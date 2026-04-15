@@ -119,7 +119,7 @@ const GeoMap = {
   gr_el: 'GR_el',
   gr_en: 'GR_en',
   ie: 'IE_en',
-  il_he: 'IL_iw',
+  il_he: 'IL_he',
   it: 'IT_it',
   lv: 'LV_lv',
   lt: 'LT_lt',
@@ -157,9 +157,9 @@ const GeoMap = {
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
-  cn: 'CN_zh-Hans',
-  tw: 'TW_zh-Hant',
-  hk_zh: 'HK_zh-hant',
+  cn: 'CN_zh',
+  tw: 'TW_zh',
+  hk_zh: 'HK_zh',
   jp: 'JP_ja',
   kr: 'KR_ko',
   za: 'ZA_en',
@@ -235,11 +235,15 @@ export async function getGeoLocaleSettings(miloLocale) {
   return settings;
 }
 
-export async function getLocaleSettings(miloLocale) {
+export function isMasGeoDetectionEnabled() {
   const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
-  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export async function getLocaleSettings(miloLocale) {
+  if (!isMasGeoDetectionEnabled()) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -866,7 +870,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
   const modal = isLocaleModal ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
@@ -1119,13 +1123,20 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
+      const useGeoMarket = isMasGeoDetectionEnabled();
+      let countryFromMarket = country;
+      if (useGeoMarket) {
+        const { getValidatedMarket } = await import('../../utils/market.js');
+        const validatedMarket = await getValidatedMarket();
+        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
-          country,
+          country: countryFromMarket,
           ...attributes,
           ...commerce,
         });
@@ -1150,6 +1161,8 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
+      } else if (useGeoMarket && countryFromMarket !== country) {
+        service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
@@ -1521,6 +1534,7 @@ export function getOptions(el) {
     if (key === 'sidenav') options.sidenav = value === 'true';
     else if (key === 'fragment' || key === 'query') options.fragment = value;
     else if (key === 'field') options.field = value;
+    else if (key === 'jsonld') options.jsonld = value === 'on';
   }
   return options;
 }

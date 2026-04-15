@@ -3,7 +3,7 @@ const MILO_TEMPLATES = [
   '404',
   'featured-story',
 ];
-const MILO_BLOCKS = [
+const C1_BLOCKS = [
   'accordion',
   'action-item',
   'action-scroller',
@@ -48,6 +48,7 @@ const MILO_BLOCKS = [
   'instagram',
   'language-selector',
   'language-banner',
+  'market-selector',
   'locui',
   'locui-create',
   'm7',
@@ -103,6 +104,26 @@ const MILO_BLOCKS = [
   'susi-light-login',
   'reading-time',
 ];
+
+const C2_BLOCKS = [
+  'base-card',
+  'box',
+  'brand-concierge',
+  'carousel-c2',
+  'elastic-carousel',
+  'explore-card',
+  'global-footer',
+  'global-navigation',
+  'martech-metadata',
+  'modal',
+  'news',
+  'region-nav',
+  'rich-content',
+  'router-marquee',
+  'section-metadata',
+  'visually-hidden',
+];
+
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
   { gist: 'gist.github.com' },
@@ -157,7 +178,11 @@ ENVS.local = {
   name: 'local',
 };
 
-export const MILO_EVENTS = { DEFERRED: 'milo:deferred' };
+export const MILO_EVENTS = {
+  DEFERRED: 'milo:deferred',
+  QUERY_INDEX_PRIMARY_LOADED: 'milo:query-index:primary-loaded',
+  QUERY_INDEX_ALL_LOADED: 'milo:query-index:all-loaded',
+};
 const TARGET_TIMEOUT_MS = 4000;
 
 const LANGSTORE = 'langstore';
@@ -180,7 +205,13 @@ let baseQueryIndex;
 let lingoSiteMapping;
 let lingoSiteMappingLoaded;
 let isLoadingQueryIndexes = false;
+let queryIndexesAllLoaded = false;
 let siteQueryIndexMapLingo = [];
+let lingoModule = null;
+let langRoutingConfig = null;
+let langBannerPromise;
+export const getLangRoutingConfig = () => langRoutingConfig;
+export const setLangRoutingConfig = (config) => { langRoutingConfig = config; };
 
 const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
 
@@ -303,6 +334,13 @@ export function setInternational(prefix) {
   sessionStorage.setItem('international', prefix);
 }
 
+export function setMarket(marketCode) {
+  const domain = window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
+  const maxAge = 365 * 24 * 60 * 60;
+  document.cookie = `country=${marketCode};max-age=${maxAge};path=/;${domain}`;
+  sessionStorage.setItem('market', marketCode);
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -388,11 +426,7 @@ export const getFederatedContentRoot = () => {
     'https://news.adobe.com',
     'graybox.adobe.com',
   ];
-  const fedContFromMiloDomain = [
-    'https://acrobat.adobe.com',
-    'https://stage.acrobat.adobe.com',
-  ];
-  const { allowedOrigins = [], origin: configOrigin } = getConfig();
+  const { allowedOrigins = [], origin: configOrigin, fedContentPrefix } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
   const origin = configOrigin || window.location.origin;
@@ -403,11 +437,14 @@ export const getFederatedContentRoot = () => {
       ? originNoStage === o
       : originNoStage.endsWith(o);
   });
-  if (fedContFromMiloDomain.includes(window.location.origin)) federatedContentRoot = 'https://milo.adobe.com';
-  else federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
+  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  }
+
+  if (fedContentPrefix) {
+    federatedContentRoot = `${federatedContentRoot}${fedContentPrefix}`;
   }
 
   return federatedContentRoot;
@@ -417,8 +454,12 @@ export const getFederatedUrl = (url = '') => {
   if (typeof url !== 'string' || !url.includes('/federal/')) return url;
   if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
   try {
+    const { fedContentPrefix, locale } = getConfig();
     const { pathname, search, hash } = new URL(url);
-    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+    const hasPrefix = fedContentPrefix && (pathname.startsWith(fedContentPrefix)
+      || pathname.startsWith(`${locale.prefix}${fedContentPrefix}`));
+    return `${getFederatedContentRoot()}${hasPrefix
+      ? pathname.replace(fedContentPrefix, '') : pathname}${search}${hash}`;
   } catch (e) {
     window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`, {
       tags: 'utils',
@@ -619,7 +660,7 @@ function processQueryIndexMap(link, domain) {
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(link)
+  result.pathsRequest = fetch(`${link}?limit=30000`)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -637,14 +678,15 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
-async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
+async function loadQueryIndexes(prefix, links = []) {
   const config = getConfig();
-  const queryIndexSuffix = config.env?.name === 'prod' ? '' : '-preview';
+  const suffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
 
-  if (links.length && links.some((link) => link.includes('/federal/')) && !queryIndexes.federal) {
+  if (links.length && links.some((l) => l.includes('/federal/')) && !queryIndexes.federal) {
+    const fedRoot = getFederatedContentRoot();
     queryIndexes.federal = processQueryIndexMap(
-      `${getFederatedContentRoot()}${prefix}/federal/assets/lingo/query-index${queryIndexSuffix}.json`,
-      getFederatedContentRoot().replace('https://', ''),
+      `${fedRoot}${prefix}/federal/assets/lingo/query-index${suffix}.json`,
+      fedRoot.replace('https://', ''),
     );
     queryIndexes.federal.domains.push(window.location.hostname);
   }
@@ -653,74 +695,118 @@ async function loadQueryIndexes(prefix, onlyCurrentSite = false, links = []) {
 
   const origin = config.origin || window.location.origin;
   const contentRoot = config.contentRoot ?? '';
-  const regionalContentRoot = `${origin}${prefix}${contentRoot}`;
   const siteId = config.uniqueSiteId ?? '';
+  const host = window.location.hostname;
+  const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
-  queryIndexes[siteId] = processQueryIndexMap(
-    `${regionalContentRoot}/assets/lingo/query-index${queryIndexSuffix}.json`,
-    window.location.hostname,
-  );
+  queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
 
-  if (onlyCurrentSite) {
-    lingoSiteMapping = Promise.resolve(lingoSiteMappingLoaded = true);
-    return;
-  }
+  const { base: localeBase, prefix: localePrefix } = config.locale;
+  let basePfx = localePrefix ?? '';
+  if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
+  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
 
-  if (config.queryIndexPath) {
-    const baseContentRoot = `${origin}${config.locale.base ? `/${config.locale.base}` : ''}${contentRoot}`;
-    baseQueryIndex = processQueryIndexMap(
-      `${baseContentRoot}${config.queryIndexPath}`,
-      window.location.hostname,
-    );
-  }
+  Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
+    .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
 
   lingoSiteMapping = (async () => {
     try {
-      const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const configJson = await response.json();
+      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const json = await resp.json();
+      siteQueryIndexMapLingo = json['site-query-index-map']?.data ?? [];
+      const localesData = json['site-locales']?.data ?? [];
 
-      siteQueryIndexMapLingo = configJson['site-query-index-map']?.data ?? [];
-      const siteLocalesData = configJson['site-locales']?.data ?? [];
-
-      const existingIndex = siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId);
-      const existingDomain = getDomainLingo(existingIndex?.queryIndexWebPath);
-
+      const existingDomain = getDomainLingo(
+        siteQueryIndexMapLingo.find((d) => d.uniqueSiteId === siteId)?.queryIndexWebPath,
+      );
       if (existingDomain) {
-        [queryIndexes[siteId], baseQueryIndex].forEach((queryIndex) => {
-          if (queryIndex && !queryIndex.domains.includes(existingDomain)) {
-            queryIndex.domains.push(existingDomain);
-          }
+        [queryIndexes[siteId], baseQueryIndex].forEach((qi) => {
+          if (qi && !qi.domains.includes(existingDomain)) qi.domains.push(existingDomain);
         });
       }
 
-      const domainInProdDomains = (d) => d.uniqueSiteId !== siteId
-        && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath));
-
-      const hasRegionalQueryIndex = (locale) => parseList(locale.regionalSites).includes(prefix);
-
       siteQueryIndexMapLingo
-        .filter(domainInProdDomains)
-        .forEach(({ uniqueSiteId, queryIndexWebPath }) => {
-          const hasRegionalSite = siteLocalesData
-            .some((s) => s.uniqueSiteId === uniqueSiteId && hasRegionalQueryIndex(s));
-
-          if (!hasRegionalSite) return;
+        .filter((d) => d.uniqueSiteId !== siteId
+          && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
+        .forEach(({ uniqueSiteId: uid, queryIndexWebPath }) => {
+          const hasRegional = localesData
+            .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
+          if (!hasRegional) return;
           const domain = getDomainLingo(queryIndexWebPath);
-          const indexPath = `https://${queryIndexWebPath.replace('/*', prefix)}`;
-          queryIndexes[uniqueSiteId] = processQueryIndexMap(indexPath, domain);
+          queryIndexes[uid] = processQueryIndexMap(`https://${queryIndexWebPath.replace('/*', prefix)}`, domain);
         });
     } catch (e) {
-      window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, {
-        tags: 'utils',
-        severity: 'error',
-      });
+      window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
       lingoSiteMappingLoaded = true;
     }
   })();
 
-  import('./lingo.js');
+  const lingoImport = import('./lingo.js').then((mod) => { lingoModule = mod; });
+
+  lingoSiteMapping.then(() => Promise.all([
+    ...Object.values(queryIndexes).map((q) => q.pathsRequest).filter(Boolean),
+    lingoImport,
+  ])).then(() => {
+    queryIndexesAllLoaded = true;
+    window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_ALL_LOADED));
+  });
+}
+
+function attachLingoPendingListener(a, hostname, rawPath, basePrefix, regionalPrefix, isBasePage) {
+  let primaryHandler;
+  let allHandler;
+  let cleaned = false;
+
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    window.removeEventListener(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryHandler);
+    window.removeEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, allHandler);
+  };
+
+  const handle = (isFinal) => {
+    if (!a.isConnected) { cleanup(); return; }
+    (lingoModule ? Promise.resolve(lingoModule) : import('./lingo.js'))
+      .then((mod) => mod.tryLocalizeLink(
+        a,
+        hostname,
+        rawPath,
+        basePrefix,
+        regionalPrefix,
+        isBasePage,
+        Object.values(queryIndexes),
+        baseQueryIndex,
+        isFinal,
+      ))
+      .then((done) => { if (done) cleanup(); })
+      .catch(() => { if (isFinal) cleanup(); });
+  };
+
+  primaryHandler = () => handle(false);
+  allHandler = () => handle(true);
+
+  if (queryIndexesAllLoaded) {
+    handle(true);
+  } else {
+    window.addEventListener(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED, primaryHandler);
+    window.addEventListener(MILO_EVENTS.QUERY_INDEX_ALL_LOADED, allHandler);
+    if (lingoSiteMapping) {
+      lingoSiteMapping.then(() => {
+        if (cleaned || !a.isConnected) return;
+        const hasIndex = Object.values(queryIndexes)
+          .some((q) => q.domains.includes(hostname));
+        if (!hasIndex) {
+          if (!isBasePage && regionalPrefix !== basePrefix) {
+            const { origin, search, hash } = new URL(a.href);
+            a.href = `${origin}${regionalPrefix}${rawPath}${search}${hash}`;
+          }
+          cleanup();
+        }
+      });
+    }
+  }
 }
 
 function localizeLinkCore(
@@ -728,71 +814,91 @@ function localizeLinkCore(
   originHostName,
   overrideDomain,
   useAsync,
-  overridePrefix = null,
-  overrideBase = null,
-  aTag = null,
+  { overridePrefix = null, overrideBase = null, aTag = null } = {},
 ) {
   try {
     const url = new URL(href);
     const relative = url.hostname === originHostName;
     const processedHref = relative ? href.replace(url.origin, '') : href;
-    const { hash } = url;
-    if (hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
+    if (url.hash.includes('#_dnt')) return processedHref.replace('#_dnt', '');
     const path = url.pathname;
     const extension = getExtension(path);
-    const allowedExts = ['', 'html', 'json'];
-    if (!allowedExts.includes(extension)) return processedHref;
+    if (!['', 'html', 'json'].includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains, uniqueSiteId } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative
-        || (url.hostname && prodDomains && prodDomains.includes(url.hostname))
-        || overrideDomain
-        || (url.hostname && getFederatedContentRoot().includes(url.hostname));
-    if (!isLocalizable) return processedHref;
-    const isLocalizedLink = isLocalizedPath(path, locales);
-    if (isLocalizedLink) return processedHref;
+      || (url.hostname && prodDomains?.includes(url.hostname))
+      || overrideDomain
+      || (url.hostname && getFederatedContentRoot().includes(url.hostname));
+    if (!isLocalizable || isLocalizedPath(path, locales)) return processedHref;
 
-    const isMepLingoFragment = path.includes('/fragments/') && aTag?.dataset.mepLingo === 'true';
-    let prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
-    const siteId = uniqueSiteId ?? '';
+    const isFragment = path.includes('/fragments/');
+    const isMepLingoFragment = isFragment && aTag?.dataset.mepLingo === 'true';
+    const prefix = overridePrefix ?? getPrefixBySite(locale, url, relative);
+    const buildUrl = (pfx) => {
+      const urlPath = `${pfx}${path}${url.search}${url.hash}`;
+      return relative ? urlPath : `${url.origin}${urlPath}`;
+    };
+
+    const isLingoPage = locale.base !== undefined || !!locale.regions;
     const isLcpSection = aTag?.closest('.section')?.dataset.idx === '0';
+    const siteId = uniqueSiteId ?? '';
     const qiResolved = queryIndexes[siteId]?.requestResolved;
     const skipQueryIndex = isMepLingoFragment
-      && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
-    if (useAsync && extension !== 'json' && lingoActive() && !skipQueryIndex
-        && (((locale.base || locale.base === '') && !path.includes('/fragments/'))
-          || (!!locale.regions && isMepLingoFragment))) {
+        && (mepLingoSkipQI() || (isLcpSection && !qiResolved));
+    const enterAsync = useAsync && aTag && extension !== 'json' && !skipQueryIndex
+      && lingoActive() && isLingoPage
+      && (!isFragment || (isMepLingoFragment && !!locale.regions));
+
+    if (enterAsync) {
       return (async () => {
-        loadQueryIndexes(prefix, false, [href]);
-        if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
-          await Promise.all([queryIndexes[siteId]?.pathsRequest, lingoSiteMapping].filter(Boolean));
-        }
-        const matchingIndexes = Object.values(queryIndexes)
-          .filter((q) => q.domains.includes(url.hostname));
+        loadQueryIndexes(prefix, [href]);
         const base = overrideBase ?? locale.base;
         const basePrefix = base === '' ? '' : `/${base}`;
-        if (matchingIndexes.length) {
-          const { default: urlInQueryIndex } = await import('./lingo.js');
-          const useRegionalPrefix = await urlInQueryIndex(`${prefix}${path}`, `${basePrefix}${path}`, url.hostname, matchingIndexes, baseQueryIndex, aTag);
-          const shouldFallbackToBase = isMepLingoFragment
-            ? locale?.regions
-            : (locale.base || locale.base === '');
-          if (!useRegionalPrefix && shouldFallbackToBase) prefix = basePrefix;
-        } else if (
-          siteQueryIndexMapLingo
-            ?.filter((index) => getDomainLingo(index?.queryIndexWebPath) === url.hostname)
-            ?.length
-        ) {
-          prefix = basePrefix;
+
+        if (isMepLingoFragment) {
+          if (!(queryIndexes[siteId]?.requestResolved || lingoSiteMappingLoaded)) {
+            await Promise.all([
+              queryIndexes[siteId]?.pathsRequest,
+              lingoSiteMapping,
+            ].filter(Boolean));
+          }
+          if (!lingoModule) lingoModule = await import('./lingo.js');
         }
-        const urlPath = `${prefix}${path}${url.search}${hash}`;
-        return relative ? urlPath : `${url.origin}${urlPath}`;
+
+        const matchingIndexes = Object.values(queryIndexes)
+          .filter((q) => q.domains.includes(url.hostname)
+            && (isMepLingoFragment || q.requestResolved));
+        const needsListener = !isMepLingoFragment && !queryIndexesAllLoaded;
+
+        const domainInSiteMap = !lingoSiteMappingLoaded
+          || Object.values(queryIndexes).some((q) => q.domains.includes(url.hostname));
+        const isBasePage = !!locale.regions;
+
+        let resolvedPrefix = basePrefix;
+        if (lingoModule) {
+          resolvedPrefix = await lingoModule.resolveLingoPrefix(
+            path,
+            prefix,
+            basePrefix,
+            url.hostname,
+            matchingIndexes,
+            baseQueryIndex,
+            aTag,
+            { isMepLingo: isMepLingoFragment, domainInSiteMap, isBasePage },
+          );
+        }
+
+        if (needsListener && resolvedPrefix === basePrefix) {
+          attachLingoPendingListener(aTag, url.hostname, path, basePrefix, prefix, isBasePage);
+        }
+
+        return buildUrl(resolvedPrefix);
       })();
     }
 
     if (skipQueryIndex && aTag) aTag.dataset.mepLingoSkippedQI = 'true';
-    const urlPath = `${prefix}${path}${url.search}${hash}`;
-    return relative ? urlPath : `${url.origin}${urlPath}`;
+    return buildUrl(prefix);
   } catch (error) {
     return href;
   }
@@ -807,7 +913,9 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
-  const country = PAGE_URL.searchParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
+  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
+  const country = akamaiLocale || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
@@ -819,6 +927,43 @@ export async function getCountry(skipFallback = false) {
   }
 }
 
+export const getCookie = (name) => document.cookie
+  .split('; ')
+  .find((row) => row.startsWith(`${name}=`))
+  ?.split('=')[1];
+
+export function normCountryCode(country) {
+  if (country == null || typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+}
+
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+  const params = new URLSearchParams(search);
+  const countryParam = normCountryCode(params.get('country'));
+  const akamaiParam = normCountryCode(params.get('akamaiLocale'));
+  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+}
+
+export async function resolveDetectedMarketCountry() {
+  const cookieMarket = getCookie('country');
+  const countryFromGeo = await getCountry();
+  let detectedMarket = computeDetectedMarketCountry(
+    window.location.search,
+    cookieMarket,
+    countryFromGeo,
+  );
+  if (!detectedMarket) {
+    try {
+      const { default: getAkamaiCode } = await import('./geo.js');
+      detectedMarket = normCountryCode(await getAkamaiCode());
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+    }
+  }
+  return detectedMarket;
+}
+
 export async function getMepLingoPrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
@@ -827,7 +972,7 @@ export async function getMepLingoPrefix() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = await getCountry();
+  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -911,12 +1056,33 @@ export async function localizeLinkAsync(
     || aTag?.dataset?.mepLingoSectionSwap
     || aTag?.dataset?.mepLingoBlockSwap;
 
-  const prefix = lingoActive() && isMepLingoLink ? await getMepLingoPrefix() : null;
-  const base = lingoActive() && isMepLingoLink
-    ? getConfig()?.locale?.prefix.replace('/', '')
-    : null;
+  const { locale } = getConfig() || {};
+  const isBasePage = !!locale?.regions;
+  const needsOverride = lingoActive()
+    && (isMepLingoLink || isBasePage || locale?.base !== undefined);
 
-  return localizeLinkCore(effectiveHref, originHostName, overrideDomain, true, prefix, base, aTag);
+  let prefix = null;
+  let base = null;
+  if (needsOverride) {
+    const isFragment = effectiveHref.includes('/fragments/');
+    if (isBasePage) {
+      const isRegularFragment = isFragment && !isMepLingoLink;
+      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      base = locale?.prefix?.replace('/', '') ?? '';
+    } else {
+      const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
+      prefix = (isFragment || aTag) ? (locale?.prefix || null) : basePrefix;
+      base = locale?.base ?? '';
+    }
+  }
+
+  return localizeLinkCore(
+    effectiveHref,
+    originHostName,
+    overrideDomain,
+    true,
+    { overridePrefix: prefix, overrideBase: base, aTag },
+  );
 }
 
 // this method is deprecated - use localizeLinkAsync instead
@@ -925,7 +1091,7 @@ export function localizeLink(
   originHostName = window.location.hostname,
   overrideDomain = false,
 ) {
-  return localizeLinkCore(href, originHostName, overrideDomain, false);
+  return localizeLinkCore(href, originHostName, overrideDomain, false, {});
 }
 
 export function loadLink(href, {
@@ -1081,6 +1247,12 @@ export async function loadTemplate() {
 function getBlockData(block) {
   const name = block.classList[0];
   const { miloLibs, codeRoot, mep, externalLibs } = getConfig();
+  const isC2Page = getMetadata('foundation') === 'c2';
+  const isC1Block = C1_BLOCKS.includes(name);
+  const isC2Block = C2_BLOCKS.includes(name);
+  const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
+
+  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock) return { name, isInvalid: true };
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1102,7 +1274,8 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && MILO_BLOCKS.includes(name)) base = miloLibs;
+  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
+  if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
@@ -1117,7 +1290,12 @@ export async function loadBlock(block) {
     block.remove();
     return null;
   }
-  const { name, blockPath, hasStyles } = getBlockData(block);
+  const { name, blockPath, hasStyles, isInvalid } = getBlockData(block);
+  if (isInvalid) {
+    block.dataset.failed = 'true';
+    block.dataset.reason = `${name} is a C1 block and cannot be used on C2 pages`;
+    return block;
+  }
   const styleLoaded = hasStyles && new Promise((resolve) => {
     loadStyle(`${blockPath}.css`, resolve);
   });
@@ -1553,7 +1731,7 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    if (getMetadata('theme') === 'max25') {
+    if (['doodlebug', 'max25'].includes(getMetadata('theme'))) {
       // TODO: Remove after correcting core logic
       const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
       if (!includeIcons.length) return;
@@ -1670,12 +1848,13 @@ async function decorateSection(section, idx) {
   const { doNotInline } = getConfig();
   const blockLinks = [...blocks].reduce((blkLinks, block) => {
     const blockName = block.classList[0];
+    const blocksList = getMetadata('foundation') === 'c2' ? C2_BLOCKS : C1_BLOCKS;
     links.filter((link) => block.contains(link))
       .forEach((link) => {
         if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
           link.href = link.href.replace('#_replacecell', '');
         } else if (link.classList.contains('fragment')
-          && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
+          && blocksList.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)
           && link.dataset.mepLingo !== 'true') {
           if (!link.href.includes('#_inline')) {
@@ -1957,13 +2136,12 @@ async function checkForPageMods() {
   });
 }
 
-async function decorateMeta(ignoreNames = []) {
+async function decorateMeta() {
   const { origin } = window.location;
   const contents = document.head.querySelectorAll('[content*=".hlx."]:not([data-localized]), [content*=".aem."]:not([data-localized]), [content*="/federal/"]:not([data-localized])');
   await Promise.all(Array.from(contents).map(async (meta) => {
     const name = meta.getAttribute('name') || meta.getAttribute('property');
     if (name === 'hlx:proxyUrl' || name?.endsWith('schedule') || meta.getAttribute('http-equiv') === 'Content-Security-Policy') return;
-    if (ignoreNames.includes(name)) return;
     try {
       const url = new URL(meta.content);
       const localizedLink = await localizeLinkAsync(`${origin}${url.pathname}`);
@@ -1992,8 +2170,6 @@ function initModalEventListener() {
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
 
-  await decorateMeta();
-
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -2009,8 +2185,14 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
-    const { default: init } = await import('../features/language-banner/language-banner.js');
-    await init();
+    const routingConfig = getLangRoutingConfig();
+    if (routingConfig?.showBanner && routingConfig.markets?.length) {
+      const { default: init } = await import('../features/language-banner/language-banner.js');
+      await init();
+    } else if (routingConfig?.showModal && routingConfig.markets?.length) {
+      const { default: showRegionModal } = await import('../features/region-modal/region-modal.js');
+      await showRegionModal(routingConfig, config, createTag, loadStyle, loadBlock);
+    }
   } else if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
     config.georouting.loadedPromise = (async () => {
@@ -2034,6 +2216,19 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
+  }
+  if (getMetadata('foundation') === 'c2') {
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+    });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
@@ -2119,28 +2314,66 @@ function initSidekick() {
   }
 }
 
-let targetMarket = null;
-let langBannerPromise;
-export const getTargetMarket = () => targetMarket;
-export const setTargetMarket = (market) => { targetMarket = market; };
-
-const getCookie = (name) => document.cookie
-  .split('; ')
-  .find((row) => row.startsWith(`${name}=`))
-  ?.split('=')[1];
-
-function getMarketsUrl() {
+export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();
   const sourceFromUrl = PAGE_URL.searchParams.get('marketsSource');
-  const allowedMarkets = ['bacom'];
-  const marketsSourceKey = (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
-      || getMetadata('marketssource')
-      || marketsSource;
-
-  return `${getFederatedContentRoot()}/federal/supported-markets/supported-markets${marketsSourceKey ? `-${marketsSourceKey}` : ''}.json`;
+  const allowedMarkets = ['express']; // TODO: remove allowedMarkets once feature is stable
+  return (/^[a-zA-Z0-9-]+$/.test(sourceFromUrl) && (env?.name !== 'prod' || allowedMarkets.includes(sourceFromUrl)) && sourceFromUrl)
+    || getMetadata('marketssource')
+    || marketsSource
+    || null;
 }
 
-async function decorateLanguageBanner() {
+export function usesBannerFlow() {
+  const onlyBanner = PAGE_URL.searchParams.get('onlybanner') ?? getMetadata('onlybanner') ?? getConfig().onlybanner ?? false;
+  return onlyBanner === true || ['true', 'on'].includes(String(onlyBanner).toLowerCase());
+}
+export function getMarketsUrl() {
+  const { contentRoot } = getConfig();
+  const marketsSourceKey = getMarketsSourceKey();
+  if (marketsSourceKey) return `${contentRoot ?? ''}/assets/supported-markets/supported-markets-${marketsSourceKey}.json`;
+  return `${getFederatedContentRoot()}/federal/assets/supported-markets/supported-markets.json`;
+}
+
+const isUsEntry = ({ prefix = '' } = {}) => prefix === '' || prefix === 'us';
+function excludeUsUnlessExplicit(markets, geoIp) {
+  if (markets.length <= 1) return markets;
+  const usEntry = markets.find(isUsEntry);
+  if (!usEntry) return markets;
+  const usListsGeo = usEntry.regionPriorities?.split(',').some((pair) => pair.trim().split(':')[0].toLowerCase() === geoIp);
+  return usListsGeo ? markets : markets.filter((market) => !isUsEntry(market));
+}
+
+function getMarketsByRegionPriority(markets, geoIp) {
+  const marketsWithPriority = [];
+  markets.forEach((market) => {
+    if (!market.regionPriorities) return;
+    const match = market.regionPriorities.split(',')
+      .find((e) => e.trim().split(':')[0].toLowerCase() === geoIp);
+    if (match) marketsWithPriority.push({ market, priority: parseInt(match.trim().split(':')[1], 10) });
+  });
+  if (!marketsWithPriority.length) return null;
+  marketsWithPriority.sort((a, b) => a.priority - b.priority);
+  return marketsWithPriority.map(({ market }) => market);
+}
+
+function reserveBannerSpace() {
+  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
+  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
+  if (existingWrapper) {
+    existingWrapper.remove();
+    document.querySelector('.global-navigation')?.classList.remove('has-promo');
+  }
+}
+
+export async function pageExist(url) {
+  const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
+  if (headResp?.status !== 401) return headResp?.ok ?? false;
+  if (!(url.includes('.aem.page') || url.includes('.aem.live'))) return false;
+  return (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
+}
+
+export async function decorateLanguageBanner() {
   const { locale, locales, languageBanner } = getConfig();
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
   if (languageBannerEnabled !== 'on') return;
@@ -2160,13 +2393,18 @@ async function decorateLanguageBanner() {
   ]);
 
   if (!geoIpCode || !marketsConfig) return;
+  getConfig().marketsConfig = marketsConfig;
+  const rawEntries = marketsConfig.languages?.data ?? marketsConfig.data;
+  if (!rawEntries?.length) return;
   const geoIp = geoIpCode.toLowerCase();
-  marketsConfig.data.forEach((market) => {
-    market.supportedRegions = market.supportedRegions.split(',').map((r) => r.trim().toLowerCase());
-  });
+  const languageEntries = rawEntries.map((entry) => ({
+    ...entry,
+    supportedRegions: entry.supportedRegions.split(',').map((r) => r.trim().toLowerCase()),
+    dir: locales?.[entry.prefix || '']?.dir || 'ltr',
+  }));
   const pagePrefix = locale.prefix?.replace('/', '') || '';
-  const pageMarket = marketsConfig.data.find((m) => m.prefix === pagePrefix)
-    ?? marketsConfig.data.find((m) => m.prefix === locale.base);
+  const pageMarket = languageEntries.find((m) => m.prefix === pagePrefix)
+    ?? languageEntries.find((m) => m.prefix === locale.base);
   const isSupportedMarket = pageMarket?.supportedRegions.includes(geoIp);
 
   const candidateMarkets = [];
@@ -2175,9 +2413,11 @@ async function decorateLanguageBanner() {
     candidateMarkets.push(...ms);
   };
 
+  const useBannerFlow = usesBannerFlow();
+  // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = marketsConfig.data.find((market) => (
+    const prefMarket = languageEntries.find((market) => (
       market.lang === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
@@ -2185,79 +2425,90 @@ async function decorateLanguageBanner() {
     else return;
   } else {
     // Unsupported Market Path
-    const marketsForGeo = marketsConfig.data.filter((market) => (
+    const marketsForGeo = languageEntries.filter((market) => (
       market.supportedRegions.includes(geoIp)));
     if (!marketsForGeo.length) return;
-
-    let prefMarketForGeo;
-    if (prefLang) {
-      prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-      if (prefMarketForGeo) addAndShow(prefMarketForGeo);
-    }
-
-    if (!prefMarketForGeo) {
-      const marketsWithPriority = [];
-      marketsForGeo.forEach((market) => {
-        if (market.regionPriorities) {
-          const priorityMap = new Map(
-            market.regionPriorities.split(',').map((p) => {
-              const [region, priority] = p.trim().split(':');
-              return [region.toLowerCase(), parseInt(priority, 10)];
-            }),
-          );
-          const priority = priorityMap.get(geoIp);
-          if (priority) {
-            marketsWithPriority.push({ market, priority });
-          }
-        }
-      });
-
-      if (marketsWithPriority.length) {
-        marketsWithPriority.sort((a, b) => a.priority - b.priority);
+    if (useBannerFlow) {
+      let prefMarketForGeo;
+      if (prefLang) {
+        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
-      addAndShow(...(marketsWithPriority.length
-        ? marketsWithPriority.map((item) => item.market)
-        : [marketsForGeo[0]]));
+      if (!prefMarketForGeo) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+      }
+    } else {
+      // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
+      const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
+      if (prefLang) {
+        const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang === prefLang);
+        if (marketsWithPrefLang.length === 1) {
+          addAndShow(marketsWithPrefLang[0]);
+        } else if (marketsWithPrefLang.length > 1) {
+          const marketsSortedByPriority = getMarketsByRegionPriority(marketsWithPrefLang, geoIp);
+          addAndShow(...(marketsSortedByPriority ?? marketsWithPrefLang));
+        }
+      }
+      if (!showBanner) {
+        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
+        addAndShow(...(marketsSortedByPriority ?? marketsForGeoFiltered));
+      }
     }
   }
 
   if (!showBanner) return;
+
+  if (!useBannerFlow && !isSupportedMarket) {
+    setLangRoutingConfig({
+      showBanner: false,
+      showModal: true,
+      markets: candidateMarkets,
+      geoMarketCode: geoIp,
+    });
+    return;
+  }
 
   const { pathname, origin } = window.location;
   const pagePath = locale.prefix ? pathname.replace(locale.prefix, '') : pathname;
 
   const fetchPromises = candidateMarkets.map((market) => {
     const url = `${origin}${market.prefix ? `/${market.prefix}` : ''}${pagePath}`;
-    return fetch(url, { method: 'HEAD' })
-      .then((res) => ({ market, ok: res.ok }))
-      .catch(() => ({ market, ok: false }));
+    return pageExist(url).then((ok) => ({ market, ok }));
   });
 
-  for (const promise of fetchPromises) {
-    const { market, ok } = await promise;
-    if (ok) { targetMarket = market; break; }
-  }
-
-  if (!targetMarket) return;
-
-  document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
-  const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
-  if (existingWrapper) {
-    existingWrapper.remove();
-    document.querySelector('.global-navigation').classList.remove('has-promo');
+  if (useBannerFlow) {
+    let targetMarket = null;
+    for (const promise of fetchPromises) {
+      const { market, ok } = await promise;
+      if (ok) { targetMarket = market; break; }
+    }
+    if (!targetMarket) return;
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: [targetMarket] });
+    reserveBannerSpace();
+  } else {
+    // ACOM : supported market, show banner
+    const results = await Promise.all(fetchPromises);
+    const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
+    if (!validatedMarkets.length) return;
+    setLangRoutingConfig({ showBanner: true, showModal: false, markets: validatedMarkets });
+    reserveBannerSpace();
   }
 }
 
-function preloadMarketsConfig() {
+export function preloadMarketsConfig(callback) {
   const config = getConfig();
+  if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  if (languageBannerEnabled !== 'on') return;
+  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
+  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
   const marketsUrl = getMarketsUrl();
-  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+  loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }
 
 async function decorateDocumentExtras() {
-  await decorateMeta(['footer-promo-tag', 'footer-source', 'gnav-source']);
+  await decorateMeta();
   await decorateHeader();
   langBannerPromise = decorateLanguageBanner();
 }
@@ -2379,14 +2630,14 @@ function loadLingoIndexes(area = document) {
   const config = getConfig();
   const { locale } = config || {};
   if (locale?.base || locale?.base === '') {
-    loadQueryIndexes(config.locale.prefix, false, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+    loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
   getMepLingoPrefix().then((prefix) => {
     if (prefix) {
-      loadQueryIndexes(prefix, true, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
+      loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
-  });
+  }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
 export async function loadArea(area = document) {
@@ -2394,7 +2645,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
-    if (lingoActive()) preloadMarketsConfig();
+    preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

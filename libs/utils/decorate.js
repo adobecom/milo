@@ -2,6 +2,7 @@ import {
   createTag,
   loadStyle,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
@@ -10,6 +11,7 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
+export const USER_PAUSED_ATTR = 'data-user-paused';
 let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
@@ -93,19 +95,26 @@ function elContainsText(el) {
   ));
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+const isC2 = getMetadata('foundation') === 'c2';
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'lg' } : ['m', 's', 'm'];
+
+export function decorateBlockText(el, config = blockTextConfig, type = null) {
+  const sizeMap = Array.isArray(config)
+    ? { heading: config[0], body: config[1], detail: config[2], button: config[3] }
+    : { ...blockTextConfig, ...config };
+
   if (!el.classList.contains('default')) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
-      if (config[2]) {
+      headings.forEach((h) => h.classList.add(`${isC2 ? 'title' : 'heading'}-${sizeMap.heading}`));
+      if (sizeMap.detail || isC2) {
         const prevSib = headings[0]?.previousElementSibling;
-        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
+        prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
-    const bodyStyle = `body-${config[1]}`;
+    const bodyStyle = `body-${sizeMap.body}`;
     const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
@@ -113,8 +122,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       el.classList.add(bodyStyle);
     }
   }
-  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
-  decorateButtons(el, buttonSize);
+  decorateButtons(el, sizeMap.button ? `button-${sizeMap.button}` : '');
   if (type === 'merch') decorateIconStack(el);
 }
 
@@ -209,19 +217,25 @@ export const decorateBlockHrs = (el) => {
 
 function applyTextOverrides(el, override, targetEl) {
   const parts = override.split('-');
-  const type = parts[1];
-  const scopeEl = (targetEl !== false) ? targetEl : el;
-  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
+  const type = isC2 ? parts[0] : parts[1];
+  const modifier = isC2 ? parts[1] : parts[0];
+  const scopeEl = targetEl !== false ? targetEl : el;
+  const els = [...scopeEl.querySelectorAll('[class]')]
+    .filter((elOfType) => [...elOfType.classList].some((cls) => cls.startsWith(type)));
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
-    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+    elem.classList.replace(replace, `${type}-${modifier}`);
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail'], target = false) {
+const textOverridesConfig = isC2 ? ['title-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+
+export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
-    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+    .filter((elClass) => options.some((ovClass) => (
+      isC2 ? elClass.startsWith(ovClass) : elClass.endsWith(ovClass)
+    )));
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override, target);
@@ -272,22 +286,25 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  if (!video.getAttributeNames().includes('data-hoverplay')) {
-    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
-    const anchorTag = video.closest('.video-holder').querySelector('a');
-    offsetFiller?.classList.toggle('is-playing');
-    const isPlaying = offsetFiller?.classList.contains('is-playing');
-    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
-    anchorTag?.setAttribute('title', `${ariaLabel}`);
-    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
-    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-  }
+  if (!video || video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const offsetFiller = holder.querySelector('.offset-filler');
+  if (!offsetFiller) return;
+  const anchorTag = holder.querySelector('a.pause-play-wrapper') || holder.querySelector('a');
+  if (!anchorTag) return;
+  if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
+  offsetFiller.classList.toggle('is-playing');
+  const isPlaying = offsetFiller.classList.contains('is-playing');
+  const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  anchorTag.setAttribute('title', `${ariaLabel}`);
+  anchorTag.setAttribute('aria-label', ariaLabel);
+  anchorTag.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = anchorTag.getAttribute('daa-ll');
+  if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
@@ -319,12 +336,15 @@ export function handlePause(event) {
   event.preventDefault();
   event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
+    if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
     if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
   }
   syncPausePlayIcon(video);
 }
@@ -391,12 +411,13 @@ function getVideoIntersectionObserver() {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
         }
       });
@@ -542,4 +563,16 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
+}
+
+/* NOTE: Experimental logic to substitute authored classes
+   with centralized kit classes */
+export function decorateBlockKit(el, kits = []) {
+  const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
+  if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
+
+  const blockClass = [...el.classList][0];
+  const kitClasses = kits[kitClass];
+  el.className = blockClass;
+  el.classList.add(kitClass, ...kitClasses);
 }

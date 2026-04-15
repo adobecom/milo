@@ -6,7 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  sendMktgTracking,
+  isTrustedUrl,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -412,6 +412,145 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
 
+  it('updateFramework should create new framework stylesheet link', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should no-op when already on target foundation', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', 'c2');
+    const c2Link = document.createElement('link');
+    c2Link.rel = 'stylesheet';
+    c2Link.href = `${libsPath}/c2/styles/styles.css`;
+    document.head.appendChild(c2Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should no-op when value is undefined', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    delete manifestJson.data[0].all;
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should no-op when value is empty string', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = '';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should no-op for invalid values', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'banana';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+  });
+
+  it('updateFramework should create C1 stylesheet link when switching from C2', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c2Link = document.createElement('link');
+    c2Link.rel = 'stylesheet';
+    c2Link.href = `${libsPath}/c2/styles/styles.css`;
+    document.head.appendChild(c2Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', 'c2');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'c1';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
+  it('updateFramework should handle case-insensitive values', async () => {
+    const config = getConfig();
+    const libsPath = config.miloLibs || config.codeRoot;
+    const c1Link = document.createElement('link');
+    c1Link.rel = 'stylesheet';
+    c1Link.href = `${libsPath}/styles/styles.css`;
+    document.head.appendChild(c1Link);
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+
+    let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateFramework.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson.data[0].all = 'C2';
+    setFetchResponse(manifestJson);
+    await init(mepSettings);
+
+    expect(document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)).to.not.be.null;
+
+    document.head.querySelector(`link[href="${libsPath}/styles/styles.css"]`)?.remove();
+    document.head.querySelector(`link[href="${libsPath}/c2/styles/styles.css"]`)?.remove();
+    document.querySelector('meta[name="foundation"]')?.setAttribute('content', '');
+  });
+
   it('will add id to the section div', async () => {
     addSectionAnchors(document);
     const sectionWithId = document.querySelector('#marquee-container');
@@ -490,6 +629,88 @@ describe('MEP Utils', () => {
       expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
       expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
     });
+    it('blocks absolute manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        'https://attacker.com/manifest.json--all---https://evil.github.io/manifest--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks trusted absolute manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        'https://www.adobe.com/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks protocol-relative manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '//evil.com/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('allows relative path manifest URLs from mep param', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '/path/manifest.json--all',
+      );
+      expect(manifests.length).to.equal(1);
+    });
+    it('allows federal manifest via mep param alongside repo manifests', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        '/homepage/fragments/tests/site-redesign.json--target-var1---/federal/tests/mep/ace1151/ace1151-gnav-and-banners.json--all',
+      );
+      expect(manifests.length).to.equal(2);
+      expect(manifests[0].manifestPath).to.equal('/homepage/fragments/tests/site-redesign.json');
+      expect(manifests[1].manifestPath).to.equal('/federal/tests/mep/ace1151/ace1151-gnav-and-banners.json');
+    });
+  });
+  describe('isTrustedUrl', () => {
+    it('allows relative paths', () => {
+      expect(isTrustedUrl('/path/to/script.js')).to.be.true;
+      expect(isTrustedUrl('/content/dam/cc/test.js')).to.be.true;
+    });
+    it('allows trusted Adobe domains', () => {
+      expect(isTrustedUrl('https://www.adobe.com/content/dam/cc/test.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.aem.page/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.aem.live/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.hlx.page/script.js')).to.be.true;
+      expect(isTrustedUrl('https://main--milo--adobecom.hlx.live/script.js')).to.be.true;
+    });
+    it('blocks untrusted external URLs', () => {
+      expect(isTrustedUrl('https://attacker.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https://evil.github.io/script.js')).to.be.false;
+      expect(isTrustedUrl('https://attacker.com/content/dam/fake.js')).to.be.false;
+    });
+    it('blocks non-adobecom aem/hlx domains', () => {
+      expect(isTrustedUrl('https://evil--project--inc.aem.page/manifest.json')).to.be.false;
+      expect(isTrustedUrl('https://evil--project--inc.hlx.live/script.js')).to.be.false;
+      expect(isTrustedUrl('https://evildomainadobecom.hlx.page/script.js')).to.be.false;
+    });
+    it('blocks non-https protocols', () => {
+      expect(isTrustedUrl('http://www.adobe.com/script.js')).to.be.false;
+      expect(isTrustedUrl('data:text/javascript,alert(1)')).to.be.false;
+    });
+    it('blocks null/empty values', () => {
+      expect(isTrustedUrl(null)).to.be.false;
+      expect(isTrustedUrl(undefined)).to.be.false;
+      expect(isTrustedUrl('')).to.be.false;
+    });
+    it('blocks protocol-relative URLs', () => {
+      expect(isTrustedUrl('//evil.com/script.js')).to.be.false;
+    });
   });
   describe('cleanAndSortManifestList', async () => {
     it('chooses server manifest over target manifest if same manifest path', async () => {
@@ -531,28 +752,6 @@ describe('MEP Utils', () => {
       ftLinks = [...allLinks].filter((link) => link.innerHTML.toLowerCase().match(/free.trial/));
       expect(ftLinks.length).to.equal(0);
     });
-  });
-});
-describe('sendMktgTracking', () => {
-  it('should return false if advertising is false and mktgAction is marketing increase', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: false };
-    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.be.false;
-  });
-  it('should return false if advertising is true and mktgAction is non-marketing', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking(true, 'my-manifest', 'non-marketing')).to.be.false;
-  });
-  it('should send return event name if advertising is true and mktgAction is marketing increase', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking('my-manifest', 'marketing increase')).to.equal('my-manifest was served');
-  });
-  it('should send return event name if advertising is true and mktgAction is marketing decrease', async () => {
-    const config = getConfig();
-    config.mep.consentState = { advertising: true };
-    expect(sendMktgTracking('my-manifest', 'marketing decrease')).to.equal('my-manifest was served');
   });
 });
 
@@ -607,7 +806,6 @@ describe('analyticifseen', () => {
   });
 
   it('should defer analytics to alloy_sendEvent when _satellite is unavailable', () => {
-    // Flush lingering alloy_sendEvent listeners left by earlier sendMktgTracking tests
     window.dispatchEvent(new Event('alloy_sendEvent'));
 
     observerCallback([{ isIntersecting: true }]);

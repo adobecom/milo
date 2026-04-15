@@ -181,19 +181,23 @@ class Footer {
       return;
     }
 
-    const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
-    const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
-    // We remove and add again the region and social elements from the body to make sure
+    const [region, social, market] = ['.region-selector', '.social', '.market-selector'].map((selector) => this.body.querySelector(selector));
+    const [regionParent, socialParent, marketParent] = [
+      region?.parentElement, social?.parentElement, market?.parentElement,
+    ];
+    // We remove and add again the region, social and market elements from the body to make sure
     // they don't get decorated twice
-    [regionParent, socialParent].forEach((parent) => parent?.replaceChildren());
+    [regionParent, socialParent, marketParent].forEach((parent) => parent?.replaceChildren());
 
     await decorateLinksAsync(this.body);
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+    marketParent?.appendChild(market);
 
-    // Support auto populated modal
-    await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
+    // Support auto populated modal, fragment and market selector
+    const blocks = ['.modal', '.fragment', '.market-selector'].map((s) => [...this.body.querySelectorAll(s)]).flat();
+    await Promise.all(blocks.map(loadBlock));
 
     // Process Jarvis chat footer link
     await this.processJarvisLink();
@@ -314,6 +318,11 @@ class Footer {
 
   decorateRegionPicker = async () => {
     this.elements.regionPicker = '';
+    const marketSelector = this.body.querySelector('.market-selector');
+    if (marketSelector) {
+      this.elements.regionPicker = marketSelector;
+      return this.elements.regionPicker;
+    }
     const regionSelector = this.body.querySelector('.region-selector a');
     if (!regionSelector) return this.elements.regionPicker;
 

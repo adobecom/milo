@@ -1,7 +1,22 @@
 import {
-  createTag, getConfig, getMetadata, loadStyle, lingoActive, getCountry, getMepLingoPrefix,
+  createTag,
+  getCookie,
+  getConfig,
+  getMetadata,
+  getMepLingoPrefix,
+  loadStyle,
+  lingoActive,
+  normCountryCode,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
+
+export function escapeHtml(str) {
+  if (str == null || str === '') return str;
+  const el = document.createElement('span');
+  el.textContent = String(str);
+  return el.innerHTML;
+}
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -639,10 +654,17 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
     const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const countryParam = normCountryCode(searchParams.get('country'));
+    const countryCookie = countryParam
+      || normCountryCode(getCookie('country'))
+      || 'None';
+
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: await getCountry(),
+      countryCookie: escapeHtml(countryCookie) ?? '',
+      userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
       geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
@@ -663,6 +685,8 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
       ${isMmm ? '' : `
+        <span>Country cookie</span>
+        <span>${lingoData.countryCookie}</span>
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
         <span>Geo + User</span>

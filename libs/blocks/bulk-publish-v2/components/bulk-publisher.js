@@ -10,6 +10,7 @@ import {
   getJobErrorText,
   getProcessedCount,
   getInvalidUrlReason,
+  getMixedProjectError,
   isValidUrl,
   processJobResult,
   PROCESS_TYPES,
@@ -136,12 +137,21 @@ class BulkPublish2 extends LitElement {
     const malformed = this.urls.filter((url) => url.length && !isValidUrl(url));
     this.invalidUrls = malformed;
     let errors = [];
-    const invalids = this.jobErrors?.urls?.length
+    const { jobErrors } = this;
+    const hasApiErrors = jobErrors && !jobErrors.mixedProject && jobErrors.urls?.length;
+    const invalids = hasApiErrors
       ? this.urls.filter((url) => this.jobErrors.urls.includes(url))
       : malformed;
 
     if (invalids?.length) {
       errors = [...errors, ...invalids];
+    }
+    if (!errors.length) {
+      const mixedError = getMixedProjectError(this.urls);
+      if (mixedError) {
+        this.jobErrors = { urls: this.urls, messages: [mixedError], mixedProject: true };
+        errors = [...this.urls];
+      }
     }
     if (errors.length === 0) {
       errors = this.urls.length === 0;
@@ -428,20 +438,24 @@ class BulkPublish2 extends LitElement {
   async submit() {
     if (!this.isDisabled()) {
       this.processing = 'started';
-      const { authorized, unauthorized } = await getPublishable(this);
-      const job = await startJob({
-        urls: authorized,
-        process: this.process.toLowerCase(),
-        useBulk: this.user.permissions[this.process]?.useBulk ?? false,
-      });
-      const { complete, error } = processJobResult(job);
-      this.jobs = [...this.jobs, ...complete];
-      this.processing = complete.length ? 'job' : false;
-      if (error.length || unauthorized.length) {
-        this.setJobErrors(error, unauthorized);
-      } else {
-        if (this.mode === 'full') this.openJobs = true;
-        this.reset();
+      try {
+        const { authorized, unauthorized } = await getPublishable(this);
+        const job = await startJob({
+          urls: authorized,
+          process: this.process.toLowerCase(),
+          useBulk: this.user.permissions[this.process]?.useBulk ?? false,
+        });
+        const { complete, error } = processJobResult(job);
+        this.jobs = [...this.jobs, ...complete];
+        this.processing = complete.length ? 'job' : false;
+        if (error.length || unauthorized.length) {
+          this.setJobErrors(error, unauthorized);
+        } else {
+          if (this.mode === 'full') this.openJobs = true;
+          this.reset();
+        }
+      } catch (e) {
+        this.processing = false;
       }
     }
   }

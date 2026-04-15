@@ -63,7 +63,7 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings } = merch;
+const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
   closeAllDropdowns,
@@ -628,7 +628,7 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -642,6 +642,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
+        ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
@@ -999,11 +1000,18 @@ class Gnav {
       return children;
     };
 
+    let countryCode = getMiloLocaleSettings(getConfig().locale)?.country || 'US';
+    if (isMasGeoDetectionEnabled?.()) {
+      const base = getConfig().miloLibs || getConfig().codeRoot;
+      const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+      countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
+    }
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
