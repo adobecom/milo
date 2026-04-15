@@ -1,0 +1,89 @@
+.rares-media-test {
+  > div {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .media {
+    position: relative;
+    overflow: clip;
+    border-radius: var(--s2a-border-radius-md);
+
+    > picture {
+      display: flex;
+    }
+
+    picture:not(.icon) img {
+      width: 100%;
+      object-fit: cover;
+      /* No --s2a- token for 245px — mobile Figma specifies fixed image height */
+      height: 245px;
+    }
+
+    .icon {
+      position: absolute;
+      top: var(--s2a-spacing-md);
+      inset-inline-start: var(--s2a-spacing-md);
+      width: 24px;
+      height: 24px;
+      z-index: 1;
+
+      img {
+        width: 24px;
+      }
+    }
+  }
+
+  .foreground {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+    padding: var(--s2a-spacing-lg) var(--s2a-spacing-md) 0;
+
+    p:has(.standalone-link) {
+      margin-block-start: calc(var(--s2a-spacing-lg) - var(--s2a-spacing-xs));
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .rares-media-test {
+    .media picture:not(.icon) img {
+      height: auto;
+      /* Figma tablet/desktop asset frame ratio */
+      aspect-ratio: 1480 / 670;
+    }
+
+    .foreground {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: var(--s2a-spacing-lg);
+      row-gap: var(--s2a-spacing-xs);
+
+      > * {
+        grid-column: 1;
+      }
+
+      p:has(.standalone-link) {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        align-self: center;
+        margin-block-start: 0;
+      }
+    }
+  }
+}
+
+@media (width >= 1280px) {
+  .rares-media-test {
+    .media .icon {
+      top: var(--s2a-spacing-lg);
+      inset-inline-start: var(--s2a-spacing-lg);
+    }
+
+    .foreground {
+      padding: var(--s2a-spacing-lg);
+      padding-block-end: 0;
+    }
+  }
+}
