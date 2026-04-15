@@ -116,10 +116,10 @@ function initGarageDoorReveal() {
       //   });
       // }
 
-      const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.6);
-      if (foreground) {
-        foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
-      }
+      // const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.6);
+      // if (foreground) {
+      //   foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
+      // }
     });
   });
 }
