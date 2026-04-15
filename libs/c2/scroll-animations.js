@@ -77,7 +77,7 @@ function initMoveUpFast() {
   sections.forEach((section) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:absolute;inset:0;background:black;'
-      + 'opacity:0;pointer-events:none;z-index:2;';
+      + 'opacity:0;pointer-events:none;z-index:1;';
     section.appendChild(overlay);
     const sectionTop = getDocTop(section);
     scrollTasks.push((scroll) => {
