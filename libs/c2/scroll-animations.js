@@ -404,10 +404,10 @@ function initCarouselC2() {
 export default function init() {
   initMoveUpFast();
   initGarageDoorReveal();
-  // initScaleDownGrid();
-  // initStagger();
-  // initElasticCarousel();
-  // initCarouselC2();
+  initScaleDownGrid();
+  initStagger();
+  initElasticCarousel();
+  initCarouselC2();
 
   if (scrollTasks.length) {
     window.addEventListener('scroll', onScroll, { passive: true });
