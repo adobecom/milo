@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { getLocale, setConfig } from '../../../libs/utils/utils.js';
 import { restoreFetch, mockFetch } from './mocks/fetchMock.js';
-import { setFormData, getFormData, validatePhoneNumber, removePhoneNumberFormat, getPhoneFieldConfig } from '../../../libs/blocks/email-collection/utils.js';
+import { setFormData, getFormData, validatePhoneNumber, removePhoneNumberFormat, getPhoneFieldConfig, fetchConsentString, getPageLocale } from '../../../libs/blocks/email-collection/utils.js';
 
 const locales = {
   '': { ietf: 'en-US', tk: 'hah7vzn.css' },
@@ -562,6 +562,10 @@ describe('Phone utils', () => {
     const phoneConfig = getPhoneFieldConfig();
     expect(phoneConfig.format('11912345678')).to.equal('(11) 91234-5678');
   });
+
+  it('getPageLocale should return br when on /br/ path', () => {
+    expect(getPageLocale()).to.equal('br');
+  });
 });
 
 describe('Phone fields rendering', () => {
@@ -662,5 +666,117 @@ describe('Phone fields rendering', () => {
     expect(body.phoneExtension).to.equal('+55');
     expect(body.phoneCountryCode).to.equal('BR');
     fetchSpy.restore();
+  });
+});
+
+describe('setFormData validation', () => {
+  function createBlock(rows) {
+    const section = document.createElement('div');
+    const block = document.createElement('div');
+    block.className = 'email-collection';
+    const sectionMeta = document.createElement('div');
+    sectionMeta.className = 'section-metadata';
+    rows.forEach(([key, value]) => {
+      const row = document.createElement('div');
+      const keyEl = document.createElement('div');
+      keyEl.textContent = key;
+      const valEl = document.createElement('div');
+      valEl.textContent = value;
+      row.appendChild(keyEl);
+      row.appendChild(valEl);
+      sectionMeta.appendChild(row);
+    });
+    section.appendChild(block);
+    section.appendChild(sectionMeta);
+    document.body.appendChild(section);
+    return block;
+  }
+
+  beforeEach(() => mockFetch({}));
+  afterEach(() => { document.body.innerHTML = ''; restoreFetch(); });
+
+  it('Should accept consent-id in place of subscription-name', () => {
+    const block = createBlock([
+      ['email', 'Email address'],
+      ['Mps-sname', '1111'],
+      ['consent-id', 'cs8a'],
+    ]);
+    expect(setFormData(block)).to.be.null;
+  });
+
+  it('Should return error when neither subscription-name nor consent-id is provided', () => {
+    const block = createBlock([
+      ['email', 'Email address'],
+      ['Mps-sname', '1111'],
+    ]);
+    const result = setFormData(block);
+    expect(result).to.be.a('string');
+    expect(result).to.include('consent-id');
+  });
+
+  it('Should return error when phone-number is set without phone-country-code', () => {
+    const block = createBlock([
+      ['email', 'Email address'],
+      ['Mps-sname', '1111'],
+      ['subscription-name', '1234'],
+      ['phone-number', 'Phone number'],
+    ]);
+    const result = setFormData(block);
+    expect(result).to.be.a('string');
+    expect(result).to.include('phone');
+  });
+
+  it('Should return error when phone-country-code is set without phone-number', () => {
+    const block = createBlock([
+      ['email', 'Email address'],
+      ['Mps-sname', '1111'],
+      ['subscription-name', '1234'],
+      ['Phone-country-code', 'Country code'],
+    ]);
+    const result = setFormData(block);
+    expect(result).to.be.a('string');
+    expect(result).to.include('phone');
+  });
+});
+
+describe('fetchConsentString', () => {
+  const CONSENT_RESPONSE = '<div><p>Consent string</p></div><div><p>consent-id</p></div>';
+  const DEFAULT_CONSENT_URL = 'https://main--federal--adobecom.aem.page/federal/email-collection/consents/cs4.plain.html';
+  const CUSTOM_CONSENT_URL = 'https://main--federal--adobecom.aem.page/federal/email-collection/consents/cs8a.plain.html';
+
+  afterEach(() => restoreFetch());
+
+  it('Should fetch from default cs4 URL when called without argument', async () => {
+    let fetchedUrl;
+    window.fetch = async (url) => {
+      fetchedUrl = url;
+      return new Response(CONSENT_RESPONSE, { ok: true });
+    };
+    await fetchConsentString();
+    expect(fetchedUrl).to.equal(DEFAULT_CONSENT_URL);
+  });
+
+  it('Should fetch from custom URL when consent ID is provided', async () => {
+    let fetchedUrl;
+    window.fetch = async (url) => {
+      fetchedUrl = url;
+      return new Response(CONSENT_RESPONSE, { ok: true });
+    };
+    await fetchConsentString('cs8a');
+    expect(fetchedUrl).to.equal(CUSTOM_CONSENT_URL);
+  });
+
+  it('Should parse and return consentId and consentDiv from response', async () => {
+    window.fetch = async () => new Response(CONSENT_RESPONSE, { ok: true });
+    const { consentId, consentDiv } = await fetchConsentString();
+    expect(consentId).to.equal('consent-id');
+    expect(consentDiv).to.exist;
+    expect(consentDiv.textContent).to.include('Consent string');
+  });
+
+  it('Should return empty object when fetch fails', async () => {
+    window.fetch = async () => new Response(null, { status: 404 });
+    const result = await fetchConsentString();
+    expect(result).to.deep.equal({});
   });
 });
