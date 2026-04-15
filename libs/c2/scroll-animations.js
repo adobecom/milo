@@ -405,7 +405,7 @@ export default function init() {
   initMoveUpFast();
   initGarageDoorReveal();
   initScaleDownGrid();
-  // initStagger();
+  initStagger();
   // initElasticCarousel();
   // initCarouselC2();
 
