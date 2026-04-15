@@ -3,6 +3,21 @@ const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
 const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
   + '[class*="parallax-stagger-rtl"]';
 
+/* ── Scroll loop ────────────────────────────────── */
+
+const scrollTasks = [];
+let ticking = false;
+
+function onScroll() {
+  if (ticking) return;
+  ticking = true;
+  requestAnimationFrame(() => {
+    const scroll = window.scrollY;
+    scrollTasks.forEach((task) => task(scroll));
+    ticking = false;
+  });
+}
+
 /* ── Shared helpers ─────────────────────────────── */
 
 function getDocTop(el) {
@@ -15,9 +30,8 @@ function getDocTop(el) {
   return top;
 }
 
-function getScrollMetrics(scroll, el, insetTop = 0, insetBottom = 0) {
-  const elHeight = el.offsetHeight;
-  const dist = (scroll + vh * (1 - insetBottom)) - getDocTop(el);
+function getScrollMetrics(scroll, elHeight, docTop, insetTop = 0, insetBottom = 0) {
+  const dist = (scroll + vh * (1 - insetBottom)) - docTop;
   const total = elHeight + vh * (1 - insetTop - insetBottom);
   return { elHeight, dist, total };
 }
@@ -66,7 +80,7 @@ function initMoveUpFast() {
       + 'opacity:0;pointer-events:none;z-index:2;';
     section.appendChild(overlay);
     const sectionTop = getDocTop(section);
-    window.lenis.on('scroll', ({ scroll }) => {
+    scrollTasks.push((scroll) => {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
       section.style.top = `${-35 * t}vh`;
       overlay.style.opacity = 0.75 * t;
@@ -84,9 +98,13 @@ function initGarageDoorReveal() {
     const foreground = gdSection.querySelector('.rich-content > div');
     const bgImg = gdSection.querySelectorAll('img');
     const revealFrom = isDesktop ? 30 : 20;
+    let docTop = null;
 
-    window.lenis.on('scroll', ({ scroll }) => {
-      const m = getScrollMetrics(scroll, gdSection);
+    scrollTasks.push((scroll) => {
+      const elHeight = gdSection.offsetHeight;
+      if (!elHeight) return;
+      if (docTop === null) docTop = getDocTop(gdSection);
+      const m = getScrollMetrics(scroll, elHeight, docTop);
 
       const growT = viewRange(m, 'entry', 0, 'cover', 1);
       gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
@@ -99,7 +117,6 @@ function initGarageDoorReveal() {
       }
 
       const innerT = viewRange(m, 'entry', 0.3, 'entry', 0.7);
-
       if (foreground) {
         foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
       }
@@ -114,14 +131,18 @@ function initScaleDownGrid() {
 
   grids.forEach((grid) => {
     let endPad = null;
+    let docTop = null;
 
-    window.lenis.on('scroll', ({ scroll }) => {
+    scrollTasks.push((scroll) => {
+      const elHeight = grid.offsetHeight;
+      if (!elHeight) return;
+      if (docTop === null) docTop = getDocTop(grid);
       if (endPad === null) {
         grid.style.paddingInline = '';
         endPad = parseFloat(getComputedStyle(grid).paddingInlineStart) || 0;
       }
-      const m = getScrollMetrics(scroll, grid, 0.4, 0.1);
-      const t = viewRange(m, 'entry', 0, 'entry', 1);
+      const m = getScrollMetrics(scroll, elHeight, docTop, 0.4, 0.1);
+      const t = viewRange(m, 'entry', 0, 'entry', 0.2);
       if (t >= 1) {
         grid.style.paddingInline = '';
         return;
@@ -140,29 +161,20 @@ function getColCount(el) {
   return 1;
 }
 
-function getEndRange(cols, count) {
-  const row3 = { 2: 5, 3: 7, 4: 9 };
-  const row2 = { 2: 3, 3: 4, 4: 5 };
-  if (count >= (row3[cols] || Infinity)) return { eType: 'cover', ePct: 0.8 };
-  if (count >= (row2[cols] || Infinity)) return { eType: 'cover', ePct: 0.7 };
-  return { eType: 'entry', ePct: 1 };
-}
-
 function setupStaggerEl(el) {
   const drift = 48;
   const isRtl = el.classList.contains('parallax-stagger-rtl');
   let childData = null;
-  let eType = null;
-  let ePct = null;
 
-  window.lenis.on('scroll', ({ scroll }) => {
+  scrollTasks.push(() => {
+    const elHeight = el.offsetHeight;
+    if (!elHeight) return;
     if (!childData) {
       const cols = getColCount(el);
       const children = [...el.children].filter(
         (c) => !c.className.match(/section-/),
       );
       if (!children.length) return;
-      ({ eType, ePct } = getEndRange(cols, children.length));
       childData = children.map((child, i) => {
         const colIdx = (i % cols) + 0.5;
         const rowIdx = Math.floor(i / cols);
@@ -172,8 +184,11 @@ function setupStaggerEl(el) {
         return { child, from: idx * drift };
       });
     }
-    const m = getScrollMetrics(scroll, el, 0.4, 0.1);
-    const t = viewRange(m, 'entry', 0, eType, ePct);
+    // top: visual distance from viewport top, accounts for parent transforms
+    // t=0 when element enters at viewport bottom (top === vh)
+    // t=1 when element top reaches viewport center (top === vh * 0.5)
+    const { top } = el.getBoundingClientRect();
+    const t = Math.max(0, Math.min(1, (vh - top) / (vh * 0.5)));
     childData.forEach(({ child, from }) => {
       child.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
     });
@@ -224,52 +239,18 @@ function initStagger() {
 function initElasticCarousel() {
   if (window.innerWidth < 768) return;
 
-  const isRtl = document.documentElement.dir === 'rtl';
-  const startMargin = isRtl ? -200 : 200;
   const initialized = new WeakSet();
-  let cssDisabled = false;
 
   const setupContainer = (container) => {
     if (initialized.has(container)) return;
     initialized.add(container);
-
-    if (!cssDisabled) {
-      cssDisabled = true;
-      const style = document.createElement('style');
-      style.textContent = '.elastic-carousel-container,'
-        + '.elastic-carousel-item { animation: none !important; }'
-        + '.elastic-carousel-item { flex-shrink: 0; }';
-      document.head.appendChild(style);
-    }
 
     const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
     const toNum = (s) => (s.includes('rem') ? parseFloat(s) * rootFontSize : parseFloat(s));
     container.querySelectorAll('.elastic-carousel-item').forEach((item) => {
       const endGap = toNum(getComputedStyle(item).getPropertyValue('--end-gap').trim());
       item.style.marginInline = `${endGap}px`;
-    });
-
-    container.style.willChange = 'margin-left, opacity';
-    container.style.opacity = '0';
-    container.style.marginLeft = `${startMargin}px`;
-    let top = null;
-    let elHeight = null;
-    let total = null;
-
-    window.lenis.on('scroll', ({ scroll }) => {
-      if (top === null) {
-        top = getDocTop(container);
-        elHeight = container.offsetHeight;
-        total = elHeight + vh;
-      }
-      const dist = (scroll + vh) - top;
-      const m = { elHeight, dist, total };
-
-      const slideT = viewRange(m, 'entry', 0.2, 'entry', 0.52);
-      const opacT = viewRange(m, 'entry', 0.0, 'entry', 0.16);
-
-      container.style.marginLeft = `${startMargin * (1 - slideT)}px`;
-      container.style.opacity = opacT;
+      item.style.flexShrink = '0';
     });
   };
 
@@ -316,7 +297,6 @@ function initCarouselC2() {
     let top = null;
     let activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
 
-    // Keep activeIdx fresh without querying every scroll tick
     const idxObserver = new MutationObserver(() => {
       activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
     });
@@ -339,7 +319,7 @@ function initCarouselC2() {
       slides.forEach((s) => { s.style.willChange = 'flex-basis'; s.style.flexBasis = `${startWidth}px`; });
     });
 
-    window.lenis.on('scroll', ({ scroll }) => {
+    scrollTasks.push((scroll) => {
       if (targetWidth === null) {
         slides.forEach((s) => { s.style.flexBasis = ''; });
         targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
@@ -347,8 +327,9 @@ function initCarouselC2() {
       }
 
       if (top === null) top = getDocTop(el);
-      const m = getScrollMetrics(scroll, el, 0.1, 0.1);
-      const t = viewRange(m, 'entry', 0, 'entry', 0.8);
+      const elHeight = el.offsetHeight;
+      const m = getScrollMetrics(scroll, elHeight, top, 0.1, 0.1);
+      const t = viewRange(m, 'entry', 0, 'entry', 0.2);
 
       if (t >= 1) {
         resetStyles();
@@ -393,4 +374,9 @@ export default function init() {
   initStagger();
   initElasticCarousel();
   initCarouselC2();
+
+  if (scrollTasks.length) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  }
 }
