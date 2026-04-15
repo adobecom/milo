@@ -407,7 +407,7 @@ export default function init() {
   initScaleDownGrid();
   initStagger();
   // initElasticCarousel();
-  // initCarouselC2();
+  initCarouselC2();
 
   if (scrollTasks.length) {
     window.addEventListener('scroll', onScroll, { passive: true });
