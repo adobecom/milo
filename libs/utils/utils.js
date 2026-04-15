@@ -2223,12 +2223,24 @@ async function loadPostLCP(config) {
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const fsThreshold = 110;
+    const fsFactor = 0.11;
+    const fsDelay = 700;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
+    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+    let fsScrollTimer;
+    window.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > fsThreshold) {
+        window.lenis.options.lerp = fsFactor;
+        clearTimeout(fsScrollTimer);
+        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+      }
+    }, { passive: true });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
