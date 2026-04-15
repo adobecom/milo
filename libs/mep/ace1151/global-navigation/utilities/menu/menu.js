@@ -293,6 +293,7 @@ const decoratePromo = async (elem, index) => {
 
 const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {}) => {
   const hasMultipleColumns = content.children.length > 1;
+  const footerListSemantics = context === 'footer';
   // Headline index is defined in the context of a whole menu
   let headlineIndex = 0;
 
@@ -386,11 +387,14 @@ const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {
         if (decoratedElem.tagName === 'LI') {
           let ul = elemDestination.querySelector('ul');
           if (!ul) {
-            ul = toFragment`<ul></ul>`;
+            ul = footerListSemantics ? toFragment`<ul role="list"></ul>` : toFragment`<ul></ul>`;
             elemDestination.append(ul);
           }
           menuList = ul;
         } else {
+          if (footerListSemantics && decoratedElem.tagName === 'UL') {
+            decoratedElem.setAttribute('role', 'list');
+          }
           menuList = elemDestination;
         }
         menuList.append(decoratedElem);
