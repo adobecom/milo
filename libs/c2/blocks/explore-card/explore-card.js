@@ -100,6 +100,7 @@ function decorateMultiViewport(el, viewportContent) {
     const mq = window.matchMedia(viewportsPoints[viewport]);
     const setContent = () => {
       if (!mq.matches) return;
+      el.dataset.activeViewport = viewport;
       el.classList.remove(...allClasses);
       el.classList.add(...classes);
     };

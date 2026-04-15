@@ -2,7 +2,16 @@
   display: none;
 }
 
-.explore-card > div[data-viewport="mobile"] {
+.explore-card:not([data-active-viewport]) > div[data-viewport="mobile"],
+.explore-card[data-active-viewport="mobile"] > div[data-viewport="mobile"] {
+  display: block;
+}
+
+.explore-card[data-active-viewport="tablet"] > div[data-viewport="tablet"] {
+  display: block;
+}
+
+.explore-card[data-active-viewport="desktop"] > div[data-viewport="desktop"] {
   display: block;
 }
 

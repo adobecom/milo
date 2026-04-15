@@ -84,5 +84,10 @@ describe('explore-card', () => {
       const el = document.querySelector('.explore-card');
       expect(el.classList.contains('dark')).to.be.true;
     });
+
+    it('sets data-active-viewport on el to the matching viewport', () => {
+      const el = document.querySelector('.explore-card');
+      expect(el.dataset.activeViewport).to.equal('mobile');
+    });
   });
 });
