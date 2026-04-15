@@ -128,8 +128,12 @@ function changeTabs(e, config) {
   scrollTabIntoView(target);
   content
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
-    .forEach((p) => p.setAttribute('hidden', true));
+    .forEach((p) => {
+      p.setAttribute('hidden', '');
+      p.setAttribute('aria-hidden', 'true');
+    });
   targetContent?.removeAttribute('hidden');
+  targetContent?.removeAttribute('aria-hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
@@ -395,7 +399,10 @@ const init = async (block) => {
       };
       const tabListContent = createTag('div', tabContentAttributes);
       tabListContent.setAttribute('aria-labelledby', `tab-${tabId}-${tabName}`);
-      if (i > 0) tabListContent.setAttribute('hidden', '');
+      if (i > 0) {
+        tabListContent.setAttribute('hidden', '');
+        tabListContent.setAttribute('aria-hidden', 'true');
+      }
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
