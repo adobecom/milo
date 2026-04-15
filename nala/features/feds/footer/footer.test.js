@@ -33,7 +33,6 @@ test.describe('Footer Block Test Suite', () => {
 
       // updated the footer section and heading content as per consuming sites
       // milo=6, cc=9 and so on
-      console.log('Footer Sections Count:', await Footer.footerSections.count());
       await expect([4, 6, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
       await expect([4, 6, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
 
