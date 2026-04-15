@@ -406,7 +406,7 @@ export default function init() {
   initGarageDoorReveal();
   initScaleDownGrid();
   initStagger();
-  // initElasticCarousel();
+  initElasticCarousel();
   initCarouselC2();
 
   if (scrollTasks.length) {
