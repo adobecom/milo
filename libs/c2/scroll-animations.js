@@ -188,7 +188,7 @@ function setupStaggerEl(el) {
     // t=0 when element enters at viewport bottom (top === vh)
     // t=1 when element top reaches viewport center (top === vh * 0.5)
     const { top } = el.getBoundingClientRect();
-    const t = Math.max(0.2, Math.min(1, (vh - top) / (vh * 0.7)));
+    const t = Math.max(0.2, Math.min(1, (vh - top) / (vh * 0.5)));
     childData.forEach(({ child, from }) => {
       child.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
     });
