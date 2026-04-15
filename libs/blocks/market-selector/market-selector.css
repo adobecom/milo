@@ -77,45 +77,6 @@
   padding: 0 8px 8px;
 }
 
-.search-input-wrapper {
-  display: flex;
-  align-items: center;
-  height: 32px;
-  box-sizing: border-box;
-  border-radius: 16px;
-  border: 2px solid #DADADA;
-  background: #FFF;
-  padding: 0 14px;
-  transition: border-color 0.2s;
-}
-
-.search-input-wrapper:hover {
-  border-color: #C6C6C6;
-}
-
-.search-input-wrapper:focus-within {
-  border-color: #131313;
-}
-
-.search-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: var(--spacing-xxs);
-  flex-shrink: 0;
-}
-
-.search-input {
-  height: 100%;
-  width: 100%;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: var(--type-body-xs-size);
-  font-family: var(--body-font-family);
-  box-sizing: border-box;
-  padding: 0;
-}
-
 .market-selector-popover .market-selector-list {
   max-height: 236px;
   overflow-y: auto;
@@ -139,14 +100,7 @@
   color: #131313;
 }
 
-.check-icon {
-  width: 16px;
-  height: 16px;
-  margin-left: var(--spacing-xxs);
-  flex-shrink: 0;
-}
-
-.no-search-result-text {
+.market-selector .no-search-result-text {
   text-align: center;
 }
 

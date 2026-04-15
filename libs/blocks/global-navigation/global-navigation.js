@@ -63,7 +63,7 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings } = merch;
+const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
   closeAllDropdowns,
@@ -1000,11 +1000,18 @@ class Gnav {
       return children;
     };
 
+    let countryCode = getMiloLocaleSettings(getConfig().locale)?.country || 'US';
+    if (isMasGeoDetectionEnabled?.()) {
+      const base = getConfig().miloLibs || getConfig().codeRoot;
+      const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+      countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
+    }
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {
