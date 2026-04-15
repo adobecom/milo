@@ -870,7 +870,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
   const modal = isLocaleModal ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
