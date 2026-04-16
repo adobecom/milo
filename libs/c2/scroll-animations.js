@@ -489,7 +489,7 @@ function initGarageDoorReveal() {
       // start when section first becomes visible (dist = growFrom, which is negative)
       // so translateY is already decreasing by the time section hits half-screen
       const growStartPct = growFrom / elHeight;
-      const growT = viewRange(m, 'entry', growStartPct, 'cover', coverEnd);
+      const growT = viewRange(m, 'entry', growStartPct, 'entry', coverEnd);
       section.style.transform = growT < 1 ? `translateY(${growFrom * (1 - growT)}px)` : '';
 
       // background image scales 1 → 1.1 (garage-door-bg-scale)
