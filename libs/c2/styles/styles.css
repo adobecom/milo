@@ -1081,58 +1081,64 @@ p {
   }
 
   .section.parallax-garage-door-reveal {
+    --gd-grow-from: -50vh;
+    --gd-reveal-from: 20vh;
+
     overflow: clip;
-    will-change: transform;
-    animation: garage-door-grow-mobile ease-out both;
+    transform-origin: top center;
+    animation: garage-door-grow ease-out both;
     animation-timeline: view();
     animation-range: entry 0% cover 40%;
-  }
 
-  @media (width >= 1280px) {
-    .section.parallax-garage-door-reveal {
-      animation-name: garage-door-grow-desktop;
+    @media (width >= 1280px) {
+      --gd-grow-from: -110vh;
+      --gd-reveal-from: 50vh;
       animation-range: entry 0% cover 50%;
     }
-  }
 
-  @media (width >= 1920px) {
-    .section.parallax-garage-door-reveal {
-      animation-name: garage-door-grow-wide;
+    @media (width >= 1920px) {
+      --gd-grow-from: -70vh;
+      --gd-reveal-from: 30vh;
+    }
+
+    .section-background img {
+      animation: garage-door-bg-scale ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 70%;
+    }
+
+    .foreground {
+      z-index: 1;
+      position: relative;
+      animation: garage-door-reveal ease-out both;
+      animation-timeline: view();
+      animation-range: cover -10% cover 70%;
+
+      * {
+        animation: garage-door-line-height ease-out both;
+        animation-timeline: view();
+        animation-range: entry 10% cover 40%;
+      }
     }
   }
 
-  .section.parallax-garage-door-reveal .foreground {
-    will-change: transform;
-    animation: garage-door-reveal-mobile ease-out both;
-    animation-timeline: view();
-    animation-range: cover -10% cover 70%;
-    z-index: 2;
-    position: relative;
+  @keyframes garage-door-grow {
+    from { transform: translateY(var(--gd-grow-from)); }
+    to { transform: translateY(0); }
   }
 
-  @media (width >= 1280px) {
-    .section.parallax-garage-door-reveal .foreground {
-      animation-name: garage-door-reveal-desktop;
-    }
+  @keyframes garage-door-reveal {
+    from { transform: translateY(var(--gd-reveal-from)); }
   }
 
-  @media (width >= 1920px) {
-    .section.parallax-garage-door-reveal .foreground {
-      animation-name: garage-door-reveal-wide;
-    }
+  @keyframes garage-door-bg-scale {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
   }
 
-  .section.parallax-garage-door-reveal .section-background {
-    will-change: transform;
+  @keyframes garage-door-line-height {
+    from { line-height: 0.6; }
   }
-
-  .section.parallax-garage-door-reveal .section-background img {
-    will-change: transform;
-    animation: garage-door-bg-scale ease-out both;
-    animation-timeline: view();
-    animation-range: entry 0% cover 70%;
-  }
-
 
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
@@ -1181,41 +1187,6 @@ p {
   @keyframes text-reveal-up {
     from { line-height: 3; }
   }
-}
-
-@keyframes garage-door-grow-mobile {
-  from { transform: translateY(-50vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-grow-desktop {
-  from { transform: translateY(-110vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-grow-wide {
-  from { transform: translateY(-70vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-reveal-mobile {
-  from { transform: translateY(20vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-reveal-desktop {
-  from { transform: translateY(50vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-reveal-wide {
-  from { transform: translateY(30vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes garage-door-bg-scale {
-  from { transform: scale(1); }
-  to { transform: scale(1.1); }
 }
 
 .dark {
