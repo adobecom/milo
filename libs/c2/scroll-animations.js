@@ -456,7 +456,7 @@ function initGarageDoorReveal() {
   let revealFrom = 0.2 * vh;
   if (w >= 1280) { growFrom = -1.1 * vh; revealFrom = 0.5 * vh; }
   if (w >= 1920) { growFrom = -0.7 * vh; revealFrom = 0.3 * vh; }
-  const coverEnd = w >= 1280 ? 0.5 : 0.4;
+  const coverEnd = 0.4;
 
   sections.forEach((section) => {
     const bgImg = section.querySelector('.section-background img');
