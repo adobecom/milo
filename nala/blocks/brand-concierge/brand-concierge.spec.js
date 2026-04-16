@@ -115,9 +115,7 @@ module.exports = {
       name: '@brand-concierge web client preload',
       path: '/drafts/nala/blocks/brand-concierge/brand-concierge',
       tags: '@brand-concierge @brand-concierge-preload @regression @milo',
-      data: {
-        scriptPattern: 'brand-concierge-web-agent/static-assets/main.js',
-      },
+      data: { scriptPattern: 'brand-concierge-web-agent/static-assets/main.js' },
     },
     {
       tcid: '10',
