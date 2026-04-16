@@ -83,15 +83,15 @@ export default {
     },
     calendarWidget: {
       title: {
-        text: '',
+        text: 'Book a meeting',
         alignment: 'left',
       },
       subtitle: {
-        text: 'Thanks for providing your contact information! Please select a meeting date and time.',
+        text: "Thanks! Here's a calendar where you can choose a time that works best for your schedule:",
         alignment: 'left',
       },
       postTitle: {
-        text: '',
+        text: "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
         alignment: 'left',
       },
       buttons: {
@@ -150,6 +150,14 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
+    'meetingbooking.form.heading': 'Schedule meeting',
+    'meetingbooking.form.intro': "I'd be happy to help you schedule a meeting! Please fill out the form below, and we'll follow up with a calendar to confirm your day and time.",
+    'meetingbooking.form.submit': 'Schedule meeting',
+    'meetingbooking.form.cancel': 'Cancel',
+    'meetingbooking.calendar.intro': "Thanks! Here's a calendar where you can choose a time that works best for your schedule:",
+    'meetingbooking.calendar.footer': "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
+    'meetingbooking.calendar.confirm': 'Confirm',
+    'meetingbooking.calendar.cancel': 'Cancel',
     'widget.firefly-gallery.preamble-markdown': "If you're not ready to sign in, you can explore the Firefly community gallery to get inspired and discover prompts to remix.",
     'widget.firefly-gallery.title': 'Adobe Firefly',
     'widget.firefly-gallery.view-item-text': 'View',
