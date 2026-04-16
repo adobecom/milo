@@ -348,6 +348,7 @@
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
     height: 100vh;
+    height: 100svh;
   }
 
   .rm-content-wrapper {
@@ -380,6 +381,7 @@
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
     height: 100vh;
+    height: 100svh;
   }
 
   .rm-content-wrapper {
