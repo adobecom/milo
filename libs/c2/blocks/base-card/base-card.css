@@ -47,7 +47,12 @@
       width: 100%;
       object-fit: cover;
       aspect-ratio: 4/3;
+      transition: transform 0.3s ease;
     }
+  }
+
+  &:hover .media picture:not(.icon) img {
+    transform: scale(1.05);
   }
 
   .foreground {
@@ -61,11 +66,17 @@
     .standalone-link {
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
-      position: relative;
       display: inline-block;
       margin-top: var(--s2a-spacing-24);
       margin-inline-end: var(--s2a-spacing-12);
       margin-bottom: var(--s2a-spacing-4);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
     }
   }
 
