@@ -451,20 +451,33 @@ function initGarageDoorReveal() {
     + ' animation: none !important; }';
   document.head.appendChild(style);
 
-  const w = window.innerWidth;
-  let growFrom = -0.5 * vh;
-  let revealFrom = 0.2 * vh;
-  if (w >= 1280) { growFrom = -1.1 * vh; revealFrom = 0.5 * vh; }
-  if (w >= 1920) { growFrom = -0.7 * vh; revealFrom = 0.3 * vh; }
-  let coverEnd = 0.2;
-  if (w >= 1280) coverEnd = 0.4;
-  if (w >= 1440) coverEnd = 0.3;
+  let growFrom; let revealFrom; let coverEnd; let growStart;
+
+  const updateBreakpoints = () => {
+    const w = window.innerWidth;
+    const cvh = window.innerHeight;
+    growFrom = -0.5 * cvh;
+    revealFrom = 0.2 * cvh;
+    if (w >= 1280) { growFrom = -1.1 * cvh; revealFrom = 0.5 * cvh; }
+    if (w >= 1920) { growFrom = -0.7 * cvh; revealFrom = 0.3 * cvh; }
+    coverEnd = 0.2;
+    if (w >= 1280) coverEnd = 0.4;
+    if (w >= 1440) coverEnd = 0.3;
+    growStart = -0.5;
+    if (w >= 1280) growStart = -1;
+    if (w >= 1920) growStart = -0.5;
+  };
+
+  updateBreakpoints();
+
+  const states = [];
+  let refreshDocTop = false;
 
   sections.forEach((section) => {
     const bgImg = section.querySelector('.section-background img');
     const foreground = section.querySelector('.foreground');
-    let docTop = null;
-    let fgChildData = null;
+    const state = { docTop: null, fgChildData: null };
+    states.push(state);
 
     section.style.willChange = 'transform';
     section.style.transform = `translateY(${growFrom}px)`;
@@ -474,11 +487,11 @@ function initGarageDoorReveal() {
     scrollTasks.push((scroll) => {
       const elHeight = section.offsetHeight;
       if (!elHeight) return;
-      if (docTop === null) docTop = getDocTop(section);
+      if (state.docTop === null || refreshDocTop) state.docTop = getDocTop(section);
 
-      if (foreground && !fgChildData) {
+      if (foreground && !state.fgChildData) {
         const nodes = [...foreground.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
-        fgChildData = nodes.map((c) => {
+        state.fgChildData = nodes.map((c) => {
           const cs = getComputedStyle(c);
           const fontSize = parseFloat(cs.fontSize) || 16;
           const natural = parseFloat(cs.lineHeight) || fontSize * 1.5;
@@ -486,11 +499,13 @@ function initGarageDoorReveal() {
         });
       }
 
-      const m = getScrollMetrics(scroll, elHeight, docTop);
+      // use live innerHeight so resize to mobile/desktop doesn't break metrics
+      const cvh = window.innerHeight;
+      const dist = (scroll + cvh) - state.docTop;
+      const total = elHeight + cvh;
+      const m = { elHeight, dist, total };
+      const { fgChildData } = state;
 
-      let growStart = -0.5;
-      if (w >= 1280) growStart = -1;
-      if (w >= 1920) growStart = -0.5;
       const growT = viewRange(m, 'entry', growStart, 'entry', coverEnd);
       section.style.transform = growT < 1 ? `translateY(${growFrom * (1 - growT)}px)` : '';
 
@@ -514,6 +529,21 @@ function initGarageDoorReveal() {
         });
       }
     });
+  });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    updateBreakpoints();
+    refreshDocTop = true;
+    sections.forEach((section, i) => {
+      states[i].docTop = null;
+      section.style.transform = `translateY(${growFrom}px)`;
+    });
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      refreshDocTop = false;
+      sections.forEach((_, i) => { states[i].fgChildData = null; });
+    }, 400);
   });
 }
 
