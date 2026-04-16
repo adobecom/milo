@@ -437,6 +437,84 @@ function initLineHeight() {
   }).observe(document.body, { childList: true, subtree: true });
 }
 
+/* ── Garage-door reveal ─────────────────────────── */
+
+function initGarageDoorReveal() {
+  const sections = findSectionsByStyle('parallax-garage-door-reveal');
+  if (!sections.length) return;
+
+  const style = document.createElement('style');
+  style.textContent = '.section.parallax-garage-door-reveal,'
+    + '.section.parallax-garage-door-reveal .section-background img,'
+    + '.section.parallax-garage-door-reveal .foreground,'
+    + '.section.parallax-garage-door-reveal .foreground * {'
+    + ' animation: none !important; }';
+  document.head.appendChild(style);
+
+  const w = window.innerWidth;
+  let growFrom = -0.5 * vh;
+  let revealFrom = 0.2 * vh;
+  if (w >= 1280) { growFrom = -1.1 * vh; revealFrom = 0.5 * vh; }
+  if (w >= 1920) { growFrom = -0.7 * vh; revealFrom = 0.3 * vh; }
+  const coverEnd = w >= 1280 ? 0.5 : 0.4;
+
+  sections.forEach((section) => {
+    const bgImg = section.querySelector('.section-background img');
+    const foreground = section.querySelector('.foreground');
+    let docTop = null;
+    let fgChildData = null;
+
+    section.style.willChange = 'transform';
+    section.style.transform = `translateY(${growFrom}px)`;
+    if (bgImg) bgImg.style.willChange = 'transform';
+    if (foreground) foreground.style.willChange = 'transform';
+
+    scrollTasks.push((scroll) => {
+      const elHeight = section.offsetHeight;
+      if (!elHeight) return;
+      if (docTop === null) docTop = getDocTop(section);
+
+      if (foreground && !fgChildData) {
+        const nodes = [...foreground.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
+        fgChildData = nodes.map((c) => {
+          const cs = getComputedStyle(c);
+          const fontSize = parseFloat(cs.fontSize) || 16;
+          const natural = parseFloat(cs.lineHeight) || fontSize * 1.5;
+          return { child: c, naturalLh: natural, fromLh: fontSize * 0.6 };
+        });
+      }
+
+      const m = getScrollMetrics(scroll, elHeight, docTop);
+
+      // start when section first becomes visible (dist = growFrom, which is negative)
+      // so translateY is already decreasing by the time section hits half-screen
+      const growStartPct = growFrom / elHeight;
+      const growT = viewRange(m, 'entry', growStartPct, 'cover', coverEnd);
+      section.style.transform = growT < 1 ? `translateY(${growFrom * (1 - growT)}px)` : '';
+
+      // background image scales 1 → 1.1 (garage-door-bg-scale)
+      if (bgImg) {
+        const bgT = viewRange(m, 'entry', 0, 'cover', 0.7);
+        bgImg.style.transform = bgT < 1 ? `scale(${1 + 0.1 * bgT})` : '';
+      }
+
+      // foreground slides up from revealFrom → 0 (garage-door-reveal)
+      if (foreground) {
+        const fgT = viewRange(m, 'cover', -0.1, 'cover', 0.7);
+        foreground.style.transform = fgT < 1 ? `translateY(${revealFrom * (1 - fgT)}px)` : '';
+      }
+
+      // text line-height compresses → natural (garage-door-line-height)
+      if (fgChildData?.length) {
+        const lhT = viewRange(m, 'entry', 0.1, 'cover', 0.4);
+        fgChildData.forEach(({ child, naturalLh, fromLh }) => {
+          child.style.lineHeight = lhT < 1 ? `${fromLh + (naturalLh - fromLh) * lhT}px` : null;
+        });
+      }
+    });
+  });
+}
+
 /* ── Entry point ────────────────────────────────── */
 
 export default function init() {
@@ -446,6 +524,7 @@ export default function init() {
   initStagger();
   initElasticCarousel();
   initCarouselC2();
+  initGarageDoorReveal();
 
   if (window.lenis) {
     window.lenis.on('scroll', ({ scroll }) => {
