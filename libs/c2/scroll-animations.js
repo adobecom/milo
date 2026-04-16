@@ -223,22 +223,25 @@ function initElasticCarousel() {
       document.head.appendChild(style);
     }
 
-    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
-    const toNum = (s) => (s.includes('rem') ? parseFloat(s) * rootFontSize : parseFloat(s));
-    container.querySelectorAll('.elastic-carousel-item').forEach((item) => {
-      const endGap = toNum(getComputedStyle(item).getPropertyValue('--end-gap').trim());
-      item.style.marginInline = `${endGap}px`;
-    });
-
     container.style.willChange = 'margin-left, opacity';
     container.style.opacity = '0';
     container.style.marginLeft = `${startMargin}px`;
     let top = null;
     let total = null;
+    let gapsApplied = false;
 
     scrollTasks.push((scroll) => {
       const elHeight = container.offsetHeight;
       if (!elHeight) return;
+      if (!gapsApplied) {
+        gapsApplied = true;
+        const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const toNum = (s) => (s.includes('rem') ? parseFloat(s) * rootFontSize : parseFloat(s));
+        container.querySelectorAll('.elastic-carousel-item').forEach((item) => {
+          const endGap = toNum(getComputedStyle(item).getPropertyValue('--end-gap').trim());
+          item.style.marginInline = `${endGap}px`;
+        });
+      }
       if (top === null) {
         top = getDocTop(container);
         total = elHeight + vh;
