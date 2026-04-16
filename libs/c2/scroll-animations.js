@@ -386,11 +386,12 @@ function initLineHeight() {
     if (initialized.has(el)) return;
     initialized.add(el);
     let childData = null;
+    let docTop = null;
 
-    scrollTasks.push(() => {
-      const { top, height } = el.getBoundingClientRect();
-      if (!height) return;
-      // Re-query if not yet initialized or if DOM was replaced
+    scrollTasks.push((scroll) => {
+      const elHeight = el.offsetHeight;
+      if (!elHeight) return;
+      if (docTop === null) docTop = getDocTop(el);
       if (!childData || !el.contains(childData[0]?.child)) {
         const nodes = [...el.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
         if (!nodes.length) return;
@@ -401,11 +402,8 @@ function initLineHeight() {
           return { child: c, from: 3 * fontSize, to: natural };
         });
       }
-      // entry 10%: element is 10% into viewport → top = vh - height*0.1
-      // cover 40%: element top is at 60% from viewport top → top = vh*0.6 - height
-      const start = vh - height * 0.1;
-      const end = vh * 0.6 - height;
-      const t = Math.max(0, Math.min(1, (start - top) / (start - end)));
+      const m = getScrollMetrics(scroll, elHeight, docTop);
+      const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
       childData.forEach(({ child, from, to }) => {
         child.style.setProperty('line-height', t < 1 ? `${from + (to - from) * t}px` : null);
       });
