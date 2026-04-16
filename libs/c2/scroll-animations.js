@@ -339,10 +339,6 @@ function initCarouselC2() {
       const w = startWidth + (targetWidth - startWidth) * t;
       const wPx = `${w}px`;
       slides.forEach((s) => { s.style.flexBasis = wPx; });
-
-      const margin = (window.innerWidth - w) / 2;
-      wrapper.style.transition = 'none';
-      wrapper.style.translate = `${-(activeIdx * w) + margin - activeIdx * 8}px`;
     });
   };
 
