@@ -1,10 +1,6 @@
-import { getConfig, getCookie, getCountry, getMarketsUrl } from './utils.js';
+import { getConfig, getMarketsUrl, normCountryCode, resolveDetectedMarketCountry } from './utils.js';
 
-export const norm = (c) => {
-  if (c == null || typeof c !== 'string') return undefined;
-  const lower = c.toLowerCase();
-  return lower === 'uk' ? 'gb' : lower.split('_')[0];
-};
+export const norm = normCountryCode;
 
 export async function getMarketConfig() {
   try {
@@ -35,21 +31,7 @@ export function marketsLangForLocale(marketsConfig, locale) {
 
 export async function getValidatedMarket() {
   const config = await getMarketConfig();
-  const params = new URLSearchParams(window.location.search);
-  const countryParam = norm(params.get('country'));
-  const akamaiParam = norm(params.get('akamaiLocale'));
-  const cookieMarket = getCookie('country');
-  const countryFromGeo = await getCountry();
-  let detectedMarket = countryParam || akamaiParam || cookieMarket || norm(countryFromGeo);
-
-  if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = norm(await getAkamaiCode());
-    } catch {
-      window.lana?.log('Error getting Akamai code', { severity: 'error' });
-    }
-  }
+  const detectedMarket = await resolveDetectedMarketCountry();
   if (!config) return detectedMarket || 'us';
   const { locale } = getConfig();
   const currLang = marketsLangForLocale(config, locale);

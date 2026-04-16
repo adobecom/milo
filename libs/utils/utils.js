@@ -927,6 +927,43 @@ export async function getCountry(skipFallback = false) {
   }
 }
 
+export const getCookie = (name) => document.cookie
+  .split('; ')
+  .find((row) => row.startsWith(`${name}=`))
+  ?.split('=')[1];
+
+export function normCountryCode(country) {
+  if (country == null || typeof country !== 'string') return undefined;
+  const lower = country.toLowerCase();
+  return lower === 'uk' ? 'gb' : lower.split('_')[0];
+}
+
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+  const params = new URLSearchParams(search);
+  const countryParam = normCountryCode(params.get('country'));
+  const akamaiParam = normCountryCode(params.get('akamaiLocale'));
+  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+}
+
+export async function resolveDetectedMarketCountry() {
+  const cookieMarket = getCookie('country');
+  const countryFromGeo = await getCountry();
+  let detectedMarket = computeDetectedMarketCountry(
+    window.location.search,
+    cookieMarket,
+    countryFromGeo,
+  );
+  if (!detectedMarket) {
+    try {
+      const { default: getAkamaiCode } = await import('./geo.js');
+      detectedMarket = normCountryCode(await getAkamaiCode());
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+    }
+  }
+  return detectedMarket;
+}
+
 export async function getLingoRegion() {
   if (!lingoActive()) return null;
   const config = getConfig();
@@ -935,7 +972,7 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = await getCountry();
+  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -1699,7 +1736,7 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    if (getMetadata('theme') === 'max25') {
+    if (['doodlebug', 'max25'].includes(getMetadata('theme'))) {
       // TODO: Remove after correcting core logic
       const includeIcons = [...icons].filter((icon) => !iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
       if (!includeIcons.length) return;
@@ -2194,12 +2231,24 @@ async function loadPostLCP(config) {
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
     const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const fsThreshold = 110;
+    const fsFactor = 0.11;
+    const fsDelay = 700;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
+    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+    let fsScrollTimer;
+    window.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > fsThreshold) {
+        window.lenis.options.lerp = fsFactor;
+        clearTimeout(fsScrollTimer);
+        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+      }
+    }, { passive: true });
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
@@ -2284,11 +2333,6 @@ function initSidekick() {
     });
   }
 }
-
-export const getCookie = (name) => document.cookie
-  .split('; ')
-  .find((row) => row.startsWith(`${name}=`))
-  ?.split('=')[1];
 
 export function getMarketsSourceKey() {
   const { env, marketsSource } = getConfig();
@@ -2476,7 +2520,9 @@ export function preloadMarketsConfig(callback) {
   const config = getConfig();
   if (config.marketsConfig) return;
   const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
-  if (languageBannerEnabled !== 'on') return;
+  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
+  const isMasGeoDetectionEnabled = ['on', 'true'].includes(masGeoDetect?.toLowerCase());
+  if (languageBannerEnabled !== 'on' && !isMasGeoDetectionEnabled) return;
   const marketsUrl = getMarketsUrl();
   loadLink(marketsUrl, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload', callback });
 }

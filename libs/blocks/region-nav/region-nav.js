@@ -61,7 +61,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
   link.href = `${href}${path}`;
-
+  if (currentLocaleObj.ietf && currentLocaleObj.ietf !== 'none') link.setAttribute('lang', currentLocaleObj.ietf);
   link.addEventListener('mouseover', () => {
     setTimeout(() => {
       if (link.matches(':hover') && !hrefAdapted) {
