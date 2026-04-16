@@ -91,7 +91,7 @@ export default {
         alignment: 'left',
       },
       postTitle: {
-        text: '',
+        text: "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
         alignment: 'left',
       },
       buttons: {
@@ -133,7 +133,6 @@ export default {
     'input.aiChatIcon.tooltip': 'Ask',
     'loading.message': '',
     'input.mic.aria': 'Voice input',
-    'calendarWidget.postTitle.text': "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
     'card.aria.select': 'Select example message',
     'carousel.prev.aria': 'Previous cards',
     'carousel.next.aria': 'Next cards',
