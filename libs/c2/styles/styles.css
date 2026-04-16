@@ -1122,6 +1122,10 @@ p {
     }
   }
 
+  .section.parallax-garage-door-reveal .section-background {
+    will-change: transform;
+  }
+
   .section.parallax-garage-door-reveal .section-background img {
     will-change: transform;
     animation: garage-door-bg-scale ease-out both;
