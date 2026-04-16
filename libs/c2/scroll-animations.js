@@ -88,42 +88,6 @@ function initMoveUpFast() {
   });
 }
 
-/* ── Garage-door reveal ─────────────────────────── */
-
-function initGarageDoorReveal() {
-  const isDesktop = window.innerWidth >= 1280;
-  const gdSections = findSectionsByStyle('parallax-garage-door-reveal');
-
-  gdSections.forEach((gdSection) => {
-    const foreground = gdSection.querySelector('.rich-content > div');
-    const bgImg = gdSection.querySelectorAll('img');
-    const revealFrom = isDesktop ? 30 : 20;
-    let docTop = null;
-
-    scrollTasks.push((scroll) => {
-      const elHeight = gdSection.offsetHeight;
-      if (!elHeight) return;
-      if (docTop === null) docTop = getDocTop(gdSection);
-      const m = getScrollMetrics(scroll, elHeight, docTop);
-
-      const growT = viewRange(m, 'entry', 0, 'entry', 0.6);
-      gdSection.style.transform = `translateY(${-80 * (1 - growT)}vh)`;
-
-      // if (bgImg.length) {
-      //   const scaleT = viewRange(m, 'entry', 0, 'entry', 0.5);
-      //   bgImg.forEach((img) => {
-      //     img.style.transform = `scale(${1 + 0.1 * scaleT})`;
-      //   });
-      // }
-
-      // const innerT = viewRange(m, 'entry', 0.1, 'entry', 0.6);
-      // if (foreground) {
-      //   foreground.style.transform = `translateY(${revealFrom * (1 - innerT)}vh)`;
-      // }
-    });
-  });
-}
-
 /* ── Scale-down grid ────────────────────────────── */
 
 function initScaleDownGrid() {
@@ -403,7 +367,6 @@ function initCarouselC2() {
 
 export default function init() {
   initMoveUpFast();
-  initGarageDoorReveal();
   initScaleDownGrid();
   initStagger();
   initElasticCarousel();
