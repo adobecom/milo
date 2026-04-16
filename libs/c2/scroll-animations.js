@@ -286,6 +286,7 @@ function initElasticCarousel() {
 /* ── Carousel C2 ────────────────────────────────── */
 
 function initCarouselC2() {
+  const isRtl = document.documentElement.dir === 'rtl';
   const initialized = new WeakSet();
   let cssInjected = false;
 
@@ -308,6 +309,8 @@ function initCarouselC2() {
     let targetWidth = null;
     let top = null;
     let interacted = false;
+    let maxSlideW = null;
+    let slideGap = null;
 
     slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
     slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
@@ -342,7 +345,12 @@ function initCarouselC2() {
         slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
       }
 
-      if (top === null) top = getDocTop(el);
+      if (top === null) {
+        top = getDocTop(el);
+        maxSlideW = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-slide-max-width')) || Infinity;
+        slideGap = parseFloat(getComputedStyle(wrapper).gap) || 8;
+      }
+
       const elHeight = el.offsetHeight;
       const m = getScrollMetrics(scroll, elHeight, top, 0.1, 0.1);
       const t = viewRange(m, 'entry', -0.5, 'entry', 0.2);
@@ -353,8 +361,13 @@ function initCarouselC2() {
       }
 
       const w = startWidth + (targetWidth - startWidth) * t;
-      const wPx = `${w}px`;
-      slides.forEach((s) => { s.style.flexBasis = wPx; });
+      slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
+
+      // Keep slide 1 centered as flex-basis animates — CSS translate is fixed on
+      // targetWidth so we compensate for the extra width during animation.
+      const effectiveW = Math.min(w, maxSlideW);
+      const tx = ((3 * effectiveW - window.innerWidth) / 2 + slideGap) * (isRtl ? 1 : -1);
+      wrapper.style.translate = `${tx}px`;
     });
   };
 
