@@ -64,7 +64,6 @@ function findSectionsByStyle(style) {
 /* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
-  if (CSS.supports('animation-timeline: scroll()')) return;
   const vh80px = Math.round(vh * 0.8);
   const topMaxPx = Math.round(vh * 0.35);
   const sections = [
