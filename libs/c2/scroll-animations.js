@@ -228,18 +228,21 @@ function initElasticCarousel() {
     container.style.marginLeft = `${startMargin}px`;
     let top = null;
     let total = null;
-    let gapsApplied = false;
+    let itemData = null;
 
     scrollTasks.push((scroll) => {
       const elHeight = container.offsetHeight;
       if (!elHeight) return;
-      if (!gapsApplied) {
-        gapsApplied = true;
+      if (!itemData) {
         const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const toNum = (s) => (s.includes('rem') ? parseFloat(s) * rootFontSize : parseFloat(s));
-        container.querySelectorAll('.elastic-carousel-item').forEach((item) => {
-          const endGap = toNum(getComputedStyle(item).getPropertyValue('--end-gap').trim());
-          item.style.marginInline = `${endGap}px`;
+        itemData = [...container.querySelectorAll('.elastic-carousel-item')].map((item) => {
+          const cs = getComputedStyle(item);
+          return {
+            item,
+            startGap: toNum(cs.getPropertyValue('--start-gap').trim()),
+            endGap: toNum(cs.getPropertyValue('--end-gap').trim()),
+          };
         });
       }
       if (top === null) {
@@ -251,9 +254,14 @@ function initElasticCarousel() {
 
       const slideT = viewRange(m, 'entry', 0.2, 'entry', 0.52);
       const opacT = viewRange(m, 'entry', 0.0, 'entry', 0.16);
+      // gap animates from startGap → endGap, starting 10% before slideT begins
+      const gapT = Math.max(0, Math.min(1, (slideT + 0.4)));
 
       container.style.marginLeft = `${startMargin * (1 - slideT)}px`;
       container.style.opacity = opacT;
+      itemData.forEach(({ item, startGap, endGap }) => {
+        item.style.marginInline = `${startGap + (endGap - startGap) * gapT}px`;
+      });
     });
   };
 
