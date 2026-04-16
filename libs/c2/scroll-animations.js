@@ -290,17 +290,9 @@ function initCarouselC2() {
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
-    const allChildren = [...wrapper.children];
-
     let startWidth = window.innerWidth;
     let targetWidth = null;
     let top = null;
-    let activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
-
-    const idxObserver = new MutationObserver(() => {
-      activeIdx = allChildren.indexOf(wrapper.querySelector('.active'));
-    });
-    idxObserver.observe(wrapper, { subtree: true, attributeFilter: ['class'], attributes: true });
 
     slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
     slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
