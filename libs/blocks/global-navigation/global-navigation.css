@@ -1170,6 +1170,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
   animation-fill-mode: forwards;
+  -webkit-animation-fill-mode: forwards;
   font-weight: 700;
 }
 
