@@ -150,7 +150,7 @@ export default {
     'feedback.toast.success': 'Thank you for the feedback.',
     'feedback.thumbsUp.aria': 'Thumbs up',
     'feedback.thumbsDown.aria': 'Thumbs down',
-    'text.meetingbooking.calendar.footer': "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
+    'meetingbooking.calendar.footer': "Once confirmed, you'll receive a calendar invite with all the details. Looking forward to connecting you with the right expert!",
     'widget.firefly-gallery.preamble-markdown': "If you're not ready to sign in, you can explore the Firefly community gallery to get inspired and discover prompts to remix.",
     'widget.firefly-gallery.title': 'Adobe Firefly',
     'widget.firefly-gallery.view-item-text': 'View',
