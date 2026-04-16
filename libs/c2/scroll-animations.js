@@ -293,6 +293,7 @@ function initCarouselC2() {
     let startWidth = window.innerWidth;
     let targetWidth = null;
     let top = null;
+    let interacted = false;
 
     slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
     slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
@@ -304,6 +305,7 @@ function initCarouselC2() {
     };
 
     window.addEventListener('resize', () => {
+      if (interacted) return;
       resetStyles();
       startWidth = window.innerWidth;
       targetWidth = null;
@@ -312,6 +314,14 @@ function initCarouselC2() {
     });
 
     scrollTasks.push((scroll) => {
+      if (!interacted && wrapper.getAttribute('data-slides-cloned') === 'true') {
+        interacted = true;
+        slides.forEach((s) => { s.style.flexBasis = ''; s.style.willChange = ''; });
+        wrapper.style.transition = '';
+        return;
+      }
+      if (interacted) return;
+
       if (targetWidth === null) {
         slides.forEach((s) => { s.style.flexBasis = ''; });
         targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
