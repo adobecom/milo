@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preflight Dashboard — Adobe.com</title>
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="./preflight-dashboard/preflight-dashboard.css">
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="pd-header" role="banner">
+    <div class="pd-header__inner">
+      <div class="pd-header__start">
+        <svg class="pd-header__logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Adobe">
+          <path fill="#FA0F00" d="M61.1 0H100v100L61.1 0zM38.9 0H0v100L38.9 0zM50 36.9L69.4 85H57.7l-6-16.2H38.9L50 36.9z"/>
+        </svg>
+        <h1 class="pd-header__title">Preflight Dashboard</h1>
+      </div>
+      <div class="pd-header__end" id="header-end">
+        <!-- Populated by JS after auth -->
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Body layout: sidebar + page ───────────────────────────────────── -->
+  <div class="pd-layout">
+
+    <!-- Left sidebar navigation -->
+    <nav class="pd-sidebar" aria-label="Preflight tools">
+      <a href="#" class="pd-sidebar__item pd-sidebar__item--active" aria-label="Preflight Dashboard" aria-current="page" title="Preflight Dashboard">
+        <!-- Dashboard / table icon (outlined style) -->
+        <svg class="pd-sidebar__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="15" height="15" rx="2" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="2.5" y1="7" x2="17.5" y2="7" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="10" y1="7" x2="10" y2="17.5" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        <span class="pd-sidebar__label">Dashboard</span>
+      </a>
+      <!-- Future preflight tools go here -->
+    </nav>
+
+    <!-- Page area (auth, error, and main dashboard) -->
+    <div class="pd-page">
+
+  <!-- ── Auth screen ────────────────────────────────────────────────────── -->
+  <div id="auth-screen" class="pd-auth hidden" role="main" aria-label="Sign in required">
+    <div class="pd-auth__card">
+      <svg class="pd-auth__logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" aria-hidden="true">
+        <path fill="#FA0F00" d="M61.1 0H100v100L61.1 0zM38.9 0H0v100L38.9 0zM50 36.9L69.4 85H57.7l-6-16.2H38.9L50 36.9z"/>
+      </svg>
+      <h2 class="pd-auth__title">Sign in required</h2>
+      <p class="pd-auth__desc">
+        The Preflight Dashboard is available to Adobe employees only.
+        Sign in with your Adobe ID to continue.
+      </p>
+      <button id="sign-in-btn" class="pd-btn pd-btn--primary pd-btn--full">Sign in with Adobe ID</button>
+    </div>
+  </div>
+
+  <!-- ── Error screen ───────────────────────────────────────────────────── -->
+  <div id="error-screen" class="pd-auth hidden" role="main" aria-label="Access error">
+    <div class="pd-auth__card">
+      <p class="pd-auth__icon" aria-hidden="true">⚠️</p>
+      <h2 class="pd-auth__title" id="error-screen-title">Access denied</h2>
+      <p class="pd-auth__desc" id="error-screen-message">
+        This dashboard is only accessible to @adobe.com accounts.
+      </p>
+      <button id="sign-out-error-btn" class="pd-btn pd-btn--secondary pd-btn--full">Sign in with a different account</button>
+    </div>
+  </div>
+
+  <!-- ── Main dashboard ─────────────────────────────────────────────────── -->
+  <main id="dashboard" class="pd-main hidden" aria-label="Preflight Dashboard">
+    <div class="pd-container">
+
+      <!-- Filters -->
+      <section class="pd-filters" aria-label="Filter controls">
+        <div class="pd-filters__row">
+          <div class="pd-field pd-field--url">
+            <label class="pd-sr-only" for="url-search">Filter by URL pattern</label>
+            <div class="pd-input-wrap">
+              <svg class="pd-input-wrap__icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" aria-hidden="true">
+                <path fill="currentColor" d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.868-3.834zm-5.242 1.406a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11z"/>
+              </svg>
+              <input
+                type="text"
+                id="url-search"
+                class="pd-input"
+                placeholder="Filter by URL pattern..."
+                autocomplete="off"
+                spellcheck="false"
+              >
+            </div>
+          </div>
+
+          <div class="pd-field pd-field--select">
+            <label class="pd-sr-only" for="content-type">Content Type</label>
+            <select id="content-type" class="pd-select">
+              <option value="">Content Type</option>
+              <option value=".page">Stage (.page)</option>
+              <option value=".live">Live (.live)</option>
+            </select>
+          </div>
+
+          <div class="pd-field pd-field--select">
+            <label class="pd-sr-only" for="project-key">Project</label>
+            <select id="project-key" class="pd-select">
+              <option value="">Project</option>
+              <option value="bacom">BACOM</option>
+              <option value="milo">Milo</option>
+              <option value="blog">Blog</option>
+              <option value="cc">CC</option>
+            </select>
+          </div>
+
+          <div class="pd-field pd-field--score">
+            <label class="pd-sr-only" for="score-min">Min Score</label>
+            <input
+              type="number"
+              id="score-min"
+              class="pd-input pd-input--score"
+              min="0"
+              max="100"
+              placeholder="0"
+              aria-label="Minimum score"
+            >
+          </div>
+
+          <div class="pd-field pd-field--score">
+            <label class="pd-sr-only" for="score-max">Max Score</label>
+            <input
+              type="number"
+              id="score-max"
+              class="pd-input pd-input--score"
+              min="0"
+              max="100"
+              placeholder="100"
+              aria-label="Maximum score"
+            >
+          </div>
+
+          <div class="pd-field pd-field--actions">
+            <button id="worst-pages-btn" class="pd-btn pd-btn--secondary">Worst Pages</button>
+            <button id="filter-btn" class="pd-btn pd-btn--primary">Apply Filters</button>
+            <button id="reset-btn" class="pd-btn pd-btn--ghost">Reset</button>
+          </div>
+        </div>
+
+        <!-- Active filter tags (hidden until filters are applied) -->
+        <div id="active-filters" class="pd-active-filters hidden" aria-live="polite">
+          <!-- Tags injected by JS -->
+        </div>
+      </section>
+
+      <!-- Inline error banner -->
+      <div id="error-banner" class="pd-error-banner hidden" role="alert" aria-live="assertive"></div>
+
+      <!-- Stats bar -->
+      <div id="stats-bar" class="pd-stats hidden" aria-live="polite">
+        <span id="stat-total" class="pd-stat-chip"></span>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="pd-loading" aria-live="polite" aria-label="Loading data">
+        <div class="pd-loading__spinner" aria-hidden="true"></div>
+        <p>Loading preflight data…</p>
+      </div>
+
+      <!-- Table section -->
+      <section id="table-section" class="pd-table-section hidden" aria-label="Preflight results">
+        <div class="pd-table-wrap" role="region" aria-label="Scrollable results table" tabindex="0">
+          <table class="pd-table" id="data-table">
+            <thead>
+              <tr>
+                <th scope="col" class="pd-table__col--url sortable" data-sort="url">
+                  URL <span class="pd-sort-icon" aria-hidden="true"></span>
+                </th>
+                <th scope="col" class="pd-table__col--status">Status</th>
+                <th scope="col" class="pd-table__col--score sortable" data-sort="performance_score">
+                  Score <span class="pd-sort-icon" aria-hidden="true"></span>
+                </th>
+                <th scope="col" class="pd-table__col--date sortable" data-sort="created_at">
+                  Last Checked <span class="pd-sort-icon" aria-hidden="true"></span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <!-- Rows injected by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Legend -->
+        <div class="pd-legend" aria-label="Score legend">
+          <span class="pd-legend__item pd-legend__item--good">&#10003; = Score &ge; 70 (Good)</span>
+          <span class="pd-legend__item pd-legend__item--warning">&#9651; = Score 50&ndash;69 (Warning)</span>
+          <span class="pd-legend__item pd-legend__item--critical">&#10007; = Score &lt; 50 (Critical)</span>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pd-pagination" role="navigation" aria-label="Table pagination">
+          <button id="prev-btn" class="pd-btn pd-btn--secondary" disabled aria-label="Go to previous page">
+            &larr; Previous
+          </button>
+          <span id="page-info" class="pd-pagination__info" aria-live="polite" aria-atomic="true">Page 1 of 1</span>
+          <span id="total-results" class="pd-pagination__total" aria-live="polite"></span>
+          <div class="pd-pagination__right">
+            <label class="pd-pagination__label" for="page-size">Rows per page</label>
+            <select id="page-size" class="pd-select pd-select--sm">
+              <option value="25">25</option>
+              <option value="50" selected>50</option>
+              <option value="100">100</option>
+            </select>
+            <button id="next-btn" class="pd-btn pd-btn--secondary" aria-label="Go to next page">
+              Next &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Empty state -->
+      <div id="empty-state" class="pd-empty hidden" aria-live="polite">
+        <p class="pd-empty__message">No results found. Try adjusting your filters.</p>
+        <button id="empty-reset-btn" class="pd-btn pd-btn--secondary">Reset filters</button>
+      </div>
+
+    </div>
+  </main>
+
+    </div><!-- /.pd-page -->
+  </div><!-- /.pd-layout -->
+
+  <script type="module" src="./preflight-dashboard/preflight-dashboard.js"></script>
+</body>
+</html>
