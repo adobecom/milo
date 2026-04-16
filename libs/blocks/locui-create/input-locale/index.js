@@ -194,11 +194,12 @@ export default function useInputLocale() {
     }));
     const newLocalesWithLangCode = [];
     const effectiveLocales = [];
+    const isRollout = project.value.type !== PROJECT_TYPES.translation;
     regionCountryCodes.forEach((locale) => {
       const languages = findLanguageForLocale(locale);
       languages?.forEach((language) => {
         newLocalesWithLangCode.push(`${language.languagecode}|${locale}`);
-        if (language.defaultlocales) {
+        if (isRollout && language.defaultlocales) {
           const defaults = language.defaultlocales.split(',');
           if (!defaults.includes(locale)) return;
         }
