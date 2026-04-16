@@ -1082,6 +1082,7 @@ p {
 
   .section.parallax-garage-door-reveal {
     overflow: clip;
+    will-change: transform;
     animation: garage-door-grow-mobile ease-out both;
     animation-timeline: view();
     animation-range: entry 0% cover 40%;
@@ -1101,6 +1102,7 @@ p {
   }
 
   .section.parallax-garage-door-reveal .foreground {
+    will-change: transform;
     animation: garage-door-reveal-mobile ease-out both;
     animation-timeline: view();
     animation-range: cover -10% cover 70%;
@@ -1121,6 +1123,7 @@ p {
   }
 
   .section.parallax-garage-door-reveal .section-background img {
+    will-change: transform;
     animation: garage-door-bg-scale ease-out both;
     animation-timeline: view();
     animation-range: entry 0% cover 70%;
