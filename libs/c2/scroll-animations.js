@@ -327,7 +327,7 @@ function initCarouselC2() {
       if (top === null) top = getDocTop(el);
       const elHeight = el.offsetHeight;
       const m = getScrollMetrics(scroll, elHeight, top, 0.1, 0.1);
-      const t = viewRange(m, 'entry', 0, 'entry', 0.2);
+      const t = viewRange(m, 'entry', -0.5, 'entry', 0.2);
 
       if (t >= 1) {
         resetStyles();
