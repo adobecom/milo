@@ -1,11 +1,13 @@
 import {
   createTag,
+  getCookie,
   getConfig,
-  getCountry,
   getMetadata,
   getMepLingoPrefix,
   loadStyle,
   lingoActive,
+  normCountryCode,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
@@ -652,10 +654,17 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
     const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const countryParam = normCountryCode(searchParams.get('country'));
+    const countryCookie = countryParam
+      || normCountryCode(getCookie('country'))
+      || 'None';
+
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: escapeHtml(await getCountry()) ?? '',
+      countryCookie: escapeHtml(countryCookie) ?? '',
+      userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
       geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
@@ -676,6 +685,8 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
       ${isMmm ? '' : `
+        <span>Country cookie</span>
+        <span>${lingoData.countryCookie}</span>
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
         <span>Geo + User</span>

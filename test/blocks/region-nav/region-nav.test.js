@@ -199,4 +199,33 @@ describe('Region Nav Block', async () => {
     // No languageMap means no transformation
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
   });
+
+  it('sets lang attribute on links with valid ietf values', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, ar: { ietf: 'es-AR', tk: 'hah7vzn.css' }, br: { ietf: 'pt-BR', tk: 'hah7vzn.css' } } });
+
+    const arLink = createTag('a', { href: 'https://adobe.com/ar/' });
+    decorateLink(arLink, '/some-page');
+    expect(arLink.getAttribute('lang')).to.equal('es-AR');
+
+    const brLink = createTag('a', { href: 'https://adobe.com/br/' });
+    decorateLink(brLink, '/path');
+    expect(brLink.getAttribute('lang')).to.equal('pt-BR');
+  });
+
+  it('does not set lang attribute when ietf is none (localeToLanguageMap)', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+
+    const link = createTag('a', { href: 'https://adobe.com/xx/' });
+    decorateLink(link, '/some-page', [{ locale: 'xx' }]);
+
+    expect(link.hasAttribute('lang')).to.be.false;
+  });
+
+  it('does not set lang attribute when locale omits ietf', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, zz: { tk: 'hah7vzn.css' } } });
+    const link = createTag('a', { href: 'https://adobe.com/zz/' });
+    decorateLink(link, '');
+
+    expect(link.hasAttribute('lang')).to.be.false;
+  });
 });
