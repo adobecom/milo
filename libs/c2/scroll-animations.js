@@ -488,7 +488,10 @@ function initGarageDoorReveal() {
 
       const m = getScrollMetrics(scroll, elHeight, docTop);
 
-      const growT = viewRange(m, 'entry', -0.5, 'entry', coverEnd);
+      let growStart = -0.5;
+      if (w >= 1280) growStart = -1;
+      if (w >= 1920) growStart = -0.5;
+      const growT = viewRange(m, 'entry', growStart, 'entry', coverEnd);
       section.style.transform = growT < 1 ? `translateY(${growFrom * (1 - growT)}px)` : '';
 
       // background image scales 1 → 1.1 (garage-door-bg-scale)
