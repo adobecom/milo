@@ -111,7 +111,7 @@ function initScaleDownGrid() {
         endPad = parseFloat(getComputedStyle(grid).paddingInlineStart) || 0;
       }
       const m = getScrollMetrics(scroll, elHeight, docTop, 0.4, 0.1);
-      const t = viewRange(m, 'entry', -0.4, 'entry', -0.2);
+      const t = viewRange(m, 'entry', -0.2, 'entry', 0.2);
       if (t >= 1) {
         grid.style.paddingInline = '';
         return;
