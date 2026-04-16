@@ -377,10 +377,37 @@ function initCarouselC2() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
+/* ── Line-height ────────────────────────────────── */
+
+function initLineHeight() {
+  const els = [...document.querySelectorAll('.parallax-line-height')];
+  if (!els.length) return;
+
+  els.forEach((el) => {
+    const children = [...el.querySelectorAll('*')];
+    if (!children.length) return;
+    const naturalLineHeights = children.map((c) => getComputedStyle(c).lineHeight);
+
+    scrollTasks.push(() => {
+      const { top, height } = el.getBoundingClientRect();
+      // entry 10% → cover 40%
+      // entry 10%: top = vh - height * 0.1
+      // cover 40%: top = vh * (1 - 0.4) - height = vh * 0.6 - height
+      const start = vh - height * 0.1;
+      const end = vh * 0.6 - height;
+      const t = Math.max(0, Math.min(1, (start - top) / (start - end)));
+      children.forEach((child, i) => {
+        child.style.lineHeight = t < 1 ? 3 - (3 - parseFloat(naturalLineHeights[i] || 1.5)) * t : '';
+      });
+    });
+  });
+}
+
 /* ── Entry point ────────────────────────────────── */
 
 export default function init() {
   initMoveUpFast();
+  initLineHeight();
   initScaleDownGrid();
   initStagger();
   initElasticCarousel();

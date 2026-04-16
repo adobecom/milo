@@ -2101,8 +2101,10 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
-    const { default: initScrollAnimations } = await import('../c2/scroll-animations.js');
-    initScrollAnimations();
+    if (!CSS.supports('animation-timeline: view()')) {
+      const { default: initScrollAnimations } = await import('../c2/scroll-animations.js');
+      initScrollAnimations();
+    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
