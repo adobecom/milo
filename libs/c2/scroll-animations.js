@@ -64,6 +64,7 @@ function findSectionsByStyle(style) {
 /* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
+  if (CSS.supports('animation-timeline: scroll()')) return;
   const vh80px = Math.round(vh * 0.8);
   const topMaxPx = Math.round(vh * 0.35);
   const sections = [
@@ -76,6 +77,9 @@ function initMoveUpFast() {
   document.head.appendChild(style);
 
   sections.forEach((section) => {
+    section.style.position = 'sticky';
+    section.style.top = '0';
+    section.style.zIndex = '0';
     const overlay = document.createElement('div');
     overlay.style.cssText = 'position:absolute;inset:0;background:black;'
       + 'opacity:0;pointer-events:none;z-index:1;';
