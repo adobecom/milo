@@ -384,7 +384,13 @@ export default function init() {
   initCarouselC2();
 
   if (scrollTasks.length) {
-    window.addEventListener('scroll', onScroll, { passive: true });
+    if (window.lenis) {
+      window.lenis.on('scroll', ({ scroll }) => {
+        scrollTasks.forEach((task) => task(scroll));
+      });
+    } else {
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
     onScroll();
   }
 }

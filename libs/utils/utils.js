@@ -2090,17 +2090,17 @@ async function loadPostLCP(config) {
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    // await Promise.all([
-    //   new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
-    //   loadScript(`${config.base}/deps/lenis.min.js`),
-    // ]);
-    // const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
-    // const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
-    // window.lenis = new window.Lenis({
-    //   autoRaf: true,
-    //   lerp,
-    //   prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
-    // });
+    await Promise.all([
+      new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
+      loadScript(`${config.base}/deps/lenis.min.js`),
+    ]);
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    window.lenis = new window.Lenis({
+      autoRaf: true,
+      lerp,
+      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+    });
     if (!CSS.supports('animation-timeline: scroll()')) {
       const { default: initPolyfill } = await import('../c2/parallax-polyfill.js');
       await initPolyfill(config, loadScript);
