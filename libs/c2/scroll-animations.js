@@ -474,20 +474,38 @@ function initGarageDoorReveal() {
   let refreshDocTop = false;
 
   sections.forEach((section) => {
-    const bgImg = section.querySelector('.section-background img');
-    const foreground = section.querySelector('.foreground');
+    let bgImg = section.querySelector('.section-background img');
+    let foreground = section.querySelector('.foreground');
     const state = { docTop: null, fgChildData: null };
     states.push(state);
 
     section.style.willChange = 'transform';
     section.style.transform = `translateY(${growFrom}px)`;
     if (bgImg) bgImg.style.willChange = 'transform';
-    if (foreground) foreground.style.willChange = 'transform';
+    if (foreground) {
+      foreground.style.position = 'relative';
+      foreground.style.zIndex = '1';
+      foreground.style.willChange = 'transform';
+    }
 
     scrollTasks.push((scroll) => {
       const elHeight = section.offsetHeight;
       if (!elHeight) return;
       if (state.docTop === null || refreshDocTop) state.docTop = getDocTop(section);
+
+      // bgImg/foreground may load after init — lazy-resolve on first scroll tick
+      if (!bgImg) {
+        bgImg = section.querySelector('.section-background img');
+        if (bgImg) bgImg.style.willChange = 'transform';
+      }
+      if (!foreground) {
+        foreground = section.querySelector('.foreground');
+        if (foreground) {
+          foreground.style.position = 'relative';
+          foreground.style.zIndex = '1';
+          foreground.style.willChange = 'transform';
+        }
+      }
 
       if (foreground && !state.fgChildData) {
         const nodes = [...foreground.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
@@ -517,7 +535,7 @@ function initGarageDoorReveal() {
 
       // foreground slides up from revealFrom → 0 (garage-door-reveal)
       if (foreground) {
-        const fgT = viewRange(m, 'cover', -0.1, 'cover', 0.7);
+        const fgT = viewRange(m, 'entry', -0.2, 'entry', 0.3);
         foreground.style.transform = fgT < 1 ? `translateY(${revealFrom * (1 - fgT)}px)` : '';
       }
 
