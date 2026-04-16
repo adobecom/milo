@@ -64,7 +64,8 @@ function findSectionsByStyle(style) {
 /* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
-  const vh80px = vh * 0.8;
+  const vh80px = Math.round(vh * 0.8);
+  const topMaxPx = Math.round(vh * 0.35);
   const sections = [
     ...document.querySelectorAll('.section.parallax-move-up-fast'),
   ];
@@ -82,7 +83,8 @@ function initMoveUpFast() {
     const sectionTop = getDocTop(section);
     scrollTasks.push((scroll) => {
       const t = Math.max(0, Math.min(1, (scroll - sectionTop) / vh80px));
-      // section.style.top = `${-35 * t}vh`;
+      const newTop = `${-Math.round(topMaxPx * t)}px`;
+      if (section.style.top !== newTop) section.style.top = newTop;
       overlay.style.opacity = 0.75 * t;
     });
   });
