@@ -380,27 +380,50 @@ function initCarouselC2() {
 /* ── Line-height ────────────────────────────────── */
 
 function initLineHeight() {
-  const els = [...document.querySelectorAll('.parallax-line-height')];
-  if (!els.length) return;
+  const initialized = new WeakSet();
 
-  els.forEach((el) => {
-    const children = [...el.querySelectorAll('*')];
-    if (!children.length) return;
-    const naturalLineHeights = children.map((c) => getComputedStyle(c).lineHeight);
+  const setup = (el) => {
+    if (initialized.has(el)) return;
+    initialized.add(el);
+    let childData = null;
 
     scrollTasks.push(() => {
       const { top, height } = el.getBoundingClientRect();
-      // entry 10% → cover 40%
-      // entry 10%: top = vh - height * 0.1
-      // cover 40%: top = vh * (1 - 0.4) - height = vh * 0.6 - height
+      if (!height) return;
+      // Re-query if not yet initialized or if DOM was replaced
+      if (!childData || !el.contains(childData[0]?.child)) {
+        const nodes = [...el.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
+        if (!nodes.length) return;
+        childData = nodes.map((c) => {
+          const cs = getComputedStyle(c);
+          const fontSize = parseFloat(cs.fontSize) || 16;
+          const natural = parseFloat(cs.lineHeight) || fontSize * 1.5;
+          return { child: c, from: 3 * fontSize, to: natural };
+        });
+      }
+      // entry 10%: element is 10% into viewport → top = vh - height*0.1
+      // cover 40%: element top is at 60% from viewport top → top = vh*0.6 - height
       const start = vh - height * 0.1;
       const end = vh * 0.6 - height;
       const t = Math.max(0, Math.min(1, (start - top) / (start - end)));
-      children.forEach((child, i) => {
-        child.style.lineHeight = t < 1 ? 3 - (3 - parseFloat(naturalLineHeights[i] || 1.5)) * t : '';
+      childData.forEach(({ child, from, to }) => {
+        child.style.setProperty('line-height', t < 1 ? `${from + (to - from) * t}px` : null);
       });
     });
-  });
+  };
+
+  document.querySelectorAll('.parallax-line-height').forEach(setup);
+
+  new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      [...mutation.addedNodes]
+        .filter((n) => n.nodeType === 1)
+        .forEach((n) => {
+          if (n.classList?.contains('parallax-line-height')) setup(n);
+          n.querySelectorAll?.('.parallax-line-height').forEach(setup);
+        });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
 }
 
 /* ── Entry point ────────────────────────────────── */
@@ -413,14 +436,12 @@ export default function init() {
   initElasticCarousel();
   initCarouselC2();
 
-  if (scrollTasks.length) {
-    if (window.lenis) {
-      window.lenis.on('scroll', ({ scroll }) => {
-        scrollTasks.forEach((task) => task(scroll));
-      });
-    } else {
-      window.addEventListener('scroll', onScroll, { passive: true });
-    }
-    onScroll();
+  if (window.lenis) {
+    window.lenis.on('scroll', ({ scroll }) => {
+      scrollTasks.forEach((task) => task(scroll));
+    });
+  } else {
+    window.addEventListener('scroll', onScroll, { passive: true });
   }
+  onScroll();
 }
