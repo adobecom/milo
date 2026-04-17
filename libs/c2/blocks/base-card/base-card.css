@@ -1,16 +1,7 @@
-
 .base-card {
   position: relative;
   height: 100%;
   contain: layout;
-
-  > div[data-viewport] {
-    display: none;
-  }
-
-  > div[data-viewport="mobile"] {
-    display: flex;
-  }
 
   > div {
     display: flex;
@@ -111,14 +102,6 @@
 
 @media (width >= 768px) {
   .base-card {
-    > div[data-viewport="mobile"] {
-      display: none;
-    }
-
-    > div[data-viewport="tablet"] {
-      display: flex;
-    }
-
     &.featured {
       .foreground {
         padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
@@ -129,14 +112,6 @@
 
 @media (width >= 1024px) {
   .base-card {
-    > div[data-viewport="tablet"] {
-      display: none;
-    }
-
-    > div[data-viewport="desktop"] {
-      display: flex;
-    }
-
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
     }
