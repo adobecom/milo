@@ -431,7 +431,7 @@
 .dialog-modal.bc-susi-modal .bc-susi-modal-title {
   padding: 20px var(--bc-susi-standard-padding) 12px;
   margin: 0;
-  font-size: 22px;
+  font-size: var(--type-heading-m-size);
   letter-spacing: -2%;
 }
 

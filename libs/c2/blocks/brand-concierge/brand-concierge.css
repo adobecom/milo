@@ -431,8 +431,8 @@
 .dialog-modal.bc-susi-modal .bc-susi-modal-title {
   padding: 20px var(--bc-susi-standard-padding) 12px;
   margin: 0;
-  font-size: 22px;
-  letter-spacing: -2%;
+  font-size:  var(--s2a-font-size-24);
+  letter-spacing: var(--s2a-font-letter-spacing-neg-1_2);
 }
 
 /* hero */
