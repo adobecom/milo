@@ -821,6 +821,12 @@
     line-height: 55px;
   }
 
+  /* c2 specific spacing */
+  .bc-susi-modal button.dialog-close {
+    right: var(--s2a-spacing-lg);
+    top: var(--s2a-spacing-lg);
+  }
+
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
   }
