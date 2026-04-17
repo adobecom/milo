@@ -228,8 +228,7 @@ export default async function init(el) {
 
   const size = getBlockSize(el);
   if (text) {
-    const buttonSize = size === 'large' ? 'button-xl' : 'button-l';
-    decorateButtons(text, buttonSize);
+    decorateButtons(text, size === 'large' ? 'button-xl' : 'button-l');
     decorateText(text, size);
     const iconArea = text.querySelector('.icon-area');
     if (iconArea?.childElementCount > 1) decorateMultipleIconArea(iconArea);

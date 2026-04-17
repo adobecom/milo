@@ -120,13 +120,13 @@ function decorateText(el, classes) {
   el.classList.add('norm');
   wrapInnerHTMLInPTag(el);
   const btnClass = classes?.find((c) => c.endsWith('-button'));
-  let buttonSize = 'button-xl';
   if (btnClass) {
     const [theme, size] = btnClass.split('-').reverse();
     el.classList.remove(btnClass);
-    buttonSize = `${theme}-${size}`;
+    decorateButtons(el, `${theme}-${size}`);
+  } else {
+    decorateButtons(el, 'button-xl');
   }
-  decorateButtons(el, buttonSize);
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
 }
