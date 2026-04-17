@@ -470,7 +470,10 @@ function initGarageDoorReveal() {
 
     section.style.willChange = 'transform';
     section.style.transform = `translateY(${growFrom}px)`;
-    if (bgImg) bgImg.style.willChange = 'transform';
+    if (bgImg) {
+      bgImg.parentElement.style.overflow = 'hidden';
+      bgImg.style.willChange = 'transform';
+    }
     if (foreground) {
       foreground.style.position = 'relative';
       foreground.style.zIndex = '1';
@@ -485,7 +488,10 @@ function initGarageDoorReveal() {
       // bgImg/foreground may load after init — lazy-resolve on first scroll tick
       if (!bgImg) {
         bgImg = section.querySelector('.section-background img');
-        if (bgImg) bgImg.style.willChange = 'transform';
+        if (bgImg) {
+          bgImg.parentElement.style.overflow = 'hidden';
+          bgImg.style.willChange = 'transform';
+        }
       }
       if (!foreground) {
         foreground = section.querySelector('.foreground');
