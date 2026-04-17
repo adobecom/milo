@@ -458,7 +458,7 @@ function initGarageDoorReveal() {
     const cvh = window.innerHeight;
     growFrom = -0.5 * cvh;
     revealFrom = 0.2 * cvh;
-    if (w >= 1280) { growFrom = -1.1 * cvh; revealFrom = 0.5 * cvh; }
+    if (w >= 1280) { growFrom = -1.1 * cvh; revealFrom = 0.4 * cvh; }
     if (w >= 1920) { growFrom = -0.7 * cvh; revealFrom = 0.3 * cvh; }
     coverEnd = 0.2;
     if (w >= 1280) coverEnd = 0.4;
