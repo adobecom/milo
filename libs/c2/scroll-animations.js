@@ -123,10 +123,13 @@ function setupStaggerEl(el) {
   const drift = 48;
   const isRtl = el.classList.contains('parallax-stagger-rtl');
   let childData = null;
+  let hasHeight = el.offsetHeight > 0;
+  new ResizeObserver(([entry]) => {
+    hasHeight = entry.contentRect.height > 0;
+  }).observe(el);
 
   scrollTasks.push(() => {
-    const elHeight = el.offsetHeight;
-    if (!elHeight) return;
+    if (!hasHeight) return;
     if (!childData) {
       const cols = getColCount(el);
       const children = [...el.children].filter(
@@ -389,10 +392,14 @@ function initLineHeight() {
     initialized.add(el);
     let childData = null;
     let docTop = null;
+    let cachedHeight = el.offsetHeight;
+    new ResizeObserver(([entry]) => {
+      cachedHeight = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+      docTop = null;
+    }).observe(el);
 
     scrollTasks.push((scroll) => {
-      const elHeight = el.offsetHeight;
-      if (!elHeight) return;
+      if (!cachedHeight) return;
       if (docTop === null) docTop = getDocTop(el);
       if (!childData || !el.contains(childData[0]?.child)) {
         const nodes = [...el.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
@@ -404,7 +411,7 @@ function initLineHeight() {
           return { child: c, from: 3 * fontSize, to: natural };
         });
       }
-      const m = getScrollMetrics(scroll, elHeight, docTop);
+      const m = getScrollMetrics(scroll, cachedHeight, docTop);
       const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
       childData.forEach(({ child, from, to }) => {
         child.style.setProperty('line-height', t < 1 ? `${from + (to - from) * t}px` : null);
