@@ -222,7 +222,6 @@ function initElasticCarousel() {
     container.style.opacity = '0';
     container.style.marginLeft = `${startMargin}px`;
     let top = null;
-    let total = null;
     let itemData = null;
 
     scrollTasks.push((scroll) => {
@@ -240,12 +239,8 @@ function initElasticCarousel() {
           };
         });
       }
-      if (top === null) {
-        top = getDocTop(container);
-        total = elHeight + vh;
-      }
-      const dist = (scroll + vh) - top;
-      const m = { elHeight, dist, total };
+      if (top === null) top = getDocTop(container);
+      const m = getScrollMetrics(scroll, elHeight, top);
 
       const slideT = viewRange(m, 'entry', 0.2, 'entry', 0.52);
       const opacT = viewRange(m, 'entry', 0.0, 'entry', 0.16);
@@ -466,13 +461,10 @@ function initGarageDoorReveal() {
 
   updateBreakpoints();
 
-  const states = [];
-
   sections.forEach((section) => {
     let bgImg = section.querySelector('.section-background img');
     let foreground = section.querySelector('.foreground');
     const state = { docTop: null, fgChildData: null };
-    states.push(state);
 
     section.style.willChange = 'transform';
     section.style.transform = `translateY(${growFrom}px)`;
