@@ -541,7 +541,7 @@ function initGarageDoorReveal() {
 
       // text line-height compresses → natural (garage-door-line-height)
       if (fgChildData?.length) {
-        const lhT = viewRange(m, 'entry', 0.1, 'cover', 0.4);
+        const lhT = viewRange(m, 'entry', 0.1, 'entry', 0.3);
         fgChildData.forEach(({ child, naturalLh, fromLh }) => {
           child.style.lineHeight = lhT < 1 ? `${fromLh + (naturalLh - fromLh) * lhT}px` : null;
         });
@@ -576,12 +576,7 @@ export default function init() {
   initCarouselC2();
   initGarageDoorReveal();
 
-  if (window.lenis) {
-    window.lenis.on('scroll', ({ scroll }) => {
-      scrollTasks.forEach((task) => task(scroll));
-    });
-  } else {
-    window.addEventListener('scroll', onScroll, { passive: true });
-  }
-  onScroll();
+  window.lenis.on('scroll', ({ scroll }) => {
+    scrollTasks.forEach((task) => task(scroll));
+  });
 }
