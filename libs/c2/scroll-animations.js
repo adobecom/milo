@@ -6,17 +6,6 @@ const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
 /* ── Scroll loop ────────────────────────────────── */
 
 const scrollTasks = [];
-let ticking = false;
-
-function onScroll() {
-  if (ticking) return;
-  ticking = true;
-  requestAnimationFrame(() => {
-    const scroll = window.scrollY;
-    scrollTasks.forEach((task) => task(scroll));
-    ticking = false;
-  });
-}
 
 /* ── Shared helpers ─────────────────────────────── */
 
