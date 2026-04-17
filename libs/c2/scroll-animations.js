@@ -460,7 +460,6 @@ function initGarageDoorReveal() {
   updateBreakpoints();
 
   const states = [];
-  let refreshDocTop = false;
 
   sections.forEach((section) => {
     let bgImg = section.querySelector('.section-background img');
@@ -483,7 +482,7 @@ function initGarageDoorReveal() {
     scrollTasks.push((scroll) => {
       const elHeight = section.offsetHeight;
       if (!elHeight) return;
-      if (state.docTop === null || refreshDocTop) state.docTop = getDocTop(section);
+      if (state.docTop === null) state.docTop = getDocTop(section);
 
       // bgImg/foreground may load after init — lazy-resolve on first scroll tick
       if (!bgImg) {
@@ -542,21 +541,6 @@ function initGarageDoorReveal() {
         });
       }
     });
-  });
-
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    updateBreakpoints();
-    refreshDocTop = true;
-    sections.forEach((section, i) => {
-      states[i].docTop = null;
-      section.style.transform = `translateY(${growFrom}px)`;
-    });
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      refreshDocTop = false;
-      sections.forEach((_, i) => { states[i].fgChildData = null; });
-    }, 400);
   });
 }
 
