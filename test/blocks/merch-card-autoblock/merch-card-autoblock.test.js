@@ -16,6 +16,8 @@ if (!customElements.get('mas-field')) {
         const field = this.getAttribute('field');
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
+        } else if (field === 'ctas') {
+          content.innerHTML = '<a class="con-button blue" href="https://www.adobe.com/">Buy now</a>';
         } else {
           content.textContent = 'Resolved inline value';
         }
@@ -258,6 +260,30 @@ describe('merch-card-autoblock autoblock', () => {
       const masField = document.querySelector('mas-field');
       expect(masField).to.exist;
       expect(masField.closest('#inline-price-heading')).to.exist;
+    });
+
+    it('inherits button size and utility classes from sibling con-buttons in the parent block', async () => {
+      const section = document.createElement('div');
+
+      // Simulate buttons already decorated by the containing block (e.g. marquee/hero-marquee)
+      const existingBtn = document.createElement('a');
+      existingBtn.classList.add('con-button', 'blue', 'button-xl', 'button-justified-mobile');
+      section.append(existingBtn);
+
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=ctas-inherit-1&field=ctas';
+      a.textContent = '[[cta-test:ctas]]';
+      section.append(a);
+      document.body.append(section);
+
+      await init(a);
+
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      const masBtn = masField.querySelector('.con-button');
+      expect(masBtn).to.exist;
+      expect(masBtn.classList.contains('button-xl')).to.be.true;
+      expect(masBtn.classList.contains('button-justified-mobile')).to.be.true;
     });
 
     it('preserves Milo typography classes on parent heading when inline fragment stays inline', async () => {

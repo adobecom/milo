@@ -129,15 +129,6 @@ function decorateText(el, classes) {
   decorateButtons(el, buttonSize);
   decorateBlockText(el, textDefault);
   decorateTextOverrides(el, ['-heading', '-body', '-detail']);
-
-  el.querySelectorAll('mas-field').forEach((masField) => {
-    const apply = () => el.querySelectorAll('.con-button').forEach((btn) => btn.classList.add(buttonSize));
-    if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
-      apply();
-    } else {
-      masField.querySelector('aem-fragment')?.addEventListener('aem:load', apply, { once: true });
-    }
-  });
 }
 
 function decorateSup(el, classes) {
@@ -303,14 +294,6 @@ export default async function init(el) {
   decorateBlockText(copy, textDefault, 'hasDetailHeading');
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
-
-  copy.querySelectorAll('mas-field').forEach((masField) => {
-    if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
-      extendButtonsClass(copy);
-    } else {
-      masField.querySelector('aem-fragment')?.addEventListener('aem:load', () => extendButtonsClass(copy), { once: true });
-    }
-  });
 
   /* c8 ignore next 2 */
   const containsClassFromArray = () => breakpointThemeClasses.some(

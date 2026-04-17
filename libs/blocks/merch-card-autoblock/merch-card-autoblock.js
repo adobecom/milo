@@ -21,6 +21,31 @@ const HEADING_SELECTOR = 'h1, h2, h3, h4, h5, h6';
 const BLOCK_CONTENT_SELECTOR = `${HEADING_SELECTOR}, p, div, ul, ol, table, blockquote, pre, figure, section, article, hr`;
 const INLINE_WRAPPER_SELECTOR = 'strong, em, span, b, i, u, small, mark';
 
+/**
+ * Inherits button size and utility classes (e.g. button-xl, button-justified-mobile)
+ * from sibling .con-button elements in the nearest enclosing block container,
+ * then applies them to buttons rendered inside the mas-field.
+ */
+function applyBlockButtonClasses(masField) {
+  const fieldButtons = masField.querySelectorAll('.con-button');
+  if (!fieldButtons.length) return;
+
+  let container = masField.parentElement;
+  while (container && container !== document.body) {
+    const siblingButtons = [...container.querySelectorAll('.con-button')]
+      .filter((btn) => !masField.contains(btn));
+    if (siblingButtons.length) {
+      const classesToInherit = new Set();
+      siblingButtons.forEach((btn) => {
+        [...btn.classList].forEach((c) => { if (c.startsWith('button-')) classesToInherit.add(c); });
+      });
+      fieldButtons.forEach((btn) => classesToInherit.forEach((c) => btn.classList.add(c)));
+      return;
+    }
+    container = container.parentElement;
+  }
+}
+
 function getTimeoutPromise() {
   return new Promise((resolve) => {
     setTimeout(() => resolve('timeout'), CARD_AUTOBLOCK_TIMEOUT);
@@ -150,6 +175,7 @@ async function createInline(el, options) {
   el.replaceWith(masField);
   await checkReady(masField);
   normalizeBlockFieldWrappers(masField);
+  applyBlockButtonClasses(masField);
 }
 
 export default async function init(el) {

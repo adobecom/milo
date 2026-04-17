@@ -413,17 +413,6 @@ export default async function init(el) {
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
-  const buttonSize = `button-${fontSizes[3]}`;
-  const applyMasButtonSize = () => {
-    blockText?.querySelectorAll('.con-button').forEach((btn) => btn.classList.add(buttonSize));
-  };
-  el.querySelectorAll('mas-field').forEach((masField) => {
-    if (masField.querySelector('[data-role="mas-field-content"]')?.firstChild) {
-      applyMasButtonSize();
-    } else {
-      masField.querySelector('aem-fragment')?.addEventListener('aem:load', applyMasButtonSize, { once: true });
-    }
-  });
   if (options.borderBottom) {
     el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
   }
