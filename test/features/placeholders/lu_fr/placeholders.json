@@ -1,0 +1,16 @@
+{
+  "total": 2,
+  "offset": 0,
+  "limit": 2,
+  "data": [
+    {
+      "key": "phone-number",
+      "value": "+352 800 24642"
+    },
+    {
+      "key": "purchase-by-phone-cci",
+      "value": "+352 800 12345"
+    }
+  ],
+  ":type": "sheet"
+}
