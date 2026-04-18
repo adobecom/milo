@@ -1,0 +1,711 @@
+# JSON-LD Graph Manager
+
+## Table Of Contents
+
+1. [Abstract](#abstract)
+1. [Purpose And Scope](#purpose-and-scope)
+1. [Problem Statement](#problem-statement)
+1. [Design Decision](#design-decision)
+1. [Feature Flagging And Rollout](#feature-flagging-and-rollout)
+1. [Architecture Overview](#architecture-overview)
+1. [Runtime Lifecycle](#runtime-lifecycle)
+1. [Data Model And Contracts](#data-model-and-contracts)
+1. [Observability And Diagnostics](#observability-and-diagnostics)
+1. [Normalization And Merge Policy](#normalization-and-merge-policy)
+1. [Canonical Page Graph Model](#canonical-page-graph-model)
+1. [Validation Cohort And Target Coverage](#validation-cohort-and-target-coverage)
+1. [Producer Integration Model](#producer-integration-model)
+1. [Relationship To The Authoring Catalog](#relationship-to-the-authoring-catalog)
+1. [Limitations And Future Work](#limitations-and-future-work)
+1. [Appendix A: Canonical Examples](#appendix-a-canonical-examples)
+1. [References](#references)
+
+## Abstract
+
+The `JsonLdGraphManager` is Milo's document-level runtime for structured data aggregation.
+
+Its objective is to improve the accuracy, consistency, and coverage of structured data across ACOM and BACOM properties so search engines and LLMs can reliably understand, interpret, and surface Adobe content. The manager achieves this by ingesting JSON-LD emitted by multiple producers, normalizing the resulting entities into a canonical graph, and rewriting a single managed JSON-LD payload into `document.head`.
+
+This document records the architectural intent, operational model, and canonical entity conventions for the `JsonLdGraphManager`. It is the runtime source of truth for how structured data is collected and emitted on a Milo page.
+
+## Purpose And Scope
+
+This document defines:
+
+* the problem the `JsonLdGraphManager` solves
+* the architectural decision to aggregate and normalize JSON-LD at runtime
+* the runtime lifecycle and DOM contract
+* the canonical graph shape and entity-linking conventions
+* the producer contract for blocks, features, and future direct integrations
+
+This document does not attempt to be the full schema inventory for Adobe web properties.
+
+Type inventories, reusable field templates, and authoring-oriented schema references belong in the existing authoring catalog at [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
+
+## Problem Statement
+
+Structured data in the Milo ecosystem is not produced by a single subsystem. It is emitted by feature modules, blocks, inline page code, metadata-driven integrations, rendered DOM derivations, and external payloads. These producers exist across multiple repositories and do not share a uniform implementation contract.
+
+This creates several problems:
+
+* duplicate or conflicting JSON-LD can accumulate on the same page
+* shared entities such as `Organization`, `WebPage`, and `BreadcrumbList` may be emitted multiple times with inconsistent identifiers
+* producer-specific failures can invalidate otherwise useful schema
+* site-wide refactors are difficult because structured data behavior is distributed across many repos and components
+* search engines and LLMs receive a fragmented representation of the page
+
+The `JsonLdGraphManager` exists to convert this fragmented producer landscape into one coherent, provenance-aware graph.
+
+## Design Decision
+
+The core design decision is:
+
+* use a document-level graph manager that observes, ingests, normalizes, and rewrites JSON-LD at runtime
+* do not require an up-front synchronized migration of every existing producer to a new direct-write interface
+
+This is an observation-first, normalization-first strategy.
+
+The long-term preferred producer interface remains direct push into the `JsonLdGraphManager`. However, the initial system is deliberately designed to work with the current ecosystem as it exists, including legacy, external, and non-Milo producers.
+
+### Rationale
+
+The decision is based on two constraints:
+
+1. the current structured data ecosystem is distributed across too many producers to rewrite safely in one pass
+1. the page still needs one canonical output even while that ecosystem remains heterogeneous
+
+The structured data catalog currently documents `33` integrations spread across `7` active site or repo entries in the integration table, with only `17` of those integrations living in `milo` itself. In practical terms, structured data is already distributed across multiple implementations, repositories, and integration patterns, so an observation-first runtime is a safer starting point than a synchronized producer rewrite. Source: [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
+
+The `JsonLdGraphManager` therefore establishes a single runtime authority without requiring immediate producer convergence.
+
+## Feature Flagging And Rollout
+
+The `JsonLdGraphManager` is feature-gated by page metadata so it can be enabled on selected pages and page families without enabling it across an entire site at once.
+
+The metadata flag is:
+
+* `jsonld-graph-manager`
+
+The feature is enabled only when that metadata field is set to `true`.
+
+The manager is initialized only when that metadata field is `true`. If the flag is absent or set to any other value, the manager does not load and no observer is attached.
+
+This flagging model is intentionally similar to existing metadata-controlled integrations such as `seotech-video-url` and `seotech-structured-data`. The purpose is to support:
+
+* controlled rollout by page family
+* AEM-driven configuration without repo-wide code divergence
+* experimentation and regression testing on limited cohorts
+* safe coexistence with legacy JSON-LD producers during migration
+
+Feature gating is also part of the rationale for the observation-first architecture. A document-level observer can be enabled on selected pages without requiring synchronized code changes across every existing producer, site, or repository.
+
+## Architecture Overview
+
+The `JsonLdGraphManager` is a document-level runtime object initialized from the document branch of `loadArea()` in `libs/utils/utils.js`.
+
+At a high level, the manager:
+
+1. scans the document for unmanaged JSON-LD
+1. ingests and removes that JSON-LD from the DOM
+1. records source provenance
+1. normalizes entities into a canonical in-memory graph
+1. applies graph transforms
+1. rewrites one managed JSON-LD graph into `document.head`
+1. observes the document for future JSON-LD additions
+
+This architecture introduces a single page-level authority for structured data output while remaining compatible with distributed producers.
+
+### Why linked entities instead of deep nesting
+
+The manager standardizes on separated but linked schema rather than deeply nested schema trees.
+
+This choice is made for four reasons:
+
+* it reduces redundant definitions of shared entities such as `Organization`
+* it limits the blast radius of producer-specific failures
+* it allows independent blocks and features to contribute nodes without owning the full page payload
+* it more accurately models the page as a graph of entities connected by references
+
+This approach is consistent with Google's guidance for multiple structured data items on a page, including the use of `@id` to relate separately declared items. See [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies).
+
+## Runtime Lifecycle
+
+### Initialization phase
+
+During document-level boot, the `JsonLdGraphManager`:
+
+1. initializes a singleton manager instance
+1. scans the full document for `script[type="application/ld+json"]`
+1. ignores its own managed graph script if one already exists
+1. parses all unmanaged JSON-LD payloads
+1. normalizes discovered entities
+1. removes the unmanaged JSON-LD scripts from the DOM
+1. records provenance for each source
+1. builds a canonical graph
+1. writes the canonical graph to `document.head`
+1. starts a `MutationObserver` for future additions
+
+### Mutation phase
+
+When a block, feature, experiment, or third-party script appends JSON-LD later, the `JsonLdGraphManager`:
+
+1. detects the new script anywhere in the document subtree
+1. enqueues the event for sequential processing
+1. parses and removes the unmanaged script
+1. updates the in-memory entity graph
+1. reruns graph transforms
+1. rewrites the managed output in `document.head`
+
+The observer target is `document.documentElement` with `childList` and `subtree` enabled. Only added nodes that are, or contain, `script[type="application/ld+json"]` are enqueued. Managed output is excluded by filtering on the manager-owned selector `script[type="application/ld+json"][data-milo-jsonld="graph"]`.
+
+### Queueing and rebuild policy
+
+Although JavaScript execution is single-threaded, the manager still uses an explicit queue. The queue provides:
+
+* deterministic processing order
+* protection from re-entrant writes
+* one rebuild path for all producer types
+* batching during high DOM churn
+
+The manager performs an immediate boot write, then batches later rewrites on a debounce interval. The target behavior is that rebuilds do not occur faster than roughly once per second during steady-state mutation bursts.
+
+## Data Model And Contracts
+
+### Managed DOM contract
+
+The `JsonLdGraphManager` owns exactly one managed JSON-LD script in `head`:
+
+```html
+<script type="application/ld+json" data-milo-jsonld="graph"></script>
+```
+
+Optional attributes may include:
+
+* `data-milo-jsonld-version`
+* `data-milo-jsonld-updated`
+
+The corresponding rules are:
+
+* all non-managed JSON-LD scripts are candidates for ingestion and removal
+* the manager ignores its own managed graph during scan and observation
+* JSON-LD may be ingested from anywhere in the document, not only `head`
+* the managed graph is the canonical page output
+
+### Canonical output shape
+
+The manager emits one graph in the following form:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": []
+}
+```
+
+Accepted input forms include:
+
+* a single JSON-LD object
+* an array of JSON-LD objects
+* an object containing `@graph`
+
+All accepted forms are flattened into one internal graph representation before transforms run.
+
+### Provenance contract
+
+The manager tracks the origin of every ingested source as a structured record rather than a single flat label.
+
+A provenance record should answer four distinct questions:
+
+* how the payload entered the manager
+* when it was discovered
+* what broad class of producer it came from
+* which concrete producer supplied it
+
+The recommended provenance shape is:
+
+```json
+{
+  "sourceId": "gm-src-0001",
+  "ingestMode": "dom",
+  "discoveryPhase": "initial",
+  "producerType": "first-party",
+  "producerName": "seotech"
+}
+```
+
+Where:
+
+* `sourceId` is an internal manager-generated identifier for the ingested source record
+* `ingestMode` distinguishes `dom`, `push`, and internal manager generation
+* `discoveryPhase` distinguishes `initial` discovery from later `mutation`
+* `producerType` distinguishes `first-party`, `third-party`, `manager`, or `unknown`
+* `producerName` identifies the concrete producer when known, such as `seotech`, `richresults`, `block:<name>`, `feature:<name>`, or `transform:webpage`
+
+Illustrative examples:
+
+* page-authored JSON-LD found during boot:
+  * `ingestMode=dom`
+  * `discoveryPhase=initial`
+  * `producerType=unknown`
+  * `producerName=unknown`
+* JSON-LD appended later by SEOTech:
+  * `ingestMode=dom`
+  * `discoveryPhase=mutation`
+  * `producerType=first-party`
+  * `producerName=seotech`
+* `WebPage` synthesized by the manager:
+  * `ingestMode=internal`
+  * `producerType=manager`
+  * `producerName=transform:webpage`
+
+Provenance exists to support debugging, trust, source attribution, and future policy decisions.
+
+## Observability And Diagnostics
+
+The `JsonLdGraphManager` should expose both local debugging output and production-safe warning and error reporting.
+
+### Debug logging
+
+For local development and non-production diagnosis, the manager should emit ordered debug output for key queue events, including:
+
+* when unmanaged JSON-LD is discovered and queued
+* the provenance record associated with each ingested source
+* when a payload is parsed and removed
+* when the managed graph is rewritten
+* the resulting graph version or queue sequence number
+
+Because all ingestion and rebuild work flows through one explicit queue, these debug messages should appear in queue order even when events happen in rapid succession.
+
+Debug logging should follow existing Milo logging conventions:
+
+* in non-production environments, debug output may be written to the console
+* when `lanadebug` is enabled, Lana debug output may also surface in the console
+* debug logging should be informative but not required for normal page behavior
+
+### Warning and error reporting
+
+Warnings and errors should be reported through `window.lana?.log(...)` using the existing repo conventions for tags and severity.
+
+Representative warning and error cases include:
+
+* invalid JSON-LD that fails to parse
+* unsupported payload shapes
+* rewrite failures
+* transform failures
+* producer payloads that violate required assumptions
+
+Recommended logging behavior:
+
+* warnings use Lana warning severity
+* errors use Lana error severity
+* tags should identify the manager and, when useful, the producer, for example `jsonld-graph-manager` or `jsonld-graph-manager,seotech`
+* high-volume success-path events should not be sent to Lana by default
+
+The intent is to keep routine queue activity visible locally during debugging while reserving Lana for actionable warnings, errors, and operational diagnostics.
+
+## Normalization And Merge Policy
+
+### Identity policy
+
+The `JsonLdGraphManager` uses canonical page-scoped identities for known entity types rather than trusting incoming `@id` values unchanged.
+
+Representative canonical ids include:
+
+* `WebPage` -> `${canonicalUrl}#webpage`
+* primary `Article` -> `${canonicalUrl}#article`
+* `BreadcrumbList` -> `${canonicalUrl}#breadcrumb`
+* `HowTo` -> `${canonicalUrl}#howto`
+* `FAQPage` -> `${canonicalUrl}#faq`
+* Adobe publisher `Organization` -> `https://www.adobe.com/#organization`
+
+Incoming producer `@id` values are treated as merge hints, not as authoritative canonical identity.
+
+The manager does not depend on raw incoming `@id` values to identify ingested source payloads. Source tracking and entity identity are separate concerns:
+
+* source identity answers where a payload came from
+* entity identity answers which canonical node should exist in the managed graph
+
+For recognized entities, the manager rewrites `@id` to canonical page-scoped values. Original producer ids may be retained as provenance or debugging metadata when useful, but they are not the durable identity contract of the managed graph.
+
+Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated by other means.
+
+### Merge priority
+
+When multiple sources describe the same entity, the default source priority is:
+
+1. graph-manager-generated transforms
+1. direct graph-manager push
+1. Milo feature or block sources
+1. third-party runtime sources
+1. initial page DOM
+
+### Default merge rules
+
+Unless a type-specific rule overrides them, the manager applies the following defaults:
+
+* scalar field conflicts are resolved by source priority
+* object fields are merged by key, with conflicting child fields resolved by source priority
+* relationship arrays are unioned by canonical `@id`
+* anonymous array members are deduplicated by normalized content hash when no stable `@id` exists
+* unknown anonymous top-level nodes are retained provisionally until they can be normalized or deduplicated
+
+### Dedupe policy
+
+The default page-level singletons are:
+
+* `WebPage`
+* the primary content entity, such as `Article`
+* `BreadcrumbList`
+* the Adobe publisher `Organization`
+
+The default page-level supplemental singletons are:
+
+* `FAQPage`
+* `HowTo`
+
+The manager may preserve multiple instances for legitimately repeatable types, such as:
+
+* `VideoObject`
+* `ImageObject`
+* `Offer`
+* `Question`
+
+Relationship arrays such as `hasPart` are unioned by canonical `@id`.
+
+## Canonical Page Graph Model
+
+The manager treats `WebPage` as the page container and links related entities to it.
+
+The canonical editorial page shape is:
+
+```text
+WebPage
+├── Article
+├── BreadcrumbList
+├── HowTo
+└── FAQPage
+```
+
+The governing rules are:
+
+* `WebPage` is the page container
+* the primary content entity is referenced by `WebPage.mainEntity`
+* `BreadcrumbList`, `HowTo`, and `FAQPage` link back to the page with `isPartOf`
+* the primary content entity may reference supplemental entities with `hasPart`
+* page-level publisher references resolve to the canonical Adobe `Organization`
+
+This model is intended to be stable across separate producer implementations.
+
+The canonical product page shape is:
+
+```text
+WebPage
+├── SoftwareApplication
+└── BreadcrumbList
+```
+
+For product-oriented pages:
+
+* `WebPage` remains the page container
+* `WebPage.mainEntity` points to `SoftwareApplication` when that entity is available
+* `BreadcrumbList` links back to the page with `isPartOf`
+* page-level publisher references resolve to the canonical Adobe `Organization`
+
+The public `tests` dataset should be treated as the current representative source of truth for which page types map to which expected primary entities and required objects. The examples in this document summarize that target model; the public catalog is the authoritative cohort definition used for validation.
+
+## Validation Cohort And Target Coverage
+
+The public authoring catalog includes a `tests` dataset that serves as the current acceptance cohort for the `JsonLdGraphManager`. Each row declares:
+
+* `URL`
+* `Page Category`
+* `Page Type`
+* `Expected Graph Root`
+* `Expected Primary Entity`
+* `Expected Required Objects`
+
+For the current cohort, the validation contract is intentionally simpler than the full implementation surface:
+
+* `WebPage` is the expected graph root for every current test row
+* `Organization`, `WebPage`, and `BreadcrumbList` are required across the current cohort
+* the primary entity is selected by page family for the currently defined target state
+
+The current target-state primary-entity expectations are:
+
+* `Product` -> `SoftwareApplication`
+* `Product Feature` -> `Article`
+* `Express Feature` -> `Article`
+* `Express Discover` -> `Article`
+* `Product Free Trial` -> no primary entity is asserted yet in the public tests dataset
+* `Express Create` -> no primary entity is asserted yet in the public tests dataset
+
+Blank primary-entity cells in the tests dataset should be interpreted as unresolved target-state policy, not as proof that the page should never have a primary entity.
+
+### Validation boundary
+
+The `tests` dataset describes the target structured-data contract for the cohort. It does not imply that the first release of the `JsonLdGraphManager` alone is responsible for producing every required entity.
+
+The manager is responsible for:
+
+* ingesting unmanaged JSON-LD
+* removing unmanaged JSON-LD scripts after ingestion
+* normalizing and deduplicating the resulting graph
+* rewriting one canonical managed graph
+* always producing `WebPage`
+* preserving and linking `BreadcrumbList` and other supported entities when they are present
+* preserving and linking entities that are already present or supplied by registered producers
+
+The manager is not, by itself, the source of truth for missing business entities such as `Article` or `SoftwareApplication` when no producer currently emits them.
+
+If no primary entity is available, the manager may still produce a legal graph centered on `WebPage` and any supported linked entities it can normalize. In that case, graph-manager validation may still pass while the page fails the target-state acceptance contract declared in the public `tests` dataset.
+
+A page may therefore pass graph-manager validation while still failing full target-state schema validation. In practical terms:
+
+* graph-manager validation confirms that aggregation, canonicalization, and managed output behave correctly
+* full schema validation confirms that the page meets the expected contract declared in the public `tests` dataset
+
+Absence of an expected primary entity in the managed graph does not by itself indicate graph-manager failure unless that entity was already present in source input or was explicitly supplied by a registered producer or transform.
+
+## Producer Integration Model
+
+The manager supports two producer modes.
+
+### Mode 1: DOM producers
+
+In this mode, a block or feature appends JSON-LD to the page. The manager observes the new payload, ingests it, removes the unmanaged script, and incorporates the resulting nodes into the canonical graph.
+
+### Mode 2: Direct push producers
+
+In this mode, a producer submits one or more nodes directly to the manager. This is the preferred long-term integration model because it avoids unnecessary DOM churn and enables explicit provenance.
+
+### Producer guidance
+
+All producers should follow these rules:
+
+* emit focused, independent entities rather than one giant nested payload
+* use `@id` references to connect related entities
+* do not assume that producer-local `@id` values will survive normalization unchanged
+* do not rely on direct writes to `head` as the durable output contract
+* do not emit duplicate top-level `WebPage` or Adobe `Organization` objects unless intentionally overriding the canonical model
+
+## Relationship To The Authoring Catalog
+
+This document and [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json) serve complementary but different roles.
+
+This document is the runtime source of truth for `JsonLdGraphManager` behavior. The public catalog is the source of truth for the current validation cohort, supported schema inventory, and related authoring references.
+
+Use this document for:
+
+* runtime behavior
+* architectural rationale
+* graph aggregation rules
+* canonical identity conventions
+* page-level entity relationships
+* producer contracts
+
+Use [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json) for:
+
+* schema inventories
+* reusable field templates
+* supported type references
+* site-specific mappings
+* authoring-oriented examples
+
+As conventions stabilize, the following are good candidates to add or strengthen in [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json):
+
+* the linked `WebPage` plus primary-entity pattern
+* the canonical Adobe `Organization` definition and stub
+* page-scoped canonical id conventions for common entity types
+
+## Limitations And Future Work
+
+The current document intentionally does not fully specify:
+
+* type-specific field-level merge semantics for every schema type
+* the full transform catalog
+* the complete direct-push API surface
+* every possible primary-entity precedence rule outside the current editorial and product examples
+
+Future work should converge first-party producers toward direct push while preserving backward compatibility with observed JSON-LD in the page.
+
+## Appendix A: Canonical Examples
+
+Appendix A intentionally favors a small number of representative graph-level examples over many isolated entity snippets. The goal is to show canonical ids, cross-entity linking, and overall graph shape in one place.
+
+### Example 1: Editorial page graph
+
+This example shows the canonical linked pattern for an editorial page with a `WebPage`, `Article`, `BreadcrumbList`, `HowTo`, `FAQPage`, and shared Adobe `Organization`.
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.adobe.com/#organization",
+      "name": "Adobe",
+      "url": "https://www.adobe.com/"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage",
+      "url": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html",
+      "name": "Remove Objects from Photos | Photoshop Elements Tips & Tricks",
+      "publisher": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "breadcrumb": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#breadcrumb"
+      },
+      "mainEntity": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#article"
+      }
+    },
+    {
+      "@type": "Article",
+      "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#article",
+      "headline": "How to Remove Unwanted Objects in Photoshop Elements",
+      "description": "Learn how to remove unwanted objects and distractions from photos using the Remove Object tool in Adobe Photoshop Elements.",
+      "isPartOf": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage"
+      },
+      "publisher": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "mainEntityOfPage": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage"
+      },
+      "hasPart": [
+        {
+          "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#breadcrumb"
+        },
+        {
+          "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#howto"
+        },
+        {
+          "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#faq"
+        }
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#breadcrumb",
+      "isPartOf": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage"
+      },
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Photoshop Elements",
+          "item": "https://www.adobe.com/products/photoshop-elements.html"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Features",
+          "item": "https://www.adobe.com/products/photoshop-elements/features.html"
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#howto",
+      "isPartOf": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage"
+      },
+      "name": "How to Remove Objects from Photos in Photoshop Elements",
+      "description": "Step-by-step instructions for removing unwanted objects from photos using the Remove Object tool in Photoshop Elements."
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#faq",
+      "isPartOf": {
+        "@id": "https://www.adobe.com/products/photoshop-elements/features/tips-tricks-object-removal.html#webpage"
+      },
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is Photoshop Elements and who is it for?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Photoshop Elements is an easy-to-use photo editing application designed for anyone who wants to enhance and create photos without professional experience."
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+### Example 2: Product-oriented page graph
+
+This example shows a page whose primary entity is `SoftwareApplication` rather than `Article`, while still following the same page-container and shared-organization conventions.
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.adobe.com/#organization",
+      "name": "Adobe",
+      "url": "https://www.adobe.com/"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://www.adobe.com/products/photoshop.html#webpage",
+      "url": "https://www.adobe.com/products/photoshop.html",
+      "name": "Adobe Photoshop",
+      "publisher": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "mainEntity": {
+        "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication",
+      "name": "Adobe Photoshop",
+      "url": "https://www.adobe.com/products/photoshop.html",
+      "applicationCategory": "DesignApplication",
+      "applicationSuite": "Adobe Creative Cloud",
+      "operatingSystem": "Windows, macOS",
+      "provider": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "brand": {
+        "@type": "Brand",
+        "@id": "https://www.adobe.com/#photoshop-brand",
+        "name": "Photoshop"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "@id": "https://www.adobe.com/products/photoshop.html#paid-offer",
+          "name": "Photoshop subscription",
+          "price": "19.99",
+          "priceCurrency": "USD",
+          "url": "https://www.adobe.com/products/photoshop.html",
+          "availability": "https://schema.org/InStock"
+        },
+        {
+          "@type": "Offer",
+          "@id": "https://www.adobe.com/products/photoshop.html#free-trial",
+          "name": "Free trial",
+          "price": "0.00",
+          "priceCurrency": "USD",
+          "url": "https://www.adobe.com/products/photoshop.html",
+          "availability": "https://schema.org/InStock"
+        }
+      ]
+    }
+  ]
+}
+```
+
+## References
+
+1. [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
+1. [Structured data catalog: structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json)
