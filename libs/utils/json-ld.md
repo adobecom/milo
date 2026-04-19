@@ -262,7 +262,7 @@ The recommended provenance shape is:
 Where:
 
 * `sourceId` is an internal manager-generated identifier for the ingested source record
-* `ingestMode` distinguishes `dom`, `push`, and internal manager generation
+* `ingestMode` distinguishes `dom`, `push`, and `internal` manager generation
 * `discoveryPhase` distinguishes `initial` discovery from later `mutation`
 * `producerType` distinguishes `first-party`, `third-party`, `manager`, or `unknown`
 * `producerName` identifies the concrete producer when known, such as `seotech`, `richresults`, `block:<name>`, `feature:<name>`, or `transform:webpage`
@@ -611,9 +611,7 @@ This section specifies the preferred long-term integration described in [Produce
 The draft direct-push surface is:
 
 ```js
-// libs/utils/json-ld.js (illustrative)
-import { getJsonLdGraphManager } from './json-ld.js';
-
+// illustrative — exact module path TBD
 const manager = getJsonLdGraphManager();
 
 manager.push({
@@ -658,8 +656,8 @@ The manager ingests JSON-LD from arbitrary page origins, including producers out
 
 * **Parsing is string-only.** Ingested payloads are parsed with `JSON.parse`. The manager does not `eval` or execute producer content.
 * **Rewrite is string-only.** The managed graph is serialized with `JSON.stringify` and written as a `textContent` assignment to the managed script, never as `innerHTML`. This prevents producer payloads from injecting HTML into `head`.
-* **Type allow-listing.** The manager's canonical identity, merge, and dedupe rules only act on a known set of schema types. Unknown types are retained provisionally but are not granted canonical identity, so a malicious producer cannot displace the canonical `WebPage` or `Organization` simply by emitting an entity claiming those types.
-* **Third-party producers.** Third-party runtime sources sit at the bottom of the merge priority ladder. A third-party producer cannot override a graph-manager transform or a direct-push contribution.
+* **Type allow-listing.** The manager's canonical identity, merge, and dedupe rules only act on a known set of schema types. Unknown types may be retained provisionally, but they do not participate in canonicalization and cannot acquire canonical identity solely by being present in the graph.
+* **Third-party producers.** Third-party runtime sources sit at the bottom of the merge priority ladder. A third-party producer cannot override a graph-manager transform or a direct-push contribution, and cannot win conflicts for canonical singleton entities such as `WebPage` or `Organization`.
 * **Provenance preservation.** The manager records the origin of every ingested source so that a suspicious payload can be attributed after the fact.
 
 Open question: whether the manager should additionally strip or quarantine specific fields (e.g. `url`, `sameAs`) when the producer is `third-party` and `unknown`. The current design trusts producer URLs subject to normalization.
