@@ -499,7 +499,7 @@ function initGarageDoorReveal() {
           const cs = getComputedStyle(c);
           const fontSize = parseFloat(cs.fontSize) || 16;
           const natural = parseFloat(cs.lineHeight) || fontSize * 1.5;
-          return { child: c, naturalLh: natural, fromLh: fontSize * 0.6 };
+          return { child: c, naturalLh: natural, fromLh: fontSize * 0.72 };
         });
       }
 
