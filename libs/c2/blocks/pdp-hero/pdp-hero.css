@@ -137,18 +137,10 @@
 /* tablet */
 @media (width >= 768px) {
   .pdp-hero-header {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
     gap: var(--s2a-spacing-40);
     padding: var(--s2a-spacing-80) var(--s2a-spacing-40) var(--s2a-spacing-40);
     min-height: 480px;
     border-radius: 0 0 48px 48px;
-  }
-
-  .pdp-hero-content {
-    flex: 1;
-    min-width: 0;
   }
 
   .pdp-hero-body {
@@ -159,8 +151,6 @@
   .pdp-hero-pricing {
     flex-direction: row;
     align-items: center;
-    align-self: flex-end;
-    flex-shrink: 0;
     background: var(--s2a-color-gray-25);
     border-radius: 1000px;
     padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-32);
@@ -180,12 +170,24 @@
 /* desktop */
 @media (width >= 1280px) {
   .pdp-hero-header {
+    flex-direction: row;
     align-items: flex-end;
+    justify-content: space-between;
     padding: var(--s2a-spacing-80) var(--s2a-spacing-40) var(--s2a-spacing-40);
     gap: var(--s2a-spacing-40);
     height: min(580px, 100vh);
     min-height: min-content;
     border-radius: 0 0 52px 52px;
+  }
+
+  .pdp-hero-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pdp-hero-pricing {
+    align-self: flex-end;
+    flex-shrink: 0;
   }
 
   .pdp-hero-heading-row {

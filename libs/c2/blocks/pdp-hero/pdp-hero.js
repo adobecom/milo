@@ -1,3 +1,4 @@
+import { decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 function resolveIconSrc(href) {
@@ -34,8 +35,8 @@ function decorateCtas(ctaP) {
   ctaP.classList.add('pdp-hero-ctas', 'action-area');
 }
 
-export default function init(el) {
-  const rows = [...el.children];
+function decoratePdpHero(block) {
+  const rows = [...block.children];
   const contentRow = rows[0];
   const fgRow = rows[1];
   if (!contentRow) return;
@@ -101,5 +102,9 @@ export default function init(el) {
     media.append(fgInner);
   }
 
-  el.replaceChildren(header, media);
+  block.replaceChildren(header, media);
+}
+
+export default function init(el) {
+  decorateViewportContent(el, decoratePdpHero);
 }
