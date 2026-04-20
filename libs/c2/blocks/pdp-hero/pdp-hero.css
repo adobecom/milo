@@ -160,7 +160,6 @@
   .pdp-hero-pricing {
     align-self: flex-end;
     flex-shrink: 0;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
   .pdp-hero-media {
