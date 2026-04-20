@@ -117,6 +117,7 @@ const C2_BLOCKS = [
   'martech-metadata',
   'modal',
   'news',
+  'pdp-faq',
   'pdp-hero',
   'region-nav',
   'rich-content',
