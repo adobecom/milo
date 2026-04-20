@@ -183,7 +183,8 @@
     align-items: flex-end;
     padding: var(--s2a-spacing-80) var(--s2a-spacing-40) var(--s2a-spacing-40);
     gap: var(--s2a-spacing-40);
-    min-height: 100vh;
+    height: min(580px, 100vh);
+    min-height: min-content;
     border-radius: 0 0 52px 52px;
   }
 
