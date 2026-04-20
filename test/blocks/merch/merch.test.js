@@ -251,6 +251,7 @@ describe('Merch Block', () => {
     it('should map correct commerce locale depending on locale config', async () => {
       [
         { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/pr', expectedLocale: 'es_PR' },
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
@@ -1336,6 +1337,7 @@ describe('Merch Block', () => {
     it('should map correct commerce locale', async () => {
       [
         { prefix: '/ar', expectedLocale: 'es_AR' },
+        { prefix: '/pr', expectedLocale: 'es_PR' },
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },

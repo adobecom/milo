@@ -166,7 +166,7 @@ const GeoMap = {
   ng: 'NG_en',
   cr: 'CR_es',
   ec: 'EC_es',
-  pr: 'US_es', // not a typo, should be US
+  pr: 'PR_es',
   gt: 'GT_es',
   cis_en: 'TM_en',
   cis_ru: 'TM_ru',
