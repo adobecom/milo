@@ -259,12 +259,6 @@
   vertical-align: middle;
 }
 
-.global-footer .language-list {
-  max-height: 250px;
-  overflow-y: auto;
-  padding: var(--spacing-xxs) 0;
-}
-
 .global-footer .language-item, .global-footer .market-selector-item {
   display: flex;
   align-items: center;
@@ -365,10 +359,6 @@
 .global-footer .language-list::-webkit-scrollbar-thumb:hover,
 .global-footer .market-selector-list::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-500);
-}
-
-.global-footer .language-list .language-item:last-child {
-  margin-bottom: 4px;
 }
 
 /* Social */
@@ -612,12 +602,6 @@ span.feds-footer-privacyLink-divider {
 
   .global-footer .search-container {
     padding: 0 8px 8px;
-  }
-
-  .global-footer .language-list {
-    padding: 0 0 16px;
-    max-height: 60vh;
-    overflow-y: auto;
   }
 
   .global-footer .language-item {
