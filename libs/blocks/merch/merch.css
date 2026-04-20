@@ -2,22 +2,6 @@ mas-field {
   display: contents;
 }
 
-[data-role="mas-field-content"] div:has(.con-button + .con-button) {
-  display: flex;
-  gap: var(--spacing-xxs);
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.hero-marquee [data-role="mas-field-content"] div:has(.con-button + .con-button),
-.marquee [data-role="mas-field-content"] div:has(.con-button + .con-button) {
-  gap: var(--spacing-s);
-}
-
-.hero-marquee.center [data-role="mas-field-content"] div:has(.con-button + .con-button) {
-  justify-content: center;
-}
-
 span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 

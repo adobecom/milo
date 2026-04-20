@@ -17,7 +17,10 @@ if (!customElements.get('mas-field')) {
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
         } else if (field === 'ctas') {
-          content.innerHTML = '<a class="con-button blue" href="https://www.adobe.com/">Buy now</a>';
+          content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong>';
+        } else if (field === 'ctas-checkout') {
+          // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
+          content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
         } else {
           content.textContent = 'Resolved inline value';
         }
@@ -262,28 +265,92 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField.closest('#inline-price-heading')).to.exist;
     });
 
-    it('inherits button size and utility classes from sibling con-buttons in the parent block', async () => {
+    it('decorates ctas using sibling button context (size + utility classes)', async () => {
       const section = document.createElement('div');
 
-      // Simulate buttons already decorated by the containing block (e.g. marquee/hero-marquee)
-      const existingBtn = document.createElement('a');
-      existingBtn.classList.add('con-button', 'blue', 'button-xl', 'button-justified-mobile');
-      section.append(existingBtn);
+      // Simulate already-decorated sibling button (block ran decorateButtons before our checkReady)
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-l', 'button-justified-mobile');
+      section.append(siblingBtn);
 
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
       const a = document.createElement('a');
       a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=ctas-inherit-1&field=ctas';
       a.textContent = '[[cta-test:ctas]]';
-      section.append(a);
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
       document.body.append(section);
 
       await init(a);
 
-      const masField = document.querySelector('mas-field');
-      expect(masField).to.exist;
-      const masBtn = masField.querySelector('.con-button');
-      expect(masBtn).to.exist;
-      expect(masBtn.classList.contains('button-xl')).to.be.true;
-      expect(masBtn.classList.contains('button-justified-mobile')).to.be.true;
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button');
+      expect(link).to.exist;
+      expect(link.classList.contains('blue')).to.be.true;
+      expect(link.classList.contains('button-l')).to.be.true;
+      expect(link.classList.contains('button-justified-mobile')).to.be.true;
+    });
+
+    it('upgrades plain commerce links and decorates using block context', async () => {
+      const section = document.createElement('div');
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-xl');
+      section.append(siblingBtn);
+
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=checkout-1&field=ctas-checkout';
+      a.textContent = '[[checkout-test:ctas-checkout]]';
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button.blue.button-xl');
+      expect(link).to.exist;
+    });
+
+    it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
+      const section = document.createElement('div');
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-l');
+      section.append(siblingBtn);
+
+      // Two CTA mas-field links in the same <p> — mirrors the marquee pattern
+      const p = document.createElement('p');
+      // Use ctas-checkout which renders a plain <a> — same as real MAS checkout links
+      const em = document.createElement('em');
+      const a1 = document.createElement('a');
+      a1.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=two-ctas-1&field=ctas-checkout';
+      a1.textContent = '[[cta1]]';
+      em.append(a1);
+
+      const strong = document.createElement('strong');
+      const a2 = document.createElement('a');
+      a2.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=two-ctas-1&field=ctas-checkout';
+      a2.textContent = '[[cta2]]';
+      strong.append(a2);
+
+      p.append(em, strong);
+      section.append(p);
+      document.body.append(section);
+
+      await Promise.all([init(a1), init(a2)]);
+
+      expect(document.querySelectorAll('mas-field').length).to.equal(0);
+      // Both CTAs should be decorated — outline for em, blue for strong
+      const outline = p.querySelector('a.con-button.outline');
+      const blue = p.querySelector('a.con-button.blue');
+      expect(outline).to.exist;
+      expect(blue).to.exist;
+      expect(outline.classList.contains('button-l')).to.be.true;
+      expect(blue.classList.contains('button-l')).to.be.true;
     });
 
     it('preserves Milo typography classes on parent heading when inline fragment stays inline', async () => {
