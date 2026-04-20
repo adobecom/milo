@@ -61,10 +61,10 @@ function keyToStr(key) {
 const isGeoKey = (key) => key.endsWith('-geo');
 const stripGeo = (key) => key.slice(0, -4);
 
-let geoPlaceholderPromise;
-export function resetGeoPlaceholderCache() { geoPlaceholderPromise = undefined; }
+const geoPlaceholderCache = new Map();
+export function resetGeoPlaceholderCache() { geoPlaceholderCache.clear(); }
 
-async function getGeoPlaceholders(sheet) {
+async function getGeoPlaceholders(config, sheet) {
   // Dynamic to avoid circular dep with utils.js that hangs WTR test runner
   const { lingoActive, getGeoLocalePrefix } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
@@ -72,9 +72,24 @@ async function getGeoPlaceholders(sheet) {
   if (!geoPrefix) return null;
 
   const siteConfig = getConfig();
-  const { origin } = window.location;
-  const contentRoot = siteConfig.contentRoot ?? '';
-  const geoContentRoot = `${origin}${geoPrefix}${contentRoot}`;
+  let geoOrigin = window.location.origin;
+
+  let pathSuffix = siteConfig.contentRoot ?? '';
+  const callerContentRoot = config.locale?.contentRoot ?? '';
+  const siteContentRoot = siteConfig.locale?.contentRoot ?? '';
+  if (callerContentRoot && callerContentRoot !== siteContentRoot) {
+    let path = callerContentRoot;
+    try {
+      const url = new URL(path);
+      geoOrigin = url.origin;
+      path = url.pathname;
+    } catch { /* relative path */ }
+    const prefix = config.locale?.prefix ?? '';
+    if (prefix && path.startsWith(prefix)) path = path.slice(prefix.length);
+    pathSuffix = path;
+  }
+
+  const geoContentRoot = `${geoOrigin}${geoPrefix}${pathSuffix}`;
   const geoConfig = { locale: { contentRoot: geoContentRoot } };
 
   const root = `${geoContentRoot}/placeholders`;
@@ -153,8 +168,11 @@ async function getPlaceholder(key, config, sheet) {
 
 async function resolveGeoKey(key, config, sheet) {
   const baseKey = stripGeo(key);
-  geoPlaceholderPromise ??= getGeoPlaceholders(sheet);
-  const geoPlaceholders = await geoPlaceholderPromise;
+  const cacheKey = config.locale?.contentRoot ?? '';
+  if (!geoPlaceholderCache.has(cacheKey)) {
+    geoPlaceholderCache.set(cacheKey, getGeoPlaceholders(config, sheet));
+  }
+  const geoPlaceholders = await geoPlaceholderCache.get(cacheKey);
   if (typeof geoPlaceholders?.[baseKey] === 'string') return geoPlaceholders[baseKey];
   return getPlaceholder(baseKey, config, sheet);
 }
