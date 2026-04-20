@@ -14,6 +14,7 @@
   padding: var(--s2a-spacing-24);
   background: var(--s2a-color-gray-25);
   border-radius: 0 0 32px 32px;
+  box-sizing: border-box;
 }
 
 .pdp-hero-content {
