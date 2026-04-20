@@ -39,7 +39,6 @@ function upgradeCommerceLinks(content) {
   });
 }
 
-
 function getTimeoutPromise() {
   return new Promise((resolve) => {
     setTimeout(() => resolve('timeout'), CARD_AUTOBLOCK_TIMEOUT);
@@ -205,7 +204,7 @@ async function createInline(el, options) {
         && blockEl.parentElement !== document.body) {
         blockEl = blockEl.parentElement;
       }
-      // Explicit *-button variation class (hero-marquee/notification pattern: 'xl-button' → 'button-xl')
+      // Explicit *-button variation class (hero-marquee/notification: 'xl-button' → 'button-xl')
       const btnVariant = [...(blockEl?.classList ?? [])].find((c) => c.endsWith('-button'));
       if (btnVariant) {
         size = `button-${btnVariant.split('-')[0]}`;
