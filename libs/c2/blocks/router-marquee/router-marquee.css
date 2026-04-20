@@ -183,6 +183,10 @@
   align-items: center;
 }
 
+[dir="rtl"] .rm-card-chevron {
+  transform: scaleX(-1);
+}
+
 .rm-card-progress {
   position: absolute;
   inset: auto 0 0;
@@ -196,6 +200,10 @@
   height: 100%;
   background: var(--s2a-color-brand-adobe-red);
   transform: translateX(-101%);
+}
+
+[dir="rtl"] .rm-card-progress-bar {
+  transform: translateX(101%);
 }
 
 .rm-card-reset {
