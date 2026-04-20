@@ -66,9 +66,9 @@ export function resetGeoPlaceholderCache() { geoPlaceholderPromise = undefined; 
 
 async function getGeoPlaceholders(sheet) {
   // Dynamic to avoid circular dep with utils.js that hangs WTR test runner
-  const { lingoActive, getMepLingoPrefix } = await import('../utils/utils.js');
+  const { lingoActive, getGeoLocalePrefix } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
-  const geoPrefix = await getMepLingoPrefix();
+  const geoPrefix = await getGeoLocalePrefix();
   if (!geoPrefix) return null;
 
   const siteConfig = getConfig();

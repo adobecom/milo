@@ -964,7 +964,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getGeoLocalePrefix() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1072,7 +1072,7 @@ export async function localizeLinkAsync(
     const isFragment = effectiveHref.includes('/fragments/');
     if (isBasePage) {
       const isRegularFragment = isFragment && !isMepLingoLink;
-      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      prefix = (aTag && !isRegularFragment) ? await getGeoLocalePrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
       const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
@@ -2653,7 +2653,7 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
+  getGeoLocalePrefix().then((prefix) => {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
