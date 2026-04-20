@@ -50,6 +50,26 @@ function findSectionsByStyle(style) {
   );
 }
 
+function injectCSS(text) {
+  const style = document.createElement('style');
+  style.textContent = text;
+  document.head.appendChild(style);
+}
+
+function observeForNew(selector, fn) {
+  new MutationObserver((mutations) => {
+    mutations.forEach(({ addedNodes }) => {
+      [...addedNodes].filter((n) => n.nodeType === 1).forEach((n) => {
+        if (n.matches?.(selector)) fn(n);
+        n.querySelectorAll?.(selector).forEach(fn);
+      });
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
+// linear interpolation: value t% of the way from a to b
+function lerp(a, b, t) { return a + (b - a) * t; }
+
 /* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
@@ -60,9 +80,7 @@ function initMoveUpFast() {
   ];
   if (!sections.length) return;
 
-  const style = document.createElement('style');
-  style.textContent = '.section.parallax-move-up-fast::after { animation: none; }';
-  document.head.appendChild(style);
+  injectCSS('.section.parallax-move-up-fast::after { animation: none; }');
 
   sections.forEach((section) => {
     section.style.position = 'sticky';
@@ -211,11 +229,9 @@ function initElasticCarousel() {
 
     if (!cssDisabled) {
       cssDisabled = true;
-      const style = document.createElement('style');
-      style.textContent = '.elastic-carousel-container,'
+      injectCSS('.elastic-carousel-container,'
         + '.elastic-carousel-item { animation: none !important; }'
-        + '.elastic-carousel-item { flex-shrink: 0; }';
-      document.head.appendChild(style);
+        + '.elastic-carousel-item { flex-shrink: 0; }');
     }
 
     container.style.willChange = 'margin-left, opacity';
@@ -250,24 +266,14 @@ function initElasticCarousel() {
       container.style.marginLeft = `${startMargin * (1 - slideT)}px`;
       container.style.opacity = opacT;
       itemData.forEach(({ item, startGap, endGap }) => {
-        item.style.marginInline = `${startGap + (endGap - startGap) * gapT}px`;
+        item.style.marginInline = `${lerp(startGap, endGap, gapT)}px`;
       });
     });
   };
 
   document.querySelectorAll('.elastic-carousel-container').forEach(setupContainer);
 
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      [...mutation.addedNodes]
-        .filter((n) => n.nodeType === 1)
-        .forEach((n) => {
-          if (n.classList?.contains('elastic-carousel-container')) setupContainer(n);
-          n.querySelectorAll?.('.elastic-carousel-container').forEach(setupContainer);
-        });
-    });
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
+  observeForNew('.elastic-carousel-container', setupContainer);
 }
 
 /* ── Carousel C2 ────────────────────────────────── */
@@ -285,10 +291,8 @@ function initCarouselC2() {
 
     if (!cssInjected) {
       cssInjected = true;
-      const style = document.createElement('style');
-      style.textContent = '.carousel-c2 .carousel-wrapper,'
-        + '.carousel-c2 .carousel-slide { animation: none !important; }';
-      document.head.appendChild(style);
+      injectCSS('.carousel-c2 .carousel-wrapper,'
+        + '.carousel-c2 .carousel-slide { animation: none !important; }');
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
@@ -347,7 +351,7 @@ function initCarouselC2() {
         return;
       }
 
-      const w = startWidth + (targetWidth - startWidth) * t;
+      const w = lerp(startWidth, targetWidth, t);
       slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
 
       // Keep slide 1 centered as flex-basis animates — CSS translate is fixed on
@@ -409,23 +413,14 @@ function initLineHeight() {
       const m = getScrollMetrics(scroll, cachedHeight, docTop);
       const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
       childData.forEach(({ child, from, to }) => {
-        child.style.setProperty('line-height', t < 1 ? `${from + (to - from) * t}px` : null);
+        child.style.setProperty('line-height', t < 1 ? `${lerp(from, to, t)}px` : null);
       });
     });
   };
 
   document.querySelectorAll('.parallax-line-height').forEach(setup);
 
-  new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      [...mutation.addedNodes]
-        .filter((n) => n.nodeType === 1)
-        .forEach((n) => {
-          if (n.classList?.contains('parallax-line-height')) setup(n);
-          n.querySelectorAll?.('.parallax-line-height').forEach(setup);
-        });
-    });
-  }).observe(document.body, { childList: true, subtree: true });
+  observeForNew('.parallax-line-height', setup);
 }
 
 /* ── Garage-door reveal ─────────────────────────── */
@@ -434,13 +429,11 @@ function initGarageDoorReveal() {
   const sections = findSectionsByStyle('parallax-garage-door-reveal');
   if (!sections.length) return;
 
-  const style = document.createElement('style');
-  style.textContent = '.section.parallax-garage-door-reveal,'
+  injectCSS('.section.parallax-garage-door-reveal,'
     + '.section.parallax-garage-door-reveal .section-background img,'
     + '.section.parallax-garage-door-reveal .foreground,'
     + '.section.parallax-garage-door-reveal .foreground * {'
-    + ' animation: none !important; }';
-  document.head.appendChild(style);
+    + ' animation: none !important; }');
 
   let growFrom; let revealFrom; let coverEnd; let growStart;
 
@@ -523,7 +516,7 @@ function initGarageDoorReveal() {
       // background image scales 1 → 1.1 (garage-door-bg-scale)
       if (bgImg) {
         const bgT = viewRange(m, 'entry', 0, 'cover', 0.7);
-        bgImg.style.transform = bgT < 1 ? `scale(${1 + 0.1 * bgT})` : '';
+        bgImg.style.transform = bgT < 1 ? `scale(${lerp(1, 1.1, bgT)})` : '';
       }
 
       // foreground slides up from revealFrom → 0 (garage-door-reveal)
@@ -536,7 +529,7 @@ function initGarageDoorReveal() {
       if (fgChildData?.length) {
         const lhT = viewRange(m, 'entry', 0.1, 'entry', 0.3);
         fgChildData.forEach(({ child, naturalLh, fromLh }) => {
-          child.style.lineHeight = lhT < 1 ? `${fromLh + (naturalLh - fromLh) * lhT}px` : null;
+          child.style.lineHeight = lhT < 1 ? `${lerp(fromLh, naturalLh, lhT)}px` : null;
         });
       }
     });
