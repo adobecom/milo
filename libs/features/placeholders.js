@@ -1,4 +1,4 @@
-import { customFetch, getConfig, getMetadata, lingoActive, getMepLingoPrefix } from '../utils/utils.js';
+import { customFetch, getConfig, getMetadata } from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
 window.mph = {};
@@ -65,6 +65,8 @@ let geoPlaceholderPromise;
 export function resetGeoPlaceholderCache() { geoPlaceholderPromise = undefined; }
 
 async function getGeoPlaceholders(sheet) {
+  // Dynamic to avoid circular dep with utils.js that hangs WTR test runner
+  const { lingoActive, getMepLingoPrefix } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
   const geoPrefix = await getMepLingoPrefix();
   if (!geoPrefix) return null;
