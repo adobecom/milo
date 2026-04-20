@@ -1,48 +1,110 @@
 # JSON-LD Graph Manager
 
-> **Status:** Design specification. The runtime described here is not yet implemented in this repository — there is no `JsonLdGraphManager` class, no `loadArea()` wiring, and no `jsonld-graph-manager` metadata flag in code today. This document describes the target runtime so that, once implementation lands, its behavior and contracts are already recorded. Remove this banner when the runtime is in place.
+> **Status:** Design specification. The runtime described here is not yet implemented — there is no `JsonLdGraphManager` class, no `loadArea()` wiring, and no `jsonld-graph-manager` metadata flag in code today. This document describes the target runtime so that, once implementation lands, its behavior and contracts are already recorded. The approach is **observation-first, normalization-first**: meet the existing producer ecosystem where it is, then converge it into one canonical graph. Remove this banner when the runtime is in place.
+
+## Quickstart
+
+The `JsonLdGraphManager` replaces the N uncoordinated JSON-LD `<script>` tags a Milo page emits today with **one canonical, linked `@graph`** in `<head>`. Producers — blocks, features, inline page content, third-party scripts — do not need to change: the manager observes their output, normalizes it, records its origin, and rewrites a single managed script. Producers that want to skip the DOM can use a direct-push API instead.
+
+Pages opt in with the `jsonld-graph-manager` metadata flag (`true`/`false`). Rollback uses the same flag — flip it off and producers resume the direct-write behavior they have today.
+
+The biggest benefit is one coherent graph for search engines and LLMs. The biggest risk is that a producer's output breaks after normalization. Both are mitigated by cohort-based rollout, canonical identity rules, and observable per-source provenance.
+
+## Who this is for
+
+| Audience | What this document means for you |
+| --- | --- |
+| **Block / feature authors** | Your existing `document.head.appendChild(script)` keeps working. The manager picks up your payload and folds it into the page graph. Over time, migrate to direct push for cleaner provenance. |
+| **SEO and content owners** | Pages under the feature flag emit one linked `@graph` so search engines and LLMs see a single coherent representation of each page, with canonical identity for `WebPage`, `Organization`, and `BreadcrumbList`. |
+| **Platform engineers** | One runtime authority over JSON-LD output; a registered producer contract; per-source provenance; a bounded observer; a feature flag for rollback. |
 
 ## Table Of Contents
 
 - [Part I — Motivation](#part-i--motivation)
   1. [Abstract](#abstract)
-  1. [Purpose And Scope](#purpose-and-scope)
   1. [Problem Statement](#problem-statement)
   1. [Design Decision](#design-decision)
-- [Part II — Architecture](#part-ii--architecture)
-  1. [Feature Flagging And Rollout](#feature-flagging-and-rollout)
+  1. [Purpose And Scope](#purpose-and-scope)
+  1. [Glossary](#glossary)
+- [Part II — Rollout](#part-ii--rollout)
+  1. [Feature Flagging](#feature-flagging)
+  1. [Rollout Timeline](#rollout-timeline)
+  1. [Rollback And Coexistence](#rollback-and-coexistence)
+- [Part III — Architecture](#part-iii--architecture)
   1. [Architecture Overview](#architecture-overview)
+  1. [Before And After](#before-and-after)
   1. [Runtime Lifecycle](#runtime-lifecycle)
   1. [Data Model And Contracts](#data-model-and-contracts)
-- [Part III — Data Model And Validation](#part-iii--data-model-and-validation)
+- [Part IV — Data Model And Validation](#part-iv--data-model-and-validation)
   1. [Producer Integration Model](#producer-integration-model)
   1. [Normalization And Merge Policy](#normalization-and-merge-policy)
   1. [Canonical Page Graph Model](#canonical-page-graph-model)
   1. [Validation Cohort And Target Coverage](#validation-cohort-and-target-coverage)
-- [Part IV — Operations](#part-iv--operations)
+- [Part V — Operations](#part-v--operations)
   1. [Observability And Diagnostics](#observability-and-diagnostics)
   1. [Testing Strategy](#testing-strategy)
   1. [Performance Considerations](#performance-considerations)
-  1. [Rollback And Coexistence](#rollback-and-coexistence)
+  1. [Direct-Push API Surface](#direct-push-api-surface)
+  1. [Security Considerations](#security-considerations)
+- [Part VI — Reference](#part-vi--reference)
   1. [Relationship To The Authoring Catalog](#relationship-to-the-authoring-catalog)
-  1. [Limitations And Future Work](#limitations-and-future-work)
-- [Part V — Reference](#part-v--reference)
   1. [Appendix A: Canonical Examples](#appendix-a-canonical-examples)
+  1. [Appendix B: Open Questions](#appendix-b-open-questions)
+  1. [Appendix C: Limitations And Future Work](#appendix-c-limitations-and-future-work)
   1. [References](#references)
 
 ---
 
 ## Part I — Motivation
 
-Part I establishes why the `JsonLdGraphManager` exists and what constraints shaped its design. It defines the objective, scopes what this document is and is not responsible for, describes the fragmented producer landscape the manager inherits, and records the core architectural decision made in response. Readers who only need context should read Part I and stop.
+Part I establishes why the `JsonLdGraphManager` exists, quantifies the current fragmentation, and records the core architectural decision. Readers who only need context should read Part I and stop.
 
 ### Abstract
 
-The `JsonLdGraphManager` is Milo's document-level runtime for structured data aggregation.
+*Today's pages speak with many voices. The manager makes them speak with one.*
 
-Its objective is to improve the accuracy, consistency, and coverage of structured data across ACOM and BACOM properties so search engines and LLMs can reliably understand, interpret, and surface Adobe content. The manager achieves this by ingesting JSON-LD emitted by multiple producers, normalizing the resulting entities into a canonical graph, and rewriting a single managed JSON-LD payload into `document.head`.
+Today, a single Milo page can emit JSON-LD from eight or more independent producers — `richresults`, `seotech`, `video-metadata`, `breadcrumbs`, `gnav`, `how-to`, `accordion`, `event-rich-results`, the review block — each writing its own `<script>` into `<head>`. The result is a fragmented, sometimes contradictory representation of the page for search engines and LLMs.
 
-This document records the architectural intent, operational model, and canonical entity conventions for the `JsonLdGraphManager`. It is the runtime source of truth for how structured data is collected and emitted on a Milo page.
+The `JsonLdGraphManager` is a document-level runtime that collects those fragments and emits **one canonical, linked `@graph`** per page. It achieves this by ingesting existing JSON-LD where it already exists, normalizing entities into canonical page-scoped identities, and rewriting a single managed JSON-LD payload into `document.head`. Its objective is to improve the accuracy, consistency, and coverage of structured data across ACOM and BACOM properties so search engines and LLMs can reliably understand, interpret, and surface Adobe content.
+
+This document is the runtime source of truth for how structured data is collected and emitted on a Milo page.
+
+### Problem Statement
+
+*Structured data today is distributed across too many producers to rewrite safely in one pass.*
+
+Structured data in the Milo ecosystem is not produced by a single subsystem. It is emitted by feature modules, blocks, inline page code, metadata-driven integrations, rendered DOM derivations, and external payloads. These producers exist across multiple repositories and do not share a uniform implementation contract.
+
+Concretely: the structured data catalog currently documents **33 integrations spread across 7 active site or repo entries**, with only 17 of those integrations living in `milo` itself. Source: [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
+
+This fragmentation creates several problems:
+
+* duplicate or conflicting JSON-LD can accumulate on the same page
+* shared entities such as `Organization`, `WebPage`, and `BreadcrumbList` are emitted multiple times with inconsistent identifiers
+* producer-specific failures can invalidate otherwise useful schema
+* site-wide refactors are difficult because structured data behavior is distributed across many repos and components
+* search engines and LLMs receive a fragmented representation of the page
+
+The `JsonLdGraphManager` exists to convert this fragmented producer landscape into one coherent, provenance-aware graph.
+
+### Design Decision
+
+*Observation-first, normalization-first.*
+
+The core decision is:
+
+* use a document-level graph manager that observes, ingests, normalizes, and rewrites JSON-LD at runtime
+* do not require an up-front synchronized migration of every existing producer to a new direct-write interface
+
+The long-term preferred producer interface remains direct push into the `JsonLdGraphManager`. However, the initial system is deliberately designed to work with the current ecosystem as it exists, including legacy, external, and non-Milo producers.
+
+Canonical entity identity is owned by the manager rather than by individual producers — see [Normalization And Merge Policy](#normalization-and-merge-policy) for the identity rules.
+
+**Why observation-first?** The current structured data ecosystem is distributed across too many producers to rewrite safely in one pass. A document-level observer gives us one runtime authority without requiring immediate producer convergence.
+
+**Why runtime, not build-time?** Much of today's JSON-LD is produced by runtime code (feature fetches, DOM derivations) and by author-hand-coded inline scripts. A build-time aggregator would miss both.
+
+**Why `MutationObserver` instead of a publish-subscribe bus?** A bus would require every producer to opt in on day one. The observer captures today's DOM-appending producers for free, and the direct-push API is the opt-in path for producers that want richer provenance. Both can coexist.
 
 ### Purpose And Scope
 
@@ -54,65 +116,34 @@ This document defines:
 * the canonical graph shape and entity-linking conventions
 * the producer contract for blocks, features, and future direct integrations
 
-This document does not attempt to be the full schema inventory for Adobe web properties.
+This document is not a schema inventory for Adobe web properties. Type inventories, reusable field templates, and authoring-oriented schema references live in the authoring catalog — see [Relationship To The Authoring Catalog](#relationship-to-the-authoring-catalog).
 
-Type inventories, reusable field templates, and authoring-oriented schema references belong in the existing authoring catalog at [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
+### Glossary
 
-### Problem Statement
-
-Structured data in the Milo ecosystem is not produced by a single subsystem. It is emitted by feature modules, blocks, inline page code, metadata-driven integrations, rendered DOM derivations, and external payloads. These producers exist across multiple repositories and do not share a uniform implementation contract.
-
-This creates several problems:
-
-* duplicate or conflicting JSON-LD can accumulate on the same page
-* shared entities such as `Organization`, `WebPage`, and `BreadcrumbList` may be emitted multiple times with inconsistent identifiers
-* producer-specific failures can invalidate otherwise useful schema
-* site-wide refactors are difficult because structured data behavior is distributed across many repos and components
-* search engines and LLMs receive a fragmented representation of the page
-
-The `JsonLdGraphManager` exists to convert this fragmented producer landscape into one coherent, provenance-aware graph.
-
-### Design Decision
-
-The core design decision is:
-
-* use a document-level graph manager that observes, ingests, normalizes, and rewrites JSON-LD at runtime
-* do not require an up-front synchronized migration of every existing producer to a new direct-write interface
-
-This is an observation-first, normalization-first strategy.
-
-The long-term preferred producer interface remains direct push into the `JsonLdGraphManager`. However, the initial system is deliberately designed to work with the current ecosystem as it exists, including legacy, external, and non-Milo producers.
-
-Canonical entity identity is owned by the manager rather than by individual producers — see [Normalization And Merge Policy](#normalization-and-merge-policy) for the identity rules.
-
-#### Rationale
-
-The decision is based on two constraints:
-
-1. the current structured data ecosystem is distributed across too many producers to rewrite safely in one pass
-1. the page still needs one canonical output even while that ecosystem remains heterogeneous
-
-The structured data catalog currently documents `33` integrations spread across `7` active site or repo entries in the integration table, with only `17` of those integrations living in `milo` itself. In practical terms, structured data is already distributed across multiple implementations, repositories, and integration patterns, so an observation-first runtime is a safer starting point than a synchronized producer rewrite. Source: [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
-
-The `JsonLdGraphManager` therefore establishes a single runtime authority without requiring immediate producer convergence.
+* **Canonical identity** — the page-scoped `@id` the manager assigns to a known entity (e.g., `${canonicalUrl}#webpage`), overriding whatever the producer supplied.
+* **Graph root** — the top-level entity of the page's `@graph`. For Milo pages, always `WebPage`.
+* **Managed graph** — the single `<script type="application/ld+json" data-milo-jsonld="graph">` the manager owns in `<head>`.
+* **Producer** — any source of JSON-LD on the page: a block, a feature, inline page content, a metadata-driven integration, or a third-party script.
+* **Provenance** — the structured record the manager keeps per ingested source (`ingestMode`, `discoveryPhase`, `producerType`, `producerName`).
+* **Singleton** — an entity type that must appear at most once in the managed graph (e.g., `WebPage`, `Organization`, `BreadcrumbList`).
+* **Supplemental entity** — a linked entity referenced from the primary entity via `hasPart`, such as `FAQPage` or `HowTo`.
+* **Transform** — a manager-internal function that adds, rewrites, or links entities during rebuild (e.g., synthesizing `WebPage` when none was supplied).
+* **Unmanaged script** — any `<script type="application/ld+json">` that does not carry the manager's `data-milo-jsonld="graph"` marker.
+* **Cohort** — the set of page families used to validate the manager during rollout, defined by the public `tests` dataset.
 
 ---
 
-## Part II — Architecture
+## Part II — Rollout
 
-Part II describes how the manager is activated, how it is organized internally, and how it interacts with the DOM at runtime. Feature flagging defines when the manager runs; the architecture overview and runtime lifecycle define what it does on boot and during mutation; the data model defines the DOM contract, output shape, and provenance record it commits to. Implementers and reviewers evaluating lifecycle behavior should read this part in full.
+Part II answers **when and to whom** the manager ships. The flag is the gate; the timeline is the plan; rollback is the flag in reverse. Reviewers evaluating launch risk should read this part in full.
 
-### Feature Flagging And Rollout
+### Feature Flagging
 
-The `JsonLdGraphManager` is feature-gated by page metadata so it can be enabled on selected pages and page families without enabling it across an entire site at once.
+*Metadata gates the manager. Absence means no-op.*
 
-The metadata flag is:
+The manager is feature-gated by page metadata so it can be enabled on selected pages and page families without enabling it across an entire site at once.
 
-* `jsonld-graph-manager`
-
-The feature is enabled only when that metadata field is set to `true`.
-
-The manager is initialized only when that metadata field is `true`. If the flag is absent or set to any other value, the manager does not load and no observer is attached.
+The metadata flag is `jsonld-graph-manager`. The feature is enabled only when that metadata field is set to `true`. If the flag is absent or set to any other value, the manager does not load and no observer is attached.
 
 This flagging model is intentionally similar to existing metadata-controlled integrations such as `seotech-video-url` and `seotech-structured-data`. The purpose is to support:
 
@@ -121,38 +152,101 @@ This flagging model is intentionally similar to existing metadata-controlled int
 * experimentation and regression testing on limited cohorts
 * safe coexistence with legacy JSON-LD producers during migration
 
-Feature gating is also part of the rationale for the observation-first architecture. A document-level observer can be enabled on selected pages without requiring synchronized code changes across every existing producer, site, or repository.
+Feature gating is also part of the rationale for the observation-first architecture: a document-level observer can be enabled on selected pages without requiring synchronized code changes across every existing producer.
+
+### Rollout Timeline
+
+*Canary first, then cohort, then family, then general.*
+
+Rollout proceeds in four stages, each gated by explicit success criteria:
+
+1. **Canary** — enable on a single low-risk page to validate boot behavior and confirm no regressions in `<head>` content. Hold for at least 24 hours under normal traffic before expanding.
+1. **Cohort 1** — enable across the first row of the public `tests` dataset (e.g., Product Features). Expand when integration tests pass for 100% of cohort pages and the Rich Results Test pass rate is non-regressing for 72 hours.
+1. **Cohort 2** — expand to remaining `tests` dataset rows. Same gate as Cohort 1.
+1. **General availability** — remove the flag gate from new page templates. The flag remains respected on individual pages so a single-page rollback is always available.
+
+Open question: specific dates, cohort ordering, and pass-rate thresholds are not yet set — they require alignment with SEO ownership. See [Appendix B: Open Questions](#appendix-b-open-questions).
+
+### Rollback And Coexistence
+
+*Flip the flag off; producers resume unmanaged direct-write.*
+
+The feature flag is the primary rollback mechanism.
+
+When `jsonld-graph-manager` metadata is `false` or absent:
+
+* the manager does not initialize
+* no observer is attached
+* no managed script is written
+* existing producers continue to write directly into `<head>` as they do today
+
+When the flag is disabled mid-rollout on a page family:
+
+* already-rendered managed graphs on prior pageviews are not retroactively rewritten — the flip takes effect on the next page load
+* on subsequent loads, producers resume unmanaged direct-write behavior
+
+When a defect is found in the manager itself:
+
+1. flip the flag off for the affected page family via metadata configuration
+1. verify on the next deploy or pageview that producers resume their prior behavior
+1. land a fix under the flag on a limited cohort, then re-expand
+
+Open question: whether disabling the flag should always be a full fallback to unmanaged output, or whether specific producers should be allow-listed to continue direct-writing even when the manager is active. The current design assumes full fallback. See [Appendix B: Open Questions](#appendix-b-open-questions).
+
+---
+
+## Part III — Architecture
+
+Part III describes how the manager is organized internally and how it interacts with the DOM at runtime. The architecture overview gives the one-slide mental model; the before/after shows concrete output; the runtime lifecycle and data model give implementation detail.
 
 ### Architecture Overview
 
+*Observe, normalize, rewrite.*
+
 The `JsonLdGraphManager` is a document-level runtime object initialized from the document branch of `loadArea()` in `libs/utils/utils.js`.
 
-At a high level, the manager:
+```mermaid
+flowchart LR
+    P["Producers<br/>(blocks, features, inline, 3rd-party)"] -->|emit JSON-LD| O[Observe]
+    O -->|parse, record provenance| N[Normalize]
+    N -->|canonical ids, merge, dedupe| R[Rewrite]
+    R -->|one &lt;script data-milo-jsonld=graph&gt;| H["&lt;head&gt;"]
+```
 
-1. scans the document for unmanaged JSON-LD
-1. ingests and removes that JSON-LD from the DOM
-1. records source provenance
-1. normalizes entities into a canonical in-memory graph
-1. applies graph transforms
-1. rewrites one managed JSON-LD graph into `document.head`
-1. observes the document for future JSON-LD additions
+The three beats are:
 
-This architecture introduces a single page-level authority for structured data output while remaining compatible with distributed producers.
+1. **Observe** — scan the DOM at boot, and watch for later appends via `MutationObserver`. Ingest and remove unmanaged JSON-LD scripts.
+1. **Normalize** — apply canonical page-scoped identity to known entity types; merge conflicts by producer priority; dedupe singletons.
+1. **Rewrite** — serialize one `@graph` into a single managed `<script>` in `<head>`.
 
-#### Why linked entities instead of deep nesting
+The manager standardizes on **separated but linked** schema rather than deeply nested schema trees. This reduces redundant definitions of shared entities, limits the blast radius of producer-specific failures, lets blocks contribute nodes without owning the page payload, and models the page as a graph of referenced entities. This approach is consistent with Google's guidance for multiple structured data items on a page — see [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). Detailed producer rules are in [Producer Integration Model](#producer-integration-model).
 
-The manager standardizes on separated but linked schema rather than deeply nested schema trees.
+### Before And After
 
-This choice is made for four reasons:
+*Today's fragmented head; tomorrow's one managed `@graph`.*
 
-* it reduces redundant definitions of shared entities such as `Organization`
-* it limits the blast radius of producer-specific failures
-* it allows independent blocks and features to contribute nodes without owning the full page payload
-* it more accurately models the page as a graph of entities connected by references
+Consider a product page that today emits JSON-LD from `richresults` (Article, Organization), `gnav` (BreadcrumbList), and `seotech` (VideoObject). The `<head>` ends up with four independent scripts, with overlapping entity definitions and inconsistent identifiers:
 
-This approach is consistent with Google's guidance for multiple structured data items on a page, including the use of `@id` to relate separately declared items. See [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). Detailed rules for how producers should emit linked entities live in [Producer Integration Model](#producer-integration-model).
+```mermaid
+flowchart LR
+    subgraph today["Today — unmanaged"]
+        H1["&lt;head&gt;"]
+        H1 --> S1["&lt;script&gt; Organization (richresults)"]
+        H1 --> S2["&lt;script&gt; Article (richresults)"]
+        H1 --> S3["&lt;script&gt; BreadcrumbList (gnav)"]
+        H1 --> S4["&lt;script&gt; VideoObject (seotech)"]
+    end
+    subgraph tomorrow["Tomorrow — managed"]
+        H2["&lt;head&gt;"]
+        H2 --> M["&lt;script data-milo-jsonld=graph&gt;<br/>one @graph with<br/>Organization, WebPage, Article,<br/>BreadcrumbList, VideoObject<br/>linked by @id"]
+    end
+```
+
+Under the manager, those same four producers still emit whatever they emit today. The manager intercepts each payload, assigns canonical identity (e.g., `WebPage` → `${url}#webpage`, `Organization` → `https://www.adobe.com/#organization`), links related entities through `@id` references, and rewrites one managed script into `<head>`. Full worked examples are in [Appendix A: Canonical Examples](#appendix-a-canonical-examples).
 
 ### Runtime Lifecycle
+
+*One boot scan plus one observer; everything else is the queue.*
 
 #### Initialization phase
 
@@ -169,9 +263,24 @@ During document-level boot, the `JsonLdGraphManager`:
 1. writes the canonical graph to `document.head`
 1. starts a `MutationObserver` for future additions
 
+```mermaid
+sequenceDiagram
+    participant L as loadArea()
+    participant M as JsonLdGraphManager
+    participant D as document
+    participant O as MutationObserver
+    L->>M: init()
+    M->>D: query script[type=application/ld+json]
+    D-->>M: unmanaged scripts
+    M->>M: parse, normalize, record provenance
+    M->>D: remove unmanaged scripts
+    M->>D: append managed script to head
+    M->>O: attach to documentElement<br/>(childList, subtree)
+```
+
 #### Mutation phase
 
-When a block, feature, experiment, or third-party script appends JSON-LD later, the `JsonLdGraphManager`:
+When a block, feature, experiment, or third-party script appends JSON-LD later, the manager:
 
 1. detects the new script anywhere in the document subtree
 1. enqueues the event for sequential processing
@@ -179,6 +288,22 @@ When a block, feature, experiment, or third-party script appends JSON-LD later, 
 1. updates the in-memory entity graph
 1. reruns graph transforms
 1. rewrites the managed output in `document.head`
+
+```mermaid
+sequenceDiagram
+    participant P as Producer (block/feature)
+    participant D as document
+    participant O as MutationObserver
+    participant Q as Queue
+    participant M as JsonLdGraphManager
+    P->>D: append script[type=application/ld+json]
+    D->>O: mutation event
+    O->>Q: enqueue (if matches filter)
+    Q->>M: process (debounced)
+    M->>D: remove unmanaged script
+    M->>M: update graph, rerun transforms
+    M->>D: rewrite managed script
+```
 
 The observer target is `document.documentElement` with `childList` and `subtree` enabled. Only added nodes that are, or contain, `script[type="application/ld+json"]` are enqueued. Managed output is excluded by filtering on the manager-owned selector `script[type="application/ld+json"][data-milo-jsonld="graph"]`.
 
@@ -195,31 +320,28 @@ The manager performs an immediate boot write, then batches later rewrites on a d
 
 ### Data Model And Contracts
 
-**TL;DR.** The manager owns one `<script data-milo-jsonld="graph">` in `head`, accepts any conventional JSON-LD input shape, and records a structured provenance record for every ingested source answering how, when, what class, and which concrete producer.
+*One managed `<script>`, one `@graph`, one provenance record per source.*
 
 #### Managed DOM contract
 
-The `JsonLdGraphManager` owns exactly one managed JSON-LD script in `head`:
+The manager owns exactly one managed JSON-LD script in `head`:
 
 ```html
 <script type="application/ld+json" data-milo-jsonld="graph"></script>
 ```
 
-Optional attributes may include:
+Optional attributes may include `data-milo-jsonld-version` and `data-milo-jsonld-updated`.
 
-* `data-milo-jsonld-version`
-* `data-milo-jsonld-updated`
-
-The corresponding rules are:
+Rules:
 
 * all non-managed JSON-LD scripts are candidates for ingestion and removal
 * the manager ignores its own managed graph during scan and observation
-* JSON-LD may be ingested from anywhere in the document, not only `head`
+* JSON-LD may be ingested from anywhere in the document, not only `<head>`
 * the managed graph is the canonical page output
 
 #### Canonical output shape
 
-The manager emits one graph in the following form:
+The manager emits one graph:
 
 ```json
 {
@@ -228,24 +350,11 @@ The manager emits one graph in the following form:
 }
 ```
 
-Accepted input forms include:
-
-* a single JSON-LD object
-* an array of JSON-LD objects
-* an object containing `@graph`
-
-All accepted forms are flattened into one internal graph representation before transforms run.
+Accepted input forms include a single JSON-LD object, an array of JSON-LD objects, or an object containing `@graph`. All accepted forms are flattened into one internal graph representation before transforms run.
 
 #### Provenance contract
 
-The manager tracks the origin of every ingested source as a structured record rather than a single flat label.
-
-A provenance record should answer four distinct questions:
-
-* how the payload entered the manager
-* when it was discovered
-* what broad class of producer it came from
-* which concrete producer supplied it
+The manager tracks the origin of every ingested source as a structured record rather than a single flat label. A provenance record answers four questions: how the payload entered the manager, when it was discovered, what class of producer it came from, and which concrete producer supplied it.
 
 The recommended provenance shape is:
 
@@ -267,84 +376,65 @@ Where:
 * `producerType` distinguishes `first-party`, `third-party`, `manager`, or `unknown`
 * `producerName` identifies the concrete producer when known, such as `seotech`, `richresults`, `block:<name>`, `feature:<name>`, or `transform:webpage`
 
-Illustrative examples:
+Representative scenarios:
 
-* page-authored JSON-LD found during boot:
-  * `ingestMode=dom`
-  * `discoveryPhase=initial`
-  * `producerType=unknown`
-  * `producerName=unknown`
-* JSON-LD appended later by SEOTech:
-  * `ingestMode=dom`
-  * `discoveryPhase=mutation`
-  * `producerType=first-party`
-  * `producerName=seotech`
-* `WebPage` synthesized by the manager:
-  * `ingestMode=internal`
-  * `producerType=manager`
-  * `producerName=transform:webpage`
+| Scenario | ingestMode | discoveryPhase | producerType | producerName |
+| --- | --- | --- | --- | --- |
+| Page-authored JSON-LD found during boot | `dom` | `initial` | `unknown` | `unknown` |
+| JSON-LD appended later by SEOTech | `dom` | `mutation` | `first-party` | `seotech` |
+| Block pushes via the direct-push API | `push` | `mutation` | `first-party` | `block:richresults` |
+| `WebPage` synthesized by the manager | `internal` | — | `manager` | `transform:webpage` |
+| Third-party widget injects JSON-LD | `dom` | `mutation` | `third-party` | `unknown` |
 
-Provenance exists to support debugging, trust, source attribution, and future policy decisions.
+Provenance supports debugging, trust, source attribution, and future policy decisions.
 
 ---
 
-## Part III — Data Model And Validation
+## Part IV — Data Model And Validation
 
-Part III follows the data's path through the manager: how producers hand data in, how incoming entities are normalized and merged, what shape the resulting canonical graph takes, and which pages are responsible for matching which expected shape. The order is deliberate — intake, then processing, then output, then acceptance — so a reader can trace a single payload from a block to the rendered `@graph`.
+Part IV follows the data's path through the manager: how producers hand data in, how incoming entities are normalized and merged, what shape the resulting canonical graph takes, and which pages are responsible for matching which expected shape.
 
 ### Producer Integration Model
 
+*Keep emitting what you emit today. Or push direct to the manager.*
+
 The manager supports two producer modes.
 
-#### Mode 1: DOM producers
+**Mode 1: DOM producers.** A block or feature appends JSON-LD to the page. The manager observes the new payload, ingests it, removes the unmanaged script, and incorporates the resulting nodes into the canonical graph. This mode accommodates today's existing producers — `richresults`, `seotech`, `video-metadata`, `breadcrumbs`, `how-to`, `accordion`, `event-rich-results`, the review block — plus hand-authored inline JSON-LD in AEM content, without requiring any producer to change at the same time.
 
-In this mode, a block or feature appends JSON-LD to the page. The manager observes the new payload, ingests it, removes the unmanaged script, and incorporates the resulting nodes into the canonical graph.
+**Mode 2: Direct push producers.** A producer submits one or more nodes directly to the manager. This is the preferred long-term integration model because it avoids unnecessary DOM churn and enables explicit provenance. The concrete signature is in [Direct-Push API Surface](#direct-push-api-surface).
 
-This is the mode that accommodates today's existing producers — `richresults`, `seotech`, `video-metadata`, `breadcrumbs`, `how-to`, `accordion`, `event-rich-results`, and the review block — without requiring them to change at the same time.
-
-#### Mode 2: Direct push producers
-
-In this mode, a producer submits one or more nodes directly to the manager. This is the preferred long-term integration model because it avoids unnecessary DOM churn and enables explicit provenance.
-
-The concrete signature, error semantics, and a worked migration example are recorded in [Direct-Push API Surface](#direct-push-api-surface) under Part IV (Open: the signature is a draft and is open for review).
-
-#### Producer guidance
-
-All producers should follow these rules:
+Producer guidance:
 
 * emit focused, independent entities rather than one giant nested payload
 * use `@id` references to connect related entities
 * do not assume that producer-local `@id` values will survive normalization unchanged — see [Normalization And Merge Policy](#normalization-and-merge-policy)
-* do not rely on direct writes to `head` as the durable output contract
+* do not rely on direct writes to `<head>` as the durable output contract
 * do not emit duplicate top-level `WebPage` or Adobe `Organization` objects unless intentionally overriding the canonical model
 
 ### Normalization And Merge Policy
 
-**TL;DR.** The manager rewrites incoming `@id` values to page-scoped canonical ids for known entities, resolves conflicts by a fixed producer-priority ladder, unions relationship arrays by canonical `@id`, and deduplicates known singletons like `WebPage` and the Adobe `Organization`.
+*Incoming `@id` values are hints. The manager owns canonical identity.*
 
 #### Identity policy
 
-The `JsonLdGraphManager` uses canonical page-scoped identities for known entity types rather than trusting incoming `@id` values unchanged.
+The manager uses canonical page-scoped identities for known entity types rather than trusting incoming `@id` values unchanged:
 
-Representative canonical ids include:
+| Entity | Canonical `@id` |
+| --- | --- |
+| `WebPage` | `${canonicalUrl}#webpage` |
+| primary `Article` | `${canonicalUrl}#article` |
+| `BreadcrumbList` | `${canonicalUrl}#breadcrumb` |
+| `HowTo` | `${canonicalUrl}#howto` |
+| `FAQPage` | `${canonicalUrl}#faq` |
+| Adobe publisher `Organization` | `https://www.adobe.com/#organization` |
 
-* `WebPage` -> `${canonicalUrl}#webpage`
-* primary `Article` -> `${canonicalUrl}#article`
-* `BreadcrumbList` -> `${canonicalUrl}#breadcrumb`
-* `HowTo` -> `${canonicalUrl}#howto`
-* `FAQPage` -> `${canonicalUrl}#faq`
-* Adobe publisher `Organization` -> `https://www.adobe.com/#organization`
+Incoming producer `@id` values are treated as merge hints, not as authoritative canonical identity. Source tracking and entity identity are separate concerns:
 
-Incoming producer `@id` values are treated as merge hints, not as authoritative canonical identity.
-
-The manager does not depend on raw incoming `@id` values to identify ingested source payloads. Source tracking and entity identity are separate concerns:
-
-* source identity answers where a payload came from
+* source identity answers where a payload came from (provenance)
 * entity identity answers which canonical node should exist in the managed graph
 
-For recognized entities, the manager rewrites `@id` to canonical page-scoped values. Original producer ids may be retained as provenance or debugging metadata when useful, but they are not the durable identity contract of the managed graph.
-
-Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated by other means.
+For recognized entities, the manager rewrites `@id` to canonical page-scoped values. Original producer ids may be retained as debugging metadata. Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated.
 
 #### Merge priority
 
@@ -368,19 +458,19 @@ Unless a type-specific rule overrides them, the manager applies the following de
 
 #### Dedupe policy
 
-The default page-level singletons are:
+Default page-level singletons (at most one instance per page):
 
 * `WebPage`
-* the primary content entity, such as `Article`
+* the primary content entity (e.g., `Article`, `SoftwareApplication`)
 * `BreadcrumbList`
 * the Adobe publisher `Organization`
 
-The default page-level supplemental singletons are:
+Default page-level supplemental singletons:
 
 * `FAQPage`
 * `HowTo`
 
-The manager may preserve multiple instances for legitimately repeatable types, such as:
+Legitimately repeatable types the manager may preserve as multiple instances:
 
 * `VideoObject`
 * `ImageObject`
@@ -391,19 +481,34 @@ Relationship arrays such as `hasPart` are unioned by canonical `@id`.
 
 ### Canonical Page Graph Model
 
-The manager treats `WebPage` as the page container and links related entities to it. Canonical `@id` values for each of these entities are defined in [Normalization And Merge Policy](#normalization-and-merge-policy).
+*`WebPage` is the page container; everything else links to it.*
 
-The canonical editorial page shape is:
+The manager treats `WebPage` as the page container and links related entities to it. Canonical `@id` values are defined in [Normalization And Merge Policy](#normalization-and-merge-policy).
 
-```text
-WebPage
-├── Article
-├── BreadcrumbList
-├── HowTo
-└── FAQPage
+#### Editorial page shape
+
+```mermaid
+graph TD
+    WP["WebPage<br/>#webpage"]
+    A["Article<br/>#article"]
+    BC["BreadcrumbList<br/>#breadcrumb"]
+    HT["HowTo<br/>#howto"]
+    FAQ["FAQPage<br/>#faq"]
+    ORG["Adobe Organization<br/>https://www.adobe.com/#organization"]
+    WP -->|mainEntity| A
+    WP -->|breadcrumb| BC
+    WP -->|publisher| ORG
+    A -->|isPartOf| WP
+    A -->|publisher| ORG
+    A -->|hasPart| BC
+    A -->|hasPart| HT
+    A -->|hasPart| FAQ
+    BC -->|isPartOf| WP
+    HT -->|isPartOf| WP
+    FAQ -->|isPartOf| WP
 ```
 
-The governing rules are:
+Governing rules:
 
 * `WebPage` is the page container
 * the primary content entity is referenced by `WebPage.mainEntity`
@@ -413,26 +518,27 @@ The governing rules are:
 
 This model is intended to be stable across separate producer implementations.
 
-The canonical product page shape is:
+#### Product page shape
 
-```text
-WebPage
-├── SoftwareApplication
-└── BreadcrumbList
+```mermaid
+graph TD
+    WP["WebPage<br/>#webpage"]
+    SA["SoftwareApplication<br/>#softwareapplication"]
+    BC["BreadcrumbList<br/>#breadcrumb"]
+    ORG["Adobe Organization"]
+    WP -->|mainEntity| SA
+    WP -->|publisher| ORG
+    SA -->|provider| ORG
+    BC -->|isPartOf| WP
 ```
 
-For product-oriented pages:
+For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` when that entity is available. `BreadcrumbList` links back to the page with `isPartOf`; publisher references resolve to the canonical Adobe `Organization`.
 
-* `WebPage` remains the page container
-* `WebPage.mainEntity` points to `SoftwareApplication` when that entity is available
-* `BreadcrumbList` links back to the page with `isPartOf`
-* page-level publisher references resolve to the canonical Adobe `Organization`
-
-The public `tests` dataset should be treated as the current representative source of truth for which page types map to which expected primary entities and required objects. The examples in this document summarize that target model; the public catalog is the authoritative cohort definition used for validation.
+The public `tests` dataset should be treated as the current representative source of truth for which page types map to which expected primary entities and required objects.
 
 ### Validation Cohort And Target Coverage
 
-**TL;DR.** The public `tests` dataset defines the acceptance contract. The manager guarantees canonical aggregation and `WebPage` presence; it does not fabricate missing business entities. A page can pass graph-manager validation while still failing full target-state validation.
+*The manager guarantees aggregation; it does not fabricate missing business entities.*
 
 The public authoring catalog includes a `tests` dataset that serves as the current acceptance cohort for the `JsonLdGraphManager`. Each row declares:
 
@@ -449,16 +555,18 @@ For the current cohort, the validation contract is intentionally simpler than th
 * `Organization`, `WebPage`, and `BreadcrumbList` are required across the current cohort
 * the primary entity is selected by page family for the currently defined target state
 
-The current target-state primary-entity expectations are:
+Current target-state primary-entity expectations:
 
-* `Product` -> `SoftwareApplication`
-* `Product Feature` -> `Article`
-* `Express Feature` -> `Article`
-* `Express Discover` -> `Article`
-* `Product Free Trial` -> no primary entity is asserted yet in the public tests dataset
-* `Express Create` -> no primary entity is asserted yet in the public tests dataset
+| Page family | Expected primary entity |
+| --- | --- |
+| `Product` | `SoftwareApplication` |
+| `Product Feature` | `Article` |
+| `Express Feature` | `Article` |
+| `Express Discover` | `Article` |
+| `Product Free Trial` | *not yet asserted in the tests dataset* |
+| `Express Create` | *not yet asserted in the tests dataset* |
 
-Blank primary-entity cells in the tests dataset should be interpreted as unresolved target-state policy, not as proof that the page should never have a primary entity.
+Blank primary-entity cells should be interpreted as unresolved target-state policy, not as proof that the page should never have a primary entity.
 
 #### Manager guarantees vs. cohort expectations
 
@@ -466,13 +574,13 @@ Blank primary-entity cells in the tests dataset should be interpreted as unresol
 | --- | --- | --- |
 | Graph root | `WebPage` is always produced | `WebPage` is the graph root for every current test row |
 | Required entities | Preserves and canonicalizes `Organization`, `WebPage`, and `BreadcrumbList` when producers supply them | `Organization`, `WebPage`, and `BreadcrumbList` are present |
-| Primary entity | Links a primary entity via `WebPage.mainEntity` if a producer supplied it | A page-family-specific primary entity (e.g. `SoftwareApplication`, `Article`) is present |
+| Primary entity | Links a primary entity via `WebPage.mainEntity` if a producer supplied it | A page-family-specific primary entity (e.g., `SoftwareApplication`, `Article`) is present |
 | Duplicates and conflicts | Dedupes singletons and reconciles by merge priority | The emitted graph is coherent and non-conflicting |
 | Missing business data | Does not fabricate entities a producer never emitted | May fail target-state validation if no producer supplies the expected primary entity |
 
 #### Validation boundary
 
-The `tests` dataset describes the target structured-data contract for the cohort. It does not imply that the first release of the `JsonLdGraphManager` alone is responsible for producing every required entity.
+The `tests` dataset describes the **target** structured-data contract for the cohort. It does not imply that the first release of the `JsonLdGraphManager` alone is responsible for producing every required entity.
 
 The manager is responsible for:
 
@@ -484,30 +592,30 @@ The manager is responsible for:
 * preserving and linking `BreadcrumbList` and other supported entities when they are present
 * preserving and linking entities that are already present or supplied by registered producers
 
-The manager is not, by itself, the source of truth for missing business entities such as `Article` or `SoftwareApplication` when no producer currently emits them.
+The manager is **not**, by itself, the source of truth for missing business entities such as `Article` or `SoftwareApplication` when no producer currently emits them.
 
-If no primary entity is available, the manager may still produce a legal graph centered on `WebPage` and any supported linked entities it can normalize. In that case, graph-manager validation may still pass while the page fails the target-state acceptance contract declared in the public `tests` dataset.
-
-A page may therefore pass graph-manager validation while still failing full target-state schema validation. In practical terms:
+If no primary entity is available, the manager may still produce a legal graph centered on `WebPage` and any supported linked entities it can normalize. In that case:
 
 * graph-manager validation confirms that aggregation, canonicalization, and managed output behave correctly
 * full schema validation confirms that the page meets the expected contract declared in the public `tests` dataset
 
-Absence of an expected primary entity in the managed graph does not by itself indicate graph-manager failure unless that entity was already present in source input or was explicitly supplied by a registered producer or transform.
+A page may therefore pass graph-manager validation while still failing full target-state schema validation. Absence of an expected primary entity in the managed graph does not by itself indicate graph-manager failure unless that entity was already present in source input or was explicitly supplied by a registered producer or transform.
 
 ---
 
-## Part IV — Operations
+## Part V — Operations
 
-Part IV covers the operational surface around the manager: how to observe it in development and production, how to test it, what performance envelope it targets, how to roll back, how this document relates to the authoring catalog, and what is intentionally deferred. These sections are the reference for anyone operating, debugging, or extending the manager in production.
+Part V is the reference for anyone operating, debugging, or extending the manager in production: how it logs, how it's tested, what performance it must hold to, what its direct-push surface looks like, and what security rules apply.
 
 ### Observability And Diagnostics
 
-The `JsonLdGraphManager` should expose both local debugging output and production-safe warning and error reporting.
+*Ordered queue debug locally, actionable warnings through Lana.*
+
+The manager should expose both local debugging output and production-safe warning and error reporting.
 
 #### Debug logging
 
-For local development and non-production diagnosis, the manager should emit ordered debug output for key queue events, including:
+For local development and non-production diagnosis, the manager should emit ordered debug output for key queue events:
 
 * when unmanaged JSON-LD is discovered and queued
 * the provenance record associated with each ingested source
@@ -515,7 +623,7 @@ For local development and non-production diagnosis, the manager should emit orde
 * when the managed graph is rewritten
 * the resulting graph version or queue sequence number
 
-Because all ingestion and rebuild work flows through one explicit queue, these debug messages should appear in queue order even when events happen in rapid succession.
+Because all ingestion and rebuild work flows through one explicit queue, these messages should appear in queue order even when events happen in rapid succession.
 
 Debug logging should follow existing Milo logging conventions:
 
@@ -527,7 +635,7 @@ Debug logging should follow existing Milo logging conventions:
 
 Warnings and errors should be reported through `window.lana?.log(...)` using the existing repo conventions for tags and severity.
 
-Representative warning and error cases include:
+Representative cases:
 
 * invalid JSON-LD that fails to parse
 * unsupported payload shapes
@@ -539,20 +647,20 @@ Recommended logging behavior:
 
 * warnings use Lana warning severity
 * errors use Lana error severity
-* tags should identify the manager and, when useful, the producer, for example `jsonld-graph-manager` or `jsonld-graph-manager,seotech`
+* tags should identify the manager and, when useful, the producer (e.g., `jsonld-graph-manager` or `jsonld-graph-manager,seotech`)
 * high-volume success-path events should not be sent to Lana by default
-
-The intent is to keep routine queue activity visible locally during debugging while reserving Lana for actionable warnings, errors, and operational diagnostics.
 
 ### Testing Strategy
 
-Testing for the `JsonLdGraphManager` is organized at three levels.
+*Three layers: unit behavior, integration DOM, NALA cohort.*
+
+Testing for the `JsonLdGraphManager` is organized at three levels:
 
 1. **Unit tests** cover the manager's internal behavior: parsing the three accepted input shapes, identity-rewrite for known types, merge-priority resolution, dedupe for singletons, and provenance record construction. These run under the existing Milo unit-test harness and should not depend on the network.
 1. **Integration tests** cover the boot and mutation lifecycle against representative DOM fixtures. Each fixture represents one page family (editorial, product, breadcrumb-only, multi-producer conflict, etc.) and asserts on the managed `@graph` output plus the removal of unmanaged scripts.
 1. **End-to-end (NALA) tests** cover cohort pages listed in the public `tests` dataset. For each row, the test asserts the expected graph root, required objects, and — when declared — the expected primary entity.
 
-Writing an acceptance test for a new page type should follow this workflow:
+Writing an acceptance test for a new page type:
 
 1. identify the page family and its row in the `tests` dataset
 1. add a DOM fixture that reproduces the producer payloads that page emits in production
@@ -561,9 +669,11 @@ Writing an acceptance test for a new page type should follow this workflow:
 
 Regression coverage for producer changes should run both integration and unit tests. A producer change that silently stops emitting a primary entity should cause an integration-level failure, not only a broken e2e test in production.
 
-Open question: whether the external `tests` dataset should also land as a local fixture in this repository. Treating it as an external source of truth keeps one authority, but a local mirror would let tests run offline and prevent test breakage when the external dataset changes ahead of code.
+Open question: whether the external `tests` dataset should also land as a local fixture in this repository. See [Appendix B: Open Questions](#appendix-b-open-questions).
 
 ### Performance Considerations
+
+*Stay within `loadArea()`'s frame budget. Debounce rebuilds. Bail on pathological growth.*
 
 The manager runs on every page where the feature flag is enabled and must not regress page performance.
 
@@ -576,39 +686,17 @@ Target performance envelope:
 
 The observer is attached once per document to `document.documentElement` with `childList` and `subtree` enabled, and its callback filters added nodes to JSON-LD scripts only. The manager must not add observers elsewhere in the tree.
 
-If the graph grows pathologically — for example, a producer appends many thousands of JSON-LD scripts — the manager should log a warning through Lana and bail out of rewriting rather than block the main thread. The exact bail-out threshold is an open question and should be calibrated once real-world producer behavior is measured.
+If the graph grows pathologically — for example, a producer appends thousands of JSON-LD scripts — the manager should log a warning through Lana and bail out of rewriting rather than block the main thread.
 
-Open question: the concrete numeric budgets (max entities per page, max rebuild cost, max debounce catch-up size). These should be set empirically during early rollout and recorded here.
-
-### Rollback And Coexistence
-
-The feature flag is the primary rollback mechanism.
-
-When `jsonld-graph-manager` metadata is `false` or absent:
-
-* the manager does not initialize
-* no observer is attached
-* no managed script is written
-* existing producers continue to write directly into `head` as they do today
-
-When the flag is disabled mid-rollout on a page family:
-
-* already-rendered managed graphs on prior pageviews are not retroactively rewritten — the flip takes effect on the next page load
-* on subsequent loads, producers resume unmanaged direct-write behavior
-
-When a defect is found in the manager itself:
-
-1. flip the flag off for the affected page family via metadata configuration
-1. verify on the next deploy or pageview that producers resume their prior behavior
-1. land a fix under the flag on a limited cohort, then re-expand
-
-Open question: whether disabling the flag should be a full fallback to unmanaged output, or whether specific producers should be allow-listed to continue direct-writing even when the manager is active. The current design assumes full fallback.
+Open question: concrete numeric budgets. See [Appendix B: Open Questions](#appendix-b-open-questions).
 
 ### Direct-Push API Surface
 
+*One call, one provenance record, one rebuild.*
+
 This section specifies the preferred long-term integration described in [Producer Integration Model](#producer-integration-model).
 
-The draft direct-push surface is:
+Draft direct-push surface:
 
 ```js
 // illustrative — exact module path TBD
@@ -641,28 +729,36 @@ Error semantics:
 * schema violations that the manager can recover from (unknown fields, unknown types) are retained provisionally and logged as warnings
 * failures during rewrite are logged at error severity and do not throw into the caller
 
-Migration example — converting an existing producer from direct DOM write to direct push:
+Migration — converting an existing producer from direct DOM write to direct push:
 
 1. identify the producer's current `document.head.appendChild(script)` site
 1. extract the JSON-LD payload into a plain object (or array of objects)
 1. call `manager.push({ producerName, producerType: 'first-party', nodes })`
 1. remove the script-append code once the manager is enabled for the producer's target pages
 
-Open question: the exact module path and whether the accessor is `getJsonLdGraphManager()` or a default export. The signature here is a draft and is open for review.
+Open question: exact module path and accessor signature. See [Appendix B: Open Questions](#appendix-b-open-questions).
 
 ### Security Considerations
 
-The manager ingests JSON-LD from arbitrary page origins, including producers outside this repository. The following rules apply.
+*Parse safe. Serialize safe. Third-party loses conflicts.*
+
+The manager ingests JSON-LD from arbitrary page origins, including producers outside this repository. The following rules apply:
 
 * **Parsing is string-only.** Ingested payloads are parsed with `JSON.parse`. The manager does not `eval` or execute producer content.
-* **Rewrite is string-only.** The managed graph is serialized with `JSON.stringify` and written as a `textContent` assignment to the managed script, never as `innerHTML`. This prevents producer payloads from injecting HTML into `head`.
+* **Rewrite is string-only.** The managed graph is serialized with `JSON.stringify` and written as a `textContent` assignment to the managed script, never as `innerHTML`. This prevents producer payloads from injecting HTML into `<head>`.
 * **Type allow-listing.** The manager's canonical identity, merge, and dedupe rules only act on a known set of schema types. Unknown types may be retained provisionally, but they do not participate in canonicalization and cannot acquire canonical identity solely by being present in the graph.
 * **Third-party producers.** Third-party runtime sources sit at the bottom of the merge priority ladder. A third-party producer cannot override a graph-manager transform or a direct-push contribution, and cannot win conflicts for canonical singleton entities such as `WebPage` or `Organization`.
 * **Provenance preservation.** The manager records the origin of every ingested source so that a suspicious payload can be attributed after the fact.
 
-Open question: whether the manager should additionally strip or quarantine specific fields (e.g. `url`, `sameAs`) when the producer is `third-party` and `unknown`. The current design trusts producer URLs subject to normalization.
+Open question: whether to strip or quarantine specific fields (`url`, `sameAs`) when the producer is `third-party` and `unknown`. See [Appendix B: Open Questions](#appendix-b-open-questions).
+
+---
+
+## Part VI — Reference
 
 ### Relationship To The Authoring Catalog
+
+*Runtime truth here; authoring truth in the catalog.*
 
 This document and [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json) serve complementary but different roles.
 
@@ -685,43 +781,19 @@ Use [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structu
 * site-specific mappings
 * authoring-oriented examples
 
-As conventions stabilize, the following are good candidates to add or strengthen in [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json):
+As conventions stabilize, these are good candidates to add or strengthen in the authoring catalog:
 
 * the linked `WebPage` plus primary-entity pattern
 * the canonical Adobe `Organization` definition and stub
 * page-scoped canonical id conventions for common entity types
 
-### Limitations And Future Work
-
-The current document intentionally does not fully specify:
-
-* type-specific field-level merge semantics for every schema type
-* the full transform catalog
-* every possible primary-entity precedence rule outside the current editorial and product examples
-
-Concrete open work items, cross-linked to the sections that frame them:
-
-* calibrate the performance budgets and bail-out threshold in [Performance Considerations](#performance-considerations)
-* finalize the direct-push signature and module path in [Direct-Push API Surface](#direct-push-api-surface)
-* decide whether to mirror the external `tests` dataset locally — see [Testing Strategy](#testing-strategy)
-* decide the coexistence model for producers when the flag is disabled — see [Rollback And Coexistence](#rollback-and-coexistence)
-* decide third-party field quarantine policy — see [Security Considerations](#security-considerations)
-
-Future work should converge first-party producers toward direct push while preserving backward compatibility with observed JSON-LD in the page.
-
----
-
-## Part V — Reference
-
-Part V is reference material. It contains full worked graph examples for the two canonical page shapes and the external links cited throughout the document.
-
 ### Appendix A: Canonical Examples
 
-Appendix A intentionally favors a small number of representative graph-level examples over many isolated entity snippets. The goal is to show canonical ids, cross-entity linking, and overall graph shape in one place.
+Appendix A favors a small number of representative graph-level examples over many isolated entity snippets, so canonical ids, cross-entity linking, and overall graph shape can be seen in one place.
 
 #### Example 1: Editorial page graph
 
-This example shows the canonical linked pattern for an editorial page with a `WebPage`, `Article`, `BreadcrumbList`, `HowTo`, `FAQPage`, and shared Adobe `Organization`.
+Canonical linked pattern for an editorial page with a `WebPage`, `Article`, `BreadcrumbList`, `HowTo`, `FAQPage`, and shared Adobe `Organization`.
 
 ```json
 {
@@ -825,9 +897,15 @@ This example shows the canonical linked pattern for an editorial page with a `We
 }
 ```
 
+**What to notice:**
+
+* `Organization` is declared once and referenced by `@id` from both `WebPage.publisher` and `Article.publisher`.
+* `Article.hasPart` references `BreadcrumbList`, `HowTo`, and `FAQPage` by `@id` rather than nesting their content — this is the linked-entity pattern.
+* Every canonical `@id` is either the canonical Adobe `Organization` URL or `${pageUrl}#<role>`.
+
 #### Example 2: Product-oriented page graph
 
-This example shows a page whose primary entity is `SoftwareApplication` rather than `Article`, while still following the same page-container and shared-organization conventions.
+A page whose primary entity is `SoftwareApplication` rather than `Article`, following the same page-container and shared-organization conventions.
 
 ```json
 {
@@ -891,6 +969,35 @@ This example shows a page whose primary entity is `SoftwareApplication` rather t
   ]
 }
 ```
+
+**What to notice:**
+
+* `WebPage.mainEntity` points to `SoftwareApplication`, not `Article` — the graph container is stable across page families, the primary entity varies.
+* `Offer` is a legitimately repeatable type, so the manager preserves both the paid offer and free trial rather than deduping them.
+* `Brand` is a supplemental entity with its own `@id`, not nested anonymously inside `SoftwareApplication`.
+
+### Appendix B: Open Questions
+
+Decisions flagged throughout the document, collected here for focused review.
+
+| # | Question | Context | Current default |
+| --- | --- | --- | --- |
+| 1 | Rollout: specific dates, cohort ordering, and pass-rate thresholds? | [Rollout Timeline](#rollout-timeline) | Not yet set — awaiting SEO alignment |
+| 2 | Rollback: should disabling the flag always be a full fallback to unmanaged output, or should specific producers be allow-listed to continue direct-writing even when the manager is active? | [Rollback And Coexistence](#rollback-and-coexistence) | Full fallback |
+| 3 | Testing: should the external `tests` dataset also land as a local fixture for offline validation? | [Testing Strategy](#testing-strategy) | Treat external as the single source of truth |
+| 4 | Performance: concrete numeric budgets (max entities per page, max rebuild cost, max debounce catch-up size)? | [Performance Considerations](#performance-considerations) | Calibrate empirically during early rollout |
+| 5 | Direct push: exact module path and accessor signature? | [Direct-Push API Surface](#direct-push-api-surface) | `getJsonLdGraphManager()` accessor, path TBD |
+| 6 | Security: should third-party fields like `url` and `sameAs` be stripped or quarantined? | [Security Considerations](#security-considerations) | Trust producer URLs subject to normalization |
+
+### Appendix C: Limitations And Future Work
+
+The current document intentionally does not fully specify:
+
+* type-specific field-level merge semantics for every schema type
+* the full transform catalog
+* every possible primary-entity precedence rule outside the current editorial and product examples
+
+Future work should converge first-party producers toward direct push while preserving backward compatibility with observed JSON-LD in the page.
 
 ### References
 
