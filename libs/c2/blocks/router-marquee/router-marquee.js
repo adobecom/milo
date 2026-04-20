@@ -599,7 +599,12 @@ const startAutoplay = (slides, cards, container, block) => {
   handleDesktopSmallVp();
 
   container.addEventListener('mouseover', pauseOnInteraction);
-  container.addEventListener('focusin', pauseOnInteraction);
+  container.addEventListener('focusin', (e) => {
+    if (!e.target.closest('.rm-pause-play')) {
+      cancelLeaveTimer();
+      if (!paused) pause();
+    }
+  });
   block.addEventListener('mouseenter', () => { if (!noHover()) cancelLeaveTimer(); });
 
   block.addEventListener('mouseleave', () => {
@@ -650,8 +655,12 @@ const startAutoplay = (slides, cards, container, block) => {
 
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
+  const total = slides.length;
   slides.forEach((slide, i) => {
     decorateSlide(slide);
+    slide.setAttribute('role', 'group');
+    slide.setAttribute('aria-roledescription', 'slide');
+    slide.setAttribute('aria-label', `${i + 1} of ${total}`);
     if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
   });
   slides[0]?.classList.add('is-active');
@@ -660,7 +669,7 @@ const buildViewport = (viewport, slides) => {
   cards.children[0]?.classList.add('is-active');
   const controls = createTag('div', { class: 'rm-controls' });
   controls.append(cards, buildPlayPause());
-  container.append(...slides, controls);
+  container.append(controls, ...slides);
   return container;
 };
 
