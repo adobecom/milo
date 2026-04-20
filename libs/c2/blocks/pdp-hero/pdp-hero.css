@@ -6,10 +6,14 @@
 }
 
 .pdp-hero-header {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-24);
   padding: var(--s2a-spacing-24);
+  background: var(--s2a-color-gray-25);
+  border-radius: 0 0 32px 32px;
 }
 
 .pdp-hero-content {
@@ -35,9 +39,12 @@
 }
 
 .pdp-hero-body {
-  font-size: var(--s2a-typography-font-size-body-lg);
-  line-height: var(--s2a-typography-line-height-body-lg);
-  letter-spacing: var(--s2a-typography-letter-spacing-body-lg);
+  font-family: var(--heading-font-family);
+  font-weight: var(--s2a-font-weight-adobe-clean-black);
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: -0.96px;
+  color: #5a5a5a;
   max-width: 671px;
 }
 
@@ -49,7 +56,6 @@
   border-radius: 1000px;
   padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-32);
   align-self: flex-start;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
 .pdp-hero-price-info {
@@ -77,8 +83,11 @@
   position: relative;
   display: flex;
   justify-content: center;
-  align-items: flex-end;
+  align-items: center;
   overflow: hidden;
+  margin-top: -32px;
+  min-height: 480px;
+  padding: calc(32px + var(--s2a-spacing-40)) var(--s2a-spacing-24) var(--s2a-spacing-40);
 }
 
 .pdp-hero-background {
@@ -113,7 +122,7 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
-  padding: 0 var(--s2a-spacing-24);
+  padding: 0;
 }
 
 .pdp-hero-foreground picture,
@@ -121,7 +130,8 @@
   display: block;
   width: 100%;
   height: auto;
-  border-radius: var(--s2a-border-radius-md) var(--s2a-border-radius-md) 0 0;
+  border-radius: var(--s2a-border-radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
 }
 
@@ -132,7 +142,9 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--s2a-spacing-40);
-    padding: var(--s2a-spacing-40);
+    padding: var(--s2a-spacing-80) var(--s2a-spacing-40) var(--s2a-spacing-40);
+    min-height: 480px;
+    border-radius: 0 0 48px 48px;
   }
 
   .pdp-hero-content {
@@ -140,19 +152,25 @@
     min-width: 0;
   }
 
+  .pdp-hero-body {
+    font-size: 32px;
+    letter-spacing: -1.28px;
+  }
+
   .pdp-hero-pricing {
     align-self: flex-end;
     flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
   .pdp-hero-media {
-    min-height: 640px;
-    padding-top: var(--s2a-spacing-64);
+    min-height: 720px;
+    margin-top: -48px;
+    padding: calc(48px + var(--s2a-spacing-64)) var(--s2a-spacing-40) var(--s2a-spacing-64);
   }
 
   .pdp-hero-foreground {
     max-width: 1000px;
-    padding: 0 var(--s2a-spacing-40);
   }
 }
 
@@ -160,8 +178,10 @@
 @media (width >= 1280px) {
   .pdp-hero-header {
     align-items: flex-end;
-    padding: var(--s2a-spacing-64) var(--s2a-spacing-40) var(--s2a-spacing-40);
+    padding: var(--s2a-spacing-80) var(--s2a-spacing-40) var(--s2a-spacing-40);
     gap: var(--s2a-spacing-40);
+    min-height: 580px;
+    border-radius: 0 0 52px 52px;
   }
 
   .pdp-hero-heading-row {
@@ -175,10 +195,13 @@
 
   .pdp-hero-body {
     max-width: 671px;
+    font-size: 36px;
+    letter-spacing: -1.44px;
   }
 
   .pdp-hero-media {
     min-height: 900px;
-    padding-top: var(--s2a-spacing-80);
+    margin-top: -52px;
+    padding: calc(52px + var(--s2a-spacing-80)) var(--s2a-spacing-40) var(--s2a-spacing-80);
   }
 }
