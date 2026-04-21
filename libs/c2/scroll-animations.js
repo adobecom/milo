@@ -1,4 +1,4 @@
-const vh = window.innerHeight;
+let vh = window.innerHeight;
 const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
 const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
   + '[class*="parallax-stagger-rtl"]';
@@ -546,6 +546,8 @@ export default function init() {
   initElasticCarousel();
   initCarouselC2();
   initGarageDoorReveal();
+
+  window.addEventListener('resize', () => { vh = window.innerHeight; });
 
   window.lenis.on('scroll', ({ scroll }) => {
     scrollTasks.forEach((task) => task(scroll));
