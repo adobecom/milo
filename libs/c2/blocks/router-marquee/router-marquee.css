@@ -307,6 +307,14 @@
     transform: rotate(180deg);
   }
 
+  [dir="rtl"] .rm-arrow-next svg {
+    transform: none;
+  }
+
+  [dir="rtl"] .rm-card-reset svg {
+    transform: scaleX(-1);
+  }
+
   .rm-controls {
     overflow: hidden;
   }
@@ -379,8 +387,18 @@
     padding: 0  0 var(--s2a-layout-sm) var(--s2a-spacing-24);
   }
 
+  [dir="rtl"] .rm-controls {
+    padding-right: var(--s2a-spacing-24);
+    padding-left: 0;
+  }
+
   .rm-controls-top {
     padding-right: var(--s2a-spacing-24);
+  }
+
+  [dir="rtl"] .rm-controls-top {
+    padding-right: 0;
+    padding-left: var(--s2a-spacing-24);
   }
 }
 
@@ -411,8 +429,18 @@
     padding: 0 0 var(--s2a-layout-sm) 8.333%;
   }
 
+  [dir="rtl"] .rm-controls {
+    padding-right: 8.333%;
+    padding-left: 0;
+  }
+
   .rm-controls-top {
     padding-right: 8.333%;
+  }
+
+  [dir="rtl"] .rm-controls-top {
+    padding-right: 0;
+    padding-left: 8.333%;
   }
 }
 
