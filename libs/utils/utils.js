@@ -711,7 +711,7 @@ async function loadQueryIndexes(prefix, links = []) {
 
   lingoSiteMapping = (async () => {
     try {
-      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping-vhargrave.json`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
       siteQueryIndexMapLingo = json['site-query-index-map']?.data ?? [];
