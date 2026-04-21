@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+const BOT_RE = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -913,6 +915,8 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
+  if (BOT_RE.test(navigator.userAgent)) return null;
+
   const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
   const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
   const country = akamaiLocale || sessionStorage.getItem('akamai');
@@ -954,11 +958,13 @@ export async function resolveDetectedMarketCountry() {
     countryFromGeo,
   );
   if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = normCountryCode(await getAkamaiCode());
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+    if (!BOT_RE.test(navigator.userAgent)) {
+      try {
+        const { default: getAkamaiCode } = await import('./geo.js');
+        detectedMarket = normCountryCode(await getAkamaiCode());
+      } catch (error) {
+        window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
+      }
     }
   }
   return detectedMarket;

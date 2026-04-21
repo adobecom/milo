@@ -2660,4 +2660,48 @@ describe('Utils', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
   });
+
+  describe('getCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+    let savedFetch;
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      window.fetch = savedFetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('should return null for bot user-agents without fetching geo', async () => {
+      const fetchSpy = sinon.spy();
+      window.fetch = fetchSpy;
+      Object.defineProperty(navigator, 'userAgent', { value: 'Googlebot/2.1', writable: true });
+      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
+      resetIsBotForTesting();
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+      expect(fetchSpy.called).to.be.false;
+    });
+
+    it('should return null for bots even when akamaiLocale param is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
+      resetIsBotForTesting();
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots even when sessionStorage akamai is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'ClaudeBot/1.0', writable: true });
+      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
+      resetIsBotForTesting();
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+  });
 });
