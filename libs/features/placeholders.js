@@ -58,8 +58,7 @@ function keyToStr(key) {
   return key.replaceAll('-', ' ');
 }
 
-const isGeoKey = (key) => key.endsWith('-geo');
-const stripGeo = (key) => key.slice(0, -4);
+const isGeoIpKey = (key) => key.endsWith('-geo-ip');
 
 const geoPlaceholderCache = new Map();
 export function resetGeoPlaceholderCache() { geoPlaceholderCache.clear(); }
@@ -146,8 +145,6 @@ async function getPlaceholder(key, config, sheet) {
 
   if (config.placeholders?.[key]) return config.placeholders[key];
 
-  if (isGeoKey(key)) return getPlaceholder(stripGeo(key), config, sheet);
-
   let placeholders;
 
   if (geoLocDisabled === 'on') {
@@ -166,15 +163,15 @@ async function getPlaceholder(key, config, sheet) {
   return keyToStr(key);
 }
 
-async function resolveGeoKey(key, config, sheet) {
-  const baseKey = stripGeo(key);
+async function resolveGeoIpKey(key, config, sheet) {
+  if (config.placeholders?.[key]) return config.placeholders[key];
   const cacheKey = config.locale?.contentRoot ?? '';
   if (!geoPlaceholderCache.has(cacheKey)) {
     geoPlaceholderCache.set(cacheKey, getGeoPlaceholders(config, sheet));
   }
   const geoPlaceholders = await geoPlaceholderCache.get(cacheKey);
-  if (typeof geoPlaceholders?.[baseKey] === 'string') return geoPlaceholders[baseKey];
-  return getPlaceholder(baseKey, config, sheet);
+  if (typeof geoPlaceholders?.[key] === 'string') return geoPlaceholders[key];
+  return getPlaceholder(key, config, sheet);
 }
 
 export async function replaceKey(key, config, sheet = 'default') {
@@ -196,11 +193,6 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
   return placeholders;
 }
 
-function isTelContext(text, matchIndex) {
-  const preceding = text.slice(Math.max(0, matchIndex - 10), matchIndex);
-  return /(?:^|["'=\s])tel:/i.test(preceding);
-}
-
 export async function replaceText(
   text,
   config,
@@ -214,9 +206,9 @@ export async function replaceText(
     return text;
   }
   const keys = Array.from(matches, (match) => match[1] || match[2]);
-  const resolved = await Promise.all(keys.map(async (key, idx) => {
-    if (isGeoKey(key) && isTelContext(text, matches[idx].index)) {
-      return resolveGeoKey(key, config, sheet);
+  const resolved = await Promise.all(keys.map(async (key) => {
+    if (isGeoIpKey(key)) {
+      return resolveGeoIpKey(key, config, sheet);
     }
     return getPlaceholder(key, config, sheet);
   }));
@@ -228,14 +220,6 @@ export async function replaceText(
   return finalText;
 }
 
-function findGeoKeyInTelHref(el) {
-  if (el.tagName !== 'A') return null;
-  const href = el.getAttribute('href') || '';
-  if (!/^tel:/i.test(href)) return null;
-  const geoMatch = href.match(/{{(.*?-geo)}}|%7B%7B(.*?-geo)%7D%7D/);
-  return geoMatch ? (geoMatch[1] || geoMatch[2]) : null;
-}
-
 export async function decoratePlaceholderArea({
   placeholderPath,
   placeholderRequest,
@@ -244,13 +228,10 @@ export async function decoratePlaceholderArea({
   if (!nodes.length) return;
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
-  const geoLinks = [];
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
-      const geoKey = findGeoKeyInTelHref(nodeEl);
-      if (geoKey) geoLinks.push({ el: nodeEl, geoKey });
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
         const attrVal = await replaceText(attr.value, config);
         return { name: attr.name, value: attrVal };
@@ -262,12 +243,4 @@ export async function decoratePlaceholderArea({
     }
   });
   await Promise.all(replaceNodes);
-  if (geoLinks.length) {
-    await Promise.all(geoLinks.map(async ({ el, geoKey }) => {
-      const geoValue = await resolveGeoKey(geoKey, config);
-      if (geoValue && geoValue !== keyToStr(stripGeo(geoKey))) {
-        el.textContent = geoValue;
-      }
-    }));
-  }
 }

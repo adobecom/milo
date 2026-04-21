@@ -20,6 +20,14 @@
       "value": "800 12345 6789"
     },
     {
+      "key": "phone-number-geo-ip",
+      "value": "800 555 1234"
+    },
+    {
+      "key": "buy-now-geo-ip",
+      "value": "Buy now"
+    },
+    {
       "key": "empty-value",
       "value": ""
     },
