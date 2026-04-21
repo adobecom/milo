@@ -916,7 +916,7 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
-  if (BOT_RE.test(navigator.userAgent)) return null;
+  if (BOT_REGEX.test(navigator.userAgent)) return null;
 
   const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
   const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
@@ -959,7 +959,7 @@ export async function resolveDetectedMarketCountry() {
     countryFromGeo,
   );
   if (!detectedMarket) {
-    if (!BOT_RE.test(navigator.userAgent)) {
+    if (!BOT_REGEX.test(navigator.userAgent)) {
       try {
         const { default: getAkamaiCode } = await import('./geo.js');
         detectedMarket = normCountryCode(await getAkamaiCode());
