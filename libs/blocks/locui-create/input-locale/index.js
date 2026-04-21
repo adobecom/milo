@@ -132,11 +132,14 @@ export default function useInputLocale() {
         groupedLocales[language].push(locale);
       }
     });
-    return Object.entries(groupedLocales).map(([language, localeList]) => ({
-      language,
-      locales: project.value.type === PROJECT_TYPES.translation ? [] : localeList,
-      langCode: languageCodes[language],
-    }));
+    return Object.entries(groupedLocales).map(([language, localeList]) => {
+      if (project.value.type === PROJECT_TYPES.translation) {
+        const langDetails = languagesList.find((l) => l.languagecode === languageCodes[language]);
+        const defaultLocales = langDetails?.defaultlocales ? langDetails.defaultlocales.split(',') : [];
+        return { language, locales: defaultLocales, langCode: languageCodes[language] };
+      }
+      return { language, locales: localeList, langCode: languageCodes[language] };
+    });
   };
 
   const updateActiveLocales = (localesToUpdate, isDeselecting = false, languageCode = null) => {
@@ -190,17 +193,24 @@ export default function useInputLocale() {
       }, {}),
     }));
     const newLocalesWithLangCode = [];
+    const effectiveLocales = [];
+    const isRollout = project.value.type !== PROJECT_TYPES.translation;
     regionCountryCodes.forEach((locale) => {
       const languages = findLanguageForLocale(locale);
       languages?.forEach((language) => {
         newLocalesWithLangCode.push(`${language.languagecode}|${locale}`);
+        if (isRollout && language.defaultlocales) {
+          const defaults = language.defaultlocales.split(',');
+          if (!defaults.includes(locale)) return;
+        }
+        if (!effectiveLocales.includes(locale)) effectiveLocales.push(locale);
       });
     });
     setSelectedLocale((prev) => [
       ...prev,
       ...newLocalesWithLangCode.filter((code) => !prev.includes(code)),
     ]);
-    updateActiveLocales(regionCountryCodes);
+    updateActiveLocales(effectiveLocales);
   };
 
   const deselectRegion = (regionKey, regionCountryCodes) => {
@@ -302,16 +312,21 @@ export default function useInputLocale() {
   };
 
   const selectLanguage = (lang) => {
-    const languageCodes = lang.livecopies.split(',');
-    const isDeselecting = languageCodes.every((code) => selectedLocaleSet.has(`${lang.languagecode}|${code}`));
+    const allLivecopies = lang.livecopies.split(',');
+    const defaultCodes = (lang.defaultlocales || lang.livecopies).split(',');
+    const isDeselecting = allLivecopies.some((code) => selectedLocaleSet.has(`${lang.languagecode}|${code}`));
     const updatedLocale = isDeselecting
       ? selectedLocale.filter((localeKey) => {
         const [langCode, locale] = parseLocaleKey(localeKey);
-        return langCode !== lang.languagecode || !languageCodes.includes(locale);
+        return langCode !== lang.languagecode || !allLivecopies.includes(locale);
       })
-      : [...selectedLocale, ...languageCodes.map((code) => `${lang.languagecode}|${code}`)];
+      : [...selectedLocale, ...allLivecopies.map((code) => `${lang.languagecode}|${code}`)];
     setSelectedLocale(updatedLocale);
-    updateActiveLocales(languageCodes, isDeselecting, lang.languagecode);
+    updateActiveLocales(
+      isDeselecting ? allLivecopies : defaultCodes,
+      isDeselecting,
+      lang.languagecode,
+    );
   };
 
   const toggleLocale = (localeKey) => {
