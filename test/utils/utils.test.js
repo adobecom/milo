@@ -2680,8 +2680,6 @@ describe('Utils', () => {
       const fetchSpy = sinon.spy();
       window.fetch = fetchSpy;
       Object.defineProperty(navigator, 'userAgent', { value: 'Googlebot/2.1', writable: true });
-      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
-      resetIsBotForTesting();
       const result = await utils.getCountry();
       expect(result).to.be.null;
       expect(fetchSpy.called).to.be.false;
@@ -2689,16 +2687,12 @@ describe('Utils', () => {
 
     it('should return null for bots even when akamaiLocale param is set', async () => {
       Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
-      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
-      resetIsBotForTesting();
       const result = await utils.getCountry();
       expect(result).to.be.null;
     });
 
     it('should return null for bots even when sessionStorage akamai is set', async () => {
       Object.defineProperty(navigator, 'userAgent', { value: 'ClaudeBot/1.0', writable: true });
-      const { resetIsBotForTesting } = await import('../../libs/utils/bot-detection.js');
-      resetIsBotForTesting();
       sessionStorage.setItem('akamai', 'fr');
       const result = await utils.getCountry();
       expect(result).to.be.null;

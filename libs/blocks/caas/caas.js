@@ -10,6 +10,7 @@ import {
   createIntersectionObserver,
   getConfig,
   getMetadata,
+  isBot,
   parseEncodedConfig,
   SLD,
 } from '../../utils/utils.js';
@@ -82,7 +83,6 @@ const loadCaas = async (a) => {
 };
 
 export default async function init(link) {
-  const { isBot } = await import('../../utils/bot-detection.js');
   if (link.textContent.includes('no-lazy') || isBot()) {
     loadCaas(link);
   } else {
