@@ -139,8 +139,7 @@ const [getCaasTags, loadCaasTags] = (() => {
 const getTag = (tagName, errors) => {
   if (!tagName) return undefined;
   const caasTags = getCaasTags();
-  // search all except Events first
-  const tag = findTag(caasTags, tagName, ['Events']) || findTag(caasTags.events.tags, tagName, []);
+  const tag = findTag(caasTags, tagName);
 
   if (!tag) {
     errors.push(tagName);
