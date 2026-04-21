@@ -180,9 +180,8 @@ export const formSuccess = (formEl, formData) => {
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
 
-  if (getMetadata('marketo-ims')) {
-    const data = window.mcz_marketoForm_pref || {};
-    const redirect = data?.form?.success?.content;
+  if (formData?.[SUCCESS_TYPE] === 'ims') {
+    const redirect = formData?.[SUCCESS_CONTENT];
 
     const emailInput = formEl.querySelector('input[name="Email"]');
     const email = emailInput?.value;
@@ -401,6 +400,12 @@ export default async function init(el) {
     el.classList.add('hide-block');
     toggleSuccessSection(formData);
     return;
+  }
+
+  const imsSuccessType = getMetadata('marketo-ims');
+
+  if (imsSuccessType) {
+    formData[SUCCESS_TYPE] = 'ims';
   }
 
   formData[SUCCESS_TYPE] = formData[SUCCESS_TYPE] || 'redirect';
