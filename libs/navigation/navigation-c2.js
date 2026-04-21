@@ -115,7 +115,7 @@ export default async function loadBlock(configs, customLib) {
           };
 
           setMetaTags(metaTags, footerConfigs, createTag);
-          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
+          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer-c2.css`));
           const { default: init } = await import('../c2/blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, footerConfigs);
         } catch (e) {
