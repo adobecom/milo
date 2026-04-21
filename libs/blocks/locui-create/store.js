@@ -83,10 +83,10 @@ export async function getUserToken() {
   return userToken;
 }
 
-async function fetchLocales(tenantBaseUrl) {
+async function fetchLocales(tenantBaseUrl, configName = 'config') {
   try {
     const response = await fetch(
-      `${tenantBaseUrl}/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
+      `${tenantBaseUrl}/.milo/${configName}.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
     );
     if (!response.ok) {
       throw new Error(`Server Error: ${response.status}`);
@@ -105,7 +105,13 @@ async function fetchLocales(tenantBaseUrl) {
 export async function fetchLocaleDetails() {
   try {
     loading.value = true;
-    let localeData = await fetchLocales(origin);
+    let localeData = null;
+    if (env.value === 'stage' || env.value === 'local') {
+      localeData = await fetchLocales(origin, 'config-stage');
+    }
+    if (!localeData) {
+      localeData = await fetchLocales(origin);
+    }
     if (!localeData) {
       localeData = await fetchLocales('https://main--federal--adobecom.aem.page');
     }
