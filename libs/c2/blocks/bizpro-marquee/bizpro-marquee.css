@@ -42,6 +42,48 @@
   }
 }
 
+.bizpro-marquee-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-16);
+  padding: var(--s2a-spacing-12);
+  border-radius: var(--s2a-spacing-16);
+  background: var(--s2a-color-gray-1000);
+  color: #fff;
+  text-decoration: none;
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: var(--s2a-typography-font-size-eyebrow);
+  line-height: var(--s2a-typography-line-height-eyebrow);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+}
+
+.bizpro-marquee-cta:hover,
+.bizpro-marquee-cta:focus-visible {
+  color: #fff;
+  text-decoration: none;
+}
+
+.bizpro-marquee-cta-icon,
+.bizpro-marquee-cta-plus {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.bizpro-marquee-cta-icon svg,
+.bizpro-marquee-cta-plus svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.bizpro-marquee-cta-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .bizpro-marquee-mosaic {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
