@@ -28,6 +28,7 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
@@ -38,16 +39,6 @@ function getBetaLabel() {
 
 function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
-}
-
-function updateModalHeight() {
-  const modal = document.getElementById('brand-concierge-modal');
-  if (!modal) return;
-  const isMobile = window.innerWidth < 768;
-  const marginTop = isMobile ? 22 : 32;
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
-  modal.style.height = `${modalHeight}px`;
 }
 
 export function updateReplicatedValue(textareaWrapper, textarea) {
@@ -172,6 +163,7 @@ async function openSusiLightModal() {
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -240,7 +232,6 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  updateModalHeight();
 
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
@@ -259,6 +250,18 @@ async function openChatModal(initialMessage, el) {
   const { userAgent, language } = window.navigator;
 
   const onBeforeEventSend = (content) => {
+    const MEETING_EVENT_TYPES = [
+      'form-fetch',
+      'form-submit',
+      'calendar-fetch',
+      'calendar-submit',
+      'conversation-command',
+    ];
+
+    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
+      return;
+    }
+
     if (!bcToken) {
       bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
     }
@@ -314,22 +317,6 @@ async function openChatModal(initialMessage, el) {
       openSusiLightModal();
     }
   });
-
-  const handleViewportResize = () => updateModalHeight();
-  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
-  window.visualViewport?.addEventListener('resize', handleViewportResize);
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleOrientationChange);
-  const cleanup = () => {
-    window.visualViewport?.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('orientationchange', handleOrientationChange);
-  };
-  const handleBCModalClose = () => {
-    cleanup();
-    window.removeEventListener('milo:modal:closed', handleBCModalClose);
-  };
-  window.addEventListener('milo:modal:closed', handleBCModalClose);
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
@@ -502,7 +489,7 @@ function decorateFloatingButton(el) {
 
   const hideFloatingButton = () => {
     floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tab-index', '-1');
+    floatingContainer.setAttribute('tabindex', '-1');
     floatingContainer.blur();
     floatingButton.classList.add('floating-hidden');
     floatingButton.classList.remove('floating-show');
@@ -510,7 +497,7 @@ function decorateFloatingButton(el) {
 
   const showFloatingButton = () => {
     floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tab-index');
+    floatingContainer.removeAttribute('tabindex');
     floatingButton.classList.remove('floating-hidden');
     floatingButton.classList.add('floating-show');
   };
@@ -678,6 +665,12 @@ export default async function init(el) {
   } else if (webClient === 'baseStage') {
     logWebClient('baseStage', baseStage);
     src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
   }
 
   loadScript(src);
