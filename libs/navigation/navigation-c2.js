@@ -30,7 +30,6 @@ export default async function loadBlock(configs, customLib) {
   const miloLibs = resolveMiloLibs(env, customLib);
   await loadStandaloneNavigationStyles(theme, miloLibs);
 
-  // Relative paths work just fine since they exist in the context of this file's origin
   const [
     { default: bootstrapBlock },
     { default: locales },
@@ -90,7 +89,7 @@ export default async function loadBlock(configs, customLib) {
             { key: 'productEntryCta', name: 'product-entry-cta' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions } = await import('../c2/blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, gnavConfigs);
           window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();
@@ -132,4 +131,4 @@ export default async function loadBlock(configs, customLib) {
   }
 }
 
-window.loadNavigation = loadBlock;
+window.loadNavigationC2 = loadBlock;

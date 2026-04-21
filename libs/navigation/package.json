@@ -3,6 +3,10 @@
   "version": "0.0.17",
   "description": "",
   "main": "dist/navigation.js",
+  "exports": {
+    ".": "./dist/navigation.js",
+    "./navigation-c2": "./dist/navigation-c2.js"
+  },
   "type": "module",
   "scripts": {
     "build": "node ./build.mjs"

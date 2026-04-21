@@ -60,7 +60,7 @@ const LitResolver = {
   name: 'lit-resolver',
   setup({ onResolve }) {
     // Resolve lit-all.min.js imports to the actual file location
-    onResolve({ filter: /lit-all\.min\.js$/ }, (args) => {
+    onResolve({ filter: /lit-all\.min\.js$/ }, () => {
       const litPath = nodepath.resolve(__dirname, '../deps/lit-all.min.js');
       return { path: litPath };
     });
@@ -68,7 +68,7 @@ const LitResolver = {
 };
 
 await esbuild.build({
-  entryPoints: ['navigation.js'],
+  entryPoints: ['navigation.js', 'navigation-c2.js'],
   bundle: true,
   splitting: true,
   format: 'esm',
