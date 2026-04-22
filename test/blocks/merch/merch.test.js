@@ -279,19 +279,6 @@ describe('Merch Block', () => {
       expect(s.country).to.equal('US');
     });
 
-    it('should not override Puerto Rico path country with geo IP', async () => {
-      sessionStorage.setItem('akamai', 'ES');
-      const geoDetectionMeta = document.createElement('meta');
-      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
-      geoDetectionMeta.setAttribute('content', 'on');
-      document.head.append(geoDetectionMeta);
-      const settings = await getLocaleSettings({ prefix: '/pr' });
-      expect(settings?.locale).to.equal('es_PR');
-      expect(settings?.country).to.equal('US');
-      sessionStorage.removeItem('akamai');
-      geoDetectionMeta.remove();
-    });
-
     it('should use geo locale for lang-first sites', async () => {
       sessionStorage.setItem('akamai', 'ES');
       const geoDetectionMeta = document.createElement('meta');

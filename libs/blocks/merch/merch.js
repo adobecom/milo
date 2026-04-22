@@ -176,6 +176,12 @@ const GeoMap = {
 };
 
 /**
+ * MAS WCS `locale` when it differs from `${language}_${country}` derived from {@link GeoMap}.
+ * @type {Record<string, string>}
+ */
+const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -221,15 +227,12 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: geo === 'pr' ? 'es_PR' : `${language}_${country}`,
+    locale: EXTRA_MAS_LOCALES[geo] ?? `${language}_${country}`,
   };
 }
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  const localePrefix = miloLocale?.prefix || 'US_en';
-  const geo = localePrefix.replace('/', '') ?? '';
-  if (geo === 'pr') return settings;
   let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
@@ -1069,7 +1072,7 @@ export async function getCheckoutAction(
 }
 
 export function setPreview(attributes) {
-  if (isPreview || /^\/pr(\/|$)/.test(window.location.pathname)) {
+  if (isPreview) {
     attributes.preview = 'on';
   }
 }
