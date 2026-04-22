@@ -58,13 +58,11 @@ function keyToStr(key) {
 }
 
 const isGeoIpKey = (key) => key.endsWith('-geo-ip');
-
-const geoPlaceholderCache = new Map();
-export function resetGeoPlaceholderCache() { geoPlaceholderCache.clear(); }
+const PH_RE = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 async function getGeoPlaceholders(config, sheet) {
   // Dynamic to avoid circular dep with utils.js that hangs WTR test runner
-  const { lingoActive, getGeoLocalePrefix } = await import('../utils/utils.js');
+  const { lingoActive, getGeoLocalePrefix, getPlaceholderPaths } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
   const geoPrefix = await getGeoLocalePrefix();
   if (!geoPrefix) return null;
@@ -88,12 +86,8 @@ async function getGeoPlaceholders(config, sheet) {
   }
 
   const geoContentRoot = `${geoOrigin}${geoPrefix}${pathSuffix}`;
-  const geoConfig = { locale: { contentRoot: geoContentRoot } };
-
-  const root = `${geoContentRoot}/placeholders`;
-  const paths = [`${root}.json`];
-  if (siteConfig.env?.name !== 'prod'
-    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
+  const geoConfig = { locale: { contentRoot: geoContentRoot }, env: siteConfig.env || {} };
+  const paths = getPlaceholderPaths(geoConfig);
 
   const placeholderRequest = Promise.all(
     paths.map((path) => customFetch({ resource: path, withCacheRules: true }).catch(() => ({}))),
@@ -161,14 +155,6 @@ async function getPlaceholder(key, config, sheet) {
   return keyToStr(key);
 }
 
-function ensureGeoFetch(config, sheet) {
-  const cacheKey = config.locale?.contentRoot ?? '';
-  if (!geoPlaceholderCache.has(cacheKey)) {
-    geoPlaceholderCache.set(cacheKey, getGeoPlaceholders(config, sheet));
-  }
-  return geoPlaceholderCache.get(cacheKey);
-}
-
 export async function replaceKey(key, config, sheet = 'default') {
   if (typeof key !== 'string' || !key.length) return '';
 
@@ -191,7 +177,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(
   text,
   config,
-  regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g,
+  regex = PH_RE,
   sheet = 'default',
   { defer = false } = {},
 ) {
@@ -202,15 +188,9 @@ export async function replaceText(
     return text;
   }
   const keys = Array.from(matches, (match) => match[1] || match[2]);
-  const hasGeoIp = keys.some(isGeoIpKey);
-
   let geoPlaceholders = null;
-  if (hasGeoIp) {
-    if (defer) {
-      ensureGeoFetch(config, sheet);
-    } else {
-      geoPlaceholders = await ensureGeoFetch(config, sheet);
-    }
+  if (keys.some(isGeoIpKey) && !defer) {
+    geoPlaceholders = await getGeoPlaceholders(config, sheet);
   }
 
   const resolved = await Promise.all(keys.map(async (key) => {
@@ -231,7 +211,7 @@ const geoIpPattern = /{{(.*?-geo-ip)}}|%7B%7B(.*?-geo-ip)%7D%7D/g;
 const findGeoIpKeys = (t) => (t ? [...t.matchAll(geoIpPattern)].map((m) => m[1] || m[2]) : []);
 
 async function deferGeoIpUpdate(deferredItems, config, sheet) {
-  const geo = await ensureGeoFetch(config, sheet);
+  const geo = await getGeoPlaceholders(config, sheet);
   if (!geo) return;
   await Promise.all(deferredItems.map(async ({ node, type, attrName, key }) => {
     if (config.placeholders?.[key] || typeof geo[key] !== 'string') return;
@@ -255,17 +235,17 @@ export async function decoratePlaceholderArea({
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
   const deferred = [];
-  const opts = { defer: true };
+  const deferOpt = { defer: true };
   const track = (keys, item) => keys.forEach((key) => deferred.push({ ...item, key }));
 
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       track(findGeoIpKeys(nodeEl.nodeValue), { node: nodeEl, type: 'text' });
-      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, undefined, undefined, opts);
+      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, PH_RE, 'default', deferOpt);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
         track(findGeoIpKeys(attr.value), { node: nodeEl, type: 'attr', attrName: attr.name });
-        const val = await replaceText(attr.value, config, undefined, undefined, opts);
+        const val = await replaceText(attr.value, config, PH_RE, 'default', deferOpt);
         return { name: attr.name, value: val };
       });
       (await Promise.all(attrPromises)).forEach(({ name, value }) => {

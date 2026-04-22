@@ -6,7 +6,6 @@ import {
   replaceKey,
   replaceKeyArray,
   decoratePlaceholderArea,
-  resetGeoPlaceholderCache,
 } from '../../../libs/features/placeholders.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
@@ -135,7 +134,6 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
   function disableLingo() {
     if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
     sessionStorage.removeItem('akamai');
-    resetGeoPlaceholderCache();
   }
 
   afterEach(() => {
@@ -160,7 +158,6 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
     const cfg = getConfig();
     cfg.locale.contentRoot = '/test/features/placeholders';
-    resetGeoPlaceholderCache();
     const text = await replaceText('{{buy-now-geo-ip}}', cfg);
     expect(text).to.equal('Buy now');
   });
@@ -205,6 +202,19 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     const text = await replaceText('{{phone-number-geo-ip}}', cfg);
     expect(text).to.equal('MEP override value');
     delete cfg.placeholders;
+  });
+
+  it('resolves geo value for federated content root (GNAV path)', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const federatedConfig = {
+      locale: {
+        ...cfg.locale,
+        contentRoot: `${window.location.origin}/fr/federal/globalnav`,
+      },
+    };
+    const text = await replaceText('{{phone-number-geo-ip}}', federatedConfig);
+    expect(text).to.equal('+352 GNAV 99999');
   });
 
   it('deferred update skips keys overridden by MEP', async () => {

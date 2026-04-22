@@ -964,7 +964,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getGeoLocalePrefix() {
+export async function getLingoRegion() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -990,7 +990,7 @@ export async function getGeoLocalePrefix() {
   return regionKey ? regions[regionKey] : null;
 }
 
-export async function getMepLingoPrefix() {
+export async function getGeoLocalePrefix() {
   const region = await getLingoRegion();
   return region?.prefix ?? null;
 }
@@ -1787,7 +1787,7 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-function getPlaceholderPaths(config) {
+export function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
   if (config.env.name !== 'prod'
