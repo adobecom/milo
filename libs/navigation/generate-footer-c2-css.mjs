@@ -10,12 +10,14 @@ const sourcePaths = [
   path.resolve(fileDir, '../c2/blocks/global-footer/global-footer.css'),
   path.resolve(fileDir, '../c2/blocks/global-footer/menu/menu.css'),
   path.resolve(fileDir, '../c2/blocks/modal/modal.css'),
+  path.resolve(fileDir, '../c2/blocks/region-nav/region-nav.css'),
 ];
 
 const importLines = [
   "@import '../c2/blocks/global-footer/global-footer.css';",
   "@import '../c2/blocks/modal/modal.css';",
   "@import '../c2/blocks/global-footer/menu/menu.css';",
+  "@import '../c2/blocks/region-nav/region-nav.css';",
 ];
 
 const VAR_USAGE_RE = /var\(\s*(--[A-Za-z0-9-_]+)/g;

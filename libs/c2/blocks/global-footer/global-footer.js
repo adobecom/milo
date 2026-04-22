@@ -500,8 +500,8 @@ class Footer {
           // and we mustn't load region-nav twice.
           if (block.getAttribute('data-failed') !== 'true') return;
           block.classList.add('hide');
-          loadStyle(`${base}/blocks/region-nav/region-nav.css`);
-          const { default: initRegionNav } = await import('../../../blocks/region-nav/region-nav.js');
+          loadStyle(`${base}/c2/blocks/region-nav/region-nav.css`);
+          const { default: initRegionNav } = await import('../region-nav/region-nav.js');
           initRegionNav(block);
           // decoratePlaceholders(block, getConfig());
           block.classList.remove('hide');

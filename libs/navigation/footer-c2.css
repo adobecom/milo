@@ -3,6 +3,7 @@
 @import '../c2/blocks/global-footer/global-footer.css';
 @import '../c2/blocks/modal/modal.css';
 @import '../c2/blocks/global-footer/menu/menu.css';
+@import '../c2/blocks/region-nav/region-nav.css';
 
 :root {
   --s2a-color-gray-25: #fff;
@@ -19,14 +20,21 @@
   --s2a-spacing-40: 40px;
   --s2a-spacing-124: 124px;
   --s2a-spacing-160: 160px;
+  --s2a-font-family-adobe-clean-display: "Adobe Clean Display";
+  --s2a-font-letter-spacing-neg-0_48: -0.48px;
   --s2a-font-letter-spacing-neg-0_2: -0.2px;
   --s2a-font-letter-spacing-0_16: 0.16px;
   --s2a-font-letter-spacing-0_24: 0.24px;
   --s2a-font-line-height-16: 1.333;
   --s2a-font-line-height-20: 1.25;
+  --s2a-font-line-height-24: 1.2;
   --s2a-font-size-12: 0.75rem;
+  --s2a-font-size-14: 0.875rem;
   --s2a-font-size-16: 1rem;
+  --s2a-font-size-20: 1.25rem;
+  --s2a-font-size-24: 1.5rem;
   --s2a-font-weight-adobe-clean-bold: 700;
+  --s2a-font-weight-adobe-clean-display-black: 900;
   --s2a-border-radius-xs: var(--s2a-border-radius-4);
   --s2a-spacing-xs: var(--s2a-spacing-8);
   --s2a-spacing-sm: var(--s2a-spacing-12);
@@ -34,25 +42,37 @@
   --s2a-spacing-lg: var(--s2a-spacing-24);
   --s2a-spacing-xl: var(--s2a-spacing-32);
   --s2a-spacing-2xl: var(--s2a-spacing-40);
+  --s2a-font-family-heading: var(--s2a-font-family-adobe-clean-display);
+  --s2a-font-letter-spacing-4xl: var(--s2a-font-letter-spacing-neg-0_48);
   --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_2);
   --s2a-font-letter-spacing-7xl: var(--s2a-font-letter-spacing-0_16);
   --s2a-font-letter-spacing-8xl: var(--s2a-font-letter-spacing-0_24);
   --s2a-font-line-height-2xs: var(--s2a-font-line-height-16);
   --s2a-font-line-height-sm: var(--s2a-font-line-height-20);
+  --s2a-font-line-height-md: var(--s2a-font-line-height-24);
   --s2a-font-size-xs: var(--s2a-font-size-12);
+  --s2a-font-size-sm: var(--s2a-font-size-14);
   --s2a-font-size-md: var(--s2a-font-size-16);
+  --s2a-font-size-xl: var(--s2a-font-size-20);
+  --s2a-font-size-2xl: var(--s2a-font-size-24);
   --s2a-layout-lg: var(--s2a-spacing-124);
   --s2a-layout-xl: var(--s2a-spacing-160);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
+  --s2a-typography-font-size-title-4: var(--s2a-font-size-xl);
   --s2a-typography-font-size-body-md: var(--s2a-font-size-md);
+  --s2a-typography-font-size-body-sm: var(--s2a-font-size-sm);
   --s2a-typography-font-size-eyebrow: var(--s2a-font-size-md);
   --s2a-typography-font-size-caption: var(--s2a-font-size-xs);
+  --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-5xl);
   --s2a-typography-letter-spacing-body-md: var(--s2a-font-letter-spacing-7xl);
+  --s2a-typography-letter-spacing-body-sm: var(--s2a-font-letter-spacing-7xl);
   --s2a-typography-letter-spacing-eyebrow: var(--s2a-font-letter-spacing-5xl);
   --s2a-typography-letter-spacing-caption: var(--s2a-font-letter-spacing-8xl);
+  --s2a-typography-line-height-title-4: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-body-md: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
+  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --grid-margin-width-base: 24px;
   --grid-margin-width: var(--grid-margin-width-base);
   --grid-margin-width-target: var(--grid-margin-width-base);
@@ -65,7 +85,19 @@
 }
 @media (width >= 768px) {
   :root {
+    --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-4xl);
     --grid-margin-width-base: 8.333%;
+  }
+}
+@media (width >= 1024px) {
+  :root {
+    --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-4xl);
+  }
+}
+@media (width >= 1280px) {
+  :root {
+    --s2a-typography-font-size-title-4: var(--s2a-font-size-2xl);
+    --s2a-typography-line-height-title-4: var(--s2a-font-line-height-md);
   }
 }
 
