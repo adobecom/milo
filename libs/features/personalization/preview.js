@@ -137,7 +137,9 @@ function addPillEventListeners(div) {
     div.classList.toggle('mep-hidden');
   });
   div.querySelector('.mep-close').addEventListener('click', () => {
-    document.body.removeChild(document.querySelector('.mep-preview-overlay'));
+    const overlayEl = document.querySelector('.mep-preview-overlay');
+    overlayEl?.hidePopover?.();
+    document.body.removeChild(overlayEl);
   });
 }
 
@@ -720,7 +722,7 @@ async function createPreviewPill() {
   const mepConfig = parseMepConfig();
   if (!mepConfig) return;
   const { activities } = mepConfig;
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', popover: 'manual', 'data-lenis-prevent': '' });
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
@@ -729,6 +731,14 @@ async function createPreviewPill() {
   pill.append(await getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
+  overlay.showPopover();
+  if (window.lenis) {
+    const originalPrevent = window.lenis.options.prevent;
+    window.lenis.options.prevent = (node) => {
+      if (node.closest('.mep-preview-overlay')) return true;
+      return originalPrevent?.(node);
+    };
+  }
   addPillEventListeners(pill);
 }
 function addHighlightData(manifests) {
