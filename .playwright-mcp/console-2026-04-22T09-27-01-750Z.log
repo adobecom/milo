@@ -1,0 +1,5 @@
+[     341ms] [LOG] LANA Msg:  name=Gnav-Time-To-Visible,startTime=179.09999999403954,duration=106.29999999701977,url=http://localhost:6456/,errorType=i 
+Opts: {clientId: feds-milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 0.01} @ http://localhost:6456/libs/utils/lana.js:121
+[     356ms] [LOG] Going to iterate over instancesSettings @ https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js:10
+[     448ms] [LOG] LANA Msg:  name=Gnav-Init-Function-Time,startTime=179.09999999403954,duration=214.29999999701977,url=http://localhost:6456/,errorType=i 
+Opts: {clientId: feds-milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 0.01} @ http://localhost:6456/libs/utils/lana.js:121

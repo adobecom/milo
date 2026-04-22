@@ -1,0 +1,268 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation "Main" [ref=e4]:
+      - generic [ref=e5]:
+        - text: ☰
+        - link "Milo" [ref=e6] [cursor=pointer]:
+          - /url: http://localhost:6456/
+          - img [ref=e8]
+          - generic [ref=e10]: Milo
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - button "Explore" [ref=e14] [cursor=pointer]
+        - listitem [ref=e15]:
+          - link "No Menu" [ref=e16] [cursor=pointer]:
+            - /url: https://business.adobe.com/
+        - listitem [ref=e17]:
+          - button "Medium Menu" [ref=e18] [cursor=pointer]
+        - listitem [ref=e19]:
+          - button "Small Menu" [ref=e20] [cursor=pointer]
+        - listitem [ref=e21]:
+          - button "Large Menu" [ref=e22] [cursor=pointer]
+        - listitem [ref=e23]:
+          - link "800-555-1234" [ref=e24] [cursor=pointer]:
+            - /url: tel:800-555-1234
+            - text: 800-555-1234
+        - listitem [ref=e25]:
+          - link "Call to Action" [ref=e27] [cursor=pointer]:
+            - /url: https://www.adobe.com/
+      - button "Sign In" [ref=e29] [cursor=pointer]
+      - link "Adobe" [ref=e30] [cursor=pointer]:
+        - /url: https://www.adobe.com/
+        - img [ref=e32]
+  - main [ref=e34]:
+    - generic [ref=e41]:
+      - generic [ref=e42]:
+        - heading "Sorry, we couldn’t find that page." [level=1] [ref=e46]
+        - heading "Head over to the Adobe homepage, or check out some of our top products below." [level=2] [ref=e50]:
+          - text: Head over to the
+          - link "Adobe homepage" [ref=e51] [cursor=pointer]:
+            - /url: https://www.adobe.com/
+          - text: ", or check out some of our top products below."
+        - generic [ref=e55]:
+          - generic [ref=e58]:
+            - generic [ref=e59]:
+              - heading "Acrobat" [level=2] [ref=e60]
+              - paragraph [ref=e61]: Create, edit, sign, and manage your PDFs — quickly, easily, anywhere.
+            - link "Learn more" [ref=e65] [cursor=pointer]:
+              - /url: https://www.adobe.com/acrobat.html
+          - generic [ref=e68]:
+            - generic [ref=e69]:
+              - heading "Photoshop" [level=2] [ref=e70]
+              - paragraph [ref=e71]: Create gorgeous images, rich graphics, and incredible art.
+            - link "Learn more" [ref=e75] [cursor=pointer]:
+              - /url: https://www.adobe.com/products/photoshop.html
+          - generic [ref=e78]:
+            - generic [ref=e79]:
+              - heading "Adobe Express" [level=2] [ref=e80]
+              - paragraph [ref=e81]: Quickly and easily make standout content from thousands of beautiful templates.
+            - link "Learn more" [ref=e85] [cursor=pointer]:
+              - /url: https://www.adobe.com/express/?promoid=K42KVQKY&mv=other
+      - list [ref=e86]
+  - contentinfo [ref=e87]:
+    - generic [ref=e88]:
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - heading "Contact Us" [level=2] [ref=e92]
+            - list [ref=e94]:
+              - listitem [ref=e95]:
+                - link "Request a demo" [ref=e96] [cursor=pointer]:
+                  - /url: https://business.adobe.com/request-consultation/experience-cloud.html
+              - listitem [ref=e97]:
+                - link "Adobe.com" [ref=e98] [cursor=pointer]:
+                  - /url: https://www.adobe.com/index.html
+          - generic [ref=e99]:
+            - heading "Why Adobe" [level=2] [ref=e100]
+            - list [ref=e102]:
+              - listitem [ref=e103]:
+                - link "Why partner with Adobe" [ref=e104] [cursor=pointer]:
+                  - /url: https://business.adobe.com/why-adobe/why-partner-with-us.html
+              - listitem [ref=e105]:
+                - link "How we use our products" [ref=e106] [cursor=pointer]:
+                  - /url: https://business.adobe.com/why-adobe/how-we-use-our-products.html
+              - listitem [ref=e107]:
+                - link "Our partners" [ref=e108] [cursor=pointer]:
+                  - /url: https://business.adobe.com/customers/partners/main.html
+              - listitem [ref=e109]:
+                - link "Industry leadership" [ref=e110] [cursor=pointer]:
+                  - /url: https://business.adobe.com/resources/leader-in-experiences.html
+              - listitem [ref=e111]:
+                - link "Creative Cloud for Enterprise" [ref=e112] [cursor=pointer]:
+                  - /url: https://www.adobe.com/creativecloud/business/enterprise.html
+              - listitem [ref=e113]:
+                - link "Document Cloud for Business" [ref=e114] [cursor=pointer]:
+                  - /url: https://www.adobe.com/documentcloud/business.html
+        - generic [ref=e116]:
+          - heading "About Experience Cloud" [level=2] [ref=e117]
+          - list [ref=e119]:
+            - listitem [ref=e120]:
+              - link "Explore all products" [ref=e121] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/adobe-experience-cloud-products.html
+            - listitem [ref=e122]:
+              - link "Adobe Experience Platform" [ref=e123] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/experience-platform/adobe-experience-platform.html
+            - listitem [ref=e124]:
+              - link "Adobe Analytics" [ref=e125] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/analytics/adobe-analytics.html
+            - listitem [ref=e126]:
+              - link "Adobe Experience Manager Sites (CMS)" [ref=e127] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/experience-manager/sites/aem-sites.html
+            - listitem [ref=e128]:
+              - link "Adobe Experience Manager Assets (DAM)" [ref=e129] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/experience-manager/assets/aem-assets.html
+            - listitem [ref=e130]:
+              - link "Marketo Engage" [ref=e131] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/marketo/adobe-marketo.html
+            - listitem [ref=e132]:
+              - link "Adobe Commerce" [ref=e133] [cursor=pointer]:
+                - /url: https://business.adobe.com/products/magento/magento-commerce.html
+        - generic [ref=e135]:
+          - heading "Our solutions" [level=2] [ref=e136]
+          - list [ref=e138]:
+            - listitem [ref=e139]:
+              - link "Data insights & audiences" [ref=e140] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/data-insights-audiences.html
+            - listitem [ref=e141]:
+              - link "Experience management platform" [ref=e142] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/experience-management-platform.html
+            - listitem [ref=e143]:
+              - link "Content management" [ref=e144] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/content-management.html
+            - listitem [ref=e145]:
+              - link "Commerce" [ref=e146] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/commerce.html
+            - listitem [ref=e147]:
+              - link "Customer journeys" [ref=e148] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/customer-journeys.html
+            - listitem [ref=e149]:
+              - link "B2B marketing" [ref=e150] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/b2b-marketing.html
+            - listitem [ref=e151]:
+              - link "Digital enrollment & onboarding" [ref=e152] [cursor=pointer]:
+                - /url: https://business.adobe.com/solutions/digital-enrollment-onboarding.html
+        - generic [ref=e154]:
+          - heading "Resources" [level=2] [ref=e155]
+          - list [ref=e157]:
+            - listitem [ref=e158]:
+              - link "Resource center" [ref=e159] [cursor=pointer]:
+                - /url: https://business.adobe.com/resources/main.html
+            - listitem [ref=e160]:
+              - link "Customer success stories" [ref=e161] [cursor=pointer]:
+                - /url: https://business.adobe.com/customer-success-stories/index.html
+            - listitem [ref=e162]:
+              - link "Experience League (learn & support)" [ref=e163] [cursor=pointer]:
+                - /url: https://experienceleague.adobe.com/#home
+            - listitem [ref=e164]:
+              - link "Community forums" [ref=e165] [cursor=pointer]:
+                - /url: https://experienceleaguecommunities.adobe.com/
+            - listitem [ref=e166]:
+              - link "Glossary" [ref=e167] [cursor=pointer]:
+                - /url: https://business.adobe.com/glossary/index.html
+            - listitem [ref=e168]:
+              - link "Development resources" [ref=e169] [cursor=pointer]:
+                - /url: https://www.adobe.io/apis/experiencecloud.html
+        - generic [ref=e171]:
+          - heading "Company" [level=2] [ref=e172]
+          - list [ref=e174]:
+            - listitem [ref=e175]:
+              - link "About Adobe" [ref=e176] [cursor=pointer]:
+                - /url: https://www.adobe.com/about-adobe.html
+            - listitem [ref=e177]:
+              - link "Careers" [ref=e178] [cursor=pointer]:
+                - /url: https://www.adobe.com/careers.html
+            - listitem [ref=e179]:
+              - link "Newsroom" [ref=e180] [cursor=pointer]:
+                - /url: https://news.adobe.com/
+            - listitem [ref=e181]:
+              - link "Corporate responsibility" [ref=e182] [cursor=pointer]:
+                - /url: https://www.adobe.com/corporate-responsibility.html
+            - listitem [ref=e183]:
+              - link "Investor relations" [ref=e184] [cursor=pointer]:
+                - /url: https://www.adobe.com/investor-relations.html
+            - listitem [ref=e185]:
+              - link "Supply chain" [ref=e186] [cursor=pointer]:
+                - /url: https://www.adobe.com/corporate-responsibility/supply-chain.html
+            - listitem [ref=e187]:
+              - link "Trust center" [ref=e188] [cursor=pointer]:
+                - /url: https://www.adobe.com/trust.html
+            - listitem [ref=e189]:
+              - link "Events" [ref=e190] [cursor=pointer]:
+                - /url: https://www.adobe.com/events.html
+            - listitem [ref=e191]:
+              - link "Diversity & inclusion" [ref=e192] [cursor=pointer]:
+                - /url: https://www.adobe.com/diversity.html
+            - listitem [ref=e193]:
+              - link "Integrity" [ref=e194] [cursor=pointer]:
+                - /url: https://www.adobe.com/about-adobe/integrity.html
+            - listitem [ref=e195]:
+              - link "COVID-19" [ref=e196] [cursor=pointer]:
+                - /url: https://www.adobe.com/covid-19-response.html
+      - generic [ref=e198]:
+        - heading "Featured products" [level=2] [ref=e199]
+        - list [ref=e201]:
+          - listitem [ref=e202]:
+            - link "Adobe Acrobat Reader" [ref=e203] [cursor=pointer]:
+              - /url: https://get.adobe.com/reader/
+              - generic [ref=e207]: Adobe Acrobat Reader
+          - listitem [ref=e208]:
+            - link "Adobe Express" [ref=e209] [cursor=pointer]:
+              - /url: https://www.adobe.com/express/?promoid=Z2G1FSYV&mv=other
+              - generic [ref=e213]: Adobe Express
+          - listitem [ref=e214]:
+            - link "Photoshop" [ref=e215] [cursor=pointer]:
+              - /url: https://www.adobe.com/products/photoshop/free-trial-download.html
+              - generic [ref=e219]: Photoshop
+          - listitem [ref=e220]:
+            - link "Illustrator" [ref=e221] [cursor=pointer]:
+              - /url: https://www.adobe.com/products/illustrator/free-trial-download.html
+              - generic [ref=e225]: Illustrator
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - button "Change region" [ref=e229] [cursor=pointer]:
+            - img [ref=e230]
+            - generic [ref=e232]: Change region
+          - list [ref=e233]:
+            - listitem [ref=e234]:
+              - link "facebook" [ref=e235] [cursor=pointer]:
+                - /url: http://www.facebook.com/adobe
+                - img [ref=e236]
+            - listitem [ref=e238]:
+              - link "instagram" [ref=e239] [cursor=pointer]:
+                - /url: https://www.instagram.com/adobe/
+                - img [ref=e240]
+            - listitem [ref=e242]:
+              - link "twitter" [ref=e243] [cursor=pointer]:
+                - /url: https://twitter.com/Adobe
+                - img [ref=e244]
+            - listitem [ref=e246]:
+              - link "linkedin" [ref=e247] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/adobe
+                - img [ref=e248]
+          - img "Adobe" [ref=e250]:
+            - img [ref=e252]
+        - list [ref=e255]:
+          - listitem [ref=e256]:
+            - text: Copyright © 2026 All rights reserved.
+            - generic [ref=e257]: /
+          - listitem [ref=e258]:
+            - link "Privacy" [ref=e259] [cursor=pointer]:
+              - /url: https://www.adobe.com/privacy.html
+            - generic [ref=e260]: /
+          - listitem [ref=e261]:
+            - link "Terms of Use" [ref=e262] [cursor=pointer]:
+              - /url: https://www.adobe.com/legal/terms.html
+            - generic [ref=e263]: /
+          - listitem [ref=e264]:
+            - link "Cookie preferences" [ref=e265] [cursor=pointer]:
+              - /url: https://www.adobe.com/#openPrivacy
+            - generic [ref=e266]: /
+          - listitem [ref=e267]:
+            - link "Do not sell my personal information" [ref=e268] [cursor=pointer]:
+              - /url: https://www.adobe.com/privacy/ca-rights.html
+            - generic [ref=e269]: /
+          - listitem [ref=e270]:
+            - link "AdChoices" [ref=e271] [cursor=pointer]:
+              - /url: https://www.adobe.com/privacy/opt-out.html#interest-based-ads
+              - img [ref=e272]
+              - text: AdChoices

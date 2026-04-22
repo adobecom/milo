@@ -1,0 +1,6 @@
+[     493ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:6456/ie/drafts/dusan/document36:0
+[     504ms] [LOG] LANA Msg:  sendAnalyticsFunc is not a function 
+Opts: {clientId: milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 1} @ http://localhost:6456/libs/utils/lana.js:121
+[     582ms] [LOG] LANA Msg:  missing ".feds-utilities" container | gnav-source: http://localhost:6456/gnav | href: http://localhost:6456/drafts/dusan/document36 
+Opts: {clientId: feds-milo, endpoint: https://www.adobe.com/lana/ll, endpointStage: https://www.stage.adobe.com/lana/ll, errorType: e, sampleRate: 1} @ http://localhost:6456/libs/utils/lana.js:121
+[     601ms] [LOG] Going to iterate over instancesSettings @ https://assets.adobedtm.com/d4d114c60e50/a0e989131fd5/launch-2c94beadc94f-development.min.js:10

@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation "Main" [ref=e4]:
+      - generic [ref=e5]:
+        - text: ☰
+        - link "Milo" [ref=e6] [cursor=pointer]:
+          - /url: http://localhost:6456/
+          - img [ref=e8]
+          - generic [ref=e10]: Milo
+      - list [ref=e12]:
+        - listitem [ref=e13]:
+          - button "Milo Documentation" [ref=e14] [cursor=pointer]
+        - listitem [ref=e15]:
+          - link "Milo Kitchen Sink" [ref=e16] [cursor=pointer]:
+            - /url: /docs/library/kitchen-sink/
+        - listitem [ref=e17]:
+          - link "Milo for Devs" [ref=e18] [cursor=pointer]:
+            - /url: /docs/engineering/
+  - main [ref=e19]:
+    - generic [ref=e35]:
+      - generic [ref=e36]:
+        - heading "milo" [level=1] [ref=e37]
+        - paragraph [ref=e38]: Website foundation technology
+      - navigation [ref=e39]:
+        - list [ref=e40]:
+          - listitem [ref=e41]:
+            - link "About" [ref=e42] [cursor=pointer]:
+              - /url: /about/
+          - listitem [ref=e43]:
+            - link "Wiki" [ref=e44] [cursor=pointer]:
+              - /url: /wiki/
+          - listitem [ref=e45]:
+            - link "Docs" [ref=e46] [cursor=pointer]:
+              - /url: /docs/
+          - listitem [ref=e47]:
+            - link "Blog" [ref=e48] [cursor=pointer]:
+              - /url: /blog/
+    - generic [ref=e54]:
+      - generic [ref=e55]:
+        - paragraph
+        - heading "Get involved" [level=2] [ref=e56]
+        - paragraph [ref=e57]:
+          - link "#milo-community" [ref=e58] [cursor=pointer]:
+            - /url: https://adobe-mwp.slack.com/archives/C03B0BUA75E
+        - paragraph [ref=e59]:
+          - link "Github" [ref=e60] [cursor=pointer]:
+            - /url: https://github.com/adobecom/milo
+      - generic [ref=e61]:
+        - heading "Proudly made in:" [level=2] [ref=e62]
+        - paragraph [ref=e63]: CA, CH, IA, NC, UT
+  - contentinfo [ref=e65]
