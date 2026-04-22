@@ -9,7 +9,8 @@
   },
   "type": "module",
   "scripts": {
-    "build": "node ./build.mjs"
+    "generate:footer-c2-css": "node ./generate-footer-c2-css.mjs",
+    "build": "npm run generate:footer-c2-css && node ./build.mjs"
   },
   "files": ["dist"],
   "author": "",

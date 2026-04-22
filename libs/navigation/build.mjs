@@ -8,7 +8,7 @@ const __dirname = nodepath.dirname(fileURLToPath(import.meta.url)); // eslint-di
 fs.rmSync('./dist/', { recursive: true, force: true });
 
 await esbuild.build({
-  entryPoints: ['navigation.css', 'footer.css', 'dark-nav.css', 'base.css'],
+  entryPoints: ['navigation.css', 'footer.css', 'footer-c2.css', 'dark-nav.css', 'base.css'],
   bundle: true,
   minify: true,
   outdir: './dist/',
