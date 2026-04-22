@@ -221,5 +221,4 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     expect(link.textContent).to.equal('Call us');
     delete cfg.placeholders;
   });
-
 });
