@@ -265,10 +265,18 @@ describe('Merch Block', () => {
         { prefix: '/langstore/el', expectedLocale: 'el_GR' },
         { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
         { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
+        { prefix: '/pr', expectedLocale: 'es_PR' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it('should use es_PR, es, US for Puerto Rico path', () => {
+      const s = getMiloLocaleSettings({ prefix: '/pr' });
+      expect(s.locale).to.equal('es_PR');
+      expect(s.language).to.equal('es');
+      expect(s.country).to.equal('US');
     });
 
     it('should use geo locale for lang-first sites', async () => {
