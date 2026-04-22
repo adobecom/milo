@@ -89,10 +89,14 @@ export function decorateIconArea(el) {
 }
 
 function elContainsText(el) {
-  return [...el.childNodes].some(({ nodeType, innerText, textContent }) => (
-    (nodeType === Node.ELEMENT_NODE && innerText.trim() !== '')
-    || (nodeType === Node.TEXT_NODE && textContent.trim() !== '')
-  ));
+  return [...el.childNodes].some((node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.innerText.trim() !== '') return true;
+    // Custom elements (tag name contains a hyphen) may render content asynchronously;
+    // treat non-hidden ones as containing text so body classes are applied upfront.
+    return node.tagName?.includes('-') && !node.hidden;
+  });
 }
 
 const isC2 = getMetadata('foundation') === 'c2';
