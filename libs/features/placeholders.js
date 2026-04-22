@@ -163,15 +163,12 @@ async function getPlaceholder(key, config, sheet) {
   return keyToStr(key);
 }
 
-async function resolveGeoIpKey(key, config, sheet) {
-  if (config.placeholders?.[key]) return config.placeholders[key];
+function ensureGeoFetch(config, sheet) {
   const cacheKey = config.locale?.contentRoot ?? '';
   if (!geoPlaceholderCache.has(cacheKey)) {
     geoPlaceholderCache.set(cacheKey, getGeoPlaceholders(config, sheet));
   }
-  const geoPlaceholders = await geoPlaceholderCache.get(cacheKey);
-  if (typeof geoPlaceholders?.[key] === 'string') return geoPlaceholders[key];
-  return getPlaceholder(key, config, sheet);
+  return geoPlaceholderCache.get(cacheKey);
 }
 
 export async function replaceKey(key, config, sheet = 'default') {
@@ -198,6 +195,7 @@ export async function replaceText(
   config,
   regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g,
   sheet = 'default',
+  { defer = false } = {},
 ) {
   if (typeof text !== 'string' || !text.length) return '';
 
@@ -206,10 +204,21 @@ export async function replaceText(
     return text;
   }
   const keys = Array.from(matches, (match) => match[1] || match[2]);
-  const resolved = await Promise.all(keys.map(async (key) => {
-    if (isGeoIpKey(key)) {
-      return resolveGeoIpKey(key, config, sheet);
+  const hasGeoIp = keys.some(isGeoIpKey);
+
+  let geoPlaceholders = null;
+  if (hasGeoIp) {
+    if (defer) {
+      ensureGeoFetch(config, sheet);
+    } else {
+      geoPlaceholders = await ensureGeoFetch(config, sheet);
     }
+  }
+
+  const resolved = await Promise.all(keys.map(async (key) => {
+    if (config.placeholders?.[key]) return config.placeholders[key];
+    if (geoPlaceholders && isGeoIpKey(key)
+      && typeof geoPlaceholders[key] === 'string') return geoPlaceholders[key];
     return getPlaceholder(key, config, sheet);
   }));
 
@@ -220,6 +229,25 @@ export async function replaceText(
   return finalText;
 }
 
+const geoIpPattern = /{{(.*?-geo-ip)}}|%7B%7B(.*?-geo-ip)%7D%7D/g;
+const findGeoIpKeys = (t) => (t ? [...t.matchAll(geoIpPattern)].map((m) => m[1] || m[2]) : []);
+
+async function deferGeoIpUpdate(deferredItems, config, sheet) {
+  const geo = await ensureGeoFetch(config, sheet);
+  if (!geo) return;
+  await Promise.all(deferredItems.map(async ({ node, type, attrName, key }) => {
+    if (config.placeholders?.[key] || typeof geo[key] !== 'string') return;
+    const base = await getPlaceholder(key, config, sheet);
+    if (geo[key] === base) return;
+    if (type === 'text') {
+      node.nodeValue = node.nodeValue.replace(base, geo[key]);
+    } else {
+      const cur = node.getAttribute(attrName);
+      if (cur) node.setAttribute(attrName, cur.replace(base, geo[key]));
+    }
+  }));
+}
+
 export async function decoratePlaceholderArea({
   placeholderPath,
   placeholderRequest,
@@ -228,19 +256,28 @@ export async function decoratePlaceholderArea({
   if (!nodes.length) return;
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
+  const deferred = [];
+  const opts = { defer: true };
+  const track = (keys, item) => keys.forEach((key) => deferred.push({ ...item, key }));
+
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
-      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
+      track(findGeoIpKeys(nodeEl.nodeValue), { node: nodeEl, type: 'text' });
+      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, undefined, undefined, opts);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
-        const attrVal = await replaceText(attr.value, config);
-        return { name: attr.name, value: attrVal };
+        track(findGeoIpKeys(attr.value), { node: nodeEl, type: 'attr', attrName: attr.name });
+        const val = await replaceText(attr.value, config, undefined, undefined, opts);
+        return { name: attr.name, value: val };
       });
-      const results = await Promise.all(attrPromises);
-      results.forEach(({ name, value }) => {
+      (await Promise.all(attrPromises)).forEach(({ name, value }) => {
         nodeEl.setAttribute(name, value);
       });
     }
   });
   await Promise.all(replaceNodes);
+
+  if (deferred.length) {
+    decoratePlaceholderArea.deferredGeo = deferGeoIpUpdate(deferred, config);
+  }
 }

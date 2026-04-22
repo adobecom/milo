@@ -142,25 +142,18 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     disableLingo();
   });
 
-  it('resolves -geo-ip phone number from geo placeholder file', async () => {
+  it('replaceText resolves geo value for -geo-ip keys (default, non-deferred)', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';
     const text = await replaceText('tel:{{phone-number-geo-ip}}', cfg);
     expect(text).to.equal('tel:+352 800 99999');
   });
 
-  it('resolves -geo-ip non-phone placeholder from geo file', async () => {
+  it('replaceText resolves geo value for non-phone -geo-ip key', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';
     const text = await replaceText('{{buy-now-geo-ip}}', cfg);
     expect(text).to.equal('Acheter maintenant');
-  });
-
-  it('resolves -geo-ip in non-tel href context', async () => {
-    const cfg = enableLingo();
-    cfg.locale.contentRoot = '/test/features/placeholders';
-    const text = await replaceText('<a href="/page/{{buy-now-geo-ip}}">info</a>', cfg);
-    expect(text).to.equal('<a href="/page/Acheter maintenant">info</a>');
   });
 
   it('falls back to base placeholder when langfirst is off', async () => {
@@ -172,7 +165,7 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     expect(text).to.equal('Buy now');
   });
 
-  it('preserves custom display text when href has -geo-ip placeholder', async () => {
+  it('deferred update swaps base to geo value in href, preserves custom text', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';
     const link = document.createElement('a');
@@ -180,12 +173,15 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     link.textContent = 'Call Adobe Support';
 
     await decoratePlaceholderArea({ nodes: [link] });
+    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
+    expect(link.textContent).to.equal('Call Adobe Support');
 
+    await decoratePlaceholderArea.deferredGeo;
     expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
     expect(link.textContent).to.equal('Call Adobe Support');
   });
 
-  it('resolves -geo-ip in both href and text node independently', async () => {
+  it('deferred update swaps both href and text node to geo values', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';
     const link = document.createElement('a');
@@ -194,7 +190,10 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     link.appendChild(textNode);
 
     await decoratePlaceholderArea({ nodes: [link, textNode] });
+    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
+    expect(textNode.nodeValue).to.equal('800 555 1234');
 
+    await decoratePlaceholderArea.deferredGeo;
     expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
     expect(textNode.nodeValue).to.equal('+352 800 99999');
   });
@@ -205,6 +204,21 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
     const text = await replaceText('{{phone-number-geo-ip}}', cfg);
     expect(text).to.equal('MEP override value');
+    delete cfg.placeholders;
+  });
+
+  it('deferred update skips keys overridden by MEP', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
+    const link = document.createElement('a');
+    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
+    link.textContent = 'Call us';
+
+    await decoratePlaceholderArea({ nodes: [link] });
+    await decoratePlaceholderArea.deferredGeo;
+    expect(link.getAttribute('href')).to.equal('tel:MEP override value');
+    expect(link.textContent).to.equal('Call us');
     delete cfg.placeholders;
   });
 
