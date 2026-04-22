@@ -9,11 +9,11 @@ const getPlaceholdersPath = (config, sheet) => {
   return `${path}${query}`;
 };
 
-const parsePlaceholderJson = async (resp, placeholders, { updateMph = true } = {}) => {
+const parsePlaceholderJson = async (resp, placeholders) => {
   try {
     const json = resp.ok ? await resp.json() : { data: [] };
     json.data?.forEach((item) => {
-      if (updateMph) window.mph[item.key] = item.value;
+      window.mph[item.key] = item.value;
       placeholders[item.key] = item.value;
     });
   } catch (e) {
@@ -21,7 +21,7 @@ const parsePlaceholderJson = async (resp, placeholders, { updateMph = true } = {
   }
 };
 
-const fetchPlaceholder = (path, placeholderRequest, { updateMph = true } = {}) => new Promise(
+const fetchPlaceholder = (path, placeholderRequest) => new Promise(
   // eslint-disable-next-line no-async-promise-executor
   async (resolve) => {
     const resp = await placeholderRequest || await customFetch(
@@ -31,9 +31,9 @@ const fetchPlaceholder = (path, placeholderRequest, { updateMph = true } = {}) =
 
     if (Array.isArray(resp)) {
       // Overlay placeholders
-      for (const r of resp) await parsePlaceholderJson(r, placeholders, { updateMph });
+      for (const r of resp) await parsePlaceholderJson(r, placeholders);
     } else {
-      await parsePlaceholderJson(resp, placeholders, { updateMph });
+      await parsePlaceholderJson(resp, placeholders);
     }
 
     resolve(placeholders);
@@ -45,11 +45,10 @@ export const fetchPlaceholders = async ({
   sheet,
   placeholderRequest,
   placeholderPath,
-  updateMph = true,
 }) => {
   const path = placeholderPath || getPlaceholdersPath(config, sheet);
 
-  fetchedPlaceholders[path] ||= fetchPlaceholder(path, placeholderRequest, { updateMph });
+  fetchedPlaceholders[path] ||= fetchPlaceholder(path, placeholderRequest);
 
   return fetchedPlaceholders[path];
 };
@@ -105,7 +104,6 @@ async function getGeoPlaceholders(config, sheet) {
     sheet,
     placeholderRequest,
     placeholderPath: paths[0],
-    updateMph: false,
   }).catch(() => ({}));
 }
 
