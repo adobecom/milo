@@ -21,7 +21,10 @@
   --s2a-spacing-160: 160px;
   --s2a-font-letter-spacing-neg-0_2: -0.2px;
   --s2a-font-letter-spacing-0_16: 0.16px;
+  --s2a-font-letter-spacing-0_24: 0.24px;
+  --s2a-font-line-height-16: 1.333;
   --s2a-font-line-height-20: 1.25;
+  --s2a-font-size-12: 0.75rem;
   --s2a-font-size-16: 1rem;
   --s2a-font-weight-adobe-clean-bold: 700;
   --s2a-border-radius-xs: var(--s2a-border-radius-4);
@@ -33,20 +36,59 @@
   --s2a-spacing-2xl: var(--s2a-spacing-40);
   --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_2);
   --s2a-font-letter-spacing-7xl: var(--s2a-font-letter-spacing-0_16);
+  --s2a-font-letter-spacing-8xl: var(--s2a-font-letter-spacing-0_24);
+  --s2a-font-line-height-2xs: var(--s2a-font-line-height-16);
   --s2a-font-line-height-sm: var(--s2a-font-line-height-20);
+  --s2a-font-size-xs: var(--s2a-font-size-12);
   --s2a-font-size-md: var(--s2a-font-size-16);
   --s2a-layout-lg: var(--s2a-spacing-124);
   --s2a-layout-xl: var(--s2a-spacing-160);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
   --s2a-typography-font-size-body-md: var(--s2a-font-size-md);
   --s2a-typography-font-size-eyebrow: var(--s2a-font-size-md);
+  --s2a-typography-font-size-caption: var(--s2a-font-size-xs);
   --s2a-typography-letter-spacing-body-md: var(--s2a-font-letter-spacing-7xl);
   --s2a-typography-letter-spacing-eyebrow: var(--s2a-font-letter-spacing-5xl);
+  --s2a-typography-letter-spacing-caption: var(--s2a-font-letter-spacing-8xl);
   --s2a-typography-line-height-body-md: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
+  --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
+  --grid-margin-width-base: 24px;
+  --grid-margin-width: var(--grid-margin-width-base);
+  --grid-margin-width-target: var(--grid-margin-width-base);
+  --grid-max-width-default: 1440px;
   --grid-max-width-wide: 1920px;
+  --grid-max-width-fluid: 2560px;
 }
 .dark {
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
+}
+@media (width >= 768px) {
+  :root {
+    --grid-margin-width-base: 8.333%;
+  }
+}
+
+.caption, [class*="caption-"] {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: var(--s2a-typography-font-size-caption);
+  line-height: var(--s2a-typography-line-height-caption);
+  letter-spacing: var(--s2a-typography-letter-spacing-caption);
+}
+.container {
+  --grid-max-width: var(--grid-max-width-default);
+  --grid-max-width-target: var(--grid-max-width-default);
+  --grid-content-width: var(--grid-max-width);
+  --grid-padding: max(
+  var(--grid-margin-width),
+  calc((100% - var(--grid-content-width)) / 2)
+  );
+  width: auto;
+  max-width: none;
+  padding-inline: var(--grid-padding);
+}
+.container.wide {
+  --grid-max-width: var(--grid-max-width-wide);
+  --grid-max-width-target: var(--grid-max-width-wide);
 }
 
