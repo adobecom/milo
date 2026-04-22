@@ -251,7 +251,6 @@ describe('Merch Block', () => {
     it('should map correct commerce locale depending on locale config', async () => {
       [
         { prefix: '/ar', expectedLocale: 'es_AR' },
-        { prefix: '/pr', expectedLocale: 'es_PR' },
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
@@ -266,10 +265,31 @@ describe('Merch Block', () => {
         { prefix: '/langstore/el', expectedLocale: 'el_GR' },
         { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
         { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
+        { prefix: '/pr', expectedLocale: 'es_PR' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it('should use es_PR, es, US for Puerto Rico path', () => {
+      const s = getMiloLocaleSettings({ prefix: '/pr' });
+      expect(s.locale).to.equal('es_PR');
+      expect(s.language).to.equal('es');
+      expect(s.country).to.equal('US');
+    });
+
+    it('should not override Puerto Rico path country with geo IP', async () => {
+      sessionStorage.setItem('akamai', 'ES');
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      const settings = await getLocaleSettings({ prefix: '/pr' });
+      expect(settings?.locale).to.equal('es_PR');
+      expect(settings?.country).to.equal('US');
+      sessionStorage.removeItem('akamai');
+      geoDetectionMeta.remove();
     });
 
     it('should use geo locale for lang-first sites', async () => {
@@ -1337,7 +1357,6 @@ describe('Merch Block', () => {
     it('should map correct commerce locale', async () => {
       [
         { prefix: '/ar', expectedLocale: 'es_AR' },
-        { prefix: '/pr', expectedLocale: 'es_PR' },
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },

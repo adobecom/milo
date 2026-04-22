@@ -166,7 +166,7 @@ const GeoMap = {
   ng: 'NG_en',
   cr: 'CR_es',
   ec: 'EC_es',
-  pr: 'PR_es',
+  pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
   cis_en: 'TM_en',
   cis_ru: 'TM_ru',
@@ -221,12 +221,15 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: `${language}_${country}`,
+    locale: geo === 'pr' ? 'es_PR' : `${language}_${country}`,
   };
 }
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
+  const localePrefix = miloLocale?.prefix || 'US_en';
+  const geo = localePrefix.replace('/', '') ?? '';
+  if (geo === 'pr') return settings;
   let country = await getCountry();
   if (country) {
     country = country.toUpperCase();
@@ -1066,7 +1069,7 @@ export async function getCheckoutAction(
 }
 
 export function setPreview(attributes) {
-  if (isPreview) {
+  if (isPreview || /^\/pr(\/|$)/.test(window.location.pathname)) {
     attributes.preview = 'on';
   }
 }
