@@ -1069,7 +1069,8 @@ export const getConfig = async (originalState, strs = {}) => {
         useRoundedCorners: !!state.useRoundedCorners,
       }),
       // Only include bladeCard when explicitly configured
-      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
+      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent)
+      && {
         bladeCard: {
           reverse: !!state.bladeCardReverse,
           lightText: !!state.bladeCardLightText,
@@ -1077,9 +1078,8 @@ export const getConfig = async (originalState, strs = {}) => {
         },
       }),
       // Include editorialOpenVariant if necessary
-      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant) && {
-        editorialOpenVariant: !!state.editorialCardOpenVariant
-      }),
+      ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant}),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
