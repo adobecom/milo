@@ -558,7 +558,7 @@ const getCaasProps = (p, pageUrl = null) => {
               target: p.cta1target,
             },
           }),
-          ...(p.cta2url || (p.cta2style === 'button' && p.cta2text ) && {
+          ...((p.cta2url || (p.cta2style === 'button' && p.cta2text)) && {
             secondaryCta: {
               text: p.cta2text,
               url: p.cta2style === 'button' ? p.cta1url : p.cta2url,

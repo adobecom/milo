@@ -1246,6 +1246,7 @@ export const defaultState = {
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
+  editorialCardOpenVariant: false,
   endpoint: 'www.adobe.com/chimera-api/collection',
   environment: '',
   excludedCards: [],
