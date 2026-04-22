@@ -1,0 +1,7 @@
+.marquee-test {
+  width: 1440px;
+  height: 579px;
+  flex-shrink: 0;
+  border-radius: 0 0 52px 52px;
+  background: #FFF;
+}
