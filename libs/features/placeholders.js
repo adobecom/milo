@@ -66,10 +66,8 @@ async function getGeoPlaceholders(config, sheet) {
   if (!lingoActive()) return null;
   const geoPrefix = await getGeoLocalePrefix();
   if (!geoPrefix) return null;
-
   const siteConfig = getConfig();
   let geoOrigin = window.location.origin;
-
   let pathSuffix = siteConfig.contentRoot ?? '';
   const callerContentRoot = config.locale?.contentRoot ?? '';
   const siteContentRoot = siteConfig.locale?.contentRoot ?? '';
@@ -98,7 +96,10 @@ async function getGeoPlaceholders(config, sheet) {
     sheet,
     placeholderRequest,
     placeholderPath: paths[0],
-  }).catch(() => ({}));
+  }).catch((e) => {
+    window.lana?.log(`Error fetching geo placeholders: ${e?.message}`, { tags: 'placeholders', severity: 'warn' });
+    return {};
+  });
 }
 
 async function getPlaceholder(key, config, sheet) {
