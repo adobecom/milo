@@ -139,7 +139,7 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
-function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch', countryOverride = null) {
   const modCurrPrefix = localePrefix || 'us';
   const modPrefix = urlPrefix || 'us';
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
@@ -149,7 +149,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
-    const resolved = norm(modPrefix) || 'us';
+    const resolved = countryOverride || norm(modPrefix) || 'us';
     const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
@@ -252,11 +252,12 @@ const [pickerKeydownHandler, removePicker, removeOnClickOutsideElement] = (() =>
   ];
 })();
 
-function openPicker(button, locales, country, event, dir, currentPage) {
+function openPicker(button, locales, country, event, dir, currentPage, akamaiCode = null) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
   const list = createTag('ul', { class: 'picker', dir });
+  const hasExactNativeLocale = akamaiCode && locales.some((l) => l.geo === akamaiCode);
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
@@ -264,7 +265,8 @@ function openPicker(button, locales, country, event, dir, currentPage) {
       a.hash = '';
       a.setAttribute('href', a.href);
     }
-    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
+    const countryOverride = (hasExactNativeLocale && l.geo !== akamaiCode) ? akamaiCode : null;
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix, 'Switch', countryOverride);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -328,7 +330,7 @@ function buildContent(currentPage, locale, geoData, locales, akamaiCode = null, 
     span.appendChild(downArrow);
     const openPickerHandler = (e) => {
       e.preventDefault();
-      openPicker(mainAction, locales, displayButton, e, dir, currentPage);
+      openPicker(mainAction, locales, displayButton, e, dir, currentPage, akamaiCode);
     };
     mainAction.addEventListener('keydown', (e) => {
       if (e.code === 'Space') openPickerHandler(e);
