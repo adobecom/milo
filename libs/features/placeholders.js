@@ -58,7 +58,7 @@ function keyToStr(key) {
 }
 
 const isGeoIpKey = (key) => key.endsWith('-geo-ip');
-const PH_RE = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 async function getGeoPlaceholders(config, sheet) {
   // Dynamic, not static — moving these into the static import above slows
@@ -180,7 +180,7 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(
   text,
   config,
-  regex = PH_RE,
+  regex = PLACEHOLDER_REGEX,
   sheet = 'default',
   { defer = false } = {},
 ) {
@@ -244,11 +244,11 @@ export async function decoratePlaceholderArea({
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
       track(findGeoIpKeys(nodeEl.nodeValue), { node: nodeEl, type: 'text' });
-      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, PH_RE, 'default', deferOpt);
+      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, PLACEHOLDER_REGEX, 'default', deferOpt);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
         track(findGeoIpKeys(attr.value), { node: nodeEl, type: 'attr', attrName: attr.name });
-        const val = await replaceText(attr.value, config, PH_RE, 'default', deferOpt);
+        const val = await replaceText(attr.value, config, PLACEHOLDER_REGEX, 'default', deferOpt);
         return { name: attr.name, value: val };
       });
       (await Promise.all(attrPromises)).forEach(({ name, value }) => {
