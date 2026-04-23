@@ -355,8 +355,7 @@ async function submitForm(form) {
 
     const phoneNumberObject = phoneNumberField && phoneNumber ? {
       phoneNumber: removePhoneNumberFormat(phoneNumber),
-      phoneExtension: getPhoneFieldConfig().code,
-      phoneCountryCode: getPhoneFieldConfig().countryCode,
+      phoneCountryCode: getPhoneFieldConfig().code.replace('+', ''),
     } : {};
 
     const { ecid, aepCmp, aepOtherConsents } = await getAEPData();

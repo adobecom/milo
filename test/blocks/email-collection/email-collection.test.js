@@ -561,7 +561,6 @@ describe('Phone utils', () => {
     const phoneConfig = getPhoneFieldConfig();
     expect(phoneConfig).to.exist;
     expect(phoneConfig.code).to.equal('+55');
-    expect(phoneConfig.countryCode).to.equal('BR');
     expect(phoneConfig.validationPattern).to.be.instanceOf(RegExp);
     expect(typeof phoneConfig.format).to.equal('function');
   });
@@ -671,8 +670,8 @@ describe('Phone fields rendering', () => {
     expect(submitCall).to.exist;
     const body = JSON.parse(submitCall.args[1].body);
     expect(body.phoneNumber).to.equal('11912345678');
-    expect(body.phoneExtension).to.equal('+55');
-    expect(body.phoneCountryCode).to.equal('BR');
+    expect(body.phoneCountryCode).to.equal('55');
+    expect(body.phoneExtension).to.be.undefined;
     fetchSpy.restore();
   });
 });

@@ -116,7 +116,6 @@ const PHONE_FIELD_CONFIG = {
     code: '+55',
     validationPattern: /^\(?\d{2}\)?[\s-]?9\d{4}[-\s]?\d{4}$/,
     icon: getPhoneIconUrl('br-flag.svg'),
-    countryCode: 'BR',
     format: (number) => {
       const digits = number.replace(/\D/g, '');
       return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
