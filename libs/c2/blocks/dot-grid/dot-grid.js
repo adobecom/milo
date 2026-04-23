@@ -321,7 +321,7 @@ export default function init(el) {
 
       let labelEl = null;
       if (def.label) {
-        labelEl = createTag('div', { class: 'card-label-outer', textContent: def.label });
+        labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
         labelEl.style.opacity = '0';
         layerEl.appendChild(labelEl);
       }
