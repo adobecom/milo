@@ -1,8 +1,9 @@
+import { createTag } from '../../../utils/utils.js';
+
 const COL_OFFSETS_F = [-0.462, -0.154, 0.154, 0.462];
 const COL_GAP_F = COL_OFFSETS_F[1] - COL_OFFSETS_F[0];
 const CARD_WIDTH = 192;
 const ROW_CARD_H = 230;
-const LAYER_DIST = 700;
 const REVEAL_SCROLL = 500;
 const GRID_PAN_MAX = 300;
 const GRID_PAN_SLOW_RATE = 0.28;
@@ -54,15 +55,13 @@ function hexToRgb(hex) {
   return [Math.floor(v / 65536) % 256, Math.floor(v / 256) % 256, v % 256];
 }
 
-// Reads authored content: each row is a direct child <div>; each cell within a
-// row has a <picture> followed by a text label. Card height is derived from the
-// picture's authored aspect ratio.
-function parseAuthoredCards(el) {
-  const rows = [...el.children].filter((c) => c.tagName === 'DIV');
+// TODO: author product UI?
+// TODO: finalize authoring structure
+function parseAuthoredContent(el) {
+  const [titleRow, imageRow1, imageRow2, textRow, ctaRow] = [...el.children];
   const cards = [];
-  rows.forEach((rowEl, rowIdx) => {
-    const cells = [...rowEl.children].filter((c) => c.tagName === 'DIV');
-    cells.forEach((cellEl, colIdx) => {
+  [imageRow1, imageRow2].forEach((rowEl, rowIdx) => {
+    [...rowEl.children].forEach((cellEl, colIdx) => {
       const picture = cellEl.querySelector('picture');
       const img = cellEl.querySelector('img');
       const label = cellEl.textContent.trim();
@@ -77,27 +76,19 @@ function parseAuthoredCards(el) {
       });
     });
   });
-  return cards;
+  const titleEl = titleRow.firstElementChild;
+  const textBlockEl = textRow.firstElementChild;
+  const ctaEl = ctaRow.firstElementChild;
+  return { titleEl, cards, textBlockEl, ctaEl };
 }
 
-const CANVAS_HTML = '<canvas id="c"></canvas>';
-
 const ARC_SVG_HTML = `
-<svg id="arc-256-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
-  <path id="arc-256-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
+<svg class="arc-256-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
+  <path class="arc-256-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
 </svg>`;
 
-const WORLD_HTML = '<div id="world"></div>';
-
-const TEXT_BLOCK_HTML = `
-<div id="text-block">
-  <h2 id="text-headline">Create beautifully.</h2>
-  <p id="text-body">Design stunning PDFs, presentations, and social content with professional templates and AI tools — all inside Acrobat.</p>
-  <a href="#" id="text-cta">Learn more <img class="text-cta-chevron" src="assets/chevron.svg" alt=""></a>
-</div>`;
-
 const ACROBAT_WIN_HTML = `
-<div id="acrobat-win">
+<div class="acrobat-win">
   <div class="ac-bar">
     <div class="ac-bar-l">
       <div class="ac-addspace">
@@ -145,7 +136,7 @@ const ACROBAT_WIN_HTML = `
           <span class="ac-badge-new">NEW</span>
         </div>
         <div class="ac-tool">
-          <span class="ac-tool-ico"><svg viewBox="0 0 18 18"><rect x="1" y="1" width="16" height="16" rx="3" fill="url(#ai-grad)"/><defs><linearGradient id="ai-grad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#676dfc"/><stop offset="1" stop-color="#ff6a54"/></linearGradient></defs><path d="M9 4l1 3.5H14l-3 2.2 1.1 3.3L9 11l-3.1 2 1.1-3.3L4 7.5h4Z" fill="white"/></svg></span>
+          <span class="ac-tool-ico"><svg viewBox="0 0 18 18"><rect x="1" y="1" width="16" height="16" rx="3" fill="url(#c2-dot-grid-acrobat-ui-ai-grad)"/><defs><linearGradient id="c2-dot-grid-acrobat-ui-ai-grad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#676dfc"/><stop offset="1" stop-color="#ff6a54"/></linearGradient></defs><path d="M9 4l1 3.5H14l-3 2.2 1.1 3.3L9 11l-3.1 2 1.1-3.3L4 7.5h4Z" fill="white"/></svg></span>
           <span class="ac-tool-lbl">AI Assistant</span>
         </div>
         <div class="ac-tool">
@@ -251,30 +242,28 @@ const ACROBAT_WIN_HTML = `
       </div>
     </div>
   </div>
-</div>
-<div id="acrobat-title">Test drive PDF Spaces.</div>
-<div id="acrobat-cta"><span>Try it Free</span></div>`;
-
-const TEMPLATE = CANVAS_HTML + ARC_SVG_HTML + WORLD_HTML + TEXT_BLOCK_HTML + ACROBAT_WIN_HTML;
+</div>`;
 
 export default function init(el) {
-  const authoredCards = parseAuthoredCards(el);
+  const { titleEl, cards: authoredCards, textBlockEl, ctaEl } = parseAuthoredContent(el);
 
-  const stage = document.createElement('div');
-  stage.className = 'dot-grid-stage';
-  stage.innerHTML = TEMPLATE;
+  const stage = createTag('div', { class: 'dot-grid-stage' }, `<canvas></canvas>${ARC_SVG_HTML}<div class="world"></div>${ACROBAT_WIN_HTML}`);
+  titleEl.classList.add('acrobat-title');
+  textBlockEl.classList.add('text-block');
+  ctaEl.classList.add('acrobat-cta');
+  [titleEl, textBlockEl].forEach((e) => {
+    e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
+  });
+  stage.append(titleEl, textBlockEl, ctaEl);
   el.textContent = '';
   el.append(stage);
 
-  const canvas = el.querySelector('#c');
+  const canvas = el.querySelector('canvas');
   const ctx = canvas.getContext('2d');
-  const world = el.querySelector('#world');
-  const acrobatWinEl = el.querySelector('#acrobat-win');
-  const acrobatTitleEl = el.querySelector('#acrobat-title');
-  const acrobatCtaEl = el.querySelector('#acrobat-cta');
-  const textBlockEl = el.querySelector('#text-block');
-  const arc256Svg = el.querySelector('#arc-256-svg');
-  const arc256Path = el.querySelector('#arc-256-path');
+  const world = el.querySelector('.world');
+  const acrobatWinEl = el.querySelector('.acrobat-win');
+  const arc256Svg = el.querySelector('.arc-256-svg');
+  const arc256Path = el.querySelector('.arc-256-path');
 
   const cfg = {
     spacing: 16,
@@ -306,13 +295,7 @@ export default function init(el) {
   const mouse = { x: -9999, y: -9999 };
 
   const scroll = { current: 0 };
-  let activeLayer = 0;
-  let zDepth = 0;
   let cardRevealOffset = REVEAL_SCROLL;
-  let layerShiftX = 0;
-  let layerShiftXTarget = 0;
-  let layerShiftY = 0;
-  let layerShiftYTarget = 0;
   let gridPanY = 0;
   let arcGridPanY = 0;
   let acrobatT = 0;
@@ -326,43 +309,29 @@ export default function init(el) {
   const baseColSpread = 1.20;
   const baseRowGap = 0.60;
 
-  const modalInfluence = { radius: 0, targetRadius: 0 };
-  const cardClickEnabled = false;
-  let expandedCard = null;
-
-  const ATTRACT_RADIUS = 190;
-  const MAX_DISPLACE = 36;
-  const NEIGHBOR_PUSH = 48;
-
   const layerDefs = [authoredCards];
 
-  const allLayers = layerDefs.map((cards, li) => {
-    const layerEl = document.createElement('div');
-    layerEl.className = 'layer';
+  const allLayers = layerDefs.map((cards) => {
+    const layerEl = createTag('div', { class: 'layer' });
     world.appendChild(layerEl);
 
     const cardObjects = cards.map((def) => {
-      const cardEl = document.createElement('div');
-      cardEl.className = 'card';
-      cardEl.innerHTML = def.html;
+      const cardEl = createTag('div', { class: 'card' }, def.html);
       layerEl.appendChild(cardEl);
 
       let labelEl = null;
       if (def.label) {
-        labelEl = document.createElement('div');
-        labelEl.className = 'card-label-outer';
-        labelEl.textContent = def.label;
+        labelEl = createTag('div', { class: 'card-label-outer', textContent: def.label });
         labelEl.style.opacity = '0';
         layerEl.appendChild(labelEl);
       }
 
-      const card = {
+      return {
         colIdx: def.colIdx,
         rowIdx: def.rowIdx,
         fanIdx: FAN_IDX[def.rowIdx][def.colIdx],
         width: CARD_WIDTH,
         height: def.cardH ?? ROW_CARD_H,
-        html: def.html,
         el: cardEl,
         labelEl,
         baseX: 0,
@@ -372,27 +341,7 @@ export default function init(el) {
         anchorX: 0,
         anchorY: 0,
         dotIdx: -1,
-        hoverScale: 1.0,
-        hoverTarget: 1.0,
-        layerIndex: li,
-        pushX: 0,
-        pushY: 0,
-        pushTX: 0,
-        pushTY: 0,
-        magnetX: 0,
-        magnetY: 0,
-        magnetTX: 0,
-        magnetTY: 0,
-        magnetT: 0,
-        expandT: 0,
-        expandTargetT: 0,
       };
-      cardEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        // eslint-disable-next-line no-use-before-define
-        if (cardClickEnabled) openCard(card);
-      });
-      return card;
     });
 
     return { el: layerEl, cards: cardObjects };
@@ -535,9 +484,7 @@ export default function init(el) {
   }
 
   function update() {
-    const al = Math.max(0, Math.min(2, Math.round(zDepth)));
-    activeLayer = al;
-    const activeCards = allLayers[al].cards;
+    const activeCards = allLayers[0].cards;
 
     dots.forEach((d) => {
       let effectiveMR = cfg.mouseRadius;
@@ -572,17 +519,6 @@ export default function init(el) {
         d.vy += (dy / dist) * force;
       }
 
-      if (modalInfluence.radius > 0) {
-        const mdx = d.x - W / 2;
-        const mdy = d.y - H / 2;
-        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
-        if (mdist < modalInfluence.radius && mdist > 0) {
-          const mforce = (1 - mdist / modalInfluence.radius) * 3.0;
-          d.vx += (mdx / mdist) * mforce;
-          d.vy += (mdy / mdist) * mforce;
-        }
-      }
-
       d.vx += (d.ox - d.x) * cfg.spring;
       d.vy += (d.oy - d.y) * cfg.spring;
       d.vx *= cfg.damping;
@@ -590,44 +526,20 @@ export default function init(el) {
       d.x += d.vx;
       d.y += d.vy;
     });
-
-    modalInfluence.radius += (modalInfluence.targetRadius - modalInfluence.radius) * 0.08;
   }
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
-    const al = activeLayer;
-    const activeCards = allLayers[al].cards;
     const r = cfg.dotSize;
+    const [dr, dg, db] = hexToRgb(cfg.dotColor);
+    const arcDotFade = arcMode ? arcToGridT : 1;
+    const alpha = 0.45 * (arcMode ? 1 : (1 - acrobatT)) * arcDotFade;
+    if (alpha <= 0) return;
+    ctx.fillStyle = `rgba(${dr},${dg},${db},${alpha})`;
 
     dots.forEach((d) => {
-      let darken = 0;
-      activeCards.forEach((card) => {
-        const hoverFactor = Math.min(1, Math.max(0, (card.hoverScale - 1.0) / 0.30));
-        if (hoverFactor <= 0) return;
-        const bx = (arcMode && card.visualCx !== 0) ? card.visualCx : card.baseX + card.width / 2;
-        const revealOff = arcMode ? 0 : cardRevealOffset;
-        const panOff = arcMode ? arcGridPanY : gridPanY;
-        const by = (arcMode && card.visualCy !== 0)
-          ? card.visualCy
-          : card.baseY + card.height / 2 + revealOff - panOff;
-        const ddx = d.ox - bx;
-        const ddy = d.oy - by;
-        const dd = Math.sqrt(ddx * ddx + ddy * ddy);
-        if (dd < 280) darken = Math.max(darken, ((1 - dd / 280) ** 0.75) * hoverFactor);
-      });
-
-      const [dr, dg, db] = hexToRgb(cfg.dotColor);
-      const cr = Math.round(dr + (5 - dr) * darken);
-      const cg = Math.round(dg + (5 - dg) * darken);
-      const cb = Math.round(db + (5 - db) * darken);
-      const arcDotFade = arcMode ? arcToGridT : 1;
-      const alpha = (0.45 + darken * 0.1) * (arcMode ? 1 : (1 - acrobatT)) * arcDotFade;
-      if (alpha <= 0) return;
-
       ctx.beginPath();
       ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
       ctx.fill();
     });
   }
@@ -644,41 +556,12 @@ export default function init(el) {
     card.labelEl.style.opacity = opacity.toFixed(3);
   }
 
-  // Card rendering: 4-branch state machine — exactly one branch runs per card per frame.
+  // Card rendering: 3-branch state machine — exactly one branch runs per card per frame.
+  //   Arc intro (fan slides in), arc rotation + peel to grid, grid-to-Acrobat transition.
   function updateCardPositions() {
     allLayers.forEach((layer) => {
       layer.cards.forEach((card) => {
-        card.hoverScale += (card.hoverTarget - card.hoverScale) * 0.12;
-        card.pushX += (card.pushTX - card.pushX) * 0.10;
-        card.pushY += (card.pushTY - card.pushY) * 0.10;
-        card.magnetX += (card.magnetTX - card.magnetX) * 0.10;
-        card.magnetY += (card.magnetTY - card.magnetY) * 0.10;
-        card.expandT += (card.expandTargetT - card.expandT) * 0.10;
-
-        const interactFade = 1 - acrobatT;
-
-        let dx = 0;
-        let dy = 0;
-        if (!arcMode && card.dotIdx >= 0 && card.dotIdx < dots.length) {
-          const dot = dots[card.dotIdx];
-          const smoothT = Math.min(1, (card.hoverScale - 1.0) / 0.30);
-          const dotInfluence = (1 - smoothT) * interactFade;
-          dx = (dot.x - dot.ox) * dotInfluence;
-          dy = (dot.y - dot.oy) * dotInfluence;
-        }
-
-        if (!arcMode) {
-          dx += (card.pushX + card.magnetX) * interactFade;
-          dy += (card.pushY + card.magnetY) * interactFade;
-        }
-
-        const effectiveReveal = arcMode ? 0 : cardRevealOffset;
-        const effectivePanY = arcMode ? arcGridPanY : gridPanY;
-
-        if (arcMode && arcPanT < ARC_INTRO_FRACTION && acrobatT <= 0) {
-          card.el.classList.remove('is-expanded');
-          card.expandTargetT = 0;
-
+        if (arcPanT < ARC_INTRO_FRACTION && acrobatT <= 0) {
           const introLocalT = getArcIntroLocalT(card);
           const introEase = easeOutCubic(introLocalT);
 
@@ -731,15 +614,15 @@ export default function init(el) {
           card.el.style.opacity = (cfg.opacity * introOpacity).toFixed(3);
           card.el.style.boxShadow = '0 4px 7.1px 0 rgba(0,0,0,0.15), 0 18px 25.1px 0 rgba(0,0,0,0.15), 0 60px 60px 0 rgba(0,0,0,0.15)';
           setLabelPos(card, posX, posY, scale, 0);
-        } else if (arcMode && arcToGridT < 1 && acrobatT <= 0) {
-          card.el.classList.remove('is-expanded');
-          card.expandTargetT = 0;
-
+        } else if (arcToGridT < 1 && acrobatT <= 0) {
           const cardPeelT = getArcToGridLocalT(card);
           const fanPos = getFanCenter(card);
           const arcZoom = 1.4 - 0.4 * easeOutCubic(arcToGridT);
           const fanDepth = 1 - (card.fanIdx / 7) * 0.30;
           const fanScale = cfg.cardScale * (1 + arcLiftZoom) * fanDepth * arcZoom;
+
+          const gridCx = card.baseX + CARD_WIDTH / 2;
+          const gridCy = card.baseY + card.height / 2;
 
           const arcLocalDelay = (card.fanIdx / 7) * arcStagger;
           const arcLocalWin = Math.max(0.01, 1 - arcStagger);
@@ -749,12 +632,9 @@ export default function init(el) {
           const pushedX = fanPos.x + fanPos.rx * 60 * arcLocalE;
           const pushedY = fanPos.y + fanPos.ry * 60 * arcLocalE;
 
-          const gridCx = card.baseX + CARD_WIDTH / 2;
-          const gridCy = card.baseY + card.height / 2;
-
           const totalPeelE = easeOutCubic(cardPeelT);
-          const posX = pushedX + (gridCx - pushedX) * totalPeelE + dx;
-          const posY = pushedY + (gridCy - pushedY) * totalPeelE + dy;
+          const posX = pushedX + (gridCx - pushedX) * totalPeelE;
+          const posY = pushedY + (gridCy - pushedY) * totalPeelE;
           const scale = fanScale + (cfg.cardScale - fanScale) * totalPeelE;
           const rotation = fanPos.rot * (1 - totalPeelE);
 
@@ -785,37 +665,14 @@ export default function init(el) {
           card.el.style.boxShadow = `0 4px 7.1px 0 rgba(0,0,0,${shadowA}), 0 18px 25.1px 0 rgba(0,0,0,${shadowA}), 0 60px 60px 0 rgba(0,0,0,${shadowA})`;
           const peelReveal = Math.max(0, Math.min(1, (cardPeelT - 0.8) / 0.2));
           setLabelPos(card, posX, posY, cfg.cardScale, peelReveal);
-        } else if (acrobatT <= 0) {
-          const expandW = CARD_WIDTH + (600 - CARD_WIDTH) * card.expandT;
-          const expandH = card.height + (650 - card.height) * card.expandT;
-          const dw = expandW - CARD_WIDTH;
-          const dh = expandH - card.height;
-          const scale = cfg.cardScale * card.hoverScale;
-
-          card.visualCx = card.baseX + CARD_WIDTH / 2 + dx;
-          card.visualCy = card.baseY + card.height / 2 + dy + effectiveReveal - effectivePanY;
-          card.el.style.left = `${card.baseX - dw / 2}px`;
-          card.el.style.top = `${card.baseY - dh / 2}px`;
-          card.el.style.width = `${expandW}px`;
-          card.el.style.height = `${expandH}px`;
-          card.el.style.transform = `translate(${dx}px,${dy + effectiveReveal - effectivePanY}px) scale(${scale})`;
-          card.el.style.opacity = cfg.opacity;
-          card.el.style.boxShadow = '';
-          card.el.style.zIndex = card.expandT > 0.01 ? 50 : '';
-          if (card.expandT > 0.15) card.el.classList.add('is-expanded');
-          else card.el.classList.remove('is-expanded');
-          setLabelPos(card, card.visualCx, card.visualCy, scale, 1);
         } else {
-          card.el.classList.remove('is-expanded');
-          card.expandTargetT = 0;
-
           const target = getAcrobatTarget(card.colIdx, card.rowIdx, card.height);
           const endCx = target.x + target.w / 2;
           const endCy = target.y + target.h / 2;
           const endScale = target.w / CARD_WIDTH;
 
-          const startCx = card.baseX + CARD_WIDTH / 2 + dx;
-          const startCy = card.baseY + card.height / 2 + dy + effectiveReveal - effectivePanY;
+          const startCx = card.baseX + CARD_WIDTH / 2;
+          const startCy = card.baseY + card.height / 2 - arcGridPanY;
 
           const et = easeInOutSine(acrobatT);
           const cx = startCx + (endCx - startCx) * et;
@@ -839,150 +696,9 @@ export default function init(el) {
     });
   }
 
-  function updateLayerTransforms() {
-    layerShiftX += (layerShiftXTarget - layerShiftX) * 0.08;
-    layerShiftY += (layerShiftYTarget - layerShiftY) * 0.08;
-
-    allLayers.forEach((layer, li) => {
-      const diff = zDepth - li;
-      const absDiff = Math.abs(diff);
-      const tz = -diff * LAYER_DIST;
-      const op = Math.max(0, 1 - absDiff * 1.3);
-      const tx = li === 0 ? layerShiftX : 0;
-      const ty = li === 0 ? layerShiftY : 0;
-      layer.el.style.transform = `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px)`;
-      layer.el.style.opacity = op;
-      layer.el.style.pointerEvents = (absDiff < 0.5 && acrobatT <= 0 && (!arcMode || arcToGridT >= 1)) ? 'auto' : 'none';
-    });
-  }
-
-  function openCard(card) {
-    // eslint-disable-next-line no-use-before-define
-    if (expandedCard === card) { collapseCard(); return; }
-    // eslint-disable-next-line no-use-before-define
-    if (expandedCard) collapseCard();
-
-    expandedCard = card;
-    card.expandTargetT = 1;
-    card.hoverTarget = 1.0;
-    modalInfluence.targetRadius = 300;
-
-    layerShiftXTarget = W / 2 - (card.baseX + CARD_WIDTH / 2);
-    layerShiftYTarget = H / 2 - (card.baseY + card.height / 2 + cardRevealOffset - gridPanY);
-
-    const ex = card.baseX + CARD_WIDTH / 2;
-    const ey = card.baseY + card.height / 2;
-    allLayers[0].cards.forEach((c) => {
-      if (c === card) return;
-      const cx = c.baseX + CARD_WIDTH / 2;
-      const cy = c.baseY + c.height / 2;
-      const ddx = cx - ex;
-      const ddy = cy - ey;
-      const dist = Math.sqrt(ddx * ddx + ddy * ddy);
-      if (dist > 0) {
-        c.pushTX = (ddx / dist) * 260;
-        c.pushTY = (ddy / dist) * 380;
-      }
-    });
-  }
-
-  function collapseCard() {
-    if (!expandedCard) return;
-    expandedCard.expandTargetT = 0;
-    allLayers[0].cards.forEach((c) => { c.pushTX = 0; c.pushTY = 0; });
-    expandedCard = null;
-    modalInfluence.targetRadius = 0;
-    layerShiftXTarget = 0;
-    layerShiftYTarget = 0;
-  }
-
-  function updateCardMagnetism() {
-    if (!allLayers.length) return;
-    const activeCards = allLayers[0].cards;
-
-    if (arcMode) {
-      activeCards.forEach((c) => {
-        c.magnetTX = 0;
-        c.magnetTY = 0;
-        c.magnetT = 0;
-        c.hoverTarget = 1.0;
-      });
-      return;
-    }
-
-    if (expandedCard) {
-      activeCards.forEach((c) => {
-        c.magnetTX = 0;
-        c.magnetTY = 0;
-        c.magnetT = 0;
-        c.hoverTarget = 1.0;
-      });
-      return;
-    }
-
-    let mostAttractedCard = null;
-    let mostAttractedT = 0;
-
-    activeCards.forEach((card) => {
-      const cx = (arcMode && card.visualCx !== 0)
-        ? card.visualCx
-        : card.baseX + card.width / 2;
-      const cy = (arcMode && card.visualCy !== 0)
-        ? card.visualCy
-        : card.baseY + card.height / 2 + cardRevealOffset - gridPanY;
-      const dist = Math.sqrt((mouse.x - cx) ** 2 + (mouse.y - cy) ** 2);
-
-      if (dist < ATTRACT_RADIUS) {
-        const t = (1 - dist / ATTRACT_RADIUS) ** 1.5;
-        card.magnetT = t;
-        card.hoverTarget = 1.0 + 0.30 * t;
-        const vcx = card.visualCx || cx;
-        const vcy = card.visualCy || cy;
-        const ddx = mouse.x - vcx;
-        const ddy = mouse.y - vcy;
-        const vdist = Math.max(8, Math.sqrt(ddx * ddx + ddy * ddy));
-        card.magnetTX = (ddx / vdist) * t * MAX_DISPLACE;
-        card.magnetTY = (ddy / vdist) * t * MAX_DISPLACE;
-        if (t > mostAttractedT) {
-          mostAttractedT = t;
-          mostAttractedCard = card;
-        }
-      } else {
-        card.magnetT = 0;
-        card.hoverTarget = 1.0;
-        card.magnetTX = 0;
-        card.magnetTY = 0;
-      }
-    });
-
-    if (mostAttractedT > 0.01 && mostAttractedCard) {
-      const ncx = (arcMode && mostAttractedCard.visualCx !== 0)
-        ? mostAttractedCard.visualCx
-        : mostAttractedCard.baseX + mostAttractedCard.width / 2;
-      const ncy = (arcMode && mostAttractedCard.visualCy !== 0)
-        ? mostAttractedCard.visualCy
-        : mostAttractedCard.baseY + mostAttractedCard.height / 2 + cardRevealOffset - gridPanY;
-      activeCards.forEach((card) => {
-        if (card === mostAttractedCard) return;
-        const cx = (arcMode && card.visualCx !== 0)
-          ? card.visualCx
-          : card.baseX + card.width / 2;
-        const cy = (arcMode && card.visualCy !== 0)
-          ? card.visualCy
-          : card.baseY + card.height / 2 + cardRevealOffset - gridPanY;
-        const repDx = cx - ncx;
-        const repDy = cy - ncy;
-        const repDist = Math.sqrt(repDx * repDx + repDy * repDy);
-        if (repDist > 0) {
-          card.magnetTX = (repDx / repDist) * mostAttractedT * NEIGHBOR_PUSH;
-          card.magnetTY = (repDy / repDist) * mostAttractedT * NEIGHBOR_PUSH;
-        }
-      });
-    }
-  }
-
   let rafId = 0;
   let running = false;
+  let interactive = false;
 
   // Total virtual scroll units consumed by the animation (arc mode).
   const ANIM_SCROLL_TOTAL = ARC_ACROBAT_START + ARC_ACROBAT_DUR;
@@ -996,7 +712,6 @@ export default function init(el) {
   function loop() {
     if (!running) return;
     scroll.current = readScrollProgress() * ANIM_SCROLL_TOTAL;
-    zDepth = 0;
     cardRevealOffset = Math.max(0, REVEAL_SCROLL - scroll.current);
 
     const rawPan = Math.max(0, scroll.current - REVEAL_SCROLL);
@@ -1027,11 +742,9 @@ export default function init(el) {
       arcToGridT = Math.max(0, Math.min(1, peelT));
       const acT = (scroll.current - ARC_ACROBAT_START) / ARC_ACROBAT_DUR;
       acrobatT = Math.max(0, Math.min(1, acT));
-      if (scroll.current >= ARC_ACROBAT_START - 150 && expandedCard) collapseCard();
     } else {
       arcPanT = 0;
       arcToGridT = 1;
-      if (scroll.current >= ACROBAT_START_SCROLL - 150 && expandedCard) collapseCard();
       const span = ACROBAT_END_SCROLL - ACROBAT_START_SCROLL;
       acrobatT = Math.max(0, Math.min(1, (scroll.current - ACROBAT_START_SCROLL) / span));
     }
@@ -1059,15 +772,21 @@ export default function init(el) {
     const titleAnimT = Math.max(0, Math.min(1, titleRawT));
     const titleSlide = easeOutCubic(titleAnimT);
     const titleScale = 0.92 + 0.08 * titleSlide;
-    if (acrobatTitleEl) {
-      acrobatTitleEl.style.transform = `translateY(${acrobatTranslateY}px) scale(${titleScale})`;
-      acrobatTitleEl.style.opacity = titleSlide;
+    if (titleEl) {
+      titleEl.style.transform = `translateY(${acrobatTranslateY}px) scale(${titleScale})`;
+      titleEl.style.opacity = titleSlide;
     }
-    if (acrobatCtaEl) acrobatCtaEl.style.transform = `translateY(${acrobatTranslateY}px)`;
+    if (ctaEl) ctaEl.style.transform = `translateY(${acrobatTranslateY}px)`;
 
-    if (acrobatT > 0) {
-      layerShiftXTarget = 0;
-      layerShiftYTarget = 0;
+    // Enable clicks once the acrobat transition has essentially landed.
+    const shouldBeInteractive = acrobatT >= 0.95;
+    if (shouldBeInteractive !== interactive) {
+      interactive = shouldBeInteractive;
+      const pe = interactive ? 'auto' : 'none';
+      titleEl.style.pointerEvents = pe;
+      // TODO: when can this be interactive?
+      textBlockEl.style.pointerEvents = pe;
+      ctaEl.style.pointerEvents = pe;
     }
 
     scrollT = arcMode ? arcToGridT : Math.min(1, scroll.current / REVEAL_SCROLL);
@@ -1118,25 +837,19 @@ export default function init(el) {
 
     positionCards();
     updateCardAnchors();
-    updateCardMagnetism();
     update();
     draw();
     updateCardPositions();
-    updateLayerTransforms();
     rafId = requestAnimationFrame(loop);
   }
 
   const onResize = () => resize();
   const onMouseMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
   const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999; };
-  const onDocClick = () => { if (cardClickEnabled && expandedCard) collapseCard(); };
-  const onKeyDown = (e) => { if (e.key === 'Escape') collapseCard(); };
 
   window.addEventListener('resize', onResize);
   window.addEventListener('mousemove', onMouseMove);
   window.addEventListener('mouseleave', onMouseLeave);
-  document.addEventListener('click', onDocClick);
-  document.addEventListener('keydown', onKeyDown);
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const arc256Length = Math.max(arc256Path.getTotalLength(), 3000) * 2 + 500;
@@ -1169,8 +882,6 @@ export default function init(el) {
     window.removeEventListener('resize', onResize);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseleave', onMouseLeave);
-    document.removeEventListener('click', onDocClick);
-    document.removeEventListener('keydown', onKeyDown);
     observer.disconnect();
   }).observe(document.body, { childList: true, subtree: true });
 
