@@ -1,5 +1,5 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, decorateBlockBg } from '../../../utils/decorate.js';
 
 function hasContent(node) {
   return node.textContent?.trim() !== '' || node.querySelector('img, picture, svg, a[href]');
@@ -37,6 +37,17 @@ function decorate(block, root) {
   backgroundDiv?.classList.add(`${blockName}-background`);
   contentDiv?.classList.add(`${blockName}-content`);
   firstRow.classList.add(`${blockName}-container`);
+
+  decorateBlockBg(block, backgroundDiv, { useHandleFocalpoint: true });
+
+  if (block !== root && block.style.background) {
+    const colorBg = createTag('div', {
+      class: `${blockName}-background`,
+      style: `background: ${block.style.background}`,
+    });
+    block.style.removeProperty('background');
+    firstRow.append(colorBg);
+  }
 
   getForegroundContent(foregroundRow, contentDiv, blockName);
   decorateBlockText(contentDiv, { heading: '4' });

@@ -117,7 +117,7 @@ function handleMasonry(text, section) {
 
   section.classList.add('masonry-layout');
   if (spanSets.length > 1) section.classList.add('masonry-responsive');
-  const divs = [...section.querySelectorAll(":scope > div:not([class*='metadata'])")];
+  const divs = [...section.querySelectorAll(":scope > div:not([class*='metadata'], .section-background)")];
 
   const applySpans = (spans) => {
     divs.forEach((div, i) => {
