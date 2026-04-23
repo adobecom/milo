@@ -1065,9 +1065,8 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
-      ...(state.useRoundedCorners && {
-        useRoundedCorners: !!state.useRoundedCorners,
-      }),
+      ...(state.useRoundedCorners
+          && { useRoundedCorners: !!state.useRoundedCorners }),
       // Only include bladeCard when explicitly configured
       ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent)
       && {
