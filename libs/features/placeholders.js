@@ -61,7 +61,9 @@ const isGeoIpKey = (key) => key.endsWith('-geo-ip');
 const PH_RE = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 async function getGeoPlaceholders(config, sheet) {
-  // Dynamic to avoid circular dep with utils.js that hangs WTR test runner
+  // Dynamic, not static — moving these into the static import above slows
+  // the WTR suite ~3.7x and times out ~11 tests. utils.js is already cached
+  // by the time this runs, so no runtime cost.
   const { lingoActive, getGeoLocalePrefix, getPlaceholderPaths } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
   const geoPrefix = await getGeoLocalePrefix();
