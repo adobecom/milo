@@ -1079,7 +1079,7 @@ export const getConfig = async (originalState, strs = {}) => {
       }),
       // Include editorialOpenVariant if necessary
       ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
-        && { editorialOpenVariant: !!state.editorialCardOpenVariant}),
+        && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
