@@ -32,7 +32,7 @@ function buildTrack(logos) {
     logos.forEach((logo) => logoSet.append(logo.cloneNode(true)));
     return logoSet;
   });
-  return createTag('div', { class: 'logo-ticker-track' }, logoSets);
+  return createTag('div', { class: 'logo-ticker-track is-offscreen' }, logoSets);
 }
 
 // TODO: temporarily overriding svg colors
@@ -107,7 +107,10 @@ export default async function init(el) {
   const toggle = buildToggle(track);
   el.replaceChildren(track, toggle);
 
-  const observer = new ResizeObserver(() => syncTrackMetrics(track));
-  observer.observe(track.firstElementChild);
   syncTrackMetrics(track);
+  new ResizeObserver(() => syncTrackMetrics(track)).observe(track.firstElementChild);
+
+  new IntersectionObserver(([entry]) => {
+    track.classList.toggle('is-offscreen', !entry.isIntersecting);
+  }, { rootMargin: '200px' }).observe(el);
 }

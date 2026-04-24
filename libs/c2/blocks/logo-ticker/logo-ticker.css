@@ -10,6 +10,7 @@
   position: relative;
   width: 100%;
   overflow: clip;
+  contain: layout paint;
   padding-block: var(--s2a-spacing-24, 24px);
   /* stylelint-disable-next-line property-no-unknown */
   view-timeline: --logo-ticker-view block;
@@ -19,9 +20,9 @@
     gap: var(--logo-ticker-gap);
     width: max-content;
     animation: logo-ticker-scroll var(--logo-ticker-duration) linear infinite;
-    will-change: transform;
 
-    &.is-paused {
+    &.is-paused,
+    &.is-offscreen {
       animation-play-state: paused;
     }
   }
@@ -94,7 +95,7 @@
     /* stylelint-disable-next-line property-no-unknown */
     animation-timeline: auto, --logo-ticker-view;
     /* stylelint-disable-next-line property-no-unknown */
-    animation-range: auto, cover 0% cover 100%;
+    animation-range: auto, contain 0% contain 100%;
   }
 
   @keyframes logo-ticker-drift {
