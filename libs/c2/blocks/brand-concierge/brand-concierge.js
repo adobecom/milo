@@ -487,51 +487,51 @@ function decorateFloatingButton(el) {
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
 
-  const hideFloatingButton = () => {
-    floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tabindex', '-1');
-    floatingContainer.blur();
-    floatingButton.classList.add('floating-hidden');
-    floatingButton.classList.remove('floating-show');
+  // Cache layout values that only change on resize — never read inside scroll handler
+  let cachedMainHeight = mainElement.scrollHeight;
+  let cachedGnavHeight = gnavElement.offsetHeight;
+  let cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
+  const getTargetHeight = (target) => {
+    const { marginBottom } = window.getComputedStyle(target);
+    return target.scrollHeight + (parseFloat(marginBottom) * 2) - 2;
   };
+  let cachedTargetHeight = getTargetHeight(floatingButton);
+  const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
-  const showFloatingButton = () => {
-    floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tabindex');
-    floatingButton.classList.remove('floating-hidden');
-    floatingButton.classList.add('floating-show');
-  };
-
-  if (variants.isHero || variants.floatingDelay) {
-    hideFloatingButton();
-  }
+  const ro = new ResizeObserver(() => {
+    cachedMainHeight = mainElement.scrollHeight;
+    cachedGnavHeight = gnavElement.offsetHeight;
+    cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
+    cachedTargetHeight = getTargetHeight(floatingButton);
+  });
+  ro.observe(mainElement);
+  ro.observe(gnavElement);
+  ro.observe(floatingButton);
 
   const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const gnavHeight = gnavElement.offsetHeight;
-    const gnavPosition = window.getComputedStyle(gnavElement).position;
-    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+    const { scrollY } = window;
+    const threshold = scrollY + window.innerHeight - (cachedGnavFixed ? 0 : cachedGnavHeight);
 
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
+    if (threshold > cachedMainHeight) {
+      target.style.bottom = `${threshold - cachedMainHeight}px`;
+      floatingContainer.setAttribute('tab-index', '-1');
+      floatingContainer.blur();
       if (variants.isFloatingAnchorHide) {
         hideFloatingButton();
       } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
+        mainElement.style.paddingBottom = `${cachedTargetHeight}px`;
       }
     } else {
       showFloatingButton();
       target.style.bottom = '0';
     }
     if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        showFloatingButton();
-      }
-      if (window.scrollY < scrollDelay) {
-        hideFloatingButton();
+      if (scrollY > scrollDelay && threshold <= cachedMainHeight) {
+        floatingButton.classList.remove('floating-hidden');
+        floatingButton.classList.add('floating-show');
+      } else {
+        floatingButton.classList.add('floating-hidden');
+        floatingButton.classList.remove('floating-show');
       }
     }
   };
