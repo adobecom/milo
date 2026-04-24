@@ -1,0 +1,133 @@
+/* TODO: design tokens & values finalization */
+.logo-ticker {
+  --logo-ticker-speed: 60s;
+  --logo-ticker-gap: 30px;
+  --logo-ticker-logo-height: 2.25rem;
+  --logo-ticker-toggle-size: 1.5rem;
+  --logo-ticker-distance: 0;
+  --logo-ticker-dir: 1;
+
+  position: relative;
+  width: 100%;
+  overflow: clip;
+  padding-block: var(--s2a-spacing-24, 24px);
+  /* stylelint-disable-next-line property-no-unknown */
+  view-timeline: --logo-ticker-view block;
+}
+
+.logo-ticker .logo-ticker-track {
+  display: flex;
+  gap: var(--logo-ticker-gap);
+  width: max-content;
+  animation: logo-ticker-scroll var(--logo-ticker-speed) linear infinite;
+  will-change: transform;
+}
+
+.logo-ticker .logo-ticker-set {
+  display: flex;
+  gap: var(--logo-ticker-gap);
+  flex: 0 0 auto;
+}
+
+.logo-ticker .logo-ticker-track.is-paused {
+  animation-play-state: paused;
+}
+
+.logo-ticker span.icon,
+.logo-ticker svg,
+.logo-ticker picture img {
+  height: var(--logo-ticker-logo-height);
+  width: auto;
+  flex: 0 0 auto;
+}
+
+/* TODO: waiting on accessibility requirements */
+.logo-ticker .logo-ticker-toggle {
+  position: absolute;
+  inset-block-end: 8%;
+  inset-inline-end: 1rem;
+  margin: 0;
+  padding: 2px;
+  width: fit-content;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-white, #fff);
+  cursor: pointer;
+  z-index: 1;
+}
+
+.logo-ticker .logo-ticker-toggle:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring, currentColor);
+  outline-offset: 2px;
+}
+
+.logo-ticker .logo-ticker-toggle-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--logo-ticker-toggle-size);
+  height: var(--logo-ticker-toggle-size);
+  border-radius: inherit;
+  background: var(--color-gray-800, #222);
+}
+
+.logo-ticker .logo-ticker-toggle-icon.is-playing .play-icon,
+.logo-ticker .logo-ticker-toggle-icon:not(.is-playing) .pause-icon {
+  display: none;
+}
+
+:dir(rtl) .logo-ticker {
+  --logo-ticker-dir: -1;
+}
+
+@keyframes logo-ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(var(--logo-ticker-distance) * var(--logo-ticker-dir))); }
+}
+
+@supports (animation-timeline: view()) {
+  .logo-ticker .logo-ticker-track {
+    animation-name: logo-ticker-scroll, logo-ticker-drift;
+    animation-duration: var(--logo-ticker-speed), auto;
+    animation-timing-function: linear, linear;
+    animation-iteration-count: infinite, 1;
+    /* stylelint-disable-next-line property-no-unknown */
+    animation-timeline: auto, --logo-ticker-view;
+    /* stylelint-disable-next-line property-no-unknown */
+    animation-range: auto, cover 0% cover 100%;
+  }
+
+  @keyframes logo-ticker-drift {
+    from { translate: calc(120px * var(--logo-ticker-dir)); }
+    to { translate: calc(-120px * var(--logo-ticker-dir)); }
+  }
+}
+
+/* TODO: waiting for exact BP decisions */
+@media (width >= 600px) {
+  .logo-ticker {
+    --logo-ticker-gap: 80px;
+    --logo-ticker-logo-height: 50px;
+    --logo-ticker-toggle-size: 2rem;
+  }
+
+  .logo-ticker .logo-ticker-toggle {
+    inset-inline-end: 2.5rem;
+  }
+}
+
+@media (width >= 1200px) {
+  .logo-ticker {
+    --logo-ticker-toggle-size: 2.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-ticker .logo-ticker-track {
+    animation: none !important;
+  }
+
+  .logo-ticker .logo-ticker-toggle {
+    display: none;
+  }
+}
