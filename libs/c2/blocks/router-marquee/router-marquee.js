@@ -89,6 +89,18 @@ const isRtl = () => document.documentElement.dir === 'rtl';
 const reflow = (el) => el?.getBoundingClientRect();
 const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
+let cssCacheGen = 0;
+const cssCache = new WeakMap();
+const getCssPxCached = (el, prop) => {
+  let entry = cssCache.get(el);
+  if (!entry || entry.gen !== cssCacheGen) {
+    entry = { gen: cssCacheGen, values: {} };
+    cssCache.set(el, entry);
+  }
+  if (!(prop in entry.values)) entry.values[prop] = getCssPx(el, prop);
+  return entry.values[prop];
+};
+
 const clearInlineStyles = (el, props) => {
   if (!el) return;
   props.forEach((p) => { el.style[p] = ''; });
@@ -298,11 +310,22 @@ const buildPlayPause = () => {
   ]));
 };
 
+const contentTargetsCache = new WeakMap();
+const getContentTargets = (content) => {
+  if (!contentTargetsCache.has(content)) {
+    const targets = [];
+    STAGGER_CHILDREN.forEach((sel) => {
+      const el = content.querySelector(sel);
+      if (el) targets.push(el);
+    });
+    contentTargetsCache.set(content, targets);
+  }
+  return contentTargetsCache.get(content);
+};
+
 const animateContentEnter = (content, direction) => {
   if (!content || prefersReducedMotion()) return;
-  const targets = STAGGER_CHILDREN
-    .map((sel) => content.querySelector(sel))
-    .filter(Boolean);
+  const targets = getContentTargets(content);
   targets.forEach((el, i) => {
     el.style.transition = 'none';
     el.style.transform = `translateX(${direction * (STAGGER_BASE + i * STAGGER_STEP)}px)`;
@@ -323,58 +346,47 @@ const setAriaHiddenAndTabIndex = (slides) => {
   });
 };
 
-const updateControlsLayout = (el) => {
+const dynamicLayoutUpdates = (el) => {
   const activeSlides = el.querySelectorAll('.rm-slide.is-active');
   const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
   if (!activeSlide) return;
   const vp = activeSlide.closest('.rm-viewport');
   const controls = vp?.querySelector('.rm-controls');
   const playPause = vp?.querySelector('.rm-pause-play');
-  if (!controls || !playPause) return;
-  const cardsWrapper = vp.querySelector('.rm-cards');
-  const cards = vp.querySelectorAll('.rm-card');
-  // the best thing I could find to determine when the play button is running out of space
-  // is this formula of: (side paddings) + (cards max width) + (cards gaps) + (play button width)
-  // which gives the min total width of the controls section.
-  // If the viewport gets smaller than this min width, I move the play button
-  const needed = (2 * getCssPx(controls, 'padding-left')) + (cards.length * getCssPx(cards[0], 'max-width')) + (cards.length * getCssPx(cardsWrapper, 'gap')) + getCssPx(playPause, 'width');
-  const stacked = needed > window.innerWidth;
-  controls.classList.toggle('rm-controls-column', stacked);
-  playPause.classList.toggle('rm-pause-play-column', stacked);
-};
-
-const updateContentSpacing = (el) => {
-  const activeSlides = el.querySelectorAll('.rm-slide.is-active');
-  const activeSlide = [...activeSlides].find((s) => s.offsetParent !== null);
-  if (!activeSlide) return;
-  const vp = activeSlide.closest('.rm-viewport');
   const wrapper = activeSlide.querySelector('.rm-content-wrapper');
   const content = activeSlide.querySelector('.rm-content');
-  const controls = vp?.querySelector('.rm-controls');
-  if (!wrapper || !content || !controls || !vp) return;
+  if (!controls || !playPause || !wrapper || !content) return;
 
-  // Set min-height so the viewport never shrinks below what the content needs
-  const wrapperPadTop = getCssPx(wrapper, 'padding-top');
-  const contentH = content.offsetHeight;
-  const needed = wrapperPadTop + contentH + 24 + controls.offsetHeight;
-
-  vp.style.minHeight = `${Math.max(window.innerHeight, needed)}px`;
-  // Compact padding-top when content overlaps controls
-  // Applied to all wrappers to handle slide changes
+  const cardsWrapper = vp.querySelector('.rm-cards');
+  const cards = vp.querySelectorAll('.rm-card');
   const allWrappers = vp.querySelectorAll('.rm-content-wrapper');
+
+  // ALL READS — single layout computation, no interleaved writes
+  // controls layout: (side paddings) + (cards max width) + (cards gaps) + (play button width)
+  const controlsNeeded = (2 * getCssPxCached(controls, 'padding-left'))
+    + (cards.length * getCssPxCached(cards[0], 'max-width'))
+    + (cards.length * getCssPxCached(cardsWrapper, 'gap'))
+    + getCssPxCached(playPause, 'width');
+  const stacked = controlsNeeded > window.innerWidth;
+
+  // content spacing: min-height so the viewport never shrinks below what content needs
+  const wrapperPadTop = getCssPxCached(wrapper, 'padding-top');
+  const contentH = content.offsetHeight;
+  const controlsH = controls.offsetHeight;
+  const minHeightNeeded = wrapperPadTop + contentH + 24 + controlsH;
+  const isCompact = wrapper.classList.contains('rm-compact');
   const controlsTop = controls.getBoundingClientRect().top - 24;
   const contentBottom = content.getBoundingClientRect().bottom;
-  const isCompact = wrapper.classList.contains('rm-compact');
+
+  // ALL WRITES — no reads after this point
+  controls.classList.toggle('rm-controls-column', stacked);
+  playPause.classList.toggle('rm-pause-play-column', stacked);
+  vp.style.minHeight = `${Math.max(window.innerHeight, minHeightNeeded)}px`;
   if (!isCompact && contentBottom >= controlsTop) {
     allWrappers.forEach((w) => w.classList.add('rm-compact'));
   } else if (isCompact && contentBottom + 80 < controlsTop) {
     allWrappers.forEach((w) => w.classList.remove('rm-compact'));
   }
-};
-
-const dynamicLayoutUpdates = (el) => {
-  updateControlsLayout(el);
-  updateContentSpacing(el);
 };
 
 const startAutoplay = (slides, cards, container, block) => {
@@ -385,6 +397,8 @@ const startAutoplay = (slides, cards, container, block) => {
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
+  let hoverPaused = false; // true when paused by card hover (auto-resumes on mouseleave)
+  const rafDynamicLayout = () => dynamicLayoutUpdates(block);
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
 
@@ -413,18 +427,18 @@ const startAutoplay = (slides, cards, container, block) => {
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   };
 
-  const fillOrigin = () => `translateX(${isRtl() ? '101%' : '-101%'})`;
+  const fillOrigin = `translateX(${isRtl() ? '101%' : '-101%'})`;
 
   const clearFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = fillOrigin();
+    bar.style.transform = fillOrigin;
   };
 
   const startFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = fillOrigin();
+    bar.style.transform = fillOrigin;
     reflow(bar);
     bar.style.transition = `transform ${AUTOPLAY_MS}ms linear`;
     bar.style.transform = 'translateX(0%)';
@@ -433,7 +447,7 @@ const startAutoplay = (slides, cards, container, block) => {
   const finishSlideTransition = () => {
     clearTimeout(cleanupTimer);
     cleanupTimer = null;
-    [...slides].forEach(resetSlide);
+    slides.forEach(resetSlide);
     if (pendingSlide) {
       pendingSlide.classList.add('is-active');
       pendingSlide = null;
@@ -491,7 +505,7 @@ const startAutoplay = (slides, cards, container, block) => {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
 
-    requestAnimationFrame(() => dynamicLayoutUpdates(block));
+    requestAnimationFrame(rafDynamicLayout);
   };
 
   const preloadNextVideo = () => {
@@ -540,10 +554,11 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      if (i === active) { pause(); return; }
+      if (i === active) { hoverPaused = true; pause(); return; }
       clearTimeout(timer);
       clearFill(active);
       paused = true;
+      hoverPaused = true;
       const dir = i > active ? 1 : -1;
       activate(i, dir, { skipTrack: isDesktopSmallVp });
       USER_ACTION = true;
@@ -588,9 +603,15 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
+  container.addEventListener('mouseleave', () => {
+    if (!hoverPaused) return;
+    hoverPaused = false;
+    resume();
+  });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
+    hoverPaused = false;
     if (paused) {
       resume();
     } else {
@@ -684,13 +705,24 @@ export default function init(el) {
   loadViewportVideos(el);
   initViewportAutoplay();
   requestAnimationFrame(() => dynamicLayoutUpdates(el));
+  let resizeRaf;
   window.addEventListener('resize', () => {
-    dynamicLayoutUpdates(el);
-    loadViewportVideos(el);
-    initViewportAutoplay();
+    cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      cssCacheGen += 1;
+      dynamicLayoutUpdates(el);
+      loadViewportVideos(el);
+      initViewportAutoplay();
+    });
   });
 
-  new IntersectionObserver(([entry]) => {
-    autoplayControllers.forEach((ctrl) => ctrl[entry.isIntersecting ? 'resume' : 'pause']());
-  }).observe(el);
+  const nextSection = el.closest('.section')?.nextElementSibling;
+  if (nextSection) {
+    new IntersectionObserver(([entry]) => {
+      const action = entry.isIntersecting ? 'pause' : 'resume';
+      if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
+        autoplayControllers.forEach((ctrl) => ctrl[action]());
+      }
+    }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
+  }
 }

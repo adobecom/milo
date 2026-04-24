@@ -528,13 +528,22 @@ function decorateFloatingButton(el) {
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
 
+  let cachedGnavHeight = gnavElement?.offsetHeight ?? 0;
+  let cachedGnavIsFixed = gnavElement
+    ? window.getComputedStyle(gnavElement).position === 'fixed' : true;
+  let cachedButtonMargin = parseFloat(window.getComputedStyle(floatingButton).marginBottom) || 0;
+  window.addEventListener('resize', () => {
+    cachedGnavHeight = gnavElement?.offsetHeight ?? 0;
+    cachedGnavIsFixed = gnavElement
+      ? window.getComputedStyle(gnavElement).position === 'fixed' : true;
+    cachedButtonMargin = parseFloat(window.getComputedStyle(floatingButton).marginBottom) || 0;
+  }, { passive: true });
+
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
-    const gnavHeight = gnavElement.offsetHeight;
-    const gnavPosition = window.getComputedStyle(gnavElement).position;
-    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
+    const threshold = (window.scrollY + window.innerHeight
+      - (cachedGnavIsFixed ? 0 : cachedGnavHeight));
+    const targetHeight = target.scrollHeight + (cachedButtonMargin * 2) - 2;
     const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
     if (threshold > mainHeight) {
