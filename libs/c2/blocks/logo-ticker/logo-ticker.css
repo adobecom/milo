@@ -1,6 +1,6 @@
 /* TODO: design tokens & values finalization */
 .logo-ticker {
-  --logo-ticker-speed: 60s;
+  --logo-ticker-duration: 60s;
   --logo-ticker-gap: 30px;
   --logo-ticker-logo-height: 2.25rem;
   --logo-ticker-toggle-size: 1.5rem;
@@ -19,7 +19,7 @@
   display: flex;
   gap: var(--logo-ticker-gap);
   width: max-content;
-  animation: logo-ticker-scroll var(--logo-ticker-speed) linear infinite;
+  animation: logo-ticker-scroll var(--logo-ticker-duration) linear infinite;
   will-change: transform;
 }
 
@@ -88,7 +88,7 @@
 @supports (animation-timeline: view()) {
   .logo-ticker .logo-ticker-track {
     animation-name: logo-ticker-scroll, logo-ticker-drift;
-    animation-duration: var(--logo-ticker-speed), auto;
+    animation-duration: var(--logo-ticker-duration), auto;
     animation-timing-function: linear, linear;
     animation-iteration-count: infinite, 1;
     /* stylelint-disable-next-line property-no-unknown */
