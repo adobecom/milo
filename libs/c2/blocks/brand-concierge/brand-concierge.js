@@ -542,7 +542,15 @@ function decorateFloatingButton(el) {
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(floatingButton);
+      scrollPending = false;
+    });
+  }, { passive: true });
 }
 
 function handleConsent(el) {
