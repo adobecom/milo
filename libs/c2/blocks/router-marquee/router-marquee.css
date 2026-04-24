@@ -16,6 +16,7 @@
   inset: 0;
   pointer-events: none;
   transform: translateX(100%);
+  will-change: transform;
 }
 
 .rm-slide.is-active {
@@ -32,6 +33,7 @@
 .rm-background {
   z-index: 0;
   transform: translateY(var(--parallax-y, 0));
+  will-change: transform;
 }
 .rm-overlay { z-index: 1; }
 

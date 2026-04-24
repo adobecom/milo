@@ -539,37 +539,77 @@ function decorateFloatingButton(el) {
     cachedButtonMargin = parseFloat(window.getComputedStyle(floatingButton).marginBottom) || 0;
   }, { passive: true });
 
-  const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const threshold = (window.scrollY + window.innerHeight
-      - (cachedGnavIsFixed ? 0 : cachedGnavHeight));
-    const targetHeight = target.scrollHeight + (cachedButtonMargin * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+  // Cache scrollHeight values via ResizeObserver to avoid forced reflows on every scroll rAF tick.
+  // mainElement.scrollHeight is also invalidated by the paddingBottom write below; ResizeObserver
+  // fires before the next frame so the cache is always fresh by the time the next scroll fires.
+  let cachedMainScrollHeight = mainElement.scrollHeight;
+  let cachedButtonScrollHeight = floatingButton.scrollHeight;
+  let cachedScrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+  const sizeObserver = new ResizeObserver(() => {
+    cachedMainScrollHeight = mainElement.scrollHeight;
+    cachedButtonScrollHeight = floatingButton.scrollHeight;
+    if (!variants.floatingDelay) cachedScrollDelay = el.scrollHeight;
+  });
+  sizeObserver.observe(mainElement);
+  sizeObserver.observe(floatingButton);
+  if (!variants.floatingDelay) sizeObserver.observe(el);
 
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      floatingContainer.setAttribute('tab-index', '-1');
-      floatingContainer.blur();
-      if (variants.isFloatingAnchorHide) {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
-      } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
-      }
-    } else {
-      floatingContainer.removeAttribute('tab-index');
-      target.style.bottom = '0';
-      floatingButton.classList.remove('floating-hidden');
-      floatingButton.classList.add('floating-show');
+  // Dirty-check state: track last-written values so handleScroll only mutates
+  // the DOM when something changes, not on every rAF tick.
+  let prevBottom = null;
+  let prevAtBottom = null;
+  let prevPadding = null;
+  // Match initial DOM state so the first scroll frame skips redundant writes.
+  let prevVisible = !(variants.isHero || variants.floatingDelay);
+
+  const handleScroll = () => {
+    const mainHeight = cachedMainScrollHeight;
+    const gnavOffset = cachedGnavIsFixed ? 0 : cachedGnavHeight;
+    const threshold = window.scrollY + window.innerHeight - gnavOffset;
+    const atBottom = threshold > mainHeight;
+
+    // style.bottom grows each tick while at the bottom; is static '0' otherwise.
+    const newBottom = atBottom ? `${threshold - mainHeight}px` : '0';
+    if (newBottom !== prevBottom) {
+      prevBottom = newBottom;
+      floatingButton.style.bottom = newBottom;
     }
-    if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        floatingButton.classList.remove('floating-hidden');
-        floatingButton.classList.add('floating-show');
+
+    // tab-index and paddingBottom only change at the bottom-zone boundary,
+    // not on every tick, so gate them behind prevAtBottom.
+    if (atBottom !== prevAtBottom) {
+      prevAtBottom = atBottom;
+      if (atBottom) {
+        floatingContainer.setAttribute('tab-index', '-1');
+        floatingContainer.blur();
       } else {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
+        floatingContainer.removeAttribute('tab-index');
       }
+      if (!variants.isFloatingAnchorHide) {
+        const targetHeight = cachedButtonScrollHeight + (cachedButtonMargin * 2) - 2;
+        const newPadding = atBottom ? `${targetHeight}px` : '';
+        if (newPadding !== prevPadding) {
+          prevPadding = newPadding;
+          mainElement.style.paddingBottom = newPadding;
+        }
+      }
+    }
+
+    // Compute the single intended visibility and only write classList when it
+    // changes (not on every rAF tick).
+    let shouldShow;
+    if (variants.isHero || variants.floatingDelay) {
+      shouldShow = !atBottom && window.scrollY > cachedScrollDelay;
+    } else if (atBottom && variants.isFloatingAnchorHide) {
+      shouldShow = false;
+    } else {
+      shouldShow = true;
+    }
+
+    if (shouldShow !== prevVisible) {
+      prevVisible = shouldShow;
+      floatingButton.classList.toggle('floating-hidden', !shouldShow);
+      floatingButton.classList.toggle('floating-show', shouldShow);
     }
   };
 
@@ -584,7 +624,7 @@ function decorateFloatingButton(el) {
     if (scrollPending) return;
     scrollPending = true;
     requestAnimationFrame(() => {
-      handleScroll(floatingButton);
+      handleScroll();
       scrollPending = false;
     });
   }, { passive: true });

@@ -2089,7 +2089,7 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
-  if (getMetadata('foundation') === 'c2') {
+  if (getMetadata('foundation') === 'c2' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     await Promise.all([
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),

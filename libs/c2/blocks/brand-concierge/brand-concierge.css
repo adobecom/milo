@@ -352,6 +352,7 @@
   position: fixed;
   transition: opacity 0.25s ease;
   width: calc(100% - var(--bc-floating-button-spacing) * 2 - var(--bc-input-border-size) * 2);
+  will-change: opacity;
   z-index: 4;
 }
 
