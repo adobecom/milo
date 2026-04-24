@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { setBackgroundFocus } from '../../libs/utils/decorate.js';
+import { setBackgroundFocus, decorateBlockText } from '../../libs/utils/decorate.js';
 
 describe('setBackgroundFocus', () => {
   let container;
@@ -78,5 +78,32 @@ describe('setBackgroundFocus', () => {
     expect(img.dataset.title).to.equal('data-focal:50,50');
     setBackgroundFocus(pic);
     expect(img.dataset.title).to.be.undefined;
+  });
+});
+
+describe('decorateBlockText — elContainsText with custom elements', () => {
+  if (!customElements.get('mas-field')) {
+    customElements.define('mas-field', class extends HTMLElement {});
+  }
+
+  it('adds body class to p containing a non-hidden custom element (mas-field)', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p><mas-field field="ctas"></mas-field></p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.true;
+  });
+
+  it('does not add body class to p containing only a hidden custom element', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p><aem-fragment hidden></aem-fragment></p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.false;
+  });
+
+  it('still adds body class to p with plain text', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p>Some description text</p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.true;
   });
 });

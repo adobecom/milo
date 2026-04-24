@@ -1,7 +1,14 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
-import { checkUrl, getKeyValPairs, getOrigin, setConfig, getCaasProps } from '../../../tools/send-to-caas/send-utils.js';
+import {
+  checkUrl,
+  getKeyValPairs,
+  getOrigin,
+  runLanguageFirstRetry,
+  setConfig,
+  getCaasProps,
+} from '../../../tools/send-to-caas/send-utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -106,5 +113,54 @@ describe('getCaasProps function', () => {
     const result = getCaasProps(mockProps, invalidUrl);
     // Should not throw an error and should fall back to window.location behavior
     expect(result).to.have.property('entityId', 'test-entity-id');
+  });
+});
+
+describe('runLanguageFirstRetry (language-first retry)', () => {
+  const baseOptions = {
+    prodUrl: 'business.adobe.com/de/blog/some-page',
+    repo: 'bacom',
+    host: 'business.adobe.com',
+  };
+  const noDelay = { retryDelayMs: 0 };
+
+  it('returns immediately when resolver returns correct lang/country (no retry)', async () => {
+    const getLangFirst = async () => ({ country: 'xx', lang: 'de' });
+    const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
+    expect(result).to.equal('de-xx');
+  });
+
+  it('retries only when resolver returns en/xx with fromFallback (error), then de/xx', async () => {
+    let callCount = 0;
+    const getLangFirst = async () => {
+      callCount += 1;
+      if (callCount === 1) return { country: 'xx', lang: 'en', fromFallback: true };
+      return { country: 'xx', lang: 'de' };
+    };
+    const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
+    expect(result).to.equal('de-xx');
+    expect(callCount).to.equal(2);
+  });
+
+  it('returns en-xx immediately when resolver returns en/xx without fromFallback (no retry)', async () => {
+    let callCount = 0;
+    const getLangFirst = async () => {
+      callCount += 1;
+      return { country: 'xx', lang: 'en' };
+    };
+    const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
+    expect(result).to.equal('en-xx');
+    expect(callCount).to.equal(1);
+  });
+
+  it('returns en-xx after all retries when resolver always returns en/xx with fromFallback', async () => {
+    let callCount = 0;
+    const getLangFirst = async () => {
+      callCount += 1;
+      return { country: 'xx', lang: 'en', fromFallback: true };
+    };
+    const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
+    expect(result).to.equal('en-xx');
+    expect(callCount).to.be.greaterThan(1);
   });
 });

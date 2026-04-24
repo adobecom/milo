@@ -11,7 +11,7 @@ import {
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
-  getCountry,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
@@ -88,6 +88,23 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (!url) return false;
+  if (url.startsWith('/') && !url.startsWith('//')) return true;
+  try {
+    const { hostname, protocol } = new URL(url);
+    if (protocol !== 'https:') return false;
+    return TRUSTED_DOMAINS.some(
+      (domain) => hostname === domain.slice(1) || hostname.endsWith(domain),
+    ) || TRUSTED_AEM_PATTERN.test(hostname);
+  } catch {
+    return false;
+  }
+}
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -118,7 +135,9 @@ export const normalizePath = (p, localize = true) => {
         || path?.includes('.json')) {
         path = pathname;
       } else {
-        path = `${config.locale.prefix}${normalizePath(pathname)}`;
+        path = isFederal
+          ? `${config.locale.prefix}${pathname}`
+          : `${config.locale.prefix}${normalizePath(pathname)}`;
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
@@ -442,7 +461,7 @@ function updateFramework(updateFrameworkList) {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
   return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
@@ -748,8 +767,8 @@ export async function handleCommands(
           }
         }
       }
-      if ((els.length && !cmd.modifiers.includes(FLAGS.all))
-        || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      if ((els?.length && !cmd.modifiers?.includes(FLAGS.all))
+        || !cmd.modifiers?.includes(FLAGS.includeFragments)) {
         cmd.completed = true;
       }
     }
@@ -878,32 +897,29 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-const matchesCountryChoiceOrIP = (name, config) => {
-  if (!name.includes('countrychoice') && !name.includes('countryip')) return false;
+const matchesCountryIP = (name, config) => {
+  if (!name.includes('countryip')) return false;
   const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
   if (!countryList?.length) return false;
-  const { countryChoice, countryIP } = config.mep;
-  const testCountry = name.includes('countrychoice') ? countryChoice : countryIP;
-  return countryList.includes(testCountry);
+  return countryList.includes(config.mep?.countryIP);
 };
 
 function hasCountryMatch(str, config) {
-  if (str.includes('countrychoice') || str.includes('countryip')) {
+  if (str.includes('countryip')) {
     const modifiedStr = str.replace('uk', 'gb');
-    return matchesCountryChoiceOrIP(modifiedStr, config);
+    return matchesCountryIP(modifiedStr, config);
   }
   return false;
 }
 
 export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  const { countryIP, countryChoice } = config.mep || {};
+  const { countryIP } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
     ...(countryIP ? [`countryip(${countryIP})`] : []),
-    ...(countryChoice ? [`countrychoice(${countryChoice})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
@@ -1004,33 +1020,11 @@ export const getEntitlements = async (data) => {
   });
 };
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
 async function setMepCountry(config) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = await getCountry(true);
+  const resolvedCountry = await resolveDetectedMarketCountry();
   config.mep = config.mep || {};
-  if (country) {
-    config.mep.countryChoice = normCountry(country);
-  }
-  if (akamaiCode) {
-    config.mep.countryIP = normCountry(akamaiCode);
-  }
-  if (!config.mep.countryChoice && config.mep.countryIP) {
-    config.mep.countryChoice = config.mep.countryIP;
-  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
-    try {
-      let countryIP = await config.mep.countryIPPromise;
-      if (countryIP) {
-        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
-        config.mep.countryIP = countryIP;
-        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
-      }
-    } catch (e) {
-      log('MEP Error: Unable to get user country');
-    }
+  if (resolvedCountry) {
+    config.mep.countryIP = resolvedCountry;
   }
 }
 
@@ -1277,7 +1271,13 @@ export async function categorizeActions(experiment, config) {
   // eslint-disable-next-line prefer-destructuring
   if (selectedVariant.replacepage?.length) config.mep.replacepage = replacepage[0];
 
-  selectedVariant.insertscript?.map((script) => loadScript(script.val));
+  selectedVariant.insertscript?.forEach((script) => {
+    if (isTrustedUrl(script.val)) {
+      loadScript(script.val);
+    } else {
+      log(`Blocked untrusted insertscript URL: ${script.val}`);
+    }
+  });
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
   if (selectedVariant.updateframework?.length) {
@@ -1497,6 +1497,10 @@ export const combineMepSources = async (
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) {
+        log(`Blocked external mep manifest URL: ${manifestPath}`);
+        return;
+      }
       if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath, source: ['mep param'] });
       }

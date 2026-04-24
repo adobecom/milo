@@ -33,10 +33,12 @@ const addInner = (el, cardType, card) => {
   new ResizeObserver(() => { adaptForTextExtension(el); }).observe(el);
 
   if (cardType === DOUBLE_WIDE) {
-    inner = document.createElement('a');
-    inner.href = el.querySelector('a')?.href || '';
+    const existingLink = el.querySelector('a');
+    inner = existingLink || document.createElement('a');
+    if (!existingLink) inner.href = '';
     inner.rel = 'noopener noreferrer';
     inner.tabIndex = 0;
+    inner.textContent = '';
     if (title) inner.append(title);
     if (text) inner.append(text);
     el.querySelector(':scope > div:not([class])')?.remove();
