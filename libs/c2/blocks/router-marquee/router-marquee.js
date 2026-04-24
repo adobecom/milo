@@ -690,13 +690,7 @@ export default function init(el) {
     initViewportAutoplay();
   });
 
-  const nextSection = el.closest('.section')?.nextElementSibling;
-  if (nextSection) {
-    new IntersectionObserver(([entry]) => {
-      const action = entry.isIntersecting ? 'pause' : 'resume';
-      if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
-        autoplayControllers.forEach((ctrl) => ctrl[action]());
-      }
-    }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
-  }
+  new IntersectionObserver(([entry]) => {
+    autoplayControllers.forEach((ctrl) => ctrl[entry.isIntersecting ? 'resume' : 'pause']());
+  }).observe(el);
 }

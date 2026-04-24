@@ -6,6 +6,7 @@ import { processTrackingLabels } from '../../../martech/attributes.js';
 const leaveTimeouts = new WeakMap();
 let hoverTracked = false;
 const rewindIntervals = new WeakMap();
+const rewindObservers = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
@@ -17,6 +18,8 @@ const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'A
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
   rewindIntervals.delete(video);
+  rewindObservers.get(video)?.disconnect();
+  rewindObservers.delete(video);
 };
 
 const rewindVideo = (video) => {
@@ -24,6 +27,13 @@ const rewindVideo = (video) => {
   video.pause();
   const startSystemTime = Date.now();
   const startVideoTime = video.currentTime;
+
+  const io = new IntersectionObserver(([entry]) => {
+    if (!entry.isIntersecting) stopRewind(video);
+  });
+  io.observe(video);
+  rewindObservers.set(video, io);
+
   const intervalRewind = setInterval(() => {
     if (video.currentTime === 0) {
       stopRewind(video);
