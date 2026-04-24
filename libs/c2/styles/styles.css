@@ -1143,6 +1143,7 @@ p {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    will-change: transform;
     position: sticky;
     top: 0;
     z-index: 0;
