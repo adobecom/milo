@@ -602,3 +602,175 @@
   text-decoration: none;
 }
 
+/* Mobile Acrobat chrome — hidden on desktop/tablet, shown at mobile breakpoint */
+.dot-grid .mob-ac {
+  display: none;
+}
+
+@media (width <= 767px) {
+  .dot-grid .card-label-outer {
+    font-size: 10pt;
+  }
+
+  /* iOS Safari z-index fix in 3D compositing context */
+  .dot-grid .layer {
+    transform-style: flat;
+  }
+
+  /* Hide desktop Acrobat chrome on mobile — replaced by .mob-ac */
+  .dot-grid .acrobat-win {
+    display: none !important;
+  }
+
+  .dot-grid .acrobat-title {
+    top: 0;
+    right: auto;
+    bottom: auto;
+    left: calc((100% - 294px) / 2);
+    z-index: 18;
+    width: 294px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(100vh);
+  }
+
+  .dot-grid .acrobat-title .heading {
+    white-space: normal;
+    font-size: 32pt;
+    line-height: 32px;
+    letter-spacing: -0.96px;
+  }
+
+  .dot-grid .acrobat-cta {
+    top: 0;
+    left: calc(50% - 54px);
+    z-index: 18;
+    width: 108px;
+    height: 40px;
+    transform: translateY(100vh);
+  }
+
+  .dot-grid .text-block {
+    width: 273px;
+    text-align: left;
+  }
+
+  .dot-grid .mob-ac {
+    position: absolute;
+    top: 0;
+    left: calc((100% - 294px) / 2);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 294px;
+    height: 536px;
+    font-family: -apple-system, 'Adobe Clean', sans-serif;
+    color: #fff;
+    background: #1a1a1a;
+    border-radius: 14px;
+    box-shadow: 0 12px 60px rgb(0 0 0 / 60%);
+    transform: translateY(100vh) scale(2);
+    transform-origin: center center;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .dot-grid .mab-tb {
+    flex: 0 0 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    background: #1a1a1a;
+    border-bottom: 0.5px solid rgb(255 255 255 / 12%);
+  }
+
+  .dot-grid .mab-tb-l {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .dot-grid .mab-vdiv {
+    width: 1px;
+    height: 20px;
+    background: rgb(255 255 255 / 25%);
+  }
+
+  .dot-grid .mab-tb-r {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .dot-grid .mab-tb-ico {
+    display: flex;
+    line-height: 0;
+    color: #fff;
+  }
+
+  .dot-grid .mab-canvas {
+    flex: 1;
+    background: #111;
+  }
+
+  .dot-grid .mab-fab {
+    position: absolute;
+    right: 14px;
+    bottom: 116px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    background: linear-gradient(-22deg, #676dfc 39%, #ff6a54 90%);
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 4px 18px rgb(0 0 0 / 45%);
+  }
+
+  .dot-grid .mab-bot {
+    flex: 0 0 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 2px;
+    background: #1a1a1a;
+    border-top: 0.5px solid rgb(255 255 255 / 12%);
+  }
+
+  .dot-grid .mab-tool {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    padding: 8px 0 0;
+    white-space: nowrap;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 400;
+    color: #fff;
+    background: none;
+    border: none;
+  }
+
+  .dot-grid .mab-home-ind {
+    flex: 0 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1a1a;
+  }
+
+  .dot-grid .mab-home-ind::after {
+    content: '';
+    width: 120px;
+    height: 4px;
+    background: rgb(255 255 255 / 35%);
+    border-radius: 4px;
+  }
+}
+
