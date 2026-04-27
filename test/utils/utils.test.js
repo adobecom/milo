@@ -2044,7 +2044,7 @@ describe('Utils', () => {
 
     it('uses prod host with no suffix on prod', () => {
       const { url, host } = resolveCrossSiteIndex(
-        { ...baseEntry, stageHost: 'business.stage.adobe.com', aemRepo: 'bacom' },
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
         '/fr',
         '',
         'business.adobe.com',
@@ -2055,7 +2055,7 @@ describe('Utils', () => {
 
     it('uses stage host with -preview suffix on .stage.adobe.com when stageHost set', () => {
       const { url, host } = resolveCrossSiteIndex(
-        { ...baseEntry, stageHost: 'business.stage.adobe.com', aemRepo: 'bacom' },
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
         '/fr',
         '-preview',
         'business.stage.adobe.com',
@@ -2066,7 +2066,7 @@ describe('Utils', () => {
 
     it('falls back to prod host with no suffix on .stage.adobe.com when stageHost missing', () => {
       const { url, host } = resolveCrossSiteIndex(
-        { ...baseEntry, aemRepo: 'bacom' },
+        { ...baseEntry },
         '/fr',
         '-preview',
         'business.stage.adobe.com',
@@ -2075,29 +2075,7 @@ describe('Utils', () => {
       expect(host).to.equal('business.adobe.com');
     });
 
-    it('uses main--<repo>--adobecom.aem.page with -preview on .aem.page when aemRepo set', () => {
-      const { url, host } = resolveCrossSiteIndex(
-        { ...baseEntry, stageHost: 'business.stage.adobe.com', aemRepo: 'bacom' },
-        '/fr',
-        '-preview',
-        'feature--milo--adobecom.aem.page',
-      );
-      expect(url).to.equal('https://main--bacom--adobecom.aem.page/fr/assets/lingo/query-index-preview.json');
-      expect(host).to.equal('main--bacom--adobecom.aem.page');
-    });
-
-    it('uses main--<repo>--adobecom.aem.live with no suffix on .aem.live when aemRepo set', () => {
-      const { url, host } = resolveCrossSiteIndex(
-        { ...baseEntry, stageHost: 'business.stage.adobe.com', aemRepo: 'bacom' },
-        '/fr',
-        '',
-        'main--milo--adobecom.aem.live',
-      );
-      expect(url).to.equal('https://main--bacom--adobecom.aem.live/fr/assets/lingo/query-index.json');
-      expect(host).to.equal('main--bacom--adobecom.aem.live');
-    });
-
-    it('falls back to prod host on .aem.page when aemRepo missing', () => {
+    it('falls back to prod host on .aem.page (cross-origin auth required)', () => {
       const { url, host } = resolveCrossSiteIndex(
         { ...baseEntry, stageHost: 'business.stage.adobe.com' },
         '/fr',
@@ -2113,24 +2091,12 @@ describe('Utils', () => {
         {
           queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/query-index.json',
           stageHost: 'www.stage.adobe.com',
-          aemRepo: 'cc',
         },
         '/fr',
         '-preview',
         'www.stage.adobe.com',
       );
       expect(url).to.equal('https://www.stage.adobe.com/fr/cc-shared/assets/query-index-preview.json');
-    });
-
-    it('aem.page with aemRepo overrides stageHost match (env precedence)', () => {
-      // .aem.page hosts should never match the stage regex, but verify aem branch wins.
-      const { host } = resolveCrossSiteIndex(
-        { ...baseEntry, stageHost: 'business.stage.adobe.com', aemRepo: 'bacom' },
-        '/fr',
-        '-preview',
-        'feature--milo--adobecom.aem.page',
-      );
-      expect(host).to.equal('main--bacom--adobecom.aem.page');
     });
   });
 
