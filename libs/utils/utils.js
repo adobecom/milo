@@ -678,24 +678,19 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
-const ENV_AEM_HOST_REGEX = new RegExp(`\\.${SLD}\\.(page|live)$`);
-const ENV_STAGE_HOST_REGEX = /\.stage\.adobe\.com$/;
+const ENV_STAGE_HOST_RE = /\.stage\.adobe\.com$/;
 
 export function resolveCrossSiteIndex(
-  { queryIndexWebPath, stageHost, aemRepo },
+  { queryIndexWebPath, stageHost },
   prefix,
   suffix,
   currentHost,
 ) {
   const prodHost = getDomainLingo(queryIndexWebPath);
-  const aemMatch = currentHost.match(ENV_AEM_HOST_REGEX);
   let host = prodHost;
   let sfx = '';
 
-  if (aemMatch && aemRepo) {
-    host = `main--${aemRepo}--adobecom.${SLD}.${aemMatch[1]}`;
-    if (aemMatch[1] === 'page') sfx = suffix;
-  } else if (ENV_STAGE_HOST_REGEX.test(currentHost) && stageHost) {
+  if (ENV_STAGE_HOST_RE.test(currentHost) && stageHost) {
     host = stageHost;
     sfx = suffix;
   }
@@ -757,13 +752,13 @@ async function loadQueryIndexes(prefix, links = []) {
       siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost, aemRepo }) => {
+        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
           const hasRegional = localesData
             .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
           if (!hasRegional) return;
           const prodDomain = getDomainLingo(queryIndexWebPath);
           const { url, host: envHost } = resolveCrossSiteIndex(
-            { queryIndexWebPath, stageHost, aemRepo },
+            { queryIndexWebPath, stageHost },
             prefix,
             suffix,
             window.location.hostname,
