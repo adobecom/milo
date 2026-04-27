@@ -85,6 +85,7 @@ const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
 const SWIPE_THRESHOLD = 100;
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isRtl = () => document.documentElement.dir === 'rtl';
 const reflow = (el) => el?.getBoundingClientRect();
 const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
@@ -412,16 +413,18 @@ const startAutoplay = (slides, cards, container, block) => {
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
   };
 
+  const fillOrigin = () => `translateX(${isRtl() ? '101%' : '-101%'})`;
+
   const clearFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = 'translateX(-101%)';
+    bar.style.transform = fillOrigin();
   };
 
   const startFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = 'translateX(-101%)';
+    bar.style.transform = fillOrigin();
     reflow(bar);
     bar.style.transition = `transform ${AUTOPLAY_MS}ms linear`;
     bar.style.transform = 'translateX(0%)';
