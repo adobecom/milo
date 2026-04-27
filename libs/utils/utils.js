@@ -2736,6 +2736,8 @@ export async function loadDeferred(area, blocks, config) {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
+
+  import('../c2/animation-loader.js').then(({ default: loadAnimations }) => loadAnimations());
 }
 
 function initSidekick() {
