@@ -1,4 +1,11 @@
-import { customFetch, getConfig, getMetadata } from '../utils/utils.js';
+import {
+  customFetch,
+  getConfig,
+  getMetadata,
+  getGeoLocalePrefix,
+  getPlaceholderPaths,
+  lingoActive,
+} from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
 window.mph = {};
@@ -61,10 +68,6 @@ const isGeoIpKey = (key) => key.endsWith('-geo-ip');
 const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 async function getGeoPlaceholders(config, sheet) {
-  // Dynamic, not static — moving these into the static import above slows
-  // the WTR suite ~3.7x and times out ~11 tests. utils.js is already cached
-  // by the time this runs, so no runtime cost.
-  const { lingoActive, getGeoLocalePrefix, getPlaceholderPaths } = await import('../utils/utils.js');
   if (!lingoActive()) return null;
   const geoPrefix = await getGeoLocalePrefix();
   if (!geoPrefix) return null;
