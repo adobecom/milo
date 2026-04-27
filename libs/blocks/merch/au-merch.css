@@ -76,7 +76,7 @@ merch-card[variant^="plans"][id] [slot="heading-m"] span.price.price-annual:not(
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual,
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.5;
   position: relative;
   top: -3px;
