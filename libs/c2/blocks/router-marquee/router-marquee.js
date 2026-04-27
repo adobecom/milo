@@ -82,7 +82,6 @@ const STAGGER_MS = 1000;
 const STAGGER_BASE = 60;
 const STAGGER_STEP = 20;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
-const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -385,10 +384,8 @@ const startAutoplay = (slides, cards, container, block) => {
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
-  let userPaused = false; // whether the user explicitly paused via the play/pause button
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
-  let leaveTimer = null; // timer for restarting autoplay on block mouse leave
 
   const isMobile = () => !window.matchMedia('(min-width: 1280px)').matches;
   const isDesktopSmallVp = isMobile()
@@ -500,6 +497,7 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const advance = () => {
+    if (paused) return;
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
@@ -509,7 +507,9 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const pause = () => {
+    if (paused) return;
     clearTimeout(timer);
+    finishSlideTransition();
     clearFill(active);
     paused = true;
     setPlayingState(false);
@@ -517,31 +517,17 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const resume = () => {
+    if (!paused) return;
     paused = false;
-    userPaused = false;
     setPlayingState(true);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
-  const cancelLeaveTimer = () => {
-    clearTimeout(leaveTimer);
-    leaveTimer = null;
-  };
-
-  const startLeaveTimer = () => {
-    if (leaveTimer || userPaused) return;
-    leaveTimer = setTimeout(() => {
-      leaveTimer = null;
-      resume();
-    }, RESUME_DELAY);
-  };
-
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
     if (target && !target.closest('.rm-pause-play')) {
-      cancelLeaveTimer();
       if (!paused) pause();
     }
   };
@@ -551,7 +537,6 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      cancelLeaveTimer();
       if (i === active) { pause(); return; }
       clearTimeout(timer);
       clearFill(active);
@@ -600,19 +585,12 @@ const startAutoplay = (slides, cards, container, block) => {
 
   container.addEventListener('mouseover', pauseOnInteraction);
   container.addEventListener('focusin', pauseOnInteraction);
-  block.addEventListener('mouseenter', () => { if (!noHover()) cancelLeaveTimer(); });
-
-  block.addEventListener('mouseleave', () => {
-    if (!noHover() && paused) startLeaveTimer();
-  });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    cancelLeaveTimer();
     if (paused) {
       resume();
     } else {
-      userPaused = true;
       pause();
     }
   });
@@ -646,6 +624,8 @@ const startAutoplay = (slides, cards, container, block) => {
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
   });
+
+  return { pause, resume };
 };
 
 const buildViewport = (viewport, slides) => {
@@ -684,6 +664,7 @@ export default function init(el) {
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   const initializedVps = new Set();
+  const autoplayControllers = [];
   const initViewportAutoplay = () => {
     const activeVp = getActiveViewport();
     if (initializedVps.has(activeVp)) return;
@@ -694,7 +675,7 @@ export default function init(el) {
     const cards = container.querySelector('.rm-cards');
     setSlideObserver(slides);
     setAnalytics(slides, cards, container, el);
-    startAutoplay(slides, cards, container, el);
+    autoplayControllers.push(startAutoplay(slides, cards, container, el));
   };
 
   loadViewportVideos(el);
@@ -705,4 +686,14 @@ export default function init(el) {
     loadViewportVideos(el);
     initViewportAutoplay();
   });
+
+  const nextSection = el.closest('.section')?.nextElementSibling;
+  if (nextSection) {
+    new IntersectionObserver(([entry]) => {
+      const action = entry.isIntersecting ? 'pause' : 'resume';
+      if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
+        autoplayControllers.forEach((ctrl) => ctrl[action]());
+      }
+    }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
+  }
 }
