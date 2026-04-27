@@ -678,6 +678,34 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
+const ENV_AEM_HOST_RE = new RegExp(`\\.${SLD}\\.(page|live)$`);
+const ENV_STAGE_HOST_RE = /\.stage\.adobe\.com$/;
+
+export function resolveCrossSiteIndex(
+  { queryIndexWebPath, stageHost, aemRepo },
+  prefix,
+  suffix,
+  currentHost,
+) {
+  const prodHost = getDomainLingo(queryIndexWebPath);
+  const aemMatch = currentHost.match(ENV_AEM_HOST_RE);
+  let host = prodHost;
+  let sfx = '';
+
+  if (aemMatch && aemRepo) {
+    host = `main--${aemRepo}--adobecom.${SLD}.${aemMatch[1]}`;
+    if (aemMatch[1] === 'page') sfx = suffix;
+  } else if (ENV_STAGE_HOST_RE.test(currentHost) && stageHost) {
+    host = stageHost;
+    sfx = suffix;
+  }
+
+  const path = queryIndexWebPath.slice(prodHost.length)
+    .replace('/*', prefix)
+    .replace(/\/query-index\.json$/, `/query-index${sfx}.json`);
+  return { url: `https://${host}${path}`, host };
+}
+
 async function loadQueryIndexes(prefix, links = []) {
   const config = getConfig();
   const suffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
@@ -729,12 +757,19 @@ async function loadQueryIndexes(prefix, links = []) {
       siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath }) => {
+        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost, aemRepo }) => {
           const hasRegional = localesData
             .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
           if (!hasRegional) return;
-          const domain = getDomainLingo(queryIndexWebPath);
-          queryIndexes[uid] = processQueryIndexMap(`https://${queryIndexWebPath.replace('/*', prefix)}`, domain);
+          const prodDomain = getDomainLingo(queryIndexWebPath);
+          const { url, host: envHost } = resolveCrossSiteIndex(
+            { queryIndexWebPath, stageHost, aemRepo },
+            prefix,
+            suffix,
+            window.location.hostname,
+          );
+          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
+          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
         });
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
