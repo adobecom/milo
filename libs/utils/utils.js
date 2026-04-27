@@ -678,8 +678,6 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
-const ENV_STAGE_HOST_RE = /\.stage\.adobe\.com$/;
-
 export function resolveCrossSiteIndex(
   { queryIndexWebPath, stageHost },
   prefix,
@@ -690,7 +688,7 @@ export function resolveCrossSiteIndex(
   let host = prodHost;
   let sfx = '';
 
-  if (ENV_STAGE_HOST_RE.test(currentHost) && stageHost) {
+  if (/\.stage\.adobe\.com$/.test(currentHost) && stageHost) {
     host = stageHost;
     sfx = suffix;
   }
