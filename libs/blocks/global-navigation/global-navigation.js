@@ -981,7 +981,7 @@ class Gnav {
     let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
     // If versions follow a predictable format (digit.digit), validate using a regex
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
+      unavVersion = '1.6';
     }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
@@ -1033,6 +1033,17 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
+      isARPEnabled: getConfig()?.unav?.isARPEnabled ?? true,
+      arpConfig: Promise.resolve({
+        sessionId: visitorGuid,
+        tokenCallback: () => {},
+        errorCallback: (err) => lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' }),
+        metadata: {
+          source: 'universal-navigation',
+          version: unavVersion,
+          ...getConfig()?.unav?.arpConfig?.metadata,
+        },
+      }),
     });
 
     // Exposing UNAV config for consumers
