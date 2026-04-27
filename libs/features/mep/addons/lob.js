@@ -19,7 +19,6 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    console.log('spectra response', content);
     content.modelLineOfBusiness = content?.modelLineOfBusiness.toLowerCase();
     return content;
     // return content.modelLineOfBusiness;
@@ -29,11 +28,56 @@ export async function getSpectraLOB(lastVisitedPage) {
   }
 }
 
+function resolvePendingPromise(promise, resolve) {
+  const promiseTimeout = setTimeout(() => resolve(undefined), 5000);
+  promise.then((result) => {
+    clearTimeout(promiseTimeout);
+    resolve(result);
+  });
+}
+
+function awaitWindowProperty(property, timeout = 5000, interval = 100) {
+  if (window[property] && !window[property].then) return Promise.resolve(window[property]);
+  return new Promise((resolve) => {
+    let timeoutRef;
+    const intervalRef = setInterval(() => {
+      if (!window[property]) return;
+      clearTimeout(timeoutRef);
+      clearInterval(intervalRef);
+      if (window[property].then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, interval);
+
+    timeoutRef = setTimeout(() => {
+      clearInterval(intervalRef);
+      if (window[property]?.then) resolvePendingPromise(window[property], resolve);
+      else resolve(window[property]);
+    }, timeout);
+  });
+}
+
+function addAlloyTracking(lobObject) {
+  awaitWindowProperty('alloy_all').then((alloyAll) => {
+    if (!alloyAll || !lobObject) return;
+    const spectraValues = {
+      modelLineOfBusiness: 'spectraLob',
+      modelScore: 'spectraScore',
+      experienceSelected: 'spectraExperience',
+    };
+    const dataObjString = 'data._adobe_corpnew.event.custom';
+    const existingCustomData = window.alloy_all?.get(window.alloy_all, dataObjString) || [];
+    window.alloy_all?.set(window.alloy_all, dataObjString, existingCustomData);
+    Object.entries(lobObject).forEach(([key, value]) => {
+      if (!spectraValues[key]) return;
+      window.alloy_all?.data?._adobe_corpnew?.event?.custom
+        ?.push({ propertyName: spectraValues[key], propertyValue: value });
+    });
+  });
+}
+
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
-  if (window.location.hostname.includes('.aem.')) return 'cc';
-  const consentCookieValue = getCookie('OptanonConsent');
-  if (consentCookieValue?.includes('C0002:0')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);
-  return lobValue;
+  addAlloyTracking(lobValue);
+  return lobValue.modelLineOfBusiness;
 }
