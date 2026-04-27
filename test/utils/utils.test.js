@@ -2660,4 +2660,124 @@ describe('Utils', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
   });
+
+  describe('getLingoRegion', () => {
+    let lingoModule;
+
+    const lingoRegionConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+        ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css', base: 'de' },
+        fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+        ch_fr: { ietf: 'fr-CH', tk: 'hah7vzn.css', base: 'fr' },
+      },
+      pathname: '/de/creativecloud/',
+      codeRoot: '/libs',
+    };
+
+    beforeEach(async () => {
+      const timestamp = Date.now();
+      lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
+    });
+
+    afterEach(() => {
+      const meta = document.querySelector('meta[name="langfirst"]');
+      if (meta) meta.remove();
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('returns null when lingo is not active', async () => {
+      lingoModule.setConfig(lingoRegionConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      const region = await lingoModule.getLingoRegion();
+      expect(region).to.be.null;
+    });
+
+    it('returns matching region when lingo is active and country matches', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      const region = await lingoModule.getLingoRegion();
+      expect(region).to.not.be.null;
+      expect(region.ietf).to.equal('de-CH');
+      expect(region.prefix).to.equal('/ch_de');
+    });
+
+    it('returns null when country has no matching region', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      sessionStorage.setItem('akamai', 'us');
+      const region = await lingoModule.getLingoRegion();
+      expect(region).to.be.null;
+    });
+
+    it('returns null when no country is available', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      const originalFetch = window.fetch;
+      window.fetch = sinon.stub().rejects(new Error('network error'));
+      const region = await lingoModule.getLingoRegion();
+      window.fetch = originalFetch;
+      expect(region).to.be.null;
+    });
+  });
+
+  describe('loadIms with Lingo locale', () => {
+    let lingoModule;
+    let originalAdobeId;
+
+    const imsLingoConfig = {
+      locales: {
+        '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+        fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+        ch_fr: { ietf: 'fr-CH', tk: 'hah7vzn.css', base: 'fr' },
+      },
+      pathname: '/fr/creativecloud/',
+      codeRoot: '/libs',
+      imsClientId: 'test-client-id',
+    };
+
+    beforeEach(async () => {
+      originalAdobeId = window.adobeid;
+      const timestamp = Date.now();
+      lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
+    });
+
+    afterEach(() => {
+      const meta = document.querySelector('meta[name="langfirst"]');
+      if (meta) meta.remove();
+      sessionStorage.removeItem('akamai');
+      window.adobeid = originalAdobeId;
+    });
+
+    it('uses region IETF for IMS locale when lingo is active', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.locale).to.equal('fr_CH');
+    });
+
+    it('uses default locale when lingo is not active', async () => {
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.locale).to.equal('fr_FR');
+    });
+  });
 });
