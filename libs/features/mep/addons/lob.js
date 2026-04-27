@@ -19,7 +19,10 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    return content.modelLineOfBusiness?.toLowerCase();
+    console.log('spectra response', content);
+    content.modelLineOfBusiness = content?.modelLineOfBusiness.toLowerCase();
+    return content;
+    // return content.modelLineOfBusiness;
     /* c8 ignore next 3 */
   } catch (e) {
     return false;
