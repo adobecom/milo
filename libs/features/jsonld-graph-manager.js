@@ -1,4 +1,4 @@
-/* eslint-disable no-use-before-define */
+/* eslint-disable no-use-before-define, no-continue */
 import { debounce } from '../utils/action.js';
 
 const MANAGED_ATTR = 'data-milo-jsonld';
@@ -76,6 +76,7 @@ export function pageScopedId(type) {
 }
 
 export function flattenPayload(data) {
+  if (!data || typeof data !== 'object') return [];
   if (Array.isArray(data)) return data;
   if (data['@graph']) return Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
   return [data];
@@ -102,11 +103,14 @@ export function normalizeNode(node) {
   return out;
 }
 
+function asArray(v) {
+  if (v == null) return [];
+  return Array.isArray(v) ? v : [v];
+}
+
 export function unionByRef(a, b) {
-  // eslint-disable-next-line no-nested-ternary
-  const arrA = a ? (Array.isArray(a) ? a : [a]) : [];
-  // eslint-disable-next-line no-nested-ternary
-  const arrB = b ? (Array.isArray(b) ? b : [b]) : [];
+  const arrA = asArray(a);
+  const arrB = asArray(b);
   const seen = new Set(arrA.map((n) => n['@id'] ?? JSON.stringify(n)));
   const result = [...arrA];
   for (const item of arrB) {
@@ -126,6 +130,8 @@ function priorityWeight(src) {
 export function mergeNodes(a, b, srcA, srcB) {
   const aWins = priorityWeight(srcA) >= priorityWeight(srcB);
   const [winner, loser] = aWins ? [a, b] : [b, a];
+  const winnerSrc = aWins ? srcA : srcB;
+  const loserSrc = aWins ? srcB : srcA;
   const out = { ...loser, ...winner };
   for (const key of Object.keys(loser)) {
     if (['@type', '@id', '@context'].includes(key)) continue;
@@ -135,7 +141,7 @@ export function mergeNodes(a, b, srcA, srcB) {
     if (REF_ARRAY_KEYS.has(key) || Array.isArray(vW) || Array.isArray(vL)) {
       out[key] = unionByRef(vW, vL);
     } else if (vW !== null && vL !== null && typeof vW === 'object' && typeof vL === 'object') {
-      out[key] = mergeNodes(vW, vL, srcA, srcB);
+      out[key] = mergeNodes(vW, vL, winnerSrc, loserSrc);
     }
   }
   return out;
@@ -193,18 +199,18 @@ export function extractInlineEntities(node) {
   return extracted;
 }
 
-function isDebugMode() {
-  return new URLSearchParams(window.location.search).get('jsonld-graph-manager-debug') === 'true';
-}
+const DEBUG = new URLSearchParams(window.location.search).get('jsonld-graph-manager-debug') === 'true';
 
-// eslint-disable-next-line no-console
-function debugLog(...args) { if (isDebugMode()) console.log('[jsonld-graph-manager]', ...args); }
+function debugLog(label, fn) {
+  if (!DEBUG) return;
+  // eslint-disable-next-line no-console
+  console.log('[jsonld-graph-manager]', label, fn());
+}
 
 function lanaLog(msg, severity = 'info') {
   window.lana?.log(`JSON-LD: ${msg}`, { tags: 'jsonld-graph-manager', severity });
   const { hostname, search } = window.location;
   if (hostname === 'localhost' || hostname.endsWith('.page') || new URLSearchParams(search).has('lanadebug')) {
-    // eslint-disable-next-line no-console
     // eslint-disable-next-line no-console
     if (severity === 'error') console.error(`JSON-LD: ${msg}`);
     // eslint-disable-next-line no-console
@@ -235,6 +241,11 @@ export class JsonLdGraphManager {
     this.rebuild();
   }
 
+  destroy() {
+    this.observer?.disconnect();
+    this.observer = null;
+  }
+
   collect(node) {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     if (node.matches?.(MANAGED_SEL)) return;
@@ -246,11 +257,11 @@ export class JsonLdGraphManager {
   }
 
   enqueue(scriptEl, source = 'runtime') {
-    debugLog('enqueue', {
+    debugLog('enqueue', () => ({
       source,
       location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,
       payload: scriptEl.textContent.trim(),
-    });
+    }));
     this.queue.push({ scriptEl, source });
     if (source === 'runtime') this.debouncedRebuild();
   }
@@ -260,25 +271,29 @@ export class JsonLdGraphManager {
     this.isProcessing = true;
     try {
       const batch = this.queue.splice(0);
-      debugLog('rebuild', { batchSize: batch.length, graphSize: this.graph.size });
+      debugLog('rebuild', () => ({ batchSize: batch.length, graphSize: this.graph.size }));
       for (const { scriptEl, source } of batch) {
         const nodes = parsePayload(scriptEl);
-        debugLog('parsed', { source, types: nodes.map((n) => n['@type']), nodeCount: nodes.length });
+        debugLog('parsed', () => ({ source, types: nodes.map((n) => n['@type']), nodeCount: nodes.length }));
+        const parentTagName = scriptEl.parentElement?.tagName ?? 'already detached';
         scriptEl.remove();
-        debugLog('removed from DOM', scriptEl.parentElement?.tagName ?? 'already detached');
+        debugLog('removed from DOM', () => parentTagName);
         for (const raw of nodes) {
           const node = normalizeNode(raw);
           const inlined = extractInlineEntities(node);
           const toMerge = [node, ...inlined];
           for (const n of toMerge) {
             const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
+            const prevSrc = this.sources.get(id) ?? 'bootDom';
             if (this.graph.has(id)) {
-              const prevSrc = this.sources.get(id) ?? 'bootDom';
               this.graph.set(id, mergeNodes(this.graph.get(id), n, prevSrc, source));
             } else {
               this.graph.set(id, n);
             }
-            this.sources.set(id, source);
+            // Track max-priority source so subsequent merges use the right weight.
+            if (priorityWeight(source) >= priorityWeight(prevSrc)) {
+              this.sources.set(id, source);
+            }
           }
         }
       }
@@ -299,10 +314,14 @@ export class JsonLdGraphManager {
     // Ensure a canonical Organization is always present. Baseline fields (name, url, logo)
     // take graph-manager-generated priority so they win over any producer-supplied values.
     const org = defaultOrg();
-    if (!this.graph.has(org['@id'])) {
-      this.graph.set(org['@id'], org);
+    const orgId = org['@id'];
+    if (!this.graph.has(orgId)) {
+      this.graph.set(orgId, org);
+      this.sources.set(orgId, 'generated');
     } else {
-      this.graph.set(org['@id'], mergeNodes(org, this.graph.get(org['@id']), 'generated', 'runtime'));
+      const prevSrc = this.sources.get(orgId) ?? 'bootDom';
+      this.graph.set(orgId, mergeNodes(org, this.graph.get(orgId), 'generated', prevSrc));
+      this.sources.set(orgId, 'generated');
     }
     const nodes = sortNodes([...this.graph.values()]);
     injectLinks(nodes);
@@ -315,8 +334,7 @@ export class JsonLdGraphManager {
       document.head.appendChild(managed);
     }
     managed.textContent = payload;
-    debugLog('rewrite', { nodeCount: nodes.length, graph: JSON.parse(payload) });
-    lanaLog(`Graph rewritten with ${nodes.length} nodes`);
+    debugLog('rewrite', () => ({ nodeCount: nodes.length, graph: nodes }));
   }
 }
 

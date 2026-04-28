@@ -2526,7 +2526,7 @@ async function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const jsonLdFlag = (getMetadata('jsonld-graph-manager') || PAGE_URL.searchParams.get('jsonld-graph-manager') || '').toLowerCase();
+  const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
   if (jsonLdFlag === 'true') {
     const { default: initJsonLd } = await import('../features/jsonld-graph-manager.js');
     await initJsonLd();

@@ -33,7 +33,18 @@ function makeScript(obj) {
   return el;
 }
 
+const activeManagers = new Set();
+
+const OriginalManager = JsonLdGraphManager;
+function trackedManager(...args) {
+  const m = new OriginalManager(...args);
+  activeManagers.add(m);
+  return m;
+}
+
 function resetManager() {
+  activeManagers.forEach((m) => m.destroy?.());
+  activeManagers.clear();
   window.miloJsonLdGraphManager = null;
   document.head.querySelector('script[data-milo-jsonld="graph"]')?.remove();
   document.head.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
@@ -233,7 +244,7 @@ describe('JsonLdGraphManager boot scan', () => {
     const script = makeScript({ '@type': 'Article', headline: 'Hello' });
     document.head.appendChild(script);
 
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const managed = document.head.querySelector('script[data-milo-jsonld="graph"]');
@@ -249,7 +260,7 @@ describe('JsonLdGraphManager boot scan', () => {
   it('removes ingested unmanaged scripts from the DOM', () => {
     const script = makeScript({ '@type': 'Article', headline: 'Hello' });
     document.head.appendChild(script);
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     expect(document.head.contains(script)).to.be.false;
   });
@@ -257,7 +268,7 @@ describe('JsonLdGraphManager boot scan', () => {
   it('does not re-ingest the managed script', () => {
     const script = makeScript({ '@type': 'Article' });
     document.head.appendChild(script);
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const managedScripts = document.head.querySelectorAll('script[data-milo-jsonld="graph"]');
@@ -270,7 +281,7 @@ describe('JsonLdGraphManager boot scan', () => {
   });
 
   it('does not emit a managed script when graph is empty', () => {
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.not.exist;
   });
@@ -286,7 +297,7 @@ describe('JsonLdGraphManager singleton enforcement', () => {
     document.head.appendChild(s1);
     document.head.appendChild(s2);
 
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
@@ -304,7 +315,7 @@ describe('JsonLdGraphManager singleton enforcement', () => {
 describe('JsonLdGraphManager output contract', () => {
   it('emits exactly one managed script', () => {
     document.head.appendChild(makeScript({ '@type': 'Article' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     manager.rebuild();
     expect(document.head.querySelectorAll('script[data-milo-jsonld="graph"]')).to.have.length(1);
@@ -312,7 +323,7 @@ describe('JsonLdGraphManager output contract', () => {
 
   it('managed script has @context: https://schema.org at root', () => {
     document.head.appendChild(makeScript({ '@type': 'Article' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent);
     expect(graph['@context']).to.equal('https://schema.org');
@@ -320,7 +331,7 @@ describe('JsonLdGraphManager output contract', () => {
 
   it('individual nodes do not have @context', () => {
     document.head.appendChild(makeScript({ '@context': 'https://schema.org', '@type': 'Article' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent);
     for (const node of graph['@graph']) {
@@ -331,7 +342,7 @@ describe('JsonLdGraphManager output contract', () => {
   it('WebPage appears first in @graph', () => {
     document.head.appendChild(makeScript({ '@type': 'Article' }));
     document.head.appendChild(makeScript({ '@type': 'WebPage' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent);
     expect(graph['@graph'][0]['@type']).to.equal('WebPage');
@@ -343,7 +354,7 @@ describe('JsonLdGraphManager output contract', () => {
 // ---------------------------------------------------------------------------
 describe('JsonLdGraphManager mutation observer', () => {
   it('picks up a script appended after init', async () => {
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const script = makeScript({ '@type': 'WebPage' });
@@ -379,7 +390,7 @@ describe('end-to-end: editorial page', () => {
   });
 
   it('produces a linked @graph for an editorial page', () => {
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const managed = document.head.querySelector('script[data-milo-jsonld="graph"]');
@@ -426,7 +437,7 @@ describe('end-to-end: product page', () => {
   });
 
   it('produces a linked @graph for a product page', () => {
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const { '@graph': graph } = JSON.parse(
@@ -461,7 +472,7 @@ describe('end-to-end: multi-producer conflict', () => {
   });
 
   it('merges two Organization nodes into one entry', () => {
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     // Enqueue first script as bootDom, second as runtime to test priority
     const allScripts = [...document.head.querySelectorAll('script[type="application/ld+json"]')];
     const orgScripts = allScripts.filter((s) => {
@@ -491,7 +502,7 @@ describe('end-to-end: multi-producer conflict', () => {
 describe('Organization synthesis', () => {
   it('synthesizes a default Organization when none is provided', () => {
     document.head.appendChild(makeScript({ '@type': 'Article', headline: 'Hello' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const { '@graph': graph } = JSON.parse(
@@ -507,7 +518,7 @@ describe('Organization synthesis', () => {
 
   it('generated baseline fields win over producer-supplied values', () => {
     document.head.appendChild(makeScript({ '@type': 'Organization', name: 'Acme', url: 'https://acme.com/', sameAs: 'https://example.com' }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const { '@graph': graph } = JSON.parse(
@@ -575,7 +586,7 @@ describe('extractInlineEntities', () => {
       headline: 'Hello',
       publisher: { '@type': 'Organization', name: 'Adobe' },
     }));
-    const manager = new JsonLdGraphManager();
+    const manager = trackedManager();
     manager.init();
 
     const { '@graph': graph } = JSON.parse(
