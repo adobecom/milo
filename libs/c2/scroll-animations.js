@@ -306,11 +306,10 @@ function initCarouselC2() {
     let top = null;
     let interacted = false;
     let slideGap = null;
-
-    slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
-    slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
+    let animStarted = false;
 
     const resetStyles = () => {
+      animStarted = false;
       slides.forEach((s) => { s.style.flexBasis = ''; s.style.willChange = ''; });
       wrapper.style.transition = '';
       wrapper.style.translate = '';
@@ -322,7 +321,6 @@ function initCarouselC2() {
       startWidth = Math.min(window.innerWidth, maxSlideW);
       targetWidth = null;
       top = null;
-      slides.forEach((s) => { s.style.willChange = 'flex-basis'; s.style.flexBasis = `${startWidth}px`; });
     });
 
     cleanupTasks.push(() => {
@@ -337,17 +335,10 @@ function initCarouselC2() {
     scrollTasks.push((scroll) => {
       if (!interacted && wrapper.getAttribute('data-slides-cloned') === 'true') {
         interacted = true;
-        slides.forEach((s) => { s.style.flexBasis = ''; s.style.willChange = ''; });
-        wrapper.style.transition = '';
+        resetStyles();
         return;
       }
       if (interacted) return;
-
-      if (targetWidth === null) {
-        slides.forEach((s) => { s.style.flexBasis = ''; });
-        targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
-        slides.forEach((s) => { s.style.flexBasis = `${startWidth}px`; });
-      }
 
       if (top === null) {
         top = getDocTop(el);
@@ -359,8 +350,17 @@ function initCarouselC2() {
       const t = viewRange(m, 'entry', -0.5, 'entry', 0.2);
 
       if (t >= 1) {
-        resetStyles();
+        if (animStarted) resetStyles();
         return;
+      }
+
+      if (targetWidth === null) {
+        targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
+      }
+
+      if (!animStarted) {
+        animStarted = true;
+        slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
       }
 
       const w = lerp(startWidth, targetWidth, t);
