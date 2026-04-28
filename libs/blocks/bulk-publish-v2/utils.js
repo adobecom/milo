@@ -77,6 +77,7 @@ const getInvalidUrlReason = (str) => {
     [!url.hostname, 'Invalid URL (missing hostname)'],
     [!url.hostname || !AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
     [!ref || !repo || !owner, 'Invalid host (missing ref, repo, or owner)'],
+    [/^([^-]+)(?:-.+)-\1$/.test(repo ?? ''), 'Invalid host (repo name has a duplicated segment, e.g. da-bacom-da should be da-bacom)'],
     [ref && repo && owner && !url.hostname.endsWith(`${ref}--${repo}--${owner}.${tld}`), 'Invalid host format (expected ref--repo--owner.aem.page or .aem.live)'],
     [repo === 'bacom', 'Old Bacom project is not supported, use new DA project instead'],
     [url.pathname.includes('//'), 'Invalid URL (path must not contain //)'],
