@@ -487,6 +487,10 @@ function decorateFloatingButton(el) {
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
 
+  const bcSpacer = document.createElement('div');
+  bcSpacer.style.cssText = 'height:0;pointer-events:none;';
+  mainElement.append(bcSpacer);
+
   // Cache layout values that only change on resize — never read inside scroll handler
   let cachedMainHeight = mainElement.scrollHeight;
   let cachedGnavHeight = gnavElement.offsetHeight;
@@ -498,11 +502,18 @@ function decorateFloatingButton(el) {
   let cachedTargetHeight = getTargetHeight(floatingButton);
   const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
-  const ro = new ResizeObserver(() => {
-    cachedMainHeight = mainElement.scrollHeight;
-    cachedGnavHeight = gnavElement.offsetHeight;
-    cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
-    cachedTargetHeight = getTargetHeight(floatingButton);
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = entry.borderBoxSize?.[0]?.blockSize;
+      if (entry.target === mainElement) {
+        cachedMainHeight = size ?? mainElement.scrollHeight;
+      } else if (entry.target === gnavElement) {
+        cachedGnavHeight = size ?? gnavElement.offsetHeight;
+        cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
+      } else if (entry.target === floatingButton) {
+        cachedTargetHeight = getTargetHeight(floatingButton);
+      }
+    }
   });
   ro.observe(mainElement);
   ro.observe(gnavElement);
@@ -519,7 +530,7 @@ function decorateFloatingButton(el) {
       if (variants.isFloatingAnchorHide) {
         hideFloatingButton();
       } else {
-        mainElement.style.paddingBottom = `${cachedTargetHeight}px`;
+        bcSpacer.style.height = `${cachedTargetHeight}px`;
       }
     } else {
       showFloatingButton();
