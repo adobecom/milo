@@ -802,7 +802,7 @@ p {
   backdrop-filter: var(--cta-backdrop-filter);
   -webkit-backdrop-filter: var(--cta-backdrop-filter);
   border-radius: var(--s2a-border-radius-round);
-  border: var(--s2a-border-width-sm) solid var(--cta-border-color);
+  border: var(--s2a-border-width-md) solid var(--cta-border-color);
   color: var(--s2a-color-gray-1000);
   display: inline-flex;
   justify-content: center;
@@ -816,7 +816,7 @@ p {
   height: var(--s2a-spacing-2xl);
   padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
   transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
-    box-shadow 300ms cubic-bezier(0.42, 0, 0, 1),
+    border-color 300ms cubic-bezier(0.42, 0, 0, 1),
     color 300ms cubic-bezier(0.42, 0, 0, 1);
 
   &:focus-visible {
@@ -835,8 +835,9 @@ p {
       --cta-transparency: 8%;
     }
 
-    &:active {
-      --cta-transparency: 12%;
+    &:active:not(.transparent) {
+      --cta-transparency: 100%;
+      color: var(--s2a-color-gray-25);
     }
   }
 
@@ -851,38 +852,46 @@ p {
     color: var(--s2a-color-gray-25);
     --cta-backdrop-filter: none;
 
-    &:hover,
-    &:active {
+    &:hover {
       background-color: var(--s2a-color-blue-1000);
       border-color: var(--s2a-color-blue-1000);
-      color: var(--s2a-color-gray-25);
+    }
+    &:active {
+      background-color: var(--s2a-color-blue-1100);
+      border-color: var(--s2a-color-blue-1100);
     }
 
     &:is(:disabled, [aria-disabled="true"], .disabled) {
       background-color: var(--s2a-color-gray-1000);
       border-color: var(--s2a-color-gray-1000);
-      color:  var(--s2a-color-transparent-white-48);
     }
   }
 
   &.fill {
-    border: none;
     --cta-transparency: 100%;
     --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
-    &:hover, &:active {
+    &:hover {
       --cta-transparency: 64%;
     }
 
-    &:is(:disabled, [aria-disabled="true"], .disabled) {
-      color:  var(--s2a-color-transparent-white-48);
+    &:active {
+      --cta-transparency: 100%;
     }
   }
 
   &.transparent {
     border: none;
     --cta-backdrop-filter: none;
+
+    &:hover {
+      --cta-transparency: 8%;
+    }
+
+    &:active {
+      --cta-transparency: 12%;
+    }
   }
 
   .icon  {
@@ -897,31 +906,41 @@ p {
 
 
 .dark {
-  .con-button.outline:not(.fill, .blue) {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-transparent-white-24);
+  .con-button {
+    &.outline {
+      --cta-background: var(--s2a-color-gray-25);
+      --cta-border-color: var(--s2a-color-gray-25);
 
-    &:hover {
-      background-color: var(--s2a-color-transparent-white-12);
+      &:hover:not(.blue, .transparent) {
+        --cta-transparency: 64%;
+        color: var(--s2a-color-gray-1000);
+      }
+      &:active:not(.blue, .transparent) {
+        --cta-transparency: 100%;
+        color: var(--s2a-color-gray-1000);
+      }
     }
 
-    &:active {
-      background-color: var(--s2a-color-transparent-white-24);
+    &.fill {
+      color: var(--s2a-color-gray-1000);
     }
-  }
 
-  .con-button.fill {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-gray-25);
-    color: var(--s2a-color-gray-1000);
+    &.transparent {
+      --cta-background: var(--s2a-color-gray-25);
 
-    &:is(:disabled, [aria-disabled="true"], .disabled) {
-      color:  var(--s2a-color-transparent-black-48);
-      background-color: var(--s2a-color-transparent-white-48);
+      &:hover {
+        --cta-transparency: 12%;
+      }
+      &:active {
+        --cta-transparency: 16%;
+      }
     }
-  }
-  .con-button.blue:not(.fill, .transparent):is(:disabled, [aria-disabled="true"], .disabled) {
-    background-color: var(--s2a-color-transparent-white-48);
+
+    &.blue:not(.fill, .transparent):is(:disabled, [aria-disabled="true"], .disabled) {
+      border-color: var(--s2a-color-gray-25);
+      background-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
+    }
   }
 }
 
