@@ -177,20 +177,29 @@ class Footer {
     if (this.logoResizeHandler) {
       window.removeEventListener('resize', this.logoResizeHandler);
     }
+    let cachedLogoHeight = logo.offsetHeight;
+    let scrollPending = false;
     const updateLogoProgress = () => {
       const prevElement = logo?.previousElementSibling;
       if (!prevElement) return;
-      const rect = prevElement.getBoundingClientRect();
-      const bottom = rect?.bottom ?? 0;
-      let progress = ((window.innerHeight - bottom) / logo.offsetHeight) * 100;
+      const bottom = prevElement.getBoundingClientRect().bottom ?? 0;
+      let progress = ((window.innerHeight - bottom) / cachedLogoHeight) * 100;
       progress = Math.max(0, Math.min(100, progress));
       logo.style.setProperty('--footer-logo-entry-progress', progress);
     };
-    this.logoScrollHandler = updateLogoProgress;
+    this.logoScrollHandler = () => {
+      if (scrollPending) return;
+      scrollPending = true;
+      requestAnimationFrame(() => {
+        updateLogoProgress();
+        scrollPending = false;
+      });
+    };
     this.logoResizeHandler = () => {
       if (this.logoResizeRaf) return;
       this.logoResizeRaf = requestAnimationFrame(() => {
         this.logoResizeRaf = null;
+        cachedLogoHeight = logo.offsetHeight;
         updateLogoProgress();
       });
     };
