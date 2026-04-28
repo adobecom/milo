@@ -19,9 +19,8 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    content.modelLineOfBusiness = content?.modelLineOfBusiness.toLowerCase();
+    content.modelLineOfBusiness = content.modelLineOfBusiness?.toLowerCase();
     return content;
-    // return content.modelLineOfBusiness;
     /* c8 ignore next 3 */
   } catch (e) {
     return false;
@@ -69,6 +68,7 @@ function addAlloyTracking(lobObject) {
     window.alloy_all?.set(window.alloy_all, dataObjString, existingCustomData);
     Object.entries(lobObject).forEach(([key, value]) => {
       if (!spectraValues[key]) return;
+      // eslint-disable-next-line no-underscore-dangle
       window.alloy_all?.data?._adobe_corpnew?.event?.custom
         ?.push({ propertyName: spectraValues[key], propertyValue: value });
     });
@@ -77,7 +77,8 @@ function addAlloyTracking(lobObject) {
 
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
+  if (window.location.hostname.includes('.aem.')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);
   addAlloyTracking(lobValue);
-  return lobValue.modelLineOfBusiness;
+  return lobValue?.modelLineOfBusiness;
 }
