@@ -245,6 +245,20 @@ describe('MiloFloodgate', () => {
       el.handleCancel();
       expect(el._cancelled).to.be.true;
     });
+
+    it('aborts the abort controller when one is present', () => {
+      el._abortController = new AbortController();
+      const { signal } = el._abortController;
+      expect(signal.aborted).to.be.false;
+      el.handleCancel();
+      expect(signal.aborted).to.be.true;
+    });
+
+    it('is safe when no abort controller has been created yet', () => {
+      el._abortController = null;
+      expect(() => el.handleCancel()).to.not.throw();
+      expect(el._cancelled).to.be.true;
+    });
   });
 
   describe('showConfirmDialog / handleConfirm / handleDialogCancel', () => {

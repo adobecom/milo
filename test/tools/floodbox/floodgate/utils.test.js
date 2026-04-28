@@ -68,4 +68,17 @@ describe('getValidFloodgate', () => {
     const cmp = await getValidFloodgate(fakeDaSdk);
     expect(cmp.org).to.equal('fake-org');
   });
+
+  it('does not throw when the SDK resolves without a context', async () => {
+    const fakeDaSdk = Promise.resolve({});
+    const cmp = await getValidFloodgate(fakeDaSdk);
+    expect(cmp).to.be.instanceOf(HTMLElement);
+    expect(cmp.tagName.toLowerCase()).to.equal('milo-floodgate');
+  });
+
+  it('does not throw when the SDK resolves to undefined', async () => {
+    const fakeDaSdk = Promise.resolve(undefined);
+    const cmp = await getValidFloodgate(fakeDaSdk);
+    expect(cmp).to.be.instanceOf(HTMLElement);
+  });
 });

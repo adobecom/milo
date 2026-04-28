@@ -12,14 +12,16 @@ class FloodgateCopy {
     paths,
     callback,
     fgColor,
+    signal,
   }) {
     this.accessToken = accessToken;
     this.org = org;
     this.repo = repo;
     this.paths = paths;
     this.callback = callback;
+    this.signal = signal;
 
-    this.requestHandler = new RequestHandler(accessToken);
+    this.requestHandler = new RequestHandler(accessToken, { signal });
     this.destRepo = `${repo}-fg-${fgColor}`;
     this.srcSitePath = `/${org}/${repo}`;
     this.destSitePath = `/${org}/${this.destRepo}`;
@@ -33,20 +35,25 @@ class FloodgateCopy {
   }
 
   async processFile(file) {
-    const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${file.path}`);
-    if (response.ok) {
-      let content = isEditableFile(file.ext) ? await response.text() : await response.blob();
-      if (file.ext === 'html') {
-        content = this.adjustUrlDomains(content);
+    if (this.signal?.aborted) return;
+    try {
+      const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${file.path}`);
+      if (response.ok) {
+        let content = isEditableFile(file.ext) ? await response.text() : await response.blob();
+        if (file.ext === 'html') {
+          content = this.adjustUrlDomains(content);
+        }
+        const destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
+        const status = await this.requestHandler.uploadContent(destFilePath, content, file.ext);
+        this.callback(status);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to fetch : ${response.status} :: ${file.path}`);
+        const status = { statusCode: response.status, filePath: file.path, errorMsg: 'Failed to fetch' };
+        this.callback(status);
       }
-      const destFilePath = file.path.replace(this.srcSitePath, this.destSitePath);
-      const status = await this.requestHandler.uploadContent(destFilePath, content, file.ext);
-      this.callback(status);
-    } else {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to fetch : ${response.status} :: ${file.path}`);
-      const status = { statusCode: response.status, filePath: file.path, errorMsg: 'Failed to fetch' };
-      this.callback(status);
+    } catch (err) {
+      if (err.name !== 'AbortError') throw err;
     }
   }
 

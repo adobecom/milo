@@ -8,7 +8,8 @@
 import RequestHandler from './request-handler.js';
 
 class CrawlTree {
-  constructor(callback, accessToken, maxConcurrent = 500, crawlType = 'default', expName = '', isDraftsOnly = false) {
+  // eslint-disable-next-line max-len
+  constructor(callback, accessToken, maxConcurrent = 500, crawlType = 'default', expName = '', isDraftsOnly = false, signal = null) {
     this.queue = [];
     this.activeCount = 0;
     this.maxConcurrent = maxConcurrent;
@@ -17,7 +18,8 @@ class CrawlTree {
     this.crawlType = crawlType;
     this.expName = expName;
     this.isDraftsOnly = isDraftsOnly;
-    this.requestHandler = new RequestHandler(this.accessToken);
+    this.signal = signal;
+    this.requestHandler = new RequestHandler(this.accessToken, { signal });
     // eslint-disable-next-line no-useless-escape
     this.grayboxPathPattern = new RegExp(`^\/[^\/]+\/[^\/]+\/(?:[^\/]+\/)?${expName}(?:\/|$)`);
     if (this.isDraftsOnly && this.crawlType === 'graybox') {
@@ -56,23 +58,27 @@ class CrawlTree {
     const files = [];
     const folders = [];
 
-    const resp = await this.requestHandler.daFetch(`https://admin.da.live/list${path}`);
-    if (resp.ok) {
-      const json = await resp.json();
-      json.forEach((child) => {
-        if (!child.ext) {
-          folders.push(child.path);
-        } else {
-          // Filter out files based on crawlType, grayboxPathPattern and isDraftsOnly flag
-          // eslint-disable-next-line no-lonely-if
-          if ((this.crawlType !== 'graybox' && this.crawlType !== 'floodgate')
-            || (this.crawlType === 'graybox' && this.grayboxPathPattern.test(child.path))
-            || (this.crawlType === 'floodgate' && (!this.isDraftsOnly || child.path.includes('/drafts/')))
-          ) {
-            files.push(child);
+    try {
+      const resp = await this.requestHandler.daFetch(`https://admin.da.live/list${path}`);
+      if (resp.ok) {
+        const json = await resp.json();
+        json.forEach((child) => {
+          if (!child.ext) {
+            folders.push(child.path);
+          } else {
+            // Filter out files based on crawlType, grayboxPathPattern and isDraftsOnly flag
+            // eslint-disable-next-line no-lonely-if
+            if ((this.crawlType !== 'graybox' && this.crawlType !== 'floodgate')
+              || (this.crawlType === 'graybox' && this.grayboxPathPattern.test(child.path))
+              || (this.crawlType === 'floodgate' && (!this.isDraftsOnly || child.path.includes('/drafts/')))
+            ) {
+              files.push(child);
+            }
           }
-        }
-      });
+        });
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') throw err;
     }
     return { files, folders };
   }
@@ -94,7 +100,7 @@ function calculateCrawlTime(startTime) {
  * @param {string} options.crawlType - The type of crawl ('graybox' or other).
  */
 function crawl({
-  path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default', isDraftsOnly = false,
+  path, callback, concurrent, throttle = 100, accessToken, crawlType = 'default', isDraftsOnly = false, signal,
 }) {
   let expName = '';
   let sitePath = path;
@@ -110,11 +116,24 @@ function crawl({
   const folders = [sitePath];
   const inProgress = [];
   const startTime = Date.now();
-  const queue = new CrawlTree(callback, accessToken, concurrent, crawlType, expName, isDraftsOnly);
+  // eslint-disable-next-line max-len
+  const queue = new CrawlTree(callback, accessToken, concurrent, crawlType, expName, isDraftsOnly, signal);
+
+  const cancelCrawl = () => {
+    isCanceled = true;
+  };
+
+  if (signal) {
+    if (signal.aborted) {
+      isCanceled = true;
+    } else {
+      signal.addEventListener('abort', cancelCrawl, { once: true });
+    }
+  }
 
   const results = new Promise((resolve) => {
     const interval = setInterval(async () => {
-      if (folders.length > 0) {
+      if (folders.length > 0 && !isCanceled) {
         inProgress.push(true);
         const currentPath = folders.pop();
         const children = await queue.getChildren(currentPath);
@@ -138,9 +157,6 @@ function crawl({
     return calculateCrawlTime(startTime);
   };
 
-  const cancelCrawl = () => {
-    isCanceled = true;
-  };
   return { results, getDuration, cancelCrawl };
 }
 

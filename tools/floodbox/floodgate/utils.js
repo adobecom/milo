@@ -138,11 +138,12 @@ function getValidPathsForInput(rawText, fgCopy, color) {
   return parsePathInput(rawText, fgCopy, color).validPaths;
 }
 
-async function expandWildcardPaths({ paths, accessToken, fgColor, operation }) {
+async function expandWildcardPaths({ paths, accessToken, fgColor, operation, signal }) {
   const wildcards = paths.filter((p) => p.endsWith('*'));
   const regular = paths.filter((p) => !p.endsWith('*'));
 
   const expandedLists = await Promise.all(wildcards.map(async (wc) => {
+    if (signal?.aborted) return [];
     const basePath = wc.slice(0, -1).replace(/\/$/, '');
     let crawlPath = basePath;
     if (operation !== 'copy') {
@@ -150,7 +151,7 @@ async function expandWildcardPaths({ paths, accessToken, fgColor, operation }) {
       const [orgPart, repoPart, ...rest] = parts;
       crawlPath = `/${orgPart}/${repoPart}-fg-${fgColor}${rest.length ? `/${rest.join('/')}` : ''}`;
     }
-    const { results } = crawl({ path: crawlPath, accessToken });
+    const { results } = crawl({ path: crawlPath, accessToken, signal });
     const files = await results;
     return files.map((file) => {
       const filePath = operation !== 'copy'
@@ -164,12 +165,12 @@ async function expandWildcardPaths({ paths, accessToken, fgColor, operation }) {
 }
 
 async function getValidFloodgate(sdk = DA_SDK) {
-  const { context, token, email } = await sdk;
+  const { context, token, email } = (await sdk) || {};
   const cmp = document.createElement('milo-floodgate');
   if (context?.org) cmp.org = context.org;
-  cmp.repo = context.repo;
-  cmp.token = token;
-  cmp.email = email;
+  if (context?.repo) cmp.repo = context.repo;
+  if (token) cmp.token = token;
+  if (email) cmp.email = email;
   return cmp;
 }
 

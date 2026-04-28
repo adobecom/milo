@@ -97,6 +97,7 @@ export default class MiloFloodgate extends LitElement {
     this._debouncedEvaluateAccess = debounce(() => this._evaluateAccess(), 300);
 
     this._pathsLines = [];
+    this._abortController = null;
 
     this._resetWorkflowState();
   }
@@ -416,6 +417,7 @@ export default class MiloFloodgate extends LitElement {
     this._startFind = true;
     this._errorMessage = '';
     this._cancelled = false;
+    this._abortController = new AbortController();
     await this.syncWorkflowTab('find');
 
     await runFindStep(this);
@@ -440,6 +442,7 @@ export default class MiloFloodgate extends LitElement {
 
   handleCancel() {
     this._cancelled = true;
+    this._abortController?.abort();
     this.requestUpdate();
   }
 
