@@ -1,5 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { ACROBAT_DESKTOP_MOCKUP, ACROBAT_MOBILE_MOCKUP } from './acrobat-mockups.js';
+import createCanvasGrid from './canvas-grid.js';
 
 const BP = {
   mobile: () => window.innerWidth <= 767,
@@ -77,11 +78,6 @@ function easeOutBack(t) {
   return 1 + c3 * ((t - 1) ** 3) + c1 * ((t - 1) ** 2);
 }
 
-function hexToRgb(hex) {
-  const v = parseInt(hex.replace('#', ''), 16);
-  return [Math.floor(v / 65536) % 256, Math.floor(v / 256) % 256, v % 256];
-}
-
 // TODO: author product UI?
 // TODO: finalize authoring structure
 function parseAuthoredContent(el) {
@@ -140,7 +136,6 @@ export default async function init(el) {
   el.append(stage);
 
   const canvas = el.querySelector('canvas');
-  const ctx = canvas.getContext('2d');
   const world = el.querySelector('.world');
   const acrobatWinEl = el.querySelector('.acrobat-win');
   const mobAcEl = el.querySelector('.mob-ac');
@@ -148,18 +143,8 @@ export default async function init(el) {
   const arc256Path = el.querySelector('.arc-256-path');
 
   const cfg = {
-    spacing: 16,
-    dotSize: 1.0,
-    mouseRadius: 125,
-    repelForce: 20,
-    spring: 0.01,
-    damping: 0.59,
-    colSpread: 1.0,
-    rowGap: 0.38,
     cardScale: 1.15,
     opacity: 1.0,
-    bgColor: '#f6f6f6',
-    dotColor: '#969696',
   };
 
   const arcStagger = 0.50;
@@ -173,8 +158,6 @@ export default async function init(el) {
 
   let W = 0;
   let H = 0;
-  let dots = [];
-  const mouse = { x: -9999, y: -9999 };
 
   const scroll = { current: 0 };
   let cardRevealOffset = REVEAL_SCROLL;
@@ -376,23 +359,6 @@ export default async function init(el) {
     };
   }
 
-  function buildGrid() {
-    // Fewer dots on mobile — roughly half the density.
-    const sp = BP.mobile() ? 24 : cfg.spacing;
-    dots = [];
-    const cols = Math.ceil(W / sp) + 2;
-    const rows = Math.ceil(H / sp) + 2;
-    for (let r = 0; r < rows; r += 1) {
-      for (let c = 0; c < cols; c += 1) {
-        const x = c * sp;
-        const y = r * sp;
-        dots.push({
-          ox: x, oy: y, x, y, vx: 0, vy: 0,
-        });
-      }
-    }
-  }
-
   function positionCards() {
     const mobL = BP.mobile() ? getMobLayout() : null;
     allLayers.forEach((layer) => {
@@ -421,33 +387,29 @@ export default async function init(el) {
     });
   }
 
-  function updateCardAnchors() {
-    if (!dots.length) return;
-    const sp = BP.mobile() ? 24 : cfg.spacing;
-    const cols = Math.ceil(W / sp) + 2;
-    allLayers.forEach((layer) => {
-      layer.cards.forEach((card) => {
-        const cx = (arcMode && card.visualCx !== 0)
-          ? card.visualCx
-          : card.baseX + card.width / 2;
-        const cy = (arcMode && card.visualCy !== 0)
-          ? card.visualCy
-          : card.baseY + card.height / 2 + cardRevealOffset - gridPanY;
-        const gc = Math.round(cx / sp);
-        const gr = Math.max(0, Math.round(cy / sp));
-        const idx = gr * cols + gc;
-        card.dotIdx = Math.max(0, Math.min(dots.length - 1, idx));
-        card.anchorX = dots[card.dotIdx].ox;
-        card.anchorY = dots[card.dotIdx].oy;
-      });
-    });
+  function getCanvasCardCenter(card) {
+    const effReveal = arcMode ? 0 : cardRevealOffset;
+    const effPanY = arcMode ? arcGridPanY : gridPanY;
+    return {
+      x: (arcMode && card.visualCx !== 0) ? card.visualCx : card.baseX + card.width / 2,
+      y: (arcMode && card.visualCy !== 0)
+        ? card.visualCy
+        : card.baseY + card.height / 2 + effReveal - effPanY,
+    };
   }
+
+  const canvasGrid = createCanvasGrid(canvas, {
+    isMobile: BP.mobile,
+    getViewport: () => ({ width: W, height: H }),
+    getCards: () => allLayers[0].cards,
+    getCardCenter: getCanvasCardCenter,
+    getState: () => ({ arcMode, arcToGridT, acrobatT }),
+  });
 
   function resize() {
     W = window.innerWidth;
     H = window.innerHeight;
-    canvas.width = W;
-    canvas.height = H;
+    canvasGrid.resize();
     // Update card width/height based on breakpoint so mobile cards are smaller.
     const mobL = BP.mobile() ? getMobLayout() : null;
     allLayers.forEach((layer) => {
@@ -465,70 +427,8 @@ export default async function init(el) {
     const titleHeading = titleEl && titleEl.querySelector('.heading');
     cachedHeadlineH = (titleHeading && titleHeading.offsetHeight)
       || (titleEl && titleEl.offsetHeight) || 60;
-    buildGrid();
     positionCards();
-    updateCardAnchors();
-  }
-
-  function update() {
-    const activeCards = allLayers[0].cards;
-
-    dots.forEach((d) => {
-      let effectiveMR = cfg.mouseRadius;
-      let effectiveRF = cfg.repelForce;
-
-      const effReveal = arcMode ? 0 : cardRevealOffset;
-      const effPanY = arcMode ? arcGridPanY : gridPanY;
-      let boost = 0;
-      activeCards.forEach((card) => {
-        const bx = (arcMode && card.visualCx !== 0)
-          ? card.visualCx
-          : card.baseX + card.width / 2;
-        const by = (arcMode && card.visualCy !== 0)
-          ? card.visualCy
-          : card.baseY + card.height / 2 + effReveal - effPanY;
-        const cdx = mouse.x - bx;
-        const cdy = mouse.y - by;
-        const cd = Math.sqrt(cdx * cdx + cdy * cdy);
-        if (cd < 280) boost = Math.max(boost, 1 - cd / 280);
-      });
-      if (boost > 0) {
-        effectiveMR = cfg.mouseRadius * (1 + boost * 1.5);
-        effectiveRF = cfg.repelForce * (1 + boost * 0.8);
-      }
-
-      const dx = d.x - mouse.x;
-      const dy = d.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < effectiveMR && dist > 0) {
-        const force = (1 - dist / effectiveMR) * effectiveRF;
-        d.vx += (dx / dist) * force;
-        d.vy += (dy / dist) * force;
-      }
-
-      d.vx += (d.ox - d.x) * cfg.spring;
-      d.vy += (d.oy - d.y) * cfg.spring;
-      d.vx *= cfg.damping;
-      d.vy *= cfg.damping;
-      d.x += d.vx;
-      d.y += d.vy;
-    });
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    const r = cfg.dotSize;
-    const [dr, dg, db] = hexToRgb(cfg.dotColor);
-    const arcDotFade = arcMode ? arcToGridT : 1;
-    const alpha = 0.45 * (arcMode ? 1 : (1 - acrobatT)) * arcDotFade;
-    if (alpha <= 0) return;
-    ctx.fillStyle = `rgba(${dr},${dg},${db},${alpha})`;
-
-    dots.forEach((d) => {
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, r, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    canvasGrid.updateCardAnchors(allLayers);
   }
 
   function setLabelPos(card, cx, cy, scale, opacity) {
@@ -918,20 +818,16 @@ export default async function init(el) {
     }
 
     positionCards();
-    updateCardAnchors();
-    update();
-    draw();
+    canvasGrid.updateCardAnchors(allLayers);
+    canvasGrid.update();
+    canvasGrid.draw();
     updateCardPositions();
     rafId = requestAnimationFrame(loop);
   }
 
   const onResize = () => resize();
-  const onMouseMove = (e) => { mouse.x = e.clientX; mouse.y = e.clientY; };
-  const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999; };
 
   window.addEventListener('resize', onResize);
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseleave', onMouseLeave);
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const arc256Length = Math.max(arc256Path.getTotalLength(), 3000) * 2 + 500;
@@ -962,8 +858,7 @@ export default async function init(el) {
     stopLoop();
     io.disconnect();
     window.removeEventListener('resize', onResize);
-    window.removeEventListener('mousemove', onMouseMove);
-    window.removeEventListener('mouseleave', onMouseLeave);
+    canvasGrid.destroy();
     observer.disconnect();
   }).observe(document.body, { childList: true, subtree: true });
 
