@@ -1,14 +1,14 @@
-<!-- Producer A (boot DOM): Organization with extra field -->
+<!-- Producer A (boot DOM): Organization with producer-only sameAs -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "Adobe",
   "url": "https://www.adobe.com/",
-  "logo": "https://www.adobe.com/logo.png"
+  "sameAs": "https://en.wikipedia.org/wiki/Adobe_Inc."
 }
 </script>
-<!-- Producer B (runtime): Organization with conflicting name field -->
+<!-- Producer B (runtime): Organization with conflicting name -->
 <script type="application/ld+json" data-producer="runtime">
 {
   "@context": "https://schema.org",

@@ -10,11 +10,14 @@ import {
   unionByRef,
   mergeNodes,
   injectLinks,
+  extractInlineEntities,
+  siteRoot,
+  defaultOrg,
   JsonLdGraphManager,
 } from '../../../libs/features/jsonld-graph-manager.js';
 
 const PAGE_URL = 'https://www.adobe.com/products/photoshop.html';
-const ORG_ID = 'https://www.adobe.com/#organization';
+const ORG_ID = 'https://www.adobe.com/#organization'; // www default
 
 function setCanonical(url = PAGE_URL) {
   document.head.querySelector('link[rel="canonical"]')?.remove();
@@ -291,7 +294,8 @@ describe('JsonLdGraphManager singleton enforcement', () => {
     const orgs = graph.filter((n) => n['@type'] === 'Organization');
     expect(orgs).to.have.length(1);
     expect(orgs[0]['@id']).to.equal(ORG_ID);
-    expect(orgs[0].logo).to.equal('logo.png');
+    // generated baseline wins — logo is the manager default, not the producer-supplied value
+    expect(orgs[0].logo).to.equal('https://www.adobe.com/favicon.ico');
   });
 });
 
@@ -473,9 +477,113 @@ describe('end-to-end: multi-producer conflict', () => {
     const orgs = graph.filter((n) => n['@type'] === 'Organization');
     expect(orgs).to.have.length(1);
     expect(orgs[0]['@id']).to.equal(ORG_ID);
-    // runtime name wins over bootDom
-    expect(orgs[0].name).to.equal('Adobe Inc.');
-    // bootDom logo is preserved (only on loser)
-    expect(orgs[0].logo).to.equal('https://www.adobe.com/logo.png');
+    // generated baseline wins over all producer sources
+    expect(orgs[0].name).to.equal('Adobe');
+    expect(orgs[0].logo).to.equal('https://www.adobe.com/favicon.ico');
+    // producer-only field (sameAs) is preserved
+    expect(orgs[0].sameAs).to.equal('https://en.wikipedia.org/wiki/Adobe_Inc.');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Organization synthesis and domain selection
+// ---------------------------------------------------------------------------
+describe('Organization synthesis', () => {
+  it('synthesizes a default Organization when none is provided', () => {
+    document.head.appendChild(makeScript({ '@type': 'Article', headline: 'Hello' }));
+    const manager = new JsonLdGraphManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    const org = graph.find((n) => n['@type'] === 'Organization');
+    expect(org).to.exist;
+    expect(org['@id']).to.equal(ORG_ID);
+    expect(org.name).to.equal('Adobe');
+    expect(org.url).to.equal('https://www.adobe.com/');
+    expect(org.logo).to.equal('https://www.adobe.com/favicon.ico');
+  });
+
+  it('generated baseline fields win over producer-supplied values', () => {
+    document.head.appendChild(makeScript({ '@type': 'Organization', name: 'Acme', url: 'https://acme.com/', sameAs: 'https://example.com' }));
+    const manager = new JsonLdGraphManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    const org = graph.find((n) => n['@type'] === 'Organization');
+    expect(org.name).to.equal('Adobe');
+    expect(org.url).to.equal('https://www.adobe.com/');
+    // producer-only field preserved
+    expect(org.sameAs).to.equal('https://example.com');
+  });
+
+  it('siteRoot() returns business URL for business/bacom hostnames', () => {
+    expect(siteRoot('business.adobe.com')).to.equal('https://business.adobe.com');
+    expect(siteRoot('bacom.adobe.com')).to.equal('https://business.adobe.com');
+    expect(siteRoot('www.adobe.com')).to.equal('https://www.adobe.com');
+    expect(siteRoot('localhost')).to.equal('https://www.adobe.com');
+  });
+
+  it('defaultOrg() returns correct values for business hostname', () => {
+    const org = defaultOrg('business.adobe.com');
+    expect(org.name).to.equal('Adobe for Business');
+    expect(org['@id']).to.equal('https://business.adobe.com/#organization');
+    expect(org.url).to.equal('https://business.adobe.com/');
+    expect(org.logo).to.equal('https://business.adobe.com/favicon.ico');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// extractInlineEntities
+// ---------------------------------------------------------------------------
+describe('extractInlineEntities', () => {
+  it('hoists inline Organization to top-level and replaces with @id ref', () => {
+    const node = {
+      '@type': 'Article',
+      '@id': `${PAGE_URL}#article`,
+      publisher: { '@type': 'Organization', name: 'Adobe' },
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(1);
+    expect(extracted[0]['@type']).to.equal('Organization');
+    expect(extracted[0]['@id']).to.equal(ORG_ID);
+    expect(node.publisher).to.deep.equal({ '@id': ORG_ID });
+  });
+
+  it('leaves inline objects that already have @id untouched', () => {
+    const node = {
+      '@type': 'Article',
+      publisher: { '@type': 'Organization', '@id': ORG_ID },
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(0);
+    expect(node.publisher['@id']).to.equal(ORG_ID);
+  });
+
+  it('leaves inline objects with unknown @type untouched', () => {
+    const node = { '@type': 'Article', publisher: { '@type': 'UnknownThing', name: 'X' } };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(0);
+  });
+
+  it('integrates hoisted entities into the graph via manager', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'Article',
+      headline: 'Hello',
+      publisher: { '@type': 'Organization', name: 'Adobe' },
+    }));
+    const manager = new JsonLdGraphManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    const article = graph.find((n) => n['@type'] === 'Article');
+    const org = graph.find((n) => n['@type'] === 'Organization');
+    expect(org).to.exist;
+    expect(article.publisher).to.deep.equal({ '@id': ORG_ID });
   });
 });

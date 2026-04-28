@@ -1,6 +1,5 @@
 import { debounce } from '../utils/action.js';
 
-const ORG_ID = 'https://www.adobe.com/#organization';
 const MANAGED_ATTR = 'data-milo-jsonld';
 const MANAGED_VAL = 'graph';
 const MANAGED_SEL = `script[type="application/ld+json"][${MANAGED_ATTR}="${MANAGED_VAL}"]`;
@@ -17,7 +16,7 @@ const RULES = {
     root: true,
     links: { publisher: 'Organization', breadcrumb: 'BreadcrumbList' },
   },
-  Organization: { id: ORG_ID, singleton: true },
+  Organization: { idSuffix: '/#organization', siteScoped: true, singleton: true },
   Article: {
     idFragment: '#article',
     linksBack: { isPartOf: 'WebPage', mainEntityOfPage: 'WebPage', publisher: 'Organization' },
@@ -40,6 +39,24 @@ const RULES = {
   Product: { idFragment: '#product' },
 };
 
+export function siteRoot(hostname = window.location.hostname) {
+  return /business|bacom/i.test(hostname)
+    ? 'https://business.adobe.com'
+    : 'https://www.adobe.com';
+}
+
+export function defaultOrg(hostname) {
+  const root = siteRoot(hostname);
+  const isBusiness = root.includes('business');
+  return {
+    '@type': 'Organization',
+    '@id': `${root}/#organization`,
+    name: isBusiness ? 'Adobe for Business' : 'Adobe',
+    url: `${root}/`,
+    logo: `${root}/favicon.ico`,
+  };
+}
+
 export function canonicalUrl() {
   const link = document.head.querySelector('link[rel="canonical"]');
   if (link?.href) {
@@ -53,7 +70,7 @@ export function canonicalUrl() {
 export function pageScopedId(type) {
   const rule = RULES[type];
   if (!rule) return null;
-  if (rule.id) return rule.id;
+  if (rule.siteScoped) return `${siteRoot()}${rule.idSuffix}`;
   return `${canonicalUrl()}${rule.idFragment}`;
 }
 
@@ -96,10 +113,12 @@ export function unionByRef(a, b) {
   return result;
 }
 
-// TODO(spec §2.4): promote to 4-level table:
-//   graph-manager-generated > Milo feature/block > third-party runtime > initial page DOM
-// v1 simplification: bootDom (0) < runtime (1).
-function priorityWeight(src) { return src === 'runtime' ? 1 : 0; }
+// Source priority per spec §2.4: generated (2) > runtime (1) > bootDom (0).
+function priorityWeight(src) {
+  if (src === 'generated') return 2;
+  if (src === 'runtime') return 1;
+  return 0;
+}
 
 export function mergeNodes(a, b, srcA, srcB) {
   const aWins = priorityWeight(srcA) >= priorityWeight(srcB);
@@ -154,12 +173,29 @@ function sortNodes(nodes) {
   });
 }
 
+const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand'];
+
+export function extractInlineEntities(node) {
+  const extracted = [];
+  for (const prop of ENTITY_PROPS) {
+    const val = node[prop];
+    if (val && typeof val === 'object' && !Array.isArray(val) && val['@type'] && !val['@id']) {
+      const normalized = normalizeNode(val);
+      if (normalized['@id']) {
+        extracted.push(normalized);
+        node[prop] = { '@id': normalized['@id'] };
+      }
+    }
+  }
+  return extracted;
+}
+
 function isDebugMode() {
   return new URLSearchParams(window.location.search).get('jsonld-graph-manager-debug') === 'true';
 }
 
 // eslint-disable-next-line no-console
-function debugLog(...args) { if (isDebugMode()) console.debug('[jsonld-graph-manager]', ...args); }
+function debugLog(...args) { if (isDebugMode()) console.log('[jsonld-graph-manager]', ...args); }
 
 function lanaLog(msg, severity = 'info') {
   window.lana?.log(`JSON-LD: ${msg}`, { tags: 'jsonld-graph-manager', severity });
@@ -227,14 +263,18 @@ export class JsonLdGraphManager {
         debugLog('removed from DOM', scriptEl.parentElement?.tagName ?? 'already detached');
         for (const raw of nodes) {
           const node = normalizeNode(raw);
-          const id = node['@id'] ?? node['@type'] ?? JSON.stringify(node);
-          if (this.graph.has(id)) {
-            const prevSrc = this.sources.get(id) ?? 'bootDom';
-            this.graph.set(id, mergeNodes(this.graph.get(id), node, prevSrc, source));
-          } else {
-            this.graph.set(id, node);
+          const inlined = extractInlineEntities(node);
+          const toMerge = [node, ...inlined];
+          for (const n of toMerge) {
+            const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
+            if (this.graph.has(id)) {
+              const prevSrc = this.sources.get(id) ?? 'bootDom';
+              this.graph.set(id, mergeNodes(this.graph.get(id), n, prevSrc, source));
+            } else {
+              this.graph.set(id, n);
+            }
+            this.sources.set(id, source);
           }
-          this.sources.set(id, source);
         }
       }
       this.rewrite();
@@ -250,6 +290,14 @@ export class JsonLdGraphManager {
     if (!this.graph.has(webpageId)) {
       const url = canonicalUrl();
       this.graph.set(webpageId, { '@type': 'WebPage', '@id': webpageId, url });
+    }
+    // Ensure a canonical Organization is always present. Baseline fields (name, url, logo)
+    // take graph-manager-generated priority so they win over any producer-supplied values.
+    const org = defaultOrg();
+    if (!this.graph.has(org['@id'])) {
+      this.graph.set(org['@id'], org);
+    } else {
+      this.graph.set(org['@id'], mergeNodes(org, this.graph.get(org['@id']), 'generated', 'runtime'));
     }
     const nodes = sortNodes([...this.graph.values()]);
     injectLinks(nodes);

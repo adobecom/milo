@@ -6,7 +6,7 @@
 
 The JSON-LD Graph Manager is a Milo feature that collects all the JSON-LD on a page and rewrites it as **one canonical, linked `@graph`**. This centralization enables the manager to automatically apply JSON-LD graph features that may improve search engine and LLM visibility, such as cross-entity `@id` linking and singleton enforcement for certain types.
 
-The feature is **disabled by default**. To enable, set the `jsonld-graph-manager` page metadata or URL query parameter to the string `true` (case-insensitive). The string `false` explicitly disables it. Presence without a value does not enable the feature.
+The feature is **disabled by default**. To enable, set the `jsonld-graph-manager` page metadata or URL query parameter to the string `true` (case-insensitive). The string `false` explicitly disables it. Presence without a value does not enable the feature. To enable debug logging of queue lifecycle events, add `jsonld-graph-manager-debug=true` as a URL query parameter.
 
 ## 1. Introduction
 
@@ -267,9 +267,11 @@ Evaluating whether this feature actually improves how search engines and LLMs su
 
 ### 4.1 Feature Flagging
 
-**Flag:** `jsonld-graph-manager` (true/false)  
+**Flag:** `jsonld-graph-manager` (page metadata or URL query parameter, `true`/`false`, default `false`)
 
 The manager is feature-gated by AEM page metadata so it can be enabled or disabled on selected pages and page families without affecting the entire site at once. You can also use the query parameter for quick testing.
+
+**Debug flag:** `jsonld-graph-manager-debug` (URL query parameter only, `true` to enable)
 
 ### 4.2 Observability And Diagnostics
 
@@ -277,23 +279,15 @@ The manager should expose both local debugging output and production-safe warnin
 
 #### Debug logging
 
-For local development and non-production diagnosis, the manager should emit ordered debug output for key queue events:
+Add `jsonld-graph-manager-debug=true` to the URL query string to enable lifecycle logging via `console.log`. Events logged in queue order:
 
-- when unmanaged JSON-LD is discovered and queued
-- the original captured payload and the DOM location it came from
-- when a payload is parsed and removed
-- when the managed graph is rewritten
-- the resulting graph version or queue sequence number
+- **enqueue** — source (`bootDom` or `runtime`), DOM location, original captured payload
+- **rebuild** — batch size, current graph size
+- **parsed** — source, node count, `@type` values found
+- **removed from DOM** — parent element of the ingested script
+- **rewrite** — node count, full expandable `@graph` object
 
-Debug mode is the appropriate place to surface per-source origin information when needed; the production manager does not persist a provenance record on the canonical graph.
-
-Because all ingestion and rebuild work flows through one explicit queue, these messages should appear in queue order even when events happen in rapid succession.
-
-Debug logging should follow existing Milo logging conventions:
-
-- in non-production environments, debug output may be written to the console
-- when `lanadebug` is enabled, Lana debug output may also surface in the console
-- debug logging should be informative but not required for normal page behavior
+Debug mode is the appropriate place to surface per-source origin when needed; the production manager does not persist a provenance record on the canonical graph.
 
 #### Warning and error reporting
 
