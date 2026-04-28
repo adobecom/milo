@@ -2230,7 +2230,7 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.05;
+    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.1;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
@@ -2239,6 +2239,7 @@ async function loadPostLCP(config) {
       autoRaf: true,
       lerp,
       syncTouch: false,
+      __experimental__naiveDimensions: true,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
