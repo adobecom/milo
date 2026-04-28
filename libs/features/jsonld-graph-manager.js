@@ -154,6 +154,13 @@ function sortNodes(nodes) {
   });
 }
 
+function isDebugMode() {
+  return new URLSearchParams(window.location.search).get('jsonld-graph-manager-debug') === 'true';
+}
+
+// eslint-disable-next-line no-console
+function debugLog(...args) { if (isDebugMode()) console.debug('[jsonld-graph-manager]', ...args); }
+
 function lanaLog(msg, severity = 'info') {
   window.lana?.log(`JSON-LD: ${msg}`, { tags: 'jsonld-graph-manager', severity });
   const { hostname, search } = window.location;
@@ -198,6 +205,11 @@ export class JsonLdGraphManager {
   }
 
   enqueue(scriptEl, source = 'runtime') {
+    debugLog('enqueue', {
+      source,
+      location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,
+      payload: scriptEl.textContent.trim(),
+    });
     this.queue.push({ scriptEl, source });
     if (source === 'runtime') this.debouncedRebuild();
   }
@@ -207,9 +219,12 @@ export class JsonLdGraphManager {
     this.isProcessing = true;
     try {
       const batch = this.queue.splice(0);
+      debugLog('rebuild', { batchSize: batch.length, graphSize: this.graph.size });
       for (const { scriptEl, source } of batch) {
         const nodes = parsePayload(scriptEl);
+        debugLog('parsed', { source, types: nodes.map((n) => n['@type']), nodeCount: nodes.length });
         scriptEl.remove();
+        debugLog('removed from DOM', scriptEl.parentElement?.tagName ?? 'already detached');
         for (const raw of nodes) {
           const node = normalizeNode(raw);
           const id = node['@id'] ?? node['@type'] ?? JSON.stringify(node);
@@ -247,6 +262,7 @@ export class JsonLdGraphManager {
       document.head.appendChild(managed);
     }
     managed.textContent = payload;
+    debugLog('rewrite', { nodeCount: nodes.length, graph: JSON.parse(payload) });
     lanaLog(`Graph rewritten with ${nodes.length} nodes`);
   }
 }
