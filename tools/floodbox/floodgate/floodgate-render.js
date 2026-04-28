@@ -123,10 +123,10 @@ export function renderFindStep(cmp) {
           </div>
         ` : nothing}
         <ul class="url-checklist">
-          ${cmp._filesToProcess.map((path, i) => html`
+          ${cmp._filesToProcess.map((path) => html`
             <li>
               <div class="path">${path}</div>
-              <button class="icon-button" type="button" @click=${() => cmp.removeFile(i)}>
+              <button class="icon-button" type="button" @click=${() => cmp.removeFile(path)}>
                 <svg class="icon"><use href="#spectrum-close"/></svg>
               </button>
             </li>

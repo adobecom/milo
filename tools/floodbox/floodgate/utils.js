@@ -103,69 +103,64 @@ function getInvalidPathIndices(paths) {
 }
 
 /**
- * Maps raw textarea line numbers to invalid paths (matches handleInputChange + validatePaths).
+ * Single-pass parse of textarea input. Returns both the line indices that fail
+ * validation (for the red-line highlight) and the valid paths in order (for
+ * downstream operations). Replaces two separate parses that previously ran on
+ * every keystroke.
  */
-function getInvalidPathLineIndices(rawText, fgCopy, color) {
+function parsePathInput(rawText, fgCopy, color) {
   const lines = rawText.split(/\r?\n/);
-  const pathEntries = [];
+  const entries = [];
   for (let i = 0; i < lines.length; i += 1) {
     const trimmed = lines[i].trim();
     if (trimmed.length) {
-      pathEntries.push({ lineIndex: i, path: lineToPathForValidation(trimmed, fgCopy, color) });
+      entries.push({ lineIndex: i, path: lineToPathForValidation(trimmed, fgCopy, color) });
     }
   }
-  if (pathEntries.length === 0) return new Set();
-  const paths = pathEntries.map((e) => e.path);
-  const invalidPathIdx = getInvalidPathIndices(paths);
+  if (entries.length === 0) {
+    return { invalidLines: new Set(), validPaths: [], lines };
+  }
+  const invalidPathIdx = getInvalidPathIndices(entries.map((e) => e.path));
   const invalidLines = new Set();
-  invalidPathIdx.forEach((pi) => invalidLines.add(pathEntries[pi].lineIndex));
-  return invalidLines;
+  const validPaths = [];
+  for (let pi = 0; pi < entries.length; pi += 1) {
+    if (invalidPathIdx.has(pi)) {
+      invalidLines.add(entries[pi].lineIndex);
+    } else {
+      validPaths.push(entries[pi].path);
+    }
+  }
+  return { invalidLines, validPaths, lines };
 }
 
 /** Non-invalid lines only, in order (same normalization as validation). */
 function getValidPathsForInput(rawText, fgCopy, color) {
-  const invalid = getInvalidPathLineIndices(rawText, fgCopy, color);
-  const lines = rawText.split(/\r?\n/);
-  const paths = [];
-  for (let i = 0; i < lines.length; i += 1) {
-    const trimmed = lines[i].trim();
-    if (trimmed.length && !invalid.has(i)) {
-      paths.push(lineToPathForValidation(trimmed, fgCopy, color));
-    }
-  }
-  return paths;
+  return parsePathInput(rawText, fgCopy, color).validPaths;
 }
 
 async function expandWildcardPaths({ paths, accessToken, fgColor, operation }) {
   const wildcards = paths.filter((p) => p.endsWith('*'));
   const regular = paths.filter((p) => !p.endsWith('*'));
-  const expanded = [...regular];
 
-  for (const wc of wildcards) {
+  const expandedLists = await Promise.all(wildcards.map(async (wc) => {
     const basePath = wc.slice(0, -1).replace(/\/$/, '');
     let crawlPath = basePath;
-
     if (operation !== 'copy') {
       const parts = basePath.split('/').filter(Boolean);
       const [orgPart, repoPart, ...rest] = parts;
       crawlPath = `/${orgPart}/${repoPart}-fg-${fgColor}${rest.length ? `/${rest.join('/')}` : ''}`;
     }
-
-    // eslint-disable-next-line no-await-in-loop
     const { results } = crawl({ path: crawlPath, accessToken });
-    // eslint-disable-next-line no-await-in-loop
     const files = await results;
-
-    for (const file of files) {
-      let filePath = operation !== 'copy'
+    return files.map((file) => {
+      const filePath = operation !== 'copy'
         ? file.path.replace(`-fg-${fgColor}`, '')
         : file.path;
-      filePath = filePath.replace(/\.html$/i, '');
-      expanded.push(filePath);
-    }
-  }
+      return filePath.replace(/\.html$/i, '');
+    });
+  }));
 
-  return [...new Set(expanded)];
+  return [...new Set([...regular, ...expandedLists.flat()])];
 }
 
 async function getValidFloodgate(sdk = DA_SDK) {
@@ -181,7 +176,7 @@ async function getValidFloodgate(sdk = DA_SDK) {
 export {
   normalizePaths,
   validatePaths,
-  getInvalidPathLineIndices,
+  parsePathInput,
   getValidPathsForInput,
   expandWildcardPaths,
   getValidFloodgate,

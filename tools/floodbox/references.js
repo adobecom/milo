@@ -25,24 +25,24 @@ class References {
   }
 
   async getReferencedFragmentsAndAssets() {
+    const FRAGMENT_FETCH_BATCH = 10;
     const fragmentsAndAssets = new Set();
-    for (const path of this.htmlPaths) {
-      const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${path}.html`);
-      if (!response.ok) {
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-      const content = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(content, 'text/html');
-      const { links } = doc;
-      for (const link of links) {
-        const { href } = link;
-        const refPath = this.getReferencePath(href);
-        if (refPath) {
-          fragmentsAndAssets.add(`/${this.org}/${this.repo}${refPath}`);
+    const parser = new DOMParser();
+    for (let i = 0; i < this.htmlPaths.length; i += FRAGMENT_FETCH_BATCH) {
+      const batch = this.htmlPaths.slice(i, i + FRAGMENT_FETCH_BATCH);
+      // eslint-disable-next-line no-await-in-loop
+      await Promise.all(batch.map(async (path) => {
+        const response = await this.requestHandler.daFetch(`${DA_ORIGIN}/source${path}.html`);
+        if (!response.ok) return;
+        const content = await response.text();
+        const doc = parser.parseFromString(content, 'text/html');
+        for (const link of doc.links) {
+          const refPath = this.getReferencePath(link.href);
+          if (refPath) {
+            fragmentsAndAssets.add(`/${this.org}/${this.repo}${refPath}`);
+          }
         }
-      }
+      }));
     }
     return fragmentsAndAssets;
   }

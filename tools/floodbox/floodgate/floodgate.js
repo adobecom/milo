@@ -5,7 +5,7 @@ import getSvg from 'https://da.live/nx/public/utils/svg.js';
 import FloodgateConfig, { evaluateFloodgateAccess } from './floodgate-config.js';
 import {
   validatePaths,
-  getInvalidPathLineIndices,
+  parsePathInput,
   getValidPathsForInput,
   getValidFloodgate,
 } from './utils.js';
@@ -91,7 +91,12 @@ export default class MiloFloodgate extends LitElement {
     this._accessBlockScope = 'none';
     this._configLoading = false;
     this._configContextKey = '';
+    this._configLoadKey = '';
+    this._configLoadPromise = null;
+    this._configLoadError = '';
     this._debouncedEvaluateAccess = debounce(() => this._evaluateAccess(), 300);
+
+    this._pathsLines = [];
 
     this._resetWorkflowState();
   }
@@ -121,6 +126,7 @@ export default class MiloFloodgate extends LitElement {
     super.updated(changed);
     if (changed.has('token')) {
       this._configContextKey = '';
+      this._configLoadError = '';
       this._prevOrg = '';
       this._prevSourceRepo = '';
     }
@@ -148,11 +154,9 @@ export default class MiloFloodgate extends LitElement {
     this._accessMode = result.mode;
     this._accessInfoMessage = result.infoMessage || '';
     this._accessBlockScope = result.blockScope;
-    if (result.blockScope === 'paths' && result.errorMessage) {
-      this._errorMessage = result.errorMessage;
-    } else if (result.blockScope === 'all' && result.errorMessage) {
-      this._errorMessage = result.errorMessage;
-    } else if (result.blockScope === 'operation' && result.errorMessage) {
+    const blockedWithMessage = result.errorMessage
+      && (result.blockScope === 'paths' || result.blockScope === 'all' || result.blockScope === 'operation');
+    if (blockedWithMessage) {
       this._errorMessage = result.errorMessage;
     } else if (result.mode !== 'blocked' || result.blockScope === 'none') {
       this._errorMessage = '';
@@ -165,41 +169,59 @@ export default class MiloFloodgate extends LitElement {
       this._configLoading = false;
       this._selectedColor = '';
       this._configContextKey = '';
+      this._configLoadKey = '';
+      this._configLoadPromise = null;
+      this._configLoadError = '';
       this.requestUpdate();
-      return;
+      return undefined;
     }
 
     const key = `${this._org}|${this._sourceRepo}`;
-    if (this._configContextKey === key) return;
+    if (this._configContextKey === key) return undefined;
 
+    // Dedupe in-flight requests for the same key. A concurrent call for a
+    // different key supersedes this one (latest wins).
+    if (this._configLoadKey === key && this._configLoadPromise) {
+      return this._configLoadPromise;
+    }
+
+    this._configLoadKey = key;
     this._configLoading = true;
+    this._configLoadError = '';
     this.requestUpdate();
 
-    try {
-      const cfg = new FloodgateConfig(this._org, this._sourceRepo, this.token);
-      await cfg.getConfig();
+    const promise = (async () => {
+      try {
+        const cfg = new FloodgateConfig(this._org, this._sourceRepo, this.token);
+        await cfg.getConfig();
 
-      // Stale check: if org/repo changed while fetching, discard
-      const currentKey = `${this._org}|${this._sourceRepo}`;
-      if (key !== currentKey) return;
+        // Superseded by a later load
+        if (this._configLoadKey !== key) return;
 
-      this._floodgateConfig = cfg;
-      this._configContextKey = key;
+        this._floodgateConfig = cfg;
+        this._configContextKey = key;
 
-      const colors = cfg.colors ?? [];
-      if (colors.length > 0) {
-        [this._selectedColor] = colors;
-      } else {
-        this._selectedColor = '';
+        const colors = cfg.colors ?? [];
+        [this._selectedColor] = colors.length > 0 ? colors : [''];
+
+        if (this._sourceRepo && this._selectedColor) {
+          this._floodgateRepo = `${this._sourceRepo}-fg-${this._selectedColor}`;
+        }
+      } catch (err) {
+        if (this._configLoadKey !== key) return;
+        this._configLoadError = 'Could not load floodgate configuration. Check your network and try again.';
+      } finally {
+        // Only the most recent loader clears the loading state.
+        if (this._configLoadKey === key) {
+          this._configLoading = false;
+          this._configLoadPromise = null;
+          this.requestUpdate();
+        }
       }
+    })();
 
-      if (this._sourceRepo && this._selectedColor) {
-        this._floodgateRepo = `${this._sourceRepo}-fg-${this._selectedColor}`;
-      }
-    } finally {
-      this._configLoading = false;
-      this.requestUpdate();
-    }
+    this._configLoadPromise = promise;
+    return promise;
   }
 
   _evaluateAccess() {
@@ -273,18 +295,15 @@ export default class MiloFloodgate extends LitElement {
   handleInputChange(event) {
     this._pathsRawValue = event.target.value;
     sessionStorage.setItem(PATHS_STORAGE_KEY, this._pathsRawValue);
-    this._invalidPathLineIndices = getInvalidPathLineIndices(
+
+    const { invalidLines, validPaths, lines } = parsePathInput(
       this._pathsRawValue,
       this._selectedOption === 'fgCopy',
       this._selectedColor,
     );
-
-    const paths = getValidPathsForInput(
-      this._pathsRawValue,
-      this._selectedOption === 'fgCopy',
-      this._selectedColor,
-    );
-
+    this._invalidPathLineIndices = invalidLines;
+    this._pathsLines = lines;
+    const paths = validPaths;
     this._pathCount = paths.length;
 
     const { valid, org, repo } = validatePaths(paths);
@@ -409,8 +428,10 @@ export default class MiloFloodgate extends LitElement {
 
   // --- File List ---
 
-  removeFile(index) {
-    this._filesToProcess.splice(index, 1);
+  removeFile(path) {
+    const idx = this._filesToProcess.indexOf(path);
+    if (idx === -1) return;
+    this._filesToProcess.splice(idx, 1);
     this._filesToProcess = [...this._filesToProcess];
     this.requestUpdate();
   }
@@ -661,6 +682,7 @@ export default class MiloFloodgate extends LitElement {
     sessionStorage.removeItem(PATHS_STORAGE_KEY);
     this._pathCount = 0;
     this._pathsRawValue = '';
+    this._pathsLines = [];
     this._invalidPathLineIndices = new Set();
     this._repoReady = false;
     this._org = '';
@@ -669,6 +691,9 @@ export default class MiloFloodgate extends LitElement {
     this._prevOrg = '';
     this._prevSourceRepo = '';
     this._configContextKey = '';
+    this._configLoadKey = '';
+    this._configLoadPromise = null;
+    this._configLoadError = '';
     this._floodgateConfig = {};
     this._selectedColor = '';
     this._configLoading = false;
@@ -692,8 +717,8 @@ export default class MiloFloodgate extends LitElement {
   }
 
   renderPathsHighlight() {
-    const raw = this._pathsRawValue ?? '';
-    const lines = raw.split(/\r?\n/);
+    const lines = this._pathsLines;
+    if (!lines || lines.length === 0) return nothing;
     const invalid = this._invalidPathLineIndices;
     return lines.map((line, i) => html`<span class="${invalid.has(i) ? 'path-invalid' : ''}">${line}</span>${i < lines.length - 1 ? '\n' : nothing}`);
   }
@@ -836,6 +861,7 @@ export default class MiloFloodgate extends LitElement {
         ` : nothing}
         ${!this.token && !this._tabUiStart ? html`<p class="access-info-message">Sign in to DA to enable floodgate actions.</p>` : nothing}
         ${this._accessInfoMessage ? html`<p class="access-info-message">${this._accessInfoMessage}</p>` : nothing}
+        ${this._configLoadError ? html`<p class="error-message">${this._configLoadError}</p>` : nothing}
         ${this._errorMessage ? html`<p class="error-message">${this._errorMessage}</p>` : nothing}
         <div class="button-row ${this._tabUiStart ? 'hide' : ''}">
           <select class="action-select" .disabled=${!this.token || isRunning} .value=${this._selectedOption} @change=${(e) => this.handleOptionChange(e)}>

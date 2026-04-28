@@ -9,18 +9,19 @@ import { expandWildcardPaths, getValidPathsForInput } from './utils.js';
 import { getFileExtension, getFileName } from '../utils.js';
 
 const EXISTENCE_CHECK_BATCH = 10;
+const DELETE_BATCH = 10;
 
 async function findFragments(cmp, org, repo, operation) {
   if (operation === 'copy') {
     const htmlPaths = cmp._filesToProcess
       .filter((p) => !p.endsWith('/') && !p.includes('.'));
-    cmp._fragmentsAssets = await findFragmentsAndAssets({
+    const result = await findFragmentsAndAssets({
       accessToken: cmp.token,
       htmlPaths,
       org,
       repo,
     });
-    cmp._filesToProcess.push(...cmp._fragmentsAssets);
+    cmp._fragmentsAssets = new Set(result);
   } else {
     const fgRepo = `${repo}-fg-${cmp._selectedColor}`;
     const fgPaths = cmp._filesToProcess.map((p) => p.replace(`/${org}/${repo}`, `/${org}/${fgRepo}`));
@@ -33,8 +34,8 @@ async function findFragments(cmp, org, repo, operation) {
     cmp._fragmentsAssets = new Set(
       [...fgFragments].map((p) => p.replace(`-fg-${cmp._selectedColor}`, '')),
     );
-    cmp._filesToProcess.push(...cmp._fragmentsAssets);
   }
+  cmp._filesToProcess.push(...cmp._fragmentsAssets);
   cmp._filesToProcess = [...new Set(cmp._filesToProcess)];
 }
 
@@ -118,8 +119,6 @@ export async function executeCopy(cmp) {
     paths: cmp._filesToProcess,
     fgColor: cmp._selectedColor,
     callback: (status) => {
-      // eslint-disable-next-line no-console
-      console.log(`${status.statusCode} :: ${status.filePath}`);
       if (SUCCESS_CODES.includes(status.statusCode)) {
         cmp._copiedFiles.push(status.filePath);
         cmp._copiedFilesCount += 1;
@@ -191,8 +190,6 @@ export async function executePromote(cmp) {
     promoteType: 'floodgate',
     files: filesToPromote,
     callback: (status) => {
-      // eslint-disable-next-line no-console
-      console.log(`${status.statusCode} :: ${status.filePath}`);
       if (SUCCESS_CODES.includes(status.statusCode)) {
         cmp._promotedFiles.push(status.filePath);
         cmp._promotedFilesCount += 1;
@@ -219,8 +216,6 @@ export async function executePreview(cmp, org, repo, paths) {
     action: 'preview',
     accessToken: cmp.token,
     callback: (status) => {
-      // eslint-disable-next-line no-console
-      console.log(`${status.statusCode} :: ${status.aemUrl}`);
       if (SUCCESS_CODES.includes(status.statusCode)) {
         cmp._previewedFilesCount += 1;
         cmp._previewedUrls.push(status.aemUrl);
@@ -244,8 +239,6 @@ export async function executePublish(cmp, org, repo, paths) {
     action: 'live',
     accessToken: cmp.token,
     callback: (status) => {
-      // eslint-disable-next-line no-console
-      console.log(`${status.statusCode} :: ${status.aemUrl}`);
       if (SUCCESS_CODES.includes(status.statusCode)) {
         cmp._publishedFilesCount += 1;
         cmp._publishedUrls.push(status.aemUrl);
@@ -282,8 +275,6 @@ export async function executeUnpublish(cmp, fgPaths) {
     accessToken: cmp.token,
     isDelete: true,
     callback: (status) => {
-      // eslint-disable-next-line no-console
-      console.log(`${status.statusCode} :: ${status.aemUrl}`);
       if (SUCCESS_CODES.includes(status.statusCode)) {
         cmp._unpublishFilesCount += 1;
       } else {
@@ -299,18 +290,19 @@ export async function executeUnpublish(cmp, fgPaths) {
 export async function executeDelete(cmp, fgPaths) {
   const startTime = Date.now();
   const reqHandler = new RequestHandler(cmp.token);
-  for (const path of fgPaths) {
+  for (let i = 0; i < fgPaths.length; i += DELETE_BATCH) {
     if (cmp._cancelled) break;
+    const batch = fgPaths.slice(i, i + DELETE_BATCH);
     // eslint-disable-next-line no-await-in-loop
-    const resp = await reqHandler.deleteContent(path);
-    // eslint-disable-next-line no-console
-    console.log(`${resp.statusCode} :: ${resp.filePath}`);
-    if (SUCCESS_CODES.includes(resp.statusCode)) {
-      cmp._deletedFilesCount += 1;
-    } else {
-      cmp._deleteErrorList.push({ href: resp.filePath, status: resp.statusCode });
-    }
-    cmp.requestUpdate();
+    await Promise.all(batch.map(async (path) => {
+      const resp = await reqHandler.deleteContent(path);
+      if (SUCCESS_CODES.includes(resp.statusCode)) {
+        cmp._deletedFilesCount += 1;
+      } else {
+        cmp._deleteErrorList.push({ href: resp.filePath, status: resp.statusCode });
+      }
+      cmp.requestUpdate();
+    }));
   }
   cmp._deleteDuration = Math.round((Date.now() - startTime) / 1000);
   cmp.requestUpdate();

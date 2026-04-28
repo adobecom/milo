@@ -223,10 +223,16 @@ describe('MiloFloodgate', () => {
       el = createComponent();
     });
 
-    it('removes a file at the given index', () => {
+    it('removes a file by path', () => {
       el._filesToProcess = ['/a', '/b', '/c'];
-      el.removeFile(1);
+      el.removeFile('/b');
       expect(el._filesToProcess).to.deep.equal(['/a', '/c']);
+    });
+
+    it('is a no-op when the path is not in the list', () => {
+      el._filesToProcess = ['/a', '/b', '/c'];
+      el.removeFile('/missing');
+      expect(el._filesToProcess).to.deep.equal(['/a', '/b', '/c']);
     });
   });
 
