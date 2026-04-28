@@ -796,8 +796,11 @@ p {
   --cta-transparency: 0%;
   --cta-background: var(--s2a-color-gray-1000);
   --cta-border-color: var(--s2a-color-gray-1000);
+  --cta-backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
   box-sizing: border-box;
   background-color: color-mix(in srgb, var(--cta-background) var(--cta-transparency), transparent);
+  backdrop-filter: var(--cta-backdrop-filter);
+  -webkit-backdrop-filter: var(--cta-backdrop-filter);
   border-radius: var(--s2a-border-radius-round);
   border: var(--s2a-border-width-sm) solid var(--cta-border-color);
   color: var(--s2a-color-gray-1000);
@@ -821,6 +824,12 @@ p {
     outline-offset: var(--s2a-border-width-2);
   }
 
+  &:is(:disabled, [aria-disabled="true"], .disabled) {
+    pointer-events: none;
+    opacity: 48%;
+    cursor: not-allowed;
+  }
+
   &.outline {
     &:hover {
       --cta-transparency: 8%;
@@ -840,6 +849,7 @@ p {
     background-color: var(--s2a-color-blue-900);
     border-color: var(--s2a-color-blue-900);
     color: var(--s2a-color-gray-25);
+    --cta-backdrop-filter: none;
 
     &:hover,
     &:active {
@@ -847,20 +857,32 @@ p {
       border-color: var(--s2a-color-blue-1000);
       color: var(--s2a-color-gray-25);
     }
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+      color:  var(--s2a-color-transparent-white-48);
+    }
   }
 
   &.fill {
     border: none;
     --cta-transparency: 100%;
+    --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
     &:hover, &:active {
       --cta-transparency: 64%;
     }
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      color:  var(--s2a-color-transparent-white-48);
+    }
   }
 
   &.transparent {
     border: none;
+    --cta-backdrop-filter: none;
   }
 
   .icon  {
@@ -875,7 +897,7 @@ p {
 
 
 .dark {
-  .con-button.outline:not(.fill) {
+  .con-button.outline:not(.fill, .blue) {
     --cta-background: var(--s2a-color-gray-25);
     --cta-border-color: var(--s2a-color-transparent-white-24);
 
@@ -892,6 +914,14 @@ p {
     --cta-background: var(--s2a-color-gray-25);
     --cta-border-color: var(--s2a-color-gray-25);
     color: var(--s2a-color-gray-1000);
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      color:  var(--s2a-color-transparent-black-48);
+      background-color: var(--s2a-color-transparent-white-48);
+    }
+  }
+  .con-button.blue:not(.fill, .transparent):is(:disabled, [aria-disabled="true"], .disabled) {
+    background-color: var(--s2a-color-transparent-white-48);
   }
 }
 
