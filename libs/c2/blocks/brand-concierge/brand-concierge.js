@@ -519,31 +519,46 @@ function decorateFloatingButton(el) {
   ro.observe(gnavElement);
   ro.observe(floatingButton);
 
+  let prevBottom = null;
+  let prevPinned = null;
+  let prevVisible = null;
+
   const handleScroll = (target) => {
     const { scrollY } = window;
     const threshold = scrollY + window.innerHeight - (cachedGnavFixed ? 0 : cachedGnavHeight);
+    const pinned = threshold > cachedMainHeight;
 
-    if (threshold > cachedMainHeight) {
-      target.style.bottom = `${threshold - cachedMainHeight}px`;
-      floatingContainer.setAttribute('tab-index', '-1');
-      floatingContainer.blur();
-      if (variants.isFloatingAnchorHide) {
-        hideFloatingButton();
+    if (pinned !== prevPinned) {
+      prevPinned = pinned;
+      if (pinned) {
+        floatingContainer.setAttribute('tab-index', '-1');
+        floatingContainer.blur();
+        if (!variants.isFloatingAnchorHide) bcSpacer.style.height = `${cachedTargetHeight}px`;
       } else {
-        bcSpacer.style.height = `${cachedTargetHeight}px`;
+        floatingContainer.removeAttribute('tab-index');
+        if (!variants.isFloatingAnchorHide) bcSpacer.style.height = '0';
       }
-    } else {
-      showFloatingButton();
-      target.style.bottom = '0';
     }
+
+    const bottom = pinned ? `${threshold - cachedMainHeight}px` : '0';
+    if (bottom !== prevBottom) {
+      prevBottom = bottom;
+      target.style.bottom = bottom;
+    }
+
+    let visible;
     if (variants.isHero || variants.floatingDelay) {
-      if (scrollY > scrollDelay && threshold <= cachedMainHeight) {
-        floatingButton.classList.remove('floating-hidden');
-        floatingButton.classList.add('floating-show');
-      } else {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
-      }
+      visible = scrollY > scrollDelay && !pinned;
+    } else if (variants.isFloatingAnchorHide) {
+      visible = !pinned;
+    } else {
+      visible = !pinned;
+    }
+
+    if (visible !== prevVisible) {
+      prevVisible = visible;
+      floatingButton.classList.toggle('floating-hidden', !visible);
+      floatingButton.classList.toggle('floating-show', visible);
     }
   };
 

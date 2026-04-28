@@ -305,7 +305,10 @@ class Footer {
     this.syncFooterMenuLayout();
 
     if (this.footerMenuResizeObserver) return;
-    this.footerMenuResizeObserver = new ResizeObserver(() => {
+    this.footerMenuResizeObserver = new ResizeObserver((entries) => {
+      const width = entries[entries.length - 1]?.contentBoxSize?.[0]?.inlineSize;
+      if (width === this.cachedFooterWidth) return;
+      this.cachedFooterWidth = width;
       if (this.footerMenuResizeRaf) return;
       this.footerMenuResizeRaf = window.requestAnimationFrame(() => {
         this.footerMenuResizeRaf = null;
