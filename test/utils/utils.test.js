@@ -2822,4 +2822,33 @@ describe('Utils', () => {
       expect(result).to.be.null;
     });
   });
+
+  describe('resolveDetectedMarketCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+
+    beforeEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    it('should return null for bots regardless of country cookie', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      document.cookie = 'country=ch; path=/';
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots regardless of sessionStorage akamai', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'GPTBot/1.0', writable: true });
+      sessionStorage.setItem('akamai', 'ch');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
+    });
+  });
 });

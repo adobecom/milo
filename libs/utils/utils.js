@@ -951,6 +951,7 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
 }
 
 export async function resolveDetectedMarketCountry() {
+  if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
@@ -959,13 +960,11 @@ export async function resolveDetectedMarketCountry() {
     countryFromGeo,
   );
   if (!detectedMarket) {
-    if (!isBot()) {
-      try {
-        const { default: getAkamaiCode } = await import('./geo.js');
-        detectedMarket = normCountryCode(await getAkamaiCode());
-      } catch (error) {
-        window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-      }
+    try {
+      const { default: getAkamaiCode } = await import('./geo.js');
+      detectedMarket = normCountryCode(await getAkamaiCode());
+    } catch (error) {
+      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
     }
   }
   return detectedMarket;
