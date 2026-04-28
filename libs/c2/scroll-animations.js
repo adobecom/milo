@@ -300,11 +300,11 @@ function initCarouselC2() {
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
-    let startWidth = window.innerWidth;
+    const maxSlideW = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-slide-max-width')) || Infinity;
+    let startWidth = Math.min(window.innerWidth, maxSlideW);
     let targetWidth = null;
     let top = null;
     let interacted = false;
-    let maxSlideW = null;
     let slideGap = null;
 
     slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
@@ -319,7 +319,7 @@ function initCarouselC2() {
     window.addEventListener('resize', () => {
       if (interacted) return;
       resetStyles();
-      startWidth = window.innerWidth;
+      startWidth = Math.min(window.innerWidth, maxSlideW);
       targetWidth = null;
       top = null;
       slides.forEach((s) => { s.style.willChange = 'flex-basis'; s.style.flexBasis = `${startWidth}px`; });
@@ -327,11 +327,10 @@ function initCarouselC2() {
 
     cleanupTasks.push(() => {
       resetStyles();
-      startWidth = window.innerWidth;
+      startWidth = Math.min(window.innerWidth, maxSlideW);
       targetWidth = null;
       top = null;
       interacted = false;
-      maxSlideW = null;
       slideGap = null;
     });
 
@@ -352,7 +351,6 @@ function initCarouselC2() {
 
       if (top === null) {
         top = getDocTop(el);
-        maxSlideW = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-slide-max-width')) || Infinity;
         slideGap = parseFloat(getComputedStyle(wrapper).gap) || 8;
       }
 
