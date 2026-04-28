@@ -271,7 +271,12 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       await test.step('step-4: Verify floating button appears after scrolling past hero', async () => {
         await page.evaluate(() => {
           const el = document.querySelector('.brand-concierge.hero');
-          window.scrollTo(0, el.scrollHeight + 1);
+          window.scrollTo(0, el.scrollHeight + 100);
+          // Webkit doesn't always fire a `scroll` event for programmatic
+          // scrollTo in headless mode, so the BC scroll handler never runs.
+          // Dispatch one manually so the handler updates the floating-hidden
+          // class regardless of browser quirk.
+          window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForTimeout(1000);
         await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
