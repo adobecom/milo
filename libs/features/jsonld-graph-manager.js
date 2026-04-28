@@ -1,3 +1,4 @@
+/* eslint-disable no-use-before-define */
 import { debounce } from '../utils/action.js';
 
 const MANAGED_ATTR = 'data-milo-jsonld';
@@ -102,7 +103,9 @@ export function normalizeNode(node) {
 }
 
 export function unionByRef(a, b) {
+  // eslint-disable-next-line no-nested-ternary
   const arrA = a ? (Array.isArray(a) ? a : [a]) : [];
+  // eslint-disable-next-line no-nested-ternary
   const arrB = b ? (Array.isArray(b) ? b : [b]) : [];
   const seen = new Set(arrA.map((n) => n['@id'] ?? JSON.stringify(n)));
   const result = [...arrA];
@@ -202,7 +205,9 @@ function lanaLog(msg, severity = 'info') {
   const { hostname, search } = window.location;
   if (hostname === 'localhost' || hostname.endsWith('.page') || new URLSearchParams(search).has('lanadebug')) {
     // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
     if (severity === 'error') console.error(`JSON-LD: ${msg}`);
+    // eslint-disable-next-line no-console
     else if (severity === 'warn') console.warn(`JSON-LD: ${msg}`);
   }
 }
@@ -222,7 +227,7 @@ export class JsonLdGraphManager {
 
     this.observer = new MutationObserver((mutations) => {
       for (const { addedNodes } of mutations) {
-        for (const node of addedNodes) this._collect(node);
+        for (const node of addedNodes) this.collect(node);
       }
     });
     this.observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -230,7 +235,7 @@ export class JsonLdGraphManager {
     this.rebuild();
   }
 
-  _collect(node) {
+  collect(node) {
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     if (node.matches?.(MANAGED_SEL)) return;
     if (node.matches?.('script[type="application/ld+json"]')) {
@@ -316,8 +321,8 @@ export class JsonLdGraphManager {
 }
 
 export default async function init() {
-  if (window.__jsonLdGraphManager) return;
+  if (window.miloJsonLdGraphManager) return;
   const manager = new JsonLdGraphManager();
-  window.__jsonLdGraphManager = manager;
+  window.miloJsonLdGraphManager = manager;
   manager.init();
 }

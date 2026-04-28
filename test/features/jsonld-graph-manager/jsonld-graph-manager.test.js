@@ -3,7 +3,6 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 import {
-  canonicalUrl,
   flattenPayload,
   parsePayload,
   normalizeNode,
@@ -35,7 +34,7 @@ function makeScript(obj) {
 }
 
 function resetManager() {
-  window.__jsonLdGraphManager = null;
+  window.miloJsonLdGraphManager = null;
   document.head.querySelector('script[data-milo-jsonld="graph"]')?.remove();
   document.head.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
   document.body.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
@@ -351,6 +350,7 @@ describe('JsonLdGraphManager mutation observer', () => {
     document.head.appendChild(script);
 
     // Flush the microtask queue so MutationObserver fires; then rebuild directly
+    // eslint-disable-next-line no-promise-executor-return
     await new Promise((r) => setTimeout(r, 0));
     manager.rebuild();
 
