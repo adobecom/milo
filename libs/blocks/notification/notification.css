@@ -224,7 +224,6 @@
   flex-direction: column;
   justify-content: center;
   flex: 1 1 0;
-  /* Prevent the title from shrinking so far it wraps per-letter at higher zoom levels */
   min-inline-size: min-content;
   max-inline-size: 100%;
 }
