@@ -275,20 +275,30 @@ class Footer {
       return;
     }
 
-    const menuContents = this.elements.footer?.querySelectorAll('.feds-menu-content');
-    if (!menuContents?.length) return;
+    const menuContents = [...(this.elements.footer?.querySelectorAll('.feds-menu-content') ?? [])];
+    if (!menuContents.length) return;
 
-    menuContents.forEach((menuContent) => {
+    const candidates = menuContents.filter((menuContent) => {
       const columnCount = menuContent.querySelectorAll(':scope > .feds-menu-column').length;
       if (columnCount <= 3) {
         menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
-        return;
+        return false;
       }
-
-      menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
-      const hasOverflow = menuContent.scrollWidth > menuContent.clientWidth;
-      menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, hasOverflow);
+      return true;
     });
+
+    // Batch write: remove stacked class so natural widths are measurable
+    candidates.forEach((menuContent) => menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS));
+
+    // Batch read: one layout flush for all items
+    const overflows = candidates.map(
+      (menuContent) => menuContent.scrollWidth > menuContent.clientWidth,
+    );
+
+    // Batch write: apply stacked class based on measurements
+    candidates.forEach(
+      (menuContent, i) => menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, overflows[i]),
+    );
   };
 
   initFooterMenuLayoutSync = () => {
