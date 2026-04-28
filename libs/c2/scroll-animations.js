@@ -1,13 +1,10 @@
-let vh = window.innerHeight;
+const vh = window.innerHeight;
 const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
 const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
   + '[class*="parallax-stagger-rtl"]';
 
-/* ── Scroll loop ────────────────────────────────── */
-
 const scrollTasks = [];
-
-/* ── Shared helpers ─────────────────────────────── */
+const cleanupTasks = [];
 
 function getDocTop(el) {
   let top = el.offsetTop;
@@ -32,8 +29,7 @@ function viewRange({ elHeight, dist, total }, sType, sPct, eType, ePct) {
 }
 
 function sectionHasStyle(section, style) {
-  if (section.classList.contains(style)) return true;
-  if (section.querySelector(`.${style}`)) return true;
+  if (section.classList.contains(style) || section.querySelector(`.${style}`)) return true;
   const smBlock = section.querySelector('.section-metadata');
   if (!smBlock) return false;
   const rows = [...smBlock.children];
@@ -67,10 +63,7 @@ function observeForNew(selector, fn) {
   }).observe(document.body, { childList: true, subtree: true });
 }
 
-// linear interpolation: value t% of the way from a to b
 function lerp(a, b, t) { return a + (b - a) * t; }
-
-/* ── Move-up-fast ───────────────────────────────── */
 
 function initMoveUpFast() {
   const vh80px = Math.round(vh * 0.8);
@@ -97,10 +90,14 @@ function initMoveUpFast() {
       if (section.style.top !== newTop) section.style.top = newTop;
       overlay.style.opacity = 0.75 * t;
     });
+    cleanupTasks.push(() => {
+      section.style.position = '';
+      section.style.top = '';
+      section.style.zIndex = '';
+      overlay.remove();
+    });
   });
 }
-
-/* ── Scale-down grid ────────────────────────────── */
 
 function initScaleDownGrid() {
   const grids = findSectionsByStyle('parallax-scale-down-grid');
@@ -125,10 +122,9 @@ function initScaleDownGrid() {
       }
       grid.style.paddingInline = `${endPad * t}px`;
     });
+    cleanupTasks.push(() => { grid.style.paddingInline = ''; docTop = null; });
   });
 }
-
-/* ── Stagger ────────────────────────────────────── */
 
 function getColCount(el) {
   if (el.classList.contains('four-up')) return 4;
@@ -172,6 +168,11 @@ function setupStaggerEl(el) {
       child.style.transform = `translate3d(0, ${from * (1 - t)}px, 0)`;
     });
   });
+  cleanupTasks.push(() => {
+    if (!childData) return;
+    childData.forEach(({ child }) => { child.style.transform = ''; });
+    childData = null;
+  });
 }
 
 function initStagger() {
@@ -212,8 +213,6 @@ function initStagger() {
     });
   });
 }
-
-/* ── Elastic carousel ───────────────────────────── */
 
 function initElasticCarousel() {
   if (window.innerWidth < 768) return;
@@ -269,14 +268,19 @@ function initElasticCarousel() {
         item.style.marginInline = `${lerp(startGap, endGap, gapT)}px`;
       });
     });
+    cleanupTasks.push(() => {
+      container.style.marginLeft = '';
+      container.style.opacity = '';
+      container.style.willChange = '';
+      top = null;
+      if (itemData) { itemData.forEach(({ item }) => { item.style.marginInline = ''; }); itemData = null; }
+    });
   };
 
   document.querySelectorAll('.elastic-carousel-container').forEach(setupContainer);
 
   observeForNew('.elastic-carousel-container', setupContainer);
 }
-
-/* ── Carousel C2 ────────────────────────────────── */
 
 function initCarouselC2() {
   const isRtl = document.documentElement.dir === 'rtl';
@@ -319,6 +323,16 @@ function initCarouselC2() {
       targetWidth = null;
       top = null;
       slides.forEach((s) => { s.style.willChange = 'flex-basis'; s.style.flexBasis = `${startWidth}px`; });
+    });
+
+    cleanupTasks.push(() => {
+      resetStyles();
+      startWidth = window.innerWidth;
+      targetWidth = null;
+      top = null;
+      interacted = false;
+      maxSlideW = null;
+      slideGap = null;
     });
 
     scrollTasks.push((scroll) => {
@@ -381,8 +395,6 @@ function initCarouselC2() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-/* ── Line-height ────────────────────────────────── */
-
 function initLineHeight() {
   const initialized = new WeakSet();
 
@@ -416,14 +428,16 @@ function initLineHeight() {
         child.style.setProperty('line-height', t < 1 ? `${lerp(from, to, t)}px` : null);
       });
     });
+    cleanupTasks.push(() => {
+      if (!childData) return;
+      childData.forEach(({ child }) => { child.style.setProperty('line-height', null); });
+    });
   };
 
   document.querySelectorAll('.parallax-line-height').forEach(setup);
 
   observeForNew('.parallax-line-height', setup);
 }
-
-/* ── Garage-door reveal ─────────────────────────── */
 
 function initGarageDoorReveal() {
   const sections = findSectionsByStyle('parallax-garage-door-reveal');
@@ -533,10 +547,17 @@ function initGarageDoorReveal() {
         });
       }
     });
+    cleanupTasks.push(() => {
+      section.style.transform = '';
+      section.style.willChange = '';
+      if (bgImg) { bgImg.style.transform = ''; bgImg.style.willChange = ''; }
+      if (foreground) { foreground.style.transform = ''; foreground.style.willChange = ''; }
+      if (state.fgChildData) {
+        state.fgChildData.forEach(({ child }) => { child.style.lineHeight = null; });
+      }
+    });
   });
 }
-
-/* ── Entry point ────────────────────────────────── */
 
 export default function init() {
   initMoveUpFast();
@@ -547,7 +568,10 @@ export default function init() {
   initCarouselC2();
   initGarageDoorReveal();
 
-  window.addEventListener('resize', () => { vh = window.innerHeight; });
+  window.addEventListener('resize', () => {
+    cleanupTasks.forEach((task) => task());
+    scrollTasks.length = 0;
+  });
 
   window.lenis.on('scroll', ({ scroll }) => {
     scrollTasks.forEach((task) => task(scroll));

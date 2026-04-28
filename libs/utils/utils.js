@@ -2115,8 +2115,7 @@ async function loadPostLCP(config) {
     }, { passive: true });
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const { default: initScrollAnimations } = await import('../c2/scroll-animations.js');
-      initScrollAnimations();
+      import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
     }
   }
   // load privacy here if quick-link is present in first section
