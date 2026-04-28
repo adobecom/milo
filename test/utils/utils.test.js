@@ -2677,6 +2677,8 @@ describe('Utils', () => {
     };
 
     beforeEach(async () => {
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      sessionStorage.removeItem('akamai');
       const timestamp = Date.now();
       lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
     });
@@ -2748,6 +2750,8 @@ describe('Utils', () => {
     };
 
     beforeEach(async () => {
+      document.querySelector('meta[name="langfirst"]')?.remove();
+      sessionStorage.removeItem('akamai');
       originalAdobeId = window.adobeid;
       const timestamp = Date.now();
       lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);

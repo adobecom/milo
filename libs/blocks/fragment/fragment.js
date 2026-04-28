@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -149,7 +149,7 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!await getGeoLocalePrefix();
 
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
@@ -216,7 +216,7 @@ export default async function init(a) {
       .catch(() => ({}));
   }
 
-  const mepLingoPrefix = await getMepLingoPrefix();
+  const mepLingoPrefix = await getGeoLocalePrefix();
   const fetchedNonRegionalContent = isMepLingoLink && resp?.ok
     && !relHref.includes(mepLingoPrefix || '___NONE___');
   const redirectedRegionalFetch = (isBlockSwap || isSectionSwap) && resp?.redirected

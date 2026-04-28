@@ -140,3 +140,8 @@
 # Standalone Gnav
 /libs/navigation/ @adobecom/feds
 /libs/martech/attributes.js @adobecom/mep-squad
+
+# Claude Skills
+/.claude/skills/build-block-from-figma/ @adobecom/milo-core
+/.claude/skills/build-content-from-figma/ @adobecom/milo-core
+/.claude/skills/build-scroll-animation/ @adobecom/milo-core

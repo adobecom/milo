@@ -139,7 +139,7 @@ function getGeoroutingOverride() {
   return georouting === 'off';
 }
 
-function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch') {
+function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Switch', countryOverride = null) {
   const modCurrPrefix = localePrefix || 'us';
   const modPrefix = urlPrefix || 'us';
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
@@ -149,7 +149,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
     const domain = window.location.host === 'adobe.com'
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
-    const resolved = norm(modPrefix) || 'us';
+    const resolved = countryOverride || norm(modPrefix) || 'us';
     const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
@@ -252,11 +252,12 @@ const [pickerKeydownHandler, removePicker, removeOnClickOutsideElement] = (() =>
   ];
 })();
 
-function openPicker(button, locales, country, event, dir, currentPage) {
+function openPicker(button, locales, country, event, dir, currentPage, akamaiCode = null) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
     return;
   }
   const list = createTag('ul', { class: 'picker', dir });
+  const hasExactNativeLocale = akamaiCode && locales.some((l) => l.geo === akamaiCode);
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
     const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
@@ -264,7 +265,8 @@ function openPicker(button, locales, country, event, dir, currentPage) {
       a.hash = '';
       a.setAttribute('href', a.href);
     }
-    decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
+    const countryOverride = (hasExactNativeLocale && l.geo !== akamaiCode) ? akamaiCode : null;
+    decorateForOnLinkClick(a, l.prefix, currentPage.prefix, 'Switch', countryOverride);
     const li = createTag('li', {}, a);
     list.appendChild(li);
   });
@@ -281,22 +283,29 @@ function openPicker(button, locales, country, event, dir, currentPage) {
   removeOnClickOutsideElement(event);
 }
 
-function buildContent(currentPage, locale, geoData, locales) {
+function buildContent(currentPage, locale, geoData, locales, akamaiCode = null, allLocales = null) {
   const fragment = new DocumentFragment();
   const lang = config.locales[locale.prefix]?.ietf ?? '';
   const dir = config.locales[locale.prefix]?.dir ?? 'ltr';
+  const hasExactNativeLocale = locales && akamaiCode && locales.some((l) => l.geo === akamaiCode);
+  const isProxyLocale = hasExactNativeLocale && locale.geo !== akamaiCode;
+  const displayGeo = isProxyLocale ? akamaiCode : locale.geo;
+  const displayButton = isProxyLocale
+    ? ((allLocales?.find((l) => l.geo === akamaiCode && l.language === locale.language)
+        || locales.find((l) => l.geo === akamaiCode))?.button ?? locale.button)
+    : locale.button;
   const geo = geoData.filter((c) => c.prefix === locale.prefix);
   const titleText = geo.length ? geo[0][currentPage.geo] : '';
   const title = createTag('h3', { lang, dir }, locale.title.replace('{{geo}}', titleText));
   const text = createTag('p', { class: 'locale-text', lang, dir }, locale.text);
   let img = null;
   if (!isC2Page) {
-    const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${locale.geo.replace('_', '-')}.svg`;
+    const flagFile = locale.globeGrid?.toLowerCase().trim() === 'on' ? 'globe-grid.png' : `flag-${displayGeo.replace('_', '-')}.svg`;
     img = createTag('img', {
       class: 'icon-milo',
       width: 15,
       height: 15,
-      alt: locale.button,
+      alt: displayButton,
     });
     img.addEventListener(
       'error',
@@ -309,7 +318,7 @@ function buildContent(currentPage, locale, geoData, locales) {
   const mainAction = createTag('a', {
     class: 'con-button blue button-l', lang, role: 'button', 'aria-haspopup': !!locales, 'aria-expanded': false, href: '#',
   }, span);
-  mainAction.append(isC2Page ? createTag('span', null, locale.button) : locale.button);
+  mainAction.append(isC2Page ? createTag('span', null, displayButton) : displayButton);
   if (locales) {
     const downArrow = createTag('img', {
       class: 'icon-milo down-arrow',
@@ -321,7 +330,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     span.appendChild(downArrow);
     const openPickerHandler = (e) => {
       e.preventDefault();
-      openPicker(mainAction, locales, locale.button, e, dir, currentPage);
+      openPicker(mainAction, locales, displayButton, e, dir, currentPage, akamaiCode);
     };
     mainAction.addEventListener('keydown', (e) => {
       if (e.code === 'Space') openPickerHandler(e);
@@ -340,7 +349,13 @@ function buildContent(currentPage, locale, geoData, locales) {
   return fragment;
 }
 
-async function getDetails(currentPage, localeMatches, geoData) {
+async function getDetails(
+  currentPage,
+  localeMatches,
+  geoData,
+  akamaiCode = null,
+  allLocales = null,
+) {
   const availableLocales = await getAvailableLocales(localeMatches);
   if (!availableLocales.length) return null;
   const georoutingWrapper = createTag('div', { class: 'georouting-wrapper fragment' });
@@ -359,16 +374,39 @@ async function getDetails(currentPage, localeMatches, geoData) {
 
   currentPage.url = window.location.hash ? document.location.href : '#';
   if (availableLocales.length === 1) {
-    const content = buildContent(currentPage, availableLocales[0], geoData);
+    const content = buildContent(
+      currentPage,
+      availableLocales[0],
+      geoData,
+      null,
+      akamaiCode,
+      allLocales,
+    );
     georoutingWrapper.appendChild(content);
     return georoutingWrapper;
   }
-  const sortedLocales = availableLocales.sort((a, b) => a.languageOrder - b.languageOrder);
+  const hasExactNativeLocale = akamaiCode && availableLocales.some((l) => l.geo === akamaiCode);
+  const sortedLocales = availableLocales
+    .map((locale) => {
+      if (!hasExactNativeLocale || locale.geo === akamaiCode || !allLocales) return locale;
+      const nativeByLang = allLocales.find(
+        (l) => l.geo === akamaiCode && l.language === locale.language,
+      );
+      return nativeByLang ? { ...locale, languageOrder: nativeByLang.languageOrder } : locale;
+    })
+    .sort((a, b) => a.languageOrder - b.languageOrder);
   const tabsContainer = createTabsContainer(sortedLocales.map((l) => l.language));
   georoutingWrapper.appendChild(tabsContainer);
 
   sortedLocales.forEach((locale) => {
-    const content = buildContent(currentPage, locale, geoData, sortedLocales);
+    const content = buildContent(
+      currentPage,
+      locale,
+      geoData,
+      sortedLocales,
+      akamaiCode,
+      allLocales,
+    );
     const tab = createTab(content, locale.language);
     georoutingWrapper.appendChild(tab);
   });
@@ -473,7 +511,13 @@ export default async function loadGeoRouting(
     let akamaiCode = await getCountry();
     if (akamaiCode && !getCodes(urlGeoData).includes(akamaiCode)) {
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
-      const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
+      const details = await getDetails(
+        urlGeoData,
+        localeMatches,
+        json.geos.data,
+        akamaiCode,
+        json.georouting.data,
+      );
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
