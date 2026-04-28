@@ -1,0 +1,26 @@
+<!-- Producer A (boot DOM): Organization with extra field -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Adobe",
+  "url": "https://www.adobe.com/",
+  "logo": "https://www.adobe.com/logo.png"
+}
+</script>
+<!-- Producer B (runtime): Organization with conflicting name field -->
+<script type="application/ld+json" data-producer="runtime">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Adobe Inc.",
+  "url": "https://www.adobe.com/"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Test Article"
+}
+</script>
