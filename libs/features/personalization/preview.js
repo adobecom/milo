@@ -3,7 +3,7 @@ import {
   getCookie,
   getConfig,
   getMetadata,
-  getMepLingoPrefix,
+  getGeoLocalePrefix,
   loadStyle,
   lingoActive,
   normCountryCode,
@@ -647,7 +647,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   async function buildSummaryLingo() {
     async function getGeoUserSupport() {
       if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-      if (await getMepLingoPrefix()) return 'Supported';
+      if (await getGeoLocalePrefix()) return 'Supported';
       return 'Not Supported';
     }
 
