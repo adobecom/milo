@@ -705,7 +705,8 @@ header .feds-nav > .feds-navItem > .feds-popup .feds-navLink--blue .feds-navLink
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
-  display: inline-block;
+  display: inline-flex;
+  gap: 3px;
   font-weight: 400;
   white-space: break-spaces;
   font-size: 12px;
@@ -2048,7 +2049,8 @@ header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .
 }
 
 header.test-nav .feds-nav > .feds-navItem--megaMenu.feds-navItem > .feds-popup .tab-content .feds-navLink-description {
-  display: inline-block;
+  display: inline-flex;
+  gap: 3px;
   font-weight: 400;
   white-space: break-spaces;
   font-size: 14px;
