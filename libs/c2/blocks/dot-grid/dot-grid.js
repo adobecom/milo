@@ -2,6 +2,7 @@ import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { ACROBAT_DESKTOP_MOCKUP, ACROBAT_MOBILE_MOCKUP } from './acrobat-mockups.js';
 import createCanvasGrid from './canvas-grid.js';
 
+// TODO: finalize breakpoints
 const BP = {
   mobile: () => window.innerWidth <= 767,
   tablet: () => window.innerWidth >= 768 && window.innerWidth <= 1279,
@@ -111,9 +112,9 @@ function parseAuthoredContent(el) {
   return { titleEl, cards, textBlockEl, ctaEl };
 }
 
-const ARC_SVG_HTML = `
-<svg class="arc-256-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
-  <path class="arc-256-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
+const ADBE_LOGO = `
+<svg class="adbe-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
+  <path class="adbe-logo-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
 </svg>`;
 
 export default async function init(el) {
@@ -124,7 +125,7 @@ export default async function init(el) {
     loadStyle(`${miloLibs || codeRoot}/c2/blocks/dot-grid/acrobat-mockups.css`, resolve);
   });
 
-  const stage = createTag('div', { class: 'dot-grid-stage' }, `<canvas></canvas>${ARC_SVG_HTML}<div class="world"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`);
+  const stage = createTag('div', { class: 'dot-grid-stage' }, `<canvas></canvas>${ADBE_LOGO}<div class="world"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`);
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
   ctaEl.classList.add('acrobat-cta');
@@ -139,8 +140,8 @@ export default async function init(el) {
   const world = el.querySelector('.world');
   const acrobatWinEl = el.querySelector('.acrobat-win');
   const mobAcEl = el.querySelector('.mob-ac');
-  const arc256Svg = el.querySelector('.arc-256-svg');
-  const arc256Path = el.querySelector('.arc-256-path');
+  const adbeLogoSvg = el.querySelector('.adbe-logo-svg');
+  const adbeLogoPath = el.querySelector('.adbe-logo-path');
 
   const cfg = {
     cardScale: 1.15,
@@ -723,19 +724,19 @@ export default async function init(el) {
 
     // Arc-256 flourish — draws from start → fully complete just as Acrobat transition begins.
     // Mobile: delayed to 85% through peel so it doesn't draw during arc/peel.
-    const arc256PeelStart = BP.mobile()
+    const adbeLogoPeelStart = BP.mobile()
       ? (ARC_PAN_END - ARC_PEEL_OVERLAP)
         + (MOB_GRID_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.85
       : ARC_PAN_END * ARC_INTRO_FRACTION;
-    const arc256Span = effAcrobatStart - arc256PeelStart;
-    const arc256RawT = (scroll.current - arc256PeelStart) / arc256Span;
-    const arc256Progress = Math.max(0, Math.min(1, arc256RawT));
-    const arc256DrawT = easeInOutSine(arc256Progress);
-    const arc256FadeIn = Math.max(0, Math.min(1, arc256Progress * 6));
-    const arc256FadeOut = Math.max(0, 1 - Math.max(0, Math.min(1, (acrobatT - 0.4) / 0.3)));
+    const adbeLogoSpan = effAcrobatStart - adbeLogoPeelStart;
+    const adbeLogoRawT = (scroll.current - adbeLogoPeelStart) / adbeLogoSpan;
+    const adbeLogoProgress = Math.max(0, Math.min(1, adbeLogoRawT));
+    const adbeLogoDrawT = easeInOutSine(adbeLogoProgress);
+    const adbeLogoFadeIn = Math.max(0, Math.min(1, adbeLogoProgress * 6));
+    const adbeLogoFadeOut = Math.max(0, 1 - Math.max(0, Math.min(1, (acrobatT - 0.4) / 0.3)));
     // eslint-disable-next-line no-use-before-define
-    arc256Path.style.strokeDashoffset = arc256Length * (1 - arc256DrawT);
-    arc256Svg.style.opacity = arc256FadeIn * arc256FadeOut;
+    adbeLogoPath.style.strokeDashoffset = adbeLogoLength * (1 - adbeLogoDrawT);
+    adbeLogoSvg.style.opacity = adbeLogoFadeIn * adbeLogoFadeOut;
 
     // Enable clicks once the acrobat transition has essentially landed.
     const shouldBeInteractive = acrobatT >= 0.95;
@@ -830,9 +831,9 @@ export default async function init(el) {
   window.addEventListener('resize', onResize);
 
   // dasharray >> path length so the full dash covers the path with no snake effect
-  const arc256Length = Math.max(arc256Path.getTotalLength(), 3000) * 2 + 500;
-  arc256Path.style.strokeDasharray = arc256Length;
-  arc256Path.style.strokeDashoffset = arc256Length;
+  const adbeLogoLength = Math.max(adbeLogoPath.getTotalLength(), 3000) * 2 + 500;
+  adbeLogoPath.style.strokeDasharray = adbeLogoLength;
+  adbeLogoPath.style.strokeDashoffset = adbeLogoLength;
 
   resize();
 

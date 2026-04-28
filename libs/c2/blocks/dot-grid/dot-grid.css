@@ -64,7 +64,7 @@
   z-index: 0;
 }
 
-.dot-grid .arc-256-svg {
+.dot-grid .adbe-logo-svg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -78,7 +78,7 @@
   will-change: opacity;
 }
 
-.dot-grid .arc-256-svg path {
+.dot-grid .adbe-logo-svg path {
   fill: none;
   stroke: #e1e1ef;
   stroke-width: 1.5;
