@@ -71,7 +71,7 @@ export const [showHideMessage, setMessageEls] = (() => {
 
 function validateInput(input) {
   const { value, type, id } = input;
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const emailRegex = /^[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}\p{N}-]{2,}$/u;
   if ((type !== 'email' && !input.checkValidity())
   || (type === 'email' && !value)) return 'required';
   if (type === 'email' && !emailRegex.test(value)) return 'email';
