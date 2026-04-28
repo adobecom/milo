@@ -1,3 +1,7 @@
+mas-field {
+  display: contents;
+}
+
 span[is='inline-price'],
 a[href^="/tools/ost"] {
   visibility: hidden; 

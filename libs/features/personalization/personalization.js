@@ -1584,7 +1584,7 @@ async function handleMartechTargetInteraction(
     const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
     if (targetInteractionData.result) {
-      const roundedResponseTime = roundToQuarter(respTime);
+      const roundedResponseTime = roundToQuarter(respTime?.duration ?? respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {

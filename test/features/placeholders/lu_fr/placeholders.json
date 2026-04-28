@@ -1,0 +1,24 @@
+{
+  "total": 4,
+  "offset": 0,
+  "limit": 4,
+  "data": [
+    {
+      "key": "phone-number",
+      "value": "+352 800 24642"
+    },
+    {
+      "key": "purchase-by-phone-cci",
+      "value": "+352 800 12345"
+    },
+    {
+      "key": "phone-number-geo-ip",
+      "value": "+352 800 99999"
+    },
+    {
+      "key": "buy-now-geo-ip",
+      "value": "Acheter maintenant"
+    }
+  ],
+  ":type": "sheet"
+}

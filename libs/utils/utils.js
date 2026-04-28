@@ -964,7 +964,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getMepLingoPrefix() {
+export async function getLingoRegion() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -987,7 +987,12 @@ export async function getMepLingoPrefix() {
     )?.[0];
   }
 
-  return regionKey ? regions[regionKey].prefix : null;
+  return regionKey ? regions[regionKey] : null;
+}
+
+export async function getGeoLocalePrefix() {
+  const region = await getLingoRegion();
+  return region?.prefix ?? null;
 }
 
 let mepLingoModulePreloaded = false;
@@ -1067,7 +1072,7 @@ export async function localizeLinkAsync(
     const isFragment = effectiveHref.includes('/fragments/');
     if (isBasePage) {
       const isRegularFragment = isFragment && !isMepLingoLink;
-      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      prefix = (aTag && !isRegularFragment) ? await getGeoLocalePrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
       const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
@@ -1782,7 +1787,7 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-function getPlaceholderPaths(config) {
+export function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
   if (config.env.name !== 'prod'
@@ -1937,43 +1942,46 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 
 let imsLoaded;
 export async function loadIms() {
-  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const {
-      locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
-    } = getConfig();
-    if (!imsClientId) {
-      reject(new Error('Missing IMS Client ID'));
-      return;
-    }
-    const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: imsScope || defaultScope,
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      redirect_uri: ahomeMeta === 'on'
-        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: () => {
-        resolve();
-        clearTimeout(timeout);
-      },
-      onError: reject,
-      ...(imsGuest === 'on' && {
-        api_parameters: { check_token: { guest_allowed: true } },
-        enableGuestAccounts: true,
-        enableGuestTokenForceRefresh: true,
-      }),
-      ...adobeid,
-    };
-    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
-      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
-      : `${base}/deps/imslib.min.js`;
-    loadScript(path);
-  }).then(() => {
+  imsLoaded = imsLoaded || (async () => {
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    return new Promise((resolve, reject) => {
+      const {
+        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+      } = getConfig();
+      if (!imsClientId) {
+        reject(new Error('Missing IMS Client ID'));
+        return;
+      }
+      const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
+      const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+      const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
+      window.adobeid = {
+        client_id: imsClientId,
+        scope: imsScope || defaultScope,
+        locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
+        redirect_uri: ahomeMeta === 'on'
+          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+        autoValidateToken: true,
+        environment: env.ims,
+        useLocalStorage: false,
+        onReady: () => {
+          resolve();
+          clearTimeout(timeout);
+        },
+        onError: reject,
+        ...(imsGuest === 'on' && {
+          api_parameters: { check_token: { guest_allowed: true } },
+          enableGuestAccounts: true,
+          enableGuestTokenForceRefresh: true,
+        }),
+        ...adobeid,
+      };
+      const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+        ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+        : `${base}/deps/imslib.min.js`;
+      loadScript(path);
+    });
+  })().then(() => {
     if (getMepEnablement('xlg') === 'loggedout') {
       /* c8 ignore next */
       getConfig().entitlements();
@@ -2645,7 +2653,7 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
+  getGeoLocalePrefix().then((prefix) => {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }
