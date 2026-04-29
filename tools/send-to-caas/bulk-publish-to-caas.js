@@ -192,7 +192,7 @@ const processData = async (data, accessToken) => {
 
   if (usePreview) {
     domain = `https://${previewHost}`;
-  } else if (floodgateColor !== 'default') {
+  } else if (floodgateColor !== 'default' && !hostFgColor) {
     domain = `https://main--${repo}--${owner}.aem.live`;
   }
 
