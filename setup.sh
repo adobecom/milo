@@ -33,10 +33,17 @@ if [[ -f "$PWD/package.json" ]] && grep -q '@adobecom/milo' "$PWD/package.json" 
   REPO_ROOT="$PWD"
   ok "Using existing repo at $REPO_ROOT"
 else
-  REPO_ROOT="${MILO_DIR:-$HOME/repos/milo}"
-  if [[ -d "$REPO_ROOT/.git" ]]; then
+  _default="${MILO_DIR:-$HOME/repos/milo}"
+  if [[ -d "$_default/.git" ]]; then
+    REPO_ROOT="$_default"
     ok "Repo already at $REPO_ROOT"
   else
+    # Ask where to clone on first run (Enter accepts the default).
+    echo ""
+    read -r -p "  Where should milo be cloned? [${_default/$HOME/\~}]: " _input
+    _input="${_input:-$_default}"
+    REPO_ROOT="${_input/#\~/$HOME}"
+    echo ""
     info "Cloning → $REPO_ROOT"
     mkdir -p "$(dirname "$REPO_ROOT")"
     git clone -b claudify-milo https://github.com/adobecom/milo.git "$REPO_ROOT"
@@ -67,6 +74,7 @@ fi
 
 nvm install "$NODE_VERSION" --no-progress 2>&1 | grep -v "^$" || true
 nvm use "$NODE_VERSION" 2>&1 | grep -v "^$" || true
+nvm alias default "$NODE_VERSION" 2>&1 | grep -v "^$" || true
 ok "Node $(node --version)  npm $(npm --version)"
 
 # ── 3. Project dependencies ───────────────────────────────────────────────────
@@ -168,7 +176,7 @@ else
     skip "Fluffyjaws MCP already registered"
   elif curl -fsSL --max-time 3 https://fluffyjaws.adobe.com/ -o /dev/null 2>/dev/null; then
     curl -fsSL https://fluffyjaws.adobe.com/api/cli/install.sh | bash
-    _mcp_add "Fluffyjaws" mcp add fluffyjaws --scope user -- /opt/homebrew/bin/fj mcp --api https://fluffyjaws.adobe.com
+    _mcp_add "Fluffyjaws" mcp add fluffyjaws --scope user -- /opt/homebrew/bin/fj mcp
   else
     info "Fluffyjaws not reachable — Adobe VPN required"
     add_manual "Connect to Adobe VPN, then re-run:  bash $REPO_ROOT/setup.sh"
