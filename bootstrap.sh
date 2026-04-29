@@ -14,11 +14,10 @@
 set -euo pipefail
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BOLD='\033[1m'; NC='\033[0m'
 ok()   { echo -e "  ${GREEN}✔${NC}  $*"; }
 info() { echo -e "  ${YELLOW}→${NC}  $*"; }
 skip() { echo -e "  ${YELLOW}–${NC}  $*"; }
-err()  { echo -e "  ${RED}✗${NC}  $*" >&2; }
 step() { echo -e "\n${BOLD}── $* ──${NC}"; }
 manual_steps=()
 add_manual() { manual_steps+=("$*"); }
