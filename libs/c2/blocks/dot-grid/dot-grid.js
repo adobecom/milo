@@ -27,7 +27,8 @@ const DESKTOP_SLOTTING_DURATION = 2200;
 const ARC_SETTLE_DURATION = 1700;
 const DESKTOP_SLOTTING_START = DESKTOP_GRID_END + ARC_SETTLE_DURATION;
 
-// Mobile timing overrides — shorter peel, no settle, shorter mockup transition.
+// Mobile is the base path: shorter peel, no settle, shorter mockup transition.
+// Desktop/tablet extend these timings below for the larger arc and mockup motion.
 const MOBILE_SETTLE_DURATION = 1056;
 const MOBILE_SLOTTING_DURATION = 550;
 const MOBILE_GRID_END = Math.round(
@@ -174,10 +175,10 @@ export default async function init(el) {
   const baseColumnSpread = 1.20;
   const baseRowGap = 0.60;
 
-  // Mobile-aware timing — updated each frame based on breakpoint.
-  let currentGridEnd = DESKTOP_GRID_END;
-  let currentSlottingStart = DESKTOP_SLOTTING_START;
-  let currentSlottingDuration = DESKTOP_SLOTTING_DURATION;
+  // Mobile-first timing; desktop/tablet override these values in the animation loop.
+  let currentGridEnd = MOBILE_GRID_END;
+  let currentSlottingStart = MOBILE_GRID_END + MOBILE_SETTLE_DURATION;
+  let currentSlottingDuration = MOBILE_SLOTTING_DURATION;
 
   // Mobile chrome rest position (set in loop, read by getMobileMockupCardSlot).
   let mobileChromeRestY = 0;
@@ -404,10 +405,11 @@ export default async function init(el) {
   }
 
   function positionCards() {
-    const mobileLayout = BREAKPOINTS.mobile() ? getMobileLayout() : null;
+    const mobileLayout = getMobileLayout();
+    const useDesktopLayout = !BREAKPOINTS.mobile();
     allLayers.forEach((layer) => {
       layer.cards.forEach((card) => {
-        if (mobileLayout) {
+        if (!useDesktopLayout) {
           if (card.mobileHidden) {
             card.baseX = -9999;
             card.baseY = -9999;
@@ -457,14 +459,14 @@ export default async function init(el) {
     viewportWidth = window.innerWidth;
     viewportHeight = window.innerHeight;
     canvasGrid.resize();
-    // Update card width/height based on breakpoint so mobile cards are smaller.
-    const mobileLayout = BREAKPOINTS.mobile() ? getMobileLayout() : null;
+    // Mobile is the base layout; desktop/tablet restore authored card dimensions.
+    const mobileLayout = getMobileLayout();
+    const useDesktopLayout = !BREAKPOINTS.mobile();
     allLayers.forEach((layer) => {
       layer.cards.forEach((card) => {
-        if (mobileLayout) {
-          card.width = mobileLayout.cardW;
-          card.height = Math.round(card.baseHeight * mobileLayout.scale);
-        } else {
+        card.width = mobileLayout.cardW;
+        card.height = Math.round(card.baseHeight * mobileLayout.scale);
+        if (useDesktopLayout) {
           card.width = CARD_WIDTH;
           card.height = card.baseHeight;
         }
@@ -502,7 +504,9 @@ export default async function init(el) {
           return;
         }
         // Mobile pins card scale to 1 so CSS width/height match visual size.
-        const cardScale = BREAKPOINTS.mobile() ? 1.0 : cardAnimationConfig.cardScale;
+        // Desktop applies an extra visual scale during the arc/fan animation.
+        let cardScale = 1.0;
+        if (!BREAKPOINTS.mobile()) cardScale = cardAnimationConfig.cardScale;
 
         if (!BREAKPOINTS.mobile() && arcPanProgress < ARC_INTRO_FRACTION && slottingProgress <= 0) {
           const cardIntroProgress = getCardArcIntroProgress(card);
@@ -684,17 +688,21 @@ export default async function init(el) {
   function loop() {
     if (!running) return;
 
-    // Mobile-aware timing — shorter peel, no settle, shorter mockup transition.
-    currentGridEnd = BREAKPOINTS.mobile() ? MOBILE_GRID_END : DESKTOP_GRID_END;
-    currentSlottingStart = BREAKPOINTS.mobile()
-      ? currentGridEnd + MOBILE_SETTLE_DURATION
-      : DESKTOP_SLOTTING_START;
-    currentSlottingDuration = BREAKPOINTS.mobile()
-      ? MOBILE_SLOTTING_DURATION
-      : DESKTOP_SLOTTING_DURATION;
+    // Mobile is the base path; desktop/tablet extend the animation timing.
+    const useDesktopTiming = !BREAKPOINTS.mobile();
+    let postRevealScrollDistance = MOBILE_POST_REVEAL_SCROLL;
+    currentGridEnd = MOBILE_GRID_END;
+    currentSlottingStart = currentGridEnd + MOBILE_SETTLE_DURATION;
+    currentSlottingDuration = MOBILE_SLOTTING_DURATION;
+    if (useDesktopTiming) {
+      currentGridEnd = DESKTOP_GRID_END;
+      currentSlottingStart = DESKTOP_SLOTTING_START;
+      currentSlottingDuration = DESKTOP_SLOTTING_DURATION;
+      postRevealScrollDistance = 0;
+    }
 
     const animScrollTotal = currentSlottingStart + currentSlottingDuration
-      + (BREAKPOINTS.mobile() ? MOBILE_POST_REVEAL_SCROLL : 0);
+      + postRevealScrollDistance;
     scroll.current = readScrollProgress() * animScrollTotal;
     cardRevealOffsetY = Math.max(0, CARD_REVEAL_SCROLL_DISTANCE - scroll.current);
 
@@ -751,13 +759,13 @@ export default async function init(el) {
     const titleScale = 0.92 + 0.08 * titleSlide;
 
     // Post-mockup reveal pan — mobile only, pans the Acrobat UI up to reveal the CTA.
-    const postRevealProgress = BREAKPOINTS.mobile()
+    const postRevealProgress = postRevealScrollDistance
       ? Math.max(
         0,
         Math.min(
           1,
           (scroll.current - (currentSlottingStart + currentSlottingDuration))
-            / MOBILE_POST_REVEAL_SCROLL,
+            / postRevealScrollDistance,
         ),
       )
       : 0;
