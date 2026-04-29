@@ -323,6 +323,10 @@
   padding: 12px;
 }
 
+.mep-popup .mep-popup-footer.dark {
+  background-color: transparent;
+}
+
 .mep-popup .mep-popup-footer a:not([active]) {
   display: none;
 }
