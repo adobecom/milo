@@ -191,17 +191,12 @@ if [[ ${#manual_steps[@]} -gt 0 ]]; then
   done
 fi
 
-echo ""
-
-# ── Launch Claude Code ────────────────────────────────────────────────────────
 if [[ -n "$CLAUDE_BIN" ]]; then
-  echo -e "  Opening Claude Code in your milo workspace…"
-  echo ""
-  cd "$REPO_ROOT"
-  exec "$CLAUDE_BIN"
+  echo -e "  When ready, open your workspace with:"
+  echo -e "  ${BOLD}claude $REPO_ROOT${NC}"
 else
   echo -e "  ${YELLOW}Claude Code CLI not found.${NC}"
   echo -e "  Install it:  ${BOLD}npm install -g @anthropic-ai/claude-code${NC}"
   echo -e "  Then open:   ${BOLD}claude $REPO_ROOT${NC}"
-  echo ""
 fi
+echo ""
