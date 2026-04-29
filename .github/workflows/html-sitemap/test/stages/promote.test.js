@@ -31,8 +31,8 @@ async function createFixture(tmpDir) {
     },
     'page-copy': {
       data: [
-        { subdomain: 'business', baseGeo: '', pageTitle: 'Sitemap', pageDescription: 'Browse pages across this site by section, locale, and region.', otherSitemapsHeading: 'Other Regions', extendedPagesHeading: 'Additional Localized Pages' },
-        { subdomain: 'business', baseGeo: 'fr', pageTitle: 'Plan du site', pageDescription: 'Parcourez les pages de ce site par section, langue et région.', otherSitemapsHeading: 'Autres régions', extendedPagesHeading: 'Pages localisées supplémentaires' },
+        { subdomain: 'business', geo: '', pageTitle: 'Sitemap' },
+        { subdomain: 'business', geo: 'fr', pageTitle: 'Plan du site' },
       ],
     },
   }, null, 2), 'utf8');

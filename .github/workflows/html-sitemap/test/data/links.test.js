@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { buildExtendedGeoLinks, buildOtherSitemapLinks } from '../../lib/data/links.js';
+import { buildExtendedGeoLinks } from '../../lib/data/links.js';
 
 test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes removed', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-dedupe-'));
@@ -52,37 +52,7 @@ test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes remo
   assert.deepEqual(groups[0].links.map((link) => link.path), ['/be_fr/products/firefly.html']);
 });
 
-test('buildOtherSitemapLinks includes only deployed sibling geos from config', () => {
-  const unit = {
-    subdomain: 'www',
-    domain: 'www.adobe.com',
-    hostSite: 'da-cc',
-    extendedSitemap: 'language',
-    template: 'da-sitemap.html',
-    baseGeo: '',
-    language: 'en',
-    extendedGeos: [],
-    deploy: true,
-    queryIndexRows: [],
-  };
-  const config = {
-    raw: {},
-    domains: [],
-    queryIndexMap: [],
-    pageCopy: [],
-    siteDomains: {},
-    geoMap: [
-      { subdomain: 'www', baseGeo: '', language: 'en', extendedGeos: [], deploy: true },
-      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: [], deploy: true },
-      { subdomain: 'www', baseGeo: 'de', language: 'de', extendedGeos: [], deploy: false },
-    ],
-  };
-
-  const links = buildOtherSitemapLinks(config, unit, {});
-  assert.deepEqual(links.map((link) => link.geo), ['fr']);
-});
-
-test('buildOtherSitemapLinks and buildExtendedGeoLinks use inventory-aware geo labels', async () => {
+test('buildExtendedGeoLinks uses inventory-aware geo labels', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-geo-labels-'));
   const unit = {
     subdomain: 'www',
@@ -133,15 +103,6 @@ test('buildOtherSitemapLinks and buildExtendedGeoLinks use inventory-aware geo l
     be_fr: 'Belgique - Fran\u00e7ais',
     vn_vi: 'Vi\u1ec7t Nam - Ti\u1ebfng Vi\u1ec7t',
   };
-
-  const siblingLinks = buildOtherSitemapLinks(config, unit, regionLabels);
-  assert.deepEqual(
-    siblingLinks.map((link) => ({ geo: link.geo, title: link.title })),
-    [
-      { geo: '', title: 'Global' },
-      { geo: 'be_en', title: 'Belgium' },
-    ],
-  );
 
   const extendedGroups = await buildExtendedGeoLinks(tmpDir, config, unit, regionLabels);
   assert.deepEqual(

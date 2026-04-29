@@ -8,19 +8,26 @@
         <div>
           <div>
             <h1>{{pageTitle}}</h1>
-            <p>{{pageDescription}}</p>
           </div>
         </div>
       </div>
     </div>
-    {{#if baseGeoSections}}
+    {{#each baseGeoSections}}
     <div>
-      <div class="grid align-headings contained static-links">
-        {{#each baseGeoSections}}
-        <div data-section-index="{{@index}}">
+      <div class="text">
+        <div>
           <div>
             <h3>{{heading}}</h3>
-            {{#each groups}} {{#if subheading}}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="columns contained static-links" data-section-index="{{@index}}">
+        <div>
+          {{#each groups}}
+          <div>
+            {{#if subheading}}
             <h4>{{subheading}}</h4>
             {{/if}}
             <ul>
@@ -28,25 +35,13 @@
               <li><a href="{{url}}" data-link-index="{{@index}}">{{title}}</a></li>
               {{/each}}
             </ul>
-            {{/each}}
           </div>
+          {{/each}}
         </div>
-        {{/each}}
       </div>
     </div>
-    {{/if}}
+    {{/each}}
     {{#if extendedGeoGroups}}
-    <div>
-      <div
-        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
-      >
-        <div>
-          <div>
-            <h2>{{extendedPagesHeading}}</h2>
-          </div>
-        </div>
-      </div>
-    </div>
     <div>
       <div class="accordion">
         {{#each extendedGeoGroups}}
@@ -66,39 +61,11 @@
       </div>
     </div>
     {{/if}}
-    {{#if otherSitemaps}}
-    <div>
-      <div
-        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
-      >
-        <div>
-          <div>
-            <h2>{{otherSitemapsHeading}}</h2>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div>
-      <div class="text static-links contained center xxl-spacing max-width-8-desktop">
-        <div>
-          <div>
-            {{#each otherSitemaps}}
-            <a href="{{url}}" data-geo-index="{{@index}}">{{title}}</a>
-            {{/each}}
-          </div>
-        </div>
-      </div>
-    </div>
-    {{/if}}
     <div>
       <div class="metadata">
         <div>
           <div>title</div>
           <div>{{pageTitle}}</div>
-        </div>
-        <div>
-          <div>description</div>
-          <div>{{pageDescription}}</div>
         </div>
         <div>
           <div>locale</div>
@@ -108,6 +75,10 @@
         <div>
           <div>robots</div>
           <div>noindex,nofollow</div>
+        </div>
+        <div>
+          <div>template</div>
+          <div>sitemap</div>
         </div>
       </div>
     </div>

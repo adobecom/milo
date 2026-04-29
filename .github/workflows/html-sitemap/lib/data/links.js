@@ -10,14 +10,8 @@ import { getBaseGeoExtractDir, getExtendedGeoDir } from '../util/files.js';
  * @typedef {import('./geo-labels.js').GeoLabelInventoryEntry} GeoLabelInventoryEntry
  * @typedef {import('../config/scope.js').ExtractUnit} ExtractUnit
  * @typedef {import('../config/config.js').HtmlSitemapConfig} HtmlSitemapConfig
- * @typedef {import('../sources/regions.js').RegionLabelMap} RegionLabelMap
- */
-
-/**
- * @typedef {Object} OtherSitemapLink
- * @property {string} geo
- * @property {string} title
- * @property {string} url
+ * @typedef {Record<string, string>} RegionLabelMap
+ *   geo -> label, scoped to a single subdomain
  */
 
 /**
@@ -100,39 +94,6 @@ function canonicalizePathForGeo(pathname, geo) {
     return pathname.slice(prefix.length) || '/';
   }
   return pathname;
-}
-
-/**
- * @param {string} domain
- * @param {string} geo
- * @returns {string}
- */
-function sitemapUrl(domain, geo) {
-  const prefix = geo ? `/${geo}` : '';
-  return `https://${domain}${prefix}/sitemap.html`;
-}
-
-/**
- * @param {HtmlSitemapConfig} config
- * @param {ExtractUnit} unit
- * @param {RegionLabelMap} regionLabels
- * @returns {OtherSitemapLink[]}
- */
-export function buildOtherSitemapLinks(
-  config,
-  unit,
-  regionLabels,
-) {
-  const geoLabelInventory = buildGeoLabelInventory(config, unit.subdomain);
-  return config.geoMap
-    .filter((row) => row.subdomain === unit.subdomain)
-    .filter((row) => row.baseGeo !== unit.baseGeo)
-    .filter((row) => row.deploy)
-    .map((row) => ({
-      geo: row.baseGeo,
-      title: resolveGeoLabel(row.baseGeo, geoLabelInventory, regionLabels),
-      url: sitemapUrl(unit.domain, row.baseGeo),
-    }));
 }
 
 /**

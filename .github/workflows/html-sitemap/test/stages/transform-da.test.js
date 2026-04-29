@@ -115,19 +115,17 @@ test('runTransformDa writes sitemap.html from sitemap.json', async () => {
   assert.match(html, /<main>/);
   assert.match(html, /class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"/);
   assert.match(html, /<h1>Sitemap<\/h1>/);
-  assert.match(html, /Browse pages across this site by section, locale, and region\./);
-  assert.match(html, /class="grid align-headings contained static-links"/);
+  assert.doesNotMatch(html, /Browse pages across this site/);
   assert.match(html, /<h3>Products<\/h3>/);
+  assert.match(html, /class="columns contained static-links"/);
   assert.match(html, /<a href="https:\/\/business\.adobe\.com\/products\/commerce" data-link-index="0">Adobe Commerce<\/a>/);
-  assert.match(html, /class="text static-links contained center xxl-spacing max-width-8-desktop"/);
-  assert.match(html, /Other Regions/);
-  assert.match(html, /<a href="https:\/\/business\.adobe\.com\/fr\/sitemap\.html" data-geo-index="0">France<\/a>/);
-  assert.match(html, /Additional Localized Pages/);
+  assert.doesNotMatch(html, /Other Regions/);
+  assert.doesNotMatch(html, /Additional Localized Pages/);
   assert.match(html, /class="accordion"/);
-  assert.match(html, /<div>Brazil<\/div>/);
+  assert.match(html, /<div>Brasil<\/div>/);
   assert.match(html, /class="metadata"/);
   assert.match(html, /<div>\s*<div>title<\/div>\s*<div>Sitemap<\/div>\s*<\/div>/);
-  assert.match(html, /<div>\s*<div>description<\/div>\s*<div>Browse pages across this site by section, locale, and region\.<\/div>\s*<\/div>/);
+  assert.doesNotMatch(html, /<div>description<\/div>/);
   assert.match(html, /\n  <footer><\/footer>\n<\/body>\n\n$/);
 
   const manifest = JSON.parse(await fs.readFile(path.join(tmpDir, 'business', 'manifest.json'), 'utf8'));
@@ -135,7 +133,7 @@ test('runTransformDa writes sitemap.html from sitemap.json', async () => {
   assert.equal(manifest.pageCount, 1);
   assert.equal(manifest.pages[0].baseGeo, '');
   assert.ok(manifest.pages[0].sha256);
-  assert.equal(manifest.pages[0].totalLinkCount, manifest.pages[0].baseGeoLinkCount + manifest.pages[0].otherSitemapLinkCount + manifest.pages[0].extendedGeoLinkCount);
+  assert.equal(manifest.pages[0].totalLinkCount, manifest.pages[0].baseGeoLinkCount + manifest.pages[0].extendedGeoLinkCount);
 
   const csv = await fs.readFile(path.join(tmpDir, 'business', 'manifest.csv'), 'utf8');
   assert.match(csv, /^baseGeo,domain,deploy,sha256,/);
@@ -212,9 +210,7 @@ test('runTransformDa writes localized html and omits empty base-geo navigation s
   const expectedHtml = await fs.readFile(expectedBusinessFrHtml, 'utf8');
   assert.equal(html, normalizeSnapshotFixture(expectedHtml));
   assert.match(html, /<h1>Plan du site<\/h1>/);
-  assert.match(html, /<h2>Autres régions<\/h2>/);
-  assert.match(html, /<a href="https:\/\/business\.adobe\.com\/sitemap\.html" data-geo-index="0">Global<\/a>/);
-  assert.match(html, /class="text static-links contained center xxl-spacing max-width-8-desktop"/);
+  assert.doesNotMatch(html, /Autres régions/);
   assert.doesNotMatch(html, /class="grid align-headings contained static-links"/);
 });
 

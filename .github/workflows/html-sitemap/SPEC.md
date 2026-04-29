@@ -1,56 +1,65 @@
 # HTML Sitemap Generator — Spec
 
-This document owns the behavioral and architectural contract behind the HTML sitemap generator.
+This document is the supplementary behavioral reference for the HTML sitemap generator.
 
 `SPEC.md` is written primarily for stakeholders, PMs, architects, and implementers who need to understand:
 
-- the product problem
-- the intended page behavior
-- the system architecture
-- the source-of-truth inventories
+- the detailed behavioral rules behind the generator
+- the source inventory context
 - the operational rules behind each stage
+- the normalization, fallback, and warning semantics
 
-`README.md` owns the external interface:
+`README.md` is the primary orientation and operator guide. It owns:
 
+- the product problem and intended page behavior
+- the architecture overview and authoritative Mermaid diagrams
 - CLI usage
 - canonical stage ids
 - flags and env vars
 - input/output file contracts
 
-This spec defines the intended generator and page contract. The implementation should converge to this document; only explicitly marked future work should remain out of sync.
+This spec defines the intended generator and page contract at the detailed rule level. The implementation should converge to this document; only explicitly marked future work should remain out of sync.
 
-## Why
+## Entry Points
 
-Crawlers and LLM agents need a navigable, indexable HTML entry point for Adobe’s localized pages. XML sitemaps alone do not provide human-readable titles, regional grouping, or easy movement between localized surfaces.
+Read [README.md](./README.md) first for:
 
-This matters even more during Project Lingo, where Adobe is consolidating country-first structures into language-first structures. The sitemap pages are intended to surface the smaller set of indexable pages clearly and consistently so discovery remains strong while redundant regional content shrinks.
+- the problem statement
+- the page model and section structure
+- the stage architecture and Mermaid diagrams
+- the public CLI and config interface
 
-Primary audiences:
+Use this spec for the detailed semantics that sit behind that overview.
 
-- Googlebot and other search crawlers
-- LLM agents that benefit from explicit regional navigation
-- humans who land on these pages directly
+## Stage Model
 
-## Product Model
+The canonical atomic stage ids are:
 
-Each supported subdomain gets a family of sitemap pages:
+- `clean`
+- `extract`
+- `transform-data`
+- `transform-da`
+- `diff`
+- `push`
+- `preview`
+- `publish`
 
-- one page for the default/root base geo
-- one page for each additional base geo that qualifies for output
+The CLI may expose shortcuts, but behavior is defined in terms of those atomic stages.
 
-Each sitemap page has three sections:
+## Dependency Model
 
-1. Base-geo links from GNAV
-2. Links to sibling sitemap pages in the same subdomain
-3. Extended-geo links that are unique after deduplication
+Dependencies are enforced by the generator, not by a separate metadata schema.
 
-### Terminology
+Examples:
 
-| Term | Definition |
-|------|-----------|
-| **Geo** | A locale or region code such as `fr`, `be_en`, `ch_fr` |
-| **Base Geo** | A geo with its own dedicated `sitemap.html` |
-| **Extended Geo** | A geo whose unique pages are surfaced within a base geo’s sitemap instead of getting its own page |
+- `transform-data` depends on eligible extracted input
+- `transform-da` depends on `sitemap.json`
+- `push`, `preview`, and `publish` depend on local `sitemap.html`
+- `push`, `preview`, and `publish` also depend on `--da-root`
+
+## Scope
+
+Each supported subdomain gets a set of base-geo sitemap pages.
 
 ### Page Emission Rule
 
@@ -68,222 +77,6 @@ This rule affects both:
 
 - whether a base-geo local output folder exists after `extract`
 - whether downstream stages have anything to transform or promote
-
-## Page Semantics
-
-### Section 1: Base Geo Links
-
-This section is derived from GNAV structure.
-
-- H3 groups top-level categories
-- H4 groups subcategories
-- links preserve navigational grouping as closely as possible
-
-### Section 2: Other Sitemap Links
-
-This section links to sibling base-geo sitemap pages in the same subdomain.
-
-Rule:
-
-- include only sibling base geos that currently have sitemap output
-- geo labels should prefer the authored region-nav fragment label for that geo when available
-- any trailing ` - <language>` suffix should be removed from the displayed geo label
-
-### Section 3: Extended Geo Links
-
-This section contains extended-geo pages grouped by geo label.
-
-Deduplication rule:
-
-- compare canonical paths after removing the geo prefix from both the base-geo path and the extended-geo path
-- if the canonical path already exists in the base geo, drop the extended-geo entry
-- dedupe is based on exact canonical path equivalence, not broader content equivalence or future consolidation rules
-- geo labels should follow the same region-nav-derived labeling rule as section 2
-
-## Architecture
-
-The pipeline is described in terms of `stages`. In GitHub Actions, those stages may later be mapped to one or more workflow `steps` or jobs, but the generator’s contract remains stage-oriented.
-
-### Stage Model
-
-The canonical atomic stage ids are:
-
-- `clean`
-- `extract`
-- `transform-data`
-- `transform-da`
-- `push`
-- `preview`
-- `publish`
-
-The CLI may expose shortcuts, but behavior is defined in terms of those atomic stages.
-
-### Dependency Model
-
-Dependencies are enforced by the generator, not by a separate metadata schema.
-
-Examples:
-
-- `transform-data` depends on eligible extracted input
-- `transform-da` depends on `sitemap.json`
-- `push`, `preview`, and `publish` depend on local `sitemap.html`
-- `push`, `preview`, and `publish` also depend on `--da-root`
-
-### Inputs and Outputs
-
-```mermaid
-%%{
-  init: {
-    "theme": "base",
-    "flowchart": {
-      "htmlLabels": false,
-      "padding": 24,
-      "nodeSpacing": 40,
-      "rankSpacing": 70
-    },
-    "themeVariables": {
-      "fontSize": "15px",
-      "lineColor": "#555555",
-      "primaryTextColor": "#2C2C2C",
-      "clusterBkg": "#FAFAFA",
-      "clusterBorder": "#CCCCCC",
-      "titleColor": "#555555"
-    }
-  }
-}%%
-flowchart LR
-
-  subgraph Federal["Federal Site"]
-    Config(["config"])
-  end
-
-  subgraph HostSite["Host Sites"]
-    GNAV(["GNAV"])
-    RegNav(["region-nav"])
-  end
-
-  subgraph SiteGeo["Sites"]
-    Indices(["/{geo}/query-index.json"])
-  end
-
-  Generator["html-sitemap-generator"]
-  Output(["/{baseGeo}/sitemap.html"])
-
-  Config   --> Generator
-  GNAV     --> Generator
-  RegNav   --> Generator
-  Indices  --> Generator
-  Generator --> Output
-
-  linkStyle default stroke:#AAAAAA,stroke-width:1.5px
-
-  style Config    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style GNAV      fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Indices   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style RegNav    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Generator fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
-  style Output    fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
-
-  style Federal  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style HostSite fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style SiteGeo  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-```
-
-### Pipeline Overview
-
-The diagram below is intentionally minimal: **stage names and flow only**. File names, config keys, and other artifacts are listed in [Stage details (artifacts)](#stage-details-artifacts) so the graph stays easy to read in editors and exports.
-
-```mermaid
-%%{
-  init: {
-    "theme": "base",
-    "flowchart": {
-      "htmlLabels": false,
-      "padding": 24,
-      "nodeSpacing": 50,
-      "rankSpacing": 52
-    },
-    "themeVariables": {
-      "fontSize": "15px",
-      "lineColor": "#555555",
-      "primaryTextColor": "#2C2C2C",
-      "clusterBkg": "#FAFAFA",
-      "clusterBorder": "#CCCCCC",
-      "titleColor": "#555555",
-      "edgeLabelBackground": "#FFFFFF",
-      "edgeLabelColor": "#555555"
-    }
-  }
-}%%
-flowchart LR
-
-  subgraph GHA["GitHub"]
-    Extract["extract\nGNAV · query indices · region-nav"]
-    TransformData["transform-data\nsitemap.json"]
-    TransformDA["transform-da\nsitemap.html"]
-    Diff["diff\nlocal ↔ DA"]
-  end
-
-  subgraph DA["DA"]
-    Push["push\nda.live"]
-  end
-
-  subgraph AEM["AEM"]
-    Preview["preview\naem.page"]
-    Publish["publish\naem.live"]
-  end
-
-  Extract       --> TransformData
-  TransformData --> TransformDA
-  TransformDA   --> Diff
-  Diff          -.-> Push
-  Push          --> Preview
-  Preview       --> Publish
-
-  linkStyle default stroke:#AAAAAA,stroke-width:1.5px
-
-  style Extract       fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style TransformData fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style TransformDA   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Diff          fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Push          fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
-  style Preview       fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
-  style Publish       fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
-
-  style GHA fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style DA  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style AEM fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-```
-
-#### Stage details (artifacts)
-
-| Stage | Artifacts / focus |
-|-------|-------------------|
-| **Config** | `config`, `query-index-map`, `geo-map`, `page-copy` |
-| **GNAV** | `fragments`, `placeholders` |
-| **Query indices** | `query-index.json` paths (per site × geo) |
-| **Region-nav** | `regions.html` fragment |
-| **extract** | Config snapshot; GNAV fragments + manifest; placeholders; query indices; region-nav HTML; persisted under `_extract/` |
-| **transform-data** | `sitemap.json` |
-| **transform-da** | `sitemap.html`; `manifest.json`; `manifest.csv` (per subdomain) |
-| **diff** | Read-only: compares local `sitemap.html` to DA |
-| **push** | Uploads `sitemap.html` to DA |
-| **preview** | Promotes path in AEM preview |
-| **publish** | Promotes path in AEM live |
-
-Interpretation:
-
-- `extract` fetches remote sources and persists them locally for deterministic downstream transforms
-- `transform-data` converts extracted inputs into normalized sitemap page data (`sitemap.json`)
-- `transform-da` renders HTML from normalized data and writes per-subdomain manifests
-- `diff` compares local HTML against what is currently in DA; read-only
-- `push` uploads changed pages to DA; skips unchanged pages unless `--force` is set
-- `preview` and `publish` promote the corresponding remote document path in AEM
-- Only geos marked `deploy: true` in the config appear in sibling links and are eligible for delivery
-
-## Scope
-
-Each supported subdomain gets a set of base-geo sitemap pages.
 
 Output pages:
 

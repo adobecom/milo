@@ -10,7 +10,7 @@ function makeConfigJson(geos) {
     config: { data: [{ subdomain: 'business', domain: 'business.adobe.com', site: 'da-bacom', extendedSitemap: 'all' }] },
     'query-index-map': { data: [{ subdomain: 'business', site: 'da-bacom', queryIndexPath: '/query-index.json', enabled: 'true' }] },
     'geo-map': { data: geos.map((g) => ({ subdomain: 'business', ...g, language: 'en', extendedGeos: '' })) },
-    'page-copy': { data: geos.map((g) => ({ subdomain: 'business', baseGeo: g.baseGeo, pageTitle: 'Sitemap', pageDescription: '', otherSitemapsHeading: '', extendedPagesHeading: '' })) },
+    'page-copy': { data: geos.map((g) => ({ subdomain: 'business', geo: g.baseGeo, pageTitle: 'Sitemap' })) },
   }, null, 2);
 }
 
@@ -113,7 +113,7 @@ test('runDiff skips geos not marked deploy', async () => {
 
     assert.equal(result.hadFailures, false);
     assert.equal(fetchCalled, false);
-    assert.ok(!result.units[0].summary);
+    assert.equal(result.units.length, 0);
   } finally {
     if (originalToken === undefined) delete process.env.DA_SOURCE_TOKEN;
     else process.env.DA_SOURCE_TOKEN = originalToken;

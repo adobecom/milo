@@ -12,7 +12,7 @@ test('loadConfig parses required sheets', async () => {
   assert.equal(config.domains.length, 2);
   assert.equal(config.queryIndexMap.length, 2);
   assert.equal(config.geoMap.length, 4);
-  assert.equal(config.pageCopy.length, 4);
+  assert.equal(config.pageCopy.length, 10);
   assert.equal(config.siteDomains['da-bacom'], 'business.adobe.com');
   assert.equal(config.siteDomains.edu, 'www.adobe.com');
   assert.equal(config.siteDomains['da-cc'], 'www.adobe.com');
@@ -21,9 +21,11 @@ test('loadConfig parses required sheets', async () => {
   assert.equal(config.domains.find((row) => row.subdomain === 'www')?.template, 'da-sitemap.html');
   assert.deepEqual(config.geoMap.find((row) => row.subdomain === 'www' && row.baseGeo === 'fr')?.extendedGeos, ['be_fr', 'ca_fr']);
   assert.equal(
-    config.pageCopy.find((row) => row.subdomain === 'business' && row.baseGeo === '')?.otherSitemapsHeading,
-    'Other {{regions-label}}',
+    config.pageCopy.find((row) => row.subdomain === 'business' && row.geo === '')?.pageTitle,
+    'Sitemap',
   );
+  assert.equal(config.regionLabels?.business?.br, 'Brasil');
+  assert.equal(config.regionLabels?.www?.be_fr, 'Belgique');
 });
 
 test('loadConfig rejects config sheet missing required fields', async () => {

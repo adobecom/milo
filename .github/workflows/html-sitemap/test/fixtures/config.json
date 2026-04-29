@@ -22,38 +22,16 @@
   },
   "page-copy": {
     "data": [
-      {
-        "domain": "business",
-        "baseGeo": "",
-        "pageTitle": "Sitemap",
-        "pageDescription": "Browse pages across this site by section, locale, and {{region-label}}.",
-        "otherSitemapsHeading": "Other {{regions-label}}",
-        "extendedPagesHeading": "Additional Localized Pages"
-      },
-      {
-        "domain": "business",
-        "baseGeo": "fr",
-        "pageTitle": "Plan du site",
-        "pageDescription": "Parcourez les pages de ce site par section, langue et {{region-fr}}.",
-        "otherSitemapsHeading": "Autres régions",
-        "extendedPagesHeading": "Pages localisées supplémentaires"
-      },
-      {
-        "domain": "www",
-        "baseGeo": "",
-        "pageTitle": "Sitemap",
-        "pageDescription": "Browse pages across this site by section, locale, and {{region-label}}.",
-        "otherSitemapsHeading": "Other {{regions-label}}",
-        "extendedPagesHeading": "Additional Localized Pages"
-      },
-      {
-        "domain": "www",
-        "baseGeo": "fr",
-        "pageTitle": "Plan du site",
-        "pageDescription": "Parcourez les pages de ce site par section, langue et {{region-fr}}.",
-        "otherSitemapsHeading": "Autres régions",
-        "extendedPagesHeading": "Pages localisées supplémentaires"
-      }
+      { "domain": "business", "geo": "", "pageTitle": "Sitemap" },
+      { "domain": "business", "geo": "fr", "pageTitle": "Plan du site" },
+      { "domain": "business", "geo": "br", "label": "Brasil" },
+      { "domain": "business", "geo": "ca", "label": "Canada" },
+      { "domain": "business", "geo": "be_fr", "label": "Belgique" },
+      { "domain": "www", "geo": "", "pageTitle": "Sitemap" },
+      { "domain": "www", "geo": "fr", "pageTitle": "Plan du site" },
+      { "domain": "www", "geo": "ae_en", "label": "Middle East and North Africa - English" },
+      { "domain": "www", "geo": "be_fr", "label": "Belgique" },
+      { "domain": "www", "geo": "ca_fr", "label": "Canada - Français" }
     ]
   }
 }

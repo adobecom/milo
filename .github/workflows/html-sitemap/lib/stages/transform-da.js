@@ -69,7 +69,6 @@ function buildRenderModel(document, copy) {
 
   return {
     pageTitle: copy.pageTitle,
-    pageDescription: copy.pageDescription,
     locale,
     baseGeoSections: document.sections.baseGeoLinks.map((section) => ({
       heading: section.heading,
@@ -78,9 +77,6 @@ function buildRenderModel(document, copy) {
         links: group.links,
       })),
     })),
-    otherSitemapsHeading: copy.otherSitemapsHeading,
-    otherSitemaps: document.sections.otherSitemapLinks,
-    extendedPagesHeading: copy.extendedPagesHeading,
     extendedGeoGroups: document.sections.extendedGeoLinks.map((group) => ({
       title: group.title,
       links: group.links,
@@ -130,7 +126,6 @@ async function buildHtmlDocument(
     wroteHtml: true,
     sectionCount:
       raw.sections.baseGeoLinks.length
-      + (raw.sections.otherSitemapLinks.length ? 1 : 0)
       + (raw.sections.extendedGeoLinks.length ? 1 : 0),
   };
 }

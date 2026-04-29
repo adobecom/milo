@@ -25,16 +25,6 @@ export function getBaseGeoExtractDir(outputDir, subdomain, baseGeo) {
  * @param {string} outputDir
  * @param {string} subdomain
  * @param {string} baseGeo
- * @returns {string}
- */
-export function getBaseGeoRegionsFile(outputDir, subdomain, baseGeo) {
-  return path.join(getBaseGeoExtractDir(outputDir, subdomain, baseGeo), 'regions.html');
-}
-
-/**
- * @param {string} outputDir
- * @param {string} subdomain
- * @param {string} baseGeo
  * @param {string} extendedGeo
  * @returns {string}
  */

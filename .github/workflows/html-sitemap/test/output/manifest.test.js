@@ -31,9 +31,6 @@ const SITEMAP_DOC = {
         ],
       },
     ],
-    otherSitemapLinks: [
-      { geo: 'fr', title: 'France', url: 'https://business.adobe.com/fr/sitemap.html' },
-    ],
     extendedGeoLinks: [
       { geo: 'br', title: 'Brazil', links: [{ title: 'X', url: 'https://x.com', path: '/x' }] },
       { geo: 'ca', title: 'Canada', links: [{ title: 'Y', url: 'https://y.com', path: '/y' }, { title: 'Z', url: 'https://z.com', path: '/z' }] },
@@ -64,10 +61,9 @@ test('writeSubdomainManifests writes manifest.json and manifest.csv with correct
   assert.equal(page.sha256, sha256(HTML_CONTENT));
   assert.equal(page.baseGeoSectionCount, 1);
   assert.equal(page.baseGeoLinkCount, 3);
-  assert.equal(page.otherSitemapLinkCount, 1);
   assert.equal(page.extendedGeoGroupCount, 2);
   assert.equal(page.extendedGeoLinkCount, 3);
-  assert.equal(page.totalLinkCount, 7);
+  assert.equal(page.totalLinkCount, 6);
 
   const csv = await fs.readFile(path.join(tmpDir, 'business', 'manifest.csv'), 'utf8');
   const lines = csv.trim().split('\n');

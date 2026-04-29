@@ -9,8 +9,9 @@ const baseConfig = {
   queryIndexMap: [],
   geoMap: [],
   siteDomains: {},
+  regionLabels: {},
   pageCopy: [
-    { subdomain: 'www', baseGeo: '', pageTitle: 'Sitemap', pageDescription: 'All pages', otherSitemapsHeading: 'Other', extendedPagesHeading: 'More' },
+    { subdomain: 'www', geo: '', pageTitle: 'Sitemap' },
   ],
 };
 
@@ -21,16 +22,18 @@ test('getPageCopy returns defaults and warns when page-copy row is missing', () 
   const copy = getPageCopy(baseConfig, { subdomain: 'www', baseGeo: 'fr', language: 'fr' });
 
   assert.equal(copy.pageTitle, 'Sitemap');
-  assert.equal(copy.pageDescription, '');
-  assert.equal(copy.otherSitemapsHeading, '');
-  assert.equal(copy.extendedPagesHeading, '');
   assert.ok(warns.some((msg) => msg.includes('No page-copy row') && msg.includes('www/fr')));
   mock.restoreAll();
 });
 
 test('getPageCopy resolves placeholders in matched row', () => {
-  const copy = getPageCopy(baseConfig, { subdomain: 'www', baseGeo: '', language: 'en' }, { region: 'locale' });
+  const config = {
+    ...baseConfig,
+    pageCopy: [
+      { subdomain: 'www', geo: '', pageTitle: '{{title-key}}' },
+    ],
+  };
+  const copy = getPageCopy(config, { subdomain: 'www', baseGeo: '', language: 'en' }, { 'title-key': 'Sitemap' });
 
   assert.equal(copy.pageTitle, 'Sitemap');
-  assert.equal(copy.pageDescription, 'All pages');
 });

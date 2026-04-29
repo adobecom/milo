@@ -86,7 +86,6 @@ test('runTransformData writes sitemap.json from extracted inputs', async () => {
   assert.equal(document.sections.baseGeoLinks[0].groups[0].subheading, 'Featured');
   assert.equal(document.sections.baseGeoLinks[0].groups[0].links[0].url, 'https://business.adobe.com/products/commerce');
   assert.equal(document.sections.baseGeoLinks[0].groups[0].links[1].url, 'https://business.adobe.com/products/premiere-pro');
-  assert.equal(document.sections.otherSitemapLinks[0].geo, 'fr');
   assert.equal(document.sections.extendedGeoLinks[0].geo, 'br');
   assert.equal(document.sections.extendedGeoLinks[0].links[0].path, '/br/products/firefly');
 });

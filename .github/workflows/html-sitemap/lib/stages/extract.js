@@ -13,7 +13,6 @@ import {
 import { mapWithConcurrency } from '../util/concurrency.js';
 import { formatStageGeo, getErrorMessage } from '../util/stages.js';
 import { extractGnavArtifacts, getPlaceholdersUrl } from '../sources/gnav.js';
-import { fetchRegionsHtml, getRegionsUrl } from '../sources/regions.js';
 import { fetchJson } from '../util/fetch.js';
 import { fetchQueryIndex } from '../sources/query-index.js';
 import { normalizeQueryIndexData } from '../data/normalize.js';
@@ -43,7 +42,6 @@ const UNIT_CONCURRENCY = 2;
  * @property {string} baseGeo
  * @property {boolean} gnavOk
  * @property {boolean} placeholdersOk
- * @property {boolean} regionsOk
  * @property {QueryIndexSummary[]} baseQueryIndices
  * @property {QueryIndexSummary[]} extendedQueryIndices
  * @property {boolean} sitemapEligible
@@ -137,23 +135,6 @@ async function writePlaceholders(baseExtractDir, unit, fetchImpl) {
 }
 
 /**
- * @param {string} baseExtractDir
- * @param {ExtractUnit} unit
- * @param {typeof fetch} [fetchImpl]
- * @returns {Promise<boolean>}
- */
-async function writeRegions(baseExtractDir, unit, fetchImpl) {
-  const result = await fetchRegionsHtml(unit.hostSite, fetchImpl);
-  if (!result.ok) {
-    console.warn(`[warn] Skipping regions for ${unit.subdomain}/${formatGeo(unit.baseGeo)}: ${result.status} ${result.statusText} (${getRegionsUrl(unit.hostSite)})`);
-    return false;
-  }
-
-  await writeText(path.join(baseExtractDir, 'regions.html'), result.html);
-  return true;
-}
-
-/**
  * @param {ExtractUnit} unit
  * @param {string} geo
  * @param {string} site
@@ -239,7 +220,6 @@ async function runExtractUnit(
       baseGeo: unit.baseGeo,
       gnavOk: false,
       placeholdersOk: false,
-      regionsOk: false,
       baseQueryIndices: baseQueryResults,
       extendedQueryIndices: [],
       sitemapEligible,
@@ -263,7 +243,6 @@ async function runExtractUnit(
   });
   const gnavOk = await writeGnav(baseExtractDir, unit, gnavResult, now);
   const placeholdersOk = await writePlaceholders(baseExtractDir, unit, fetchImpl);
-  const regionsOk = await writeRegions(baseExtractDir, unit, fetchImpl);
 
   const extendedQueryResults = await Promise.all(
     allExtendedGeos.flatMap((extendedGeo) => unit.queryIndexRows.map(async (row) => {
@@ -290,7 +269,6 @@ async function runExtractUnit(
     baseGeo: unit.baseGeo,
     gnavOk,
     placeholdersOk,
-    regionsOk,
     baseQueryIndices: baseQueryResults,
     extendedQueryIndices: extendedQueryResults,
     sitemapEligible,
@@ -314,7 +292,6 @@ function printExtractSummary(
   const noPageCandidates = summaries.filter((summary) => !summary.sitemapEligible).map((summary) => formatGeo(summary.baseGeo));
   const missingGnav = summaries.filter((summary) => !summary.gnavOk).map((summary) => formatGeo(summary.baseGeo));
   const missingPlaceholders = summaries.filter((summary) => !summary.placeholdersOk).map((summary) => formatGeo(summary.baseGeo));
-  const missingRegions = summaries.filter((summary) => !summary.regionsOk).map((summary) => formatGeo(summary.baseGeo));
   const baseMisses = summaries.flatMap((summary) =>
     summary.baseQueryIndices
       .filter((result) => !result.ok)
@@ -333,9 +310,6 @@ function printExtractSummary(
   }
   if (missingPlaceholders.length && missingPlaceholders.length !== summaries.length) {
     console.log(`[summary] Missing placeholders: ${missingPlaceholders.join(', ')}`);
-  }
-  if (missingRegions.length && missingRegions.length !== summaries.length) {
-    console.log(`[summary] Missing regions: ${missingRegions.join(', ')}`);
   }
   if (baseMisses.length) {
     console.log(`[summary] Missing base query indices: ${baseMisses.join(', ')}`);

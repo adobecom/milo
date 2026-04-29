@@ -32,8 +32,8 @@ test('runPush creates remote folders and uploads sitemap.html under da-root', as
     },
     'page-copy': {
       data: [
-        { subdomain: 'business', baseGeo: '', pageTitle: 'Sitemap', pageDescription: 'Browse pages across this site by section, locale, and region.', otherSitemapsHeading: 'Other Regions', extendedPagesHeading: 'Additional Localized Pages' },
-        { subdomain: 'business', baseGeo: 'fr', pageTitle: 'Plan du site', pageDescription: 'Parcourez les pages de ce site par section, langue et région.', otherSitemapsHeading: 'Autres régions', extendedPagesHeading: 'Pages localisées supplémentaires' },
+        { subdomain: 'business', geo: '', pageTitle: 'Sitemap' },
+        { subdomain: 'business', geo: 'fr', pageTitle: 'Plan du site' },
       ],
     },
   }, null, 2), 'utf8');
@@ -113,7 +113,7 @@ test('runPush can exchange rolling-import IMS credentials for a DA bearer token'
     },
     'page-copy': {
       data: [
-        { subdomain: 'business', baseGeo: '', pageTitle: 'Sitemap', pageDescription: 'Browse pages across this site by section, locale, and region.', otherSitemapsHeading: 'Other Regions', extendedPagesHeading: 'Additional Localized Pages' },
+        { subdomain: 'business', geo: '', pageTitle: 'Sitemap' },
       ],
     },
   }, null, 2), 'utf8');
@@ -191,7 +191,7 @@ test('runPush skips unchanged pages when force is false', async () => {
     config: { data: [{ subdomain: 'business', domain: 'business.adobe.com', site: 'da-bacom', extendedSitemap: 'all' }] },
     'query-index-map': { data: [{ subdomain: 'business', site: 'da-bacom', queryIndexPath: '/query-index.json', enabled: 'true' }] },
     'geo-map': { data: [{ subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', deploy: 'true' }] },
-    'page-copy': { data: [{ subdomain: 'business', baseGeo: '', pageTitle: 'Sitemap', pageDescription: '', otherSitemapsHeading: '', extendedPagesHeading: '' }] },
+    'page-copy': { data: [{ subdomain: 'business', geo: '', pageTitle: 'Sitemap' }] },
   }, null, 2), 'utf8');
 
   const originalToken = process.env.DA_SOURCE_TOKEN;

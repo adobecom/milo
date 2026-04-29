@@ -45,7 +45,8 @@ export function planExtractUnits(
     }
 
     const queryIndexRows = config.queryIndexMap.filter((row) => row.subdomain === domainRow.subdomain);
-    geoRows.forEach((geoRow) => {
+    const deployedGeoRows = geoFilter !== undefined ? geoRows : geoRows.filter((row) => row.deploy);
+    deployedGeoRows.forEach((geoRow) => {
       units.push({
         subdomain: domainRow.subdomain,
         domain: domainRow.domain,
@@ -55,7 +56,7 @@ export function planExtractUnits(
         baseGeo: geoRow.baseGeo,
         language: geoRow.language,
         extendedGeos: geoRow.extendedGeos,
-        deploy: geoRow.deploy,
+        deploy: true,
         queryIndexRows,
       });
     });

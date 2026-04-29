@@ -47,7 +47,6 @@ test('runExtract writes GNAV, manifest, placeholders, base and extended query in
   `, 'text/html'));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/fragments/gnav/products.plain.html', makeResponse(200, '<html><body><h5>Featured</h5></body></html>', 'text/html'));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/fragments/gnav/ai.plain.html', makeResponse(200, '<html><body><p>AI</p></body></html>', 'text/html'));
-  stub.routes.set('https://main--da-bacom--adobecom.aem.live/fragments/regions', makeResponse(200, '<html><body><div class="region-nav"><a href="/fr/">France</a></div></body></html>', 'text/html'));
   stub.routes.set('https://main--federal--adobecom.aem.live/federal/globalnav/placeholders.json', makeResponse(200, JSON.stringify({ data: [{ Key: 'premiere', Text: 'Premiere' }] })));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/query-index.json', makeResponse(200, JSON.stringify({ data: [{ path: '/products' }] })));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/br/query-index.json', makeResponse(200, JSON.stringify({ data: [{ path: '/br/products' }] })));
@@ -73,9 +72,6 @@ test('runExtract writes GNAV, manifest, placeholders, base and extended query in
   const placeholders = JSON.parse(await fs.readFile(path.join(tmpDir, 'business', '_extract', 'placeholders.json'), 'utf8'));
   assert.equal(placeholders.data[0].Text, 'Premiere');
 
-  const regionsHtml = await fs.readFile(path.join(tmpDir, 'business', '_extract', 'regions.html'), 'utf8');
-  assert.match(regionsHtml, /href="\/fr\/"/);
-
   const baseIndex = JSON.parse(await fs.readFile(path.join(tmpDir, 'business', '_extract', 'da-bacom', 'query-index.json'), 'utf8'));
   assert.equal(baseIndex.data[0].path, '/products');
 
@@ -93,7 +89,6 @@ test('runExtract warns and continues when GNAV cannot be resolved', async () => 
   const stub = createFetchStub();
 
   stub.routes.set('https://main--federal--adobecom.aem.live/fr/federal/globalnav/placeholders.json', makeResponse(404, 'missing', 'text/plain'));
-  stub.routes.set('https://main--da-bacom--adobecom.aem.live/fragments/regions', makeResponse(200, '<html><body><div class="region-nav"><a href="/fr/">France</a></div></body></html>', 'text/html'));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/fr/query-index.json', makeResponse(200, JSON.stringify({ data: [{ path: '/fr/products' }] })));
   stub.routes.set('https://main--da-bacom--adobecom.aem.live/be_fr/query-index.json', makeResponse(404, 'missing', 'text/plain'));
 

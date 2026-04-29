@@ -21,7 +21,6 @@ import { readSitemapDataDocument } from '../data/sitemap.js';
  * @property {string} sha256
  * @property {number} baseGeoSectionCount
  * @property {number} baseGeoLinkCount
- * @property {number} otherSitemapLinkCount
  * @property {number} extendedGeoGroupCount
  * @property {number} extendedGeoLinkCount
  * @property {number} totalLinkCount
@@ -36,7 +35,7 @@ import { readSitemapDataDocument } from '../data/sitemap.js';
 
 /**
  * @param {SitemapDataDocument} document
- * @returns {Pick<ManifestPage, 'baseGeoSectionCount' | 'baseGeoLinkCount' | 'otherSitemapLinkCount' | 'extendedGeoGroupCount' | 'extendedGeoLinkCount' | 'totalLinkCount'>}
+ * @returns {Pick<ManifestPage, 'baseGeoSectionCount' | 'baseGeoLinkCount' | 'extendedGeoGroupCount' | 'extendedGeoLinkCount' | 'totalLinkCount'>}
  */
 function countLinks(document) {
   const baseGeoSectionCount = document.sections.baseGeoLinks.length;
@@ -44,18 +43,16 @@ function countLinks(document) {
     (sum, section) => sum + section.groups.reduce((groupSum, group) => groupSum + group.links.length, 0),
     0,
   );
-  const otherSitemapLinkCount = document.sections.otherSitemapLinks.length;
   const extendedGeoGroupCount = document.sections.extendedGeoLinks.length;
   const extendedGeoLinkCount = document.sections.extendedGeoLinks.reduce(
     (sum, group) => sum + group.links.length,
     0,
   );
-  const totalLinkCount = baseGeoLinkCount + otherSitemapLinkCount + extendedGeoLinkCount;
+  const totalLinkCount = baseGeoLinkCount + extendedGeoLinkCount;
 
   return {
     baseGeoSectionCount,
     baseGeoLinkCount,
-    otherSitemapLinkCount,
     extendedGeoGroupCount,
     extendedGeoLinkCount,
     totalLinkCount,
@@ -91,7 +88,6 @@ const CSV_COLUMNS = [
   'sha256',
   'baseGeoSectionCount',
   'baseGeoLinkCount',
-  'otherSitemapLinkCount',
   'extendedGeoGroupCount',
   'extendedGeoLinkCount',
   'totalLinkCount',

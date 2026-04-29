@@ -1,0 +1,19 @@
+/* Template: HTML Sitemap */
+
+/* Headings: Adobe Clean Display (matches c2 heading font) */
+.sitemap h1,
+.sitemap h3,
+.sitemap h4 {
+  font-family: "Adobe Clean Display", adobe-clean-display, var(--body-font-family);
+}
+
+/* Links: no underline by default in nav lists, underline on hover */
+.sitemap .columns-wrapper a,
+.sitemap .accordion-wrapper a {
+  text-decoration: none;
+}
+
+.sitemap .columns-wrapper a:hover,
+.sitemap .accordion-wrapper a:hover {
+  text-decoration: underline;
+}

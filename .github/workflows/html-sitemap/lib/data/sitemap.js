@@ -1,11 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { relevantExtendedGeos } from '../config/scope.js';
-import { getBaseGeoDataFile, getBaseGeoExtractDir, getBaseGeoRegionsFile, writeJson } from '../util/files.js';
+import { getBaseGeoDataFile, getBaseGeoExtractDir, writeJson } from '../util/files.js';
 import { loadPlaceholderMap } from '../sources/placeholders.js';
-import { loadRegionLabelMap } from '../sources/regions.js';
 import { buildBaseGeoLinks } from './gnav-sections.js';
-import { buildExtendedGeoLinks, buildOtherSitemapLinks } from './links.js';
+import { buildExtendedGeoLinks } from './links.js';
 import { normalizeQueryIndexData } from './normalize.js';
 
 /**
@@ -28,13 +27,11 @@ import { normalizeQueryIndexData } from './normalize.js';
  */
 
 /** @typedef {Awaited<ReturnType<typeof buildBaseGeoLinks>>} SitemapBaseGeoLinks */
-/** @typedef {ReturnType<typeof buildOtherSitemapLinks>} SitemapOtherSitemapLinks */
 /** @typedef {Awaited<ReturnType<typeof buildExtendedGeoLinks>>} SitemapExtendedGeoLinks */
 
 /**
  * @typedef {Object} SitemapSections
  * @property {SitemapBaseGeoLinks} baseGeoLinks
- * @property {SitemapOtherSitemapLinks} otherSitemapLinks
  * @property {SitemapExtendedGeoLinks} extendedGeoLinks
  */
 
@@ -120,7 +117,7 @@ export async function buildSitemapDataDocument(
 ) {
   const extractDir = getBaseGeoExtractDir(outputDir, unit.subdomain, unit.baseGeo);
   const placeholders = await loadPlaceholderMap(path.join(extractDir, 'placeholders.json'));
-  const regionLabels = await loadRegionLabelMap(getBaseGeoRegionsFile(outputDir, unit.subdomain, unit.baseGeo));
+  const regionLabels = config.regionLabels?.[unit.subdomain] || {};
 
   const baseGeoLinks = await buildBaseGeoLinks(
     path.join(extractDir, 'gnav'),
@@ -128,7 +125,6 @@ export async function buildSitemapDataDocument(
     unit.domain,
     config.siteDomains,
   ).catch(() => []);
-  const otherSitemapLinks = buildOtherSitemapLinks(config, unit, regionLabels);
   const extendedGeoLinks = await buildExtendedGeoLinks(outputDir, config, unit, regionLabels);
   const extendedGeoSummary = await summarizeExtendedGeoInputs(outputDir, config, unit, extendedGeoLinks);
 
@@ -139,7 +135,6 @@ export async function buildSitemapDataDocument(
     domain: unit.domain,
     sections: {
       baseGeoLinks,
-      otherSitemapLinks,
       extendedGeoLinks,
     },
   };

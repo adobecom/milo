@@ -31,11 +31,19 @@ import process from 'node:process';
 /**
  * @typedef {Object} PageCopyRow
  * @property {string} subdomain
- * @property {string} baseGeo
+ * @property {string} geo
+ *   Empty string for the default/global page; matches `baseGeo` in geo-map for
+ *   localized pages; may also be a non-base extended geo whose only purpose is
+ *   to provide a `label`.
  * @property {string} pageTitle
- * @property {string} pageDescription
- * @property {string} otherSitemapsHeading
- * @property {string} extendedPagesHeading
+ *   Empty if this row exists only to provide a region label.
+ * @property {string} label
+ *   Empty if this row exists only to provide page copy.
+ */
+
+/**
+ * @typedef {Record<string, Record<string, string>>} RegionLabelMap
+ *   subdomain -> geo -> label, derived from page-copy rows that carry a label.
  */
 
 /**
@@ -45,6 +53,7 @@ import process from 'node:process';
  * @property {QueryIndexMapRow[]} queryIndexMap
  * @property {GeoMapRow[]} geoMap
  * @property {PageCopyRow[]} pageCopy
+ * @property {RegionLabelMap} regionLabels
  * @property {Record<string, string>} siteDomains
  */
 
@@ -169,7 +178,7 @@ export async function loadConfig(
   validateRequiredFields('config', configRows, ['subdomain', 'domain', 'site', 'extendedSitemap']);
   validateRequiredFields('query-index-map', qimRows, ['subdomain', 'site', 'queryIndexPath'], subdomainAlt);
   validateRequiredFields('geo-map', geoRows, ['subdomain', 'language'], subdomainAlt);
-  validateRequiredFields('page-copy', copyRows, ['subdomain', 'pageTitle', 'pageDescription'], subdomainAlt);
+  validateRequiredFields('page-copy', copyRows, ['subdomain'], subdomainAlt);
 
   const domains = configRows.map((row) => ({
     subdomain: row.subdomain,
@@ -196,11 +205,9 @@ export async function loadConfig(
 
   const pageCopy = copyRows.map((row) => ({
     subdomain: row.subdomain || row.domain,
-    baseGeo: normalizeBaseGeo(row.baseGeo),
+    geo: normalizeBaseGeo(row.geo ?? row.baseGeo),
     pageTitle: row.pageTitle || '',
-    pageDescription: row.pageDescription || '',
-    otherSitemapsHeading: row.otherSitemapsHeading || '',
-    extendedPagesHeading: row.extendedPagesHeading || '',
+    label: row.label || '',
   })).filter((row) => row.subdomain);
 
   const domainBySubdomain = new Map(domains.map((row) => [row.subdomain, row.domain]));
@@ -212,12 +219,21 @@ export async function loadConfig(
     }),
   ]);
 
+  /** @type {RegionLabelMap} */
+  const regionLabels = {};
+  for (const row of pageCopy) {
+    if (!row.geo || !row.label) continue;
+    if (!regionLabels[row.subdomain]) regionLabels[row.subdomain] = {};
+    regionLabels[row.subdomain][row.geo] = row.label;
+  }
+
   return {
     raw: json,
     domains,
     queryIndexMap,
     geoMap,
     pageCopy,
+    regionLabels,
     siteDomains,
   };
 }

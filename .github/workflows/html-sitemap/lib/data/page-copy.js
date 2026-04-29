@@ -8,9 +8,6 @@ import { resolvePlaceholders } from '../sources/placeholders.js';
 /**
  * @typedef {Object} PageCopy
  * @property {string} pageTitle
- * @property {string} pageDescription
- * @property {string} otherSitemapsHeading
- * @property {string} extendedPagesHeading
  */
 
 /**
@@ -21,9 +18,6 @@ import { resolvePlaceholders } from '../sources/placeholders.js';
 function resolvePageCopy(copy, placeholders) {
   return {
     pageTitle: resolvePlaceholders(copy.pageTitle, placeholders),
-    pageDescription: resolvePlaceholders(copy.pageDescription, placeholders),
-    otherSitemapsHeading: resolvePlaceholders(copy.otherSitemapsHeading, placeholders),
-    extendedPagesHeading: resolvePlaceholders(copy.extendedPagesHeading, placeholders),
   };
 }
 
@@ -38,15 +32,12 @@ export function getPageCopy(
   unit,
   placeholders = {},
 ) {
-  const row = config.pageCopy.find((entry) => entry.subdomain === unit.subdomain && entry.baseGeo === unit.baseGeo);
+  const row = config.pageCopy.find((entry) => entry.subdomain === unit.subdomain && entry.geo === unit.baseGeo);
   if (!row) {
     console.warn(`[warn] No page-copy row for ${unit.subdomain}/${unit.baseGeo || '(default)'}; using defaults`);
   }
   const copy = {
     pageTitle: row?.pageTitle || 'Sitemap',
-    pageDescription: row?.pageDescription || '',
-    otherSitemapsHeading: row?.otherSitemapsHeading || '',
-    extendedPagesHeading: row?.extendedPagesHeading || '',
   };
   return resolvePageCopy(copy, placeholders);
 }

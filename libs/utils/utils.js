@@ -2,6 +2,7 @@
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
+  'sitemap',
 ];
 const C1_BLOCKS = [
   'accordion',
