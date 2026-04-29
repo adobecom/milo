@@ -487,52 +487,78 @@ function decorateFloatingButton(el) {
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
 
-  const hideFloatingButton = () => {
-    floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tabindex', '-1');
-    floatingContainer.blur();
-    floatingButton.classList.add('floating-hidden');
-    floatingButton.classList.remove('floating-show');
-  };
+  const bcSpacer = document.createElement('div');
+  bcSpacer.style.cssText = 'height:0;pointer-events:none;';
+  mainElement.append(bcSpacer);
 
-  const showFloatingButton = () => {
-    floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tabindex');
-    floatingButton.classList.remove('floating-hidden');
-    floatingButton.classList.add('floating-show');
+  // Cache layout values that only change on resize — never read inside scroll handler
+  let cachedMainHeight = mainElement.scrollHeight;
+  let cachedGnavHeight = gnavElement.offsetHeight;
+  let cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
+  const getTargetHeight = (target) => {
+    const { marginBottom } = window.getComputedStyle(target);
+    return target.scrollHeight + (parseFloat(marginBottom) * 2) - 2;
   };
+  let cachedTargetHeight = getTargetHeight(floatingButton);
+  const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
 
-  if (variants.isHero || variants.floatingDelay) {
-    hideFloatingButton();
-  }
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = entry.borderBoxSize?.[0]?.blockSize;
+      if (entry.target === mainElement) {
+        cachedMainHeight = size ?? mainElement.scrollHeight;
+      } else if (entry.target === gnavElement) {
+        cachedGnavHeight = size ?? gnavElement.offsetHeight;
+        cachedGnavFixed = window.getComputedStyle(gnavElement).position === 'fixed';
+      } else if (entry.target === floatingButton) {
+        cachedTargetHeight = getTargetHeight(floatingButton);
+      }
+    }
+  });
+  ro.observe(mainElement);
+  ro.observe(gnavElement);
+  ro.observe(floatingButton);
+
+  let prevBottom = null;
+  let prevPinned = null;
+  let prevVisible = null;
 
   const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const gnavHeight = gnavElement.offsetHeight;
-    const gnavPosition = window.getComputedStyle(gnavElement).position;
-    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+    const { scrollY } = window;
+    const threshold = scrollY + window.innerHeight - (cachedGnavFixed ? 0 : cachedGnavHeight);
+    const pinned = threshold > cachedMainHeight;
 
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      if (variants.isFloatingAnchorHide) {
-        hideFloatingButton();
+    if (pinned !== prevPinned) {
+      prevPinned = pinned;
+      if (pinned) {
+        floatingContainer.setAttribute('tab-index', '-1');
+        floatingContainer.blur();
+        if (!variants.isFloatingAnchorHide) bcSpacer.style.height = `${cachedTargetHeight}px`;
       } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
+        floatingContainer.removeAttribute('tab-index');
+        if (!variants.isFloatingAnchorHide) bcSpacer.style.height = '0';
       }
-    } else {
-      showFloatingButton();
-      target.style.bottom = '0';
     }
+
+    const bottom = pinned ? `${threshold - cachedMainHeight}px` : '0';
+    if (bottom !== prevBottom) {
+      prevBottom = bottom;
+      target.style.bottom = bottom;
+    }
+
+    let visible;
     if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        showFloatingButton();
-      }
-      if (window.scrollY < scrollDelay) {
-        hideFloatingButton();
-      }
+      visible = scrollY > scrollDelay && !pinned;
+    } else if (variants.isFloatingAnchorHide) {
+      visible = !pinned;
+    } else {
+      visible = !pinned;
+    }
+
+    if (visible !== prevVisible) {
+      prevVisible = visible;
+      floatingButton.classList.toggle('floating-hidden', !visible);
+      floatingButton.classList.toggle('floating-show', visible);
     }
   };
 
@@ -542,7 +568,15 @@ function decorateFloatingButton(el) {
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(floatingButton);
+      scrollPending = false;
+    });
+  }, { passive: true });
 }
 
 function handleConsent(el) {
