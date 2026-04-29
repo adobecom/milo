@@ -54,3 +54,7 @@ export const getCountry = stub().resolves('us');
  * @see https://jira.corp.adobe.com/browse/MWPW-174411
 */
 export const shouldAllowKrTrial = stub();
+
+export const lingoActive = () => false;
+export const getGeoLocalePrefix = () => Promise.resolve(null);
+export const getPlaceholderPaths = () => [];

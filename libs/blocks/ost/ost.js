@@ -197,7 +197,10 @@ export async function loadOstEnv() {
   searchParameters.delete('exclusive');
   defaultPlaceholderOptions.forceTaxExclusive = exclusive;
 
-  const searchOfferSelectorId = searchParameters.get('osi');
+  const osiParam = searchParameters.get('osi') ?? '';
+  const osiParts = osiParam.split(',');
+  const searchOfferSelectorId = osiParts[0] || undefined;
+  const initialReferenceOsi = osiParts[1] || undefined;
   searchParameters.delete('osi');
 
   [
@@ -311,6 +314,7 @@ export async function loadOstEnv() {
     language,
     searchParameters: ostSearchParameters,
     searchOfferSelectorId,
+    initialReferenceOsi,
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
