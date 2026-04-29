@@ -9,7 +9,7 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
-  getFloodgateColorFromRepo,
+  getFloodgateColorFromHost,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
@@ -185,8 +185,8 @@ const processData = async (data, accessToken) => {
     return;
   }
 
-  const repoFgColor = getFloodgateColorFromRepo(repo);
-  const floodgateColor = repoFgColor || publishToFloodgate;
+  const hostFgColor = getFloodgateColorFromHost(host);
+  const floodgateColor = hostFgColor || publishToFloodgate;
 
   let domain = `https://${host}`;
 

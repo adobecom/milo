@@ -191,13 +191,14 @@ const processRepoForFloodgate = (repo, fgColor) => {
     if (repo.endsWith(fgInfix)) {
       return repo.slice(0, repo.lastIndexOf(fgInfix));
     }
-    return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
   }
   return repo;
 };
 
-export const getFloodgateColorFromRepo = (repo) => {
-  const match = repo?.match(/-fg-(\w+)$/);
+export const getFloodgateColorFromHost = (host) => {
+  const parts = host?.split('.')[0].split('--') || [];
+  const repo = parts.length >= 3 ? parts.slice(1, -1).join('--') : '';
+  const match = repo.match(/-fg-(\w+)$/);
   return match ? match[1] : '';
 };
 

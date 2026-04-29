@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 import {
   checkUrl,
-  getFloodgateColorFromRepo,
+  getFloodgateColorFromHost,
   getKeyValPairs,
   getOrigin,
   runLanguageFirstRetry,
@@ -166,26 +166,21 @@ describe('runLanguageFirstRetry (language-first retry)', () => {
   });
 });
 
-describe('getFloodgateColorFromRepo', () => {
-  it('should extract color from DA fg repo name', () => {
-    expect(getFloodgateColorFromRepo('da-events-fg-pink')).to.equal('pink');
+describe('getFloodgateColorFromHost', () => {
+  it('should extract color from aem.live fg host', () => {
+    expect(getFloodgateColorFromHost('main--da-events-fg-pink--adobecom.aem.live')).to.equal('pink');
   });
 
-  it('should extract color for blue', () => {
-    expect(getFloodgateColorFromRepo('da-events-fg-blue')).to.equal('blue');
+  it('should extract color from aem.page fg host', () => {
+    expect(getFloodgateColorFromHost('main--da-events-fg-blue--adobecom.aem.page')).to.equal('blue');
   });
 
-  it('should return empty string for legacy repo name without fg infix', () => {
-    expect(getFloodgateColorFromRepo('bacom-pink')).to.equal('');
+  it('should return empty string for non-fg aem host', () => {
+    expect(getFloodgateColorFromHost('main--da-events--adobecom.aem.live')).to.equal('');
   });
 
-  it('should return empty string for repos with no floodgate suffix', () => {
-    expect(getFloodgateColorFromRepo('da-events')).to.equal('');
-  });
-
-  it('should return empty string for null/undefined', () => {
-    expect(getFloodgateColorFromRepo(null)).to.equal('');
-    expect(getFloodgateColorFromRepo(undefined)).to.equal('');
+  it('should return empty string for production host', () => {
+    expect(getFloodgateColorFromHost('business.adobe.com')).to.equal('');
   });
 });
 
@@ -196,8 +191,8 @@ describe('getOrigin with DA floodgate repos', () => {
     expect(result).to.equal('da-events');
   });
 
-  it('should strip legacy -{color} from repo to get correct origin', () => {
-    setConfig({ project: '', repo: 'bacom-pink' });
+  it('should return repo as-is when it does not contain -fg-{color}', () => {
+    setConfig({ project: '', repo: 'bacom' });
     const result = getOrigin('pink');
     expect(result).to.equal('bacom');
   });
