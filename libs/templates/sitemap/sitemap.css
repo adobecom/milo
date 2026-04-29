@@ -1,19 +1,74 @@
 /* Template: HTML Sitemap */
 
-/* Headings: Adobe Clean Display (matches c2 heading font) */
+/* Adobe Clean for all sitemap content (explicit so buttons inherit too) */
+.sitemap {
+  font-family: var(--body-font-family);
+}
+
+.sitemap button {
+  font-family: inherit;
+}
+
+/* Adobe Clean Display for h1, h3, and accordion section-heading buttons */
 .sitemap h1,
 .sitemap h3,
-.sitemap h4 {
+.sitemap .accordion .descr-term button {
   font-family: "Adobe Clean Display", adobe-clean-display, var(--body-font-family);
 }
 
-/* Links: no underline by default in nav lists, underline on hover */
-.sitemap .columns-wrapper a,
-.sitemap .accordion-wrapper a {
+/* Accordion section heading: match section h3 (heading-l), flush-left */
+.sitemap .accordion .descr-term button {
+  font-size: var(--type-heading-l-size);
+  line-height: var(--type-heading-l-lh);
+  font-weight: 700;
+  padding-left: 0;
+}
+
+/* h4 subheadings: Adobe Clean Bold, body size */
+.sitemap h4 {
+  font-weight: 700;
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+}
+
+/* Lists: no bullets, flush-left */
+.sitemap .columns ul,
+.sitemap .accordion ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+/* Links: lighter gray, no underline by default, underline on hover */
+.sitemap .columns a,
+.sitemap .accordion a {
+  color: var(--color-gray-600);
   text-decoration: none;
 }
 
-.sitemap .columns-wrapper a:hover,
-.sitemap .accordion-wrapper a:hover {
+.sitemap .columns a:hover,
+.sitemap .accordion a:hover {
   text-decoration: underline;
+}
+
+/* Match accordion width to columns (override milo's default max-width-10-desktop) */
+.sitemap .accordion-container .foreground {
+  max-width: var(--grid-container-width);
+}
+
+/* Accordion content: text size matches columns, flush-left with heading */
+.sitemap .accordion .descr-details {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Accordion expanded state: no gray background, no blue left-border highlight */
+.sitemap .accordion .descr-term button[aria-expanded="true"] {
+  background: transparent;
+}
+
+.sitemap .accordion .descr-term button[aria-expanded="true"]::before {
+  background-color: transparent;
 }
