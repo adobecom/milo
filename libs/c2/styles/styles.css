@@ -878,6 +878,11 @@ p {
   }
 }
 
+/* Needed for garage door JS animation in browsers without animation-timeline support */
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+  z-index: 1;
+}
+
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1076,10 +1081,6 @@ p {
 
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
-  .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
-    z-index: 1;
-  }
-
   .section.parallax-garage-door-reveal {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
