@@ -184,7 +184,7 @@ describe('Language Banner', () => {
     it('fires an analytics event when the banner is shown', () => {
       expect(window._satellite.track.calledOnce).to.be.true;
       const [, payload] = window._satellite.track.firstCall.args;
-      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner');
+      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner|intl:none|pref-lang:en');
     });
 
     it('sets international cookie and navigates on continue click', async () => {
