@@ -111,11 +111,10 @@ export default function createCanvasGrid(canvas, {
 
   function draw() {
     const { width, height } = getViewport();
-    const { arcMode, arcToGridProgress, slottingProgress } = getState();
+    const { arcToGridProgress } = getState();
     context.clearRect(0, 0, width, height);
     const [dotRed, dotGreen, dotBlue] = hexToRgb(CONFIG.dotColor);
-    const arcDotFade = arcMode ? arcToGridProgress : 1;
-    const alpha = 0.45 * (arcMode ? 1 : (1 - slottingProgress)) * arcDotFade;
+    const alpha = 0.45 * arcToGridProgress;
     if (alpha <= 0) return;
     context.fillStyle = `rgba(${dotRed},${dotGreen},${dotBlue},${alpha})`;
 
