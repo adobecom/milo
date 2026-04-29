@@ -10,8 +10,8 @@ const CONFIG = {
 };
 
 function hexToRgb(hex) {
-  const v = parseInt(hex.replace('#', ''), 16);
-  return [Math.floor(v / 65536) % 256, Math.floor(v / 256) % 256, v % 256];
+  const hexValue = parseInt(hex.replace('#', ''), 16);
+  return [Math.floor(hexValue / 65536) % 256, Math.floor(hexValue / 256) % 256, hexValue % 256];
 }
 
 export default function createCanvasGrid(canvas, {
@@ -21,7 +21,7 @@ export default function createCanvasGrid(canvas, {
   getCardCenter,
   getState,
 }) {
-  const ctx = canvas.getContext('2d');
+  const context = canvas.getContext('2d');
   const mouse = { x: -9999, y: -9999 };
   let dots = [];
 
@@ -31,16 +31,16 @@ export default function createCanvasGrid(canvas, {
 
   function buildGrid() {
     const { width, height } = getViewport();
-    const sp = getSpacing();
+    const spacing = getSpacing();
     dots = [];
-    const cols = Math.ceil(width / sp) + 2;
-    const rows = Math.ceil(height / sp) + 2;
-    for (let r = 0; r < rows; r += 1) {
-      for (let c = 0; c < cols; c += 1) {
-        const x = c * sp;
-        const y = r * sp;
+    const columnCount = Math.ceil(width / spacing) + 2;
+    const rowCount = Math.ceil(height / spacing) + 2;
+    for (let row = 0; row < rowCount; row += 1) {
+      for (let column = 0; column < columnCount; column += 1) {
+        const x = column * spacing;
+        const y = row * spacing;
         dots.push({
-          ox: x, oy: y, x, y, vx: 0, vy: 0,
+          originX: x, originY: y, x, y, velocityX: 0, velocityY: 0,
         });
       }
     }
@@ -56,87 +56,87 @@ export default function createCanvasGrid(canvas, {
   function updateCardAnchors(layers) {
     if (!dots.length) return;
     const { width } = getViewport();
-    const sp = getSpacing();
-    const cols = Math.ceil(width / sp) + 2;
+    const spacing = getSpacing();
+    const columnCount = Math.ceil(width / spacing) + 2;
     layers.forEach((layer) => {
       layer.cards.forEach((card) => {
         const { x, y } = getCardCenter(card);
-        const gc = Math.round(x / sp);
-        const gr = Math.max(0, Math.round(y / sp));
-        const idx = gr * cols + gc;
-        card.dotIdx = Math.max(0, Math.min(dots.length - 1, idx));
-        card.anchorX = dots[card.dotIdx].ox;
-        card.anchorY = dots[card.dotIdx].oy;
+        const gridColumn = Math.round(x / spacing);
+        const gridRow = Math.max(0, Math.round(y / spacing));
+        const dotIndex = gridRow * columnCount + gridColumn;
+        card.dotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
+        card.anchorX = dots[card.dotIdx].originX;
+        card.anchorY = dots[card.dotIdx].originY;
       });
     });
   }
 
   function update() {
     const activeCards = getCards();
-    dots.forEach((d) => {
-      let effectiveMR = CONFIG.mouseRadius;
-      let effectiveRF = CONFIG.repelForce;
+    dots.forEach((dot) => {
+      let currentMouseRadius = CONFIG.mouseRadius;
+      let currentRepelForce = CONFIG.repelForce;
       let boost = 0;
 
       activeCards.forEach((card) => {
         const { x, y } = getCardCenter(card);
-        const cdx = mouse.x - x;
-        const cdy = mouse.y - y;
-        const cd = Math.sqrt(cdx * cdx + cdy * cdy);
-        if (cd < 280) boost = Math.max(boost, 1 - cd / 280);
+        const cardDeltaX = mouse.x - x;
+        const cardDeltaY = mouse.y - y;
+        const cardDistance = Math.sqrt(cardDeltaX * cardDeltaX + cardDeltaY * cardDeltaY);
+        if (cardDistance < 280) boost = Math.max(boost, 1 - cardDistance / 280);
       });
 
       if (boost > 0) {
-        effectiveMR = CONFIG.mouseRadius * (1 + boost * 1.5);
-        effectiveRF = CONFIG.repelForce * (1 + boost * 0.8);
+        currentMouseRadius = CONFIG.mouseRadius * (1 + boost * 1.5);
+        currentRepelForce = CONFIG.repelForce * (1 + boost * 0.8);
       }
 
-      const dx = d.x - mouse.x;
-      const dy = d.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < effectiveMR && dist > 0) {
-        const force = (1 - dist / effectiveMR) * effectiveRF;
-        d.vx += (dx / dist) * force;
-        d.vy += (dy / dist) * force;
+      const deltaX = dot.x - mouse.x;
+      const deltaY = dot.y - mouse.y;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      if (distance < currentMouseRadius && distance > 0) {
+        const force = (1 - distance / currentMouseRadius) * currentRepelForce;
+        dot.velocityX += (deltaX / distance) * force;
+        dot.velocityY += (deltaY / distance) * force;
       }
 
-      d.vx += (d.ox - d.x) * CONFIG.spring;
-      d.vy += (d.oy - d.y) * CONFIG.spring;
-      d.vx *= CONFIG.damping;
-      d.vy *= CONFIG.damping;
-      d.x += d.vx;
-      d.y += d.vy;
+      dot.velocityX += (dot.originX - dot.x) * CONFIG.spring;
+      dot.velocityY += (dot.originY - dot.y) * CONFIG.spring;
+      dot.velocityX *= CONFIG.damping;
+      dot.velocityY *= CONFIG.damping;
+      dot.x += dot.velocityX;
+      dot.y += dot.velocityY;
     });
   }
 
   function draw() {
     const { width, height } = getViewport();
-    const { arcMode, arcToGridT, acrobatT } = getState();
-    ctx.clearRect(0, 0, width, height);
-    const [dr, dg, db] = hexToRgb(CONFIG.dotColor);
-    const arcDotFade = arcMode ? arcToGridT : 1;
-    const alpha = 0.45 * (arcMode ? 1 : (1 - acrobatT)) * arcDotFade;
+    const { arcMode, arcToGridProgress, slottingProgress } = getState();
+    context.clearRect(0, 0, width, height);
+    const [dotRed, dotGreen, dotBlue] = hexToRgb(CONFIG.dotColor);
+    const arcDotFade = arcMode ? arcToGridProgress : 1;
+    const alpha = 0.45 * (arcMode ? 1 : (1 - slottingProgress)) * arcDotFade;
     if (alpha <= 0) return;
-    ctx.fillStyle = `rgba(${dr},${dg},${db},${alpha})`;
+    context.fillStyle = `rgba(${dotRed},${dotGreen},${dotBlue},${alpha})`;
 
-    dots.forEach((d) => {
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, CONFIG.dotSize, 0, Math.PI * 2);
-      ctx.fill();
+    dots.forEach((dot) => {
+      context.beginPath();
+      context.arc(dot.x, dot.y, CONFIG.dotSize, 0, Math.PI * 2);
+      context.fill();
     });
   }
 
-  const onMouseMove = (e) => {
+  const handleMouseMove = (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
   };
-  const onMouseLeave = () => {
+  const handleMouseLeave = () => {
     mouse.x = -9999;
     mouse.y = -9999;
   };
 
-  window.addEventListener('mousemove', onMouseMove);
-  window.addEventListener('mouseleave', onMouseLeave);
+  window.addEventListener('mousemove', handleMouseMove);
+  window.addEventListener('mouseleave', handleMouseLeave);
 
   return {
     resize,
@@ -144,8 +144,8 @@ export default function createCanvasGrid(canvas, {
     update,
     draw,
     destroy() {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseleave', onMouseLeave);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseleave', handleMouseLeave);
     },
   };
 }

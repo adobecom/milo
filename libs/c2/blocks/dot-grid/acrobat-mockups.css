@@ -1,5 +1,5 @@
-.dot-grid .acrobat-win {
-  --acs: min(calc(68.6 * 1vw / 988), 1px);
+.dot-grid .acrobat-desktop-mockup {
+  --acrobat-desktop-scale: min(calc(68.6 * 1vw / 988), 1px);
 
   position: absolute;
   top: calc(21vh + 12px);
@@ -12,172 +12,172 @@
   aspect-ratio: 988 / 567;
   color: #ebebeb;
   background: #1d1d1d;
-  border-radius: calc(var(--acs) * 10);
-  box-shadow: 0 calc(var(--acs) * 20) calc(var(--acs) * 60) rgb(0 0 0 / 60%);
+  border-radius: calc(var(--acrobat-desktop-scale) * 10);
+  box-shadow: 0 calc(var(--acrobat-desktop-scale) * 20) calc(var(--acrobat-desktop-scale) * 60) rgb(0 0 0 / 60%);
   transform: translateY(150vh) scale(1.3);
   transform-origin: center center;
   pointer-events: none;
   will-change: transform;
 }
 
-.dot-grid .ac-bar {
-  flex: 0 0 calc(var(--acs) * 35.8);
+.dot-grid .acrobat-desktop-toolbar {
+  flex: 0 0 calc(var(--acrobat-desktop-scale) * 35.8);
   display: flex;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
-  padding: 0 calc(var(--acs) * 8);
+  padding: 0 calc(var(--acrobat-desktop-scale) * 8);
   background: #1d1d1d;
 }
 
-.dot-grid .ac-bar-l {
+.dot-grid .acrobat-desktop-toolbar-left {
   display: flex;
   flex-shrink: 0;
-  gap: calc(var(--acs) * 10);
+  gap: calc(var(--acrobat-desktop-scale) * 10);
   align-items: center;
   height: 100%;
 }
 
-.dot-grid .ac-bar-r {
+.dot-grid .acrobat-desktop-toolbar-right {
   display: flex;
   flex-shrink: 0;
-  gap: calc(var(--acs) * 6);
+  gap: calc(var(--acrobat-desktop-scale) * 6);
   align-items: center;
 }
 
-.dot-grid .ac-addspace {
+.dot-grid .acrobat-desktop-add-space {
   display: flex;
-  gap: calc(var(--acs) * 6);
+  gap: calc(var(--acrobat-desktop-scale) * 6);
   align-items: center;
   white-space: nowrap;
   font-size: 10.23px;
 }
 
-.dot-grid .ac-addspace-ico {
+.dot-grid .acrobat-desktop-add-space-icon {
   display: flex;
   flex-shrink: 0;
-  width: calc(var(--acs) * 18);
-  height: calc(var(--acs) * 18);
+  width: calc(var(--acrobat-desktop-scale) * 18);
+  height: calc(var(--acrobat-desktop-scale) * 18);
 }
 
-.dot-grid .ac-addspace-ico svg {
+.dot-grid .acrobat-desktop-add-space-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.dot-grid .ac-tabs {
+.dot-grid .acrobat-desktop-tabs {
   display: flex;
-  gap: calc(var(--acs) * 22);
+  gap: calc(var(--acrobat-desktop-scale) * 22);
   align-items: flex-end;
   height: 100%;
 }
 
-.dot-grid .ac-tab {
+.dot-grid .acrobat-desktop-tab {
   position: relative;
   display: flex;
   align-items: center;
   height: 100%;
-  padding-bottom: calc(var(--acs) * 1);
+  padding-bottom: calc(var(--acrobat-desktop-scale) * 1);
   white-space: nowrap;
   font-size: 10.23px;
   color: rgb(235 235 235 / 50%);
 }
 
-.dot-grid .ac-tab-on {
+.dot-grid .acrobat-desktop-tab-active {
   color: #ebebeb;
 }
 
-.dot-grid .ac-tab-on::after {
+.dot-grid .acrobat-desktop-tab-active::after {
   content: '';
   position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  height: calc(var(--acs) * 2);
+  height: calc(var(--acrobat-desktop-scale) * 2);
   background: white;
-  border-radius: calc(var(--acs) * 1);
+  border-radius: calc(var(--acrobat-desktop-scale) * 1);
 }
 
-.dot-grid .ac-divv {
+.dot-grid .acrobat-desktop-divider {
   flex-shrink: 0;
   width: 1px;
-  height: calc(var(--acs) * 16);
+  height: calc(var(--acrobat-desktop-scale) * 16);
   background: #545454;
 }
 
-.dot-grid .ac-ico {
+.dot-grid .acrobat-desktop-icon {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: calc(var(--acs) * 18);
-  height: calc(var(--acs) * 18);
+  width: calc(var(--acrobat-desktop-scale) * 18);
+  height: calc(var(--acrobat-desktop-scale) * 18);
 }
 
-.dot-grid .ac-ico svg {
+.dot-grid .acrobat-desktop-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.dot-grid .ac-ico-dim {
+.dot-grid .acrobat-desktop-icon-dim {
   opacity: 0.35;
 }
 
-.dot-grid .ac-findtext {
-  margin-right: calc(var(--acs) * 2);
+.dot-grid .acrobat-desktop-find-text {
+  margin-right: calc(var(--acrobat-desktop-scale) * 2);
   white-space: nowrap;
   font-size: 10.23px;
   color: rgb(235 235 235 / 45%);
 }
 
-.dot-grid .ac-share {
-  padding: calc(var(--acs) * 4.5) calc(var(--acs) * 14);
+.dot-grid .acrobat-desktop-share {
+  padding: calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 14);
   white-space: nowrap;
   font-size: 10.23px;
   font-weight: 700;
   color: white;
   background: #545454;
-  border-radius: calc(var(--acs) * 16);
+  border-radius: calc(var(--acrobat-desktop-scale) * 16);
 }
 
-.dot-grid .ac-aiassist {
+.dot-grid .acrobat-desktop-ai-assistant {
   display: flex;
-  gap: calc(var(--acs) * 5);
+  gap: calc(var(--acrobat-desktop-scale) * 5);
   align-items: center;
-  padding: calc(var(--acs) * 4.5) calc(var(--acs) * 12) calc(var(--acs) * 4.5) calc(var(--acs) * 10);
+  padding: calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 12) calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 10);
   white-space: nowrap;
   font-size: 10.23px;
   font-weight: 700;
   color: white;
   background: linear-gradient(-22deg, #676dfc 39%, #ff6a54 90%);
-  border-radius: calc(var(--acs) * 16);
+  border-radius: calc(var(--acrobat-desktop-scale) * 16);
 }
 
-.dot-grid .ac-aiassist-ico {
+.dot-grid .acrobat-desktop-ai-assistant-icon {
   display: flex;
   flex-shrink: 0;
-  width: calc(var(--acs) * 14);
-  height: calc(var(--acs) * 14);
+  width: calc(var(--acrobat-desktop-scale) * 14);
+  height: calc(var(--acrobat-desktop-scale) * 14);
 }
 
-.dot-grid .ac-aiassist-ico svg {
+.dot-grid .acrobat-desktop-ai-assistant-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.dot-grid .ac-bar-sep {
+.dot-grid .acrobat-desktop-toolbar-separator {
   flex: 0 0 1px;
   background: #545454;
 }
 
-.dot-grid .ac-body {
+.dot-grid .acrobat-desktop-body {
   display: flex;
   flex: 1;
   min-height: 0;
 }
 
-.dot-grid .ac-lhp {
-  flex: 0 0 calc(var(--acs) * 211);
+.dot-grid .acrobat-desktop-left-panel {
+  flex: 0 0 calc(var(--acrobat-desktop-scale) * 211);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -185,195 +185,195 @@
   border-right: 1px solid #545454;
 }
 
-.dot-grid .ac-lhp-hdr {
-  flex: 0 0 calc(var(--acs) * 35);
+.dot-grid .acrobat-desktop-left-panel-header {
+  flex: 0 0 calc(var(--acrobat-desktop-scale) * 35);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 calc(var(--acs) * 6) 0 calc(var(--acs) * 18);
+  padding: 0 calc(var(--acrobat-desktop-scale) * 6) 0 calc(var(--acrobat-desktop-scale) * 18);
   border-bottom: 1px solid #323232;
 }
 
-.dot-grid .ac-lhp-hdr-title {
-  font-size: calc(var(--acs) * 13.15);
+.dot-grid .acrobat-desktop-left-panel-header-title {
+  font-size: calc(var(--acrobat-desktop-scale) * 13.15);
   font-weight: 700;
   color: white;
 }
 
-.dot-grid .ac-lhp-hdr-x {
+.dot-grid .acrobat-desktop-left-panel-header-close {
   display: flex;
   flex-shrink: 0;
-  width: calc(var(--acs) * 13);
-  height: calc(var(--acs) * 13);
+  width: calc(var(--acrobat-desktop-scale) * 13);
+  height: calc(var(--acrobat-desktop-scale) * 13);
   opacity: 0.5;
 }
 
-.dot-grid .ac-lhp-hdr-x svg {
+.dot-grid .acrobat-desktop-left-panel-header-close svg {
   width: 100%;
   height: 100%;
 }
 
-.dot-grid .ac-tools {
+.dot-grid .acrobat-desktop-tools {
   display: flex;
   flex: 1;
   flex-direction: column;
   gap: 0;
   overflow: hidden;
-  padding: calc(var(--acs) * 6) calc(var(--acs) * 6) calc(var(--acs) * 4) calc(var(--acs) * 8);
+  padding: calc(var(--acrobat-desktop-scale) * 6) calc(var(--acrobat-desktop-scale) * 6) calc(var(--acrobat-desktop-scale) * 4) calc(var(--acrobat-desktop-scale) * 8);
 }
 
-.dot-grid .ac-tool {
+.dot-grid .acrobat-desktop-tool {
   display: flex;
-  gap: calc(var(--acs) * 7);
+  gap: calc(var(--acrobat-desktop-scale) * 7);
   align-items: center;
-  padding: calc(var(--acs) * 3.8) calc(var(--acs) * 5);
-  border-radius: calc(var(--acs) * 4);
+  padding: calc(var(--acrobat-desktop-scale) * 3.8) calc(var(--acrobat-desktop-scale) * 5);
+  border-radius: calc(var(--acrobat-desktop-scale) * 4);
 }
 
-.dot-grid .ac-tool-ico {
+.dot-grid .acrobat-desktop-tool-icon {
   display: flex;
   flex-shrink: 0;
-  width: calc(var(--acs) * 18);
-  height: calc(var(--acs) * 18);
+  width: calc(var(--acrobat-desktop-scale) * 18);
+  height: calc(var(--acrobat-desktop-scale) * 18);
 }
 
-.dot-grid .ac-tool-ico svg {
+.dot-grid .acrobat-desktop-tool-icon svg {
   width: 100%;
   height: 100%;
 }
 
-.dot-grid .ac-tool-lbl {
+.dot-grid .acrobat-desktop-tool-label {
   white-space: nowrap;
-  font-size: calc(var(--acs) * 10.23);
+  font-size: calc(var(--acrobat-desktop-scale) * 10.23);
   color: #ebebeb;
 }
 
-.dot-grid .ac-badge-new {
+.dot-grid .acrobat-desktop-new-badge {
   flex-shrink: 0;
   margin-left: auto;
-  padding: calc(var(--acs) * 1.5) calc(var(--acs) * 4);
-  font-size: calc(var(--acs) * 7.5);
+  padding: calc(var(--acrobat-desktop-scale) * 1.5) calc(var(--acrobat-desktop-scale) * 4);
+  font-size: calc(var(--acrobat-desktop-scale) * 7.5);
   font-weight: 700;
   color: white;
   background: #0265dc;
-  border-radius: calc(var(--acs) * 3);
+  border-radius: calc(var(--acrobat-desktop-scale) * 3);
 }
 
-.dot-grid .ac-viewmore {
-  margin-top: calc(var(--acs) * 2);
-  padding: calc(var(--acs) * 5) calc(var(--acs) * 15);
-  font-size: calc(var(--acs) * 10.23);
+.dot-grid .acrobat-desktop-view-more {
+  margin-top: calc(var(--acrobat-desktop-scale) * 2);
+  padding: calc(var(--acrobat-desktop-scale) * 5) calc(var(--acrobat-desktop-scale) * 15);
+  font-size: calc(var(--acrobat-desktop-scale) * 10.23);
   color: #72b7f9;
 }
 
-.dot-grid .ac-qt {
-  flex: 0 0 calc(var(--acs) * 41);
+.dot-grid .acrobat-desktop-quick-tools {
+  flex: 0 0 calc(var(--acrobat-desktop-scale) * 41);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--acs) * 2);
+  gap: calc(var(--acrobat-desktop-scale) * 2);
   align-items: center;
-  padding: calc(var(--acs) * 10) 0 0;
+  padding: calc(var(--acrobat-desktop-scale) * 10) 0 0;
   background: #252525;
   border-right: 1px solid rgb(255 255 255 / 5%);
 }
 
-.dot-grid .ac-qt-btn {
+.dot-grid .acrobat-desktop-quick-tool-button {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: calc(var(--acs) * 29);
-  height: calc(var(--acs) * 29);
-  border-radius: calc(var(--acs) * 4);
+  width: calc(var(--acrobat-desktop-scale) * 29);
+  height: calc(var(--acrobat-desktop-scale) * 29);
+  border-radius: calc(var(--acrobat-desktop-scale) * 4);
 }
 
-.dot-grid .ac-qt-btn-on {
+.dot-grid .acrobat-desktop-quick-tool-active {
   background: rgb(68 122 255 / 22%);
 }
 
-.dot-grid .ac-qt-btn svg {
-  width: calc(var(--acs) * 18);
-  height: calc(var(--acs) * 18);
+.dot-grid .acrobat-desktop-quick-tool-button svg {
+  width: calc(var(--acrobat-desktop-scale) * 18);
+  height: calc(var(--acrobat-desktop-scale) * 18);
 }
 
-.dot-grid .ac-cvs {
+.dot-grid .acrobat-desktop-canvas {
   flex: 1;
   background: #252525;
 }
 
-.dot-grid .ac-rhr {
-  flex: 0 0 calc(var(--acs) * 46);
+.dot-grid .acrobat-desktop-right-rail {
+  flex: 0 0 calc(var(--acrobat-desktop-scale) * 46);
   display: flex;
   flex-direction: column;
-  gap: calc(var(--acs) * 1);
+  gap: calc(var(--acrobat-desktop-scale) * 1);
   align-items: center;
-  padding: calc(var(--acs) * 6) 0;
+  padding: calc(var(--acrobat-desktop-scale) * 6) 0;
   background: #1d1d1d;
   border-left: 1px solid #545454;
 }
 
-.dot-grid .ac-rhr-btn {
+.dot-grid .acrobat-desktop-right-rail-button {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: calc(var(--acs) * 32);
-  height: calc(var(--acs) * 28);
+  width: calc(var(--acrobat-desktop-scale) * 32);
+  height: calc(var(--acrobat-desktop-scale) * 28);
 }
 
-.dot-grid .ac-rhr-btn svg {
-  width: calc(var(--acs) * 18);
-  height: calc(var(--acs) * 18);
+.dot-grid .acrobat-desktop-right-rail-button svg {
+  width: calc(var(--acrobat-desktop-scale) * 18);
+  height: calc(var(--acrobat-desktop-scale) * 18);
 }
 
-.dot-grid .ac-rhr-sep {
+.dot-grid .acrobat-desktop-right-rail-separator {
   flex-shrink: 0;
-  width: calc(var(--acs) * 28);
+  width: calc(var(--acrobat-desktop-scale) * 28);
   height: 1px;
-  margin: calc(var(--acs) * 4) 0;
+  margin: calc(var(--acrobat-desktop-scale) * 4) 0;
   background: #545454;
 }
 
-.dot-grid .ac-rhr-num {
+.dot-grid .acrobat-desktop-right-rail-page-number {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: calc(var(--acs) * 30);
-  height: calc(var(--acs) * 22);
-  font-size: calc(var(--acs) * 11);
+  width: calc(var(--acrobat-desktop-scale) * 30);
+  height: calc(var(--acrobat-desktop-scale) * 22);
+  font-size: calc(var(--acrobat-desktop-scale) * 11);
   text-align: center;
   color: #ebebeb;
   border: 1px solid #454545;
-  border-radius: calc(var(--acs) * 3);
+  border-radius: calc(var(--acrobat-desktop-scale) * 3);
 }
 
-.dot-grid .ac-rhr-zoom {
+.dot-grid .acrobat-desktop-right-rail-zoom {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  height: calc(var(--acs) * 22);
-  font-size: calc(var(--acs) * 10.5);
+  height: calc(var(--acrobat-desktop-scale) * 22);
+  font-size: calc(var(--acrobat-desktop-scale) * 10.5);
   color: rgb(235 235 235 / 50%);
 }
 
-.dot-grid .ac-rhr-spacer {
+.dot-grid .acrobat-desktop-right-rail-spacer {
   flex: 1;
 }
 
-/* Mobile Acrobat chrome — hidden on desktop/tablet, shown at mobile breakpoint */
-.dot-grid .mob-ac {
+/* Mobile Acrobat mockup — hidden on desktop/tablet, shown at mobile breakpoint */
+.dot-grid .acrobat-mobile-mockup {
   display: none;
 }
 
 @media (width <= 767px) {
-  /* Hide desktop Acrobat chrome on mobile — replaced by .mob-ac */
-  .dot-grid .acrobat-win {
+  /* Hide desktop Acrobat mockup on mobile — replaced by .acrobat-mobile-mockup */
+  .dot-grid .acrobat-desktop-mockup {
     display: none !important;
   }
 
-  .dot-grid .mob-ac {
+  .dot-grid .acrobat-mobile-mockup {
     position: absolute;
     top: 0;
     left: calc((100% - 294px) / 2);
@@ -393,7 +393,7 @@
     will-change: transform;
   }
 
-  .dot-grid .mab-tb {
+  .dot-grid .acrobat-mobile-top-bar {
     flex: 0 0 44px;
     display: flex;
     align-items: center;
@@ -402,37 +402,37 @@
     border-bottom: 0.5px solid rgb(255 255 255 / 12%);
   }
 
-  .dot-grid .mab-tb-l {
+  .dot-grid .acrobat-mobile-top-bar-left {
     display: flex;
     gap: 10px;
     align-items: center;
   }
 
-  .dot-grid .mab-vdiv {
+  .dot-grid .acrobat-mobile-vertical-divider {
     width: 1px;
     height: 20px;
     background: rgb(255 255 255 / 25%);
   }
 
-  .dot-grid .mab-tb-r {
+  .dot-grid .acrobat-mobile-top-bar-right {
     display: flex;
     gap: 18px;
     align-items: center;
     margin-left: auto;
   }
 
-  .dot-grid .mab-tb-ico {
+  .dot-grid .acrobat-mobile-top-bar-icon {
     display: flex;
     line-height: 0;
     color: #fff;
   }
 
-  .dot-grid .mab-canvas {
+  .dot-grid .acrobat-mobile-canvas {
     flex: 1;
     background: #111;
   }
 
-  .dot-grid .mab-fab {
+  .dot-grid .acrobat-mobile-floating-action-button {
     position: absolute;
     right: 14px;
     bottom: 116px;
@@ -448,7 +448,7 @@
     box-shadow: 0 4px 18px rgb(0 0 0 / 45%);
   }
 
-  .dot-grid .mab-bot {
+  .dot-grid .acrobat-mobile-bottom-bar {
     flex: 0 0 80px;
     display: flex;
     align-items: center;
@@ -458,7 +458,7 @@
     border-top: 0.5px solid rgb(255 255 255 / 12%);
   }
 
-  .dot-grid .mab-tool {
+  .dot-grid .acrobat-mobile-tool-button {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -474,7 +474,7 @@
     border: none;
   }
 
-  .dot-grid .mab-home-ind {
+  .dot-grid .acrobat-mobile-home-indicator {
     flex: 0 0 20px;
     display: flex;
     align-items: center;
@@ -482,7 +482,7 @@
     background: #1a1a1a;
   }
 
-  .dot-grid .mab-home-ind::after {
+  .dot-grid .acrobat-mobile-home-indicator::after {
     content: '';
     width: 120px;
     height: 4px;
