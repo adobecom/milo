@@ -199,6 +199,23 @@ Unless a type-specific rule overrides them, the manager applies the following de
 
 Singleton, supplemental, and repeatable type policies are defined by the `requirements` sheet (`webpage-singleton`, `organization-singleton`, `breadcrumblist-singleton`, `required-primary-type`, `supplemental-singletons`, `repeatable-types`). Relationship arrays such as `hasPart` are unioned by canonical `@id`.
 
+#### Type-specific transforms
+
+In addition to identity rewrite and merge, the manager applies a small set of type-specific transforms.
+
+**Product → SoftwareApplication.** Adobe.com pages do not market physical products. The merch card system, however, emits `Product` nodes (see Appendix A.3). Because the canonical primary type for product-oriented pages is `SoftwareApplication`, the manager normalizes any incoming `Product` node into a `SoftwareApplication`:
+
+- rewrites `@type` from `Product` to `SoftwareApplication`
+- re-derives `@id` to `{canonicalPageURL}#softwareapplication`
+- preserves `name`, `brand`, `image`, `offers`, and other shared properties
+- hoists nested `Brand` and `Offer` entities to the top-level `@graph` and replaces inline values with `@id` references
+
+This transform is governed by the `product-to-softwareapplication` requirement.
+
+#### Reference shape
+
+References to other graph nodes are encoded as `{ "@id": "…" }` (see `nodes-referenced-by-id`). Because all referenced entities — including the site-wide `Organization` — are present as top-level nodes in the managed `@graph`, consumers can follow any `@id` to find the full node and its properties. Adding `url` to a reference object would be redundant.
+
 ### 2.5 Canonical Page Graph Model
 
 The manager treats `WebPage` as the page container and links related entities to it. Canonical `@id` values are defined in the preceding section.
@@ -232,16 +249,21 @@ This model is intended to be stable across separate producer implementations. Th
 ```mermaid
 graph TD
     WP["WebPage<br/>#webpage"]
-    SA["SoftwareApplication<br/>#softwareapplication"]
+    SA["SoftwareApplication<br/>#softwareapplication<br/>(transformed from Product)"]
     BC["BreadcrumbList<br/>#breadcrumb"]
     ORG["Adobe Organization"]
+    OFF1["Offer<br/>#offer-paid"]
+    OFF2["Offer<br/>#offer-trial"]
     WP -->|mainEntity| SA
     WP -->|publisher| ORG
+    WP -->|breadcrumb| BC
     SA -->|provider| ORG
+    SA -->|offers| OFF1
+    SA -->|offers| OFF2
     BC -->|isPartOf| WP
 ```
 
-For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` rather than `Article`. The page-family-to-primary-entity mapping is owned by the public `tests` dataset.
+For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` rather than `Article`. Producer payloads of `@type: Product` are transformed to `SoftwareApplication` per §2.4. Offers (paid subscription, free trial, etc.) are hoisted to the top-level `@graph` and referenced by `@id`. The page-family-to-primary-entity mapping is owned by the public `tests` dataset.
 
 ### 2.6 Alternatives Considered
 
@@ -311,6 +333,8 @@ Recommended logging behavior:
 ## References
 
 [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). developers.google.com.
+
+[Software App rich results](https://developers.google.com/search/docs/appearance/structured-data/software-app). developers.google.com. Defines required and recommended properties for `SoftwareApplication` to be eligible for software-app rich results: `name`, `offers` (with `price`), and either `aggregateRating` or `review`. Drives the `softwareapplication-name`, `softwareapplication-rating-or-review`, and `offer-price` requirements.
 
 [Structured data catalog: structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json). milo.adobe.com. This AEM spreadsheet is the authoritative source for the normative graph specification, the validation cohort, the supported type inventory, and the integration registry. The `requirements` sheet in particular is consumed directly by the validator and transformer, so this document and that sheet must stay aligned. The catalog is organized into the following sheets:
 
@@ -491,3 +515,130 @@ Primary node/entity is `SoftwareApplication` rather than `Article`.
   ]
 }
 ```
+
+### Example 3: Merch card Product → SoftwareApplication transformation
+
+The merch card system currently emits a `Product` node per card. The graph manager normalizes this into a `SoftwareApplication` (see §2.4 type-specific transforms). Nested `Brand` and `Offer` entities are hoisted to the top-level `@graph`; references to the site-wide `Organization` are replaced with `{ "@id": "https://www.adobe.com/#organization" }` and the manager-synthesized canonical Organization.
+
+Note that the manager produces incomplete nodes when source data is unavailable. For example, the merch card payload below has no `aggregateRating`, no `review`, no `applicationCategory`, and no `operatingSystem`; the manager preserves what producers provide and does not invent values for these fields.
+
+#### Input — merch card producer payload
+
+```json
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product",
+  "name": "This is a new card created by Axel.",
+  "brand": {
+    "@type": "Brand",
+    "name": "Adobe"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#offer",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "priceCurrency": "USD",
+      "price": "662.9",
+      "availability": "https://schema.org/InStock",
+      "category": "Subscription",
+      "seller": { "@id": "https://www.adobe.com/#org" },
+      "itemOffered": { "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product" },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "662.9",
+        "priceCurrency": "USD",
+        "billingDuration": "P1Y",
+        "billingIncrement": 1,
+        "priceWithoutDiscount": "779.88"
+      }
+    }
+  ],
+  "image": [
+    "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
+    "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg?format=png&width=800&height=800"
+  ]
+}
+```
+
+#### Output — managed graph
+
+```json
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.adobe.com/#organization",
+      "name": "Adobe",
+      "url": "https://www.adobe.com/",
+      "logo": "https://www.adobe.com/favicon.ico"
+    },
+    {
+      "@type": "WebPage",
+      "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#webpage",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "publisher": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "mainEntity": {
+        "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#softwareapplication"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#softwareapplication",
+      "name": "This is a new card created by Axel.",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "isPartOf": {
+        "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#webpage"
+      },
+      "provider": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "brand": {
+        "@type": "Brand",
+        "name": "Adobe"
+      },
+      "image": [
+        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
+        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg?format=png&width=800&height=800"
+      ],
+      "offers": [
+        { "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#offer" }
+      ]
+    },
+    {
+      "@type": "Offer",
+      "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#offer",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "price": "662.9",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "category": "Subscription",
+      "seller": {
+        "@id": "https://www.adobe.com/#organization"
+      },
+      "itemOffered": {
+        "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#softwareapplication"
+      },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "662.9",
+        "priceCurrency": "USD",
+        "billingDuration": "P1Y",
+        "billingIncrement": 1,
+        "priceWithoutDiscount": "779.88"
+      }
+    }
+  ]
+}
+```
+
+Notes on the transform:
+
+- The producer-supplied `Product#product` `@id` is replaced with the canonical `#softwareapplication` `@id`; the inline `Offer.itemOffered` reference is rewritten to point at the new id.
+- The producer-supplied seller `@id` `https://www.adobe.com/#org` is normalized to the canonical `https://www.adobe.com/#organization`. (Producer-side fix-up planned; manager performs this canonicalization defensively.)
+- The inline `Brand` is small and anonymous; the manager retains it inline rather than hoisting it to a top-level node. Hoisting is reserved for typed entities that have or can derive a stable `@id`.
+- Producer fields not satisfying Google rich-results requirements (`aggregateRating` / `review`, `applicationCategory`, `operatingSystem`) are absent in this example; corresponding `softwareapplication-rating-or-review` warnings would fire for this output until producers supply that data.

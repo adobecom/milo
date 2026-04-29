@@ -1,0 +1,40 @@
+<!-- Merch-card-style Product producer payload (per json-ld.md Appendix A.3). -->
+<!-- The graph manager must transform this into a SoftwareApplication, hoist the Offer, -->
+<!-- keep the anonymous Brand inline, and canonicalize the seller alias #org → #organization. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product",
+  "name": "Photoshop",
+  "brand": {
+    "@type": "Brand",
+    "name": "Adobe"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#offer",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "priceCurrency": "USD",
+      "price": "662.9",
+      "availability": "https://schema.org/InStock",
+      "category": "Subscription",
+      "seller": { "@id": "https://www.adobe.com/#org" },
+      "itemOffered": { "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product" },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "662.9",
+        "priceCurrency": "USD",
+        "billingDuration": "P1Y",
+        "billingIncrement": 1,
+        "priceWithoutDiscount": "779.88"
+      }
+    }
+  ],
+  "image": [
+    "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
+    "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg?format=png&width=800&height=800"
+  ]
+}
+</script>

@@ -37,8 +37,18 @@ const RULES = {
   // for v1 they are merged into one entry. Assign sequential ids in a later iteration.
   VideoObject: { idFragment: '#videoobject', repeatable: true },
   Event: { idFragment: '#event' },
-  Product: { idFragment: '#product' },
+  Offer: { idFragment: '#offer', repeatable: true },
 };
+
+// Producer-side @type values transformed to canonical types before normalization.
+// Adobe.com pages do not market physical products; Product (e.g., from review block,
+// merch cards) is rewritten to SoftwareApplication per the product-to-softwareapplication
+// requirement.
+const TYPE_TRANSFORMS = { Product: 'SoftwareApplication' };
+
+// Defensive canonicalization: producer-supplied @id fragments that should map to the
+// canonical site-wide Organization @id.
+const ORG_ID_ALIASES = new Set(['#org', '#publisher', '#adobe']);
 
 export function siteRoot(hostname = window.location.hostname) {
   return /business|bacom/i.test(hostname)
@@ -95,12 +105,37 @@ export function parsePayload(scriptEl) {
 export function normalizeNode(node) {
   const out = { ...node };
   delete out['@context'];
+  if (TYPE_TRANSFORMS[out['@type']]) out['@type'] = TYPE_TRANSFORMS[out['@type']];
   const type = out['@type'];
   if (!type) return out;
   const rule = RULES[type];
   if (!rule) return out;
   out['@id'] = pageScopedId(type);
   return out;
+}
+
+export function canonicalizeOrgId(id) {
+  if (typeof id !== 'string') return id;
+  const hashIdx = id.lastIndexOf('#');
+  if (hashIdx < 0) return id;
+  const fragment = id.slice(hashIdx);
+  if (!ORG_ID_ALIASES.has(fragment)) return id;
+  const root = id.slice(0, hashIdx).replace(/\/$/, '');
+  return `${root}/#organization`;
+}
+
+// Walk reference stubs ({ "@id": "..." } with no @type) and rewrite known
+// Organization @id aliases to the canonical form. Skips full nodes (which carry @type).
+export function canonicalizeReferences(node) {
+  for (const v of Object.values(node)) {
+    if (Array.isArray(v)) {
+      for (const item of v) {
+        if (item && typeof item === 'object') canonicalizeReferences(item);
+      }
+    } else if (v && typeof v === 'object') {
+      if (v['@id'] && !v['@type']) v['@id'] = canonicalizeOrgId(v['@id']);
+    }
+  }
 }
 
 function asArray(v) {
@@ -182,17 +217,32 @@ function sortNodes(nodes) {
   });
 }
 
-const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand'];
+const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered'];
+
+function extractEntity(val) {
+  if (!val || typeof val !== 'object' || Array.isArray(val) || !val['@type']) return null;
+  if (!RULES[val['@type']] && !TYPE_TRANSFORMS[val['@type']]) return null;
+  const normalized = normalizeNode(val);
+  return normalized['@id'] ? normalized : null;
+}
 
 export function extractInlineEntities(node) {
   const extracted = [];
   for (const prop of ENTITY_PROPS) {
     const val = node[prop];
-    if (val && typeof val === 'object' && !Array.isArray(val) && val['@type'] && !val['@id']) {
-      const normalized = normalizeNode(val);
-      if (normalized['@id']) {
-        extracted.push(normalized);
-        node[prop] = { '@id': normalized['@id'] };
+    if (val == null) continue;
+    if (Array.isArray(val)) {
+      node[prop] = val.map((item) => {
+        const ent = extractEntity(item);
+        if (!ent) return item;
+        extracted.push(ent);
+        return { '@id': ent['@id'] };
+      });
+    } else {
+      const ent = extractEntity(val);
+      if (ent) {
+        extracted.push(ent);
+        node[prop] = { '@id': ent['@id'] };
       }
     }
   }
@@ -282,6 +332,7 @@ export class JsonLdGraphManager {
           const node = normalizeNode(raw);
           const inlined = extractInlineEntities(node);
           const toMerge = [node, ...inlined];
+          for (const n of toMerge) canonicalizeReferences(n);
           for (const n of toMerge) {
             const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
             const prevSrc = this.sources.get(id) ?? 'bootDom';

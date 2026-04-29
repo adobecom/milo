@@ -10,6 +10,7 @@ import {
   mergeNodes,
   injectLinks,
   extractInlineEntities,
+  canonicalizeOrgId,
   siteRoot,
   defaultOrg,
   JsonLdGraphManager,
@@ -564,14 +565,16 @@ describe('extractInlineEntities', () => {
     expect(node.publisher).to.deep.equal({ '@id': ORG_ID });
   });
 
-  it('leaves inline objects that already have @id untouched', () => {
+  it('hoists inline objects that already have @id and rewrites them as references', () => {
     const node = {
       '@type': 'Article',
-      publisher: { '@type': 'Organization', '@id': ORG_ID },
+      publisher: { '@type': 'Organization', '@id': ORG_ID, name: 'Adobe' },
     };
     const extracted = extractInlineEntities(node);
-    expect(extracted).to.have.length(0);
-    expect(node.publisher['@id']).to.equal(ORG_ID);
+    expect(extracted).to.have.length(1);
+    expect(extracted[0]['@type']).to.equal('Organization');
+    expect(extracted[0]['@id']).to.equal(ORG_ID);
+    expect(node.publisher).to.deep.equal({ '@id': ORG_ID });
   });
 
   it('leaves inline objects with unknown @type untouched', () => {
@@ -596,5 +599,212 @@ describe('extractInlineEntities', () => {
     const org = graph.find((n) => n['@type'] === 'Organization');
     expect(org).to.exist;
     expect(article.publisher).to.deep.equal({ '@id': ORG_ID });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Type transform: Product → SoftwareApplication
+// ---------------------------------------------------------------------------
+describe('Product → SoftwareApplication transform', () => {
+  it('rewrites @type and assigns canonical SA @id', () => {
+    const out = normalizeNode({ '@type': 'Product', name: 'X', description: 'Y' });
+    expect(out['@type']).to.equal('SoftwareApplication');
+    expect(out['@id']).to.equal(`${PAGE_URL}#softwareapplication`);
+    expect(out.name).to.equal('X');
+    expect(out.description).to.equal('Y');
+  });
+
+  it('produces no Product nodes in the managed graph (review-block shape)', () => {
+    document.head.appendChild(makeScript({
+      '@context': 'http://schema.org',
+      '@type': 'Product',
+      name: 'Adobe Photoshop',
+      description: 'Photo editor',
+    }));
+    const manager = trackedManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    expect(graph.some((n) => n['@type'] === 'Product')).to.be.false;
+    const sa = graph.find((n) => n['@type'] === 'SoftwareApplication');
+    expect(sa).to.exist;
+    expect(sa.name).to.equal('Adobe Photoshop');
+    expect(sa.description).to.equal('Photo editor');
+    expect(sa['@id']).to.equal(`${PAGE_URL}#softwareapplication`);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Inline Offer hoisting (extractInlineEntities array handling)
+// ---------------------------------------------------------------------------
+describe('inline Offer hoisting', () => {
+  it('hoists inline Offers from offers array and replaces with @id refs', () => {
+    const node = {
+      '@type': 'SoftwareApplication',
+      offers: [
+        { '@type': 'Offer', '@id': 'producer/path#offer', price: '19.99', priceCurrency: 'USD' },
+      ],
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(1);
+    expect(extracted[0]['@type']).to.equal('Offer');
+    expect(extracted[0]['@id']).to.equal(`${PAGE_URL}#offer`);
+    expect(extracted[0].price).to.equal('19.99');
+    expect(node.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+  });
+
+  it('preserves non-typed array entries (e.g., URL strings)', () => {
+    const node = {
+      '@type': 'BreadcrumbList',
+      itemListElement: ['https://example.com/a', 'https://example.com/b'],
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(0);
+    expect(node.itemListElement).to.deep.equal([
+      'https://example.com/a',
+      'https://example.com/b',
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Brand stays inline (not in RULES)
+// ---------------------------------------------------------------------------
+describe('inline Brand handling', () => {
+  it('does not hoist anonymous Brand', () => {
+    const node = {
+      '@type': 'SoftwareApplication',
+      brand: { '@type': 'Brand', name: 'Adobe' },
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(0);
+    expect(node.brand).to.deep.equal({ '@type': 'Brand', name: 'Adobe' });
+  });
+
+  it('does not hoist Brand even when producer assigns @id', () => {
+    const node = {
+      '@type': 'SoftwareApplication',
+      brand: { '@type': 'Brand', '@id': 'https://example.com/#brand', name: 'Adobe' },
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(0);
+    expect(node.brand['@type']).to.equal('Brand');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// canonicalizeOrgId — defensive #org → #organization rewrite
+// ---------------------------------------------------------------------------
+describe('canonicalizeOrgId', () => {
+  it('rewrites #org alias to #organization', () => {
+    expect(canonicalizeOrgId('https://www.adobe.com/#org'))
+      .to.equal('https://www.adobe.com/#organization');
+  });
+
+  it('rewrites #publisher and #adobe aliases', () => {
+    expect(canonicalizeOrgId('https://www.adobe.com/#publisher'))
+      .to.equal('https://www.adobe.com/#organization');
+    expect(canonicalizeOrgId('https://www.adobe.com/#adobe'))
+      .to.equal('https://www.adobe.com/#organization');
+  });
+
+  it('leaves canonical #organization unchanged', () => {
+    const id = 'https://www.adobe.com/#organization';
+    expect(canonicalizeOrgId(id)).to.equal(id);
+  });
+
+  it('leaves unrelated fragments unchanged', () => {
+    const id = 'https://www.adobe.com/page#article';
+    expect(canonicalizeOrgId(id)).to.equal(id);
+  });
+
+  it('handles ids with no fragment', () => {
+    const id = 'https://www.adobe.com/page';
+    expect(canonicalizeOrgId(id)).to.equal(id);
+  });
+
+  it('canonicalizes Org alias references end-to-end through manager', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'Article',
+      headline: 'Test',
+      publisher: { '@id': 'https://www.adobe.com/#org' },
+    }));
+    const manager = trackedManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    const article = graph.find((n) => n['@type'] === 'Article');
+    expect(article.publisher).to.deep.equal({ '@id': ORG_ID });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BreadcrumbList "when applicable"
+// ---------------------------------------------------------------------------
+describe('graph without BreadcrumbList', () => {
+  it('produces a valid graph without breadcrumb property on WebPage', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'Article',
+      headline: 'No breadcrumbs here',
+    }));
+    const manager = trackedManager();
+    manager.init();
+
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+    expect(graph.some((n) => n['@type'] === 'BreadcrumbList')).to.be.false;
+    const webpage = graph.find((n) => n['@type'] === 'WebPage');
+    expect(webpage.breadcrumb).to.be.undefined;
+    // Article still links back to WebPage; Organization synthesized.
+    expect(graph.some((n) => n['@type'] === 'Organization')).to.be.true;
+    expect(graph.some((n) => n['@type'] === 'Article')).to.be.true;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// End-to-end: merch-card-style Product transformation
+// ---------------------------------------------------------------------------
+describe('end-to-end: merch-card Product transformation', () => {
+  beforeEach(async () => {
+    resetManager();
+    setCanonical();
+    const html = await readFile({ path: './mocks/merch-card.html' });
+    const tpl = document.createElement('template');
+    tpl.innerHTML = html;
+    [...tpl.content.querySelectorAll('script[type="application/ld+json"]')].forEach((s) => {
+      document.head.appendChild(s);
+    });
+  });
+
+  it('converts Product → SoftwareApplication, hoists Offer, keeps Brand inline, canonicalizes seller', () => {
+    const manager = trackedManager();
+    manager.init();
+    const { '@graph': graph } = JSON.parse(
+      document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
+    );
+
+    expect(graph.some((n) => n['@type'] === 'Product')).to.be.false;
+
+    const sa = graph.find((n) => n['@type'] === 'SoftwareApplication');
+    expect(sa).to.exist;
+    expect(sa['@id']).to.equal(`${PAGE_URL}#softwareapplication`);
+    expect(sa.name).to.equal('Photoshop');
+    expect(sa.brand).to.deep.equal({ '@type': 'Brand', name: 'Adobe' });
+    expect(sa.image).to.have.length(2);
+    expect(sa.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+
+    const offer = graph.find((n) => n['@type'] === 'Offer');
+    expect(offer).to.exist;
+    expect(offer['@id']).to.equal(`${PAGE_URL}#offer`);
+    expect(offer.price).to.equal('662.9');
+    expect(offer.priceCurrency).to.equal('USD');
+    expect(offer.priceSpecification).to.exist;
+    // Seller alias #org canonicalized to #organization.
+    expect(offer.seller).to.deep.equal({ '@id': ORG_ID });
   });
 });
