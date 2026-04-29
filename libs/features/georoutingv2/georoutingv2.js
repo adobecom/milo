@@ -487,8 +487,13 @@ export default async function loadGeoRouting(
   if (storedLocale || storedLocale === '') {
     const urlLocaleGeo = urlLocale.split('_')[0];
     const storedLocaleGeo = storedLocale.split('_')[0];
+    // Treat regional locales (declared with a `base` in locales.js, e.g. ca_fr -> fr)
+    // as equivalent to their base locale so users on French content with a French-region
+    // cookie (or vice versa) aren't shown the modal.
+    const isBaseEquivalent = config.locales[storedLocale]?.base === urlLocale
+      || config.locales[urlLocale]?.base === storedLocale;
     // Show modal when url and cookie disagree
-    if (urlLocaleGeo !== storedLocaleGeo) {
+    if (urlLocaleGeo !== storedLocaleGeo && !isBaseEquivalent) {
       const localeMatches = json.georouting.data.filter(
         (d) => d.prefix === storedLocale,
       );

@@ -8,7 +8,17 @@ const { createTag, loadStyle, loadBlock, setConfig, getFederatedContentRoot } = 
 
 const mockConfig = {
   locales: {
-    '': { ietf: 'us' }, ch_de: {}, ch_fr: {}, ch_it: {}, mena_en: {}, de: {}, africa: {}, eg_ar: { dir: 'rtl' }, eg_en: { },
+    '': { ietf: 'us' },
+    ch_de: { base: 'de' },
+    ch_fr: { base: 'fr' },
+    ch_it: { base: 'it' },
+    mena_en: {},
+    de: {},
+    fr: {},
+    ca_fr: { base: 'fr' },
+    africa: {},
+    eg_ar: { dir: 'rtl' },
+    eg_en: {},
   },
   locale: { contentRoot: window.location.href, prefix: '' },
   env: 'test',
@@ -68,6 +78,26 @@ const mockGeoroutingJson = {
         language: 'Français',
         languageOrder: '2',
         geo: 'ch',
+      },
+      {
+        prefix: 'fr',
+        title: 'Vous visitez Adobe.com pour {{geo}}.',
+        text: 'En fonction de votre situation géographique, nous pensons que vous préférerez le site Web français.',
+        button: 'France',
+        akamaiCodes: 'FR',
+        language: '',
+        languageOrder: '',
+        geo: 'fr',
+      },
+      {
+        prefix: 'ca_fr',
+        title: 'Vous visitez Adobe.com pour {{geo}}.',
+        text: 'En fonction de votre situation géographique, nous pensons que vous préférerez le site Web canadien français.',
+        button: 'Canada - Français',
+        akamaiCodes: 'CA',
+        language: 'Français',
+        languageOrder: '2',
+        geo: 'ca',
       },
       {
         prefix: 'mena_en',
@@ -487,6 +517,39 @@ describe('GeoRouting', () => {
     // prepare
     mockConfig.locale.prefix = 'ch_de';
     document.cookie = 'international=ch_fr;path=/;';
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    mockConfig.locale.prefix = '';
+    expect(modal).to.be.null;
+  });
+
+  it('If aiming for base fr page and storage is regional fr variant (ca_fr) no modal is shown', async () => {
+    // prepare
+    mockConfig.locale.prefix = 'fr';
+    document.cookie = 'international=ca_fr;path=/;';
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    mockConfig.locale.prefix = '';
+    expect(modal).to.be.null;
+  });
+
+  it('If aiming for regional fr variant (ca_fr) page and storage is base fr no modal is shown', async () => {
+    // prepare
+    mockConfig.locale.prefix = 'ca_fr';
+    document.cookie = 'international=fr;path=/;';
+    await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+    const modal = document.querySelector('.dialog-modal');
+    // assert
+    mockConfig.locale.prefix = '';
+    expect(modal).to.be.null;
+  });
+
+  it('If aiming for base de page and storage is regional de variant (ch_de) no modal is shown', async () => {
+    // prepare
+    mockConfig.locale.prefix = 'de';
+    document.cookie = 'international=ch_de;path=/;';
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
     const modal = document.querySelector('.dialog-modal');
     // assert
