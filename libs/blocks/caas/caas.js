@@ -1,6 +1,5 @@
 import {
   decodeCompressedString,
-  fgHeaderName,
   initCaas,
   loadCaasFiles,
   loadStrings,
@@ -53,15 +52,7 @@ const loadCaas = async (a) => {
     state.langFirst = true;
   }
 
-  let floodGateColor = getMetadata('floodgatecolor') || '';
-  if (!floodGateColor) {
-    try {
-      const resp = await fetch(window.location.href, { method: 'HEAD' });
-      floodGateColor = resp.headers.get(fgHeaderName) || '';
-    } catch {
-      // ignore fetch errors
-    }
-  }
+  const floodGateColor = getMetadata('floodgatecolor') || '';
   if (floodGateColor && floodGateColor !== 'default') {
     state.fetchCardsFromFloodgateTree = true;
     state.floodgateColor = floodGateColor;
