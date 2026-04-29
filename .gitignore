@@ -18,6 +18,7 @@ libs/navigation/dist/
 !/.claude/skills/
 **/.CLAUDE.md
 mcp-server.log
+.playwright-stamp
 
 # Font files should not be committed due to copyright & branding reasons. Use Typekit instead.
 *.otf
