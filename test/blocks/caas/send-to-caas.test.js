@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 import {
   checkUrl,
+  getFloodgateColorFromRepo,
   getKeyValPairs,
   getOrigin,
   runLanguageFirstRetry,
@@ -162,5 +163,48 @@ describe('runLanguageFirstRetry (language-first retry)', () => {
     const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
     expect(result).to.equal('en-xx');
     expect(callCount).to.be.greaterThan(1);
+  });
+});
+
+describe('getFloodgateColorFromRepo', () => {
+  it('should extract color from DA fg repo name', () => {
+    expect(getFloodgateColorFromRepo('da-events-fg-pink')).to.equal('pink');
+  });
+
+  it('should extract color for blue', () => {
+    expect(getFloodgateColorFromRepo('da-events-fg-blue')).to.equal('blue');
+  });
+
+  it('should return empty string for legacy repo name without fg infix', () => {
+    expect(getFloodgateColorFromRepo('bacom-pink')).to.equal('');
+  });
+
+  it('should return empty string for repos with no floodgate suffix', () => {
+    expect(getFloodgateColorFromRepo('da-events')).to.equal('');
+  });
+
+  it('should return empty string for null/undefined', () => {
+    expect(getFloodgateColorFromRepo(null)).to.equal('');
+    expect(getFloodgateColorFromRepo(undefined)).to.equal('');
+  });
+});
+
+describe('getOrigin with DA floodgate repos', () => {
+  it('should strip -fg-{color} from DA repo to get correct origin', () => {
+    setConfig({ project: '', repo: 'da-events-fg-pink' });
+    const result = getOrigin('pink');
+    expect(result).to.equal('da-events');
+  });
+
+  it('should strip legacy -{color} from repo to get correct origin', () => {
+    setConfig({ project: '', repo: 'bacom-pink' });
+    const result = getOrigin('pink');
+    expect(result).to.equal('bacom');
+  });
+
+  it('should return repo as-is when floodgate color is default', () => {
+    setConfig({ project: '', repo: 'da-events' });
+    const result = getOrigin('default');
+    expect(result).to.equal('da-events');
   });
 });

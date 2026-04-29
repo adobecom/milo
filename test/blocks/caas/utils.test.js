@@ -912,6 +912,7 @@ describe('getCountryAndLang', () => {
 describe('getFloodgateCaasConfig', () => {
   const caasFgState = defaultState;
   caasFgState.fetchCardsFromFloodgateTree = true;
+  caasFgState.floodgateColor = 'pink';
   caasFgState.draftDb = true;
 
   it('should return a floodgate enabled caas config object', async () => {

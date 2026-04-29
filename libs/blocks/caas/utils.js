@@ -177,7 +177,6 @@ export const LOCALES = {
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
-export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -822,10 +821,9 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
   requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeaderName, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, state.floodgateColor]);
   }
   return requestHeaders;
 };
@@ -1239,6 +1237,7 @@ export const defaultState = {
   andLogicTags: [],
   autoCountryLang: false,
   fetchCardsFromFloodgateTree: false,
+  floodgateColor: '',
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

@@ -187,9 +187,18 @@ const getDateProp = (dateStr, errorMsg) => {
 
 const processRepoForFloodgate = (repo, fgColor) => {
   if (repo && fgColor && fgColor !== 'default') {
+    const fgInfix = `-fg-${fgColor}`;
+    if (repo.endsWith(fgInfix)) {
+      return repo.slice(0, repo.lastIndexOf(fgInfix));
+    }
     return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
   }
   return repo;
+};
+
+export const getFloodgateColorFromRepo = (repo) => {
+  const match = repo?.match(/-fg-(\w+)$/);
+  return match ? match[1] : '';
 };
 
 export const getOrigin = (fgColor) => {
