@@ -1,4 +1,5 @@
 const { execSync } = require('child_process');
+const crypto = require('crypto');
 const fsp = require('fs/promises');
 const os = require('os');
 const path = require('path');
@@ -19,6 +20,7 @@ const DEPS_DIR = './libs/c2/styles/deps';
 // so it is pinned here and bumped manually when a new release ships.
 const DEPS_RELEASE_BASE_URL = 'https://github.com/adobecom/consonant/raw/main/releases';
 const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.14.tgz';
+const DEPS_PACKAGE_SHA256 = '47dc99d6bdd3ebf53402ab4a1c2be3282b822a7dd77e3d6edb76cd2f3e1897c6';
 // Path inside the extracted package that holds the CSS sources we want to
 // mirror into DEPS_DIR.
 const DEPS_PACKAGE_CSS_SUBPATH = path.join('css', 'dev');
@@ -40,6 +42,9 @@ const EXCLUDED_VAR_PATTERNS = [
   '--s2a-font-family-label',
   '--s2a-font-family-eyebrow',
   '--s2a-font-family-caption',
+  /* waiting for some clarity */
+  '--s2a-color-button-*',
+  '--s2a-color-iconbutton-*',
 ];
 
 // S2A Build Logic
@@ -216,15 +221,10 @@ function normalizeSectionKey(textOrFilename) {
   return textOrFilename.trim().replace(/\.css$/i, '').toLowerCase();
 }
 
-function findSentinelComment(rule) {
-  return rule.nodes.find((n) => n.type === 'comment'
-    && /new tokens get added here/i.test(n.text));
-}
-
 // Walk the rule's children once to map each managed section to its last S2A
 // decl. Appending after `lastNode` keeps insertions glued to the section's
-// decls and stops before any unrelated content that follows (nested rules,
-// non-S2A decls, or the sentinel comment).
+// decls and stops before any unrelated content that follows (nested rules
+// or non-S2A decls).
 function scanSections(rule) {
   const sections = [];
   let current = null;
@@ -244,28 +244,23 @@ function scanSections(rule) {
   return sections;
 }
 
-// Create a new /* tokens.xxx.css */ section comment, placed just above the
-// sentinel when present so new sections stack with the managed ones rather
-// than trailing after unrelated content.
-function createSection(rule, source, indent, sentinel) {
+// Create a new /* tokens.xxx */ section comment appended at the end of the
+// rule so new sections stack after existing managed ones.
+function createSection(rule, source, indent) {
   const key = normalizeSectionKey(source);
   const comment = postcss.comment({ text: key });
   comment.raws.before = `\n\n${indent}`;
   comment.raws.left = ' ';
   comment.raws.right = ' ';
-  if (sentinel) {
-    rule.insertBefore(sentinel, comment);
-  } else {
-    rule.append(comment);
-    rule.raws.semicolon = true;
-  }
+  rule.append(comment);
+  rule.raws.semicolon = true;
   return { comment, key, lastNode: comment };
 }
 
 // Reconcile the --s2a- declarations inside `rule` against `varsMap`:
 //   - update values when they differ (decls keep their current position),
-//   - insert new decls under the /* tokens.xxx.css */ section matching their
-//     source, creating the section above the sentinel if it doesn't exist,
+//   - insert new decls under the /* tokens.xxx */ section matching their
+//     source, creating the section at the end of the rule if it doesn't exist,
 //   - remove existing --s2a- decls that are no longer in varsMap.
 // Changes are recorded into changeLog with an optional context prefix.
 function patchRule(rule, varsMap, changeLog, context = '') {
@@ -280,7 +275,6 @@ function patchRule(rule, varsMap, changeLog, context = '') {
 
   const sections = scanSections(rule);
   const sectionByKey = new Map(sections.map((s) => [s.key, s]));
-  const sentinel = findSentinelComment(rule);
 
   for (const [prop, { value, source }] of Object.entries(varsMap)) {
     const existing = existingByProp.get(prop);
@@ -295,7 +289,7 @@ function patchRule(rule, varsMap, changeLog, context = '') {
     const key = source ? normalizeSectionKey(source) : null;
     let section = key ? sectionByKey.get(key) : null;
     if (!section && source) {
-      section = createSection(rule, source, indent, sentinel);
+      section = createSection(rule, source, indent);
       sectionByKey.set(section.key, section);
     }
 
@@ -371,16 +365,20 @@ ${deleted.length ? deleted.join('\n') : 'none'}`;
 
 // Mirror sourceDir into targetDir: replace existing files, copy new ones, and
 // delete any local files that no longer exist in source so deps stays 1:1
-// with the upstream release.
+// with the upstream release. Only `tokens.*.css` files are considered on both
+// sides; anything else upstream is ignored and anything else local is left alone.
 async function mirrorDirectory(sourceDir, targetDir) {
   await fsp.mkdir(targetDir, { recursive: true });
-  const sourceFiles = await fsp.readdir(sourceDir);
+
+  const sourceEntries = await fsp.readdir(sourceDir, { withFileTypes: true });
+  const sourceFiles = sourceEntries.filter(isTokensFile).map((e) => e.name);
   const sourceSet = new Set(sourceFiles);
 
-  const localFiles = await fsp.readdir(targetDir).catch(() => []);
-  for (const f of localFiles) {
-    if (!sourceSet.has(f)) {
-      await fsp.rm(path.join(targetDir, f), { recursive: true, force: true });
+  const localEntries = await fsp.readdir(targetDir, { withFileTypes: true }).catch(() => []);
+  for (const entry of localEntries) {
+    if (!isTokensFile(entry)) continue;
+    if (!sourceSet.has(entry.name)) {
+      await fsp.rm(path.join(targetDir, entry.name), { force: true });
     }
   }
 
@@ -390,7 +388,9 @@ async function mirrorDirectory(sourceDir, targetDir) {
 }
 
 // Download the upstream tarball, extract it to a temp dir, and mirror its
-// css/dev contents into the local deps folder.
+// css/dev contents into the local deps folder. The download is checked
+// against DEPS_PACKAGE_SHA256 before extraction so a swapped or tampered
+// tarball fails the build instead of silently propagating into the PR.
 async function syncDepsFromUpstream(depsDir) {
   const url = `${DEPS_RELEASE_BASE_URL}/${DEPS_PACKAGE}`;
   console.log(`Downloading ${url}`);
@@ -399,14 +399,23 @@ async function syncDepsFromUpstream(depsDir) {
     throw new Error(`Failed to download ${url}: ${response.status} ${response.statusText}`);
   }
 
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const actualHash = crypto.createHash('sha256').update(buffer).digest('hex');
+  if (actualHash !== DEPS_PACKAGE_SHA256) {
+    throw new Error(
+      `SHA-256 mismatch for ${DEPS_PACKAGE}.\n  expected: ${DEPS_PACKAGE_SHA256}\n  actual:   ${actualHash}\n`
+      + 'Update DEPS_PACKAGE_SHA256 if this version bump is intentional.',
+    );
+  }
+
   const tmpRoot = await fsp.mkdtemp(path.join(os.tmpdir(), 's2a-deps-'));
   try {
     const tarPath = path.join(tmpRoot, DEPS_PACKAGE);
-    await fsp.writeFile(tarPath, Buffer.from(await response.arrayBuffer()));
+    await fsp.writeFile(tarPath, buffer);
 
     const extractDir = path.join(tmpRoot, 'extracted');
     await fsp.mkdir(extractDir);
-    await tar.x({ file: tarPath, cwd: extractDir });
+    await tar.x({ file: tarPath, cwd: extractDir, strict: true });
 
     const entries = await fsp.readdir(extractDir, { withFileTypes: true });
     const root = entries.find((e) => e.isDirectory());
@@ -472,7 +481,7 @@ const createAndPushBranch = ({ filePath, branch }) => {
   execSyncSafe(`git branch -D ${branch}`);
   execSync(`git checkout -b ${branch}`);
   execSync(`git add ${filePath}`);
-  execSyncSafe('git commit -m "Update S2A style tokens"');
+  execSync('git commit -m "Update S2A style tokens"');
   execSync(`git push --force origin ${branch}`);
 };
 
