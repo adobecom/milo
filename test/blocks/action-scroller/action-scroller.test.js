@@ -20,7 +20,7 @@ describe('action scrollers', () => {
     ]);
   });
 
-  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility)');
+  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility):not(.no-links)');
   actionScroller.forEach((scroller) => {
     init(scroller);
 
@@ -61,6 +61,16 @@ describe('action scrollers', () => {
           expect(scrolledBack).to.be.true;
         });
       }
+    });
+  });
+
+  describe('action scroller no-links', () => {
+    it('hides scroller from accessibility tree when there are no links', () => {
+      const el = document.querySelector('.action-scroller.no-links');
+      init(el);
+      const scroller = el.querySelector('.scroller');
+      expect(scroller.getAttribute('aria-hidden')).to.equal('true');
+      expect(scroller.getAttribute('tabindex')).to.be.null;
     });
   });
 

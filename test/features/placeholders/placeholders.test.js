@@ -1,7 +1,12 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig, getConfig, customFetch } from '../../../libs/utils/utils.js';
-import { replaceText, replaceKey, replaceKeyArray, decoratePlaceholderArea } from '../../../libs/features/placeholders.js';
+import {
+  replaceText,
+  replaceKey,
+  replaceKeyArray,
+  decoratePlaceholderArea,
+} from '../../../libs/features/placeholders.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
@@ -91,5 +96,139 @@ describe('Placeholders', () => {
     text = await replaceText(text, config);
     document.head.removeChild(meta);
     expect(text).to.equal('Add to cart. Adobe Apps');
+  });
+});
+
+describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
+  let paramsGetStub;
+  let langfirstMeta;
+  const geoFixturePath = '/test/features/placeholders/lu_fr';
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
+  function enableLingo() {
+    langfirstMeta = document.createElement('meta');
+    langfirstMeta.name = 'langfirst';
+    langfirstMeta.content = 'on';
+    document.head.appendChild(langfirstMeta);
+    sessionStorage.setItem('akamai', 'lu');
+    const geoLocales = {
+      '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+      '/fr': { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+    };
+    const regions = { lu_fr: { prefix: geoFixturePath } };
+    setConfig({ locales: geoLocales, locale: { region: 'fr' }, contentRoot: '' });
+    const cfg = getConfig();
+    cfg.locale.prefix = '/fr';
+    cfg.locale.regions = regions;
+    return cfg;
+  }
+
+  function disableLingo() {
+    if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
+    sessionStorage.removeItem('akamai');
+  }
+
+  afterEach(() => {
+    disableLingo();
+  });
+
+  it('replaceText resolves geo value for -geo-ip keys (default, non-deferred)', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const text = await replaceText('tel:{{phone-number-geo-ip}}', cfg);
+    expect(text).to.equal('tel:+352 800 99999');
+  });
+
+  it('replaceText resolves geo value for non-phone -geo-ip key', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Acheter maintenant');
+  });
+
+  it('falls back to base placeholder when langfirst is off', async () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+    const cfg = getConfig();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Buy now');
+  });
+
+  it('deferred update swaps base to geo value in href, preserves custom text', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const link = document.createElement('a');
+    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
+    link.textContent = 'Call Adobe Support';
+
+    await decoratePlaceholderArea({ nodes: [link] });
+    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
+    expect(link.textContent).to.equal('Call Adobe Support');
+
+    await decoratePlaceholderArea.deferredGeo;
+    expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
+    expect(link.textContent).to.equal('Call Adobe Support');
+  });
+
+  it('deferred update swaps both href and text node to geo values', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const link = document.createElement('a');
+    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
+    const textNode = document.createTextNode('{{phone-number-geo-ip}}');
+    link.appendChild(textNode);
+
+    await decoratePlaceholderArea({ nodes: [link, textNode] });
+    expect(link.getAttribute('href')).to.equal('tel:800 555 1234');
+    expect(textNode.nodeValue).to.equal('800 555 1234');
+
+    await decoratePlaceholderArea.deferredGeo;
+    expect(link.getAttribute('href')).to.equal('tel:+352 800 99999');
+    expect(textNode.nodeValue).to.equal('+352 800 99999');
+  });
+
+  it('MEP placeholder overrides geo-ip value', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
+    const text = await replaceText('{{phone-number-geo-ip}}', cfg);
+    expect(text).to.equal('MEP override value');
+    delete cfg.placeholders;
+  });
+
+  it('resolves geo value for federated content root (GNAV path)', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const federatedConfig = {
+      locale: {
+        ...cfg.locale,
+        contentRoot: `${window.location.origin}/fr/federal/globalnav`,
+      },
+    };
+    const text = await replaceText('{{phone-number-geo-ip}}', federatedConfig);
+    expect(text).to.equal('+352 GNAV 99999');
+  });
+
+  it('deferred update skips keys overridden by MEP', async () => {
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    cfg.placeholders = { 'phone-number-geo-ip': 'MEP override value' };
+    const link = document.createElement('a');
+    link.setAttribute('href', 'tel:%7B%7Bphone-number-geo-ip%7D%7D');
+    link.textContent = 'Call us';
+
+    await decoratePlaceholderArea({ nodes: [link] });
+    await decoratePlaceholderArea.deferredGeo;
+    expect(link.getAttribute('href')).to.equal('tel:MEP override value');
+    expect(link.textContent).to.equal('Call us');
+    delete cfg.placeholders;
   });
 });

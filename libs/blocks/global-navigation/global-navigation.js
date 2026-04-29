@@ -12,6 +12,8 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getLingoRegion,
+  lingoActive,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -63,7 +65,7 @@ const [utilities, placeholders, merch, { processTrackingLabels }] = await Promis
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings } = merch;
+const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
   closeAllDropdowns,
@@ -185,6 +187,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
+  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -200,7 +203,7 @@ const handleSignIn = async () => {
     scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
     response_type: 'token',
     redirect_uri: redirectUri,
-    locale: locale?.ietf || 'en-US',
+    locale: lingoRegion?.ietf || locale?.ietf || 'en-US',
   };
 
   const dctxId = getMetadata('susi-light-dctx-id');
@@ -628,7 +631,7 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -642,6 +645,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
+        ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
         ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
@@ -684,7 +688,7 @@ class Gnav {
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
-    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items" role="list"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    localNav.replaceChildren(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items" role="list"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const localNavTitle = document.querySelector('.feds-localnav-title');
@@ -775,7 +779,7 @@ class Gnav {
       </div>
       `;
 
-    this.block.append(
+    this.block.replaceChildren(
       this.elements.curtain,
       this.elements.topnavWrapper,
     );
@@ -958,7 +962,10 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const locale = getUniversalNavLocale(config.locale);
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf
+      ? lingoRegion.ietf.replace('-', '_')
+      : getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
@@ -999,11 +1006,18 @@ class Gnav {
       return children;
     };
 
+    let countryCode = getMiloLocaleSettings(getConfig().locale)?.country || 'US';
+    if (isMasGeoDetectionEnabled?.()) {
+      const base = getConfig().miloLibs || getConfig().codeRoot;
+      const { getValidatedMarket } = await import(`${base}/utils/market.js`);
+      countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
+    }
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
       locale,
-      countryCode: getMiloLocaleSettings(getConfig().locale)?.country || 'US',
+      countryCode,
       imsClientId: window.adobeid?.client_id,
       theme: isDarkMode() ? 'dark' : 'light',
       analyticsContext: {

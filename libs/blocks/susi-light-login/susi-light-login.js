@@ -1,5 +1,7 @@
 /* eslint-disable consistent-return */
-import { loadScript, createTag, getConfig, loadIms, getMetadata } from '../../utils/utils.js';
+import {
+  loadScript, createTag, getConfig, loadIms, getMetadata, getLingoRegion, lingoActive,
+} from '../../utils/utils.js';
 
 const loadSusiLight = async (env) => {
   const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
@@ -39,24 +41,25 @@ export class SusiLight {
     this.setBackground();
     this.el.innerHTML = '';
 
-    const loginContainer = this.createLoginContainer();
+    const loginContainer = await this.createLoginContainer();
     this.el.append(loginContainer);
   };
 
   handleViewportChange = () => this.setBackground();
 
-  createAuthParams = () => {
+  createAuthParams = async () => {
     const { imsClientId, locale, imsScope, env } = getConfig();
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     return {
       client_id: imsClientId,
       scope: imsScope || window.adobeid.scope || 'AdobeID,openid,gnav',
       response_type: 'code',
       redirect_uri: this.getRedirectURL(env),
-      locale: locale?.ietf || 'en-US',
+      locale: lingoRegion?.ietf || locale?.ietf || 'en-US',
     };
   };
 
-  createSusiElement = () => {
+  createSusiElement = async () => {
     const { env } = getConfig();
     const sentry = createTag('susi-sentry-light');
     const { classList } = this.el;
@@ -64,7 +67,7 @@ export class SusiLight {
 
     if (env.name !== 'prod') sentry.stage = true;
     sentry.variant = 'standard';
-    sentry.authParams = this.createAuthParams();
+    sentry.authParams = await this.createAuthParams();
     const dctxId = getMetadata('susi-light-dctx-id');
     if (dctxId) sentry.authParams.dctx_id = dctxId;
     sentry.config = { consentProfile: 'free' };
@@ -76,7 +79,7 @@ export class SusiLight {
     return sentry;
   };
 
-  createLoginContainer = () => {
+  createLoginContainer = async () => {
     const loginContainer = createTag('div', { class: 'login-container' });
     const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
     const loginProduct = createTag('div', { class: 'login-product' });
@@ -84,7 +87,7 @@ export class SusiLight {
     const loginText = this.children[1]?.querySelectorAll('p');
     const loginTitle = createTag('h1', { class: 'login-title' }, loginText.length > 0 ? getText(loginText[0]) : getText(this.children[1]));
     const loginDesc = createTag('div', { class: 'login-description' }, loginText.length > 1 ? getText(loginText[1]) : '');
-    const susiElement = this.createSusiElement();
+    const susiElement = await this.createSusiElement();
     const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[3]);
 
     susiWrapper.append(loginProduct, loginTitle, loginDesc, susiElement);

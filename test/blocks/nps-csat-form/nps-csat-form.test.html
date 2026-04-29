@@ -13,17 +13,14 @@
   <script>
     // Set up mocking in a non-module script so it executes before any module loads
     window.capturedMessages = [];
-    window.mockParent = {
+    window.mockHost = {
       postMessage: (message, origin) => {
         window.capturedMessages.push({ message, origin });
       },
     };
-    
-    // Mock window.parent before any modules load
-    Object.defineProperty(window, 'parent', {
-      configurable: true,
-      get: () => window.mockParent,
-    });
+
+    // Use uxpHost to mock postMessage transport without redefining window.parent
+    window.uxpHost = window.mockHost;
   </script>
   <script type="module">
     import { runTests } from '@web/test-runner-mocha';
@@ -42,22 +39,22 @@
     const ErrorMsg = 'Error';
 
     // Helper to create a block with test data
-    const createBlock = () => {
+    const createBlock = (overrides = {}) => {
       const block = document.createElement('div');
       block.className = 'nps-csat-form';
       
       // Add child rows with test data
       const rows = [
-        ['Title', 'How satisfied are you?'],
-        ['Question', 'How satisfied are you with this product?'],
-        ['Radio Labels', '5 :: Very dissatisfied, Dissatisfied, Neutral, Satisfied, Very satisfied'],
-        ['Feedback Label', 'Please provide additional feedback'],
-        ['Textbox Placeholder', 'Enter your feedback here...'],
-        ['Contact Me', 'I would like Adobe to contact me about my feedback'],
-        ['Cancel Text', 'Cancel'],
-        ['Submit Text', 'Submit'],
-        ['Error Text', 'Please select a rating'],
-        ['Display Cross', 'false'],
+        ['Title', overrides.title ?? 'How satisfied are you?'],
+        ['Question', overrides.question ?? 'How satisfied are you with this product?'],
+        ['Radio Labels', overrides.radioLabels ?? '5 :: Very dissatisfied, Dissatisfied, Neutral, Satisfied, Very satisfied'],
+        ['Feedback Label', overrides.feedbackLabel ?? 'Please provide additional feedback'],
+        ['Textbox Placeholder', overrides.textboxPlaceholder ?? 'Enter your feedback here...'],
+        ['Contact Me', overrides.contactMeString ?? 'I would like Adobe to contact me about my feedback'],
+        ['Cancel Text', overrides.cancelText ?? 'Cancel'],
+        ['Submit Text', overrides.submitText ?? 'Submit'],
+        ['Error Text', overrides.errorText ?? 'Please select a rating'],
+        ['Display Cross', overrides.displayCross ?? 'false'],
       ];
       
       rows.forEach(([key, value]) => {
@@ -114,6 +111,20 @@
       setTimeout(checkForMessage, 0);
     });
 
+    const receiveMessageOfType = async (expectedType, timeoutMessage) => {
+      const startTime = Date.now();
+      const timeoutMs = MSG_TIMEOUT + 250;
+
+      while (Date.now() - startTime < timeoutMs) {
+        const message = await receiveMessage(timeoutMessage);
+        if (message.type === expectedType) {
+          return message;
+        }
+      }
+
+      throw new Error(timeoutMessage ?? `Timed out waiting for ${expectedType} message`);
+    };
+
     const sendMessage = (message) => {
       const event = new MessageEvent('message', {
         data: JSON.stringify(message),
@@ -140,6 +151,24 @@
           resolve(); // No message received - this is what we expect
         }
       }, timeoutMs);
+    });
+
+    const waitForCondition = (predicate, timeoutMs = 200) => new Promise((resolve, reject) => {
+      const startTime = Date.now();
+
+      const check = () => {
+        if (predicate()) {
+          resolve();
+          return;
+        }
+        if (Date.now() - startTime >= timeoutMs) {
+          reject(new Error('Timed out waiting for condition'));
+          return;
+        }
+        setTimeout(check, 5);
+      };
+
+      check();
     });
 
     runTests(() => {
@@ -171,7 +200,7 @@
           it('should send Ready message on initialization and wait for Ack', async () => {
             // Initialize the form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -183,7 +212,7 @@
           it('should timeout and send Error message if no Ack received within timeout', async () => {
             // Initialize the form but don't send Ack
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
 
             // Don't send Ack - wait for timeout
@@ -198,7 +227,7 @@
             // Initialize form with proper Ack
             await npsCsatForm(block);
 
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -215,7 +244,7 @@
           it('should send Submit message with form data when form is submitted', async () => {
             // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -244,22 +273,370 @@
           });
 
           it('should not submit and show error if no radio button is selected', async () => {
-            // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
             const form = block.querySelector('#nps');
             const radioGroup = block.querySelector('.nps-radio-group');
 
-            // Try to submit without selecting radio
+            // Programmatically uncheck all radios to test validation
+            form.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
+
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
 
-            // Should show error state
             expect(radioGroup.classList.contains('show-error')).to.be.true;
             expect(block.classList.contains('submit-clicked')).to.be.true;
+          });
+        });
+
+        describe('NPS Form Handling', () => {
+          beforeEach(() => {
+            if (block && block.parentNode) {
+              block.parentNode.removeChild(block);
+            }
+            block = createBlock({
+              question: 'How likely are you to recommend Adobe to a friend or colleague?',
+              radioLabels: '11 :: Select an option, 10-Extremely likely, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0-Not at all likely',
+            });
+          });
+
+          it('should parse authored NPS options and map values to score positions', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            const desktopRadios = Array.from(form.querySelectorAll('.desktop-nps-radio input[type="radio"][name="feedback"]'));
+            const desktopLabels = Array.from(form.querySelectorAll('.desktop-nps-radio label span'));
+            const pickerOptions = Array.from(form.querySelectorAll('nps-picker .nps-popover-item'));
+
+            expect(desktopRadios.length).to.equal(11);
+            expect(desktopLabels[0].textContent.trim()).to.equal('0');
+            expect(desktopLabels[desktopLabels.length - 1].textContent.trim()).to.equal('10');
+            expect(desktopRadios[0].value).to.equal('0');
+            expect(desktopRadios[desktopRadios.length - 1].value).to.equal('10');
+
+            expect(pickerOptions.length).to.equal(11);
+            expect(pickerOptions[0].getAttribute('data-value')).to.equal('10');
+            expect(pickerOptions[0].textContent.trim()).to.equal('10 – Extremely likely');
+            expect(pickerOptions[1].getAttribute('data-value')).to.equal('9');
+            expect(pickerOptions[1].textContent.trim()).to.equal('9');
+            expect(pickerOptions[pickerOptions.length - 1].getAttribute('data-value')).to.equal('0');
+            expect(pickerOptions[pickerOptions.length - 1].textContent.trim()).to.equal('0 – Not at all likely');
+          });
+
+          it('should submit desktop NPS score using radio score value', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            const desktopContainer = form.querySelector('.desktop-nps-radio');
+            const mobileContainer = form.querySelector('.mobile-nps-select');
+            desktopContainer.style.display = 'block';
+            mobileContainer.style.display = 'none';
+
+            const radio = form.querySelector('#nps-2');
+            radio.checked = true;
+
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+
+            const submitMessage = await receiveMessageOfType(Submit);
+            expect(submitMessage.type).to.equal(Submit);
+            expect(submitMessage.data.score).to.equal(2);
+          });
+
+          it('should submit mobile NPS score using selected option score value', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            const desktopContainer = form.querySelector('.desktop-nps-radio');
+            const mobileContainer = form.querySelector('.mobile-nps-select');
+            const picker = form.querySelector('nps-picker.nps-picker');
+            desktopContainer.style.display = 'none';
+            mobileContainer.style.display = 'block';
+            picker.value = '4';
+
+            const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
+            form.dispatchEvent(submitEvent);
+
+            const submitMessage = await receiveMessageOfType(Submit);
+            expect(submitMessage.type).to.equal(Submit);
+            expect(submitMessage.data.score).to.equal(4);
+          });
+        });
+
+        describe('NPS Popover Picker', () => {
+          beforeEach(() => {
+            if (block && block.parentNode) {
+              block.parentNode.removeChild(block);
+            }
+            block = createBlock({
+              question: 'How likely are you to recommend Adobe to a friend or colleague?',
+              radioLabels: '11 :: Select an option, 10-Extremely likely, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0-Not at all likely',
+            });
+          });
+
+          it('should render picker trigger, popover, and options', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+            const options = picker.querySelectorAll('.nps-popover-item');
+
+            expect(picker).to.exist;
+            expect(trigger).to.exist;
+            expect(popover).to.exist;
+            expect(options.length).to.equal(11);
+          });
+
+          it('should update picker value and label when selecting an item', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const triggerLabel = picker.querySelector('.nps-picker-label');
+            const thirdItem = picker.querySelectorAll('.nps-popover-item')[2];
+
+            let changed = false;
+            picker.addEventListener('change', () => { changed = true; });
+            thirdItem.click();
+
+            expect(changed).to.be.true;
+            expect(picker.value).to.equal(thirdItem.getAttribute('data-value'));
+            expect(triggerLabel.textContent.trim()).to.equal(thirdItem.textContent.trim());
+            expect(thirdItem.getAttribute('aria-selected')).to.equal('true');
+          });
+
+          it('should sync aria-expanded with popover toggle events', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+
+            const openEvent = new Event('toggle');
+            Object.defineProperty(openEvent, 'newState', { value: 'open' });
+            popover.dispatchEvent(openEvent);
+            expect(trigger.getAttribute('aria-expanded')).to.equal('true');
+
+            const closeEvent = new Event('toggle');
+            Object.defineProperty(closeEvent, 'newState', { value: 'closed' });
+            popover.dispatchEvent(closeEvent);
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+          });
+
+          it('should support keyboard navigation and enter selection in popover', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+            const items = picker.querySelectorAll('.nps-popover-item');
+            const first = items[0];
+            const second = items[1];
+
+            if (typeof popover.showPopover === 'function' && !popover.matches(':popover-open')) {
+              popover.showPopover();
+            } else {
+              trigger.click();
+            }
+
+            first.focus();
+            first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+            expect(document.activeElement).to.equal(second);
+
+            second.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+            expect(picker.value).to.equal(second.getAttribute('data-value'));
+          });
+
+          it('should close the picker when focus tabs away from the open dropdown', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const form = block.querySelector('#nps');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+            const submitButton = form.querySelector('.nps-submit');
+
+            if (typeof popover.showPopover === 'function' && !popover.matches(':popover-open')) {
+              popover.showPopover();
+            } else {
+              trigger.click();
+            }
+
+            firstItem.focus();
+            firstItem.dispatchEvent(new FocusEvent('focusout', {
+              bubbles: true,
+              cancelable: true,
+              relatedTarget: submitButton,
+            }));
+            submitButton.focus();
+            await Promise.resolve();
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+          });
+
+          it('should close the picker on the first tab press from the trigger', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const popover = picker.querySelector('.nps-popover');
+
+            if (typeof popover.showPopover === 'function' && !popover.matches(':popover-open')) {
+              popover.showPopover();
+            } else {
+              trigger.click();
+            }
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+          });
+
+          it('should move focus into the dropdown when opened from the keyboard', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            expect(document.activeElement).to.equal(firstItem);
+          });
+
+          it('should close the picker and move focus to textarea on tab from an option', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+            const textarea = block.querySelector('#explanation-input');
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            firstItem.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            await waitForCondition(() => (
+              trigger.getAttribute('aria-expanded') === 'false'
+              && document.activeElement === textarea
+            ));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+            expect(document.activeElement).to.equal(textarea);
+          });
+
+          it('should close the picker and move focus back to the trigger on shift-tab from an option', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const picker = block.querySelector('nps-picker.nps-picker');
+            const trigger = picker.querySelector('.nps-picker-trigger');
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+
+            trigger.focus();
+            trigger.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'ArrowDown',
+              bubbles: true,
+              cancelable: true,
+            }));
+            await waitForCondition(() => document.activeElement === firstItem);
+
+            firstItem.dispatchEvent(new KeyboardEvent('keydown', {
+              key: 'Tab',
+              shiftKey: true,
+              bubbles: true,
+              cancelable: true,
+            }));
+
+            await waitForCondition(() => (
+              trigger.getAttribute('aria-expanded') === 'false'
+              && document.activeElement === trigger
+            ));
+
+            expect(trigger.getAttribute('aria-expanded')).to.equal('false');
+            expect(document.activeElement).to.equal(trigger);
+          });
+
+          it('should show and clear submit error for picker selection flow', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            const radioGroup = block.querySelector('.nps-radio-group');
+            const desktopContainer = form.querySelector('.desktop-nps-radio');
+            const mobileContainer = form.querySelector('.mobile-nps-select');
+            const picker = form.querySelector('nps-picker.nps-picker');
+            desktopContainer.style.display = 'none';
+            mobileContainer.style.display = 'block';
+
+            form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+            expect(radioGroup.classList.contains('show-error')).to.be.true;
+
+            const firstItem = picker.querySelectorAll('.nps-popover-item')[0];
+            firstItem.click();
+            expect(radioGroup.classList.contains('show-error')).to.be.false;
           });
         });
 
@@ -268,7 +645,7 @@
             // Skipped: cancelActions uses a closure that may have been called in previous tests
             // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -298,7 +675,7 @@
             // Skipped: cancelActions uses a closure that maintains state across tests
             // This test would need module reloading to work properly
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -326,7 +703,7 @@
           it('should send Error message for invalid JSON in parent messages', async () => {
             // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -345,7 +722,7 @@
           it('should send Error message for unrecognized message types', async () => {
             // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -361,9 +738,8 @@
 
         describe('Radio Button Error State Management', () => {
           it('should remove error state when radio button is selected after submission attempt', async () => {
-            // Initialize form
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -371,104 +747,101 @@
             const radioGroup = block.querySelector('.nps-radio-group');
             const radioButton = form.querySelector('input[type="radio"]');
 
-            // Try to submit without selecting radio (to trigger error)
+            // Programmatically uncheck all radios to test validation
+            form.querySelectorAll('input[type="radio"]').forEach((r) => { r.checked = false; });
+
             const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
             form.dispatchEvent(submitEvent);
 
             expect(radioGroup.classList.contains('show-error')).to.be.true;
 
-            // Now select a radio button
             radioButton.checked = true;
             const changeEvent = new Event('change', { bubbles: true });
             radioButton.dispatchEvent(changeEvent);
 
-            // Error should be removed after radio button selection
             expect(radioGroup.classList.contains('show-error')).to.be.false;
           });
         });
 
         describe('Keyboard Accessibility', () => {
-          it('should navigate radio buttons forward with ArrowRight', async () => {
+          it('should navigate radio buttons forward with ArrowRight and select on 5pt', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
             const form = block.querySelector('#nps');
             const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
 
-            // Focus first radio button and press ArrowRight
             radioButtons[0].focus();
             const arrowRightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true });
             radioButtons[0].dispatchEvent(arrowRightEvent);
 
-            // Should focus next radio button
             expect(document.activeElement).to.equal(radioButtons[1]);
+            expect(radioButtons[1].checked).to.be.true;
           });
 
-          it('should navigate radio buttons forward with ArrowUp', async () => {
+          it('should navigate radio buttons forward with ArrowUp and select on 5pt', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
             const form = block.querySelector('#nps');
             const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
 
-            // Focus first radio button and press ArrowUp
             radioButtons[0].focus();
             const arrowUpEvent = new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true, cancelable: true });
             radioButtons[0].dispatchEvent(arrowUpEvent);
 
-            // Should focus next radio button
             expect(document.activeElement).to.equal(radioButtons[1]);
+            expect(radioButtons[1].checked).to.be.true;
           });
 
-          it('should navigate radio buttons backward with ArrowLeft', async () => {
+          it('should navigate radio buttons backward with ArrowLeft and select on 5pt', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
             const form = block.querySelector('#nps');
             const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
 
-            // Focus second radio button and press ArrowLeft
             radioButtons[1].focus();
             const arrowLeftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true });
             radioButtons[1].dispatchEvent(arrowLeftEvent);
 
-            // Should focus previous radio button
             expect(document.activeElement).to.equal(radioButtons[0]);
+            expect(radioButtons[0].checked).to.be.true;
           });
 
-          it('should wrap around when navigating with arrow keys', async () => {
+          it('should wrap around when navigating with arrow keys and select on 5pt', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
             const form = block.querySelector('#nps');
             const radioButtons = Array.from(form.querySelectorAll('input[type="radio"]'));
 
-            // Focus last radio button and press ArrowRight (should wrap to first)
             const lastIndex = radioButtons.length - 1;
             radioButtons[lastIndex].focus();
             const arrowRightEvent = new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true });
             radioButtons[lastIndex].dispatchEvent(arrowRightEvent);
 
             expect(document.activeElement).to.equal(radioButtons[0]);
+            expect(radioButtons[0].checked).to.be.true;
 
-            // Focus first radio button and press ArrowLeft (should wrap to last)
             const arrowLeftEvent = new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true });
             radioButtons[0].dispatchEvent(arrowLeftEvent);
 
             expect(document.activeElement).to.equal(radioButtons[lastIndex]);
+            expect(radioButtons[lastIndex].checked).to.be.true;
           });
 
           it('should toggle checkbox with spacebar', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -498,7 +871,7 @@
           it.skip('should send cancel message when Escape key is pressed', async () => {
             // Skipped: cancelActions uses a closure that may have been called in previous tests
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -524,7 +897,7 @@
           it.skip('should send cancel message when Esc key is pressed', async () => {
             // Skipped: cancelActions uses a closure that may have been called in previous tests
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -545,11 +918,126 @@
           });
         });
 
+        describe('NPS Digit Key Navigation', () => {
+          beforeEach(() => {
+            if (block && block.parentNode) {
+              block.parentNode.removeChild(block);
+            }
+            block = createBlock({
+              question: 'How likely are you to recommend Adobe to a friend or colleague?',
+              radioLabels: '11 :: Select an option, 10-Extremely likely, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0-Not at all likely',
+            });
+          });
+
+          it('should select matching NPS value when pressing a digit key', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            const keyEvent = new KeyboardEvent('keydown', { key: '8', bubbles: true, cancelable: true });
+            form.dispatchEvent(keyEvent);
+
+            const scoreEightRadio = form.querySelector('.desktop-nps-radio input[type="radio"][data-display="8"]');
+            expect(scoreEightRadio.checked).to.be.true;
+          });
+
+          it('should select value 10 when pressing 1 then 0 quickly', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            const form = block.querySelector('#nps');
+            form.dispatchEvent(new KeyboardEvent('keydown', { key: '1', bubbles: true, cancelable: true }));
+            form.dispatchEvent(new KeyboardEvent('keydown', { key: '0', bubbles: true, cancelable: true }));
+
+            const scoreTenRadio = form.querySelector('.desktop-nps-radio input[type="radio"][data-display="10"]');
+            expect(scoreTenRadio.checked).to.be.true;
+          });
+        });
+
+        describe('Focus Management', () => {
+          it('should focus close button first when close button is present', async () => {
+            if (block && block.parentNode) {
+              block.parentNode.removeChild(block);
+            }
+            block = createBlock({
+              displayCross: 'true',
+            });
+
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(document.activeElement).to.equal(block.querySelector('.nps-close'));
+          });
+
+          it('should focus first radio when close button is absent', async () => {
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(document.activeElement).to.equal(block.querySelector('input[type="radio"]'));
+          });
+        });
+
+        describe('RTL Support', () => {
+          const originalUrl = window.location.href;
+
+          afterEach(() => {
+            window.history.replaceState({}, '', originalUrl);
+          });
+
+          it('should set dir=rtl when source_locale is an RTL locale', async () => {
+            window.history.replaceState({}, '', `${window.location.pathname}?source_locale=ar`);
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(block.getAttribute('dir')).to.equal('rtl');
+          });
+
+          it('should set dir=rtl for additional RTL locales', async () => {
+            window.history.replaceState({}, '', `${window.location.pathname}?source_locale=he`);
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(block.getAttribute('dir')).to.equal('rtl');
+          });
+
+          it('should not set dir=rtl for LTR locale', async () => {
+            window.history.replaceState({}, '', `${window.location.pathname}?source_locale=en`);
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(block.hasAttribute('dir')).to.be.false;
+          });
+
+          it('should not set dir=rtl when source_locale is absent', async () => {
+            window.history.replaceState({}, '', `${window.location.pathname}`);
+            await npsCsatForm(block);
+            const readyMessage = await receiveMessageOfType(Ready);
+            expect(readyMessage.type).to.equal(Ready);
+            sendMessage(ACK);
+
+            expect(block.hasAttribute('dir')).to.be.false;
+          });
+        });
+
 
         describe('Form Submission with Analytics', () => {
           it('should send analytics data with all form fields on successful submission', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -594,7 +1082,7 @@
 
           it('should prevent double submission', async () => {
             await npsCsatForm(block);
-            const readyMessage = await receiveMessage();
+            const readyMessage = await receiveMessageOfType(Ready);
             expect(readyMessage.type).to.equal(Ready);
             sendMessage(ACK);
 
@@ -628,7 +1116,7 @@
             it('should start in STATE_BASE and transition to STATE_EXPECT_ACK when sending Ready message', async () => {
               // Initialize form - this sends Ready message and transitions to STATE_EXPECT_ACK
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // At this point, state should be STATE_EXPECT_ACK
@@ -643,7 +1131,7 @@
             it('should transition from STATE_EXPECT_ACK to STATE_BASE when receiving Acknowledged', async () => {
               // Initialize form
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // Send ACK to transition back to STATE_BASE
@@ -662,7 +1150,7 @@
             it('should transition to STATE_EXPECT_ACK when sending Cancel message', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -687,7 +1175,7 @@
             it('should handle parent Cancel message and transition states correctly', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -709,7 +1197,7 @@
             it('should transition from STATE_EXPECT_ACK to STATE_BASE on timeout', async () => {
               // Initialize form but don't send ACK
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // Wait for timeout error
@@ -728,7 +1216,7 @@
             it('should clear timeout when receiving Acknowledged in STATE_EXPECT_ACK', async () => {
               // Initialize form
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // Send ACK before timeout
@@ -744,7 +1232,7 @@
             it('should handle malformed JSON in any state', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -763,7 +1251,7 @@
             it('should handle messages with missing type property', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -778,7 +1266,7 @@
             it('should handle unrecognized message types in STATE_BASE', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -793,7 +1281,7 @@
             it('should ignore Ready and Submit messages in STATE_BASE', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 
@@ -810,7 +1298,7 @@
             it('should send unexpected type error for Ready/Submit messages in STATE_EXPECT_ACK', async () => {
               // Initialize form (now in STATE_EXPECT_ACK)
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // Send Ready message while expecting ACK
@@ -826,7 +1314,7 @@
             it('should send unrecognized error for unknown message types', async () => {
               // Initialize form (now in STATE_EXPECT_ACK)
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
 
               // Send unrecognized message - should get error but stay in STATE_EXPECT_ACK
@@ -840,7 +1328,7 @@
             it('should handle Error messages without state change', async () => {
               // Initialize and acknowledge
               await npsCsatForm(block);
-              const readyMessage = await receiveMessage();
+              const readyMessage = await receiveMessageOfType(Ready);
               expect(readyMessage.type).to.equal(Ready);
               sendMessage(ACK);
 

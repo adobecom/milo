@@ -540,19 +540,32 @@ const getCategoryMappings = async (state) => {
   return {};
 };
 
-const isLocaleInRegionalSites = (regionalSites, locStr) => {
+const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   if (!regionalSites) return false;
-  return regionalSites
+  const sites = regionalSites
     .split(',')
-    .map((site) => site.trim().replace(/^\//, ''))
-    .includes(locStr);
+    .map((site) => site.trim().replace(/^\//, ''));
+  return (
+    sites.includes(locStr)
+    || (Boolean(langStr) && sites.includes(`${locStr}_${langStr}`))
+  );
 };
+
+let lingoSiteMappingPromise;
+function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
+  if (!lingoSiteMappingPromise) {
+    lingoSiteMappingPromise = fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      });
+  }
+  return lingoSiteMappingPromise;
+}
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
-  const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const configJson = await response.json();
+  const configJson = await fetchLingoSiteMapping(fqdn);
 
   let siteId;
   let isKnownLingoSiteLocale = false;
@@ -570,20 +583,18 @@ async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com
       const baseLocale = baseSite?.split('/')[1];
       const matchesBase = country === baseLocale;
       const langMatchesBase = language === baseLocale;
-      const matchesRegional = isLocaleInRegionalSites(regionalSites, country);
+      const matchesRegional = isLocaleInRegionalSites(regionalSites, country, language);
       return matchesBase || matchesRegional || langMatchesBase;
     });
 
     if (isKnownLingoSiteLocale) {
       // determine if the country is allowed to be used for the langauge
       const baseSiteLocale = language === 'en' ? '' : language;
-      const altLocale = `${country}_${language}`;
       siteLocalesData
         .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
         .forEach(({ baseSite, regionalSites }) => {
           if (baseSiteLocale === baseSite || baseSiteLocale === baseSite.split('/')[1]) {
-            const regionalMap = regionalSites.split(',').map((site) => site.trim().replace(/^\//, ''));
-            if (country === 'xx' || regionalMap.includes(country) || regionalMap.includes(altLocale)) {
+            if (country === 'xx' || isLocaleInRegionalSites(regionalSites, country, language)) {
               isPermittedLingoSiteLocale = true;
             }
           }
@@ -631,9 +642,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
 
   try {
     let siteId;
-    const response = await fetch(`https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?${fqdn}`);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const configJson = await response.json();
+    const configJson = await fetchLingoSiteMapping(fqdn);
 
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
     const siteLocalesData = configJson['site-locales']?.data ?? [];
@@ -684,6 +693,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       tags: 'caas',
       severity: 'error',
     });
+    lingoSiteMapping.fromFallback = true;
   }
   return lingoSiteMapping;
 }
@@ -692,6 +702,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
   const localeArr = path.split('/');
   let langStr = 'en';
   let countryStr = 'xx';
+  let fromFallback = false;
   if (origin.toLowerCase() === 'news') {
     langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
     countryStr = LOCALES[localeArr[2]] ?? 'xx';
@@ -700,6 +711,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
     }
   } else {
     const mapping = await getLingoSiteLocale(origin, path, fqdn);
+    fromFallback = mapping.fromFallback === true;
     countryStr = LOCALES[mapping.country.toLowerCase()] ?? 'xx';
     if (typeof countryStr === 'object') {
       countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
@@ -709,6 +721,7 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
   return {
     country: countryStr.toLowerCase(),
     lang: langStr.toLowerCase(),
+    ...(fromFallback && { fromFallback: true }),
   };
 };
 

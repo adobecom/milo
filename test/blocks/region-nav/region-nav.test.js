@@ -30,6 +30,25 @@ describe('Region Nav Block', async () => {
     sinon.restore();
   });
 
+  it('converts modal title <strong> to <h2> for accessibility', () => {
+    const h2 = block.querySelector(':scope > div:first-of-type h2');
+    expect(h2).to.exist;
+    expect(h2.textContent.trim()).to.equal('Choose your region');
+  });
+
+  it('converts region group <p><strong> headers to <h3> for accessibility', () => {
+    const h3s = [...block.querySelectorAll(':scope > div:nth-of-type(2) h3')];
+    expect(h3s).to.have.length(3);
+    expect(h3s[0].textContent.trim()).to.equal('Americas');
+    expect(h3s[1].textContent.trim()).to.equal('Europe, Middle East and Africa');
+    expect(h3s[2].textContent.trim()).to.equal('Asia Pacific');
+  });
+
+  it('does not leave any <p><strong> region headers after init', () => {
+    const remainingStrongHeaders = block.querySelectorAll(':scope > div:nth-of-type(2) p > strong');
+    expect(remainingStrongHeaders).to.have.length(0);
+  });
+
   it('sets links correctly', () => {
     const { contentRoot } = getConfig().locale;
     window.location.hash = 'langnav';
@@ -87,6 +106,21 @@ describe('Region Nav Block', async () => {
     await clock.runAllAsync();
     expect(window.open.calledWith(chdeLink.href)).to.be.true;
     expect(getCookie('international')).to.equal(chdePrefix);
+  });
+
+  it('sets the country cookie via setMarket on click', async () => {
+    sinon.stub(window, 'fetch').callsFake(() => new Promise((resolve) => {
+      resolve({ status: 200, ok: true });
+    }));
+    sinon.stub(window, 'open').callsFake(() => {});
+    document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+
+    const deLink = document.querySelector('a[href*="/de/"]');
+    if (deLink) {
+      deLink.click();
+      await clock.runAllAsync();
+      expect(getCookie('country')).to.equal('de');
+    }
   });
 
   it('handles click event for 404 pages', async () => {
@@ -164,5 +198,34 @@ describe('Region Nav Block', async () => {
 
     // No languageMap means no transformation
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
+  });
+
+  it('sets lang attribute on links with valid ietf values', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, ar: { ietf: 'es-AR', tk: 'hah7vzn.css' }, br: { ietf: 'pt-BR', tk: 'hah7vzn.css' } } });
+
+    const arLink = createTag('a', { href: 'https://adobe.com/ar/' });
+    decorateLink(arLink, '/some-page');
+    expect(arLink.getAttribute('lang')).to.equal('es-AR');
+
+    const brLink = createTag('a', { href: 'https://adobe.com/br/' });
+    decorateLink(brLink, '/path');
+    expect(brLink.getAttribute('lang')).to.equal('pt-BR');
+  });
+
+  it('does not set lang attribute when ietf is none (localeToLanguageMap)', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
+
+    const link = createTag('a', { href: 'https://adobe.com/xx/' });
+    decorateLink(link, '/some-page', [{ locale: 'xx' }]);
+
+    expect(link.hasAttribute('lang')).to.be.false;
+  });
+
+  it('does not set lang attribute when locale omits ietf', () => {
+    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' }, zz: { tk: 'hah7vzn.css' } } });
+    const link = createTag('a', { href: 'https://adobe.com/zz/' });
+    decorateLink(link, '');
+
+    expect(link.hasAttribute('lang')).to.be.false;
   });
 });

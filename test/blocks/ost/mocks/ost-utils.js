@@ -135,6 +135,10 @@ const shouldAllowKrTrial = (button, localePrefix) => {
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
+const lingoActive = () => false;
+const getGeoLocalePrefix = () => Promise.resolve(null);
+const getPlaceholderPaths = () => [];
+
 export {
   createTag,
   getConfig,
@@ -152,4 +156,7 @@ export {
   customFetch,
   SLD,
   shouldAllowKrTrial,
+  lingoActive,
+  getGeoLocalePrefix,
+  getPlaceholderPaths,
 };

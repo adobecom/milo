@@ -1,11 +1,12 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getTargetMarket, getCountry } from '../../utils/utils.js';
+import { getConfig, createTag, loadStyle, getLangRoutingConfig, getCountry } from '../../utils/utils.js';
 
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
   if (!banner) return banner;
+  banner.setAttribute('dir', market.dir || 'ltr');
   const messageContainer = createTag('div', { class: 'language-banner-content' });
-  const messageText = createTag('span', { class: 'language-banner-text' }, `${market.text} ${market.languageName}.`);
+  const messageText = createTag('span', { class: 'language-banner-text' }, market.text);
   const link = createTag('a', { class: 'language-banner-link', href: translatedUrl, 'daa-ll': `${market.prefix || 'us'}|Continue` }, market.continueText || 'Continue');
   const closeButton = createTag('button', { class: 'language-banner-close', 'aria-label': 'Close', 'daa-ll': 'Close' });
   closeButton.innerHTML = `
@@ -43,12 +44,12 @@ export function sendAnalytics(event) {
 async function showBanner(market, config) {
   if (!market) return;
 
-  const { pathname } = window.location;
+  let path = window.location.href.replace(window.location.origin, '');
   const currentPrefix = config.locale.prefix;
-  const pagePath = currentPrefix ? pathname.replace(currentPrefix, '') : pathname;
+  if (path.startsWith(currentPrefix)) path = path.replace(currentPrefix, '');
   const translatedUrl = market.prefix
-    ? `${window.location.origin}/${market.prefix}${pagePath}`
-    : `${window.location.origin}${pagePath}`;
+    ? `${window.location.origin}/${market.prefix}${path}`
+    : `${window.location.origin}${path}`;
 
   const banner = buildBanner(market, translatedUrl);
   if (!banner) return;
@@ -65,7 +66,7 @@ async function showBanner(market, config) {
     setInternational(market.prefix || 'us');
     if (config.lingoProjectSuccessLogging === 'on') {
       const country = await getCountry();
-      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-click', severity: 'i' });
+      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-click', severity: 'i' });
     }
     window.open(translatedUrl, '_self');
   });
@@ -75,7 +76,7 @@ async function showBanner(market, config) {
     document.cookie = `international=${pagePrefix};path=/;${domain}`;
     if (config.lingoProjectSuccessLogging === 'on') {
       const country = await getCountry();
-      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-close', severity: 'i' });
+      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-close', severity: 'i' });
     }
     banner.remove();
   });
@@ -83,13 +84,13 @@ async function showBanner(market, config) {
   sendAnalytics(new Event(eventName));
   if (config.lingoProjectSuccessLogging === 'on') {
     const country = await getCountry();
-    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-load', severity: 'i' });
+    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
 
 export default async function init() {
-  const market = getTargetMarket();
-  if (market) {
-    await showBanner(market, getConfig());
+  const routingConfig = getLangRoutingConfig();
+  if (routingConfig?.showBanner && routingConfig.markets?.length) {
+    await showBanner(routingConfig.markets[0], getConfig());
   }
 }
