@@ -1,17 +1,19 @@
 # Milo — Claude Code Setup
 
+Paste this into your terminal — no repo needed:
+
 ```sh
-git clone https://github.com/adobecom/milo.git
-cd milo
-bash bootstrap.sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/adobecom/milo/claudify-milo/setup.sh)"
 ```
 
-The script installs everything and prints any remaining steps at the end. Two auth steps are always manual (browser OAuth flows):
+It clones the repo, installs everything, and opens Claude Code automatically.
+
+Two auth steps must be done manually afterward (browser OAuth flows):
 
 1. **Figma MCP** — In Claude Code, run `/mcp` → choose **figma** → sign in.
 2. **DA uploads** — `da-auth-helper login` (choose the Skyline profile). Token cached at `~/.aem/da-token.json`.
 
-Then restart Claude Code and run `/mcp` to confirm all three MCP connections are active.
+Then run `/mcp` to confirm all three MCP connections are active.
 
 ---
 
