@@ -4,100 +4,72 @@ This file documents everything needed to use Claude Code and its skills in this 
 
 ---
 
-## 1. Node.js version
-
-This repo requires **Node 25** (LTS). Use [nvm](https://github.com/nvm-sh/nvm):
+## Quick start
 
 ```sh
-nvm install 25
-nvm use 25          # or: nvm alias default 25 to set it globally
+git clone https://github.com/adobecom/milo.git
+cd milo
+bash bootstrap.sh
 ```
 
-An `.nvmrc` is present in the repo root; `nvm use` (no arguments) will pick it up automatically.
+`bootstrap.sh` handles steps 1–4 automatically. It will print any remaining manual steps (auth) at the end.
 
 ---
 
-## 2. Install project dependencies
+## What the bootstrap script does
+
+### 1. Node.js (via nvm)
+
+Installs and activates Node **25** (pinned in `.nvmrc`). Installs nvm itself if not present.
+
+### 2. Project dependencies
 
 ```sh
 npm install
-npx playwright install   # downloads Chromium/Firefox/WebKit browsers used by tests and skills
+npx playwright install   # Chromium/Firefox/WebKit browsers for tests and skills
 ```
+
+### 3. Global tools
+
+| Tool | Purpose |
+|------|---------|
+| `@adobe/aem-cli` | Required for `npm run libs` (local dev server) |
+| `da-auth-helper` | Required for `/build-content-from-figma` — uploads assets to DA |
+
+### 4. Claude Code MCP servers
+
+| MCP | Required by | Notes |
+|-----|-------------|-------|
+| Figma | `/build-block-from-figma`, `/build-content-from-figma` | Requires Figma Dev Mode access |
+| Playwright | `/build-block-from-figma`, `/build-scroll-animation` | Browser automation |
+| Fluffyjaws | `/build-block-from-figma` | Adobe EDS conventions. **Requires Adobe VPN** |
+
+The script registers Figma and Playwright automatically. Fluffyjaws is registered if the Adobe VPN is reachable at run time; if not, re-run the script with VPN connected.
 
 ---
 
-## 3. Global tools
+## Manual steps after bootstrap
 
-### AEM CLI — required for `npm run libs`
+The script prints these at the end, but for reference:
 
+**1. Authenticate the Figma MCP**
+In Claude Code, run `/mcp` → choose **figma** → sign in with your Figma account.
+
+**2. Authenticate DA (for `/build-content-from-figma`)**
 ```sh
-npm install -g @adobe/aem-cli
+da-auth-helper login   # opens browser — choose the Skyline profile
+da-auth-helper token   # verify the token is cached
 ```
-
-Verify: `aem --version`
-
-### da-auth-helper — required for `build-content-from-figma`
-
-Uploads HTML and media assets directly to Document Authoring (DA).
-
-```sh
-npm install -g github:adobe-rnd/da-auth-helper
-da-auth-helper login    # opens browser — choose the Skyline profile
-da-auth-helper token    # verify the token is cached
-```
-
 The token is stored at `~/.aem/da-token.json` and refreshed automatically on expiry.
 
----
+**3. Fluffyjaws (if VPN was not connected during bootstrap)**
+Connect to Adobe VPN, then re-run `bash bootstrap.sh`.
 
-## 4. Claude Code MCP servers
-
-Skills in this repo rely on three MCP servers. Run these commands once per machine (they register globally with `--scope user`).
-
-### Figma — required for `build-block-from-figma` and `build-content-from-figma`
-
-```sh
-claude mcp add --transport http figma https://mcp.figma.com/mcp --scope user
-```
-
-Then in Claude: type `/mcp`, choose **figma**, and authenticate with your Figma account. Requires Figma Dev Mode access.
-
-### Playwright — required for `build-block-from-figma` and `build-scroll-animation`
-
-```sh
-claude mcp add playwright npx @playwright/mcp@latest --scope user
-```
-
-### Fluffyjaws — required for `build-block-from-figma`
-
-Provides authoritative Adobe EDS conventions. Requires Adobe VPN.
-
-**Step 1 — install the CLI** (connect to VPN first):
-
-```sh
-API_BASE=https://fluffyjaws.adobe.com
-if curl -fsSL "$API_BASE/" -o /dev/null 2>/dev/null; then
-  curl -fsSL "$API_BASE/api/cli/install.sh" | bash
-else
-  echo "VPN required. Connect and retry."
-fi
-```
-
-**Step 2 — register as an MCP server** in `~/.claude.json` under `mcpServers`:
-
-```json
-"fluffyjaws": {
-  "type": "stdio",
-  "command": "/opt/homebrew/bin/fj",
-  "args": ["mcp", "--api", "https://fluffyjaws.adobe.com"]
-}
-```
-
-After adding all MCPs, close and reopen Claude, then run `/mcp` to confirm all three connections are active.
+After all steps, restart Claude Code and run `/mcp` to confirm all three MCP connections are active.
 
 ---
 
-## 5. Available skills
+## Available skills
 
 Run any skill by typing its name as a slash command in Claude Code.
 
@@ -105,7 +77,7 @@ Run any skill by typing its name as a slash command in Claude Code.
 
 Builds a new C2 block component (`libs/c2/blocks/`) from Figma designs. Validates visually with Playwright screenshots, runs an axe-core accessibility audit (WCAG 2.2 AA), and a Lighthouse performance audit.
 
-**Requires:** Figma MCP, Playwright MCP, Fluffyjaws MCP, Node 25, `npm install`
+**Requires:** Figma MCP, Playwright MCP, Fluffyjaws MCP
 
 **Prompts for:**
 - Preview URL (`http://localhost:6456/...` or `https://main--repo--org.aem.live/...`)
@@ -145,13 +117,13 @@ Builds CSS scroll-driven animations for C2 blocks. Recommends existing `parallax
 
 ---
 
-## 6. Common development commands
+## Common development commands
 
 ```sh
 npm run libs          # serve milo at http://localhost:6456 (requires AEM CLI)
 npm run test          # run unit tests
 npm run lint          # lint JS and CSS
-npx lighthouse <url>  # run a Lighthouse audit (lighthouse is in devDependencies)
+npx lighthouse <url>  # Lighthouse audit (lighthouse is in devDependencies)
 ```
 
 For Nala E2E tests:
