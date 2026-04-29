@@ -1,6 +1,5 @@
 import {
   decodeCompressedString,
-  fgHeaderValue,
   initCaas,
   loadCaasFiles,
   loadStrings,
@@ -55,8 +54,9 @@ const loadCaas = async (a) => {
   }
 
   const floodGateColor = getMetadata('floodgatecolor') || '';
-  if (floodGateColor === fgHeaderValue) {
+  if (floodGateColor && floodGateColor !== 'default') {
     state.fetchCardsFromFloodgateTree = true;
+    state.floodgateColor = floodGateColor;
   }
 
   const { env } = getConfig();
