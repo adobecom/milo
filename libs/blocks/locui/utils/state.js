@@ -1,8 +1,12 @@
 import { signal } from '../../../deps/htm-preact.js';
+import { getConfig } from '../../../utils/utils.js';
 import { setStatus } from './status.js';
 import { origin } from './franklin.js';
 
-const LOC_CONFIG = '/.milo/config.json';
+function getLocConfigPath() {
+  const { env } = getConfig();
+  return env?.name === 'prod' ? '/.milo/config.json' : '/.milo/config-stage.json';
+}
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
 
@@ -37,7 +41,11 @@ export function getSiteConfig() {
       resolve(siteConfig.value);
       return;
     }
-    const resp = await fetch(`${origin}${LOC_CONFIG}`);
+    const primaryPath = getLocConfigPath();
+    let resp = await fetch(`${origin}${primaryPath}`);
+    if (!resp.ok && primaryPath !== '/.milo/config.json') {
+      resp = await fetch(`${origin}/.milo/config.json`);
+    }
     if (!resp.ok) {
       setStatus('siteConfig', 'error', 'Error getting site settings.');
       return;
