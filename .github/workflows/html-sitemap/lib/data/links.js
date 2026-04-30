@@ -97,6 +97,24 @@ function canonicalizePathForGeo(pathname, geo) {
 }
 
 /**
+ * Strip trailing `.html` so legacy (cc) and modern (da-cc) paths compare equal.
+ * @param {string} pathname
+ * @returns {string}
+ */
+function stripHtmlSuffix(pathname) {
+  return pathname.replace(/\.html$/, '');
+}
+
+/**
+ * @param {string} pathname
+ * @param {string} geo
+ * @returns {string}
+ */
+function dedupKey(pathname, geo) {
+  return stripHtmlSuffix(canonicalizePathForGeo(pathname, geo));
+}
+
+/**
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit
@@ -111,15 +129,35 @@ async function loadExtendedQueryIndexLinks(
 ) {
   const geoDir = getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, geo);
   const siteDirs = await fs.readdir(geoDir).catch(() => []);
-  const links = await Promise.all(siteDirs.map(async (siteDir) => {
-    const siteDir_ = path.join(geoDir, siteDir);
+  const perSite = await Promise.all(siteDirs.map(async (siteDir) => {
+    const dir = path.join(geoDir, siteDir);
     const [json, meta] = await Promise.all([
-      fs.readFile(path.join(siteDir_, 'query-index.json'), 'utf8').then(JSON.parse),
-      fs.readFile(path.join(siteDir_, '_meta.json'), 'utf8').then(JSON.parse).catch(() => ({})),
+      fs.readFile(path.join(dir, 'query-index.json'), 'utf8').then(JSON.parse),
+      fs.readFile(path.join(dir, '_meta.json'), 'utf8').then(JSON.parse).catch(() => ({})),
     ]);
-    return normalizeQueryIndexData(json, unit.domain, config.siteDomains, meta.originUrl);
+    return {
+      site: siteDir,
+      links: normalizeQueryIndexData(json, unit.domain, config.siteDomains, meta.originUrl),
+    };
   }));
-  return links.flat();
+
+  // Inter-site dedup: same logical path can appear in legacy (cc) with `.html`
+  // and modern (da-cc) without. Strip `.html` for comparison and prefer da-*.
+  /** @type {Map<string, { link: NormalizedLink, site: string }>} */
+  const byKey = new Map();
+  for (const { site, links } of perSite) {
+    const isDa = site.startsWith('da-');
+    for (const link of links) {
+      const key = stripHtmlSuffix(link.path);
+      const existing = byKey.get(key);
+      if (!existing) {
+        byKey.set(key, { link, site });
+      } else if (!existing.site.startsWith('da-') && isDa) {
+        byKey.set(key, { link, site });
+      }
+    }
+  }
+  return [...byKey.values()].map((entry) => entry.link);
 }
 
 /**
@@ -145,7 +183,7 @@ export async function buildExtendedGeoLinks(
     .map(async (siteDir) => {
       const json = JSON.parse(await fs.readFile(path.join(baseExtractDir, siteDir, 'query-index.json'), 'utf8'));
       normalizeQueryIndexData(json, unit.domain, config.siteDomains)
-        .forEach((link) => basePaths.add(canonicalizePathForGeo(link.path, unit.baseGeo)));
+        .forEach((link) => basePaths.add(dedupKey(link.path, unit.baseGeo)));
     }));
 
   const groups = await Promise.all(
@@ -153,9 +191,9 @@ export async function buildExtendedGeoLinks(
       const links = await loadExtendedQueryIndexLinks(outputDir, config, unit, geo);
       const seen = new Set();
       const deduped = links.filter((link) => {
-        const canonicalPath = canonicalizePathForGeo(link.path, geo);
-        if (basePaths.has(canonicalPath) || seen.has(canonicalPath)) return false;
-        seen.add(canonicalPath);
+        const key = dedupKey(link.path, geo);
+        if (basePaths.has(key) || seen.has(key)) return false;
+        seen.add(key);
         return true;
       });
       if (!deduped.length) return null;
