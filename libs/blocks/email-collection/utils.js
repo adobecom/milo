@@ -95,7 +95,6 @@ export const FORM_FIELDS = {
     tag: 'input',
     attributes: {
       type: 'tel',
-      required: true,
       disabled: '',
     },
   },

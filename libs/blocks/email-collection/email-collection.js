@@ -81,8 +81,8 @@ function validateInput(input) {
 
 function showInputError(form, input, placeholders) {
   const { id } = input;
-  const label = form.querySelector(`label[for=${id}]`);
-  const error = form.querySelector(`div[id$=${id}]`);
+  const label = form.querySelector(`label[for="${id}"]`);
+  const error = form.querySelector(`div[id$="${id}"]`);
   const errorType = validateInput(input);
   if (error) error.textContent = placeholders[errorType];
 
@@ -98,7 +98,9 @@ function showInputError(form, input, placeholders) {
 
 async function formatPhoneNumber(input) {
   if (!input) return;
-  const { code, format: formatNumber } = getPhoneFieldConfig();
+  const config = getPhoneFieldConfig();
+  if (!config) return;
+  const { code, format: formatNumber } = config;
   input.value = input.value.replace(code, '');
   const form = input.closest('form');
   const { placeholders } = await getFormData('config');
@@ -420,7 +422,7 @@ async function decorateConsentString() {
 
   const { subscriptionName } = getFormData('metadata');
   const regex = /{{subscription-name}}/g;
-  consentDiv.innerHTML = consentDiv.innerHTML.replaceAll(regex, subscriptionName);
+  consentDiv.innerHTML = consentDiv.innerHTML.replaceAll(regex, subscriptionName ?? '');
 
   return consentDiv;
 }
@@ -572,7 +574,7 @@ function decorateText(elChildren) {
 
 async function checkIsSubscribed() {
   const { consentId } = await getFormData('consent');
-  if (consentId?.startsWith('cs8A')) return false;
+  if (consentId?.toLowerCase().startsWith('cs8a')) return false;
 
   const isGuest = await isUserGuest();
   if (isGuest) return false;
