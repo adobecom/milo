@@ -1280,4 +1280,38 @@ img:hover ~ .asset-meta,
   border: 3px solid #e68600 !important;
 }
 
+/* Highlight cards whose M@S fragment is unpublished */
+.preflight-mas-unpublished {
+  position: relative !important;
+  outline: 4px solid #f44 !important;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(255 68 68 / 8%) 0,
+    rgb(255 68 68 / 8%) 8px,
+    transparent 8px,
+    transparent 16px
+  ) !important;
+}
+
+.preflight-mas-unpublished::before {
+  content: 'Not published';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  z-index: 2;
+  padding: 4px 10px;
+  background: #f44;
+  color: #fff;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-top-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 20%);
+  pointer-events: none;
+  line-height: 2.5;
+}
+
 
