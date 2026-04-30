@@ -1,6 +1,5 @@
 import {
   decodeCompressedString,
-  fgHeaderName,
   initCaas,
   loadCaasFiles,
   loadStrings,
@@ -27,15 +26,17 @@ const getFloodgateColor = async (host) => {
     const repo = parts.length >= 3 ? parts.slice(1, -1).join('--') : '';
     const fgMatch = repo.match(/-fg-(\w+)$/);
     if (fgMatch) return fgMatch[1];
-    return '';
   }
 
   try {
     const resp = await fetch(window.location.href, { method: 'HEAD', credentials: 'same-origin' });
-    return resp.headers.get(fgHeaderName) || '';
+    const fgHeader = resp.headers.get('x-adobe-floodgate');
+    if (fgHeader) return fgHeader;
   } catch {
-    return '';
+    // ignore fetch errors
   }
+
+  return '';
 };
 
 const getCaasStrings = (placeholderUrl) => new Promise((resolve) => {
