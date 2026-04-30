@@ -230,6 +230,7 @@ function buildStage(el) {
   stage.append(titleEl, textBlockEl, ctaEl);
   el.replaceChildren(stage);
   return {
+    stage,
     titleEl,
     textBlockEl,
     ctaEl,
@@ -246,15 +247,14 @@ export default async function init(el) {
   await loadBlockStyles();
 
   const {
-    titleEl, textBlockEl, ctaEl, sceneCards,
-    canvas, acrobatDesktopMockupEl, acrobatMobileMockupEl,
-    adbeLogoSvg, adbeLogoPath,
+    stage, titleEl, textBlockEl, ctaEl, sceneCards,
+    canvas, adbeLogoPath,
   } = buildStage(el);
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const adbeLogoLength = Math.max(adbeLogoPath.getTotalLength(), 3000) * 2 + 500;
   adbeLogoPath.style.strokeDasharray = adbeLogoLength;
-  adbeLogoPath.style.strokeDashoffset = adbeLogoLength;
+  stage.style.setProperty('--adbe-logo-length', adbeLogoLength);
 
   // ──────────────────── Animation state ────────────────────
   let viewportWidth = 0;
@@ -783,23 +783,16 @@ export default async function init(el) {
 
   let arcTextPanProgressCached = 0;
 
+  // Writes per-frame transform/opacity scalars to CSS custom properties on the stage.
+  // The actual transform and opacity declarations live in CSS — see .acrobat-* rules.
   function updateMockupAndTitleTransform() {
     const slottingEase = easeInOutSine(phase.slotting);
-    const mockupScale = 2.5 - 1.5 * slottingEase;
-    const acrobatWidth = frame.isTablet
-      ? Math.max(680, Math.min(988, viewportWidth * 0.70))
-      : Math.min(viewportWidth * 0.686, 988);
-    const mockupHeight = acrobatWidth * (567 / 988);
-    const topOverhang = ((2.5 - 1) / 2) * mockupHeight;
-    const offscreenY = viewportHeight + topOverhang + 30;
-    const mockupTranslateY = (1 - slottingEase) * offscreenY;
 
     const rawTitleMotionProgress = (scrollTimeline.current - timing.slottingStart)
       / (timing.slottingDuration + 350);
     const titleMotionProgress = Math.max(0, Math.min(1, rawTitleMotionProgress));
     const titleSlide = easeOutCubic(titleMotionProgress);
     const titleOpacity = titleSlide;
-    const titleScale = 0.92 + 0.08 * titleSlide;
 
     // Post-mockup reveal pan — mobile only, pans the Acrobat UI up to reveal the CTA.
     const postRevealProgress = timing.postRevealScrollDistance
@@ -814,7 +807,6 @@ export default async function init(el) {
       : 0;
 
     if (frame.isMobile) {
-      if (acrobatDesktopMockupEl) acrobatDesktopMockupEl.style.transform = '';
       const mobileChromeHeight = 536;
       const mobileScale = 2.0 - 1.0 * slottingEase;
       const mobileTopOverhang = ((2.0 - 1.0) / 2) * mobileChromeHeight;
@@ -828,24 +820,29 @@ export default async function init(el) {
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
       verticalPan.mobilePostRevealY = postRevealPanY;
-      if (acrobatMobileMockupEl) {
-        acrobatMobileMockupEl.style.transform = `translateY(${chromeRestY + slideOffset - postRevealPanY}px) scale(${mobileScale})`;
-      }
-      if (titleEl) {
-        titleEl.style.transform = `translateY(${headlineRestY + slideOffset - postRevealPanY}px)`;
-        titleEl.style.opacity = titleOpacity;
-      }
-      if (ctaEl) {
-        ctaEl.style.transform = `translateY(${ctaRestY + slideOffset - postRevealPanY}px)`;
-      }
+      stage.style.setProperty('--mockup-y', `${chromeRestY + slideOffset - postRevealPanY}px`);
+      stage.style.setProperty('--mockup-scale', mobileScale);
+      stage.style.setProperty('--title-y', `${headlineRestY + slideOffset - postRevealPanY}px`);
+      stage.style.setProperty('--title-scale', 1);
+      stage.style.setProperty('--title-opacity', titleOpacity);
+      stage.style.setProperty('--cta-y', `${ctaRestY + slideOffset - postRevealPanY}px`);
     } else {
       verticalPan.mobilePostRevealY = 0;
-      acrobatDesktopMockupEl.style.transform = `translateY(${mockupTranslateY}px) scale(${mockupScale})`;
-      if (titleEl) {
-        titleEl.style.transform = `translateY(${mockupTranslateY}px) scale(${titleScale})`;
-        titleEl.style.opacity = titleOpacity;
-      }
-      if (ctaEl) ctaEl.style.transform = `translateY(${mockupTranslateY}px)`;
+      const acrobatWidth = frame.isTablet
+        ? Math.max(680, Math.min(988, viewportWidth * 0.70))
+        : Math.min(viewportWidth * 0.686, 988);
+      const mockupHeight = acrobatWidth * (567 / 988);
+      const topOverhang = ((2.5 - 1) / 2) * mockupHeight;
+      const offscreenY = viewportHeight + topOverhang + 30;
+      const mockupTranslateY = (1 - slottingEase) * offscreenY;
+      const mockupScale = 2.5 - 1.5 * slottingEase;
+      const titleScale = 0.92 + 0.08 * titleSlide;
+      stage.style.setProperty('--mockup-y', `${mockupTranslateY}px`);
+      stage.style.setProperty('--mockup-scale', mockupScale);
+      stage.style.setProperty('--title-y', `${mockupTranslateY}px`);
+      stage.style.setProperty('--title-scale', titleScale);
+      stage.style.setProperty('--title-opacity', titleOpacity);
+      stage.style.setProperty('--cta-y', `${mockupTranslateY}px`);
     }
   }
 
@@ -864,8 +861,8 @@ export default async function init(el) {
       0,
       1 - Math.max(0, Math.min(1, (phase.slotting - 0.4) / 0.3)),
     );
-    adbeLogoPath.style.strokeDashoffset = adbeLogoLength * (1 - adbeLogoDrawProgress);
-    adbeLogoSvg.style.opacity = adbeLogoFadeIn * adbeLogoFadeOut;
+    stage.style.setProperty('--adbe-draw', adbeLogoDrawProgress);
+    stage.style.setProperty('--adbe-opacity', adbeLogoFadeIn * adbeLogoFadeOut);
   }
 
   // Enable clicks once the mockup transition has essentially landed.

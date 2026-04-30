@@ -1,8 +1,8 @@
 const CONFIG = {
-  spacing: 16,
-  mobileSpacing: 24,
-  dotSize: 1,
-  mouseRadius: 125,
+  spacing: 40, // default 16
+  mobileSpacing: 45, // 24
+  dotSize: 1.2, // 1
+  mouseRadius: 60, // 125
   repelForce: 20,
   spring: 0.01,
   damping: 0.59,
@@ -71,24 +71,23 @@ export default function createCanvasGrid(canvas, {
 
   function update() {
     const activeCards = getCards();
+
+    let currentMouseRadius = CONFIG.mouseRadius;
+    let currentRepelForce = CONFIG.repelForce;
+    let boost = 0;
+    activeCards.forEach((card) => {
+      const { x, y } = getCardCenter(card);
+      const dx = mouse.x - x;
+      const dy = mouse.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 280) boost = Math.max(boost, 1 - dist / 280);
+    });
+    if (boost > 0) {
+      currentMouseRadius = CONFIG.mouseRadius * (1 + boost * 1.5);
+      currentRepelForce = CONFIG.repelForce * (1 + boost * 0.8);
+    }
+
     dots.forEach((dot) => {
-      let currentMouseRadius = CONFIG.mouseRadius;
-      let currentRepelForce = CONFIG.repelForce;
-      let boost = 0;
-
-      activeCards.forEach((card) => {
-        const { x, y } = getCardCenter(card);
-        const cardDeltaX = mouse.x - x;
-        const cardDeltaY = mouse.y - y;
-        const cardDistance = Math.sqrt(cardDeltaX * cardDeltaX + cardDeltaY * cardDeltaY);
-        if (cardDistance < 280) boost = Math.max(boost, 1 - cardDistance / 280);
-      });
-
-      if (boost > 0) {
-        currentMouseRadius = CONFIG.mouseRadius * (1 + boost * 1.5);
-        currentRepelForce = CONFIG.repelForce * (1 + boost * 0.8);
-      }
-
       const deltaX = dot.x - mouse.x;
       const deltaY = dot.y - mouse.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -97,7 +96,6 @@ export default function createCanvasGrid(canvas, {
         dot.velocityX += (deltaX / distance) * force;
         dot.velocityY += (deltaY / distance) * force;
       }
-
       dot.velocityX += (dot.originX - dot.x) * CONFIG.spring;
       dot.velocityY += (dot.originY - dot.y) * CONFIG.spring;
       dot.velocityX *= CONFIG.damping;

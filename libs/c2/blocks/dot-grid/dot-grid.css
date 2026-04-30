@@ -72,7 +72,7 @@
   width: 80vw;
   max-width: 900px;
   height: auto;
-  opacity: 0;
+  opacity: var(--adbe-opacity, 0);
   transform: translate(-50%, -50%);
   pointer-events: none;
   will-change: opacity;
@@ -83,6 +83,7 @@
   stroke: #e1e1ef;
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
+  stroke-dashoffset: calc(var(--adbe-logo-length, 9999) * (1 - var(--adbe-draw, 0)));
 }
 
 .dot-grid .card-scene {
@@ -159,8 +160,8 @@
   z-index: 19;
   width: min(68.6vw, 988px);
   text-align: center;
-  opacity: 0;
-  transform: translateY(150vh) scale(0.92);
+  opacity: var(--title-opacity, 0);
+  transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
   pointer-events: none;
   will-change: transform, opacity;
 }
@@ -187,7 +188,7 @@
   height: 40px;
   background: #000;
   border-radius: 9999px;
-  transform: translateY(150vh);
+  transform: translateY(var(--cta-y, 150vh));
   pointer-events: none;
   will-change: transform;
 }
@@ -240,8 +241,7 @@
     z-index: 18;
     width: 294px;
     text-align: center;
-    opacity: 0;
-    transform: translateY(100vh);
+    transform: translateY(var(--title-y, 100vh)) scale(var(--title-scale, 1));
   }
 
   .dot-grid .acrobat-title .heading {
@@ -257,7 +257,7 @@
     z-index: 18;
     width: 108px;
     height: 40px;
-    transform: translateY(100vh);
+    transform: translateY(var(--cta-y, 100vh));
   }
 
   .dot-grid .text-block {
