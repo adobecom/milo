@@ -92,3 +92,42 @@
 .sitemap .accordion .descr-term button {
   border-color: var(--color-gray-200);
 }
+
+/* Accordion icon: replace + with chevron (∨ / ∧) */
+.sitemap .accordion-icon {
+  width: 12px;
+  height: 8px;
+  margin-top: -4px;
+}
+
+.sitemap .accordion-icon::before {
+  width: 8px;
+  height: 8px;
+  background: none;
+  border: 2px solid var(--color-gray-600);
+  border-top: none;
+  border-left: none;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  top: 0;
+  right: 0;
+  bottom: 2px;
+  left: 0;
+  margin: auto;
+  transition: transform 0.2s ease;
+}
+
+.sitemap .accordion-icon::after {
+  display: none;
+}
+
+/* Expanded: flip to ∧ */
+.sitemap .accordion .descr-term button[aria-expanded="true"] .accordion-icon::before {
+  transform: rotate(-135deg);
+  bottom: -2px;
+}
+
+/* Hover: darken chevron */
+.sitemap .accordion .descr-term button:hover .accordion-icon::before {
+  border-color: var(--color-black);
+}
