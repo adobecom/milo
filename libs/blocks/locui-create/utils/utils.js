@@ -76,13 +76,17 @@ export function setSelectedLocalesAndRegions() {
   }, {});
   const selectedLocale = [];
   const activeLocales = {};
+  const isPromoteOrSingleRollout = userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout
+    || userWorkflowType.value === USER_WORKFLOW_TYPE.single_rollout;
   languages.forEach((loc) => {
     const { language, locales } = loc;
     const { livecopies, defaultlocales, languagecode } = localeByLanguage[language] || {};
-    const effectiveLivecopies = defaultlocales || livecopies;
+    const visibleLivecopies = isPromoteOrSingleRollout
+      ? livecopies
+      : (defaultlocales || livecopies);
     const livecopiesArr = [];
-    if (effectiveLivecopies) {
-      const newLivecopies = effectiveLivecopies.split(',').map((locale) => `${languagecode}|${locale}`);
+    if (visibleLivecopies) {
+      const newLivecopies = visibleLivecopies.split(',').map((locale) => `${languagecode}|${locale}`);
       livecopiesArr.push(...newLivecopies);
     }
     if (locales.length > 0) {
