@@ -189,7 +189,7 @@ export async function runTransformDa({
       subdomain: entry.unit.subdomain,
       baseGeo: entry.unit.baseGeo,
       domain: entry.unit.domain,
-      deploy: entry.unit.deploy,
+      stage: entry.unit.stage,
     }));
 
   if (manifestEntries.length > 0) {

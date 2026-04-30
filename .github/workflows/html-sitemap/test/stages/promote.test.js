@@ -25,8 +25,8 @@ async function createFixture(tmpDir) {
     },
     'geo-map': {
       data: [
-        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', deploy: 'true' },
-        { subdomain: 'business', baseGeo: 'fr', language: 'fr', extendedGeos: '', deploy: 'true' },
+        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', stage: 'publish' },
+        { subdomain: 'business', baseGeo: 'fr', language: 'fr', extendedGeos: '', stage: 'publish' },
       ],
     },
     'page-copy': {

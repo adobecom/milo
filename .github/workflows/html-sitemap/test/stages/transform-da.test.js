@@ -136,7 +136,7 @@ test('runTransformDa writes sitemap.html from sitemap.json', async () => {
   assert.equal(manifest.pages[0].totalLinkCount, manifest.pages[0].baseGeoLinkCount + manifest.pages[0].extendedGeoLinkCount);
 
   const csv = await fs.readFile(path.join(tmpDir, 'business', 'manifest.csv'), 'utf8');
-  assert.match(csv, /^baseGeo,domain,deploy,sha256,/);
+  assert.match(csv, /^baseGeo,domain,stage,sha256,/);
 });
 
 test('runTransformDa writes localized html and omits empty base-geo navigation sections', async () => {

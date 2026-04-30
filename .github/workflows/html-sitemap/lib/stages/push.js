@@ -69,7 +69,7 @@ export async function runPush({
   const normalizedRoot = normalizeDaRoot(daRoot);
 
   const settled = await mapWithConcurrency(units, UNIT_CONCURRENCY, async (unit) => {
-    if (!unit.deploy) {
+    if (!unit.stage) {
       return {
         ok: true,
         unit,

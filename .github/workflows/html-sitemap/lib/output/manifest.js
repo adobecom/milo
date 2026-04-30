@@ -17,7 +17,7 @@ import { readSitemapDataDocument } from '../data/sitemap.js';
  * @typedef {Object} ManifestPage
  * @property {string} baseGeo
  * @property {string} domain
- * @property {boolean} deploy
+ * @property {string} stage
  * @property {string} sha256
  * @property {number} baseGeoSectionCount
  * @property {number} baseGeoLinkCount
@@ -61,7 +61,7 @@ function countLinks(document) {
 
 /**
  * @param {string} outputDir
- * @param {{ subdomain: string, baseGeo: string, domain: string, deploy: boolean }} entry
+ * @param {{ subdomain: string, baseGeo: string, domain: string, stage: string }} entry
  * @returns {Promise<ManifestPage>}
  */
 async function buildManifestPage(
@@ -74,7 +74,7 @@ async function buildManifestPage(
   return {
     baseGeo: entry.baseGeo,
     domain: entry.domain,
-    deploy: entry.deploy,
+    stage: entry.stage,
     sha256: sha256(html),
     ...countLinks(document),
   };
@@ -84,7 +84,7 @@ async function buildManifestPage(
 const CSV_COLUMNS = [
   'baseGeo',
   'domain',
-  'deploy',
+  'stage',
   'sha256',
   'baseGeoSectionCount',
   'baseGeoLinkCount',
@@ -105,7 +105,7 @@ function pagesToCsv(pages) {
 
 /**
  * @param {string} outputDir
- * @param {Array<{ subdomain: string, baseGeo: string, domain: string, deploy: boolean }>} entries
+ * @param {Array<{ subdomain: string, baseGeo: string, domain: string, stage: string }>} entries
  * @returns {Promise<void>}
  */
 export async function writeSubdomainManifests(

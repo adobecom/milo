@@ -18,7 +18,7 @@ test('runDiff reports changed when local and remote differ', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-diff-'));
   await fs.mkdir(path.join(tmpDir, 'business'), { recursive: true });
   await fs.writeFile(path.join(tmpDir, 'business', 'sitemap.html'), '<body>local</body>\n', 'utf8');
-  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', deploy: 'true' }]), 'utf8');
+  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', stage: 'publish' }]), 'utf8');
 
   const originalToken = process.env.DA_SOURCE_TOKEN;
   process.env.DA_SOURCE_TOKEN = 'test-token';
@@ -45,7 +45,7 @@ test('runDiff reports unchanged when hashes match', async () => {
   const html = '<body>same content</body>\n';
   await fs.mkdir(path.join(tmpDir, 'business'), { recursive: true });
   await fs.writeFile(path.join(tmpDir, 'business', 'sitemap.html'), html, 'utf8');
-  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', deploy: 'true' }]), 'utf8');
+  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', stage: 'publish' }]), 'utf8');
 
   const originalToken = process.env.DA_SOURCE_TOKEN;
   process.env.DA_SOURCE_TOKEN = 'test-token';
@@ -71,7 +71,7 @@ test('runDiff reports new when remote returns 404', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-diff-'));
   await fs.mkdir(path.join(tmpDir, 'business'), { recursive: true });
   await fs.writeFile(path.join(tmpDir, 'business', 'sitemap.html'), '<body>new page</body>\n', 'utf8');
-  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', deploy: 'true' }]), 'utf8');
+  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', stage: 'publish' }]), 'utf8');
 
   const originalToken = process.env.DA_SOURCE_TOKEN;
   process.env.DA_SOURCE_TOKEN = 'test-token';
@@ -93,11 +93,11 @@ test('runDiff reports new when remote returns 404', async () => {
   }
 });
 
-test('runDiff skips geos not marked deploy', async () => {
+test('runDiff skips geos not marked stage', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-diff-'));
   await fs.mkdir(path.join(tmpDir, 'business'), { recursive: true });
   await fs.writeFile(path.join(tmpDir, 'business', 'sitemap.html'), '<body>local</body>\n', 'utf8');
-  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', deploy: '' }]), 'utf8');
+  await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), makeConfigJson([{ baseGeo: '', stage: '' }]), 'utf8');
 
   const originalToken = process.env.DA_SOURCE_TOKEN;
   process.env.DA_SOURCE_TOKEN = 'test-token';

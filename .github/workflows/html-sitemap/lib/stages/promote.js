@@ -19,6 +19,21 @@ import { formatStageGeo, getErrorMessage } from '../util/stages.js';
  * @typedef {import('../util/stages.js').UnitStageResult} UnitStageResult
  */
 
+/** @type {string[]} */
+const STAGE_ORDER = ['push', 'preview', 'publish'];
+
+/**
+ * Returns true if the unit's configured stage is at least as far as the action.
+ * e.g. stage='preview' reaches 'preview' but not 'publish'.
+ * @param {string} unitStage
+ * @param {string} action
+ * @returns {boolean}
+ */
+function unitReachesStage(unitStage, action) {
+  if (!unitStage) return false;
+  return STAGE_ORDER.indexOf(unitStage) >= STAGE_ORDER.indexOf(action);
+}
+
 const GROUP_CONCURRENCY = 2;
 
 /**
@@ -90,7 +105,7 @@ export async function runPromote({
   /** @type {ExtractUnit[]} */
   const presentUnits = [];
   for (const unit of units) {
-    if (!unit.deploy) {
+    if (!unitReachesStage(unit.stage, action)) {
       skippedEntries.push({
         ok: true,
         unit,

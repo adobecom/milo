@@ -13,7 +13,7 @@
  * @property {string} baseGeo
  * @property {string} language
  * @property {string[]} extendedGeos
- * @property {boolean} deploy
+ * @property {string} stage
  * @property {QueryIndexMapRow[]} queryIndexRows
  */
 
@@ -45,8 +45,8 @@ export function planExtractUnits(
     }
 
     const queryIndexRows = config.queryIndexMap.filter((row) => row.subdomain === domainRow.subdomain);
-    const deployedGeoRows = geoFilter !== undefined ? geoRows : geoRows.filter((row) => row.deploy);
-    deployedGeoRows.forEach((geoRow) => {
+    const stagedGeoRows = geoFilter !== undefined ? geoRows : geoRows.filter((row) => row.stage);
+    stagedGeoRows.forEach((geoRow) => {
       units.push({
         subdomain: domainRow.subdomain,
         domain: domainRow.domain,
@@ -56,7 +56,7 @@ export function planExtractUnits(
         baseGeo: geoRow.baseGeo,
         language: geoRow.language,
         extendedGeos: geoRow.extendedGeos,
-        deploy: true,
+        stage: geoRow.stage,
         queryIndexRows,
       });
     });

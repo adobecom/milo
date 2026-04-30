@@ -26,8 +26,8 @@ test('runPush creates remote folders and uploads sitemap.html under da-root', as
     },
     'geo-map': {
       data: [
-        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', deploy: 'true' },
-        { subdomain: 'business', baseGeo: 'fr', language: 'fr', extendedGeos: '', deploy: 'true' },
+        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', stage: 'publish' },
+        { subdomain: 'business', baseGeo: 'fr', language: 'fr', extendedGeos: '', stage: 'publish' },
       ],
     },
     'page-copy': {
@@ -108,7 +108,7 @@ test('runPush can exchange rolling-import IMS credentials for a DA bearer token'
     },
     'geo-map': {
       data: [
-        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', deploy: 'true' },
+        { subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', stage: 'publish' },
       ],
     },
     'page-copy': {
@@ -190,7 +190,7 @@ test('runPush skips unchanged pages when force is false', async () => {
   await fs.writeFile(path.join(tmpDir, 'html-sitemap.json'), JSON.stringify({
     config: { data: [{ subdomain: 'business', domain: 'business.adobe.com', site: 'da-bacom', extendedSitemap: 'all' }] },
     'query-index-map': { data: [{ subdomain: 'business', site: 'da-bacom', queryIndexPath: '/query-index.json', enabled: 'true' }] },
-    'geo-map': { data: [{ subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', deploy: 'true' }] },
+    'geo-map': { data: [{ subdomain: 'business', baseGeo: '', language: 'en', extendedGeos: '', stage: 'publish' }] },
     'page-copy': { data: [{ subdomain: 'business', geo: '', pageTitle: 'Sitemap' }] },
   }, null, 2), 'utf8');
 

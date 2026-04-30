@@ -46,7 +46,7 @@ test('writeSubdomainManifests writes manifest.json and manifest.csv with correct
   await writeFixture(tmpDir, 'business', '', HTML_CONTENT, SITEMAP_DOC);
 
   await writeSubdomainManifests(tmpDir, [
-    { subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', deploy: true },
+    { subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', stage: 'publish' },
   ]);
 
   const manifest = JSON.parse(await fs.readFile(path.join(tmpDir, 'business', 'manifest.json'), 'utf8'));
@@ -57,7 +57,7 @@ test('writeSubdomainManifests writes manifest.json and manifest.csv with correct
   const page = manifest.pages[0];
   assert.equal(page.baseGeo, '');
   assert.equal(page.domain, 'business.adobe.com');
-  assert.equal(page.deploy, true);
+  assert.equal(page.stage, 'publish');
   assert.equal(page.sha256, sha256(HTML_CONTENT));
   assert.equal(page.baseGeoSectionCount, 1);
   assert.equal(page.baseGeoLinkCount, 3);
@@ -68,7 +68,7 @@ test('writeSubdomainManifests writes manifest.json and manifest.csv with correct
   const csv = await fs.readFile(path.join(tmpDir, 'business', 'manifest.csv'), 'utf8');
   const lines = csv.trim().split('\n');
   assert.equal(lines.length, 2);
-  assert.match(lines[0], /^baseGeo,domain,deploy,sha256,/);
+  assert.match(lines[0], /^baseGeo,domain,stage,sha256,/);
   assert.ok(lines[1].startsWith(',business.adobe.com,'));
   assert.ok(lines[1].includes(sha256(HTML_CONTENT)));
 });
@@ -81,8 +81,8 @@ test('writeSubdomainManifests sorts pages by baseGeo', async () => {
   await writeFixture(tmpDir, 'business', 'fr', HTML_CONTENT, frDoc);
 
   await writeSubdomainManifests(tmpDir, [
-    { subdomain: 'business', baseGeo: 'fr', domain: 'business.adobe.com', deploy: true },
-    { subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', deploy: true },
+    { subdomain: 'business', baseGeo: 'fr', domain: 'business.adobe.com', stage: 'publish' },
+    { subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', stage: 'publish' },
   ]);
 
   const manifest = JSON.parse(await fs.readFile(path.join(tmpDir, 'business', 'manifest.json'), 'utf8'));
@@ -100,7 +100,7 @@ test('writeSubdomainManifests sorts pages by baseGeo', async () => {
 test('writeSubdomainManifests is idempotent for same inputs', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-manifest-idem-'));
   await writeFixture(tmpDir, 'business', '', HTML_CONTENT, SITEMAP_DOC);
-  const entries = [{ subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', deploy: true }];
+  const entries = [{ subdomain: 'business', baseGeo: '', domain: 'business.adobe.com', stage: 'publish' }];
 
   await writeSubdomainManifests(tmpDir, entries);
   const first = await fs.readFile(path.join(tmpDir, 'business', 'manifest.json'), 'utf8');

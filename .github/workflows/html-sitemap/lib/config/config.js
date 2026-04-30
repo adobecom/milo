@@ -25,7 +25,7 @@ import process from 'node:process';
  * @property {string} baseGeo
  * @property {string} language
  * @property {string[]} extendedGeos
- * @property {boolean} deploy
+ * @property {string} stage
  */
 
 /**
@@ -200,7 +200,7 @@ export async function loadConfig(
     baseGeo: normalizeBaseGeo(row.baseGeo),
     language: row.language,
     extendedGeos: parseExtendedGeos(row.extendedGeos),
-    deploy: parseBooleanFlag(row.deploy),
+    stage: (row.stage || '').trim().toLowerCase(),
   })).filter((row) => row.subdomain && row.language !== undefined);
 
   const pageCopy = copyRows.map((row) => ({

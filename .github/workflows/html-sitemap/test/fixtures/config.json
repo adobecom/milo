@@ -14,10 +14,10 @@
   },
   "geo-map": {
     "data": [
-      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br,ca", "deploy": "true" },
-      { "domain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr", "deploy": "true" },
-      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en", "deploy": "true" },
-      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr,ca_fr", "deploy": "true" }
+      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br,ca", "stage": "publish" },
+      { "domain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr", "stage": "publish" },
+      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en", "stage": "publish" },
+      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr,ca_fr", "stage": "publish" }
     ]
   },
   "page-copy": {

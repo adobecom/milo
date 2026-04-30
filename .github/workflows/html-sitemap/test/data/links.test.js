@@ -16,7 +16,7 @@ test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes remo
     baseGeo: 'fr',
     language: 'fr',
     extendedGeos: ['be_fr'],
-    deploy: true,
+    stage: 'publish',
     queryIndexRows: [],
   };
   const config = {
@@ -28,7 +28,7 @@ test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes remo
       'da-cc': 'www.adobe.com',
     },
     geoMap: [
-      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: ['be_fr'], deploy: true },
+      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: ['be_fr'], stage: 'publish' },
     ],
   };
 
@@ -63,7 +63,7 @@ test('buildExtendedGeoLinks uses inventory-aware geo labels', async () => {
     baseGeo: 'fr',
     language: 'fr',
     extendedGeos: ['ca_fr', 'be_fr'],
-    deploy: true,
+    stage: 'publish',
     queryIndexRows: [],
   };
   const config = {
@@ -75,9 +75,9 @@ test('buildExtendedGeoLinks uses inventory-aware geo labels', async () => {
       'da-cc': 'www.adobe.com',
     },
     geoMap: [
-      { subdomain: 'www', baseGeo: '', language: 'en', extendedGeos: ['ca'], deploy: true },
-      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: ['ca_fr', 'be_fr'], deploy: true },
-      { subdomain: 'www', baseGeo: 'be_en', language: 'en', extendedGeos: [], deploy: true },
+      { subdomain: 'www', baseGeo: '', language: 'en', extendedGeos: ['ca'], stage: 'publish' },
+      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: ['ca_fr', 'be_fr'], stage: 'publish' },
+      { subdomain: 'www', baseGeo: 'be_en', language: 'en', extendedGeos: [], stage: 'publish' },
     ],
   };
 
@@ -122,7 +122,7 @@ test('buildExtendedGeoLinks uses inventory-aware geo labels', async () => {
   const singleVariantConfig = {
     ...config,
     geoMap: [
-      { subdomain: 'www', baseGeo: '', language: 'en', extendedGeos: ['vn_vi'], deploy: true },
+      { subdomain: 'www', baseGeo: '', language: 'en', extendedGeos: ['vn_vi'], stage: 'publish' },
     ],
   };
 
