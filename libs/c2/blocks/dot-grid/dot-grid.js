@@ -252,8 +252,14 @@ export default async function init(el) {
   // ──────────────────── Animation state ────────────────────
   let viewportWidth = 0;
   let viewportHeight = 0;
-  /** Scroll-scrub timeline position (abstract units; scales with block scroll progress). */
-  const scrollTimeline = { current: 0 };
+  /**
+   * Scroll-scrub timeline state.
+   *  - current: animation scroll units (0 → animScrollTotal), grows after the stage pins.
+   *  - blockTop: block bounding rect top in pixels — positive while the block is approaching
+   *    from below, 0 at pin, negative during pinned scroll. Used to drive the card slide-in
+   *    pre-pin (mirrors poc-v3's pageScroll-driven slide start during the JTBD overlay).
+   */
+  const scrollTimeline = { current: 0, blockTop: 0 };
 
   // Phase progress, 0..1 each
   const phase = {
@@ -618,16 +624,17 @@ export default async function init(el) {
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
     // Slide-in: arc rises from below + side, per-card stagger, overlapping rotation.
+    // Driven by the block's pre-pin approach (blockTop in px) so the slide starts as the
+    // section scrolls into view and is mostly settled by the time the stage pins —
+    // matches poc-v3, where the slide rode the JTBD pre-scroll instead of pinned scroll.
     let mobileSlideX = 0;
     let mobileSlideY = 0;
     let mobileSlideScaleMultiplier = 1;
     let mobileSlideOpacity = 1;
     if (frame.isMobile) {
       const mobileSlideEarly = viewportHeight * 0.72 + MOBILE_SLIDE_DURATION * 0.13;
-      const slideProgress = Math.max(
-        0,
-        Math.min(1, scrollTimeline.current / (mobileSlideEarly + SLIDE_OVERLAP)),
-      );
+      const slidePixels = Math.max(0, mobileSlideEarly - scrollTimeline.blockTop);
+      const slideProgress = Math.min(1, slidePixels / (mobileSlideEarly + SLIDE_OVERLAP));
       const staggerFrac = (1 - card.fanIdx / 7) * MOBILE_SLIDE_STAGGER;
       const cardMobileSlideProgress = Math.max(
         0,
@@ -643,10 +650,8 @@ export default async function init(el) {
       mobileSlideOpacity = Math.min(1, cardMobileSlideProgress / 0.25);
     } else {
       const deskSlideEarly = viewportHeight * 0.75;
-      const slideProgress = Math.max(
-        0,
-        Math.min(1, scrollTimeline.current / (deskSlideEarly + SLIDE_OVERLAP)),
-      );
+      const slidePixels = Math.max(0, deskSlideEarly - scrollTimeline.blockTop);
+      const slideProgress = Math.min(1, slidePixels / (deskSlideEarly + SLIDE_OVERLAP));
       const staggerFrac = (1 - card.fanIdx / 7) * DESKTOP_SLIDE_STAGGER;
       const cardDeskSlideProgress = Math.max(
         0,
@@ -750,6 +755,7 @@ export default async function init(el) {
 
   function readScrollProgress() {
     const rect = el.getBoundingClientRect();
+    scrollTimeline.blockTop = rect.top;
     const panRange = Math.max(1, el.offsetHeight - window.innerHeight);
     return Math.max(0, Math.min(1, -rect.top / panRange));
   }
