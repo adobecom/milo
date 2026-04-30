@@ -3,7 +3,7 @@
 Paste this into your terminal — no repo needed:
 
 ```sh
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/adobecom/milo/claudify-milo/setup.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/adobecom/milo/stage/setup.sh)"
 ```
 
 It clones the repo, installs everything, and opens Claude Code automatically.

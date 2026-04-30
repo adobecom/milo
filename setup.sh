@@ -4,7 +4,7 @@
 #
 # Paste into Terminal (no repo needed):
 #
-#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/adobecom/milo/claudify-milo/setup.sh)"
+#   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/adobecom/milo/stage/setup.sh)"
 #
 # Already have the repo?  Run from inside it:
 #   bash setup.sh
@@ -90,7 +90,7 @@ else
     echo ""
     info "Cloning → $REPO_ROOT"
     mkdir -p "$(dirname "$REPO_ROOT")"
-    git clone -b claudify-milo https://github.com/adobecom/milo.git "$REPO_ROOT"
+    git clone -b stage https://github.com/adobecom/milo.git "$REPO_ROOT"
     ok "Cloned"
   fi
 fi
