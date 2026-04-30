@@ -25,7 +25,8 @@
 }
 
 /* h3 subheadings: Adobe Clean Bold, body size */
-.sitemap h3, h4 {
+.sitemap h3,
+.sitemap h4 {
   font-weight: 700;
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
@@ -62,10 +63,8 @@
   max-width: var(--grid-container-width);
 }
 
-/* Accordion content: text size matches columns, flush-left with heading */
+/* Accordion content: flush-left with heading (font-size inherits body-m default) */
 .sitemap .accordion .descr-details {
-  font-size: var(--type-body-m-size);
-  line-height: var(--type-body-m-lh);
   padding-left: 0;
   padding-right: 0;
 }

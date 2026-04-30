@@ -113,7 +113,7 @@ test('runTransformDa writes sitemap.html from sitemap.json', async () => {
   assert.equal(html, normalizeSnapshotFixture(expectedHtml));
   assert.match(html, /<body>/);
   assert.match(html, /<main>/);
-  assert.match(html, /class="text xxl-heading xl-spacing center"/);
+  assert.match(html, /class="text xxl-heading xl-spacing-top center left-mobile"/);
   assert.match(html, /<h1>Sitemap<\/h1>/);
   assert.doesNotMatch(html, /Browse pages across this site/);
   assert.match(html, /<h2>Products<\/h2>/);
@@ -121,7 +121,7 @@ test('runTransformDa writes sitemap.html from sitemap.json', async () => {
   assert.match(html, /<a href="https:\/\/business\.adobe\.com\/products\/commerce">Adobe Commerce<\/a>/);
   assert.doesNotMatch(html, /Other Regions/);
   assert.doesNotMatch(html, /Additional Localized Pages/);
-  assert.match(html, /class="accordion"/);
+  assert.match(html, /class="accordion/);
   assert.match(html, /<h2>Brasil<\/h2>/);
   assert.match(html, /class="metadata"/);
   assert.match(html, /<div>\s*<div>title<\/div>\s*<div>Sitemap<\/div>\s*<\/div>/);
