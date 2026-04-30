@@ -39,6 +39,12 @@
   margin: 0;
 }
 
+/* Columns: zero row-gap so h3 margin-top alone separates stacked groups
+   (gives consistent rhythm at every viewport) */
+.sitemap .columns > .row {
+  row-gap: 0;
+}
+
 /* Links: lighter gray, no underline by default, underline on hover */
 .sitemap .columns a,
 .sitemap .accordion a {
