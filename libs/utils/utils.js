@@ -990,7 +990,7 @@ export async function getLingoRegion() {
   return regionKey ? regions[regionKey] : null;
 }
 
-export async function getMepLingoPrefix() {
+export async function getGeoLocalePrefix() {
   const region = await getLingoRegion();
   return region?.prefix ?? null;
 }
@@ -1072,7 +1072,7 @@ export async function localizeLinkAsync(
     const isFragment = effectiveHref.includes('/fragments/');
     if (isBasePage) {
       const isRegularFragment = isFragment && !isMepLingoLink;
-      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      prefix = (aTag && !isRegularFragment) ? await getGeoLocalePrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
       const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
@@ -1787,7 +1787,7 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-function getPlaceholderPaths(config) {
+export function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
   if (config.env.name !== 'prod'
@@ -2653,7 +2653,7 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
+  getGeoLocalePrefix().then((prefix) => {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }

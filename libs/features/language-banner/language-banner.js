@@ -66,7 +66,7 @@ async function showBanner(market, config) {
     setInternational(market.prefix || 'us');
     if (config.lingoProjectSuccessLogging === 'on') {
       const country = await getCountry();
-      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-click', severity: 'i' });
+      window.lana.log(`Click: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-click', severity: 'i' });
     }
     window.open(translatedUrl, '_self');
   });
@@ -76,7 +76,7 @@ async function showBanner(market, config) {
     document.cookie = `international=${pagePrefix};path=/;${domain}`;
     if (config.lingoProjectSuccessLogging === 'on') {
       const country = await getCountry();
-      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-close', severity: 'i' });
+      window.lana.log(`Close: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-close', severity: 'i' });
     }
     banner.remove();
   });
@@ -84,7 +84,7 @@ async function showBanner(market, config) {
   sendAnalytics(new Event(eventName));
   if (config.lingoProjectSuccessLogging === 'on') {
     const country = await getCountry();
-    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { sampleRate: 10, tags: 'lingo, lingo-language-banner-load', severity: 'i' });
+    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
 
