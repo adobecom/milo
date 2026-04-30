@@ -19,6 +19,8 @@ const LABEL_CLEARANCE = 28;
 const ARC_INTRO_FRACTION = 0.10;
 const ARC_PAN_END = 1350;
 const ARC_PEEL_OVERLAP = ARC_PAN_END * (1 - ARC_INTRO_FRACTION);
+/** Scroll unit at which card peel starts (end of the arc-rotation intro window). */
+const PEEL_START_SCROLL = ARC_PAN_END - ARC_PEEL_OVERLAP;
 /** Full arc→grid scroll span reference; mobile settle timing anchors here. */
 const DESKTOP_ARC_REFERENCE_END = ARC_PAN_END + 1000;
 /** Desktop/tablet peel completes at this scroll unit. */
@@ -35,24 +37,29 @@ const DESKTOP_SLOTTING_START = DESKTOP_PEEL_END_SCROLL
 const MOBILE_SETTLE_DURATION = 468;
 const MOBILE_SLOTTING_DURATION = 900;
 const MOBILE_GRID_END = Math.round(
-  (ARC_PAN_END - ARC_PEEL_OVERLAP)
-    + (DESKTOP_ARC_REFERENCE_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.39,
+  PEEL_START_SCROLL + (DESKTOP_ARC_REFERENCE_END - PEEL_START_SCROLL) * 0.39,
 );
-const MOBILE_PAN_START = Math.round(((ARC_PAN_END - ARC_PEEL_OVERLAP) + MOBILE_GRID_END) / 2);
+const MOBILE_PAN_START = Math.round((PEEL_START_SCROLL + MOBILE_GRID_END) / 2);
 const MOBILE_ARC_ALPHA = 0.6; // arc orientation on portrait screens
 const MOBILE_SLIDE_DURATION = 300;
-const MOBILE_SLIDE_STAGGER = 0.45;
-const MOBILE_SLIDE_START_Y = 0.90;
-const MOBILE_SLIDE_SCALE = 0.85;
-const MOBILE_SLIDE_START_X = 0.55;
-const MOBILE_SLIDE_STAGGER_X = 0.20;
 /** Scroll units into arc rotation at which slide fully completes. */
 const SLIDE_OVERLAP = 200;
-const DESKTOP_SLIDE_STAGGER = 0.45;
-const DESKTOP_SLIDE_STAGGER_X = 0.20;
-const DESKTOP_SLIDE_SCALE = 0.85;
-const DESKTOP_SLIDE_START_Y = 0.90;
-const DESKTOP_SLIDE_START_X = 0.55;
+// Slide-in shape — kept as separate mobile/desktop tables so each breakpoint can be
+// retuned independently without touching the other. Currently identical by design.
+const MOBILE_SLIDE_PARAMS = {
+  stagger: 0.45,
+  staggerX: 0.20,
+  startX: 0.55,
+  startY: 0.90,
+  scale: 0.85,
+};
+const DESKTOP_SLIDE_PARAMS = {
+  stagger: 0.45,
+  staggerX: 0.20,
+  startX: 0.55,
+  startY: 0.90,
+  scale: 0.85,
+};
 
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
@@ -594,6 +601,28 @@ export default async function init(el) {
     if (card.labelEl) card.labelEl.style.opacity = '0';
   }
 
+  // Per-card slide-in offset/scale/opacity. Driven by the block's pre-pin position
+  // (scrollTimeline.blockTop) so cards rise into the arc as the section scrolls into view —
+  // mirrors poc-v3, where the slide rode the JTBD pre-scroll instead of pinned scroll.
+  function computeCardSlide(card, slideEarly, params) {
+    const slidePixels = Math.max(0, slideEarly - scrollTimeline.blockTop);
+    const slideProgress = Math.min(1, slidePixels / (slideEarly + SLIDE_OVERLAP));
+    const fanLagFraction = 1 - card.fanIdx / 7;
+    const staggerFrac = fanLagFraction * params.stagger;
+    const cardSlideProgress = Math.max(
+      0,
+      Math.min(1, (slideProgress - staggerFrac) / (1 - staggerFrac)),
+    );
+    const slideEase = easeOutSine(cardSlideProgress);
+    const xMultiplier = params.startX + fanLagFraction * params.staggerX;
+    return {
+      x: viewportWidth * xMultiplier * (1 - slideEase),
+      y: viewportHeight * params.startY * (1 - slideEase),
+      scaleMultiplier: params.scale + (1 - params.scale) * slideEase,
+      opacity: Math.min(1, cardSlideProgress / 0.25),
+    };
+  }
+
   // Arc rotation + peel onto the grid (slide-in from below on all breakpoints).
   function renderArcPeelToGrid(card, cardScale) {
     const cardPeelProgress = getCardArcToGridProgress(card);
@@ -623,52 +652,14 @@ export default async function init(el) {
     const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
-    // Slide-in: arc rises from below + side, per-card stagger, overlapping rotation.
-    // Driven by the block's pre-pin approach (blockTop in px) so the slide starts as the
-    // section scrolls into view and is mostly settled by the time the stage pins —
-    // matches poc-v3, where the slide rode the JTBD pre-scroll instead of pinned scroll.
-    let mobileSlideX = 0;
-    let mobileSlideY = 0;
-    let mobileSlideScaleMultiplier = 1;
-    let mobileSlideOpacity = 1;
-    if (frame.isMobile) {
-      const mobileSlideEarly = viewportHeight * 0.72 + MOBILE_SLIDE_DURATION * 0.13;
-      const slidePixels = Math.max(0, mobileSlideEarly - scrollTimeline.blockTop);
-      const slideProgress = Math.min(1, slidePixels / (mobileSlideEarly + SLIDE_OVERLAP));
-      const staggerFrac = (1 - card.fanIdx / 7) * MOBILE_SLIDE_STAGGER;
-      const cardMobileSlideProgress = Math.max(
-        0,
-        Math.min(1, (slideProgress - staggerFrac) / (1 - staggerFrac)),
-      );
-      const cardMobileSlideEase = easeOutSine(cardMobileSlideProgress);
-      const mobileSlideXMultiplier = MOBILE_SLIDE_START_X
-        + (1 - card.fanIdx / 7) * MOBILE_SLIDE_STAGGER_X;
-      mobileSlideX = viewportWidth * mobileSlideXMultiplier * (1 - cardMobileSlideEase);
-      mobileSlideY = viewportHeight * MOBILE_SLIDE_START_Y * (1 - cardMobileSlideEase);
-      mobileSlideScaleMultiplier = MOBILE_SLIDE_SCALE
-        + (1 - MOBILE_SLIDE_SCALE) * cardMobileSlideEase;
-      mobileSlideOpacity = Math.min(1, cardMobileSlideProgress / 0.25);
-    } else {
-      const deskSlideEarly = viewportHeight * 0.75;
-      const slidePixels = Math.max(0, deskSlideEarly - scrollTimeline.blockTop);
-      const slideProgress = Math.min(1, slidePixels / (deskSlideEarly + SLIDE_OVERLAP));
-      const staggerFrac = (1 - card.fanIdx / 7) * DESKTOP_SLIDE_STAGGER;
-      const cardDeskSlideProgress = Math.max(
-        0,
-        Math.min(1, (slideProgress - staggerFrac) / (1 - staggerFrac)),
-      );
-      const cardDeskSlideEase = easeOutSine(cardDeskSlideProgress);
-      const deskSlideXMultiplier = DESKTOP_SLIDE_START_X
-        + (1 - card.fanIdx / 7) * DESKTOP_SLIDE_STAGGER_X;
-      mobileSlideX = viewportWidth * deskSlideXMultiplier * (1 - cardDeskSlideEase);
-      mobileSlideY = viewportHeight * DESKTOP_SLIDE_START_Y * (1 - cardDeskSlideEase);
-      mobileSlideScaleMultiplier = DESKTOP_SLIDE_SCALE
-        + (1 - DESKTOP_SLIDE_SCALE) * cardDeskSlideEase;
-      mobileSlideOpacity = Math.min(1, cardDeskSlideProgress / 0.25);
-    }
+    const slideEarly = frame.isMobile
+      ? viewportHeight * 0.72 + MOBILE_SLIDE_DURATION * 0.13
+      : viewportHeight * 0.75;
+    const slideParams = frame.isMobile ? MOBILE_SLIDE_PARAMS : DESKTOP_SLIDE_PARAMS;
+    const slide = computeCardSlide(card, slideEarly, slideParams);
 
-    card.visualCx = currentX + mobileSlideX;
-    card.visualCy = currentY + mobileSlideY;
+    card.visualCx = currentX + slide.x;
+    card.visualCy = currentY + slide.y;
 
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
@@ -685,14 +676,14 @@ export default async function init(el) {
 
     applyCardBox(card.el, card);
     setCardTransform(card.el, {
-      translateX: currentX - card.baseX - card.width / 2 + mobileSlideX,
-      translateY: currentY - card.baseY - card.height / 2 + mobileSlideY,
-      scale: scale * mobileSlideScaleMultiplier,
+      translateX: currentX - card.baseX - card.width / 2 + slide.x,
+      translateY: currentY - card.baseY - card.height / 2 + slide.y,
+      scale: scale * slide.scaleMultiplier,
       rotation,
       tiltX: cardXTilt,
       tiltY: cardYTilt,
     });
-    card.el.style.opacity = (CARD_OPACITY * mobileSlideOpacity).toFixed(3);
+    card.el.style.opacity = (CARD_OPACITY * slide.opacity).toFixed(3);
     const shadowAlpha = 0.15 * (1 - cardPeelProgress);
     const shadowAlphaKey = shadowAlpha.toFixed(3);
     if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
@@ -782,9 +773,8 @@ export default async function init(el) {
     scrollTimeline.current = readScrollProgress() * animScrollTotal;
 
     phase.arcPan = Math.max(0, Math.min(1, scrollTimeline.current / ARC_PAN_END));
-    const peelStart = ARC_PAN_END - ARC_PEEL_OVERLAP;
-    const rawArcToGridProgress = (scrollTimeline.current - peelStart)
-      / (timing.gridEnd - peelStart);
+    const rawArcToGridProgress = (scrollTimeline.current - PEEL_START_SCROLL)
+      / (timing.gridEnd - PEEL_START_SCROLL);
     phase.arcToGrid = Math.max(0, Math.min(1, rawArcToGridProgress));
     const rawSlottingProgress = (scrollTimeline.current - timing.slottingStart)
       / timing.slottingDuration;
@@ -863,9 +853,8 @@ export default async function init(el) {
   // Mobile: delayed to 85% through peel so it doesn't draw during arc/peel.
   function updateAdbeLogo() {
     const adbeLogoPeelStart = frame.isMobile
-      ? (ARC_PAN_END - ARC_PEEL_OVERLAP)
-        + (MOBILE_GRID_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.85
-      : ARC_PAN_END * ARC_INTRO_FRACTION;
+      ? PEEL_START_SCROLL + (MOBILE_GRID_END - PEEL_START_SCROLL) * 0.85
+      : PEEL_START_SCROLL;
     const adbeLogoSpan = timing.slottingStart - adbeLogoPeelStart;
     const rawAdbeLogoProgress = (scrollTimeline.current - adbeLogoPeelStart) / adbeLogoSpan;
     const adbeLogoProgress = Math.max(0, Math.min(1, rawAdbeLogoProgress));
