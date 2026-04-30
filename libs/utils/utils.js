@@ -1966,7 +1966,12 @@ export async function loadIms() {
         scope: imsScope || defaultScope,
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${lingoRegion?.prefix || locale.prefix}` : undefined,
+          ? (() => {
+            const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
+            const acomPrefix = (lingoRegion?.prefix || locale.prefix).slice(1);
+            if (acomPrefix === 'cn' || acomPrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            return `${baseUrl}/home${acomPrefix ? `?acomLocale=${acomPrefix}` : ''}`;
+          })() : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,
