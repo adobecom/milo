@@ -3,7 +3,7 @@
   <main>
     <div>
       <div
-        class="text max-width-8-desktop center xxl-spacing xl-button l-title xxl-heading l-body"
+        class="text xxl-heading xl-spacing center"
       >
         <div>
           <div>
@@ -17,22 +17,22 @@
       <div class="text">
         <div>
           <div>
-            <h3>{{heading}}</h3>
+            <h2>{{heading}}</h2>
           </div>
         </div>
       </div>
     </div>
     <div>
-      <div class="columns contained static-links" data-section-index="{{@index}}">
+      <div class="columns contained static-links">
         <div>
           {{#each groups}}
           <div>
             {{#if subheading}}
-            <h4>{{subheading}}</h4>
+            <h3>{{subheading}}</h3>
             {{/if}}
             <ul>
               {{#each links}}
-              <li><a href="{{url}}" data-link-index="{{@index}}">{{title}}</a></li>
+              <li><a href="{{url}}">{{title}}</a></li>
               {{/each}}
             </ul>
           </div>
@@ -45,14 +45,16 @@
     <div>
       <div class="accordion">
         {{#each extendedGeoGroups}}
-        <div data-group-index="{{@index}}">
-          <div>{{title}}</div>
+        <div>
+          <div>
+            <h2>{{title}}</h2>
+          </div>
         </div>
         <div>
           <div>
             <ul>
               {{#each links}}
-              <li><a href="{{url}}" data-link-index="{{@index}}">{{title}}</a></li>
+              <li><a href="{{url}}">{{title}}</a></li>
               {{/each}}
             </ul>
           </div>

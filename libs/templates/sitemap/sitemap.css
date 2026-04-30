@@ -11,12 +11,12 @@
 
 /* Adobe Clean Display for h1, h3, and accordion section-heading buttons */
 .sitemap h1,
-.sitemap h3,
+.sitemap h2,
 .sitemap .accordion .descr-term button {
   font-family: "Adobe Clean Display", adobe-clean-display, var(--body-font-family);
 }
 
-/* Accordion section heading: match section h3 (heading-l), flush-left */
+/* Accordion section heading: match section h2 (heading-l), flush-left */
 .sitemap .accordion .descr-term button {
   font-size: var(--type-heading-l-size);
   line-height: var(--type-heading-l-lh);
@@ -24,8 +24,8 @@
   padding-left: 0;
 }
 
-/* h4 subheadings: Adobe Clean Bold, body size */
-.sitemap h4 {
+/* h3 subheadings: Adobe Clean Bold, body size */
+.sitemap h3, h4 {
   font-weight: 700;
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
@@ -71,4 +71,13 @@
 
 .sitemap .accordion .descr-term button[aria-expanded="true"]::before {
   background-color: transparent;
+}
+
+/* Accordion borders: lighter (~10% black per Figma) */
+.sitemap .accordion.descr-list {
+  border-bottom-color: var(--color-gray-200);
+}
+
+.sitemap .accordion .descr-term button {
+  border-color: var(--color-gray-200);
 }
