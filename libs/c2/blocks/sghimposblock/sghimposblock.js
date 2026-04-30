@@ -10,54 +10,46 @@ function isViewportLabel(row) {
   return VIEWPORT_KEYWORDS.includes(getRowText(row));
 }
 
-function decorateCard(wrapper, inheritedTextEl = null) {
-  const cols = [...wrapper.querySelectorAll(':scope > div')];
-  const [textColRaw, mediaCol] = cols;
-
+function decorateCard(wrapper, inheritedCopy = null) {
+  const [textColRaw, mediaCol] = [...wrapper.querySelectorAll(':scope > div')];
   const hasContent = textColRaw?.children.length > 0;
-  let textCol = hasContent ? textColRaw : null;
 
-  if (!textCol && inheritedTextEl) {
-    const cloned = inheritedTextEl.cloneNode(true);
-    textColRaw?.replaceWith(cloned);
-    textCol = cloned;
-  } else if (!textCol) {
-    textCol = textColRaw;
-  }
-
-  // Mark plain CTAs before decorateBlockText so they don't get body-md
-  textCol?.querySelectorAll(':scope > p > a').forEach((a) => {
-    if (!a.closest('em') && !a.closest('strong')) {
-      a.closest('p').classList.add('sg-cta');
-    }
-  });
-
-  if (textCol) decorateBlockText(textCol, { heading: '4', body: 'md' });
-
-  // Extract icon (first p containing only a picture)
-  const iconP = textCol?.querySelector(':scope > p:first-child');
-  const isIconOnly = iconP && iconP.childElementCount === 1 && iconP.querySelector('picture');
-  const icon = isIconOnly ? iconP : null;
-  if (icon) icon.remove();
-
-  const ctaP = textCol?.querySelector('.sg-cta');
-  if (ctaP) ctaP.remove();
-
-  // Build asset container
   const asset = document.createElement('div');
   asset.classList.add('sg-asset');
   if (mediaCol) {
     mediaCol.classList.add('sg-media');
     asset.append(mediaCol);
   }
+
+  // Empty text col — inherit the previous viewport's copy (new bg image, same text)
+  if (!hasContent && inheritedCopy) {
+    wrapper.replaceChildren(asset, inheritedCopy.cloneNode(true));
+    return inheritedCopy;
+  }
+
+  const textCol = textColRaw;
+
+  // Mark plain CTAs before decorateBlockText so they are not styled as body text
+  textCol?.querySelectorAll(':scope > p > a').forEach((a) => {
+    if (!a.closest('em') && !a.closest('strong')) a.closest('p').classList.add('sg-cta');
+  });
+
+  if (textCol) decorateBlockText(textCol, { heading: '4', body: 'md' });
+
+  // Extract icon (first p that contains only a picture element)
+  const firstP = textCol?.querySelector(':scope > p:first-child');
+  const icon = firstP?.childElementCount === 1 && firstP.querySelector('picture') ? firstP : null;
   if (icon) {
+    icon.remove();
     const iconWrap = document.createElement('div');
     iconWrap.classList.add('sg-icon');
     iconWrap.append(icon);
     asset.append(iconWrap);
   }
 
-  // Build copy container
+  const ctaP = textCol?.querySelector('.sg-cta');
+  if (ctaP) ctaP.remove();
+
   const copy = document.createElement('div');
   copy.classList.add('sg-copy');
   if (textCol) {
@@ -67,18 +59,18 @@ function decorateCard(wrapper, inheritedTextEl = null) {
   if (ctaP) copy.append(ctaP);
 
   wrapper.replaceChildren(asset, copy);
-  return hasContent ? textCol : inheritedTextEl;
+  return copy;
 }
 
 function decorateViewportStructure(rows) {
-  let lastTextEl = null;
+  let lastCopy = null;
   for (let i = 0; i < rows.length; i += 2) {
     const labelRow = rows[i];
     const contentRow = rows[i + 1];
     if (!contentRow) break;
     contentRow.setAttribute('data-viewport', getRowText(labelRow).replace('-viewport', ''));
     labelRow.remove();
-    lastTextEl = decorateCard(contentRow, lastTextEl);
+    lastCopy = decorateCard(contentRow, lastCopy);
   }
 }
 
