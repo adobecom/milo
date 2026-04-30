@@ -1960,7 +1960,7 @@ export async function loadIms() {
         scope: imsScope || defaultScope,
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${lingoRegion?.prefix || locale.prefix}` : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,

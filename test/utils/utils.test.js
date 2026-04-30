@@ -2758,8 +2758,10 @@ describe('Utils', () => {
     });
 
     afterEach(() => {
-      const meta = document.querySelector('meta[name="langfirst"]');
-      if (meta) meta.remove();
+      const langMeta = document.querySelector('meta[name="langfirst"]');
+      if (langMeta) langMeta.remove();
+      const ahomeMeta = document.querySelector('meta[name="adobe-home-redirect"]');
+      if (ahomeMeta) ahomeMeta.remove();
       sessionStorage.removeItem('akamai');
       window.adobeid = originalAdobeId;
     });
@@ -2782,6 +2784,35 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.locale).to.equal('fr_FR');
+    });
+
+    it('uses region prefix for redirect_uri when lingo is active and adobe-home-redirect is on', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.contain('/ch_fr');
+      expect(window.adobeid.redirect_uri).to.not.match(/\/fr$/);
+    });
+
+    it('falls back to locale prefix for redirect_uri when lingo is not active', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.match(/\/fr$/);
     });
   });
 });
