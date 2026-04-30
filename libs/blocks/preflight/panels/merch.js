@@ -1,8 +1,12 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { checkUnpublishedFragments } from '../checks/merch.js';
 
 const wcsElements = signal([]);
 const masFieldsMultipleFragmentWarnings = signal([]);
+const unpublishedFragments = signal([]);
 const loading = signal(true);
+
+const MAS_UNPUBLISHED_HIGHLIGHT = 'preflight-mas-unpublished';
 
 const ALLOWED_MAS_HOSTS = ['mas.adobe.com'];
 
@@ -92,6 +96,23 @@ function checkMasFieldsMultipleFragments() {
     }
   });
   masFieldsMultipleFragmentWarnings.value = warnings;
+}
+
+async function checkUnpublishedFragmentsForPanel() {
+  const main = document.querySelector('main');
+  main?.querySelectorAll(`.${MAS_UNPUBLISHED_HIGHLIGHT}`).forEach((el) => {
+    el.classList.remove(MAS_UNPUBLISHED_HIGHLIGHT);
+  });
+  const { unpublished } = await checkUnpublishedFragments({ area: document });
+  unpublishedFragments.value = unpublished.map((u) => {
+    u.cards?.forEach((c) => c.classList.add(MAS_UNPUBLISHED_HIGHLIGHT));
+    const firstCard = u.cards?.[0];
+    return {
+      uuid: u.uuid,
+      httpStatus: u.httpStatus,
+      location: firstCard ? getBlockLocation(firstCard) : 0,
+    };
+  });
 }
 
 function getService() {
@@ -442,6 +463,42 @@ function MasFieldsMultipleFragmentSection() {
   `;
 }
 
+function UnpublishedFragmentItem({ entry }) {
+  return html`
+    <div class="preflight-item merch-item merch-error">
+      <div class="preflight-item-text">
+        <p class="preflight-item-title">
+          <span class="result-icon red"></span>
+          Unpublished M@S fragment
+        </p>
+        <p class="preflight-item-description">
+          <strong>Fragment ID:</strong> <code class="wcs-osi-code">${entry.uuid}</code>
+          <br/><strong>HTTP status:</strong> ${entry.httpStatus}
+        </p>
+        <button
+          class="preflight-action merch-scroll-btn"
+          onclick=${() => scrollToElement(entry.location)}>
+          Scroll to card
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function UnpublishedFragmentsSection() {
+  const entries = unpublishedFragments.value;
+  if (entries.length === 0) return null;
+  return html`
+    <div class="merch-section">
+      <h3 class="merch-section-title">M@S Unpublished Fragments</h3>
+      <p class="merch-section-description">These fragments are referenced on this page but are not published. Publishing now will break the live page.</p>
+      <div class="merch-blocks-list">
+        ${entries.map((entry) => html`<${UnpublishedFragmentItem} entry=${entry} />`)}
+      </div>
+    </div>
+  `;
+}
+
 function MerchSummary() {
   const totalElements = wcsElements.value.length;
   const passedCount = wcsElements.value.filter((elem) => (elem.urlStatus === 'success' || !elem.href)
@@ -451,8 +508,9 @@ function MerchSummary() {
     || elem.promoCodeStatus === 'not-found').length;
   const undeterminedCount = wcsElements.value.filter((elem) => elem.urlStatus === 'undetermined').length;
   const masWarningsCount = masFieldsMultipleFragmentWarnings.value.length;
+  const unpublishedCount = unpublishedFragments.value.length;
 
-  if (totalElements === 0 && masWarningsCount === 0) {
+  if (totalElements === 0 && masWarningsCount === 0 && unpublishedCount === 0) {
     return html`
       <div class="merch-summary no-blocks">
         <h3>No Merch Elements Found</h3>
@@ -487,6 +545,12 @@ function MerchSummary() {
           <span class="merch-stat-label">Blocks w/ multiple fragment IDs</span>
         </div>
       `}
+      ${unpublishedCount > 0 && html`
+        <div class="merch-summary-stat has-errors">
+          <span class="merch-stat-number">${unpublishedCount}</span>
+          <span class="merch-stat-label">Unpublished M@S fragments</span>
+        </div>
+      `}
     </div>
   `;
 }
@@ -496,6 +560,7 @@ export default function Merch() {
     checkMasFieldsMultipleFragments();
     setTimeout(() => {
       checkWcsElements();
+      checkUnpublishedFragmentsForPanel();
     }, 3000);
   }, []);
 
@@ -512,6 +577,7 @@ export default function Merch() {
       <div class="merch-panel">
         <${MerchSummary} />
         <${MasFieldsMultipleFragmentSection} />
+        <${UnpublishedFragmentsSection} />
       </div>
     `;
   }
@@ -520,6 +586,7 @@ export default function Merch() {
     <div class="merch-panel">
       <${MerchSummary} />
       <${MasFieldsMultipleFragmentSection} />
+      <${UnpublishedFragmentsSection} />
       <div class="merch-section">
         <h3 class="merch-section-title">Elements</h3>
         <div class="merch-blocks-list">
