@@ -40,6 +40,12 @@
   margin: 0;
 }
 
+/* List item spacing */
+.sitemap .columns li + li,
+.sitemap .accordion li + li {
+  margin-top: 4px;
+}
+
 /* Columns: zero row-gap so h3 margin-top alone separates stacked groups
    (gives consistent rhythm at every viewport) */
 .sitemap .columns > .row {
