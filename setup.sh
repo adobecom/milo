@@ -22,6 +22,38 @@ step() { echo -e "\n${BOLD}── $* ──${NC}"; }
 manual_steps=()
 add_manual() { manual_steps+=("$*"); }
 
+# Arrow-key select menu. Usage: _pick "opt1" "opt2" ...  → sets _PICK to chosen index.
+_pick() {
+  local -a items=("$@")
+  local cur=0 n=${#items[@]} key esc i
+  tput civis 2>/dev/null || true
+  for i in "${!items[@]}"; do
+    [[ $i -eq $cur ]] \
+      && echo -e "  ${GREEN}›${NC}  ${BOLD}${items[$i]}${NC}" \
+      || echo -e "     ${items[$i]}"
+  done
+  while true; do
+    IFS= read -r -s -n1 key
+    if [[ $key == $'\x1b' ]]; then
+      IFS= read -r -s -n2 esc
+      case "$esc" in
+        '[A') (( cur > 0   )) && (( cur-- )) || true ;;
+        '[B') (( cur < n-1 )) && (( cur++ )) || true ;;
+      esac
+    elif [[ $key == '' ]]; then
+      break
+    fi
+    printf "\033[%dA" "$n"
+    for i in "${!items[@]}"; do
+      [[ $i -eq $cur ]] \
+        && echo -e "  ${GREEN}›${NC}  ${BOLD}${items[$i]}${NC}" \
+        || echo -e "     ${items[$i]}"
+    done
+  done
+  tput cnorm 2>/dev/null || true
+  _PICK=$cur
+}
+
 echo ""
 echo -e "${BOLD}Milo — Claude Code setup${NC}"
 echo "─────────────────────────"
@@ -38,11 +70,23 @@ else
     REPO_ROOT="$_default"
     ok "Repo already at $REPO_ROOT"
   else
-    # Ask where to clone on first run (Enter accepts the default).
+    # Ask where to clone on first run.
     echo ""
-    read -r -p "  Where should milo be cloned? [${_default/$HOME/\~}]: " _input
-    _input="${_input:-$_default}"
-    REPO_ROOT="${_input/#\~/$HOME}"
+    echo -e "  Where should milo be cloned?"
+    echo ""
+    _pick \
+      "Current folder  (${PWD/$HOME/\~}/milo)" \
+      "Home folder     (~/milo)" \
+      "Custom path"
+    echo ""
+    case $_PICK in
+      0) REPO_ROOT="$PWD/milo" ;;
+      1) REPO_ROOT="$HOME/milo" ;;
+      2)
+        read -r -p "  Path: " _input
+        REPO_ROOT="${_input/#\~/$HOME}"
+        ;;
+    esac
     echo ""
     info "Cloning → $REPO_ROOT"
     mkdir -p "$(dirname "$REPO_ROOT")"
