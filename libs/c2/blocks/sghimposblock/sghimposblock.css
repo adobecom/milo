@@ -1,0 +1,140 @@
+.sghimposblock {
+  display: flex;
+  flex-direction: column;
+}
+
+.sghimposblock > div[data-viewport] {
+  display: none;
+}
+
+.sghimposblock > div[data-viewport="mobile"] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-lg);
+}
+
+.sg-asset {
+  position: relative;
+  border-radius: var(--s2a-border-radius-md);
+  overflow: clip;
+  aspect-ratio: 375 / 245;
+}
+
+.sg-media {
+  height: 100%;
+
+  picture {
+    display: block;
+    height: 100%;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.sg-icon {
+  position: absolute;
+  inset-block-start: var(--s2a-spacing-md);
+  inset-inline-start: var(--s2a-spacing-md);
+  width: 24px;
+  height: 24px;
+
+  p {
+    margin: 0;
+    line-height: 0;
+  }
+
+  img {
+    display: block;
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.sg-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-sm);
+  padding-inline: var(--s2a-spacing-md);
+}
+
+.sg-foreground :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--s2a-color-content-title);
+  margin: 0;
+}
+
+.sg-foreground p {
+  margin: 0;
+  color: var(--s2a-color-content-body-subtle);
+}
+
+.sg-cta {
+  margin: 0;
+
+  a {
+    color: var(--s2a-color-content-label);
+    font-family: var(--body-font-family);
+    font-weight: 700;
+    font-size: var(--s2a-typography-font-size-label);
+    line-height: var(--s2a-typography-line-height-label);
+    letter-spacing: var(--s2a-typography-letter-spacing-label);
+    text-decoration: none;
+
+    &::after {
+      content: ' ›';
+      font-weight: 400;
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .sghimposblock > div[data-viewport="mobile"] {
+    display: none;
+  }
+
+  .sghimposblock > div[data-viewport="tablet"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .sg-asset {
+    aspect-ratio: 1192 / 540;
+  }
+
+  .sg-copy {
+    flex-direction: row;
+    align-items: flex-start;
+    padding-inline: var(--s2a-spacing-lg);
+  }
+
+  .sg-foreground {
+    flex: 1 0 0;
+    min-width: 0;
+  }
+
+  .sg-cta {
+    flex-shrink: 0;
+    padding-block-start: 11px;
+    white-space: nowrap;
+  }
+}
+
+@media (width >= 1280px) {
+  .sghimposblock > div[data-viewport="tablet"] {
+    display: none;
+  }
+
+  .sghimposblock > div[data-viewport="desktop"] {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-lg);
+  }
+
+  .sg-asset {
+    aspect-ratio: 1480 / 670;
+  }
+}

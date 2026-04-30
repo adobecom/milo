@@ -124,6 +124,7 @@ const C2_BLOCKS = [
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'sghimposblock',
   'visually-hidden',
 ];
 
