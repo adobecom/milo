@@ -382,7 +382,7 @@ Expected shell:
 
 Section rendering contract:
 
-- Section 1: grouped navigation links rendered as a generic multi-column or grid-like layout
+- Section 1: grouped navigation links rendered as a multi-column layout
 - Section 2: a simple authored list of sibling sitemap links; a dedicated block is not required
 - Section 3: grouped extended-geo links rendered as an expandable or otherwise compact grouped layout
 

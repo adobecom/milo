@@ -211,7 +211,6 @@ test('runTransformDa writes localized html and omits empty base-geo navigation s
   assert.equal(html, normalizeSnapshotFixture(expectedHtml));
   assert.match(html, /<h1>Plan du site<\/h1>/);
   assert.doesNotMatch(html, /Autres régions/);
-  assert.doesNotMatch(html, /class="grid align-headings contained static-links"/);
 });
 
 test('runTransformDa writes www html from the federal GNAV-backed document shape', async () => {
