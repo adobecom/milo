@@ -104,7 +104,7 @@
   width: 8px;
   height: 8px;
   background: none;
-  border: 2px solid var(--color-gray-600);
+  border: 2px solid currentColor;
   border-top: none;
   border-left: none;
   border-radius: 1px;
@@ -127,8 +127,7 @@
   bottom: -2px;
 }
 
-/* Hover: darken chevron (also reset background — milo hover rule sets background: black at lower specificity) */
+/* Hover: reset background only (milo hover rule sets background: black at lower specificity) */
 .sitemap .accordion .descr-term button:hover .accordion-icon::before {
   background: none;
-  border-color: var(--color-black);
 }
