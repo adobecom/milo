@@ -111,10 +111,11 @@ function parseAuthoredContent(el) {
     [...rowEl.children].forEach((cellEl, colIdx) => {
       const picture = cellEl.querySelector('picture');
       const img = cellEl.querySelector('img');
-      const label = cellEl.textContent.trim();
+      const mediaRoot = picture || img || null;
       const imageWidth = (img && parseInt(img.getAttribute('width'), 10)) || CARD_WIDTH;
       const imageHeight = (img && parseInt(img.getAttribute('height'), 10)) || DEFAULT_CARD_HEIGHT;
       const cardHeight = Math.round(CARD_WIDTH * (imageHeight / imageWidth));
+      const label = cellEl.textContent.trim();
       // Mobile mapping: row 0 becomes a 2×2 grid (col%2, floor(col/2)); row 1 is hidden.
       cards.push({
         colIdx,
@@ -125,7 +126,7 @@ function parseAuthoredContent(el) {
         cardHeight,
         baseHeight: cardHeight,
         label,
-        html: picture ? picture.outerHTML : '',
+        mediaRoot,
       });
     });
   });
@@ -133,6 +134,45 @@ function parseAuthoredContent(el) {
   const textBlockEl = textRow.firstElementChild;
   const ctaEl = ctaRow.firstElementChild;
   return { titleEl, cards, textBlockEl, ctaEl };
+}
+
+/** Builds the card-scene DOM: one stack root under `.card-scene` plus card state objects. */
+function buildCardStack(cardScene, cardDefs) {
+  const stackRoot = createTag('div', { class: 'card-stack' });
+  cardScene.append(stackRoot);
+  return cardDefs.map((def) => {
+    const cardEl = createTag('div', { class: 'card' });
+    if (def.mediaRoot) {
+      cardEl.appendChild(def.mediaRoot);
+    }
+    stackRoot.appendChild(cardEl);
+    let labelEl = null;
+    if (def.label) {
+      labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
+      labelEl.style.opacity = '0';
+      stackRoot.appendChild(labelEl);
+    }
+    return {
+      colIdx: def.colIdx,
+      rowIdx: def.rowIdx,
+      mobileColIdx: def.mobileColIdx ?? def.colIdx,
+      mobileRowIdx: def.mobileRowIdx ?? def.rowIdx,
+      mobileHidden: def.mobileHidden ?? false,
+      fanIdx: FAN_INDEX_BY_GRID_POSITION[def.rowIdx][def.colIdx],
+      width: CARD_WIDTH,
+      baseHeight: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
+      height: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
+      el: cardEl,
+      labelEl,
+      baseX: 0,
+      baseY: 0,
+      visualCx: 0,
+      visualCy: 0,
+      anchorX: 0,
+      anchorY: 0,
+      dotIdx: -1,
+    };
+  });
 }
 
 function setCardTransform(el, {
@@ -166,12 +206,14 @@ async function loadBlockStyles() {
 }
 
 function buildStage(el) {
-  const { titleEl, cards: authoredCards, textBlockEl, ctaEl } = parseAuthoredContent(el);
+  const { titleEl, cards: cardDefs, textBlockEl, ctaEl } = parseAuthoredContent(el);
   const stage = createTag(
     'div',
     { class: 'dot-grid-stage' },
     `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`,
   );
+  const cardScene = stage.querySelector('.card-scene');
+  const sceneCards = buildCardStack(cardScene, cardDefs);
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
   ctaEl.classList.add('acrobat-cta');
@@ -184,9 +226,8 @@ function buildStage(el) {
     titleEl,
     textBlockEl,
     ctaEl,
-    authoredCards,
+    sceneCards,
     canvas: el.querySelector('canvas'),
-    cardScene: el.querySelector('.card-scene'),
     acrobatDesktopMockupEl: el.querySelector('.acrobat-desktop-mockup'),
     acrobatMobileMockupEl: el.querySelector('.acrobat-mobile-mockup'),
     adbeLogoSvg: el.querySelector('.adbe-logo-svg'),
@@ -194,48 +235,12 @@ function buildStage(el) {
   };
 }
 
-function buildCardLayer(cardScene, cards) {
-  const layerEl = createTag('div', { class: 'layer' });
-  cardScene.appendChild(layerEl);
-  const cardObjects = cards.map((def) => {
-    const cardEl = createTag('div', { class: 'card' }, def.html);
-    layerEl.appendChild(cardEl);
-    let labelEl = null;
-    if (def.label) {
-      labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
-      labelEl.style.opacity = '0';
-      layerEl.appendChild(labelEl);
-    }
-    return {
-      colIdx: def.colIdx,
-      rowIdx: def.rowIdx,
-      mobileColIdx: def.mobileColIdx ?? def.colIdx,
-      mobileRowIdx: def.mobileRowIdx ?? def.rowIdx,
-      mobileHidden: def.mobileHidden ?? false,
-      fanIdx: FAN_INDEX_BY_GRID_POSITION[def.rowIdx][def.colIdx],
-      width: CARD_WIDTH,
-      baseHeight: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
-      height: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
-      el: cardEl,
-      labelEl,
-      baseX: 0,
-      baseY: 0,
-      visualCx: 0,
-      visualCy: 0,
-      anchorX: 0,
-      anchorY: 0,
-      dotIdx: -1,
-    };
-  });
-  return { el: layerEl, cards: cardObjects };
-}
-
 export default async function init(el) {
   await loadBlockStyles();
 
   const {
-    titleEl, textBlockEl, ctaEl, authoredCards,
-    canvas, cardScene, acrobatDesktopMockupEl, acrobatMobileMockupEl,
+    titleEl, textBlockEl, ctaEl, sceneCards,
+    canvas, acrobatDesktopMockupEl, acrobatMobileMockupEl,
     adbeLogoSvg, adbeLogoPath,
   } = buildStage(el);
 
@@ -280,8 +285,11 @@ export default async function init(el) {
     mobilePostRevealY: 0,
   };
 
-  // Mobile chrome rest position (set per frame, read by getMobileMockupCardSlot)
-  let mobileChromeRestY = 0;
+  /**
+   * Viewport Y of the mobile Acrobat mockup top at rest.
+   * Set in updateMockupAndTitleTransform; read by getMobileMockupCardSlot.
+   */
+  let mobileAcrobatMockupRestTop = 0;
   let cachedHeadlineH = 60;
 
   // Per-frame arc geometry — built once by buildArcCtx().
@@ -297,8 +305,6 @@ export default async function init(el) {
   };
 
   let cachedTextBlockWidth = 0;
-
-  const allLayers = [authoredCards].map((cards) => buildCardLayer(cardScene, cards));
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
@@ -438,7 +444,8 @@ export default async function init(el) {
     const SLOT_ROW_COUNT = 2;
 
     const chromeLeft = (viewportWidth - MOBILE_MOCKUP_WIDTH) / 2;
-    const chromeTop = mobileChromeRestY || (viewportHeight - MOBILE_MOCKUP_HEIGHT) / 2;
+    const chromeTop = mobileAcrobatMockupRestTop
+      || (viewportHeight - MOBILE_MOCKUP_HEIGHT) / 2;
     const canvasTop = chromeTop + MOBILE_MOCKUP_TOP_BAR_HEIGHT;
     const canvasHeight = MOBILE_MOCKUP_HEIGHT
       - MOBILE_MOCKUP_TOP_BAR_HEIGHT
@@ -494,33 +501,31 @@ export default async function init(el) {
   function positionCards() {
     const useDesktopLayout = !frame.isMobile;
     const ml = frame.mobileLayout;
-    allLayers.forEach((layer) => {
-      layer.cards.forEach((card) => {
-        if (!useDesktopLayout) {
-          if (card.mobileHidden) {
-            // Park hidden mobile cards far off-screen so canvas anchors don't influence dots.
-            card.baseX = -9999;
-            card.baseY = -9999;
-            return;
-          }
-          const gridW = ml.cardW * 2 + MOBILE_COL_GAP;
-          const gridLeft = Math.max(MOBILE_OUTER_MARGIN, Math.round((viewportWidth - gridW) / 2));
-          const centerX = gridLeft
-            + card.mobileColIdx * (ml.cardW + MOBILE_COL_GAP)
-            + ml.cardW / 2;
-          const firstRowCenterY = viewportHeight * 0.50 + ml.tallH / 2;
-          const centerY = firstRowCenterY + card.mobileRowIdx * ml.rowPitch;
-          card.baseX = centerX - card.width / 2;
-          card.baseY = centerY - card.height / 2;
+    sceneCards.forEach((card) => {
+      if (!useDesktopLayout) {
+        if (card.mobileHidden) {
+          // Park hidden mobile cards far off-screen so canvas anchors don't influence dots.
+          card.baseX = -9999;
+          card.baseY = -9999;
           return;
         }
-        const centerX = viewportWidth
-          * (0.5 + CARD_COLUMN_OFFSETS_RATIO[card.colIdx] * cardGridLayout.columnSpread);
-        const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
-        const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * cardGridLayout.rowGap);
+        const gridW = ml.cardW * 2 + MOBILE_COL_GAP;
+        const gridLeft = Math.max(MOBILE_OUTER_MARGIN, Math.round((viewportWidth - gridW) / 2));
+        const centerX = gridLeft
+            + card.mobileColIdx * (ml.cardW + MOBILE_COL_GAP)
+            + ml.cardW / 2;
+        const firstRowCenterY = viewportHeight * 0.50 + ml.tallH / 2;
+        const centerY = firstRowCenterY + card.mobileRowIdx * ml.rowPitch;
         card.baseX = centerX - card.width / 2;
         card.baseY = centerY - card.height / 2;
-      });
+        return;
+      }
+      const centerX = viewportWidth
+          * (0.5 + CARD_COLUMN_OFFSETS_RATIO[card.colIdx] * cardGridLayout.columnSpread);
+      const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
+      const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * cardGridLayout.rowGap);
+      card.baseX = centerX - card.width / 2;
+      card.baseY = centerY - card.height / 2;
     });
   }
 
@@ -534,7 +539,7 @@ export default async function init(el) {
   const canvasGrid = createCanvasGrid(canvas, {
     isMobile: BREAKPOINTS.mobile,
     getViewport: () => ({ width: viewportWidth, height: viewportHeight }),
-    getCards: () => allLayers[0].cards,
+    getCards: () => sceneCards,
     getCardCenter: getCanvasCardCenter,
     getState: () => ({ arcToGridProgress: phase.arcToGrid }),
   });
@@ -547,15 +552,13 @@ export default async function init(el) {
     // Mobile is the base layout; desktop/tablet restore authored card dimensions.
     const ml = frame.mobileLayout;
     const useDesktopLayout = !frame.isMobile;
-    allLayers.forEach((layer) => {
-      layer.cards.forEach((card) => {
-        card.width = ml.cardW;
-        card.height = Math.round(card.baseHeight * ml.scale);
-        if (useDesktopLayout) {
-          card.width = CARD_WIDTH;
-          card.height = card.baseHeight;
-        }
-      });
+    sceneCards.forEach((card) => {
+      card.width = ml.cardW;
+      card.height = Math.round(card.baseHeight * ml.scale);
+      if (useDesktopLayout) {
+        card.width = CARD_WIDTH;
+        card.height = card.baseHeight;
+      }
     });
     arcAngle = frame.isMobile ? MOBILE_ARC_ALPHA : Math.atan2(viewportHeight, viewportWidth);
     const titleHeading = titleEl && titleEl.querySelector('.heading');
@@ -563,7 +566,7 @@ export default async function init(el) {
       || (titleEl && titleEl.offsetHeight) || 60;
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
-    canvasGrid.updateCardAnchors(allLayers);
+    canvasGrid.updateCardAnchors(sceneCards);
   }
 
   function setLabelPos(card, centerX, centerY, scale, opacity) {
@@ -732,15 +735,13 @@ export default async function init(el) {
   function updateCardPositions() {
     const cardScale = frame.isMobile ? 1.0 : CARD_SCALE_DESKTOP;
     const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
-    allLayers.forEach((layer) => {
-      layer.cards.forEach((card) => {
-        if (frame.isMobile && card.mobileHidden) {
-          hideMobileCard(card);
-          return;
-        }
-        if (inArcPeel) renderArcPeelToGrid(card, cardScale);
-        else renderGridToSlot(card, cardScale);
-      });
+    sceneCards.forEach((card) => {
+      if (frame.isMobile && card.mobileHidden) {
+        hideMobileCard(card);
+        return;
+      }
+      if (inArcPeel) renderArcPeelToGrid(card, cardScale);
+      else renderGridToSlot(card, cardScale);
     });
   }
 
@@ -825,7 +826,7 @@ export default async function init(el) {
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
       const headlineRestY = viewportHeight * 0.28;
       const chromeRestY = headlineRestY + cachedHeadlineH + 16;
-      mobileChromeRestY = chromeRestY;
+      mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + mobileChromeHeight + 10;
       const postRevealNeeded = Math.max(0, ctaRestY + 40 + 20 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
@@ -982,7 +983,7 @@ export default async function init(el) {
     updateCompressionAndPan();
     updateTextBlock();
     positionCards();
-    canvasGrid.updateCardAnchors(allLayers);
+    canvasGrid.updateCardAnchors(sceneCards);
     canvasGrid.update();
     canvasGrid.draw();
     updateCardPositions();
@@ -1006,7 +1007,7 @@ export default async function init(el) {
     updateMockupAndTitleTransform();
     updateTextBlock();
     positionCards();
-    canvasGrid.updateCardAnchors(allLayers);
+    canvasGrid.updateCardAnchors(sceneCards);
     canvasGrid.update();
     canvasGrid.draw();
     updateCardPositions();

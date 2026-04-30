@@ -53,21 +53,19 @@ export default function createCanvasGrid(canvas, {
     buildGrid();
   }
 
-  function updateCardAnchors(layers) {
+  function updateCardAnchors(cards) {
     if (!dots.length) return;
     const { width } = getViewport();
     const spacing = getSpacing();
     const columnCount = Math.ceil(width / spacing) + 2;
-    layers.forEach((layer) => {
-      layer.cards.forEach((card) => {
-        const { x, y } = getCardCenter(card);
-        const gridColumn = Math.round(x / spacing);
-        const gridRow = Math.max(0, Math.round(y / spacing));
-        const dotIndex = gridRow * columnCount + gridColumn;
-        card.dotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
-        card.anchorX = dots[card.dotIdx].originX;
-        card.anchorY = dots[card.dotIdx].originY;
-      });
+    cards.forEach((card) => {
+      const { x, y } = getCardCenter(card);
+      const gridColumn = Math.round(x / spacing);
+      const gridRow = Math.max(0, Math.round(y / spacing));
+      const dotIndex = gridRow * columnCount + gridColumn;
+      card.dotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
+      card.anchorX = dots[card.dotIdx].originX;
+      card.anchorY = dots[card.dotIdx].originY;
     });
   }
 

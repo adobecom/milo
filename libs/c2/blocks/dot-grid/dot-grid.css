@@ -94,7 +94,7 @@
   pointer-events: none;
 }
 
-.dot-grid .layer {
+.dot-grid .card-stack {
   position: absolute;
   inset: 0;
   overflow: visible;
@@ -113,7 +113,7 @@
   cursor: default;
 }
 
-.dot-grid .layer .card {
+.dot-grid .card-stack .card {
   height: 230px;
   cursor: default;
 }
