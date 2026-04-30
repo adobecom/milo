@@ -214,7 +214,7 @@ const loadViewportVideos = (el) => {
       const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
       if (isActiveSlide) {
         loadVideo(v);
-        v.play().catch(() => {});
+        if (!prefersReducedMotion()) v.play().catch(() => {});
       }
     });
   });
@@ -250,7 +250,13 @@ const buildCard = (slide) => {
   icon.remove();
   label?.remove();
 
-  const card = createTag('a', { class: 'rm-card', href, 'aria-label': ariaLabel });
+  const card = createTag('a', {
+    class: 'rm-card',
+    href,
+    'aria-label': ariaLabel,
+    role: 'tab',
+    'aria-selected': 'false',
+  });
   card.replaceChildren(
     createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
@@ -271,7 +277,7 @@ const buildReset = () => createTag('button', {
 }, RESET_SVG);
 
 const buildCards = (slides) => {
-  const cards = createTag('div', { class: 'rm-cards' });
+  const cards = createTag('div', { class: 'rm-cards', role: 'tablist' });
   slides.forEach((slide) => cards.append(buildCard(slide)));
   cards.append(buildReset());
   return cards;
@@ -279,10 +285,9 @@ const buildCards = (slides) => {
 
 const buildPlayPause = () => {
   const root = getFederatedContentRoot();
-  return createTag('a', {
+  return createTag('button', {
     class: 'rm-pause-play',
-    role: 'button',
-    tabindex: '0',
+    type: 'button',
     'aria-label': 'Pause',
   }, createTag('div', { class: 'offset-filler is-playing' }, [
     createTag('img', {
@@ -319,7 +324,6 @@ const setAriaHiddenAndTabIndex = (slides) => {
     const isActive = slide.classList.contains('is-active');
     slide.setAttribute('aria-hidden', String(!isActive));
     slide.toggleAttribute('inert', !isActive);
-    slide.setAttribute('tabindex', isActive ? '0' : '-1');
   });
 };
 
@@ -381,6 +385,7 @@ const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
+  const liveRegion = container.querySelector('.rm-live-region');
   const filler = playPauseBtn?.querySelector('.offset-filler');
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
@@ -485,8 +490,12 @@ const startAutoplay = (slides, cards, container, block) => {
     }
 
     cardEls[active]?.classList.remove('is-active');
+    cardEls[active]?.setAttribute('aria-selected', 'false');
     active = index;
     cardEls[active]?.classList.add('is-active');
+    cardEls[active]?.setAttribute('aria-selected', 'true');
+    const label = cardEls[active]?.querySelector('.rm-card-label')?.textContent;
+    if (liveRegion && label) liveRegion.textContent = `Slide ${active + 1} of ${slides.length}, ${label}`;
     if (isMobile() && !skipTrack) {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
@@ -587,7 +596,9 @@ const startAutoplay = (slides, cards, container, block) => {
   handleDesktopSmallVp();
 
   container.addEventListener('mouseover', pauseOnInteraction);
-  container.addEventListener('focusin', pauseOnInteraction);
+  container.addEventListener('focusin', (e) => {
+    if (!e.target.closest('.rm-pause-play') && !paused) pause();
+  });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
@@ -623,6 +634,11 @@ const startAutoplay = (slides, cards, container, block) => {
   }, { passive: true });
 
   requestAnimationFrame(() => {
+    if (prefersReducedMotion()) {
+      paused = true;
+      setPlayingState(false);
+      return;
+    }
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
@@ -635,15 +651,20 @@ const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide, i) => {
     decorateSlide(slide);
+    slide.setAttribute('role', 'tabpanel');
+    slide.setAttribute('aria-roledescription', 'slide');
     if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
   });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
-  cards.children[0]?.classList.add('is-active');
+  const firstCard = cards.children[0];
+  firstCard?.classList.add('is-active');
+  firstCard?.setAttribute('aria-selected', 'true');
   const controls = createTag('div', { class: 'rm-controls' });
   controls.append(cards, buildPlayPause());
-  container.append(...slides, controls);
+  const liveRegion = createTag('div', { class: 'rm-live-region', 'aria-live': 'polite', 'aria-atomic': 'true' });
+  container.append(controls, ...slides, liveRegion);
   return container;
 };
 
