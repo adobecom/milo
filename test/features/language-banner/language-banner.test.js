@@ -176,15 +176,25 @@ describe('Language Banner', () => {
 
     beforeEach(async () => {
       openStub = sandbox.stub(window, 'open');
+      sandbox.stub(window, 'fetch').callsFake((url) => {
+        if (url.includes('geo2.adobe.com')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ country: 'DE' }),
+          });
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+      });
       setConfigForTest();
       setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
       await init();
     });
 
     it('fires an analytics event when the banner is shown', () => {
+      sessionStorage.setItem('akamai', 'de');
       expect(window._satellite.track.calledOnce).to.be.true;
       const [, payload] = window._satellite.track.firstCall.args;
-      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner|intl:none|pref-lang:en');
+      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner|locale:us|country:de|intl:none|pref-lang:en');
     });
 
     it('sets international cookie and navigates on continue click', async () => {

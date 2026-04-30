@@ -92,9 +92,9 @@ async function showBanner(market, config) {
     banner.remove();
   });
 
-  sendAnalytics(new Event(`${eventName}|intl:${intlCookie}|pref-lang:${prefLang}`));
+  const country = await getCountry();
+  sendAnalytics(new Event(`${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}|intl:${intlCookie}|pref-lang:${prefLang}`));
   if (config.lingoProjectSuccessLogging === 'on') {
-    const country = await getCountry();
     window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}|intl:${intlCookie}|pref-lang:${prefLang}`, { tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
