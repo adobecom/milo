@@ -2784,4 +2784,71 @@ describe('Utils', () => {
       expect(window.adobeid.locale).to.equal('fr_FR');
     });
   });
+
+  describe('getCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+    let savedFetch;
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      window.fetch = savedFetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('should return null for bot user-agents without fetching geo', async () => {
+      const fetchSpy = sinon.spy();
+      window.fetch = fetchSpy;
+      Object.defineProperty(navigator, 'userAgent', { value: 'Googlebot/2.1', writable: true });
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+      expect(fetchSpy.called).to.be.false;
+    });
+
+    it('should return null for bots even when akamaiLocale param is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots even when sessionStorage akamai is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'ClaudeBot/1.0', writable: true });
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+  });
+
+  describe('resolveDetectedMarketCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+
+    beforeEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    it('should return null for bots regardless of country cookie', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      document.cookie = 'country=ch; path=/';
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots regardless of sessionStorage akamai', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'GPTBot/1.0', writable: true });
+      sessionStorage.setItem('akamai', 'ch');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
+    });
+  });
 });
