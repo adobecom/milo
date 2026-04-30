@@ -13,20 +13,30 @@ const CARD_COLUMN_OFFSETS_RATIO = [-0.462, -0.154, 0.154, 0.462];
 const CARD_COLUMN_GAP_RATIO = CARD_COLUMN_OFFSETS_RATIO[1] - CARD_COLUMN_OFFSETS_RATIO[0];
 const CARD_WIDTH = 192;
 const DEFAULT_CARD_HEIGHT = 230;
+/** Row pitch / compression math uses this tallest-card metric. */
+const ROW_METRIC_HEIGHT = 264;
+const LABEL_CLEARANCE = 28;
 const ARC_INTRO_FRACTION = 0.10;
 const ARC_PAN_END = 1350;
 const ARC_PEEL_OVERLAP = ARC_PAN_END * (1 - ARC_INTRO_FRACTION);
-const DESKTOP_GRID_END = ARC_PAN_END + 1000;
-const DESKTOP_SLOTTING_DURATION = 2200;
+/** Full arc→grid scroll span reference; mobile settle timing anchors here. */
+const DESKTOP_ARC_REFERENCE_END = ARC_PAN_END + 1000;
+/** Desktop/tablet peel completes at this scroll unit. */
+const DESKTOP_PEEL_END_SCROLL = 1132;
+const DESKTOP_SLOTTING_DURATION = 1720;
 const ARC_SETTLE_DURATION = 1700;
-const DESKTOP_SLOTTING_START = DESKTOP_GRID_END + ARC_SETTLE_DURATION;
+const DESKTOP_SLOTTING_BREATHE = 0;
+const DESKTOP_SLOTTING_START = DESKTOP_PEEL_END_SCROLL
+  + ARC_SETTLE_DURATION
+  + DESKTOP_SLOTTING_BREATHE;
 
 // Mobile is the base path: shorter peel, no settle, shorter mockup transition.
 // Desktop/tablet extend these timings below for the larger arc and mockup motion.
-const MOBILE_SETTLE_DURATION = 1056;
-const MOBILE_SLOTTING_DURATION = 550;
+const MOBILE_SETTLE_DURATION = 468;
+const MOBILE_SLOTTING_DURATION = 900;
 const MOBILE_GRID_END = Math.round(
-  (ARC_PAN_END - ARC_PEEL_OVERLAP) + (DESKTOP_GRID_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.5,
+  (ARC_PAN_END - ARC_PEEL_OVERLAP)
+    + (DESKTOP_ARC_REFERENCE_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.39,
 );
 const MOBILE_PAN_START = Math.round(((ARC_PAN_END - ARC_PEEL_OVERLAP) + MOBILE_GRID_END) / 2);
 const MOBILE_ARC_ALPHA = 0.6; // arc orientation on portrait screens
@@ -36,22 +46,30 @@ const MOBILE_SLIDE_START_Y = 0.90;
 const MOBILE_SLIDE_SCALE = 0.85;
 const MOBILE_SLIDE_START_X = 0.55;
 const MOBILE_SLIDE_STAGGER_X = 0.20;
+/** Scroll units into arc rotation at which slide fully completes. */
+const SLIDE_OVERLAP = 200;
+const DESKTOP_SLIDE_STAGGER = 0.45;
+const DESKTOP_SLIDE_STAGGER_X = 0.20;
+const DESKTOP_SLIDE_SCALE = 0.85;
+const DESKTOP_SLIDE_START_Y = 0.90;
+const DESKTOP_SLIDE_START_X = 0.55;
 
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
 const MOBILE_OUTER_MARGIN = 24;
 const MOBILE_POST_REVEAL_SCROLL = 500;
 
-// Arc + intro animation tunables
+// Arc animation tunables
 const ARC_STAGGER = 0.50;
 const ARC_SPAN = 0.80;
 const ARC_LIFT_ZOOM = 1.00;
 const ARC_Y_TILT = 25;
 const ARC_X_TILT = 10;
-const INTRO_STAGGER = 0.50;
-const INTRO_COMPRESS = 0.20;
-const INTRO_DISTANCE = 0.20;
-const CARD_SCALE_DESKTOP = 1.15;
+/** Settled horizontal compression target as columnSpread delta. */
+const COLUMN_COMPRESSION_TARGET = 0.675;
+/** Column spread used to pin marketing text X during arc (settled spread minus post-peel trim). */
+const ARC_TEXT_ANCHOR_COLUMN_SPREAD = COLUMN_COMPRESSION_TARGET - 0.15;
+const CARD_SCALE_DESKTOP = 1.035;
 const CARD_OPACITY = 1.0;
 const BASE_COLUMN_SPREAD = 1.20;
 const BASE_ROW_GAP = 0.60;
@@ -82,11 +100,6 @@ function easeOutSine(t) {
 }
 function easeInOutSine(t) {
   return -(Math.cos(Math.PI * t) - 1) / 2;
-}
-function easeOutBack(t) {
-  const c1 = 1.70158;
-  const c3 = c1 + 1;
-  return 1 + c3 * ((t - 1) ** 3) + c1 * ((t - 1) ** 2);
 }
 
 // TODO: author product UI?
@@ -125,7 +138,7 @@ function parseAuthoredContent(el) {
 function setCardTransform(el, {
   translateX, translateY, scale, rotation = 0, tiltX = 0, tiltY = 0,
 }) {
-  el.style.transform = `translate(${translateX}px,${translateY}px) scale(${scale}) rotate(${rotation}deg) rotateY(${tiltY.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg)`;
+  el.style.transform = `translate(${translateX}px,${translateY}px) scale(${scale}) rotate(${rotation}deg) perspective(900px) rotateY(${tiltY.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg)`;
 }
 
 function applyCardBox(el, { baseX, baseY, width, height }) {
@@ -157,7 +170,7 @@ function buildStage(el) {
   const stage = createTag(
     'div',
     { class: 'dot-grid-stage' },
-    `<canvas></canvas>${ADBE_LOGO}<div class="world"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`,
+    `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`,
   );
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
@@ -173,7 +186,7 @@ function buildStage(el) {
     ctaEl,
     authoredCards,
     canvas: el.querySelector('canvas'),
-    world: el.querySelector('.world'),
+    cardScene: el.querySelector('.card-scene'),
     acrobatDesktopMockupEl: el.querySelector('.acrobat-desktop-mockup'),
     acrobatMobileMockupEl: el.querySelector('.acrobat-mobile-mockup'),
     adbeLogoSvg: el.querySelector('.adbe-logo-svg'),
@@ -181,9 +194,9 @@ function buildStage(el) {
   };
 }
 
-function buildCardLayer(world, cards) {
+function buildCardLayer(cardScene, cards) {
   const layerEl = createTag('div', { class: 'layer' });
-  world.appendChild(layerEl);
+  cardScene.appendChild(layerEl);
   const cardObjects = cards.map((def) => {
     const cardEl = createTag('div', { class: 'card' }, def.html);
     layerEl.appendChild(cardEl);
@@ -220,12 +233,11 @@ function buildCardLayer(world, cards) {
 export default async function init(el) {
   await loadBlockStyles();
 
-  const ctx = buildStage(el);
   const {
     titleEl, textBlockEl, ctaEl, authoredCards,
-    canvas, world, acrobatDesktopMockupEl, acrobatMobileMockupEl,
+    canvas, cardScene, acrobatDesktopMockupEl, acrobatMobileMockupEl,
     adbeLogoSvg, adbeLogoPath,
-  } = ctx;
+  } = buildStage(el);
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const adbeLogoLength = Math.max(adbeLogoPath.getTotalLength(), 3000) * 2 + 500;
@@ -235,32 +247,35 @@ export default async function init(el) {
   // ──────────────────── Animation state ────────────────────
   let viewportWidth = 0;
   let viewportHeight = 0;
-  const scroll = { current: 0 };
+  /** Scroll-scrub timeline position (abstract units; scales with block scroll progress). */
+  const scrollTimeline = { current: 0 };
 
   // Phase progress, 0..1 each
   const phase = {
     arcPan: 0,
     arcToGrid: 0,
     slotting: 0,
-    gridCompression: 0,
   };
 
-  // Per-frame layout (column spread, row gap)
-  const layout = {
+  // Desktop card grid metrics (columnSpread, rowGap). Only read on desktop; mobile uses
+  // frame.mobileLayout. Updated each frame anyway so breakpoint switches don't leave stale values.
+  const cardGridLayout = {
     columnSpread: BASE_COLUMN_SPREAD,
     rowGap: BASE_ROW_GAP,
   };
 
-  // Mobile is the base; desktop/tablet override these in applyViewportTiming().
+  // Scroll offsets (abstract units) where arc/grid/slotting phases begin or how long they run.
   const timing = {
     gridEnd: MOBILE_GRID_END,
     slottingStart: MOBILE_GRID_END + MOBILE_SETTLE_DURATION,
     slottingDuration: MOBILE_SLOTTING_DURATION,
     postRevealScrollDistance: MOBILE_POST_REVEAL_SCROLL,
+    /** Scroll position where post-peel settle compression / text pan begins. */
+    settleScrollStart: DESKTOP_ARC_REFERENCE_END,
   };
 
-  // Vertical pan offsets accumulated during peel→grid and post-reveal.
-  const pan = {
+  // Vertical pan offsets (px) for cards, text, and mockup during peel→grid and post-reveal.
+  const verticalPan = {
     arcGridY: 0,
     mobilePostRevealY: 0,
   };
@@ -277,18 +292,15 @@ export default async function init(el) {
   // Avoids repeated window.innerWidth reads + repeated getMobileLayout() calls.
   const frame = {
     isMobile: false,
+    isTablet: false,
     mobileLayout: null,
   };
 
-  const allLayers = [authoredCards].map((cards) => buildCardLayer(world, cards));
+  let cachedTextBlockWidth = 0;
+
+  const allLayers = [authoredCards].map((cards) => buildCardLayer(cardScene, cards));
 
   // ──────────────────── Arc geometry helpers ────────────────────
-  function getCardArcIntroProgress(card) {
-    const staggerStart = (1 - card.fanIdx / 7) * INTRO_STAGGER * ARC_INTRO_FRACTION;
-    const staggerDur = ARC_INTRO_FRACTION - staggerStart;
-    return Math.max(0, Math.min(1, (phase.arcPan - staggerStart) / staggerDur));
-  }
-
   function getCardArcToGridProgress(card) {
     const delay = (card.fanIdx / 7) * ARC_STAGGER;
     const win = 1 - ARC_STAGGER;
@@ -387,13 +399,29 @@ export default async function init(el) {
     const t = Math.max(0, Math.min(1, (viewportWidth - 375) / 392));
     const cardW = Math.round((viewportWidth * (0.875 - t * 0.175) - MOBILE_COL_GAP) / 2);
     const scale = cardW / CARD_WIDTH;
-    const tallH = Math.round(230 * scale);
+    const tallH = Math.round(ROW_METRIC_HEIGHT * scale);
     return { cardW, scale, tallH, rowPitch: tallH + 61 };
   }
 
   function refreshFrameProfile() {
     frame.isMobile = BREAKPOINTS.mobile();
+    frame.isTablet = !frame.isMobile && BREAKPOINTS.tablet();
     frame.mobileLayout = getMobileLayout();
+  }
+
+  function getDeskGridScale() {
+    if (frame.isMobile) return 1.0;
+    if (frame.isTablet) {
+      const colFit = (viewportWidth * CARD_COLUMN_GAP_RATIO * cardGridLayout.columnSpread - 24)
+        / (CARD_WIDTH * CARD_SCALE_DESKTOP);
+      const rowFit = (viewportHeight * cardGridLayout.rowGap - 24)
+        / (ROW_METRIC_HEIGHT * CARD_SCALE_DESKTOP);
+      return Math.max(0.45, Math.min(1.0, Math.min(colFit, rowFit)));
+    }
+    return Math.max(
+      0.75,
+      Math.min(1.0, 0.75 + (0.25 * (viewportWidth - 768)) / (1440 - 768)),
+    );
   }
 
   function getMobileMockupCardSlot(card) {
@@ -422,7 +450,7 @@ export default async function init(el) {
       - (SLOT_ROW_COUNT - 1) * ROW_GAP
       - SLOT_ROW_COUNT * (CARD_LABEL_GAP + CARD_LABEL_HEIGHT);
     const tallSlotH = Math.floor(availableSlotHeight / SLOT_ROW_COUNT);
-    const cardSlotScale = tallSlotH / 230;
+    const cardSlotScale = tallSlotH / ROW_METRIC_HEIGHT;
 
     const height = Math.round(card.baseHeight * cardSlotScale);
     const width = Math.round(CARD_WIDTH * cardSlotScale);
@@ -445,7 +473,9 @@ export default async function init(el) {
   }
 
   function getDesktopMockupCardSlot(colIdx, rowIdx, cardHeight) {
-    const mockupWidth = Math.min(viewportWidth * 0.686, 988);
+    const mockupWidth = frame.isTablet
+      ? Math.max(680, Math.min(988, viewportWidth * 0.70))
+      : Math.min(viewportWidth * 0.686, 988);
     const mockupLeft = (viewportWidth - mockupWidth) / 2;
     const mockupTop = viewportHeight * 0.21 + 12;
     const scale = mockupWidth / 988;
@@ -485,9 +515,9 @@ export default async function init(el) {
           return;
         }
         const centerX = viewportWidth
-          * (0.5 + CARD_COLUMN_OFFSETS_RATIO[card.colIdx] * layout.columnSpread);
-        const rowAnchor = -0.2 + 0.7 * phase.gridCompression;
-        const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * layout.rowGap);
+          * (0.5 + CARD_COLUMN_OFFSETS_RATIO[card.colIdx] * cardGridLayout.columnSpread);
+        const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
+        const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * cardGridLayout.rowGap);
         card.baseX = centerX - card.width / 2;
         card.baseY = centerY - card.height / 2;
       });
@@ -531,6 +561,7 @@ export default async function init(el) {
     const titleHeading = titleEl && titleEl.querySelector('.heading');
     cachedHeadlineH = (titleHeading && titleHeading.offsetHeight)
       || (titleEl && titleEl.offsetHeight) || 60;
+    cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
     canvasGrid.updateCardAnchors(allLayers);
   }
@@ -554,66 +585,7 @@ export default async function init(el) {
     if (card.labelEl) card.labelEl.style.opacity = '0';
   }
 
-  // Desktop-only: cards slide in from below to take their fan position.
-  function renderArcIntro(card, cardScale) {
-    const cardIntroProgress = getCardArcIntroProgress(card);
-    const cardIntroEase = easeOutCubic(cardIntroProgress);
-
-    const fanPos = getFanCenter(card);
-    const { arcRadius, fanCenterX, fanCenterY, middleAngle, arcZoom } = arcGeometry;
-    const fanDepth = 1 - (card.fanIdx / 7) * 0.30;
-    const fanScale = cardScale * (1 + ARC_LIFT_ZOOM) * fanDepth * arcZoom;
-
-    const compressedArcSpan = ARC_SPAN * INTRO_COMPRESS;
-    const compressedArcAngle = middleAngle + compressedArcSpan / 2
-      - (card.fanIdx / 7) * compressedArcSpan
-      + 0.28;
-    const compressedArcX = fanCenterX + arcRadius * Math.cos(compressedArcAngle);
-    const compressedArcY = fanCenterY + arcRadius * Math.sin(compressedArcAngle);
-    const compressedArcRotation = (
-      Math.atan2(Math.cos(compressedArcAngle), -Math.sin(compressedArcAngle)) * 180
-    ) / Math.PI;
-
-    const extraOffX = viewportWidth * (0.5 + (1 - card.fanIdx / 7) * INTRO_DISTANCE);
-    const extraOffY = (1 - card.fanIdx / 7) * viewportHeight * 0.3;
-    const startX = compressedArcX + extraOffX;
-    const startY = compressedArcY + extraOffY + viewportHeight * 0.35;
-
-    const currentX = startX + (fanPos.x - startX) * cardIntroEase;
-    const currentY = startY + (fanPos.y - startY) * cardIntroEase;
-    const rotation = compressedArcRotation
-      + (fanPos.rot - compressedArcRotation) * cardIntroEase;
-
-    const furtherness = 1 - card.fanIdx / 7;
-    const startScale = 0.50 - furtherness * 0.20;
-    const scaleFactor = startScale + (1 - startScale) * cardIntroEase;
-    const scale = fanScale * scaleFactor * (0.93 + 0.07 * easeOutBack(cardIntroProgress));
-    const cardIntroOpacity = Math.min(1, cardIntroProgress / 0.10);
-
-    card.visualCx = currentX;
-    card.visualCy = currentY;
-    card.el.style.zIndex = String(31 - card.fanIdx);
-
-    const tiltFactor = Math.max(0, 1 - phase.arcToGrid / 0.12);
-    const screenYNorm = (fanPos.y - viewportHeight / 2) / (viewportHeight / 2);
-    const cardYTilt = screenYNorm * ARC_Y_TILT * tiltFactor;
-    const cardXTilt = -screenYNorm * ARC_X_TILT * tiltFactor;
-
-    applyCardBox(card.el, card);
-    setCardTransform(card.el, {
-      translateX: currentX - card.baseX - card.width / 2,
-      translateY: currentY - card.baseY - card.height / 2,
-      scale,
-      rotation,
-      tiltX: cardXTilt,
-      tiltY: cardYTilt,
-    });
-    card.el.style.opacity = (CARD_OPACITY * cardIntroOpacity).toFixed(3);
-    card.el.style.boxShadow = arcCardShadow(0.15);
-    setLabelPos(card, currentX, currentY, scale, 0);
-  }
-
-  // Arc rotation + peel onto the grid (mobile also includes the rise-from-below slide).
+  // Arc rotation + peel onto the grid (slide-in from below on all breakpoints).
   function renderArcPeelToGrid(card, cardScale) {
     const cardPeelProgress = getCardArcToGridProgress(card);
     const fanPos = getFanCenter(card);
@@ -622,7 +594,7 @@ export default async function init(el) {
     const fanScale = cardScale * (1 + ARC_LIFT_ZOOM) * fanDepth * arcZoom;
 
     const gridCenterX = card.baseX + card.width / 2;
-    const gridCenterY = card.baseY + card.height / 2 - pan.arcGridY;
+    const gridCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
 
     const arcLocalDelay = (card.fanIdx / 7) * ARC_STAGGER;
     const arcLocalWin = Math.max(0.01, 1 - ARC_STAGGER);
@@ -638,25 +610,27 @@ export default async function init(el) {
     const totalPeelEase = easeOutCubic(cardPeelProgress);
     const currentX = pushedX + (gridCenterX - pushedX) * totalPeelEase;
     const currentY = pushedY + (gridCenterY - pushedY) * totalPeelEase;
-    const scale = fanScale + (cardScale - fanScale) * totalPeelEase;
+    const deskGridScale = getDeskGridScale();
+    const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
-    // Mobile: arc rises from below, staggered per card, overlapping with rotation.
+    // Slide-in: arc rises from below + side, per-card stagger, overlapping rotation.
     let mobileSlideX = 0;
     let mobileSlideY = 0;
     let mobileSlideScaleMultiplier = 1;
     let mobileSlideOpacity = 1;
     if (frame.isMobile) {
-      const mobileSlideProgress = Math.max(
+      const mobileSlideEarly = viewportHeight * 0.72 + MOBILE_SLIDE_DURATION * 0.13;
+      const slideProgress = Math.max(
         0,
-        Math.min(1, scroll.current / MOBILE_SLIDE_DURATION),
+        Math.min(1, scrollTimeline.current / (mobileSlideEarly + SLIDE_OVERLAP)),
       );
       const staggerFrac = (1 - card.fanIdx / 7) * MOBILE_SLIDE_STAGGER;
       const cardMobileSlideProgress = Math.max(
         0,
-        Math.min(1, (mobileSlideProgress - staggerFrac) / (1 - staggerFrac)),
+        Math.min(1, (slideProgress - staggerFrac) / (1 - staggerFrac)),
       );
-      const cardMobileSlideEase = easeOutCubic(cardMobileSlideProgress);
+      const cardMobileSlideEase = easeOutSine(cardMobileSlideProgress);
       const mobileSlideXMultiplier = MOBILE_SLIDE_START_X
         + (1 - card.fanIdx / 7) * MOBILE_SLIDE_STAGGER_X;
       mobileSlideX = viewportWidth * mobileSlideXMultiplier * (1 - cardMobileSlideEase);
@@ -664,6 +638,25 @@ export default async function init(el) {
       mobileSlideScaleMultiplier = MOBILE_SLIDE_SCALE
         + (1 - MOBILE_SLIDE_SCALE) * cardMobileSlideEase;
       mobileSlideOpacity = Math.min(1, cardMobileSlideProgress / 0.25);
+    } else {
+      const deskSlideEarly = viewportHeight * 0.75;
+      const slideProgress = Math.max(
+        0,
+        Math.min(1, scrollTimeline.current / (deskSlideEarly + SLIDE_OVERLAP)),
+      );
+      const staggerFrac = (1 - card.fanIdx / 7) * DESKTOP_SLIDE_STAGGER;
+      const cardDeskSlideProgress = Math.max(
+        0,
+        Math.min(1, (slideProgress - staggerFrac) / (1 - staggerFrac)),
+      );
+      const cardDeskSlideEase = easeOutSine(cardDeskSlideProgress);
+      const deskSlideXMultiplier = DESKTOP_SLIDE_START_X
+        + (1 - card.fanIdx / 7) * DESKTOP_SLIDE_STAGGER_X;
+      mobileSlideX = viewportWidth * deskSlideXMultiplier * (1 - cardDeskSlideEase);
+      mobileSlideY = viewportHeight * DESKTOP_SLIDE_START_Y * (1 - cardDeskSlideEase);
+      mobileSlideScaleMultiplier = DESKTOP_SLIDE_SCALE
+        + (1 - DESKTOP_SLIDE_SCALE) * cardDeskSlideEase;
+      mobileSlideOpacity = Math.min(1, cardDeskSlideProgress / 0.25);
     }
 
     card.visualCx = currentX + mobileSlideX;
@@ -692,9 +685,14 @@ export default async function init(el) {
       tiltY: cardYTilt,
     });
     card.el.style.opacity = (CARD_OPACITY * mobileSlideOpacity).toFixed(3);
-    card.el.style.boxShadow = arcCardShadow(0.15 * (1 - cardPeelProgress));
+    const shadowAlpha = 0.15 * (1 - cardPeelProgress);
+    const shadowAlphaKey = shadowAlpha.toFixed(3);
+    if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
+      card.lastArcShadowAlphaKey = shadowAlphaKey;
+      card.el.style.boxShadow = arcCardShadow(shadowAlpha);
+    }
     const peelReveal = Math.max(0, Math.min(1, (cardPeelProgress - 0.8) / 0.2));
-    setLabelPos(card, currentX, currentY, cardScale, peelReveal);
+    setLabelPos(card, currentX, currentY, scale, peelReveal);
   }
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
@@ -704,12 +702,12 @@ export default async function init(el) {
       : getDesktopMockupCardSlot(card.colIdx, card.rowIdx, card.height);
     const endCenterX = cardSlot.x + cardSlot.width / 2;
     const endCenterY = frame.isMobile
-      ? cardSlot.y + cardSlot.height / 2 - pan.mobilePostRevealY
+      ? cardSlot.y + cardSlot.height / 2 - verticalPan.mobilePostRevealY
       : cardSlot.y + cardSlot.height / 2;
     const endScale = cardSlot.width / card.width;
 
     const startCenterX = card.baseX + card.width / 2;
-    const startCenterY = card.baseY + card.height / 2 - pan.arcGridY;
+    const startCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
 
     const slottingEaseProgress = easeInOutSine(phase.slotting);
     const centerX = startCenterX + (endCenterX - startCenterX) * slottingEaseProgress;
@@ -733,9 +731,6 @@ export default async function init(el) {
   // Card rendering: 3-branch state machine — exactly one branch runs per card per frame.
   function updateCardPositions() {
     const cardScale = frame.isMobile ? 1.0 : CARD_SCALE_DESKTOP;
-    const inArcIntro = !frame.isMobile
-      && phase.arcPan < ARC_INTRO_FRACTION
-      && phase.slotting <= 0;
     const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
     allLayers.forEach((layer) => {
       layer.cards.forEach((card) => {
@@ -743,8 +738,7 @@ export default async function init(el) {
           hideMobileCard(card);
           return;
         }
-        if (inArcIntro) renderArcIntro(card, cardScale);
-        else if (inArcPeel) renderArcPeelToGrid(card, cardScale);
+        if (inArcPeel) renderArcPeelToGrid(card, cardScale);
         else renderGridToSlot(card, cardScale);
       });
     });
@@ -765,39 +759,48 @@ export default async function init(el) {
       timing.slottingStart = MOBILE_GRID_END + MOBILE_SETTLE_DURATION;
       timing.slottingDuration = MOBILE_SLOTTING_DURATION;
       timing.postRevealScrollDistance = MOBILE_POST_REVEAL_SCROLL;
+      timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
     } else {
-      timing.gridEnd = DESKTOP_GRID_END;
+      timing.gridEnd = DESKTOP_PEEL_END_SCROLL;
       timing.slottingStart = DESKTOP_SLOTTING_START;
       timing.slottingDuration = DESKTOP_SLOTTING_DURATION;
       timing.postRevealScrollDistance = 0;
+      timing.settleScrollStart = DESKTOP_PEEL_END_SCROLL;
     }
   }
 
   function updateAnimationProgress() {
     const animScrollTotal = timing.slottingStart + timing.slottingDuration
       + timing.postRevealScrollDistance;
-    scroll.current = readScrollProgress() * animScrollTotal;
+    scrollTimeline.current = readScrollProgress() * animScrollTotal;
 
-    phase.arcPan = Math.max(0, Math.min(1, scroll.current / ARC_PAN_END));
+    phase.arcPan = Math.max(0, Math.min(1, scrollTimeline.current / ARC_PAN_END));
     const peelStart = ARC_PAN_END - ARC_PEEL_OVERLAP;
-    const peelT = (scroll.current - peelStart) / (timing.gridEnd - peelStart);
-    phase.arcToGrid = Math.max(0, Math.min(1, peelT));
-    const rawSlottingProgress = (scroll.current - timing.slottingStart) / timing.slottingDuration;
+    const rawArcToGridProgress = (scrollTimeline.current - peelStart)
+      / (timing.gridEnd - peelStart);
+    phase.arcToGrid = Math.max(0, Math.min(1, rawArcToGridProgress));
+    const rawSlottingProgress = (scrollTimeline.current - timing.slottingStart)
+      / timing.slottingDuration;
     phase.slotting = Math.max(0, Math.min(1, rawSlottingProgress));
-    phase.gridCompression = phase.arcToGrid;
   }
+
+  let arcTextPanProgressCached = 0;
 
   function updateMockupAndTitleTransform() {
     const slottingEase = easeInOutSine(phase.slotting);
     const mockupScale = 2.5 - 1.5 * slottingEase;
-    const mockupHeight = viewportHeight * 0.63;
+    const acrobatWidth = frame.isTablet
+      ? Math.max(680, Math.min(988, viewportWidth * 0.70))
+      : Math.min(viewportWidth * 0.686, 988);
+    const mockupHeight = acrobatWidth * (567 / 988);
     const topOverhang = ((2.5 - 1) / 2) * mockupHeight;
     const offscreenY = viewportHeight + topOverhang + 30;
     const mockupTranslateY = (1 - slottingEase) * offscreenY;
 
-    const titleRawT = (scroll.current - timing.slottingStart) / (timing.slottingDuration + 350);
-    const titleAnimT = Math.max(0, Math.min(1, titleRawT));
-    const titleSlide = easeOutCubic(titleAnimT);
+    const rawTitleMotionProgress = (scrollTimeline.current - timing.slottingStart)
+      / (timing.slottingDuration + 350);
+    const titleMotionProgress = Math.max(0, Math.min(1, rawTitleMotionProgress));
+    const titleSlide = easeOutCubic(titleMotionProgress);
     const titleOpacity = titleSlide;
     const titleScale = 0.92 + 0.08 * titleSlide;
 
@@ -807,7 +810,7 @@ export default async function init(el) {
         0,
         Math.min(
           1,
-          (scroll.current - (timing.slottingStart + timing.slottingDuration))
+          (scrollTimeline.current - (timing.slottingStart + timing.slottingDuration))
             / timing.postRevealScrollDistance,
         ),
       )
@@ -827,7 +830,7 @@ export default async function init(el) {
       const postRevealNeeded = Math.max(0, ctaRestY + 40 + 20 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
-      pan.mobilePostRevealY = postRevealPanY;
+      verticalPan.mobilePostRevealY = postRevealPanY;
       if (acrobatMobileMockupEl) {
         acrobatMobileMockupEl.style.transform = `translateY(${chromeRestY + slideOffset - postRevealPanY}px) scale(${mobileScale})`;
       }
@@ -839,7 +842,7 @@ export default async function init(el) {
         ctaEl.style.transform = `translateY(${ctaRestY + slideOffset - postRevealPanY}px)`;
       }
     } else {
-      pan.mobilePostRevealY = 0;
+      verticalPan.mobilePostRevealY = 0;
       acrobatDesktopMockupEl.style.transform = `translateY(${mockupTranslateY}px) scale(${mockupScale})`;
       if (titleEl) {
         titleEl.style.transform = `translateY(${mockupTranslateY}px) scale(${titleScale})`;
@@ -857,7 +860,7 @@ export default async function init(el) {
         + (MOBILE_GRID_END - (ARC_PAN_END - ARC_PEEL_OVERLAP)) * 0.85
       : ARC_PAN_END * ARC_INTRO_FRACTION;
     const adbeLogoSpan = timing.slottingStart - adbeLogoPeelStart;
-    const rawAdbeLogoProgress = (scroll.current - adbeLogoPeelStart) / adbeLogoSpan;
+    const rawAdbeLogoProgress = (scrollTimeline.current - adbeLogoPeelStart) / adbeLogoSpan;
     const adbeLogoProgress = Math.max(0, Math.min(1, rawAdbeLogoProgress));
     const adbeLogoDrawProgress = easeInOutSine(adbeLogoProgress);
     const adbeLogoFadeIn = Math.max(0, Math.min(1, adbeLogoProgress * 6));
@@ -882,50 +885,61 @@ export default async function init(el) {
   }
 
   function updateCompressionAndPan() {
-    const arcTextPanProgress = Math.max(
+    arcTextPanProgressCached = Math.max(
       0,
-      Math.min(1, (scroll.current - timing.gridEnd) / ARC_SETTLE_DURATION),
+      Math.min(1, (scrollTimeline.current - timing.settleScrollStart) / ARC_SETTLE_DURATION),
     );
-    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO * 0.75 - CARD_WIDTH;
-    const compressedRowGap = (compressedColGapPx + DEFAULT_CARD_HEIGHT) / viewportHeight;
-    const postPeelT = easeOutSine(arcTextPanProgress);
+    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO * COLUMN_COMPRESSION_TARGET
+      - CARD_WIDTH;
+    const compressedRowGap = (compressedColGapPx + ROW_METRIC_HEIGHT + LABEL_CLEARANCE)
+      / viewportHeight;
+    const postPeelEase = easeOutSine(arcTextPanProgressCached);
     const slottingCompression = easeInOutSine(phase.slotting);
-    layout.columnSpread = BASE_COLUMN_SPREAD
-      + (0.75 - BASE_COLUMN_SPREAD) * phase.arcToGrid
-      - 0.15 * postPeelT - 0.15 * slottingCompression;
-    layout.rowGap = BASE_ROW_GAP
+    cardGridLayout.columnSpread = BASE_COLUMN_SPREAD
+      + (COLUMN_COMPRESSION_TARGET - BASE_COLUMN_SPREAD) * phase.arcToGrid
+      - 0.15 * postPeelEase - 0.15 * slottingCompression;
+    cardGridLayout.rowGap = BASE_ROW_GAP
       + (compressedRowGap - BASE_ROW_GAP) * phase.arcToGrid
-      - 0.04 * postPeelT - 0.04 * slottingCompression;
+      - 0.04 * postPeelEase - 0.04 * slottingCompression;
     const textAtRestY = viewportHeight * (0.5 + 0.5 * compressedRowGap)
-      + DEFAULT_CARD_HEIGHT / 2
+      + ROW_METRIC_HEIGHT / 2
       + 90;
-    const arcPanTarget = Math.max(0, textAtRestY - viewportHeight * 0.50);
-    pan.arcGridY = arcPanTarget * easeOutSine(arcTextPanProgress);
+    const arcPanTarget = Math.max(0, textAtRestY - viewportHeight * 0.70);
+    verticalPan.arcGridY = arcPanTarget * easeOutSine(arcTextPanProgressCached);
     if (frame.isMobile) {
-      // Mobile pan: starts at peel midpoint (MOBILE_PAN_START ~689), runs 1610 units.
-      // Brings the last visible row up to make room for the text block.
       const ml = frame.mobileLayout;
       const mobileRow1CenterY = viewportHeight * 0.50 + ml.tallH / 2 + ml.rowPitch;
       const mobileTextBaseY = mobileRow1CenterY + ml.tallH / 2 + 4 + 22 + 32;
-      const mobileTextTarget = Math.max(0, mobileTextBaseY - viewportHeight * 0.50);
-      const mobilePanT = Math.max(0, Math.min(1, (scroll.current - MOBILE_PAN_START) / 1610));
-      pan.arcGridY = mobileTextTarget * easeOutSine(mobilePanT);
+      const mobileTextTarget = Math.max(0, mobileTextBaseY - viewportHeight * 0.65);
+      const mobilePanProgress = Math.max(
+        0,
+        Math.min(1, (scrollTimeline.current - MOBILE_PAN_START) / 900),
+      );
+      verticalPan.arcGridY = mobileTextTarget * easeOutSine(mobilePanProgress);
     }
   }
 
   function updateTextBlock() {
-    const arcTextRevealProgress = Math.max(
-      0,
-      Math.min(1, (scroll.current - timing.gridEnd) / 400),
-    );
     const textEase = easeInOutSine(phase.slotting);
-    const textScale = 1 - 0.28 * textEase;
+    const textScaleDuringSlotting = 1 - 0.28 * textEase;
+    const deskGridScaleForText = getDeskGridScale();
+    const col3Right = viewportWidth
+      * (0.5 + CARD_COLUMN_OFFSETS_RATIO[3] * ARC_TEXT_ANCHOR_COLUMN_SPREAD)
+      + (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
+    const col0VisualLeft = viewportWidth
+      * (0.5 + CARD_COLUMN_OFFSETS_RATIO[0] * ARC_TEXT_ANCHOR_COLUMN_SPREAD)
+      - (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
+    const arcTextFadeProgress = frame.isMobile
+      ? Math.max(0, Math.min(1, (phase.slotting - 0.4) / 0.3))
+      : Math.max(0, Math.min(1, (phase.slotting - 0.55) / 0.15));
+    const arcFinalScale = frame.isMobile
+      ? textScaleDuringSlotting
+      : textScaleDuringSlotting * (1 - 0.15 * easeInOutSine(arcTextFadeProgress));
     let pinnedTextY;
     if (frame.isMobile) {
-      // Text block lands 32px below label of tallest visible-row card.
       const ml = frame.mobileLayout;
       const row1CenterY = viewportHeight * 0.50 + ml.tallH / 2 + ml.rowPitch;
-      pinnedTextY = row1CenterY - pan.arcGridY + ml.tallH / 2 + 4 + 22 + 32;
+      pinnedTextY = row1CenterY - verticalPan.arcGridY + ml.tallH / 2 + 4 + 22 + 32;
       const gridW = ml.cardW * 2 + MOBILE_COL_GAP;
       const mobileGridLeft = Math.max(
         MOBILE_OUTER_MARGIN,
@@ -933,24 +947,21 @@ export default async function init(el) {
       );
       textBlockEl.style.left = `${mobileGridLeft}px`;
     } else {
-      const col3Right = viewportWidth
-        * (0.5 + CARD_COLUMN_OFFSETS_RATIO[3] * layout.columnSpread)
-        + CARD_WIDTH / 2;
-      const arcTextLeft = col3Right - textBlockEl.offsetWidth;
-      pinnedTextY = viewportHeight * (0.5 + 0.5 * layout.rowGap)
-        + DEFAULT_CARD_HEIGHT / 2
-        + 90
-        + viewportHeight * 0.12
-        - pan.arcGridY;
+      const arcTextLeft = frame.isTablet
+        ? col0VisualLeft
+        : col3Right - (cachedTextBlockWidth || textBlockEl.offsetWidth);
+      pinnedTextY = viewportHeight * (0.5 + 0.5 * cardGridLayout.rowGap)
+        + ROW_METRIC_HEIGHT / 2
+        + 37
+        + viewportHeight * 0.036
+        - verticalPan.arcGridY;
       textBlockEl.style.left = `${arcTextLeft}px`;
     }
-    // Mobile: text fades in early in the peel (10%→40%). Desktop: short timer after peel end.
     const arcReveal = frame.isMobile
       ? Math.max(0, Math.min(1, (phase.arcToGrid - 0.1) / 0.3))
-      : Math.min(1, arcTextRevealProgress * 2.5);
-    const arcTextFadeProgress = Math.max(0, Math.min(1, (phase.slotting - 0.4) / 0.3));
+      : Math.max(0, Math.min(1, arcTextPanProgressCached * 2));
     const textOpacity = Math.max(0, 1 - arcTextFadeProgress) * arcReveal;
-    textBlockEl.style.transform = `translateY(${pinnedTextY}px) scale(${textScale})`;
+    textBlockEl.style.transform = `translateY(${pinnedTextY}px) scale(${arcFinalScale})`;
     textBlockEl.style.opacity = textOpacity;
   }
 
@@ -983,6 +994,27 @@ export default async function init(el) {
   window.addEventListener('resize', onResize);
 
   resize();
+
+  (function prewarmCanvasDots() {
+    const savedArcToGrid = phase.arcToGrid;
+    phase.arcToGrid = 0.001;
+    refreshFrameProfile();
+    applyViewportTiming();
+    updateAnimationProgress();
+    buildArcCtx();
+    updateCompressionAndPan();
+    updateMockupAndTitleTransform();
+    updateTextBlock();
+    positionCards();
+    canvasGrid.updateCardAnchors(allLayers);
+    canvasGrid.update();
+    canvasGrid.draw();
+    updateCardPositions();
+    phase.arcToGrid = savedArcToGrid;
+    updateAnimationProgress();
+    buildArcCtx();
+    canvasGrid.draw();
+  }());
 
   const startLoop = () => {
     if (running) return;

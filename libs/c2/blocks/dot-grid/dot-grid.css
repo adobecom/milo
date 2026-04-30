@@ -85,7 +85,7 @@
   vector-effect: non-scaling-stroke;
 }
 
-.dot-grid .world {
+.dot-grid .card-scene {
   position: absolute;
   inset: 0;
   z-index: 25;
@@ -98,7 +98,7 @@
   position: absolute;
   inset: 0;
   overflow: visible;
-  transform-style: preserve-3d;
+  transform-style: flat;
   will-change: transform, opacity;
 }
 
@@ -135,6 +135,8 @@
 
 .dot-grid .card-label-outer {
   position: absolute;
+  top: 0;
+  left: 0;
   display: inline-flex;
   align-items: center;
   padding: 5px 6.3px;
@@ -176,13 +178,13 @@
 .dot-grid .acrobat-cta {
   position: absolute;
   top: calc(21vh + 12px + min(39.35vw, 567px) + 48px);
-  left: calc(50vw - min(3.75vw, 54px));
+  left: calc(50vw - 54px);
   z-index: 19;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(7.5vw, 108px);
-  height: min(2.78vw, 40px);
+  width: 108px;
+  height: 40px;
   background: #000;
   border-radius: 9999px;
   transform: translateY(150vh);
@@ -203,14 +205,31 @@
   text-decoration: none;
 }
 
+@media (width >= 768px) and (width <= 1279px) {
+  .dot-grid .acrobat-title {
+    left: calc((100vw - clamp(680px, 70vw, 988px)) / 2);
+    width: clamp(680px, 70vw, 988px);
+  }
+
+  .dot-grid .acrobat-cta {
+    top: calc(21vh + 12px + clamp(390px, 40.17vw, 567px) + 48px);
+  }
+
+  .dot-grid .text-block {
+    min-width: 292px;
+  }
+
+  .dot-grid .acrobat-desktop-mockup {
+    width: clamp(680px, 70vw, 988px);
+    left: calc((100vw - clamp(680px, 70vw, 988px)) / 2);
+
+    --acrobat-desktop-scale: clamp(calc(680px / 988), calc(70 * 1vw / 988), 1px);
+  }
+}
+
 @media (width <= 767px) {
   .dot-grid .card-label-outer {
     font-size: 10pt;
-  }
-
-  /* iOS Safari z-index fix in 3D compositing context */
-  .dot-grid .layer {
-    transform-style: flat;
   }
 
   .dot-grid .acrobat-title {
