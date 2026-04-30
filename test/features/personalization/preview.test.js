@@ -101,6 +101,9 @@ describe('preview feature', () => {
   beforeEach(() => {
     setConfig(config);
   });
+  afterEach(() => {
+    delete window.lenis;
+  });
   it('builds with 0 manifests', async () => {
     await decoratePreviewMode();
     const event = new Event(MILO_EVENTS.DEFERRED);
@@ -115,6 +118,34 @@ describe('preview feature', () => {
     expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
     document.querySelector('.mep-close').click();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(0);
+  });
+  it('close button does not throw when overlay is already removed', async () => {
+    await decoratePreviewMode();
+    const closeBtn = document.querySelector('.mep-close');
+    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
+    expect(() => closeBtn.click()).to.not.throw();
+  });
+  it('Lenis prevent callback is restored after close', async () => {
+    const originalPrevent = sinon.stub().returns(false);
+    window.lenis = { options: { prevent: originalPrevent } };
+    await decoratePreviewMode();
+    const patchedPrevent = window.lenis.options.prevent;
+    expect(patchedPrevent).to.not.equal(originalPrevent);
+    document.querySelector('.mep-close').click();
+    expect(window.lenis.options.prevent).to.equal(originalPrevent);
+    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
+  });
+  it('Lenis prevent returns true for nodes inside the overlay, delegates otherwise', async () => {
+    const originalPrevent = sinon.stub().returns(false);
+    window.lenis = { options: { prevent: originalPrevent } };
+    await decoratePreviewMode();
+    const { prevent } = window.lenis.options;
+    const insideNode = document.querySelector('.mep-preview-overlay');
+    expect(prevent(insideNode)).to.be.true;
+    const outsideNode = document.body;
+    prevent(outsideNode);
+    expect(originalPrevent.calledWith(outsideNode)).to.be.true;
+    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
   });
   it('builds with multiple manifests', async () => {
     config.mep.experiments = experiments;
