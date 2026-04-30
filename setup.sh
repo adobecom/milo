@@ -33,7 +33,7 @@ if [[ -f "$PWD/package.json" ]] && grep -q '@adobecom/milo' "$PWD/package.json" 
   REPO_ROOT="$PWD"
   ok "Using existing repo at $REPO_ROOT"
 else
-  _default="${MILO_DIR:-$HOME/repos/milo}"
+  _default="${MILO_DIR:-$HOME/milo}"
   if [[ -d "$_default/.git" ]]; then
     REPO_ROOT="$_default"
     ok "Repo already at $REPO_ROOT"
