@@ -1,5 +1,12 @@
 /* eslint-disable no-underscore-dangle */
-import { getConfig, createTag, loadStyle, getLangRoutingConfig, getCountry } from '../../utils/utils.js';
+import {
+  getConfig,
+  createTag,
+  loadStyle,
+  getLangRoutingConfig,
+  getCountry,
+  getCookie,
+} from '../../utils/utils.js';
 
 function buildBanner(market, translatedUrl) {
   const banner = document.body.querySelector('.language-banner');
@@ -59,6 +66,10 @@ async function showBanner(market, config) {
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
   // eventName = "suggestedSite-currentSite|language-banner"
   const eventName = `${market.prefix || 'us'}-${pagePrefix}|language-banner`;
+  const intlCookie = getCookie('international') || 'none';
+  const prefLang = intlCookie !== 'none'
+    ? (config.locales?.[intlCookie === 'us' ? '' : intlCookie]?.ietf?.split('-')[0] || intlCookie.split('_').pop())
+    : navigator.language?.split('-')[0] || 'none';
 
   banner.querySelector('.language-banner-link').addEventListener('click', async (e) => {
     e.preventDefault();
@@ -81,10 +92,10 @@ async function showBanner(market, config) {
     banner.remove();
   });
 
-  sendAnalytics(new Event(eventName));
+  const country = await getCountry();
+  sendAnalytics(new Event(`${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}|intl:${intlCookie}|pref-lang:${prefLang}`));
   if (config.lingoProjectSuccessLogging === 'on') {
-    const country = await getCountry();
-    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}`, { tags: 'lingo, lingo-language-banner-load', severity: 'i' });
+    window.lana.log(`Load: ${eventName}|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${country}|intl:${intlCookie}|pref-lang:${prefLang}`, { tags: 'lingo, lingo-language-banner-load', severity: 'i' });
   }
 }
 
