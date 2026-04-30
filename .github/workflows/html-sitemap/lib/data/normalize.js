@@ -3,6 +3,7 @@
  * @property {string} title
  * @property {string} url
  * @property {string} path
+ * @property {string} [originUrl]
  */
 
 /**
@@ -89,12 +90,14 @@ function isIndexable(robots) {
  * @param {unknown} raw
  * @param {string} fallbackDomain
  * @param {SiteDomainMap} [siteDomainMap]
+ * @param {string} [originUrl]
  * @returns {NormalizedLink[]}
  */
 export function normalizeQueryIndexData(
   raw,
   fallbackDomain,
   siteDomainMap = {},
+  originUrl,
 ) {
   const rows = Array.isArray(/** @type {{ data?: unknown[] }} */ (raw)?.data)
     ? /** @type {QueryIndexRow[]} */ (/** @type {{ data: unknown[] }} */ (raw).data)
@@ -110,6 +113,6 @@ export function normalizeQueryIndexData(
     const rawTitle = String(row.title || '').trim();
     const title = cleanTitle(rawTitle || titleFromSlug(urlPath));
 
-    return [{ title, url, path: urlPath }];
+    return [{ title, url, path: urlPath, ...(originUrl ? { originUrl } : {}) }];
   });
 }

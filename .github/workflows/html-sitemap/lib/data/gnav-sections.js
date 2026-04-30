@@ -47,7 +47,7 @@ import { cleanTitle, toProductionUrl } from './normalize.js';
  */
 
 /**
- * @typedef {{ type: 'subheading', text: string } | { type: 'link', href: string, text: string }} ParsedItem
+ * @typedef {{ type: 'subheading', text: string } | { type: 'link', href: string, text: string, sourceUrl?: string }} ParsedItem
  */
 
 /**
@@ -100,9 +100,10 @@ function walk(node, ancestors, visit) {
 
 /**
  * @param {string} html
+ * @param {string} [sourceUrl]
  * @returns {ParsedItem[]}
  */
-function parseSectionItems(html) {
+function parseSectionItems(html, sourceUrl) {
   const document = parse(html);
   /** @type {ParsedItem[]} */
   const items = [];
@@ -127,7 +128,7 @@ function parseSectionItems(html) {
 
     const text = getText(node).trim();
     if (!text) return;
-    items.push({ type: 'link', href, text });
+    items.push({ type: 'link', href, text, sourceUrl });
   });
 
   return items;
@@ -169,6 +170,7 @@ function groupItems(
       title: cleanTitle(resolvePlaceholders(item.text, placeholders)),
       url: normalizedUrl,
       path: new URL(normalizedUrl).pathname,
+      ...(item.sourceUrl ? { originUrl: item.sourceUrl } : {}),
     });
   }
 
@@ -197,7 +199,7 @@ export async function buildBaseGeoLinks(
     const inlineChildren = manifest.files.filter((entry) => entry.kind === 'inline-column' && entry.parentFile === file.file);
     const htmlSources = inlineChildren.length ? inlineChildren : [file];
     const items = (
-      await Promise.all(htmlSources.map(async (source) => parseSectionItems(await fs.readFile(path.join(gnavDir, source.file), 'utf8'))))
+      await Promise.all(htmlSources.map(async (source) => parseSectionItems(await fs.readFile(path.join(gnavDir, source.file), 'utf8'), source.sourceUrl)))
     ).flat();
 
     const groups = groupItems(items, placeholders, fallbackDomain, siteDomainMap);

@@ -55,6 +55,16 @@ export function getBaseGeoHtmlFile(outputDir, subdomain, baseGeo) {
 /**
  * @param {string} outputDir
  * @param {string} subdomain
+ * @param {string} baseGeo
+ * @returns {string}
+ */
+export function getBaseGeoLinksCsvFile(outputDir, subdomain, baseGeo) {
+  return path.join(getBaseGeoDir(outputDir, subdomain, baseGeo), 'links.csv');
+}
+
+/**
+ * @param {string} outputDir
+ * @param {string} subdomain
  * @returns {string}
  */
 export function getSubdomainManifestJsonFile(outputDir, subdomain) {

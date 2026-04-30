@@ -109,10 +109,15 @@ async function loadExtendedQueryIndexLinks(
   unit,
   geo,
 ) {
-  const siteDirs = await fs.readdir(getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, geo)).catch(() => []);
+  const geoDir = getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, geo);
+  const siteDirs = await fs.readdir(geoDir).catch(() => []);
   const links = await Promise.all(siteDirs.map(async (siteDir) => {
-    const json = JSON.parse(await fs.readFile(path.join(getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, geo), siteDir, 'query-index.json'), 'utf8'));
-    return normalizeQueryIndexData(json, unit.domain, config.siteDomains);
+    const siteDir_ = path.join(geoDir, siteDir);
+    const [json, meta] = await Promise.all([
+      fs.readFile(path.join(siteDir_, 'query-index.json'), 'utf8').then(JSON.parse),
+      fs.readFile(path.join(siteDir_, '_meta.json'), 'utf8').then(JSON.parse).catch(() => ({})),
+    ]);
+    return normalizeQueryIndexData(json, unit.domain, config.siteDomains, meta.originUrl);
   }));
   return links.flat();
 }

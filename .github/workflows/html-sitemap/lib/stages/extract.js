@@ -31,6 +31,7 @@ const UNIT_CONCURRENCY = 2;
  * @property {boolean} ok
  * @property {number} rowCount
  * @property {number} indexableCount
+ * @property {string} [url]
  * @property {unknown} [json]
  * @property {number} [status]
  * @property {string} [statusText]
@@ -175,6 +176,7 @@ async function fetchQueryIndexSummary(
     site,
     geo,
     ok: true,
+    url: result.url,
     rowCount: result.rowCount,
     indexableCount: normalizeQueryIndexData(result.json, unit.domain, siteDomains).length,
     json: result.json,
@@ -231,10 +233,10 @@ async function runExtractUnit(
 
   await Promise.all(baseQueryResults
     .filter((result) => result.ok)
-    .map((result) => writeJson(
-      path.join(baseExtractDir, result.site, 'query-index.json'),
-      result.json,
-    )));
+    .flatMap((result) => [
+      writeJson(path.join(baseExtractDir, result.site, 'query-index.json'), result.json),
+      writeJson(path.join(baseExtractDir, result.site, '_meta.json'), { originUrl: result.url }),
+    ]));
 
   const gnavResult = await extractGnavArtifacts({
     hostSite: unit.hostSite,
@@ -255,10 +257,11 @@ async function runExtractUnit(
         fetchImpl,
       );
       if (summary.ok) {
-        await writeJson(
-          path.join(getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, extendedGeo), row.site, 'query-index.json'),
-          summary.json,
-        );
+        const extendedGeoSiteDir = path.join(getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, extendedGeo), row.site);
+        await Promise.all([
+          writeJson(path.join(extendedGeoSiteDir, 'query-index.json'), summary.json),
+          writeJson(path.join(extendedGeoSiteDir, '_meta.json'), { originUrl: summary.url }),
+        ]);
       }
       return summary;
     })),

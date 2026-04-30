@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { relevantExtendedGeos } from '../config/scope.js';
-import { getBaseGeoDataFile, getBaseGeoExtractDir, writeJson } from '../util/files.js';
+import { getBaseGeoDataFile, getBaseGeoExtractDir, getBaseGeoLinksCsvFile, writeJson, writeText } from '../util/files.js';
 import { loadPlaceholderMap } from '../sources/placeholders.js';
 import { buildBaseGeoLinks } from './gnav-sections.js';
 import { buildExtendedGeoLinks } from './links.js';
@@ -104,6 +104,38 @@ async function summarizeExtendedGeoInputs(
   };
 }
 
+const LINKS_CSV_COLUMNS = ['type', 'url', 'title', 'path', 'originUrl'];
+
+/**
+ * @param {SitemapDataDocument} document
+ * @returns {string}
+ */
+function buildLinksCSV(document) {
+  /** @type {Record<string, string>[]} */
+  const rows = [];
+
+  for (const section of document.sections.baseGeoLinks) {
+    for (const group of section.groups) {
+      for (const link of group.links) {
+        rows.push({ type: 'base', url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+      }
+    }
+  }
+
+  for (const group of document.sections.extendedGeoLinks) {
+    for (const link of group.links) {
+      rows.push({ type: 'extended', url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+    }
+  }
+
+  const header = LINKS_CSV_COLUMNS.join(',');
+  const lines = rows.map((row) => LINKS_CSV_COLUMNS.map((col) => {
+    const val = row[col] || '';
+    return val.includes(',') || val.includes('"') ? `"${val.replace(/"/g, '""')}"` : val;
+  }).join(','));
+  return `${[header, ...lines].join('\n')}\n`;
+}
+
 /**
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
@@ -139,7 +171,10 @@ export async function buildSitemapDataDocument(
     },
   };
 
-  await writeJson(getBaseGeoDataFile(outputDir, unit.subdomain, unit.baseGeo), document);
+  await Promise.all([
+    writeJson(getBaseGeoDataFile(outputDir, unit.subdomain, unit.baseGeo), document),
+    writeText(getBaseGeoLinksCsvFile(outputDir, unit.subdomain, unit.baseGeo), buildLinksCSV(document)),
+  ]);
 
   return {
     subdomain: unit.subdomain,
