@@ -133,6 +133,7 @@ class FloodgateConfig {
     this.copyOnlyUsers = [];
     this.colors = [];
     this.promoteIgnorePaths = [];
+    this.chronoBoxFragmentsEnabled = false;
   }
 
   async getConfig() {
@@ -171,6 +172,8 @@ class FloodgateConfig {
     this.copyOnlyUsers = parseUserList(copyOnlyUsersEntry?.value);
     const colors = config.data.find(({ key }) => key === 'colors');
     this.colors = colors?.value?.split(',').map((color) => color.trim());
+    const chronoBoxEntry = config.data.find(({ key }) => key === 'chronoBoxFragmentsEnabled');
+    this.chronoBoxFragmentsEnabled = chronoBoxEntry?.value === 'true';
   }
 }
 

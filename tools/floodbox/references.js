@@ -1,13 +1,20 @@
 import RequestHandler from './request-handler.js';
 import { DA_ORIGIN } from './constants.js';
 
+// Endpoints whose `?schedule=<base64-json>` query param contains
+// fragment references. Add new supported endpoints here.
+const SCHEDULE_MAKER_ENDPOINTS = [
+  'https://www.adobe.com/ecc/system/tools/schedule-maker',
+];
+
 class References {
-  constructor(accessToken, htmlPaths, org, repo, signal) {
+  constructor(accessToken, htmlPaths, org, repo, signal, options = {}) {
     this.accessToken = accessToken;
     this.org = org;
     this.repo = repo;
     this.htmlPaths = htmlPaths;
     this.signal = signal;
+    this.includeChronoBoxFragments = !!options.includeChronoBoxFragments;
 
     // eslint-disable-next-line no-useless-escape
     this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.*(?:fragments\/|\\.(?:pdf|svg|json))[^?]*)`);
@@ -23,6 +30,69 @@ class References {
       return link.match(this.referencePattern)[1];
     }
     return null;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  extractScheduleMakerFragments(href) {
+    if (!href) return [];
+    let url;
+    try {
+      url = new URL(href);
+    } catch {
+      return [];
+    }
+    const endpoint = `${url.origin}${url.pathname}`;
+    if (!SCHEDULE_MAKER_ENDPOINTS.includes(endpoint)) return [];
+    const schedule = url.searchParams.get('schedule');
+    if (!schedule) return [];
+    let parsed;
+    try {
+      parsed = JSON.parse(atob(schedule));
+    } catch {
+      return [];
+    }
+    const blocks = Array.isArray(parsed?.blocks) ? parsed.blocks : [];
+    const results = [];
+    blocks.forEach((block) => {
+      const fragmentPath = block && typeof block === 'object' ? block.fragmentPath : null;
+      if (typeof fragmentPath !== 'string' || !fragmentPath) return;
+      results.push(fragmentPath.startsWith('/') ? fragmentPath : `/${fragmentPath}`);
+    });
+    return results;
+  }
+
+  extractChronoBoxFragments(doc, htmlPath) {
+    const results = [];
+    const repoPrefix = `/${this.org}/${this.repo}`;
+    const repoRelative = htmlPath.startsWith(repoPrefix)
+      ? htmlPath.slice(repoPrefix.length)
+      : htmlPath;
+    const baseDir = repoRelative.slice(0, repoRelative.lastIndexOf('/'));
+    const parseCell = (cell) => {
+      const text = cell?.textContent?.trim();
+      if (!text) return null;
+      try {
+        const parsed = JSON.parse(text);
+        return Array.isArray(parsed) ? parsed : null;
+      } catch {
+        return null;
+      }
+    };
+    doc.querySelectorAll('.chrono-box').forEach((block) => {
+      Array.from(block.children).forEach((row) => {
+        const entries = parseCell(row.children[1]);
+        if (!entries) return;
+        entries.forEach((entry) => {
+          const pathToFragment = entry && typeof entry === 'object' ? entry.pathToFragment : null;
+          if (typeof pathToFragment !== 'string' || !pathToFragment) return;
+          const resolved = pathToFragment.startsWith('/')
+            ? pathToFragment
+            : `${baseDir}/${pathToFragment}`;
+          results.push(resolved);
+        });
+      });
+    });
+    return results;
   }
 
   async getReferencedFragmentsAndAssets() {
@@ -44,6 +114,16 @@ class References {
             if (refPath) {
               fragmentsAndAssets.add(`/${this.org}/${this.repo}${refPath}`);
             }
+            if (this.includeChronoBoxFragments) {
+              this.extractScheduleMakerFragments(link.href).forEach((p) => {
+                fragmentsAndAssets.add(`/${this.org}/${this.repo}${p}`);
+              });
+            }
+          }
+          if (this.includeChronoBoxFragments) {
+            this.extractChronoBoxFragments(doc, path).forEach((p) => {
+              fragmentsAndAssets.add(`/${this.org}/${this.repo}${p}`);
+            });
           }
         } catch (err) {
           if (err.name !== 'AbortError') throw err;
@@ -54,8 +134,22 @@ class References {
   }
 }
 
-function findFragmentsAndAssets({ accessToken, htmlPaths, org, repo, signal }) {
-  const references = new References(accessToken, htmlPaths, org, repo, signal);
+function findFragmentsAndAssets({
+  accessToken,
+  htmlPaths,
+  org,
+  repo,
+  signal,
+  includeChronoBoxFragments,
+}) {
+  const references = new References(
+    accessToken,
+    htmlPaths,
+    org,
+    repo,
+    signal,
+    { includeChronoBoxFragments },
+  );
   return references.getReferencedFragmentsAndAssets();
 }
 

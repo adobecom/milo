@@ -222,6 +222,7 @@ describe('FloodgateConfig', () => {
     expect(floodgateConfig.allAccessUsers).to.deep.equal([]);
     expect(floodgateConfig.copyOnlyUsers).to.deep.equal([]);
     expect(floodgateConfig.promoteIgnorePaths).to.deep.equal([]);
+    expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.false;
   });
 
   it('should fetch and process config correctly', async () => {
@@ -233,6 +234,7 @@ describe('FloodgateConfig', () => {
           { key: 'allAccessUsers', value: 'a@b.com, c@d.org' },
           { key: 'copyOnlyUsers', value: 'x@y.com' },
           { key: 'colors', value: 'pink, blue' },
+          { key: 'chronoBoxFragmentsEnabled', value: 'true' },
         ],
         'promote-ignore-paths': {
           data: [
@@ -253,12 +255,29 @@ describe('FloodgateConfig', () => {
     expect(floodgateConfig.allAccessUsers).to.deep.equal(['a@b.com', 'c@d.org']);
     expect(floodgateConfig.copyOnlyUsers).to.deep.equal(['x@y.com']);
     expect(floodgateConfig.colors).to.deep.equal(['pink', 'blue']);
+    expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.true;
     expect(floodgateConfig.getPromoteIgnorePaths()).to.deep.equal([
       '/placeholders.json',
       '/metadata.json',
       '/my-folder/my-file',
       '/summit25/',
     ]);
+  });
+
+  it('treats non-"true" chronoBoxFragmentsEnabled values as disabled', async () => {
+    const mockResponse = {
+      ok: true,
+      json: sinon.stub().resolves({
+        data: [
+          { key: 'chronoBoxFragmentsEnabled', value: 'yes' },
+        ],
+      }),
+    };
+
+    daFetchStub.resolves(mockResponse);
+    await floodgateConfig.getConfig();
+
+    expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.false;
   });
 
   it('should handle failed fetch', async () => {
@@ -269,6 +288,7 @@ describe('FloodgateConfig', () => {
     expect(floodgateConfig.draftsAllowed).to.be.false;
     expect(floodgateConfig.allAccessUsers).to.deep.equal([]);
     expect(floodgateConfig.copyOnlyUsers).to.deep.equal([]);
+    expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.false;
     expect(floodgateConfig.getPromoteIgnorePaths()).to.deep.equal([]);
   });
 
@@ -284,6 +304,7 @@ describe('FloodgateConfig', () => {
     expect(floodgateConfig.draftsAllowed).to.be.false;
     expect(floodgateConfig.allAccessUsers).to.deep.equal([]);
     expect(floodgateConfig.copyOnlyUsers).to.deep.equal([]);
+    expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.false;
     expect(floodgateConfig.getPromoteIgnorePaths()).to.deep.equal([]);
   });
 });

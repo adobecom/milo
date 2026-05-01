@@ -11,8 +11,9 @@ import { getFileExtension, getFileName } from '../utils.js';
 const EXISTENCE_CHECK_BATCH = 10;
 const DELETE_BATCH = 10;
 
-async function findFragments(cmp, org, repo, operation) {
+export async function findFragments(cmp, org, repo, operation) {
   const signal = cmp._abortController?.signal;
+  const includeChronoBoxFragments = !!cmp._floodgateConfig?.chronoBoxFragmentsEnabled;
   if (operation === 'copy') {
     const htmlPaths = cmp._filesToProcess
       .filter((p) => !p.endsWith('/') && !p.includes('.'));
@@ -22,6 +23,7 @@ async function findFragments(cmp, org, repo, operation) {
       org,
       repo,
       signal,
+      includeChronoBoxFragments,
     });
     cmp._fragmentsAssets = new Set(result);
   } else {
@@ -33,6 +35,7 @@ async function findFragments(cmp, org, repo, operation) {
       org,
       repo: fgRepo,
       signal,
+      includeChronoBoxFragments,
     });
     cmp._fragmentsAssets = new Set(
       [...fgFragments].map((p) => p.replace(`-fg-${cmp._selectedColor}`, '')),
