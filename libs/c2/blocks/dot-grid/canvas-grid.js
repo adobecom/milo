@@ -71,6 +71,7 @@ export default function createCanvasGrid(canvas, {
   }
 
   function update() {
+    if (isMobile()) return;
     const mouseParked = mouse.x === -9999;
     if (mouseParked && settled) return;
 
@@ -142,6 +143,7 @@ export default function createCanvasGrid(canvas, {
   }
 
   const handleMouseMove = (e) => {
+    if (isMobile()) return;
     mouse.x = e.clientX;
     mouse.y = e.clientY;
     settled = false;
