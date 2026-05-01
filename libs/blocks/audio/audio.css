@@ -1,0 +1,121 @@
+.audio {
+  & .audio-player {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xxs);
+    padding: 10px var(--spacing-xs);
+    background: var(--color-gray-100);
+    border-radius: 40px;
+    max-width: 480px;
+  }
+
+  & audio {
+    display: none;
+  }
+
+  & .audio-play-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: #fff;
+    cursor: pointer;
+
+    & svg {
+      width: 24px;
+      height: 24px;
+      fill: currentcolor;
+    }
+
+    & .audio-pause-icon {
+      display: none;
+    }
+
+    &.is-playing {
+      & .audio-play-icon {
+        display: none;
+      }
+
+      & .audio-pause-icon {
+        display: flex;
+      }
+    }
+
+    &:hover {
+      background: var(--color-accent-hover);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent-focus-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  & .audio-track {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  & .audio-progress {
+    width: 100%;
+    height: 4px;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+    border-radius: 2px;
+    appearance: none;
+    background: var(--color-gray-300);
+
+    &::-webkit-slider-runnable-track {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--color-gray-300);
+    }
+
+    &::-webkit-slider-thumb {
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      margin-block-start: -4px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      cursor: pointer;
+    }
+
+    &::-moz-range-track {
+      height: 4px;
+      border-radius: 2px;
+      background: var(--color-gray-300);
+    }
+
+    &::-moz-range-thumb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--color-accent);
+      cursor: pointer;
+      border: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-accent-focus-ring);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  }
+
+  & .audio-time {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--type-body-xs-size);
+    color: var(--color-gray-600);
+  }
+}
