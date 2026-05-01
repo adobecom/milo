@@ -43,6 +43,8 @@ const FLOODGATE_HELP_ICON_URL = new URL('./help.svg', import.meta.url).href;
 
 const LARGE_OP_THRESHOLD = 50;
 const PATHS_STORAGE_KEY = 'floodgate-paths';
+// ~5000 typical paths. Above this we refuse to parse to avoid pinning the UI thread.
+const MAX_PATHS_INPUT_CHARS = 500_000;
 
 function debounce(fn, ms = 300) {
   let timer;
@@ -93,6 +95,7 @@ export default class MiloFloodgate extends LitElement {
     this._configContextKey = '';
     this._configLoadKey = '';
     this._configLoadPromise = null;
+    this._configLoadController = null;
     this._configLoadError = '';
     this._debouncedEvaluateAccess = debounce(() => this._evaluateAccess(), 300);
 
@@ -126,6 +129,10 @@ export default class MiloFloodgate extends LitElement {
   updated(changed) {
     super.updated(changed);
     if (changed.has('token')) {
+      this._configLoadController?.abort();
+      this._configLoadController = null;
+      this._configLoadKey = '';
+      this._configLoadPromise = null;
       this._configContextKey = '';
       this._configLoadError = '';
       this._prevOrg = '';
@@ -166,6 +173,8 @@ export default class MiloFloodgate extends LitElement {
 
   async _loadFloodgateConfig() {
     if (!this.token || !this._org || !this._sourceRepo) {
+      this._configLoadController?.abort();
+      this._configLoadController = null;
       this._floodgateConfig = {};
       this._configLoading = false;
       this._selectedColor = '';
@@ -186,6 +195,11 @@ export default class MiloFloodgate extends LitElement {
       return this._configLoadPromise;
     }
 
+    // Supersede any previous in-flight load
+    this._configLoadController?.abort();
+    const controller = new AbortController();
+    this._configLoadController = controller;
+
     this._configLoadKey = key;
     this._configLoading = true;
     this._configLoadError = '';
@@ -193,7 +207,7 @@ export default class MiloFloodgate extends LitElement {
 
     const promise = (async () => {
       try {
-        const cfg = new FloodgateConfig(this._org, this._sourceRepo, this.token);
+        const cfg = new FloodgateConfig(this._org, this._sourceRepo, this.token, controller.signal);
         await cfg.getConfig();
 
         // Superseded by a later load
@@ -209,6 +223,7 @@ export default class MiloFloodgate extends LitElement {
           this._floodgateRepo = `${this._sourceRepo}-fg-${this._selectedColor}`;
         }
       } catch (err) {
+        if (err?.name === 'AbortError') return;
         if (this._configLoadKey !== key) return;
         this._configLoadError = 'Could not load floodgate configuration. Check your network and try again.';
       } finally {
@@ -216,6 +231,7 @@ export default class MiloFloodgate extends LitElement {
         if (this._configLoadKey === key) {
           this._configLoading = false;
           this._configLoadPromise = null;
+          this._configLoadController = null;
           this.requestUpdate();
         }
       }
@@ -295,7 +311,25 @@ export default class MiloFloodgate extends LitElement {
 
   handleInputChange(event) {
     this._pathsRawValue = event.target.value;
-    sessionStorage.setItem(PATHS_STORAGE_KEY, this._pathsRawValue);
+    try {
+      sessionStorage.setItem(PATHS_STORAGE_KEY, this._pathsRawValue);
+    } catch {
+      // QuotaExceeded — too large to persist; continue without storing.
+    }
+
+    if (this._pathsRawValue.length > MAX_PATHS_INPUT_CHARS) {
+      this._invalidPathLineIndices = new Set();
+      this._pathsLines = [];
+      this._pathCount = 0;
+      this._org = '';
+      this._sourceRepo = '';
+      this._floodgateRepo = '';
+      this._canStart = false;
+      this._repoReady = false;
+      this._errorMessage = `Input is too large (${this._pathsRawValue.length.toLocaleString()} chars). Maximum is ${MAX_PATHS_INPUT_CHARS.toLocaleString()}. Reduce the path list and try again.`;
+      this.requestUpdate();
+      return;
+    }
 
     const { invalidLines, validPaths, lines } = parsePathInput(
       this._pathsRawValue,
@@ -420,11 +454,23 @@ export default class MiloFloodgate extends LitElement {
     this._abortController = new AbortController();
     await this.syncWorkflowTab('find');
 
-    await runFindStep(this);
+    let findError;
+    try {
+      await runFindStep(this);
+    } catch (err) {
+      if (err?.name !== 'AbortError') findError = err;
+    }
 
     this._finding = false;
     this._findingStatus = '';
-    this._actionReady = true;
+    if (findError) {
+      this._errorMessage = `Could not finish finding files: ${findError.message || 'network error'}. Please try again.`;
+      this._tabUiStart = false;
+      this._startFind = false;
+      this._canStart = true;
+    } else {
+      this._actionReady = true;
+    }
     this.requestUpdate();
   }
 
@@ -693,6 +739,8 @@ export default class MiloFloodgate extends LitElement {
     this._floodgateRepo = '';
     this._prevOrg = '';
     this._prevSourceRepo = '';
+    this._configLoadController?.abort();
+    this._configLoadController = null;
     this._configContextKey = '';
     this._configLoadKey = '';
     this._configLoadPromise = null;

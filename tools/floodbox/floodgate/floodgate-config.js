@@ -122,11 +122,12 @@ const getFirstSheet = (json) => getSheetByIndex(json, 0);
  * FloodgateConfig provides the configuration setup for the Floodgate app.
  */
 class FloodgateConfig {
-  constructor(org, repo, accessToken) {
+  constructor(org, repo, accessToken, signal) {
     this.org = org;
     this.repo = repo;
     this.accessToken = accessToken;
-    this.requestHandler = new RequestHandler(accessToken);
+    this.signal = signal;
+    this.requestHandler = new RequestHandler(accessToken, { signal });
 
     this.draftsAllowed = false;
     this.allAccessUsers = [];

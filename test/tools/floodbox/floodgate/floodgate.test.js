@@ -389,6 +389,21 @@ describe('MiloFloodgate', () => {
     it('returns original string for invalid URLs', () => {
       expect(aemUrlToPageUrl('not-a-url')).to.equal('not-a-url');
     });
+
+    it('returns the original URL when the path is missing required segments', () => {
+      // Missing org/repo/branch — would otherwise emit "main--undefined--undefined."
+      expect(aemUrlToPageUrl('https://admin.aem.page/preview'))
+        .to.equal('https://admin.aem.page/preview');
+      expect(aemUrlToPageUrl('https://admin.aem.page/preview/myorg'))
+        .to.equal('https://admin.aem.page/preview/myorg');
+      expect(aemUrlToPageUrl('https://admin.aem.page/preview/myorg/myrepo'))
+        .to.equal('https://admin.aem.page/preview/myorg/myrepo');
+    });
+
+    it('returns a bare host (no path) when only the branch segment is present', () => {
+      const result = aemUrlToPageUrl('https://admin.aem.page/preview/myorg/myrepo/main');
+      expect(result).to.equal('https://main--myrepo--myorg.aem.page');
+    });
   });
 
   describe('stripAdminPreviewPrefixForDisplay', () => {
@@ -591,6 +606,92 @@ describe('MiloFloodgate', () => {
       await el.updateComplete;
       el.handleInputChange({ target: { value: 'not-a-path' } });
       expect(el._canStart).to.be.false;
+    });
+
+    it('refuses to parse input over the size cap and surfaces an error', async () => {
+      el = createComponent();
+      await el.updateComplete;
+      // Build a payload longer than MAX_PATHS_INPUT_CHARS (500_000) without
+      // running parsePathInput on it — we want to confirm the early-return path.
+      const oversized = '/myorg/myrepo/p'.repeat(40_000); // ~600k chars
+      el.handleInputChange({ target: { value: oversized } });
+      expect(el._canStart).to.be.false;
+      expect(el._pathCount).to.equal(0);
+      expect(el._pathsLines).to.eql([]);
+      expect(el._errorMessage).to.match(/too large/i);
+    });
+
+    it('does not throw when sessionStorage rejects an oversize value', async () => {
+      el = createComponent();
+      await el.updateComplete;
+      const setItem = sinon.stub(window.sessionStorage, 'setItem').throws(new Error('QuotaExceeded'));
+      try {
+        const big = '/myorg/myrepo/p'.repeat(40_000);
+        // Should not throw despite sessionStorage failure + cap trigger.
+        el.handleInputChange({ target: { value: big } });
+        expect(el._canStart).to.be.false;
+      } finally {
+        setItem.restore();
+      }
+    });
+  });
+
+  describe('handleStart error handling', () => {
+    it('surfaces an error message and resets state when runFindStep throws', async () => {
+      el = createComponent();
+      await el.updateComplete;
+      // Inflight fetches normally pass through to the DA-live stub. Override here
+      // so runFindStep's HEAD checks reject with a real network error.
+      sinon.restore();
+      const fetchStub = sinon.stub(window, 'fetch').rejects(new Error('boom'));
+
+      const textarea = el.shadowRoot.querySelector('textarea[name="paths"]');
+      textarea.value = '/myorg/myrepo/page1';
+      el.handleInputChange({ target: textarea });
+
+      // Build a real FloodgateConfig with the test user pre-authorized so the
+      // access gate passes — we're testing the find-step error path, not access.
+      const { default: FC } = await import('../../../../tools/floodbox/floodgate/floodgate-config.js');
+      const fc = new FC('myorg', 'myrepo', 'test-token');
+      fc.allAccessUsers = ['user@test.com'];
+      fc.colors = ['pink'];
+      el._floodgateConfig = fc;
+      el._configContextKey = 'myorg|myrepo';
+      el._selectedColor = 'pink';
+      el._canStart = true;
+
+      try {
+        await el.handleStart({ preventDefault: () => {} });
+      } finally {
+        fetchStub.restore();
+      }
+
+      expect(el._finding).to.be.false;
+      expect(el._tabUiStart).to.be.false;
+      expect(el._errorMessage).to.match(/Could not finish finding files/);
+      expect(el._actionReady).to.not.be.true;
+    });
+  });
+
+  describe('config load supersession', () => {
+    it('aborts the in-flight config controller when token changes', async () => {
+      el = createComponent();
+      await el.updateComplete;
+      // Simulate an in-flight load
+      const controller = new AbortController();
+      el._configLoadController = controller;
+      el._configLoadKey = 'org|repo';
+      el._configLoadPromise = Promise.resolve();
+      el._configContextKey = 'org|repo';
+
+      el.token = 'new-token';
+      await el.updateComplete;
+
+      expect(controller.signal.aborted).to.be.true;
+      expect(el._configLoadController).to.be.null;
+      expect(el._configLoadKey).to.equal('');
+      expect(el._configLoadPromise).to.be.null;
+      expect(el._configContextKey).to.equal('');
     });
   });
 });

@@ -307,4 +307,26 @@ describe('FloodgateConfig', () => {
     expect(floodgateConfig.chronoBoxFragmentsEnabled).to.be.false;
     expect(floodgateConfig.getPromoteIgnorePaths()).to.deep.equal([]);
   });
+
+  it('forwards an AbortSignal into the underlying RequestHandler', () => {
+    const ctrl = new AbortController();
+    const fc = new FloodgateConfig(org, repo, accessToken, ctrl.signal);
+    expect(fc.signal).to.equal(ctrl.signal);
+    expect(fc.requestHandler.signal).to.equal(ctrl.signal);
+  });
+
+  it('propagates AbortError from a signaled fetch', async () => {
+    const ctrl = new AbortController();
+    const fc = new FloodgateConfig(org, repo, accessToken, ctrl.signal);
+    const abortErr = new Error('aborted');
+    abortErr.name = 'AbortError';
+    daFetchStub.rejects(abortErr);
+    let caught;
+    try {
+      await fc.getConfig();
+    } catch (err) {
+      caught = err;
+    }
+    expect(caught?.name).to.equal('AbortError');
+  });
 });

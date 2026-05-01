@@ -16,11 +16,13 @@ export function stripAdminPreviewPrefixForDisplay(href) {
 export function aemUrlToPageUrl(aemUrl) {
   try {
     const url = new URL(aemUrl);
+    // Expected admin URL shape: /{action}/{org}/{repo}/{branch}/{...path}
+    // parts === ['', action, org, repo, branch, ...rest] → length ≥ 5
     const parts = url.pathname.split('/');
-    const action = parts[1];
-    const org = parts[2];
-    const repo = parts[3];
-    const pagePath = `/${parts.slice(5).join('/')}`;
+    if (parts.length < 5) return aemUrl;
+    const [, action, org, repo] = parts;
+    if (!action || !org || !repo) return aemUrl;
+    const pagePath = parts.length > 5 ? `/${parts.slice(5).join('/')}` : '';
     const domain = action === 'live' ? 'aem.live' : 'aem.page';
     return `https://main--${repo}--${org}.${domain}${pagePath}`;
   } catch {
