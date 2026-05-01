@@ -2,6 +2,23 @@ import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { ACROBAT_DESKTOP_MOCKUP, ACROBAT_MOBILE_MOCKUP } from './acrobat-mockups.js';
 import createCanvasGrid from './canvas-grid.js';
 
+/* ────────────────────────────────────────────────────────────────────────────
+ * SCROLL-DRIVEN ANIMATION OVERVIEW
+ * Block is 600vh tall and pin-scrolled. Page scroll drives `scrollTimeline.current`
+ * (abstract units, 0 → animScrollTotal) which in turn drives three phases:
+ *
+ *   ┌─ phase.arcPan (0..1) ───┬─ phase.arcToGrid (0..1) ─┬─ phase.slotting (0..1) ─┐
+ *   │ Cards arc-rotate in    │ Arc flattens/peels cards │ Cards glide into the    │
+ *   │ from upper-right.      │ down to a flat grid.     │ Acrobat mockup slots.   │
+ *   │ + slide-in pre-pin     │ Mockup waits.            │ Mockup + title + CTA    │
+ *   │   from below.          │                          │   slide up from below.  │
+ *   └────────────────────────┴──────────────────────────┴─────────────────────────┘
+ *   0           ARC_PAN_END          gridEnd            slottingStart   +slottingDuration
+ *
+ * Each phase is computed independently from `scrollTimeline.current` and clamped to [0,1].
+ * Mobile and desktop have different `gridEnd` / `slottingStart` (see applyViewportTiming).
+ * ──────────────────────────────────────────────────────────────────────────── */
+
 // TODO: finalize breakpoints
 const BREAKPOINTS = {
   mobile: () => window.innerWidth <= 767,
@@ -13,6 +30,9 @@ const CARD_COLUMN_OFFSETS_RATIO = [-0.462, -0.154, 0.154, 0.462];
 const CARD_COLUMN_GAP_RATIO = CARD_COLUMN_OFFSETS_RATIO[1] - CARD_COLUMN_OFFSETS_RATIO[0];
 const CARD_WIDTH = 192;
 const DEFAULT_CARD_HEIGHT = 230;
+/** 8 cards fan along the arc (2 rows × 4 cols). Used for fanIdx normalization. */
+const FAN_COUNT = 8;
+const FAN_LAST_INDEX = FAN_COUNT - 1;
 /** Row pitch / compression math uses this tallest-card metric. */
 const ROW_METRIC_HEIGHT = 264;
 const LABEL_CLEARANCE = 28;
@@ -87,6 +107,68 @@ const FAN_INDEX_BY_GRID_POSITION = [
   [7, 5, 3, 1],
   [6, 4, 2, 0],
 ];
+
+// ──────────── Acrobat desktop mockup geometry ────────────
+// Mockup is a 988×567 illustration scaled responsively. Card slot positions
+// are authored in mockup-pixel coordinates and scaled to the rendered width.
+const ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH = 988;
+const ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT = 567;
+const ACROBAT_DESKTOP_MOCKUP_MAX_WIDTH = 988;
+const ACROBAT_DESKTOP_MOCKUP_TABLET_MIN_WIDTH = 680;
+const ACROBAT_DESKTOP_MOCKUP_TABLET_VW = 0.70;
+const ACROBAT_DESKTOP_MOCKUP_DESKTOP_VW = 0.686;
+const ACROBAT_DESKTOP_SLOT_WIDTH = 146;
+const ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN = [355, 516, 677, 838];
+const ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW = [194, 409];
+const ACROBAT_DESKTOP_TOP_VH_RATIO = 0.21;
+const ACROBAT_DESKTOP_TOP_OFFSET_PX = 12;
+
+// ──────────── Acrobat mobile mockup geometry ────────────
+const ACROBAT_MOBILE_MOCKUP_WIDTH = 294;
+const ACROBAT_MOBILE_MOCKUP_HEIGHT = 536;
+const ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT = 44;
+const ACROBAT_MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT = 100;
+const ACROBAT_MOBILE_MOCKUP_TOP_PADDING = 48;
+const ACROBAT_MOBILE_MOCKUP_BOTTOM_PADDING = 8;
+const ACROBAT_MOBILE_SLOT_COLUMN_GAP = 16;
+const ACROBAT_MOBILE_SLOT_ROW_COUNT = 2;
+const ACROBAT_MOBILE_SLOT_ROW_GAP = 24;
+const ACROBAT_MOBILE_CARD_LABEL_HEIGHT = 22;
+const ACROBAT_MOBILE_CARD_LABEL_GAP = 4;
+
+// Mockup intro animation: scales from START_SCALE (offscreen) → END_SCALE (rest) over slotting.
+const ACROBAT_DESKTOP_MOCKUP_START_SCALE = 2.5;
+const ACROBAT_DESKTOP_MOCKUP_END_SCALE = 1.0;
+const ACROBAT_MOBILE_MOCKUP_START_SCALE = 2.0;
+const ACROBAT_MOBILE_MOCKUP_END_SCALE = 1.0;
+
+// Marketing text-block vertical offset below the bottom card row:
+// label gap + label height + spacing to text. Used in 3 places.
+const TEXT_BLOCK_BELOW_CARD_OFFSET = ACROBAT_MOBILE_CARD_LABEL_GAP
+  + ACROBAT_MOBILE_CARD_LABEL_HEIGHT + 32;
+
+function getAcrobatDesktopMockupWidth(viewportWidth, isTablet) {
+  if (isTablet) {
+    return Math.max(
+      ACROBAT_DESKTOP_MOCKUP_TABLET_MIN_WIDTH,
+      Math.min(ACROBAT_DESKTOP_MOCKUP_MAX_WIDTH, viewportWidth * ACROBAT_DESKTOP_MOCKUP_TABLET_VW),
+    );
+  }
+  return Math.min(
+    viewportWidth * ACROBAT_DESKTOP_MOCKUP_DESKTOP_VW,
+    ACROBAT_DESKTOP_MOCKUP_MAX_WIDTH,
+  );
+}
+
+function getDeskCardCenterX(viewportWidth, colIdx, columnSpread) {
+  return viewportWidth * (0.5 + CARD_COLUMN_OFFSETS_RATIO[colIdx] * columnSpread);
+}
+
+function clamp01(x) {
+  if (x < 0) return 0;
+  if (x > 1) return 1;
+  return x;
+}
 
 function easeInOutCubic(t) {
   return t < 0.5 ? 4 * t * t * t : 1 - ((-2 * t + 2) ** 3) / 2;
@@ -321,9 +403,9 @@ export default async function init(el) {
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
-    const delay = (card.fanIdx / 7) * ARC_STAGGER;
+    const delay = (card.fanIdx / FAN_LAST_INDEX) * ARC_STAGGER;
     const win = 1 - ARC_STAGGER;
-    return Math.max(0, Math.min(1, (phase.arcToGrid - delay) / win));
+    return clamp01((phase.arcToGrid - delay) / win);
   }
 
   // Precompute per-frame arc constants once so getFanCenter doesn't recompute for each card.
@@ -392,7 +474,7 @@ export default async function init(el) {
       arcMidpointY,
     } = arcGeometry;
     const angle = middleAngle + effectiveArcSpan / 2
-      - (card.fanIdx / 7) * effectiveArcSpan
+      - (card.fanIdx / FAN_LAST_INDEX) * effectiveArcSpan
       + rotationOffset;
     let x = fanCenterX + arcRadius * Math.cos(angle);
     let y = fanCenterY + arcRadius * Math.sin(angle);
@@ -415,7 +497,7 @@ export default async function init(el) {
   // ──────────────────── Layout helpers ────────────────────
   // Responsive mobile grid dims. At 375px matches base sizing; scales to ~70% grid at 767px.
   function getMobileLayout() {
-    const t = Math.max(0, Math.min(1, (viewportWidth - 375) / 392));
+    const t = clamp01((viewportWidth - 375) / 392);
     const cardW = Math.round((viewportWidth * (0.875 - t * 0.175) - MOBILE_COL_GAP) / 2);
     const scale = cardW / CARD_WIDTH;
     const tallH = Math.round(ROW_METRIC_HEIGHT * scale);
@@ -425,7 +507,20 @@ export default async function init(el) {
   function refreshFrameProfile() {
     frame.isMobile = BREAKPOINTS.mobile();
     frame.isTablet = !frame.isMobile && BREAKPOINTS.tablet();
-    frame.mobileLayout = getMobileLayout();
+    frame.mobileLayout = frame.isMobile ? getMobileLayout() : null;
+    if (frame.isMobile) {
+      timing.gridEnd = MOBILE_GRID_END;
+      timing.slottingStart = MOBILE_GRID_END + MOBILE_SETTLE_DURATION;
+      timing.slottingDuration = MOBILE_SLOTTING_DURATION;
+      timing.postRevealScrollDistance = MOBILE_POST_REVEAL_SCROLL;
+      timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
+    } else {
+      timing.gridEnd = DESKTOP_PEEL_END_SCROLL;
+      timing.slottingStart = DESKTOP_SLOTTING_START;
+      timing.slottingDuration = DESKTOP_SLOTTING_DURATION;
+      timing.postRevealScrollDistance = 0;
+      timing.settleScrollStart = DESKTOP_PEEL_END_SCROLL;
+    }
   }
 
   function getDeskGridScale() {
@@ -443,99 +538,96 @@ export default async function init(el) {
     );
   }
 
-  function getMobileMockupCardSlot(card) {
-    const MOBILE_MOCKUP_WIDTH = 294;
-    const MOBILE_MOCKUP_HEIGHT = 536;
-    const MOBILE_MOCKUP_TOP_BAR_HEIGHT = 44;
-    const MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT = 100;
-    const SLOT_COLUMN_GAP = 16;
-    const MOBILE_MOCKUP_TOP_PADDING = 48;
-    const MOBILE_MOCKUP_BOTTOM_PADDING = 8;
-    const CARD_LABEL_HEIGHT = 22;
-    const CARD_LABEL_GAP = 4;
-    const ROW_GAP = 24;
-    const SLOT_ROW_COUNT = 2;
-
-    const chromeLeft = (viewportWidth - MOBILE_MOCKUP_WIDTH) / 2;
+  // Per-frame mockup geometry — shared across all 8 cards in the slotting phase.
+  // Per-card slot derivation happens in get*MockupCardSlot using these frame values.
+  function getMobileMockupFrame() {
+    const chromeLeft = (viewportWidth - ACROBAT_MOBILE_MOCKUP_WIDTH) / 2;
     const chromeTop = mobileAcrobatMockupRestTop
-      || (viewportHeight - MOBILE_MOCKUP_HEIGHT) / 2;
-    const canvasTop = chromeTop + MOBILE_MOCKUP_TOP_BAR_HEIGHT;
-    const canvasHeight = MOBILE_MOCKUP_HEIGHT
-      - MOBILE_MOCKUP_TOP_BAR_HEIGHT
-      - MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT;
-
+      || (viewportHeight - ACROBAT_MOBILE_MOCKUP_HEIGHT) / 2;
+    const canvasTop = chromeTop + ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT;
+    const canvasHeight = ACROBAT_MOBILE_MOCKUP_HEIGHT
+      - ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT
+      - ACROBAT_MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT;
+    const labelStripHeight = ACROBAT_MOBILE_CARD_LABEL_GAP + ACROBAT_MOBILE_CARD_LABEL_HEIGHT;
     const availableSlotHeight = canvasHeight
-      - MOBILE_MOCKUP_TOP_PADDING
-      - MOBILE_MOCKUP_BOTTOM_PADDING
-      - (SLOT_ROW_COUNT - 1) * ROW_GAP
-      - SLOT_ROW_COUNT * (CARD_LABEL_GAP + CARD_LABEL_HEIGHT);
-    const tallSlotH = Math.floor(availableSlotHeight / SLOT_ROW_COUNT);
+      - ACROBAT_MOBILE_MOCKUP_TOP_PADDING
+      - ACROBAT_MOBILE_MOCKUP_BOTTOM_PADDING
+      - (ACROBAT_MOBILE_SLOT_ROW_COUNT - 1) * ACROBAT_MOBILE_SLOT_ROW_GAP
+      - ACROBAT_MOBILE_SLOT_ROW_COUNT * labelStripHeight;
+    const tallSlotH = Math.floor(availableSlotHeight / ACROBAT_MOBILE_SLOT_ROW_COUNT);
     const cardSlotScale = tallSlotH / ROW_METRIC_HEIGHT;
-
-    const height = Math.round(card.baseHeight * cardSlotScale);
-    const width = Math.round(CARD_WIDTH * cardSlotScale);
-
+    const slotWidth = Math.round(CARD_WIDTH * cardSlotScale);
     const slotGridLeft = chromeLeft
-      + (MOBILE_MOCKUP_WIDTH - 2 * width - SLOT_COLUMN_GAP) / 2;
-    const rowPitch = tallSlotH + CARD_LABEL_GAP + CARD_LABEL_HEIGHT + ROW_GAP;
-    const firstRowCenterY = canvasTop + MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2;
-    const centerY = firstRowCenterY + card.mobileRowIdx * rowPitch;
-    const centerX = slotGridLeft
-      + card.mobileColIdx * (width + SLOT_COLUMN_GAP)
-      + width / 2;
-
-    return {
-      x: centerX - width / 2,
-      y: centerY - height / 2,
-      width,
-      height,
-    };
+      + (ACROBAT_MOBILE_MOCKUP_WIDTH - 2 * slotWidth - ACROBAT_MOBILE_SLOT_COLUMN_GAP) / 2;
+    const rowPitch = tallSlotH + labelStripHeight + ACROBAT_MOBILE_SLOT_ROW_GAP;
+    const firstRowCenterY = canvasTop + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2;
+    return { slotWidth, cardSlotScale, slotGridLeft, rowPitch, firstRowCenterY };
   }
 
-  function getDesktopMockupCardSlot(colIdx, rowIdx, cardHeight) {
-    const mockupWidth = frame.isTablet
-      ? Math.max(680, Math.min(988, viewportWidth * 0.70))
-      : Math.min(viewportWidth * 0.686, 988);
+  function getDesktopMockupFrame() {
+    const mockupWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
     const mockupLeft = (viewportWidth - mockupWidth) / 2;
-    const mockupTop = viewportHeight * 0.21 + 12;
-    const scale = mockupWidth / 988;
-    const SLOT_CENTER_X_BY_COLUMN = [355, 516, 677, 838];
-    const SLOT_CENTER_Y_BY_ROW = [194, 409];
-    const width = 146 * scale;
-    const height = cardHeight * (width / CARD_WIDTH);
+    const mockupTop = viewportHeight * ACROBAT_DESKTOP_TOP_VH_RATIO
+      + ACROBAT_DESKTOP_TOP_OFFSET_PX;
+    const scale = mockupWidth / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH;
+    const slotWidth = ACROBAT_DESKTOP_SLOT_WIDTH * scale;
+    return { mockupLeft, mockupTop, scale, slotWidth };
+  }
+
+  function getMobileMockupCardSlot(card, mockupFrame) {
+    const width = mockupFrame.slotWidth;
+    const height = Math.round(card.baseHeight * mockupFrame.cardSlotScale);
+    const centerY = mockupFrame.firstRowCenterY + card.mobileRowIdx * mockupFrame.rowPitch;
+    const centerX = mockupFrame.slotGridLeft
+      + card.mobileColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP)
+      + width / 2;
+    return { x: centerX - width / 2, y: centerY - height / 2, width, height };
+  }
+
+  function getDesktopMockupCardSlot(card, mockupFrame) {
+    const width = mockupFrame.slotWidth;
+    const height = card.height * (width / CARD_WIDTH);
     return {
-      x: mockupLeft + SLOT_CENTER_X_BY_COLUMN[colIdx] * scale - width / 2,
-      y: mockupTop + SLOT_CENTER_Y_BY_ROW[rowIdx] * scale - height / 2,
+      x: mockupFrame.mockupLeft
+        + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[card.colIdx] * mockupFrame.scale
+        - width / 2,
+      y: mockupFrame.mockupTop
+        + ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[card.rowIdx] * mockupFrame.scale
+        - height / 2,
       width,
       height,
     };
   }
 
   function positionCards() {
-    const useDesktopLayout = !frame.isMobile;
-    const ml = frame.mobileLayout;
-    sceneCards.forEach((card) => {
-      if (!useDesktopLayout) {
+    if (frame.isMobile) {
+      const { mobileLayout } = frame;
+      const gridW = mobileLayout.cardW * 2 + MOBILE_COL_GAP;
+      const gridLeft = Math.max(MOBILE_OUTER_MARGIN, Math.round((viewportWidth - gridW) / 2));
+      const firstRowCenterY = viewportHeight * 0.50 + mobileLayout.tallH / 2;
+      sceneCards.forEach((card) => {
         if (card.mobileHidden) {
           // Park hidden mobile cards far off-screen so canvas anchors don't influence dots.
           card.baseX = -9999;
           card.baseY = -9999;
           return;
         }
-        const gridW = ml.cardW * 2 + MOBILE_COL_GAP;
-        const gridLeft = Math.max(MOBILE_OUTER_MARGIN, Math.round((viewportWidth - gridW) / 2));
         const centerX = gridLeft
-            + card.mobileColIdx * (ml.cardW + MOBILE_COL_GAP)
-            + ml.cardW / 2;
-        const firstRowCenterY = viewportHeight * 0.50 + ml.tallH / 2;
-        const centerY = firstRowCenterY + card.mobileRowIdx * ml.rowPitch;
+            + card.mobileColIdx * (mobileLayout.cardW + MOBILE_COL_GAP)
+            + mobileLayout.cardW / 2;
+        const centerY = firstRowCenterY + card.mobileRowIdx * mobileLayout.rowPitch;
         card.baseX = centerX - card.width / 2;
         card.baseY = centerY - card.height / 2;
-        return;
-      }
-      const centerX = viewportWidth
-          * (0.5 + CARD_COLUMN_OFFSETS_RATIO[card.colIdx] * cardGridLayout.columnSpread);
-      const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
+      });
+      return;
+    }
+    const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
+    sceneCards.forEach((card) => {
+      const centerX = getDeskCardCenterX(
+        viewportWidth,
+        card.colIdx,
+        cardGridLayout.columnSpread,
+      );
       const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * cardGridLayout.rowGap);
       card.baseX = centerX - card.width / 2;
       card.baseY = centerY - card.height / 2;
@@ -562,17 +654,19 @@ export default async function init(el) {
     viewportHeight = window.innerHeight;
     refreshFrameProfile();
     canvasGrid.resize();
-    // Mobile is the base layout; desktop/tablet restore authored card dimensions.
-    const ml = frame.mobileLayout;
-    const useDesktopLayout = !frame.isMobile;
-    sceneCards.forEach((card) => {
-      card.width = ml.cardW;
-      card.height = Math.round(card.baseHeight * ml.scale);
-      if (useDesktopLayout) {
+    // Mobile uses the responsive layout; desktop/tablet use authored card dimensions.
+    if (frame.isMobile) {
+      const { mobileLayout } = frame;
+      sceneCards.forEach((card) => {
+        card.width = mobileLayout.cardW;
+        card.height = Math.round(card.baseHeight * mobileLayout.scale);
+      });
+    } else {
+      sceneCards.forEach((card) => {
         card.width = CARD_WIDTH;
         card.height = card.baseHeight;
-      }
-    });
+      });
+    }
     arcAngle = frame.isMobile ? MOBILE_ARC_ALPHA : Math.atan2(viewportHeight, viewportWidth);
     const titleHeading = titleEl && titleEl.querySelector('.heading');
     cachedHeadlineH = (titleHeading && titleHeading.offsetHeight)
@@ -607,7 +701,7 @@ export default async function init(el) {
   function computeCardSlide(card, slideEarly, params) {
     const slidePixels = Math.max(0, slideEarly - scrollTimeline.blockTop);
     const slideProgress = Math.min(1, slidePixels / (slideEarly + SLIDE_OVERLAP));
-    const fanLagFraction = 1 - card.fanIdx / 7;
+    const fanLagFraction = 1 - card.fanIdx / FAN_LAST_INDEX;
     const staggerFrac = fanLagFraction * params.stagger;
     const cardSlideProgress = Math.max(
       0,
@@ -624,22 +718,19 @@ export default async function init(el) {
   }
 
   // Arc rotation + peel onto the grid (slide-in from below on all breakpoints).
-  function renderArcPeelToGrid(card, cardScale) {
+  function renderArcPeelToGrid(card, cardScale, deskGridScale) {
     const cardPeelProgress = getCardArcToGridProgress(card);
     const fanPos = getFanCenter(card);
     const { arcZoom } = arcGeometry;
-    const fanDepth = 1 - (card.fanIdx / 7) * 0.30;
+    const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * 0.30;
     const fanScale = cardScale * (1 + ARC_LIFT_ZOOM) * fanDepth * arcZoom;
 
     const gridCenterX = card.baseX + card.width / 2;
     const gridCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
 
-    const arcLocalDelay = (card.fanIdx / 7) * ARC_STAGGER;
+    const arcLocalDelay = (card.fanIdx / FAN_LAST_INDEX) * ARC_STAGGER;
     const arcLocalWin = Math.max(0.01, 1 - ARC_STAGGER);
-    const cardArcPushProgress = Math.max(
-      0,
-      Math.min(1, (phase.arcPan - arcLocalDelay) / arcLocalWin),
-    );
+    const cardArcPushProgress = clamp01((phase.arcPan - arcLocalDelay) / arcLocalWin);
     const cardArcPushEase = easeInOutCubic(cardArcPushProgress);
 
     const pushedX = fanPos.x + fanPos.rx * 60 * cardArcPushEase;
@@ -648,7 +739,6 @@ export default async function init(el) {
     const totalPeelEase = easeOutCubic(cardPeelProgress);
     const currentX = pushedX + (gridCenterX - pushedX) * totalPeelEase;
     const currentY = pushedY + (gridCenterY - pushedY) * totalPeelEase;
-    const deskGridScale = getDeskGridScale();
     const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
@@ -664,7 +754,7 @@ export default async function init(el) {
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
       const zBase = isPeeling ? 32 : 20;
-      card.el.style.zIndex = String(zBase + (7 - card.fanIdx));
+      card.el.style.zIndex = String(zBase + (FAN_LAST_INDEX - card.fanIdx));
     } else {
       card.el.style.zIndex = '';
     }
@@ -690,15 +780,15 @@ export default async function init(el) {
       card.lastArcShadowAlphaKey = shadowAlphaKey;
       card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
-    const peelReveal = Math.max(0, Math.min(1, (cardPeelProgress - 0.8) / 0.2));
+    const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
     setLabelPos(card, currentX, currentY, scale, peelReveal);
   }
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
-  function renderGridToSlot(card, cardScale) {
+  function renderGridToSlot(card, cardScale, mockupFrame) {
     const cardSlot = frame.isMobile
-      ? getMobileMockupCardSlot(card)
-      : getDesktopMockupCardSlot(card.colIdx, card.rowIdx, card.height);
+      ? getMobileMockupCardSlot(card, mockupFrame)
+      : getDesktopMockupCardSlot(card, mockupFrame);
     const endCenterX = cardSlot.x + cardSlot.width / 2;
     const endCenterY = frame.isMobile
       ? cardSlot.y + cardSlot.height / 2 - verticalPan.mobilePostRevealY
@@ -731,13 +821,19 @@ export default async function init(el) {
   function updateCardPositions() {
     const cardScale = frame.isMobile ? 1.0 : CARD_SCALE_DESKTOP;
     const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
+    // Frame-level values shared across cards — compute once per frame, not per card.
+    const deskGridScale = inArcPeel ? getDeskGridScale() : 0;
+    let mockupFrame = null;
+    if (!inArcPeel) {
+      mockupFrame = frame.isMobile ? getMobileMockupFrame() : getDesktopMockupFrame();
+    }
     sceneCards.forEach((card) => {
       if (frame.isMobile && card.mobileHidden) {
         hideMobileCard(card);
         return;
       }
-      if (inArcPeel) renderArcPeelToGrid(card, cardScale);
-      else renderGridToSlot(card, cardScale);
+      if (inArcPeel) renderArcPeelToGrid(card, cardScale, deskGridScale);
+      else renderGridToSlot(card, cardScale, mockupFrame);
     });
   }
 
@@ -748,23 +844,7 @@ export default async function init(el) {
     const rect = el.getBoundingClientRect();
     scrollTimeline.blockTop = rect.top;
     const panRange = Math.max(1, el.offsetHeight - window.innerHeight);
-    return Math.max(0, Math.min(1, -rect.top / panRange));
-  }
-
-  function applyViewportTiming() {
-    if (frame.isMobile) {
-      timing.gridEnd = MOBILE_GRID_END;
-      timing.slottingStart = MOBILE_GRID_END + MOBILE_SETTLE_DURATION;
-      timing.slottingDuration = MOBILE_SLOTTING_DURATION;
-      timing.postRevealScrollDistance = MOBILE_POST_REVEAL_SCROLL;
-      timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
-    } else {
-      timing.gridEnd = DESKTOP_PEEL_END_SCROLL;
-      timing.slottingStart = DESKTOP_SLOTTING_START;
-      timing.slottingDuration = DESKTOP_SLOTTING_DURATION;
-      timing.postRevealScrollDistance = 0;
-      timing.settleScrollStart = DESKTOP_PEEL_END_SCROLL;
-    }
+    return clamp01(-rect.top / panRange);
   }
 
   function updateAnimationProgress() {
@@ -772,13 +852,13 @@ export default async function init(el) {
       + timing.postRevealScrollDistance;
     scrollTimeline.current = readScrollProgress() * animScrollTotal;
 
-    phase.arcPan = Math.max(0, Math.min(1, scrollTimeline.current / ARC_PAN_END));
+    phase.arcPan = clamp01(scrollTimeline.current / ARC_PAN_END);
     const rawArcToGridProgress = (scrollTimeline.current - PEEL_START_SCROLL)
       / (timing.gridEnd - PEEL_START_SCROLL);
-    phase.arcToGrid = Math.max(0, Math.min(1, rawArcToGridProgress));
+    phase.arcToGrid = clamp01(rawArcToGridProgress);
     const rawSlottingProgress = (scrollTimeline.current - timing.slottingStart)
       / timing.slottingDuration;
-    phase.slotting = Math.max(0, Math.min(1, rawSlottingProgress));
+    phase.slotting = clamp01(rawSlottingProgress);
   }
 
   let arcTextPanProgressCached = 0;
@@ -790,7 +870,7 @@ export default async function init(el) {
 
     const rawTitleMotionProgress = (scrollTimeline.current - timing.slottingStart)
       / (timing.slottingDuration + 350);
-    const titleMotionProgress = Math.max(0, Math.min(1, rawTitleMotionProgress));
+    const titleMotionProgress = clamp01(rawTitleMotionProgress);
     const titleSlide = easeOutCubic(titleMotionProgress);
     const titleOpacity = titleSlide;
 
@@ -807,15 +887,15 @@ export default async function init(el) {
       : 0;
 
     if (frame.isMobile) {
-      const mobileChromeHeight = 536;
-      const mobileScale = 2.0 - 1.0 * slottingEase;
-      const mobileTopOverhang = ((2.0 - 1.0) / 2) * mobileChromeHeight;
+      const mobileScaleDelta = ACROBAT_MOBILE_MOCKUP_START_SCALE - ACROBAT_MOBILE_MOCKUP_END_SCALE;
+      const mobileScale = ACROBAT_MOBILE_MOCKUP_START_SCALE - mobileScaleDelta * slottingEase;
+      const mobileTopOverhang = (mobileScaleDelta / 2) * ACROBAT_MOBILE_MOCKUP_HEIGHT;
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
       const headlineRestY = viewportHeight * 0.28;
       const chromeRestY = headlineRestY + cachedHeadlineH + 16;
       mobileAcrobatMockupRestTop = chromeRestY;
-      const ctaRestY = chromeRestY + mobileChromeHeight + 10;
+      const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 10;
       const postRevealNeeded = Math.max(0, ctaRestY + 40 + 20 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
@@ -828,14 +908,15 @@ export default async function init(el) {
       stage.style.setProperty('--cta-y', `${ctaRestY + slideOffset - postRevealPanY}px`);
     } else {
       verticalPan.mobilePostRevealY = 0;
-      const acrobatWidth = frame.isTablet
-        ? Math.max(680, Math.min(988, viewportWidth * 0.70))
-        : Math.min(viewportWidth * 0.686, 988);
-      const mockupHeight = acrobatWidth * (567 / 988);
-      const topOverhang = ((2.5 - 1) / 2) * mockupHeight;
+      const acrobatWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
+      const mockupHeight = acrobatWidth
+        * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
+      const desktopScaleDelta = ACROBAT_DESKTOP_MOCKUP_START_SCALE
+        - ACROBAT_DESKTOP_MOCKUP_END_SCALE;
+      const topOverhang = (desktopScaleDelta / 2) * mockupHeight;
       const offscreenY = viewportHeight + topOverhang + 30;
       const mockupTranslateY = (1 - slottingEase) * offscreenY;
-      const mockupScale = 2.5 - 1.5 * slottingEase;
+      const mockupScale = ACROBAT_DESKTOP_MOCKUP_START_SCALE - desktopScaleDelta * slottingEase;
       const titleScale = 0.92 + 0.08 * titleSlide;
       stage.style.setProperty('--mockup-y', `${mockupTranslateY}px`);
       stage.style.setProperty('--mockup-scale', mockupScale);
@@ -854,12 +935,12 @@ export default async function init(el) {
       : PEEL_START_SCROLL;
     const adbeLogoSpan = timing.slottingStart - adbeLogoPeelStart;
     const rawAdbeLogoProgress = (scrollTimeline.current - adbeLogoPeelStart) / adbeLogoSpan;
-    const adbeLogoProgress = Math.max(0, Math.min(1, rawAdbeLogoProgress));
+    const adbeLogoProgress = clamp01(rawAdbeLogoProgress);
     const adbeLogoDrawProgress = easeInOutSine(adbeLogoProgress);
-    const adbeLogoFadeIn = Math.max(0, Math.min(1, adbeLogoProgress * 6));
+    const adbeLogoFadeIn = clamp01(adbeLogoProgress * 6);
     const adbeLogoFadeOut = Math.max(
       0,
-      1 - Math.max(0, Math.min(1, (phase.slotting - 0.4) / 0.3)),
+      1 - clamp01((phase.slotting - 0.4) / 0.3),
     );
     stage.style.setProperty('--adbe-draw', adbeLogoDrawProgress);
     stage.style.setProperty('--adbe-opacity', adbeLogoFadeIn * adbeLogoFadeOut);
@@ -900,9 +981,11 @@ export default async function init(el) {
     const arcPanTarget = Math.max(0, textAtRestY - viewportHeight * 0.70);
     verticalPan.arcGridY = arcPanTarget * easeOutSine(arcTextPanProgressCached);
     if (frame.isMobile) {
-      const ml = frame.mobileLayout;
-      const mobileRow1CenterY = viewportHeight * 0.50 + ml.tallH / 2 + ml.rowPitch;
-      const mobileTextBaseY = mobileRow1CenterY + ml.tallH / 2 + 4 + 22 + 32;
+      const { mobileLayout } = frame;
+      const mobileRow1CenterY = viewportHeight * 0.50
+        + mobileLayout.tallH / 2 + mobileLayout.rowPitch;
+      const mobileTextBaseY = mobileRow1CenterY + mobileLayout.tallH / 2
+        + TEXT_BLOCK_BELOW_CARD_OFFSET;
       const mobileTextTarget = Math.max(0, mobileTextBaseY - viewportHeight * 0.65);
       const mobilePanProgress = Math.max(
         0,
@@ -916,24 +999,25 @@ export default async function init(el) {
     const textEase = easeInOutSine(phase.slotting);
     const textScaleDuringSlotting = 1 - 0.28 * textEase;
     const deskGridScaleForText = getDeskGridScale();
-    const col3Right = viewportWidth
-      * (0.5 + CARD_COLUMN_OFFSETS_RATIO[3] * ARC_TEXT_ANCHOR_COLUMN_SPREAD)
-      + (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
-    const col0VisualLeft = viewportWidth
-      * (0.5 + CARD_COLUMN_OFFSETS_RATIO[0] * ARC_TEXT_ANCHOR_COLUMN_SPREAD)
-      - (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
+    const halfCardOnGrid = (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
+    const col3Right = getDeskCardCenterX(viewportWidth, 3, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
+      + halfCardOnGrid;
+    const col0VisualLeft = getDeskCardCenterX(viewportWidth, 0, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
+      - halfCardOnGrid;
     const arcTextFadeProgress = frame.isMobile
-      ? Math.max(0, Math.min(1, (phase.slotting - 0.4) / 0.3))
-      : Math.max(0, Math.min(1, (phase.slotting - 0.55) / 0.15));
+      ? clamp01((phase.slotting - 0.4) / 0.3)
+      : clamp01((phase.slotting - 0.55) / 0.15);
     const arcFinalScale = frame.isMobile
       ? textScaleDuringSlotting
       : textScaleDuringSlotting * (1 - 0.15 * easeInOutSine(arcTextFadeProgress));
     let pinnedTextY;
     if (frame.isMobile) {
-      const ml = frame.mobileLayout;
-      const row1CenterY = viewportHeight * 0.50 + ml.tallH / 2 + ml.rowPitch;
-      pinnedTextY = row1CenterY - verticalPan.arcGridY + ml.tallH / 2 + 4 + 22 + 32;
-      const gridW = ml.cardW * 2 + MOBILE_COL_GAP;
+      const { mobileLayout } = frame;
+      const row1CenterY = viewportHeight * 0.50
+        + mobileLayout.tallH / 2 + mobileLayout.rowPitch;
+      pinnedTextY = row1CenterY - verticalPan.arcGridY
+        + mobileLayout.tallH / 2 + TEXT_BLOCK_BELOW_CARD_OFFSET;
+      const gridW = mobileLayout.cardW * 2 + MOBILE_COL_GAP;
       const mobileGridLeft = Math.max(
         MOBILE_OUTER_MARGIN,
         Math.round((viewportWidth - gridW) / 2),
@@ -951,8 +1035,8 @@ export default async function init(el) {
       textBlockEl.style.left = `${arcTextLeft}px`;
     }
     const arcReveal = frame.isMobile
-      ? Math.max(0, Math.min(1, (phase.arcToGrid - 0.1) / 0.3))
-      : Math.max(0, Math.min(1, arcTextPanProgressCached * 2));
+      ? clamp01((phase.arcToGrid - 0.1) / 0.3)
+      : clamp01(arcTextPanProgressCached * 2);
     const textOpacity = Math.max(0, 1 - arcTextFadeProgress) * arcReveal;
     textBlockEl.style.transform = `translateY(${pinnedTextY}px) scale(${arcFinalScale})`;
     textBlockEl.style.opacity = textOpacity;
@@ -966,7 +1050,6 @@ export default async function init(el) {
     if (!running) return;
 
     refreshFrameProfile();
-    applyViewportTiming();
     updateAnimationProgress();
     buildArcCtx();
     updateMockupAndTitleTransform();
@@ -992,7 +1075,6 @@ export default async function init(el) {
     const savedArcToGrid = phase.arcToGrid;
     phase.arcToGrid = 0.001;
     refreshFrameProfile();
-    applyViewportTiming();
     updateAnimationProgress();
     buildArcCtx();
     updateCompressionAndPan();
