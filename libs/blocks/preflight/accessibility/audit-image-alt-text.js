@@ -79,8 +79,12 @@ export async function checkAlt() {
 
       a11yMessage = createTag(
         'div',
-        { class: 'asset-meta-entry preflight-decoration needs-attention' },
-        img.dataset.altCheck,
+        {
+          class: 'asset-meta-entry preflight-decoration is-decorative',
+          role: 'status',
+          'aria-label': 'Decorative image, empty alt',
+        },
+        'Decorative',
       );
 
       decorativeImages.value = [...decorativeImages.value,
@@ -108,7 +112,7 @@ export async function checkAlt() {
     pictureMetaElem.append(a11yMessage);
     img.dataset.pageLocation = parent;
   });
-  result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images are highlighted in yellow on the page';
+  result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images (empty alt) show an informational Decorative label on the page.';
   altResult.value = { ...result, checked: true };
   // eslint-disable-next-line consistent-return
   return {

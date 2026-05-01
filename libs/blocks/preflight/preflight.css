@@ -811,8 +811,9 @@ img:hover ~ .asset-meta,
   word-break: break-word;
 }
 
-.asset-meta-entry.needs-attention {
-  background: #FFB74D;
+.asset-meta-entry.is-decorative {
+  background: #B3E5FC;
+  color: #01579b;
 }
 
 .asset-meta-entry.is-invalid {

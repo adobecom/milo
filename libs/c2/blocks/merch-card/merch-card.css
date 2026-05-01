@@ -1,0 +1,293 @@
+/**
+ * C2 Foundation — Merch Card Facelift
+ *
+ * ── Grid fix ──────────────────────────────────────────────────────────────────
+ * decorateDefaults() wraps consecutive <p> elements in a single div.content
+ * before autoblocks run, so all three merch-cards end up inside one .content
+ * wrapper. That makes .section.three-up see one grid item instead of three.
+ * display:contents makes .content transparent to the parent grid.
+ */
+
+.section[class*="up"] > .content:has(> merch-card) {
+  display: contents;
+}
+
+/* Center each card within its grid column */
+.section[class*="up"] {
+  justify-items: center !important;
+}
+
+merch-card {
+  max-width: 380px !important;
+  width: 100% !important;
+}
+
+/* three-up kicks in at md (1024px) instead of sm (768px) for merch cards */
+@media (width >= 768px) {
+  .section.three-up {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (width >= 1024px) {
+  .section.three-up {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/**
+ *
+ * !important throughout — this is a mock/prototype layer that must win over
+ * MAS web component defaults and consonant legacy styles.
+ */
+
+/* ─── Card host ─────────────────────────────────────────────────────────────── */
+
+merch-card {
+  display: block !important;
+  background: var(--s2a-color-gray-25) !important;
+  border: var(--s2a-border-width-1) solid var(--s2a-color-gray-200) !important;
+  border-radius: var(--s2a-border-radius-md) !important;
+  padding: var(--s2a-spacing-lg) !important; /* 24px */
+  box-shadow:
+    var(--s2a-shadow-level-1-x)
+    var(--s2a-shadow-level-1-y)
+    var(--s2a-shadow-level-1-blur)
+    var(--s2a-shadow-level-1-spread)
+    var(--s2a-shadow-level-1-color) !important;
+
+  /* Shadow DOM custom property overrides */
+  --consonant-merch-card-border-radius: var(--s2a-border-radius-md);
+  --consonant-merch-card-background-color: var(--s2a-color-gray-25);
+  --consonant-merch-card-border: none;
+}
+
+/* ─── Badge — tuck inside card, don't let it overflow ───────────────────────── */
+
+[slot="badge"] {
+  position: absolute !important;
+  top: var(--s2a-spacing-md) !important;
+  inset-inline-end: var(--s2a-spacing-md) !important;
+}
+
+merch-badge {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-12) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold) !important;
+  border-radius: var(--s2a-border-radius-round) !important;
+}
+
+/* ─── Icon — constrain merch-icon host (img lives in its shadow DOM) ─────────── */
+
+merch-icon[slot="icons"] {
+  display: inline-block !important;
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+  min-height: 40px !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+  overflow: hidden !important;
+  vertical-align: middle !important;
+  margin-block-end: var(--s2a-spacing-xs) !important; /* 8px below icon */
+  border-radius: var(--s2a-border-radius-xs) !important;
+  flex-shrink: 0 !important;
+}
+
+/* ─── Eyebrow — heading-xs ──────────────────────────────────────────────────── */
+
+[slot="heading-xs"] {
+  display: block !important;
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-14) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-500) !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0 !important;
+  margin: 0 0 var(--s2a-spacing-xs) !important; /* 8px below */
+}
+
+/* ─── Price heading — heading-m ─────────────────────────────────────────────── */
+
+/* Outer slot element and the nested <p> it contains */
+[slot="heading-m"] {
+  display: block !important;
+  margin-block: var(--s2a-spacing-xs) var(--s2a-spacing-2xs) !important; /* 8px / 4px */
+  padding: 0 !important;
+}
+
+[slot="heading-m"] p {
+  font-size: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Active price — large + bold */
+[slot="heading-m"] .price:not(.price-strikethrough):not(.price-legal) {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-24) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-black) !important;
+  color: var(--s2a-color-gray-900) !important;
+}
+
+/* Strikethrough was-price — small + muted */
+[slot="heading-m"] .price-strikethrough {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-14) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-500) !important;
+  text-decoration: line-through !important;
+  margin-inline-end: var(--s2a-spacing-2xs) !important;
+}
+
+/* Billing term — block below price */
+[slot="heading-m"] .price-legal {
+  display: block !important;
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-14) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-500) !important;
+  margin-block-start: var(--s2a-spacing-2xs) !important;
+  letter-spacing: 0 !important;
+}
+
+[slot="heading-m"] .price-plan-type {
+  display: block !important;
+  font-size: var(--s2a-font-size-14) !important;
+  color: var(--s2a-color-gray-500) !important;
+}
+
+/* ─── Body text ─────────────────────────────────────────────────────────────── */
+
+[slot="body-xs"],
+[slot="body-xxs"],
+[slot="promo-text"] {
+  display: block !important;
+  margin-block-start: var(--s2a-spacing-md) !important; /* 16px */
+}
+
+[slot="body-xs"] p,
+[slot="body-xxs"] p,
+[slot="promo-text"] p {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-14) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-700) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 var(--s2a-spacing-xs) !important;
+}
+
+/* Inline prices inside body copy — keep them inline, unstyled */
+[slot="body-xs"] .price,
+[slot="body-xxs"] .price {
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+}
+
+/* "See all plans & pricing details" — demote to a small muted link */
+[slot="body-xs"] a[is="checkout-link"],
+[slot="body-xs"] a.placeholder-resolved:not(.con-button) {
+  display: block !important;
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-13) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-600) !important;
+  text-decoration: underline !important;
+  margin-block-start: var(--s2a-spacing-xs) !important;
+}
+
+[slot="body-xs"] a[is="checkout-link"]:hover,
+[slot="body-xs"] a.placeholder-resolved:not(.con-button):hover {
+  color: var(--s2a-color-gray-900) !important;
+}
+
+/* Body inline links (e.g. "See terms.") */
+[slot="body-xs"] a:not([is="checkout-link"]):not(.con-button),
+[slot="body-xxs"] a:not([is="checkout-link"]):not(.con-button) {
+  color: var(--s2a-color-blue-900) !important;
+  text-decoration: underline !important;
+}
+
+/* ─── Addon (Adobe Stock checkbox row) ──────────────────────────────────────── */
+
+[slot="addon"] p {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-13) !important;
+  color: var(--s2a-color-gray-600) !important;
+  margin: 0 !important;
+}
+
+/* ─── CTA buttons — pill shape ──────────────────────────────────────────────── */
+
+merch-card a.con-button,
+merch-card [slot="footer"] a.con-button,
+merch-card [slot="body-xs"] a.con-button {
+  border-radius: var(--s2a-border-radius-round) !important;
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold) !important;
+  font-size: var(--s2a-font-size-16) !important;
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-xl) !important;
+  height: 48px !important;
+  min-width: 120px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease !important;
+}
+
+/* Primary — blue filled */
+merch-card a.con-button.blue,
+merch-card [slot="footer"] a.con-button.blue {
+  background: var(--s2a-color-blue-800) !important;
+  border: var(--s2a-border-width-2) solid var(--s2a-color-blue-800) !important;
+  color: var(--s2a-color-gray-25) !important;
+}
+
+merch-card a.con-button.blue:hover,
+merch-card [slot="footer"] a.con-button.blue:hover {
+  background: var(--s2a-color-blue-900) !important;
+  border-color: var(--s2a-color-blue-900) !important;
+  color: var(--s2a-color-gray-25) !important;
+  text-decoration: none !important;
+}
+
+/* Secondary — outlined dark */
+merch-card a.con-button.outline,
+merch-card [slot="footer"] a.con-button.outline {
+  background: transparent !important;
+  border: var(--s2a-border-width-2) solid var(--s2a-color-gray-900) !important;
+  color: var(--s2a-color-gray-900) !important;
+}
+
+merch-card a.con-button.outline:hover,
+merch-card [slot="footer"] a.con-button.outline:hover {
+  background: var(--s2a-color-gray-900) !important;
+  color: var(--s2a-color-gray-25) !important;
+  text-decoration: none !important;
+}
+
+/* Dark mode outline */
+.dark merch-card a.con-button.outline,
+.dark merch-card [slot="footer"] a.con-button.outline {
+  border-color: var(--s2a-color-gray-25) !important;
+  color: var(--s2a-color-gray-25) !important;
+}
+
+.dark merch-card a.con-button.outline:hover,
+.dark merch-card [slot="footer"] a.con-button.outline:hover {
+  background: var(--s2a-color-gray-25) !important;
+  color: var(--s2a-color-gray-900) !important;
+}
+
+/* ─── Secure transaction ─────────────────────────────────────────────────────── */
+
+merch-card .secure-transaction-label {
+  font-family: var(--s2a-font-family-adobe-clean), adobe-clean, sans-serif !important;
+  font-size: var(--s2a-font-size-12) !important;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular) !important;
+  color: var(--s2a-color-gray-400) !important;
+  letter-spacing: 0 !important;
+}

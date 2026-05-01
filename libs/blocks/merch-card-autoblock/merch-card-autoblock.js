@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
@@ -139,12 +139,73 @@ async function createJsonLd(el, options) {
   el.remove();
 }
 
+/**
+ * Injects styles directly into shadow roots so the C2 mock can control
+ * spacing that is otherwise locked inside the web component.
+ */
+function applyC2ShadowStyles(card) {
+  // ── merch-card shadow root ──────────────────────────────────────────────
+  const cardShadow = card.shadowRoot;
+  if (cardShadow) {
+    const s = document.createElement('style');
+    s.dataset.c2 = '';
+    s.textContent = `
+      /* Collapse flex gap and padding on the body wrapper */
+      .body {
+        gap: 0 !important;
+        padding: 0 !important;
+      }
+
+      /* Hide empty/unused slots that create dead whitespace */
+      slot[name="heading-s"],
+      slot[name="subtitle"],
+      slot[name="annualPrice"],
+      slot[name="priceLabel"],
+      slot[name="body-xxs"],
+      slot[name="promo-text"],
+      slot[name="whats-included"],
+      slot[name="callout-content"],
+      slot[name="quantity-select"] {
+        display: none !important;
+      }
+
+      /* Tight spacing between visible slots */
+      slot[name="icons"]   { margin-bottom: 6px !important; }
+      slot[name="heading-xs"] { margin-bottom: 4px !important; }
+      slot[name="heading-m"]  { margin-top: 12px !important; margin-bottom: 0 !important; }
+      slot[name="body-xs"]    { margin-top: 12px !important; }
+      slot[name="addon"]      { margin-top: 10px !important; }
+      slot[name="badge"]      { margin: 0 !important; }
+
+      /* Footer row */
+      footer {
+        padding-top: 12px !important;
+        padding-bottom: 4px !important;
+      }
+    `;
+    cardShadow.appendChild(s);
+  }
+
+  // ── merch-icon shadow root — fix the img to a fixed 40px size ──────────
+  card.querySelectorAll('merch-icon[slot="icons"]').forEach((icon) => {
+    const img = icon.shadowRoot?.querySelector('img');
+    if (img) {
+      img.style.cssText = 'width:40px;height:40px;border-radius:6px;display:block;';
+    }
+  });
+}
+
 export async function createCard(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
+  const isC2 = getMetadata('foundation') === 'c2';
+  if (isC2) {
+    const { miloLibs, codeRoot } = getConfig();
+    loadStyle(`${miloLibs ?? codeRoot}/c2/blocks/merch-card/merch-card.css`);
+  }
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
     parent.replaceWith(merchCard);
@@ -152,6 +213,14 @@ export async function createCard(el, options) {
     el.replaceWith(merchCard);
   }
   await checkReady(merchCard);
+  if (isC2) applyC2ShadowStyles(merchCard);
+
+  // decorateDefaults() wraps consecutive <p> autoblocks in a single div.content
+  // before they become merch-cards, so the parent *-up grid sees one item.
+  // Making the wrapper display:contents lets each card be a direct grid item.
+  const contentWrapper = merchCard.closest('.section[class*="up"] > .content');
+  if (contentWrapper) contentWrapper.style.display = 'contents';
+
   await postProcessAutoblock(merchCard, true);
 }
 

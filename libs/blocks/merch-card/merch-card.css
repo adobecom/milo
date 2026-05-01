@@ -3,6 +3,7 @@ main > div.section[class*="-merch-card"]:not([data-status='decorated']),
   display: grid;
 }
 
+
 div[class*="-merch-card"] > div,
  div[class*="-merch-cards"] > div {
    grid-column: 1 / -1;
