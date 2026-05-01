@@ -101,6 +101,7 @@ export default class MiloFloodgate extends LitElement {
 
     this._pathsLines = [];
     this._abortController = null;
+    this._tokenInitialized = false;
 
     this._resetWorkflowState();
   }
@@ -129,14 +130,17 @@ export default class MiloFloodgate extends LitElement {
   updated(changed) {
     super.updated(changed);
     if (changed.has('token')) {
-      this._configLoadController?.abort();
-      this._configLoadController = null;
-      this._configLoadKey = '';
-      this._configLoadPromise = null;
-      this._configContextKey = '';
-      this._configLoadError = '';
-      this._prevOrg = '';
-      this._prevSourceRepo = '';
+      if (this._tokenInitialized) {
+        this._configLoadController?.abort();
+        this._configLoadController = null;
+        this._configLoadKey = '';
+        this._configLoadPromise = null;
+        this._configContextKey = '';
+        this._configLoadError = '';
+        this._prevOrg = '';
+        this._prevSourceRepo = '';
+      }
+      this._tokenInitialized = true;
     }
     const textarea = this.shadowRoot.querySelector('textarea[name="paths"]');
     const highlight = this.shadowRoot.querySelector('.paths-highlight');

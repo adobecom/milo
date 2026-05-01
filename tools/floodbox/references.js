@@ -7,6 +7,12 @@ const SCHEDULE_MAKER_ENDPOINTS = [
   'https://www.adobe.com/ecc/system/tools/schedule-maker',
 ];
 
+// URL hashes are client-side only — strip them from any captured fragment path.
+function stripHash(p) {
+  const i = p.indexOf('#');
+  return i === -1 ? p : p.slice(0, i);
+}
+
 class References {
   constructor(accessToken, htmlPaths, org, repo, signal, options = {}) {
     this.accessToken = accessToken;
@@ -17,7 +23,7 @@ class References {
     this.includeChronoBoxFragments = !!options.includeChronoBoxFragments;
 
     // eslint-disable-next-line no-useless-escape
-    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.*(?:fragments\/|\\.(?:pdf|svg|json))[^?]*)`);
+    this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.*(?:fragments\/|\\.(?:pdf|svg|json))[^?#]*)`);
     this.requestHandler = new RequestHandler(accessToken, { signal });
   }
 
@@ -56,7 +62,8 @@ class References {
     blocks.forEach((block) => {
       const fragmentPath = block && typeof block === 'object' ? block.fragmentPath : null;
       if (typeof fragmentPath !== 'string' || !fragmentPath) return;
-      results.push(fragmentPath.startsWith('/') ? fragmentPath : `/${fragmentPath}`);
+      const normalized = fragmentPath.startsWith('/') ? fragmentPath : `/${fragmentPath}`;
+      results.push(stripHash(normalized));
     });
     return results;
   }
@@ -88,7 +95,7 @@ class References {
           const resolved = pathToFragment.startsWith('/')
             ? pathToFragment
             : `${baseDir}/${pathToFragment}`;
-          results.push(resolved);
+          results.push(stripHash(resolved));
         });
       });
     });

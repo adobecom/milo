@@ -102,6 +102,25 @@ describe('References', () => {
     expect(result).to.eql(new Set());
   });
 
+  it('strips URL hashes from captured fragment paths', async () => {
+    requestHandlerStub
+      .onFirstCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path1#section-2">Link</a>',
+      })
+      .onSecondCall().resolves({
+        ok: true,
+        text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/path2#top">Link</a><a href="https://main--test-repo--test-org.aem.page/path3.pdf#page=4">PDF</a>',
+      });
+
+    const result = await findFragmentsAndAssets({ accessToken, htmlPaths, org, repo });
+    expect(result).to.eql(new Set([
+      '/test-org/test-repo/fragments/path1',
+      '/test-org/test-repo/fragments/path2',
+      '/test-org/test-repo/path3.pdf',
+    ]));
+  });
+
   describe('chrono-box fragments', () => {
     const dirHtmlPaths = ['/some/dir/page1', '/some/dir/page2'];
 

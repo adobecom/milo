@@ -586,6 +586,24 @@ describe('MiloFloodgate', () => {
       el.handleClear({ preventDefault: () => {} });
       expect(sessionStorage.getItem('floodgate-paths')).to.be.null;
     });
+
+    it('restores paths from sessionStorage on first mount and parses them', async () => {
+      sessionStorage.setItem('floodgate-paths', '/myorg/myrepo/page1\n/myorg/myrepo/page2');
+      el = createComponent();
+      await el.updateComplete;
+      const textarea = el.shadowRoot.querySelector('textarea[name="paths"]');
+      expect(textarea.value).to.equal('/myorg/myrepo/page1\n/myorg/myrepo/page2');
+      // Parsing should have run during firstUpdated, not been blocked by the
+      // initial token-change reset in updated().
+      expect(el._org).to.equal('myorg');
+      expect(el._sourceRepo).to.equal('myrepo');
+      expect(el._pathCount).to.equal(2);
+      expect(el._canStart).to.be.true;
+      // The config-load controller created during the initial restore must not
+      // have been aborted by updated()'s token-change handler.
+      expect(el._prevOrg).to.equal('myorg');
+      expect(el._prevSourceRepo).to.equal('myrepo');
+    });
   });
 
   describe('handleInputChange path parsing', () => {
