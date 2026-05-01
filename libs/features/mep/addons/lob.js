@@ -79,6 +79,7 @@ export default async function init(enablement) {
   if (enablement !== true) return enablement;
   if (window.location.hostname.includes('.aem.')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);
+  if (!lobValue || !lobValue.modelLineOfBusiness) return false;
   addAlloyTracking(lobValue);
-  return lobValue?.modelLineOfBusiness;
+  return lobValue.modelLineOfBusiness;
 }
