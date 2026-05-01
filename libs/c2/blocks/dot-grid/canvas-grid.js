@@ -24,6 +24,7 @@ export default function createCanvasGrid(canvas, {
   const context = canvas.getContext('2d');
   const mouse = { x: -9999, y: -9999 };
   let dots = [];
+  let settled = true;
 
   function getSpacing() {
     return isMobile() ? CONFIG.mobileSpacing : CONFIG.spacing;
@@ -70,6 +71,9 @@ export default function createCanvasGrid(canvas, {
   }
 
   function update() {
+    const mouseParked = mouse.x === -9999;
+    if (mouseParked && settled) return;
+
     const activeCards = getCards();
 
     let currentMouseRadius = CONFIG.mouseRadius;
@@ -87,7 +91,10 @@ export default function createCanvasGrid(canvas, {
       currentRepelForce = CONFIG.repelForce * (1 + boost * 0.8);
     }
 
-    dots.forEach((dot) => {
+    // 8k+ dots need raw loops
+    let maxDisturbance = 0;
+    for (let i = 0; i < dots.length; i += 1) {
+      const dot = dots[i];
       const deltaX = dot.x - mouse.x;
       const deltaY = dot.y - mouse.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -102,7 +109,20 @@ export default function createCanvasGrid(canvas, {
       dot.velocityY *= CONFIG.damping;
       dot.x += dot.velocityX;
       dot.y += dot.velocityY;
-    });
+      const disturb = Math.abs(dot.velocityX) + Math.abs(dot.velocityY)
+        + Math.abs(dot.x - dot.originX) + Math.abs(dot.y - dot.originY);
+      if (disturb > maxDisturbance) maxDisturbance = disturb;
+    }
+    settled = mouseParked && maxDisturbance < 0.05;
+    if (settled) {
+      for (let i = 0; i < dots.length; i += 1) {
+        const dot = dots[i];
+        dot.x = dot.originX;
+        dot.y = dot.originY;
+        dot.velocityX = 0;
+        dot.velocityY = 0;
+      }
+    }
   }
 
   function draw() {
@@ -114,24 +134,25 @@ export default function createCanvasGrid(canvas, {
     if (alpha <= 0) return;
     context.fillStyle = `rgba(${dotRed},${dotGreen},${dotBlue},${alpha})`;
 
-    dots.forEach((dot) => {
+    for (let i = 0; i < dots.length; i += 1) {
       context.beginPath();
-      context.arc(dot.x, dot.y, CONFIG.dotSize, 0, Math.PI * 2);
+      context.arc(dots[i].x, dots[i].y, CONFIG.dotSize, 0, Math.PI * 2);
       context.fill();
-    });
+    }
   }
 
   const handleMouseMove = (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+    settled = false;
   };
   const handleMouseLeave = () => {
     mouse.x = -9999;
     mouse.y = -9999;
   };
 
-  window.addEventListener('mousemove', handleMouseMove);
-  window.addEventListener('mouseleave', handleMouseLeave);
+  canvas.addEventListener('mousemove', handleMouseMove, { passive: true });
+  canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
   return {
     resize,
@@ -139,8 +160,8 @@ export default function createCanvasGrid(canvas, {
     update,
     draw,
     destroy() {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
     },
   };
 }
