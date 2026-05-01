@@ -182,6 +182,12 @@ const GeoMap = {
 const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
+ * MAS commerce-service `lang` overrides for regions where BCP 47 script subtag is required.
+ * @type {Record<string, string>}
+ */
+const EXTRA_MAS_LANGUAGES = { tw: 'zh-Hant', hk_zh: 'zh-Hant' };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -222,7 +228,7 @@ export function getMiloLocaleSettings(miloLocale) {
   }
 
   country = country.toUpperCase();
-  language = language.toLowerCase();
+  language = EXTRA_MAS_LANGUAGES[geo] ?? language.toLowerCase();
 
   return {
     language,
