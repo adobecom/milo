@@ -18,12 +18,13 @@ function decorateText(el) {
   hangOpeningQuote(firstText);
 }
 
-function promoteParagraphTitle(content, headingSize = '2') {
+function promoteParagraphTitle(content, headingSize = '2', skipFirst = false) {
   if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
-  const firstP = content.querySelector('p');
-  if (!firstP) return;
-  const bodyClass = [...firstP.classList].find((c) => c.startsWith('body-'));
-  if (bodyClass) firstP.classList.replace(bodyClass, `title-${headingSize}`);
+  const ps = [...content.querySelectorAll('p')];
+  const target = skipFirst ? ps[1] : ps[0];
+  if (!target) return;
+  const bodyClass = [...target.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) target.classList.replace(bodyClass, `title-${headingSize}`);
 }
 
 function decorateJumpLinks(content, foreground) {
@@ -57,7 +58,7 @@ function decorate(block, root = block) {
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
-  promoteParagraphTitle(content);
+  promoteParagraphTitle(content, '2', root.classList.contains('jump-link'));
   if (root.classList.contains('jump-link')) decorateJumpLinks(content, foreground);
 }
 

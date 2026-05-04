@@ -92,7 +92,8 @@
 
       &:hover .jump-link-badge,
       &:focus-visible .jump-link-badge {
-        background: rgba(255, 255, 255, 0.2);
+        background: var(--s2a-color-background-default);
+        color: var(--s2a-color-content-default);
       }
     }
 
