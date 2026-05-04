@@ -539,7 +539,7 @@ function initGarageDoorReveal() {
 
       // text line-height compresses → natural (garage-door-line-height)
       if (fgChildData?.length) {
-        const lhT = viewRange(m, 'entry', 0.1, 'entry', 0.3);
+        const lhT = viewRange(m, 'entry', -0.1, 'entry', 0.1);
         fgChildData.forEach(({ child, naturalLh, fromLh }) => {
           child.style.lineHeight = lhT < 1 ? `${lerp(fromLh, naturalLh, lhT)}px` : null;
         });
