@@ -283,10 +283,16 @@ export const CONFIG = {
         name: 'profile',
         attributes: {
           accountMenuContext: {
+            aupContext: {
+              apiKey: getConfig().imsClientId,
+              // clientId: getConfig().imsClientId,
+              // appId: 'adobe_com',
+            },
             sharedContextConfig: {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -295,8 +301,11 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
+              managePeopleConfig: {
+                enableWorkflow: true,
+                ...getConfig().unav?.profile?.managePeopleConfig,
+              },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
-              ...getConfig().unav?.profile?.config,
             },
             messageEventListener: getMessageEventListener(),
           },
