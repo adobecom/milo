@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { buildExtendedGeoLinks } from '../../lib/data/links.js';
 
-test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes removed', async () => {
+test('buildExtendedGeoLinks keeps extended-geo entries even when the same canonical path exists in the base geo', async () => {
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-dedupe-'));
   const unit = {
     subdomain: 'www',
@@ -49,7 +49,58 @@ test('buildExtendedGeoLinks dedupes using canonical paths with geo prefixes remo
 
   const groups = await buildExtendedGeoLinks(tmpDir, config, unit, {});
   assert.equal(groups.length, 1);
-  assert.deepEqual(groups[0].links.map((link) => link.path), ['/be_fr/products/firefly.html']);
+  assert.deepEqual(
+    groups[0].links.map((link) => link.path),
+    ['/be_fr/products/premiere.html', '/be_fr/products/firefly.html'],
+  );
+});
+
+test('buildExtendedGeoLinks collapses intra-geo duplicates between cc (.html) and da-* variants', async () => {
+  const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'html-sitemap-intra-geo-'));
+  const unit = {
+    subdomain: 'www',
+    domain: 'www.adobe.com',
+    hostSite: 'da-cc',
+    extendedSitemap: 'language',
+    template: 'da-sitemap.html',
+    baseGeo: 'fr',
+    language: 'fr',
+    extendedGeos: ['be_fr'],
+    stage: 'publish',
+    queryIndexRows: [],
+  };
+  const config = {
+    raw: {},
+    domains: [],
+    queryIndexMap: [],
+    pageCopy: [],
+    siteDomains: {
+      cc: 'www.adobe.com',
+      'da-cc': 'www.adobe.com',
+    },
+    geoMap: [
+      { subdomain: 'www', baseGeo: 'fr', language: 'fr', extendedGeos: ['be_fr'], stage: 'publish' },
+    ],
+  };
+
+  await fs.mkdir(path.join(tmpDir, 'www', 'fr', '_extract', 'extended', 'be_fr', 'cc'), { recursive: true });
+  await fs.writeFile(path.join(tmpDir, 'www', 'fr', '_extract', 'extended', 'be_fr', 'cc', 'query-index.json'), JSON.stringify({
+    data: [
+      { path: '/be_fr/products/premiere.html', title: 'Premiere (legacy cc)' },
+    ],
+  }), 'utf8');
+
+  await fs.mkdir(path.join(tmpDir, 'www', 'fr', '_extract', 'extended', 'be_fr', 'da-cc'), { recursive: true });
+  await fs.writeFile(path.join(tmpDir, 'www', 'fr', '_extract', 'extended', 'be_fr', 'da-cc', 'query-index.json'), JSON.stringify({
+    data: [
+      { path: '/be_fr/products/premiere', title: 'Premiere (modern da-cc)' },
+    ],
+  }), 'utf8');
+
+  const groups = await buildExtendedGeoLinks(tmpDir, config, unit, {});
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].links.length, 1);
+  assert.equal(groups[0].links[0].title, 'Premiere (modern da-cc)');
 });
 
 test('buildExtendedGeoLinks uses inventory-aware geo labels', async () => {

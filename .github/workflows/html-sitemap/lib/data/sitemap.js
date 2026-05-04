@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { relevantExtendedGeos } from '../config/scope.js';
-import { getBaseGeoDataFile, getBaseGeoExtractDir, getBaseGeoLinksCsvFile, writeJson, writeText } from '../util/files.js';
+import { getBaseGeoDataFile, getBaseGeoExtractDir, getBaseGeoSitemapLinksFile, writeJson, writeText } from '../util/files.js';
 import { loadPlaceholderMap } from '../sources/placeholders.js';
 import { buildBaseGeoLinks } from './gnav-sections.js';
 import { buildExtendedGeoLinks } from './links.js';
@@ -78,7 +78,7 @@ async function summarizeExtendedGeoInputs(
 
   await Promise.all(geos.map(async (geo) => {
     const geoDir = path.join(getBaseGeoExtractDir(outputDir, unit.subdomain, unit.baseGeo), 'extended', geo);
-    const siteDirs = await fs.readdir(geoDir).catch(() => []);
+    const siteDirs = (await fs.readdir(geoDir).catch(() => [])).filter((e) => !e.startsWith('.'));
     let rawCount = 0;
 
     await Promise.all(siteDirs.map(async (siteDir) => {
@@ -104,7 +104,7 @@ async function summarizeExtendedGeoInputs(
   };
 }
 
-const LINKS_CSV_COLUMNS = ['type', 'url', 'title', 'path', 'originUrl'];
+const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'url', 'path', 'originUrl'];
 
 /**
  * @param {SitemapDataDocument} document
@@ -116,15 +116,18 @@ function buildLinksCSV(document) {
 
   for (const section of document.sections.baseGeoLinks) {
     for (const group of section.groups) {
+      const heading = group.subheading
+        ? `${section.heading} > ${group.subheading}`
+        : section.heading;
       for (const link of group.links) {
-        rows.push({ type: 'base', url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+        rows.push({ type: 'base', heading, url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
       }
     }
   }
 
   for (const group of document.sections.extendedGeoLinks) {
     for (const link of group.links) {
-      rows.push({ type: 'extended', url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+      rows.push({ type: 'extended', heading: group.title, url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
     }
   }
 
@@ -173,7 +176,7 @@ export async function buildSitemapDataDocument(
 
   await Promise.all([
     writeJson(getBaseGeoDataFile(outputDir, unit.subdomain, unit.baseGeo), document),
-    writeText(getBaseGeoLinksCsvFile(outputDir, unit.subdomain, unit.baseGeo), buildLinksCSV(document)),
+    writeText(getBaseGeoSitemapLinksFile(outputDir, unit.subdomain, unit.baseGeo), buildLinksCSV(document)),
   ]);
 
   return {

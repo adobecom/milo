@@ -39,7 +39,7 @@ Each sitemap page has three sections:
 
 1. Base-geo links from GNAV
 2. Links to sibling sitemap pages in the same subdomain
-3. Extended-geo links that are unique after deduplication
+3. Extended-geo links from each extended geo's query indices
 
 ### Terminology
 
@@ -90,11 +90,10 @@ Rule:
 
 This section contains extended-geo pages grouped by geo label.
 
-Deduplication rule:
+Within a single extended geo, entries from different site families (e.g. `cc`, `da-cc`) that resolve to the same canonical path are collapsed: legacy `cc` paths with a trailing `.html` and modern `da-*` paths without are treated as the same page, with the `da-*` variant preferred.
 
-- compare canonical paths after removing the geo prefix from both the base-geo path and the extended-geo path
-- if the canonical path already exists in the base geo, drop the extended-geo entry
-- dedupe is based on exact canonical path equivalence, not broader content equivalence or future consolidation rules
+Extended-geo entries are NOT deduplicated against the base geo. A page that exists at both `/fr/foo` and `/lu_fr/foo` will appear in both the base section and under the extended geo group.
+
 - geo labels should follow the same region-nav-derived labeling rule as section 2
 
 ## Architecture
@@ -752,7 +751,7 @@ Conditions that affect output:
 
 - runs only for base geos that already have eligible extracted input
 - sibling sitemap links include only base geos marked `deploy: true` in the config, regardless of local disk state
-- extended-geo links are subject to deduplication and `extendedSitemap` rules
+- extended-geo links are subject to intra-geo `cc`/`da-*` collapsing and `extendedSitemap` rules
 - geo labels for section 2 and section 3 prefer extracted `regions.html` link text and strip any trailing ` - <language>` suffix before falling back to generated labels
 
 ### `transform-da`

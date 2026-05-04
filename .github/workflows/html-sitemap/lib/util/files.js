@@ -58,8 +58,8 @@ export function getBaseGeoHtmlFile(outputDir, subdomain, baseGeo) {
  * @param {string} baseGeo
  * @returns {string}
  */
-export function getBaseGeoLinksCsvFile(outputDir, subdomain, baseGeo) {
-  return path.join(getBaseGeoDir(outputDir, subdomain, baseGeo), 'links.csv');
+export function getBaseGeoSitemapLinksFile(outputDir, subdomain, baseGeo) {
+  return path.join(getBaseGeoDir(outputDir, subdomain, baseGeo), 'sitemap-links.csv');
 }
 
 /**

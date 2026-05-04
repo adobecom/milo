@@ -338,7 +338,7 @@ Output semantics:
 - strips trailing Adobe branding such as `- Adobe` or `| Adobe`
 - derives fallback titles from URL slugs without file extensions
 - includes only sibling sitemap links that currently exist
-- dedupes extended-geo entries against base-geo canonical paths
+- collapses intra-geo duplicates between `cc` (legacy, `.html`) and `da-*` (modern, no `.html`) site families, preferring `da-*`
 - strips any trailing ` - <language>` suffix from region-nav-derived geo labels
 
 #### Query-index row selection
@@ -346,12 +346,14 @@ Output semantics:
 - Each row is read from the `path` field; falls back to `url` when `path` is absent
 - Rows where `robots` contains `noindex` or `nofollow` are excluded (either value triggers exclusion)
 
-#### Extended-geo deduplication
+#### Extended-geo intra-geo collapsing
 
-1. Build the base-geo canonical path set: for each base-geo query-index row, strip the geo prefix to produce a canonical path
-2. For each extended geo, normalize its query-index rows the same way
-3. Drop any extended-geo entry whose canonical path already exists in the base-geo set
-4. Within a single extended geo, also drop entries whose canonical path was already seen in that geo
+Extended-geo entries are NOT deduplicated against the base geo. A page that exists at both `/fr/foo` and `/lu_fr/foo` will appear in both the base-geo section and under the corresponding extended-geo group.
+
+Within a single extended geo:
+
+1. Across site families (`cc`, `da-cc`, `da-dc`, etc.) collapse entries that resolve to the same canonical path after stripping a trailing `.html`. Prefer the `da-*` variant when both legacy `cc` and modern `da-*` rows exist.
+2. Drop entries whose canonical path was already seen in that geo (after step 1, with the geo prefix stripped).
 
 The resulting `sitemap.json` contains:
 

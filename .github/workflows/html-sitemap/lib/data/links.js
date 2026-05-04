@@ -3,7 +3,7 @@ import path from 'node:path';
 import { normalizeQueryIndexData } from './normalize.js';
 import { formatGeoLabelFromInventory } from './geo-labels.js';
 import { relevantExtendedGeos } from '../config/scope.js';
-import { getBaseGeoExtractDir, getExtendedGeoDir } from '../util/files.js';
+import { getExtendedGeoDir } from '../util/files.js';
 
 /**
  * @typedef {import('./normalize.js').NormalizedLink} NormalizedLink
@@ -128,7 +128,7 @@ async function loadExtendedQueryIndexLinks(
   geo,
 ) {
   const geoDir = getExtendedGeoDir(outputDir, unit.subdomain, unit.baseGeo, geo);
-  const siteDirs = await fs.readdir(geoDir).catch(() => []);
+  const siteDirs = (await fs.readdir(geoDir).catch(() => [])).filter((e) => !e.startsWith('.'));
   const perSite = await Promise.all(siteDirs.map(async (siteDir) => {
     const dir = path.join(geoDir, siteDir);
     const [json, meta] = await Promise.all([
@@ -174,17 +174,6 @@ export async function buildExtendedGeoLinks(
   regionLabels,
 ) {
   const geoLabelInventory = buildGeoLabelInventory(config, unit.subdomain);
-  const baseExtractDir = getBaseGeoExtractDir(outputDir, unit.subdomain, unit.baseGeo);
-  const baseSiteDirs = await fs.readdir(baseExtractDir).catch(() => []);
-  const basePaths = new Set();
-
-  await Promise.all(baseSiteDirs
-    .filter((entry) => entry !== 'gnav' && entry !== 'extended' && !entry.endsWith('.json') && !entry.endsWith('.html'))
-    .map(async (siteDir) => {
-      const json = JSON.parse(await fs.readFile(path.join(baseExtractDir, siteDir, 'query-index.json'), 'utf8'));
-      normalizeQueryIndexData(json, unit.domain, config.siteDomains)
-        .forEach((link) => basePaths.add(dedupKey(link.path, unit.baseGeo)));
-    }));
 
   const groups = await Promise.all(
     relevantExtendedGeos(config, unit).map(async (geo) => {
@@ -192,7 +181,7 @@ export async function buildExtendedGeoLinks(
       const seen = new Set();
       const deduped = links.filter((link) => {
         const key = dedupKey(link.path, geo);
-        if (basePaths.has(key) || seen.has(key)) return false;
+        if (seen.has(key)) return false;
         seen.add(key);
         return true;
       });
