@@ -15,25 +15,70 @@ const isMobile = () => window.innerWidth <= 768;
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
 const stopRewind = (video) => {
-  clearInterval(rewindIntervals.get(video));
+  cancelAnimationFrame(rewindIntervals.get(video));
   rewindIntervals.delete(video);
 };
 
+/**
+ * Fallback. "Fakes" rewind of the original video, if no reverse video was provided.
+ * NOTE: This is heavy on CPU and will most likely result into "choppy" user experience
+*/
 const rewindVideo = (video) => {
   stopRewind(video);
   video.pause();
   const startSystemTime = Date.now();
   const startVideoTime = video.currentTime;
-  const intervalRewind = setInterval(() => {
-    if (video.currentTime === 0) {
+  const frame = () => {
+    const elapsed = Date.now() - startSystemTime;
+    const newTime = Math.max(startVideoTime - elapsed / 1000, 0);
+    video.currentTime = newTime;
+    if (newTime === 0) {
       stopRewind(video);
       video.load();
     } else {
-      const elapsed = Date.now() - startSystemTime;
-      video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
+      rewindIntervals.set(video, requestAnimationFrame(frame));
     }
-  }, 30);
-  rewindIntervals.set(video, intervalRewind);
+  };
+  rewindIntervals.set(video, requestAnimationFrame(frame));
+};
+
+/**
+ * Preferred way of "playing video backwards" by swapping it with
+ * a reversed version of the orignal video. Must be added as a link under
+ * original video in CMS.
+ * Easy on CPU.
+ */
+const swapVideo = (from, to) => {
+  const duration = from.duration || to.duration || 0;
+  if (!duration) return;
+  to.currentTime = duration - from.currentTime;
+  const doSwap = () => {
+    from.pause();
+    from.classList.remove('active');
+    to.classList.add('active');
+    to.play().catch(() => {});
+  };
+  if (to.readyState >= 2) {
+    doSwap();
+  } else {
+    to.addEventListener('seeked', doSwap, { once: true });
+  }
+};
+
+const swapToReverse = (slide) => {
+  const forward = slide.querySelector('video.forward');
+  const reverse = slide.querySelector('video.reverse');
+  if (!forward) return;
+  if (!reverse) { rewindVideo(forward); return; }
+  swapVideo(forward, reverse);
+};
+
+const swapToForward = (slide) => {
+  const forward = slide.querySelector('video.forward');
+  const reverse = slide.querySelector('video.reverse');
+  if (!forward) return;
+  if (!reverse) { stopRewind(forward); forward.play().catch(() => {}); return; }
+  swapVideo(reverse, forward);
 };
 
 const handleMobileAutoplay = (carousel) => {
@@ -41,8 +86,8 @@ const handleMobileAutoplay = (carousel) => {
   const observers = [];
 
   slides.forEach((slide, index) => {
-    const video = slide.querySelector('video');
-    if (!video) return;
+    const forward = slide.querySelector('video.forward');
+    if (!forward) return;
 
     const nextSlide = slides[index + 1];
 
@@ -53,7 +98,7 @@ const handleMobileAutoplay = (carousel) => {
         if (entry.isIntersecting) {
           const nextRect = nextSlide?.getBoundingClientRect();
           const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-          if (!isCovered) video.play().catch(() => { });
+          if (!isCovered) swapToForward(slide);
         }
       },
       { threshold: 0.6 },
@@ -69,11 +114,11 @@ const handleMobileAutoplay = (carousel) => {
       ([entry]) => {
         if (!isMobile()) return;
         if (entry.isIntersecting) {
-          rewindVideo(video);
+          swapToReverse(slide);
         } else {
           const rect = slide.getBoundingClientRect();
           if (rect.top >= 0 && rect.top <= window.innerHeight) {
-            video.play().catch(() => { });
+            swapToForward(slide);
           }
         }
       },
@@ -100,12 +145,12 @@ const disableHoverOnScroll = (carousel) => {
 };
 
 const onSlideLeave = (event) => {
-  const video = event?.target?.querySelector('video');
-  if (!video) return;
+  const slideEl = event?.target;
+  if (!slideEl?.querySelector('video')) return;
 
-  clearTimeout(slideLeaveTimeouts.get(video));
-  slideLeaveTimeouts.set(video, setTimeout(() => {
-    rewindVideo(video);
+  clearTimeout(slideLeaveTimeouts.get(slideEl));
+  slideLeaveTimeouts.set(slideEl, setTimeout(() => {
+    swapToReverse(slideEl);
   }, 100));
 };
 
@@ -129,13 +174,11 @@ const onHover = (event) => {
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
 
-  const video = slideEl.querySelector('video');
-  clearTimeout(slideLeaveTimeouts.get(video));
-  slideLeaveTimeouts.delete(video);
+  clearTimeout(slideLeaveTimeouts.get(slideEl));
+  slideLeaveTimeouts.delete(slideEl);
 
-  if (video) {
-    stopRewind(video);
-    video.play().catch(() => { });
+  if (slideEl.querySelector('video')) {
+    swapToForward(slideEl);
   }
 
   const slideIndex = slideEl.dataset.index * 1;
@@ -171,14 +214,30 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   const [iconContainer, heading, linkName, description] = left.children;
   const icon = iconContainer?.querySelector('img');
   const asset = right.children[0];
+  const reverseAsset = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
 
+  let reverseHtml = '';
   if (asset?.dataset.videoSource) {
+    const videoSrc = asset.dataset.videoSource;
     asset.setAttribute('preload', 'none');
-    asset.appendChild(createTag('source', { src: asset?.dataset.videoSource, type: 'video/mp4' }));
+    asset.appendChild(createTag('source', { src: videoSrc, type: 'video/mp4' }));
     asset.setAttribute('muted', true);
     asset.setAttribute('tabindex', '-1');
     asset.removeAttribute('controls');
+    asset.classList.add('forward', 'active');
+
+    if (reverseAsset?.dataset.videoSource) {
+      const reverseSrc = reverseAsset.dataset.videoSource;
+      const reverseVideo = createTag('video', {
+        preload: 'none',
+        muted: true,
+        tabindex: '-1',
+        class: 'reverse',
+      });
+      reverseVideo.appendChild(createTag('source', { src: reverseSrc, type: 'video/mp4' }));
+      reverseHtml = reverseVideo.outerHTML;
+    }
   }
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
@@ -196,6 +255,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='elastic-carousel-item-media'>
         ${asset.outerHTML}
+        ${reverseHtml}
       </div>
       <div class='elastic-carousel-item-footer'>
         ${linkName?.outerHTML}

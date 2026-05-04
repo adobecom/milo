@@ -2,6 +2,8 @@
 
 html[dir="rtl"] {
   .elastic-carousel {
+    --gap-dir: -1;
+
     & .elastic-carousel-container {
       & .elastic-carousel-item {
         & .elastic-carousel-item-footer {
@@ -34,6 +36,7 @@ html[dir="rtl"] {
   --start-gap: 2.75rem;
   --end-gap: .25rem;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
+  --gap-dir: 1;
   --elastic-carousel-container-width: calc((var(--slides) * var(--elastic-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
 
   height: var(--elastic-carousel-container-height-desktop);
@@ -94,12 +97,26 @@ html[dir="rtl"] {
 
       .elastic-carousel-item-media {
         text-align: center;
+        position: relative;
 
         video {
           border-radius: var(--s2a-border-radius-md);
           object-fit: cover;
           height: 394px;
           width: 100%;
+
+          &.reverse {
+            position: absolute;
+            inset: 0;
+          }
+
+          &.active {
+            opacity: 1;
+          }
+
+          &:not(.active) {
+            opacity: 0;
+          }
         }
       }
 
@@ -228,25 +245,29 @@ html[dir="rtl"] {
 
       .elastic-carousel-item {
 
+        &:nth-child(1) {
+          --gap-translate: -4.5rem;
+        }
+
         &:nth-child(2) {
-          --start-gap: 2.25rem;
+          --gap-translate: 0rem;
         }
 
         &:nth-child(3) {
-          --start-gap: 1.75rem;
+          --gap-translate: 3.5rem;
         }
 
         &:nth-child(4) {
-          --start-gap: 1rem;
+          --gap-translate: 5.75rem;
         }
 
         &:nth-child(5) {
-          --start-gap: .5rem;
+          --gap-translate: 6.75rem;
         }
 
-        margin-inline: var(--start-gap);
-        will-change: margin-inline;
-        animation: elasticItemsGapShrink var(--parallax-easing) both;
+        margin-inline: var(--end-gap);
+        will-change: translate;
+        animation: elasticItemsGapClose var(--parallax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
 
@@ -417,24 +438,23 @@ html[dir="rtl"] {
 
 /** animations */
 
-@keyframes elasticItemsGapShrink {
+@keyframes elasticItemsGapClose {
   0% {
-    margin-inline: var(--start-gap);
+    translate: calc(var(--gap-translate) * var(--gap-dir)) 0;
   }
 
-
   40% {
-    margin-inline: var(--end-gap);
+    translate: 0 0;
   }
 
   100% {
-    margin-inline: var(--end-gap);
+    translate: 0 0;
   }
 }
 
 @keyframes elasticCarouselSlideIn {
   0% {
-    margin-left: var(--start-margin);
+    translate: var(--start-margin) 0;
     opacity: 0;
   }
 
@@ -443,11 +463,11 @@ html[dir="rtl"] {
   }
 
   40% {
-    margin-left: 0;
+    translate: 0px 0;
   }
 
   100% {
-    margin-left: 0;
+    translate: 0px 0;
     opacity: 1;
   }
 }
