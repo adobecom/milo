@@ -198,9 +198,7 @@ function parseAuthoredContent(el) {
   const cards = [];
   [imageRow1, imageRow2].forEach((rowEl, rowIdx) => {
     [...rowEl.children].forEach((cellEl, colIdx) => {
-      const picture = cellEl.querySelector('picture');
       const img = cellEl.querySelector('img');
-      const mediaRoot = picture || img || null;
       const imageWidth = (img && parseInt(img.getAttribute('width'), 10)) || CARD_WIDTH;
       const imageHeight = (img && parseInt(img.getAttribute('height'), 10)) || DEFAULT_CARD_HEIGHT;
       const cardHeight = Math.round(CARD_WIDTH * (imageHeight / imageWidth));
@@ -215,7 +213,7 @@ function parseAuthoredContent(el) {
         cardHeight,
         baseHeight: cardHeight,
         label,
-        mediaRoot,
+        el: cellEl,
       });
     });
   });
@@ -230,10 +228,8 @@ function buildCardStack(cardScene, cardDefs) {
   const stackRoot = createTag('div', { class: 'card-stack' });
   cardScene.append(stackRoot);
   return cardDefs.map((def) => {
-    const cardEl = createTag('div', { class: 'card' });
-    if (def.mediaRoot) {
-      cardEl.appendChild(def.mediaRoot);
-    }
+    const cardEl = def.el;
+    cardEl.classList.add('card');
     stackRoot.appendChild(cardEl);
     let labelEl = null;
     if (def.label) {
