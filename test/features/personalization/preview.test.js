@@ -119,6 +119,17 @@ describe('preview feature', () => {
     document.querySelector('.mep-close').click();
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(0);
   });
+  it('showPopover is deferred until badge click, not called on init', async () => {
+    await decoratePreviewMode();
+    const overlay = document.querySelector('.mep-preview-overlay');
+    const showPopover = sinon.stub();
+    overlay.showPopover = showPopover;
+    expect(showPopover.called).to.be.false;
+    document.querySelector('.mep-badge').click();
+    expect(showPopover.calledOnce).to.be.true;
+    document.querySelector('.mep-badge').click();
+    expect(showPopover.calledOnce).to.be.true;
+  });
   it('close button does not throw when overlay is already removed', async () => {
     await decoratePreviewMode();
     const closeBtn = document.querySelector('.mep-close');
