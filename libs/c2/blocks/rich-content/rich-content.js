@@ -1,5 +1,5 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
-import { createTag } from '../../../utils/utils.js';
+import { createTag, scrollToHashedElement } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
   if (!header) return;
@@ -45,6 +45,10 @@ function decorateJumpLinks(content, foreground) {
     anchor.textContent = '';
     anchor.classList.add('jump-link-anchor');
     anchor.append(badge, label);
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToHashedElement(anchor.hash);
+    });
     nav.append(anchor);
   });
 
