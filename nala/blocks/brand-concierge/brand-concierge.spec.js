@@ -103,5 +103,43 @@ module.exports = {
         delayClass: 'floating-delay-100',
       },
     },
+    {
+      tcid: '8',
+      name: '@brand-concierge modal open close',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-button',
+      tags: '@brand-concierge @brand-concierge-modal @regression @milo',
+      data: {},
+    },
+    {
+      tcid: '9',
+      name: '@brand-concierge web client preload',
+      path: '/drafts/nala/blocks/brand-concierge/brand-concierge',
+      tags: '@brand-concierge @brand-concierge-preload @regression @milo',
+      data: { scriptPattern: 'brand-concierge-web-agent/static-assets/main.js' },
+    },
+    {
+      tcid: '10',
+      name: '@brand-concierge webclient baseStage param',
+      path: '/drafts/nala/blocks/brand-concierge/brand-concierge?webclient=baseStage',
+      tags: '@brand-concierge @brand-concierge-webclient @regression @milo',
+      data: {
+        scriptPattern: 'experience-platform-brand-concierge-web-agent/static-assets/main.js',
+        envPattern: 'experience-stage.adobe.net',
+      },
+    },
+    {
+      tcid: '11',
+      name: '@brand-concierge hero floating aria-hidden',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-floating-button',
+      tags: '@brand-concierge @brand-concierge-aria-hidden @regression @milo',
+      data: {},
+    },
+    {
+      tcid: '12',
+      name: '@brand-concierge consent hide block',
+      path: '/drafts/nala/blocks/brand-concierge/brand-concierge',
+      tags: '@brand-concierge @brand-concierge-consent @regression @milo',
+      data: {},
+    },
   ],
 };
