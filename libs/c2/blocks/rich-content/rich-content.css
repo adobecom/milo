@@ -111,6 +111,7 @@
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.2s ease;
       flex-shrink: 0;
       color: white;
     }
