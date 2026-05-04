@@ -14,6 +14,8 @@ function hexToRgb(hex) {
   return [Math.floor(hexValue / 65536) % 256, Math.floor(hexValue / 256) % 256, hexValue % 256];
 }
 
+const [DOT_RED, DOT_GREEN, DOT_BLUE] = hexToRgb(CONFIG.dotColor);
+
 export default function createCanvasGrid(canvas, {
   isMobile,
   getViewport,
@@ -64,9 +66,9 @@ export default function createCanvasGrid(canvas, {
       const gridColumn = Math.round(x / spacing);
       const gridRow = Math.max(0, Math.round(y / spacing));
       const dotIndex = gridRow * columnCount + gridColumn;
-      card.dotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
-      card.anchorX = dots[card.dotIdx].originX;
-      card.anchorY = dots[card.dotIdx].originY;
+      const clampedDotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
+      card.anchorX = dots[clampedDotIdx].originX;
+      card.anchorY = dots[clampedDotIdx].originY;
     });
   }
 
@@ -130,10 +132,9 @@ export default function createCanvasGrid(canvas, {
     const { width, height } = getViewport();
     const { arcToGridProgress } = getState();
     context.clearRect(0, 0, width, height);
-    const [dotRed, dotGreen, dotBlue] = hexToRgb(CONFIG.dotColor);
     const alpha = 0.45 * arcToGridProgress;
     if (alpha <= 0) return;
-    context.fillStyle = `rgba(${dotRed},${dotGreen},${dotBlue},${alpha})`;
+    context.fillStyle = `rgba(${DOT_RED},${DOT_GREEN},${DOT_BLUE},${alpha})`;
 
     for (let i = 0; i < dots.length; i += 1) {
       context.beginPath();

@@ -1,4 +1,5 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
+import { debounce } from '../../../utils/action.js';
 import { ACROBAT_DESKTOP_MOCKUP, ACROBAT_MOBILE_MOCKUP } from './acrobat-mockups.js';
 import createCanvasGrid from './canvas-grid.js';
 
@@ -47,10 +48,7 @@ const DESKTOP_ARC_REFERENCE_END = ARC_PAN_END + 1000;
 const DESKTOP_PEEL_END_SCROLL = 1132;
 const DESKTOP_SLOTTING_DURATION = 1720;
 const ARC_SETTLE_DURATION = 1700;
-const DESKTOP_SLOTTING_BREATHE = 0;
-const DESKTOP_SLOTTING_START = DESKTOP_PEEL_END_SCROLL
-  + ARC_SETTLE_DURATION
-  + DESKTOP_SLOTTING_BREATHE;
+const DESKTOP_SLOTTING_START = DESKTOP_PEEL_END_SCROLL + ARC_SETTLE_DURATION;
 
 // Mobile is the base path: shorter peel, no settle, shorter mockup transition.
 // Desktop/tablet extend these timings below for the larger arc and mockup motion.
@@ -211,7 +209,6 @@ function parseAuthoredContent(el) {
         mobileRowIdx: Math.floor(colIdx / 2),
         mobileHidden: rowIdx !== 0,
         cardHeight,
-        baseHeight: cardHeight,
         label,
         el: cellEl,
       });
@@ -240,13 +237,13 @@ function buildCardStack(cardScene, cardDefs) {
     return {
       colIdx: def.colIdx,
       rowIdx: def.rowIdx,
-      mobileColIdx: def.mobileColIdx ?? def.colIdx,
-      mobileRowIdx: def.mobileRowIdx ?? def.rowIdx,
-      mobileHidden: def.mobileHidden ?? false,
+      mobileColIdx: def.mobileColIdx,
+      mobileRowIdx: def.mobileRowIdx,
+      mobileHidden: def.mobileHidden,
       fanIdx: FAN_INDEX_BY_GRID_POSITION[def.rowIdx][def.colIdx],
       width: CARD_WIDTH,
-      baseHeight: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
-      height: def.cardHeight ?? DEFAULT_CARD_HEIGHT,
+      baseHeight: def.cardHeight,
+      height: def.cardHeight,
       el: cardEl,
       labelEl,
       baseX: 0,
@@ -255,7 +252,6 @@ function buildCardStack(cardScene, cardDefs) {
       visualCy: 0,
       anchorX: 0,
       anchorY: 0,
-      dotIdx: -1,
     };
   });
 }
@@ -1062,7 +1058,7 @@ export default async function init(el) {
   }
 
   // ──────────────────── Bootstrap ────────────────────
-  const onResize = () => resize();
+  const onResize = debounce(resize, 120);
   window.addEventListener('resize', onResize);
 
   resize();
