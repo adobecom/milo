@@ -119,6 +119,7 @@ async function saveAllToDa(url, blob) {
 }
 
 async function previewOrPublish({ path, action }) {
+  if(action !== "preview") return console.log("do not publish")
   const previewUrl = `${AEM_ORIGIN}/${action}/${toOrg}/${toRepo}/main${path}`;
   const authToken = (process.env.AEM_LIVE_DA_ADMIN_TOKEN || '').trim();
   const opts = { method: 'POST',
@@ -213,7 +214,8 @@ async function fetchRedirects() {
 
 async function importUrl(aemPath, importedMedia) {
   const extensionLessAemPath = aemPath.replace('.md', '');
-  const url = new URL(importFrom + extensionLessAemPath);
+  const url = new URL(importFrom.replace('aem.live', 'aem.page') + extensionLessAemPath);
+
   // AVOID Re-fetching the same resource (e.g. nested circular fragments)
   if(map[importFrom + extensionLessAemPath]) return;
   map[importFrom + extensionLessAemPath] = true;
@@ -276,14 +278,18 @@ async function importUrl(aemPath, importedMedia) {
   }
 
   try {
-    const resp = await fetch(`${url.origin}${srcPath}`);
+    const originUrl = url.origin.replace("aem.live", "aem.page")
+    const authToken = (process.env.AEM_LIVE_PREVIEW || '').trim();
+    const resp = await fetch(`${originUrl}${srcPath}`, 
+      { headers: { Authorization: `token ${authToken}` } }
+    );
     if (resp.status === 404) {
       if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS)
-        console.log('Resource not found: ', `${url.origin}${srcPath}`);
+        console.log('Resource not found: ', `${originUrl}${srcPath}`);
       return;
     }
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS)
-      console.log('fetched resource from AEM at:', `${url.origin}${srcPath}`);
+      console.log('fetched resource from AEM at:', `${originUrl}${srcPath}`);
     if (
       resp.redirected &&
       !(
@@ -320,7 +326,7 @@ async function importUrl(aemPath, importedMedia) {
     url.status = await saveAllToDa(url, content);
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log('imported resource to DA ' + url.daHref);
     await previewOrPublish({ path: pathname, action: 'preview' });
-    await previewOrPublish({ path: pathname, action: 'live' });
+    // DO NOT PUBLISH BASED ON PREVIEW DATA // await previewOrPublish({ path: pathname, action: 'live' });
   } catch (e) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Failed to import resource to DA ${toOrg}/${toRepo} | destination: ${url.pathname} | error: ${e.message}`);
     throw e;

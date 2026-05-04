@@ -162,6 +162,7 @@ async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
             path: entry.path,
             route: entry.route,
             paths: entry.paths,
+            timestamp: entry.timestamp,
           })),
           null,
           2
@@ -176,25 +177,60 @@ async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
   }
 }
 
+function parseLogTimestamp(ts) {
+  if (ts == null) return 0;
+  const n = typeof ts === 'number' ? ts : Date.parse(ts);
+  return Number.isFinite(n) ? n : 0;
+}
+
+/** Stable key for “same document” so we keep one log row per path. */
+function entryPathKey(entry) {
+  if (entry.path) return entry.path;
+  if (Array.isArray(entry.paths) && entry.paths.length) {
+    return [...entry.paths].sort().join('\0');
+  }
+  return '';
+}
+
+/**
+ * One entry per path: the row with the latest `timestamp` wins (any route).
+ * Then we only use rows where `route` is `preview`.
+ */
 async function getLivePaths(entries, logLink) {
+  const latestByPath = new Map();
+  for (const entry of entries) {
+    const key = entryPathKey(entry);
+    if (!key) continue;
+    const ts = parseLogTimestamp(entry.timestamp);
+    const prev = latestByPath.get(key);
+    if (!prev || ts >= parseLogTimestamp(prev.timestamp)) {
+      latestByPath.set(key, entry);
+    }
+  }
+
+  const latestEntries = [...latestByPath.values()];
   const livePaths = Array.from(
     new Set(
-      entries
-        .filter((entry) => entry.route === 'live')
+      latestEntries
+        .filter((log) => log.route === 'preview')
+        .filter((log) => !log.path.includes('.json'))
+        .filter((log) => !log.path.includes('.mp4'))
         .flatMap((log) => [
           log.path,
           ...(Array.isArray(log.paths) ? log.paths : []),
         ])
         .filter(Boolean)
     )
-  );
+  )
+
   if(LOCAL_RUN) {
-    console.log("Live paths found: ", livePaths.length);
+    console.log("preview paths found: ", livePaths.length);
   } else {
     await slackNotification(
       `Importing ${livePaths.length} published documents from ${entries.length} log entries. ${logLink}`,
     );
   }
+
   if (livePaths.length < 10 && !LOCAL_RUN)
     console.log(
       'First 10 paths to import:\n' + livePaths.slice(0, 10).join('\n')
@@ -223,6 +259,7 @@ async function main() {
     return;
   }
   const livePaths = localPathsToImport.length ? localPathsToImport : await getLivePaths(entries, logLink);
+
   const importedMedia = new Set();
   let result = {
     success: 0,
@@ -231,7 +268,7 @@ async function main() {
     successPaths: [],
     errorPaths: []
   };
-  if(LOCAL_RUN) saveLivePaths(livePaths)
+  if(LOCAL_RUN) saveLivePaths(livePaths.filter(path => !path.includes('/drafts/')))
 
   for (const path of livePaths) {
     queue.add(() =>
@@ -279,7 +316,7 @@ async function main() {
     );
   }
   result.successPaths.slice(0, 500).forEach((path) => {
-    console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
+    console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.page${path}`);
   });
   result.errorPaths.slice(0, 500).forEach((path) => {
     console.log(`Erroring path: ${path}`);
