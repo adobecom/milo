@@ -136,7 +136,8 @@ export default function useInputLocale() {
       if (project.value.type === PROJECT_TYPES.translation) {
         const langDetails = languagesList.find((l) => l.languagecode === languageCodes[language]);
         const defaultLocales = langDetails?.defaultlocales ? langDetails.defaultlocales.split(',') : [];
-        return { language, locales: defaultLocales, langCode: languageCodes[language] };
+        const nonDefaultLocales = localeList.filter((locale) => !defaultLocales.includes(locale));
+        return { language, locales: nonDefaultLocales, langCode: languageCodes[language] };
       }
       return { language, locales: localeList, langCode: languageCodes[language] };
     });
