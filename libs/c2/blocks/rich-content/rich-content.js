@@ -1,5 +1,5 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
-import { createTag, scrollToHashedElement } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
   if (!header) return;
@@ -62,8 +62,17 @@ function decorate(block, root = block) {
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
-  promoteParagraphTitle(content, '2', root.classList.contains('jump-link'));
-  if (root.classList.contains('jump-link')) decorateJumpLinks(content, foreground);
+  const isJumpLink = root.classList.contains('jump-link');
+  promoteParagraphTitle(content, '2', isJumpLink);
+
+  if (!isJumpLink) return;
+
+  const firstP = content?.querySelector('p:has(picture, img)');
+  const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  const iconImg = firstP?.querySelector('img[src]');
+  if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
+  decorateJumpLinks(content, foreground);
 }
 
 export default function init(el) {

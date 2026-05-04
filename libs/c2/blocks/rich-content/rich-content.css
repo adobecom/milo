@@ -66,15 +66,19 @@
       }
     }
 
-    .eyebrow:has(img) {
+    .eyebrow {
+      color: var(--s2a-color-content-knockout, white);
+    }
+
+    .eyebrow:has(picture, img) {
       display: flex;
       align-items: center;
       gap: var(--s2a-spacing-xs, 8px);
 
+      picture,
       img {
         width: 24px;
-        height: auto;
-        flex-shrink: 0;
+        height: 24px;
       }
     }
 
