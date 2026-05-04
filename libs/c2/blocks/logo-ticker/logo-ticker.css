@@ -3,7 +3,7 @@
   --logo-ticker-duration: 60s;
   --logo-ticker-gap: 30px;
   --logo-ticker-logo-height: 2.25rem;
-  --logo-ticker-toggle-size: 1.5rem;
+  --logo-ticker-toggle-size: var(--s2a-spacing-24);
   --logo-ticker-distance: 0;
   --logo-ticker-dir: 1;
 
@@ -45,22 +45,23 @@
   .logo-ticker-toggle {
     position: absolute;
     inset-block-end: 8%;
-    inset-inline-end: 1rem;
+    inset-inline-end: var(--s2a-spacing-16);
     margin: 0;
-    padding: 2px;
+    padding: var(--s2a-spacing-2);
     width: fit-content;
     border: none;
     border-radius: 50%;
-    background: var(--color-white, #fff);
+    background: var(--s2a-color-background-default);
     cursor: pointer;
     z-index: 1;
 
     &:focus-visible {
-      outline: 2px solid var(--color-accent-focus-ring, currentColor);
-      outline-offset: 2px;
+      outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+      outline-offset: var(--s2a-spacing-2);
     }
   }
 
+  /* TODO: waiting for final accessibility updates */
   .logo-ticker-toggle-icon {
     display: flex;
     justify-content: center;
@@ -68,7 +69,7 @@
     width: var(--logo-ticker-toggle-size);
     height: var(--logo-ticker-toggle-size);
     border-radius: inherit;
-    background: var(--color-gray-800, #222);
+    background: var(--s2a-color-gray-800);
 
     &.is-playing .play-icon,
     &:not(.is-playing) .pause-icon {
@@ -95,7 +96,7 @@
     /* stylelint-disable-next-line property-no-unknown */
     animation-timeline: auto, --logo-ticker-view;
     /* stylelint-disable-next-line property-no-unknown */
-    animation-range: auto, contain 0% contain 100%;
+    animation-range: normal, contain 0% contain 100%;
   }
 
   @keyframes logo-ticker-drift {
@@ -105,21 +106,34 @@
 }
 
 /* TODO: waiting for exact BP decisions */
-@media (width >= 600px) {
+@media (width >= 768px) {
   .logo-ticker {
-    --logo-ticker-gap: 80px;
+    --logo-ticker-gap: var(--s2a-spacing-80);
     --logo-ticker-logo-height: 50px;
-    --logo-ticker-toggle-size: 2rem;
+    --logo-ticker-toggle-size: 1.75rem;
 
     .logo-ticker-toggle {
-      inset-inline-end: 2.5rem;
+      inset-inline-end: var(--s2a-spacing-40);
     }
   }
 }
 
-@media (width >= 1200px) {
+/* TODO: placeholders responsive button vals. Waiting for design */
+@media (width >= 1024px) {
   .logo-ticker {
-    --logo-ticker-toggle-size: 2.5rem;
+    --logo-ticker-toggle-size: 1.875rem;
+  }
+}
+
+@media (width >= 1280px) {
+  .logo-ticker {
+    --logo-ticker-toggle-size: var(--s2a-spacing-32);
+  }
+}
+
+@media (width >= 1440px) {
+  .logo-ticker {
+    --logo-ticker-toggle-size: 2.125rem;
   }
 }
 
