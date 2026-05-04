@@ -285,8 +285,8 @@ export const CONFIG = {
           accountMenuContext: {
             aupContext: {
               apiKey: getConfig().imsClientId,
+              appId: 'adobe_com',
               // clientId: getConfig().imsClientId,
-              // appId: 'adobe_com',
             },
             sharedContextConfig: {
               enableLocalSection: true,
