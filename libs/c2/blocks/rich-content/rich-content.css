@@ -59,6 +59,11 @@
 
     .foreground .content {
       padding-block-start: var(--s2a-layout-sm, 80px);
+
+      .title-2,
+      .eyebrow {
+        max-width: 656px;
+      }
     }
 
     .eyebrow:has(img) {
