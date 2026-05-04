@@ -1,0 +1,707 @@
+/** main classes */
+
+html[dir="rtl"] {
+  .hub-hero-carousel {
+    & .hub-hero-carousel-container {
+      & .hub-hero-carousel-item {
+        & .hub-hero-carousel-item-footer {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+
+        & .hub-hero-carousel-item-header {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+      }
+    }
+  }
+}
+
+.hub-hero {
+  max-width: 1920px;
+  height: 1800px;
+  margin-inline: auto;
+}
+
+.hub-hero-header {
+  --hub-hero-top-spacing: 7.75rem;
+  padding-top: var(--hub-hero-top-spacing);
+  padding-bottom: 8.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  animation: hubHeroHeaderFade linear both;
+  animation-timeline: scroll();
+  animation-range: 0% 30%;
+  height: 362px;
+
+  div {
+    position: absolute;
+    inset: 0;
+    top: var(--hub-hero-top-spacing);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--s2a-spacing-lg);
+
+    .eyebrow {
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    }
+
+    p {
+      margin-bottom: 0;
+      max-width: 574px;
+    }
+
+    h1 {
+      color: var(--S2AC-Palette-static-black, black);
+      font-size: var(--s2a-font-size-80);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      line-height: var(--s2a-font-line-height-76);
+      word-wrap: break-word;
+    }
+  }
+}
+
+.hub-hero-image-grid-container {
+  display: flex;
+  flex-direction: row;
+  gap: 6.5rem;
+  position: relative;
+  z-index: 1;
+  justify-content: center;
+  transform: translate(0, -30%);
+  animation: hubHeroGridConverge ease both;
+  animation-timeline: view();
+  animation-range: entry 0% exit 40%;
+
+  .hub-hero-image-grid-container-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6.5rem;
+    animation: hubHeroGridColConverge ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 40%, entry 100% exit 90%;
+
+    &:nth-child(2),
+    &:nth-child(4) {
+      animation: hubHeroGridColConverge ease both, hubHeroGridColShiftDown ease both, hubHeroGridColFadeOut ease both;
+      animation-timeline: view(), view(), view();
+      animation-range: entry 0% exit 40%, entry 60% exit 80%, entry 100% exit 90%;
+    }
+
+    &:nth-child(3) {
+      animation: hubHeroGridColConverge ease both, hubHeroGridColCenterShift ease both, hubHeroGridColFadeOut ease both;
+      animation-timeline: view(), view(), view();
+      animation-range: entry 0% exit 40%, entry 60% exit 80%, entry 100% exit 90%;
+    }
+
+    img {
+      max-width: 388px;
+    }
+  }
+}
+
+.hub-hero-carousel-header {
+  position: sticky;
+  top: 20%;
+  margin-top: -20%;
+  text-align: center;
+  animation: hubHeroCarouselHeaderFade ease both;
+  animation-timeline: scroll();
+  animation-range: 0% 30%;
+}
+
+.hub-hero-carousel {
+  --hub-hero-carousel-transtions: all .5s ease;
+  --hub-hero-carousel-container-height-desktop: 590px;
+  --hub-hero-carousel-container-height-tablet: 572px;
+  --hub-hero-carousel-item-max-width: 294px;
+  --hub-hero-carousel-item-hover-grow-index: 1.75;
+  --slides: 5;
+  --start-gap: 2.75rem;
+  --end-gap: .25rem;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
+
+  height: var(--hub-hero-carousel-container-height-desktop);
+  position: relative;
+  overflow: clip;
+  margin: auto;
+
+  .hub-hero-carousel-container {
+    display: flex;
+    position: absolute;
+    left: 0;
+    transform: translateX(calc(50vw - 50%));
+    transition: transform .5s ease;
+    max-width: var(--hub-hero-carousel-container-width);
+
+    .hub-hero-carousel-item {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      width: var(--hub-hero-carousel-item-max-width);
+      max-width: var(--hub-hero-carousel-item-max-width);
+      background-color: var(--s2a-color-gray-75);
+      border-radius: var(--s2a-border-radius-md);
+      cursor: pointer;
+      will-change: width, max-width;
+      transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s ease;
+      contain: layout;
+
+      &:nth-child(3) {
+        animation: hubHeroCarouselPlaceholderShrink ease both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 50%;
+        background: transparent;
+        overflow: hidden;
+      }
+
+      .hub-hero-carousel-item-header {
+        display: flex;
+        flex-direction: row;
+        padding: var(--s2a-spacing-lg);
+        gap: var(--s2a-spacing-md);
+        align-items: center;
+
+        img {
+          width: 24px;
+          height: 24px;
+        }
+
+        p {
+          font-size: var(--s2a-font-size-sm);
+          font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          color: var(--s2a-color-gray-1000);
+          margin: 0;
+          transition: color .1s ease;
+          line-height: var(--s2a-font-line-height-18);
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
+        }
+      }
+
+      .hub-hero-carousel-item-media {
+        text-align: center;
+
+        video {
+          border-radius: var(--s2a-border-radius-md);
+          object-fit: cover;
+          height: 394px;
+          width: 100%;
+        }
+      }
+
+      .hub-hero-carousel-item-footer {
+        display: flex;
+        flex-direction: column;
+        padding: var(--s2a-spacing-lg);
+        max-width: 270px;
+        font-size: var(--s2a-font-size-md);
+        line-height: var(--s2a-font-line-height-16);
+
+        &:after {
+          content: '';
+          display: block;
+          background: url('../../assets/img/arrow-right.svg') no-repeat;
+          width: 24px;
+          height: 24px;
+          margin: var(--s2a-spacing-lg);
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          opacity: 0;
+          transition: none;
+        }
+
+        :is(h1, h2, h3, h4, h5, h6) {
+          /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
+          font-family: var(--body-font-family);
+          font-size: var(--s2a-typography-font-size-eyebrow);
+          font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          line-height: var(--s2a-typography-line-height-eyebrow);
+          letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+          margin: 0 0 var(--s2a-spacing-2xs) 0;
+          transition: color .1s ease;
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
+        }
+
+        p {
+          opacity: .6;
+          margin: 0;
+          transition: color .1s ease;
+          display: -webkit-box;
+          line-clamp: 2;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+      }
+    }
+  }
+}
+
+
+/** custom media rules */
+@media (768px <= width < 1700px) {
+  .hub-hero-carousel-container {
+    left: 50%;
+    transform: translateX(-50%);
+
+    &.stick-left {
+      transform: translateX(0);
+    }
+
+    &.stick-right {
+      transform: translateX(calc(100vw - 100%));
+    }
+  }
+}
+
+/** desktop only */
+@media (1280px <= width) {
+  .hub-hero-carousel-container {
+    max-height: var(--hub-hero-carousel-container-height-desktop);
+
+    .hub-hero-carousel-item {
+      width: calc(100vw/calc(var(--slides) - 1));
+    }
+  }
+}
+
+/** tablet only */
+@media (768px <= width < 1280px) {
+  .hub-hero-carousel {
+    height: var(--hub-hero-carousel-container-height-tablet);
+
+    .hub-hero-carousel-container {
+      height: 100%;
+      max-height: var(--hub-hero-carousel-container-height-tablet);
+
+      .hub-hero-carousel-item {
+        width: calc(100vw / calc(var(--slides) - 1.5));
+
+        .hub-hero-carousel-item-header {
+          padding: var(--s2a-spacing-md);
+        }
+      }
+    }
+  }
+}
+
+/** tablet up */
+@media (width >= 768px) {
+  .hub-hero-carousel {
+    padding: 2px 0;
+
+    &.disable-hover {
+      pointer-events: none;
+    }
+
+    html[dir="rtl"] .hub-hero-carousel-container {
+      --start-margin: -200px;
+    }
+
+    .hub-hero-carousel-container {
+      --start-margin: 200px;
+      /** animation */
+      /* animation: elasticCarouselSlideIn var(--parallax-easing) both; */
+      animation-timeline: view();
+      animation-range: entry 20% exit 100%;
+
+      .hub-hero-carousel-item {
+
+        &:nth-child(2) {
+          --start-gap: 2.25rem;
+        }
+
+        &:nth-child(3) {
+          --start-gap: 1.75rem;
+        }
+
+        &:nth-child(4) {
+          --start-gap: 1rem;
+        }
+
+        &:nth-child(5) {
+          --start-gap: .5rem;
+        }
+
+        margin-inline: var(--start-gap);
+        will-change: margin-inline;
+        animation: elasticItemsGapShrink var(--parallax-easing) both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+
+        &.hovered,
+        &:focus-visible {
+          background-color: var(--s2a-color-gray-1000);
+          max-width: 496px;
+          width: calc((100vw/calc(var(--slides)))*var(--hub-hero-carousel-item-hover-grow-index));
+
+          .hub-hero-carousel-item-footer p,
+          .hub-hero-carousel-item-header p {
+            color: var(--s2a-color-gray-25);
+          }
+
+          .hub-hero-carousel-item-footer {
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+              color: var(--s2a-color-gray-25);
+            }
+          }
+
+          .hub-hero-carousel-item-footer:after {
+            opacity: 1;
+            background-color: var(--s2a-color-gray-25);
+            border-radius: var(--s2a-border-radius-round);
+            background-position: 55% 50%;
+            background-size: 8px;
+            position: absolute;
+          }
+        }
+      }
+    }
+  }
+}
+
+/* mobile only */
+@media (width < 768px) {
+  .hub-hero-carousel {
+    --offset-adjuster: 50px;
+    --offset-scale: .85;
+    --last-offset: 2.5rem;
+    --offset-variance-index: -2px;
+
+    height: auto;
+    overflow: visible;
+    padding-bottom: calc(var(--last-offset) * var(--offset-scale));
+    padding-top: calc(var(--offset-adjuster) / var(--slides));
+    margin-inline: var(--s2a-spacing-sm);
+
+    .hub-hero-carousel-container {
+      top: 0%;
+      height: 100%;
+      position: relative;
+      transform: unset;
+      flex-direction: column;
+      display: grid;
+      gap: 20vh;
+
+      .hub-hero-carousel-item {
+        position: sticky;
+        top: 18%;
+        width: 100%;
+        max-width: 100%;
+        color: var(--s2a-color-gray-25);
+        background: transparent;
+
+        /** animation */
+        animation: elasticMobileStackSlides var(--paralax-easing) both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+
+        /** if we go with dynamic amount of slides, below stuff can be moved to JS */
+        &:nth-child(1) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 5) - var(--offset-variance-index) * 5);
+          --stack-contrast: 0;
+          --stack-shrink: 3rem;
+          z-index: 1;
+          animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+        }
+
+        &:nth-child(2) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
+          z-index: 2;
+          --stack-contrast: .25;
+          --stack-shrink: 2.25rem;
+        }
+
+        &:nth-child(3) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
+          z-index: 3;
+          --stack-contrast: .5;
+          --stack-shrink: 1.5rem;
+        }
+
+        &:nth-child(4) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
+          z-index: 4;
+          --stack-contrast: .75;
+          --stack-shrink: .75rem;
+        }
+
+        &:nth-child(5) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1) - var(--offset-variance-index));
+          z-index: 5;
+          --stack-contrast: 1;
+          --stack-shrink: 0rem;
+        }
+
+        &:last-child {
+          height: auto;
+        }
+
+        .hub-hero-carousel-item-container {
+          position: relative;
+          background-color: var(--s2a-color-gray-1000);
+          border-radius: var(--s2a-border-radius-md);
+          animation: elasticItemsShrink var(--paralax-easing) both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+          overflow-x: clip;
+
+          .hub-hero-carousel-item-header {
+            padding: var(--s2a-spacing-lg);
+            position: relative;
+
+            &:after {
+              content: '';
+              display: block;
+              background: url('../../assets/img/arrow-right.svg') no-repeat;
+              width: 24px;
+              height: 24px;
+              margin: var(--s2a-spacing-lg);
+              position: absolute;
+              right: 0;
+              top: 0;
+              opacity: 1;
+              background-color: var(--s2a-color-gray-25);
+              border-radius: var(--s2a-border-radius-round);
+              background-position: 55% 50%;
+              background-size: 8px;
+              transition: none;
+            }
+
+            p {
+              color: var(--s2a-color-gray-25);
+            }
+          }
+
+          .hub-hero-carousel-item-media {
+            video {
+              border-radius: var(--s2a-border-radius-0);
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+/** animations */
+
+@keyframes elasticItemsGapShrink {
+  0% {
+    margin-inline: var(--start-gap);
+  }
+
+
+  40% {
+    margin-inline: var(--end-gap);
+  }
+
+  100% {
+    margin-inline: var(--end-gap);
+  }
+}
+
+@keyframes elasticCarouselSlideIn {
+  0% {
+    margin-left: var(--start-margin);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  40% {
+    margin-left: 0;
+  }
+
+  100% {
+    margin-left: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes elasticMobileStackSlidesIgnoreOpactity {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  20% {
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+    opacity: .2;
+  }
+}
+
+@keyframes elasticMobileStackSlides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 0;
+  }
+
+
+  10% {
+    opacity: 1;
+  }
+
+  20% {
+    filter: contrast(1);
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+
+  }
+}
+
+@keyframes elasticItemsShrink {
+  0% {
+    margin: 0
+  }
+
+  20% {
+    margin: 0
+  }
+
+  100% {
+    margin: 0 var(--stack-shrink);
+  }
+}
+
+@keyframes hubHeroCarouselHeaderFade {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+    line-height: calc(var(--s2a-spacing-3xl) * 3);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(0, -10%);
+    line-height: var(--s2a-spacing-3xl);
+  }
+}
+
+@keyframes hubHeroHeaderFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0;
+    transform: translateY(-10%);
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroGridConverge {
+  0% {
+    gap: 6.5rem;
+  }
+
+  100% {
+    gap: .25rem;
+  }
+}
+
+@keyframes hubHeroGridColConverge {
+  0% {
+    gap: 6.5rem;
+  }
+
+  100% {
+    gap: .25rem;
+  }
+}
+
+@keyframes hubHeroCarouselPlaceholderShrink {
+  0% {
+    width: var(--hub-hero-carousel-item-max-width);
+    max-width: var(--hub-hero-carousel-item-max-width);
+    margin: 1px;
+  }
+
+  100% {
+    width: 0;
+    max-width: 0;
+    margin: 0;
+  }
+}
+
+@keyframes hubHeroGridColFadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroGridColShiftDown {
+  0% {
+    transform: translate(0, 20%);
+  }
+
+  100% {
+    transform: translate(0, -30%);
+  }
+}
+
+@keyframes hubHeroGridColCenterShift {
+  0% {
+    transform: translate(0, 30%);
+  }
+
+  100% {
+    transform: translate(0, -75%);
+  }
+}
