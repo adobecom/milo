@@ -17,7 +17,7 @@ const ROOT_MARGIN = 1000;
 const P_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 const S_CAAS_AIO = b64ToUtf8('MTQyNTctY2hpbWVyYS1zdGFnZS5hZG9iZWlvcnVudGltZS5uZXQvYXBpL3YxL3dlYi9jaGltZXJhLTAuMC4xL2NvbGxlY3Rpb24=');
 
-const getFloodgateColor = async (host) => {
+const getFloodgateColor = (host) => {
   const metaColor = getMetadata('floodgatecolor');
   if (metaColor) return metaColor;
 
@@ -26,14 +26,6 @@ const getFloodgateColor = async (host) => {
     const repo = parts.length >= 3 ? parts.slice(1, -1).join('--') : '';
     const fgMatch = repo.match(/-fg-(\w+)$/);
     if (fgMatch) return fgMatch[1];
-  }
-
-  try {
-    const resp = await fetch(window.location.href, { method: 'HEAD', credentials: 'same-origin' });
-    const fgHeader = resp.headers.get('x-adobe-floodgate');
-    if (fgHeader) return fgHeader;
-  } catch {
-    // ignore fetch errors
   }
 
   return '';
@@ -77,7 +69,7 @@ const loadCaas = async (a) => {
   const { env } = getConfig();
   const { host, search } = window.location;
 
-  const floodGateColor = await getFloodgateColor(host);
+  const floodGateColor = getFloodgateColor(host);
   if (floodGateColor && floodGateColor !== 'default') {
     state.fetchCardsFromFloodgateTree = true;
     state.floodgateColor = floodGateColor;
