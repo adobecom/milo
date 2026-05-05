@@ -35,9 +35,9 @@ function buildTrack(logos) {
   return createTag('div', { class: 'logo-ticker-track is-offscreen' }, logoSets);
 }
 
-// TODO: temporarily overriding svg colors
+// TODO: temporarily overriding svg colors. Should upload to feds
 function recolorIcons(root) {
-  const ICON_FILL = 'lightgrey';
+  const ICON_FILL = 'var(--s2a-color-content-default)';
   function recolorSvg(svg) {
     svg.setAttribute('fill', ICON_FILL);
     svg.querySelectorAll('[fill]:not([fill="none"])').forEach((node) => {

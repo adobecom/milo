@@ -1,8 +1,8 @@
 /* TODO: design tokens & values finalization */
 .logo-ticker {
-  --logo-ticker-duration: 60s;
-  --logo-ticker-gap: 30px;
-  --logo-ticker-logo-height: 2.25rem;
+  --logo-ticker-duration: 40s;
+  --logo-ticker-gap: var(--s2a-spacing-80);
+  --logo-ticker-logo-height: 36px;
   --logo-ticker-toggle-size: var(--s2a-spacing-24);
   --logo-ticker-distance: 0;
   --logo-ticker-dir: 1;
@@ -11,7 +11,7 @@
   width: 100%;
   overflow: clip;
   contain: layout paint;
-  padding-block: var(--s2a-spacing-24, 24px);
+  padding-block: var(--s2a-spacing-24);
   /* stylelint-disable-next-line property-no-unknown */
   view-timeline: --logo-ticker-view block;
 
@@ -108,8 +108,6 @@
 /* TODO: waiting for exact BP decisions */
 @media (width >= 768px) {
   .logo-ticker {
-    --logo-ticker-gap: var(--s2a-spacing-80);
-    --logo-ticker-logo-height: 50px;
     --logo-ticker-toggle-size: 1.75rem;
 
     .logo-ticker-toggle {
@@ -127,6 +125,7 @@
 
 @media (width >= 1280px) {
   .logo-ticker {
+    --logo-ticker-gap: var(--s2a-spacing-80);
     --logo-ticker-toggle-size: var(--s2a-spacing-32);
   }
 }
