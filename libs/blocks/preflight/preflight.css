@@ -279,7 +279,7 @@ span.preflight-time {
   transition: outline 300ms;
   border: none;
   height: 36px;
-  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 16px;
   padding: 0 18px;
   clip-path: polygon(0% 0%, var(--notch-size) 0%, calc(100% - var(--notch-size)) 0%, 100% var(--notch-size), 100% calc(100% - var(--notch-size)), 100% 100%, 0% 100%, 0% 100%);
@@ -1302,7 +1302,7 @@ img:hover ~ .asset-meta,
   padding: 4px 10px;
   background: #f44;
   color: #fff;
-  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-family: var(--body-font-family);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.04em;
