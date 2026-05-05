@@ -55,7 +55,7 @@ function syncTrackMetrics(track) {
   const setWidth = firstSet.offsetWidth;
   track.style.setProperty('--logo-ticker-distance', `-${setWidth + gap}px`);
   const containerWidth = track.parentElement?.clientWidth || 0;
-  track.classList.toggle('is-static', setWidth <= containerWidth);
+  track.classList.toggle('is-static', setWidth + 2 * gap <= containerWidth);
 }
 
 function buildToggle(track) {
