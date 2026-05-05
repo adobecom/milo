@@ -786,95 +786,173 @@ p {
   color: inherit;
 }
 
+.action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-xs);
+}
+
 .con-button {
-  --cta-transparency: 0%;
-  --cta-background: var(--s2a-color-gray-1000);
-  --cta-border-color: var(--s2a-color-gray-1000);
+  --cta-backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
   box-sizing: border-box;
-  background-color: color-mix(in srgb, var(--cta-background) var(--cta-transparency), transparent);
-  border-radius: var(--s2a-border-radius-md);
-  border: var(--s2a-border-width-sm) solid var(--cta-border-color);
+  background-color: var(--s2a-color-transparent-black-00);
+  backdrop-filter: var(--cta-backdrop-filter);
+  -webkit-backdrop-filter: var(--cta-backdrop-filter);
+  border-radius: var(--s2a-border-radius-round);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-1000);
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: var(--s2a-spacing-xs);
   font-size: var(--s2a-typography-font-size-label);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-typography-line-height-label);
   letter-spacing: var(--s2a-typography-letter-spacing-label);
-  padding: 5px 14px;
   text-decoration: none;
-  transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
-    box-shadow 300ms cubic-bezier(0.42, 0, 0, 1),
-    color 300ms cubic-bezier(0.42, 0, 0, 1);
+  height: var(--s2a-spacing-2xl);
+  padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
+  transition: background-color 300ms var(--parallax-easing),
+    border-color 300ms var(--parallax-easing),
+    color 300ms var(--parallax-easing);
+
+  &:focus-visible {
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+    outline-offset: var(--s2a-border-width-2);
+  }
+
+  &:is(:disabled, [aria-disabled="true"], .disabled) {
+    pointer-events: none;
+    opacity: 48%;
+    cursor: not-allowed;
+  }
 
   &.outline {
     &:hover {
-      --cta-transparency: 64%;
-      box-shadow: inset 0 0 0 1px var(--cta-border-color);
+      background-color: var(--s2a-color-transparent-black-08);
     }
 
     &:active {
-      --cta-transparency: 100%;
+      background-color: var(--s2a-color-gray-1000);
       color: var(--s2a-color-gray-25);
     }
   }
 
-
-  &.button-lg {
-    min-height: var(--s2a-spacing-2xl);
-    border-radius: 75px;
-    padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
+  &.button-xs {
+    padding: var(--s2a-spacing-none) var(--s2a-spacing-sm);
+    height: var(--s2a-spacing-lg);
   }
 
   &.blue {
-    background-color: #3b63fb; /* Missing color */
-    border-color: #3b63fb;
+    background-color: var(--s2a-color-blue-900);
+    border-color: var(--s2a-color-blue-900);
+    --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
-    &:hover,
+    &:hover {
+      background-color: var(--s2a-color-blue-1000);
+      border-color: var(--s2a-color-blue-1000);
+    }
     &:active {
-      background-color: #274dea; /* Missing color */
-      border-color: #274dea;
-      color: var(--s2a-color-gray-25);
+      background-color: var(--s2a-color-blue-1100);
+      border-color: var(--s2a-color-blue-1100);
+    }
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
     }
   }
 
   &.fill {
-    --cta-transparency: 100%;
+    background-color: var(--s2a-color-gray-1000);
+    border-color: var(--s2a-color-gray-1000);
+    --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
     &:hover {
-      --cta-transparency: 64%;
+      background-color: var(--s2a-color-transparent-black-64);
+      border-color: var(--s2a-color-transparent-black-64);
     }
 
     &:active {
-      --cta-transparency: 100%;
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  &.transparent {
+    border: none;
+    --cta-backdrop-filter: none;
+
+    &:hover {
+      background-color: var(--s2a-color-transparent-black-08);
+    }
+
+    &:active {
+      background-color: var(--s2a-color-transparent-black-12);
+      color: var(--s2a-color-gray-1000);
+    }
+  }
+
+  .icon  {
+    display: flex;
+    align-items: center;
+    svg {
+      width: 12px;
+      height: 12px;
     }
   }
 }
 
 
 .dark {
-  .con-button.outline:not(.fill) {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-gray-25);
+  .con-button {
+    &.outline {
+      background-color: var(--s2a-color-transparent-white-00);
+      border-color: var(--s2a-color-gray-25);
 
-    &:hover {
-      border-color: transparent;
-      box-shadow: none;;
-      color: var(--s2a-color-gray-1000);
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-64);
+        color: var(--s2a-color-gray-1000);
+      }
+      &:active {
+        background-color: var(--s2a-color-gray-25);
+        color: var(--s2a-color-gray-1000);
+      }
     }
 
-    &:active {
+    &.fill {
+      background-color: var(--s2a-color-gray-25);
+      border-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
+
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-64);
+      }
+
+      &:active {
+        background-color: var(--s2a-color-gray-25);
+      }
+    }
+
+    &.transparent {
+      background-color: var(--s2a-color-transparent-white-00);
+      color: var(--s2a-color-gray-25);
+
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-12);
+      }
+      &:active {
+        background-color: var(--s2a-color-transparent-white-16);
+      }
+    }
+
+    &.blue:is(:disabled, [aria-disabled="true"], .disabled) {
+      border-color: var(--s2a-color-gray-25);
+      background-color: var(--s2a-color-gray-25);
       color: var(--s2a-color-gray-1000);
     }
-  }
-
-  .con-button.fill {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-gray-25);
-    color: var(--s2a-color-gray-1000);
   }
 }
 
