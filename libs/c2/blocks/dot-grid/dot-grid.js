@@ -659,6 +659,7 @@ export default async function init(el) {
     positionCards();
   }
 
+  // TODO: handle via css?
   function setLabelPos(card, centerX, centerY, scale, opacity) {
     if (!card.labelEl) return;
     if (opacity <= 0) {
@@ -1011,6 +1012,58 @@ export default async function init(el) {
     textBlockEl.style.opacity = textOpacity;
   }
 
+  // ──────────────────── Debug overlay (?dotgriddebug) ────────────────────
+  const debugEnabled = new URLSearchParams(window.location.search).has('dotgriddebug');
+  let debugEl = null;
+  if (debugEnabled) {
+    debugEl = createTag('div', { class: 'dot-grid-debug' });
+    debugEl.style.cssText = 'position:fixed;top:8px;left:8px;z-index:99999;'
+      + 'background:rgba(0,0,0,0.78);color:#0f0;padding:8px 12px;'
+      + 'font:12px/1.4 monospace;border-radius:4px;pointer-events:none;'
+      + 'white-space:pre;font-variant-numeric:tabular-nums;';
+    document.body.appendChild(debugEl);
+  }
+  let lastDebugText = '';
+
+  function getActiveStage() {
+    const c = scrollTimeline.current;
+    if (c < PEEL_START_SCROLL) return 'arc-pan';
+    if (c < timing.gridEnd) return 'peel';
+    if (c < timing.slottingStart) return 'settle';
+    if (c < timing.slottingStart + timing.slottingDuration) return 'slotting';
+    if (timing.postRevealScrollDistance > 0) return 'post-reveal';
+    return 'done';
+  }
+
+  function getBreakpointLabel() {
+    if (frame.isMobile) return 'mobile';
+    if (frame.isTablet) return 'tablet';
+    return 'desktop';
+  }
+
+  // TODO: remove after done debugging
+  function updateDebugOverlay() {
+    if (!debugEl) return;
+    document.querySelector('header').style.display = 'none';
+    const animTotal = timing.slottingStart + timing.slottingDuration
+      + timing.postRevealScrollDistance;
+    const scrollPct = animTotal ? (scrollTimeline.current / animTotal) * 100 : 0;
+    const text = [
+      `stage:    ${getActiveStage()}`,
+      `breakpt:  ${getBreakpointLabel()}`,
+      `scroll:   ${scrollPct.toFixed(1)}%  (${scrollTimeline.current.toFixed(0)} / ${animTotal})`,
+      `arcPan:   ${phase.arcPan.toFixed(3)}`,
+      `arcToGrd: ${phase.arcToGrid.toFixed(3)}`,
+      `slotting: ${phase.slotting.toFixed(3)}`,
+      `blockTop: ${scrollTimeline.blockTop.toFixed(0)}px`,
+      `blockH:   ${el.offsetHeight}px`,
+      `viewH:    ${window.innerHeight}px`,
+    ].join('\n');
+    if (text === lastDebugText) return;
+    lastDebugText = text;
+    debugEl.textContent = text;
+  }
+
   // ──────────────────── Render loop ────────────────────
   let rafId = 0;
   let running = false;
@@ -1030,6 +1083,8 @@ export default async function init(el) {
     canvasGrid.update();
     canvasGrid.draw();
     updateCardPositions();
+    // TODO: remove after done debugging
+    updateDebugOverlay();
     rafId = requestAnimationFrame(loop);
   }
 
@@ -1081,6 +1136,8 @@ export default async function init(el) {
     io.disconnect();
     window.removeEventListener('resize', onResize);
     canvasGrid.destroy();
+    // TODO: remove after done debugging
+    debugEl?.remove();
     observer.disconnect();
   }).observe(document.body, { childList: true, subtree: true });
 
