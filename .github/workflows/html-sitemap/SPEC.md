@@ -335,7 +335,8 @@ Output semantics:
 - resolves placeholder tokens using extracted placeholders
 - resolves section 2 and section 3 geo labels from extracted region-nav fragment links when available
 - normalizes query-index titles
-- strips trailing Adobe branding such as `- Adobe` or `| Adobe`
+- strips trailing Adobe branding from titles (see [Title cleanup](#title-cleanup))
+- preserves the pre-cleanup value as `originalTitle` on every link (in `sitemap.json` and `sitemap-links.csv`) for auditing
 - derives fallback titles from URL slugs without file extensions
 - includes only sibling sitemap links that currently exist
 - collapses intra-geo duplicates between `cc` (legacy, `.html`) and `da-*` (modern, no `.html`) site families, preferring `da-*`
@@ -345,6 +346,34 @@ Output semantics:
 
 - Each row is read from the `path` field; falls back to `url` when `path` is absent
 - Rows where `robots` contains `noindex` or `nofollow` are excluded (either value triggers exclusion)
+
+#### Title cleanup
+
+Both query-index and GNAV link titles are passed through a `cleanTitle` step that strips trailing Adobe branding while preserving legitimate subtitles.
+
+Algorithm:
+
+1. Locate the last title-segment delimiter (`|`, `-`, en-dash `–`, or em-dash `—`) that has whitespace on both sides — a true delimiter, not a hyphen inside a word like `co-creation`.
+2. If "adobe" (case-insensitive) appears anywhere in the substring from that delimiter to the end of the title, strip from the delimiter onward.
+3. Otherwise the title is returned unchanged (whitespace collapsed and trimmed).
+
+Examples that are stripped:
+
+- `Premiere Pro - Adobe` → `Premiere Pro`
+- `Acrobat Pro - DC | Adobe` → `Acrobat Pro - DC` (only the trailing ` | Adobe` segment is removed)
+- `My Page | adobe.com` → `My Page`
+- `Photoshop - Adobe Creative Cloud` → `Photoshop`
+- `Solution de vectorisation – Adobe Illustrator` → `Solution de vectorisation`
+- `My Page — Adobe Substance 3D` → `My Page`
+- `Mon site | Adobe France` → `Mon site`
+
+Examples that are preserved:
+
+- `Tutorials - Pro Tips` (no `adobe` in trailing segment)
+- `co-creation studio` (hyphen has no surrounding whitespace)
+- `JPEG vs PNG : qu'est-ce qui les différencie ?` (no delimiter)
+
+The pre-cleanup value is preserved on each link as `originalTitle`. When no cleanup occurred, `originalTitle` equals `title`. This field appears in both `sitemap.json` and `sitemap-links.csv` and is intended for stakeholder auditing of the cleanup behavior.
 
 #### Extended-geo intra-geo collapsing
 

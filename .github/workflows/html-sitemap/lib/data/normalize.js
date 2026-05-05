@@ -1,6 +1,7 @@
 /**
  * @typedef {Object} NormalizedLink
  * @property {string} title
+ * @property {string} originalTitle - title before Adobe-branding cleanup; equals title when no cleanup occurred
  * @property {string} url
  * @property {string} path
  * @property {string} [originUrl]
@@ -28,15 +29,41 @@ function titleFromSlug(pathname) {
   return slug.split('-').filter(Boolean).map((part) => part[0].toUpperCase() + part.slice(1)).join(' ');
 }
 
+const TITLE_DELIMITERS = new Set(['|', '-', '–', '—']);
+
 /**
+ * Strip a trailing Adobe-branding suffix from a title.
+ *
+ * Algorithm: find the last title-segment delimiter (`|`, `-`, en-dash `–`,
+ * or em-dash `—`) that is surrounded by whitespace (i.e. a true delimiter,
+ * not a hyphen inside a word). If "adobe" appears anywhere in the
+ * substring from that delimiter to the end of the title, strip from the
+ * delimiter onward. Otherwise return the title unchanged (whitespace
+ * collapsed and trimmed).
+ *
+ * Matches `| Adobe`, `- Adobe`, `– Adobe Substance 3D`, `| adobe.com`,
+ * etc., including localized variants like `| Adobe France`. Preserves
+ * legitimate subtitles such as `Acrobat Pro - DC` or `Tutorials – Pro
+ * Tips` that contain a delimiter but no Adobe branding in the trailing
+ * segment.
+ *
  * @param {string} title
  * @returns {string}
  */
 export function cleanTitle(title) {
-  return title
-    .replace(/\s*[-|]\s*Adobe\s*$/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const cleaned = title.replace(/\s+/g, ' ').trim();
+  let lastDelim = -1;
+  for (let i = cleaned.length - 1; i > 0; i -= 1) {
+    if (TITLE_DELIMITERS.has(cleaned[i]) && cleaned[i - 1] === ' ' && cleaned[i + 1] === ' ') {
+      lastDelim = i;
+      break;
+    }
+  }
+  if (lastDelim !== -1 && /adobe/i.test(cleaned.slice(lastDelim))) {
+    const prefix = cleaned.slice(0, lastDelim).trimEnd();
+    if (prefix) return prefix;
+  }
+  return cleaned;
 }
 
 /**
@@ -110,9 +137,10 @@ export function normalizeQueryIndexData(
     const url = toProductionUrl(String(source), fallbackDomain, siteDomainMap);
     const parsed = new URL(url);
     const urlPath = parsed.pathname;
-    const rawTitle = String(row.title || '').trim();
-    const title = cleanTitle(rawTitle || titleFromSlug(urlPath));
+    const rawTitle = String(row.title || '').replace(/\s+/g, ' ').trim();
+    const originalTitle = rawTitle || titleFromSlug(urlPath);
+    const title = cleanTitle(originalTitle);
 
-    return [{ title, url, path: urlPath, ...(originUrl ? { originUrl } : {}) }];
+    return [{ title, originalTitle, url, path: urlPath, ...(originUrl ? { originUrl } : {}) }];
   });
 }

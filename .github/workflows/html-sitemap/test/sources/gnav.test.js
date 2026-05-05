@@ -121,6 +121,7 @@ test('buildBaseGeoLinks ignores decorative asset links inside federal nav cards'
           links: [
             {
               title: 'What is Creative Cloud?',
+              originalTitle: 'What is Creative Cloud?',
               url: 'https://www.adobe.com/creativecloud.html',
               path: '/creativecloud.html',
               originUrl: 'https://main--federal--adobecom.aem.live/federal/globalnav/acom/sections/section-menu-cc.plain.html',

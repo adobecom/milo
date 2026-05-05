@@ -104,7 +104,7 @@ async function summarizeExtendedGeoInputs(
   };
 }
 
-const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'url', 'path', 'originUrl'];
+const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'originalTitle', 'url', 'path', 'originUrl'];
 
 /**
  * @param {SitemapDataDocument} document
@@ -120,14 +120,14 @@ function buildLinksCSV(document) {
         ? `${section.heading} > ${group.subheading}`
         : section.heading;
       for (const link of group.links) {
-        rows.push({ type: 'base', heading, url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+        rows.push({ type: 'base', heading, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originUrl: link.originUrl || '' });
       }
     }
   }
 
   for (const group of document.sections.extendedGeoLinks) {
     for (const link of group.links) {
-      rows.push({ type: 'extended', heading: group.title, url: link.url, title: link.title, path: link.path, originUrl: link.originUrl || '' });
+      rows.push({ type: 'extended', heading: group.title, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originUrl: link.originUrl || '' });
     }
   }
 

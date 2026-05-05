@@ -96,6 +96,10 @@ Extended-geo entries are NOT deduplicated against the base geo. A page that exis
 
 - geo labels should follow the same region-nav-derived labeling rule as section 2
 
+### Title cleanup
+
+Page titles from query-index rows and GNAV links are normalized by stripping trailing Adobe-branding suffixes such as `| Adobe`, `- Adobe`, `– Adobe Substance 3D`, or `| adobe.com`. The rule looks for the last whitespace-bounded `|`, `-`, en-dash, or em-dash and only strips when "adobe" appears in the trailing segment, so legitimate subtitles like `Acrobat Pro - DC` are preserved. The original pre-cleanup value is exposed as `originalTitle` on each link in `sitemap.json` and `sitemap-links.csv` for auditing. See SPEC's [Title cleanup](SPEC.md#title-cleanup) for the full algorithm and examples.
+
 ## Architecture
 
 The pipeline is described in terms of `stages`. In GitHub Actions, those stages may later be mapped to one or more workflow `steps` or jobs, but the generator's contract remains stage-oriented.

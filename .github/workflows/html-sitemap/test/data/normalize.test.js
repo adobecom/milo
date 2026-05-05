@@ -20,12 +20,13 @@ test('normalizeQueryIndexData filters non-indexable rows and falls back title fr
 
   assert.deepEqual(links, [{
     title: 'Adobe Express',
+    originalTitle: 'Adobe Express',
     url: 'https://business.adobe.com/products/adobe-express.html',
     path: '/products/adobe-express.html',
   }]);
 });
 
-test('normalizeQueryIndexData strips trailing Adobe branding from titles', () => {
+test('normalizeQueryIndexData strips trailing Adobe branding from titles and preserves original', () => {
   const links = normalizeQueryIndexData({
     data: [
       { path: '/products/premiere.html', title: 'Premiere Pro - Adobe' },
@@ -36,20 +37,49 @@ test('normalizeQueryIndexData strips trailing Adobe branding from titles', () =>
   assert.deepEqual(links, [
     {
       title: 'Premiere Pro',
+      originalTitle: 'Premiere Pro - Adobe',
       url: 'https://www.adobe.com/products/premiere.html',
       path: '/products/premiere.html',
     },
     {
       title: 'Adobe Firefly',
+      originalTitle: 'Adobe Firefly | Adobe',
       url: 'https://www.adobe.com/products/firefly.html',
       path: '/products/firefly.html',
     },
   ]);
 });
 
-test('cleanTitle strips trailing Adobe branding from shared title sources', () => {
+test('cleanTitle strips trailing Adobe branding when adobe appears after final delimiter', () => {
+  // basic cases - simple Adobe / | Adobe suffix
   assert.equal(cleanTitle('Adobe Express for Education | Adobe'), 'Adobe Express for Education');
   assert.equal(cleanTitle('Premiere Pro - Adobe'), 'Premiere Pro');
+
+  // adobe.com or branded extensions in trailing segment
+  assert.equal(cleanTitle('My Page | adobe.com'), 'My Page');
+  assert.equal(cleanTitle('Acrobat Pro | Adobe Acrobat'), 'Acrobat Pro');
+  assert.equal(cleanTitle('Photoshop - Adobe Creative Cloud'), 'Photoshop');
+
+  // en-dash and em-dash delimiters
+  assert.equal(cleanTitle('Solution de vectorisation – Adobe Illustrator'), 'Solution de vectorisation');
+  assert.equal(cleanTitle('Innovations IA – Adobe.'), 'Innovations IA');
+  assert.equal(cleanTitle('My Page — Adobe Substance 3D'), 'My Page');
+
+  // legitimate subtitles that contain `-` or `|` are preserved when the
+  // trailing segment has no `adobe`
+  assert.equal(cleanTitle('Acrobat Pro - DC | Adobe'), 'Acrobat Pro - DC');
+  assert.equal(cleanTitle('Tutorials - Pro Tips'), 'Tutorials - Pro Tips');
+
+  // hyphens inside words are not treated as delimiters
+  assert.equal(cleanTitle('co-creation studio'), 'co-creation studio');
+  assert.equal(cleanTitle('JPEG vs PNG : qu’est-ce qui les différencie ?'), 'JPEG vs PNG : qu’est-ce qui les différencie ?');
+
+  // titles without any delimiter are unchanged
+  assert.equal(cleanTitle('Adobe Photoshop'), 'Adobe Photoshop');
+  assert.equal(cleanTitle('  Photoshop  '), 'Photoshop');
+
+  // localized Adobe-branding suffix
+  assert.equal(cleanTitle('Mon site | Adobe France'), 'Mon site');
 });
 
 test('toProductionUrl remaps adobecom AEM hosts to production domains', () => {

@@ -166,8 +166,10 @@ function groupItems(
     if (isDecorativeAssetHref(item.href)) continue;
     const resolvedHref = resolvePlaceholders(item.href, placeholders);
     const normalizedUrl = toProductionUrl(resolvedHref, fallbackDomain, siteDomainMap);
+    const originalTitle = resolvePlaceholders(item.text, placeholders).replace(/\s+/g, ' ').trim();
     current.links.push({
-      title: cleanTitle(resolvePlaceholders(item.text, placeholders)),
+      title: cleanTitle(originalTitle),
+      originalTitle,
       url: normalizedUrl,
       path: new URL(normalizedUrl).pathname,
       ...(item.sourceUrl ? { originUrl: item.sourceUrl } : {}),
