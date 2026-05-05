@@ -17,12 +17,6 @@
   initial-value: 1440px;
 }
 
-@property --parallax-stagger-progress {
-  syntax: '<number>';
-  inherits: false;
-  initial-value: 0;
-}
-
 :root {
   /* tokens.primitives */
   --s2a-color-gray-25: #fff;
@@ -981,9 +975,6 @@ p {
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
     @media (width >= 768px) {
-      /* Define a named view-timeline so children can reference the section's scroll position
-         directly — avoids inheriting --parallax-stagger-progress which forces a full
-         descendant style-recalc on every scroll frame. */
       view-timeline: --parallax-stagger-timeline block;
       view-timeline-inset: 40% 10%;
       animation-name: none;
