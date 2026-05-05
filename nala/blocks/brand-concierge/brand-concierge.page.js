@@ -31,5 +31,16 @@ export default class BrandConciergeBlock {
     // Page-level content elements
     this.pageHeadings = this.page.locator('h1, h2, h3');
     this.pageBody = this.page.locator('p');
+
+    // Modal close/dismiss elements
+    this.modalCloseButton = this.page.locator('#brand-concierge-modal .dialog-close');
+    this.modalCurtain = this.page.locator('.modal-curtain');
+
+    // Web client script loader (used for pre-load + ?webclient= tests)
+    // Matches base/prod/stage URLs for BC agent main.js
+    this.webClientScript = this.page.locator(
+      'script[src*="adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js"], '
+      + 'script[src*="experience-platform-brand-concierge-web-agent/static-assets/main.js"]',
+    );
   }
 }
