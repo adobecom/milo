@@ -28,66 +28,29 @@ Primary audiences:
 - LLM agents that benefit from explicit regional navigation
 - humans who land on these pages directly
 
-## Product Model
+## Where to look
 
-Each supported subdomain gets a family of sitemap pages:
+This README is the operator and developer guide — setup, environment, CLI, troubleshooting, template language. Behavior contracts and rules live in **[SPEC.md](SPEC.md)**:
 
-- one page for the default/root base geo
-- one page for each additional base geo that qualifies for output
+| If you want to know… | Read |
+|---|---|
+| What does the pipeline produce? | [SPEC §1.2 Page model](SPEC.md#12-page-model), [SPEC §5 Output contracts](SPEC.md#5-output-contracts) |
+| What does each config sheet do? | [SPEC §2 Config schema](SPEC.md#2-config-schema) |
+| What does each stage do? | [SPEC §3 Pipeline stages](SPEC.md#3-pipeline-stages) |
+| How does title cleanup / dedup / geo labels work? | [SPEC §4 Behavior rules](SPEC.md#4-behavior-rules) |
+| Why was decision X made? | [SPEC §7 Alternatives considered](SPEC.md#7-alternatives-considered) |
+| How do I run this locally? | This README, sections below |
+| The build is red — what do I do? | [Troubleshooting](#troubleshooting) below |
 
-Each sitemap page has two sections:
-
-1. Base-geo links from GNAV
-2. Extended-geo links from each extended geo's query indices
-
-### Terminology
+## Terminology
 
 | Term | Definition |
 |------|-----------|
 | **Geo** | A locale or region code such as `fr`, `be_en`, `ch_fr` |
 | **Base Geo** | A geo with its own dedicated `sitemap.html` |
 | **Extended Geo** | A geo whose unique pages are surfaced within a base geo's sitemap instead of getting its own page |
-
-### Page Emission Rule
-
-A base geo emits sitemap output only when at least one base-geo query index from any configured site returns indexable URLs.
-
-If all query indices for a base geo:
-
-- 404
-- fail in a skippable way
-- or return no indexable rows
-
-then that base geo does not emit a sitemap page.
-
-This rule affects both:
-
-- whether a base-geo local output folder exists after `extract`
-- whether downstream stages have anything to transform or promote
-
-## Page Semantics
-
-### Section 1: Base Geo Links
-
-This section is derived from GNAV structure.
-
-- H3 groups top-level categories
-- H4 groups subcategories
-- links preserve navigational grouping as closely as possible
-
-### Section 2: Extended Geo Links
-
-This section contains extended-geo pages grouped by geo label.
-
-Within a single extended geo, entries from different site families (e.g. `cc`, `da-cc`) that resolve to the same canonical path are collapsed: legacy `cc` paths with a trailing `.html` and modern `da-*` paths without are treated as the same page, with the `da-*` variant preferred.
-
-Extended-geo entries are NOT deduplicated against the base geo. A page that exists at both `/fr/foo` and `/lu_fr/foo` will appear in both the base section and under the extended geo group.
-
-- geo labels come from `page-copy.label`; a trailing ` - <language>` qualifier is stripped at render time
-
-### Title cleanup
-
-Page titles from query-index rows and GNAV links are normalized by stripping trailing Adobe-branding suffixes such as `| Adobe`, `- Adobe`, `– Adobe Substance 3D`, or `| adobe.com`. The rule looks for the last whitespace-bounded `|`, `-`, en-dash, or em-dash and only strips when "adobe" appears in the trailing segment, so legitimate subtitles like `Acrobat Pro - DC` are preserved. The original pre-cleanup value is exposed as `originalTitle` on each link in `sitemap.json` and `sitemap-links.csv` for auditing. See SPEC's [Title cleanup](SPEC.md#title-cleanup) for the full algorithm and examples.
+| **Subdomain** | A pipeline target: `www` (`www.adobe.com`) or `business` (`business.adobe.com`) |
+| **Stage** | One of the atomic pipeline operations: `clean`, `extract`, `transform-data`, `transform-da`, `diff`, `push`, `preview`, `publish` |
 
 ## Architecture
 
@@ -123,7 +86,6 @@ flowchart LR
 
   subgraph HostSite["Host Sites"]
     GNAV(["GNAV"])
-    RegNav(["region-nav"])
   end
 
   subgraph SiteGeo["Sites"]
@@ -135,7 +97,6 @@ flowchart LR
 
   Config   --> Generator
   GNAV     --> Generator
-  RegNav   --> Generator
   Indices  --> Generator
   Generator --> Output
 
@@ -144,7 +105,6 @@ flowchart LR
   style Config    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
   style GNAV      fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
   style Indices   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style RegNav    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
   style Generator fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
   style Output    fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
 
@@ -182,7 +142,7 @@ The diagram below is intentionally minimal: stage names and flow only. File name
 flowchart LR
 
   subgraph GHA["GitHub"]
-    Extract["extract\nGNAV · query indices · region-nav"]
+    Extract["extract\nGNAV · query indices"]
     TransformData["transform-data\nsitemap.json"]
     TransformDA["transform-da\nsitemap.html"]
     Diff["diff\nlocal ↔ DA"]
@@ -219,31 +179,7 @@ flowchart LR
   style AEM fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
 ```
 
-### Stage Details
-
-| Stage | Artifacts / focus |
-|-------|-------------------|
-| **Config** | `config`, `query-index-map`, `geo-map`, `page-copy` |
-| **GNAV** | `fragments`, `placeholders` |
-| **Query indices** | `query-index.json` paths (per site x geo) |
-| **Region-nav** | `regions.html` fragment |
-| **extract** | Config snapshot; GNAV fragments + manifest; placeholders; query indices; region-nav HTML; persisted under `_extract/` |
-| **transform-data** | `sitemap.json` |
-| **transform-da** | `sitemap.html`; `manifest.json`; `manifest.csv` (per subdomain) |
-| **diff** | Read-only: compares local `sitemap.html` to DA |
-| **push** | Uploads `sitemap.html` to DA |
-| **preview** | Promotes path in AEM preview |
-| **publish** | Promotes path in AEM live |
-
-Interpretation:
-
-- `extract` fetches remote sources and persists them locally for deterministic downstream transforms
-- `transform-data` converts extracted inputs into normalized sitemap page data (`sitemap.json`)
-- `transform-da` renders HTML from normalized data and writes per-subdomain manifests
-- `diff` compares local HTML against what is currently in DA; read-only
-- `push` uploads changed pages to DA; skips unchanged pages unless `--force` is set
-- `preview` and `publish` promote the corresponding remote document path in AEM
-- only geos with a non-empty `stage` in the config are eligible for delivery; `stage` selects how far each geo travels (`push`, `preview`, or `publish`)
+For per-stage read/write contracts and behavior, see [Stage Contract](#stage-contract) below or [SPEC §3 Pipeline stages](SPEC.md#3-pipeline-stages).
 
 ## Prerequisites
 
@@ -370,147 +306,37 @@ node --env-file=.env .github/workflows/html-sitemap/generate.ts preview --subdom
 node --env-file=.env .github/workflows/html-sitemap/generate.ts publish --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
 ```
 
-## Input Contract
+## Configuration
 
 The generator reads a multi-sheet JSON config file. Default:
 
 - `https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json`
 
-Override with `--config <url|path>`.
+Override with `--config <url|path>`. The format is compatible with [AEM multi-sheet JSON](https://www.aem.live/developer/spreadsheets#multi-sheet-format).
 
-The live config JSON is the source of truth for query-index paths, geo mappings, deployment eligibility, and page copy:
+Top-level sheets: `config`, `query-index-map`, `geo-map`, `page-copy`.
 
-- [`html-sitemap.json`](https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json)
+For the column-by-column schema of each sheet, see **[SPEC §2 Config schema](SPEC.md#2-config-schema)**. For the live current values, fetch the JSON directly. The pipeline does not read field documentation from anywhere else.
 
-That means current site lists and country coverage should be read from config first. `SPEC.md` may retain snapshots for architectural context, but the config is authoritative when they differ.
+## Local output layout
 
-Expected top-level sheets:
-
-- `config`
-- `query-index-map`
-- `geo-map`
-- `page-copy`
-
-The format is compatible with AEM multi-sheet JSON:
-
-- https://www.aem.live/developer/spreadsheets#multi-sheet-format
-
-### `config`
-
-Maps each subdomain to its production domain, host site, and behavior settings.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `subdomain` | yes | Short name used as the output directory and filter key (`business`, `www`) |
-| `domain` | yes | Production domain (`business.adobe.com`, `www.adobe.com`) |
-| `site` | yes | Host site / repo name for AEM origin URLs (`da-bacom`, `da-cc`) |
-| `extendedSitemap` | yes | `language` — include only the base geo's mapped extended geos; `all` — include every extended geo in the subdomain |
-| `template` | no | DA template filename; defaults to `da-sitemap.html` |
-
-### `query-index-map`
-
-Maps each site to its query-index path.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
-| `site` | yes | Site / repo name (`da-bacom`, `cc`, `edu`, etc.) |
-| `queryIndexPath` | yes | Path to the query-index JSON on the site origin |
-| `enabled` | no | Set to `true`, `1`, `yes`, or `on` to include in extraction; defaults to disabled when empty or omitted |
-
-### `geo-map`
-
-Maps each base geo to its language, extended-geo assignments, and how far the pipeline should deploy it.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
-| `baseGeo` | no | Geo code for the base geo; empty string or omitted for the root geo |
-| `language` | yes | Language code for this base geo (`en`, `fr`, `ja`, etc.) |
-| `extendedGeos` | no | Comma-separated list of extended geo codes assigned to this base geo |
-| `stage` | no | Deployment stage: `push`, `preview`, `publish`, or empty (extract & transform only). Case-insensitive. |
-| `note` | no | Free-form editorial notes; not consumed by the pipeline |
-
-`stage` is the maximum stage the pipeline will reach for this geo:
-
-- empty or absent — extract and transform only; no DA upload, no AEM preview, no AEM publish
-- `push` — also upload to DA
-- `preview` — also trigger AEM preview
-- `publish` — also trigger AEM publish
-
-All geos are still extracted and transformed regardless of `stage`, preserving full data, manifests, and the ability to inspect any geo locally — `stage` only gates the delivery stages (`push`, `preview`, `publish`).
-
-### `page-copy`
-
-Per-(subdomain, geo) page copy. Provides geo labels and localized page titles.
-
-| Field | Required | Description |
-|-------|----------|-------------|
-| `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
-| `geo` | no | Geo code; matches a `baseGeo` or `extendedGeo` from `geo-map`. Empty string or omitted for the default/root sitemap. |
-| `label` | no | Human-readable region label shown as the heading for each extended-geo group. A trailing `- <language>` qualifier is stripped at render time. |
-| `pageTitle` | no | Localized `<h1>` and HTML `<title>` for the rendered sitemap; defaults to `Sitemap` when empty or row is missing. May contain `{{placeholders}}` resolved from the extracted placeholder map. |
-
-For backwards compatibility a `baseGeo` cell is read as `geo` when `geo` is absent.
-
-### Example
-
-```json
-{
-  "config": {
-    "data": [
-      { "subdomain": "business", "domain": "business.adobe.com", "site": "da-bacom", "extendedSitemap": "all" },
-      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language", "template": "da-sitemap.html" }
-    ]
-  },
-  "query-index-map": {
-    "data": [
-      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json", "enabled": "true" },
-      { "subdomain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json", "enabled": "false" }
-    ]
-  },
-  "geo-map": {
-    "data": [
-      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl", "stage": "preview", "note": "" },
-      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr", "stage": "publish", "note": "lingo phase 1" }
-    ]
-  },
-  "page-copy": {
-    "data": [
-      { "subdomain": "business", "geo": "", "label": "", "pageTitle": "Sitemap" },
-      { "subdomain": "business", "geo": "fr", "label": "France", "pageTitle": "Plan du site" }
-    ]
-  }
-}
-```
-
-See [SPEC.md](./SPEC.md#source-inventory) for the live catalog snapshots showing current site and geo data.
-
-## Output Contract
-
-All stages read and write under a single local output root. Default:
-
-- `tmp/html-sitemap`
-
-Paths below are relative to that root.
-
-Representative layout:
+All stages read and write under a single local output root. Default: `tmp/html-sitemap` (override with `--output`).
 
 ```text
 /html-sitemap
-  html-sitemap.json
-    /business
-      /_extract
-        /gnav
-          gnav.html
-          products.html
-          manifest.json
-        regions.html
-        placeholders.json
-        /da-bacom
-          query-index.json
-    sitemap.json
-    sitemap.html
+  html-sitemap.json                         <- resolved config snapshot
+  /business
+    /_extract                               <- raw fetched inputs
+      /gnav
+        gnav.html
+        manifest.json
+      placeholders.json
+      /da-bacom
+        query-index.json
+        _meta.json
+    sitemap.json                            <- normalized render contract
+    sitemap-links.csv                       <- flat link audit
+    sitemap.html                            <- rendered DA HTML
     manifest.json
     manifest.csv
     /fr
@@ -518,322 +344,44 @@ Representative layout:
         /gnav
           gnav.html
           manifest.json
-        regions.html
         placeholders.json
         /da-bacom
           query-index.json
+          _meta.json
         /extended
           /ca_fr
             /da-bacom
               query-index.json
+              _meta.json
       sitemap.json
+      sitemap-links.csv
       sitemap.html
 ```
 
-### File Formats
-
-`html-sitemap.json`
-
-- Local copy of the resolved config input
-- Written by `extract`
-
-`_extract/gnav/*.html`
-
-- Raw GNAV fragment HTML persisted from source `.plain.html`
-- Written by `extract`
-
-`_extract/gnav/manifest.json`
-
-- Directory-level manifest for persisted GNAV artifacts
-- Maps local files back to source provenance and fragment role
-- Written by `extract`
-
-`_extract/placeholders.json`
-
-- Raw placeholders payload used later by transform
-- Written by `extract`
-
-`_extract/**/query-index.json`
-
-- Raw query-index payloads fetched per site and geo
-- Written by `extract`
-
-`sitemap.json`
-
-- Normalized intermediate data for one sitemap page
-- Written by `transform-data`
-- Consumed by `transform-da`
-- Defines the render contract for the final sitemap page
-- Uses `page-copy.label` values for `extendedGeoLinks[*].title`, stripping any trailing ` - <language>` suffix; falls back to `Intl.DisplayNames`-generated labels when the page-copy row is absent
-
-Shape:
-
-```json
-{
-  "subdomain": "business",
-  "baseGeo": "",
-  "domain": "business.adobe.com",
-  "sections": {
-    "baseGeoLinks": [
-      {
-        "heading": "Products",
-        "groups": [
-          {
-            "subheading": "Featured",
-            "links": [{ "title": "Adobe Commerce", "url": "https://business.adobe.com/products/commerce", "path": "/products/commerce" }]
-          }
-        ]
-      }
-    ],
-    "extendedGeoLinks": [
-      {
-        "geo": "br",
-        "title": "Brazil",
-        "links": [{ "title": "Adobe Firefly", "url": "https://business.adobe.com/br/products/firefly", "path": "/br/products/firefly" }]
-      }
-    ]
-  }
-}
-```
-
-| Section | Structure |
-|---------|-----------|
-| `baseGeoLinks` | Array of GNAV sections, each with a `heading` and `groups[]` of `{ subheading, links[] }` |
-| `extendedGeoLinks` | Array of `{ geo, title, links[] }` groups for extended-geo pages |
-
-Each `link` has `title`, `originalTitle` (pre-cleanup raw title), `url` (canonical production URL), `path` (URL pathname), and an optional `originUrl` (provenance — the GNAV fragment or query-index URL the link was extracted from).
-
-`sitemap.html`
-
-- DA-compatible HTML source document for one sitemap page
-- Written by `transform-da`
-- Consumed by `push`, `preview`, and `publish`
-- This HTML document is the reference render output for the generator
-- The editable template at `templates/da-sitemap.html` is the primary DA page reference
-- Template selection may be set per subdomain in the `config` sheet; if omitted it defaults to `da-sitemap.html`
-- See [Template Language](#template-language) for the template syntax reference
-
-The rendered HTML includes `data-*` attributes on iterated elements for monitoring and programmatic access:
-
-| Attribute | Location | Value |
-|-----------|----------|-------|
-| `data-section-index` | GNAV section container (`baseGeoLinks`) | Zero-based section index |
-| `data-link-index` | Individual `<a>` elements within sections and extended geo groups | Zero-based link index within its parent loop |
-| `data-group-index` | Extended geo group container (`extendedGeoLinks`) | Zero-based group index |
-
-These attributes are stable for the same inputs and can be used to locate specific items by position without parsing the full DOM.
-
-`manifest.json`
-
-- Per-subdomain build manifest summarizing every generated page
-- Written by `transform-da` at `{subdomain}/manifest.json`
-- Deterministic: same inputs always produce the same manifest, safe to diff across runs
-- Diffing two manifests reveals which pages changed (hash differs), were added, or removed
-
-Top-level shape:
-
-```json
-{
-  "subdomain": "business",
-  "pageCount": 11,
-  "pages": [
-    {
-      "baseGeo": "",
-      "domain": "business.adobe.com",
-      "stage": "publish",
-      "sha256": "a1b2c3d4...",
-      "baseGeoSectionCount": 6,
-      "baseGeoLinkCount": 42,
-      "extendedGeoGroupCount": 3,
-      "extendedGeoLinkCount": 15,
-      "totalLinkCount": 57
-    }
-  ]
-}
-```
-
-Page entry fields:
-
-| Field | Meaning |
-|-------|---------|
-| `baseGeo` | Geo code for this page (empty string = root) |
-| `domain` | Production domain |
-| `stage` | Deployment stage from `geo-map` (`push`, `preview`, `publish`, or empty) |
-| `sha256` | SHA-256 hash of the `sitemap.html` content (UTF-8 bytes) |
-| `baseGeoSectionCount` | Number of GNAV navigation sections (section 1 groups) |
-| `baseGeoLinkCount` | Total links across all section 1 groups |
-| `extendedGeoGroupCount` | Number of extended geo groups (section 2) |
-| `extendedGeoLinkCount` | Total links across all section 2 groups |
-| `totalLinkCount` | Sum of all link counts |
-
-Pages are sorted by `baseGeo` for stable ordering. Pages that were skipped (no `sitemap.html`) are excluded.
-
-`manifest.csv`
-
-- CSV mirror of the `manifest.json` pages array
-- Written by `transform-da` at `{subdomain}/manifest.csv`
-- One header row followed by one row per page, same sort order as JSON
-- Intended for stakeholders who prefer tabular data over JSON
+For the on-disk file *contracts* — JSON shapes, manifest fields, `data-*` attributes — see **[SPEC §5 Output contracts](SPEC.md#5-output-contracts)**.
 
 ## Stage Contract
 
-### `clean`
+For the read/write/behavior contract of each stage, see **[SPEC §3 Pipeline stages](SPEC.md#3-pipeline-stages)**. The summary below is a quick reference; SPEC is authoritative.
 
-Reads:
+| Stage | Reads | Writes | Notes |
+|-------|-------|--------|-------|
+| `clean` | — | (removes `--output`) | Local-only; never touches DA or AEM |
+| `extract` | `--config`, remote GNAV + query indices | `_extract/**`, `html-sitemap.json` | Pulls everything needed for downstream stages |
+| `transform-data` | `_extract/**` | `sitemap.json`, `sitemap-links.csv` | Normalizes and applies behavior rules ([SPEC §4](SPEC.md#4-behavior-rules)) |
+| `transform-da` | `sitemap.json`, template | `sitemap.html`, `manifest.{json,csv}` | Renders DA-compatible HTML |
+| `diff` | local `sitemap.html`, remote DA | — | Read-only; reports `changed`/`unchanged`/`new` |
+| `push` | local `sitemap.html`, remote DA | DA source document | Skips unchanged unless `--force` |
+| `preview` | local `sitemap.html` | AEM preview state | Requires DA push to have happened |
+| `publish` | local `sitemap.html` | AEM live state | Requires AEM preview to have happened |
 
-- nothing
+All delivery stages (`diff`, `push`, `preview`, `publish`) require `--da-root` and corresponding auth env vars. See [Environment](#environment).
 
-Writes:
-
-- removes the local `--output` directory
-
-Conditions:
-
-- local-only
-- does not remove anything from DA or AEM
-
-### `extract`
-
-Reads:
-
-- config from `--config`
-- remote GNAV, placeholders, and query-index sources
-
-Writes:
-
-- `html-sitemap.json`
-- `_extract/gnav/*.html`
-- `_extract/gnav/manifest.json`
-- `_extract/regions.html`
-- `_extract/placeholders.json`
-- `_extract/**/query-index.json`
-
-Conditions that affect output:
-
-- A base geo gets local output only if at least one base-geo query index succeeds and returns indexable rows.
-- Extended-geo query indices are written under the owning base geo’s `_extract/extended/...`.
-- Paginated query-index responses are fully fetched using `total`, `offset`, and `limit` before the merged payload is written locally.
-- Region-nav fragment extraction is best-effort and may warn/skip without aborting extraction.
-- Missing remote resources warn and continue.
-
-### `transform-data`
-
-Reads:
-
-- previously extracted `_extract` artifacts for each eligible base geo
-
-Writes:
-
-- `sitemap.json`
-
-Conditions that affect output:
-
-- runs only for base geos that already have eligible extracted input
-- extended-geo links are subject to intra-geo `cc`/`da-*` collapsing and `extendedSitemap` rules
-- extended-geo group titles come from `page-copy.label`, with any trailing ` - <language>` suffix stripped; falls back to `Intl.DisplayNames`-generated labels when the page-copy row is absent
-
-### `transform-da`
-
-Reads:
-
-- `sitemap.json`
-
-Writes:
-
-- `sitemap.html`
-- `manifest.json` (per subdomain)
-- `manifest.csv` (per subdomain)
-
-Conditions that affect output:
-
-- runs only where `sitemap.json` exists
-- output is a DA HTML source document, not a DA-specific JSON format
-- render semantics come from `sitemap.json` plus the DA page shell, not from old browser-specific sitemap blocks
-- page copy comes from the `page-copy` sheet and can resolve `{{variable}}` placeholders against extracted placeholders data
-
-### `diff`
-
-Reads:
-
-- local `sitemap.html` for each eligible geo
-- remote DA source document at the corresponding `--da-root` path
-
-Writes:
-
-- nothing (read-only comparison)
-- prints per-geo status: `changed`, `unchanged`, or `new` (not yet in DA)
-
-Conditions that affect output:
-
-- requires `--da-root`
-- requires DA auth env vars
-- skips geos with no local `sitemap.html`
-- skips geos whose `stage` in `geo-map` does not reach `push` (i.e. empty stage)
-- compares the SHA-256 hash of local content against remote content fetched from DA
-- a missing remote document is reported as `new`, not as an error
-
-This stage is a dry-run companion to `push` — it shows what would change without writing anything. In multi-stage runs, `diff` can precede `push` to log which pages will be updated.
-
-### `push`
-
-Reads:
-
-- local `sitemap.html`
-- remote DA source document (for change detection)
-
-Writes:
-
-- remote DA source document rooted at `--da-root`
-- DA edit URLs for uploaded documents in stage output
-
-Conditions that affect output:
-
-- requires `--da-root`
-- requires DA auth env vars
-- skips geos with no local `sitemap.html`
-- skips geos whose `stage` in `geo-map` does not reach `push` (i.e. empty stage)
-- compares local content hash against remote before uploading; skips unchanged pages to preserve remote document timestamps
-- `--force` bypasses the change detection and always uploads
-
-### `preview`
-
-Reads:
-
-- local `sitemap.html` to determine which geos are eligible
-
-Writes:
-
-- AEM preview state for the corresponding remote document path under `--da-root`
-- `.page` URLs for previewed documents in stage output
-
-Conditions that affect output:
-
-- requires `--da-root`
-- requires AEM admin token env vars
-- skips geos with no local `sitemap.html`
-- skips geos whose `stage` in `geo-map` does not reach `preview` (i.e. empty or `push`)
-
-### `publish`
-
-Reads:
-
-- local `sitemap.html` to determine which geos are eligible
-
-Writes:
-
-- AEM live/publish state for the corresponding remote document path under `--da-root`
-- `.live` URLs for published documents in stage output
-
-Conditions that affect output:
-
-- requires `--da-root`
-- requires AEM admin token env vars
-- skips geos with no local `sitemap.html`
-- skips geos whose `stage` in `geo-map` is not `publish`
+The `stage` field in `geo-map` controls how far each geo travels (`push`/`preview`/`publish`/empty). See [SPEC §2.3](SPEC.md#23-geo-map-sheet).
 
 ## Troubleshooting
 
-Symptom-keyed runbook for the most common failures. For non-technical incidents (a page didn't appear, a label is wrong) the wiki points stakeholders here.
+Symptom-keyed runbook for the most common failures.
 
 ### How do I tell if the last run succeeded?
 
