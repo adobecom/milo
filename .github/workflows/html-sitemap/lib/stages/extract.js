@@ -140,6 +140,7 @@ async function writePlaceholders(baseExtractDir, unit, fetchImpl) {
  * @param {string} geo
  * @param {string} site
  * @param {string} queryIndexPath
+ * @param {boolean} addHtmlExtension
  * @param {Record<string, string>} siteDomains
  * @param {typeof fetch} [fetchImpl]
  * @returns {Promise<QueryIndexSummary>}
@@ -149,6 +150,7 @@ async function fetchQueryIndexSummary(
   geo,
   site,
   queryIndexPath,
+  addHtmlExtension,
   siteDomains,
   fetchImpl,
 ) {
@@ -178,7 +180,7 @@ async function fetchQueryIndexSummary(
     ok: true,
     url: result.url,
     rowCount: result.rowCount,
-    indexableCount: normalizeQueryIndexData(result.json, unit.domain, siteDomains).length,
+    indexableCount: normalizeQueryIndexData(result.json, unit.domain, siteDomains, { addHtmlExtension }).length,
     json: result.json,
   };
 }
@@ -205,6 +207,7 @@ async function runExtractUnit(
     unit.baseGeo,
     row.site,
     row.queryIndexPath,
+    row.addHtmlExtension,
     siteDomains,
     fetchImpl,
   )));
@@ -253,6 +256,7 @@ async function runExtractUnit(
         extendedGeo,
         row.site,
         row.queryIndexPath,
+        row.addHtmlExtension,
         siteDomains,
         fetchImpl,
       );

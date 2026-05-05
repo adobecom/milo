@@ -115,6 +115,18 @@ function dedupKey(pathname, geo) {
 }
 
 /**
+ * @param {HtmlSitemapConfig} config
+ * @param {string} subdomain
+ * @param {string} site
+ * @returns {boolean}
+ */
+function getAddHtmlExtension(config, subdomain, site) {
+  return Boolean(config.queryIndexMap.find(
+    (row) => row.subdomain === subdomain && row.site === site,
+  )?.addHtmlExtension);
+}
+
+/**
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit
@@ -137,7 +149,10 @@ async function loadExtendedQueryIndexLinks(
     ]);
     return {
       site: siteDir,
-      links: normalizeQueryIndexData(json, unit.domain, config.siteDomains, meta.originUrl),
+      links: normalizeQueryIndexData(json, unit.domain, config.siteDomains, {
+        originUrl: meta.originUrl,
+        addHtmlExtension: getAddHtmlExtension(config, unit.subdomain, siteDir),
+      }),
     };
   }));
 

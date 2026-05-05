@@ -83,7 +83,10 @@ async function summarizeExtendedGeoInputs(
 
     await Promise.all(siteDirs.map(async (siteDir) => {
       const json = JSON.parse(await fs.readFile(path.join(geoDir, siteDir, 'query-index.json'), 'utf8'));
-      rawCount += normalizeQueryIndexData(json, unit.domain, config.siteDomains).length;
+      const addHtmlExtension = Boolean(config.queryIndexMap.find(
+        (row) => row.subdomain === unit.subdomain && row.site === siteDir,
+      )?.addHtmlExtension);
+      rawCount += normalizeQueryIndexData(json, unit.domain, config.siteDomains, { addHtmlExtension }).length;
     }));
 
     if (rawCount > 0) {
@@ -104,7 +107,7 @@ async function summarizeExtendedGeoInputs(
   };
 }
 
-const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'originalTitle', 'url', 'path', 'originUrl'];
+const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'originalTitle', 'url', 'path', 'originalPath', 'originUrl'];
 
 /**
  * @param {SitemapDataDocument} document
@@ -120,14 +123,14 @@ function buildLinksCSV(document) {
         ? `${section.heading} > ${group.subheading}`
         : section.heading;
       for (const link of group.links) {
-        rows.push({ type: 'base', heading, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originUrl: link.originUrl || '' });
+        rows.push({ type: 'base', heading, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originalPath: link.originalPath || link.path, originUrl: link.originUrl || '' });
       }
     }
   }
 
   for (const group of document.sections.extendedGeoLinks) {
     for (const link of group.links) {
-      rows.push({ type: 'extended', heading: group.title, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originUrl: link.originUrl || '' });
+      rows.push({ type: 'extended', heading: group.title, url: link.url, title: link.title, originalTitle: link.originalTitle || link.title, path: link.path, originalPath: link.originalPath || link.path, originUrl: link.originUrl || '' });
     }
   }
 

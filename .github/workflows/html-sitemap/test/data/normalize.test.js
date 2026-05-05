@@ -23,6 +23,7 @@ test('normalizeQueryIndexData filters non-indexable rows and falls back title fr
     originalTitle: 'Adobe Express',
     url: 'https://business.adobe.com/products/adobe-express.html',
     path: '/products/adobe-express.html',
+    originalPath: '/products/adobe-express.html',
   }]);
 });
 
@@ -40,14 +41,65 @@ test('normalizeQueryIndexData strips trailing Adobe branding from titles and pre
       originalTitle: 'Premiere Pro - Adobe',
       url: 'https://www.adobe.com/products/premiere.html',
       path: '/products/premiere.html',
+      originalPath: '/products/premiere.html',
     },
     {
       title: 'Adobe Firefly',
       originalTitle: 'Adobe Firefly | Adobe',
       url: 'https://www.adobe.com/products/firefly.html',
       path: '/products/firefly.html',
+      originalPath: '/products/firefly.html',
     },
   ]);
+});
+
+test('normalizeQueryIndexData appends .html when addHtmlExtension is true', () => {
+  const links = normalizeQueryIndexData({
+    data: [
+      { path: '/products/foo', title: 'Foo' },
+      { path: '/products/bar.html', title: 'Bar' },
+      { path: '/', title: 'Home' },
+    ],
+  }, 'www.adobe.com', {}, { addHtmlExtension: true });
+
+  assert.deepEqual(links, [
+    {
+      title: 'Foo',
+      originalTitle: 'Foo',
+      url: 'https://www.adobe.com/products/foo.html',
+      path: '/products/foo.html',
+      originalPath: '/products/foo',
+    },
+    {
+      title: 'Bar',
+      originalTitle: 'Bar',
+      url: 'https://www.adobe.com/products/bar.html',
+      path: '/products/bar.html',
+      originalPath: '/products/bar.html',
+    },
+    {
+      title: 'Home',
+      originalTitle: 'Home',
+      url: 'https://www.adobe.com/',
+      path: '/',
+      originalPath: '/',
+    },
+  ]);
+});
+
+test('normalizeQueryIndexData accepts originUrl as a bare-string fourth arg (back-compat)', () => {
+  const links = normalizeQueryIndexData({
+    data: [{ path: '/x.html', title: 'X' }],
+  }, 'www.adobe.com', {}, 'https://origin/example');
+
+  assert.deepEqual(links, [{
+    title: 'X',
+    originalTitle: 'X',
+    url: 'https://www.adobe.com/x.html',
+    path: '/x.html',
+    originalPath: '/x.html',
+    originUrl: 'https://origin/example',
+  }]);
 });
 
 test('cleanTitle strips trailing Adobe branding when adobe appears after final delimiter', () => {

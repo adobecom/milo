@@ -17,6 +17,11 @@ import process from 'node:process';
  * @property {string} site
  * @property {string} queryIndexPath
  * @property {boolean} enabled
+ * @property {boolean} addHtmlExtension
+ *   When true, paths sourced from this query index get a `.html` suffix
+ *   appended (unless they already end in `.html` or are the root `/`).
+ *   Use this for indexes whose `path` field omits the extension that the
+ *   live URL actually serves (e.g. modern AEM da-* indexes).
  */
 
 /**
@@ -193,6 +198,7 @@ export async function loadConfig(
     site: row.site,
     queryIndexPath: row.queryIndexPath,
     enabled: parseBooleanFlag(row.enabled),
+    addHtmlExtension: parseBooleanFlag(row.addHtmlExtension),
   })).filter((row) => row.subdomain && row.site && row.queryIndexPath && row.enabled);
 
   const geoMap = geoRows.map((row) => ({

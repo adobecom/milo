@@ -58,6 +58,7 @@ Per-subdomain aggregated query-index sources. Lets one subdomain pull pages from
 | `site` | yes | Host site / repo whose query-index.json is fetched. Resolved against `https://main--{site}--adobecom.aem.live`. |
 | `queryIndexPath` | yes | Path of the query-index JSON under the host site. Combined with the geo prefix at fetch time. |
 | `enabled` | no | Whether this row participates in extraction. `true`/`1`/`yes`/`on` enables; empty or anything else disables. |
+| `addHtmlExtension` | no | When truthy (`true`/`1`/`yes`/`on`), append `.html` to paths sourced from this index unless they already end in `.html` or are the root `/`. Use this for indexes whose `path` field omits the extension that the live URL serves (e.g. modern AEM da-* indexes). See [§4.3](#43-url-normalization). |
 
 ### 2.3 `geo-map` sheet
 
@@ -277,6 +278,8 @@ All URLs in sitemap output are canonical production URLs:
 - AEM repo hosts (`main--{site}--adobecom.aem.live`) remap to the production domain for that site using the `siteDomains` mapping derived from config.
 - Other absolute URLs pass through unchanged.
 
+When the source `query-index-map` row has `addHtmlExtension` enabled, paths are suffixed with `.html` after the steps above. The suffix is skipped when the path already ends in `.html` or is the root `/`. Both `path` and `url` reflect the suffixed value; `originalPath` preserves the path as parsed from the source row before this step (see [§5.2](#52-sitemap-linkscsv) and the link shape in [§5.1](#51-sitemapjson)).
+
 ### 4.4 Placeholder resolution
 
 Placeholders use the pattern `{{key}}`:
@@ -392,7 +395,8 @@ Shape:
               "title": "Adobe Commerce",
               "originalTitle": "Adobe Commerce",
               "url": "https://business.adobe.com/products/commerce",
-              "path": "/products/commerce"
+              "path": "/products/commerce",
+              "originalPath": "/products/commerce"
             }]
           }
         ]
@@ -405,8 +409,9 @@ Shape:
         "links": [{
           "title": "Adobe Firefly",
           "originalTitle": "Adobe Firefly | Adobe",
-          "url": "https://business.adobe.com/br/products/firefly",
-          "path": "/br/products/firefly",
+          "url": "https://business.adobe.com/br/products/firefly.html",
+          "path": "/br/products/firefly.html",
+          "originalPath": "/br/products/firefly",
           "originUrl": "https://main--da-bacom--adobecom.aem.live/br/query-index.json"
         }]
       }
@@ -424,15 +429,16 @@ Each `link` has:
 
 - `title` — cleaned title
 - `originalTitle` — raw title before [§4.6](#46-title-cleanup) cleanup; equals `title` when no cleanup occurred
-- `url` — canonical production URL
-- `path` — URL pathname
+- `url` — canonical production URL (reflects `addHtmlExtension` if applied)
+- `path` — final URL pathname (reflects `addHtmlExtension` if applied)
+- `originalPath` — pathname as parsed from the source row, before any [§4.3](#43-url-normalization) html-suffix manipulation; equals `path` for GNAV links and for query-index rows that did not have `addHtmlExtension` applied
 - `originUrl` (optional) — provenance: the GNAV fragment or query-index URL the link was extracted from
 
 ### 5.2 `sitemap-links.csv`
 
 Flat audit view of every link in `sitemap.json`. Written alongside `sitemap.json` by `transform-data`. Intended for stakeholder review and content auditing.
 
-Columns: `type`, `heading`, `title`, `originalTitle`, `url`, `path`, `originUrl`.
+Columns: `type`, `heading`, `title`, `originalTitle`, `url`, `path`, `originalPath`, `originUrl`.
 
 - `type`: `base` or `extended`
 - `heading`: for base, `<sectionHeading> > <subheading>`; for extended, the geo-group title

@@ -3,7 +3,8 @@
  * @property {string} title
  * @property {string} originalTitle - title before Adobe-branding cleanup; equals title when no cleanup occurred
  * @property {string} url
- * @property {string} path
+ * @property {string} path - final path after any html-suffix manipulation
+ * @property {string} originalPath - path as parsed from the source row, before any html-suffix manipulation
  * @property {string} [originUrl]
  */
 
@@ -114,18 +115,34 @@ function isIndexable(robots) {
 }
 
 /**
+ * @typedef {Object} NormalizeOptions
+ * @property {string} [originUrl]
+ * @property {boolean} [addHtmlExtension]
+ *   Append `.html` to the resolved path (unless it is already `.html` or the
+ *   root `/`). Used for query indexes that omit the suffix that the live URL
+ *   actually serves.
+ */
+
+/**
  * @param {unknown} raw
  * @param {string} fallbackDomain
  * @param {SiteDomainMap} [siteDomainMap]
- * @param {string} [originUrl]
+ * @param {NormalizeOptions | string} [optionsOrOriginUrl]
+ *   Pass a NormalizeOptions object. A bare string is accepted for backward
+ *   compatibility and is interpreted as `originUrl`.
  * @returns {NormalizedLink[]}
  */
 export function normalizeQueryIndexData(
   raw,
   fallbackDomain,
   siteDomainMap = {},
-  originUrl,
+  optionsOrOriginUrl,
 ) {
+  const options = typeof optionsOrOriginUrl === 'string'
+    ? { originUrl: optionsOrOriginUrl }
+    : (optionsOrOriginUrl || {});
+  const { originUrl, addHtmlExtension = false } = options;
+
   const rows = Array.isArray(/** @type {{ data?: unknown[] }} */ (raw)?.data)
     ? /** @type {QueryIndexRow[]} */ (/** @type {{ data: unknown[] }} */ (raw).data)
     : [];
@@ -134,13 +151,28 @@ export function normalizeQueryIndexData(
     const source = row.path || row.url;
     if (!source || !isIndexable(row.robots)) return [];
 
-    const url = toProductionUrl(String(source), fallbackDomain, siteDomainMap);
-    const parsed = new URL(url);
-    const urlPath = parsed.pathname;
+    const productionUrl = toProductionUrl(String(source), fallbackDomain, siteDomainMap);
+    const parsed = new URL(productionUrl);
+    const originalPath = parsed.pathname;
+
+    const shouldAddHtml = addHtmlExtension
+      && originalPath !== '/'
+      && !/\.html$/.test(originalPath);
+    const urlPath = shouldAddHtml ? `${originalPath}.html` : originalPath;
+    if (shouldAddHtml) parsed.pathname = urlPath;
+    const url = parsed.toString();
+
     const rawTitle = String(row.title || '').replace(/\s+/g, ' ').trim();
     const originalTitle = rawTitle || titleFromSlug(urlPath);
     const title = cleanTitle(originalTitle);
 
-    return [{ title, originalTitle, url, path: urlPath, ...(originUrl ? { originUrl } : {}) }];
+    return [{
+      title,
+      originalTitle,
+      url,
+      path: urlPath,
+      originalPath,
+      ...(originUrl ? { originUrl } : {}),
+    }];
   });
 }
