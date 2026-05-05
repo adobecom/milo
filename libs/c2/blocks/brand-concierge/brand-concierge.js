@@ -531,11 +531,13 @@ function decorateFloatingButton(el) {
     if (pinned !== prevPinned) {
       prevPinned = pinned;
       if (pinned) {
-        floatingContainer.setAttribute('tab-index', '-1');
+        floatingContainer.setAttribute('tabindex', '-1');
+        floatingContainer.setAttribute('aria-hidden', 'true');
         floatingContainer.blur();
         if (!variants.isFloatingAnchorHide) bcSpacer.style.height = `${cachedTargetHeight}px`;
       } else {
-        floatingContainer.removeAttribute('tab-index');
+        floatingContainer.removeAttribute('tabindex');
+        floatingContainer.removeAttribute('aria-hidden');
         if (!variants.isFloatingAnchorHide) bcSpacer.style.height = '0';
       }
     }
@@ -546,14 +548,9 @@ function decorateFloatingButton(el) {
       target.style.bottom = bottom;
     }
 
-    let visible;
-    if (variants.isHero || variants.floatingDelay) {
-      visible = scrollY > scrollDelay && !pinned;
-    } else if (variants.isFloatingAnchorHide) {
-      visible = !pinned;
-    } else {
-      visible = !pinned;
-    }
+    const visible = (variants.isHero || variants.floatingDelay)
+      ? scrollY > scrollDelay && !pinned
+      : !pinned;
 
     if (visible !== prevVisible) {
       prevVisible = visible;
