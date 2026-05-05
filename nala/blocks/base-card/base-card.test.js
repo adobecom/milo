@@ -68,7 +68,7 @@ test.describe('Milo Base Card Block test suite', () => {
       await expect(await baseCard.fullWidthBaseCard).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('base-card', 1));
       const link = baseCard.fullWidthBaseCard.getByRole('link', { name: data.fullWidthCta });
 
-      await expect(link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.fullWidthCta, 3, data.fullWidthTitle));
+      await expect(link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.fullWidthCta, 1, data.fullWidthTitle));
     });
   });
 
