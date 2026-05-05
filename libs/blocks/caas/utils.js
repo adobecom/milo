@@ -563,10 +563,6 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   return lingoSiteMappingPromise;
 }
 
-export function primeFetchLingoSiteMapping(fqdn) {
-  if (!lingoSiteMappingPromise) fetchLingoSiteMapping(fqdn);
-}
-
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);

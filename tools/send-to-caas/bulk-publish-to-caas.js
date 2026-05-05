@@ -192,8 +192,6 @@ const processData = async (data, accessToken) => {
     domain = `https://main--${repo}--${owner}.aem.live`;
   }
 
-  primeFetchLingoSiteMapping(host);
-
   for (const page of data) {
     if (!keepGoing) break;
 
