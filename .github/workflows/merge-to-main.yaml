@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [labeled]
   schedule:
-    - cron: '0 9 * * *' # Run every day at 9am UTC
+    - cron: '48 8 * * *' # Run every day at 8:48am UTC
   workflow_dispatch: # Allow manual trigger
 
 env:
