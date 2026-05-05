@@ -56,22 +56,6 @@ export default function createCanvasGrid(canvas, {
     buildGrid();
   }
 
-  function updateCardAnchors(cards) {
-    if (!dots.length) return;
-    const { width } = getViewport();
-    const spacing = getSpacing();
-    const columnCount = Math.ceil(width / spacing) + 2;
-    cards.forEach((card) => {
-      const { x, y } = getCardCenter(card);
-      const gridColumn = Math.round(x / spacing);
-      const gridRow = Math.max(0, Math.round(y / spacing));
-      const dotIndex = gridRow * columnCount + gridColumn;
-      const clampedDotIdx = Math.max(0, Math.min(dots.length - 1, dotIndex));
-      card.anchorX = dots[clampedDotIdx].originX;
-      card.anchorY = dots[clampedDotIdx].originY;
-    });
-  }
-
   function update() {
     if (isMobile()) return;
     const mouseParked = mouse.x === -9999;
@@ -159,7 +143,6 @@ export default function createCanvasGrid(canvas, {
 
   return {
     resize,
-    updateCardAnchors,
     update,
     draw,
     destroy() {
