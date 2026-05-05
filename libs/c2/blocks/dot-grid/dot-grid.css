@@ -112,6 +112,7 @@
   border-radius: 8px;
   transform-origin: center center;
   cursor: default;
+  will-change: transform, opacity;
 }
 
 .dot-grid .card-stack .card {

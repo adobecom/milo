@@ -18,6 +18,7 @@
   transform-origin: center center;
   pointer-events: none;
   will-change: transform;
+  contain: layout style paint;
 }
 
 .dot-grid .acrobat-desktop-toolbar {

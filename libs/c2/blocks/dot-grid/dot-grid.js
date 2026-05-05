@@ -5,19 +5,59 @@ import createCanvasGrid from './canvas-grid.js';
 
 /* ────────────────────────────────────────────────────────────────────────────
  * SCROLL-DRIVEN ANIMATION OVERVIEW
- * Block is 600vh tall and pin-scrolled. Page scroll drives `scrollTimeline.current`
- * (abstract units, 0 → animScrollTotal) which in turn drives three phases:
+ * Block is 600vh tall and pin-scrolled. Page scroll (px) is normalized to 0..1
+ * across the pinned range, then stretched onto an abstract timeline budget
+ * `animScrollTotal` (≈4552 on desktop, ≈2977 on mobile). All phase boundaries
+ * below are positions on that abstract budget — independent of viewport or
+ * block height.
  *
- *   ┌─ phase.arcPan (0..1) ───┬─ phase.arcToGrid (0..1) ─┬─ phase.slotting (0..1) ─┐
- *   │ Cards arc-rotate in    │ Arc flattens/peels cards │ Cards glide into the    │
- *   │ from upper-right.      │ down to a flat grid.     │ Acrobat mockup slots.   │
- *   │ + slide-in pre-pin     │ Mockup waits.            │ Mockup + title + CTA    │
- *   │   from below.          │                          │   slide up from below.  │
- *   └────────────────────────┴──────────────────────────┴─────────────────────────┘
- *   0           ARC_PAN_END          gridEnd            slottingStart   +slottingDuration
+ *   abstract scroll units (desktop):
+ *   0       135                     1132                    2832            4552
+ *   │        │                       │                       │               │
+ *   ├────────┴───────────────────────┤                       │               │
+ *   │  arcPan: 0 → 1 by scroll 1350  │ (continues invisibly  │               │
+ *   │  Cards arc-rotate in from      │  past gridEnd; cards  │               │
+ *   │  upper-right. Slide-in pre-pin │  already off arc)     │               │
+ *   │  rises cards into formation.   │                       │               │
+ *   │        │                       │                       │               │
+ *   │        ├───────────────────────┤                       │               │
+ *   │        │ arcToGrid: 0 → 1      │                       │               │
+ *   │        │ Arc flattens, cards   │                       │               │
+ *   │        │ peel onto flat grid   │                       │               │
+ *   │        │ (staggered by fanIdx) │                       │               │
+ *   │        │                       │                       │               │
+ *   │        │                       ├───────────────────────┤               │
+ *   │        │                       │ settle (no phase var) │               │
+ *   │        │                       │ Cards rest on grid;   │               │
+ *   │        │                       │ column compression +  │               │
+ *   │        │                       │ text-block pans up;   │               │
+ *   │        │                       │ ADBE logo draws in.   │               │
+ *   │        │                       │ Driven by             │               │
+ *   │        │                       │ arcTextPanProgress.   │               │
+ *   │        │                       │                       │               │
+ *   │        │                       │                       ├───────────────┤
+ *   │        │                       │                       │ slotting: 0→1 │
+ *   │        │                       │                       │ Cards glide   │
+ *   │        │                       │                       │ into Acrobat  │
+ *   │        │                       │                       │ mockup slots; │
+ *   │        │                       │                       │ mockup +      │
+ *   │        │                       │                       │ title + CTA   │
+ *   │        │                       │                       │ slide up.     │
+ *   PEEL_START_  ARC_PAN_END (1350)  gridEnd                slottingStart    +slottingDuration
+ *   SCROLL (135)                     (DESKTOP_PEEL_END_      (DESKTOP_        (4552 = total)
+ *                                     SCROLL = 1132)         SLOTTING_START
+ *                                                            = 2832)
  *
- * Each phase is computed independently from `scrollTimeline.current` and clamped to [0,1].
- * Mobile and desktop have different `gridEnd` / `slottingStart` (see applyViewportTiming).
+ * Phase signals overlap and gap intentionally:
+ *   - arcToGrid starts later than arcPan (10% intro window before peel begins)
+ *     and finishes earlier (peel runs over a shorter scroll distance than the
+ *     rotation; the remaining arcPan progress past gridEnd is invisible).
+ *   - The 37%-of-timeline gap between gridEnd and slottingStart is the "settle"
+ *     period — no phase variable, but compression / text pan / logo draw run
+ *     during it, driven by arcTextPanProgressCached.
+ *
+ * Mobile collapses the settle gap and adds a post-reveal pan after slotting;
+ * see refreshFrameProfile() for the mobile timing constants.
  * ──────────────────────────────────────────────────────────────────────────── */
 
 // TODO: finalize breakpoints

@@ -120,11 +120,12 @@ export default function createCanvasGrid(canvas, {
     if (alpha <= 0) return;
     context.fillStyle = `rgba(${DOT_RED},${DOT_GREEN},${DOT_BLUE},${alpha})`;
 
+    context.beginPath();
     for (let i = 0; i < dots.length; i += 1) {
-      context.beginPath();
+      context.moveTo(dots[i].x + CONFIG.dotSize, dots[i].y);
       context.arc(dots[i].x, dots[i].y, CONFIG.dotSize, 0, Math.PI * 2);
-      context.fill();
     }
+    context.fill();
   }
 
   const handleMouseMove = (e) => {
