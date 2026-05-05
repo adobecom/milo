@@ -333,14 +333,13 @@ Output semantics:
 
 - writes `sitemap.json`
 - resolves placeholder tokens using extracted placeholders
-- resolves section 2 and section 3 geo labels from extracted region-nav fragment links when available
+- resolves extended-geo group titles from `page-copy.label`
 - normalizes query-index titles
 - strips trailing Adobe branding from titles (see [Title cleanup](#title-cleanup))
 - preserves the pre-cleanup value as `originalTitle` on every link (in `sitemap.json` and `sitemap-links.csv`) for auditing
 - derives fallback titles from URL slugs without file extensions
-- includes only sibling sitemap links that currently exist
 - collapses intra-geo duplicates between `cc` (legacy, `.html`) and `da-*` (modern, no `.html`) site families, preferring `da-*`
-- strips any trailing ` - <language>` suffix from region-nav-derived geo labels
+- strips any trailing ` - <language>` suffix from page-copy-derived geo labels
 
 #### Query-index row selection
 
@@ -387,7 +386,6 @@ Within a single extended geo:
 The resulting `sitemap.json` contains:
 
 - `sections.baseGeoLinks`
-- `sections.otherSitemapLinks`
 - `sections.extendedGeoLinks`
 
 This `sitemap.json` document is the normalized render contract for a sitemap page. Downstream rendering should consume this document rather than re-reading raw extracted GNAV or query-index inputs.
@@ -414,8 +412,7 @@ Expected shell:
 Section rendering contract:
 
 - Section 1: grouped navigation links rendered as a multi-column layout
-- Section 2: a simple authored list of sibling sitemap links; a dedicated block is not required
-- Section 3: grouped extended-geo links rendered as an expandable or otherwise compact grouped layout
+- Section 2: grouped extended-geo links rendered as an expandable or otherwise compact grouped layout
 
 Rendering notes:
 
@@ -432,10 +429,11 @@ Rendering notes:
 Page-copy contract:
 
 - H1 defaults to `Sitemap`
-- metadata `title` and `description` are rendered directly in the editable DA template from `pageTitle` and `pageDescription`
+- metadata `title` is rendered directly in the editable DA template from `pageTitle`
+- metadata `description` is authored literally in the DA template
 - metadata `locale` is rendered directly in the editable DA template from the current base geo, with root rendered as `global`
 - metadata rows may be authored literally in the DA template; they are not required to come from a preassembled metadata array in code
-- page-copy strings may contain `{{variable}}` placeholders, resolved using the extracted placeholder map for that base geo
+- `pageTitle` may contain `{{variable}}` placeholders, resolved using the extracted placeholder map for that base geo
 - the DA document shell should remain editable as template HTML rather than being buried entirely in string assembly code
 
 #### Manifest

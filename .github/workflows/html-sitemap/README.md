@@ -35,11 +35,10 @@ Each supported subdomain gets a family of sitemap pages:
 - one page for the default/root base geo
 - one page for each additional base geo that qualifies for output
 
-Each sitemap page has three sections:
+Each sitemap page has two sections:
 
 1. Base-geo links from GNAV
-2. Links to sibling sitemap pages in the same subdomain
-3. Extended-geo links from each extended geo's query indices
+2. Extended-geo links from each extended geo's query indices
 
 ### Terminology
 
@@ -76,17 +75,7 @@ This section is derived from GNAV structure.
 - H4 groups subcategories
 - links preserve navigational grouping as closely as possible
 
-### Section 2: Other Sitemap Links
-
-This section links to sibling base-geo sitemap pages in the same subdomain.
-
-Rule:
-
-- include only sibling base geos that currently have sitemap output
-- geo labels should prefer the authored region-nav fragment label for that geo when available
-- any trailing ` - <language>` suffix should be removed from the displayed geo label
-
-### Section 3: Extended Geo Links
+### Section 2: Extended Geo Links
 
 This section contains extended-geo pages grouped by geo label.
 
@@ -94,7 +83,7 @@ Within a single extended geo, entries from different site families (e.g. `cc`, `
 
 Extended-geo entries are NOT deduplicated against the base geo. A page that exists at both `/fr/foo` and `/lu_fr/foo` will appear in both the base section and under the extended geo group.
 
-- geo labels should follow the same region-nav-derived labeling rule as section 2
+- geo labels come from `page-copy.label`; a trailing ` - <language>` qualifier is stripped at render time
 
 ### Title cleanup
 
@@ -254,7 +243,7 @@ Interpretation:
 - `diff` compares local HTML against what is currently in DA; read-only
 - `push` uploads changed pages to DA; skips unchanged pages unless `--force` is set
 - `preview` and `publish` promote the corresponding remote document path in AEM
-- only geos marked `deploy: true` in the config appear in sibling links and are eligible for delivery
+- only geos with a non-empty `stage` in the config are eligible for delivery; `stage` selects how far each geo travels (`push`, `preview`, or `publish`)
 
 ## Prerequisites
 
@@ -363,7 +352,7 @@ Options:
 
 `--subdomain` is safe to use in production — subdomains are independent and have separate manifests and output directories.
 
-`--geo` is intended for local development and debugging. Section 2 sibling links are driven by the config `deploy` flag (not disk state), so they are consistent regardless of which geos were extracted. However, the per-subdomain manifest will only reflect the geos generated in that run. Production runs should omit `--geo` to generate complete manifests and let the config `deploy` flag control which pages get promoted.
+`--geo` is intended for local development and debugging. The per-subdomain manifest only reflects the geos generated in that run. Production runs should omit `--geo` to generate complete manifests and let the config `stage` field control which pages get promoted.
 
 Examples:
 
@@ -431,7 +420,7 @@ Maps each site to its query-index path.
 
 ### `geo-map`
 
-Maps each base geo to its language and extended-geo assignments.
+Maps each base geo to its language, extended-geo assignments, and how far the pipeline should deploy it.
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -439,29 +428,30 @@ Maps each base geo to its language and extended-geo assignments.
 | `baseGeo` | no | Geo code for the base geo; empty string or omitted for the root geo |
 | `language` | yes | Language code for this base geo (`en`, `fr`, `ja`, etc.) |
 | `extendedGeos` | no | Comma-separated list of extended geo codes assigned to this base geo |
-| `deploy` | no | Set to `true` to mark this geo for deployment; defaults to disabled when empty or omitted |
+| `stage` | no | Deployment stage: `push`, `preview`, `publish`, or empty (extract & transform only). Case-insensitive. |
+| `note` | no | Free-form editorial notes; not consumed by the pipeline |
 
-`deploy` controls two things:
+`stage` is the maximum stage the pipeline will reach for this geo:
 
-- **Section 2 links**: only geos marked `deploy: true` appear in the "Other Sitemaps" section of any page, preventing links to pages that don't exist in production
-- **Delivery stages**: `push`, `preview`, and `publish` only promote geos marked `deploy: true`
+- empty or absent — extract and transform only; no DA upload, no AEM preview, no AEM publish
+- `push` — also upload to DA
+- `preview` — also trigger AEM preview
+- `publish` — also trigger AEM publish
 
-All geos are still extracted and transformed regardless of `deploy` status. This preserves full data, manifests, and the ability to inspect any geo locally.
+All geos are still extracted and transformed regardless of `stage`, preserving full data, manifests, and the ability to inspect any geo locally — `stage` only gates the delivery stages (`push`, `preview`, `publish`).
 
 ### `page-copy`
 
-Maps each base geo to render-time page strings.
+Per-(subdomain, geo) page copy. Provides geo labels and localized page titles.
 
 | Field | Required | Description |
 |-------|----------|-------------|
 | `subdomain` | yes | Subdomain this row belongs to (falls back to `domain` field if absent) |
-| `baseGeo` | no | Geo code; empty string or omitted for the root geo |
-| `pageTitle` | yes | Page `<h1>` and metadata title; defaults to `Sitemap` if row is missing |
-| `pageDescription` | yes | Metadata description |
-| `otherSitemapsHeading` | no | Section 2 heading (sibling sitemaps) |
-| `extendedPagesHeading` | no | Section 3 heading (extended geos) |
+| `geo` | no | Geo code; matches a `baseGeo` or `extendedGeo` from `geo-map`. Empty string or omitted for the default/root sitemap. |
+| `label` | no | Human-readable region label shown as the heading for each extended-geo group. A trailing `- <language>` qualifier is stripped at render time. |
+| `pageTitle` | no | Localized `<h1>` and HTML `<title>` for the rendered sitemap; defaults to `Sitemap` when empty or row is missing. May contain `{{placeholders}}` resolved from the extracted placeholder map. |
 
-Page-copy strings may contain `{{variable}}` placeholders resolved from the extracted placeholder map. `pageTitle`, `pageDescription`, and `locale` are exposed directly to the DA template.
+For backwards compatibility a `baseGeo` cell is read as `geo` when `geo` is absent.
 
 ### Example
 
@@ -475,19 +465,20 @@ Page-copy strings may contain `{{variable}}` placeholders resolved from the extr
   },
   "query-index-map": {
     "data": [
-      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json" },
+      { "subdomain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json", "enabled": "true" },
       { "subdomain": "www", "site": "cc", "queryIndexPath": "/cc-shared/assets/query-index.json", "enabled": "false" }
     ]
   },
   "geo-map": {
     "data": [
-      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl" },
-      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr", "deploy": "true" }
+      { "subdomain": "business", "baseGeo": "", "language": "en", "extendedGeos": "ca, nl", "stage": "preview", "note": "" },
+      { "subdomain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "ca_fr, ch_fr", "stage": "publish", "note": "lingo phase 1" }
     ]
   },
   "page-copy": {
     "data": [
-      { "subdomain": "business", "baseGeo": "", "pageTitle": "Sitemap", "pageDescription": "Browse pages across this site by section, locale, and region.", "otherSitemapsHeading": "Other Regions", "extendedPagesHeading": "Additional Localized Pages" }
+      { "subdomain": "business", "geo": "", "label": "", "pageTitle": "Sitemap" },
+      { "subdomain": "business", "geo": "fr", "label": "France", "pageTitle": "Plan du site" }
     ]
   }
 }
@@ -562,15 +553,6 @@ Representative layout:
 - Raw placeholders payload used later by transform
 - Written by `extract`
 
-`_extract/regions.html`
-
-- Raw region-nav fragment HTML fetched from the host site's regions fragment
-- Written by `extract`
-- Used by `transform-data` to derive display labels for section 2 (other sitemaps) and section 3 (extended geos)
-- Contains `<a>` elements whose `href` maps to a geo prefix and whose link text provides the authored geo label
-- Any trailing ` - <language>` suffix in the link text is stripped before use
-- Falls back to `Intl.DisplayNames`-generated labels when the fragment is unavailable or a geo is not represented
-
 `_extract/**/query-index.json`
 
 - Raw query-index payloads fetched per site and geo
@@ -582,7 +564,7 @@ Representative layout:
 - Written by `transform-data`
 - Consumed by `transform-da`
 - Defines the render contract for the final sitemap page
-- Uses extracted `regions.html` labels for `otherSitemapLinks[*].title` and `extendedGeoLinks[*].title` when available, stripping any trailing ` - <language>` suffix
+- Uses `page-copy.label` values for `extendedGeoLinks[*].title`, stripping any trailing ` - <language>` suffix; falls back to `Intl.DisplayNames`-generated labels when the page-copy row is absent
 
 Shape:
 
@@ -603,9 +585,6 @@ Shape:
         ]
       }
     ],
-    "otherSitemapLinks": [
-      { "geo": "fr", "title": "France", "url": "https://business.adobe.com/fr/sitemap.html" }
-    ],
     "extendedGeoLinks": [
       {
         "geo": "br",
@@ -620,10 +599,9 @@ Shape:
 | Section | Structure |
 |---------|-----------|
 | `baseGeoLinks` | Array of GNAV sections, each with a `heading` and `groups[]` of `{ subheading, links[] }` |
-| `otherSitemapLinks` | Flat array of `{ geo, title, url }` for sibling sitemap pages |
 | `extendedGeoLinks` | Array of `{ geo, title, links[] }` groups for extended-geo pages |
 
-Each `link` has `title`, `url` (canonical production URL), and `path` (URL pathname).
+Each `link` has `title`, `originalTitle` (pre-cleanup raw title), `url` (canonical production URL), `path` (URL pathname), and an optional `originUrl` (provenance — the GNAV fragment or query-index URL the link was extracted from).
 
 `sitemap.html`
 
@@ -641,7 +619,6 @@ The rendered HTML includes `data-*` attributes on iterated elements for monitori
 |-----------|----------|-------|
 | `data-section-index` | GNAV section container (`baseGeoLinks`) | Zero-based section index |
 | `data-link-index` | Individual `<a>` elements within sections and extended geo groups | Zero-based link index within its parent loop |
-| `data-geo-index` | Sibling sitemap `<a>` elements (`otherSitemapLinks`) | Zero-based geo index |
 | `data-group-index` | Extended geo group container (`extendedGeoLinks`) | Zero-based group index |
 
 These attributes are stable for the same inputs and can be used to locate specific items by position without parsing the full DOM.
@@ -663,14 +640,13 @@ Top-level shape:
     {
       "baseGeo": "",
       "domain": "business.adobe.com",
-      "deploy": true,
+      "stage": "publish",
       "sha256": "a1b2c3d4...",
       "baseGeoSectionCount": 6,
       "baseGeoLinkCount": 42,
-      "otherSitemapLinkCount": 10,
       "extendedGeoGroupCount": 3,
       "extendedGeoLinkCount": 15,
-      "totalLinkCount": 67
+      "totalLinkCount": 57
     }
   ]
 }
@@ -682,13 +658,12 @@ Page entry fields:
 |-------|---------|
 | `baseGeo` | Geo code for this page (empty string = root) |
 | `domain` | Production domain |
-| `deploy` | Whether this geo is marked for deployment in `geo-map` |
+| `stage` | Deployment stage from `geo-map` (`push`, `preview`, `publish`, or empty) |
 | `sha256` | SHA-256 hash of the `sitemap.html` content (UTF-8 bytes) |
 | `baseGeoSectionCount` | Number of GNAV navigation sections (section 1 groups) |
 | `baseGeoLinkCount` | Total links across all section 1 groups |
-| `otherSitemapLinkCount` | Number of sibling sitemap links (section 2) |
-| `extendedGeoGroupCount` | Number of extended geo groups (section 3) |
-| `extendedGeoLinkCount` | Total links across all section 3 groups |
+| `extendedGeoGroupCount` | Number of extended geo groups (section 2) |
+| `extendedGeoLinkCount` | Total links across all section 2 groups |
 | `totalLinkCount` | Sum of all link counts |
 
 Pages are sorted by `baseGeo` for stable ordering. Pages that were skipped (no `sitemap.html`) are excluded.
@@ -754,9 +729,8 @@ Writes:
 Conditions that affect output:
 
 - runs only for base geos that already have eligible extracted input
-- sibling sitemap links include only base geos marked `deploy: true` in the config, regardless of local disk state
 - extended-geo links are subject to intra-geo `cc`/`da-*` collapsing and `extendedSitemap` rules
-- geo labels for section 2 and section 3 prefer extracted `regions.html` link text and strip any trailing ` - <language>` suffix before falling back to generated labels
+- extended-geo group titles come from `page-copy.label`, with any trailing ` - <language>` suffix stripped; falls back to `Intl.DisplayNames`-generated labels when the page-copy row is absent
 
 ### `transform-da`
 
@@ -794,7 +768,7 @@ Conditions that affect output:
 - requires `--da-root`
 - requires DA auth env vars
 - skips geos with no local `sitemap.html`
-- skips geos not marked `deploy: true` in `geo-map`
+- skips geos whose `stage` in `geo-map` does not reach `push` (i.e. empty stage)
 - compares the SHA-256 hash of local content against remote content fetched from DA
 - a missing remote document is reported as `new`, not as an error
 
@@ -817,7 +791,7 @@ Conditions that affect output:
 - requires `--da-root`
 - requires DA auth env vars
 - skips geos with no local `sitemap.html`
-- skips geos not marked `deploy: true` in `geo-map`
+- skips geos whose `stage` in `geo-map` does not reach `push` (i.e. empty stage)
 - compares local content hash against remote before uploading; skips unchanged pages to preserve remote document timestamps
 - `--force` bypasses the change detection and always uploads
 
@@ -837,7 +811,7 @@ Conditions that affect output:
 - requires `--da-root`
 - requires AEM admin token env vars
 - skips geos with no local `sitemap.html`
-- skips geos not marked `deploy: true` in `geo-map`
+- skips geos whose `stage` in `geo-map` does not reach `preview` (i.e. empty or `push`)
 
 ### `publish`
 
@@ -855,7 +829,54 @@ Conditions that affect output:
 - requires `--da-root`
 - requires AEM admin token env vars
 - skips geos with no local `sitemap.html`
-- skips geos not marked `deploy: true` in `geo-map`
+- skips geos whose `stage` in `geo-map` is not `publish`
+
+## Troubleshooting
+
+Symptom-keyed runbook for the most common failures. For non-technical incidents (a page didn't appear, a label is wrong) the wiki points stakeholders here.
+
+### How do I tell if the last run succeeded?
+
+Today: check the GitHub Actions run history.
+
+```
+gh run list --workflow=html-sitemap.yml
+```
+
+Failure shows up as a red X. Click in for logs. *(Slack notification on failure is open work.)*
+
+### Run failed at the `push` stage with 401
+
+DA source token expired. Stored in repo secrets as `DA_SOURCE_TOKEN`. Refresh by re-authenticating at [da.live](https://da.live/) and copying the `auth_token` cookie.
+
+### Run failed at `preview` or `publish` with 401
+
+AEM admin token expired. Stored in repo secrets as `AEM_ADMIN_TOKEN_ADOBECOM_DA_CC` or `…_DA_BACOM`. Refresh from [admin.hlx.page/auth/adobe](https://admin.hlx.page/auth/adobe).
+
+### A locale is missing from the rendered sitemap
+
+Check `geo-map`: is `stage` set for that geo? An empty `stage` means the geo is extracted but not deployed. Set to `preview` or `publish` and re-run.
+
+### Pages are missing from a locale's extended-geo section
+
+The extended-geo section pulls from query indices on `cc`, `da-cc`, `da-dc`, etc. If pages were recently published or had `noindex` removed, the query index may not yet reflect that. Trigger a bulk re-index via the AEM Admin API:
+
+```
+POST https://admin.hlx.page/index/{owner}/{repo}/{ref}/*
+{ "paths": [...], "forceUpdate": true }
+```
+
+### A page that should be `noindex` is appearing
+
+Check the source query index for that path — a stale entry can persist. Re-index the affected path:
+
+```
+POST https://admin.hlx.page/index/{owner}/{repo}/{ref}/{path}
+```
+
+### Push reports "unchanged, skipping"
+
+Local content matches what's already in DA — nothing to do. Pass `--force` to upload anyway (rarely needed).
 
 ## Template Language
 
