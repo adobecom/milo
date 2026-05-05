@@ -985,6 +985,7 @@ p {
          directly — avoids inheriting --parallax-stagger-progress which forces a full
          descendant style-recalc on every scroll frame. */
       view-timeline: --parallax-stagger-timeline block;
+      view-timeline-inset: 40% 10%;
       animation-name: none;
 
       > :not([class*="section-"]) {
