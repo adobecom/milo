@@ -87,7 +87,9 @@ const loadCaas = async (a) => {
   const caasEndpoint = queryParams.get('caasendpoint');
   const caasContainer = queryParams.get('caascontainer');
 
-  if (host.includes('stage.adobe') || env?.name === 'local' || caasEndpoint === 'stage') {
+  if (host.includes('stage.adobe.com')) {
+    chimeraEndpoint = 'www.stage.adobe.com/chimera-api/collection';
+  } else if (env?.name === 'local' || caasEndpoint === 'stage') {
     chimeraEndpoint = S_CAAS_AIO;
   } else if (host.includes(`.${SLD}.`) || caasEndpoint === 'prod') {
     // If invoking URL is not an Acom URL, then switch to AIO
