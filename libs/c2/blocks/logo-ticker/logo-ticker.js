@@ -3,7 +3,7 @@ import { replaceKeyArray } from '../../../features/placeholders.js';
 
 const LANA_OPTIONS = { tags: 'logo-ticker', errorType: 'i' };
 const PLACEHOLDER_KEYS = ['pause-motion', 'play-motion', 'pause-icon', 'play-icon'];
-const SET_COUNT = 3;
+const SET_COUNT = 2;
 
 let labels = {
   pauseMotion: 'Pause',
@@ -52,7 +52,10 @@ function syncTrackMetrics(track) {
   const firstSet = track.firstElementChild;
   if (!firstSet) return;
   const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-  track.style.setProperty('--logo-ticker-distance', `-${firstSet.offsetWidth + gap}px`);
+  const setWidth = firstSet.offsetWidth;
+  track.style.setProperty('--logo-ticker-distance', `-${setWidth + gap}px`);
+  const containerWidth = track.parentElement?.clientWidth || 0;
+  track.classList.toggle('is-static', setWidth <= containerWidth);
 }
 
 function buildToggle(track) {
@@ -108,7 +111,9 @@ export default async function init(el) {
   el.replaceChildren(track, toggle);
 
   syncTrackMetrics(track);
-  new ResizeObserver(() => syncTrackMetrics(track)).observe(track.firstElementChild);
+  const ro = new ResizeObserver(() => syncTrackMetrics(track));
+  ro.observe(track.firstElementChild);
+  ro.observe(el);
 
   new IntersectionObserver(([entry]) => {
     track.classList.toggle('is-offscreen', !entry.isIntersecting);

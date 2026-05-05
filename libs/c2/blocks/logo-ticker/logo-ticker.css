@@ -41,6 +41,16 @@
     flex: 0 0 auto;
   }
 
+  .logo-ticker-track.is-static {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+
+    .logo-ticker-set:not(:first-child) {
+      display: none;
+    }
+  }
+
   /* TODO: waiting on accessibility requirements */
   .logo-ticker-toggle {
     position: absolute;
@@ -59,6 +69,10 @@
       outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
       outline-offset: var(--s2a-spacing-2);
     }
+  }
+
+  &:has(.logo-ticker-track.is-static) .logo-ticker-toggle {
+    display: none;
   }
 
   /* TODO: waiting for final accessibility updates */
