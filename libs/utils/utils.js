@@ -114,6 +114,7 @@ const C2_BLOCKS = [
   'explore-card',
   'global-footer',
   'global-navigation',
+  'gui-test',
   'martech-metadata',
   'modal',
   'news',

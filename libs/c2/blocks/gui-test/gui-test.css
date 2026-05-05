@@ -1,0 +1,127 @@
+.gui-test {
+  position: relative;
+  contain: layout;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .media {
+    position: relative;
+    clip-path: inset(0 round var(--s2a-border-radius-md));
+    overflow: clip;
+
+    > picture:not(.icon) {
+      display: flex;
+    }
+
+    picture:not(.icon) img {
+      width: 100%;
+      object-fit: cover;
+      aspect-ratio: 4 / 3;
+      transition: transform 0.3s ease;
+    }
+
+    .icon {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      inset-block-start: var(--s2a-spacing-16);
+      inset-inline-start: var(--s2a-spacing-16);
+
+      img {
+        width: 24px;
+      }
+    }
+  }
+
+  &:hover .media picture:not(.icon) img {
+    transform: scale(1.05);
+  }
+
+  .foreground {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-8);
+    padding-block-start: var(--s2a-spacing-24);
+    padding-inline: var(--s2a-spacing-16);
+
+    :is(h1, h2, h3, h4, h5, h6) {
+      color: var(--s2a-color-content-title);
+    }
+
+    > p:has(.standalone-link) {
+      margin-block-start: var(--s2a-spacing-16);
+    }
+
+    .standalone-link {
+      color: var(--s2a-color-content-label);
+      text-decoration: none;
+      font-weight: 700;
+
+      &::after {
+        content: '';
+        display: inline-block;
+        /* 3x6 chevron matching Figma spec */
+        width: 3px;
+        height: 6px;
+        margin-inline-start: var(--s2a-spacing-8);
+        background: currentcolor;
+        clip-path: polygon(0 0, 100% 50%, 0 100%);
+        vertical-align: middle;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+    }
+  }
+
+  p {
+    color: var(--s2a-color-content-body-subtle);
+  }
+}
+
+@media (width >= 768px) {
+  .gui-test {
+    .media picture:not(.icon) img {
+      aspect-ratio: 1480 / 670;
+    }
+
+    .foreground {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--s2a-spacing-8) var(--s2a-spacing-24);
+      align-items: start;
+
+      > * {
+        grid-column: 1;
+      }
+
+      > p:has(.standalone-link) {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        align-self: start;
+        margin-block-start: 0;
+        padding-block-start: var(--s2a-spacing-8);
+      }
+    }
+  }
+}
+
+@media (width >= 1280px) {
+  .gui-test {
+    .foreground {
+      padding-inline: var(--s2a-spacing-24);
+    }
+
+    .media .icon {
+      inset-block-start: var(--s2a-spacing-24);
+      inset-inline-start: var(--s2a-spacing-24);
+    }
+  }
+}
