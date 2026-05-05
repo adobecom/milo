@@ -43,13 +43,30 @@ export function sendViewportDimensionsOnRequest(source) {
   window.addEventListener('resize', debounce(() => sendViewportDimensionsToIframe(source), 10));
 }
 
-function reactToMessage({ data, source }) {
+function reactToMessage({ data, source }, iframe) {
   if (data === 'viewportWidth' && source) {
     /* If the page inside iframe comes from another domain, it won't be able to retrieve
     the viewport dimensions, so it sends a request to receive the viewport dimensions
     from the parent window. */
     sendViewportDimensionsOnRequest(source);
   }
+
+  /* The height of the CRM modal is not calculated properly on Titan side so it looks better
+    if we simply set the fixed height 875px for CRM on desktop
+   */
+  if (iframe.src.includes('.modal.html')){ // if crm
+    const dialogModal = iframe.closest('.dialog-modal');
+    const miloIframe = iframe.closest('.milo-iframe');
+    if (!dialogModal || !miloIframe) return;
+    if(document.body.offsetWidth > TABLET_MAX) {
+      miloIframe.style.height = 'auto';
+      dialogModal.style.height = 'auto';
+      dialogModal.style.maxHeight = '875px';
+    } else {
+      dialogModal.style.maxHeight = 'none';
+    }    
+    return;
+  }  
 
   if (data?.contentHeight) {
     /* If the page inside iframe sends the postMessage with its content height,
@@ -84,5 +101,7 @@ export function adjustStyles({ dialog, iframe }) {
 export default async function enableCommerceFrameFeatures({ dialog, iframe }) {
   if (!dialog || !iframe) return;
   adjustStyles({ dialog, iframe });
-  window.addEventListener('message', reactToMessage);
+  window.addEventListener('message', (e) => {
+    reactToMessage(e, iframe);
+  });
 }
