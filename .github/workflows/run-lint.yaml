@@ -25,3 +25,5 @@ jobs:
           config_path: ".eslintrc.js"
           # ignore_path: "/path/to/.eslintignore"
           # extra_args: "--max-warnings=0"
+          # Suppress warnings (e.g. "File ignored by default" for ignored paths); errors still reported
+          extra_args: "--quiet"

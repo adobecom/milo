@@ -1,0 +1,37 @@
+{
+  "config": {
+    "data": [
+      { "subdomain": "business", "domain": "business.adobe.com", "site": "da-bacom", "extendedSitemap": "all" },
+      { "subdomain": "www", "domain": "www.adobe.com", "site": "da-cc", "extendedSitemap": "language", "template": "da-sitemap.html" }
+    ]
+  },
+  "query-index-map": {
+    "data": [
+      { "domain": "business", "site": "da-bacom", "queryIndexPath": "/query-index.json", "enabled": "true" },
+      { "domain": "www", "site": "da-cc", "queryIndexPath": "/cc-shared/assets/query-index.json", "enabled": "false" },
+      { "domain": "www", "site": "edu", "queryIndexPath": "/edu-shared/assets/query-index.json", "enabled": "true" }
+    ]
+  },
+  "geo-map": {
+    "data": [
+      { "domain": "business", "baseGeo": "", "language": "en", "extendedGeos": "br,ca", "stage": "publish" },
+      { "domain": "business", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr", "stage": "publish" },
+      { "domain": "www", "baseGeo": "", "language": "en", "extendedGeos": "ae_en", "stage": "publish" },
+      { "domain": "www", "baseGeo": "fr", "language": "fr", "extendedGeos": "be_fr,ca_fr", "stage": "publish" }
+    ]
+  },
+  "page-copy": {
+    "data": [
+      { "domain": "business", "geo": "", "pageTitle": "Sitemap" },
+      { "domain": "business", "geo": "fr", "pageTitle": "Plan du site" },
+      { "domain": "business", "geo": "br", "label": "Brasil" },
+      { "domain": "business", "geo": "ca", "label": "Canada" },
+      { "domain": "business", "geo": "be_fr", "label": "Belgique" },
+      { "domain": "www", "geo": "", "pageTitle": "Sitemap" },
+      { "domain": "www", "geo": "fr", "pageTitle": "Plan du site" },
+      { "domain": "www", "geo": "ae_en", "label": "Middle East and North Africa - English" },
+      { "domain": "www", "geo": "be_fr", "label": "Belgique" },
+      { "domain": "www", "geo": "ca_fr", "label": "Canada - Français" }
+    ]
+  }
+}

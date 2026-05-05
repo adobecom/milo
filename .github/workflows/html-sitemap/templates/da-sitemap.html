@@ -1,0 +1,89 @@
+<body>
+  <header></header>
+  <main>
+    <div>
+      <div
+        class="text xxl-heading xl-spacing-top center left-mobile"
+      >
+        <div>
+          <div>
+            <h1>{{pageTitle}}</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+    {{#each baseGeoSections}}
+    <div>
+      <div class="text xl-spacing-top">
+        <div>
+          <div>
+            <h2>{{heading}}</h2>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="columns contained static-links">
+        <div>
+          {{#each groups}}
+          <div>
+            {{#if subheading}}
+            <h3>{{subheading}}</h3>
+            {{/if}}
+            <ul>
+              {{#each links}}
+              <li><a href="{{url}}">{{title}}</a></li>
+              {{/each}}
+            </ul>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+    </div>
+    {{/each}}
+    {{#if extendedGeoGroups}}
+    <div>
+      <div class="accordion xl-spacing-top">
+        {{#each extendedGeoGroups}}
+        <div>
+          <div>
+            <h2>{{title}}</h2>
+          </div>
+        </div>
+        <div>
+          <div>
+            <ul>
+              {{#each links}}
+              <li><a href="{{url}}">{{title}}</a></li>
+              {{/each}}
+            </ul>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+    <div>
+      <div class="metadata">
+        <div>
+          <div>title</div>
+          <div>{{pageTitle}}</div>
+        </div>
+        <div>
+          <div>locale</div>
+          <div>{{locale}}</div>
+        </div>
+        <!-- TODO: remove later -->
+        <div>
+          <div>robots</div>
+          <div>noindex,nofollow</div>
+        </div>
+        <div>
+          <div>template</div>
+          <div>sitemap</div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer></footer>
+</body>

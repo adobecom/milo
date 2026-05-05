@@ -1,0 +1,48 @@
+name: HTML Sitemap Generator (Scheduled)
+
+on:
+  workflow_dispatch: # manual trigger until schedule cadence is decided
+  # TODO: decide on schedule (hourly or daily)
+  # schedule:
+  #   - cron: '0 */1 * * *'  # hourly
+  #   - cron: '0 6 * * *'    # daily at 6am UTC
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        working-directory: .github/workflows/html-sitemap
+        run: npm ci
+
+      - name: Lint
+        working-directory: .github/workflows/html-sitemap
+        run: npm run lint
+
+      - name: Run tests
+        working-directory: .github/workflows/html-sitemap
+        run: npm test
+
+      - name: Run pipeline
+        working-directory: .github/workflows/html-sitemap
+        env:
+          ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
+          ROLLING_IMPORT_CLIENT_ID: ${{ secrets.ROLLING_IMPORT_CLIENT_ID }}
+          ROLLING_IMPORT_CLIENT_SECRET: ${{ secrets.ROLLING_IMPORT_CLIENT_SECRET }}
+          ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
+          ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
+          AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
+          AEM_ADMIN_TOKEN_ADOBECOM_DA_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_CC }}
+        run: |
+          node generate.js \
+            --stages extract,transform,diff,push,preview,publish \
+            --output tmp/html-sitemap \
+            --da-root /

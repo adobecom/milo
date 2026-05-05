@@ -1,5 +1,6 @@
 .hlx/*
 .aem/*
+.agents
 coverage
 logs/*
 *node_modules
@@ -7,6 +8,7 @@ logs/*
 .idea
 .iml
 .env
+.envrc
 test-html-results/
 test-results/
 test-a11y-results/
