@@ -7,7 +7,7 @@ function customReporter() {
   return {
     async reportTestFileResults({ logger, sessionsForTestFile }) {
       sessionsForTestFile.forEach((session) => {
-        session.testResults.tests.forEach((test) => {
+        session.testResults?.tests?.forEach((test) => {
           if (!test.passed && !test.skipped) {
             logger.log(test);
           }

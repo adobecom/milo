@@ -1,11 +1,13 @@
 import {
   createTag,
+  getCookie,
   getConfig,
-  getCountry,
   getMetadata,
-  getMepLingoPrefix,
+  getGeoLocalePrefix,
   loadStyle,
   lingoActive,
+  normCountryCode,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
@@ -130,12 +132,16 @@ function addDividers(node, selector) {
   });
 }
 
-function addPillEventListeners(div) {
+function addPillEventListeners(div, overlay, onClose) {
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
-    div.classList.toggle('mep-hidden');
+    const isHidden = div.classList.toggle('mep-hidden');
+    if (!isHidden) overlay?.showPopover?.();
   });
   div.querySelector('.mep-close').addEventListener('click', () => {
-    document.body.removeChild(document.querySelector('.mep-preview-overlay'));
+    const overlayEl = document.querySelector('.mep-preview-overlay');
+    overlayEl?.hidePopover?.();
+    overlayEl?.remove();
+    onClose?.();
   });
 }
 
@@ -645,17 +651,24 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   async function buildSummaryLingo() {
     async function getGeoUserSupport() {
       if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-      if (await getMepLingoPrefix()) return 'Supported';
+      if (await getGeoLocalePrefix()) return 'Supported';
       return 'Not Supported';
     }
 
     const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
     const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
 
+    const searchParams = new URLSearchParams(window.location.search);
+    const countryParam = normCountryCode(searchParams.get('country'));
+    const countryCookie = countryParam
+      || normCountryCode(getCookie('country'))
+      || 'None';
+
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      userCountry: escapeHtml(await getCountry()) ?? '',
+      countryCookie: escapeHtml(countryCookie) ?? '',
+      userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
       geoUser: await getGeoUserSupport(),
       updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
@@ -676,6 +689,8 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
       ${isMmm ? '' : `
+        <span>Country cookie</span>
+        <span>${lingoData.countryCookie}</span>
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
         <span>Geo + User</span>
@@ -709,7 +724,7 @@ async function createPreviewPill() {
   const mepConfig = parseMepConfig();
   if (!mepConfig) return;
   const { activities } = mepConfig;
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', popover: 'manual', 'data-lenis-prevent': '' });
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
@@ -718,7 +733,16 @@ async function createPreviewPill() {
   pill.append(await getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
-  addPillEventListeners(pill);
+  let onClose;
+  if (window.lenis?.options) {
+    const originalPrevent = window.lenis.options.prevent;
+    window.lenis.options.prevent = (node) => {
+      if (node.closest('.mep-preview-overlay')) return true;
+      return originalPrevent?.(node);
+    };
+    onClose = () => { window.lenis.options.prevent = originalPrevent; };
+  }
+  addPillEventListeners(pill, overlay, onClose);
 }
 function addHighlightData(manifests) {
   manifests.forEach(({ selectedVariant, manifest }) => {

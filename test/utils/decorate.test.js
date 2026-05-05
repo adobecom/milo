@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
-import { setBackgroundFocus, getButtonType } from '../../libs/utils/decorate.js';
+import { setBackgroundFocus, decorateBlockText, getButtonType } from '../../libs/utils/decorate.js';
 
 describe('setBackgroundFocus', () => {
   let container;
@@ -81,7 +81,7 @@ describe('setBackgroundFocus', () => {
   });
 });
 
-describe('Decorate', () => {
+describe('Get button type', () => {
   it('Should return outline for <em><strong> CTA', async () => {
     const ctaParent = document.createElement('em');
     const cta = document.createElement('strong');
@@ -115,5 +115,32 @@ describe('Decorate', () => {
     cta.innerHTML = '<strong>CTA</strong>';
     const type = getButtonType(cta);
     expect(type).to.equal('blue');
+  });
+});
+
+describe('decorateBlockText — elContainsText with custom elements', () => {
+  if (!customElements.get('mas-field')) {
+    customElements.define('mas-field', class extends HTMLElement {});
+  }
+
+  it('adds body class to p containing a non-hidden custom element (mas-field)', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p><mas-field field="ctas"></mas-field></p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.true;
+  });
+
+  it('does not add body class to p containing only a hidden custom element', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p><aem-fragment hidden></aem-fragment></p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.false;
+  });
+
+  it('still adds body class to p with plain text', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<h2>Heading</h2><p>Some description text</p>';
+    decorateBlockText(el, ['m', 'm', 'm']);
+    expect(el.querySelector('p').classList.contains('body-m')).to.be.true;
   });
 });

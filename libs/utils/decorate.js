@@ -11,6 +11,7 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
+export const USER_PAUSED_ATTR = 'data-user-paused';
 let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
@@ -96,10 +97,14 @@ export function decorateIconArea(el) {
 }
 
 function elContainsText(el) {
-  return [...el.childNodes].some(({ nodeType, innerText, textContent }) => (
-    (nodeType === Node.ELEMENT_NODE && innerText.trim() !== '')
-    || (nodeType === Node.TEXT_NODE && textContent.trim() !== '')
-  ));
+  return [...el.childNodes].some((node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.innerText.trim() !== '') return true;
+    // Custom elements (tag name contains a hyphen) may render content asynchronously;
+    // treat non-hidden ones as containing text so body classes are applied upfront.
+    return node.tagName?.includes('-') && !node.hidden;
+  });
 }
 
 const isC2 = getMetadata('foundation') === 'c2';
@@ -293,22 +298,25 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  if (!video.getAttributeNames().includes('data-hoverplay')) {
-    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
-    const anchorTag = video.closest('.video-holder').querySelector('a');
-    offsetFiller?.classList.toggle('is-playing');
-    const isPlaying = offsetFiller?.classList.contains('is-playing');
-    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
-    anchorTag?.setAttribute('title', `${ariaLabel}`);
-    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
-    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-  }
+  if (!video || video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const offsetFiller = holder.querySelector('.offset-filler');
+  if (!offsetFiller) return;
+  const anchorTag = holder.querySelector('a.pause-play-wrapper') || holder.querySelector('a');
+  if (!anchorTag) return;
+  if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
+  offsetFiller.classList.toggle('is-playing');
+  const isPlaying = offsetFiller.classList.contains('is-playing');
+  const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  anchorTag.setAttribute('title', `${ariaLabel}`);
+  anchorTag.setAttribute('aria-label', ariaLabel);
+  anchorTag.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = anchorTag.getAttribute('daa-ll');
+  if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
@@ -340,12 +348,15 @@ export function handlePause(event) {
   event.preventDefault();
   event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
+    if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
     if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
   }
   syncPausePlayIcon(video);
 }
@@ -412,12 +423,13 @@ function getVideoIntersectionObserver() {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
         }
       });
@@ -567,7 +579,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
 
 /* NOTE: Experimental logic to substitute authored classes
    with centralized kit classes */
-export function decorateBlockKit(el, kits = []) {
+export function decorateBlockKit(el, kits = {}) {
   const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
   if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
 
@@ -575,4 +587,186 @@ export function decorateBlockKit(el, kits = []) {
   const kitClasses = kits[kitClass];
   el.className = blockClass;
   el.classList.add(kitClass, ...kitClasses);
+}
+
+/* Per-viewport content decoration */
+const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+const VIEWPORT_SUFFIX = '-viewport';
+
+const VIEWPORT_QUERIES = {
+  'mobile-tablet-desktop': {
+    mobile: '(width < 768px)',
+    tablet: '(768px <= width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-desktop': {
+    mobile: '(width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-tablet': {
+    mobile: '(width < 768px)',
+    tablet: '(width >= 768px)',
+  },
+  mobile: { mobile: 'all' },
+  tablet: { tablet: 'all' },
+  desktop: { desktop: 'all' },
+};
+
+function isEmptyCell(el) {
+  if (!el) return true;
+  return !el.children.length && !el.textContent?.trim();
+}
+
+function cloneChildren(source) {
+  return [...source.children].map((child) => child.cloneNode(true));
+}
+
+function parseVariants(text) {
+  const match = text.match(/\(([^)]+)\)/);
+  return match
+    ? match[1].split(',').map((cls) => cls.trim()).filter(Boolean)
+    : [];
+}
+
+function getDelimiterKeyword(row) {
+  if (row.children.length !== 1) return null;
+  const text = row.children[0].textContent.trim().toLowerCase();
+  // TODO: remove bare-keyword fallback post-rollout (replace with the line below)
+  // return VIEWPORT_KEYWORDS.find((kw) => text.startsWith(kw + VIEWPORT_SUFFIX)) ?? null;
+  return VIEWPORT_KEYWORDS.find((kw) => (
+    text.startsWith(kw + VIEWPORT_SUFFIX) || text === kw || text.startsWith(`${kw} `) || text.startsWith(`${kw}(`)
+  )) ?? null;
+}
+
+function warnDuplicateH1s(viewportData) {
+  const h1Count = Object.values(viewportData)
+    .reduce((n, vp) => n + vp.container.querySelectorAll('h1').length, 0);
+  if (h1Count > 1) {
+    /* TODO: this should be surfaced in Preflight */
+    /* eslint-disable-next-line no-console */
+    console.warn(
+      '[parseViewportContent] Multiple <h1> elements detected across viewport sections. '
+      + 'This may cause SEO issues — consider using a single <h1> and swapping its text content.',
+    );
+  }
+}
+
+function resolveInheritance(rows, previousContent) {
+  if (!previousContent) return;
+
+  const [contentRow, ...extraRows] = rows;
+  const prevChildren = [...previousContent.children];
+  const [prevContentRow, ...prevExtraRows] = prevChildren;
+
+  if (contentRow && prevContentRow) {
+    [...contentRow.children].forEach((col, i) => {
+      const prevCol = prevContentRow.children[i];
+      if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
+        col.replaceChildren(...cloneChildren(prevCol));
+      }
+    });
+  }
+
+  extraRows.forEach((row, i) => {
+    const prevRow = prevExtraRows[i];
+    const cell = row?.children[0];
+    const prevCell = prevRow?.children[0];
+    if (cell && isEmptyCell(cell) && prevCell && !isEmptyCell(prevCell)) {
+      cell.replaceChildren(...cloneChildren(prevCell));
+    }
+  });
+}
+
+function parseViewportContent(el) {
+  const children = [...el.children];
+  const content = {};
+  const delimiterEls = [];
+
+  VIEWPORT_KEYWORDS.forEach((keyword, kwIndex) => {
+    const delimiterIdx = children.findIndex((child) => getDelimiterKeyword(child) === keyword);
+    if (delimiterIdx < 0) return;
+
+    // Find the next delimiter (if any) to bound this section
+    const nextIdx = children.findIndex((child, i) => {
+      if (i <= delimiterIdx) return false;
+      const nextKw = getDelimiterKeyword(child);
+      return nextKw && VIEWPORT_KEYWORDS.indexOf(nextKw) > kwIndex;
+    });
+
+    const rows = children.slice(
+      delimiterIdx + 1,
+      nextIdx < 0 ? children.length : nextIdx,
+    );
+
+    // Inherit from the nearest defined lower viewport
+    const prevKey = VIEWPORT_KEYWORDS.slice(0, kwIndex).reverse()
+      .find((k) => content[k]);
+    resolveInheritance(rows, content[prevKey]?.container);
+
+    const container = createTag('div');
+    container.append(...rows);
+
+    const delimiterEl = children[delimiterIdx];
+    const variants = parseVariants(delimiterEl.textContent);
+    delimiterEls.push(delimiterEl);
+
+    content[keyword] = { container, variants };
+  });
+
+  delimiterEls.forEach((d) => d.remove());
+
+  if (!Object.keys(content).length) {
+    return { hasViewportVariations: false };
+  }
+
+  warnDuplicateH1s(content);
+
+  const allVariants = Object.values(content).flatMap(({ variants }) => variants);
+
+  return { hasViewportVariations: true, content, allVariants };
+}
+
+function applyViewportContent(el, viewports) {
+  if (!viewports.hasViewportVariations) return;
+
+  const { content, allVariants } = viewports;
+  const vpKeys = Object.keys(content);
+  const queryKey = vpKeys.join('-');
+  const queries = VIEWPORT_QUERIES[queryKey];
+
+  if (!queries) return;
+
+  vpKeys.forEach((viewport) => {
+    const mq = window.matchMedia(queries[viewport]);
+    const { container, variants } = content[viewport];
+    const children = [...container.children];
+
+    const setContent = () => {
+      if (!mq.matches) return;
+      el.classList.remove(...allVariants);
+      if (variants.length) el.classList.add(...variants);
+      el.replaceChildren(...children);
+      decorateTextOverrides(el);
+    };
+
+    setContent();
+    mq.addEventListener('change', setContent);
+  });
+}
+
+/* decorateFn receives:
+ * - block — the element to decorate (viewport container or el itself)
+ * - root  — for checking base classes on detached containers */
+export function decorateViewportContent(el, decorateFn) {
+  const viewports = parseViewportContent(el);
+  if (viewports.hasViewportVariations) {
+    Object.values(viewports.content).forEach(({ container }) => {
+      decorateFn(container, el);
+    });
+    applyViewportContent(el, viewports);
+  } else {
+    decorateFn(el, el);
+    decorateTextOverrides(el);
+  }
+  return viewports;
 }

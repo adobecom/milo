@@ -7,21 +7,21 @@ const IS_SUBSCRIBED_URL = 'https://www.stage.adobe.com/milo-email-collection-api
 const FORM_SUBMIT_URL = 'https://www.stage.adobe.com/milo-email-collection-api/form-submit';
 const CONSENT_URL = 'https://main--federal--adobecom.aem.page/federal/email-collection/consents/cs4.plain.html';
 
-export function mockFetch({ subscribed = false, signedIn = true }) {
+export function mockFetch({ subscribed = false, signedIn = true, consentUrl = CONSENT_URL }) {
   window.fetch = async (url) => {
     if (!signedIn) {
       return new Response('{"error":"Bad or missing credentials"}', { ok: false, status: 401 });
     }
     switch (url) {
       case PLACEHOLDERS_URL:
-        return new Response('{"total":2,"offset":0,"limit":2,"data":[{"key":"required","value":"This field is required."},{"key":"email","value":"Enter a valid email."}],"columns":["key","value"],":type":"sheet"}', { ok: true });
+        return new Response('{"total":3,"offset":0,"limit":3,"data":[{"key":"required","value":"This field is required."},{"key":"email","value":"Enter a valid email."},{"key":"phone","value":"Enter a valid phone number."}],"columns":["key","value"],":type":"sheet"}', { ok: true });
       case COUNTRIES_URL:
         return new Response('{"total":229,"offset":0,"limit":229,"data":[{"key":"US","value":"United States"},{"key":"GB","value":"United Kingdom"}],"columns":["key","value"],":type":"sheet"}', { ok: true });
       case STATES_URL:
         return new Response('{"total":229,"offset":0,"limit":229,"data":[{"key":"AL","value":"Alabama", "countryCode":"US"},{"key":"NY","value":"New York", "countryCode":"US"}],"columns":["key","value", "countryCode"],":type":"sheet"}', { ok: true });
       case IS_SUBSCRIBED_URL:
         return new Response(`{"subscribed": ${subscribed}}`, { ok: true, headers: { 'content-length': 10 } });
-      case CONSENT_URL:
+      case consentUrl:
         return new Response('<div><p>Consent string</p></div><div><p>consent-id</p></div>', { ok: true });
       case FORM_SUBMIT_URL:
         return new Response(subscribed ? '{"subscribed": "true"}' : '{"message": "Email subscribed successfully"}', { ok: true, status: subscribed ? 200 : 201 });

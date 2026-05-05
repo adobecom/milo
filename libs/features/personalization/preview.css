@@ -1,12 +1,16 @@
 .mep-preview-overlay {
   z-index: 101;
   position: fixed;
-  bottom: 16px;
-  left: 32px;
-  color: #eee; 
+  inset: auto auto 16px 32px;
+  color: #eee;
   font-size: 24px;
   display: block !important;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow: visible;
 }
 
 .mep-badge {
@@ -317,6 +321,10 @@
   align-items: center;
   justify-content: right;
   padding: 12px;
+}
+
+.mep-popup .mep-popup-footer.dark {
+  background-color: transparent;
 }
 
 .mep-popup .mep-popup-footer a:not([active]) {

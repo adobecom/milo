@@ -119,7 +119,7 @@ const GeoMap = {
   gr_el: 'GR_el',
   gr_en: 'GR_en',
   ie: 'IE_en',
-  il_he: 'IL_iw',
+  il_he: 'IL_he',
   it: 'IT_it',
   lv: 'LV_lv',
   lt: 'LT_lt',
@@ -157,9 +157,9 @@ const GeoMap = {
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
-  cn: 'CN_zh-Hans',
-  tw: 'TW_zh-Hant',
-  hk_zh: 'HK_zh-hant',
+  cn: 'CN_zh',
+  tw: 'TW_zh',
+  hk_zh: 'HK_zh',
   jp: 'JP_ja',
   kr: 'KR_ko',
   za: 'ZA_en',
@@ -174,6 +174,12 @@ const GeoMap = {
   th_en: 'TH_en',
   th_th: 'TH_th',
 };
+
+/**
+ * MAS WCS `locale` when it differs from `${language}_${country}` derived from {@link GeoMap}.
+ * @type {Record<string, string>}
+ */
+const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
@@ -221,7 +227,7 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: `${language}_${country}`,
+    locale: EXTRA_MAS_LOCALES[geo] ?? `${language}_${country}`,
   };
 }
 
@@ -870,7 +876,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
   const modal = isLocaleModal ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
@@ -1033,7 +1039,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   if (isInternalModal(url) || prodModalUrl) {
-    const localized = await localizeLinkAsync(url);
+    const localized = await localizeLinkAsync(url, window.location.hostname, false, el);
     url = prodModalUrl && !localized.startsWith('http')
       ? `${new URL(url).origin}${localized}`
       : localized;

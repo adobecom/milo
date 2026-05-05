@@ -1,4 +1,11 @@
-import { customFetch, getConfig, getMetadata } from '../utils/utils.js';
+import {
+  customFetch,
+  getConfig,
+  getMetadata,
+  getGeoLocalePrefix,
+  getPlaceholderPaths,
+  lingoActive,
+} from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
 window.mph = {};
@@ -57,6 +64,49 @@ function keyToStr(key) {
   return key.replaceAll('-', ' ');
 }
 
+const isGeoIpKey = (key) => key.endsWith('-geo-ip');
+const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
+
+async function getGeoPlaceholders(config, sheet) {
+  if (!lingoActive()) return null;
+  const geoPrefix = await getGeoLocalePrefix();
+  if (!geoPrefix) return null;
+  const siteConfig = getConfig();
+  let geoOrigin = window.location.origin;
+  let pathSuffix = siteConfig.contentRoot ?? '';
+  const callerContentRoot = config.locale?.contentRoot ?? '';
+  const siteContentRoot = siteConfig.locale?.contentRoot ?? '';
+  if (callerContentRoot && callerContentRoot !== siteContentRoot) {
+    let path = callerContentRoot;
+    try {
+      const url = new URL(path);
+      geoOrigin = url.origin;
+      path = url.pathname;
+    } catch { /* relative path */ }
+    const prefix = config.locale?.prefix ?? '';
+    if (prefix && path.startsWith(prefix)) path = path.slice(prefix.length);
+    pathSuffix = path;
+  }
+
+  const geoContentRoot = `${geoOrigin}${geoPrefix}${pathSuffix}`;
+  const geoConfig = { locale: { contentRoot: geoContentRoot }, env: siteConfig.env || {} };
+  const paths = getPlaceholderPaths(geoConfig);
+
+  const placeholderRequest = Promise.all(
+    paths.map((path) => customFetch({ resource: path, withCacheRules: true }).catch(() => ({}))),
+  );
+
+  return fetchPlaceholders({
+    config: geoConfig,
+    sheet,
+    placeholderRequest,
+    placeholderPath: paths[0],
+  }).catch((e) => {
+    window.lana?.log(`Error fetching geo placeholders: ${e?.message}`, { tags: 'placeholders', severity: 'warn' });
+    return {};
+  });
+}
+
 async function getPlaceholder(key, config, sheet) {
   let defaultFetched = false;
   const defaultLocale = 'en-US';
@@ -92,6 +142,7 @@ async function getPlaceholder(key, config, sheet) {
   };
 
   if (config.placeholders?.[key]) return config.placeholders[key];
+
   let placeholders;
 
   if (geoLocDisabled === 'on') {
@@ -132,8 +183,9 @@ export async function replaceKeyArray(keys, config, sheet = 'default') {
 export async function replaceText(
   text,
   config,
-  regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g,
+  regex = PLACEHOLDER_REGEX,
   sheet = 'default',
+  { defer = false } = {},
 ) {
   if (typeof text !== 'string' || !text.length) return '';
 
@@ -142,13 +194,42 @@ export async function replaceText(
     return text;
   }
   const keys = Array.from(matches, (match) => match[1] || match[2]);
-  const placeholders = await replaceKeyArray(keys, config, sheet);
-  // The .shift method is very slow, thus using normal iterator
+  let geoPlaceholders = null;
+  if (keys.some(isGeoIpKey) && !defer) {
+    geoPlaceholders = await getGeoPlaceholders(config, sheet);
+  }
+
+  const resolved = await Promise.all(keys.map(async (key) => {
+    if (config.placeholders?.[key]) return config.placeholders[key];
+    if (geoPlaceholders && isGeoIpKey(key)
+      && typeof geoPlaceholders[key] === 'string') return geoPlaceholders[key];
+    return getPlaceholder(key, config, sheet);
+  }));
+
   let i = 0;
   // eslint-disable-next-line no-plusplus
-  let finalText = text.replaceAll(regex, () => placeholders[i++]);
+  let finalText = text.replaceAll(regex, () => resolved[i++]);
   finalText = finalText.replace(/&nbsp;/g, '\u00A0');
   return finalText;
+}
+
+const geoIpPattern = /{{(.*?-geo-ip)}}|%7B%7B(.*?-geo-ip)%7D%7D/g;
+const findGeoIpKeys = (t) => (t ? [...t.matchAll(geoIpPattern)].map((m) => m[1] || m[2]) : []);
+
+async function deferGeoIpUpdate(deferredItems, config, sheet) {
+  const geo = await getGeoPlaceholders(config, sheet);
+  if (!geo) return;
+  await Promise.all(deferredItems.map(async ({ node, type, attrName, key }) => {
+    if (config.placeholders?.[key] || typeof geo[key] !== 'string') return;
+    const base = await getPlaceholder(key, config, sheet);
+    if (geo[key] === base) return;
+    if (type === 'text') {
+      node.nodeValue = node.nodeValue.replace(base, geo[key]);
+    } else {
+      const cur = node.getAttribute(attrName);
+      if (cur) node.setAttribute(attrName, cur.replace(base, geo[key]));
+    }
+  }));
 }
 
 export async function decoratePlaceholderArea({
@@ -159,19 +240,28 @@ export async function decoratePlaceholderArea({
   if (!nodes.length) return;
   const config = getConfig();
   await fetchPlaceholders({ placeholderPath, config, placeholderRequest });
+  const deferred = [];
+  const deferOpt = { defer: true };
+  const track = (keys, item) => keys.forEach((key) => deferred.push({ ...item, key }));
+
   const replaceNodes = nodes.map(async (nodeEl) => {
     if (nodeEl.nodeType === Node.TEXT_NODE) {
-      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config);
+      track(findGeoIpKeys(nodeEl.nodeValue), { node: nodeEl, type: 'text' });
+      nodeEl.nodeValue = await replaceText(nodeEl.nodeValue, config, PLACEHOLDER_REGEX, 'default', deferOpt);
     } else if (nodeEl.nodeType === Node.ELEMENT_NODE) {
       const attrPromises = [...nodeEl.attributes].map(async (attr) => {
-        const attrVal = await replaceText(attr.value, config);
-        return { name: attr.name, value: attrVal };
+        track(findGeoIpKeys(attr.value), { node: nodeEl, type: 'attr', attrName: attr.name });
+        const val = await replaceText(attr.value, config, PLACEHOLDER_REGEX, 'default', deferOpt);
+        return { name: attr.name, value: val };
       });
-      const results = await Promise.all(attrPromises);
-      results.forEach(({ name, value }) => {
+      (await Promise.all(attrPromises)).forEach(({ name, value }) => {
         nodeEl.setAttribute(name, value);
       });
     }
   });
   await Promise.all(replaceNodes);
+
+  if (deferred.length) {
+    decoratePlaceholderArea.deferredGeo = deferGeoIpUpdate(deferred, config);
+  }
 }
