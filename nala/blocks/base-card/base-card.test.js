@@ -54,20 +54,19 @@ test.describe('Milo Base Card Block test suite', () => {
 
     await test.step('step-2: Verify full-width base-card specs', async () => {
       await expect(await baseCard.fullWidthBaseCard).toBeVisible();
-      await expect(baseCard.fullWidthMobileRow).toBeAttached();
-      await expect(baseCard.fullWidthTabletRow).toBeAttached();
-      await expect(baseCard.fullWidthDesktopRow).toBeAttached();
+      await expect(baseCard.fullWidthForeground).toBeAttached();
+      await expect(baseCard.fullWidthMedia).toBeAttached();
 
       await expect(baseCard.fullWidthBody).toContainText(data.fullWidthBody);
       await expect(baseCard.fullWidthBaseCard.getByRole('heading', { name: data.fullWidthTitle, exact: true }).first()).toBeVisible();
       await expect(baseCard.fullWidthBaseCard.getByRole('link', { name: data.fullWidthCta }).first()).toBeVisible();
-      await expect(await webUtil.verifyAttributes(baseCard.fullWidthMobileParallaxImg, baseCard.attributes[ATTR.fullWidthMobileParallax])).toBeTruthy();
-      await expect(await webUtil.verifyAttributes(baseCard.fullWidthMobileMediaIconImg, baseCard.attributes[ATTR.fullWidthIcon])).toBeTruthy();
+      await expect(await webUtil.verifyAttributes(baseCard.fullWidthParallaxImg, baseCard.attributes[ATTR.fullWidthParallax])).toBeTruthy();
+      await expect(await webUtil.verifyAttributes(baseCard.fullWidthIconImg, baseCard.attributes[ATTR.fullWidthIcon])).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytics attributes on full-width block and CTAs', async () => {
       await expect(await baseCard.fullWidthBaseCard).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('base-card', 1));
-      const link = baseCard.fullWidthBaseCard.getByRole('link', { name: data.fullWidthCtaCta });
+      const link = baseCard.fullWidthBaseCard.getByRole('link', { name: data.fullWidthCta });
 
       await expect(link).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.fullWidthCta, 3, data.fullWidthTitle));
     });
@@ -83,21 +82,19 @@ test.describe('Milo Base Card Block test suite', () => {
       await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
     });
 
-    await test.step('step-2: Verify foreground and media structure on mobile row', async () => {
-      await expect(baseCard.fullWidthMobileForeground).toBeAttached();
-      await expect(baseCard.fullWidthMobileMedia).toBeAttached();
-      await expect(baseCard.fullWidthMobileMediaParallaxPicture).toBeAttached();
-      await expect(baseCard.fullWidthMobileMediaIconImg).toBeAttached();
+    await test.step('step-2: Verify foreground and media structure', async () => {
+      await expect(baseCard.fullWidthForeground).toBeAttached();
+      await expect(baseCard.fullWidthMedia).toBeAttached();
+      await expect(baseCard.fullWidthParallaxPicture).toBeAttached();
+      await expect(baseCard.fullWidthIconImg).toBeAttached();
     });
 
-    await test.step('step-3: Verify tablet and desktop parallax image attributes', async () => {
-      expect(await webUtil.verifyAttributes(baseCard.fullWidthTabletParallaxImg, baseCard.attributes[ATTR.fullWidthTabletParallax])).toBeTruthy();
-      expect(await webUtil.verifyAttributes(baseCard.fullWidthDesktopParallaxImg, baseCard.attributes[ATTR.fullWidthDesktopParallax])).toBeTruthy();
+    await test.step('step-3: Verify parallax image attributes', async () => {
+      expect(await webUtil.verifyAttributes(baseCard.fullWidthParallaxImg, baseCard.attributes[ATTR.fullWidthParallax])).toBeTruthy();
     });
 
-    await test.step('step-4: Verify tablet and desktop icon images', async () => {
-      expect(await webUtil.verifyAttributes(baseCard.fullWidthTabletMediaIconImg, baseCard.attributes[ATTR.fullWidthIcon])).toBeTruthy();
-      expect(await webUtil.verifyAttributes(baseCard.fullWidthDesktopMediaIconImg, baseCard.attributes[ATTR.fullWidthIcon])).toBeTruthy();
+    await test.step('step-4: Verify icon image attributes', async () => {
+      expect(await webUtil.verifyAttributes(baseCard.fullWidthIconImg, baseCard.attributes[ATTR.fullWidthIcon])).toBeTruthy();
     });
   });
 
