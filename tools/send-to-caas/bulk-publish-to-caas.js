@@ -14,7 +14,7 @@ import {
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId, primeFetchLingoSiteMapping } from '../../libs/blocks/caas/utils.js';
+import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
