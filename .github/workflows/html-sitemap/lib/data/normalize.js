@@ -127,20 +127,15 @@ function isIndexable(robots) {
  * @param {unknown} raw
  * @param {string} fallbackDomain
  * @param {SiteDomainMap} [siteDomainMap]
- * @param {NormalizeOptions | string} [optionsOrOriginUrl]
- *   Pass a NormalizeOptions object. A bare string is accepted for backward
- *   compatibility and is interpreted as `originUrl`.
+ * @param {NormalizeOptions} [options]
  * @returns {NormalizedLink[]}
  */
 export function normalizeQueryIndexData(
   raw,
   fallbackDomain,
   siteDomainMap = {},
-  optionsOrOriginUrl,
+  options = {},
 ) {
-  const options = typeof optionsOrOriginUrl === 'string'
-    ? { originUrl: optionsOrOriginUrl }
-    : (optionsOrOriginUrl || {});
   const { originUrl, addHtmlExtension = false } = options;
 
   const rows = Array.isArray(/** @type {{ data?: unknown[] }} */ (raw)?.data)

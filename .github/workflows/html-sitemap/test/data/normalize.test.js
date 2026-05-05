@@ -87,10 +87,10 @@ test('normalizeQueryIndexData appends .html when addHtmlExtension is true', () =
   ]);
 });
 
-test('normalizeQueryIndexData accepts originUrl as a bare-string fourth arg (back-compat)', () => {
+test('normalizeQueryIndexData attaches originUrl when provided in options', () => {
   const links = normalizeQueryIndexData({
     data: [{ path: '/x.html', title: 'X' }],
-  }, 'www.adobe.com', {}, 'https://origin/example');
+  }, 'www.adobe.com', {}, { originUrl: 'https://origin/example' });
 
   assert.deepEqual(links, [{
     title: 'X',
