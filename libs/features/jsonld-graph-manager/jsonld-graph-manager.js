@@ -1,5 +1,5 @@
 /* eslint-disable no-use-before-define, no-continue */
-import { debounce } from '../utils/action.js';
+import { debounce } from '../../utils/action.js';
 
 const MANAGED_ATTR = 'data-milo-jsonld';
 const MANAGED_VAL = 'graph';

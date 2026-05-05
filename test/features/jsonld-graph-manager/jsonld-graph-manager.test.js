@@ -14,7 +14,7 @@ import {
   siteRoot,
   defaultOrg,
   JsonLdGraphManager,
-} from '../../../libs/features/jsonld-graph-manager.js';
+} from '../../../libs/features/jsonld-graph-manager/jsonld-graph-manager.js';
 
 const PAGE_URL = 'https://www.adobe.com/products/photoshop.html';
 const ORG_ID = 'https://www.adobe.com/#organization'; // www default
