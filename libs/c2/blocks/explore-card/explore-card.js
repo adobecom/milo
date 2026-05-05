@@ -32,6 +32,7 @@ function decorate(block, root) {
 
   if (prodIcon && isSvgUrl(prodIcon.src)) {
     prodIcon.src = getFederatedUrl(prodIcon.src);
+    prodIcon.closest('p').classList.add('icon');
   }
 
   backgroundDiv?.classList.add(`${blockName}-background`);
