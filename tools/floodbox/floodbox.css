@@ -85,10 +85,6 @@ select {
   height: 32px;
 }
 
-.hide {
-  display: none;
-}
-
 .clear-button {
   align-self: flex-start;
   transform: translateY(50%);
@@ -435,6 +431,10 @@ select {
 
 .urls-result li:last-child {
   margin: 0;
+}
+
+.hide {
+  display: none;
 }
 
 @media (width > 600px) {

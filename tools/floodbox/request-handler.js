@@ -2,8 +2,9 @@ import { DA_ORIGIN, SUPPORTED_FILES } from './constants.js';
 import { isEditableFile } from './utils.js';
 
 class RequestHandler {
-  constructor(accessToken) {
+  constructor(accessToken, { signal } = {}) {
     this.accessToken = accessToken;
+    this.signal = signal;
   }
 
   async daFetch(url, opts = {}) {
@@ -11,12 +12,14 @@ class RequestHandler {
     if (this.accessToken) {
       opts.headers.Authorization = `Bearer ${this.accessToken}`;
     }
+    if (this.signal && !opts.signal) {
+      opts.signal = this.signal;
+    }
 
     const resp = await fetch(url, opts);
     if (resp.status === 401) {
       // eslint-disable-next-line no-console
       console.log('Unauthorized access. Please check your access token.');
-      return resp.status;
     }
     return resp;
   }
