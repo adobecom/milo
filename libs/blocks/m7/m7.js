@@ -1,5 +1,5 @@
 import { getConfig, getMetadata } from '../../utils/utils.js';
-import { getMiloLocaleSettings } from '../merch/merch.js';
+import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../merch/merch.js';
 
 async function getImsCountry() {
   if (window.adobeIMS?.isSignedInUser()) {
@@ -14,10 +14,17 @@ export async function generateM7Link(href) {
   const paCode = getMetadata('m7-pa-code');
   if (!paCode || (!href.includes('/creativecloud/business-plans') && !href.includes('/creativecloud/education-plans'))) return href;
 
+  let marketCountry;
+  if (isMasGeoDetectionEnabled()) {
+    const { getValidatedMarket } = await import('../../utils/market.js');
+    const validatedMarket = await getValidatedMarket();
+    if (validatedMarket) marketCountry = validatedMarket.toUpperCase();
+  }
+
   const imsCountry = await getImsCountry();
   const { locale } = getConfig();
   const localeSettings = getMiloLocaleSettings(locale);
-  const country = imsCountry || localeSettings.country || 'US';
+  const country = imsCountry || marketCountry || localeSettings.country || 'US';
   const { language } = localeSettings;
   const clientId = getMetadata('m7-checkout-client-id');
 
