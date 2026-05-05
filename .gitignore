@@ -16,6 +16,7 @@ libs/navigation/dist/
 /.cursor*/
 /.claude/*
 !/.claude/skills/
+!/.claude/commands/
 **/.CLAUDE.md
 mcp-server.log
 .playwright-stamp
