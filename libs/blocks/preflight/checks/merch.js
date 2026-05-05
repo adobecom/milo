@@ -60,13 +60,9 @@ export async function checkUnpublishedFragments({ area = document, locale } = {}
       };
     });
 
-  // eslint-disable-next-line no-console
-  console.log(
-    '[preflight][mas] scanned %d fragment(s); %d unpublished: %o',
-    uuids.length,
-    unpublished.length,
-    unpublished.map((u) => u.uuid),
-  );
+  if (unpublished.length > 0) {
+    window.lana?.log?.(`[preflight][mas] ${unpublished.length} unpublished fragment(s) out of ${uuids.length} scanned: ${unpublished.map((u) => u.uuid).join(', ')}`, { tags: 'preflight', errorType: 'i' });
+  }
 
   return { unpublished, scanned: uuids.length };
 }
