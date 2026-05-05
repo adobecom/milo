@@ -281,10 +281,21 @@ describe('JsonLdGraphManager boot scan', () => {
     expect(afterCount).to.equal(count);
   });
 
-  it('does not emit a managed script when graph is empty', () => {
+  it('emits a baseline WebPage + Organization graph when no producers are present', () => {
     const manager = trackedManager();
     manager.init();
-    expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.not.exist;
+    const managed = document.head.querySelector('script[data-milo-jsonld="graph"]');
+    expect(managed).to.exist;
+    const graph = JSON.parse(managed.textContent)['@graph'];
+    const types = graph.map((n) => n['@type']);
+    expect(types).to.include.members(['WebPage', 'Organization']);
+    const webpage = graph.find((n) => n['@type'] === 'WebPage');
+    expect(webpage.publisher).to.deep.equal({ '@id': ORG_ID });
+    const org = graph.find((n) => n['@type'] === 'Organization');
+    expect(org['@id']).to.equal(ORG_ID);
+    expect(org.name).to.equal('Adobe');
+    expect(org.url).to.equal('https://www.adobe.com/');
+    expect(org.logo).to.equal('https://www.adobe.com/favicon.ico');
   });
 });
 

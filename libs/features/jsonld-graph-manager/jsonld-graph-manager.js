@@ -355,8 +355,10 @@ export class JsonLdGraphManager {
   }
 
   rewrite() {
-    if (this.graph.size === 0) return;
     // Synthesize a minimal WebPage root when producers haven't emitted one.
+    // Always runs (even with zero producers) because enabling the manager is
+    // an explicit opt-in and the requirements sheet mandates singleton WebPage
+    // and Organization nodes (`webpage-singleton`, `organization-singleton`).
     const webpageId = pageScopedId('WebPage');
     if (!this.graph.has(webpageId)) {
       const url = canonicalUrl();
