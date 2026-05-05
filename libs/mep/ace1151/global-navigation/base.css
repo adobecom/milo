@@ -186,6 +186,7 @@ header.global-navigation.ready {
 
 header.test-nav .feds-navLink-description {
   display: flex;
+  gap: 3px;
   font-size: 12px;
   color: #FFF;
 }

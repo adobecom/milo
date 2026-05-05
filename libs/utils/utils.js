@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
+export const isBot = () => BOT_REGEX.test(navigator.userAgent);
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -913,6 +916,8 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
+  if (isBot()) return null;
+
   const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
   const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
   const country = akamaiLocale || sessionStorage.getItem('akamai');
@@ -946,6 +951,7 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
 }
 
 export async function resolveDetectedMarketCountry() {
+  if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(

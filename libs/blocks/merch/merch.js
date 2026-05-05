@@ -1039,7 +1039,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   if (isInternalModal(url) || prodModalUrl) {
-    const localized = await localizeLinkAsync(url);
+    const localized = await localizeLinkAsync(url, window.location.hostname, false, el);
     url = prodModalUrl && !localized.startsWith('http')
       ? `${new URL(url).origin}${localized}`
       : localized;
