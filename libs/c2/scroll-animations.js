@@ -1,4 +1,8 @@
 const vh = window.innerHeight;
+const BREAKPOINT_MD = 1280;
+const BREAKPOINT_LG = 1440;
+const BREAKPOINT_XL = 1920;
+const isRtl = document.documentElement.dir === 'rtl';
 const STAGGER_RE = /parallax-stagger-(ltr|rtl)/;
 const STAGGER_SELECTOR = '[class*="parallax-stagger-ltr"],'
   + '[class*="parallax-stagger-rtl"]';
@@ -135,7 +139,7 @@ function getColCount(el) {
 
 function setupStaggerEl(el) {
   const drift = 48;
-  const isRtl = el.classList.contains('parallax-stagger-rtl');
+  const isElRtl = el.classList.contains('parallax-stagger-rtl');
   let childData = null;
   let hasHeight = el.offsetHeight > 0;
   new ResizeObserver(([entry]) => {
@@ -153,7 +157,7 @@ function setupStaggerEl(el) {
       childData = children.map((child, i) => {
         const colIdx = (i % cols) + 0.5;
         const rowIdx = Math.floor(i / cols);
-        const idx = isRtl
+        const idx = isElRtl
           ? (cols - 1 - colIdx + rowIdx)
           : (colIdx + rowIdx);
         return { child, from: idx * drift };
@@ -217,7 +221,6 @@ function initStagger() {
 function initElasticCarousel() {
   if (window.innerWidth < 768) return;
 
-  const isRtl = document.documentElement.dir === 'rtl';
   const startMargin = isRtl ? -200 : 200;
   const initialized = new WeakSet();
   let cssDisabled = false;
@@ -283,7 +286,6 @@ function initElasticCarousel() {
 }
 
 function initCarouselC2() {
-  const isRtl = document.documentElement.dir === 'rtl';
   const initialized = new WeakSet();
   let cssInjected = false;
 
@@ -454,14 +456,14 @@ function initGarageDoorReveal() {
     const cvh = window.innerHeight;
     growFrom = -0.5 * cvh;
     revealFrom = 0.2 * cvh;
-    if (w >= 1280) { growFrom = -1.1 * cvh; revealFrom = 0.4 * cvh; }
-    if (w >= 1920) { growFrom = -0.7 * cvh; revealFrom = 0.3 * cvh; }
+    if (w >= BREAKPOINT_MD) { growFrom = -1.1 * cvh; revealFrom = 0.4 * cvh; }
+    if (w >= BREAKPOINT_XL) { growFrom = -0.7 * cvh; revealFrom = 0.3 * cvh; }
     coverEnd = 0.2;
-    if (w >= 1280) coverEnd = 0.4;
-    if (w >= 1440) coverEnd = 0.3;
+    if (w >= BREAKPOINT_MD) coverEnd = 0.4;
+    if (w >= BREAKPOINT_LG) coverEnd = 0.3;
     growStart = -0.5;
-    if (w >= 1280) growStart = -1;
-    if (w >= 1920) growStart = -0.5;
+    if (w >= BREAKPOINT_MD) growStart = -1;
+    if (w >= BREAKPOINT_XL) growStart = -0.5;
   };
 
   updateBreakpoints();
