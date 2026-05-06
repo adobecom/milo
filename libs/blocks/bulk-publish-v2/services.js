@@ -79,16 +79,25 @@ const authenticate = async (tool = null) => {
   isPushedDown();
   const setUserV6 = (event) => { tool.user = setUserData(event?.detail?.data); };
   const setUserV7 = (event) => { tool.user = setUserData(event?.detail); };
+
+  const addListeners = (sidekick) => {
+    sidekick.addEventListener('statusfetched', setUserV6); // sidekick v6
+    sidekick.addEventListener('status-fetched', setUserV7); // sidekick v7
+    // Handle race condition where status-fetched fired before listeners were registered
+    const existingStatus = sidekick.appStore?.status;
+    if (existingStatus && Object.keys(existingStatus).length > 0) {
+      tool.user = setUserData(existingStatus);
+    }
+  };
+
   const openSideKick = document.querySelector('aem-sidekick, helix-sidekick');
   if (openSideKick) {
-    openSideKick.addEventListener('statusfetched', setUserV6); // sidekick v6
-    openSideKick.addEventListener('status-fetched', setUserV7); // sidekick v7
-    /* c8 ignore next 6 */
+    addListeners(openSideKick);
+  /* c8 ignore next 5 */
   } else {
     document.addEventListener('sidekick-ready', () => {
       const sidekick = document.querySelector('aem-sidekick, helix-sidekick');
-      sidekick.addEventListener('statusfetched', setUserV6); // sidekick v6
-      sidekick.addEventListener('status-fetched', setUserV7); // sidekick v7
+      addListeners(sidekick);
     }, { once: true });
   }
 };

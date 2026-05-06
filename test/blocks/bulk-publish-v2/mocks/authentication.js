@@ -1,4 +1,9 @@
 class MockAuth extends HTMLElement {
+  constructor() {
+    super();
+    this.appStore = { status: {} };
+  }
+
   opened() {
     this.dispatchEvent(new CustomEvent('sidekick-ready', { bubbles: true }));
     this.isopen = true;
