@@ -565,7 +565,7 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
 
 export function initBulkPublisherLingoMapping() {
   lingoSiteMappingPromise = fetch(
-    'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
+    'https://www.milo.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
   ).then((response) => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return response.json();
