@@ -38,33 +38,35 @@
   .foreground {
     display: flex;
     flex-direction: column;
-    gap: var(--s2a-spacing-xs);
+    gap: var(--s2a-spacing-lg);
     padding-block-start: var(--s2a-spacing-lg);
     padding-inline: var(--s2a-spacing-md);
+  }
 
-    p:has(> a:only-child) {
-      margin-block-start: var(--s2a-spacing-md);
+  .text-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+  }
 
-      a {
-        color: var(--s2a-color-content-default);
-        text-decoration: none;
-        font-weight: var(--s2a-font-weight-adobe-clean-bold);
-        font-size: var(--s2a-font-size-sm);
-        line-height: var(--s2a-font-line-height-xs);
-        display: inline-flex;
-        align-items: center;
-        gap: var(--s2a-spacing-xs);
+  .foreground > p:has(> a:only-child) a {
+    color: var(--s2a-color-content-default);
+    text-decoration: none;
+    font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    font-size: var(--s2a-font-size-sm);
+    line-height: var(--s2a-font-line-height-xs);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s2a-spacing-xs);
 
-        &::after {
-          content: '';
-          display: inline-block;
-          width: 3px;
-          height: 6px;
-          border-inline-end: 1.5px solid currentcolor;
-          border-block-start: 1.5px solid currentcolor;
-          transform: rotate(45deg);
-        }
-      }
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 6px;
+      border-inline-end: 1.5px solid currentcolor;
+      border-block-start: 1.5px solid currentcolor;
+      transform: rotate(45deg);
     }
   }
 }
@@ -80,15 +82,16 @@
       flex-direction: row;
       justify-content: space-between;
       align-items: flex-start;
-      padding-block-start: var(--s2a-spacing-lg);
-      padding-inline: var(--s2a-spacing-md);
-      gap: var(--s2a-spacing-lg);
+    }
 
-      p:has(> a:only-child) {
-        flex-shrink: 0;
-        margin-block-start: 0;
-        padding-block-start: var(--s2a-spacing-xs);
-      }
+    .text-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .foreground > p:has(> a:only-child) {
+      flex-shrink: 0;
+      padding-block-start: var(--s2a-spacing-xs);
     }
   }
 }
