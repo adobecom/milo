@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { runDiff } from '../../lib/output/diff.js';
+import { runDiff } from '../../lib/stages/diff.js';
 
 function makeConfigJson(geos) {
   return JSON.stringify({

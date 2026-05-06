@@ -7,7 +7,7 @@ import { runExtract } from './lib/stages/extract.js';
 import { runClean } from './lib/stages/clean.js';
 import { runTransformData } from './lib/stages/transform-data.js';
 import { runTransformDa } from './lib/stages/transform-da.js';
-import { runDiff } from './lib/output/diff.js';
+import { runDiff } from './lib/stages/diff.js';
 import { runPush } from './lib/stages/push.js';
 import { runPromote } from './lib/stages/promote.js';
 import { parsePositionalStages, parseStagesOption, STAGE_ORDER } from './lib/util/stages.js';
