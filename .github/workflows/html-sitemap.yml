@@ -1,15 +1,18 @@
 name: HTML Sitemap Generator
 
+# Triggers
+# - schedule:          full pipeline against the federal config. No inputs.
+# - workflow_dispatch: adhoc. `config` is required; full pipeline always
+#                      runs. Per-geo delivery scope is gated by the
+#                      `stage` column in the config's geo-map sheet
+#                      (preview / publish / empty).
+
 on:
   workflow_dispatch:
     inputs:
-      stages:
-        description: 'Comma-separated stage ids (e.g. extract,transform,push,preview,publish)'
-        required: true
-        default: 'extract,transform,diff'
       config:
-        description: 'Config JSON URL or path'
-        required: false
+        description: 'Config JSON URL or path. Federal: https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json'
+        required: true
       output:
         description: 'Local output root directory'
         required: false
@@ -28,6 +31,10 @@ on:
         description: 'Push even if remote content is unchanged'
         type: boolean
         default: false
+  # TODO: decide on schedule cadence (hourly or daily) and uncomment.
+  # schedule:
+  #   - cron: '0 */1 * * *'  # hourly
+  #   - cron: '0 6 * * *'    # daily at 6am UTC
 
 jobs:
   generate:
@@ -64,11 +71,20 @@ jobs:
           AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM }}
           AEM_ADMIN_TOKEN_ADOBECOM_DA_CC: ${{ secrets.AEM_ADMIN_TOKEN_ADOBECOM_DA_CC }}
         run: |
-          ARGS="--stages ${{ inputs.stages }} --output ${{ inputs.output }} --da-root ${{ inputs.da-root }}"
+          FEDERAL_CONFIG="https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json"
+          STAGES="clean,extract,transform-data,transform-da,diff,push,preview,publish"
 
-          if [ -n "${{ inputs.config }}" ]; then
-            ARGS="$ARGS --config ${{ inputs.config }}"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            CONFIG="$FEDERAL_CONFIG"
+            OUTPUT="tmp/html-sitemap"
+            DA_ROOT="/"
+          else
+            CONFIG="${{ inputs.config }}"
+            OUTPUT="${{ inputs.output }}"
+            DA_ROOT="${{ inputs.da-root }}"
           fi
+
+          ARGS="--stages $STAGES --config $CONFIG --output $OUTPUT --da-root $DA_ROOT"
 
           if [ -n "${{ inputs.subdomain }}" ]; then
             ARGS="$ARGS --subdomain ${{ inputs.subdomain }}"
