@@ -31,7 +31,7 @@ export default async function init(el) {
   const [head, ...tail] = rows;
   formatHeader(head);
   rows = tail;
-  const upsMap = { 2: 'two-up', 3: 'three-up', 4: 'four-up' };
+  const upsMap = { 2: 'two-up', 3: 'three-up', 4: 'four-up', 6: 'six-up' };
   // TODO: Infer parallax class from authoring
   el.appendChild(createTag('div', { class: `news-items parallax-stagger-ltr ${upsMap[rows.length || 3]}` }, rows));
   rows.forEach((row) => {
