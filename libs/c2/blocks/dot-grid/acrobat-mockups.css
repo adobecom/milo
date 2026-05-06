@@ -13,7 +13,8 @@
   color: #ebebeb;
   background: #1d1d1d;
   border-radius: calc(var(--acrobat-desktop-scale) * 10);
-  box-shadow: 0 calc(var(--acrobat-desktop-scale) * 20) calc(var(--acrobat-desktop-scale) * 60) rgb(0 0 0 / 60%);
+
+  /* box-shadow: 0 calc(var(--acrobat-desktop-scale) * 20) calc(var(--acrobat-desktop-scale) * 60) rgb(0 0 0 / 60%); */
   transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
   transform-origin: center center;
   pointer-events: none;

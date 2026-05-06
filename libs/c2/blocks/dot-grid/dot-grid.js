@@ -800,7 +800,7 @@ export default async function init(el) {
     const shadowAlphaKey = shadowAlpha.toFixed(3);
     if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
       card.lastArcShadowAlphaKey = shadowAlphaKey;
-      card.el.style.boxShadow = arcCardShadow(shadowAlpha);
+      // card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
     const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
     setLabelPos(card, currentX, currentY, scale, peelReveal);
@@ -833,7 +833,7 @@ export default async function init(el) {
       scale,
     });
     card.el.style.opacity = 1;
-    card.el.style.boxShadow = '';
+    // card.el.style.boxShadow = '';
     card.el.style.zIndex = '';
     setLabelPos(card, centerX, centerY, scale, 1);
   }
