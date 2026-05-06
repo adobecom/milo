@@ -357,11 +357,9 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options, origin) => {
   const langFirst = lingoActive();
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(
-      window.location.pathname,
-      origin,
-      window.location.hostname,
-    );
+    const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
+    const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
+    return getLanguageFirstCountryAndLang(window.location.pathname, origin, fqdn);
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')

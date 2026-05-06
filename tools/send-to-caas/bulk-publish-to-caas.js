@@ -14,7 +14,7 @@ import {
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { getGrayboxExperienceId, initBulkPublisherLingoMapping } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -191,6 +191,8 @@ const processData = async (data, accessToken) => {
   } else if (publishToFloodgate !== 'default') {
     domain = `https://main--${repo}--${owner}.aem.live`;
   }
+
+  initBulkPublisherLingoMapping();
 
   for (const page of data) {
     if (!keepGoing) break;

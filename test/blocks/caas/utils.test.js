@@ -11,6 +11,7 @@ import {
   getCountryAndLang,
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
+  initBulkPublisherLingoMapping,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -1305,5 +1306,35 @@ describe('isLocaleInRegionalSites helper function tests', () => {
       const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
       expect(result).to.be.false;
     });
+  });
+});
+
+describe('initBulkPublisherLingoMapping', () => {
+  let ogFetch;
+  const LINGO_MAPPING_URL = 'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json';
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('overwrites a previously cached fqdn with bulkpublisher', async () => {
+    const fetchedUrls = [];
+    window.fetch = stub().callsFake((url) => {
+      fetchedUrls.push(url);
+      return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+    });
+
+    // Simulate cache already warmed by a different fqdn
+    window.fetch(`${LINGO_MAPPING_URL}?www.adobe.com`);
+    fetchedUrls.length = 0;
+
+    initBulkPublisherLingoMapping();
+
+    expect(fetchedUrls).to.have.length(1);
+    expect(fetchedUrls[0]).to.equal(`${LINGO_MAPPING_URL}?bulkpublisher`);
   });
 });

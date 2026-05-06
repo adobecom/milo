@@ -563,6 +563,15 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   return lingoSiteMappingPromise;
 }
 
+export function initBulkPublisherLingoMapping() {
+  lingoSiteMappingPromise = fetch(
+    'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
+  ).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  });
+}
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
