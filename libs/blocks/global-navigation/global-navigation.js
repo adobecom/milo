@@ -631,7 +631,13 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
+    const {
+      searchEnabled,
+      selfIntegrateUnav,
+      desktopAppsCta = false,
+      whatsNew,
+      showPlansCta = false,
+    } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -644,6 +650,7 @@ class Gnav {
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
@@ -1772,7 +1779,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false } = getConfig();
+  const { mep, miniGnav = false, showPlansCta } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1798,6 +1805,7 @@ export default async function init(block) {
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   if (miniGnav) block.classList.add('mini-gnav');
+  if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');

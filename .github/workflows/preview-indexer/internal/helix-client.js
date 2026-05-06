@@ -152,7 +152,6 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   const body = {
     select: ['preview'],
     paths: [`${path}*`],
-    pathsOnly: true,
     forceAsync: true,
   };
   const initialUrl = `https://admin.hlx.page/status/${siteOrg}/${siteRepo}/main/*`;
@@ -178,7 +177,12 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     });
     const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
-    return isCompleted ? detailsJson?.data?.resources?.preview || [] : [];
+    if (isCompleted && detailsJson?.data?.resources?.length) {
+      return detailsJson?.data?.resources
+        .filter((data) => !data.previewConfigRedirectLocation)
+        .map((data) => data.path) || [];
+    }
+    return [];
   }
   console.error(`Job not stopped: ${job.links.self}`);
   throw new Error(`Job not stopped: ${job.links.self}`);

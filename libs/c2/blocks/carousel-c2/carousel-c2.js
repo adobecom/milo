@@ -16,6 +16,18 @@ const MAX_SLIDE_TRANISTION_DURATION = 500;
 let carouselGap = 8;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+function setSlideSpreadSign(activeSlide, slides) {
+  if (!activeSlide || !slides) return;
+  const activeIndex = slides.indexOf(activeSlide);
+  if (activeIndex < 0) return;
+  slides.forEach((slide, i) => {
+    const newSign = i - activeIndex;
+    const current = parseInt(slide.style.getPropertyValue('--slide-spread-sign'), 10);
+    if (current === newSign) return;
+    slide.style.setProperty('--slide-spread-sign', newSign);
+  });
+}
+
 function handlePrevious(previousElment, elements) {
   const indexOfActive = elements.indexOf(previousElment);
   return elements[indexOfActive - 1] ?? elements[elements.length - 1];
@@ -71,18 +83,22 @@ function setActualSlideWidth(carousel, carouselWidth) {
   const isGridMarginPer = gridMarginProperty?.endsWith('%');
   const gridMarginPropertyValue = isGridMarginPer
     ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
-  const actualSlideWidth = carouselWidth - 2
-    * (isGridMarginPer ? carouselWidth : 1) * gridMarginPropertyValue;
+  const actualSlideWidth = Math.min(carouselWidth - 2
+    * (isGridMarginPer ? carouselWidth : 1) * gridMarginPropertyValue, 1920);
   carousel.style.setProperty('--actual-slide-width', `${actualSlideWidth}px`);
+
+  return actualSlideWidth;
 }
 
-function getMarginAndSlideWidth(slide) {
-  const slideWidth = slide.getBoundingClientRect().width;
+function getCarouselDimensions(slide) {
   const carousel = slide.closest('.carousel-c2');
   const carouselWidth = carousel.getBoundingClientRect().width;
-  setActualSlideWidth(carousel, carouselWidth);
+  const slideWidth = setActualSlideWidth(carousel, carouselWidth);
 
-  return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth };
+  const fluidGrid = parseFloat(getComputedStyle(carousel).getPropertyValue('--grid-max-width-fluid'));
+  const maxSlideWidth = Math.min(carouselWidth, fluidGrid);
+
+  return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth, maxSlideWidth };
 }
 
 function isRTL() {
@@ -94,26 +110,30 @@ function getDirection(direction) {
   return direction === 'next' ? 'prev' : 'next';
 }
 
-function goToActive(carouselEls, active) {
-  const { wrapper, marginWidth, slideWidth } = carouselEls;
-  const indexOfActive = [...wrapper.children].indexOf(active);
+function goToActive(carouselEls) {
+  const { wrapper, marginWidth, el, allSlides, activeSlide } = carouselEls;
+  const actualSlideWidth = parseFloat(el.style.getPropertyValue('--actual-slide-width'));
+  const indexOfActive = [...wrapper.children].indexOf(activeSlide);
   const gaps = indexOfActive * carouselGap;
   const translateValue = isRTL()
-    ? indexOfActive * slideWidth - marginWidth + gaps
-    : indexOfActive * slideWidth * -1 + marginWidth - gaps;
+    ? indexOfActive * actualSlideWidth - marginWidth + gaps
+    : indexOfActive * actualSlideWidth * -1 + marginWidth - gaps;
   wrapper.style.transition = 'none';
   wrapper.style.translate = `${translateValue}px`;
+  setSlideSpreadSign(activeSlide, allSlides);
+
   // eslint-disable-next-line
   wrapper._timeout = null;
 }
 
-function cloneSlides(carouselEls, activeSlide) {
-  const { wrapper, slides } = carouselEls;
+function cloneSlides(carouselEls) {
+  const { wrapper, slides, activeSlide } = carouselEls;
   const cloneBack = slides.slice(0, 3).map((slide) => slide.cloneNode(true));
   const cloneFront = slides.slice(-3).map((slide) => slide.cloneNode(true));
   [...cloneFront, ...cloneBack].forEach((slide) => {
     slide.setAttribute('data-cloned', 'true');
     slide.removeAttribute('data-index');
+    slide.style.removeProperty('--slide-spread-sign');
     slide.classList.remove('active');
   });
   const allSlides = [...cloneFront, ...slides, ...cloneBack];
@@ -123,9 +143,6 @@ function cloneSlides(carouselEls, activeSlide) {
     });
   });
   wrapper.replaceChildren(...allSlides);
-  const { marginWidth, slideWidth } = getMarginAndSlideWidth(activeSlide);
-  carouselEls.marginWidth = marginWidth;
-  carouselEls.slideWidth = slideWidth;
   carouselEls.allSlides = allSlides;
   goToActive(carouselEls, activeSlide);
   wrapper.setAttribute('data-slides-cloned', 'true');
@@ -146,8 +163,8 @@ const eventTimeStamp = {
 }
 /* eslint-enable */
 
-function slideAnimation(carouselEls, active, direction) {
-  const { wrapper, slideWidth } = carouselEls;
+function slideAnimation(carouselEls, direction) {
+  const { wrapper, slideWidth, allSlides, activeClone } = carouselEls;
   const alreadyTranslated = parseFloat(wrapper.style.translate);
   let duration = parseFloat(getComputedStyle(wrapper).getPropertyValue('--transition-duration'));
   const eventInterval = Math.min(eventTimeStamp.diff(wrapper), MAX_SLIDE_TRANISTION_DURATION);
@@ -159,6 +176,7 @@ function slideAnimation(carouselEls, active, direction) {
   const negate = (direction === 'next') !== isRTL() ? -1 : 1;
   const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
+  setSlideSpreadSign(activeClone, allSlides);
 
   if (prefersReducedMotion()) {
     wrapper.style.transition = 'none';
@@ -169,7 +187,7 @@ function slideAnimation(carouselEls, active, direction) {
 
   /* eslint-disable */
   if (wrapper._timeout) clearTimeout(wrapper._timeout);
-  wrapper._timeout = setTimeout(() => goToActive(carouselEls, active), duration - 20);
+  wrapper._timeout = setTimeout(() => goToActive(carouselEls), duration - 20);
   /* eslint-enable */
 }
 
@@ -181,6 +199,8 @@ function moveSlides(carouselEls, direction, e) {
     slideIndicators,
     prevBtn,
     nextBtn,
+    activeSlide: active,
+    activeClone: clone,
   } = carouselEls;
   const { timeStamp, type: eventType } = e;
 
@@ -188,19 +208,19 @@ function moveSlides(carouselEls, direction, e) {
   const eventTimeStampDiff = eventTimeStamp.diff(wrapper);
   if (eventTimeStampDiff !== 0 && eventTimeStampDiff < MIN_SLIDE_TRANISTION_DURATION) return;
 
-  let activeSlide = wrapper.querySelector('.active');
+  let activeSlide = active;
+  let activeClone = clone;
   let activeSlideIndicator = indicatorsContainer.querySelector('.active');
   if (wrapper.getAttribute('data-slides-cloned') !== 'true') {
-    cloneSlides(carouselEls, activeSlide);
+    cloneSlides(carouselEls);
   }
 
   const { allSlides } = carouselEls;
-  allSlides.forEach((slide) => slide.classList.remove('active-clone'));
 
+  activeClone?.classList.remove('active-clone');
   activeSlide.classList.remove('active');
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.removeAttribute('aria-current');
-  let activeClone;
 
   if (direction === 'next') {
     activeClone = handleNext(activeSlide, allSlides);
@@ -219,7 +239,10 @@ function moveSlides(carouselEls, direction, e) {
   activeClone?.classList.add('active-clone');
   activeSlideIndicator.classList.add('active');
   activeSlideIndicator.setAttribute('aria-current', 'location');
-  slideAnimation(carouselEls, activeSlide, direction);
+  carouselEls.activeClone = activeClone;
+  carouselEls.activeSlide = activeSlide;
+
+  slideAnimation(carouselEls, direction);
 
   setAriaHiddenAndTabIndex(allSlides, activeSlide);
   updateAriaLive(carouselEls);
@@ -239,8 +262,8 @@ function attachListeners(carouselEls) {
   el.addEventListener('keyup', (e) => {
     const { code, target } = e;
     if (prefersReducedMotion() || code !== 'Tab' || !target.matches('button.prev')) return;
-    const wrapperAnimation = wrapper.getAnimations().find((a) => a.animationName === 'wrapper-enter');
-    if (!wrapperAnimation || wrapperAnimation.playState === 'finished') return;
+    const slideSpreadAnimation = wrapper.getAnimations({ subtree: true }).find((a) => a.animationName === 'slide-spread');
+    if (!slideSpreadAnimation || slideSpreadAnimation.playState === 'finished') return;
     wrapper.scrollIntoView({ block: 'center' });
   });
 
@@ -274,10 +297,14 @@ function attachListeners(carouselEls) {
     const observeEl = mq.matches ? wrapper : slideToObserve;
     ro = new ResizeObserver(() => {
       const activeSlide = wrapper.querySelector('.active');
-      const { marginWidth, slideWidth } = getMarginAndSlideWidth(activeSlide);
+      const { marginWidth, slideWidth, maxSlideWidth } = getCarouselDimensions(activeSlide);
       carouselGap = parseFloat(getComputedStyle(wrapper).gap);
       carouselEls.marginWidth = marginWidth;
       carouselEls.slideWidth = slideWidth;
+
+      const slideScaleMult = maxSlideWidth / slideWidth;
+      el.style.setProperty('--slide-scale-multiplier', slideScaleMult);
+
       goToActive(carouselEls, activeSlide);
     });
     ro.observe(observeEl);
@@ -305,7 +332,8 @@ export default function init(el) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
       rdx.push(slide);
-      slide.setAttribute('data-index', rdx.indexOf(slide));
+      const slideIndex = rdx.indexOf(slide);
+      slide.setAttribute('data-index', slideIndex);
     }
     return rdx;
   }, []);
@@ -329,6 +357,7 @@ export default function init(el) {
   const lastSlide = slides.pop();
   slides.unshift(lastSlide);
   slides[1].classList.add('active');
+  setSlideSpreadSign(slides[1], slides);
   indicatorsContainer.children[0]?.classList.add('active');
   indicatorsContainer.children[0]?.setAttribute('aria-current', 'location');
 
@@ -347,6 +376,7 @@ export default function init(el) {
     nextBtn,
     ariaLive,
     carouselAriaLabel,
+    activeSlide: slides[1],
   };
 
   setAriaHiddenAndTabIndex(slides, slides[1]);

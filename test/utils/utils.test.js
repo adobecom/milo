@@ -2032,6 +2032,74 @@ describe('Utils', () => {
     });
   });
 
+  describe('resolveCrossSiteIndex', () => {
+    let resolveCrossSiteIndex;
+
+    before(async () => {
+      const mod = await import('../../libs/utils/utils.js');
+      ({ resolveCrossSiteIndex } = mod);
+    });
+
+    const baseEntry = { queryIndexWebPath: 'business.adobe.com/*/assets/lingo/query-index.json' };
+
+    it('uses prod host with no suffix on prod', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '',
+        'business.adobe.com',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('uses stage host with -preview suffix on .stage.adobe.com when stageHost set', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '-preview',
+        'business.stage.adobe.com',
+      );
+      expect(url).to.equal('https://business.stage.adobe.com/fr/assets/lingo/query-index-preview.json');
+      expect(host).to.equal('business.stage.adobe.com');
+    });
+
+    it('falls back to prod host with no suffix on .stage.adobe.com when stageHost missing', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry },
+        '/fr',
+        '-preview',
+        'business.stage.adobe.com',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('falls back to prod host on .aem.page (cross-origin auth required)', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '-preview',
+        'feature--milo--adobecom.aem.page',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('handles cc-shared path (no /lingo/ segment) correctly', () => {
+      const { url } = resolveCrossSiteIndex(
+        {
+          queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/query-index.json',
+          stageHost: 'www.stage.adobe.com',
+        },
+        '/fr',
+        '-preview',
+        'www.stage.adobe.com',
+      );
+      expect(url).to.equal('https://www.stage.adobe.com/fr/cc-shared/assets/query-index-preview.json');
+    });
+  });
+
   describe('Language Banner in Utils', () => {
     let fetchStub;
     const sandbox = sinon.createSandbox();
