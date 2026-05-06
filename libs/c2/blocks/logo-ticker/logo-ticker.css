@@ -54,6 +54,7 @@
 
   /* TODO: waiting on accessibility requirements */
   .logo-ticker-toggle {
+    display: none; /* TODO: temporarily hiding play/pause. Waiting for accessibility updates */
     position: absolute;
     inset-block-end: 8%;
     inset-inline-end: var(--s2a-spacing-16);

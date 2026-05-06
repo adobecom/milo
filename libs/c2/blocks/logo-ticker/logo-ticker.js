@@ -5,14 +5,14 @@ const LANA_OPTIONS = { tags: 'logo-ticker', errorType: 'i' };
 const PLACEHOLDER_KEYS = ['pause-motion', 'play-motion', 'pause-icon', 'play-icon'];
 const SET_COUNT = 2;
 
-let labels = {
+let playPauseLabels = {
   pauseMotion: 'Pause',
   playMotion: 'Play',
   pauseIcon: 'Pause icon',
   playIcon: 'Play icon',
 };
 
-async function fetchLabels() {
+async function fetchPlayPauseLabels() {
   try {
     const [pauseMotion, playMotion, pauseIcon, playIcon] = await replaceKeyArray(
       PLACEHOLDER_KEYS,
@@ -21,18 +21,23 @@ async function fetchLabels() {
     return { pauseMotion, playMotion, pauseIcon, playIcon };
   } catch (err) {
     window.lana?.log(`logo-ticker: failed to load animation labels: ${err}`, LANA_OPTIONS);
-    return labels;
+    return playPauseLabels;
   }
 }
 
-function buildTrack(logos) {
+function buildTrack(el, logos) {
   const logoSets = Array.from({ length: SET_COUNT }, (_, i) => {
     const logoSet = createTag('div', { class: 'logo-ticker-set' });
     if (i > 0) logoSet.setAttribute('aria-hidden', 'true');
     logos.forEach((logo) => logoSet.append(logo.cloneNode(true)));
     return logoSet;
   });
-  return createTag('div', { class: 'logo-ticker-track is-offscreen' }, logoSets);
+
+  const track = createTag('div', { class: 'logo-ticker-track is-offscreen', role: 'image' }, logoSets);
+  if (el.children.length >= 2) {
+    track.setAttribute('aria-label', el.children[1].textContent);
+  }
+  return track;
 }
 
 // TODO: temporarily overriding svg colors. Should upload to feds
@@ -65,20 +70,21 @@ function buildToggle(track) {
   const button = createTag('button', {
     type: 'button',
     class: 'logo-ticker-toggle',
-    title: labels.pauseMotion,
-    'aria-label': labels.pauseMotion,
+    title: playPauseLabels.pauseMotion,
+    'aria-label': playPauseLabels.pauseMotion,
     'aria-pressed': 'true',
+    'aria-hidden': 'true',
   });
 
   const iconWrap = createTag('span', { class: 'logo-ticker-toggle-icon is-playing' });
   const playIcon = createTag('img', {
     class: 'play-icon',
-    alt: labels.playIcon,
+    alt: playPauseLabels.playIcon,
     src: `${fedRoot}/federal/assets/svgs/accessibility-play.svg`,
   });
   const pauseIcon = createTag('img', {
     class: 'pause-icon',
-    alt: labels.pauseIcon,
+    alt: playPauseLabels.pauseIcon,
     src: `${fedRoot}/federal/assets/svgs/accessibility-pause.svg`,
   });
   iconWrap.append(playIcon, pauseIcon);
@@ -89,7 +95,7 @@ function buildToggle(track) {
     playing = next;
     track.classList.toggle('is-paused', !next);
     iconWrap.classList.toggle('is-playing', next);
-    const label = next ? labels.pauseMotion : labels.playMotion;
+    const label = next ? playPauseLabels.pauseMotion : playPauseLabels.playMotion;
     button.setAttribute('aria-label', label);
     button.setAttribute('aria-pressed', String(next));
     button.setAttribute('title', label);
@@ -103,9 +109,9 @@ export default async function init(el) {
   const logos = [...el.querySelectorAll('span.icon')];
   if (!logos.length) return;
 
-  labels = await fetchLabels();
+  playPauseLabels = await fetchPlayPauseLabels();
 
-  const track = buildTrack(logos);
+  const track = buildTrack(el, logos);
   recolorIcons(track);
   const toggle = buildToggle(track);
   el.replaceChildren(track, toggle);
