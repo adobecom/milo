@@ -1174,7 +1174,7 @@ p {
   }
 
   @keyframes garage-door-line-height {
-    from { line-height: 0.6; }
+    from { line-height: 60%; }
   }
 
   /* Section 1 to section 2 parallax declarations */
