@@ -177,16 +177,23 @@ class Footer {
     if (this.logoResizeHandler) {
       window.removeEventListener('resize', this.logoResizeHandler);
     }
+    let scrollPending = false;
     const updateLogoProgress = () => {
       const prevElement = logo?.previousElementSibling;
       if (!prevElement) return;
-      const rect = prevElement.getBoundingClientRect();
-      const bottom = rect?.bottom ?? 0;
+      const bottom = prevElement.getBoundingClientRect().bottom ?? 0;
       let progress = ((window.innerHeight - bottom) / logo.offsetHeight) * 100;
       progress = Math.max(0, Math.min(100, progress));
       logo.style.setProperty('--footer-logo-entry-progress', progress);
     };
-    this.logoScrollHandler = updateLogoProgress;
+    this.logoScrollHandler = () => {
+      if (scrollPending) return;
+      scrollPending = true;
+      requestAnimationFrame(() => {
+        updateLogoProgress();
+        scrollPending = false;
+      });
+    };
     this.logoResizeHandler = () => {
       if (this.logoResizeRaf) return;
       this.logoResizeRaf = requestAnimationFrame(() => {
@@ -266,27 +273,40 @@ class Footer {
       return;
     }
 
-    const menuContents = this.elements.footer?.querySelectorAll('.feds-menu-content');
-    if (!menuContents?.length) return;
+    const menuContents = [...(this.elements.footer?.querySelectorAll('.feds-menu-content') ?? [])];
+    if (!menuContents.length) return;
 
-    menuContents.forEach((menuContent) => {
+    const candidates = menuContents.filter((menuContent) => {
       const columnCount = menuContent.querySelectorAll(':scope > .feds-menu-column').length;
       if (columnCount <= 3) {
         menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
-        return;
+        return false;
       }
-
-      menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS);
-      const hasOverflow = menuContent.scrollWidth > menuContent.clientWidth;
-      menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, hasOverflow);
+      return true;
     });
+
+    // Batch write: remove stacked class so natural widths are measurable
+    candidates.forEach((menuContent) => menuContent.classList.remove(FOOTER_MENU_STACKED_CLASS));
+
+    // Batch read: one layout flush for all items
+    const overflows = candidates.map(
+      (menuContent) => menuContent.scrollWidth > menuContent.clientWidth,
+    );
+
+    // Batch write: apply stacked class based on measurements
+    candidates.forEach(
+      (menuContent, i) => menuContent.classList.toggle(FOOTER_MENU_STACKED_CLASS, overflows[i]),
+    );
   };
 
   initFooterMenuLayoutSync = () => {
     this.syncFooterMenuLayout();
 
     if (this.footerMenuResizeObserver) return;
-    this.footerMenuResizeObserver = new ResizeObserver(() => {
+    this.footerMenuResizeObserver = new ResizeObserver((entries) => {
+      const width = entries[entries.length - 1]?.contentBoxSize?.[0]?.inlineSize;
+      if (width === this.cachedFooterWidth) return;
+      this.cachedFooterWidth = width;
       if (this.footerMenuResizeRaf) return;
       this.footerMenuResizeRaf = window.requestAnimationFrame(() => {
         this.footerMenuResizeRaf = null;
