@@ -265,10 +265,14 @@ function buildCardStack(cardScene, cardDefs) {
   return cardDefs.map((def) => {
     const cardEl = def.el;
     cardEl.classList.add('card');
+    cardEl.style.left = '0';
+    cardEl.style.top = '0';
     stackRoot.appendChild(cardEl);
     let labelEl = null;
     if (def.label) {
       labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
+      labelEl.style.left = '0';
+      labelEl.style.top = '0';
       labelEl.style.opacity = '0';
       stackRoot.appendChild(labelEl);
     }
@@ -299,14 +303,6 @@ function setCardTransform(el, {
   el.style.transform = `translate(${translateX}px,${translateY}px) scale(${scale}) rotate(${rotation}deg) perspective(900px) rotateY(${tiltY.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg)`;
 }
 
-// TODO: can this be handled via css
-function applyCardBox(el, { baseX, baseY, width, height }) {
-  el.style.left = `${baseX}px`;
-  el.style.top = `${baseY}px`;
-  el.style.width = `${width}px`;
-  el.style.height = `${height}px`;
-}
-
 function arcCardShadow(opacity) {
   const a = typeof opacity === 'number' ? opacity.toFixed(3) : opacity;
   return `0 4px 7.1px 0 rgba(0,0,0,${a}), 0 18px 25.1px 0 rgba(0,0,0,${a}), 0 60px 60px 0 rgba(0,0,0,${a})`;
@@ -335,6 +331,7 @@ function buildStage(el) {
   const sceneCards = buildCardStack(cardScene, cardDefs);
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
+  textBlockEl.style.left = '0';
   ctaEl.classList.add('acrobat-cta');
   [titleEl, textBlockEl].forEach((e) => {
     e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
@@ -427,6 +424,8 @@ export default async function init(el) {
   };
 
   let cachedTextBlockWidth = 0;
+  let cachedBlockDocTop = 0;
+  let cachedBlockHeight = 0;
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
@@ -686,29 +685,32 @@ export default async function init(el) {
       sceneCards.forEach((card) => {
         card.width = mobileLayout.cardW;
         card.height = Math.round(card.baseHeight * mobileLayout.scale);
+        card.el.style.width = `${card.width}px`;
+        card.el.style.height = `${card.height}px`;
       });
     } else {
       sceneCards.forEach((card) => {
         card.width = CARD_WIDTH;
         card.height = card.baseHeight;
+        card.el.style.width = `${card.width}px`;
+        card.el.style.height = `${card.height}px`;
       });
     }
     arcAngle = frame.isMobile ? MOBILE_ARC_ALPHA : Math.atan2(viewportHeight, viewportWidth);
     cachedHeadlineH = titleHeading?.offsetHeight || titleEl?.offsetHeight || 60;
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
+    cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
+    cachedBlockHeight = el.offsetHeight;
   }
 
-  // TODO: handle via css?
   function setLabelPos(card, centerX, centerY, scale, opacity) {
     if (!card.labelEl) return;
     if (opacity <= 0) {
       card.labelEl.style.opacity = '0';
       return;
     }
-    card.labelEl.style.left = `${centerX - (card.width / 2) * scale}px`;
-    card.labelEl.style.top = `${centerY + (card.height / 2) * scale + 4}px`;
-    card.labelEl.style.transform = `scale(${scale})`;
+    card.labelEl.style.transform = `translate(${centerX - (card.width / 2) * scale}px,${centerY + (card.height / 2) * scale + 4}px) scale(${scale})`;
     card.labelEl.style.opacity = opacity.toFixed(3);
   }
 
@@ -785,10 +787,9 @@ export default async function init(el) {
     const cardYTilt = screenYNorm * ARC_Y_TILT * tiltFactor;
     const cardXTilt = -screenYNorm * ARC_X_TILT * tiltFactor;
 
-    applyCardBox(card.el, card);
     setCardTransform(card.el, {
-      translateX: currentX - card.baseX - card.width / 2 + slide.x,
-      translateY: currentY - card.baseY - card.height / 2 + slide.y,
+      translateX: currentX - card.width / 2 + slide.x,
+      translateY: currentY - card.height / 2 + slide.y,
       scale: scale * slide.scaleMultiplier,
       rotation,
       tiltX: cardXTilt,
@@ -826,10 +827,9 @@ export default async function init(el) {
     card.visualCx = centerX;
     card.visualCy = centerY;
 
-    applyCardBox(card.el, card);
     setCardTransform(card.el, {
-      translateX: centerX - card.baseX - card.width / 2,
-      translateY: centerY - card.baseY - card.height / 2,
+      translateX: centerX - card.width / 2,
+      translateY: centerY - card.height / 2,
       scale,
     });
     card.el.style.opacity = 1;
@@ -862,10 +862,10 @@ export default async function init(el) {
   let interactive = false;
 
   function readScrollProgress() {
-    const rect = el.getBoundingClientRect();
-    scrollTimeline.blockTop = rect.top;
-    const panRange = Math.max(1, el.offsetHeight - window.innerHeight);
-    return clamp01(-rect.top / panRange);
+    const blockTop = cachedBlockDocTop - window.scrollY;
+    scrollTimeline.blockTop = blockTop;
+    const panRange = Math.max(1, cachedBlockHeight - window.innerHeight);
+    return clamp01(-blockTop / panRange);
   }
 
   function updateAnimationProgress() {
@@ -1021,6 +1021,7 @@ export default async function init(el) {
       ? textScaleDuringSlotting
       : textScaleDuringSlotting * (1 - 0.15 * easeInOutSine(arcTextFadeProgress));
     let pinnedTextY;
+    let textLeft;
     if (frame.isMobile) {
       const { mobileLayout } = frame;
       const row1CenterY = viewportHeight * 0.50
@@ -1028,13 +1029,12 @@ export default async function init(el) {
       pinnedTextY = row1CenterY - verticalPan.arcGridY
         + mobileLayout.tallH / 2 + TEXT_BLOCK_BELOW_CARD_OFFSET;
       const gridW = mobileLayout.cardW * 2 + MOBILE_COL_GAP;
-      const mobileGridLeft = Math.max(
+      textLeft = Math.max(
         MOBILE_OUTER_MARGIN,
         Math.round((viewportWidth - gridW) / 2),
       );
-      textBlockEl.style.left = `${mobileGridLeft}px`;
     } else {
-      const arcTextLeft = frame.isTablet
+      textLeft = frame.isTablet
         ? col0VisualLeft
         : col3Right - cachedTextBlockWidth;
       pinnedTextY = viewportHeight * (0.5 + 0.5 * cardGridLayout.rowGap)
@@ -1042,13 +1042,12 @@ export default async function init(el) {
         + 37
         + viewportHeight * 0.036
         - verticalPan.arcGridY;
-      textBlockEl.style.left = `${arcTextLeft}px`;
     }
     const arcReveal = frame.isMobile
       ? clamp01((phase.arcToGrid - 0.1) / 0.3)
       : clamp01(arcTextPanProgressCached * 2);
     const textOpacity = Math.max(0, 1 - arcTextFadeProgress) * arcReveal;
-    textBlockEl.style.transform = `translateY(${pinnedTextY}px) scale(${arcFinalScale})`;
+    textBlockEl.style.transform = `translate(${textLeft}px,${pinnedTextY}px) scale(${arcFinalScale})`;
     textBlockEl.style.opacity = textOpacity;
   }
 
@@ -1165,8 +1164,13 @@ export default async function init(el) {
   };
 
   const io = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) startLoop();
-    else stopLoop();
+    if (entry.isIntersecting) {
+      cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
+      cachedBlockHeight = el.offsetHeight;
+      startLoop();
+    } else {
+      stopLoop();
+    }
   }, { rootMargin: '200px 0px' });
   io.observe(el);
 

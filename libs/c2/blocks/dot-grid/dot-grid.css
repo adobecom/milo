@@ -100,7 +100,6 @@
   inset: 0;
   overflow: visible;
   transform-style: flat;
-  will-change: transform, opacity;
 }
 
 .dot-grid .card {
