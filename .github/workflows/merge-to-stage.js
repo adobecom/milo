@@ -134,7 +134,7 @@ const merge = async ({ prs, type }) => {
 
   for await (const { number, files, html_url, title } of prs) {
     try {
-      if (mergeLimitExceeded()) return;
+      if (type !== LABELS.zeroImpact && mergeLimitExceeded()) return;
       if (!process.env.LOCAL_RUN) {
         await github.rest.pulls.merge({
           owner,
