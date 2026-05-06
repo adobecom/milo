@@ -926,6 +926,7 @@ header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > bu
   animation: slideleft 0.4s ease, fadein 0.2s ease;
   animation-fill-mode: forwards;
   padding: 15px 20px;
+  will-change: translate, opacity;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper--expanded .feds-nav > section.feds-navItem > button.feds-navLink {
@@ -939,6 +940,7 @@ header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
   border: none;
   animation: slideright 0.4s ease, fadeout 0.2s ease;
   animation-fill-mode: forwards;
+  will-change: translate, opacity;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink {
