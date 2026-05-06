@@ -1154,7 +1154,7 @@ p {
       * {
         animation: garage-door-line-height ease-out both;
         animation-timeline: view();
-        animation-range: entry 10% cover 40%;
+        animation-range: entry 30% cover 60%;
       }
     }
   }
