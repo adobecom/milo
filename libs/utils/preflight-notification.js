@@ -10,12 +10,24 @@ function openPreflightPanel() {
   sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
 }
 
-async function createPreflightNotification() {
+function getMasUnpublishedCount(results) {
+  const merchResults = results?.runChecks?.merch || [];
+  return merchResults.reduce((sum, check) => {
+    if (check?.status !== 'fail') return sum;
+    return sum + (check.details?.unpublished?.length || 0);
+  }, 0);
+}
+
+async function createPreflightNotification(masUnpublishedCount = 0) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
+
+  const masLine = masUnpublishedCount > 0
+    ? `<br/><span class="notification-mas-line">M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.</span>`
+    : '';
 
   const overlay = document.createElement('div');
   overlay.className = 'milo-preflight-overlay';
@@ -23,7 +35,7 @@ async function createPreflightNotification() {
     <div class="preflight-notification">
       <div class="notification-content">
         <span class="notification-message">
-          Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.
+          Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}
         </span>
         <button class="notification-close">×</button>
       </div>
@@ -82,7 +94,7 @@ function createObserver() {
       url: window.location.href,
       area: document,
     }).catch(() => null);
-    if (results?.hasFailures) await createPreflightNotification();
+    if (results?.hasFailures) await createPreflightNotification(getMasUnpublishedCount(results));
   });
 
   sidekickObserver.observe(sidekick, {
@@ -113,7 +125,7 @@ export default async function show() {
   if (!results) return;
 
   if (results.hasFailures) {
-    await createPreflightNotification();
+    await createPreflightNotification(getMasUnpublishedCount(results));
   } else {
     setupLinkCheckListener();
   }
