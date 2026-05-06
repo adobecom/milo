@@ -38,6 +38,7 @@
 
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
+  overflow: visible;
 }
 
 .dark .notification,
@@ -211,7 +212,9 @@
 }
 
 .notification.ribbon.space-between .foreground .text {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
+  row-gap: var(--spacing-xs);
+  column-gap: var(--spacing-s);
   inline-size: 100%;
 }
 
@@ -220,7 +223,9 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  flex-basis: 100%;
+  flex: 1 1 0;
+  min-inline-size: min-content;
+  max-inline-size: 100%;
 }
 
 .notification .foreground .image {
@@ -363,6 +368,9 @@
   align-self: center;
   justify-content: flex-end;
   inline-size: auto;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  flex: 0 1 auto;
 }
 
 .notification.flexible {
@@ -618,7 +626,7 @@
   }
 
   .notification.ribbon .foreground .text {
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     align-items: center;
   }
 
@@ -665,7 +673,7 @@
   }
 
   .notification.ribbon.space-between .foreground .action-area {
-    flex-wrap: unset;
+    flex-wrap: wrap;
   }
 
   .notification.pill.flexible {
