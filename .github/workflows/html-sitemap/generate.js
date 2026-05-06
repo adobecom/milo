@@ -10,7 +10,7 @@ import { runTransformDa } from './lib/stages/transform-da.js';
 import { runDiff } from './lib/output/diff.js';
 import { runPush } from './lib/stages/push.js';
 import { runPromote } from './lib/stages/promote.js';
-import { parsePositionalStages, parseStagesOption } from './lib/util/stages.js';
+import { parsePositionalStages, parseStagesOption, STAGE_ORDER } from './lib/util/stages.js';
 
 /**
  * @typedef {import('./lib/util/stages.js').StageId} StageId
@@ -44,8 +44,9 @@ function getHelpText() {
   return `HTML Sitemap Generator
 
 Usage:
-  node --env-file=.env generate.js [stage] [mode] [options]
-  node --env-file=.env generate.js --stages <list> [options]
+  node --env-file=.env generate.js [options]                       # full pipeline
+  node --env-file=.env generate.js [stage] [mode] [options]        # narrow to a stage
+  node --env-file=.env generate.js --stages <list> [options]       # narrow to a list
 
 Stages:
   clean            Delete generated output data under --output
@@ -64,10 +65,16 @@ Options:
   --geo <prefix>        Filter to a single base geo (e.g. fr, de, default)
   --da-root <path>      Remote DA folder root for diff/push/preview/publish
   --force               Push even if remote content is unchanged
-  --stages <list>       Comma-separated stage ids
+  --stages <list>       Comma-separated stage ids (override; omit to run all)
   -h, --help            Show this help
 
 Notes:
+  Stages and config:
+    Omit --stages (and positional stage args) to run the full pipeline.
+    Per-geo delivery scope is gated by the config's geo-map.stage column
+    (preview / publish / empty), so the full pipeline is the safe default.
+    --stages is an override for narrowing scope during local development.
+
   Positional stage shortcuts:
     transform data -> transform-data
     transform da   -> transform-da
@@ -177,7 +184,11 @@ export function handleStageFailures(stage, hadFailures) {
 }
 
 async function main() {
-  const { stages, options, help } = parseArgs(process.argv.slice(2));
+  const { stages: parsedStages, options, help } = parseArgs(process.argv.slice(2));
+  // No explicit stage selection => run the full pipeline. Per-geo delivery
+  // scope is gated by the config's geo-map.stage column (preview / publish /
+  // empty), so this is the safe production default.
+  const stages = parsedStages.length ? parsedStages : [...STAGE_ORDER];
   const outputDir = path.resolve(process.cwd(), options.output);
 
   if (help) {
@@ -185,10 +196,6 @@ async function main() {
     return;
   }
 
-  if (!stages.length) {
-    console.log(getHelpText());
-    throw new Error('No stages selected.');
-  }
 
   for (const stage of stages) {
     if (stage === 'clean') {
