@@ -2568,6 +2568,12 @@ async function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+  if (jsonLdFlag === 'true') {
+    const { default: initJsonLd } = await import('../features/jsonld-graph-manager/jsonld-graph-manager.js');
+    await initJsonLd();
+  }
+
   const injectBlock = getMetadata('injectblock');
   if (injectBlock) {
     import('./injectblock.js').then((module) => module.default(injectBlock));
