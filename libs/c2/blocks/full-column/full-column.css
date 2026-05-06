@@ -15,11 +15,10 @@
       height: 100%;
     }
 
-    img {
+    picture img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: var(--s2a-border-radius-md);
     }
   }
 
@@ -42,13 +41,31 @@
     gap: var(--s2a-spacing-xs);
     padding-block-start: var(--s2a-spacing-lg);
     padding-inline: var(--s2a-spacing-md);
-  }
 
-  .action-area {
-    display: flex;
-    align-items: center;
-    gap: var(--s2a-spacing-xs);
-    margin-block-start: var(--s2a-spacing-md);
+    p:has(> a:only-child) {
+      margin-block-start: var(--s2a-spacing-md);
+
+      a {
+        color: var(--s2a-color-content-default);
+        text-decoration: none;
+        font-weight: var(--s2a-font-weight-adobe-clean-bold);
+        font-size: var(--s2a-font-size-sm);
+        line-height: var(--s2a-font-line-height-xs);
+        display: inline-flex;
+        align-items: center;
+        gap: var(--s2a-spacing-xs);
+
+        &::after {
+          content: '';
+          display: inline-block;
+          width: 3px;
+          height: 6px;
+          border-inline-end: 1.5px solid currentcolor;
+          border-block-start: 1.5px solid currentcolor;
+          transform: rotate(45deg);
+        }
+      }
+    }
   }
 }
 
@@ -59,30 +76,27 @@
       aspect-ratio: 1480 / 670;
     }
 
-    > div {
-      .foreground {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding-block-start: var(--s2a-spacing-lg);
-        padding-inline: var(--s2a-spacing-md);
-      }
-    }
+    .foreground {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-block-start: var(--s2a-spacing-lg);
+      padding-inline: var(--s2a-spacing-md);
+      gap: var(--s2a-spacing-lg);
 
-    .action-area {
-      flex-shrink: 0;
-      margin-block-start: 0;
-      padding-block-start: var(--s2a-spacing-xs);
+      p:has(> a:only-child) {
+        flex-shrink: 0;
+        margin-block-start: 0;
+        padding-block-start: var(--s2a-spacing-xs);
+      }
     }
   }
 }
 
 @media (width >= 1280px) {
   .full-column {
-    > div {
-      .foreground {
-        padding-inline: var(--s2a-spacing-lg);
-      }
+    .foreground {
+      padding-inline: var(--s2a-spacing-lg);
     }
 
     .icon {

@@ -7,7 +7,7 @@ function decorate(block) {
   const media = row.children[1];
   foreground?.classList.add('foreground');
   media?.classList.add('media');
-  decorateBlockText(foreground);
+  decorateBlockText(foreground, { heading: '4' });
 
   const icon = foreground?.querySelector(':scope > p:first-child picture');
   if (icon) {
@@ -15,6 +15,8 @@ function decorate(block) {
     iconWrapper?.classList.add('icon');
     media?.prepend(iconWrapper);
   }
+
+  if (media) row.prepend(media);
 }
 
 export default function init(el) {
