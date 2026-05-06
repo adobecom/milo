@@ -620,6 +620,7 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
   pointer-events: auto !important;
+  line-height: 1.5;
 }
 
 /* Non-fragment (HTML) badges - not clickable */
@@ -680,4 +681,97 @@ body[data-mep-highlight='true'] main[data-manifest-id]::before {
 
 body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-manifest-id]::before {
   display: none;
+}
+
+/* CaaS region highlights ----------------------------------------------------- */
+body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx']),
+body[data-mep-caas-highlight='true'] [data-country='xx'] {
+  outline: 2px dashed transparent;
+  outline-offset: 2px;
+  position: relative !important;
+}
+
+body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx'])::before,
+body[data-mep-caas-highlight='true'] [data-country='xx']::before {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  min-height: 20px !important;
+  min-width: 60px !important;
+  max-width: 400px;
+  text-align: left !important;
+  vertical-align: top;
+  position: absolute !important;
+  left: 5px;
+  top: var(--badge-top-offset, 0);
+  z-index: 3;
+  padding: 5px 10px !important;
+  margin: 2px;
+  margin-left: var(--badge-margin-left, 0);
+  color: #000 !important;
+  opacity: 0.9 !important;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+/* Market-specific (any country code other than xx) - green */
+body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx']) {
+  outline-color: #28a745;
+}
+
+body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx'])::before {
+  content: '🔗 caas-market: ' attr(data-card-path);
+  background-color: #d4edda !important;
+  border: 1px solid #28a745;
+}
+
+/* Lang-first / global (xx) - yellow */
+body[data-mep-caas-highlight='true'] [data-country='xx'] {
+  outline-color: #ffc107;
+}
+
+body[data-mep-caas-highlight='true'] [data-country='xx']::before {
+  content: '🔗 caas-lang: ' attr(data-card-path);
+  background-color: #fff3cd !important;
+  border: 1px solid #ffc107;
+}
+
+/* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
+body[data-mep-caas-highlight='true'] [data-caas-block] {
+  outline: 2px dashed #007bff;
+  outline-offset: 4px;
+}
+
+a.mep-caas-edit-badge,
+body a.mep-caas-edit-badge {
+  visibility: visible !important; /* override caas.css hiding /tools/caas# links */
+  display: inline-block;
+  margin: 0 0 12px 5px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #cce5ff;
+  color: #003a75;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.95;
+  z-index: 4;
+  position: relative;
+}
+
+a.mep-caas-edit-badge::before {
+  content: '🔗 ';
+}
+
+a.mep-caas-edit-badge:hover,
+a.mep-caas-edit-badge:focus {
+  opacity: 1;
+  text-decoration: none;
 }

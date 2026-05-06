@@ -9,6 +9,7 @@ import {
   normCountryCode,
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
+import { mepCaasConfigUrls } from '../../blocks/caas/utils.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 export function escapeHtml(str) {
@@ -27,6 +28,94 @@ export const API_URLS = {
   save: `${API_DOMAIN}/save-mep-call`,
   report: `${API_DOMAIN}/get-report`,
 };
+
+const CAAS_BADGE_CLASS = 'mep-caas-edit-badge';
+const PREVIEW_HOST_RE = /\.(aem|hlx)\.(page|live)$/;
+const BLOG_PATH_RE = /^\/(?:[^/]+\/)?blog\//i;
+const PREVIEW_REPO_HOST_RE = /^(.+?)--(.+?)--adobecom\.aem\.(page|live)$/;
+
+function rewriteForPreviewHost(url) {
+  if (!url) return url;
+  const isPreview = PREVIEW_HOST_RE.test(window.location.host)
+    || window.location.search.includes('milolibs=');
+  if (!isPreview) return url;
+  try {
+    const u = new URL(url);
+    const { prodDomains = ['business.adobe.com', 'www.adobe.com', 'news.adobe.com'] } = getConfig();
+    if (!prodDomains.includes(u.host)) return u.toString();
+    u.protocol = window.location.protocol;
+    u.host = window.location.host;
+    if (PREVIEW_HOST_RE.test(u.host)) u.pathname = u.pathname.replace(/\.html$/, '');
+    return u.toString();
+  } catch { return url; }
+}
+
+function rewriteBlogPreviewHost(url) {
+  if (!url) return null;
+  const m = window.location.host.match(PREVIEW_REPO_HOST_RE);
+  if (!m) return null;
+  const [, branch, repo, env] = m;
+  if (repo.endsWith('-blog')) return null;
+  try {
+    const u = new URL(url);
+    if (u.host !== 'business.adobe.com') return null;
+    if (!BLOG_PATH_RE.test(u.pathname)) return null;
+    u.protocol = window.location.protocol;
+    u.host = `${branch}--${repo}-blog--adobecom.aem.${env}`;
+    u.pathname = u.pathname.replace(/\.html$/, '');
+    return u.toString();
+  } catch { return null; }
+}
+
+function derivePathsForCards(root = document) {
+  root.querySelectorAll('[data-card-url]:not([data-card-path])').forEach((el) => {
+    const href = el.dataset.cardUrl;
+    if (!href) { el.dataset.cardPath = ''; return; }
+    try {
+      el.dataset.cardPath = new URL(href).pathname;
+    } catch {
+      el.dataset.cardPath = '';
+    }
+  });
+}
+
+function injectCaasBadges() {
+  document.querySelectorAll('[data-caas-block]').forEach((el) => {
+    const prev = el.previousElementSibling;
+    if (prev?.classList?.contains(CAAS_BADGE_CLASS)) return;
+    const url = mepCaasConfigUrls.get(el);
+    if (!url) return;
+    const a = createTag(
+      'a',
+      {
+        class: CAAS_BADGE_CLASS,
+        href: url,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
+      'Edit in CaaS Configurator',
+    );
+    el.insertAdjacentElement('beforebegin', a);
+  });
+  derivePathsForCards();
+}
+
+function removeCaasBadges() {
+  document.querySelectorAll(`a.${CAAS_BADGE_CLASS}`).forEach((el) => el.remove());
+}
+
+let caasObserver;
+function watchForCaasBlocks() {
+  if (caasObserver) return;
+  caasObserver = new MutationObserver((mutations) => {
+    if (document.body.dataset.mepCaasHighlight !== 'true') return;
+    const hasCaasMutation = mutations.some((m) => [...m.addedNodes].some((n) => (n.nodeType === 1)
+      && (n.matches?.('[data-caas-block], [data-card-url]')
+        || n.querySelector?.('[data-caas-block], [data-card-url]'))));
+    if (hasCaasMutation) injectCaasBadges();
+  });
+  caasObserver.observe(document.body, { childList: true, subtree: true });
+}
 
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
@@ -81,6 +170,21 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.set('mepFragments', true);
   } else {
     simulateHref.searchParams.delete('mepFragments');
+  }
+
+  const mepCaasHighlightCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepCaasHighlightCheckbox${pageId}`,
+  );
+
+  if (mepCaasHighlightCheckbox) {
+    document.body.dataset.mepCaasHighlight = mepCaasHighlightCheckbox.checked;
+    if (mepCaasHighlightCheckbox.checked) {
+      simulateHref.searchParams.set('mepCaasHighlight', true);
+      injectCaasBadges();
+    } else {
+      simulateHref.searchParams.delete('mepCaasHighlight');
+      removeCaasBadges();
+    }
   }
 
   const mepPreviewButtonCheckbox = popup.querySelector(
@@ -427,6 +531,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   const urlParams = new URLSearchParams(window.location.search);
   const highlightParam = urlParams.get('mepHighlight');
   const fragmentsParam = urlParams.get('mepFragments');
+  const caasHighlightParam = urlParams.get('mepCaasHighlight');
 
   let mepHighlightChecked = '';
   if (page?.highlight || highlightParam === 'true') {
@@ -437,6 +542,11 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   if (page?.fragments || fragmentsParam === 'true') {
     mepFragmentsChecked = 'checked="checked"';
     document.body.dataset.mepFragments = true;
+  }
+  let mepCaasHighlightChecked = '';
+  if (caasHighlightParam === 'true') {
+    mepCaasHighlightChecked = 'checked="checked"';
+    document.body.dataset.mepCaasHighlight = true;
   }
   const PREVIEW_BUTTON_ID = 'preview-button';
   const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
@@ -560,6 +670,11 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <input type="checkbox" name="mepFragments${pageId}"
         id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
         <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepCaasHighlight${pageId}"
+        id="mepCaasHighlightCheckbox${pageId}" ${mepCaasHighlightChecked} value="true">
+        <label for="mepCaasHighlightCheckbox${pageId}">Highlight CaaS</label>
       </div>
       ${showManifestsCheckbox}
       <div>
@@ -842,13 +957,14 @@ function addFragmentBadgeClickHandlers() {
   document.body.addEventListener('click', (e) => {
     const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
     const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
-    if (!isHighlightEnabled && !isFragmentsEnabled) return;
+    const isCaasHighlightEnabled = document.body.dataset.mepCaasHighlight === 'true';
+    if (!isHighlightEnabled && !isFragmentsEnabled && !isCaasHighlightEnabled) return;
 
     // Ignore clicks from within the MEP popup
     if (e.target.closest('.mep-preview-overlay')) return;
 
     // Find the badged element that was clicked (includes non-fragment badges)
-    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default]');
+    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]');
     if (!fragment) return;
 
     const elementStyle = window.getComputedStyle(fragment);
@@ -861,7 +977,12 @@ function addFragmentBadgeClickHandlers() {
     const badgeHeight = parseFloat(beforeStyles.height)
       || parseFloat(beforeStyles.minHeight)
       || 35;
-    const fragmentPath = fragment.dataset.path || fragment.dataset.fragmentPath;
+    let fragmentPath = fragment.dataset.path
+      || fragment.dataset.fragmentPath
+      || fragment.dataset.cardUrl;
+    if (fragment.dataset.cardUrl) {
+      fragmentPath = rewriteBlogPreviewHost(fragmentPath) || rewriteForPreviewHost(fragmentPath);
+    }
     const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
     const handleBadgeClick = () => {
       e.preventDefault();
@@ -936,6 +1057,8 @@ export default async function decoratePreviewMode() {
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
+  watchForCaasBlocks();
+  if (document.body.dataset.mepCaasHighlight === 'true') injectCaasBadges();
   // Adjust badge positions after a short delay to allow rendering
   setTimeout(() => {
     adjustBadgesForZeroHeightSections();
