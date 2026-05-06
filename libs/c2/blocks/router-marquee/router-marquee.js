@@ -385,7 +385,6 @@ const startAutoplay = (slides, cards, container, block) => {
   const cardEls = [...cards.querySelectorAll('.rm-card')];
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
-  const liveRegion = container.querySelector('.rm-live-region');
   const filler = playPauseBtn?.querySelector('.offset-filler');
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
@@ -494,8 +493,6 @@ const startAutoplay = (slides, cards, container, block) => {
     active = index;
     cardEls[active]?.classList.add('is-active');
     cardEls[active]?.setAttribute('aria-selected', 'true');
-    const label = cardEls[active]?.querySelector('.rm-card-label')?.textContent;
-    if (liveRegion && label) liveRegion.textContent = `Slide ${active + 1} of ${slides.length}, ${label}`;
     if (isMobile() && !skipTrack) {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
@@ -662,9 +659,9 @@ const buildViewport = (viewport, slides) => {
   firstCard?.classList.add('is-active');
   firstCard?.setAttribute('aria-selected', 'true');
   const controls = createTag('div', { class: 'rm-controls' });
-  controls.append(cards, buildPlayPause());
-  const liveRegion = createTag('div', { class: 'rm-live-region', 'aria-live': 'polite', 'aria-atomic': 'true' });
-  container.append(controls, ...slides, liveRegion);
+  const srHint = createTag('p', { class: 'rm-sr-hint' }, 'Autoplay is on. Use the Pause button for a better experience with a screen reader.');
+  controls.append(srHint, buildPlayPause(), cards);
+  container.append(controls, ...slides);
   return container;
 };
 

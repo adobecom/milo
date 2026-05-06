@@ -489,6 +489,7 @@
   }
 
   .rm-cards {
+    order: -1;
     gap: var(--s2a-spacing-8);
   }
 
@@ -511,7 +512,7 @@
   }
 }
 
-.rm-live-region {
+.rm-sr-hint {
   position: absolute;
   width: 1px;
   height: 1px;
