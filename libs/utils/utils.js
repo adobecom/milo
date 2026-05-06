@@ -117,6 +117,7 @@ const C2_BLOCKS = [
   'explore-card',
   'global-footer',
   'global-navigation',
+  'hub-hero-modal',
   'martech-metadata',
   'modal',
   'news',
