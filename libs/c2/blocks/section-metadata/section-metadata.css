@@ -88,9 +88,9 @@
   }
 
   &.bento .explore-card-content {
-    padding-inline: var(--s2a-spacing-xl);
+    padding-inline: 0;
     padding-bottom: var(--s2a-spacing-xl);
-    padding-top: 92vw;
+    padding-top: 0;
 
     & [class*='title-'] {
       z-index: 1;
@@ -103,24 +103,36 @@
       z-index: 1;
     }
 
+    [class*='title-'],
+    [class*='body-'] {
+      padding-inline: var(--s2a-spacing-xl);
+    }
+
     > :nth-child(1):not(img):not(video) {
       margin-bottom: var(--s2a-spacing-xs);
     }
 
     .explore-card-foreground {
-      order: -1;
       aspect-ratio: 1 / 1.2;
 
       img {
         object-fit: cover;
-        object-position: 100% 0;
+        object-position: top;
       }
+    }
+
+    .content-spacer {
+      aspect-ratio: 1 / 1;
+      display: block;
+      height: auto;
+      order: -1;
+      width: 100%;
     }
   }
 
   &.bento .grid-full-width {
     .explore-card-content {
-      padding-top: 42vw;
+      padding-top: 36vw;
 
       [class*='title-'],
       > :nth-child(1):not(img):not(video) {
@@ -142,7 +154,7 @@
     img,
     .video-container {
       opacity: 1;
-      object-position: 100% 0;
+      object-position: top;
     }
   }
 }
@@ -194,7 +206,7 @@
   .section {
     &.bento .grid-full-width {
       & .explore-card-content {
-        padding-top: 108vw;
+        padding-top: 100vw;
       }
     }
   }
@@ -217,10 +229,12 @@
 
   .section.bento {
     .explore-card-content {
-      padding-top: 33vw;
-
       & [class*='title-'] {
         margin-top: 0;
+      }
+
+      .content-spacer {
+        aspect-ratio: 1 / 0.8;
       }
     }
   }
@@ -260,27 +274,21 @@
 @media (width >= 1440px) {
   .section.bento {
     .explore-card-content {
-      padding-inline: var(--s2a-spacing-3xl);
       padding-bottom: var(--s2a-spacing-3xl);
       min-height: initial;
+
+      [class*='title-'],
+      [class*='body-'] {
+        padding-inline: var(--s2a-spacing-3xl);
+      }
     }
   }
 }
 
 @media (width >= 1920px) {
   .section.bento {
-    .explore-card-content {
-      padding-top: 630px;
-    }
-
     & .grid-full-width .explore-card-content {
-      padding-top: 780px;
-    }
-
-    &.wide {
-      & .grid-full-width .explore-card-content {
-        padding-top: 810px;
-      }
+      padding-top: 680px;
     }
   }
 }

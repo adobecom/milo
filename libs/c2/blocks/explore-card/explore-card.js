@@ -9,7 +9,8 @@ function getForegroundContent(foregroundRow, contentDiv, blockName) {
   if (foregroundRow) {
     if (hasContent(foregroundRow)) {
       [...foregroundRow.children].forEach((child) => child.classList.add(`${blockName}-foreground`));
-      contentDiv?.append(...foregroundRow.childNodes);
+      const contentSpacer = createTag('div', { class: 'content-spacer' });
+      contentDiv?.append(contentSpacer, ...foregroundRow.childNodes);
     }
     foregroundRow.remove();
   }

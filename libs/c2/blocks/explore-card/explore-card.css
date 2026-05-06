@@ -132,6 +132,10 @@
     width: 32px;
     height: auto;
   }
+
+  .content-spacer {
+    display: none;
+  }
 }
 
 .explore-card-container {
