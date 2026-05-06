@@ -1311,7 +1311,7 @@ describe('isLocaleInRegionalSites helper function tests', () => {
 
 describe('initBulkPublisherLingoMapping', () => {
   let ogFetch;
-  const LINGO_MAPPING_URL = 'https://www.adobe.com/federal/assets/data/lingo-site-mapping.json';
+  const LINGO_MAPPING_URL = 'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json';
 
   beforeEach(() => {
     ogFetch = window.fetch;
