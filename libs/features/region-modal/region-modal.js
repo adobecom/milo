@@ -1,4 +1,4 @@
-import { getCountry, setMarket, pageExist } from '../../utils/utils.js';
+import { getCountry, setMarket, pageExist, getCookie } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { marketsLangForLocale, norm } from '../../utils/market.js';
 
@@ -250,6 +250,10 @@ function decoratePickerLink(link, market, currentPagePrefix, geoMarketCode) {
     setIntlCookie(market.prefix || 'us');
     link.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
     removeOverflow();
+    if (config.lingoProjectSuccessLogging === 'on') {
+      const country = await getCountry();
+      window.lana.log(`${eventName}|locale:${currentPagePrefix}|country:${country}`, { tags: 'lingo, lingo-region-modal-click', severity: 'i' });
+    }
     window.open(market.url, '_self');
   });
 }
@@ -312,6 +316,10 @@ function decorateCurrentSiteLink(link, currentPagePrefix, regionCode) {
     setIntlCookie(currentPagePrefix);
     link.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
     removeOverflow();
+    if (config.lingoProjectSuccessLogging === 'on') {
+      const country = await getCountry();
+      window.lana.log(`${eventName}|locale:${currentPagePrefix}|country:${country}`, { tags: 'lingo, lingo-region-modal-click', severity: 'i' });
+    }
   });
 }
 
@@ -390,7 +398,8 @@ function buildContent(
     mainAction.removeAttribute('role');
     mainAction.removeAttribute('aria-haspopup');
     mainAction.removeAttribute('aria-expanded');
-    mainAction.setAttribute('daa-ll', `Continue:${availableMarkets[0]?.prefix || 'us'}-${currentPagePrefix}|region-modal`);
+    const eventName = `Continue:${availableMarkets[0]?.prefix || 'us'}-${currentPagePrefix}|region-modal`;
+    mainAction.setAttribute('daa-ll', eventName);
     mainAction.addEventListener('click', async (e) => {
       e.preventDefault();
       const m = availableMarkets[0];
@@ -398,6 +407,10 @@ function buildContent(
       setIntlCookie(m.prefix || 'us');
       mainAction.closest('.dialog-modal')?.dispatchEvent(new Event('closeModal'));
       removeOverflow();
+      if (config.lingoProjectSuccessLogging === 'on') {
+        const country = await getCountry();
+        window.lana.log(`${eventName}|locale:${currentPagePrefix}|country:${country}`, { tags: 'lingo, lingo-region-modal-click', severity: 'i' });
+      }
       window.open(m.url, '_self');
     });
   }
@@ -517,6 +530,13 @@ export default async function showRegionModal(
 
   const akamaiCode = await getCountry();
   const topMarket = availableMarkets[0];
-  const eventString = `Load:${topMarket.prefix || 'us'}-${currentPagePrefix}|region-modal|locale:${currentPagePrefix}|country:${akamaiCode}`;
+  const intlCookie = getCookie('international') || 'none';
+  const prefLang = intlCookie !== 'none'
+    ? (config.locales?.[intlCookie === 'us' ? '' : intlCookie]?.ietf?.split('-')[0] || intlCookie.split('_').pop())
+    : navigator.language?.split('-')[0] || 'none';
+  const eventString = `Load:${topMarket.prefix || 'us'}-${currentPagePrefix}|region-modal|locale:${currentPagePrefix}|country:${akamaiCode}|intl:${intlCookie}|pref-lang:${prefLang}`;
   if (sendAnalyticsFunc) sendAnalyticsFunc(new Event(eventString));
+  if (config.lingoProjectSuccessLogging === 'on') {
+    window.lana.log(eventString, { tags: 'lingo, lingo-region-modal-load', severity: 'i' });
+  }
 }

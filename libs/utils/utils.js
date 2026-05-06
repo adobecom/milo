@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
+export const isBot = () => BOT_REGEX.test(navigator.userAgent);
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -678,6 +681,27 @@ function processQueryIndexMap(link, domain) {
 }
 const getDomainLingo = (path) => path?.split('/*')[0];
 
+export function resolveCrossSiteIndex(
+  { queryIndexWebPath, stageHost },
+  prefix,
+  suffix,
+  currentHost,
+) {
+  const prodHost = getDomainLingo(queryIndexWebPath);
+  let host = prodHost;
+  let sfx = '';
+
+  if (/\.stage\.adobe\.com$/.test(currentHost) && stageHost) {
+    host = stageHost;
+    sfx = suffix;
+  }
+
+  const path = queryIndexWebPath.slice(prodHost.length)
+    .replace('/*', prefix)
+    .replace(/\/query-index\.json$/, `/query-index${sfx}.json`);
+  return { url: `https://${host}${path}`, host };
+}
+
 async function loadQueryIndexes(prefix, links = []) {
   const config = getConfig();
   const suffix = config.env?.name === 'prod' || window.location.host.includes(`${SLD}.live`) ? '' : '-preview';
@@ -729,12 +753,19 @@ async function loadQueryIndexes(prefix, links = []) {
       siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath }) => {
+        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
           const hasRegional = localesData
             .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
           if (!hasRegional) return;
-          const domain = getDomainLingo(queryIndexWebPath);
-          queryIndexes[uid] = processQueryIndexMap(`https://${queryIndexWebPath.replace('/*', prefix)}`, domain);
+          const prodDomain = getDomainLingo(queryIndexWebPath);
+          const { url, host: envHost } = resolveCrossSiteIndex(
+            { queryIndexWebPath, stageHost },
+            prefix,
+            suffix,
+            window.location.hostname,
+          );
+          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
+          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
         });
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
@@ -913,6 +944,8 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
+  if (isBot()) return null;
+
   const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
   const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
   const country = akamaiLocale || sessionStorage.getItem('akamai');
@@ -946,6 +979,7 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
 }
 
 export async function resolveDetectedMarketCountry() {
+  if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
@@ -964,7 +998,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getMepLingoPrefix() {
+export async function getLingoRegion() {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -987,7 +1021,12 @@ export async function getMepLingoPrefix() {
     )?.[0];
   }
 
-  return regionKey ? regions[regionKey].prefix : null;
+  return regionKey ? regions[regionKey] : null;
+}
+
+export async function getGeoLocalePrefix() {
+  const region = await getLingoRegion();
+  return region?.prefix ?? null;
 }
 
 let mepLingoModulePreloaded = false;
@@ -1067,7 +1106,7 @@ export async function localizeLinkAsync(
     const isFragment = effectiveHref.includes('/fragments/');
     if (isBasePage) {
       const isRegularFragment = isFragment && !isMepLingoLink;
-      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      prefix = (aTag && !isRegularFragment) ? await getGeoLocalePrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
       const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
@@ -1782,7 +1821,7 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-function getPlaceholderPaths(config) {
+export function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
   if (config.env.name !== 'prod'
@@ -1937,43 +1976,46 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 
 let imsLoaded;
 export async function loadIms() {
-  imsLoaded = imsLoaded || new Promise((resolve, reject) => {
-    const {
-      locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
-    } = getConfig();
-    if (!imsClientId) {
-      reject(new Error('Missing IMS Client ID'));
-      return;
-    }
-    const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
-    const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
-    window.adobeid = {
-      client_id: imsClientId,
-      scope: imsScope || defaultScope,
-      locale: locale?.ietf?.replace('-', '_') || 'en_US',
-      redirect_uri: ahomeMeta === 'on'
-        ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
-      autoValidateToken: true,
-      environment: env.ims,
-      useLocalStorage: false,
-      onReady: () => {
-        resolve();
-        clearTimeout(timeout);
-      },
-      onError: reject,
-      ...(imsGuest === 'on' && {
-        api_parameters: { check_token: { guest_allowed: true } },
-        enableGuestAccounts: true,
-        enableGuestTokenForceRefresh: true,
-      }),
-      ...adobeid,
-    };
-    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
-      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
-      : `${base}/deps/imslib.min.js`;
-    loadScript(path);
-  }).then(() => {
+  imsLoaded = imsLoaded || (async () => {
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    return new Promise((resolve, reject) => {
+      const {
+        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+      } = getConfig();
+      if (!imsClientId) {
+        reject(new Error('Missing IMS Client ID'));
+        return;
+      }
+      const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
+      const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+      const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
+      window.adobeid = {
+        client_id: imsClientId,
+        scope: imsScope || defaultScope,
+        locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
+        redirect_uri: ahomeMeta === 'on'
+          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+        autoValidateToken: true,
+        environment: env.ims,
+        useLocalStorage: false,
+        onReady: () => {
+          resolve();
+          clearTimeout(timeout);
+        },
+        onError: reject,
+        ...(imsGuest === 'on' && {
+          api_parameters: { check_token: { guest_allowed: true } },
+          enableGuestAccounts: true,
+          enableGuestTokenForceRefresh: true,
+        }),
+        ...adobeid,
+      };
+      const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+        ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+        : `${base}/deps/imslib.min.js`;
+      loadScript(path);
+    });
+  })().then(() => {
     if (getMepEnablement('xlg') === 'loggedout') {
       /* c8 ignore next */
       getConfig().entitlements();
@@ -2645,7 +2687,7 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
+  getGeoLocalePrefix().then((prefix) => {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }

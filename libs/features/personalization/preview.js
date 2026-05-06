@@ -3,7 +3,7 @@ import {
   getCookie,
   getConfig,
   getMetadata,
-  getMepLingoPrefix,
+  getGeoLocalePrefix,
   loadStyle,
   lingoActive,
   normCountryCode,
@@ -132,12 +132,16 @@ function addDividers(node, selector) {
   });
 }
 
-function addPillEventListeners(div) {
+function addPillEventListeners(div, overlay, onClose) {
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
-    div.classList.toggle('mep-hidden');
+    const isHidden = div.classList.toggle('mep-hidden');
+    if (!isHidden) overlay?.showPopover?.();
   });
   div.querySelector('.mep-close').addEventListener('click', () => {
-    document.body.removeChild(document.querySelector('.mep-preview-overlay'));
+    const overlayEl = document.querySelector('.mep-preview-overlay');
+    overlayEl?.hidePopover?.();
+    overlayEl?.remove();
+    onClose?.();
   });
 }
 
@@ -647,7 +651,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   async function buildSummaryLingo() {
     async function getGeoUserSupport() {
       if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-      if (await getMepLingoPrefix()) return 'Supported';
+      if (await getGeoLocalePrefix()) return 'Supported';
       return 'Not Supported';
     }
 
@@ -720,7 +724,7 @@ async function createPreviewPill() {
   const mepConfig = parseMepConfig();
   if (!mepConfig) return;
   const { activities } = mepConfig;
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', style: 'display: none;' });
+  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', popover: 'manual', 'data-lenis-prevent': '' });
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
@@ -729,7 +733,16 @@ async function createPreviewPill() {
   pill.append(await getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
-  addPillEventListeners(pill);
+  let onClose;
+  if (window.lenis?.options) {
+    const originalPrevent = window.lenis.options.prevent;
+    window.lenis.options.prevent = (node) => {
+      if (node.closest('.mep-preview-overlay')) return true;
+      return originalPrevent?.(node);
+    };
+    onClose = () => { window.lenis.options.prevent = originalPrevent; };
+  }
+  addPillEventListeners(pill, overlay, onClose);
 }
 function addHighlightData(manifests) {
   manifests.forEach(({ selectedVariant, manifest }) => {

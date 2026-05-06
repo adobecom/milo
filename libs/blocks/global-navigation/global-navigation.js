@@ -12,6 +12,8 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  getLingoRegion,
+  lingoActive,
 } from '../../utils/utils.js';
 
 const cssPromise = (async () => {
@@ -185,6 +187,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
+  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -200,7 +203,7 @@ const handleSignIn = async () => {
     scope: imsScope || SIGNIN_CONTEXT.scope || 'AdobeID,openid,gnav',
     response_type: 'token',
     redirect_uri: redirectUri,
-    locale: locale?.ietf || 'en-US',
+    locale: lingoRegion?.ietf || locale?.ietf || 'en-US',
   };
 
   const dctxId = getMetadata('susi-light-dctx-id');
@@ -628,7 +631,13 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
+    const {
+      searchEnabled,
+      selfIntegrateUnav,
+      desktopAppsCta = false,
+      whatsNew,
+      showPlansCta = false,
+    } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -641,6 +650,7 @@ class Gnav {
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
@@ -959,7 +969,10 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const locale = getUniversalNavLocale(config.locale);
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf
+      ? lingoRegion.ietf.replace('-', '_')
+      : getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
     const visitorGuid = window.alloy ? await window.alloy('getIdentity')
       .then((data) => data?.identity?.ECID).catch(() => undefined) : undefined;
@@ -1766,7 +1779,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false } = getConfig();
+  const { mep, miniGnav = false, showPlansCta } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1792,6 +1805,7 @@ export default async function init(block) {
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   if (miniGnav) block.classList.add('mini-gnav');
+  if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
