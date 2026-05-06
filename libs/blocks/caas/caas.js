@@ -79,7 +79,7 @@ const loadCaas = async (a) => {
   const caasEndpoint = queryParams.get('caasendpoint');
   const caasContainer = queryParams.get('caascontainer');
 
-  if (host.includes('stage.adobe.com')) {
+  if (host === 'stage.adobe.com' || host.endsWith('.stage.adobe.com')) {
     chimeraEndpoint = 'www.stage.adobe.com/chimera-api/collection';
   } else if (env?.name === 'local' || caasEndpoint === 'stage') {
     chimeraEndpoint = S_CAAS_AIO;
