@@ -54,19 +54,19 @@ function reactToMessage({ data, source }, iframe) {
   /* The height of the CRM modal is not calculated properly on Titan side so it looks better
     if we simply set the fixed height 875px for CRM on desktop
    */
-  if (iframe.src.includes('.modal.html')){ // if crm
+  if (iframe.src.includes('.modal.html')) { // if crm
     const dialogModal = iframe.closest('.dialog-modal');
     const miloIframe = iframe.closest('.milo-iframe');
     if (!dialogModal || !miloIframe) return;
-    if(document.body.offsetWidth > TABLET_MAX) {
+    if (document.body.offsetWidth > TABLET_MAX) {
       miloIframe.style.height = 'auto';
       dialogModal.style.height = 'auto';
       dialogModal.style.maxHeight = '875px';
     } else {
       dialogModal.style.maxHeight = 'none';
-    }    
+    }
     return;
-  }  
+  }
 
   if (data?.contentHeight) {
     /* If the page inside iframe sends the postMessage with its content height,
