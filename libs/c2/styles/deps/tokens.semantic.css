@@ -3,21 +3,26 @@
  */
 
 :root {
-  --s2a-border-radius-none: var(--s2a-border-radius-0);
+  /* Border Radius */
   --s2a-border-radius-2xs: var(--s2a-border-radius-2);
   --s2a-border-radius-xs: var(--s2a-border-radius-4);
   --s2a-border-radius-sm: var(--s2a-border-radius-8);
   --s2a-border-radius-md: var(--s2a-border-radius-16);
   --s2a-border-radius-lg: var(--s2a-border-radius-32);
+  --s2a-border-radius-none: var(--s2a-border-radius-0);
   --s2a-border-radius-round: var(--s2a-border-radius-999);
+
+  /* Border Width */
   --s2a-border-width-sm: var(--s2a-border-width-1);
   --s2a-border-width-md: var(--s2a-border-width-2);
   --s2a-border-width-lg: var(--s2a-border-width-4);
-  --s2a-opacity-scrim-subtle: var(--s2a-opacity-32);
+
+  /* Opacity */
   --s2a-opacity-disabled: var(--s2a-opacity-48);
   --s2a-opacity-scrim-strong: var(--s2a-opacity-64);
-  --s2a-spacing-none: var(--s2a-spacing-0);
-  --s2a-spacing-3xs: var(--s2a-spacing-2);
+  --s2a-opacity-scrim-subtle: var(--s2a-opacity-32);
+
+  /* Spacing */
   --s2a-spacing-2xs: var(--s2a-spacing-4);
   --s2a-spacing-xs: var(--s2a-spacing-8);
   --s2a-spacing-sm: var(--s2a-spacing-12);
@@ -27,26 +32,37 @@
   --s2a-spacing-2xl: var(--s2a-spacing-40);
   --s2a-spacing-3xl: var(--s2a-spacing-48);
   --s2a-spacing-4xl: var(--s2a-spacing-64);
-  --s2a-font-family-heading: var(--s2a-font-family-adobe-clean-display);
-  --s2a-font-family-default: var(--s2a-font-family-adobe-clean);
-  --s2a-font-family-title: var(--s2a-font-family-adobe-clean-display);
-  --s2a-font-family-subheading: var(--s2a-font-family-adobe-clean-display);
+  --s2a-spacing-3xs: var(--s2a-spacing-2);
+  --s2a-spacing-none: var(--s2a-spacing-0);
+
+  /* Font Family */
   --s2a-font-family-body: var(--s2a-font-family-adobe-clean);
-  --s2a-font-family-label: var(--s2a-font-family-adobe-clean);
-  --s2a-font-family-eyebrow: var(--s2a-font-family-adobe-clean);
   --s2a-font-family-caption: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-default: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-eyebrow: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-heading: var(--s2a-font-family-adobe-clean-display);
+  --s2a-font-family-label: var(--s2a-font-family-adobe-clean);
+  --s2a-font-family-subheading: var(--s2a-font-family-adobe-clean-display);
+  --s2a-font-family-title: var(--s2a-font-family-adobe-clean-display);
+
+  /* Font Letter Spacing */
   --s2a-font-letter-spacing-xs: var(--s2a-font-letter-spacing-neg-3_84);
   --s2a-font-letter-spacing-sm: var(--s2a-font-letter-spacing-neg-3_2);
   --s2a-font-letter-spacing-md: var(--s2a-font-letter-spacing-neg-2_88);
   --s2a-font-letter-spacing-lg: var(--s2a-font-letter-spacing-neg-1_68);
   --s2a-font-letter-spacing-xl: var(--s2a-font-letter-spacing-neg-1_44);
   --s2a-font-letter-spacing-2xl: var(--s2a-font-letter-spacing-neg-1_2);
-  --s2a-font-letter-spacing-3xl: var(--s2a-font-letter-spacing-neg-0_96);
-  --s2a-font-letter-spacing-4xl: var(--s2a-font-letter-spacing-neg-0_48);
-  --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_2);
-  --s2a-font-letter-spacing-6xl: var(--s2a-font-letter-spacing-0);
-  --s2a-font-letter-spacing-7xl: var(--s2a-font-letter-spacing-0_16);
-  --s2a-font-letter-spacing-8xl: var(--s2a-font-letter-spacing-0_24);
+  --s2a-font-letter-spacing-3xl: var(--s2a-font-letter-spacing-neg-1);
+  --s2a-font-letter-spacing-4xl: var(--s2a-font-letter-spacing-neg-0_96);
+  --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_48);
+  --s2a-font-letter-spacing-6xl: var(--s2a-font-letter-spacing-neg-0_2);
+  --s2a-font-letter-spacing-7xl: var(--s2a-font-letter-spacing-0);
+  --s2a-font-letter-spacing-8xl: var(--s2a-font-letter-spacing-0_12);
+  --s2a-font-letter-spacing-9xl: var(--s2a-font-letter-spacing-0_14);
+  --s2a-font-letter-spacing-10xl: var(--s2a-font-letter-spacing-0_16);
+  --s2a-font-letter-spacing-11xl: var(--s2a-font-letter-spacing-0_24);
+
+  /* Font Line Height */
   --s2a-font-line-height-2xs: var(--s2a-font-line-height-16);
   --s2a-font-line-height-xs: var(--s2a-font-line-height-18);
   --s2a-font-line-height-sm: var(--s2a-font-line-height-20);
@@ -58,6 +74,8 @@
   --s2a-font-line-height-4xl: var(--s2a-font-line-height-69);
   --s2a-font-line-height-5xl: var(--s2a-font-line-height-76);
   --s2a-font-line-height-6xl: var(--s2a-font-line-height-92);
+
+  /* Font Size */
   --s2a-font-size-xs: var(--s2a-font-size-12);
   --s2a-font-size-sm: var(--s2a-font-size-14);
   --s2a-font-size-md: var(--s2a-font-size-16);
@@ -65,17 +83,29 @@
   --s2a-font-size-xl: var(--s2a-font-size-20);
   --s2a-font-size-2xl: var(--s2a-font-size-24);
   --s2a-font-size-3xl: var(--s2a-font-size-32);
-  --s2a-font-size-4xl: var(--s2a-font-size-40);
-  --s2a-font-size-5xl: var(--s2a-font-size-48);
-  --s2a-font-size-6xl: var(--s2a-font-size-56);
-  --s2a-font-size-7xl: var(--s2a-font-size-64);
-  --s2a-font-size-8xl: var(--s2a-font-size-72);
-  --s2a-font-size-9xl: var(--s2a-font-size-80);
-  --s2a-font-size-10xl: var(--s2a-font-size-96);
+  --s2a-font-size-4xl: var(--s2a-font-size-36);
+  --s2a-font-size-5xl: var(--s2a-font-size-40);
+  --s2a-font-size-6xl: var(--s2a-font-size-48);
+  --s2a-font-size-7xl: var(--s2a-font-size-56);
+  --s2a-font-size-8xl: var(--s2a-font-size-64);
+  --s2a-font-size-9xl: var(--s2a-font-size-72);
+  --s2a-font-size-10xl: var(--s2a-font-size-80);
+  --s2a-font-size-11xl: var(--s2a-font-size-96);
+
+  /* Font Weight */
+  --s2a-font-weight-title: var(--s2a-font-weight-adobe-clean-display-black);
+  --s2a-font-weight-body: var(--s2a-font-weight-adobe-clean-regular);
+  --s2a-font-weight-eyebrow: var(--s2a-font-weight-adobe-clean-bold);
+  --s2a-font-weight-label: var(--s2a-font-weight-adobe-clean-bold);
+  --s2a-font-weight-caption: var(--s2a-font-weight-adobe-clean-bold);
+
+  /* Blur */
   --s2a-blur-xs: var(--s2a-blur-8);
   --s2a-blur-sm: var(--s2a-blur-16);
   --s2a-blur-md: var(--s2a-blur-32);
   --s2a-blur-lg: var(--s2a-blur-64);
+
+  /* Layout */
   --s2a-layout-sm: var(--s2a-spacing-80);
   --s2a-layout-md: var(--s2a-spacing-96);
   --s2a-layout-lg: var(--s2a-spacing-124);

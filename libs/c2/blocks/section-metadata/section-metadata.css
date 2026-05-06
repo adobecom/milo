@@ -35,7 +35,7 @@
   }
 
   &.masonry-layout {
-    gap: var(--s2a-grid-gutter);
+    gap: var(--grid-gutter);
     grid-template-columns: repeat(var(--grid-columns), 1fr);
 
     .grid-full-width { grid-column: span var(--grid-columns); }
@@ -66,7 +66,7 @@
 
 .section[class*='grid-width-'] {
   display: grid;
-  gap: var(--s2a-grid-gutter);
+  gap: var(--grid-gutter);
 }
 
 .section-background {

@@ -2,36 +2,107 @@
  * Do not edit directly, this file was auto-generated.
  */
 
-:root[data-theme="light"] {
-  --s2a-color-background-default: var(--s2a-color-gray-25);
-  --s2a-color-background-subtle: var(--s2a-color-gray-50);
+:root, :root[data-theme="light"] {
+  /* Color / Background */
   --s2a-color-background-brand: var(--s2a-color-brand-adobe-red);
-  --s2a-color-background-knockout: var(--s2a-color-gray-1000);
-  --s2a-color-background-inverse: var(--s2a-color-gray-25);
+  --s2a-color-background-default: var(--s2a-color-gray-25);
   --s2a-color-background-disabled: var(--s2a-color-gray-50);
+  --s2a-color-background-inverse: var(--s2a-color-gray-1000);
+  --s2a-color-background-knockout: var(--s2a-color-gray-1000);
+  --s2a-color-background-subtle: var(--s2a-color-gray-50);
   --s2a-color-background-utility-error: var(--s2a-color-red-900);
-  --s2a-color-border-default: var(--s2a-color-gray-800);
-  --s2a-color-border-subtle: var(--s2a-color-gray-300);
-  --s2a-color-border-strong: var(--s2a-color-gray-900);
-  --s2a-color-border-knockout: var(--s2a-color-gray-1000);
-  --s2a-color-border-inverse: var(--s2a-color-gray-25);
+
+  /* Color / Border */
   --s2a-color-border-brand: var(--s2a-color-brand-adobe-red);
+  --s2a-color-border-default: var(--s2a-color-gray-800);
   --s2a-color-border-disabled: var(--s2a-color-gray-400);
+  --s2a-color-border-inverse: var(--s2a-color-gray-25);
+  --s2a-color-border-knockout: var(--s2a-color-gray-1000);
+  --s2a-color-border-strong: var(--s2a-color-gray-900);
+  --s2a-color-border-subtle: var(--s2a-color-gray-300);
   --s2a-color-border-utility-error: var(--s2a-color-red-900);
-  --s2a-color-content-default: var(--s2a-color-gray-800);
-  --s2a-color-content-subtle: var(--s2a-color-gray-700);
-  --s2a-color-content-knockout: var(--s2a-color-gray-25);
-  --s2a-color-content-inverse: var(--s2a-color-gray-1000);
+
+  /* Color / Content */
+  --s2a-color-content-body-strong: var(--s2a-color-content-strong); /** This is for text */
+  --s2a-color-content-body-subtle: var(--s2a-color-content-subtle); /** text subtle */
   --s2a-color-content-brand: var(--s2a-color-brand-adobe-red);
+  --s2a-color-content-caption: var(--s2a-color-content-subtle);
+  --s2a-color-content-default: var(--s2a-color-gray-1000);
   --s2a-color-content-disabled: var(--s2a-color-gray-400);
-  --s2a-color-content-utility-error: var(--s2a-color-red-900);
-  --s2a-color-content-body-subtle: var(--s2a-color-transparent-black-64);
-  --s2a-color-content-body-strong: var(--s2a-color-gray-900);
   --s2a-color-content-eyebrow: var(--s2a-color-transparent-black-64);
-  --s2a-color-content-caption: var(--s2a-color-transparent-black-64);
+  --s2a-color-content-inverse: var(--s2a-color-content-knockout);
+  --s2a-color-content-knockout: var(--s2a-color-gray-25);
+  --s2a-color-content-label: var(--s2a-color-content-default);
+  --s2a-color-content-strong: var(--s2a-color-gray-900);
+  --s2a-color-content-subheading: var(--s2a-color-gray-1000);
+  --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
+  --s2a-color-content-title: var(--s2a-color-content-default);
+  --s2a-color-content-utility-error: var(--s2a-color-red-900);
+
+  /* Color / Focus Ring */
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
   --s2a-color-focus-ring-knockout: var(--s2a-color-gray-25);
-  --s2a-color-content-title: var(--s2a-color-content-default);
-  --s2a-color-content-subheading: var(--s2a-color-content-default);
-  --s2a-color-content-label: var(--s2a-color-content-default);
+
+  /* Other */
+  --s2a-color-button-background-accent-solid-on-light-active: var(--s2a-color-blue-1100);
+  --s2a-color-button-background-accent-solid-on-light-default: var(--s2a-color-blue-900);
+  --s2a-color-button-background-accent-solid-on-light-hover: var(--s2a-color-blue-1000);
+  --s2a-color-button-background-primary-outlined-on-dark-active: var(--s2a-color-gray-25);
+  --s2a-color-button-background-primary-outlined-on-dark-hover: var(--s2a-color-transparent-white-64);
+  --s2a-color-button-background-primary-outlined-on-light-active: var(--s2a-color-gray-1000);
+  --s2a-color-button-background-primary-outlined-on-light-default: var(--s2a-color-transparent-black-00);
+  --s2a-color-button-background-primary-outlined-on-light-hover: var(--s2a-color-transparent-black-08);
+  --s2a-color-button-background-primary-solid-on-dark-active: var(--s2a-color-gray-25);
+  --s2a-color-button-background-primary-solid-on-dark-default: var(--s2a-color-gray-25);
+  --s2a-color-button-background-primary-solid-on-dark-hover: var(--s2a-color-transparent-white-64);
+  --s2a-color-button-background-primary-solid-on-light-active: var(--s2a-color-gray-1000);
+  --s2a-color-button-background-primary-solid-on-light-default: var(--s2a-color-gray-1000);
+  --s2a-color-button-background-primary-solid-on-light-hover: var(--s2a-color-transparent-black-64);
+  --s2a-color-button-background-primary-transparent-on-dark-active: var(--s2a-color-transparent-white-16);
+  --s2a-color-button-background-primary-transparent-on-dark-default: var(--s2a-color-transparent-white-00);
+  --s2a-color-button-background-primary-transparent-on-dark-hover: var(--s2a-color-transparent-white-12);
+  --s2a-color-button-background-primary-transparent-on-light-active: var(--s2a-color-transparent-black-12);
+  --s2a-color-button-background-primary-transparent-on-light-default: var(--s2a-color-transparent-black-00);
+  --s2a-color-button-background-primary-transparent-on-light-hover: var(--s2a-color-transparent-black-08);
+  --s2a-color-button-border-primary-outlined-on-dark-default: var(--s2a-color-gray-25);
+  --s2a-color-button-border-primary-outlined-on-light-default: var(--s2a-color-gray-1000);
+  --s2a-color-button-border-primary-solid-on-dark-default: var(--s2a-color-gray-25);
+  --s2a-color-button-border-primary-solid-on-dark-hover: var(--s2a-color-gray-25);
+  --s2a-color-button-border-primary-solid-on-light-default: var(--s2a-color-gray-1000);
+  --s2a-color-button-content-primary-outlined-default: var(--s2a-color-gray-1000);
+  --s2a-color-button-content-primary-outlined-knockout: var(--s2a-color-gray-25);
+  --s2a-color-button-content-primary-solid-default: var(--s2a-color-gray-25);
+  --s2a-color-button-content-primary-solid-inverse: var(--s2a-color-gray-1000);
+  --s2a-color-button-content-primary-transparent-default: var(--s2a-color-gray-1000);
+  --s2a-color-button-content-primary-transparent-knockout: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-background-accent-solid-on-light-active: var(--s2a-color-blue-1100);
+  --s2a-color-iconbutton-background-accent-solid-on-light-default: var(--s2a-color-blue-900);
+  --s2a-color-iconbutton-background-accent-solid-on-light-hover: var(--s2a-color-blue-1000);
+  --s2a-color-iconbutton-background-primary-outlined-on-dark-active: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-background-primary-outlined-on-dark-defatul: var(--s2a-color-transparent-white-00);
+  --s2a-color-iconbutton-background-primary-outlined-on-dark-hover: var(--s2a-color-transparent-white-64);
+  --s2a-color-iconbutton-background-primary-outlined-on-light-active: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-background-primary-outlined-on-light-default: var(--s2a-color-transparent-black-00);
+  --s2a-color-iconbutton-background-primary-outlined-on-light-hover: var(--s2a-color-transparent-black-08);
+  --s2a-color-iconbutton-background-primary-solid-on-dark-active: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-background-primary-solid-on-dark-default: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-background-primary-solid-on-dark-hover: var(--s2a-color-transparent-white-64);
+  --s2a-color-iconbutton-background-primary-solid-on-light-active: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-background-primary-solid-on-light-default: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-background-primary-solid-on-light-hover: var(--s2a-color-transparent-black-64);
+  --s2a-color-iconbutton-background-primary-transparent-on-dark-active: var(--s2a-color-transparent-white-16);
+  --s2a-color-iconbutton-background-primary-transparent-on-dark-default: var(--s2a-color-transparent-white-00);
+  --s2a-color-iconbutton-background-primary-transparent-on-dark-hover: var(--s2a-color-transparent-white-12);
+  --s2a-color-iconbutton-background-primary-transparent-on-light-active: var(--s2a-color-transparent-black-12);
+  --s2a-color-iconbutton-background-primary-transparent-on-light-default: var(--s2a-color-transparent-black-00);
+  --s2a-color-iconbutton-background-primary-transparent-on-light-hover: var(--s2a-color-transparent-black-08);
+  --s2a-color-iconbutton-border-primary-outlined-default: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-border-primary-outlined-on-dark: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-border-primary-solid-default: var(--s2a-color-transparent-white-12);
+  --s2a-color-iconbutton-content-primary-outlined-default: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-content-primary-outlined-knockout: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-content-primary-solid-default: var(--s2a-color-gray-25);
+  --s2a-color-iconbutton-content-primary-solid-inverse: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-content-primary-transparent-default: var(--s2a-color-gray-1000);
+  --s2a-color-iconbutton-content-primary-transparent-knockout: var(--s2a-color-gray-25);
 }
