@@ -9,6 +9,7 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
+  getFloodgateColorFromHost,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
@@ -184,11 +185,14 @@ const processData = async (data, accessToken) => {
     return;
   }
 
+  const hostFgColor = getFloodgateColorFromHost(host);
+  const floodgateColor = hostFgColor || publishToFloodgate;
+
   let domain = `https://${host}`;
 
   if (usePreview) {
     domain = `https://${previewHost}`;
-  } else if (publishToFloodgate !== 'default') {
+  } else if (floodgateColor !== 'default' && !hostFgColor) {
     domain = `https://main--${repo}--${owner}.aem.live`;
   }
 
@@ -216,7 +220,7 @@ const processData = async (data, accessToken) => {
         prodUrl,
         host,
         repo,
-        floodgatecolor: publishToFloodgate,
+        floodgatecolor: floodgateColor,
         languageFirst,
       });
 
