@@ -1,19 +1,14 @@
 .dot-grid .acrobat-desktop-mockup {
-  --acrobat-desktop-scale: min(calc(68.6 * 1vw / 988), 1px);
-
   position: absolute;
   top: calc(21vh + 12px);
   left: calc((100vw - min(68.6vw, 988px)) / 2);
   z-index: 20;
-  display: flex;
-  flex-direction: column;
+  display: block;
   overflow: hidden;
   width: min(68.6vw, 988px);
   aspect-ratio: 988 / 567;
-  color: #ebebeb;
-  background: #1d1d1d;
-  border-radius: calc(var(--acrobat-desktop-scale) * 10);
-  box-shadow: 0 calc(var(--acrobat-desktop-scale) * 20) calc(var(--acrobat-desktop-scale) * 60) rgb(0 0 0 / 60%);
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 60%);
   transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
   transform-origin: center center;
   pointer-events: none;
@@ -21,355 +16,19 @@
   contain: layout style paint;
 }
 
-.dot-grid .acrobat-desktop-toolbar {
-  flex: 0 0 calc(var(--acrobat-desktop-scale) * 35.8);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  overflow: hidden;
-  padding: 0 calc(var(--acrobat-desktop-scale) * 8);
-  background: #1d1d1d;
-}
-
-.dot-grid .acrobat-desktop-toolbar-left {
-  display: flex;
-  flex-shrink: 0;
-  gap: calc(var(--acrobat-desktop-scale) * 10);
-  align-items: center;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-toolbar-right {
-  display: flex;
-  flex-shrink: 0;
-  gap: calc(var(--acrobat-desktop-scale) * 6);
-  align-items: center;
-}
-
-.dot-grid .acrobat-desktop-add-space {
-  display: flex;
-  gap: calc(var(--acrobat-desktop-scale) * 6);
-  align-items: center;
-  white-space: nowrap;
-  font-size: 10.23px;
-}
-
-.dot-grid .acrobat-desktop-add-space-icon {
-  display: flex;
-  flex-shrink: 0;
-  width: calc(var(--acrobat-desktop-scale) * 18);
-  height: calc(var(--acrobat-desktop-scale) * 18);
-}
-
-.dot-grid .acrobat-desktop-add-space-icon svg {
+.dot-grid .acrobat-desktop-mockup picture,
+.dot-grid .acrobat-desktop-mockup img {
+  display: block;
   width: 100%;
   height: 100%;
+  object-fit: fill;
 }
 
-.dot-grid .acrobat-desktop-tabs {
-  display: flex;
-  gap: calc(var(--acrobat-desktop-scale) * 22);
-  align-items: flex-end;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-tab {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding-bottom: calc(var(--acrobat-desktop-scale) * 1);
-  white-space: nowrap;
-  font-size: 10.23px;
-  color: rgb(235 235 235 / 50%);
-}
-
-.dot-grid .acrobat-desktop-tab-active {
-  color: #ebebeb;
-}
-
-.dot-grid .acrobat-desktop-tab-active::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: calc(var(--acrobat-desktop-scale) * 2);
-  background: white;
-  border-radius: calc(var(--acrobat-desktop-scale) * 1);
-}
-
-.dot-grid .acrobat-desktop-divider {
-  flex-shrink: 0;
-  width: 1px;
-  height: calc(var(--acrobat-desktop-scale) * 16);
-  background: #545454;
-}
-
-.dot-grid .acrobat-desktop-icon {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--acrobat-desktop-scale) * 18);
-  height: calc(var(--acrobat-desktop-scale) * 18);
-}
-
-.dot-grid .acrobat-desktop-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-icon-dim {
-  opacity: 0.35;
-}
-
-.dot-grid .acrobat-desktop-find-text {
-  margin-right: calc(var(--acrobat-desktop-scale) * 2);
-  white-space: nowrap;
-  font-size: 10.23px;
-  color: rgb(235 235 235 / 45%);
-}
-
-.dot-grid .acrobat-desktop-share {
-  padding: calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 14);
-  white-space: nowrap;
-  font-size: 10.23px;
-  font-weight: 700;
-  color: white;
-  background: #545454;
-  border-radius: calc(var(--acrobat-desktop-scale) * 16);
-}
-
-.dot-grid .acrobat-desktop-ai-assistant {
-  display: flex;
-  gap: calc(var(--acrobat-desktop-scale) * 5);
-  align-items: center;
-  padding: calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 12) calc(var(--acrobat-desktop-scale) * 4.5) calc(var(--acrobat-desktop-scale) * 10);
-  white-space: nowrap;
-  font-size: 10.23px;
-  font-weight: 700;
-  color: white;
-  background: linear-gradient(-22deg, #676dfc 39%, #ff6a54 90%);
-  border-radius: calc(var(--acrobat-desktop-scale) * 16);
-}
-
-.dot-grid .acrobat-desktop-ai-assistant-icon {
-  display: flex;
-  flex-shrink: 0;
-  width: calc(var(--acrobat-desktop-scale) * 14);
-  height: calc(var(--acrobat-desktop-scale) * 14);
-}
-
-.dot-grid .acrobat-desktop-ai-assistant-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-toolbar-separator {
-  flex: 0 0 1px;
-  background: #545454;
-}
-
-.dot-grid .acrobat-desktop-body {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-}
-
-.dot-grid .acrobat-desktop-left-panel {
-  flex: 0 0 calc(var(--acrobat-desktop-scale) * 211);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: #1d1d1d;
-  border-right: 1px solid #545454;
-}
-
-.dot-grid .acrobat-desktop-left-panel-header {
-  flex: 0 0 calc(var(--acrobat-desktop-scale) * 35);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 calc(var(--acrobat-desktop-scale) * 6) 0 calc(var(--acrobat-desktop-scale) * 18);
-  border-bottom: 1px solid #323232;
-}
-
-.dot-grid .acrobat-desktop-left-panel-header-title {
-  font-size: calc(var(--acrobat-desktop-scale) * 13.15);
-  font-weight: 700;
-  color: white;
-}
-
-.dot-grid .acrobat-desktop-left-panel-header-close {
-  display: flex;
-  flex-shrink: 0;
-  width: calc(var(--acrobat-desktop-scale) * 13);
-  height: calc(var(--acrobat-desktop-scale) * 13);
-  opacity: 0.5;
-}
-
-.dot-grid .acrobat-desktop-left-panel-header-close svg {
-  width: 100%;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-tools {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 0;
-  overflow: hidden;
-  padding: calc(var(--acrobat-desktop-scale) * 6) calc(var(--acrobat-desktop-scale) * 6) calc(var(--acrobat-desktop-scale) * 4) calc(var(--acrobat-desktop-scale) * 8);
-}
-
-.dot-grid .acrobat-desktop-tool {
-  display: flex;
-  gap: calc(var(--acrobat-desktop-scale) * 7);
-  align-items: center;
-  padding: calc(var(--acrobat-desktop-scale) * 3.8) calc(var(--acrobat-desktop-scale) * 5);
-  border-radius: calc(var(--acrobat-desktop-scale) * 4);
-}
-
-.dot-grid .acrobat-desktop-tool-icon {
-  display: flex;
-  flex-shrink: 0;
-  width: calc(var(--acrobat-desktop-scale) * 18);
-  height: calc(var(--acrobat-desktop-scale) * 18);
-}
-
-.dot-grid .acrobat-desktop-tool-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.dot-grid .acrobat-desktop-tool-label {
-  white-space: nowrap;
-  font-size: calc(var(--acrobat-desktop-scale) * 10.23);
-  color: #ebebeb;
-}
-
-.dot-grid .acrobat-desktop-new-badge {
-  flex-shrink: 0;
-  margin-left: auto;
-  padding: calc(var(--acrobat-desktop-scale) * 1.5) calc(var(--acrobat-desktop-scale) * 4);
-  font-size: calc(var(--acrobat-desktop-scale) * 7.5);
-  font-weight: 700;
-  color: white;
-  background: #0265dc;
-  border-radius: calc(var(--acrobat-desktop-scale) * 3);
-}
-
-.dot-grid .acrobat-desktop-view-more {
-  margin-top: calc(var(--acrobat-desktop-scale) * 2);
-  padding: calc(var(--acrobat-desktop-scale) * 5) calc(var(--acrobat-desktop-scale) * 15);
-  font-size: calc(var(--acrobat-desktop-scale) * 10.23);
-  color: #72b7f9;
-}
-
-.dot-grid .acrobat-desktop-quick-tools {
-  flex: 0 0 calc(var(--acrobat-desktop-scale) * 41);
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--acrobat-desktop-scale) * 2);
-  align-items: center;
-  padding: calc(var(--acrobat-desktop-scale) * 10) 0 0;
-  background: #252525;
-  border-right: 1px solid rgb(255 255 255 / 5%);
-}
-
-.dot-grid .acrobat-desktop-quick-tool-button {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--acrobat-desktop-scale) * 29);
-  height: calc(var(--acrobat-desktop-scale) * 29);
-  border-radius: calc(var(--acrobat-desktop-scale) * 4);
-}
-
-.dot-grid .acrobat-desktop-quick-tool-active {
-  background: rgb(68 122 255 / 22%);
-}
-
-.dot-grid .acrobat-desktop-quick-tool-button svg {
-  width: calc(var(--acrobat-desktop-scale) * 18);
-  height: calc(var(--acrobat-desktop-scale) * 18);
-}
-
-.dot-grid .acrobat-desktop-canvas {
-  flex: 1;
-  background: #252525;
-}
-
-.dot-grid .acrobat-desktop-right-rail {
-  flex: 0 0 calc(var(--acrobat-desktop-scale) * 46);
-  display: flex;
-  flex-direction: column;
-  gap: calc(var(--acrobat-desktop-scale) * 1);
-  align-items: center;
-  padding: calc(var(--acrobat-desktop-scale) * 6) 0;
-  background: #1d1d1d;
-  border-left: 1px solid #545454;
-}
-
-.dot-grid .acrobat-desktop-right-rail-button {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--acrobat-desktop-scale) * 32);
-  height: calc(var(--acrobat-desktop-scale) * 28);
-}
-
-.dot-grid .acrobat-desktop-right-rail-button svg {
-  width: calc(var(--acrobat-desktop-scale) * 18);
-  height: calc(var(--acrobat-desktop-scale) * 18);
-}
-
-.dot-grid .acrobat-desktop-right-rail-separator {
-  flex-shrink: 0;
-  width: calc(var(--acrobat-desktop-scale) * 28);
-  height: 1px;
-  margin: calc(var(--acrobat-desktop-scale) * 4) 0;
-  background: #545454;
-}
-
-.dot-grid .acrobat-desktop-right-rail-page-number {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  width: calc(var(--acrobat-desktop-scale) * 30);
-  height: calc(var(--acrobat-desktop-scale) * 22);
-  font-size: calc(var(--acrobat-desktop-scale) * 11);
-  text-align: center;
-  color: #ebebeb;
-  border: 1px solid #454545;
-  border-radius: calc(var(--acrobat-desktop-scale) * 3);
-}
-
-.dot-grid .acrobat-desktop-right-rail-zoom {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  height: calc(var(--acrobat-desktop-scale) * 22);
-  font-size: calc(var(--acrobat-desktop-scale) * 10.5);
-  color: rgb(235 235 235 / 50%);
-}
-
-.dot-grid .acrobat-desktop-right-rail-spacer {
-  flex: 1;
-}
-
-/* Mobile Acrobat mockup — hidden on desktop/tablet, shown at mobile breakpoint */
 .dot-grid .acrobat-mobile-mockup {
   display: none;
 }
 
 @media (width <= 767px) {
-  /* Hide desktop Acrobat mockup on mobile — replaced by .acrobat-mobile-mockup */
   .dot-grid .acrobat-desktop-mockup {
     display: none !important;
   }
@@ -379,13 +38,10 @@
     top: 0;
     left: calc((100% - 294px) / 2);
     z-index: 20;
-    display: flex;
-    flex-direction: column;
+    display: block;
     overflow: hidden;
     width: 294px;
     height: 536px;
-    color: #fff;
-    background: #1a1a1a;
     border-radius: 14px;
     box-shadow: 0 12px 60px rgb(0 0 0 / 60%);
     transform: translateY(var(--mockup-y, 100vh)) scale(var(--mockup-scale, 2));
@@ -394,100 +50,11 @@
     will-change: transform;
   }
 
-  .dot-grid .acrobat-mobile-top-bar {
-    flex: 0 0 44px;
-    display: flex;
-    align-items: center;
-    padding: 0 14px;
-    background: #1a1a1a;
-    border-bottom: 0.5px solid rgb(255 255 255 / 12%);
-  }
-
-  .dot-grid .acrobat-mobile-top-bar-left {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  .dot-grid .acrobat-mobile-vertical-divider {
-    width: 1px;
-    height: 20px;
-    background: rgb(255 255 255 / 25%);
-  }
-
-  .dot-grid .acrobat-mobile-top-bar-right {
-    display: flex;
-    gap: 18px;
-    align-items: center;
-    margin-left: auto;
-  }
-
-  .dot-grid .acrobat-mobile-top-bar-icon {
-    display: flex;
-    line-height: 0;
-    color: #fff;
-  }
-
-  .dot-grid .acrobat-mobile-canvas {
-    flex: 1;
-    background: #111;
-  }
-
-  .dot-grid .acrobat-mobile-floating-action-button {
-    position: absolute;
-    right: 14px;
-    bottom: 116px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 52px;
-    height: 52px;
-    padding: 0;
-    background: linear-gradient(-22deg, #676dfc 39%, #ff6a54 90%);
-    border: none;
-    border-radius: 50%;
-    box-shadow: 0 4px 18px rgb(0 0 0 / 45%);
-  }
-
-  .dot-grid .acrobat-mobile-bottom-bar {
-    flex: 0 0 80px;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 0 2px;
-    background: #1a1a1a;
-    border-top: 0.5px solid rgb(255 255 255 / 12%);
-  }
-
-  .dot-grid .acrobat-mobile-tool-button {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-    padding: 8px 0 0;
-    white-space: nowrap;
-    font-family: inherit;
-    font-size: 9px;
-    font-weight: 400;
-    color: #fff;
-    background: none;
-    border: none;
-  }
-
-  .dot-grid .acrobat-mobile-home-indicator {
-    flex: 0 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #1a1a1a;
-  }
-
-  .dot-grid .acrobat-mobile-home-indicator::after {
-    content: '';
-    width: 120px;
-    height: 4px;
-    background: rgb(255 255 255 / 35%);
-    border-radius: 4px;
+  .dot-grid .acrobat-mobile-mockup picture,
+  .dot-grid .acrobat-mobile-mockup img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
   }
 }

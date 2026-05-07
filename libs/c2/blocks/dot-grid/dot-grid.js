@@ -1,6 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
-import { ACROBAT_DESKTOP_MOCKUP, ACROBAT_MOBILE_MOCKUP } from './acrobat-mockups.js';
+
 import createCanvasGrid from './canvas-grid.js';
 
 /* ────────────────────────────────────────────────────────────────────────────
@@ -235,7 +235,7 @@ function easeInOutSine(t) {
 // TODO: author product UI?
 // TODO: finalize authoring structure
 function parseAuthoredContent(el) {
-  const [titleRow, imageRow1, imageRow2, textRow, ctaRow] = [...el.children];
+  const [titleRow, imageRow1, imageRow2, textRow, ctaRow, mockupRow] = [...el.children];
   const cards = [];
   [imageRow1, imageRow2].forEach((rowEl, rowIdx) => {
     [...rowEl.children].forEach((cellEl, colIdx) => {
@@ -260,7 +260,18 @@ function parseAuthoredContent(el) {
   const titleEl = titleRow.firstElementChild;
   const textBlockEl = textRow.firstElementChild;
   const ctaEl = ctaRow.firstElementChild;
-  return { titleEl, cards, textBlockEl, ctaEl };
+  // TODO: mobile UI 1st col, desktop UI 2nd col
+  const [mobileMockupCol, desktopMockupCol] = mockupRow.children;
+  const mobileMockupImgEl = mobileMockupCol.querySelector('picture');
+  const desktopMockupImgEl = desktopMockupCol.querySelector('picture');
+  return {
+    titleEl,
+    cards,
+    textBlockEl,
+    ctaEl,
+    mobileMockupImgEl,
+    desktopMockupImgEl,
+  };
 }
 
 /** Builds the card-scene DOM: one stack root under `.card-scene` plus card state objects. */
@@ -326,11 +337,17 @@ async function loadBlockStyles() {
 }
 
 function buildStage(el) {
-  const { titleEl, cards: cardDefs, textBlockEl, ctaEl } = parseAuthoredContent(el);
+  const {
+    titleEl, cards: cardDefs, textBlockEl, ctaEl, mobileMockupImgEl, desktopMockupImgEl,
+  } = parseAuthoredContent(el);
+  const desktopMockupWrapper = createTag('div', { class: 'acrobat-desktop-mockup' });
+  if (desktopMockupImgEl) desktopMockupWrapper.appendChild(desktopMockupImgEl);
+  const mobileMockupWrapper = createTag('div', { class: 'acrobat-mobile-mockup' });
+  if (mobileMockupImgEl) mobileMockupWrapper.appendChild(mobileMockupImgEl);
   const stage = createTag(
     'div',
     { class: 'dot-grid-stage' },
-    `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>${ACROBAT_DESKTOP_MOCKUP}${ACROBAT_MOBILE_MOCKUP}`,
+    `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>`,
   );
   const cardScene = stage.querySelector('.card-scene');
   const sceneCards = buildCardStack(cardScene, cardDefs);
@@ -342,7 +359,7 @@ function buildStage(el) {
     e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
     e.querySelector('p')?.classList.add('subcopy');
   });
-  stage.append(titleEl, textBlockEl, ctaEl);
+  stage.append(desktopMockupWrapper, mobileMockupWrapper, titleEl, textBlockEl, ctaEl);
   el.replaceChildren(stage);
   return {
     stage,
