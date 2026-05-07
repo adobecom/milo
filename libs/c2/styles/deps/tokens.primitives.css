@@ -221,17 +221,12 @@
   --s2a-font-letter-spacing-neg-2_88: -2.88px;
   --s2a-font-letter-spacing-neg-1_68: -1.68px;
   --s2a-font-letter-spacing-neg-1_44: -1.44px;
-  --s2a-font-letter-spacing-neg-1_2: -1.2px;
   --s2a-font-letter-spacing-neg-1: -1px;
   --s2a-font-letter-spacing-neg-0_96: -0.96px;
   --s2a-font-letter-spacing-neg-0_48: -0.48px;
   --s2a-font-letter-spacing-neg-0_2: -0.2px;
   --s2a-font-letter-spacing-neg-0_16: -0.16px; /** Letter spacing primitive: -0.16px */
   --s2a-font-letter-spacing-0: 0;
-  --s2a-font-letter-spacing-0_12: 0.12px;
-  --s2a-font-letter-spacing-0_14: 0.14px;
-  --s2a-font-letter-spacing-0_16: 0.16px;
-  --s2a-font-letter-spacing-0_24: 0.24px;
 
   /* Font Line Height */
   --s2a-font-line-height-16: 16px;

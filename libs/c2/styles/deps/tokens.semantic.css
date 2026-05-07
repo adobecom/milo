@@ -51,16 +51,11 @@
   --s2a-font-letter-spacing-md: var(--s2a-font-letter-spacing-neg-2_88);
   --s2a-font-letter-spacing-lg: var(--s2a-font-letter-spacing-neg-1_68);
   --s2a-font-letter-spacing-xl: var(--s2a-font-letter-spacing-neg-1_44);
-  --s2a-font-letter-spacing-2xl: var(--s2a-font-letter-spacing-neg-1_2);
-  --s2a-font-letter-spacing-3xl: var(--s2a-font-letter-spacing-neg-1);
-  --s2a-font-letter-spacing-4xl: var(--s2a-font-letter-spacing-neg-0_96);
-  --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_48);
-  --s2a-font-letter-spacing-6xl: var(--s2a-font-letter-spacing-neg-0_2);
-  --s2a-font-letter-spacing-7xl: var(--s2a-font-letter-spacing-0);
-  --s2a-font-letter-spacing-8xl: var(--s2a-font-letter-spacing-0_12);
-  --s2a-font-letter-spacing-9xl: var(--s2a-font-letter-spacing-0_14);
-  --s2a-font-letter-spacing-10xl: var(--s2a-font-letter-spacing-0_16);
-  --s2a-font-letter-spacing-11xl: var(--s2a-font-letter-spacing-0_24);
+  --s2a-font-letter-spacing-2xl: var(--s2a-font-letter-spacing-neg-1);
+  --s2a-font-letter-spacing-3xl: var(--s2a-font-letter-spacing-neg-0_96);
+  --s2a-font-letter-spacing-4xl: var(--s2a-font-letter-spacing-neg-0_48);
+  --s2a-font-letter-spacing-5xl: var(--s2a-font-letter-spacing-neg-0_2);
+  --s2a-font-letter-spacing-6xl: var(--s2a-font-letter-spacing-0);
 
   /* Font Line Height */
   --s2a-font-line-height-2xs: var(--s2a-font-line-height-16);
