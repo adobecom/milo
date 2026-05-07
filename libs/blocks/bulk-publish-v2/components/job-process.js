@@ -2,6 +2,7 @@ import './job-info.js';
 import { LitElement, html } from '../../../deps/lit-all.min.js';
 import { getStatusProps, updateJobUrls, isSuccess, isDelete, delay } from '../utils.js';
 import { pollJobStatus, updateRetry } from '../services.js';
+import { runAutoPublishForJob } from '../auto-publish-hook.js';
 import { getSheet } from '../../../../tools/utils/utils.js';
 import { getConfig } from '../../../utils/utils.js';
 
@@ -23,6 +24,7 @@ class JobProcess extends LitElement {
     super();
     this.jobStatus = undefined;
     this.queue = [];
+    this.caasAutoPublishFired = false;
   }
 
   async connectedCallback() {
@@ -51,6 +53,14 @@ class JobProcess extends LitElement {
     if (stopped && this.jobStatus?.progress?.failed > 0) {
       const timeouts = this.jobStatus?.data?.resources?.filter((job) => job.status === 503) ?? [];
       this.retry(timeouts);
+    }
+    if (stopped && !this.caasAutoPublishFired) {
+      this.caasAutoPublishFired = true;
+      // Fire-and-forget: caasAutoPublish is best-effort and must never
+      // block or affect the bulk publish UI. Errors are swallowed; the
+      // shared library gates itself on per-site /.milo/caas/config.json.
+      runAutoPublishForJob({ job: this.job, jobStatus: this.jobStatus })
+        .catch(() => {});
     }
   }
 
