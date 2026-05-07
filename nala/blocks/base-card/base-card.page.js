@@ -1,7 +1,5 @@
 export const ATTR = {
-  fullWidthMobileParallax: 'base-card.full-width.mobile.parallaxImg',
-  fullWidthTabletParallax: 'base-card.full-width.tablet.parallaxImg',
-  fullWidthDesktopParallax: 'base-card.full-width.desktop.parallaxImg',
+  fullWidthParallax: 'base-card.full-width.parallaxImg',
   fullWidthIcon: 'base-card.full-width.iconImg',
   threeUpParallax: 'base-card.three-up.parallaxImg',
   threeUpIcon: 'base-card.three-up.iconImg',
@@ -24,34 +22,13 @@ export default class BaseCard {
     );
     this.sectionFullWidth = page.locator('main .section.base-card-section.container.constrained').first();
 
-    this.fullWidthMobileRow = this.fullWidthBaseCard.locator('[data-viewport="mobile"]');
-    this.fullWidthTabletRow = this.fullWidthBaseCard.locator('[data-viewport="tablet"]');
-    this.fullWidthDesktopRow = this.fullWidthBaseCard.locator('[data-viewport="desktop"]');
+    this.fullWidthForeground = this.fullWidthBaseCard.locator('.foreground').first();
+    this.fullWidthBody = this.fullWidthForeground.locator('p.body-md:not(:has(a))').first();
 
-    this.fullWidthMobileForeground = this.fullWidthMobileRow.locator(
-      '.foreground[data-valign="middle"]',
-    );
-
-    this.fullWidthBody = this.fullWidthMobileForeground.locator('p.body-md:not(:has(a))').first();
-
-    this.fullWidthMobileMedia = this.fullWidthMobileRow.locator('.media');
-    this.fullWidthMobileMediaParallaxPicture = this.fullWidthMobileMedia.locator(
-      'picture.parallax-scale-down',
-    );
-    this.fullWidthMobileParallaxImg = this.fullWidthMobileMediaParallaxPicture.locator('img');
-    this.fullWidthMobileMediaIconImg = this.fullWidthMobileMedia.locator('picture.icon img');
-
-    this.fullWidthTabletMedia = this.fullWidthTabletRow.locator('.media');
-    this.fullWidthTabletParallaxImg = this.fullWidthTabletMedia.locator(
-      'picture.parallax-scale-down img',
-    );
-    this.fullWidthTabletMediaIconImg = this.fullWidthTabletMedia.locator('picture.icon img');
-
-    this.fullWidthDesktopMedia = this.fullWidthDesktopRow.locator('.media');
-    this.fullWidthDesktopParallaxImg = this.fullWidthDesktopMedia.locator(
-      'picture.parallax-scale-down img',
-    );
-    this.fullWidthDesktopMediaIconImg = this.fullWidthDesktopMedia.locator('picture.icon img');
+    this.fullWidthMedia = this.fullWidthBaseCard.locator('.media').first();
+    this.fullWidthParallaxPicture = this.fullWidthMedia.locator('picture.parallax-scale-down');
+    this.fullWidthParallaxImg = this.fullWidthParallaxPicture.locator('img');
+    this.fullWidthIconImg = this.fullWidthMedia.locator('picture.icon img');
 
     this.attributes = {
       baseCard: { dataBlockStatus: 'loaded' },
@@ -59,18 +36,7 @@ export default class BaseCard {
         href: 'https://business.adobe.com/',
         target: '_blank',
       },
-      [ATTR.fullWidthMobileParallax]: {
-        loading: 'eager',
-        fetchpriority: 'high',
-        width: '720',
-        height: '360',
-      },
-      [ATTR.fullWidthTabletParallax]: {
-        loading: 'lazy',
-        width: '720',
-        height: '360',
-      },
-      [ATTR.fullWidthDesktopParallax]: {
+      [ATTR.fullWidthParallax]: {
         loading: 'lazy',
         width: '720',
         height: '360',
