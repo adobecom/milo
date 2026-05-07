@@ -136,4 +136,22 @@ describe('Carousel', () => {
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     expect(swipeDistance.xDistance).to.equal(0);
   });
+
+  it('Swipe (touchend) does not focus the next nav button', () => {
+    /* eslint-disable compat/compat -- Touch/TouchEvent; WTR Chromium */
+    const carousel = document.body.querySelector('.carousel');
+    if (!carousel.querySelector('.carousel-wrapper')) init(carousel);
+
+    const next = document.body.querySelector('.carousel-next');
+    // Carousel reads only screenX/screenY; identifier + target are required by Touch().
+    const touch = (x) => new Touch({ identifier: 0, target: carousel, screenX: x, screenY: 300 });
+    const t0 = touch(400);
+    carousel.dispatchEvent(new TouchEvent('touchstart', { touches: [t0], changedTouches: [t0] }));
+    const t1 = touch(300);
+    carousel.dispatchEvent(new TouchEvent('touchmove', { touches: [t1], changedTouches: [t1] }));
+    carousel.dispatchEvent(new TouchEvent('touchend', { changedTouches: [t1] }));
+
+    expect(document.activeElement).to.not.equal(next);
+    /* eslint-enable compat/compat */
+  });
 });

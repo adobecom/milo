@@ -33,7 +33,7 @@ async function tryEarlyDecisionUsingBaseIndex(
   return urlExistsInBase ? false : null;
 }
 
-export default async function urlInQueryIndex(
+async function urlInQueryIndex(
   regionalPath,
   basePath,
   urlHostname,
@@ -72,4 +72,83 @@ export default async function urlInQueryIndex(
 
   await Promise.all(matchingIndexes.map((m) => m.pathsRequest));
   return urlInMatchingIndex(matchingIndexes, sanitizedPath);
+}
+
+function setLinkHref(a, prefix, rawPath) {
+  const { origin, search, hash } = new URL(a.href);
+  a.href = `${origin}${prefix}${rawPath}${search}${hash}`;
+}
+
+export async function resolveLingoPrefix(
+  path,
+  prefix,
+  basePrefix,
+  hostname,
+  matchingIndexes,
+  baseQueryIndex,
+  aTag,
+  { isMepLingo = false, domainInSiteMap = false, isBasePage = false } = {},
+) {
+  if (!matchingIndexes.length) {
+    if (isMepLingo && !domainInSiteMap) return prefix;
+    if (!domainInSiteMap) return isBasePage ? basePrefix : prefix;
+    return basePrefix;
+  }
+
+  const useRegional = await urlInQueryIndex(
+    `${prefix}${path}`,
+    `${basePrefix}${path}`,
+    hostname,
+    matchingIndexes,
+    baseQueryIndex,
+    aTag,
+  );
+  return useRegional ? prefix : basePrefix;
+}
+
+export async function tryLocalizeLink(
+  a,
+  hostname,
+  rawPath,
+  basePrefix,
+  regionalPrefix,
+  isBasePage,
+  allQueryIndexes,
+  baseQueryIndex,
+  isFinal,
+) {
+  if (!a.isConnected) return true;
+
+  const indexes = allQueryIndexes
+    .filter((q) => q.domains.includes(hostname) && q.requestResolved);
+
+  if (!indexes.length) {
+    if (isFinal) {
+      const hasIndex = allQueryIndexes.some((q) => q.domains.includes(hostname));
+      if (!hasIndex && !isBasePage && regionalPrefix !== basePrefix) {
+        setLinkHref(a, regionalPrefix, rawPath);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  const newPrefix = await resolveLingoPrefix(
+    rawPath,
+    regionalPrefix,
+    basePrefix,
+    hostname,
+    indexes,
+    baseQueryIndex,
+    null,
+  );
+
+  if (!a.isConnected) return true;
+
+  if (newPrefix !== basePrefix) {
+    setLinkHref(a, newPrefix, rawPath);
+    return true;
+  }
+
+  return isFinal;
 }

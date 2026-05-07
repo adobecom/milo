@@ -84,7 +84,7 @@ mepLingoCountryToRegion: {
 |----------|-------------|
 | `getCountry()` | Get user's country code from akamaiLocale param, sessionStorage, or server timing |
 | `lingoActive()` | Check if lingo is enabled via `langfirst` URL param or meta tag |
-| `getMepLingoPrefix()` | Get the regional prefix for the current user's country |
+| `getGeoLocalePrefix()` | Get the regional prefix for the current user's country |
 
 ### `getLocaleCodeFromPrefix` Details
 

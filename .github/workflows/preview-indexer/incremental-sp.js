@@ -21,24 +21,29 @@ const filteredRepos = reposToProcess.filter((repo) => !SITE || repo === SITE);
 for (const repo of filteredRepos) {
   await queue.add(async () => {
     console.log(`Initiating incremental index for ${ORG}/${repo}`);
-    const spClient = new SPClient(ORG, repo);
-    await spClient.init();
-    const indexer = await initIndexer(
-      ORG,
-      repo,
-      lingoConfigMap,
-      {
-        isSp: true,
-        savePreviewIndexJson: async (_, __, pathname, data) => {
-          return spClient.uploadPreviewIndex(pathname, data)
-        },
-        getPreviewIndexJson: async (_, __, pathname) => {
-          return spClient.getPreviewIndexJson(pathname);
+    try {
+      const spClient = new SPClient(ORG, repo);
+      await spClient.init();
+      const indexer = await initIndexer(
+        ORG,
+        repo,
+        lingoConfigMap,
+        {
+          isSp: true,
+          savePreviewIndexJson: async (_, __, pathname, data) => {
+            return spClient.uploadPreviewIndex(pathname, data)
+          },
+          getPreviewIndexJson: async (_, __, pathname) => {
+            return spClient.getPreviewIndexJson(pathname);
+          }
         }
-      }  
-    );
-    const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
-    return indexer.incremental(siteRegionPaths);
+      );
+      const siteRegionPaths = indexer.normalizeRegionPaths(SITE_REGION_PATHS);
+      return indexer.incremental(siteRegionPaths);
+    } catch (error) {
+      console.error(`Error initiating incremental index for ${ORG}/${repo}: ${error}`);
+    }
+    return {};
   });
 }
 

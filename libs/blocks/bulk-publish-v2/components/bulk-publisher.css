@@ -229,7 +229,7 @@ label[for='urls'] i {
   display: block;
   width: 100%;
   max-height: 60vh;
-  height: 100%;
+  flex: 1;
   font-size: 0.75em;
   padding: 10px 35px 15px 13px;
   box-sizing: border-box;
@@ -242,11 +242,11 @@ label[for='urls'] i {
 }
 
 .error-bar {
-  position: absolute;
-  left: 0;
-  width: 100%;
   background-color: var(--error);
   color: white;
+  border-radius: 6px 6px 0 0;
+  border: 3px solid var(--error);
+  border-bottom: none;
 }
 
 .error-bar .btn {
@@ -478,14 +478,12 @@ label[for='urls'] i {
   margin-bottom: 2px;
 }
 
-.urls.invalid textarea {
-  padding-top: 56px;
-}
-
 .urls.invalid textarea,
 .urls.invalid textarea:focus-visible {
-  outline: 2px solid var(--error);
+  outline: none;
   border-color: var(--error);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
 }
 
 .processor button {

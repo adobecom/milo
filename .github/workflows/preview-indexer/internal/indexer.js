@@ -80,9 +80,9 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
 
   function getFilteredPaths(paths) {
     const hasNoExtension = (path) => !/\.[^/]+$/.test(path);
-    const notExcluded = (path) => !config.excludePathsRegex?.test(path);
+    const isIncluded = (path) => config.canIncludePath(path);
     return paths.filter(
-      (path) => hasNoExtension(path) && notExcluded(path),
+      (path) => hasNoExtension(path) && isIncluded(path),
     );
   }
 
@@ -133,7 +133,6 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
 
     const previewPaths = await getPreviewPaths(entries);
     const filteredPreviewPaths = getFilteredPaths(previewPaths).filter((path) => !filteredUnpreviewPaths.includes(path));
-
     const unpreviewPathsPerRoot = getPathsPerRoot(previewRoots, filteredUnpreviewPaths);
     const previewPathsPerRoot = getPathsPerRoot(previewRoots, filteredPreviewPaths);
 
@@ -195,10 +194,10 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
       const previewPaths = await getPreviewPathsForRegion(siteOrg, siteRepo, root);
 
       const hasNoExtension = (path) => !/\.[^/]+$/.test(path);
-      const notExcluded = (path) => !config.excludePathsRegex?.test(path);
+      const isIncluded = (path) => config.canIncludePath(path);
       const pathExtn = config.getPreviewPathExtension();
       const filteredPreviewPaths = (previewPaths?.filter(
-        (path) => hasNoExtension(path) && notExcluded(path),
+        (path) => hasNoExtension(path) && isIncluded(path),
       ) || []).map((path) => `${path.endsWith('/') ? path : path + pathExtn}`);
 
       const defaultPreviewsPathsJson = await datalayer.getPreviewIndexJson(siteOrg, siteRepo, `${indexPath}-default`);

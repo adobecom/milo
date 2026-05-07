@@ -1,4 +1,4 @@
-import { getModal } from '../modal/modal.js';
+import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -28,8 +28,10 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
+let bcToken;
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -37,16 +39,6 @@ function getBetaLabel() {
 
 function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
-}
-
-function updateModalHeight() {
-  const modal = document.getElementById('brand-concierge-modal');
-  if (!modal) return;
-  const isMobile = window.innerWidth < 768;
-  const marginTop = isMobile ? 22 : 32;
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
-  modal.style.height = `${modalHeight}px`;
 }
 
 export function updateReplicatedValue(textareaWrapper, textarea) {
@@ -59,6 +51,16 @@ export function getUpdatedChatUIConfig() {
   if (authoredContent.header.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
   if (authoredContent.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;
   if (authoredContent.input) chatUIConfig.text['input.placeholder'] = authoredContent.input;
+
+  // For stage, override specific env variables
+  const config = getConfig();
+  const { env } = config || {};
+  const isStage = env?.name !== 'prod';
+  if (isStage) {
+    chatUIConfig.env = 'stage';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyHostname = 'https://firefly-stage.corp.adobe.com';
+    chatUIConfig.behavior.fireflyGalleryWidget.fireflyEnv = 'stage';
+  }
   return chatUIConfig;
 }
 
@@ -88,12 +90,130 @@ function resetFloatingButton(el) {
   }
 }
 
+/**
+ * Creates the SUSI Light component for the sign-in modal.
+ * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
+ * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
+ */
+export function createSusiComponentForModal({
+  authParams,
+  config,
+  variant,
+  redirectUrl,
+  isStage,
+  popup,
+  onCloseRedirect,
+  onSuccessfulToken,
+  onError,
+}) {
+  const susi = createTag('susi-sentry-light');
+  susi.authParams = {
+    ...authParams,
+    redirect_uri: redirectUrl,
+  };
+  susi.config = config;
+  susi.variant = variant;
+  susi.popup = !!popup;
+  if (isStage) susi.stage = 'true';
+
+  const onRedirect = (e) => {
+    if (popup && typeof onCloseRedirect === 'function') {
+      onCloseRedirect();
+    } else if (!popup) {
+      window.location.assign(e.detail);
+    }
+  };
+  const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
+  const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
+
+  susi.addEventListener('redirect', onRedirect);
+  susi.addEventListener('on-error', onError);
+  susi.addEventListener('on-analytics', onAnalytics);
+  if (onSuccessfulToken) {
+    susi.addEventListener('on-token', onSuccessfulToken);
+  }
+  susi.addEventListener('on-auth-failed', onAuthFailed);
+  return susi;
+}
+
+async function openSusiLightModal() {
+  const config = getConfig();
+  const { env, locale, imsClientId } = config || {};
+  const isStage = env?.name !== 'prod';
+  const redirectUrl = window.location.href;
+  const clientId = imsClientId;
+  const localeIetf = (locale?.ietf || 'en-US').toLowerCase();
+
+  const CDN_URL = `https://auth-light.identity${isStage ? '-stage' : ''}.adobe.com/sentry/wrapper.js`;
+  await loadScript(CDN_URL);
+
+  const SUSI_MODAL_ID = 'bc-susi-modal';
+  const closeSusiModal = () => {
+    const modal = document.getElementById(SUSI_MODAL_ID);
+    if (modal) closeModal(modal);
+  };
+  const authParams = {
+    dt: false,
+    locale: localeIetf,
+    response_type: 'token',
+    client_id: clientId,
+    scope: 'AdobeID,openid,gnav,pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read',
+  };
+  const susiConfig = { consentProfile: 'free', fullWidth: true };
+  const onSuccessfulToken = ({ detail }) => {
+    closeSusiModal();
+    window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
+    const token = detail;
+    if (!bcToken) {
+      bcToken = token;
+      const mountEl = document.getElementById(mountId);
+      if (mountEl) {
+        mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
+      }
+    }
+  };
+
+  const onError = (e) => {
+    const mountEl = document.getElementById(mountId);
+    window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
+    if (mountEl) {
+      mountEl.dispatchEvent(
+        new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
+      );
+    }
+    closeSusiModal();
+  };
+  const susiEl = createSusiComponentForModal({
+    authParams,
+    config: susiConfig,
+    variant: 'standard',
+    redirectUrl,
+    isStage,
+    popup: true,
+    onCloseRedirect: closeSusiModal,
+    onSuccessfulToken,
+    onError,
+  });
+  const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in or create an account');
+  const fragment = new DocumentFragment();
+
+  fragment.append(title, wrapper);
+  await getModal(null, {
+    id: SUSI_MODAL_ID,
+    class: 'bc-susi-modal',
+    content: fragment,
+  });
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
   const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
   const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
+
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
@@ -112,66 +232,91 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  updateModalHeight();
+
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
   const submitButton = el.querySelector('.input-field-button');
+
   if (textareaWrapper && textarea && submitButton) {
     textarea.value = '';
     submitButton.disabled = true;
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { env } = getConfig();
-  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
+  const { locale } = getConfig();
 
-  if (env.name === 'prod') {
-    src = prod;
-  }
+  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
+  const surfaceURL = window.location.href;
+  const { userAgent, language } = window.navigator;
 
-  if (webClient === 'prod') {
-    console.log('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    console.log('stage', stage);
-    src = stage;
-  }
+  const onBeforeEventSend = (content) => {
+    const MEETING_EVENT_TYPES = [
+      'form-fetch',
+      'form-submit',
+      'calendar-fetch',
+      'calendar-submit',
+      'conversation-command',
+    ];
 
-  await loadScript(src);
+    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
+      return;
+    }
 
-  const bootstrapAPIReady = await waitForCondition(
-    () => !!window.adobe?.concierge?.bootstrap,
-    5000, // 5 seconds max wait
-    100, // Check every 100ms
-  );
+    if (!bcToken) {
+      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+    }
+
+    if (bcToken) {
+      content.data = {
+        type: 'auth',
+        payload: { token: bcToken },
+      };
+    }
+
+    // eslint-disable-next-line no-underscore-dangle
+    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
+    const consentConfObject = consentsConfig
+      && Object.keys(consentsConfig).reduce((rdx, key) => {
+        rdx.push({
+          consentStandard: key,
+          consentStringValue: consentsConfig[key].toString(),
+          consentStandardVersion: '2.0',
+          gdprApplies: true,
+          containsPersonalData: true,
+        });
+        return rdx;
+      }, []);
+
+    content.xdm = {
+      web: { webPageDetails: { URL: surfaceURL } },
+      environment: {
+        browserDetails: { userAgent },
+        _dc: { language },
+      },
+      homeAddress: { region: locale.region },
+    };
+
+    if (consentConfObject?.length) {
+      content.xdm.consentStrings = consentConfObject;
+    }
+  };
 
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
+      onBeforeEventSend,
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
   }
 
-  const handleViewportResize = () => updateModalHeight();
-  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
-  window.visualViewport?.addEventListener('resize', handleViewportResize);
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleOrientationChange);
-  const cleanup = () => {
-    window.visualViewport?.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('orientationchange', handleOrientationChange);
-  };
-  const handleBCModalClose = () => {
-    cleanup();
-    window.removeEventListener('milo:modal:closed', handleBCModalClose);
-  };
-  window.addEventListener('milo:modal:closed', handleBCModalClose);
+  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
+    if (detail?.action === 'sign-in') {
+      openSusiLightModal();
+    }
+  });
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
@@ -221,6 +366,7 @@ function decorateHeader(el, header) {
   const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
   const subTitle = header.querySelector('p');
   const headerSection = createTag('section', { class: 'bc-header' });
+
   if (hTag) {
     hTag.classList.add('bc-header-title');
     headerSection.append(hTag);
@@ -232,6 +378,7 @@ function decorateHeader(el, header) {
   if (!hTag && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
+
   el.append(headerSection);
   el.removeChild(header);
 }
@@ -275,7 +422,9 @@ function decorateInput(el, input) {
     tabindex: 0,
   }, `${aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
+
   fieldLabel.append(fieldLabelToolTip);
+
   const fieldInput = createTag('textarea', {
     id: 'bc-input-field',
     rows: 1,
@@ -289,6 +438,7 @@ function decorateInput(el, input) {
   }, submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
+
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
   el.removeChild(input);
@@ -330,34 +480,58 @@ function decorateFloatingButton(el) {
   const floatingInput = createTag('div', { class: 'bc-floating-input' }, authoredContent.input);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
+
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  if (variants.isHero) {
-    floatingButton.classList.add('floating-hidden');
-  }
-
   const mainElement = document.querySelector('main');
   const gnavElement = document.querySelector('header.global-navigation');
+
+  const hideFloatingButton = () => {
+    floatingContainer.setAttribute('aria-hidden', 'true');
+    floatingContainer.setAttribute('tabindex', '-1');
+    floatingContainer.blur();
+    floatingButton.classList.add('floating-hidden');
+    floatingButton.classList.remove('floating-show');
+  };
+
+  const showFloatingButton = () => {
+    floatingContainer.removeAttribute('aria-hidden');
+    floatingContainer.removeAttribute('tabindex');
+    floatingButton.classList.remove('floating-hidden');
+    floatingButton.classList.add('floating-show');
+  };
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloatingButton();
+  }
+
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
     const gnavHeight = gnavElement.offsetHeight;
-    const threshold = (window.scrollY + window.innerHeight - gnavHeight);
+    const gnavPosition = window.getComputedStyle(gnavElement).position;
+    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
     const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2);
+    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
+    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
+
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
-      mainElement.style.paddingBottom = `${targetHeight}px`;
+      if (variants.isFloatingAnchorHide) {
+        hideFloatingButton();
+      } else {
+        mainElement.style.paddingBottom = `${targetHeight}px`;
+      }
     } else {
+      showFloatingButton();
       target.style.bottom = '0';
     }
-    if (variants.isHero) {
-      if (window.scrollY > el.scrollHeight) {
-        floatingButton.classList.remove('floating-hidden');
-        floatingButton.classList.add('floating-show');
-      } else {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
+    if (variants.isHero || variants.floatingDelay) {
+      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
+        showFloatingButton();
+      }
+      if (window.scrollY < scrollDelay) {
+        hideFloatingButton();
       }
     }
   };
@@ -384,6 +558,10 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS?.refreshToken();
+    window.UniversalNav?.reload();
+  });
 
   const rows = el.querySelectorAll(':scope > div');
 
@@ -406,6 +584,17 @@ export default async function init(el) {
   } else if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
   }
+
+  if (el.classList.contains('floating-anchor-hide')) {
+    variants.isFloatingAnchorHide = true;
+  }
+
+  el.classList.forEach((classItem) => {
+    if (classItem.includes('floating-delay')) {
+      variants.floatingDelay = true;
+      variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+  });
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
@@ -439,4 +628,50 @@ export default async function init(el) {
     decorateCards(el, cards);
     decorateLegal(el, legal);
   }
+
+  const loginTestButton = params.get('susi-test-btn');
+  if (loginTestButton) {
+    const button = document.createElement('button');
+    button.textContent = 'Click me to open SUSI Light (testing only)';
+    button.onclick = openSusiLightModal;
+    el.appendChild(button);
+  }
+
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
+  const { env } = getConfig();
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env?.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    logWebClient('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    logWebClient('stage', stage);
+    src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  loadScript(src);
 }

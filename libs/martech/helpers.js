@@ -1,4 +1,4 @@
-import { getMepEnablement } from '../utils/utils.js';
+import { getMepEnablement, isSignedOut } from '../utils/utils.js';
 
 /* eslint-disable no-underscore-dangle */
 export const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
@@ -883,5 +883,51 @@ export const loadAnalyticsAndInteractionData = async (
     return {};
   }
 };
+
+export function getMepConsentConfig() {
+  const cookies = getAllCookies();
+  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
+  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
+  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
+
+  if (!optOnConsentCookie || consentState === 'pre') {
+    return {
+      performance: true,
+      advertising: isSignedOut() && consentState !== 'pre',
+    };
+  }
+  return parseOptanonConsent(optOnConsentCookie).configuration;
+}
+
+function fireAnalyticsEvent(val) {
+  /* eslint-disable no-underscore-dangle */
+  window._satellite?.track?.('event', {
+    documentUnloading: true,
+    xdm: {
+      eventType: 'web.webinteraction.linkClicks',
+      web: {
+        webInteraction: {
+          linkClicks: { value: 1 },
+          type: 'other',
+          name: val,
+        },
+      },
+    },
+    data:
+      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+  });
+}
+
+export async function sendAnalytics(val) {
+  /* eslint-disable no-underscore-dangle */
+  if (!getMepConsentConfig()?.performance) return;
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(val);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(val);
+    }, { once: true });
+  }
+}
 
 export default { loadAnalyticsAndInteractionData };

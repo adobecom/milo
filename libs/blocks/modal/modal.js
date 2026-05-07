@@ -123,6 +123,9 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
 
   if (!document.querySelectorAll('.modal-curtain').length) {
     document.body.classList.remove('disable-scroll');
+    /** Restore lenis behaviour on modal close */
+    /* TODO: merch needs to load C2 modals */
+    window.lenis?.start();
   }
 
   [...document.querySelectorAll('header, main, footer')]
@@ -285,6 +288,9 @@ export async function getModal(details, custom) {
 
   if (!dialog.classList.contains('curtain-off')) {
     document.body.classList.add('disable-scroll');
+    /** Stop lenis behaviour on modal open */
+    /* TODO: merch needs to load C2 modals */
+    window.lenis?.stop();
     const curtain = createTag('div', {
       class: 'modal-curtain is-open',
       'daa-ll': `${analyticsEventName}:modalClose:curtainClose`,

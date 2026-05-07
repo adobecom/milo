@@ -160,3 +160,226 @@ body:has(.dialog-modal:not(.locale-modal-v2)) #locale-modal-v2,
 body:has(.dialog-modal:not(.locale-modal-v2, .curtain-off)) #locale-modal-v2 + .modal-curtain.is-open {
   display: none;
 }
+
+html:has(meta[name="foundation"][content="c2"]) {
+  .dialog-modal.locale-modal-v2 {
+    .georouting-wrapper {
+      padding: var(--s2a-spacing-lg);
+
+      &:not(:has(.tabs)) {
+        padding: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--dialog-modal-close-size)) calc(2 * var(--s2a-spacing-lg)) calc(2* var(--s2a-spacing-lg));
+
+        h3 {
+          padding-top: var(--s2a-spacing-lg);
+        }
+      }
+
+      h3 {
+        font-size: var(--s2a-typography-font-size-title-4);
+        line-height: var(--s2a-typography-line-height-title-4);
+        letter-spacing: var(--s2a-typography-letter-spacing-title-4);
+        margin: 0;
+      }
+    }
+
+    .dialog-close {
+      z-index: 2;
+      right: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
+      top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm) + var(--s2a-spacing-xs));
+    }
+
+    /* c2 styles for tabs */
+    .tabs {
+      .paddle {
+        top: calc(var(--s2a-spacing-xs) + var(--dialog-modal-close-size) + var(--s2a-spacing-lg));
+        margin: 0;
+        height: 52px;
+      }
+
+      div[role="tablist"] {
+        padding: calc(var(--s2a-spacing-xs) + var(--dialog-modal-close-size) + var(--s2a-spacing-lg)) 0 var(--s2a-spacing-xs);
+
+        .tab-list-container {
+          margin: 0;
+        }
+      }
+
+      &.quiet div[role="tablist"] button {
+        font-weight: var(--s2a-font-weight-adobe-clean-bold);
+        font-size: var(--s2a-typography-font-size-eyebrow);
+        line-height: var(--s2a-typography-line-height-eyebrow);
+        letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+        padding: var(--s2a-spacing-md) 0 calc(var(--s2a-spacing-md) - 1px);
+        border-bottom: 1px solid transparent;
+
+        &:hover {
+          border-color: var(--s2a-color-gray-500);
+        }
+
+        &:focus {
+          outline: 2px solid var(--s2a-color-blue-800);
+          outline-offset: -2px;
+          border-color: var(--s2a-color-gray-500);
+        }
+
+        &:not(:first-of-type) {
+          margin-inline-start: var(--s2a-spacing-lg);
+        }
+
+        &[aria-selected="true"] {
+          border-bottom: 1px solid var(--s2a-color-gray-1000);
+        }
+      }
+
+      .tab-content {
+        padding-top: var(--s2a-spacing-lg);
+      }
+    }
+    /* c2 styles for tabs */
+
+    .locale-text {
+      margin: var(--s2a-spacing-2xs) var(--s2a-spacing-sm) var(--s2a-spacing-lg) 0;
+    }
+
+    .link-wrapper {
+      padding: var(--s2a-spacing-lg) var(--s2a-spacing-sm) 0 0;
+      line-height: initial;
+
+      > a {
+        font-size: var(--s2a-typography-font-size-body-sm);
+        line-height: var(--s2a-typography-line-height-body-sm);
+        letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+
+        &:first-child {
+          margin-inline-end: var(--s2a-spacing-md);
+        }
+      }
+
+      .con-button.blue {
+        box-sizing: border-box;
+        display: inline-flex;
+        flex-direction: row-reverse;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          margin-left: 0;
+          margin-top: 3px;
+          float: none;
+        }
+      }
+
+      a:last-child {
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    span.icon {
+      display: inline-flex;
+    }
+
+    .picker {
+      padding: var(--s2a-spacing-xs) 0;
+      box-sizing: border-box;
+      min-width: auto;
+      border-radius: var(--s2a-spacing-sm);
+      border: 1px solid var(--s2a-color-transparent-black-08);
+      margin-top: var(--s2a-spacing-xs);
+
+      &.top {
+        bottom: var(--s2a-spacing-2xl);
+      }
+
+      li {
+        &:not(:last-child) {
+          margin-bottom: var(--s2a-spacing-sm);
+        }
+
+        > a {
+          padding: var(--s2a-spacing-2xs) var(--s2a-spacing-md);
+          font-size: var(--s2a-typography-font-size-body-sm);
+          line-height: var(--s2a-typography-line-height-body-sm);
+          letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+          box-sizing: border-box;
+          margin-inline-end: 0;
+          width: 100%;
+          text-decoration: none;
+
+          &:hover {
+            background: transparent;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+
+  .locale-modal-v2 .georouting-wrapper > .section {
+    padding: var(--s2a-spacing-sm) var(--s2a-spacing-sm) var(--s2a-spacing-lg) var(--s2a-spacing-lg);
+  }
+
+  &[dir="rtl"] {
+    .dialog-modal.locale-modal-v2 {
+      .dialog-close {
+        left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
+      }
+
+      .locale-text {
+        margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-lg) var(--s2a-spacing-sm);
+      }
+
+      .link-wrapper {
+        padding: var(--s2a-spacing-lg) 0 0 var(--s2a-spacing-sm);
+      }
+    }
+  }
+
+  @media (min-width: 760px) {
+    .dialog-modal.locale-modal-v2 {
+      max-width: calc((100% - 6px) - 2em);
+    }
+  }
+
+  @media (min-width: 838px) {
+    .dialog-modal.locale-modal-v2 {
+      max-width: 798px;
+
+      &:has(.tabs) {
+        .dialog-close {
+          top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs) + 25px); /* Adjust based on tab height */
+        }
+      }
+
+      .dialog-close {
+        right: calc(2 * var(--s2a-spacing-lg));
+        top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs));
+      }
+
+      /* c2 styles for tabs */
+      .tabs {
+        .paddle {
+          top: var(--s2a-spacing-xs);
+          height: 62px;
+        }
+
+        div[role="tablist"] {
+          padding: var(--s2a-spacing-xs) 0;
+          width: calc(100% - var(--s2a-spacing-lg) - var(--dialog-modal-close-size));
+        }
+      }
+      /* c2 styles for tabs */
+
+      .link-wrapper > a:first-child {
+        margin-inline-end: var(--s2a-spacing-lg);
+      }
+    }
+
+    .locale-modal-v2 .georouting-wrapper > .section {
+      padding: 0 var(--s2a-spacing-lg) var(--s2a-spacing-lg);
+    }
+  }
+}

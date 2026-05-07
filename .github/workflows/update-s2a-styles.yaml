@@ -1,0 +1,31 @@
+name: Update S2A Styles
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: 21
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Update S2A styles and create PR if needed
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        with:
+          script: |
+            const updateS2AStyles = require('./.github/workflows/update-s2a-styles.js')
+            await updateS2AStyles({ github, context })
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -54,4 +54,44 @@ describe('normalizePath function', () => {
     const path = await normalizePath('https://main--milo--adobecom.aem.page/path/to/fragment.plain.html');
     expect(path).to.equal('/de/path/to/fragment.plain.html');
   });
+
+  it('localizes federal URLs with locale prefix and preserves federal origin', async () => {
+    config.locales = {
+      de: {
+        ietf: 'de-DE',
+        prefix: '/de',
+      },
+    };
+    config.locale = config.locales.de;
+    const federalUrl = 'https://main--federal--adobecom.aem.page/federal/globalnav/acom/fragments/promos/test-promo';
+    const path = await normalizePath(federalUrl);
+    expect(path).to.include('/de/federal/globalnav/acom/fragments/promos/test-promo');
+    expect(path).to.include('federal--adobecom.aem.page');
+    expect(path).not.to.include('/de/https://');
+  });
+
+  it('does not localize federal URLs for en-US locale', async () => {
+    config.locale = { ietf: 'en-US', prefix: '' };
+    const federalUrl = 'https://main--federal--adobecom.aem.page/federal/globalnav/acom/fragments/promos/test-promo';
+    const path = await normalizePath(federalUrl);
+    expect(path).to.include('federal--adobecom.aem.page');
+    expect(path).to.include('/federal/globalnav/acom/fragments/promos/test-promo');
+    expect(path).not.to.include('/de/');
+  });
+
+  it('does not duplicate query params for external URLs', () => {
+    config.locale = { ietf: 'en-US', prefix: '' };
+    const apiUrl = 'https://example.lambda-url.us-west-2.on.aws/get-page?id=123&lastSeen=week&manifestSrc=pzn,%20promo';
+    const result = normalizePath(apiUrl);
+    expect(result).to.equal(apiUrl);
+    expect(result.match(/id=123/g)).to.have.lengthOf(1);
+  });
+
+  it('strips #_dnt from external URLs without duplicating params', () => {
+    config.locale = { ietf: 'en-US', prefix: '' };
+    const apiUrl = 'https://example.lambda-url.us-west-2.on.aws/get-page?id=123#_dnt';
+    const result = normalizePath(apiUrl);
+    expect(result).to.equal('https://example.lambda-url.us-west-2.on.aws/get-page?id=123');
+    expect(result).to.not.include('#_dnt');
+  });
 });

@@ -3,7 +3,7 @@
  * These utilities are used for unit testing MEP Lingo logic without requiring full page setup.
  */
 
-import { getConfig, getCountry } from '../../../libs/utils/utils.js';
+import { getConfig, resolveDetectedMarketCountry } from '../../../libs/utils/utils.js';
 import { getLocaleCodeFromPrefix } from '../../../libs/features/mep/lingo.js';
 
 /**
@@ -17,11 +17,12 @@ export default async function getMepLingoContext(locale) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
 
-  const country = await getCountry(true);
-  if (!country) {
+  const resolved = await resolveDetectedMarketCountry();
+  if (!resolved) {
     return { country: null, localeCode: null, regionKey: null, matchingRegion: null };
   }
 
+  const country = resolved.toLowerCase();
   const config = getConfig();
   const mapping = config.mepLingoCountryToRegion;
 

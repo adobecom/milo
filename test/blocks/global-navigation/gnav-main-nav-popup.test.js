@@ -67,7 +67,10 @@ describe('main nav popups', () => {
       document.querySelector(selectors.mainNavToggle).click();
       document.querySelector(selectors.navLink).click();
 
-      expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
+      const promoImage = document.querySelector(selectors.promoImage);
+      expect(isElementVisible(promoImage)).to.equal(true);
+      expect(promoImage.getAttribute('aria-hidden')).to.equal('true');
+      expect(promoImage.getAttribute('tabindex')).to.equal('-1');
     });
 
     it('should allow CTAs in Promo boxes', async () => {
@@ -129,7 +132,10 @@ describe('main nav popups', () => {
       document.querySelector(selectors.mainNavToggle).click();
       document.querySelector(selectors.navLink).click();
 
-      expect(isElementVisible(document.querySelector(selectors.promoImage))).to.equal(true);
+      const promoImage = document.querySelector(selectors.promoImage);
+      expect(isElementVisible(promoImage)).to.equal(true);
+      expect(promoImage.getAttribute('aria-hidden')).to.equal('true');
+      expect(promoImage.getAttribute('tabindex')).to.equal('-1');
     });
   });
 

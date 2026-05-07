@@ -20,6 +20,7 @@ import {
   localizeLinkAsync,
   createTag,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   SLD,
   MILO_EVENTS,
@@ -61,6 +62,9 @@ export const decorateURL = async (destination, baseURL = window.location) => {
     let destinationUrl = new URL(destination, baseURL.origin);
     const { hostname, pathname, search, hash } = destinationUrl;
 
+    const { htmlExclude } = getConfig();
+    const exclude = htmlExclude?.some((excludeRe) => excludeRe.test(destinationUrl));
+
     /* c8 ignore next 3 */
     if (!hostname) {
       throw new Error('URL does not have a valid host');
@@ -70,7 +74,7 @@ export const decorateURL = async (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/')) {
+    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/') && !exclude) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
@@ -175,6 +179,20 @@ export const formSuccess = (formEl, formData) => {
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
+
+  if (formData?.[SUCCESS_TYPE] === 'ims') {
+    const redirect = formData?.[SUCCESS_CONTENT];
+
+    const emailInput = formEl.querySelector('input[name="Email"]');
+    const email = emailInput?.value;
+
+    if (email && redirect) {
+      window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
+    } else {
+      window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
+    }
+    return false;
+  }
 
   /* c8 ignore next 5 */
   if (parentModal) {
@@ -382,6 +400,12 @@ export default async function init(el) {
     el.classList.add('hide-block');
     toggleSuccessSection(formData);
     return;
+  }
+
+  const imsSuccessType = getMetadata('marketo-ims');
+
+  if (imsSuccessType) {
+    formData[SUCCESS_TYPE] = 'ims';
   }
 
   formData[SUCCESS_TYPE] = formData[SUCCESS_TYPE] || 'redirect';

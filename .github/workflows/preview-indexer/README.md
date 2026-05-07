@@ -89,13 +89,15 @@ For each site (e.g., `adobecom/da-bacom`), configure:
 |-----------------|-------------|---------|
 | `AEM_ADMIN_TOKEN_<ORG>_<REPO>` | Helix admin API token | `AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM` |
 | `PREVIEW_INDEX_KEY_<ORG>_<REPO>` | Key for regional paths in lingo config | `PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM` |
-| `EXCLUDE_PREVIEW_PATHS_<ORG>_<REPO>` | Comma-separated paths to exclude | `EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM` |
+| `EXCLUDE_PREVIEW_PATHS_PATTERN_<ORG>_<REPO>` | Regex pattern — paths matching this pattern are excluded | `EXCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM` |
+| `INCLUDE_PREVIEW_PATHS_PATTERN_<ORG>_<REPO>` | Regex pattern — when set, only paths matching this pattern are included (applied after exclusion) | `INCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM` |
 | `PREVIEW_INDEX_FILE_<ORG>_<REPO>` | Site-specific index path template | `PREVIEW_INDEX_FILE_ADOBECOM_DA_BACOM` |
 | `PREVIEW_PATH_EXTN_<ORG>_<REPO>` | Site-specific preview path extention that needs to be applied e.g. .html | `PREVIEW_PATH_EXTN_ADOBECOM_DA_BACOM` |
 
 **Notes**:
 - Hyphens in org/repo names are converted to underscores and uppercased.
 - `/target-preview/` is automatically added to exclude paths for all sites.
+- `INCLUDE_PREVIEW_PATHS_PATTERN_<ORG>_<REPO>` acts as an allowlist: if omitted, all non-excluded paths pass through; if set, only paths that also match this pattern are kept.
 
 #### Optional Configuration
 
@@ -180,7 +182,7 @@ ROLLING_IMPORT_GRANT_TYPE=authorization_code
 PREVIEW_INDEXER_REPOS=da-bacom,da-bacom-lingo
 AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM=...
 PREVIEW_INDEX_KEY_ADOBECOM_DA_BACOM=bacom
-EXCLUDE_PREVIEW_PATHS_ADOBECOM_DA_BACOM=/target-preview/
+EXCLUDE_PREVIEW_PATHS_PATTERN_ADOBECOM_DA_BACOM=/target-preview/
 LINGO_CONFIG=https://...
 
 # Optional

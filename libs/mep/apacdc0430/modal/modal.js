@@ -2,6 +2,7 @@
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../../martech/attributes.js';
+import { sendAnalytics } from '../../../martech/helpers.js';
 
 const LOCALE_MODAL_ID = 'locale-modal-v2';
 const FOCUSABLES = 'a:not(.hide-video, .faas), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
@@ -29,25 +30,6 @@ export async function findDetails(hash, el) {
     isHash: hash === window.location.hash,
     title: ariaLabel ? `Modal: ${ariaLabel}` : null,
   };
-}
-
-function fireAnalyticsEvent(event) {
-  const data = {
-    xdm: {},
-    data: { web: { webInteraction: { name: event?.type } } },
-  };
-  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
-  window._satellite?.track('event', data);
-}
-
-export function sendAnalytics(event) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(event);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(event);
-    }, { once: true });
-  }
 }
 
 function focusAfterModalClose(modal) {
