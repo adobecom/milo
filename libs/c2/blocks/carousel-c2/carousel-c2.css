@@ -32,8 +32,8 @@
     transition: translate var(--transition-duration) var(--animation-curve);
     cursor: grab;
     will-change: translate;
-    animation: wrapper-enter var(--animation-curve);
-    animation-timeline: --carousel-wrapper;
+    /* animation: wrapper-enter var(--animation-curve); */
+    /* animation-timeline: --carousel-wrapper; */
     animation-fill-mode: var(--carousel-animation-fill);
     animation-range: var(--carousel-animation-range);
 
@@ -48,8 +48,8 @@
       flex: 1 0 var(--carousel-slide-width);
       overflow: clip;
       border-radius: var(--s2a-border-radius-16);
-      animation: slide-enter, var(--animation-curve);
-      animation-timeline: --carousel-wrapper;
+      /* animation: slide-enter, var(--animation-curve); */
+      /* animation-timeline: --carousel-wrapper; */
       animation-fill-mode: var(--carousel-animation-fill);
       animation-range: var(--carousel-animation-range);
 
@@ -76,8 +76,8 @@
             .content {
               max-width: 477px;
               transition: opacity .5s ease-in-out;
-              animation:  content-enter var(--animation-curve);
-              animation-timeline: view();
+              /* animation: content-enter var(--animation-curve); */
+              /* animation-timeline: view(); */
               animation-fill-mode: var(--carousel-animation-fill);
               animation-range: var(--carousel-text-animation-range);
 
@@ -113,8 +113,8 @@
       &:has(.rich-content) {
         .section-background img {
           border-radius: var(--s2a-border-radius-16);
-          animation: image-enter var(--animation-curve);
-          animation-timeline: --carousel-wrapper;
+          /* animation: image-enter var(--animation-curve); */
+          /* animation-timeline: --carousel-wrapper; */
           animation-fill-mode: var(--carousel-animation-fill);
           animation-range: var(--carousel-animation-range);
         }
@@ -122,8 +122,8 @@
 
       &.active {
         .rich-content .content > * {
-          animation: text-enter var(--animation-curve);
-          animation-timeline: view();
+          /* animation: text-enter var(--animation-curve); */
+          /* animation-timeline: view(); */
           animation-fill-mode: var(--carousel-animation-fill);
           animation-range: var(--carousel-text-animation-range);
         }
@@ -178,8 +178,8 @@
       cursor: pointer;
       overflow: hidden;
       transition: background 0.25s var(--animation-curve), color 0.25s var(--animation-curve);
-      animation: button-enter var(--animation-curve);
-      animation-timeline: --carousel-wrapper;
+      /* animation: button-enter var(--animation-curve); */
+      /* animation-timeline: --carousel-wrapper; */
       animation-fill-mode: var(--carousel-animation-fill);
       animation-range: var(--carousel-animation-range);
 

@@ -884,7 +884,8 @@ p {
 }
 
 /* TODO: Parallax styles should be loaded separately and conditionally */
-@supports (animation-timeline: view()) {
+/* CSS scroll-driven animations disabled: scroll-animations.js handles these via Lenis */
+@supports not (display: block) {
   /* General parallax declarations */
   [class*="parallax-"] {
     /* Default transition values */

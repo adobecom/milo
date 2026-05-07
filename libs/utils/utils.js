@@ -2249,8 +2249,7 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
-    if (!CSS.supports('animation-timeline: view()')
-      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
     }
   }
