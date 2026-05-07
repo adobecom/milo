@@ -25,6 +25,9 @@ jobs:
           config_path: ".eslintrc.js"
           # ignore_path: "/path/to/.eslintignore"
           # extra_args: "--max-warnings=0"
-          # Suppress only "File ignored by default" warnings for ignored paths;
-          # rule-level warnings and errors are still reported.
-          extra_args: "--no-warn-ignored"
+          # Suppress warnings (errors still reported) to silence "File ignored
+          # by default" noise from files outside this repo's primary ESLint
+          # config (e.g. .github/workflows/html-sitemap/ has its own internal
+          # lint). The narrower --no-warn-ignored alternative requires a
+          # newer ESLint than this CI uses.
+          extra_args: "--quiet"
