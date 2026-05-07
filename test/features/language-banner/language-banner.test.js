@@ -235,6 +235,8 @@ describe('Language Banner', () => {
       fr: { ietf: 'fr-FR', prefix: '/fr' },
       it: { ietf: 'it-IT', prefix: '/it' },
       jp: { ietf: 'ja-JP', prefix: '/jp' },
+      cn: { ietf: 'zh-CN', prefix: '/cn' },
+      tw: { ietf: 'zh-TW', prefix: '/tw' },
     };
 
     const mockMarketsData = {
@@ -267,6 +269,36 @@ describe('Language Banner', () => {
         },
         {
           prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'FR', continueText: 'Continuer', supportedRegions: 'de,fr',
+        },
+      ],
+    };
+
+    /** Both locales use lang `zh`; banner must pick prefix from international cookie */
+    const marketsZhTwCn = {
+      data: [
+        {
+          prefix: '',
+          lang: 'en',
+          languageName: 'English',
+          text: 'English',
+          continueText: 'Continue',
+          supportedRegions: 'us',
+        },
+        {
+          prefix: 'cn',
+          lang: 'zh',
+          languageName: '简体中文',
+          text: 'CN',
+          continueText: 'Continue',
+          supportedRegions: 'us, cn',
+        },
+        {
+          prefix: 'tw',
+          lang: 'zh',
+          languageName: '繁體中文',
+          text: 'TW',
+          continueText: 'Continue',
+          supportedRegions: 'us, tw',
         },
       ],
     };
@@ -384,6 +416,21 @@ describe('Language Banner', () => {
       expect(cfg?.showBanner).to.equal(true);
       expect(cfg?.showModal).to.equal(false);
       expect(cfg?.markets?.some((m) => m.prefix === 'fr')).to.equal(true);
+    });
+
+    it('finds right zh market when multiple lang zh rows share international cookie prefix (tw)', async () => {
+      document.head.innerHTML = '<meta name="languagebanner" content="on">';
+      document.cookie = 'international=tw; path=/';
+      sessionStorage.setItem('akamai', 'us');
+      fetchStub.callsFake(defaultFetchForLanguageBanner(marketsZhTwCn, true));
+      setPathConfig('/');
+      Object.defineProperty(navigator, 'language', { value: 'en-US', configurable: true });
+      await decorateLanguageBanner();
+      const cfg = getLangRoutingConfig();
+      expect(cfg?.showBanner).to.equal(true);
+      expect(cfg?.markets?.length).to.equal(1);
+      expect(cfg?.markets?.[0]?.prefix).to.equal('tw');
+      expect(cfg?.markets?.[0]?.lang).to.equal('zh');
     });
 
     it('onlybanner flow sets single-market banner when a candidate page exists', async () => {

@@ -2443,10 +2443,16 @@ export async function decorateLanguageBanner() {
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
+    const prefMatches = languageEntries.filter((market) => (
       market.lang === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
+    let prefMarket = prefMatches[0];
+    if (prefMatches.length > 1) {
+      let key = navigator.language?.split('-').pop()?.toLowerCase();
+      if (internationalCookie) key = internationalCookie === 'us' ? '' : internationalCookie;
+      prefMarket = (key && prefMatches.find((m) => m.prefix === key)) || prefMatches[0];
+    }
     if (prefMarket) addAndShow(prefMarket);
     else return;
   } else {
