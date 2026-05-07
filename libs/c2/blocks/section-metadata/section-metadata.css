@@ -35,16 +35,18 @@
   }
 
   &.masonry-layout {
+    display: grid;
     gap: var(--grid-gutter);
     grid-template-columns: repeat(var(--grid-columns), 1fr);
 
     .grid-full-width { grid-column: span var(--grid-columns); }
     .grid-half-width { grid-column: span 3; }
-    .grid-span-1 { grid-column: span 1; }
-    .grid-span-2 { grid-column: span 2; }
-    .grid-span-3 { grid-column: span 3; }
-    .grid-span-4 { grid-column: span 4; }
-    .grid-span-5 { grid-column: span 5; }
+
+    .grid-span-1,
+    .grid-span-2,
+    .grid-span-3,
+    .grid-span-4,
+    .grid-span-5,
     .grid-span-6 { grid-column: span 6; }
 
     & > div[class*='grid-'],
@@ -61,6 +63,98 @@
   &.product-grid[class*='-up'] {
     align-items: stretch;
     grid-auto-rows: initial;
+  }
+
+  &.bento .rich-content.grid-full-width {
+    margin-inline-start: var(--s2a-spacing-lg);
+    margin-block-end: calc(var(--s2a-spacing-lg) - var(--s2a-spacing-8));
+  }
+
+  &.bento .rich-content.grid-full-width ~ .rich-content.grid-full-width {
+    margin-inline-start: 0;
+    margin-block-end: 0;
+  }
+
+  &.bento:not(.container):not(.wide) { padding-inline: var(--s2a-spacing-lg);}
+  &.bento:not(.container):not(.wide)[class*='combo'] { padding-bottom: var(--s2a-spacing-lg);}
+
+  &.bento .explore-card {
+    border-radius: var(--s2a-border-radius-md);
+    z-index: inherit;
+
+    .explore-card-container:hover [class*='body-'] {
+      opacity: initial;
+    }
+  }
+
+  &.bento .explore-card-content {
+    padding-inline: 0;
+    padding-bottom: var(--s2a-spacing-xl);
+    padding-top: 0;
+
+    & [class*='title-'] {
+      z-index: 1;
+    }
+
+    & [class*='body-'] {
+      margin-top: initial;
+      margin-bottom: 0;
+      opacity: 1;
+      z-index: 1;
+    }
+
+    [class*='title-'],
+    [class*='body-'] {
+      padding-inline: var(--s2a-spacing-xl);
+    }
+
+    > :nth-child(1):not(img):not(video) {
+      margin-bottom: var(--s2a-spacing-xs);
+    }
+
+    .explore-card-foreground {
+      aspect-ratio: 1 / 1.2;
+
+      img {
+        object-fit: cover;
+        object-position: top;
+      }
+    }
+
+    .content-aux {
+      aspect-ratio: 1 / 1;
+      display: block;
+      height: auto;
+      order: -1;
+      width: 100%;
+    }
+  }
+
+  &.bento .grid-full-width {
+    .explore-card-content {
+      padding-top: 36vw;
+
+      [class*='title-'],
+      > :nth-child(1):not(img):not(video) {
+        text-align: start;
+        margin-top: auto;
+      }
+    }
+  }
+
+  &.bento .explore-card-link-container:hover { color: inherit; }
+
+  &.bento .explore-card-link-container::before,
+  &:has(.bento .explore-card-link-container:focus-visible) .explore-card-link-container::before {
+    content: none;
+  }
+
+  &.bento .explore-card-background {
+    img,
+    .video-container {
+      opacity: 1;
+      object-position: top;
+    }
   }
 }
 
@@ -107,12 +201,41 @@
   .section[class*='grid-width-'] {
     display: block;
   }
+
+  .section {
+    &.bento .grid-full-width {
+      & .explore-card-content {
+        padding-top: 100vw;
+      }
+    }
+  }
+
 }
 
 /* tablet up */
 @media (width >= 768px) {
   .section.product-grid[class*='-up'] {
     grid-auto-rows: 1fr;
+  }
+
+  .section.masonry-layout {
+    .grid-span-1 { grid-column: span 1; }
+    .grid-span-2 { grid-column: span 2; }
+    .grid-span-3 { grid-column: span 3; }
+    .grid-span-4 { grid-column: span 4; }
+    .grid-span-5 { grid-column: span 5; }
+  }
+
+  .section.bento {
+    .explore-card-content {
+      & [class*='title-'] {
+        margin-top: 0;
+      }
+
+      .content-aux {
+        aspect-ratio: 1 / 0.8;
+      }
+    }
   }
 }
 
@@ -143,6 +266,28 @@
       &.grid-width-6 { --grid-content-width: var(--grid-width-6); }
       &.grid-width-8 { --grid-content-width: var(--grid-width-8); }
       &.grid-width-10 { --grid-content-width: var(--grid-width-10); }
+    }
+  }
+}
+
+@media (width >= 1440px) {
+  .section.bento {
+    .explore-card-content {
+      padding-bottom: var(--s2a-spacing-3xl);
+      min-height: initial;
+
+      [class*='title-'],
+      [class*='body-'] {
+        padding-inline: var(--s2a-spacing-3xl);
+      }
+    }
+  }
+}
+
+@media (width >= 1920px) {
+  .section.bento {
+    & .grid-full-width .explore-card-content {
+      padding-top: 680px;
     }
   }
 }
