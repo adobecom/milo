@@ -878,6 +878,15 @@ p {
   }
 }
 
+span.hang-opening-quote {
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] span.hang-opening-quote {
+  transform: translateX(100%);
+}
+
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */

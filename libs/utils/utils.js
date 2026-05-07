@@ -121,6 +121,7 @@ const C2_BLOCKS = [
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'social-proof',
   'visually-hidden',
 ];
 
