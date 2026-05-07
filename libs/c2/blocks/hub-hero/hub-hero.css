@@ -18,6 +18,10 @@ html[dir="rtl"] {
             left: 0;
             right: unset;
           }
+          .eyebrow {
+            font-size: var(--s2a-font-size-md);
+            font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          }
         }
       }
     }
@@ -69,6 +73,42 @@ html[dir="rtl"] {
       word-wrap: break-word;
     }
   }
+
+  .action-area .con-button {
+    background-color: black;
+    color: white;
+    padding: var(--s2a-spacing-md) 64px var(--s2a-spacing-md) 54px;
+    border-radius: 12px;
+    font-size: var(--s2a-font-size-md);
+    line-height: var(--s2a-typography-line-height-eyebrow);
+    position: relative;
+    cursor: pointer;
+    &::before {
+      content: "";
+      background-image: url('https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg');
+      position: absolute;
+      left: 12px;
+      height: 32px;
+      width: 32px;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    &::after {
+      content: "";
+      background-image: url(../../assets/img/arrow-bottom.svg);
+      position: absolute;
+      padding: var(--s2a-spacing-xs);
+      height: 14px;
+      width: 14px;
+      right: 12px;
+      border-radius: 6px;
+      background-size: 42%;
+      background-repeat: no-repeat;
+      border: 1px solid var(--s2a-color-transparent-white-12);
+      background-color: var(--s2a-color-transparent-white-16);
+      background-position: center;
+    }
+  }
 }
 
 .hub-hero-image-grid-container {
@@ -78,7 +118,7 @@ html[dir="rtl"] {
   position: relative;
   z-index: 1;
   justify-content: center;
-  transform: translate(0, -30%);
+  /* transform: translate(0, -30%); */
   animation: hubHeroGridConverge ease both;
   animation-timeline: view();
   animation-range: entry 0% exit 40%;
