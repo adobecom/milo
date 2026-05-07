@@ -969,7 +969,15 @@ export const getConfig = async (originalState, strs = {}) => {
   const isLingoActive = await getLingoActive();
   let isLingoSite = false;
   if (isLingoActive) {
-    isLingoSite = await getLangFirstParam(originSelection.split(',')[0], country, language);
+    const primeSource = originSelection.split(',')[0];
+    const pathname = pageConfigHelper()?.pathname || window.location.pathname;
+    const fqdn = window.location.hostname;
+    const { country: lingoCountry, lang: lingoLang } = await getLanguageFirstCountryAndLang(
+      pathname,
+      primeSource,
+      fqdn,
+    );
+    isLingoSite = await getLangFirstParam(primeSource, lingoCountry, lingoLang);
   }
   // handle news source separately as it is not a lingo site
   if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
