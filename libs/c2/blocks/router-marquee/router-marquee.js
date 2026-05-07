@@ -386,6 +386,7 @@ const startAutoplay = (slides, cards, container, block) => {
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
   const filler = playPauseBtn?.querySelector('.offset-filler');
+  const srHint = container.querySelector('.rm-sr-hint');
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
@@ -415,6 +416,7 @@ const startAutoplay = (slides, cards, container, block) => {
   const setPlayingState = (isPlaying) => {
     filler?.classList.toggle('is-playing', isPlaying);
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    if (srHint) srHint.hidden = !isPlaying;
   };
 
   const fillOrigin = () => `translateX(${isRtl() ? '101%' : '-101%'})`;
