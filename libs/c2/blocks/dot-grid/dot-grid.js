@@ -156,8 +156,13 @@ const ACROBAT_DESKTOP_MOCKUP_DESKTOP_VW = 0.686;
 const ACROBAT_DESKTOP_SLOT_WIDTH = 146;
 const ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN = [355, 516, 677, 838];
 const ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW = [194, 409];
-const ACROBAT_DESKTOP_TOP_VH_RATIO = 0.21;
-const ACROBAT_DESKTOP_TOP_OFFSET_PX = 12;
+/** px from header bottom to mockup top, and mockup bottom to CTA top, at rest. */
+const ACROBAT_DESKTOP_GAP_ABOVE = 40;
+const ACROBAT_DESKTOP_GAP_BELOW = 40;
+/** Viewport height (px) at which the peek gradient starts (above = centered, below = peeked). */
+const ACROBAT_DESKTOP_PEEK_START_H = 960;
+/** Fraction of mockup height visible at viewport bottom when fully peeked. */
+const ACROBAT_DESKTOP_PEEK_AMOUNT = 0.30;
 
 // ──────────── Acrobat mobile mockup geometry ────────────
 const ACROBAT_MOBILE_MOCKUP_WIDTH = 294;
@@ -335,6 +340,7 @@ function buildStage(el) {
   ctaEl.classList.add('acrobat-cta');
   [titleEl, textBlockEl].forEach((e) => {
     e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
+    e.querySelector('p')?.classList.add('subcopy');
   });
   stage.append(titleEl, textBlockEl, ctaEl);
   el.replaceChildren(stage);
@@ -356,7 +362,7 @@ export default async function init(el) {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
     canvas, adbeLogoPath,
   } = buildStage(el);
-  const titleHeading = titleEl.querySelector('.heading');
+  const desktopMockupEl = stage.querySelector('.acrobat-desktop-mockup');
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const adbeLogoLength = Math.max(adbeLogoPath.getTotalLength(), 3000) * 2 + 500;
@@ -402,6 +408,7 @@ export default async function init(el) {
   const verticalPan = {
     arcGridY: 0,
     mobilePostRevealY: 0,
+    deskPostRevealY: 0,
   };
 
   /**
@@ -410,6 +417,13 @@ export default async function init(el) {
    */
   let mobileAcrobatMockupRestTop = 0;
   let cachedHeadlineH = 60;
+  // Desktop/tablet: computed in resize(), used by getDesktopMockupFrame() and post-reveal pan.
+  // eslint-disable-next-line prefer-const
+  let cachedAcrobatWinTop = 0;
+  // eslint-disable-next-line prefer-const
+  let cachedAcrobatCtaTop = 0;
+  // eslint-disable-next-line prefer-const
+  let cachedDeskPostRevealNeeded = 0;
 
   // Per-frame arc geometry — built once by buildArcCtx().
   let arcAngle = Math.atan2(1, 1);
@@ -544,7 +558,7 @@ export default async function init(el) {
       timing.gridEnd = DESKTOP_PEEL_END_SCROLL;
       timing.slottingStart = DESKTOP_SLOTTING_START;
       timing.slottingDuration = DESKTOP_SLOTTING_DURATION;
-      timing.postRevealScrollDistance = 0;
+      timing.postRevealScrollDistance = cachedDeskPostRevealNeeded;
       timing.settleScrollStart = DESKTOP_PEEL_END_SCROLL;
     }
   }
@@ -593,8 +607,7 @@ export default async function init(el) {
   function getDesktopMockupFrame() {
     const mockupWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
     const mockupLeft = (viewportWidth - mockupWidth) / 2;
-    const mockupTop = viewportHeight * ACROBAT_DESKTOP_TOP_VH_RATIO
-      + ACROBAT_DESKTOP_TOP_OFFSET_PX;
+    const mockupTop = cachedAcrobatWinTop;
     const scale = mockupWidth / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH;
     const slotWidth = ACROBAT_DESKTOP_SLOT_WIDTH * scale;
     return { mockupLeft, mockupTop, scale, slotWidth };
@@ -697,11 +710,31 @@ export default async function init(el) {
       });
     }
     arcAngle = frame.isMobile ? MOBILE_ARC_ALPHA : Math.atan2(viewportHeight, viewportWidth);
-    cachedHeadlineH = titleHeading?.offsetHeight || titleEl?.offsetHeight || 60;
+    cachedHeadlineH = titleEl?.offsetHeight || 80;
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
     cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
     cachedBlockHeight = el.offsetHeight;
+    if (!frame.isMobile && desktopMockupEl) {
+      const aW = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
+      const aH = aW * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
+      const ctaH = ctaEl.offsetHeight || 40;
+      const stackH = cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE
+        + aH + ACROBAT_DESKTOP_GAP_BELOW + ctaH;
+      const centeredTop = Math.max(48, (viewportHeight - stackH) / 2);
+      const peekWinTop = viewportHeight - ACROBAT_DESKTOP_PEEK_AMOUNT * aH;
+      const peekStackTop = peekWinTop - cachedHeadlineH - ACROBAT_DESKTOP_GAP_ABOVE;
+      const peekRange = ACROBAT_DESKTOP_PEEK_START_H - viewportHeight;
+      const peekBlend = Math.max(0, Math.min(1, peekRange / 320));
+      const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
+      cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
+      cachedAcrobatCtaTop = cachedAcrobatWinTop + aH + ACROBAT_DESKTOP_GAP_BELOW;
+      cachedDeskPostRevealNeeded = Math.max(0, cachedAcrobatCtaTop + ctaH + 20 - viewportHeight);
+      titleEl.style.top = `${stackTop}px`;
+      desktopMockupEl.style.top = `${cachedAcrobatWinTop}px`;
+      ctaEl.style.top = `${cachedAcrobatCtaTop}px`;
+      verticalPan.deskPostRevealY = 0;
+    }
   }
 
   function setLabelPos(card, centerX, centerY, scale, opacity) {
@@ -812,9 +845,8 @@ export default async function init(el) {
       ? getMobileMockupCardSlot(card, mockupFrame)
       : getDesktopMockupCardSlot(card, mockupFrame);
     const endCenterX = cardSlot.x + cardSlot.width / 2;
-    const endCenterY = frame.isMobile
-      ? cardSlot.y + cardSlot.height / 2 - verticalPan.mobilePostRevealY
-      : cardSlot.y + cardSlot.height / 2;
+    const endCenterY = cardSlot.y + cardSlot.height / 2
+      - (frame.isMobile ? verticalPan.mobilePostRevealY : verticalPan.deskPostRevealY);
     const endScale = cardSlot.width / card.width;
 
     const startCenterX = card.baseX + card.width / 2;
@@ -910,9 +942,9 @@ export default async function init(el) {
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
       const headlineRestY = viewportHeight * 0.28;
-      const chromeRestY = headlineRestY + cachedHeadlineH + 16;
+      const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       mobileAcrobatMockupRestTop = chromeRestY;
-      const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 10;
+      const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       const postRevealNeeded = Math.max(0, ctaRestY + 60 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
@@ -935,12 +967,17 @@ export default async function init(el) {
       const mockupTranslateY = (1 - slottingEase) * offscreenY;
       const mockupScale = ACROBAT_DESKTOP_MOCKUP_START_SCALE - desktopScaleDelta * slottingEase;
       const titleScale = 0.92 + 0.08 * titleSlide;
-      stage.style.setProperty('--mockup-y', `${mockupTranslateY}px`);
+      const deskRevealTarget = cachedDeskPostRevealNeeded
+        ? easeOutSine(postRevealProgress) * cachedDeskPostRevealNeeded
+        : 0;
+      verticalPan.deskPostRevealY = deskRevealTarget;
+      const panY = deskRevealTarget;
+      stage.style.setProperty('--mockup-y', `${mockupTranslateY - panY}px`);
       stage.style.setProperty('--mockup-scale', mockupScale);
-      stage.style.setProperty('--title-y', `${mockupTranslateY}px`);
+      stage.style.setProperty('--title-y', `${mockupTranslateY - panY}px`);
       stage.style.setProperty('--title-scale', titleScale);
       stage.style.setProperty('--title-opacity', titleOpacity);
-      stage.style.setProperty('--cta-y', `${mockupTranslateY}px`);
+      stage.style.setProperty('--cta-y', `${mockupTranslateY - panY}px`);
     }
   }
 

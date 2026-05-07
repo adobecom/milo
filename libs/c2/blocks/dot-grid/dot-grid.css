@@ -155,7 +155,7 @@
 
 .dot-grid .acrobat-title {
   position: absolute;
-  bottom: calc(100vh - (21vh + 12px) + 24px);
+  top: 0;
   left: calc((100vw - min(68.6vw, 988px)) / 2);
   z-index: 19;
   width: min(68.6vw, 988px);
@@ -167,7 +167,6 @@
 }
 
 .dot-grid .acrobat-title .heading {
-  margin: 0;
   white-space: nowrap;
   font-size: min(3.889vw, 56px);
   font-weight: 900;
@@ -176,19 +175,30 @@
   color: #000;
 }
 
+.dot-grid .acrobat-title .subcopy {
+  margin: 0 auto;
+  max-width: 616px;
+  padding-top: 8px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 20px;
+  color: #131313;
+}
+
 .dot-grid .acrobat-cta {
   position: absolute;
-  top: calc(21vh + 12px + min(39.35vw, 567px) + 48px);
-  left: calc(50vw - 54px);
+  top: 0;
+  left: 50%;
   z-index: 19;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 108px;
   height: 40px;
+  padding: 0 20px;
+  white-space: nowrap;
   background: #000;
   border-radius: 9999px;
-  transform: translateY(var(--cta-y, 150vh));
+  transform: translateX(-50%) translateY(var(--cta-y, 150vh));
   pointer-events: none;
   will-change: transform;
 }
@@ -212,9 +222,7 @@
     width: clamp(680px, 70vw, 988px);
   }
 
-  .dot-grid .acrobat-cta {
-    top: calc(21vh + 12px + clamp(390px, 40.17vw, 567px) + 48px);
-  }
+  /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
 
   .dot-grid .text-block {
     min-width: 292px;
@@ -245,6 +253,7 @@
   }
 
   .dot-grid .acrobat-title .heading {
+    margin-bottom: 6px;
     white-space: normal;
     font-size: 32pt;
     line-height: 32px;
@@ -253,11 +262,9 @@
 
   .dot-grid .acrobat-cta {
     top: 0;
-    left: calc(50% - 54px);
+    left: 50%;
     z-index: 18;
-    width: 108px;
-    height: 40px;
-    transform: translateY(var(--cta-y, 100vh));
+    transform: translateX(-50%) translateY(var(--cta-y, 100vh));
   }
 
   .dot-grid .text-block {
