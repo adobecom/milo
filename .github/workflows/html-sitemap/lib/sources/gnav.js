@@ -1,3 +1,10 @@
+/**
+ * GNAV fragment fetcher and HTML walker. Resolves the top-level GNAV (local
+ * site or federal fallback), discovers section + inline-column fragments
+ * referenced from it, fetches each `.plain.html` form, and packages them
+ * with a manifest for downstream stages. See SPEC.md §4.4.
+ */
+
 import path from 'node:path';
 import { parse } from 'parse5';
 import { fetchText } from '../util/fetch.js';
@@ -31,6 +38,7 @@ const EXCLUDED_SECTIONS = ['section-menu-dx'];
  */
 
 /**
+ * Build the leading `/<baseGeo>` prefix used in localized URLs.
  * @param {string} baseGeo
  * @returns {string}
  */
@@ -39,6 +47,8 @@ function getGeoPrefix(baseGeo) {
 }
 
 /**
+ * Prepend the geo prefix to a resource path if it isn't already prefixed
+ * (so we localize section URLs like `/fragments/...` to `/<geo>/fragments/...`).
  * @param {string} baseGeo
  * @param {string} resourcePath
  * @returns {string}
@@ -82,6 +92,7 @@ function traverse(node, visitor) {
 }
 
 /**
+ * Pull `(heading, href)` pairs from heading-tag links (`<h2><a>...</a></h2>`).
  * @param {ParsedNode} document
  * @returns {{ heading: string, href: string }[]}
  */
@@ -103,6 +114,8 @@ function collectHeadingLinks(document) {
 }
 
 /**
+ * Pull every `<a href>` from the document — fallback when the GNAV uses
+ * fragment links instead of heading-anchor sections.
  * @param {ParsedNode} document
  * @returns {{ heading: string, href: string }[]}
  */
@@ -139,6 +152,9 @@ function isExcludedSection(sectionPath) {
 }
 
 /**
+ * Discover the top-level sections of a GNAV: tries heading-anchor sections
+ * first, falls back to fragment links. Filters out excluded sections like
+ * `section-menu-dx`.
  * @param {string} html
  * @param {string} origin
  * @returns {{ heading: string, sectionPath: string }[]}
@@ -162,6 +178,8 @@ export function parseTopLevelSections(html, origin) {
 }
 
 /**
+ * Find the inline-column fragments referenced from a section's HTML
+ * (anchors with `#_inline` markers, excluding promo links).
  * @param {string} html
  * @param {string} origin
  * @returns {string[]}
@@ -189,6 +207,9 @@ function makeSafeBaseName(sourcePath) {
 }
 
 /**
+ * Pick a stable on-disk filename for a fetched fragment. Top-level always
+ * lands at `gnav.html`; sections + inline columns get their basename, with
+ * `-N` collision suffixes when a name repeats.
  * @param {GnavArtifact['kind']} kind
  * @param {string} sourcePath
  * @param {Map<string, number>} counts
@@ -210,6 +231,7 @@ function assignLocalFileName(
 }
 
 /**
+ * GET the `.plain.html` form of an AEM document and return text + status.
  * @param {string} url
  * @param {{ fetchImpl?: typeof fetch }} runtimeOptions
  * @returns {Promise<{ ok: false, status: number, statusText: string } | { ok: true, text: string }>}
@@ -233,6 +255,9 @@ async function fetchPlainHtml(
 }
 
 /**
+ * Resolve the GNAV for a (hostSite, baseGeo) and return the full set of
+ * fetched fragments. Tries the local site first, falls back to the
+ * federal GNAV. Returns `{ ok: false, warning }` when neither resolves.
  * @param {{ hostSite: string, baseGeo: string, fetchImpl?: typeof fetch }} options
  * @returns {Promise<GnavExtractResult>}
  */
@@ -333,6 +358,7 @@ export async function extractGnavArtifacts(
 }
 
 /**
+ * URL of the federal placeholders.json for a given geo.
  * @param {string} baseGeo
  * @returns {string}
  */

@@ -1,3 +1,10 @@
+/**
+ * Extended-geo link aggregation. For each extended geo under a base geo,
+ * load all per-site query-index outputs from extract, normalize them into
+ * `NormalizedLink`s, and dedupe across sites (preferring `da-*` modern
+ * paths over their legacy `.html` counterparts). See SPEC.md §4.2 / §4.7.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { normalizeQueryIndexData } from './normalize.js';
@@ -22,6 +29,9 @@ import { getExtendedGeoDir } from '../util/files.js';
  */
 
 /**
+ * Collect every base + extended geo for a subdomain into the inventory used
+ * by `formatGeoLabelFromInventory` to decide whether language qualifiers
+ * are needed.
  * @param {HtmlSitemapConfig} config
  * @param {string} subdomain
  * @returns {GeoLabelInventoryEntry[]}
@@ -50,6 +60,8 @@ function buildGeoLabelInventory(config, subdomain) {
 }
 
 /**
+ * Strip a trailing ` - <language>` qualifier from a config-supplied region
+ * label so it renders cleanly. Whitespace is collapsed and trimmed.
  * @param {string} _geo
  * @param {string} label
  * @param {GeoLabelInventoryEntry[]} _inventory
@@ -65,6 +77,9 @@ function normalizeRegionLabel(
 }
 
 /**
+ * Resolve a display label for a geo, preferring the config's
+ * `page-copy.label` when present and otherwise falling back to
+ * `formatGeoLabelFromInventory`.
  * @param {string} geo
  * @param {GeoLabelInventoryEntry[]} inventory
  * @param {RegionLabelMap} regionLabels
@@ -82,6 +97,8 @@ function resolveGeoLabel(
 }
 
 /**
+ * Strip a leading `/<geo>` segment so paths under a geo and at the geo root
+ * compare equal during dedup.
  * @param {string} pathname
  * @param {string} geo
  * @returns {string}
@@ -106,6 +123,8 @@ function stripHtmlSuffix(pathname) {
 }
 
 /**
+ * Compose the canonical dedup key (geo-stripped, html-stripped) used to
+ * collapse duplicates within a single extended-geo group.
  * @param {string} pathname
  * @param {string} geo
  * @returns {string}
@@ -115,6 +134,7 @@ function dedupKey(pathname, geo) {
 }
 
 /**
+ * Look up the `addHtmlExtension` flag for a (subdomain, site) pair.
  * @param {HtmlSitemapConfig} config
  * @param {string} subdomain
  * @param {string} site
@@ -127,6 +147,9 @@ function getAddHtmlExtension(config, subdomain, site) {
 }
 
 /**
+ * Load + normalize per-site query-index outputs for one extended geo and
+ * dedupe across sites, preferring `da-*` modern paths over legacy `.html`
+ * counterparts.
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit
@@ -176,6 +199,9 @@ async function loadExtendedQueryIndexLinks(
 }
 
 /**
+ * Build the full list of extended-geo groups for one base geo. Each group
+ * is one extended geo with its deduped link list and resolved title.
+ * Empty groups (no links after dedup) are dropped.
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit

@@ -1,9 +1,16 @@
+/**
+ * HTTP helpers with retry + exponential backoff for transient failures.
+ * Wraps `fetch` so all remote calls (config, GNAV, query indices, AEM admin)
+ * share the same retry policy.
+ */
+
 import { getErrorMessage } from './stages.js';
 
 const DEFAULT_RETRIES = 2;
 const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
 
 /**
+ * Promise-based sleep.
  * @param {number} ms
  * @returns {Promise<void>}
  */
@@ -14,6 +21,8 @@ function delay(ms) {
 }
 
 /**
+ * Fetch a URL, retrying with exponential backoff on transient failures
+ * (network errors and HTTP 429/5xx). Returns the final Response.
  * @param {string} url
  * @param {RequestInit} [options]
  * @param {{ fetchImpl?: typeof fetch, retries?: number }} [runtimeOptions]
@@ -48,6 +57,7 @@ export async function fetchWithRetry(
 }
 
 /**
+ * `fetchWithRetry` variant that sets an `accept: application/json` header.
  * @param {string} url
  * @param {RequestInit} [requestOptions]
  * @param {{ fetchImpl?: typeof fetch, retries?: number }} [runtimeOptions]
@@ -70,6 +80,7 @@ export async function fetchJson(
 }
 
 /**
+ * `fetchWithRetry` variant for plain text responses (no JSON header).
  * @param {string} url
  * @param {RequestInit} [requestOptions]
  * @param {{ fetchImpl?: typeof fetch, retries?: number }} [runtimeOptions]

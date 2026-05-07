@@ -1,3 +1,8 @@
+/**
+ * Resolves the page-copy bundle (page title) for a given (subdomain, geo)
+ * unit. Substitutes `{{placeholders}}` from the geo's placeholders.json.
+ */
+
 import { resolvePlaceholders } from '../sources/placeholders.js';
 
 /**
@@ -11,6 +16,7 @@ import { resolvePlaceholders } from '../sources/placeholders.js';
  */
 
 /**
+ * Resolve `{{placeholders}}` in every string field of a PageCopy.
  * @param {PageCopy} copy
  * @param {PlaceholderMap} placeholders
  * @returns {PageCopy}
@@ -22,6 +28,8 @@ function resolvePageCopy(copy, placeholders) {
 }
 
 /**
+ * Look up the page-copy row for a unit and resolve placeholders. Falls back
+ * to `pageTitle: 'Sitemap'` when no matching row exists.
  * @param {HtmlSitemapConfig} config
  * @param {{ subdomain: string, baseGeo: string, language: string }} unit
  * @param {PlaceholderMap} [placeholders]

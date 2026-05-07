@@ -1,3 +1,9 @@
+/**
+ * Per-subdomain manifest writer (used by `transform-da`). Builds a
+ * `manifest.json` + `manifest.csv` listing each rendered base-geo page with
+ * its content hash, link counts, and configured stage.
+ */
+
 import fs from 'node:fs/promises';
 import { sha256 } from '../util/hash.js';
 import {
@@ -34,6 +40,7 @@ import { readSitemapDataDocument } from '../data/sitemap.js';
  */
 
 /**
+ * Roll up base/extended section + link counts from a sitemap document.
  * @param {SitemapDataDocument} document
  * @returns {Pick<ManifestPage, 'baseGeoSectionCount' | 'baseGeoLinkCount' | 'extendedGeoGroupCount' | 'extendedGeoLinkCount' | 'totalLinkCount'>}
  */
@@ -60,6 +67,8 @@ function countLinks(document) {
 }
 
 /**
+ * Build one ManifestPage by hashing the rendered HTML and joining it with
+ * the underlying sitemap document's link counts.
  * @param {string} outputDir
  * @param {{ subdomain: string, baseGeo: string, domain: string, stage: string }} entry
  * @returns {Promise<ManifestPage>}
@@ -94,6 +103,7 @@ const CSV_COLUMNS = [
 ];
 
 /**
+ * Serialize the manifest pages to a flat CSV string.
  * @param {ManifestPage[]} pages
  * @returns {string}
  */
@@ -104,6 +114,8 @@ function pagesToCsv(pages) {
 }
 
 /**
+ * Group entries by subdomain and write a JSON + CSV manifest for each one.
+ * Pages within a subdomain are sorted by `baseGeo` for stable output.
  * @param {string} outputDir
  * @param {Array<{ subdomain: string, baseGeo: string, domain: string, stage: string }>} entries
  * @returns {Promise<void>}

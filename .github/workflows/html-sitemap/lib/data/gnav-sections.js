@@ -1,3 +1,10 @@
+/**
+ * GNAV section parser. Walks the parse5 tree of each saved GNAV section
+ * fragment, extracting `(subheading, link[])` groups for the rendered
+ * sitemap. Manifest from `extract` (gnav/manifest.json) drives which files
+ * are sections vs inline-columns vs top-level. See SPEC.md §4.4.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { parse } from 'parse5';
@@ -51,6 +58,7 @@ import { cleanTitle, toProductionUrl } from './normalize.js';
  */
 
 /**
+ * True for image asset URLs that should not be rendered as sitemap links.
  * @param {string} href
  * @returns {boolean}
  */
@@ -59,6 +67,7 @@ function isDecorativeAssetHref(href) {
 }
 
 /**
+ * Read an attribute by name from a parse5 node.
  * @param {ParsedNode} node
  * @param {string} name
  * @returns {string | undefined}
@@ -68,6 +77,7 @@ function getAttr(node, name) {
 }
 
 /**
+ * Concatenate all text content beneath a parse5 node.
  * @param {ParsedNode} [node]
  * @returns {string}
  */
@@ -78,6 +88,7 @@ function getText(node) {
 }
 
 /**
+ * True if a parse5 node has the given CSS class on its `class` attribute.
  * @param {ParsedNode} node
  * @param {string} className
  * @returns {boolean}
@@ -88,6 +99,7 @@ function hasClass(node, className) {
 }
 
 /**
+ * Depth-first traversal: invokes `visit(node, ancestors)` for every node.
  * @param {ParsedNode} node
  * @param {ParsedNode[]} ancestors
  * @param {(node: ParsedNode, ancestors: ParsedNode[]) => void} visit
@@ -99,6 +111,9 @@ function walk(node, ancestors, visit) {
 }
 
 /**
+ * Walk a section's HTML and extract a flat stream of subheadings and links
+ * in document order. Filters out anchors that are not inside a recognized
+ * link container (link-group, list, paragraph).
  * @param {string} html
  * @param {string} [sourceUrl]
  * @returns {ParsedItem[]}
@@ -135,6 +150,9 @@ function parseSectionItems(html, sourceUrl) {
 }
 
 /**
+ * Bucket a flat ParsedItem stream into `(subheading, links[])` groups.
+ * Drops bookmark/inline anchors and decorative assets. Resolves placeholders
+ * and converts each link to a NormalizedLink with absolute production URL.
  * @param {ParsedItem[]} items
  * @param {PlaceholderMap} placeholders
  * @param {string} fallbackDomain
@@ -183,6 +201,10 @@ function groupItems(
 }
 
 /**
+ * Build the GNAV-derived sections list for one base geo by reading the
+ * `gnav/` directory's manifest + section HTML files written by `extract`.
+ * Returns one `GnavSection` per non-empty section, with inline-column
+ * fragments folded into their parent section.
  * @param {string} gnavDir
  * @param {PlaceholderMap} placeholders
  * @param {string} fallbackDomain

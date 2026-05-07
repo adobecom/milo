@@ -1,3 +1,10 @@
+/**
+ * `diff` stage. Compares each base geo's local `sitemap.html` against the
+ * remote DA copy by SHA-256 and labels each as `new`, `changed`, or
+ * `unchanged`. Geos with no `geo-map.stage` value, or no local HTML, are
+ * silently skipped. See SPEC.md §3.5.
+ */
+
 import fs from 'node:fs/promises';
 import { sha256 } from '../util/hash.js';
 import { loadConfig } from '../config/config.js';
@@ -33,6 +40,7 @@ const UNIT_CONCURRENCY = 2;
  */
 
 /**
+ * Group results by status and emit one log line per non-empty bucket.
  * @param {Array<{ ok: boolean, summary?: DiffSummary, unit: { baseGeo: string } }>} units
  * @returns {void}
  */
@@ -49,6 +57,9 @@ function printSummary(units) {
 }
 
 /**
+ * Stage entrypoint. For each in-scope base geo, hash the local HTML and
+ * fetch the remote copy from DA to determine drift status. Returns the
+ * settled per-unit results so a downstream `--force` push can use them.
  * @param {Object} options
  * @param {string} options.configRef
  * @param {string} options.outputDir

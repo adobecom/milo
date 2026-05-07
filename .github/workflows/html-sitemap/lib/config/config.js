@@ -1,3 +1,10 @@
+/**
+ * Config loader and schema. Reads the multi-sheet `html-sitemap.json` (URL
+ * or local path), validates required fields, and returns a typed
+ * `HtmlSitemapConfig` consumed by every stage. See SPEC.md §2 for sheet
+ * semantics.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -69,6 +76,7 @@ export const DEFAULT_DA_TEMPLATE = 'da-sitemap.html';
  */
 
 /**
+ * True if the value looks like an http(s) URL.
  * @param {string} value
  * @returns {boolean}
  */
@@ -77,6 +85,7 @@ function isUrl(value) {
 }
 
 /**
+ * Pull a named sheet's `data` rows, throwing if the sheet is missing.
  * @param {MultiSheetJson} json
  * @param {string} name
  * @returns {Record<string, string>[]}
@@ -90,6 +99,9 @@ function requireSheet(json, name) {
 }
 
 /**
+ * Throw if any row is missing a required field. Optional `alternateFields`
+ * map lets a legacy column name satisfy the requirement (e.g. `domain` in
+ * place of `subdomain`).
  * @param {string} sheetName
  * @param {Record<string, string>[]} rows
  * @param {string[]} requiredFields
@@ -114,6 +126,7 @@ function validateRequiredFields(
 }
 
 /**
+ * Parse a comma-separated `extendedGeos` cell into a trimmed list.
  * @param {string} [value]
  * @returns {string[]}
  */
@@ -123,6 +136,8 @@ function parseExtendedGeos(value) {
 }
 
 /**
+ * Coerce empty/missing `baseGeo` cells to the empty string (the canonical
+ * default-geo marker).
  * @param {string} [value]
  * @returns {string}
  */
@@ -131,6 +146,7 @@ function normalizeBaseGeo(value) {
 }
 
 /**
+ * Parse spreadsheet-friendly boolean cells (`true`/`1`/`yes`/`on`).
  * @param {string} [value]
  * @returns {boolean}
  */
@@ -140,6 +156,7 @@ function parseBooleanFlag(value) {
 }
 
 /**
+ * Load JSON from either an http(s) URL or a local filesystem path.
  * @param {string} ref
  * @param {{ fetchImpl?: typeof fetch }} [options]
  * @returns {Promise<MultiSheetJson>}
@@ -164,6 +181,9 @@ export async function loadJsonRef(
 }
 
 /**
+ * Load + validate the multi-sheet config and project it into the typed
+ * `HtmlSitemapConfig` shape consumed by the pipeline. Disabled
+ * `query-index-map` rows are dropped here.
  * @param {string} ref
  * @param {{ fetchImpl?: typeof fetch }} [options]
  * @returns {Promise<HtmlSitemapConfig>}

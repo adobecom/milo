@@ -1,3 +1,8 @@
+/**
+ * Stage-input availability checks. Used by transform/diff/push/promote
+ * stages to skip geos whose prior-stage artifacts are missing on disk.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getBaseGeoDir, getBaseGeoExtractDir, pathExists } from '../util/files.js';
@@ -7,6 +12,7 @@ import { getBaseGeoDir, getBaseGeoExtractDir, pathExists } from '../util/files.j
  */
 
 /**
+ * Stable string key for a (subdomain, baseGeo) pair.
  * @param {string} subdomain
  * @param {string} baseGeo
  * @returns {string}
@@ -16,6 +22,7 @@ export function makeBaseGeoKey(subdomain, baseGeo) {
 }
 
 /**
+ * True when the base geo has a normalized `sitemap.json` on disk.
  * @param {string} outputDir
  * @param {string} subdomain
  * @param {string} baseGeo
@@ -30,6 +37,8 @@ export async function hasSitemapDataDocument(
 }
 
 /**
+ * True when the base geo has at least one site's `query-index.json`
+ * extracted on disk (excluding the gnav/extended subdirs).
  * @param {string} outputDir
  * @param {string} subdomain
  * @param {string} baseGeo
@@ -56,6 +65,8 @@ export async function hasExtractedInput(
 }
 
 /**
+ * Build the set of `(subdomain:baseGeo)` keys whose extract output is on
+ * disk. Lets transform stages skip geos that did not produce input.
  * @param {string} outputDir
  * @param {Pick<ExtractUnit, 'subdomain' | 'baseGeo'>[]} units
  * @returns {Promise<Set<string>>}

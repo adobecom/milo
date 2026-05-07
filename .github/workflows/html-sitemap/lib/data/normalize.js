@@ -1,4 +1,12 @@
 /**
+ * Query-index row → `NormalizedLink` projection. Resolves production
+ * URLs from repo-host inputs, applies the optional `addHtmlExtension`
+ * suffix, filters non-indexable rows (robots noindex/nofollow), derives a
+ * fallback title from the slug when missing, and strips Adobe-branding
+ * suffixes from titles. See SPEC.md §4.3 for URL normalization rules.
+ */
+
+/**
  * @typedef {Object} NormalizedLink
  * @property {string} title
  * @property {string} originalTitle - title before Adobe-branding cleanup; equals title when no cleanup occurred
@@ -21,6 +29,8 @@
  */
 
 /**
+ * Derive a Title-Case display title from the last path segment when a row
+ * has no title (e.g. `/foo-bar-baz` → `Foo Bar Baz`).
  * @param {string} pathname
  * @returns {string}
  */
@@ -68,6 +78,10 @@ export function cleanTitle(title) {
 }
 
 /**
+ * Map a `main--<site>--adobecom.aem.{live,page}` hostname back to the
+ * production origin (e.g. `https://www.adobe.com`) using the config's
+ * site→domain map. Returns null if the hostname is not a repo host or the
+ * site is not in the map.
  * @param {string} hostname
  * @param {SiteDomainMap} siteDomainMap
  * @returns {string | null}
@@ -80,6 +94,9 @@ function mapRepoHost(hostname, siteDomainMap) {
 }
 
 /**
+ * Resolve a query-index `path`/`url` value to a fully-qualified production
+ * URL. Absolute paths are joined to `fallbackDomain`; absolute URLs on
+ * a repo host are remapped to their production origin via the site map.
  * @param {string} value
  * @param {string} fallbackDomain
  * @param {SiteDomainMap} [siteDomainMap]
@@ -105,6 +122,9 @@ export function toProductionUrl(
 }
 
 /**
+ * True when a row's `robots` value does not contain `noindex` or
+ * `nofollow` (case-insensitive). Empty/missing robots is treated as
+ * indexable.
  * @param {string} [robots]
  * @returns {boolean}
  */
@@ -124,6 +144,8 @@ function isIndexable(robots) {
  */
 
 /**
+ * Project a query-index JSON document (`{ data: [...] }`) into the
+ * pipeline's `NormalizedLink[]` shape, dropping non-indexable rows.
  * @param {unknown} raw
  * @param {string} fallbackDomain
  * @param {SiteDomainMap} [siteDomainMap]

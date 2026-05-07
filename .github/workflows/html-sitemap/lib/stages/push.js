@@ -1,3 +1,9 @@
+/**
+ * `push` stage. Uploads each base geo's local `sitemap.html` to DA. Skips
+ * geos whose remote content already matches (unless `--force`) and geos
+ * with no `geo-map.stage` value or no local HTML. See SPEC.md §3.6.
+ */
+
 import fs from 'node:fs/promises';
 import { sha256 } from '../util/hash.js';
 import { loadConfig } from '../config/config.js';
@@ -33,6 +39,7 @@ const UNIT_CONCURRENCY = 2;
  */
 
 /**
+ * Log which geos were pushed and the resulting DA edit URLs.
  * @param {UnitStageEntry[]} units
  * @returns {void}
  */
@@ -51,6 +58,8 @@ function printSummary(units) {
 }
 
 /**
+ * Stage entrypoint. Hash-compares local vs remote and uploads when they
+ * differ (or always when `force: true`).
  * @param {{ configRef: string, outputDir: string, subdomainFilter?: string, geoFilter?: string, daRoot: string, force?: boolean, fetchImpl?: typeof fetch }} options
  * @returns {Promise<PushResult>}
  */

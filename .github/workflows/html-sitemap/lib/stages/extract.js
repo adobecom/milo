@@ -1,3 +1,11 @@
+/**
+ * `extract` stage. Fetches the config snapshot, GNAV fragments,
+ * placeholders, and per-(site, geo) query indices into the local
+ * `_extract/` tree. A base geo's tree is only kept when it satisfies the
+ * page-emission rule (at least one query-index has indexable rows). See
+ * SPEC.md §3.1.
+ */
+
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import { loadConfig } from '../config/config.js';
@@ -57,6 +65,7 @@ function formatGeo(geo) {
 }
 
 /**
+ * Persist the resolved config alongside extract output for traceability.
  * @param {string} outputDir
  * @param {unknown} rawConfig
  * @returns {Promise<void>}
@@ -66,6 +75,8 @@ async function writeConfigSnapshot(outputDir, rawConfig) {
 }
 
 /**
+ * Save the GNAV fragments + a manifest documenting where each came from.
+ * Returns false (and warns) when the extraction failed upstream.
  * @param {string} baseExtractDir
  * @param {ExtractUnit} unit
  * @param {Awaited<ReturnType<typeof extractGnavArtifacts>>} gnavResult
@@ -112,6 +123,8 @@ async function writeGnav(
 }
 
 /**
+ * Fetch the geo's placeholders.json and persist it. Best-effort; warns
+ * and returns false on failure rather than throwing.
  * @param {string} baseExtractDir
  * @param {ExtractUnit} unit
  * @param {typeof fetch} [fetchImpl]
@@ -136,6 +149,9 @@ async function writePlaceholders(baseExtractDir, unit, fetchImpl) {
 }
 
 /**
+ * Fetch one (site, geo) query-index and compute the indexable row count
+ * (used by the page-emission rule). Returns the raw json + url for later
+ * persistence on success, or just the failure metadata otherwise.
  * @param {ExtractUnit} unit
  * @param {string} geo
  * @param {string} site
@@ -186,6 +202,9 @@ async function fetchQueryIndexSummary(
 }
 
 /**
+ * Extract everything for one base geo: query indices (base + extended),
+ * GNAV, placeholders. If the page-emission rule isn't met, also remove
+ * any prior output for this base geo so the disk reflects the new state.
  * @param {ExtractUnit} unit
  * @param {{ outputDir: string, siteDomains: Record<string, string>, allExtendedGeos: string[], fetchImpl?: typeof fetch, now: Date }} options
  * @returns {Promise<ExtractUnitSummary>}
@@ -283,6 +302,8 @@ async function runExtractUnit(
 }
 
 /**
+ * Emit a `[summary]` log line per category (eligible / not, missing
+ * GNAV / placeholders / query indices, extended fetches).
  * @param {{ summary?: ExtractUnitSummary }[]} units
  * @returns {void}
  */
@@ -327,6 +348,9 @@ function printExtractSummary(
 }
 
 /**
+ * Stage entrypoint. Loads config, plans units, and extracts each in
+ * parallel up to `UNIT_CONCURRENCY`. Reports per-unit failures via the
+ * stage result without aborting the rest.
  * @param {{ configRef: string, outputDir: string, subdomainFilter?: string, geoFilter?: string, fetchImpl?: typeof fetch, now?: Date }} options
  * @returns {Promise<UnitStageResult>}
  */

@@ -1,3 +1,9 @@
+/**
+ * Query-index fetcher with full pagination. AEM Live exposes one paginated
+ * `query-index.json` per (site, geo); this module fetches all pages and
+ * returns one merged JSON document. See SPEC.md §4.5.
+ */
+
 import { fetchJson } from '../util/fetch.js';
 import { getErrorMessage } from '../util/stages.js';
 
@@ -10,6 +16,7 @@ import { getErrorMessage } from '../util/stages.js';
  */
 
 /**
+ * Prepend `/<geo>` to a resource path when geo is non-empty.
  * @param {string} geo
  * @param {string} resourcePath
  * @returns {string}
@@ -20,6 +27,7 @@ function withGeoPrefix(geo, resourcePath) {
 }
 
 /**
+ * Add or replace the `offset` query parameter for the next page request.
  * @param {string} baseUrl
  * @param {number} offset
  * @returns {string}
@@ -31,6 +39,8 @@ function getPageUrl(baseUrl, offset) {
 }
 
 /**
+ * True if `value` looks like a paginated query-index response (has a
+ * `data` array).
  * @param {unknown} value
  * @returns {boolean}
  */
@@ -39,6 +49,8 @@ function isPagedQueryIndexJson(value) {
 }
 
 /**
+ * Fetch a single page of a query-index JSON. Returns a tagged result so
+ * callers can distinguish HTTP errors from JSON-parse errors.
  * @param {string} url
  * @param {typeof fetch} [fetchImpl]
  * @returns {Promise<{ ok: false, status: number, statusText: string, url: string } | { ok: true, url: string, json: unknown }>}
@@ -75,6 +87,10 @@ async function fetchQueryIndexPage(
 }
 
 /**
+ * Fetch all pages of a (site, geo) query-index and return them as a single
+ * merged JSON document. Pagination uses the standard `total` / `limit` /
+ * `offset` fields; the loop terminates when `data.length >= total` or a
+ * page returns no new rows.
  * @param {{ site: string, geo: string, queryIndexPath: string, fetchImpl?: typeof fetch }} options
  * @returns {Promise<{ ok: false, status: number, statusText: string, url: string } | { ok: true, url: string, json: unknown, rowCount: number }>}
  */

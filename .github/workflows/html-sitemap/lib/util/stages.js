@@ -1,4 +1,10 @@
 /**
+ * Stage utilities — shared types, error formatting, and parsing of stage
+ * lists (CLI `--stages` option, positional args). The canonical stage order
+ * lives here as `STAGE_ORDER`.
+ */
+
+/**
  * @typedef {import('../config/scope.js').ExtractUnit} ExtractUnit
  */
 
@@ -19,6 +25,7 @@
  */
 
 /**
+ * Render a geo for log output, substituting `(default)` for the empty geo.
  * @param {string} geo
  * @returns {string}
  */
@@ -27,6 +34,7 @@ export function formatStageGeo(geo) {
 }
 
 /**
+ * Extract a string message from an unknown caught value.
  * @param {unknown} error
  * @returns {string}
  */
@@ -58,6 +66,8 @@ const VALID_STAGE_TOKENS = new Set([
 ]);
 
 /**
+ * Resolve a single stage token to one or more atomic stage ids. The
+ * `transform` alias expands to `[transform-data, transform-da]`.
  * @param {string} token
  * @returns {StageId[]}
  */
@@ -74,6 +84,8 @@ export function normalizeStageToken(token) {
 }
 
 /**
+ * Normalize a list of stage tokens into a deduplicated set in canonical
+ * `STAGE_ORDER`. Order in the input is ignored.
  * @param {string[]} tokens
  * @returns {StageId[]}
  */
@@ -84,6 +96,7 @@ export function normalizeStageList(tokens) {
 }
 
 /**
+ * Parse the comma-separated value of the CLI `--stages` option.
  * @param {string} value
  * @returns {StageId[]}
  */
@@ -92,6 +105,8 @@ export function parseStagesOption(value) {
 }
 
 /**
+ * Resolve positional CLI args (e.g. `transform data`) to atomic stage ids.
+ * Returns an empty array when no positional stage was supplied.
  * @param {string} [stage]
  * @param {string} [mode]
  * @returns {StageId[]}

@@ -1,3 +1,8 @@
+/**
+ * Document Authoring (`admin.da.live/source`) HTTP client. Upload, fetch,
+ * and edit-URL helpers used by the diff/push stages.
+ */
+
 import fs from 'node:fs/promises';
 
 const DA_SOURCE_ORIGIN = 'https://admin.da.live/source';
@@ -5,6 +10,7 @@ const DA_ORG = 'adobecom';
 const DA_EDIT_ORIGIN = 'https://da.live/edit#';
 
 /**
+ * Upload a local HTML file to DA at the given remote path.
  * @param {string} repo
  * @param {string} remoteFile
  * @param {string} localFile
@@ -37,6 +43,8 @@ export async function uploadHtmlFile(
 }
 
 /**
+ * GET an HTML file from DA. Returns a tagged result so callers can branch
+ * on missing-vs-present without throwing on 404.
  * @param {string} repo
  * @param {string} remoteFile
  * @param {string} authHeader
@@ -63,6 +71,8 @@ export async function fetchRemoteHtml(
 }
 
 /**
+ * Build the human-facing `da.live/edit#...` URL for a remote document
+ * (handy in summary log output).
  * @param {string} repo
  * @param {string} remotePath
  * @returns {string}

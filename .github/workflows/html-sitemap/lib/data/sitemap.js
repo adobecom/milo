@@ -1,3 +1,9 @@
+/**
+ * Sitemap data document — the canonical normalized output of `transform-data`.
+ * Combines GNAV-derived base sections and dedup'd extended-geo groups into
+ * one `sitemap.json`, plus a flat `sitemap-links.csv` for auditing.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { relevantExtendedGeos } from '../config/scope.js';
@@ -44,6 +50,7 @@ import { normalizeQueryIndexData } from './normalize.js';
  */
 
 /**
+ * Read a previously written `sitemap.json` from disk.
  * @param {string} outputDir
  * @param {Pick<ExtractUnit, 'subdomain' | 'baseGeo'>} unit
  * @returns {Promise<SitemapDataDocument>}
@@ -58,6 +65,9 @@ export async function readSitemapDataDocument(
 }
 
 /**
+ * Compute counters for the per-geo log line: how many extended geos were
+ * considered, had raw links, were rendered after dedup, were empty, or were
+ * fully deduped away.
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit
@@ -110,6 +120,9 @@ async function summarizeExtendedGeoInputs(
 const LINKS_CSV_COLUMNS = ['type', 'heading', 'title', 'originalTitle', 'url', 'path', 'originalPath', 'originUrl'];
 
 /**
+ * Flatten a SitemapDataDocument into a single CSV string for auditing.
+ * Each row is one link with a `type` column distinguishing base vs extended
+ * provenance.
  * @param {SitemapDataDocument} document
  * @returns {string}
  */
@@ -143,6 +156,9 @@ function buildLinksCSV(document) {
 }
 
 /**
+ * Build and persist `sitemap.json` + `sitemap-links.csv` for one base geo
+ * by composing GNAV-derived sections with extended-geo groups. Returns the
+ * per-geo summary used for log output.
  * @param {string} outputDir
  * @param {HtmlSitemapConfig} config
  * @param {ExtractUnit} unit

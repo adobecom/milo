@@ -1,4 +1,11 @@
 /**
+ * Concurrency primitives. The pipeline fans out fetches and writes across
+ * many geos / sites; these helpers cap parallelism to friendly limits.
+ */
+
+/**
+ * Run `mapper` over `items` with at most `limit` in-flight at a time.
+ * Preserves input order in the returned results array.
  * @template T, R
  * @param {T[]} items
  * @param {number} limit

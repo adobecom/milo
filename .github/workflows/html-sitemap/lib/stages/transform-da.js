@@ -1,3 +1,9 @@
+/**
+ * `transform-da` stage. Renders each base geo's `sitemap.json` into a
+ * `sitemap.html` using the configured template, and writes per-subdomain
+ * manifests. See SPEC.md §3.4.
+ */
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { DEFAULT_DA_TEMPLATE, loadConfig } from '../config/config.js';
@@ -33,6 +39,8 @@ const TEMPLATES_DIR_URL = new URL('../../templates/', import.meta.url);
 const sitemapTemplatePromises = new Map();
 
 /**
+ * Validate a template filename and fall back to the default. Path
+ * separators are rejected to prevent directory traversal.
  * @param {string} [template]
  * @returns {string}
  */
@@ -46,6 +54,8 @@ function resolveTemplateName(template) {
 }
 
 /**
+ * Read a template file from disk, memoizing the read promise so concurrent
+ * geos share one I/O.
  * @param {string} [template]
  * @returns {Promise<string>}
  */
@@ -60,6 +70,8 @@ async function loadSitemapTemplate(template) {
 }
 
 /**
+ * Project a SitemapDataDocument + page copy into the flat shape consumed
+ * by the template engine.
  * @param {SitemapDataDocument} document
  * @param {ReturnType<typeof getPageCopy>} copy
  * @returns {Object}
@@ -85,6 +97,8 @@ function buildRenderModel(document, copy) {
 }
 
 /**
+ * Compose the template + render model into a final HTML string (with a
+ * trailing newline).
  * @param {SitemapDataDocument} document
  * @param {ReturnType<typeof getPageCopy>} copy
  * @param {string} [templateName]
@@ -101,6 +115,8 @@ async function renderDocument(
 }
 
 /**
+ * Build and persist `sitemap.html` for one base geo from its
+ * `sitemap.json` + placeholders + page copy.
  * @param {string} outputDir
  * @param {Parameters<typeof getPageCopy>[0]} config
  * @param {{ subdomain: string, baseGeo: string, language: string, template?: string }} unit
@@ -131,6 +147,7 @@ async function buildHtmlDocument(
 }
 
 /**
+ * Log a one-line summary of which geos rendered HTML and which were skipped.
  * @param {UnitStageEntry[]} units
  * @returns {void}
  */
@@ -144,6 +161,8 @@ function printSummary(units) {
 }
 
 /**
+ * Stage entrypoint. Render each in-scope base geo's sitemap.html, then
+ * write per-subdomain manifests covering everything rendered.
  * @param {{ configRef: string, outputDir: string, subdomainFilter?: string, geoFilter?: string }} options
  * @returns {Promise<UnitStageResult>}
  */

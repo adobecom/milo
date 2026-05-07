@@ -1,3 +1,9 @@
+/**
+ * `transform-data` stage. Reads each base geo's `_extract/` artifacts and
+ * builds the normalized `sitemap.json` + `sitemap-links.csv`. Skips geos
+ * whose extract output is missing. See SPEC.md §3.3.
+ */
+
 import { loadConfig } from '../config/config.js';
 import { planExtractUnits } from '../config/scope.js';
 import { mapWithConcurrency } from '../util/concurrency.js';
@@ -14,6 +20,8 @@ import { formatStageGeo, getErrorMessage } from '../util/stages.js';
 const UNIT_CONCURRENCY = 2;
 
 /**
+ * Roll up per-geo summaries into log lines (transformed vs skipped, plus
+ * extended-geo counters).
  * @param {UnitStageEntry[]} units
  * @returns {void}
  */
@@ -39,6 +47,9 @@ function printSummary(units) {
 }
 
 /**
+ * Stage entrypoint. Parallel-builds `sitemap.json` for each in-scope base
+ * geo (capped by `UNIT_CONCURRENCY`); geos missing extract input are
+ * silently skipped.
  * @param {{ configRef: string, outputDir: string, subdomainFilter?: string, geoFilter?: string }} options
  * @returns {Promise<UnitStageResult>}
  */

@@ -1,3 +1,9 @@
+/**
+ * AEM Admin (`admin.hlx.page`) client. Starts bulk preview/publish jobs for
+ * a list of remote paths and polls until completion. Per-repo auth tokens
+ * are read from environment variables (`AEM_ADMIN_TOKEN_<ORG>_<REPO>`).
+ */
+
 import process from 'node:process';
 import { getRemoteDocumentPath } from './paths.js';
 
@@ -26,6 +32,8 @@ const HLX_REF = 'main';
  */
 
 /**
+ * Build the canonical env-var name for a (org, repo) pair, e.g.
+ * `AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM`.
  * @param {string} owner
  * @param {string} repo
  * @param {string} [prefix]
@@ -36,6 +44,8 @@ export function getSiteEnvKey(owner, repo, prefix = '') {
 }
 
 /**
+ * Resolve the AEM admin auth header for a repo, checking site-specific env
+ * vars first then falling back to generic ones. Throws if no token is set.
  * @param {string} site
  * @returns {string}
  */
@@ -82,6 +92,7 @@ function getDetailsUrl(job) {
 }
 
 /**
+ * Build the absolute remote path AEM admin expects for the bulk endpoint.
  * @param {string} normalizedRoot
  * @param {string} baseGeo
  * @returns {string}
@@ -91,6 +102,7 @@ export function getRemotePromotePath(normalizedRoot, baseGeo) {
 }
 
 /**
+ * Build the public AEM Page (preview) or Live URL for a remote document.
  * @param {string} repo
  * @param {string} remotePath
  * @param {'page' | 'live'} environment
@@ -106,6 +118,8 @@ export function getAemDocumentUrl(
 }
 
 /**
+ * Group units by their `hostSite` (= AEM Live repo) so a single bulk admin
+ * request can cover all paths in a repo.
  * @param {ExtractUnit[]} units
  * @returns {Map<string, ExtractUnit[]>}
  */
@@ -120,6 +134,7 @@ export function groupUnitsByRepo(units) {
 }
 
 /**
+ * POST a bulk preview/publish job to AEM admin and return the job handle.
  * @param {PromoteAction} action
  * @param {string} repo
  * @param {string[]} paths
@@ -154,6 +169,8 @@ export async function startJob(
 }
 
 /**
+ * Poll a bulk job's status URL until `stopTime` is set or the attempt
+ * budget is exhausted.
  * @param {PromoteJobResponse} job
  * @param {string} authHeader
  * @param {typeof fetch} fetchImpl

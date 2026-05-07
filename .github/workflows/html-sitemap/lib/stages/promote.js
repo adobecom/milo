@@ -1,3 +1,10 @@
+/**
+ * `preview` and `publish` stages — both implemented as `runPromote` with
+ * the action passed in. Groups units by repo and submits one bulk AEM
+ * admin job per repo, then polls until completion. Per-geo gating uses
+ * the config's `geo-map.stage` column. See SPEC.md §3.7 / §3.8.
+ */
+
 import { loadConfig } from '../config/config.js';
 import { planExtractUnits } from '../config/scope.js';
 import { mapWithConcurrency } from '../util/concurrency.js';
@@ -59,6 +66,7 @@ const GROUP_CONCURRENCY = 2;
  */
 
 /**
+ * Log promoted/skipped/failed buckets and the resulting AEM URLs.
  * @param {PromoteAction} action
  * @param {PromoteEntry[]} entries
  * @returns {void}
@@ -82,6 +90,9 @@ function printSummary(action, entries) {
 }
 
 /**
+ * Stage entrypoint shared by `preview` and `publish`. Filters out units
+ * whose `geo-map.stage` doesn't reach `action`, then issues one AEM admin
+ * bulk job per repo and aggregates per-geo statuses.
  * @param {{ action: PromoteAction, configRef: string, outputDir: string, subdomainFilter?: string, geoFilter?: string, daRoot: string, fetchImpl?: typeof fetch, pollIntervalMs?: number, maxPollAttempts?: number }} options
  * @returns {Promise<PromoteResult>}
  */

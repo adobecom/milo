@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 
+/**
+ * CLI entrypoint. Parses CLI args, loads each stage's runner, and dispatches
+ * the requested stages in canonical order. With no `--stages` (and no
+ * positional stage), runs the full pipeline; per-geo delivery scope is
+ * gated by the config's `geo-map.stage` column. Used both locally and from
+ * `.github/workflows/html-sitemap.yml`.
+ */
+
 import process from 'node:process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +37,8 @@ const DEFAULT_OUTPUT = 'tmp/html-sitemap';
  */
 
 /**
+ * Map the `default` / `root` aliases for the global geo to the empty
+ * string used internally.
  * @param {string} value
  * @returns {string}
  */
@@ -38,6 +48,7 @@ function normalizeGeoOption(value) {
 }
 
 /**
+ * Return the multi-line help text printed for `--help`.
  * @returns {string}
  */
 function getHelpText() {
@@ -90,6 +101,8 @@ Examples:
 }
 
 /**
+ * Parse a CLI argv array into the structured options the pipeline uses.
+ * Validates flag/value pairing and rejects mixing positional + `--stages`.
  * @param {string[]} argv
  * @returns {ParsedArgs}
  */
@@ -171,6 +184,9 @@ function parseArgs(argv) {
 const STRICT_DELIVERY_STAGES = new Set(['push', 'preview', 'publish']);
 
 /**
+ * Set the process exit code on any stage failure, and additionally throw to
+ * abort the pipeline when a delivery stage (push/preview/publish) fails so
+ * downstream stages don't try to run on broken state.
  * @param {StageId} stage
  * @param {boolean} hadFailures
  * @returns {void}

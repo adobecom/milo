@@ -1,3 +1,9 @@
+/**
+ * DA authorization header resolver. Prefers a direct DA token from env;
+ * otherwise mints a Bearer token via the IMS rolling-import flow. The IMS
+ * exchange is memoized so concurrent stages share one token.
+ */
+
 import process from 'node:process';
 import { fetchJson } from '../util/fetch.js';
 
@@ -76,6 +82,8 @@ async function fetchRollingImportToken(fetchImpl) {
 }
 
 /**
+ * Return the `Authorization` header value for DA requests. Direct tokens
+ * win; otherwise IMS-mints once and reuses the result for the process.
  * @param {typeof fetch} [fetchImpl]
  * @returns {Promise<string>}
  */

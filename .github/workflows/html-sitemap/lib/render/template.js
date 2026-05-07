@@ -1,4 +1,11 @@
 /**
+ * Tiny Mustache/Handlebars-style template engine used by `transform-da` to
+ * render `da-sitemap.html`. Supports `{{value}}`, `{{#if}}`/`{{else}}`,
+ * `{{#unless}}`, and `{{#each}}` with HTML escaping by default. See
+ * SPEC.md §6 for the template language contract.
+ */
+
+/**
  * @typedef {string | number | boolean | null | undefined | TemplateScope | TemplateScope[]} TemplateValue
  */
 
@@ -15,6 +22,7 @@
  */
 
 /**
+ * HTML-escape a string so it can be inserted into HTML safely.
  * @param {string} value
  * @returns {string}
  */
@@ -32,6 +40,7 @@ function escapeHtml(value) {
  */
 
 /**
+ * Classify the contents of a `{{...}}` tag.
  * @param {string} tag
  * @returns {ParsedTag}
  */
@@ -62,6 +71,8 @@ function parseTag(tag) {
 }
 
 /**
+ * Remove the leading/trailing whitespace + newline around a control tag
+ * that occupies its own line, so the rendered output keeps clean spacing.
  * @param {string} template
  * @returns {string}
  */
@@ -73,6 +84,10 @@ function stripStandaloneControlLines(template) {
 }
 
 /**
+ * Recursive-descent parser. Walks `template` from `start`, building a
+ * TemplateNode tree until it hits the closing tag for `stop` (or EOF).
+ * Returns `{ elseHit: true }` when an `{{else}}` is encountered inside an
+ * `if`/`unless` block so the caller can collect the else branch.
  * @param {string} template
  * @param {number} [start]
  * @param {ParseStop} [stop]
@@ -156,6 +171,8 @@ function parseNodes(template, start = 0, stop) {
 }
 
 /**
+ * Split a dotted lookup key into segments. `.` and `this` mean the current
+ * context (no segments).
  * @param {string} key
  * @returns {string[]}
  */
@@ -165,6 +182,8 @@ function toPathSegments(key) {
 }
 
 /**
+ * Resolve a dotted key against the context stack, walking outwards from
+ * the innermost scope (Handlebars-style scope inheritance).
  * @param {TemplateScope[]} contexts
  * @param {string} key
  * @returns {TemplateValue}
@@ -192,6 +211,7 @@ function lookupValue(contexts, key) {
 }
 
 /**
+ * Truthiness test for `{{#if}}` / `{{#unless}}`. Empty arrays are falsy.
  * @param {TemplateValue} value
  * @returns {boolean}
  */
@@ -201,6 +221,8 @@ function isTruthy(value) {
 }
 
 /**
+ * Render a scalar `{{value}}` token, HTML-escaping strings and rejecting
+ * non-scalar types.
  * @param {TemplateValue} value
  * @returns {string}
  */
@@ -212,6 +234,9 @@ function renderScalar(value) {
 }
 
 /**
+ * Recursively render a TemplateNode tree against a context stack. Each
+ * iteration of an `each` block pushes the item's scope onto the stack and
+ * exposes `@index` / `@key` for the current iteration.
  * @param {TemplateNode[]} nodes
  * @param {TemplateScope[]} contexts
  * @returns {string}
@@ -261,6 +286,8 @@ function renderNodes(nodes, contexts) {
 }
 
 /**
+ * Render a template string against the given data, returning the
+ * resulting HTML.
  * @param {string} template
  * @param {TemplateScope} data
  * @returns {string}
