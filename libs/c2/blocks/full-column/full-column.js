@@ -1,25 +1,44 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { createTag } from '../../../utils/utils.js';
 
-function decorate(block) {
+function markStandaloneLinks(el) {
+  el.querySelectorAll('a').forEach((a) => {
+    const parent = a.parentElement;
+    if (!parent) return;
+    if (parent.textContent?.trim() === a.textContent?.trim()) {
+      a.classList.add('standalone-link', 'label');
+      parent.classList.add('cta-container');
+    }
+  });
+}
+
+function decorateFullColumn(block) {
   const row = block.children[0];
   const foreground = row?.children[0];
   const media = row?.children[1];
+  if (!foreground) return;
 
-  if (foreground) {
-    foreground.classList.add('foreground');
+  foreground.classList.add('foreground');
+  decorateBlockText(foreground, { heading: '4' });
+  markStandaloneLinks(foreground);
 
-    const firstChild = foreground.children[0];
-    if (firstChild?.childElementCount === 1 && firstChild.firstElementChild?.tagName === 'PICTURE') {
-      const pic = firstChild.firstElementChild;
-      const img = pic.querySelector('img');
-      if (img?.src?.endsWith('.svg') || /\.svg(\?|$)/i.test(img?.getAttribute('src') || '')) {
-        pic.classList.add('icon');
-        media?.prepend(pic);
-        firstChild.remove();
-      }
+  const firstCell = foreground.children[0];
+  if (firstCell?.childElementCount === 1 && firstCell?.firstElementChild?.tagName === 'PICTURE') {
+    const iconPicture = firstCell.firstElementChild;
+    iconPicture.classList.add('icon');
+    if (media) {
+      media.appendChild(iconPicture);
+    } else {
+      foreground.prepend(iconPicture);
     }
+    firstCell.remove();
+  }
 
-    decorateBlockText(foreground);
+  const textEls = [...foreground.children].filter((c) => !c.classList.contains('cta-container'));
+  if (textEls.length) {
+    const textWrap = createTag('div', { class: 'text-content' });
+    textEls[0].before(textWrap);
+    textEls.forEach((el) => textWrap.appendChild(el));
   }
 
   if (media) {
@@ -28,5 +47,5 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
+  decorateViewportContent(el, decorateFullColumn);
 }
