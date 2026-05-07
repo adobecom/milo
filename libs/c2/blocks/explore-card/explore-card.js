@@ -1,5 +1,5 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, decorateBlockBg } from '../../../utils/decorate.js';
 
 function hasContent(node) {
   return node.textContent?.trim() !== '' || node.querySelector('img, picture, svg, a[href]');
@@ -9,7 +9,8 @@ function getForegroundContent(foregroundRow, contentDiv, blockName) {
   if (foregroundRow) {
     if (hasContent(foregroundRow)) {
       [...foregroundRow.children].forEach((child) => child.classList.add(`${blockName}-foreground`));
-      contentDiv?.append(...foregroundRow.childNodes);
+      const contentAux = createTag('div', { class: 'content-aux' });
+      contentDiv?.append(contentAux, ...foregroundRow.childNodes);
     }
     foregroundRow.remove();
   }
@@ -32,11 +33,23 @@ function decorate(block, root) {
 
   if (prodIcon && isSvgUrl(prodIcon.src)) {
     prodIcon.src = getFederatedUrl(prodIcon.src);
+    prodIcon.closest('p').classList.add('icon');
   }
 
   backgroundDiv?.classList.add(`${blockName}-background`);
   contentDiv?.classList.add(`${blockName}-content`);
   firstRow.classList.add(`${blockName}-container`);
+
+  decorateBlockBg(block, backgroundDiv, { useHandleFocalpoint: true });
+
+  if (block !== root && block.style.background) {
+    const colorBg = createTag('div', {
+      class: `${blockName}-background`,
+      style: `background: ${block.style.background}`,
+    });
+    block.style.removeProperty('background');
+    firstRow.append(colorBg);
+  }
 
   getForegroundContent(foregroundRow, contentDiv, blockName);
   decorateBlockText(contentDiv, { heading: '5' });
