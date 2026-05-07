@@ -92,7 +92,7 @@ function elContainsText(el) {
   return [...el.childNodes].some((node) => {
     if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== '';
     if (node.nodeType !== Node.ELEMENT_NODE) return false;
-    if (node.innerText.trim() !== '') return true;
+    if (node.textContent.trim() !== '') return true;
     // Custom elements (tag name contains a hyphen) may render content asynchronously;
     // treat non-hidden ones as containing text so body classes are applied upfront.
     return node.tagName?.includes('-') && !node.hidden;
