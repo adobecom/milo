@@ -394,3 +394,21 @@ describe('custom actions', async () => {
     expect(document.querySelector(notLcpLink)).not.to.exist;
   });
 });
+
+describe('handleCommands with invalid selector', () => {
+  it('should not throw when getSelectedElements returns empty object', async () => {
+    const commands = [{
+      action: 'replace',
+      content: '/some-fragment',
+      selector: '',
+    }];
+    const rootEl = document.createElement('div');
+    let error;
+    try {
+      await handleCommands(commands, rootEl, false, true);
+    } catch (e) {
+      error = e;
+    }
+    expect(error).to.be.undefined;
+  });
+});

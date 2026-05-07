@@ -1,5 +1,5 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
+import { decorateAnchorVideo, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -488,7 +488,9 @@ function moveSlides(event, carouselElements) {
   if (isHintingTablet(el) || isHintingMobile) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
-    if (video?.paused && video.readyState >= 2) {
+    if (video?.paused
+      && video.readyState >= 2
+      && !video.hasAttribute(USER_PAUSED_ATTR)) {
       video.play().catch(() => {});
       syncPausePlayIcon(video);
     }

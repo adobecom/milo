@@ -1,6 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import {
-  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getMepLingoPrefix,
+  createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix,
 } from '../../utils/utils.js';
 
 const fragMap = {};
@@ -91,6 +91,12 @@ export const removeMepLingoRow = (container) => {
   mepLingoRow?.remove();
 };
 
+const preserveAuthored = (a, isBlockSwap, originalBlock, originalSection) => {
+  if (isBlockSwap) removeMepLingoRow(originalBlock);
+  else removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
+  a.parentElement?.remove();
+};
+
 export default async function init(a) {
   const { decorateArea, mep, placeholders, locale } = getConfig();
   let relHref = await localizeLinkAsync(a.href, window.location.hostname, false, a);
@@ -143,7 +149,7 @@ export default async function init(a) {
   const isMepLingoLink = a.dataset.mepLingo === 'true';
   const isMepLingoInsert = a.dataset.mepLingoInsert === 'true';
   const isMepLingoRemove = a.dataset.mepLingoRemove === 'true';
-  const shouldFetchMepLingo = isMepLingoLink && !!await getMepLingoPrefix();
+  const shouldFetchMepLingo = isMepLingoLink && !!await getGeoLocalePrefix();
 
   // Import mep/lingo.js once if this is a mep-lingo link
   const lingoModule = isMepLingoLink ? await import('../../features/mep/lingo.js') : null;
@@ -210,14 +216,25 @@ export default async function init(a) {
       .catch(() => ({}));
   }
 
-  const mepLingoPrefix = await getMepLingoPrefix();
-  if (isMepLingoLink && resp?.ok && !relHref.includes(mepLingoPrefix || '___NONE___')) {
+  const mepLingoPrefix = await getGeoLocalePrefix();
+  const fetchedNonRegionalContent = isMepLingoLink && resp?.ok
+    && !relHref.includes(mepLingoPrefix || '___NONE___');
+  const redirectedRegionalFetch = (isBlockSwap || isSectionSwap) && resp?.redirected
+    && mepLingoPrefix && relHref.includes(mepLingoPrefix);
+
+  if (fetchedNonRegionalContent || redirectedRegionalFetch) {
     usedFallback = true;
   }
 
   // Insert variants should not show fallback content - remove if no regional content
   if (isMepLingoInsert && usedFallback) {
     lingoModule.removeMepLingoElement(a, isMepLingoBlock, originalBlock);
+    return;
+  }
+
+  if (usedFallback && !isMepLingoBlock
+    && ((isBlockSwap && originalBlock) || (isSectionSwap && originalSection))) {
+    preserveAuthored(a, isBlockSwap, originalBlock, originalSection);
     return;
   }
 
@@ -273,14 +290,12 @@ export default async function init(a) {
         originalBlock?.remove();
         a.parentElement?.remove();
       } else {
-        removeMepLingoRow(originalBlock);
-        a.parentElement?.remove();
+        preserveAuthored(a, isBlockSwap, originalBlock, originalSection);
       }
       return;
     }
     if (isSectionSwap && originalSection) {
-      removeMepLingoRow(originalSection?.querySelector('.section-metadata'));
-      a.parentElement?.remove();
+      preserveAuthored(a, false, originalBlock, originalSection);
       return;
     }
     if (isMepLingoFragment) {

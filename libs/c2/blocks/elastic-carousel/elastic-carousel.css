@@ -62,6 +62,7 @@ html[dir="rtl"] {
       cursor: pointer;
       will-change: width, max-width;
       transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s ease;
+      contain: layout;
 
       .elastic-carousel-item-header {
         display: flex;

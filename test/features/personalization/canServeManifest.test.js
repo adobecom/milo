@@ -99,6 +99,7 @@ describe('canServeManifest', () => {
     expect(canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] })).to.be.true;
     expect(getConfig().mep.variantOverride['/test/test.json']).to.be.equal('test');
   });
+
   // "was served" analytics: MEP gates _satellite.track on both performance (C0002)
   // and advertising (C0004) consent. Launch independently checks C0002 and suppresses
   // events when it's off, so the effect is not observable at the network payload level.
@@ -112,6 +113,7 @@ describe('canServeManifest', () => {
     const [, payload] = trackStub.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
   });
+
   it('should fire analytics for marketing decrease when both consent flags are true', () => {
     const trackStub = stub();
     window._satellite = { track: trackStub };
@@ -120,6 +122,7 @@ describe('canServeManifest', () => {
     const [, payload] = trackStub.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('test was served');
   });
+
   it('should not fire analytics for marketing decrease when advertising consent is false', () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
     const trackStub = stub();
@@ -127,6 +130,7 @@ describe('canServeManifest', () => {
     canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
     expect(trackStub.called).to.be.false;
   });
+
   it('should not fire analytics for marketing decrease when performance consent is false', () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();
@@ -134,6 +138,7 @@ describe('canServeManifest', () => {
     canServeManifest({ mktgAction: 'marketing decrease', manifestPath: '/test/test.json', variantNames: ['test'] });
     expect(trackStub.called).to.be.false;
   });
+
   it('should not fire analytics for marketing increase when advertising consent is false', () => {
     getConfig().mep.consentState = { performance: true, advertising: false };
     const trackStub = stub();
@@ -141,6 +146,7 @@ describe('canServeManifest', () => {
     canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
     expect(trackStub.called).to.be.false;
   });
+
   it('should not fire analytics for marketing increase when performance consent is false', () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();
@@ -148,6 +154,7 @@ describe('canServeManifest', () => {
     canServeManifest({ mktgAction: 'marketing increase', manifestPath: '/test/test.json' });
     expect(trackStub.called).to.be.false;
   });
+
   it('should serve marketing decrease manifest with default variant but suppress analytics when consent is missing', () => {
     getConfig().mep.consentState = { performance: false, advertising: true };
     const trackStub = stub();

@@ -29,6 +29,7 @@
     padding: var(--s2a-spacing-0) var(--s2a-spacing-lg);
     height: 100%;
     box-sizing: border-box;
+    contain: layout;
 
     > .foreground {
       display: flex;

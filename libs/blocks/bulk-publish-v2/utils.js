@@ -71,11 +71,14 @@ const getInvalidUrlReason = (str) => {
   }
 
   const [ref, repo, owner] = getAemUrl(url);
+  const tld = url.hostname.endsWith('.aem.live') ? 'aem.live' : 'aem.page';
   const postParse = [
     [url.protocol !== 'https:', 'Must use HTTPS'],
     [!url.hostname, 'Invalid URL (missing hostname)'],
     [!url.hostname || !AEM_PAGE_HOST_REGEX.test(url.hostname), 'Invalid host (expected *.aem.page or *.aem.live)'],
     [!ref || !repo || !owner, 'Invalid host (missing ref, repo, or owner)'],
+    [/^([^-]+)(?:-.+)-\1$/.test(repo ?? ''), 'Invalid host (repo name has a duplicated segment, e.g. da-bacom-da should be da-bacom)'],
+    [ref && repo && owner && !url.hostname.endsWith(`${ref}--${repo}--${owner}.${tld}`), 'Invalid host format (expected ref--repo--owner.aem.page or .aem.live)'],
     [repo === 'bacom', 'Old Bacom project is not supported, use new DA project instead'],
     [url.pathname.includes('//'), 'Invalid URL (path must not contain //)'],
     [url.pathname.toLowerCase().endsWith('.html'), 'URL must not end with .html'],
@@ -85,6 +88,21 @@ const getInvalidUrlReason = (str) => {
 };
 
 const isValidUrl = (str) => !getInvalidUrlReason(str);
+
+const getMixedProjectError = (urls) => {
+  if (urls.length < 2) return null;
+  const projects = new Set();
+  urls.forEach((str) => {
+    if (!isValidUrl(str)) return;
+    const seg = str.split('/')[2]?.replace(/[\u2013\u2014]/g, '--').split('.').find((s) => s.includes('--'));
+    const [, repo, owner] = seg?.split('--') ?? [];
+    if (repo && owner) projects.add(`${repo}--${owner}`);
+  });
+  if (projects.size > 1) {
+    return `All URLs must belong to the same project. Found multiple projects: ${[...projects].join(', ')}`;
+  }
+  return null;
+};
 
 const editEntry = (el, str) => {
   if (el?.value) {
@@ -242,6 +260,7 @@ export {
   updateJobUrls,
   sticky,
   getInvalidUrlReason,
+  getMixedProjectError,
   isValidUrl,
   delay,
   setJobTime,

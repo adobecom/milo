@@ -232,7 +232,8 @@ function getMarketOptions(markets, currentLang) {
       marketCode: market.marketCode,
       prefix: market.prefix,
       url: '#',
-    }));
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, langKey));
 }
 
 function createDropdown(
@@ -634,10 +635,16 @@ function createDropdown(
 
 export default async function init(block) {
   const config = await getMarketConfig();
-  if (!config || !config.languages?.length) return;
+  if (!config || !config.languages?.length) {
+    block.innerHTML = '';
+    return;
+  }
 
   const markets = await loadMarketsData();
-  if (!markets?.length) return;
+  if (!markets?.length) {
+    block.innerHTML = '';
+    return;
+  }
 
   const placeholders = block.querySelectorAll('p');
   const labels = {

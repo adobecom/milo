@@ -16,10 +16,13 @@ tmp
 libs/navigation/dist/
 *.mdc
 /.cursor*/
-/.claude/
+/.claude/*
+!/.claude/skills/
+!/.claude/commands/
 /.codex/
-CLAUDE.md
 **/.CLAUDE.md
+mcp-server.log
+.playwright-stamp
 
 # Font files should not be committed due to copyright & branding reasons. Use Typekit instead.
 *.otf

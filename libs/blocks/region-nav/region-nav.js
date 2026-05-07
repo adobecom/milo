@@ -6,6 +6,7 @@ import {
   setInternational,
   getCountry,
   setMarket,
+  createTag,
 } from '../../utils/utils.js';
 import { norm } from '../../utils/market.js';
 
@@ -60,7 +61,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
   link.href = `${href}${path}`;
-
+  if (currentLocaleObj.ietf && currentLocaleObj.ietf !== 'none') link.setAttribute('lang', currentLocaleObj.ietf);
   link.addEventListener('mouseover', () => {
     setTimeout(() => {
       if (link.matches(':hover') && !hrefAdapted) {
@@ -114,6 +115,23 @@ export default async function init(block) {
   config = getConfig();
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
+  const titleDiv = divs[0];
+  if (!titleDiv.querySelector('h2')) {
+    const titleStrong = titleDiv.querySelector('strong');
+    const titleP = titleStrong ? titleStrong.closest('p') : titleDiv.querySelector('p');
+    if (titleP) {
+      const h2 = createTag('h2', { class: 'tracking-header' }, titleP.textContent.trim());
+      titleP.replaceWith(h2);
+    }
+  }
+  const regionHeaders = divs[1].querySelectorAll(':scope > div > p > strong');
+  regionHeaders.forEach((strong) => {
+    if (strong.querySelector('a')) return;
+    const p = strong.parentElement;
+    if (p.nextElementSibling?.tagName !== 'UL') return;
+    const h3 = createTag('h3', { class: `tracking-header ${strong.className}`.trim() }, strong.textContent);
+    p.replaceWith(h3);
+  });
   const links = divs[1].querySelectorAll('a');
   if (!links.length) return;
   const { prefix } = config.locale;
