@@ -1,0 +1,248 @@
+/* hub-hero-modal
+ * A scrollable, vertically-stacked set of sections rendered inside
+ * a Milo dialog-modal fragment.  Desktop Figma frame: 10311:248467.
+ * No separate mobile/tablet frames exist; single-column layout scales
+ * naturally at all viewports.
+ *
+ * Structure (one header row + N content-section rows):
+ *   Row 0  → .hub-hero-modal-title  (eyebrow + headline, sticky at top)
+ *   Rows 1+ → .hub-hero-modal-section (scrollable)
+ *   One     → .hub-hero-modal-cta    (sticky at bottom, extracted from row 1)
+ *
+ * Z-pattern alignment (Figma 10311:248467, no authoring required):
+ *   - Odd sections (1, 3, 5…) except last → end (right)
+ *   - Even sections (2, 4, 6…)            → start (left, browser default)
+ *   - Last section                         → center
+ * Selectors use :nth-of-type/:last-of-type so that the <div> title and CTA
+ * siblings do not skew ordinal counting (see Z-pattern rules below).
+ *
+ * Scroll / sticky architecture:
+ *   .dialog-modal is the scroll container (overflow: auto; max-height).
+ *   .fragment, .section, and .content wrappers are display: block with no
+ *   overflow set, so they do not create intermediate scroll contexts.
+ *   .hub-hero-modal must NOT set overflow-y — doing so would create an
+ *   intermediate overflow context that traps position: sticky on
+ *   .hub-hero-modal-title and .hub-hero-modal-cta, rendering it inert.
+ *   With no overflow on .hub-hero-modal, sticky scoping propagates to
+ *   .dialog-modal, which has the bounded height sticky requires.
+ */
+
+.hub-hero-modal {
+  background: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+  display: block;
+  font-family: var(--body-font-family);
+  width: 100%;
+}
+
+/* ── Modal title (sticky at top, one per modal) ───────── */
+
+/*
+ * Row 0 (eyebrow paragraph + headline) is extracted by JS and placed here.
+ * position: sticky keeps it visible while the sections scroll past.
+ * Scroll ancestor is .dialog-modal (overflow: auto; max-height).
+ */
+.hub-hero-modal-title {
+  background: var(--s2a-color-background-default);
+  border-block-end: 1px solid var(--s2a-color-gray-100);
+  padding-block: var(--s2a-spacing-md);
+
+  /* Extra end padding prevents title text running under the dialog-close button
+   * (position: absolute; right: 5px; width: 26px inside .dialog-modal). */
+  padding-inline-end: calc(var(--s2a-spacing-lg) + 32px);
+  padding-inline-start: var(--s2a-spacing-lg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Eyebrow paragraph in the title area */
+.hub-hero-modal-title p {
+  color: var(--s2a-color-content-subtle);
+  font-size: var(--s2a-font-size-xs);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.hub-hero-modal-title h1,
+.hub-hero-modal-title h2,
+.hub-hero-modal-title h3,
+.hub-hero-modal-title h4,
+.hub-hero-modal-title h5,
+.hub-hero-modal-title h6 {
+  font-family: var(--heading-font-family);
+  margin: 0;
+}
+
+/* ── Section ──────────────────────────────────────────── */
+
+.hub-hero-modal-section {
+  border-block-end: 1px solid var(--s2a-color-gray-100);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Last section has no bottom border — uses :last-of-type because
+ * .hub-hero-modal-cta (a <div>) is the actual :last-child of the block. */
+.hub-hero-modal-section:last-of-type {
+  border-block-end: none;
+}
+
+/* ── Counter: ( X/Y ) ─────────────────────────────────── */
+
+.hub-hero-modal-counter {
+  color: var(--s2a-color-content-default);
+  font-family: var(--s2a-font-family-label);
+  font-size: var(--s2a-typography-font-size-label);
+  font-weight: 700;
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
+  margin-block-end: var(--s2a-spacing-xs);
+
+  /* text-align inherits from content area (start by default, center in :last-of-type) */
+}
+
+/* ── Text content area ────────────────────────────────── */
+
+.hub-hero-modal-content {
+  display: flex;
+  flex-direction: column;
+  padding-block: var(--s2a-spacing-lg);
+  padding-inline: var(--s2a-spacing-lg);
+}
+
+/*
+ * Z-pattern alignment (Figma 10311:248467):
+ *   odd sections  → text-align: end   (right)
+ *   even sections → text-align: start (left, browser default — no rule needed)
+ *   last section  → text-align: center (overrides odd/even)
+ * Works for any number of sections.
+ *
+ * Uses :nth-of-type / :last-of-type because <section> elements share their
+ * parent with <div> elements (.hub-hero-modal-title and .hub-hero-modal-cta).
+ * :nth-child would count ALL children, inverting the Z-pattern and causing
+ * :last-child to never match a section.  :nth-of-type counts only <section>
+ * siblings, giving the correct 1-based ordinals.
+ */
+.hub-hero-modal-section:last-of-type .hub-hero-modal-content {
+  text-align: center;
+}
+
+.hub-hero-modal-section:nth-of-type(odd):not(:last-of-type) .hub-hero-modal-content {
+  text-align: end;
+}
+
+.hub-hero-modal-content p {
+  margin-block: 0;
+}
+
+/* ── Media area ───────────────────────────────────────── */
+
+.hub-hero-modal-media {
+  overflow: hidden;
+  position: relative;
+}
+
+.hub-hero-modal-media picture {
+  display: block;
+}
+
+.hub-hero-modal-media img {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+/* ── Promo CTA (sticky at bottom, one per modal) ─────── */
+
+/*
+ * Frosted bar that sticks to the bottom of .dialog-modal's scroll viewport.
+ * Extracted from the first section row by JS; lives outside the scrollable
+ * sections so it remains visible until the user scrolls to the very end.
+ * Padding: 24 + 56(pill) + 24 = 104px total block height.
+ * position: sticky works because .hub-hero-modal has no overflow set, so the
+ * sticky scope propagates to the .dialog-modal scroll container.
+ */
+.hub-hero-modal-cta {
+  align-items: center;
+  backdrop-filter: blur(16px);
+  background: rgb(0 0 0 / 40%);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding-block: var(--s2a-spacing-lg);
+  position: sticky;
+  width: 100%;
+  z-index: 1;
+}
+
+.hub-hero-modal-cta p,
+.hub-hero-modal-cta .action-area {
+  margin: 0;
+}
+
+/*
+ * Dark pill button (Figma Promo CTA: 295×56px).
+ * --s2a-color-gray-900 (#131313) ≈ Figma #1a1a1a — closest available token.
+ * Product icon (if authored as <img> inside the link) renders on the left.
+ */
+.hub-hero-modal-cta a,
+.hub-hero-modal-cta .con-button {
+  align-items: center;
+  background: var(--s2a-color-gray-900);
+  border-radius: 100px;
+  color: var(--s2a-color-gray-25);
+  display: inline-flex;
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: 600;
+  gap: var(--s2a-spacing-sm);
+  min-height: 56px;
+  padding-block: var(--s2a-spacing-sm);
+  padding-inline-end: var(--s2a-spacing-xs);
+  padding-inline-start: var(--s2a-spacing-md);
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+/* Product icon inside the link (optional authored <img>) */
+.hub-hero-modal-cta a img,
+.hub-hero-modal-cta .con-button img {
+  block-size: 32px;
+  border-radius: 6px;
+  inline-size: 32px;
+  object-fit: cover;
+}
+
+/*
+ * Arrow indicator on the right (Figma: 32×32 rounded-square frame).
+ * Subtle translucent fill matches the Figma arrow container.
+ * Alt text '' (the '/' syntax) suppresses screen-reader announcement of the
+ * decorative arrow character.  Supported: Chrome 119+, Firefox 92+, Safari 16.4+.
+ * Older Safari announces "right arrow" — acceptable degradation, not a blocker.
+ */
+.hub-hero-modal-cta a::after,
+.hub-hero-modal-cta .con-button::after {
+  align-items: center;
+  background: rgb(255 255 255 / 12%);
+  block-size: 32px;
+  border-radius: 6px;
+  content: '→' / '';
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: var(--s2a-font-size-xs);
+  inline-size: 32px;
+  justify-content: center;
+}
+
+.hub-hero-modal-cta a:hover,
+.hub-hero-modal-cta .con-button:hover {
+  background: var(--s2a-color-gray-800);
+}
+
+.hub-hero-modal-cta a:focus-visible,
+.hub-hero-modal-cta .con-button:focus-visible {
+  outline: 2px solid var(--s2a-color-gray-25);
+  outline-offset: var(--s2a-spacing-2xs);
+}

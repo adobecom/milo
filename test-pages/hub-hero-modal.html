@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>hub-hero-modal – local test</title>
+  <style>
+    /* Minimal host styles to simulate a modal container */
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #222; font-family: sans-serif; }
+    /*
+     * .dialog-modal mirrors the real Milo dialog container.
+     * The block CSS relies on this being the scroll ancestor —
+     * .hub-hero-modal deliberately has no overflow so that
+     * position:sticky on the title and CTA scopes to here.
+     */
+    /*
+     * .modal-host mirrors .dialog-modal from libs/blocks/modal/modal.css.
+     * Real Milo uses: max-height: calc((100vh - 6px) - 2em)
+     * The fixed 700px was ~200px too short at typical desktop viewports.
+     */
+    .modal-host {
+      margin: 40px auto;
+      width: 596px;
+      max-height: calc((100vh - 6px) - 2em);
+      overflow-y: auto;
+      border-radius: 12px;
+      box-shadow: 0 8px 40px rgb(0 0 0 / 60%);
+      position: relative;
+    }
+    /* s2a tokens fallback for standalone testing */
+    :root {
+      --s2a-color-background-default: #fff;
+      --s2a-color-content-default: #1a1a1a;
+      --s2a-color-content-subtle: #6e6e6e;
+      --s2a-color-gray-25: #f5f5f5;
+      --s2a-color-gray-100: #e1e1e1;
+      --s2a-color-gray-800: #2c2c2c;
+      --s2a-color-gray-900: #131313;
+      --s2a-font-size-xs: 11px;
+      --s2a-font-size-sm: 14px;
+      --s2a-spacing-2xs: 4px;
+      --s2a-spacing-xs: 8px;
+      --s2a-spacing-sm: 12px;
+      --s2a-spacing-md: 16px;
+      --s2a-spacing-lg: 24px;
+      --body-font-family: 'Adobe Clean', adobe-clean, sans-serif;
+      --heading-font-family: 'Adobe Clean', adobe-clean, sans-serif;
+    }
+  </style>
+  <link rel="stylesheet" href="/libs/c2/blocks/hub-hero-modal/hub-hero-modal.css">
+</head>
+<body>
+  <div class="modal-host">
+    <div class="hub-hero-modal">
+      <!-- Row 0: modal header (eyebrow + headline) -->
+      <div>
+        <div>
+          <p>Sales</p>
+          <h2>Close more deals.</h2>
+        </div>
+        <div></div>
+      </div>
+      <!-- Row 1: first section — CTA extracted from here -->
+      <div>
+        <div>
+          <p>Convert sales documents to high-fidelity PDFs that you can edit or share for review, signatures, and markup with 70+ trusted tools.</p>
+          <p><strong><a href="https://www.adobe.com/acrobat">Explore Acrobat Studio</a></strong></p>
+        </div>
+        <div>
+          <picture>
+            <img src="https://content.da.live/sirivuri/da-dc/drafts/sirivuri/.mwpw-194632-hub-hero-modal/artwork-section1.png" alt="Acrobat Studio artwork" style="width:596px;height:500px;object-fit:cover;">
+          </picture>
+        </div>
+      </div>
+      <!-- Row 2 -->
+      <div>
+        <div>
+          <p>Upload RFPs, call transcripts, and analyst reports into a smart shared PDF Space. AI generates summaries, key insights, sales talking points, and objection scripts.</p>
+        </div>
+        <div>
+          <picture>
+            <img src="https://content.da.live/sirivuri/da-dc/drafts/sirivuri/.mwpw-194632-hub-hero-modal/artwork-section2.png" alt="PDF Spaces UI" style="width:596px;height:270px;object-fit:cover;">
+          </picture>
+        </div>
+      </div>
+      <!-- Row 3 -->
+      <div>
+        <div>
+          <p>Use Adobe Express to turn those insights into polished, client-ready pitches, presentations, or leave-behinds.</p>
+        </div>
+        <div>
+          <picture>
+            <img src="https://content.da.live/sirivuri/da-dc/drafts/sirivuri/.mwpw-194632-hub-hero-modal/artwork-section3.png" alt="Adobe Express artwork" style="width:596px;height:500px;object-fit:cover;">
+          </picture>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import init from '/libs/c2/blocks/hub-hero-modal/hub-hero-modal.js';
+
+    // Stub out Milo utils used by the block for standalone testing
+    window.__milo_stubbed = true;
+
+    const el = document.querySelector('.hub-hero-modal');
+    init(el);
+
+    // Log structure to console for inspection
+    console.log('Sections:', el.querySelectorAll('.hub-hero-modal-section').length);
+    console.log('Modal title:', el.querySelector('.hub-hero-modal-title')?.textContent?.trim());
+    console.log('Sticky CTA:', el.querySelector('.hub-hero-modal-cta')?.textContent?.trim());
+    console.log('CTA inside section?', !!el.querySelector('.hub-hero-modal-section .hub-hero-modal-cta'));
+  </script>
+</body>
+</html>
