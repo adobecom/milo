@@ -115,6 +115,7 @@ const C2_BLOCKS = [
   'carousel-c2',
   'elastic-carousel',
   'explore-card',
+  'full-column',
   'global-footer',
   'global-navigation',
   'martech-metadata',
