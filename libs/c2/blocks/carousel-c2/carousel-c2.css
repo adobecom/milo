@@ -383,7 +383,7 @@
 }
 
 @keyframes text-enter {
-  from { line-height: 2; }
+  from { line-height: 200%; }
 }
 
 @keyframes button-enter {
