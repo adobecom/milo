@@ -1,8 +1,8 @@
-# HTML Sitemap Generator — Spec
+# Milo HTML Sitemap Generator SPEC
 
 ## Summary
 
-This document, together with [`html-sitemap.json`](https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json), defines the html-sitemap pipeline. The implementation derives from these two sources: behavior comes from this spec; data (subdomains, query-index paths, geo mappings, page copy) comes from the JSON config. Code reviews and behavior questions resolve against this spec; content questions resolve against the JSON.
+This document, together with [`html-sitemap.json`](https://main--federal--adobecom.aem.live/federal/assets/data/html-sitemap.json), defines the Milo HTML Sitemap Generator pipeline (html-sitemap). The implementation derives from these two sources: behavior comes from this spec; data (subdomains, query-index paths, geo mappings, page copy) comes from the JSON config. Code reviews and behavior questions resolve against this spec; content questions resolve against the JSON.
 
 Procedural questions — install, run, debug locally — are answered by [README.md](./README.md). The spec is evergreen: it describes behavior, not project status.
 

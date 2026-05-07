@@ -1,22 +1,10 @@
-# HTML Sitemap Generator
+# Milo HTML Sitemap Generator README
 
-A Node.js pipeline that builds localized HTML sitemap pages for Adobe sites and promotes them through DA and AEM.
+## Summary
 
-This README is the primary orientation and operator guide for the generator. It owns:
+The Milo HTML Sitemap Generator is an automation that authors and publishes sitemap.html pages for selected base geos across www and business subdomains of Adobe.com. Recurring and adhoc Github Action workflows use the generate CLI to extract data from GNAV fragments and query indices, transform this data into sitemap.html pages, then push them to DA for preview and publish to AEM.
 
-- why the generator exists
-- the product model and page shape
-- the stage architecture
-- the public CLI and config interface
-- auth, outputs, and day-to-day usage
-
-See [SPEC.md](./SPEC.md) for the supplementary behavioral reference:
-
-- detailed fetch, transform, and rendering rules
-- source inventory context and architectural snapshots
-- fallback behavior, warning conditions, and normalization rules
-
-## Why
+## Introduction
 
 Crawlers and LLM agents need a navigable, indexable HTML entry point for Adobe's localized pages. XML sitemaps alone do not provide human-readable titles, regional grouping, or easy movement between localized surfaces.
 
@@ -28,7 +16,7 @@ Primary audiences:
 - LLM agents that benefit from explicit regional navigation
 - humans who land on these pages directly
 
-## Where to look
+## Documentation
 
 This README is the operator and developer guide — setup, environment, CLI, troubleshooting, template language. Behavior contracts and rules live in **[SPEC.md](SPEC.md)**:
 
@@ -54,68 +42,7 @@ This README is the operator and developer guide — setup, environment, CLI, tro
 
 ## Architecture
 
-The pipeline is described in terms of `stages`. In GitHub Actions, those stages may later be mapped to one or more workflow `steps` or jobs, but the generator's contract remains stage-oriented.
-
-### Inputs and Outputs
-
-```mermaid
-%%{
-  init: {
-    "theme": "base",
-    "flowchart": {
-      "htmlLabels": false,
-      "padding": 24,
-      "nodeSpacing": 40,
-      "rankSpacing": 70
-    },
-    "themeVariables": {
-      "fontSize": "15px",
-      "lineColor": "#555555",
-      "primaryTextColor": "#2C2C2C",
-      "clusterBkg": "#FAFAFA",
-      "clusterBorder": "#CCCCCC",
-      "titleColor": "#555555"
-    }
-  }
-}%%
-flowchart LR
-
-  subgraph Federal["Federal Site"]
-    Config(["config"])
-  end
-
-  subgraph HostSite["Host Sites"]
-    GNAV(["GNAV"])
-  end
-
-  subgraph SiteGeo["Sites"]
-    Indices(["/{geo}/query-index.json"])
-  end
-
-  Generator["html-sitemap-generator"]
-  Output(["/{baseGeo}/sitemap.html"])
-
-  Config   --> Generator
-  GNAV     --> Generator
-  Indices  --> Generator
-  Generator --> Output
-
-  linkStyle default stroke:#AAAAAA,stroke-width:1.5px
-
-  style Config    fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style GNAV      fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Indices   fill:#EBEBEB,stroke:#AAAAAA,stroke-width:1.5px,color:#2C2C2C
-  style Generator fill:#C8C8C8,stroke:#999999,stroke-width:1.5px,color:#2C2C2C
-  style Output    fill:#E50914,stroke:#B00000,stroke-width:1.5px,color:#FFFFFF
-
-  style Federal  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style HostSite fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-  style SiteGeo  fill:#F9F9F9,stroke:#CCCCCC,stroke-width:1px
-```
-
-### Pipeline Overview
-
-The diagram below is intentionally minimal: stage names and flow only. File names, config keys, and other artifacts are listed in [Stage details](#stage-details) so the graph stays easy to read in editors and exports.
+The generator follows a basic Extract-Transform-Load (ETL) data pipeline architecture where each stage generates data input for the next stage. The pipeline is executed by Github Action workflows that enable both recurring and adhoc runs. These workflows use the generate CLI together with html-sitemap.json to determine which stages to run for each base geo of the given subdomain.
 
 ```mermaid
 %%{
@@ -214,11 +141,13 @@ ROLLING_IMPORT_CODE=...
 ROLLING_IMPORT_GRANT_TYPE=authorization_code
 
 # Direct DA bearer token for local/manual runs
+# Use the auth_token cookie value from da.live doc page
+# e.g. https://da.live/edit#/adobecom/da-cc/drafts/hgpa/html-sitemap/fr/sitemap
 DA_SOURCE_TOKEN=...
 DA_TOKEN=...
 
 # AEM admin tokens for preview + publish
-# Use the raw auth_token cookie value from https://admin.hlx.page/profile
+# Use the auth_token cookie value from https://admin.hlx.page/profile
 # Resolved per site in this order (first match wins):
 #   AEM_ADMIN_TOKEN_ADOBECOM_{SITE}  (e.g. AEM_ADMIN_TOKEN_ADOBECOM_DA_BACOM)
 #   AEM_ADMIN_TOKEN_{SITE}           (e.g. AEM_ADMIN_TOKEN_DA_BACOM)
@@ -500,23 +429,6 @@ Implementation modules are organized by concern:
 - `lib/output/`: build artifacts (manifest, diff)
 - `lib/stages/`: stage orchestrators (extract, transform, push, promote, clean)
 - `lib/util/`: shared helpers (fetch, files, concurrency, hashing)
-
-## GitHub Actions Inputs
-
-The workflow should expose the same interface as the CLI:
-
-- `stages`
-- `config`
-- `output`
-- `subdomain`
-- `geo`
-- `da-root`
-
-## Related
-
-- [SPEC.md](./SPEC.md)
-- [Preview Indexer](../preview-indexer/README.md)
-- [Federal repo](https://github.com/adobecom/federal)
 
 ## License
 
