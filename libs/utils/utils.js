@@ -35,6 +35,7 @@ const MILO_BLOCKS = [
   'footer',
   'gnav',
   'how-to',
+  'hub-hero-modal',
   'icon-block',
   'iframe',
   'instagram',
