@@ -238,6 +238,7 @@ async function runExtractUnit(
       fs.rm(path.join(geoDir, '_extract'), { recursive: true, force: true }),
       fs.rm(path.join(geoDir, 'sitemap.json'), { force: true }),
       fs.rm(path.join(geoDir, 'sitemap.html'), { force: true }),
+      fs.rm(path.join(geoDir, 'sitemap-links.csv'), { force: true }),
     ]);
     return {
       subdomain: unit.subdomain,

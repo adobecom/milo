@@ -163,14 +163,14 @@ AEM_ADMIN_TOKEN_ADOBECOM_DA_CC=...
 Run help:
 
 ```bash
-node .github/workflows/html-sitemap/generate.ts --help
+node .github/workflows/html-sitemap/generate.js --help
 ```
 
 Usage:
 
 ```text
-node --env-file=.env generate.ts [stage] [mode] [options]
-node --env-file=.env generate.ts --stages <list> [options]
+node --env-file=.env generate.js [stage] [mode] [options]
+node --env-file=.env generate.js --stages <list> [options]
 ```
 
 `--env-file` is resolved relative to the current shell working directory, not relative to `.github/workflows/html-sitemap/`.
@@ -200,7 +200,7 @@ Rules:
 - Delivery stages are fail-fast in multi-stage runs:
   - a `push` failure stops the pipeline before `preview` or `publish`
   - a `preview` failure stops the pipeline before `publish`
-- No stage selection prints help and exits non-zero.
+- No stage selection runs the full pipeline. Per-geo delivery scope is gated by the config's `geo-map.stage` column (preview / publish / empty), so this is the safe production default. `--stages` is an override reserved for narrowing scope during local development.
 
 Options:
 
@@ -223,16 +223,16 @@ Examples:
 
 ```bash
 # Extract + transform locally
-node --env-file=.env .github/workflows/html-sitemap/generate.ts extract --subdomain www --geo fr
-node --env-file=.env .github/workflows/html-sitemap/generate.ts transform --subdomain www --geo fr
+node --env-file=.env .github/workflows/html-sitemap/generate.js extract --subdomain www --geo fr
+node --env-file=.env .github/workflows/html-sitemap/generate.js transform --subdomain www --geo fr
 
 # Explicit multi-stage run
-node --env-file=.env .github/workflows/html-sitemap/generate.ts --stages extract,transform-data,transform-da --subdomain business
+node --env-file=.env .github/workflows/html-sitemap/generate.js --stages extract,transform-data,transform-da --subdomain business
 
 # Delivery stages
-node --env-file=.env .github/workflows/html-sitemap/generate.ts push --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
-node --env-file=.env .github/workflows/html-sitemap/generate.ts preview --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
-node --env-file=.env .github/workflows/html-sitemap/generate.ts publish --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.js push --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.js preview --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
+node --env-file=.env .github/workflows/html-sitemap/generate.js publish --subdomain business --geo default --da-root /drafts/hgpa/html-sitemap
 ```
 
 ## Configuration
