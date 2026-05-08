@@ -8,8 +8,6 @@ const UNMANAGED_SEL = `script[type="application/ld+json"]:not([${MANAGED_ATTR}="
 const DEBOUNCE_MS = 1000;
 const REF_ARRAY_KEYS = new Set(['hasPart', 'mainEntity', 'itemListElement']);
 
-// Encoding of the requirements sheet: https://milo.adobe.com/docs/authoring/structured-data-json-ld.json
-// Each @type entry describes identity, singleton status, and default linkage edges.
 const RULES = {
   WebPage: {
     idFragment: '#webpage',
@@ -33,21 +31,13 @@ const RULES = {
   },
   HowTo: { idFragment: '#howto', linksBack: { isPartOf: 'WebPage' } },
   FAQPage: { idFragment: '#faq', linksBack: { isPartOf: 'WebPage' } },
-  // TODO(spec §2.4): repeatable types get the same canonical id if they lack @id;
-  // for v1 they are merged into one entry. Assign sequential ids in a later iteration.
   VideoObject: { idFragment: '#videoobject', repeatable: true },
   Event: { idFragment: '#event' },
   Offer: { idFragment: '#offer', repeatable: true },
 };
 
-// Producer-side @type values transformed to canonical types before normalization.
-// Adobe.com pages do not market physical products; Product (e.g., from review block,
-// merch cards) is rewritten to SoftwareApplication per the product-to-softwareapplication
-// requirement.
 const TYPE_TRANSFORMS = { Product: 'SoftwareApplication' };
 
-// Defensive canonicalization: producer-supplied @id fragments that should map to the
-// canonical site-wide Organization @id.
 const ORG_ID_ALIASES = new Set(['#org', '#publisher', '#adobe']);
 
 export function siteRoot(hostname = window.location.hostname) {
@@ -124,8 +114,6 @@ export function canonicalizeOrgId(id) {
   return `${root}/#organization`;
 }
 
-// Walk reference stubs ({ "@id": "..." } with no @type) and rewrite known
-// Organization @id aliases to the canonical form. Skips full nodes (which carry @type).
 export function canonicalizeReferences(node) {
   for (const v of Object.values(node)) {
     if (Array.isArray(v)) {
@@ -155,7 +143,6 @@ export function unionByRef(a, b) {
   return result;
 }
 
-// Source priority per spec §2.4: generated (2) > runtime (1) > bootDom (0).
 function priorityWeight(src) {
   if (src === 'generated') return 2;
   if (src === 'runtime') return 1;
@@ -341,7 +328,6 @@ export class JsonLdGraphManager {
             } else {
               this.graph.set(id, n);
             }
-            // Track max-priority source so subsequent merges use the right weight.
             if (priorityWeight(source) >= priorityWeight(prevSrc)) {
               this.sources.set(id, source);
             }
@@ -355,17 +341,11 @@ export class JsonLdGraphManager {
   }
 
   rewrite() {
-    // Synthesize a minimal WebPage root when producers haven't emitted one.
-    // Always runs (even with zero producers) because enabling the manager is
-    // an explicit opt-in and the requirements sheet mandates singleton WebPage
-    // and Organization nodes (`webpage-singleton`, `organization-singleton`).
     const webpageId = pageScopedId('WebPage');
     if (!this.graph.has(webpageId)) {
       const url = canonicalUrl();
       this.graph.set(webpageId, { '@type': 'WebPage', '@id': webpageId, url });
     }
-    // Ensure a canonical Organization is always present. Baseline fields (name, url, logo)
-    // take graph-manager-generated priority so they win over any producer-supplied values.
     const org = defaultOrg();
     const orgId = org['@id'];
     if (!this.graph.has(orgId)) {
