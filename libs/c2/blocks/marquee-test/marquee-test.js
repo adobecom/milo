@@ -7,24 +7,24 @@ function decorate(block) {
   const col = block.children[0]?.children[0];
   if (!col) return;
 
-  const picture = col.querySelector('picture');
+  const iconEl = col.querySelector('picture') ?? col.querySelector('p img[src*=".svg"]');
   const ctaLink = col.querySelector('p:has(em a) em a, p:has(strong a) strong a');
   col.querySelector('p:has(em a), p:has(strong a)')?.remove();
 
   decorateBlockText(col, { heading: '2', body: 'md' });
 
   const heading = col.querySelector('h1, h2, h3, h4');
-  const bodyParas = [...col.querySelectorAll('p')];
+  const bodyEls = [...col.querySelectorAll('.body-md')];
 
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
-  if (picture) {
-    picture.classList.add('icon');
-    chicletRow.append(picture);
+  if (iconEl) {
+    iconEl.classList.add('icon');
+    chicletRow.append(iconEl);
   }
   if (heading) chicletRow.append(heading);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
-  foreground.append(chicletRow, ...bodyParas);
+  foreground.append(chicletRow, ...bodyEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   if (ctaLink) {

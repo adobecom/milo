@@ -44,6 +44,13 @@
       }
     }
 
+    img.icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+      object-fit: contain;
+    }
+
     .title-2 {
       color: var(--s2a-color-content-title);
       font-family: var(--heading-font-family);
@@ -101,7 +108,8 @@
     padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     padding-inline: var(--s2a-spacing-3xl);
 
-    .pm-chiclet-row .icon {
+    .pm-chiclet-row .icon,
+    .pm-chiclet-row img.icon {
       block-size: 80px;
       inline-size: 80px;
     }
