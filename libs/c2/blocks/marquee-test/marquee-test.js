@@ -17,7 +17,10 @@ function decorate(block) {
   const bodyParas = [...col.querySelectorAll('p')];
 
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
-  if (picture) chicletRow.append(createTag('div', { class: 'pm-chiclet' }, picture));
+  if (picture) {
+    picture.classList.add('icon');
+    chicletRow.append(picture);
+  }
   if (heading) chicletRow.append(heading);
 
   const foreground = createTag('div', { class: 'pm-foreground' });

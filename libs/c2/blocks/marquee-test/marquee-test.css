@@ -25,14 +25,13 @@
   gap: var(--s2a-spacing-lg);
 }
 
-.pm-chiclet {
+.pm-chiclet-row .icon {
   block-size: 50px;
   flex-shrink: 0;
   inline-size: 50px;
 }
 
-.pm-chiclet img,
-.pm-chiclet picture img {
+.pm-chiclet-row .icon img {
   block-size: 100%;
   inline-size: 100%;
   object-fit: contain;
@@ -112,7 +111,7 @@
     padding-inline: var(--s2a-spacing-3xl);
   }
 
-  .pm-chiclet {
+  .pm-chiclet-row .icon {
     block-size: 80px;
     inline-size: 80px;
   }
