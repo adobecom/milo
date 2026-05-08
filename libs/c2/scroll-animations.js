@@ -314,6 +314,22 @@ function initCarouselC2() {
       top = null;
     });
 
+    new MutationObserver(() => {
+      if (interacted) return;
+      const actualSlideW = parseFloat(el.style.getPropertyValue('--actual-slide-width')) || 0;
+      const carouselW = el.getBoundingClientRect().width;
+      const marginW = (carouselW - actualSlideW) / 2;
+      const gap = parseFloat(getComputedStyle(wrapper).gap) || 8;
+      const activeEl = wrapper.querySelector('.active');
+      const idx = [...wrapper.children].indexOf(activeEl);
+      const tx = isRtl
+        ? idx * actualSlideW - marginW + idx * gap
+        : idx * actualSlideW * -1 + marginW - idx * gap;
+      wrapper.style.transition = 'none';
+      wrapper.style.translate = `${tx}px`;
+      top = null;
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
+
     cleanupTasks.push(() => {
       resetStyles();
       top = null;
@@ -334,15 +350,11 @@ function initCarouselC2() {
       const m = getScrollMetrics(scroll, elHeight, top, 0.1, 0.1);
       const t = viewRange(m, 'entry', -0.5, 'entry', 0.2);
 
-      if (t >= 1) {
-        resetStyles();
-        return;
-      }
-
       const slideScaleMult = parseFloat(el.style.getPropertyValue('--slide-scale-multiplier')) || 1;
+      const rtlMult = document.documentElement.dir === 'rtl' ? -1 : 1;
       slides.forEach((s) => {
         const sign = parseInt(s.style.getPropertyValue('--slide-spread-sign'), 10) || 0;
-        const spreadPx = window.innerWidth * 0.5 * sign * (1 - t);
+        const spreadPx = window.innerWidth * 0.5 * sign * rtlMult * (1 - t);
         s.style.translate = `${spreadPx}px 0`;
         s.style.scale = `${lerp(slideScaleMult, 1, t)} 1`;
       });
