@@ -105,7 +105,7 @@ The `JsonLdGraphManager` exists to convert these entities into a single graph. C
 
 `Organization` appears once and is referenced by `@id` from both `WebPage.publisher` and `Article.publisher`. `WebPage` is the graph root — it declares its `breadcrumb` and `mainEntity` by reference. `Article` links back via `isPartOf` and `mainEntityOfPage`. `BreadcrumbList` also declares `isPartOf` the `WebPage`. Every relationship is bidirectional and traversable.
 
-See the `requirements` sheet of [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json) for the list of rules for the managed graph. It is used together with this document to generate the implementation.
+§3 Requirements specifies the normative rules for the managed graph. §4 Per-Type Strategy maps each supported schema.org type to its Google rich-result requirements, manager handling, and known producers in the Milo repository.
 
 ## 2. Design
 
@@ -168,7 +168,7 @@ The manager performs an immediate boot write, then batches later rewrites on a d
 
 ### 2.3 Output Contract
 
-The shape of the managed `<script>` and `@graph`, including required and optional attributes, identity rules, singletons, and entity linkage, is defined by the `requirements` sheet in [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json). The manager's job is to produce output that satisfies every `error`-severity rule in that sheet.
+The shape of the managed `<script>` and `@graph`, including required and optional attributes, identity rules, singletons, and entity linkage, is defined in §3 Requirements. The manager's job is to produce output that satisfies every `error`-severity rule there.
 
 Accepted input forms include a single JSON-LD object, an array of JSON-LD objects, or an object containing `@graph`. All accepted forms are flattened into one internal graph representation before transforms run.
 
@@ -176,7 +176,7 @@ Non-managed JSON-LD scripts are candidates for ingestion and removal regardless 
 
 ### 2.4 Normalization And Merge Policy
 
-The canonical `@id` values the manager assigns to each recognized entity type are defined in the `requirements` sheet (see `page-scoped-id-format` and `organization-site-wide-id`). Incoming producer `@id` values are treated as merge hints — for recognized entities, the manager rewrites `@id` to the canonical value. Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated.
+The canonical `@id` values the manager assigns to each recognized entity type are defined in §3 Requirements (`page-scoped-id-format`, `organization-site-wide-id`). Incoming producer `@id` values are treated as merge hints — for recognized entities, the manager rewrites `@id` to the canonical value. Unknown nodes that lack stable identity are retained provisionally until they can be normalized or deduplicated.
 
 #### Merge priority
 
@@ -197,7 +197,7 @@ Unless a type-specific rule overrides them, the manager applies the following de
 - anonymous array members are deduplicated by normalized content hash when no stable `@id` exists
 - unknown anonymous top-level nodes are retained provisionally until they can be normalized or deduplicated
 
-Singleton, supplemental, and repeatable type policies are defined by the `requirements` sheet (`webpage-singleton`, `organization-singleton`, `breadcrumblist-singleton`, `required-primary-type`, `supplemental-singletons`, `repeatable-types`). Relationship arrays such as `hasPart` are unioned by canonical `@id`.
+Singleton, supplemental, and repeatable type policies are defined in §3.4 Graph composition (`webpage-canonical-singleton`, `organization-singleton`, `breadcrumblist-singleton`, `required-primary-type`, `supplemental-singletons`, `repeatable-types`). Relationship arrays such as `hasPart` are unioned by canonical `@id`.
 
 #### Type-specific transforms
 
@@ -211,6 +211,10 @@ In addition to identity rewrite and merge, the manager applies a small set of ty
 - hoists nested `Brand` and `Offer` entities to the top-level `@graph` and replaces inline values with `@id` references
 
 This transform is governed by the `product-to-softwareapplication` requirement.
+
+**SoftwareApplication subtype preservation.** Schema.org defines `WebApplication`, `MobileApplication`, and `VideoGame` as subtypes of `SoftwareApplication`, and Google's Software App rich result explicitly supports them. When a producer supplies one of these subtypes (e.g., team-hardcoded `WebApplication` markup), the manager preserves the more specific `@type`, lands the node at the canonical `#softwareapplication` `@id`, and merges contributions from other producers (e.g., the review block emitting `Product` → `SoftwareApplication`) at the same id. The baseline `Product → SoftwareApplication` transform does NOT rewrite a producer-supplied subtype down to plain `SoftwareApplication`. Governed by `softwareapplication-subtype-allowed`.
+
+**Cross-page WebPage references.** Producers occasionally assert `isPartOf` or `mainEntityOfPage` against a different page's WebPage (e.g., a sub-app belonging to a parent /online/ index). Schema.org permits this and Google's rich-result spec is silent on it. To keep the page graph coherent on a single-page basis, the manager rewrites such references to the current canonical `#webpage` id and discards the inline cross-page WebPage body. Governed by `webpage-canonical-singleton`. (We may revisit this if a consumer ever surfaces a need for cross-page parent linkage.)
 
 #### Reference shape
 
@@ -242,7 +246,7 @@ graph TD
     FAQ -->|isPartOf| WP
 ```
 
-This model is intended to be stable across separate producer implementations. The relationships shown — `mainEntity`, `breadcrumb`, `publisher`, `isPartOf`, `hasPart` — and their cardinality constraints are encoded as rules in the `requirements` sheet.
+This model is intended to be stable across separate producer implementations. The relationships shown — `mainEntity`, `breadcrumb`, `publisher`, `isPartOf`, `hasPart` — and their cardinality constraints are encoded as rules in §3 Requirements.
 
 #### Product page shape
 
@@ -273,7 +277,327 @@ There are two additional approaches that have been tabled but should be reexamin
 
 **Build-time aggregation.** Collect and normalize JSON-LD at publish time instead of at runtime. Rejected: much of today's JSON-LD is produced by runtime code (feature fetches, DOM derivations, experimentation) and by author-hand-coded inline scripts. A build-time aggregator would miss both categories, and the managed graph would not reflect what the browser actually renders. There are still valid use-cases for this approach to perform major portions of node generation.
 
-## 3. Conformance
+## 3. Requirements
+
+The normative rules for the managed graph. Every rule has a stable `Name`, a `Severity`, the `Requirement` itself, and optional `Notes`. Severity meanings:
+
+- **error** — the manager MUST satisfy this rule. Output that violates an error-rule is non-conformant.
+- **warn** — the manager SHOULD satisfy this rule. Violations should be logged via Lana but do not block emission.
+- **info** — informational guidance. Captures defaults, conventions, and rules the manager applies but that consumers and producers MAY also rely on.
+
+Rules are grouped by concern. Cross-type behavior (singletons, defaults, transforms, source priority) lives here; per-type policy and producer inventory lives in §4.
+
+### 3.1 Output shape
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `single-script-tag` | error | The HTML page MUST contain exactly one `<script type="application/ld+json">` tag, located in `<head>`. |
+| `managed-script-marker` | error | The managed script MUST carry the attribute `data-milo-jsonld="graph"` so the graph manager can identify it for ingestion and rewrite. |
+| `managed-script-metadata` | info | The managed script MAY carry the optional attributes `data-milo-jsonld-version` and `data-milo-jsonld-updated`. |
+| `graph-container-shape` | error | The script content MUST be a single graph object with `@context` set to `https://schema.org` and a `@graph` array. |
+| `no-per-node-context` | error | `@context` MUST NOT appear on individual nodes. |
+
+### 3.2 Identity
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `all-nodes-have-id` | error | Every node in `@graph` MUST have an `@id`. |
+| `all-nodes-have-type` | error | Every node in `@graph` MUST have an `@type`. |
+| `unique-node-ids` | error | Every `@id` in `@graph` MUST be unique; no two nodes may share the same `@id`. |
+| `page-scoped-id-format` | error | Page-scoped node `@id` values MUST follow the format `{canonicalPageURL}#{role}` where `{role}` is the lowercase entity role on the page, e.g. `https://example.com/page#webpage`, `#article`, `#breadcrumb`, `#howto`, `#faq`. |
+| `organization-site-wide-id` | error | The Adobe publisher Organization is a site-wide singleton; its `@id` MUST be `https://www.adobe.com/#organization` rather than the page-scoped format. |
+| `organization-site-root` | info | Site root is `https://www.adobe.com` unless `window.location.hostname` contains `business` or `bacom`, in which case `https://business.adobe.com`. |
+
+### 3.3 References
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `nodes-referenced-by-id` | error | Nodes that appear in `@graph` MUST NOT be inlined as nested objects; they MUST be referenced by `@id`. |
+
+The previous `external-reference-includes-url` rule is retired. Because every referenced entity — including the site-wide `Organization` and any `Offer` — is present as a top-level node in the same `@graph`, an `@id`-only reference is sufficient; consumers can follow `@id` to retrieve `url` and other properties.
+
+### 3.4 Graph composition
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `webpage-canonical-singleton` | error | The graph MUST contain exactly one WebPage node whose `@id` is the canonical page id (`{canonicalPageURL}#webpage`). Producer-supplied cross-page WebPage references in `isPartOf` / `mainEntityOfPage` are rewritten to the canonical page id and any inline cross-page WebPage body is discarded. |
+| `organization-singleton` | error | The graph MUST contain exactly one Organization node. |
+| `breadcrumblist-singleton` | error | The graph MUST contain exactly one BreadcrumbList node when applicable. (BreadcrumbList is optional; some pages have no breadcrumbs. When breadcrumbs are present, exactly one BreadcrumbList is required.) |
+| `required-primary-type` | warn | The graph SHOULD contain exactly one node of a recognised primary page type: `Article`, `NewsArticle`, `SoftwareApplication`, or any SoftwareApplication subtype permitted by `softwareapplication-subtype-allowed`. |
+| `supplemental-singletons` | warn | The graph MAY contain at most one HowTo node and at most one FAQPage node. (Presence is optional; count > 1 is a hard violation.) |
+| `repeatable-types` | info | The graph MAY contain multiple instances of `VideoObject`. These types are NOT deduplicated as singletons. |
+
+`webpage-canonical-singleton` replaces the prior `webpage-singleton`. Schema.org allows `isPartOf` to point at a cross-page resource and Google's rich-result spec doesn't constrain it, but a managed page-graph that contains two WebPage nodes is internally inconsistent for our consumers (the WebPage of the rendered page is the only one with full link wiring). We therefore rewrite cross-page `isPartOf`/`mainEntityOfPage` to the current canonical `#webpage` id. This is policy choice C from the design review — to be revisited if a consumer ever surfaces a need for cross-page parent linkage.
+
+### 3.5 Linking
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `webpage-publisher-link` | error | The WebPage node MUST have a `publisher` property referencing the Organization node by `@id`. |
+| `webpage-mainentity-link` | error | The WebPage node SHOULD have a `mainEntity` property referencing the primary page type node by `@id`. (Assuming a primary entity exists: `Article`, `NewsArticle`, or `SoftwareApplication`.) |
+| `webpage-breadcrumb-link` | warn | The WebPage node SHOULD have a `breadcrumb` property referencing the BreadcrumbList node by `@id`. (Only evaluated when a BreadcrumbList is present.) |
+| `primary-type-ispartof` | error | The primary page type node MUST have an `isPartOf` property referencing the WebPage node by `@id`. |
+| `breadcrumblist-ispartof` | error | The BreadcrumbList node MUST have an `isPartOf` property referencing the WebPage node by `@id`. |
+| `primary-type-publisher` | warn | The primary page type node SHOULD have a `publisher` property referencing the Organization node by `@id`. |
+| `primary-type-mainentityofpage` | info | The primary page type node MAY have a `mainEntityOfPage` property referencing the WebPage node by `@id`. |
+
+### 3.6 Type transforms
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `product-to-softwareapplication` | error | A `Product` node MUST be transformed by the graph manager into a `SoftwareApplication` node. The transform rewrites `@type` from `Product` to `SoftwareApplication`, re-derives `@id` to `{canonicalPageURL}#softwareapplication`, and preserves `name`, `brand`, `image`, `offers`, and other shared properties. Nested `Brand` and `Offer` entities are hoisted to the top-level `@graph` by `@id`. (Required because Adobe.com pages do not market physical products; the merch card system emits `Product` but the canonical primary type for product-oriented pages is `SoftwareApplication`.) |
+| `softwareapplication-subtype-allowed` | info | The manager preserves a more specific `@type` when supplied by a producer. Recognized SoftwareApplication subtypes are `WebApplication`, `MobileApplication`, and `VideoGame` (per the [Google Software App rich result](https://developers.google.com/search/docs/appearance/structured-data/software-app) and schema.org). When a subtype is present, the node retains its specific `@type`, lands at the canonical `#softwareapplication` `@id`, and merges with any other SoftwareApplication-family contributions from the same page. The `Product → SoftwareApplication` baseline transform does NOT rewrite a producer-supplied subtype down to plain `SoftwareApplication`. |
+
+### 3.7 Defaults and precedence
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `organization-default-name` | error | `Organization.name` MUST be present; manager default is `"Adobe"` (or `"Adobe for Business"` when site root is `https://business.adobe.com`). |
+| `organization-default-url` | error | `Organization.url` MUST be the site root homepage URL (e.g., `https://www.adobe.com/` or `https://business.adobe.com/`), not a page-scoped URL. |
+| `organization-default-logo` | warn | `Organization.logo` SHOULD be present as a schema.org `ImageObject` whose `url` and `contentUrl` point at the canonical Adobe corporate horizontal red logo (`https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg`). The manager applies this default when no producer-supplied logo is present. Per [Google's Logo guidelines](https://developers.google.com/search/docs/appearance/structured-data/logo) the image must be at least 112×112 pixels (SVG satisfies this); the `ImageObject` form is preferred over a bare URL string for richer metadata. |
+| `organization-default-precedence` | info | Manager-synthesized Organization fields (`name`, `url`, `logo`) take graph-manager-generated priority — they win over any producer-supplied values for those three fields. Producer-supplied fields not in the default set (`sameAs`, `address`, `description`, etc.) are preserved. |
+| `organization-nested-extraction` | info | Organization objects embedded as inline property values (e.g. `publisher`, `author`, `provider`) are hoisted to the top-level `@graph` and merged into the canonical Organization node. The inline value is replaced with `{ "@id": "<canonical-org-id>" }`. |
+| `source-priority` | error | When the same node is contributed by multiple sources, scalar conflicts are resolved by source priority: graph-manager-generated > Milo feature/block runtime > third-party runtime > initial page DOM (`bootDom`). Object fields merge by key with the same precedence; relationship arrays are unioned by `@id`. This applies to all types unless a type-specific override exists. (Codifies that runtime producers — for example, the review block's `aggregateRating` — win over hardcoded `bootDom` values, ensuring the freshest data reaches consumers.) |
+
+### 3.8 Type-specific rules
+
+#### SoftwareApplication
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `softwareapplication-name` | error | A SoftwareApplication node MUST have a `name` property. (Required for the Google software-app rich result. Only evaluated when primary type is SoftwareApplication or a subtype.) |
+| `softwareapplication-offers` | warn | A SoftwareApplication node SHOULD have an `offers` property referencing one or more Offer nodes by `@id`. Multiple offers (e.g., paid subscription and free trial) are encoded as separate Offer nodes. (Each Offer MAY include a `potentialAction` property to express usage actions, e.g., `BuyAction`, `TryAction`.) |
+| `softwareapplication-rating-or-review` | warn | A SoftwareApplication node SHOULD have either an `aggregateRating` or a `review` property. Required for the Google software-app rich result. The manager will produce incomplete nodes when this data is not available from producers. |
+| `softwareapplication-provider` | info | A SoftwareApplication node MAY have a `provider` property referencing the Organization node by `@id`. |
+
+#### Offer
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `offer-price` | error | An Offer node MUST have `price` and `priceCurrency` properties. (Required for the Google software-app rich result. Evaluated for any Offer node referenced by `SoftwareApplication.offers`.) |
+
+#### BreadcrumbList
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `breadcrumblist-items` | error | The BreadcrumbList `itemListElement` MUST be a non-empty array of ListItem nodes, each with `position`, `name`, and `item` properties. |
+
+## 4. Per-Type Strategy
+
+Each subsection covers one schema.org type the manager handles. The structure is:
+
+- **Schema.org** — type hierarchy and accepted subtypes.
+- **Google rich result** — what consumer behavior depends on the markup, with required and recommended fields.
+- **Manager handling** — `@id` pattern, cardinality, defaults, transforms.
+- **Known producers** — Milo blocks and features that emit this type today.
+
+Coverage strategy: Google rich-result eligibility is consumer #1. Other consumers (LLMs, knowledge graphs) benefit indirectly from the same shape. The manager preserves producer fields beyond what Google requires.
+
+Producer inventory in this section is scoped to the `milo` repository. The full cross-repo inventory lives in the `integrations` sheet of [structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json).
+
+### 4.1 WebPage
+
+**Schema.org.** `Thing > CreativeWork > WebPage`. No subtypes accepted by the manager.
+
+**Google rich result.** Not directly eligible, but acts as the page-graph root that other rich-result types attach to via `isPartOf` / `mainEntity` / `breadcrumb`. Required for Article, NewsArticle, SoftwareApplication, and BreadcrumbList rich results to have a coherent parent.
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#webpage`
+- Cardinality: singleton (`webpage-canonical-singleton`)
+- Synthesized when absent from producers
+- Cross-page WebPage references in `isPartOf` / `mainEntityOfPage` are rewritten to the canonical page id
+
+**Known producers (milo).** None. The manager always synthesizes WebPage.
+
+### 4.2 Organization
+
+**Schema.org.** `Thing > Organization`. No subtypes used.
+
+**Google rich result.** Logo, knowledge panel, and publisher attribution on Article rich results. Required: `name`. Logo SHOULD be present (112×112 pixel minimum). See [Google Logo guidelines](https://developers.google.com/search/docs/appearance/structured-data/logo).
+
+**Manager handling.**
+- `@id`: `{siteRoot}/#organization` (site-wide, not page-scoped)
+- Cardinality: singleton (`organization-singleton`)
+- Synthesized when absent. Default `name`, `url`, `logo` overrides any producer-supplied values for those three fields (`organization-default-precedence`). Producer-supplied fields not in the default set (`sameAs`, `address`, etc.) are preserved.
+- Inline Organization values in `publisher` / `author` / `provider` are extracted and merged into the canonical node (`organization-nested-extraction`)
+- Producer-supplied non-canonical `@id` aliases (`#org`, `#publisher`, `#adobe`) are rewritten to `#organization`
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `richresults` | `richresults=Organization` page metadata | [`libs/features/richresults.js`](https://github.com/adobecom/milo/blob/stage/libs/features/richresults.js) |
+
+### 4.3 BreadcrumbList
+
+**Schema.org.** `Thing > Intangible > ItemList > BreadcrumbList`.
+
+**Google rich result.** [Breadcrumb](https://developers.google.com/search/docs/appearance/structured-data/breadcrumb). Required: `itemListElement` array of `ListItem` with `position`, `name`, `item` (URL).
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#breadcrumb`
+- Cardinality: singleton when applicable (`breadcrumblist-singleton`)
+- `WebPage.breadcrumb` is set to `{ @id: '#breadcrumb' }` when present
+- `BreadcrumbList.isPartOf` is set to `{ @id: '#webpage' }`
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `global-navigation breadcrumbs` | Breadcrumbs render and SEO not disabled | [`libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/global-navigation/features/breadcrumbs/breadcrumbs.js) |
+| `legacy gnav breadcrumbs` | Breadcrumbs render and `breadcrumb-seo` is not `off` | [`libs/blocks/gnav/gnav.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/gnav/gnav.js#L522) |
+| `MEP breadcrumbs` | MEP breadcrumbs render and SEO not disabled | [`libs/mep/ace1151/global-navigation/features/breadcrumbs/breadcrumbs.js`](https://github.com/adobecom/milo/blob/stage/libs/mep/ace1151/global-navigation/features/breadcrumbs/breadcrumbs.js) |
+
+### 4.4 SoftwareApplication (and subtypes)
+
+**Schema.org.** `Thing > CreativeWork > SoftwareApplication`. Accepted subtypes: `WebApplication`, `MobileApplication`, `VideoGame` (the latter requires co-typing with another SoftwareApplication subtype).
+
+**Google rich result.** [Software App](https://developers.google.com/search/docs/appearance/structured-data/software-app). Required: `name`, `offers.price`, and one of `aggregateRating` or `review`. Recommended: `applicationCategory`, `operatingSystem`. Subtypes `WebApplication`, `MobileApplication`, `VideoGame` are explicitly supported.
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#softwareapplication` (regardless of subtype)
+- Cardinality: singleton; one primary type per page
+- Transform: `Product` → `SoftwareApplication` (`product-to-softwareapplication`)
+- Subtypes preserved when producer supplies them (`softwareapplication-subtype-allowed`); the canonical `#softwareapplication` `@id` lets the manager merge contributions from the review block (`Product` → `SoftwareApplication`) with team-hardcoded `WebApplication` markup
+- Inline `Offer` and `Brand` are extracted; `offers` becomes `{ @id }` references; anonymous `Brand` may stay inline
+- `provider` set to `{ @id: '<org>' }` when manager-synthesized; producer-supplied `provider` is canonicalized to the same shape
+
+**Known producers (milo).**
+
+| Block / feature | Type emitted | Trigger | Source |
+|---|---|---|---|
+| `merch autoblock` | `Product` (→ SA) | merch options include `jsonld=on` | [`libs/blocks/merch-card-autoblock/merch-card-autoblock.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/merch-card-autoblock/merch-card-autoblock.js#L137) |
+| `review flow` | `Product` (→ SA) | Review block has `product-name` and rating response | [`libs/blocks/review/utils/setJsonLdProductInfo.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/review/utils/setJsonLdProductInfo.js#L2) |
+
+The Acrobat team's hardcoded `WebApplication` markup is a `da-dc` repo producer, not a milo producer; it appears in the cross-repo `integrations` sheet.
+
+### 4.5 Article / NewsArticle
+
+**Schema.org.** `Thing > CreativeWork > Article`. `NewsArticle` is a subtype of `Article`.
+
+**Google rich result.** [Article](https://developers.google.com/search/docs/appearance/structured-data/article). Required: `headline`, `image`, `datePublished`, `author`, `publisher`. NewsArticle is the same shape with stricter content guidelines.
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#article`
+- Cardinality: singleton; one primary type per page
+- `isPartOf` and `mainEntityOfPage` set to `{ @id: '#webpage' }`
+- `publisher` reference canonicalized to `{ @id: '<org>' }`
+
+**Known producers (milo).**
+
+| Block / feature | Type emitted | Trigger | Source |
+|---|---|---|---|
+| `richresults` | `Article` | `richresults=Article` page metadata | [`libs/features/richresults.js`](https://github.com/adobecom/milo/blob/stage/libs/features/richresults.js) |
+| `richresults` | `NewsArticle` | `richresults=NewsArticle` page metadata | (same file) |
+
+### 4.6 HowTo
+
+**Schema.org.** `Thing > CreativeWork > HowTo`.
+
+**Google rich result.** Status: HowTo rich results were deprecated in Google Search in 2023 and are no longer eligible for the rich treatment, but the markup is still ingested for general structured-data understanding. Required (per the deprecated spec): `name`, `step` array of `HowToStep`.
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#howto`
+- Cardinality: supplemental singleton (`supplemental-singletons`)
+- `isPartOf` set to `{ @id: '#webpage' }`
+- `publisher` reference canonicalized to Organization
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `how-to` | Block has class `seo` | [`libs/blocks/how-to/how-to.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/how-to/how-to.js#L19) |
+
+### 4.7 FAQPage
+
+**Schema.org.** `Thing > CreativeWork > WebPage > FAQPage`.
+
+**Google rich result.** [FAQPage](https://developers.google.com/search/docs/appearance/structured-data/faqpage). Eligibility for the rich result is restricted (since 2023) to authoritative government and health sites; for other sites the markup is still consumed by Search and LLMs but does not trigger the rich result. Required: `mainEntity` array of `Question` with `acceptedAnswer.Answer.text`.
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#faq`
+- Cardinality: supplemental singleton (`supplemental-singletons`)
+- `isPartOf` set to `{ @id: '#webpage' }`
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `accordion` | Block has class `seo` | [`libs/blocks/accordion/accordion.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/accordion/accordion.js#L8) |
+| `MEP accordion ace1151` | MEP accordion SEO path | [`libs/mep/ace1151/accordion/accordion.js`](https://github.com/adobecom/milo/blob/stage/libs/mep/ace1151/accordion/accordion.js#L8) |
+| `MEP accordion emea1443` | MEP accordion SEO path | [`libs/mep/emea1443/accordion/accordion.js`](https://github.com/adobecom/milo/blob/stage/libs/mep/emea1443/accordion/accordion.js#L8) |
+
+### 4.8 VideoObject
+
+**Schema.org.** `Thing > CreativeWork > MediaObject > VideoObject`.
+
+**Google rich result.** [Video](https://developers.google.com/search/docs/appearance/structured-data/video). Required: `name`, `thumbnailUrl`, `uploadDate`. Recommended: `description`, `contentUrl`, `embedUrl`, `duration`.
+
+**Manager handling.**
+- `@id`: producer-supplied (typically `{canonicalPageURL}#video-{slug}`)
+- Cardinality: repeatable (`repeatable-types`); not deduplicated as singletons
+- One canonical `#videoobject` is reserved for the first/only emitter; additional videos require distinct producer-supplied `@id` values
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `seotech video path` | `seotech-video-url` page metadata | [`libs/features/seotech/seotech.js`](https://github.com/adobecom/milo/blob/stage/libs/features/seotech/seotech.js) |
+| `video-metadata` | Recognized video metadata fields exist | [`libs/blocks/video-metadata/video-metadata.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/video-metadata/video-metadata.js#L69) |
+
+### 4.9 Offer
+
+**Schema.org.** `Thing > Intangible > Offer`.
+
+**Google rich result.** Used by Software App and Product rich results. Required when referenced from `SoftwareApplication`: `price`, `priceCurrency` (`offer-price`).
+
+**Manager handling.**
+- `@id`: producer-supplied or `{canonicalPageURL}#offer` (singleton when only one Offer is present)
+- Cardinality: repeatable when distinct `@id` values are supplied (e.g., `#offer-paid`, `#offer-trial`)
+- Hoisted from `SoftwareApplication.offers` to top-level `@graph` and replaced with `{ @id }` references
+- Producer-supplied `seller: { @id: '...#org' }` (and similar aliases) is canonicalized to `{ @id: '...#organization' }`
+
+**Known producers (milo).** Emitted as nested values inside `Product`/`SoftwareApplication` from `merch autoblock` and `review flow`. Hoisted by the manager.
+
+### 4.10 Event
+
+**Schema.org.** `Thing > Event`.
+
+**Google rich result.** [Event](https://developers.google.com/search/docs/appearance/structured-data/event). Required: `name`, `startDate`, `location`. Recommended: `description`, `endDate`, `image`, `offers`.
+
+**Manager handling.** Currently passed through. Not a primary page type. Producer-supplied `@id` retained.
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `event-rich-results` | Block present | [`libs/blocks/event-rich-results/event-rich-results.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/event-rich-results/event-rich-results.js) |
+
+### 4.11 WebSite
+
+**Schema.org.** `Thing > CreativeWork > WebSite`.
+
+**Google rich result.** [Sitelinks search box](https://developers.google.com/search/docs/appearance/structured-data/sitelinks-searchbox). Required: `potentialAction` of type `SearchAction` with a `target` URL template and `query-input`.
+
+**Manager handling.** Site-wide singleton; emitted only when explicitly authored (e.g., `richresults=SiteSearchBox`). Not a primary page type.
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `richresults` | `richresults=SiteSearchBox` page metadata | [`libs/features/richresults.js`](https://github.com/adobecom/milo/blob/stage/libs/features/richresults.js) |
+
+### 4.12 seotech structured-data path (variable type)
+
+The `seotech` feature can fetch external JSON-LD from a remote API. The emitted type depends on the response payload. The manager applies its standard ingest / transform / merge pipeline per ingested node.
+
+**Known producers (milo).**
+
+| Block / feature | Trigger | Source |
+|---|---|---|
+| `seotech structured-data path` | `seotech-structured-data=on` page metadata | [`libs/features/seotech/seotech.js`](https://github.com/adobecom/milo/blob/stage/libs/features/seotech/seotech.js) |
+
+## 5. Conformance
 
 Testing for the `JsonLdGraphManager` is organized at three levels:
 
@@ -285,9 +609,9 @@ Testing for the `JsonLdGraphManager` is organized at three levels:
 
 Evaluating whether this feature actually improves how search engines and LLMs surface content is not in the scope of this document. 
 
-## 4. Operations
+## 6. Operations
 
-### 4.1 Feature Flagging
+### 6.1 Feature Flagging
 
 **Flag:** `jsonld-graph-manager` (page metadata or URL query parameter, `true`/`false`, default `false`)
 
@@ -295,7 +619,7 @@ The manager is feature-gated by AEM page metadata so it can be enabled or disabl
 
 **Debug flag:** `jsonld-graph-manager-debug` (URL query parameter only, `true` to enable)
 
-### 4.2 Observability And Diagnostics
+### 6.2 Observability And Diagnostics
 
 The manager should expose both local debugging output and production-safe warning and error reporting.
 
@@ -334,12 +658,17 @@ Recommended logging behavior:
 
 [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). developers.google.com.
 
-[Software App rich results](https://developers.google.com/search/docs/appearance/structured-data/software-app). developers.google.com. Defines required and recommended properties for `SoftwareApplication` to be eligible for software-app rich results: `name`, `offers` (with `price`), and either `aggregateRating` or `review`. Drives the `softwareapplication-name`, `softwareapplication-rating-or-review`, and `offer-price` requirements.
+[Software App rich results](https://developers.google.com/search/docs/appearance/structured-data/software-app). developers.google.com. Defines required and recommended properties for `SoftwareApplication` to be eligible for software-app rich results: `name`, `offers` (with `price`), and either `aggregateRating` or `review`. Explicitly supports `WebApplication`, `MobileApplication`, and `VideoGame` subtypes. Drives the `softwareapplication-name`, `softwareapplication-rating-or-review`, `offer-price`, and `softwareapplication-subtype-allowed` requirements.
 
-[Structured data catalog: structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json). milo.adobe.com. This AEM spreadsheet is the authoritative source for the normative graph specification, the validation cohort, the supported type inventory, and the integration registry. The `requirements` sheet in particular is consumed directly by the validator and transformer, so this document and that sheet must stay aligned. The catalog is organized into the following sheets:
+[Logo structured data](https://developers.google.com/search/docs/appearance/structured-data/logo). developers.google.com. Defines requirements for organization logos in structured data: 112×112 pixel minimum, accepts URL string or `ImageObject`. Drives the `organization-default-logo` requirement.
+
+[Schema.org `isPartOf`](https://schema.org/isPartOf). schema.org. Defines `isPartOf` as accepting `CreativeWork` or `URL`, with no constraint that the parent be in the same graph. Informs the policy choice in `webpage-canonical-singleton` to rewrite cross-page references to the current canonical page id.
+
+[Schema.org `WebApplication`](https://schema.org/WebApplication). schema.org. Subtype hierarchy: `Thing > CreativeWork > SoftwareApplication > WebApplication`. Adds `browserRequirements`; otherwise inherits all `SoftwareApplication` properties. Informs `softwareapplication-subtype-allowed`.
+
+[Structured data catalog: structured-data-json-ld.json](https://milo.adobe.com/docs/authoring/structured-data-json-ld.json). milo.adobe.com. This AEM spreadsheet is a companion to this document. The normative `requirements` sheet has been absorbed into §3 of this document and is no longer maintained as a separate sheet. The remaining sheets are:
 
 - `sites` — `adobecom` AEM sites in scope, with their GitHub URLs.
-- `requirements` — normative graph requirements that drive transformation and validation code.
 - `tests` — validation cohort pages with their expected primary entity.
 - `types` — reference of supported schema types with Milo, Google, and Schema.org status and documentation links.
 - `integrations` — reference of known JSON-LD producer integrations across sites, with location, trigger, configuration source, and last-updated date.
@@ -573,7 +902,11 @@ Note that the manager produces incomplete nodes when source data is unavailable.
       "@id": "https://www.adobe.com/#organization",
       "name": "Adobe",
       "url": "https://www.adobe.com/",
-      "logo": "https://www.adobe.com/favicon.ico"
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg",
+        "contentUrl": "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg"
+      }
     },
     {
       "@type": "WebPage",
