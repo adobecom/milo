@@ -314,22 +314,6 @@ function initCarouselC2() {
       top = null;
     });
 
-    new MutationObserver(() => {
-      if (interacted) return;
-      const actualSlideW = parseFloat(el.style.getPropertyValue('--actual-slide-width')) || 0;
-      const carouselW = el.getBoundingClientRect().width;
-      const marginW = (carouselW - actualSlideW) / 2;
-      const gap = parseFloat(getComputedStyle(wrapper).gap) || 8;
-      const activeEl = wrapper.querySelector('.active');
-      const idx = [...wrapper.children].indexOf(activeEl);
-      const tx = isRtl
-        ? idx * actualSlideW - marginW + idx * gap
-        : idx * actualSlideW * -1 + marginW - idx * gap;
-      wrapper.style.transition = 'none';
-      wrapper.style.translate = `${tx}px`;
-      top = null;
-    }).observe(document.documentElement, { attributes: true, attributeFilter: ['dir'] });
-
     cleanupTasks.push(() => {
       resetStyles();
       top = null;
