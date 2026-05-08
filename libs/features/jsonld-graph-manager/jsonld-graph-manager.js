@@ -34,6 +34,7 @@ const RULES = {
   VideoObject: { idFragment: '#videoobject', repeatable: true },
   Event: { idFragment: '#event' },
   Offer: { idFragment: '#offer', repeatable: true },
+  AggregateRating: { idFragment: '#aggregaterating', singleton: true },
 };
 
 const TYPE_TRANSFORMS = { Product: 'SoftwareApplication' };
@@ -254,7 +255,7 @@ function sortNodes(nodes) {
   });
 }
 
-const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered'];
+const ENTITY_PROPS = ['publisher', 'author', 'creator', 'provider', 'brand', 'seller', 'offers', 'itemOffered', 'aggregateRating'];
 
 function extractEntity(val) {
   if (!val || typeof val !== 'object' || Array.isArray(val) || !val['@type']) return null;

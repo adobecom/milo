@@ -326,6 +326,7 @@ The previous `external-reference-includes-url` rule is retired. Because every re
 | `breadcrumblist-singleton` | error | The graph MUST contain exactly one BreadcrumbList node when applicable. (BreadcrumbList is optional; some pages have no breadcrumbs. When breadcrumbs are present, exactly one BreadcrumbList is required.) |
 | `required-primary-type` | warn | The graph SHOULD contain exactly one node of a recognised primary page type: `Article`, `NewsArticle`, `SoftwareApplication`, or any SoftwareApplication subtype permitted by `softwareapplication-subtype-allowed`. |
 | `supplemental-singletons` | warn | The graph MAY contain at most one HowTo node and at most one FAQPage node. (Presence is optional; count > 1 is a hard violation.) |
+| `aggregaterating-singleton` | error | The graph MUST contain at most one AggregateRating node. When multiple producers contribute an `aggregateRating` (e.g., team-hardcoded markup and the review block), they merge at the canonical `@id` (`{canonicalPageURL}#aggregaterating`) and source priority resolves scalar conflicts. |
 | `repeatable-types` | info | The graph MAY contain multiple instances of `VideoObject` and `Offer`. These types are NOT deduplicated as singletons. (v1 limitation: when multiple repeatable nodes are emitted without distinct producer-supplied `@id` values, they collapse to a single node at the canonical id, e.g., `#videoobject` or `#offer`. Distinct `@id` values from producers are required to materialize multiple instances. Sequential `@id` assignment by the manager is planned for a future iteration.) |
 
 `webpage-canonical-singleton` replaces the prior `webpage-singleton`. Schema.org allows `isPartOf` to point at a cross-page resource and Google's rich-result spec doesn't constrain it, but a managed page-graph that contains two WebPage nodes is internally inconsistent for our consumers (the WebPage of the rendered page is the only one with full link wiring). We therefore rewrite cross-page `isPartOf`/`mainEntityOfPage` to the current canonical `#webpage` id. This is policy choice C from the design review — to be revisited if a consumer ever surfaces a need for cross-page parent linkage.
@@ -359,6 +360,7 @@ The previous `external-reference-includes-url` rule is retired. Because every re
 | `organization-default-precedence` | info | Manager-synthesized Organization fields (`name`, `url`, `logo`) take graph-manager-generated priority — they win over any producer-supplied values for those three fields. Producer-supplied fields not in the default set (`sameAs`, `address`, `description`, etc.) are preserved. |
 | `organization-nested-extraction` | info | Organization objects embedded as inline property values (e.g. `publisher`, `author`, `provider`) are hoisted to the top-level `@graph` and merged into the canonical Organization node. The inline value is replaced with `{ "@id": "<canonical-org-id>" }`. |
 | `organization-id-aliases` | info | Producer-supplied non-canonical Organization `@id` values whose fragment matches `#org`, `#publisher`, or `#adobe` are rewritten to the canonical `#organization` fragment in reference stubs (objects with `@id` but no `@type`). Full Organization nodes already get the canonical `@id` via the identity rewrite. (Defensive measure for known producer drift; producer-side fix-up is preferred long-term.) |
+| `aggregaterating-extraction` | info | AggregateRating objects embedded as inline property values (typically on `SoftwareApplication`, `Article`, `Product`, etc.) are hoisted to the top-level `@graph` and merged into the canonical AggregateRating node at `{canonicalPageURL}#aggregaterating`. The inline value is replaced with `{ "@id": "<canonical-aggregaterating-id>" }`. |
 | `source-priority` | error | When the same node is contributed by multiple sources, scalar conflicts are resolved by source priority: graph-manager-generated > Milo feature/block runtime > third-party runtime > initial page DOM (`bootDom`). Object fields merge by key with the same precedence; relationship arrays are unioned by `@id`. This applies to all types unless a type-specific override exists. The recorded source for a node is ratcheted to the maximum-priority source that has contributed to it; subsequent merges of lower-priority sources keep the higher source as the "previous" source for priority comparison, ensuring a generated default cannot be overwritten by later `bootDom` payloads arriving out of order. (Codifies that runtime producers — for example, the review block's `aggregateRating` — win over hardcoded `bootDom` values, ensuring the freshest data reaches consumers.) |
 
 ### 3.8 Type-specific rules
@@ -561,7 +563,21 @@ The Acrobat team's hardcoded `WebApplication` markup is a `da-dc` repo producer,
 
 **Known producers (milo).** Emitted as nested values inside `Product`/`SoftwareApplication` from `merch autoblock` and `review flow`. Hoisted by the manager.
 
-### 4.10 Event
+### 4.10 AggregateRating
+
+**Schema.org.** `Thing > Intangible > Rating > AggregateRating`.
+
+**Google rich result.** A required property of the [Software App](https://developers.google.com/search/docs/appearance/structured-data/software-app), [Product](https://developers.google.com/search/docs/appearance/structured-data/product), [Course](https://developers.google.com/search/docs/appearance/structured-data/course), and [Review snippet](https://developers.google.com/search/docs/appearance/structured-data/review-snippet) rich results when emitted at the host entity. Required: `ratingValue`, `ratingCount` (or `reviewCount`).
+
+**Manager handling.**
+- `@id`: `{canonicalPageURL}#aggregaterating`
+- Cardinality: singleton (`aggregaterating-singleton`) — at most one AggregateRating per page
+- Hoisted from inline property values on host entities (e.g., `SoftwareApplication.aggregateRating`) to a top-level `@graph` node and replaced with `{ "@id": "<canonical-aggregaterating-id>" }` (`aggregaterating-extraction`)
+- Multi-producer contributions merge at the canonical id; source priority resolves scalar conflicts (e.g., the review block's runtime ratings beat a stale team-hardcoded snapshot from `bootDom`)
+
+**Known producers (milo).** Emitted as a nested value inside `Product`/`SoftwareApplication` from the `review flow` block. Hoisted by the manager.
+
+### 4.11 Event
 
 **Schema.org.** `Thing > Event`.
 
@@ -575,7 +591,7 @@ The Acrobat team's hardcoded `WebApplication` markup is a `da-dc` repo producer,
 |---|---|---|
 | `event-rich-results` | Block present | [`libs/blocks/event-rich-results/event-rich-results.js`](https://github.com/adobecom/milo/blob/stage/libs/blocks/event-rich-results/event-rich-results.js) |
 
-### 4.11 WebSite
+### 4.12 WebSite
 
 **Schema.org.** `Thing > CreativeWork > WebSite`.
 
@@ -589,7 +605,7 @@ The Acrobat team's hardcoded `WebApplication` markup is a `da-dc` repo producer,
 |---|---|---|
 | `richresults` | `richresults=SiteSearchBox` page metadata | [`libs/features/richresults.js`](https://github.com/adobecom/milo/blob/stage/libs/features/richresults.js) |
 
-### 4.12 seotech structured-data path (variable type)
+### 4.13 seotech structured-data path (variable type)
 
 The `seotech` feature can fetch external JSON-LD from a remote API. The emitted type depends on the response payload. The manager applies its standard ingest / transform / merge pipeline per ingested node.
 

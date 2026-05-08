@@ -888,7 +888,13 @@ describe('SoftwareApplication subtype preservation', () => {
     // Producer-only fields preserved from both contributions.
     expect(app.browserRequirements).to.equal('HTML5');
     expect(app.applicationCategory).to.equal('BusinessApplication');
-    expect(app.aggregateRating).to.deep.equal({ '@type': 'AggregateRating', ratingValue: '4.61', ratingCount: '269519' });
+    // AggregateRating hoisted to top-level node, referenced by @id.
+    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+    const rating = graph.find((n) => n['@type'] === 'AggregateRating');
+    expect(rating).to.exist;
+    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(rating.ratingValue).to.equal('4.61');
+    expect(rating.ratingCount).to.equal('269519');
   });
 });
 
@@ -1006,5 +1012,57 @@ describe('injectLinks subtype awareness', () => {
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const webpage = graph.find((n) => n['@type'] === 'WebPage');
     expect(webpage.mainEntity).to.deep.equal({ '@id': `${PAGE_URL}#newsarticle` });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AggregateRating extraction (singleton, hoisted from inline values)
+// ---------------------------------------------------------------------------
+describe('AggregateRating singleton', () => {
+  it('extractInlineEntities hoists inline AggregateRating to top-level and references it by @id', () => {
+    const node = {
+      '@type': 'SoftwareApplication',
+      '@id': `${PAGE_URL}#softwareapplication`,
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.5', ratingCount: '100' },
+    };
+    const extracted = extractInlineEntities(node);
+    expect(extracted).to.have.length(1);
+    expect(extracted[0]['@type']).to.equal('AggregateRating');
+    expect(extracted[0]['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    expect(extracted[0].ratingValue).to.equal('4.5');
+    expect(node.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+  });
+
+  it('end-to-end: two producers contributing aggregateRating merge into one canonical node', () => {
+    // Enqueue first as bootDom (team hardcode), second as runtime (review block).
+    const bootScript = makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.6', ratingCount: '279157' },
+    });
+    const runtimeScript = makeScript({
+      '@type': 'Product',
+      name: 'Compress PDF',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.61', ratingCount: '269519' },
+    });
+    document.head.appendChild(bootScript);
+    document.head.appendChild(runtimeScript);
+    const manager = trackedManager();
+    manager.enqueue(bootScript, 'bootDom');
+    manager.enqueue(runtimeScript, 'runtime');
+    manager.rebuild();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const ratings = graph.filter((n) => n['@type'] === 'AggregateRating');
+    expect(ratings).to.have.length(1);
+    const rating = ratings[0];
+    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
+    // Runtime wins over bootDom on scalar conflicts (source-priority).
+    expect(rating.ratingValue).to.equal('4.61');
+    expect(rating.ratingCount).to.equal('269519');
+    // The SA reference points at the canonical aggregateRating @id.
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
   });
 });
