@@ -63,9 +63,8 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      will-change: width, max-width;
       transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s ease;
-      contain: layout;
+      contain: layout style paint;
 
       .elastic-carousel-item-header {
         display: flex;
