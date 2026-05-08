@@ -963,3 +963,48 @@ describe('rewriteCrossPageRefs', () => {
     expect(app.isPartOf).to.deep.equal({ '@id': `${PAGE_URL}#webpage` });
   });
 });
+
+// ---------------------------------------------------------------------------
+// injectLinks: subtype-aware lookup for mainEntity and linksBack
+// ---------------------------------------------------------------------------
+describe('injectLinks subtype awareness', () => {
+  it('sets WebPage.mainEntity to a SoftwareApplication subtype (WebApplication) when no plain SA exists', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const webpage = graph.find((n) => n['@type'] === 'WebPage');
+    expect(webpage.mainEntity).to.deep.equal({ '@id': `${PAGE_URL}#softwareapplication` });
+  });
+
+  it('auto-injects provider on a WebApplication via SoftwareApplication linksBack', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app['@type']).to.equal('WebApplication');
+    expect(app.provider).to.deep.equal({ '@id': ORG_ID });
+  });
+
+  it('sets WebPage.mainEntity to a NewsArticle node by @id when present', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'NewsArticle',
+      '@id': `${PAGE_URL}#newsarticle`,
+      headline: 'Adobe announces…',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const webpage = graph.find((n) => n['@type'] === 'WebPage');
+    expect(webpage.mainEntity).to.deep.equal({ '@id': `${PAGE_URL}#newsarticle` });
+  });
+});

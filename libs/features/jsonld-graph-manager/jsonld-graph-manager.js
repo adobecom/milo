@@ -211,13 +211,21 @@ export function mergeNodes(a, b, srcA, srcB) {
   return out;
 }
 
+function effectiveType(t) {
+  return SOFTWARE_APP_SUBTYPES.has(t) ? 'SoftwareApplication' : t;
+}
+
 export function injectLinks(nodes) {
   const byType = {};
   for (const node of nodes) {
-    if (node['@type'] && !byType[node['@type']]) byType[node['@type']] = node;
+    const t = node['@type'];
+    if (!t) continue;
+    if (!byType[t]) byType[t] = node;
+    const eff = effectiveType(t);
+    if (eff !== t && !byType[eff]) byType[eff] = node;
   }
   for (const node of nodes) {
-    const rule = RULES[node['@type']];
+    const rule = RULES[effectiveType(node['@type'])];
     if (!rule?.linksBack) continue;
     for (const [prop, targetType] of Object.entries(rule.linksBack)) {
       const target = byType[targetType];
@@ -231,7 +239,7 @@ export function injectLinks(nodes) {
       if (target?.['@id'] && !webpage[prop]) webpage[prop] = { '@id': target['@id'] };
     }
     if (!webpage.mainEntity) {
-      const primary = byType.Article ?? byType.SoftwareApplication;
+      const primary = byType.Article ?? byType.NewsArticle ?? byType.SoftwareApplication;
       if (primary?.['@id']) webpage.mainEntity = { '@id': primary['@id'] };
     }
   }
