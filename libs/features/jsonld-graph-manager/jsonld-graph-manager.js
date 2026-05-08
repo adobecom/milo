@@ -38,6 +38,8 @@ const RULES = {
 
 const TYPE_TRANSFORMS = { Product: 'SoftwareApplication' };
 
+const SOFTWARE_APP_SUBTYPES = new Set(['WebApplication', 'MobileApplication', 'VideoGame']);
+
 const ORG_ID_ALIASES = new Set(['#org', '#publisher', '#adobe']);
 
 export function siteRoot(hostname = window.location.hostname) {
@@ -45,6 +47,8 @@ export function siteRoot(hostname = window.location.hostname) {
     ? 'https://business.adobe.com'
     : 'https://www.adobe.com';
 }
+
+const ADOBE_CORPORATE_LOGO = 'https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg';
 
 export function defaultOrg(hostname) {
   const root = siteRoot(hostname);
@@ -54,7 +58,11 @@ export function defaultOrg(hostname) {
     '@id': `${root}/#organization`,
     name: isBusiness ? 'Adobe for Business' : 'Adobe',
     url: `${root}/`,
-    logo: `${root}/favicon.ico`,
+    logo: {
+      '@type': 'ImageObject',
+      url: ADOBE_CORPORATE_LOGO,
+      contentUrl: ADOBE_CORPORATE_LOGO,
+    },
   };
 }
 
@@ -98,6 +106,10 @@ export function normalizeNode(node) {
   if (TYPE_TRANSFORMS[out['@type']]) out['@type'] = TYPE_TRANSFORMS[out['@type']];
   const type = out['@type'];
   if (!type) return out;
+  if (SOFTWARE_APP_SUBTYPES.has(type)) {
+    out['@id'] = pageScopedId('SoftwareApplication');
+    return out;
+  }
   const rule = RULES[type];
   if (!rule) return out;
   out['@id'] = pageScopedId(type);
@@ -122,6 +134,32 @@ export function canonicalizeReferences(node) {
       }
     } else if (v && typeof v === 'object') {
       if (v['@id'] && !v['@type']) v['@id'] = canonicalizeOrgId(v['@id']);
+    }
+  }
+}
+
+const PARENT_PAGE_PROPS = ['isPartOf', 'mainEntityOfPage'];
+
+function maybeRewriteWebPageRef(val) {
+  if (!val || typeof val !== 'object' || Array.isArray(val)) return val;
+  const isInlineWebPage = val['@type'] === 'WebPage';
+  const id = val['@id'];
+  const looksLikeWebPageRef = typeof id === 'string' && id.endsWith('#webpage');
+  if (isInlineWebPage || looksLikeWebPageRef) {
+    return { '@id': pageScopedId('WebPage') };
+  }
+  return val;
+}
+
+export function rewriteCrossPageRefs(node) {
+  for (const prop of PARENT_PAGE_PROPS) {
+    const val = node[prop];
+    if (val == null) continue;
+    if (Array.isArray(val)) {
+      const rewritten = val.map(maybeRewriteWebPageRef);
+      node[prop] = rewritten.length === 1 ? rewritten[0] : rewritten;
+    } else {
+      node[prop] = maybeRewriteWebPageRef(val);
     }
   }
 }
@@ -165,6 +203,10 @@ export function mergeNodes(a, b, srcA, srcB) {
     } else if (vW !== null && vL !== null && typeof vW === 'object' && typeof vL === 'object') {
       out[key] = mergeNodes(vW, vL, winnerSrc, loserSrc);
     }
+  }
+  const subtype = [a['@type'], b['@type']].find((t) => SOFTWARE_APP_SUBTYPES.has(t));
+  if (subtype && [a['@type'], b['@type']].some((t) => t === 'SoftwareApplication' || SOFTWARE_APP_SUBTYPES.has(t))) {
+    out['@type'] = subtype;
   }
   return out;
 }
@@ -319,7 +361,10 @@ export class JsonLdGraphManager {
           const node = normalizeNode(raw);
           const inlined = extractInlineEntities(node);
           const toMerge = [node, ...inlined];
-          for (const n of toMerge) canonicalizeReferences(n);
+          for (const n of toMerge) {
+            rewriteCrossPageRefs(n);
+            canonicalizeReferences(n);
+          }
           for (const n of toMerge) {
             const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
             const prevSrc = this.sources.get(id) ?? 'bootDom';

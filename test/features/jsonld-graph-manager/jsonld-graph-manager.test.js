@@ -10,6 +10,7 @@ import {
   mergeNodes,
   injectLinks,
   extractInlineEntities,
+  rewriteCrossPageRefs,
   canonicalizeOrgId,
   siteRoot,
   defaultOrg,
@@ -18,6 +19,12 @@ import {
 
 const PAGE_URL = 'https://www.adobe.com/products/photoshop.html';
 const ORG_ID = 'https://www.adobe.com/#organization'; // www default
+const ADOBE_LOGO_URL = 'https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg';
+const ADOBE_LOGO_OBJECT = {
+  '@type': 'ImageObject',
+  url: ADOBE_LOGO_URL,
+  contentUrl: ADOBE_LOGO_URL,
+};
 
 function setCanonical(url = PAGE_URL) {
   document.head.querySelector('link[rel="canonical"]')?.remove();
@@ -295,7 +302,7 @@ describe('JsonLdGraphManager boot scan', () => {
     expect(org['@id']).to.equal(ORG_ID);
     expect(org.name).to.equal('Adobe');
     expect(org.url).to.equal('https://www.adobe.com/');
-    expect(org.logo).to.equal('https://www.adobe.com/favicon.ico');
+    expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
 });
 
@@ -317,7 +324,7 @@ describe('JsonLdGraphManager singleton enforcement', () => {
     expect(orgs).to.have.length(1);
     expect(orgs[0]['@id']).to.equal(ORG_ID);
     // generated baseline wins — logo is the manager default, not the producer-supplied value
-    expect(orgs[0].logo).to.equal('https://www.adobe.com/favicon.ico');
+    expect(orgs[0].logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
 });
 
@@ -502,7 +509,7 @@ describe('end-to-end: multi-producer conflict', () => {
     expect(orgs[0]['@id']).to.equal(ORG_ID);
     // generated baseline wins over all producer sources
     expect(orgs[0].name).to.equal('Adobe');
-    expect(orgs[0].logo).to.equal('https://www.adobe.com/favicon.ico');
+    expect(orgs[0].logo).to.deep.equal(ADOBE_LOGO_OBJECT);
     // producer-only field (sameAs) is preserved
     expect(orgs[0].sameAs).to.equal('https://en.wikipedia.org/wiki/Adobe_Inc.');
   });
@@ -525,7 +532,7 @@ describe('Organization synthesis', () => {
     expect(org['@id']).to.equal(ORG_ID);
     expect(org.name).to.equal('Adobe');
     expect(org.url).to.equal('https://www.adobe.com/');
-    expect(org.logo).to.equal('https://www.adobe.com/favicon.ico');
+    expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
 
   it('generated baseline fields win over producer-supplied values', () => {
@@ -555,7 +562,7 @@ describe('Organization synthesis', () => {
     expect(org.name).to.equal('Adobe for Business');
     expect(org['@id']).to.equal('https://business.adobe.com/#organization');
     expect(org.url).to.equal('https://business.adobe.com/');
-    expect(org.logo).to.equal('https://business.adobe.com/favicon.ico');
+    expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
 });
 
@@ -817,5 +824,142 @@ describe('end-to-end: merch-card Product transformation', () => {
     expect(offer.priceSpecification).to.exist;
     // Seller alias #org canonicalized to #organization.
     expect(offer.seller).to.deep.equal({ '@id': ORG_ID });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// SoftwareApplication subtype preservation (WebApplication, MobileApplication, VideoGame)
+// ---------------------------------------------------------------------------
+describe('SoftwareApplication subtype preservation', () => {
+  it('normalizeNode preserves WebApplication @type and assigns canonical SA @id', () => {
+    const node = normalizeNode({
+      '@type': 'WebApplication',
+      '@id': 'https://producer.example/some-id',
+      name: 'Compress PDF',
+      browserRequirements: 'Requires HTML5',
+    });
+    expect(node['@type']).to.equal('WebApplication');
+    expect(node['@id']).to.equal(`${PAGE_URL}#softwareapplication`);
+    expect(node.name).to.equal('Compress PDF');
+    expect(node.browserRequirements).to.equal('Requires HTML5');
+  });
+
+  it('normalizeNode preserves MobileApplication @type', () => {
+    const node = normalizeNode({ '@type': 'MobileApplication', name: 'Adobe Scan' });
+    expect(node['@type']).to.equal('MobileApplication');
+    expect(node['@id']).to.equal(`${PAGE_URL}#softwareapplication`);
+  });
+
+  it('mergeNodes promotes type to subtype when one input is plain SoftwareApplication', () => {
+    const sa = { '@type': 'SoftwareApplication', '@id': `${PAGE_URL}#softwareapplication`, name: 'Photoshop', aggregateRating: { ratingValue: '4.61' } };
+    const webapp = { '@type': 'WebApplication', '@id': `${PAGE_URL}#softwareapplication`, name: 'Compress PDF', browserRequirements: 'HTML5' };
+    // Even with bootDom (lower) for webapp and runtime (higher) for sa, subtype wins.
+    const merged = mergeNodes(sa, webapp, 'runtime', 'bootDom');
+    expect(merged['@type']).to.equal('WebApplication');
+    // Source priority still applies to scalars: runtime sa.name wins.
+    expect(merged.name).to.equal('Photoshop');
+    // Producer-only fields preserved on both sides.
+    expect(merged.browserRequirements).to.equal('HTML5');
+    expect(merged.aggregateRating).to.deep.equal({ ratingValue: '4.61' });
+  });
+
+  it('end-to-end: producer WebApplication + review-block Product merge into single WebApplication node', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+      browserRequirements: 'HTML5',
+      applicationCategory: 'BusinessApplication',
+    }));
+    document.head.appendChild(makeScript({
+      '@type': 'Product',
+      name: 'Compress PDF',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.61', ratingCount: '269519' },
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    // Exactly one node at #softwareapplication.
+    const apps = graph.filter((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(apps).to.have.length(1);
+    const app = apps[0];
+    // Subtype preserved.
+    expect(app['@type']).to.equal('WebApplication');
+    // Producer-only fields preserved from both contributions.
+    expect(app.browserRequirements).to.equal('HTML5');
+    expect(app.applicationCategory).to.equal('BusinessApplication');
+    expect(app.aggregateRating).to.deep.equal({ '@type': 'AggregateRating', ratingValue: '4.61', ratingCount: '269519' });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// rewriteCrossPageRefs (policy C: cross-page WebPage references collapse to current canonical)
+// ---------------------------------------------------------------------------
+describe('rewriteCrossPageRefs', () => {
+  it('rewrites inline cross-page WebPage in isPartOf to canonical reference', () => {
+    const node = {
+      '@type': 'WebApplication',
+      isPartOf: {
+        '@type': 'WebPage',
+        '@id': 'https://www.adobe.com/acrobat/online.html#webpage',
+        name: 'Adobe Acrobat online tools',
+        url: 'https://www.adobe.com/acrobat/online.html',
+      },
+    };
+    rewriteCrossPageRefs(node);
+    expect(node.isPartOf).to.deep.equal({ '@id': `${PAGE_URL}#webpage` });
+  });
+
+  it('rewrites cross-page WebPage reference stub (no @type) to canonical', () => {
+    const node = {
+      '@type': 'Article',
+      isPartOf: { '@id': 'https://www.adobe.com/somewhere-else.html#webpage' },
+    };
+    rewriteCrossPageRefs(node);
+    expect(node.isPartOf).to.deep.equal({ '@id': `${PAGE_URL}#webpage` });
+  });
+
+  it('rewrites mainEntityOfPage the same way', () => {
+    const node = {
+      '@type': 'Article',
+      mainEntityOfPage: { '@type': 'WebPage', '@id': 'https://www.adobe.com/parent.html#webpage' },
+    };
+    rewriteCrossPageRefs(node);
+    expect(node.mainEntityOfPage).to.deep.equal({ '@id': `${PAGE_URL}#webpage` });
+  });
+
+  it('leaves non-WebPage isPartOf values alone', () => {
+    const node = {
+      '@type': 'Article',
+      isPartOf: { '@type': 'CreativeWorkSeries', '@id': 'https://example.com/series#1' },
+    };
+    rewriteCrossPageRefs(node);
+    expect(node.isPartOf).to.deep.equal({ '@type': 'CreativeWorkSeries', '@id': 'https://example.com/series#1' });
+  });
+
+  it('end-to-end: producer cross-page WebPage in isPartOf is rewritten in the managed graph', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+      isPartOf: {
+        '@type': 'WebPage',
+        '@id': 'https://www.adobe.com/acrobat/online.html#webpage',
+        name: 'Adobe Acrobat online tools',
+        url: 'https://www.adobe.com/acrobat/online.html',
+      },
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    // Exactly one WebPage node — singleton enforced.
+    const webpages = graph.filter((n) => n['@type'] === 'WebPage');
+    expect(webpages).to.have.length(1);
+    expect(webpages[0]['@id']).to.equal(`${PAGE_URL}#webpage`);
+    // No phantom cross-page WebPage node leaked into the graph.
+    expect(graph.find((n) => n['@id'] === 'https://www.adobe.com/acrobat/online.html#webpage')).to.not.exist;
+    // The WebApplication's isPartOf points at the canonical current-page #webpage.
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.isPartOf).to.deep.equal({ '@id': `${PAGE_URL}#webpage` });
   });
 });
