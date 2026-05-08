@@ -83,6 +83,7 @@ html[dir="rtl"] {
     line-height: var(--s2a-typography-line-height-eyebrow);
     position: relative;
     cursor: pointer;
+    border: 0;
     &::before {
       content: "";
       background-image: url('https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg');
@@ -114,38 +115,41 @@ html[dir="rtl"] {
 .hub-hero-image-grid-container {
   display: flex;
   flex-direction: row;
-  gap: 6.5rem;
   position: relative;
   z-index: 1;
   justify-content: center;
-  /* transform: translate(0, -30%); */
   animation: hubHeroGridConverge ease both;
   animation-timeline: view();
-  animation-range: entry 0% exit 40%;
+  animation-range: entry 70% exit 100%;
 
   .hub-hero-image-grid-container-col {
     display: flex;
     flex-direction: column;
-    gap: 6.5rem;
-    animation: hubHeroGridColConverge ease both, hubHeroGridColFadeOut ease both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 40%, entry 100% exit 90%;
 
     &:nth-child(2),
     &:nth-child(4) {
       animation: hubHeroGridColConverge ease both, hubHeroGridColShiftDown ease both, hubHeroGridColFadeOut ease both;
       animation-timeline: view(), view(), view();
-      animation-range: entry 0% exit 40%, entry 60% exit 80%, entry 100% exit 90%;
+      animation-range: entry 70% exit 100%, entry 70% exit 100%, entry 0% exit 60%;
+    }
+
+    &:nth-child(1),
+    &:nth-child(5) {
+      animation: hubHeroGridColConverge ease both, hubHeroGridColShiftUp ease both, hubHeroGridColFadeOut ease both;
+      animation-timeline: view(), view(), view();
+      animation-range: entry 70% exit 100%, entry 70% exit 100%, entry 1% exit 70%;
     }
 
     &:nth-child(3) {
       animation: hubHeroGridColConverge ease both, hubHeroGridColCenterShift ease both, hubHeroGridColFadeOut ease both;
       animation-timeline: view(), view(), view();
-      animation-range: entry 0% exit 40%, entry 60% exit 80%, entry 100% exit 90%;
+      animation-range: entry 70% exit 100%, entry 70% exit 40%, entry 100% exit 90%;
     }
 
     img {
       max-width: 388px;
+      min-width: 155px;
+      width: 20vw;
     }
   }
 }
@@ -721,6 +725,9 @@ html[dir="rtl"] {
     opacity: 1;
   }
 
+  70% {
+    opacity: 1;
+  }
   100% {
     opacity: 0;
   }
@@ -728,20 +735,30 @@ html[dir="rtl"] {
 
 @keyframes hubHeroGridColShiftDown {
   0% {
-    transform: translate(0, 20%);
+    transform: translate(0, 0%);
   }
 
   100% {
-    transform: translate(0, -30%);
+    transform: translate(0, -70%);
+  }
+}
+
+@keyframes hubHeroGridColShiftUp {
+  0% {
+    transform: translate(0, -10%);
+  }
+
+  100% {
+    transform: translate(0, -50%);
   }
 }
 
 @keyframes hubHeroGridColCenterShift {
   0% {
-    transform: translate(0, 30%);
+    transform: translate(0, 15%);
   }
 
   100% {
-    transform: translate(0, -75%);
+    transform: translate(0, -95%);
   }
 }
