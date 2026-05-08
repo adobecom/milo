@@ -143,3 +143,9 @@
     }
   }
 }
+
+@media (width >= 2560px) {
+  .marquee-test {
+    padding: 0 320px;
+  }
+}
