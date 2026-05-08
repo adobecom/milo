@@ -4,11 +4,11 @@ description: >
   Advanced runtime performance analysis for web pages. Goes beyond Core Web
   Vitals to measure what Lighthouse can't: scroll FPS, main-thread saturation,
   GPU texture pressure, animation jank, long tasks, and resource weight.
-  Runs twice — unthrottled desktop and throttled desktop (4× CPU) — to
-  separate CPU-bound regressions from inherent page weight.
+  Accepts a live URL (runs Playwright, two passes: unthrottled + 4× CPU) or a
+  Chrome DevTools performance trace (.json) for offline analysis.
   Use when asked to audit performance, profile a page, or investigate
   scroll jank, CPU/GPU load, or animation issues on any URL.
-argument-hint: "[url]"
+argument-hint: "[url | trace.json]"
 user_invocable: true
 ---
 
@@ -16,37 +16,49 @@ user_invocable: true
 
 Advanced runtime performance analysis: FPS, CPU/GPU, animations, long tasks — unthrottled then throttled.
 
-**CRITICAL — No intermediate output.** Do not write ANY text to the user during Phases 1, 2, or 3. Tool calls (browser, file reads, grep) are allowed. Written commentary, status lines, progress updates, or any other text is strictly prohibited until Phase 4. The user will see only the final report.
+**CRITICAL — No intermediate output.** Do not write ANY text to the user during Phases 1, 2, or 3. Tool calls (browser, file reads, Bash, grep) are allowed. Written commentary, status lines, progress updates, or any other text is strictly prohibited until Phase 4. The user will see only the final report.
 
-## Phase 0: Validate input
+## Phase 0: Validate input and route
 
-The URL is the skill argument. If no argument was provided, output:
-```
-Usage: /performance-audit <url>
-```
-and stop. Do not ask the user for the URL interactively.
+Inspect the skill argument:
 
-## Phase 1: Baseline run — unthrottled desktop
+- **No argument** — output the usage message below and stop:
+  ```
+  Usage: /performance-audit <url>
+         /performance-audit <path/to/trace.json>
+  ```
+
+- **Argument starts with `http://` or `https://`** — URL mode. Proceed to Phase 1.
+
+- **Argument ends with `.json`** — Trace mode. Skip to **Trace Phase 1**.
+
+- **Anything else** — output the usage message above and stop.
+
+---
+
+## URL Mode
+
+### Phase 1: Baseline run — unthrottled desktop
 
 Read `references/throttling-profiles.md` and `agents/metrics-collector.md` in parallel if not already in context.
 
 **Execute the procedure from `agents/metrics-collector.md` directly using your Playwright MCP tools. Do NOT spawn a sub-agent.** Substitute:
 - `%%PROFILE%%` → `desktop-baseline`
 - `%%URL%%` → the target URL
-- `%%SCREENSHOT_PATH%%` → `/tmp/perf-baseline.png`
+- `%%SCREENSHOT_PATH%%` → `./perf-baseline.png`
 
 The `browser_run_code` call returns a JSON string. Parse it and store as `baseline`.
 
-## Phase 2: Throttled run — 4× CPU desktop
+### Phase 2: Throttled run — 4× CPU desktop
 
 **Execute the procedure from `agents/metrics-collector.md` directly using your Playwright MCP tools. Do NOT spawn a sub-agent.** Substitute:
 - `%%PROFILE%%` → `throttled-desktop`
 - `%%URL%%` → the target URL
-- `%%SCREENSHOT_PATH%%` → `/tmp/perf-throttled.png`
+- `%%SCREENSHOT_PATH%%` → `./perf-throttled.png`
 
 The `browser_run_code` call returns a JSON string. Parse it and store as `throttled`.
 
-## Phase 3: Analyse traces
+### Phase 3: Analyse traces
 
 Read `references/core-web-vitals.md` and `agents/trace-analyser.md` in parallel if not already in context.
 
@@ -54,11 +66,9 @@ Read `references/core-web-vitals.md` and `agents/trace-analyser.md` in parallel 
 
 Produce the ordered findings list in memory; do not output it yet.
 
-## Phase 4: Report
+### Phase 4: Report (URL mode)
 
-Produce a structured report using the findings from Phase 3. Group findings by category. Only render a category section if at least one finding belongs to it. Order categories: CPU → GPU → FPS → Animations → Layout → Network.
-
-Each finding must include an **Affects** indicator: `baseline + throttled`, `throttled only`, or `baseline only`.
+Use the two-column report format below. Findings include an **Affects** indicator: `baseline + throttled`, `throttled only`, or `baseline only`.
 
 ```
 ## Performance Audit — <URL>
@@ -94,33 +104,83 @@ Date: <today>
 
 ---
 
-### CPU
-<!-- only if CPU findings exist -->
+### CPU / GPU / FPS / Animations / Layout / Network
+(only sections with findings)
 
 1. **[CRITICAL/HIGH/MEDIUM] <Title>** — `<specific element, file, or selector>`
    Affects: baseline + throttled | throttled only | baseline only
    What: <one sentence>
    Fix: <concrete code change, attribute, or config>
    Expected gain: <metric ↓/↑ value>
-
-### GPU
-<!-- only if GPU findings exist -->
-
-### FPS
-<!-- only if FPS findings exist -->
-
-### Animations
-<!-- only if Animations findings exist -->
-
-### Layout
-<!-- only if Layout findings exist -->
-
-### Network
-<!-- only if Network findings exist -->
 ```
 
-Cap at the top 20 findings total across all categories; within each category order by severity (CRITICAL → HIGH → MEDIUM). Each finding must name a specific element, file, or property — no generic advice. If all metrics are green, say so clearly and omit the category sections.
-
-## Phase 5: Done
+### Phase 5: Done
 
 The browser was already closed by the Phase 2 metrics-collector step. No cleanup needed here.
+
+---
+
+## Trace Mode (when input is a .json file)
+
+### Trace Phase 1: Parse Chrome profile
+
+Read `agents/chrome-trace-parser.md` if not already in context.
+
+**Execute the procedure from `agents/chrome-trace-parser.md` directly using Bash. Do NOT spawn a sub-agent.** Substitute `%%FILE_PATH%%` with the provided file path.
+
+Capture the JSON string printed to stdout, parse it, and store as `baseline`. Set `throttled = baseline` (single-pass — no CPU throttle comparison available).
+
+If the Bash command exits with a non-zero code, tell the user the file could not be parsed as a Chrome trace and stop.
+
+### Trace Phase 2: Analyse
+
+Read `references/core-web-vitals.md` and `agents/trace-analyser.md` in parallel if not already in context.
+
+**Follow the procedure in `agents/trace-analyser.md` directly. Do NOT spawn a sub-agent.** Use `baseline` for both inputs. Skip Dimension 6 (CPU Throttle Regression) — it requires two different passes. Skip Dimension 2 animation audit analysis (animationAudit is empty in trace mode). Run source-code lookups (find, grep, Read) where applicable.
+
+Produce the ordered findings list in memory; do not output it yet.
+
+### Trace Phase 3: Report (trace mode)
+
+Use the single-column report format below. Omit the Animations & Runtime "Active animations detected" section (not available from trace). Omit Resource Budget if `resourceTotals` is empty. Drop the "Affects" indicator from findings.
+
+```
+## Performance Audit — <filename> (Chrome trace)
+Date: <today>
+Source: Chrome DevTools performance recording
+
+### Runtime Performance
+
+| Metric | Recorded | Target |
+|--------|----------|--------|
+| Avg FPS | X fps    | ≥ 60   |
+
+### Main Thread & Runtime
+
+| Metric | Recorded |
+|--------|----------|
+| Jank frames (>33ms) | X/X (X%) |
+| P95 frame time | Xms |
+| Max frame time | Xms |
+| Long tasks (>50ms) | X |
+| Worst long task | Xms |
+| Total blocking time | Xms |
+| Task duration (total) | Xs |
+| Script duration | Xs |
+| Style recalc duration | Xs |
+| Layout duration | Xs |
+
+---
+
+### CPU / GPU / FPS / Animations / Layout / Network
+(only sections with findings)
+
+1. **[CRITICAL/HIGH/MEDIUM] <Title>** — `<specific element, file, or selector>`
+   What: <one sentence>
+   Fix: <concrete code change, attribute, or config>
+   Expected gain: <metric ↓/↑ value>
+```
+
+---
+
+Cap at the top 20 findings total across all categories; within each category order by severity (CRITICAL → HIGH → MEDIUM). Each finding must name a specific element, file, or property — no generic advice. If all metrics are green, say so clearly and omit the category sections.
