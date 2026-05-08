@@ -272,6 +272,7 @@ export function getVideoAttrs(hash, dataset) {
   const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
   const autoPlayAttrs = 'autoplay muted';
+  // const autoPlayAttrs = playInViewport && isAutoplayOnce ? 'muted' : 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {

@@ -1,0 +1,207 @@
+.side-2-side {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s2a-spacing-xs);
+  padding-inline: var(--s2a-spacing-24);
+
+  .card {
+    border-radius: var(--s2a-border-radius-md);
+    position: relative;
+  }
+
+  .media {
+    picture,
+    video,
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-container.video-holder .pause-play-wrapper {
+      left: unset;
+      right: var(--s2a-spacing-md);
+      bottom: var(--s2a-spacing-md);
+      width: var(--s2a-spacing-32);;
+      height: var(--s2a-spacing-32);;
+      border-radius: 6px;
+      background: #2e2e2e;
+      padding: 0;
+
+      .offset-filler:hover {
+        width: inherit;
+        height: inherit;
+      }
+
+      img.accessibility-control:is(.pause-icon, .play-icon) {
+        width: 20px;
+        height: 20px;
+      }
+    }
+  }
+
+  .title-6 {
+    font-family: var(--heading-font-family);
+    font-size: var(--s2a-font-size-18);
+    font-weight: var(--s2a-font-weight-adobe-clean-black);
+    line-height: var(--s2a-font-line-height-56);
+    letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+    margin: 0;
+  }
+
+  .body-md {
+    margin: 0;
+  }
+}
+
+.side-2-side .card-overlay {
+  --parallax-stagger-index: 0.5;
+  position: relative;
+  overflow: hidden;
+  color: var(--s2a-color-gray-25);
+  height: 379px;
+
+  .media {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+  }
+
+  .media picture {
+    width: 100%;
+    height: 100%;
+  }
+
+  .media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Dark scrim — Figma gradient stops kept as raw values; no token match */
+  .media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(150deg, rgb(0 0 0 / 92%) 6%, rgb(0 0 0 / 0%) 32%);
+    pointer-events: none;
+  }
+
+  .foreground {
+    position: relative;
+    padding: var(--s2a-spacing-md);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+  }
+
+  .foreground :is(.title-6, p) {
+    color: var(--s2a-color-gray-25);
+  }
+}
+
+.side-2-side .card-stacked {
+  --parallax-stagger-index: 1.5;
+  display: flex;
+  flex-direction: column;
+  padding-left: 48px;
+
+  .media {
+    border-radius: var(--s2a-border-radius-md);
+    overflow: hidden;
+    height: 328px;
+  }
+
+  .foreground {
+    padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-2xs);
+  }
+
+  .title-6 {
+    color: var(--s2a-color-gray-1000);
+  }
+
+  .foreground p:not(.title-6) {
+    color: var(--s2a-color-transparent-black-64);
+  }
+}
+
+@media (width >= 768px) {
+  .side-2-side {
+    grid-template-columns: 1.85fr 1fr;
+    align-items: start;
+  }
+
+  .side-2-side .card-overlay {
+    height: 519px;
+  }
+
+  .side-2-side .card-overlay .foreground {
+    max-width: 40%;
+  }
+
+  .side-2-side .card-stacked {
+    padding-left: 0;
+  }
+
+  .side-2-side .card-stacked .media {
+    height: 300px;
+  }
+}
+
+@media (width >= 976px) {
+  .side-2-side .card-overlay {
+    height: 707px;
+  }
+
+  .side-2-side .card-stacked .media {
+    height: 409px;
+  }
+}
+
+@media (width >= 1280px) {
+  .side-2-side .card-overlay {
+    height: 1000px;
+  }
+
+  .side-2-side .card-overlay .foreground {
+    padding: var(--s2a-spacing-xl);
+  }
+
+  .side-2-side .card-stacked {
+    padding-left: 0;
+  }
+
+  .side-2-side .card-stacked .media {
+    height: 600px;
+  }
+
+  .side-2-side .card-stacked .foreground {
+    padding: var(--s2a-spacing-lg) var(--s2a-spacing-lg) 0;
+  }
+
+  .side-2-side .media .video-container.video-holder .pause-play-wrapper {
+    left: unset;
+    right: var(--s2a-spacing-xl);
+    bottom: var(--s2a-spacing-xl);
+  }
+}
+
+@media (width >= 1440px) {
+  .side-2-side {
+    padding-inline: var(--grid-padding);
+  }
+}
+
+@media (width >= 1920px) {
+  .side-2-side .card-overlay {
+    height: 1383px;
+  }
+
+  .side-2-side .card-stacked .media {
+    height: 828px;
+  }
+}
