@@ -297,41 +297,27 @@ function initCarouselC2() {
 
     if (!cssInjected) {
       cssInjected = true;
-      injectCSS('.carousel-c2 .carousel-wrapper,'
-        + '.carousel-c2 .carousel-slide { animation: none !important; }');
+      injectCSS('.carousel-c2 .carousel-slide { animation: none !important; }');
     }
 
     const slides = [...wrapper.querySelectorAll('.carousel-slide')];
-    const maxSlideW = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-slide-max-width')) || Infinity;
-    let startWidth = Math.min(window.innerWidth, maxSlideW);
-    let targetWidth = null;
     let top = null;
     let interacted = false;
-    let slideGap = null;
-    let animStarted = false;
 
     const resetStyles = () => {
-      animStarted = false;
-      slides.forEach((s) => { s.style.flexBasis = ''; s.style.willChange = ''; });
-      wrapper.style.transition = '';
-      wrapper.style.translate = '';
+      slides.forEach((s) => { s.style.translate = ''; s.style.scale = ''; });
     };
 
     window.addEventListener('resize', () => {
       if (interacted) return;
       resetStyles();
-      startWidth = Math.min(window.innerWidth, maxSlideW);
-      targetWidth = null;
       top = null;
     });
 
     cleanupTasks.push(() => {
       resetStyles();
-      startWidth = Math.min(window.innerWidth, maxSlideW);
-      targetWidth = null;
       top = null;
       interacted = false;
-      slideGap = null;
     });
 
     scrollTasks.push((scroll) => {
@@ -342,37 +328,24 @@ function initCarouselC2() {
       }
       if (interacted) return;
 
-      if (top === null) {
-        top = getDocTop(el);
-        slideGap = parseFloat(getComputedStyle(wrapper).gap) || 8;
-      }
+      if (top === null) top = getDocTop(el);
 
       const elHeight = el.offsetHeight;
       const m = getScrollMetrics(scroll, elHeight, top, 0.1, 0.1);
       const t = viewRange(m, 'entry', -0.5, 'entry', 0.2);
 
       if (t >= 1) {
-        if (animStarted) resetStyles();
+        resetStyles();
         return;
       }
 
-      if (targetWidth === null) {
-        targetWidth = slides[0]?.getBoundingClientRect().width || startWidth;
-      }
-
-      if (!animStarted) {
-        animStarted = true;
-        slides.forEach((s) => { s.style.willChange = 'flex-basis'; });
-      }
-
-      const w = lerp(startWidth, targetWidth, t);
-      slides.forEach((s) => { s.style.flexBasis = `${w}px`; });
-
-      // Keep slide 1 centered as flex-basis animates — CSS translate is fixed on
-      // targetWidth so we compensate for the extra width during animation.
-      const effectiveW = Math.min(w, maxSlideW);
-      const tx = ((3 * effectiveW - window.innerWidth) / 2 + slideGap) * (isRtl ? 1 : -1);
-      wrapper.style.translate = `${tx}px`;
+      const slideScaleMult = parseFloat(el.style.getPropertyValue('--slide-scale-multiplier')) || 1;
+      slides.forEach((s) => {
+        const sign = parseInt(s.style.getPropertyValue('--slide-spread-sign'), 10) || 0;
+        const spreadPx = window.innerWidth * 0.5 * sign * (1 - t);
+        s.style.translate = `${spreadPx}px 0`;
+        s.style.scale = `${lerp(slideScaleMult, 1, t)} 1`;
+      });
     });
   };
 
