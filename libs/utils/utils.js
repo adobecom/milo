@@ -1282,8 +1282,6 @@ function getBlockData(block) {
 
   if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
   if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
-  // TODO: remove before merging - forces modal+preflight to load locally on C2 pages for testing
-  if (isC2Page && (name === 'preflight' || name === 'modal')) base = `${codeRoot}/c2`;
 
   let path = `${base}/blocks/${name}`;
   if (mep?.blocks?.[name]) path = mep.blocks[name];
