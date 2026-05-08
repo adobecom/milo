@@ -117,7 +117,7 @@ describe('MMM', () => {
     const radios = mepPopupBody.querySelectorAll('select');
     expect(radios.length).to.equal(3);
     const checkboxes = mepPopupBody.querySelectorAll('input[type="checkbox"]');
-    expect(checkboxes.length).to.equal(3);
+    expect(checkboxes.length).to.equal(4);
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
