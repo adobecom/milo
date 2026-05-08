@@ -139,8 +139,12 @@ const [getCaasTags, loadCaasTags] = (() => {
 const getTag = (tagName, errors) => {
   if (!tagName) return undefined;
   const caasTags = getCaasTags();
-  // search all except Events first
-  const tag = findTag(caasTags, tagName, ['Events']) || findTag(caasTags.events.tags, tagName, []);
+  // Skip the Events namespace root by tagID (not by title "Events", which would also
+  // exclude unrelated tags like caas:newsroom/article/events). Falls back to a search
+  // inside the Events subtree only if no non-Events match is found, preserving the
+  // historical "prefer non-Events" resolution.
+  const tag = findTag(caasTags, tagName, ['caas:events'])
+    || findTag(caasTags.events.tags, tagName, []);
 
   if (!tag) {
     errors.push(tagName);
@@ -353,11 +357,9 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options, origin) => {
   const langFirst = lingoActive();
   if (langFirst) {
-    return getLanguageFirstCountryAndLang(
-      window.location.pathname,
-      origin,
-      window.location.hostname,
-    );
+    const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
+    const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
+    return getLanguageFirstCountryAndLang(window.location.pathname, origin, fqdn);
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')

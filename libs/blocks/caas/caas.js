@@ -10,6 +10,7 @@ import {
   createIntersectionObserver,
   getConfig,
   getMetadata,
+  isBot,
   parseEncodedConfig,
   SLD,
 } from '../../utils/utils.js';
@@ -81,12 +82,8 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
-const isGoogleBot = function () {
-  return /googlebot/i.test(navigator.userAgent);
-};
-
 export default async function init(link) {
-  if (link.textContent.includes('no-lazy') || isGoogleBot()) {
+  if (link.textContent.includes('no-lazy') || isBot()) {
     loadCaas(link);
   } else {
     createIntersectionObserver({

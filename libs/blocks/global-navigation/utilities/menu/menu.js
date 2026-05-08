@@ -106,22 +106,8 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   return headline;
 };
 
-const decorateLinkGroup = (elem, index) => {
-  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
-
-  // TODO: allow links with image and no label
-  const image = elem.querySelector('picture');
-  const link = elem.querySelector('a');
-  const description = elem.querySelector('p:nth-child(2)');
-  const modifierClasses = [...elem.classList]
-    .filter((className) => className !== 'link-group')
-    .map((className) => `feds-navLink--${className}`);
-  const imageElem = image ? toFragment`<div class="feds-navLink-image">${image}</div>` : '';
-  const descriptionElem = description ? toFragment`<div class="feds-navLink-description">${description.textContent}</div>` : '';
-  const contentElem = link ? toFragment`<div class="feds-navLink-content">
-      <div class="feds-navLink-title">${link.textContent}</div>
-      ${descriptionElem}
-    </div>` : '';
+/** Mega-menu link-group shell: `feds-navLink` anchor, or `feds-navLink--header` as a div. */
+function buildFedsLinkGroupShell(link, modifierClasses, imageElem, contentElem, index) {
   let linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
@@ -140,8 +126,66 @@ const decorateLinkGroup = (elem, index) => {
       </div>`;
   }
   if (link?.target) linkGroup.target = link.target;
-
   return linkGroup;
+}
+
+const decorateLinkGroup = (elem, index) => {
+  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
+
+  // TODO: allow links with image and no label
+  const image = elem.querySelector('picture');
+  const link = elem.querySelector('a');
+  const description = elem.querySelector('p:nth-child(2)');
+  const modifierClasses = [...elem.classList]
+    .filter((className) => className !== 'link-group')
+    .map((className) => `feds-navLink--${className}`);
+  const imageElem = image ? toFragment`<div class="feds-navLink-image">${image}</div>` : '';
+  const descriptionElem = description ? toFragment`<div class="feds-navLink-description">${description.textContent}</div>` : '';
+  const contentElem = link ? toFragment`<div class="feds-navLink-content">
+      <div class="feds-navLink-title">${link.textContent}</div>
+      ${descriptionElem}
+    </div>` : '';
+
+  return buildFedsLinkGroupShell(link, modifierClasses, imageElem, contentElem, index);
+};
+
+/**
+ * Link-groups authored with a primary column title link plus a Milo OST price in the second line
+ * (e.g. heading link first, `a.merch` in paragraph two) need the live price injected into the
+ * description; decorateLinkGroup only reads `querySelector('a')` (first anchor) for merch.
+ */
+const decorateLinkGroupWithEmbeddedMerch = (elem, index, priceEl) => {
+  if (!(elem instanceof HTMLElement) || !elem.querySelector('a')) return '';
+
+  const image = elem.querySelector('picture');
+  const primaryLink = elem.querySelector('a:not(.merch)') || elem.querySelector('a');
+  const description = elem.querySelector('p:nth-child(2)');
+  const modifierClasses = [...elem.classList]
+    .filter((className) => className !== 'link-group')
+    .map((className) => `feds-navLink--${className}`);
+  const imageElem = image ? toFragment`<div class="feds-navLink-image">${image}</div>` : '';
+
+  let descriptionFrag = '';
+  if (description && priceEl) {
+    const descClone = description.cloneNode(true);
+    const merchInClone = descClone.querySelector('a.merch');
+    if (merchInClone) {
+      merchInClone.replaceWith(priceEl);
+    }
+    const descWrapper = document.createElement('div');
+    descWrapper.className = 'feds-navLink-description';
+    descWrapper.append(...descClone.childNodes);
+    descriptionFrag = descWrapper;
+  } else if (description) {
+    descriptionFrag = toFragment`<div class="feds-navLink-description">${description.textContent}</div>`;
+  }
+
+  const contentElem = primaryLink ? toFragment`<div class="feds-navLink-content">
+      <div class="feds-navLink-title">${primaryLink.textContent}</div>
+      ${descriptionFrag}
+    </div>` : '';
+
+  return buildFedsLinkGroupShell(primaryLink, modifierClasses, imageElem, contentElem, index);
 };
 
 const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = { position: 0 } } = {}) => {
@@ -152,15 +196,21 @@ const decorateElements = async ({ elem, className = 'feds-navLink', itemIndex = 
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      const anchorElement = link.querySelector('a');
-      if (anchorElement?.classList.contains('merch')) {
-        const clonedElement = anchorElement.cloneNode(true);
+      const merchAnchor = link.querySelector('a.merch');
+      if (merchAnchor) {
+        const clonedElement = merchAnchor.cloneNode(true);
         const merchElement = await merch.default(clonedElement);
-        const decoratedElement = decorateLinkGroup(link, itemIndex.position);
-        merchElement.classList.value = decoratedElement.classList.value;
-        merchElement.innerHTML = decoratedElement.innerHTML;
-        merchElement.setAttribute('daa-ll', decoratedElement.getAttribute('daa-ll'));
-        return merchElement;
+        const primaryAnchor = link.querySelector('a:not(.merch)');
+        if (merchElement && primaryAnchor && merchAnchor !== primaryAnchor) {
+          return decorateLinkGroupWithEmbeddedMerch(link, itemIndex.position, merchElement);
+        }
+        if (merchElement) {
+          const decoratedElement = decorateLinkGroup(link, itemIndex.position);
+          merchElement.classList.value = decoratedElement.classList.value;
+          merchElement.innerHTML = decoratedElement.innerHTML;
+          merchElement.setAttribute('daa-ll', decoratedElement.getAttribute('daa-ll'));
+          return merchElement;
+        }
       }
       return decorateLinkGroup(link, itemIndex.position);
     }
@@ -503,4 +553,5 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
+export { decorateLinkGroupWithEmbeddedMerch };
 export default { decorateMenu, decorateLinkGroup, decorateHeadline };

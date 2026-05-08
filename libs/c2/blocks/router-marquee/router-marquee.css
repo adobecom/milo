@@ -183,6 +183,10 @@
   align-items: center;
 }
 
+[dir="rtl"] .rm-card-chevron {
+  transform: scaleX(-1);
+}
+
 .rm-card-progress {
   position: absolute;
   inset: auto 0 0;
@@ -198,12 +202,20 @@
   transform: translateX(-101%);
 }
 
+[dir="rtl"] .rm-card-progress-bar {
+  transform: translateX(101%);
+}
+
 .rm-card-reset {
   display: none;
 }
 
 .rm-pause-play {
   cursor: pointer;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 .rm-pause-play.is-hidden {
@@ -299,6 +311,14 @@
     transform: rotate(180deg);
   }
 
+  [dir="rtl"] .rm-arrow-next svg {
+    transform: none;
+  }
+
+  [dir="rtl"] .rm-card-reset svg {
+    transform: scaleX(-1);
+  }
+
   .rm-controls {
     overflow: hidden;
   }
@@ -348,6 +368,7 @@
   .rm-viewport[data-viewport="mobile"] {
     display: flex;
     height: 100vh;
+    height: 100svh;
   }
 
   .rm-content-wrapper {
@@ -370,8 +391,18 @@
     padding: 0  0 var(--s2a-layout-sm) var(--s2a-spacing-24);
   }
 
+  [dir="rtl"] .rm-controls {
+    padding-right: var(--s2a-spacing-24);
+    padding-left: 0;
+  }
+
   .rm-controls-top {
     padding-right: var(--s2a-spacing-24);
+  }
+
+  [dir="rtl"] .rm-controls-top {
+    padding-right: 0;
+    padding-left: var(--s2a-spacing-24);
   }
 }
 
@@ -380,6 +411,7 @@
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
     height: 100vh;
+    height: 100svh;
   }
 
   .rm-content-wrapper {
@@ -401,8 +433,18 @@
     padding: 0 0 var(--s2a-layout-sm) 8.333%;
   }
 
+  [dir="rtl"] .rm-controls {
+    padding-right: 8.333%;
+    padding-left: 0;
+  }
+
   .rm-controls-top {
     padding-right: 8.333%;
+  }
+
+  [dir="rtl"] .rm-controls-top {
+    padding-right: 0;
+    padding-left: 8.333%;
   }
 }
 
@@ -447,6 +489,7 @@
   }
 
   .rm-cards {
+    order: -1;
     gap: var(--s2a-spacing-8);
   }
 
@@ -467,4 +510,16 @@
   .rm-card-label {
     flex: 1;
   }
+}
+
+.rm-sr-hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
