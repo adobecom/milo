@@ -39,7 +39,7 @@
 }
 
 /* Product name — super typography */
-.pm-title {
+.pm-chiclet-row .title-2 {
   color: var(--s2a-color-content-title);
   font-family: var(--heading-font-family);
   font-size: var(--s2a-typography-font-size-super);
@@ -50,7 +50,7 @@
 }
 
 /* Body text */
-.pm-body p {
+.pm-foreground .body-md {
   color: var(--s2a-color-content-title);
   font-family: var(--heading-font-family);
   font-size: var(--s2a-typography-font-size-title-4);
@@ -117,7 +117,7 @@
     inline-size: 80px;
   }
 
-  .pm-body p {
+  .pm-foreground .body-md {
     max-inline-size: 332px;
   }
 
@@ -139,7 +139,7 @@
     min-block-size: 540px;
   }
 
-  .pm-body p {
+  .pm-foreground .body-md {
     max-inline-size: 467px;
   }
 
