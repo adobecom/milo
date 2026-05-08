@@ -60,7 +60,6 @@ html[dir="rtl"] {
       background-color: var(--s2a-color-gray-75);
       border-radius: var(--s2a-border-radius-md);
       cursor: pointer;
-      will-change: width, max-width;
       transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s ease;
       contain: layout;
 
@@ -217,6 +216,12 @@ html[dir="rtl"] {
 
     .elastic-carousel-container {
       .elastic-carousel-item {
+
+        &:hover,
+        &.hovered,
+        &:focus-visible {
+          will-change: width, max-width;
+        }
 
         &.hovered,
         &:focus-visible {
