@@ -47,7 +47,7 @@ async function preview(divPreview, selectType, selectLocale, selectCountry, frag
     || (selectType.value === MAS_MERCH_CARD_COLLECTION && !merchBlock.classList.length)) {
     divPreview.innerText = 'Cannot load fragment';
   } else if (deeplink) {
-    const urlDeeplink = new URL(window.location.href);
+    const urlDeeplink = new URL(window.location.href.split('#')[0]);
     urlDeeplink.searchParams.set(FRAGMENT_ID, fragmentEl.value);
     urlDeeplink.searchParams.set(CONTENT_TYPE, selectType.value);
     urlDeeplink.searchParams.set(LOCALE, selectLocale.value);
@@ -108,7 +108,7 @@ export default async function init(el) {
     createMasCommerceService(selectLocale, selectCountry);
   });
   btnCopy.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(window.location.href);
+    await navigator.clipboard.writeText(window.location.href.split('#')[0]);
   });
   const divMeta = createTag('div', { class: 'fragment-meta' });
   divMeta.appendChild(fragmentIdEl);
