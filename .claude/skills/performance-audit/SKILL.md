@@ -30,7 +30,9 @@ Inspect the skill argument:
 
 - **Argument starts with `http://` or `https://`** — URL mode. Proceed to Phase 1.
 
-- **Argument ends with `.json`** — Trace mode. Skip to **Trace Phase 1**.
+- **Argument ends with `.json`** — read the first 100 bytes with Bash (`head -c 100 <path>`) to detect format:
+  - Contains `"baseline"` and `"throttled"` keys → **Script Output Mode**. Skip to **Script Phase 1**.
+  - Otherwise → **Chrome Trace Mode**. Skip to **Trace Phase 1**.
 
 - **Anything else** — output the usage message above and stop.
 
@@ -117,6 +119,26 @@ Date: <today>
 ### Phase 5: Done
 
 The browser was already closed by the Phase 2 metrics-collector step. No cleanup needed here.
+
+---
+
+## Script Output Mode (output from standalone-audit.js)
+
+### Script Phase 1: Load bundles
+
+Read the JSON file using Bash (`cat <path>`). Parse it. The root object has `baseline` and `throttled` keys — each is a full MetricsBundle. Store them directly as `baseline` and `throttled`. No browser automation needed.
+
+### Script Phase 2: Analyse
+
+Read `references/core-web-vitals.md` and `agents/trace-analyser.md` in parallel if not already in context.
+
+**Follow the procedure in `agents/trace-analyser.md` directly. Do NOT spawn a sub-agent.** Work through all dimensions against `baseline` and `throttled`, running source-code lookups (find, grep, Read) as directed by Step 0.
+
+Produce the ordered findings list in memory; do not output it yet.
+
+### Script Phase 3: Report
+
+Use the same two-column report format as URL Mode Phase 4 (the data is identical). Findings include an **Affects** indicator.
 
 ---
 
