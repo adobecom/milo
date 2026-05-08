@@ -1,6 +1,6 @@
-# Trace Analyser Agent
+# Trace Analyser
 
-Delegated from SKILL.md Phase 3. Receives two `MetricsBundle` objects (baseline and throttled), cross-references `references/core-web-vitals.md` for thresholds, and returns an ordered list of findings.
+Used by SKILL.md Phase 3. Receives two `MetricsBundle` objects (baseline and throttled), cross-references `references/core-web-vitals.md` for thresholds, and returns an ordered list of findings focused on runtime performance: FPS, CPU, GPU, animations, and resource weight.
 
 ## Inputs
 
@@ -15,11 +15,11 @@ Read `references/core-web-vitals.md` before starting. Apply the thresholds defin
 
 Before writing any finding, look up every block name, script filename, or CSS class referenced in the MetricsBundle against the actual source. Do not assume an implementation based on the name alone.
 
-For each block name that appears in `vitals.shifts[].sources` or in `resourceSummary` filenames:
+For each block name that appears in `animationAudit[].selector` or `resourceSummary` filenames:
 
 1. Search for the block's JS file: `find . -name "<block-name>.js" -path "*/blocks/*" -o -name "<block-name>.js" -path "*/c2/*"`. If no JS file exists, the block is CSS-only — do not emit a JS-related finding for it.
 2. If a JS file exists, grep it for: `addEventListener('scroll'`, `getBoundingClientRect`, `offsetHeight`, `offsetWidth`, `style.setProperty`, `classList.add`, `classList.remove`, `requestAnimationFrame`. Read the surrounding 20 lines for any hits.
-3. Check for a corresponding CSS file and grep it for `animation-timeline`, `scroll-timeline`, `will-change`, `transform` to understand whether the effect is already compositor-driven.
+3. Check for a corresponding CSS file and grep it for `animation-timeline`, `scroll-timeline`, `will-change`, `transform`, `margin`, `top`, `left`, `width`, `height` inside `@keyframes` blocks (layout-triggering animation properties).
 
 Only after confirming what the code actually does should you write the finding's `fix`. If the source shows the block is already using the correct approach (e.g. CSS `animation-timeline: view()`), do not flag it as a JS-driven problem — instead note that the block is already optimised for that dimension and look for the real source of the signal in other blocks.
 
@@ -37,49 +37,13 @@ Categories (assign exactly one per finding):
 - **CPU** — main-thread tasks, script duration, INP, forced reflow, CPU throttle regression
 - **GPU** — GPU texture pressure, compositor layers, will-change abuse
 - **FPS** — frame drops during scroll, scroll handlers, rAF budget
-- **Animations** — animation jank, scroll-driven effects, CSS vs JS animation paths
+- **Animations** — animation jank, scroll-driven effects, CSS vs JS animation paths, long tasks during animation
 - **Network** — LCP resource fetch, render-blocking resources, large transfers, resource budget
-- **Layout** — CLS, layout shifts, style recalc, forced layout (reflow)
+- **Layout** — style recalc, forced layout (reflow)
 
 ---
 
-### Dimension 1 — LCP  _(category: Network)_
-
-1. Find the most likely LCP resource: the largest image or text block above the fold. Look in `baseline.resourceSummary.img` and `baseline.resourceSummary.fetch` for entries with high `decodedKB`.
-2. Check if that resource has `renderBlocking: true` anywhere upstream (scripts or stylesheets ahead of it in the waterfall).
-3. If `transferKB` is small but `decodedKB` is large (ratio > 5×): image is decoded at a size far larger than displayed — oversized for the viewport.
-4. If `durationMs` is high relative to `transferKB` (slow KB/ms): TTFB is the bottleneck, not transfer.
-5. If `throttled.vitals.lcpMs > 2 × baseline.vitals.lcpMs`: the bottleneck is network or JS init, not rendering. Flag for preload or server-side fixes.
-6. Compare against thresholds. Emit finding with the specific resource filename and the fix.
-
-Common fixes:
-- Add `<link rel="preload" as="image" fetchpriority="high">` for the LCP image
-- Remove `loading="lazy"` from above-fold images
-- Serve WebP/AVIF via `<picture>` with `srcset`
-- Add `fetchpriority="high"` attribute directly on `<img>`
-- Defer non-critical scripts that block the LCP resource
-
----
-
-### Dimension 2 — CLS  _(category: Layout)_
-
-1. Sort `baseline.vitals.shifts` by `value` descending.
-2. For each shift entry, inspect `sources` for the offending DOM node:
-   - `<img>` without explicit `width`/`height` or `aspect-ratio` → missing size reservation
-   - A font resource that loads after first paint → FOUT. Check `baseline.resourceSummary.font` for entries with `durationMs > 500`.
-   - An element injected by JS (ads, banners, consent bars) → reserved space needed.
-3. Sum shift values. Classify against threshold.
-4. Emit one finding per distinct root cause (not per shift entry).
-
-Common fixes:
-- Set explicit `width` and `height` on `<img>` elements (browser computes `aspect-ratio` automatically)
-- Add `aspect-ratio` in CSS for containers that hold dynamically loaded content
-- Add `font-display: swap` or `optional` to `@font-face` declarations
-- Reserve space for injected elements with `min-height`
-
----
-
-### Dimension 3 — INP / Main Thread  _(category: CPU)_
+### Dimension 1 — INP / Main Thread  _(category: CPU)_
 
 1. Check `baseline.vitals.inpMs`. If INP > 200ms during scroll, the page has heavy event handlers or long tasks on the scroll path.
 2. Check `baseline.cdp.taskDurationS`. If > 1s, the main thread is saturated.
@@ -97,10 +61,38 @@ Common fixes:
 
 ---
 
-### Dimension 4 — FPS  _(category: FPS or GPU — use FPS for frame-drop findings, GPU for texture/layer findings)_
+### Dimension 2 — Animation Runtime  _(category: Animations)_
 
-1. If `baseline.fps < 55`: the page drops frames even on a fast desktop. Likely heavy paint or many composited layers.
-2. If `throttled.fps < 30`: severe jank on mobile. Usually heavy scroll handlers or GPU overload.
+Use the `scroll`, `longTasks`, `totalBlockingTimeMs`, and `animationAudit` fields from both bundles.
+
+1. **Jank analysis** — check `baseline.scroll.jankFrames / baseline.scroll.totalFrames`:
+   - > 10%: significant scroll jank. Report jank ratio, `rafP95`, and `rafMax`.
+   - Check if `throttled.scroll.jankFrames` is significantly higher than baseline — if so, the jank is CPU-bound (likely JS-driven scroll handlers or forced reflow, not CSS).
+
+2. **Long tasks** — inspect `baseline.longTasks` (sorted by `durationMs` desc):
+   - If any task > 200ms: flag as blocking main thread during scroll/load.
+   - Categorise by `startMs`: tasks with `startMs < 3000` are during page load; tasks with `startMs > 3000` are during idle/user interaction.
+   - Report cumulative blocking time: `baseline.totalBlockingTimeMs`.
+
+3. **Animation audit** — inspect `baseline.animationAudit` (cross-reference the CSS from Step 0):
+   - Identify animations using layout-triggering properties (`margin`, `width`, `height`, `top`, `left`) inside `@keyframes` or `transition`. These run on the main thread and force recalc per frame.
+   - Identify elements with `will-change` that is always-on (not conditional on `:hover`/interaction) — each creates a GPU compositor layer with memory overhead.
+   - Identify scroll-driven animations (`animation-timeline: view()`) applied to many elements simultaneously.
+
+4. Emit findings for each animation issue found, naming the specific `selector` and `animationName` from the audit.
+
+Common fixes:
+- Replace layout-property animations with `transform`/`opacity` equivalents
+- Apply `will-change` only on `:hover`/`:focus-visible`, not unconditionally
+- Limit `animation-timeline: view()` to a single coordinating container; animate children via CSS custom properties
+- Wrap all `animation-timeline` rules in `@supports (animation-timeline: view())`
+
+---
+
+### Dimension 3 — FPS  _(category: FPS or GPU — use FPS for frame-drop findings, GPU for texture/layer findings)_
+
+1. If `baseline.scroll.fpsAvg < 55`: the page drops frames even on a fast desktop. Likely heavy paint or many composited layers.
+2. If `throttled.scroll.fpsAvg < 30`: severe jank on mobile. Usually heavy scroll handlers or GPU overload.
 3. Check `baseline.cdp.gpuTextureMB`:
    - > 100 MB: too many large images decoded to GPU texture simultaneously, or too many compositor layers.
    - > 50 MB: borderline; flag if combined with low FPS.
@@ -114,7 +106,7 @@ Common fixes:
 
 ---
 
-### Dimension 5 — Resource Budget  _(category: Network)_
+### Dimension 4 — Resource Budget  _(category: Network)_
 
 Use `baseline.resourceTotals` for counts and totals. Use `baseline.resourceSummary` to identify the largest individual files. Flag individual resources that exceed:
 
@@ -130,24 +122,15 @@ For each flagged resource, name the filename and suggest the specific fix.
 
 ---
 
-### Dimension 6 — Forced Reflow  _(category: CPU)_
+### Dimension 5 — Forced Reflow  _(category: CPU)_
 
-Forced reflow (layout thrash) occurs when JavaScript reads a layout property — `offsetWidth`, `offsetHeight`, `getBoundingClientRect()`, `scrollTop`, `clientHeight`, etc. — immediately after writing to the DOM. The browser is forced to flush pending style changes and recalculate layout synchronously before returning the value. On a page with many elements or complex CSS, each forced reflow can block the main thread for tens of milliseconds.
+Forced reflow (layout thrash) occurs when JavaScript reads a layout property — `offsetWidth`, `offsetHeight`, `getBoundingClientRect()`, `scrollTop`, `clientHeight`, etc. — immediately after writing to the DOM.
 
-#### Detection from MetricsBundle
+1. **Primary signal**: `cdp.layoutDurationS > 0.02` on desktop baseline indicates significant layout work.
+2. **Secondary signal**: high `cdp.recalcStyleDurationS` alongside high `cdp.layoutDurationS` — interleaved style and layout time is the fingerprint of repeated forced reflow.
+3. **Tertiary signal**: low FPS during scroll combined with elevated `layoutDurationS` but low `scriptDurationS`.
 
-1. **Primary signal**: `cdp.layoutDurationS > 0.02` (20ms) on desktop baseline indicates significant layout work. If it also exceeds `0.05` on the throttled pass, forced reflow is likely a material bottleneck.
-2. **Secondary signal**: high `cdp.recalcStyleDurationS` alongside high `cdp.layoutDurationS` — interleaved style and layout time is the fingerprint of repeated forced reflow, as opposed to a single large layout pass at load.
-3. **Tertiary signal**: low FPS during scroll combined with elevated `layoutDurationS` but low `scriptDurationS` — the bottleneck is not JS execution itself but layout recalculation triggered by JS reads.
-
-#### Investigation steps
-
-1. Compute the layout-to-script ratio: `cdp.layoutDurationS / cdp.scriptDurationS`. A ratio > 0.5 means layout is consuming more than half the JS budget — unusual for a well-optimised page and a strong indicator of thrash.
-2. Check the resource list for third-party scripts (`type: 'script'` with an external hostname). Ad scripts, analytics, and tag managers are common sources of synchronous layout reads in scroll and resize handlers.
-3. Look for scroll-linked behaviour on the page: sticky headers, parallax effects, lazy-load triggers, or progress bars — all common sites of `getBoundingClientRect()` calls inside event listeners.
-4. If `throttled.cdp.layoutDurationS > 3 × baseline.cdp.layoutDurationS`: the reflow cost scales with CPU speed, confirming it is happening repeatedly (once per frame) rather than once at load.
-
-#### Severity thresholds
+Severity thresholds:
 
 | `layoutDurationS` (baseline) | Severity |
 |------------------------------|----------|
@@ -156,37 +139,26 @@ Forced reflow (layout thrash) occurs when JavaScript reads a layout property —
 | > 0.05 | HIGH |
 | > 0.05 and throttled > 0.15 | CRITICAL |
 
-#### Common fixes
+After verifying the source code (Step 0), name the specific function call or block file driving the reflow.
 
-- **Batch reads before writes**: read all layout properties first, then apply all DOM mutations — never interleave.
-  ```javascript
-  // Bad
-  el.style.height = el.offsetHeight + 10 + 'px'; // read → write → read next iteration = thrash
-
-  // Good
-  const h = el.offsetHeight;    // read
-  el.style.height = h + 10 + 'px'; // write
-  ```
-- **Cache layout values**: if the same property is needed in a loop, read it once outside the loop.
-- **Use `ResizeObserver` instead of polling** `offsetWidth` on a timer or scroll event.
-- **Replace scroll listeners with Intersection Observer** for lazy-load triggers and scroll-linked class toggling — no layout reads needed.
-- **Replace scroll listeners with CSS scroll-driven animations** (`animation-timeline: view()`) for parallax and reveal effects — runs entirely on the compositor thread.
-- **`requestAnimationFrame` batching**: if reads and writes must coexist, schedule reads at the top of the rAF callback and writes at the bottom, or split into two rAF callbacks.
-
-Emit one finding that names the most likely JS site (third-party script filename, or the scroll/resize listener pattern detected) and references the specific CDP values that flagged it.
+Common fixes:
+- Batch reads before writes; never interleave
+- Cache layout values in a variable outside loops
+- Use `ResizeObserver` instead of polling `offsetWidth`
+- Replace scroll listeners with `IntersectionObserver`
+- Use `IntersectionObserverEntry.boundingClientRect` (already computed) instead of calling `getBoundingClientRect()` again
 
 ---
 
-### Dimension 7 — CPU Throttle Regression  _(category: CPU; or Animations if FPS delta is the primary signal)_
+### Dimension 6 — CPU Throttle Regression  _(category: CPU; or Animations if FPS delta is the primary signal)_
 
 Both passes use the same 1440×900 desktop viewport — only CPU speed differs. Any regression is therefore purely CPU-bound.
 
 Compute:
-- LCP delta: `(throttled.vitals.lcpMs - baseline.vitals.lcpMs) / baseline.vitals.lcpMs × 100`
-- FPS delta: `baseline.fps - throttled.fps`
+- FPS delta: `baseline.scroll.fpsAvg - throttled.scroll.fpsAvg`
 - TaskDuration delta: `throttled.cdp.taskDurationS / baseline.cdp.taskDurationS`
+- RAF P95 delta: `throttled.scroll.rafP95 - baseline.scroll.rafP95`
 
-If LCP delta > 100%: LCP is gated on main-thread work (JS parsing or long tasks blocking paint), not on network fetch time. Highlight for script deferral or code-splitting.
 If FPS delta > 20: scroll handlers, animations, or compositor layers don't scale with CPU — highlight for animation/listener audit.
 If TaskDuration scales > 4× (matches throttle rate): main thread is fully saturated during load — no idle headroom. Highlight for task splitting or `scheduler.yield()`.
 
@@ -194,14 +166,18 @@ If TaskDuration scales > 4× (matches throttle rate): main thread is fully satur
 
 ## Output
 
-Return findings as an ordered list, highest severity first. Within the same severity, order by estimated user impact (LCP > CLS > INP > FPS > resource weight).
+Return findings as an ordered list, highest severity first. Within the same severity, order by estimated user impact (INP > FPS > animations > resource weight).
 
-Each finding:
+Each finding must include an `"affects"` field indicating which pass(es) show the problem:
+- `"baseline + throttled"` — problem present on both runs
+- `"throttled only"` — problem only shows under CPU throttle
+- `"baseline only"` — problem only shows on unthrottled run (unusual; note why)
 
-```
+```json
 {
   "severity": "CRITICAL | HIGH | MEDIUM",
   "category": "CPU | GPU | FPS | Animations | Network | Layout",
+  "affects": "baseline + throttled | throttled only | baseline only",
   "title": "<short title>",
   "target": "<specific element, filename, selector, or property>",
   "what": "<one-sentence description>",
@@ -210,4 +186,4 @@ Each finding:
 }
 ```
 
-Maximum 8 findings. If fewer than 3 dimensions show problems, still report all passing metrics explicitly so the main skill can include them in the report.
+Maximum 20 findings. If fewer than 3 dimensions show problems, still report all passing metrics explicitly so the main skill can include them in the report.
