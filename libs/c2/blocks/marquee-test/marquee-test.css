@@ -8,100 +8,91 @@
   overflow: hidden;
   padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
   padding-inline: var(--s2a-spacing-lg);
+
+  .pm-foreground {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .body-md {
+      color: var(--s2a-color-content-title);
+      font-family: var(--heading-font-family);
+      font-size: var(--s2a-typography-font-size-title-4);
+      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+      line-height: var(--s2a-typography-line-height-title-4);
+      margin: 0;
+      max-inline-size: 400px;
+    }
+  }
+
+  .pm-chiclet-row {
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-lg);
+
+    .icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+
+      img {
+        block-size: 100%;
+        inline-size: 100%;
+        object-fit: contain;
+      }
+    }
+
+    .title-2 {
+      color: var(--s2a-color-content-title);
+      font-family: var(--heading-font-family);
+      font-size: var(--s2a-typography-font-size-super);
+      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+      letter-spacing: var(--s2a-typography-letter-spacing-super);
+      line-height: var(--s2a-typography-line-height-super);
+      margin: 0;
+    }
+  }
+
+  .pm-promo-area {
+    margin-block-start: var(--s2a-spacing-lg);
+  }
+
+  .pm-promo-button {
+    align-items: center;
+    background: var(--s2a-color-background-knockout);
+    border-radius: var(--s2a-border-radius-md);
+    display: flex;
+    gap: var(--s2a-spacing-md);
+    padding-block: var(--s2a-spacing-12);
+    padding-inline: var(--s2a-spacing-20) var(--s2a-spacing-12);
+    text-decoration: none;
+
+    .pm-promo-text {
+      color: var(--s2a-color-content-knockout);
+      flex: 1;
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-eyebrow);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+      line-height: var(--s2a-typography-line-height-eyebrow);
+    }
+
+    .pm-promo-chevron {
+      align-items: center;
+      background: var(--s2a-color-transparent-white-16);
+      block-size: 32px;
+      border-radius: var(--s2a-border-radius-sm);
+      color: var(--s2a-color-content-knockout);
+      display: flex;
+      flex-shrink: 0;
+      inline-size: 32px;
+      justify-content: center;
+    }
+  }
 }
 
-/* Left column: chiclet at top, body at bottom */
-.pm-foreground {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* Chiclet row: icon + product name side-by-side */
-.pm-chiclet-row {
-  align-items: center;
-  display: flex;
-  gap: var(--s2a-spacing-lg);
-}
-
-.pm-chiclet-row .icon {
-  block-size: 50px;
-  flex-shrink: 0;
-  inline-size: 50px;
-}
-
-.pm-chiclet-row .icon img {
-  block-size: 100%;
-  inline-size: 100%;
-  object-fit: contain;
-}
-
-/* Product name — super typography */
-.pm-chiclet-row .title-2 {
-  color: var(--s2a-color-content-title);
-  font-family: var(--heading-font-family);
-  font-size: var(--s2a-typography-font-size-super);
-  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-  letter-spacing: var(--s2a-typography-letter-spacing-super);
-  line-height: var(--s2a-typography-line-height-super);
-  margin: 0;
-}
-
-/* Body text */
-.pm-foreground .body-md {
-  color: var(--s2a-color-content-title);
-  font-family: var(--heading-font-family);
-  font-size: var(--s2a-typography-font-size-title-4);
-  font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-  letter-spacing: var(--s2a-font-letter-spacing-4xl);
-  line-height: var(--s2a-typography-line-height-title-4);
-  margin: 0;
-  max-inline-size: 400px;
-}
-
-/* Promo area: below foreground on mobile */
-.pm-promo-area {
-  margin-block-start: var(--s2a-spacing-lg);
-}
-
-/* Black pill promo button */
-.pm-promo-button {
-  align-items: center;
-  background: var(--s2a-color-background-knockout);
-  border-radius: var(--s2a-border-radius-md);
-  display: flex;
-  gap: var(--s2a-spacing-md);
-  inline-size: 100%;
-  padding-block: var(--s2a-spacing-12);
-  padding-inline: var(--s2a-spacing-20) var(--s2a-spacing-12);
-  text-decoration: none;
-}
-
-.pm-promo-text {
-  color: var(--s2a-color-content-knockout);
-  flex: 1;
-  font-family: var(--body-font-family);
-  font-size: var(--s2a-typography-font-size-eyebrow);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-  line-height: var(--s2a-typography-line-height-eyebrow);
-}
-
-.pm-promo-chevron {
-  align-items: center;
-  /* No --s2a- token for rgba(255 255 255 / 18%) — closest is --s2a-color-transparent-white-16 */
-  background: var(--s2a-color-transparent-white-16);
-  block-size: 32px;
-  border-radius: var(--s2a-border-radius-sm);
-  color: var(--s2a-color-content-knockout);
-  display: flex;
-  flex-shrink: 0;
-  inline-size: 32px;
-  justify-content: center;
-}
-
-/* Tablet (M — 768px+) */
 @media (width >= 768px) {
   .marquee-test {
     flex-direction: row;
@@ -109,40 +100,38 @@
     min-block-size: 500px;
     padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     padding-inline: var(--s2a-spacing-3xl);
-  }
 
-  .pm-chiclet-row .icon {
-    block-size: 80px;
-    inline-size: 80px;
-  }
+    .pm-chiclet-row .icon {
+      block-size: 80px;
+      inline-size: 80px;
+    }
 
-  .pm-foreground .body-md {
-    max-inline-size: 332px;
-  }
+    .pm-foreground .body-md {
+      max-inline-size: 332px;
+    }
 
-  /* Promo: anchor to bottom-right */
-  .pm-promo-area {
-    align-self: flex-end;
-    flex-shrink: 0;
-    margin-block-start: 0;
-  }
+    .pm-promo-area {
+      align-self: flex-end;
+      flex-shrink: 0;
+      margin-block-start: 0;
+    }
 
-  .pm-promo-button {
-    inline-size: 260px;
+    .pm-promo-button {
+      inline-size: 260px;
+    }
   }
 }
 
-/* Desktop (L — 1280px+) */
 @media (width >= 1280px) {
   .marquee-test {
     min-block-size: 540px;
-  }
 
-  .pm-foreground .body-md {
-    max-inline-size: 467px;
-  }
+    .pm-foreground .body-md {
+      max-inline-size: 467px;
+    }
 
-  .pm-promo-button {
-    inline-size: 330px;
+    .pm-promo-button {
+      inline-size: 330px;
+    }
   }
 }
