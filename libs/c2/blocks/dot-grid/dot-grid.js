@@ -915,6 +915,7 @@ export default async function init(el) {
   }
 
   let arcTextPanProgressCached = 0;
+  let mockupPrewarmed = false;
 
   // Writes per-frame transform/opacity scalars to CSS custom properties on the stage.
   // The actual transform and opacity declarations live in CSS — see .acrobat-* rules.
@@ -1042,6 +1043,26 @@ export default async function init(el) {
     }
   }
 
+  function prewarmMockupIfNeeded() {
+    if (mockupPrewarmed) return;
+    if (arcTextPanProgressCached < 0.6) return;
+    mockupPrewarmed = true;
+
+    const mockupEl = stage.querySelector(
+      frame.isMobile ? '.acrobat-mobile-mockup' : '.acrobat-desktop-mockup',
+    );
+    if (!mockupEl) return;
+
+    mockupEl.style.opacity = '0.001';
+    mockupEl.style.transform = 'translateY(0) scale(1)';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mockupEl.style.opacity = '';
+        mockupEl.style.transform = '';
+      });
+    });
+  }
+
   function updateTextBlock() {
     const textEase = easeInOutSine(phase.slotting);
     const textScaleDuringSlotting = 1 - 0.28 * textEase;
@@ -1154,6 +1175,7 @@ export default async function init(el) {
     updateAdbeLogo();
     updateInteractivity();
     updateCompressionAndPan();
+    prewarmMockupIfNeeded();
     updateTextBlock();
     positionCards();
     canvasGrid.update();
