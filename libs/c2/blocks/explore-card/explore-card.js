@@ -9,8 +9,7 @@ function getForegroundContent(foregroundRow, contentDiv, blockName) {
   if (foregroundRow) {
     if (hasContent(foregroundRow)) {
       [...foregroundRow.children].forEach((child) => child.classList.add(`${blockName}-foreground`));
-      const contentAux = createTag('div', { class: 'content-aux' });
-      contentDiv?.append(contentAux, ...foregroundRow.childNodes);
+      contentDiv?.append(...foregroundRow.childNodes);
     }
     foregroundRow.remove();
   }
@@ -28,8 +27,11 @@ function decorate(block, root) {
   const backgroundDiv = firstRow.querySelector(':scope > div:last-child');
   const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
   const prodIcon = contentDiv?.querySelector('img');
-  const link = contentDiv?.querySelector('a');
+  const isVideoHref = (href) => /\.(mp4|webm|ogg|mov|m4v)(\?[^#]*)?(#.*)?$/i.test(href);
+  const link = [...(contentDiv?.querySelectorAll('a[href]:not([data-video-poster])') ?? [])]
+    .find((a) => !isVideoHref(a.href)) ?? null;
   const heading = contentDiv?.querySelector(':is(h1, h2, h3, h4, h5, h6)');
+  const contentAux = createTag('div', { class: 'content-aux' });
 
   if (prodIcon && isSvgUrl(prodIcon.src)) {
     prodIcon.src = getFederatedUrl(prodIcon.src);
@@ -53,6 +55,7 @@ function decorate(block, root) {
 
   getForegroundContent(foregroundRow, contentDiv, blockName);
   decorateBlockText(contentDiv, { heading: '5' });
+  contentDiv?.append(contentAux);
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
