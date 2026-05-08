@@ -1,0 +1,145 @@
+/* Product Marquee — mobile-first */
+
+.product-marquee-grid {
+  background: var(--s2a-color-background-default);
+  display: flex;
+  flex-direction: column;
+  min-block-size: 460px;
+  overflow: hidden;
+  padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
+  padding-inline: var(--s2a-spacing-lg);
+
+  .pm-foreground {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .body-md {
+      color: var(--s2a-color-content-title);
+      font-family: var(--heading-font-family);
+      font-size: var(--s2a-typography-font-size-title-4);
+      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+      line-height: var(--s2a-typography-line-height-title-4);
+      margin: 0;
+      max-inline-size: 400px;
+    }
+  }
+
+  .pm-chiclet-row {
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-lg);
+
+    .icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+
+      img {
+        block-size: 100%;
+        inline-size: 100%;
+        object-fit: contain;
+      }
+    }
+
+    img.icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+      object-fit: contain;
+    }
+
+    .title-2 {
+      color: var(--s2a-color-content-title);
+      font-family: var(--heading-font-family);
+      font-size: var(--s2a-typography-font-size-super);
+      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
+      letter-spacing: var(--s2a-typography-letter-spacing-super);
+      line-height: var(--s2a-typography-line-height-super);
+      margin: 0;
+    }
+  }
+
+  .pm-promo-area {
+    margin-block-start: var(--s2a-spacing-lg);
+  }
+
+  .pm-promo-button {
+    align-items: center;
+    background: var(--s2a-color-background-knockout);
+    border-radius: var(--s2a-border-radius-md);
+    display: flex;
+    gap: var(--s2a-spacing-md);
+    padding-block: var(--s2a-spacing-12);
+    padding-inline: var(--s2a-spacing-20) var(--s2a-spacing-12);
+    text-decoration: none;
+
+    .pm-promo-text {
+      color: var(--s2a-color-content-knockout);
+      flex: 1;
+      font-family: var(--body-font-family);
+      font-size: var(--s2a-typography-font-size-eyebrow);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+      line-height: var(--s2a-typography-line-height-eyebrow);
+    }
+
+    .pm-promo-chevron {
+      align-items: center;
+      background: var(--s2a-color-transparent-white-16);
+      block-size: 32px;
+      border-radius: var(--s2a-border-radius-sm);
+      color: var(--s2a-color-content-knockout);
+      display: flex;
+      flex-shrink: 0;
+      inline-size: 32px;
+      justify-content: center;
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .product-marquee-grid {
+    flex-direction: row;
+    justify-content: space-between;
+    min-block-size: 500px;
+    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+    padding-inline: var(--s2a-spacing-3xl);
+
+    .pm-chiclet-row .icon,
+    .pm-chiclet-row img.icon {
+      block-size: 80px;
+      inline-size: 80px;
+    }
+
+    .pm-foreground .body-md {
+      max-inline-size: 332px;
+    }
+
+    .pm-promo-area {
+      align-self: flex-end;
+      flex-shrink: 0;
+      margin-block-start: 0;
+    }
+
+    .pm-promo-button {
+      inline-size: 260px;
+    }
+  }
+}
+
+@media (width >= 1280px) {
+  .product-marquee-grid {
+    min-block-size: 540px;
+
+    .pm-foreground .body-md {
+      max-inline-size: 467px;
+    }
+
+    .pm-promo-button {
+      inline-size: 330px;
+    }
+  }
+}
