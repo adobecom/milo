@@ -6,6 +6,7 @@ import { replaceKey } from '../../features/placeholders.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
+export const MAS_COMPARE_CHART = 'mas-compare-chart';
 export const MAS_MERCH_CARD = 'merch-card';
 export const MAS_MERCH_CARD_COLLECTION = 'merch-card-collection';
 export const MAS_MERCH_MNEMONIC_LIST = 'merch-mnemonic-list';
