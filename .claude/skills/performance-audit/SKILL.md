@@ -47,7 +47,6 @@ Read `references/throttling-profiles.md` and `agents/metrics-collector.md` in pa
 **Execute the procedure from `agents/metrics-collector.md` directly using your Playwright MCP tools. Do NOT spawn a sub-agent.** Substitute:
 - `%%PROFILE%%` → `desktop-baseline`
 - `%%URL%%` → the target URL
-- `%%SCREENSHOT_PATH%%` → `./perf-baseline.png`
 
 The `browser_run_code` call returns a JSON string. Parse it and store as `baseline`.
 
@@ -56,7 +55,6 @@ The `browser_run_code` call returns a JSON string. Parse it and store as `baseli
 **Execute the procedure from `agents/metrics-collector.md` directly using your Playwright MCP tools. Do NOT spawn a sub-agent.** Substitute:
 - `%%PROFILE%%` → `throttled-desktop`
 - `%%URL%%` → the target URL
-- `%%SCREENSHOT_PATH%%` → `./perf-throttled.png`
 
 The `browser_run_code` call returns a JSON string. Parse it and store as `throttled`.
 

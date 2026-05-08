@@ -6,7 +6,6 @@ Used by SKILL.md Phases 1 and 2. Launches a Playwright browser, applies the requ
 
 - `url` — the page URL to test
 - `profile` — `desktop-baseline` or `throttled-desktop` (see `references/throttling-profiles.md`)
-- `screenshot_path` — local path to save the above-fold screenshot
 
 ## Procedure
 
@@ -34,8 +33,7 @@ Run the complete script below in one `browser_run_code` call. The script:
 4. Waits 3 s for above-fold content, then freezes LCP, then waits 7 s more
 5. Collects resource timing
 6. Scrolls in viewport-height steps with 2 s pauses, recording per-frame timing
-7. Collects CDP metrics, vitals, long tasks, and animation audit
-8. Takes screenshot and returns the MetricsBundle
+7. Collects CDP metrics, vitals, long tasks, and animation audit, and returns the MetricsBundle
 
 ```javascript
 // ── Pre-navigation setup (keep minimal to reduce blank-page wait time) ─────
@@ -154,8 +152,8 @@ await page.evaluate(() => {
 
 const { numStops } = await page.evaluate(() => ({
   numStops: Math.min(
-    Math.ceil(Math.max(document.body.scrollHeight - window.innerHeight, 0) / window.innerHeight),
-    6
+    Math.ceil(Math.max(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight, 0) / window.innerHeight),
+    12
   ),
 }));
 
@@ -168,6 +166,10 @@ for (let i = 0; i < numStops; i++) {
   // Wait 2 s for Lenis inertia (or native momentum) to settle
   await page.waitForTimeout(2000);
 }
+
+// Guarantee the bottom is reached regardless of smooth-scroll inertia (Lenis etc.)
+await page.evaluate(() => window.scrollTo(0, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)));
+await page.waitForTimeout(1000);
 
 const scrollStats = await page.evaluate(() => {
   const d = window.__rafTrack.durations;
@@ -231,9 +233,6 @@ const animationAudit = await page.evaluate(() => {
   return results;
 });
 
-// ── Screenshot ─────────────────────────────────────────────────────────────
-await page.screenshot({ path: '%%SCREENSHOT_PATH%%', fullPage: false });
-
 // ── Return MetricsBundle ───────────────────────────────────────────────────
 return JSON.stringify({
   profile: '%%PROFILE%%',
@@ -255,7 +254,7 @@ return JSON.stringify({
   },
   resourceTotals,
   resourceSummary,
-  screenshotPath: '%%SCREENSHOT_PATH%%',
+  screenshotPath: null,
   notes: [],
 });
 ```

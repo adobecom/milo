@@ -25,7 +25,7 @@ if (!url || !url.startsWith('http')) {
   process.exit(1);
 }
 
-async function runPass(url, profile, screenshotPath) {
+async function runPass(url, profile) {
   const browser = await chromium.launch({ headless: false });
   const context = await browser.newContext();
   const page    = await context.newPage();
@@ -99,13 +99,20 @@ async function runPass(url, profile, screenshotPath) {
   });
 
   const { numStops } = await page.evaluate(() => ({
-    numStops: Math.min(Math.ceil(Math.max(document.body.scrollHeight - window.innerHeight, 0) / window.innerHeight), 6),
+    numStops: Math.min(
+      Math.ceil(Math.max(Math.max(document.documentElement.scrollHeight, document.body.scrollHeight) - window.innerHeight, 0) / window.innerHeight),
+      12
+    ),
   }));
 
   for (let i = 0; i < numStops; i++) {
     for (let t = 0; t < 5; t++) { await page.mouse.wheel(0, 200); await page.waitForTimeout(16); }
     await page.waitForTimeout(2000);
   }
+
+  // Guarantee the bottom is reached regardless of smooth-scroll inertia (Lenis etc.)
+  await page.evaluate(() => window.scrollTo(0, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)));
+  await page.waitForTimeout(1000);
 
   const scrollStats = await page.evaluate(() => {
     const d = window.__rafTrack.durations;
@@ -161,7 +168,6 @@ async function runPass(url, profile, screenshotPath) {
     return results;
   });
 
-  await page.screenshot({ path: screenshotPath, fullPage: false });
   await context.close();
   await browser.close();
 
@@ -183,17 +189,17 @@ async function runPass(url, profile, screenshotPath) {
     },
     resourceTotals,
     resourceSummary,
-    screenshotPath,
+    screenshotPath: null,
     notes: [],
   };
 }
 
 (async () => {
   console.log('[1/2] Baseline pass (unthrottled)...');
-  const baseline = await runPass(url, 'desktop-baseline', 'perf-baseline.png');
+  const baseline = await runPass(url, 'desktop-baseline');
 
   console.log('[2/2] Throttled pass (4× CPU)...');
-  const throttled = await runPass(url, 'throttled-desktop', 'perf-throttled.png');
+  const throttled = await runPass(url, 'throttled-desktop');
 
   fs.writeFileSync(outputFile, JSON.stringify({ baseline, throttled }, null, 2));
   console.log('Done → ' + path.resolve(outputFile));
