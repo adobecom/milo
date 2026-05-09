@@ -465,22 +465,27 @@
 
 /* Modal */
 @keyframes slide-up {
+  /* PERF TEST: was animating `bottom: -100vh -> 0`, which forces layout
+     per frame on a 100vh-sized fixed-position element. Replaced with a
+     compositable translate; the modal sits statically at `bottom: 0`. */
   from {
-    bottom: -100vh;
+    translate: 0 100vh;
   }
 
   to {
-    bottom: 0;
+    translate: 0 0;
   }
 }
 
 @keyframes slide-down {
+  /* PERF TEST: was animating `bottom: 0 -> -100vh`, layout-triggering.
+     Replaced with compositable translate. */
   from {
-    bottom: 0;
+    translate: 0 0;
   }
 
   to {
-    bottom: -100vh;
+    translate: 0 100vh;
   }
 }
 

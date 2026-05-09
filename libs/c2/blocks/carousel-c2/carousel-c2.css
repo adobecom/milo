@@ -122,6 +122,10 @@
           animation-timeline: view();
           animation-fill-mode: var(--carousel-animation-fill);
           animation-range: var(--carousel-text-animation-range);
+          /* PERF TEST: title-enter now animates `transform: scaleY` (a
+             compositable approximation of the original `line-height`
+             animation). transform-origin keeps the baseline anchored. */
+          transform-origin: bottom;
         }
 
         .rich-content .content > :not([class*="title-"]) {
@@ -376,7 +380,11 @@
 }
 
 @keyframes title-enter {
-  from { line-height: 2; }
+  /* PERF TEST: original animated `line-height: 2` (layout-triggering).
+     Replaced with a vertical scale that approximates the visual without
+     invalidating layout. */
+  from { transform: scaleY(1.5); }
+  to   { transform: scaleY(1); }
 }
 
 @keyframes text-enter {

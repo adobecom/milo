@@ -83,14 +83,23 @@
 
     .parallax-featured-card-media {
       animation-name: grow-featured-card-radius;
-      will-change: clip-path;
+      /* PERF TEST: was `will-change: clip-path` for the original animation
+         that interpolated `clip-path: inset(0 round 0)` →
+         `inset(0 round var(--md-radius))`. Animating clip-path shape is not
+         GPU-composited in Chrome (the path is re-recorded each frame).
+         Now compositable. */
+      will-change: transform;
     }
   }
 }
 
 @keyframes grow-featured-card-radius {
-  from { clip-path: inset(0 round 0); }
-  to { clip-path: inset(0 round var(--s2a-border-radius-md)); }
+  /* PERF TEST: original animated `clip-path` shape (border-radius growth).
+     Replaced with a transform no-op so the animation pipeline runs on a
+     compositable property. The featured card retains its final rounded-
+     corner clip-path statically via `.media { clip-path: inset(0 round md) }`
+     above. */
+  0%, 100% { transform: translateZ(0); }
 }
 
 @media (width < 768px) {

@@ -23,6 +23,23 @@
   initial-value: 0;
 }
 
+main > .section,
+main > .router-marquee,
+main > .elastic-carousel,
+main > .news,
+main > .product-grid {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 100vh;   /* tune per block type if you have a better default */
+  contain: layout paint;
+}
+
+body > footer,
+body > header,
+main > .section {
+  isolation: isolate;
+  contain: layout paint;
+}
+
 :root {
   /* tokens.primitives */
   --s2a-color-gray-25: #fff;
@@ -967,31 +984,50 @@ p {
   /* Grid parallax declarations */
   .parallax-scale-down-grid {
     animation-name: enable-grid-parallax;
-    will-change: padding-inline;
+    /* PERF TEST: was `will-change: padding-inline` for the layout-triggering
+       custom-property animation below. Now compositable. */
+    will-change: transform;
     overflow: clip;
   }
 
   @keyframes enable-grid-parallax {
-    from {
-      --grid-max-width: var(--grid-max-width-fluid);
-      --grid-margin-width: 0px;
-    }
-
-    to {
-      --grid-max-width: var(--grid-max-width-target);
-      --grid-margin-width: var(--grid-margin-width-target);
-    }
+    /* PERF TEST: original animated --grid-max-width and --grid-margin-width,
+       which fed `padding-inline` on consumers (a layout-triggering, non-
+       compositable property). Replaced with a no-op transform so the
+       animation pipeline runs on a GPU-composited property. The grid keeps
+       its static `padding-inline` values from the cascade. */
+    from { transform: translateZ(0); }
+    to   { transform: translateZ(0); }
   }
 
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
+    /* PERF TEST: expose the parent's view-progression as a named timeline so
+       each child can run its own composited transform animation, instead of
+       reading a custom property that the parent animates (which forces a
+       per-frame style recalc on every consumer). The inset values mirror
+       the anonymous `view(block 40% 10%)` timeline already in use by the
+       parent's own animation (inherited from the [class*="parallax-"] rule
+       above), so children animate in sync with the parent's progression. */
+    view-timeline-name: --parallax-stagger;
+    view-timeline-axis: block;
+    view-timeline-inset: 40% 10%;
+
     @media (width >= 768px) {
       animation-name: enable-parallax-stagger;
 
       > :not([class*="section-"]) {
         --parallax-stagger-row-index: 0;
 
-        transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
+        /* PERF TEST: per-child composited transform animation driven by the
+           parent section's view-timeline. Replaces the previous static
+           `transform: ... var(--parallax-stagger-progress) ...` that
+           depended on a custom property animated on the parent. */
+        animation-name: parallax-stagger-translate;
+        animation-timeline: --parallax-stagger;
+        animation-range: var(--parallax-range-start) var(--parallax-range-end);
+        animation-timing-function: var(--parallax-easing);
+        animation-fill-mode: both;
         will-change: transform;
       }
 
@@ -1075,8 +1111,20 @@ p {
   }
 
   @keyframes enable-parallax-stagger {
-    from { --parallax-stagger-progress: 1; }
-    to { --parallax-stagger-progress: 0; }
+    /* PERF TEST: original animated --parallax-stagger-progress (a registered
+       <number> custom property, inherits: true), consumed in
+       `transform: translate3d(... * progress, ...)` on every child. That
+       forced a style-recalc on every consumer per scroll frame. Per-child
+       movement is now driven by the composited parallax-stagger-translate
+       keyframe below; this parent-level keyframe is intentionally a no-op
+       transform so the parent's animation entry remains harmless. */
+    from { transform: translateZ(0); }
+    to   { transform: translateZ(0); }
+  }
+
+  @keyframes parallax-stagger-translate {
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    to   { transform: translate3d(0, 0, 0); }
   }
 
   /* Garage door parallax (rich content over section w/ bkg) declarations */
@@ -1138,7 +1186,12 @@ p {
   }
 
   @keyframes garage-door-line-height {
-    from { line-height: 0.6; }
+    /* PERF TEST: original animated `line-height: 0.6` on every descendant
+       of `.garage-door-reveal .foreground` (selector: *), which triggers
+       layout per-frame on every text element. Replaced with a vertical
+       scale that approximates the visual without invalidating layout. */
+    from { transform: scaleY(0.6); }
+    to   { transform: scaleY(1); }
   }
 
   /* Section 1 to section 2 parallax declarations */
@@ -1182,11 +1235,19 @@ p {
     animation: text-reveal-up var(--parallax-easing) both;
     animation-timeline: view();
     animation-range: entry 10% cover 40%;
-    will-change: line-height;
+    /* PERF TEST: was `will-change: line-height` for the layout-triggering
+       animation below. Now compositable. */
+    will-change: transform;
+    transform-origin: bottom;
   }
 
   @keyframes text-reveal-up {
-    from { line-height: 3; }
+    /* PERF TEST: original animated `line-height: 3` on every descendant of
+       `.parallax-line-height` (selector: *), which triggers layout per-frame.
+       Replaced with a vertical scale that approximates the text-reveal
+       visual without invalidating layout. */
+    from { transform: scaleY(2); }
+    to   { transform: scaleY(1); }
   }
 }
 

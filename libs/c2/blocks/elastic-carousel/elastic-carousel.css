@@ -244,8 +244,12 @@ html[dir="rtl"] {
           --start-gap: .5rem;
         }
 
-        margin-inline: var(--start-gap);
-        will-change: margin-inline;
+        /* PERF TEST: was `margin-inline: var(--start-gap)` paired with an
+           animation that interpolated to var(--end-gap). margin animation
+           is layout-triggering. The end-state gap is now applied statically;
+           the animation below is a compositable no-op. */
+        margin-inline: var(--end-gap);
+        will-change: transform;
         animation: elasticItemsGapShrink var(--parallax-easing) both;
         animation-timeline: view();
         animation-range: entry 0% exit 100%;
@@ -418,23 +422,19 @@ html[dir="rtl"] {
 /** animations */
 
 @keyframes elasticItemsGapShrink {
-  0% {
-    margin-inline: var(--start-gap);
-  }
-
-
-  40% {
-    margin-inline: var(--end-gap);
-  }
-
-  100% {
-    margin-inline: var(--end-gap);
-  }
+  /* PERF TEST: original interpolated `margin-inline` between var(--start-gap)
+     and var(--end-gap), forcing layout per scroll frame on every elastic
+     carousel item. Replaced with a compositable transform no-op; the items
+     sit at their end-state gap statically (margin-inline: var(--end-gap)). */
+  0%, 100% { transform: translateZ(0); }
 }
 
 @keyframes elasticCarouselSlideIn {
+  /* PERF TEST: original animated `margin-left` (layout-triggering) plus
+     opacity. Replaced with the compositable `translate` property so the
+     slide-in visual is preserved without per-frame layout. */
   0% {
-    margin-left: var(--start-margin);
+    translate: var(--start-margin) 0;
     opacity: 0;
   }
 
@@ -443,11 +443,11 @@ html[dir="rtl"] {
   }
 
   40% {
-    margin-left: 0;
+    translate: 0 0;
   }
 
   100% {
-    margin-left: 0;
+    translate: 0 0;
     opacity: 1;
   }
 }
@@ -495,15 +495,9 @@ html[dir="rtl"] {
 }
 
 @keyframes elasticItemsShrink {
-  0% {
-    margin: 0
-  }
-
-  20% {
-    margin: 0
-  }
-
-  100% {
-    margin: 0 var(--stack-shrink);
-  }
+  /* PERF TEST: original interpolated `margin: 0 → 0 var(--stack-shrink)`,
+     forcing layout per scroll frame on every stacked item container.
+     Replaced with a compositable transform no-op; stacking visual on mobile
+     loses the per-frame margin shrink effect for now. */
+  0%, 100% { transform: translateZ(0); }
 }

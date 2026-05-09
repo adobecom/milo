@@ -465,22 +465,25 @@
 
 /* Modal */
 @keyframes slide-up {
+  /* PERF TEST: original animated `bottom` (layout-triggering).
+     Replaced with a compositable transform translation. */
   from {
-    bottom: -100vh;
+    transform: translateY(100%);
   }
 
   to {
-    bottom: 0;
+    transform: translateY(0);
   }
 }
 
 @keyframes slide-down {
+  /* PERF TEST: as slide-up; closes the dialog by translating downward. */
   from {
-    bottom: 0;
+    transform: translateY(0);
   }
 
   to {
-    bottom: -100vh;
+    transform: translateY(100%);
   }
 }
 
@@ -538,7 +541,10 @@
 
 #brand-concierge-modal.dialog-modal.closing {
   animation: var(--bc-modal-animation-time) ease-in-out slide-down;
-  bottom: -100vh;
+  /* PERF TEST: was `bottom: -100vh` to keep the dialog off-screen after the
+     slide-down animation completes. With the animation now translating via
+     transform, the static end-state is also a transform. */
+  transform: translateY(100%);
 }
 
 #brand-concierge-modal ~ .modal-curtain {
