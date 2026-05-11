@@ -376,7 +376,7 @@
 }
 
 @keyframes title-enter {
-  from { line-height: 2; }
+  from { transform: translateY(48px); }
 }
 
 @keyframes text-enter {

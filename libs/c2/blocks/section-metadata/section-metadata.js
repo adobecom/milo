@@ -160,6 +160,33 @@ function handleMasonry(text, section) {
   });
 }
 
+function handleGridScaleDown(section) {
+  const block = section.querySelector(':scope > div:not(.section-background):not([class*="metadata"])');
+  if (!block) return;
+
+  block.style.willChange = 'transform';
+
+  let scaleFrom = 1;
+  let docTop = null;
+
+  const recalc = () => {
+    const sectionWidth = section.offsetWidth;
+    const blockWidth = block.offsetWidth;
+    if (sectionWidth > 0 && blockWidth > 0) scaleFrom = sectionWidth / blockWidth;
+    docTop = null;
+  };
+
+  const onScroll = () => {
+    if (docTop === null) docTop = section.getBoundingClientRect().top + window.scrollY;
+    const vh = window.innerHeight;
+    const t = Math.max(0, Math.min(1, (window.scrollY + vh - docTop) / section.offsetHeight));
+    block.style.transform = `scaleX(${(scaleFrom + (1 - scaleFrom) * t).toFixed(4)})`;
+  };
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  new ResizeObserver(() => { recalc(); onScroll(); }).observe(section);
+}
+
 function handleStickyFocus(section) {
   if (!section.classList.contains('parallax-move-up-fast')) return;
 
@@ -193,4 +220,5 @@ export default async function init(el) {
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
   handleStickyFocus(section);
+  if (section.classList.contains('parallax-scale-down-grid')) handleGridScaleDown(section);
 }
