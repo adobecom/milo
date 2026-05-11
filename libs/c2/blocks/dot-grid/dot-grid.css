@@ -102,6 +102,36 @@
   transform-style: flat;
 }
 
+.dot-grid .acrobat-desktop-mockup {
+  position: absolute;
+  top: calc(21vh + 12px);
+  left: calc((100vw - min(68.6vw, 971px)) / 2);
+  z-index: 20;
+  display: block;
+  overflow: hidden;
+  width: min(68.6vw, 971px);
+  aspect-ratio: 971 / 576;
+  border-radius: 10px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 60%);
+  transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
+  transform-origin: center center;
+  pointer-events: none;
+  will-change: transform;
+  contain: layout style paint;
+}
+
+.dot-grid .acrobat-desktop-mockup picture,
+.dot-grid .acrobat-desktop-mockup img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.dot-grid .acrobat-mobile-mockup {
+  display: none;
+}
+
 .dot-grid .card {
   position: absolute;
   width: 192px;
@@ -156,9 +186,9 @@
 .dot-grid .acrobat-title {
   position: absolute;
   top: 0;
-  left: calc((100vw - min(68.6vw, 988px)) / 2);
+  left: calc((100vw - min(68.6vw, 971px)) / 2);
   z-index: 19;
-  width: min(68.6vw, 988px);
+  width: min(68.6vw, 971px);
   text-align: center;
   opacity: var(--title-opacity, 0);
   transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
@@ -217,9 +247,14 @@
 }
 
 @media (width >= 768px) and (width <= 1279px) {
+  .dot-grid .acrobat-desktop-mockup {
+    width: clamp(680px, 70vw, 971px);
+    left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
+  }
+
   .dot-grid .acrobat-title {
-    left: calc((100vw - clamp(680px, 70vw, 988px)) / 2);
-    width: clamp(680px, 70vw, 988px);
+    left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
+    width: clamp(680px, 70vw, 971px);
   }
 
   /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
@@ -227,16 +262,38 @@
   .dot-grid .text-block {
     min-width: 292px;
   }
-
-  .dot-grid .acrobat-desktop-mockup {
-    width: clamp(680px, 70vw, 988px);
-    left: calc((100vw - clamp(680px, 70vw, 988px)) / 2);
-
-    --acrobat-desktop-scale: clamp(calc(680px / 988), calc(70 * 1vw / 988), 1px);
-  }
 }
 
 @media (width <= 767px) {
+  .dot-grid .acrobat-desktop-mockup {
+    display: none !important;
+  }
+
+  .dot-grid .acrobat-mobile-mockup {
+    position: absolute;
+    top: 0;
+    left: calc((100% - 294px) / 2);
+    z-index: 20;
+    display: block;
+    overflow: hidden;
+    width: 294px;
+    height: 536px;
+    border-radius: 14px;
+    box-shadow: 0 12px 60px rgb(0 0 0 / 60%);
+    transform: translateY(var(--mockup-y, 100vh)) scale(var(--mockup-scale, 2));
+    transform-origin: center center;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .dot-grid .acrobat-mobile-mockup picture,
+  .dot-grid .acrobat-mobile-mockup img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+  }
+
   .dot-grid .card-label-outer {
     font-size: 10pt;
   }

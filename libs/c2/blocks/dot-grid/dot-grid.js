@@ -1,4 +1,4 @@
-import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
+import { createTag } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
 
 import createCanvasGrid from './canvas-grid.js';
@@ -151,17 +151,17 @@ const FAN_INDEX_BY_GRID_POSITION = [
 ];
 
 // ──────────── Acrobat desktop mockup geometry ────────────
-// Mockup is a 988×567 illustration scaled responsively. Card slot positions
+// Mockup is a 971×576 illustration scaled responsively. Card slot positions
 // are authored in mockup-pixel coordinates and scaled to the rendered width.
-const ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH = 988;
-const ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT = 567;
-const ACROBAT_DESKTOP_MOCKUP_MAX_WIDTH = 988;
+const ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH = 971;
+const ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT = 576;
+const ACROBAT_DESKTOP_MOCKUP_MAX_WIDTH = 971;
 const ACROBAT_DESKTOP_MOCKUP_TABLET_MIN_WIDTH = 680;
 const ACROBAT_DESKTOP_MOCKUP_TABLET_VW = 0.70;
 const ACROBAT_DESKTOP_MOCKUP_DESKTOP_VW = 0.686;
-const ACROBAT_DESKTOP_SLOT_WIDTH = 146;
-const ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN = [355, 516, 677, 838];
-const ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW = [194, 409];
+const ACROBAT_DESKTOP_SLOT_WIDTH = 134;
+const ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN = [129, 284, 439, 594];
+const ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW = [187, 393];
 /** px from header bottom to mockup top, and mockup bottom to CTA top, at rest. */
 const ACROBAT_DESKTOP_GAP_ABOVE = 40;
 const ACROBAT_DESKTOP_GAP_BELOW = 40;
@@ -325,13 +325,6 @@ const ADBE_LOGO = `
   <path class="adbe-logo-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
 </svg>`;
 
-async function loadBlockStyles() {
-  const { miloLibs, codeRoot } = getConfig();
-  return new Promise((resolve) => {
-    loadStyle(`${miloLibs || codeRoot}/c2/blocks/dot-grid/acrobat-mockups.css`, resolve);
-  });
-}
-
 function buildStage(el) {
   const {
     titleEl, cards: cardDefs, textBlockEl, ctaEl, mobileMockupImgEl, desktopMockupImgEl,
@@ -369,8 +362,6 @@ function buildStage(el) {
 }
 
 export default async function init(el) {
-  await loadBlockStyles();
-
   const {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
     canvas, adbeLogoPath,
@@ -724,6 +715,12 @@ export default async function init(el) {
     }
     arcAngle = frame.isMobile ? ANIM.mobileArcAlpha : Math.atan2(viewportHeight, viewportWidth);
     cachedHeadlineH = titleEl?.offsetHeight || 80;
+    if (frame.isMobile) {
+      const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
+      const chromeRestY = headlineRestY + cachedHeadlineH + 24;
+      titleEl.style.top = `${headlineRestY}px`;
+      ctaEl.style.top = `${chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24}px`;
+    }
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
     cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
@@ -853,7 +850,7 @@ export default async function init(el) {
   }
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
-  function renderGridToSlot(card, cardScale, mockupFrame) {
+  function renderGridToSlot(card, cardScale, deskGridScale, mockupFrame) {
     const cardSlot = frame.isMobile
       ? getMobileMockupCardSlot(card, mockupFrame)
       : getDesktopMockupCardSlot(card, mockupFrame);
@@ -868,7 +865,8 @@ export default async function init(el) {
     const slottingEaseProgress = easeInOutSine(phase.slotting);
     const centerX = startCenterX + (endCenterX - startCenterX) * slottingEaseProgress;
     const centerY = startCenterY + (endCenterY - startCenterY) * slottingEaseProgress;
-    const scale = cardScale + (endScale - cardScale) * slottingEaseProgress;
+    const startScale = cardScale * deskGridScale;
+    const scale = startScale + (endScale - startScale) * slottingEaseProgress;
     card.visualCx = centerX;
     card.visualCy = centerY;
 
@@ -888,7 +886,7 @@ export default async function init(el) {
     const cardScale = frame.isMobile ? 1.0 : ANIM.cardScaleDesktop;
     const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
     // Frame-level values shared across cards — compute once per frame, not per card.
-    const deskGridScale = inArcPeel ? getDeskGridScale() : 0;
+    const deskGridScale = getDeskGridScale();
     let mockupFrame = null;
     if (!inArcPeel) {
       mockupFrame = frame.isMobile ? getMobileMockupFrame() : getDesktopMockupFrame();
@@ -899,7 +897,7 @@ export default async function init(el) {
         return;
       }
       if (inArcPeel) renderArcPeelToGrid(card, cardScale, deskGridScale);
-      else renderGridToSlot(card, cardScale, mockupFrame);
+      else renderGridToSlot(card, cardScale, deskGridScale, mockupFrame);
     });
   }
 
@@ -964,10 +962,10 @@ export default async function init(el) {
       verticalPan.mobilePostRevealY = postRevealPanY;
       stage.style.setProperty('--mockup-y', `${chromeRestY + slideOffset - postRevealPanY}px`);
       stage.style.setProperty('--mockup-scale', mobileScale);
-      stage.style.setProperty('--title-y', `${headlineRestY + slideOffset - postRevealPanY}px`);
+      stage.style.setProperty('--title-y', `${slideOffset - postRevealPanY}px`);
       stage.style.setProperty('--title-scale', 1);
       stage.style.setProperty('--title-opacity', titleOpacity);
-      stage.style.setProperty('--cta-y', `${ctaRestY + slideOffset - postRevealPanY}px`);
+      stage.style.setProperty('--cta-y', `${slideOffset - postRevealPanY}px`);
     } else {
       verticalPan.mobilePostRevealY = 0;
       const acrobatWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
@@ -991,6 +989,8 @@ export default async function init(el) {
       stage.style.setProperty('--title-scale', titleScale);
       stage.style.setProperty('--title-opacity', titleOpacity);
       stage.style.setProperty('--cta-y', `${mockupTranslateY - panY}px`);
+      const ctaVisiblePx = viewportHeight - cachedAcrobatCtaTop + panY;
+      ctaEl.style.opacity = Math.max(0, Math.min(1, ctaVisiblePx / 60)).toFixed(3);
     }
   }
 
