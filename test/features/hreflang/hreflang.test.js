@@ -54,6 +54,13 @@ function mockFetch(xmlBody, ok = true) {
   });
 }
 
+const BASE_CONFIG = {
+  locales: LOCALES,
+  sitemapTemplate: SITEMAP_TEMPLATE,
+  sitemapOrigin: SITEMAP_ORIGIN,
+  location: DE_LOCATION,
+};
+
 describe('appendHreflangLinks', () => {
   let fetchStub;
 
@@ -76,21 +83,21 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: '/sitemap.xml', sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks({ ...BASE_CONFIG, sitemapTemplate: '/sitemap.xml' });
 
     expect(fetchStub.calledWith('https://www.adobe.com/sitemap.xml', sinon.match.any)).to.be.true;
   });
 
   it('does nothing when hreflinksuseragents meta is absent', async () => {
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
     expect(fetchStub.called).to.be.false;
   });
 
   it('does nothing when user agent is not in allowed list', async () => {
     setUserAgentMeta('SomeOtherBot');
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
     expect(fetchStub.called).to.be.false;
   });
 
@@ -98,7 +105,7 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
 
     const links = document.querySelectorAll('link[rel="alternate"]');
     expect(links).to.have.length(2);
@@ -110,9 +117,9 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
     removeInjectedLinks();
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
 
     expect(fetchStub.callCount).to.equal(1);
     expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(2);
@@ -122,7 +129,7 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_UNKNOWN_LOCATION });
+    await appendHreflangLinks({ ...BASE_CONFIG, location: DE_UNKNOWN_LOCATION });
 
     expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(0);
   });
@@ -131,7 +138,7 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch('', false);
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
 
     expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(0);
   });
@@ -140,7 +147,7 @@ describe('appendHreflangLinks', () => {
     setUserAgentMeta(window.navigator.userAgent);
     stub(window, 'fetch').rejects(new DOMException('The user aborted a request.', 'AbortError'));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
 
     expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(0);
   });
@@ -150,7 +157,7 @@ describe('appendHreflangLinks', () => {
     fetchStub = mockFetch(buildMockXml(MOCK_MAP));
     stub(sessionStorage, 'setItem').throws(new DOMException('QuotaExceededError'));
 
-    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+    await appendHreflangLinks(BASE_CONFIG);
 
     expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(2);
   });

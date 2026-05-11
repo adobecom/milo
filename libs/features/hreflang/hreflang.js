@@ -3,14 +3,14 @@ const FETCH_TIMEOUT_MS = 5000;
 
 function buildHreflangMap(xmlDoc) {
   const map = {};
-  for (const urlEl of xmlDoc.querySelectorAll('url')) {
+  xmlDoc.querySelectorAll('url').forEach((urlEl) => {
     const loc = urlEl.querySelector('loc')?.textContent;
-    if (!loc) continue;
+    if (!loc) return;
     const links = [...urlEl.querySelectorAll('link[rel="alternate"]')]
       .map((el) => ({ hreflang: el.getAttribute('hreflang'), href: el.getAttribute('href') }))
       .filter((l) => l.hreflang && l.href);
     if (links.length) map[loc] = links;
-  }
+  });
   return map;
 }
 
