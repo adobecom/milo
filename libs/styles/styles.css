@@ -195,6 +195,10 @@
   }
 }
 
+p {
+  color: red !important;
+}
+
 /*** Consonant Typography ***/
 
 .heading-xxxl,
