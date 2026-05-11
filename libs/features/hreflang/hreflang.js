@@ -48,24 +48,32 @@ async function fetchSitemapMap(sitemapUrl) {
     }
     return buildHreflangMap(xmlDoc);
   } catch (e) {
-    window.lana?.log(`hreflang: error fetching sitemap ${sitemapUrl} - ${e.message}`, { tags: 'hreflang', severity: 'error' });
+    const msg = e.name === 'AbortError'
+      ? `hreflang: sitemap fetch timed out after ${FETCH_TIMEOUT_MS}ms: ${sitemapUrl}`
+      : `hreflang: error fetching sitemap ${sitemapUrl} - ${e.message}`;
+    window.lana?.log(msg, { tags: 'hreflang', severity: 'error' });
     return null;
   } finally {
     clearTimeout(timeoutId);
   }
 }
 
-function getSitemapPath(pathname, locales, sitemapTemplate) {
-  const localeMatch = locales.find((locale) => pathname.startsWith(`/${locale}/`));
-  return localeMatch ? sitemapTemplate.replace('{locale}', localeMatch) : sitemapTemplate.replace('/{locale}', '');
+function getSitemapPath(localeMatch, sitemapTemplate) {
+  if (!sitemapTemplate.includes('{locale}')) {
+    window.lana?.log(`hreflang: sitemapTemplate missing {locale} placeholder: ${sitemapTemplate}`, { tags: 'hreflang', severity: 'error' });
+    return sitemapTemplate;
+  }
+  return localeMatch
+    ? sitemapTemplate.replace('{locale}', localeMatch)
+    : sitemapTemplate.replace(/\/?{locale}/, '');
 }
 
 // sitemapOrigin is the prod origin used in sitemap <loc> values, which may differ
 // from location.origin (e.g. localhost in dev). The fetch uses location.origin so
 // it works locally; sitemapOrigin is only used to construct the lookup key.
-function getCurrentPageUrl(sitemapOrigin, pathname, locales) {
-  const localeMatch = locales.find((locale) => pathname.startsWith(`/${locale}/`));
-  const correctedPath = pathname.endsWith('.html') ? pathname : `${pathname}.html`;
+function getCurrentPageUrl(sitemapOrigin, pathname, localeMatch) {
+  const normalizedPath = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+  const correctedPath = normalizedPath.endsWith('.html') ? normalizedPath : `${normalizedPath}.html`;
   const isLocaleRoot = localeMatch && pathname === `/${localeMatch}/`;
   if (pathname === '/' || isLocaleRoot) {
     return isLocaleRoot ? `${sitemapOrigin}/${localeMatch}/` : `${sitemapOrigin}/`;
@@ -109,9 +117,10 @@ export async function appendHreflangLinks({
   if (!allowedAgents.some((agent) => userAgent.includes(agent.trim()))) return;
 
   const { origin, pathname } = location;
-  const sitemapPath = getSitemapPath(pathname, locales, sitemapTemplate);
+  const localeMatch = locales.find((locale) => pathname.startsWith(`/${locale}/`));
+  const sitemapPath = getSitemapPath(localeMatch, sitemapTemplate);
   const sitemapUrl = `${origin}${sitemapPath}`;
-  const currentPageUrl = getCurrentPageUrl(sitemapOrigin, pathname, locales);
+  const currentPageUrl = getCurrentPageUrl(sitemapOrigin, pathname, localeMatch);
 
   let map = getCachedMap(sitemapPath);
   if (!map) {

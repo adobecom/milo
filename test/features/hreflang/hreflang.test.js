@@ -1,5 +1,5 @@
 import { expect } from '@esm-bundle/chai';
-import { stub, restore } from 'sinon';
+import sinon, { stub, restore } from 'sinon';
 import { appendHreflangLinks } from '../../../libs/features/hreflang/hreflang.js';
 
 const DE_LOCATION = { origin: 'https://www.adobe.com', pathname: '/de/products/test' };
@@ -43,10 +43,6 @@ function removeUserAgentMeta() {
   document.querySelector('meta[name="hreflinksuseragents"]')?.remove();
 }
 
-function removeHeadLoadedMeta() {
-  document.querySelector('meta[name="head-loaded"]')?.remove();
-}
-
 function removeInjectedLinks() {
   document.querySelectorAll('link[rel="alternate"]').forEach((el) => el.remove());
 }
@@ -64,7 +60,6 @@ describe('appendHreflangLinks', () => {
   beforeEach(() => {
     sessionStorage.clear();
     removeUserAgentMeta();
-    removeHeadLoadedMeta();
     removeInjectedLinks();
     fetchStub?.restore();
     if (!document.head.querySelector('title')) {
@@ -75,6 +70,15 @@ describe('appendHreflangLinks', () => {
 
   afterEach(() => {
     restore();
+  });
+
+  it('returns template as-is and logs when sitemapTemplate has no {locale} placeholder', async () => {
+    setUserAgentMeta(window.navigator.userAgent);
+    fetchStub = mockFetch(buildMockXml(MOCK_MAP));
+
+    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: '/sitemap.xml', sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+
+    expect(fetchStub.calledWith('https://www.adobe.com/sitemap.xml', sinon.match.any)).to.be.true;
   });
 
   it('does nothing when hreflinksuseragents meta is absent', async () => {
@@ -126,6 +130,15 @@ describe('appendHreflangLinks', () => {
   it('handles failed fetch gracefully', async () => {
     setUserAgentMeta(window.navigator.userAgent);
     fetchStub = mockFetch('', false);
+
+    await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
+
+    expect(document.querySelectorAll('link[rel="alternate"]')).to.have.length(0);
+  });
+
+  it('handles fetch timeout gracefully', async () => {
+    setUserAgentMeta(window.navigator.userAgent);
+    stub(window, 'fetch').rejects(new DOMException('The user aborted a request.', 'AbortError'));
 
     await appendHreflangLinks({ locales: LOCALES, sitemapTemplate: SITEMAP_TEMPLATE, sitemapOrigin: SITEMAP_ORIGIN, location: DE_LOCATION });
 
