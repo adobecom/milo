@@ -1,6 +1,7 @@
 .faq-redesign {
   padding-block: var(--s2a-spacing-2xl);
   padding-inline: var(--s2a-spacing-md);
+  position: relative;
 
   .faq-headline {
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
