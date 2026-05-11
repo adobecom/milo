@@ -99,7 +99,7 @@
     padding-inline: var(--s2a-spacing-124);
 
     .faq-headline {
-      flex: 0 0 280px;
+      flex: 0 0 1;
     }
 
     .faq-item {
