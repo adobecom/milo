@@ -2032,6 +2032,74 @@ describe('Utils', () => {
     });
   });
 
+  describe('resolveCrossSiteIndex', () => {
+    let resolveCrossSiteIndex;
+
+    before(async () => {
+      const mod = await import('../../libs/utils/utils.js');
+      ({ resolveCrossSiteIndex } = mod);
+    });
+
+    const baseEntry = { queryIndexWebPath: 'business.adobe.com/*/assets/lingo/query-index.json' };
+
+    it('uses prod host with no suffix on prod', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '',
+        'business.adobe.com',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('uses stage host with -preview suffix on .stage.adobe.com when stageHost set', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '-preview',
+        'business.stage.adobe.com',
+      );
+      expect(url).to.equal('https://business.stage.adobe.com/fr/assets/lingo/query-index-preview.json');
+      expect(host).to.equal('business.stage.adobe.com');
+    });
+
+    it('falls back to prod host with no suffix on .stage.adobe.com when stageHost missing', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry },
+        '/fr',
+        '-preview',
+        'business.stage.adobe.com',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('falls back to prod host on .aem.page (cross-origin auth required)', () => {
+      const { url, host } = resolveCrossSiteIndex(
+        { ...baseEntry, stageHost: 'business.stage.adobe.com' },
+        '/fr',
+        '-preview',
+        'feature--milo--adobecom.aem.page',
+      );
+      expect(url).to.equal('https://business.adobe.com/fr/assets/lingo/query-index.json');
+      expect(host).to.equal('business.adobe.com');
+    });
+
+    it('handles cc-shared path (no /lingo/ segment) correctly', () => {
+      const { url } = resolveCrossSiteIndex(
+        {
+          queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/query-index.json',
+          stageHost: 'www.stage.adobe.com',
+        },
+        '/fr',
+        '-preview',
+        'www.stage.adobe.com',
+      );
+      expect(url).to.equal('https://www.stage.adobe.com/fr/cc-shared/assets/query-index-preview.json');
+    });
+  });
+
   describe('Language Banner in Utils', () => {
     let fetchStub;
     const sandbox = sinon.createSandbox();
@@ -2782,6 +2850,73 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.locale).to.equal('fr_FR');
+    });
+  });
+
+  describe('getCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+    let savedFetch;
+
+    beforeEach(() => {
+      savedFetch = window.fetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      window.fetch = savedFetch;
+      sessionStorage.removeItem('akamai');
+    });
+
+    it('should return null for bot user-agents without fetching geo', async () => {
+      const fetchSpy = sinon.spy();
+      window.fetch = fetchSpy;
+      Object.defineProperty(navigator, 'userAgent', { value: 'Googlebot/2.1', writable: true });
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+      expect(fetchSpy.called).to.be.false;
+    });
+
+    it('should return null for bots even when akamaiLocale param is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots even when sessionStorage akamai is set', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'ClaudeBot/1.0', writable: true });
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.getCountry();
+      expect(result).to.be.null;
+    });
+  });
+
+  describe('resolveDetectedMarketCountry bot detection', () => {
+    const originalUserAgent = navigator.userAgent;
+
+    beforeEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    afterEach(() => {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    it('should return null for bots regardless of country cookie', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+      document.cookie = 'country=ch; path=/';
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
+    });
+
+    it('should return null for bots regardless of sessionStorage akamai', async () => {
+      Object.defineProperty(navigator, 'userAgent', { value: 'GPTBot/1.0', writable: true });
+      sessionStorage.setItem('akamai', 'ch');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.be.null;
     });
   });
 });

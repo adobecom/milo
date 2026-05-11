@@ -32,10 +32,6 @@
     transition: translate var(--transition-duration) var(--animation-curve);
     cursor: grab;
     will-change: translate;
-    animation: wrapper-enter var(--animation-curve);
-    animation-timeline: --carousel-wrapper;
-    animation-fill-mode: var(--carousel-animation-fill);
-    animation-range: var(--carousel-animation-range);
 
     &.grabbing {
       cursor: grabbing;
@@ -48,11 +44,11 @@
       flex: 1 0 var(--carousel-slide-width);
       overflow: clip;
       border-radius: var(--s2a-border-radius-16);
-      animation: slide-enter, var(--animation-curve);
+      will-change: transform;
+      animation: slide-spread var(--animation-curve), slide-enter var(--animation-curve);
       animation-timeline: --carousel-wrapper;
       animation-fill-mode: var(--carousel-animation-fill);
       animation-range: var(--carousel-animation-range);
-
 
       &:has(.rich-content) {
         display: flex;
@@ -121,7 +117,14 @@
       }
 
       &.active {
-        .rich-content .content > * {
+        .rich-content .content > [class*="title-"] {
+          animation: title-enter var(--animation-curve);
+          animation-timeline: view();
+          animation-fill-mode: var(--carousel-animation-fill);
+          animation-range: var(--carousel-text-animation-range);
+        }
+
+        .rich-content .content > :not([class*="title-"]) {
           animation: text-enter var(--animation-curve);
           animation-timeline: view();
           animation-fill-mode: var(--carousel-animation-fill);
@@ -352,50 +355,42 @@
   }
 }
 
-@keyframes wrapper-enter {
-  from {
-    gap: 50vw;
-  }
+@keyframes slide-spread {
+  from { translate: calc(50vw * var(--slide-spread-sign, 0)) 0; }
+  to   { translate: 0 0; }
 }
 
 @keyframes slide-enter {
-  from {
-    max-height: 1000px;
-    max-width: var(--grid-max-width-fluid);
-    flex: 1 0 100%;
-  }
+  from { scale: var(--slide-scale-multiplier) 1; }
+  to { scale: 1 1; }
 }
 
 @keyframes image-enter {
-  from {
-    transform: scale(1.1);
-  } to {
-    transform: scale(1);
-  }
+  from { scale: 1 var(--slide-scale-multiplier); }
+  to { scale: 1 1; }
 }
 
 @keyframes content-enter {
-  from {
-    transform: translate(-5%, 70%);
-  } to {
-    transform: translateX(0%, 0%);
-  }
+  from { transform: translate(-5%, 70%); }
+  to { transform: translate(0%, 0%); }
 }
 
-@keyframes text-enter {
+@keyframes title-enter {
   from { line-height: 2; }
 }
 
+@keyframes text-enter {
+  from { transform: translateY(100%); }
+}
+
 @keyframes button-enter {
-  from { left: var(--btn-animation-start) };
+  from { translate: var(--btn-animation-start) 0}
+  to   { translate: 0 0; }
 }
 
 @keyframes content-enter-rtl {
-  from {
-    transform: translate(5%, 70%);
-  } to {
-    transform: translate(0%, 0%);
-  }
+  from { transform: translate(5%, 70%); }
+  to { transform: translate(0%, 0%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
