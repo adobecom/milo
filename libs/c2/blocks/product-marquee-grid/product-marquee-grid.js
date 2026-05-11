@@ -1,4 +1,4 @@
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 const CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false"><path d="M3 5.5L8 10.5L13 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -7,7 +7,12 @@ function decorate(block) {
   const col = block.children[0]?.children[0];
   if (!col) return;
 
-  const iconEl = col.querySelector('picture') ?? col.querySelector('p img[src*=".svg"]');
+  const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
+  const iconEl = col.querySelector('p img[src*=".svg"]');
+  if (iconEl && isSvgUrl(iconEl.src)) {
+    iconEl.src = getFederatedUrl(iconEl.src);
+  }
+
   const ctaLink = col.querySelector('p:has(em a) em a, p:has(strong a) strong a');
   col.querySelector('p:has(em a), p:has(strong a)')?.remove();
 
