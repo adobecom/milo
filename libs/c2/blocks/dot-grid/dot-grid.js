@@ -43,7 +43,7 @@ import createCanvasGrid from './canvas-grid.js';
  *   │        │                       │                       │ mockup +      │
  *   │        │                       │                       │ title + CTA   │
  *   │        │                       │                       │ slide up.     │
- *   PEEL_START_  ARC_PAN_END (1350)  gridEnd                slottingStart    +slottingDuration
+ *   PEEL_START_  ANIM.arcPanEnd (1350)  gridEnd                slottingStart    +slottingDuration
  *   SCROLL (135)                     (DESKTOP_PEEL_END_      (DESKTOP_        (4552 = total)
  *                                     SCROLL = 1132)         SLOTTING_START
  *                                                            = 2832)
@@ -77,65 +77,71 @@ const FAN_LAST_INDEX = FAN_COUNT - 1;
 /** Row pitch / compression math uses this tallest-card metric. */
 const ROW_METRIC_HEIGHT = 264;
 const LABEL_CLEARANCE = 28;
-const ARC_INTRO_FRACTION = 0.10;
-const ARC_PAN_END = 1350;
-/** Scroll unit at which card peel starts (end of the arc-rotation intro window). */
-const PEEL_START_SCROLL = ARC_PAN_END * ARC_INTRO_FRACTION;
-/** Full arc→grid scroll span reference; mobile settle timing anchors here. */
-const DESKTOP_ARC_REFERENCE_END = ARC_PAN_END + 1000;
-/** Desktop/tablet peel completes at this scroll unit. */
-const DESKTOP_PEEL_END_SCROLL = 1132;
-const DESKTOP_SLOTTING_DURATION = 1720;
-const ARC_SETTLE_DURATION = 1700;
-const DESKTOP_SLOTTING_START = DESKTOP_PEEL_END_SCROLL + ARC_SETTLE_DURATION;
+// ── Animation tunables — edit here to adjust timing and feel ─────────────
+const ANIM = {
+  // Arc rotation timeline (abstract scroll units)
+  arcPanEnd: 1350,
+  arcIntroFraction: 0.10,
 
-// Mobile is the base path: shorter peel, no settle, shorter mockup transition.
-// Desktop/tablet extend these timings below for the larger arc and mockup motion.
-const MOBILE_SETTLE_DURATION = 468;
-const MOBILE_SLOTTING_DURATION = 900;
+  // Desktop/tablet peel + settle
+  desktopPeelEnd: 1132,
+  desktopSlottingDuration: 1720,
+  arcSettleDuration: 1700,
+
+  // Mobile peel + settle
+  mobileSettleDuration: 468,
+  mobileSlottingDuration: 900,
+  mobilePostRevealScroll: 500,
+
+  // Slide-in (pre-pin card entrance)
+  slideOverlap: 200,
+  mobileSlideDuration: 300,
+  mobileArcAlpha: 0.6,
+  // Kept as separate objects so each breakpoint can be retuned independently.
+  mobileSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0.90, scale: 0.85 },
+  desktopSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0.90, scale: 0.85 },
+
+  // Arc shape + feel
+  arcStagger: 0.50,
+  arcSpan: 0.80,
+  arcLiftZoom: 1.00,
+  arcYTilt: 25,
+  arcXTilt: 10,
+
+  // Grid layout
+  baseColumnSpread: 1.20,
+  baseRowGap: 0.60,
+  columnCompressionTarget: 0.675,
+  cardScaleDesktop: 1.035,
+
+  // Mockup positioning
+  desktopPeekStartH: 960,
+  desktopPeekAmount: 0.30,
+  mobileHeadlineY: 0.28,
+
+  // Mockup animation
+  desktopMockupStartScale: 2.5,
+  desktopMockupEndScale: 1.0,
+  mobileMockupStartScale: 2.0,
+  mobileMockupEndScale: 1.0,
+};
+
+// Derived scroll boundaries — computed from ANIM; do not edit directly.
+/** Scroll unit at which card peel starts (end of the arc-rotation intro window). */
+const PEEL_START_SCROLL = ANIM.arcPanEnd * ANIM.arcIntroFraction;
+/** Full arc→grid scroll span reference; mobile settle timing anchors here. */
+const DESKTOP_ARC_REFERENCE_END = ANIM.arcPanEnd + 1000;
+const DESKTOP_SLOTTING_START = ANIM.desktopPeelEnd + ANIM.arcSettleDuration;
 const MOBILE_GRID_END = Math.round(
   PEEL_START_SCROLL + (DESKTOP_ARC_REFERENCE_END - PEEL_START_SCROLL) * 0.39,
 );
 const MOBILE_PAN_START = Math.round((PEEL_START_SCROLL + MOBILE_GRID_END) / 2);
-const MOBILE_ARC_ALPHA = 0.6; // arc orientation on portrait screens
-const MOBILE_SLIDE_DURATION = 300;
-/** Scroll units into arc rotation at which slide fully completes. */
-const SLIDE_OVERLAP = 200;
-// Slide-in shape — kept as separate mobile/desktop tables so each breakpoint can be
-// retuned independently without touching the other. Currently identical by design.
-const MOBILE_SLIDE_PARAMS = {
-  stagger: 0.45,
-  staggerX: 0.20,
-  startX: 0.55,
-  startY: 0.90,
-  scale: 0.85,
-};
-const DESKTOP_SLIDE_PARAMS = {
-  stagger: 0.45,
-  staggerX: 0.20,
-  startX: 0.55,
-  startY: 0.90,
-  scale: 0.85,
-};
+/** Column spread used to pin marketing text X during arc (settled spread minus post-peel trim). */
+const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM.columnCompressionTarget - 0.15;
 
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
 const MOBILE_OUTER_MARGIN = 24;
-const MOBILE_POST_REVEAL_SCROLL = 500;
-
-// Arc animation tunables
-const ARC_STAGGER = 0.50;
-const ARC_SPAN = 0.80;
-const ARC_LIFT_ZOOM = 1.00;
-const ARC_Y_TILT = 25;
-const ARC_X_TILT = 10;
-/** Settled horizontal compression target as columnSpread delta. */
-const COLUMN_COMPRESSION_TARGET = 0.675;
-/** Column spread used to pin marketing text X during arc (settled spread minus post-peel trim). */
-const ARC_TEXT_ANCHOR_COLUMN_SPREAD = COLUMN_COMPRESSION_TARGET - 0.15;
-const CARD_SCALE_DESKTOP = 1.035;
-const BASE_COLUMN_SPREAD = 1.20;
-const BASE_ROW_GAP = 0.60;
 
 // FAN_INDEX_BY_GRID_POSITION maps grid [row][col] → arc position.
 // Arc reads column-by-column L→R; fanIdx=0 is lower-right (peels first).
@@ -159,10 +165,6 @@ const ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW = [194, 409];
 /** px from header bottom to mockup top, and mockup bottom to CTA top, at rest. */
 const ACROBAT_DESKTOP_GAP_ABOVE = 40;
 const ACROBAT_DESKTOP_GAP_BELOW = 40;
-/** Viewport height (px) at which the peek gradient starts (above = centered, below = peeked). */
-const ACROBAT_DESKTOP_PEEK_START_H = 960;
-/** Fraction of mockup height visible at viewport bottom when fully peeked. */
-const ACROBAT_DESKTOP_PEEK_AMOUNT = 0.30;
 
 // ──────────── Acrobat mobile mockup geometry ────────────
 const ACROBAT_MOBILE_MOCKUP_WIDTH = 294;
@@ -176,12 +178,6 @@ const ACROBAT_MOBILE_SLOT_ROW_COUNT = 2;
 const ACROBAT_MOBILE_SLOT_ROW_GAP = 24;
 const ACROBAT_MOBILE_CARD_LABEL_HEIGHT = 22;
 const ACROBAT_MOBILE_CARD_LABEL_GAP = 4;
-
-// Mockup intro animation: scales from START_SCALE (offscreen) → END_SCALE (rest) over slotting.
-const ACROBAT_DESKTOP_MOCKUP_START_SCALE = 2.5;
-const ACROBAT_DESKTOP_MOCKUP_END_SCALE = 1.0;
-const ACROBAT_MOBILE_MOCKUP_START_SCALE = 2.0;
-const ACROBAT_MOBILE_MOCKUP_END_SCALE = 1.0;
 
 // Marketing text-block vertical offset below the bottom card row:
 // label gap + label height + spacing to text. Used in 3 places.
@@ -407,16 +403,16 @@ export default async function init(el) {
   // Desktop card grid metrics (columnSpread, rowGap). Only read on desktop; mobile uses
   // frame.mobileLayout. Updated each frame anyway so breakpoint switches don't leave stale values.
   const cardGridLayout = {
-    columnSpread: BASE_COLUMN_SPREAD,
-    rowGap: BASE_ROW_GAP,
+    columnSpread: ANIM.baseColumnSpread,
+    rowGap: ANIM.baseRowGap,
   };
 
   // Scroll offsets (abstract units) where arc/grid/slotting phases begin or how long they run.
   const timing = {
     gridEnd: MOBILE_GRID_END,
-    slottingStart: MOBILE_GRID_END + MOBILE_SETTLE_DURATION,
-    slottingDuration: MOBILE_SLOTTING_DURATION,
-    postRevealScrollDistance: MOBILE_POST_REVEAL_SCROLL,
+    slottingStart: MOBILE_GRID_END + ANIM.mobileSettleDuration,
+    slottingDuration: ANIM.mobileSlottingDuration,
+    postRevealScrollDistance: ANIM.mobilePostRevealScroll,
     /** Scroll position where post-peel settle compression / text pan begins. */
     settleScrollStart: DESKTOP_ARC_REFERENCE_END,
   };
@@ -460,8 +456,8 @@ export default async function init(el) {
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
-    const delay = (card.fanIdx / FAN_LAST_INDEX) * ARC_STAGGER;
-    const win = 1 - ARC_STAGGER;
+    const delay = (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcStagger;
+    const win = 1 - ANIM.arcStagger;
     return clamp01((phase.arcToGrid - delay) / win);
   }
 
@@ -475,8 +471,8 @@ export default async function init(el) {
       + arcRadius * Math.cos(arcAngle)
       - viewportHeight * 0.15;
     const middleAngle = arcAngle - Math.PI / 2;
-    const rotationOffset = ARC_SPAN * 0.5 - ARC_SPAN * 1.5 * arcRotationProgress;
-    const effectiveArcSpan = ARC_SPAN * (1 + 0.4 * arcRotationProgress);
+    const rotationOffset = ANIM.arcSpan * 0.5 - ANIM.arcSpan * 1.5 * arcRotationProgress;
+    const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
     const flattenProgress = easeInOutCubic(Math.min(1, phase.arcToGrid * 2));
     let tangentDirectionX = 0;
     let tangentDirectionY = 0;
@@ -567,16 +563,16 @@ export default async function init(el) {
     frame.mobileLayout = frame.isMobile ? getMobileLayout() : null;
     if (frame.isMobile) {
       timing.gridEnd = MOBILE_GRID_END;
-      timing.slottingStart = MOBILE_GRID_END + MOBILE_SETTLE_DURATION;
-      timing.slottingDuration = MOBILE_SLOTTING_DURATION;
-      timing.postRevealScrollDistance = MOBILE_POST_REVEAL_SCROLL;
+      timing.slottingStart = MOBILE_GRID_END + ANIM.mobileSettleDuration;
+      timing.slottingDuration = ANIM.mobileSlottingDuration;
+      timing.postRevealScrollDistance = ANIM.mobilePostRevealScroll;
       timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
     } else {
-      timing.gridEnd = DESKTOP_PEEL_END_SCROLL;
+      timing.gridEnd = ANIM.desktopPeelEnd;
       timing.slottingStart = DESKTOP_SLOTTING_START;
-      timing.slottingDuration = DESKTOP_SLOTTING_DURATION;
+      timing.slottingDuration = ANIM.desktopSlottingDuration;
       timing.postRevealScrollDistance = cachedDeskPostRevealNeeded;
-      timing.settleScrollStart = DESKTOP_PEEL_END_SCROLL;
+      timing.settleScrollStart = ANIM.desktopPeelEnd;
     }
   }
 
@@ -584,9 +580,9 @@ export default async function init(el) {
     if (frame.isMobile) return 1.0;
     if (frame.isTablet) {
       const colFit = (viewportWidth * CARD_COLUMN_GAP_RATIO * cardGridLayout.columnSpread - 24)
-        / (CARD_WIDTH * CARD_SCALE_DESKTOP);
+        / (CARD_WIDTH * ANIM.cardScaleDesktop);
       const rowFit = (viewportHeight * cardGridLayout.rowGap - 24)
-        / (ROW_METRIC_HEIGHT * CARD_SCALE_DESKTOP);
+        / (ROW_METRIC_HEIGHT * ANIM.cardScaleDesktop);
       return Math.max(0.45, Math.min(1.0, Math.min(colFit, rowFit)));
     }
     return Math.max(
@@ -726,7 +722,7 @@ export default async function init(el) {
         card.el.style.height = `${card.height}px`;
       });
     }
-    arcAngle = frame.isMobile ? MOBILE_ARC_ALPHA : Math.atan2(viewportHeight, viewportWidth);
+    arcAngle = frame.isMobile ? ANIM.mobileArcAlpha : Math.atan2(viewportHeight, viewportWidth);
     cachedHeadlineH = titleEl?.offsetHeight || 80;
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
@@ -739,9 +735,9 @@ export default async function init(el) {
       const stackH = cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE
         + aH + ACROBAT_DESKTOP_GAP_BELOW + ctaH;
       const centeredTop = Math.max(48, (viewportHeight - stackH) / 2);
-      const peekWinTop = viewportHeight - ACROBAT_DESKTOP_PEEK_AMOUNT * aH;
+      const peekWinTop = viewportHeight - ANIM.desktopPeekAmount * aH;
       const peekStackTop = peekWinTop - cachedHeadlineH - ACROBAT_DESKTOP_GAP_ABOVE;
-      const peekRange = ACROBAT_DESKTOP_PEEK_START_H - viewportHeight;
+      const peekRange = ANIM.desktopPeekStartH - viewportHeight;
       const peekBlend = Math.max(0, Math.min(1, peekRange / 320));
       const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
       cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
@@ -776,7 +772,7 @@ export default async function init(el) {
   // mirrors poc-v3, where the slide rode the JTBD pre-scroll instead of pinned scroll.
   function computeCardSlide(card, slideEarly, params) {
     const slidePixels = Math.max(0, slideEarly - scrollTimeline.blockTop);
-    const slideProgress = Math.min(1, slidePixels / (slideEarly + SLIDE_OVERLAP));
+    const slideProgress = Math.min(1, slidePixels / (slideEarly + ANIM.slideOverlap));
     const fanLagFraction = 1 - card.fanIdx / FAN_LAST_INDEX;
     const staggerFrac = fanLagFraction * params.stagger;
     const cardSlideProgress = clamp01((slideProgress - staggerFrac) / (1 - staggerFrac));
@@ -796,13 +792,13 @@ export default async function init(el) {
     const fanPos = getFanCenter(card);
     const { arcZoom } = arcGeometry;
     const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * 0.30;
-    const fanScale = cardScale * (1 + ARC_LIFT_ZOOM) * fanDepth * arcZoom;
+    const fanScale = cardScale * (1 + ANIM.arcLiftZoom) * fanDepth * arcZoom;
 
     const gridCenterX = card.baseX + card.width / 2;
     const gridCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
 
-    const arcLocalDelay = (card.fanIdx / FAN_LAST_INDEX) * ARC_STAGGER;
-    const arcLocalWin = Math.max(0.01, 1 - ARC_STAGGER);
+    const arcLocalDelay = (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcStagger;
+    const arcLocalWin = Math.max(0.01, 1 - ANIM.arcStagger);
     const cardArcPushProgress = clamp01((phase.arcPan - arcLocalDelay) / arcLocalWin);
     const cardArcPushEase = easeInOutCubic(cardArcPushProgress);
 
@@ -816,9 +812,9 @@ export default async function init(el) {
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
     const slideEarly = frame.isMobile
-      ? viewportHeight * 0.72 + MOBILE_SLIDE_DURATION * 0.13
+      ? viewportHeight * 0.72 + ANIM.mobileSlideDuration * 0.13
       : viewportHeight * 0.75;
-    const slideParams = frame.isMobile ? MOBILE_SLIDE_PARAMS : DESKTOP_SLIDE_PARAMS;
+    const slideParams = frame.isMobile ? ANIM.mobileSlide : ANIM.desktopSlide;
     const slide = computeCardSlide(card, slideEarly, slideParams);
 
     card.visualCx = currentX + slide.x;
@@ -834,8 +830,8 @@ export default async function init(el) {
 
     const tiltFactor = Math.max(0, 1 - phase.arcToGrid / 0.12);
     const screenYNorm = (fanPos.y - viewportHeight / 2) / (viewportHeight / 2);
-    const cardYTilt = screenYNorm * ARC_Y_TILT * tiltFactor;
-    const cardXTilt = -screenYNorm * ARC_X_TILT * tiltFactor;
+    const cardYTilt = screenYNorm * ANIM.arcYTilt * tiltFactor;
+    const cardXTilt = -screenYNorm * ANIM.arcXTilt * tiltFactor;
 
     setCardTransform(card.el, {
       translateX: currentX - card.width / 2 + slide.x,
@@ -889,7 +885,7 @@ export default async function init(el) {
 
   // Card rendering: 3-branch state machine — exactly one branch runs per card per frame.
   function updateCardPositions() {
-    const cardScale = frame.isMobile ? 1.0 : CARD_SCALE_DESKTOP;
+    const cardScale = frame.isMobile ? 1.0 : ANIM.cardScaleDesktop;
     const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
     // Frame-level values shared across cards — compute once per frame, not per card.
     const deskGridScale = inArcPeel ? getDeskGridScale() : 0;
@@ -922,7 +918,7 @@ export default async function init(el) {
       + timing.postRevealScrollDistance;
     scrollTimeline.current = readScrollProgress() * animScrollTotal;
 
-    phase.arcPan = clamp01(scrollTimeline.current / ARC_PAN_END);
+    phase.arcPan = clamp01(scrollTimeline.current / ANIM.arcPanEnd);
     const rawArcToGridProgress = (scrollTimeline.current - PEEL_START_SCROLL)
       / (timing.gridEnd - PEEL_START_SCROLL);
     phase.arcToGrid = clamp01(rawArcToGridProgress);
@@ -953,12 +949,12 @@ export default async function init(el) {
       : 0;
 
     if (frame.isMobile) {
-      const mobileScaleDelta = ACROBAT_MOBILE_MOCKUP_START_SCALE - ACROBAT_MOBILE_MOCKUP_END_SCALE;
-      const mobileScale = ACROBAT_MOBILE_MOCKUP_START_SCALE - mobileScaleDelta * slottingEase;
+      const mobileScaleDelta = ANIM.mobileMockupStartScale - ANIM.mobileMockupEndScale;
+      const mobileScale = ANIM.mobileMockupStartScale - mobileScaleDelta * slottingEase;
       const mobileTopOverhang = (mobileScaleDelta / 2) * ACROBAT_MOBILE_MOCKUP_HEIGHT;
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
-      const headlineRestY = viewportHeight * 0.28;
+      const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
       const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
@@ -977,12 +973,12 @@ export default async function init(el) {
       const acrobatWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
       const mockupHeight = acrobatWidth
         * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
-      const desktopScaleDelta = ACROBAT_DESKTOP_MOCKUP_START_SCALE
-        - ACROBAT_DESKTOP_MOCKUP_END_SCALE;
+      const desktopScaleDelta = ANIM.desktopMockupStartScale
+        - ANIM.desktopMockupEndScale;
       const topOverhang = (desktopScaleDelta / 2) * mockupHeight;
       const offscreenY = viewportHeight + topOverhang + 30;
       const mockupTranslateY = (1 - slottingEase) * offscreenY;
-      const mockupScale = ACROBAT_DESKTOP_MOCKUP_START_SCALE - desktopScaleDelta * slottingEase;
+      const mockupScale = ANIM.desktopMockupStartScale - desktopScaleDelta * slottingEase;
       const titleScale = 0.92 + 0.08 * titleSlide;
       const deskRevealTarget = cachedDeskPostRevealNeeded
         ? easeOutSine(postRevealProgress) * cachedDeskPostRevealNeeded
@@ -1028,19 +1024,19 @@ export default async function init(el) {
 
   function updateCompressionAndPan() {
     arcTextPanProgressCached = clamp01(
-      (scrollTimeline.current - timing.settleScrollStart) / ARC_SETTLE_DURATION,
+      (scrollTimeline.current - timing.settleScrollStart) / ANIM.arcSettleDuration,
     );
-    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO * COLUMN_COMPRESSION_TARGET
+    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO * ANIM.columnCompressionTarget
       - CARD_WIDTH;
     const compressedRowGap = (compressedColGapPx + ROW_METRIC_HEIGHT + LABEL_CLEARANCE)
       / viewportHeight;
     const postPeelEase = easeOutSine(arcTextPanProgressCached);
     const slottingCompression = easeInOutSine(phase.slotting);
-    cardGridLayout.columnSpread = BASE_COLUMN_SPREAD
-      + (COLUMN_COMPRESSION_TARGET - BASE_COLUMN_SPREAD) * phase.arcToGrid
+    cardGridLayout.columnSpread = ANIM.baseColumnSpread
+      + (ANIM.columnCompressionTarget - ANIM.baseColumnSpread) * phase.arcToGrid
       - 0.15 * postPeelEase - 0.15 * slottingCompression;
-    cardGridLayout.rowGap = BASE_ROW_GAP
-      + (compressedRowGap - BASE_ROW_GAP) * phase.arcToGrid
+    cardGridLayout.rowGap = ANIM.baseRowGap
+      + (compressedRowGap - ANIM.baseRowGap) * phase.arcToGrid
       - 0.04 * postPeelEase - 0.04 * slottingCompression;
     const textAtRestY = viewportHeight * (0.5 + 0.5 * compressedRowGap)
       + ROW_METRIC_HEIGHT / 2
@@ -1063,7 +1059,7 @@ export default async function init(el) {
     const textEase = easeInOutSine(phase.slotting);
     const textScaleDuringSlotting = 1 - 0.28 * textEase;
     const deskGridScaleForText = getDeskGridScale();
-    const halfCardOnGrid = (CARD_WIDTH / 2) * CARD_SCALE_DESKTOP * deskGridScaleForText;
+    const halfCardOnGrid = (CARD_WIDTH / 2) * ANIM.cardScaleDesktop * deskGridScaleForText;
     const col3Right = getDeskCardCenterX(viewportWidth, 3, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
       + halfCardOnGrid;
     const col0VisualLeft = getDeskCardCenterX(viewportWidth, 0, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
