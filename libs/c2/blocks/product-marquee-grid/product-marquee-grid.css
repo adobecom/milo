@@ -103,7 +103,7 @@
 
     .pm-foreground .body-md {
       max-inline-size: 476px;
-      inset-inline-end: 80px;
+      margin-inline-end: 80px;
     }
 
     .pm-promo-area {
