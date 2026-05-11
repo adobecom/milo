@@ -370,7 +370,7 @@ html[dir="rtl"] {
           position: relative;
           background-color: var(--s2a-color-gray-1000);
           border-radius: var(--s2a-border-radius-md);
-          animation: elasticItemsShrink var(--paralax-easing) both;
+          /* animation: elasticItemsShrink var(--paralax-easing) both; */
           animation-timeline: view();
           animation-range: entry 0% exit 100%;
           overflow-x: clip;
