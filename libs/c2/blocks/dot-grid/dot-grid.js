@@ -279,6 +279,8 @@ function buildCardStack(cardScene, cardDefs) {
     cardEl.classList.add('card');
     cardEl.style.left = '0';
     cardEl.style.top = '0';
+    const cardImg = cardEl.querySelector('img');
+    if (cardImg) cardImg.decoding = 'async';
     stackRoot.appendChild(cardEl);
     let labelEl = null;
     if (def.label) {
@@ -820,8 +822,13 @@ export default async function init(el) {
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
       const zBase = isPeeling ? 32 : 20;
-      card.el.style.zIndex = String(zBase + (FAN_LAST_INDEX - card.fanIdx));
-    } else {
+      const zIndex = String(zBase + (FAN_LAST_INDEX - card.fanIdx));
+      if (zIndex !== card.lastZIndex) {
+        card.lastZIndex = zIndex;
+        card.el.style.zIndex = zIndex;
+      }
+    } else if (card.lastZIndex !== '') {
+      card.lastZIndex = '';
       card.el.style.zIndex = '';
     }
 
@@ -1200,6 +1207,34 @@ export default async function init(el) {
     updateAnimationProgress();
     buildArcCtx();
     canvasGrid.draw();
+  }());
+
+  (function prewarmCardTextures() {
+    sceneCards.forEach((card) => {
+      card.el.querySelector('img')?.decode?.().catch(() => {});
+    });
+    stage.querySelectorAll('.acrobat-desktop-mockup img, .acrobat-mobile-mockup img').forEach((img) => {
+      img.decode?.().catch(() => {});
+    });
+    const warm = () => {
+      if (running) return;
+      sceneCards.forEach((card) => {
+        card.el.style.transform = 'translateX(-10000px)';
+        card.el.style.opacity = '0.001';
+      });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (running) return;
+        sceneCards.forEach((card) => {
+          card.el.style.transform = '';
+          card.el.style.opacity = '0';
+        });
+      }));
+    };
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(warm, { timeout: 3000 });
+    } else {
+      setTimeout(warm, 1000);
+    }
   }());
 
   const startLoop = () => {

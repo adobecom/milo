@@ -142,6 +142,7 @@
   transform-origin: center center;
   cursor: default;
   will-change: transform, opacity;
+  contain: layout style;
 }
 
 .dot-grid .card-stack .card {
@@ -284,6 +285,7 @@
     transform-origin: center center;
     pointer-events: none;
     will-change: transform;
+    contain: layout style paint;
   }
 
   .dot-grid .acrobat-mobile-mockup picture,
