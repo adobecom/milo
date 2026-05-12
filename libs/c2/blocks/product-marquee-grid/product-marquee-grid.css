@@ -15,7 +15,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    .body-md {
+    .pm-body {
       color: var(--s2a-color-content-title);
       font-family: var(--heading-font-family);
       font-size: var(--s2a-typography-font-size-title-4);
@@ -23,7 +23,7 @@
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
       line-height: var(--s2a-typography-line-height-title-4);
       margin: 0;
-      max-inline-size: 400px;
+      max-width: 400px;
     }
   }
 
@@ -102,10 +102,9 @@
 
     .pm-foreground {
       flex: 1;
-      min-inline-size: 0;
 
-      .body-md {
-        max-inline-size: min(476px, 80%);
+      .pm-body {
+        max-width: min(476px, 80%);
       }
     }
 
@@ -113,7 +112,7 @@
       align-self: flex-end;
       flex: 0 0 25%;
       margin-block-start: 0;
-      min-inline-size: 260px;
+      min-width: 260px;
     }
   }
 }
