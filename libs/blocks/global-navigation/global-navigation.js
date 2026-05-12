@@ -631,7 +631,13 @@ class Gnav {
   };
 
   decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false, whatsNew } = getConfig();
+    const {
+      searchEnabled,
+      selfIntegrateUnav,
+      desktopAppsCta = false,
+      whatsNew,
+      showPlansCta = false,
+    } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -644,6 +650,7 @@ class Gnav {
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
         ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${whatsNew === 'on' ? toFragment`<div class="feds-client-whatsnew"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
@@ -745,30 +752,24 @@ class Gnav {
     if (promo) localNav.classList.add('has-promo');
     this.elements.localNav = localNav;
     firstElem.textContent = title.trim();
-    const isAtTop = () => {
-      const rect = this.elements.localNav.getBoundingClientRect();
-      // note: ios safari changes between -0.34375, 0, and 0.328125
-      return rect.top === 0;
-    };
+    const stickyObserver = new IntersectionObserver(
+      ([entry]) => {
+        this.elements.localNav?.classList.toggle('is-sticky', entry.boundingClientRect.top <= 0);
+      },
+      { threshold: [1] },
+    );
+    stickyObserver.observe(this.elements.localNav);
     window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
-      if (classList.contains('feds-localnav--active')) {
-        trigger({
-          element: curtain,
-          event: e,
-          type: 'localNav-curtain',
-          animatedElement: itemWrapper,
-          animationType: 'transition',
-        });
-      }
-      if (isAtTop()) {
-        if (!classList?.contains('is-sticky')) {
-          classList?.add('is-sticky');
-        }
-      } else {
-        classList?.remove('is-sticky');
-      }
-    });
+      if (!classList?.contains('feds-localnav--active')) return;
+      trigger({
+        element: curtain,
+        event: e,
+        type: 'localNav-curtain',
+        animatedElement: itemWrapper,
+        animationType: 'transition',
+      });
+    }, { passive: true });
   };
 
   decorateTopnavWrapper = async () => {
@@ -1772,7 +1773,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep, miniGnav = false } = getConfig();
+  const { mep, miniGnav = false, showPlansCta } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1798,6 +1799,7 @@ export default async function init(block) {
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
   if (miniGnav) block.classList.add('mini-gnav');
+  if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');

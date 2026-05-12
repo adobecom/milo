@@ -31,6 +31,9 @@
     "url": "https://github.com/adobecom/milo/issues"
   },
   "homepage": "https://github.com/adobecom/milo#readme",
+  "engines": {
+    "node": ">=25"
+  },
   "dependencies": {
     "@preact/signals": "1.0.4",
     "htm": "^3.1.1",
@@ -49,12 +52,14 @@
     "@web/test-runner-commands": "^0.9.0",
     "@web/test-runner-playwright": "^0.11.0",
     "axe-html-reporter": "^2.2.11",
+    "chrome-launcher": "^1.2.1",
     "axios": "^1.7.5",
     "chai": "^5.1.1",
     "chalk": "^4.1.2",
     "commander": "^12.1.0",
     "echarts": "^5.5.1",
     "eslint": "8.11.0",
+    "lighthouse": "^13.1.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-nibble": "^8.1.0",
     "eslint-plugin-chai-friendly": "^0.7.2",

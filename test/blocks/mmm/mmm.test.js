@@ -156,6 +156,19 @@ describe('MMM', () => {
     expect(previewButton.href).to.include('%2Fadded-manifest.json');
   });
 
+  it('does not crash and preserves loading state when fetchData returns null', async () => {
+    const [,, thirdButton] = document.body.querySelectorAll('dt button');
+    const thirdDd = document.body.querySelectorAll('dd')[2];
+    expect(thirdDd.querySelector('.loading')).to.exist;
+
+    window.fetch = stub().returns(Promise.resolve({ ok: false }));
+    thirdButton.click();
+    await delay(50);
+
+    expect(thirdDd.classList.contains('placeholder-resolved')).to.be.false;
+    expect(thirdDd.querySelector('.loading')).to.exist;
+  });
+
   it('Test filters', async () => {
     let filterData = getLocalStorageFilter();
     expect(filterData).to.be.null;

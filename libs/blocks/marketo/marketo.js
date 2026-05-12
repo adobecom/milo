@@ -20,6 +20,7 @@ import {
   localizeLinkAsync,
   createTag,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   SLD,
   MILO_EVENTS,
@@ -178,6 +179,20 @@ export const formSuccess = (formEl, formData) => {
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
+
+  if (formData?.[SUCCESS_TYPE] === 'ims') {
+    const redirect = formData?.[SUCCESS_CONTENT];
+
+    const emailInput = formEl.querySelector('input[name="Email"]');
+    const email = emailInput?.value;
+
+    if (email && redirect) {
+      window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
+    } else {
+      window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
+    }
+    return false;
+  }
 
   /* c8 ignore next 5 */
   if (parentModal) {
@@ -385,6 +400,12 @@ export default async function init(el) {
     el.classList.add('hide-block');
     toggleSuccessSection(formData);
     return;
+  }
+
+  const imsSuccessType = getMetadata('marketo-ims');
+
+  if (imsSuccessType) {
+    formData[SUCCESS_TYPE] = 'ims';
   }
 
   formData[SUCCESS_TYPE] = formData[SUCCESS_TYPE] || 'redirect';
