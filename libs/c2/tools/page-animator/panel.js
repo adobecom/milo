@@ -14,7 +14,7 @@ export function saveState(stateMap) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stateMap));
 }
 
-export function buildPanel(tree, stateMap, callbacks) {
+export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockSourceIds = new Set()) {
   const { onLiveUpdate, onCommitUpdate, onReset } = callbacks;
 
   const panel = document.createElement('div');
@@ -62,7 +62,8 @@ export function buildPanel(tree, stateMap, callbacks) {
         const row = document.createElement('div');
         const isSelected = item.id === selectedId;
         const hasAnim = !!stateMap[item.id];
-        row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}`;
+        const fromBlock = blockSourceIds.has(item.id);
+        row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}`;
         row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
         row.addEventListener('click', () => selectItem(item));
         group.appendChild(row);
@@ -127,18 +128,58 @@ export function buildPanel(tree, stateMap, callbacks) {
       wrap.appendChild(div);
     });
 
+    const fromBlock = blockSourceIds.has(item.id);
+
     const resetBtn = document.createElement('button');
     resetBtn.className = 'pa-reset-btn';
-    resetBtn.textContent = 'Reset animation';
+    resetBtn.textContent = fromBlock ? 'Reset to block' : 'Reset animation';
     resetBtn.addEventListener('click', () => {
-      delete stateMap[item.id];
-      onReset(item.el, item.id);
-      saveState(stateMap);
+      if (fromBlock) {
+        stateMap[item.id] = { ...blockStateMap[item.id] };
+        onCommitUpdate(item.id, stateMap[item.id]);
+        const stored = loadStoredState() || {};
+        delete stored[item.id];
+        saveState(stored);
+      } else {
+        delete stateMap[item.id];
+        onReset(item.el, item.id);
+        saveState(stateMap);
+      }
       renderTree();
     });
     wrap.appendChild(resetBtn);
 
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'pa-reset-btn';
+    copyBtn.textContent = fromBlock ? 'Copy updated' : 'Copy to DA';
+    copyBtn.style.marginTop = '6px';
+    copyBtn.addEventListener('click', () => {
+      if (!stateMap[item.id]) stateMap[item.id] = getDefaultState();
+      navigator.clipboard.writeText(buildCopyText(item)).then(() => {
+        const prev = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => { copyBtn.textContent = prev; }, 1500);
+      });
+    });
+    wrap.appendChild(copyBtn);
+
     return wrap;
+  }
+
+  function buildCopyText(item) {
+    const sectionNode = tree.find((s) => s.id === item.id || s.blocks.some((b) => b.id === item.id));
+    let header;
+    if (sectionNode.id === item.id) {
+      header = 'animation';
+    } else {
+      const blockClass = item.el.classList[0];
+      const sameClass = sectionNode.blocks.filter((b) => b.el.classList[0] === blockClass);
+      const sibIdx = sameClass.findIndex((b) => b.id === item.id);
+      header = sibIdx > 0 ? `animation ${blockClass} ${sibIdx + 1}` : `animation ${blockClass}`;
+    }
+    const state = stateMap[item.id] || getDefaultState();
+    const rows = CONTROLS.map((c) => `${c.cssVar}\t${state[c.cssVar] ?? c.default}`);
+    return [header, ...rows].join('\n');
   }
 
   renderTree();
