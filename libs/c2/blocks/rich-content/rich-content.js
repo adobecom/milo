@@ -1,4 +1,16 @@
-import { decorateBlockText, decorateViewportContent, hangOpeningQuote } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { createTag } from '../../../utils/utils.js';
+
+function hangOpeningQuote(header) {
+  if (!header) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = header.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  header.textContent = header.textContent.slice(1);
+  const span = createTag('span', { class: 'opening-quote' }, quote);
+  header.prepend(span);
+}
 
 function decorateText(el) {
   decorateBlockText(el);
