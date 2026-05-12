@@ -91,7 +91,6 @@
 @media (width >= 768px) {
   .product-marquee-grid {
     flex-direction: row;
-    justify-content: space-between;
     min-block-size: 500px;
     padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     padding-inline: var(--s2a-spacing-3xl);
@@ -101,27 +100,24 @@
       inline-size: 80px;
     }
 
-    .pm-foreground .body-md {
-      max-inline-size: 476px;
-      margin-inline-end: 80px;
+    .pm-foreground {
+      flex: 1;
+      min-inline-size: 0;
+
+      .body-md {
+        max-inline-size: 476px;
+      }
     }
 
     .pm-promo-area {
       align-self: flex-end;
-      flex-shrink: 0;
+      flex: 0 0 25%;
       margin-block-start: 0;
+      min-inline-size: 260px;
     }
 
     .pm-promo-button {
-      inline-size: 260px;
-    }
-  }
-}
-
-@media (width >= 1280px) {
-  .product-marquee-grid {
-    .pm-promo-button {
-      inline-size: 330px;
+      inline-size: 100%;
     }
   }
 }
