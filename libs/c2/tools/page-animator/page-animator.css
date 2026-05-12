@@ -184,3 +184,7 @@
   outline-offset: 3px !important;
   scroll-margin: 20px;
 }
+
+.pa-item.pa-from-block .pa-dot {
+  background: #2d9e5f;
+}
