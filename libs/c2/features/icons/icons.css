@@ -1,0 +1,153 @@
+/* ============================================================
+   C2 MILO TOOLTIP — overrides libs/features/icons/icons.css
+   Design values sourced from c2-demo/index.html reference
+   ============================================================ */
+
+.milo-tooltip {
+  position: relative;
+  text-decoration: none;
+  border-bottom: none;
+  min-width: 24px;
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ————————————————————————————————
+   Bubble (::before)
+   ———————————————————————————————— */
+.milo-tooltip::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 100%;
+  margin-left: 12px;
+  max-width: 240px;
+  width: max-content;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #1d1d1d;
+  color: #fff;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.4;
+  text-align: left;
+  z-index: 100;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* ————————————————————————————————
+   Arrow (::after)
+   ———————————————————————————————— */
+.milo-tooltip::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  margin-left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1d1d1d;
+  z-index: 100;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* ————————————————————————————————
+   Position variants
+   ———————————————————————————————— */
+.milo-tooltip.left::before {
+  left: initial;
+  margin: initial;
+  right: 100%;
+  margin-right: 12px;
+}
+
+.milo-tooltip.left::after {
+  left: 0;
+  margin-left: -5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-left-color: #1d1d1d;
+  border-right-color: transparent;
+}
+
+.milo-tooltip.top::before {
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+  top: -8px;
+  margin: 0;
+}
+
+.milo-tooltip.top::after {
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) translateY(-100%);
+  margin: 0;
+  border: 5px solid transparent;
+  border-top-color: #1d1d1d;
+  border-right-color: transparent;
+}
+
+.milo-tooltip.bottom::before {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100%;
+  margin-top: 10px;
+  margin-left: 0;
+}
+
+.milo-tooltip.bottom::after {
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  margin: 2px 0 0;
+  border: 5px solid transparent;
+  border-bottom-color: #1d1d1d;
+  border-right-color: transparent;
+}
+
+/* ————————————————————————————————
+   Show on hover / focus / active
+   ———————————————————————————————— */
+.milo-tooltip:hover::before,
+.milo-tooltip:focus::before,
+.milo-tooltip:active::before,
+.milo-tooltip:hover::after,
+.milo-tooltip:focus::after,
+.milo-tooltip:active::after {
+  visibility: visible;
+  opacity: 1;
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) and (not (backdrop-filter: blur(1px))) {
+  .milo-tooltip:focus::before {
+    outline: 4px solid -webkit-focus-ring-color;
+    outline-offset: 1px;
+  }
+}
+
+/* ————————————————————————————————
+   JS-controlled hide (escape key / blur)
+   Higher specificity wins over :hover/:focus
+   ———————————————————————————————— */
+.milo-tooltip.hide-tooltip::before,
+.milo-tooltip.hide-tooltip::after {
+  visibility: hidden;
+  opacity: 0;
+}
+
+@media (max-width: 600px) {
+  .milo-tooltip::before {
+    max-width: 200px;
+  }
+}
