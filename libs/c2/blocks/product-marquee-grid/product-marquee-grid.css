@@ -105,7 +105,7 @@
       min-inline-size: 0;
 
       .body-md {
-        max-inline-size: 476px;
+        max-inline-size: min(476px, 80%);
       }
     }
 
