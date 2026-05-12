@@ -1194,7 +1194,7 @@ p {
   }
 
   @keyframes dg-top-door {
-    from { transform: translateY(-30vh); }
+    from { transform: translateY(-20vh); }
     to { transform: translateY(0); }
   }
 

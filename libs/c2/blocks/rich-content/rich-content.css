@@ -122,7 +122,7 @@
 
     .jump-link-label {
       font-family: var(--s2a-font-family-title);
-      font-size: var(--s2a-typography-font-size-title-4, 20px);
+      font-size: var(--s2a-font-size-lg, 18px);
       line-height: var(--s2a-typography-line-height-title-4, 20px);
       font-weight: 900;
       letter-spacing: var(--s2a-font-letter-spacing-4xl, -0.48px);
@@ -192,6 +192,8 @@
       gap: var(--s2a-spacing-xl, 32px);
       align-items: center;
     }
+
+    .jump-link-label { font-size: var(--s2a-typography-font-size-title-4, 20px); }
   }
 }
 
@@ -218,7 +220,10 @@
     }
 
     &.jump-link {
-      &.hero { height: 814px; }
+      &.hero {
+        height: 814px;
+        padding-block-start: var(--s2a-layout-lg, 124px);
+      }
 
       .foreground .content { padding-block-start: 0; }
 
