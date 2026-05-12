@@ -26,9 +26,9 @@
 .region-nav > div:first-of-type > div > p:first-of-type {
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-  font-size: var(--s2a-typography-font-size-title-4);
-  line-height: var(--s2a-typography-line-height-title-4);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-4);
+  font-size: var(--s2a-typography-font-size-title-5);
+  line-height: var(--s2a-typography-line-height-title-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-title-5);
 }
 
 .region-nav > div:first-of-type > div > p:last-of-type {
