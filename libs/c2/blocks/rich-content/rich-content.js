@@ -40,8 +40,7 @@ function decorateJumpLinks(content, foreground) {
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
 
   anchors.forEach((anchor) => {
-    const badge = createTag('span', { class: 'jump-link-badge' });
-    badge.innerHTML = ARROW_SVG;
+    const badge = createTag('span', { class: 'jump-link-badge' }, ARROW_SVG);
     const label = createTag('span', { class: 'jump-link-label' }, anchor.textContent.trim());
     anchor.textContent = '';
     anchor.classList.add('jump-link-anchor');

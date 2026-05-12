@@ -114,10 +114,10 @@
       justify-content: center;
       width: 30px;
       height: 30px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.2s ease;
+      border-radius: var(--s2a-border-radius-sm);
+      background: var(--s2a-color-transparent-white-16);
+      border: 1px solid var(--s2a-color-transparent-white-12);
+      transition: background-color 0.2s ease, color 0.2s ease;
       flex-shrink: 0;
       color: var(--s2a-color-content-knockout);
     }
