@@ -106,6 +106,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'animation',
   'base-card',
   'box',
   'brand-concierge',
