@@ -602,7 +602,8 @@ export default async function init(el) {
 
   // set variant
   if (!el.classList.contains('hero')
-  && !el.classList.contains('floating-button-only')) {
+  && !el.classList.contains('floating-button-only')
+  && !el.classList.contains('floating-input')) {
     el.classList.add('inline');
     variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
@@ -628,6 +629,10 @@ export default async function init(el) {
       variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
     }
   });
+
+  if (el.classList.contains('floating-input')) {
+    variants.isFloatingInput = true;
+  }
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
@@ -660,6 +665,21 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isFloatingInput) {
+    const [background, header, cards, input, legal] = rows;
+    el.removeChild(background);
+    el.removeChild(header);
+    el.removeChild(legal);
+    decorateInput(el, input);
+    decorateCards(el, cards);
+    const mainEl = document.querySelector('main');
+    if (mainEl) {
+      const updatePadding = () => { mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`; };
+      window.addEventListener('resize', updatePadding);
+      requestAnimationFrame(updatePadding);
+    }
   }
 
   const loginTestButton = params.get('susi-test-btn');
