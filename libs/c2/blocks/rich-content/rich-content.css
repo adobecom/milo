@@ -260,9 +260,10 @@
 
   .rich-content.jump-link.hero {
     height: 1085px;
+    padding-inline: var(--grid-padding);
 
-    .foreground .content { padding-inline: calc(var(--s2a-layout-xl) * 2); }
+    .foreground .content { padding-inline: 0; }
 
-    .jump-links { padding-inline: calc(var(--s2a-layout-xl) * 2); }
+    .jump-links { padding-inline: 0; }
   }
 }
