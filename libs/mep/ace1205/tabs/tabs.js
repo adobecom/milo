@@ -2,8 +2,8 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS, getConfig, localizeLinkAsync } from '../../utils/utils.js';
-import { processTrackingLabels } from '../../martech/attributes.js';
+import { createTag, MILO_EVENTS, getConfig, localizeLinkAsync } from '../../../utils/utils.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
 const tabColor = {};
@@ -11,7 +11,7 @@ const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
 
 const isTabInTabListView = (tab) => {
-  const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
+  const tabList = tab.closest('[role="tablist"]');
   const tabRect = tab.getBoundingClientRect();
   const tabListRect = tabList.getBoundingClientRect();
 
@@ -101,26 +101,19 @@ function changeTabs(e, config) {
   const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
   const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
   const blockId = tabsBlock.id;
-  const isRadio = target.getAttribute('role') === 'radio';
-  const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
 
-  let targetContent;
-  if (isRadio) {
-    targetContent = content.querySelector(`#${target.getAttribute('data-control-id')}`);
-  } else {
-    targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
-  }
+  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
 
   parent
-    .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
-      t.setAttribute(attributeName, false);
+      t.setAttribute('aria-selected', false);
       t.setAttribute('tabindex', '-1');
       if (Object.keys(tabColor).length) {
-        t.removeAttribute('style', 'backgroundColor');
+        t.style.backgroundColor = '';
       }
     });
-  target.setAttribute(attributeName, true);
+  target.setAttribute('aria-selected', true);
   target.setAttribute('tabindex', '0');
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
@@ -187,8 +180,8 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
+  const tabs = elm.querySelectorAll('[role="tab"]');
+  const tabLists = elm.querySelectorAll('[role="tablist"]');
   let tabFocus = 0;
 
   tabLists.forEach((tabList) => {
@@ -212,9 +205,10 @@ function initTabs(elm, config, rootElem) {
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => changeTabs(e, config));
-    if (elm?.classList.contains('segmented-control')) {
-      tab.addEventListener('focus', () => scrollTabIntoView(tab));
-    }
+    // if (elm?.classList.contains('segmented-control')) {
+    //   tab.addEventListener('focus', () => scrollTabIntoView(tab));
+    // }
+    tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
   if (config) configTabs(config, rootElem);
 }
@@ -231,8 +225,8 @@ function nextTab(current, i, arr) {
   return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
-function initPaddles(tabList, left, right, isRadio) {
-  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
+function initPaddles(tabList, left, right) {
+  const tabListItems = tabList.querySelectorAll('[role="tab"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
@@ -299,11 +293,12 @@ const handleDeferredImages = (block) => {
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };
 
-const handlePillSize = (pill) => {
-  const sizes = ['s', 'm', 'l'];
-  const variant = pill.substring(0, pill.indexOf('-pill'));
+const handleButtonSize = (button) => {
+  const sizes = ['s', 'm', 'l', 'xl'];
+  const variant = button.substring(0, button.indexOf('-button'));
   const size = sizes.findIndex((tshirt) => variant.startsWith(tshirt));
-  return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
+  // return `${sizes[size]?.[0] ?? sizes[1]}-button`;
+  return `${sizes[size] ?? sizes[1]}-button`;
 };
 
 export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
@@ -352,35 +347,40 @@ const init = async (block) => {
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
   block.append(tabContent);
 
-  const isRadio = block.classList.contains('radio');
+  // const isRadio = block.classList.contains('radio'); // remove this feature
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tabList');
-  tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
+  // tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
+  tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
   if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
+
   if (tabListItems) {
-    const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    const btnClass = (pillVariant && handlePillSize(pillVariant))
-    || (block.classList.contains('segmented-control') && 'heading-xxs')
-    || 'heading-xs';
+    // const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
+    // const btnClass = (pillVariant && handlePillSize(pillVariant))
+    const buttonVariant = [...block.classList].find((variant) => variant.includes('button'));
+    const btnClass = buttonVariant ? handleButtonSize(buttonVariant) : 'heading-xs';
+    // || (block.classList.contains('segmented-control') && 'heading-xxs')
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
-        role: isRadio ? 'radio' : 'tab',
+        role: 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
-        [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
+        // [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
+        'aria-selected': (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
         'daa-ll': `tab-${tabId}-${tabName}`,
-        ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
+        // ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
+        'aria-controls': controlId,
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
@@ -388,7 +388,8 @@ const init = async (block) => {
 
       const tabContentAttributes = {
         id: `tab-panel-${tabId}-${tabName}`,
-        ...(isRadio ? { } : { role: 'tabpanel' }),
+        // ...(isRadio ? { } : { role: 'tabpanel' }),
+        role: 'tabpanel',
         class: 'tabpanel',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
@@ -399,25 +400,24 @@ const init = async (block) => {
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
-    tabListContainer.dataset.pretext = config.pretext;
+    // tabListContainer.dataset.pretext = config.pretext; // no longer needed as radio is gone
   }
 
   // For segmented-control variant, wrap tabList in tabs-wrapper container
-  if (block.classList.contains('segmented-control')) {
-    const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
-    tabList.insertAdjacentElement('beforebegin', tabsWrapper);
-    tabsWrapper.append(tabList);
-  }
+  // if (block.classList.contains('segmented-control')) {
+  const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
+  tabList.insertAdjacentElement('beforebegin', tabsWrapper);
+  tabsWrapper.append(tabList);
+  // }
 
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  // For segmented-control variant, do not add paddles relative to tab-list-container
   if (!block.classList.contains('segmented-control')) {
     tabList.insertAdjacentElement('afterend', paddleRight);
     block.prepend(paddleLeft);
   }
-  initPaddles(tabList, paddleLeft, paddleRight, isRadio);
+  initPaddles(tabList, paddleLeft, paddleRight);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
@@ -435,15 +435,16 @@ const init = async (block) => {
     if (!metaSettings.tab) return;
     let id = tabId;
     let val = getStringKeyName(metaSettings.tab);
-    const assotiatedTabButton = rootElem.querySelector(`#tab-${val}`);
-    assotiatedTabButton?.setAttribute('data-deeplink', metaSettings.deeplink);
-    let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (config.id) {
       const values = metaSettings.tab.split(',');
       [id] = values;
       val = getStringKeyName(String(values[1]));
-      assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     }
+    const associatedTabButton = rootElem.querySelector(`#tab-${id}-${val}`);
+    if (associatedTabButton && metaSettings.deeplink) {
+      associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
+    }
+    const assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (assocTabItem) {
       if (metaSettings['tab-background']) {
         tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
