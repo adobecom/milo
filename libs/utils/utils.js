@@ -2372,7 +2372,9 @@ export async function loadDeferred(area, blocks, config) {
     ].join(';'));
     btn.addEventListener('click', () => {
       btn.remove();
-      import('../c2/tools/page-animator/page-animator.js').catch(console.error);
+      const url = new URL('../c2/tools/page-animator/page-animator.js', import.meta.url)
+        .href.replace('.aem.live', '.aem.page');
+      import(url).catch(console.error);
     });
     document.body.appendChild(btn);
   }
