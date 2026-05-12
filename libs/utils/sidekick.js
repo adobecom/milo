@@ -27,12 +27,17 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  const pageAnimatorListener = () => {
+    import('../c2/tools/page-animator/page-animator.js').catch(console.error);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
+  sk.addEventListener('custom:page-animator', debounce(pageAnimatorListener, 500));
 
   // Color code publish button
   stylePublish(sk);

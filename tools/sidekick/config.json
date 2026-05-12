@@ -167,6 +167,13 @@
     },
     {
       "containerId": "tools",
+      "id": "page-animator",
+      "title": "Page Animator",
+      "environments": ["dev", "preview", "live"],
+      "event": "page-animator"
+    },
+    {
+      "containerId": "tools",
       "id": "rollout",
       "title": "Rollout",
       "environments": [ "preview" ],
