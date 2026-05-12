@@ -49,6 +49,7 @@
       height: 584px;
       display: flex;
       flex-direction: column;
+      padding-inline: 0;
     }
 
     .foreground {
@@ -59,6 +60,7 @@
 
     .foreground .content {
       padding-block-start: var(--s2a-layout-sm);
+      padding-inline: var(--s2a-spacing-lg);
 
       .title-2,
       .eyebrow {
@@ -185,12 +187,16 @@
   .rich-content.jump-link {
     &.hero { height: 580px; }
 
-    .foreground .content { padding-block-start: var(--s2a-layout-md); }
+    .foreground .content {
+      padding-block-start: var(--s2a-layout-md);
+      padding-inline: var(--s2a-spacing-xl);
+    }
 
     .jump-links {
       flex-direction: row;
       gap: var(--s2a-spacing-xl, 32px);
       align-items: center;
+      padding-inline: var(--s2a-spacing-xl);
     }
 
     .jump-link-label { font-size: var(--s2a-typography-font-size-title-4); }
@@ -227,12 +233,12 @@
 
       .foreground .content {
         padding-block-start: 0;
-        padding-inline: var(--s2a-spacing-md);
+        padding-inline: var(--s2a-spacing-2xl);
       }
 
       .jump-links {
         padding-block-end: var(--s2a-layout-sm);
-        padding-inline: var(--s2a-spacing-md);
+        padding-inline: var(--s2a-spacing-2xl);
       }
 
       .jump-link-label {
@@ -254,5 +260,9 @@
 
   .rich-content.jump-link.hero {
     height: 1085px;
+
+    .foreground .content { padding-inline: calc(var(--s2a-layout-xl) * 2); }
+
+    .jump-links { padding-inline: calc(var(--s2a-layout-xl) * 2); }
   }
 }
