@@ -59,7 +59,7 @@
     display: flex;
     gap: var(--s2a-spacing-md);
     padding-block: var(--s2a-spacing-12);
-    padding-inline: var(--s2a-spacing-20) var(--s2a-spacing-12);
+    padding-inline: var(--s2a-spacing-24) var(--s2a-spacing-12);
     text-decoration: none;
 
     .pm-promo-text {
