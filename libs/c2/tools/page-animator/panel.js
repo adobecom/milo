@@ -155,7 +155,9 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
     copyBtn.style.marginTop = '6px';
     copyBtn.addEventListener('click', () => {
       if (!stateMap[item.id]) stateMap[item.id] = getDefaultState();
-      navigator.clipboard.writeText(buildCopyText(item)).then(() => {
+      const html = buildCopyHtml(item);
+      const blob = new Blob([html], { type: 'text/html' });
+      navigator.clipboard.write([new ClipboardItem({ 'text/html': blob })]).then(() => {
         const prev = copyBtn.textContent;
         copyBtn.textContent = 'Copied!';
         setTimeout(() => { copyBtn.textContent = prev; }, 1500);
@@ -166,7 +168,7 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
     return wrap;
   }
 
-  function buildCopyText(item) {
+  function buildCopyHtml(item) {
     const sectionNode = tree.find((s) => s.id === item.id || s.blocks.some((b) => b.id === item.id));
     let header;
     if (sectionNode.id === item.id) {
@@ -175,11 +177,12 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
       const blockClass = item.el.classList[0];
       const sameClass = sectionNode.blocks.filter((b) => b.el.classList[0] === blockClass);
       const sibIdx = sameClass.findIndex((b) => b.id === item.id);
-      header = sibIdx > 0 ? `animation ${blockClass} ${sibIdx + 1}` : `animation ${blockClass}`;
+      const variantToken = blockClass.includes('-') ? `(${blockClass})` : blockClass;
+      header = sibIdx > 0 ? `animation ${variantToken} ${sibIdx + 1}` : `animation ${variantToken}`;
     }
     const state = stateMap[item.id] || getDefaultState();
-    const rows = CONTROLS.map((c) => `${c.cssVar}\t${state[c.cssVar] ?? c.default}`);
-    return [header, ...rows].join('\n');
+    const rows = CONTROLS.map((c) => `<tr><td>${c.cssVar}</td><td>${state[c.cssVar] ?? c.default}</td></tr>`).join('');
+    return `<table><tr><td colspan="2">${header}</td></tr>${rows}</table>`;
   }
 
   renderTree();

@@ -112,6 +112,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'animation',
   'base-card',
   'brand-concierge',
   'brand-concierge-global',
