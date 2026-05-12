@@ -1,4 +1,4 @@
-import { scanPage } from './scanner.js';
+import { scanPage, readBlockAnimations } from './scanner.js';
 import StyleManager from './style-manager.js';
 import { buildPanel, loadStoredState, saveState } from './panel.js';
 import { serializeState, deserializeState, CONTROLS } from './controls.js';
@@ -15,7 +15,9 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
 
   const styleManager = new StyleManager();
   const tree = scanPage();
-  const stateMap = loadStoredState() || {};
+  const blockStateMap = readBlockAnimations();
+  const blockSourceIds = new Set(Object.keys(blockStateMap));
+  const stateMap = { ...blockStateMap, ...(loadStoredState() || {}) };
 
   // Restore persisted animations
   Object.entries(stateMap).forEach(([animId, state]) => {
@@ -41,7 +43,7 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
     },
   };
 
-  let currentPanel = buildPanel(tree, stateMap, callbacks);
+  let currentPanel = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds);
 
   // Check what fixed element is covering the top-right corner (where our panel header will be).
   // Using elementFromPoint before the panel is injected gives us the exact gnav element.
@@ -102,7 +104,7 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
           Object.assign(stateMap, imported);
           Object.entries(imported).forEach(([id, state]) => styleManager.updateRule(id, state));
           saveState(stateMap);
-          const fresh = buildPanel(tree, stateMap, callbacks);
+          const fresh = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds);
           panelEl.replaceWith(fresh);
           fresh.classList.add('pa-open');
           currentPanel = fresh;
