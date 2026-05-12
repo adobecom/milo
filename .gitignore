@@ -12,6 +12,7 @@ test-results/
 test-a11y-results/
 tmp
 libs/navigation/dist/
+.scout/
 *.mdc
 /.cursor*/
 /.claude/*
