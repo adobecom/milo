@@ -15,7 +15,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    .pm-body {
+    .body-md {
       color: var(--s2a-color-content-title);
       font-family: var(--heading-font-family);
       font-size: var(--s2a-typography-font-size-title-4);
@@ -103,7 +103,7 @@
     .pm-foreground {
       flex: 1;
 
-      .pm-body {
+      .body-md {
         max-width: min(476px, 80%);
       }
     }
