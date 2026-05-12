@@ -37,29 +37,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
-
-  // On-page launcher button for testing (no sidekick config required)
-  const animatorBtn = createTag('button', { id: 'page-animator-launch-btn' }, 'Animator');
-  Object.assign(animatorBtn.style, {
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px',
-    zIndex: '999999',
-    padding: '8px 14px',
-    background: '#0d66d0',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '20px',
-    fontSize: '13px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    cursor: 'pointer',
-    boxShadow: '0 2px 10px rgb(0 0 0 / 30%)',
-  });
-  animatorBtn.addEventListener('click', () => {
-    animatorBtn.remove();
-    pageAnimatorListener();
-  });
-  document.body.appendChild(animatorBtn);
+  sk.addEventListener('custom:page-animator', debounce(pageAnimatorListener, 500));
 
   // Color code publish button
   stylePublish(sk);

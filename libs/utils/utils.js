@@ -2357,6 +2357,25 @@ export async function loadDeferred(area, blocks, config) {
   }
 
   import('../c2/animation-loader.js').then(({ default: loadAnimations }) => loadAnimations());
+
+  if (config?.env?.name !== 'prod' && !document.getElementById('page-animator-launch-btn')) {
+    const btn = document.createElement('button');
+    btn.id = 'page-animator-launch-btn';
+    btn.type = 'button';
+    btn.textContent = 'Animator';
+    btn.setAttribute('style', [
+      'position:fixed', 'bottom:20px', 'right:20px', 'z-index:999999',
+      'padding:8px 14px', 'background:#0d66d0', 'color:#fff',
+      'border:none', 'border-radius:20px', 'font-size:13px',
+      'font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+      'cursor:pointer', 'box-shadow:0 2px 10px rgb(0 0 0/30%)',
+    ].join(';'));
+    btn.addEventListener('click', () => {
+      btn.remove();
+      import('../c2/tools/page-animator/page-animator.js').catch(console.error);
+    });
+    document.body.appendChild(btn);
+  }
 }
 
 function initSidekick() {
