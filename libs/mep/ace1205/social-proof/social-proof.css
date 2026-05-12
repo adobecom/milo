@@ -1,7 +1,5 @@
 .social-proof {
   border-radius: var(--s2a-border-radius-24);
-  padding-inline: var(--s2a-spacing-lg);
-  max-width: 1920px;
 
   > div {
     display: flex;
@@ -83,11 +81,5 @@
 @media (width >= 1440px) {
   .social-proof > div .foreground {
     padding: var(--s2a-layout-md);
-  }
-}
-
-@media (width >= 1920px) {
-  .social-proof {
-    margin: 0 auto;
   }
 }
