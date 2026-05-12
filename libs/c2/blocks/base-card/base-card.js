@@ -20,7 +20,7 @@ function decorateCard(block, root) {
   if (!foreground) return;
 
   foreground.classList.add('foreground');
-  decorateBlockText(foreground, { heading: '4' });
+  decorateBlockText(foreground, { heading: '5' });
   markStandaloneLinks(foreground);
 
   if (media) {
