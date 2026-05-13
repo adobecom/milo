@@ -100,8 +100,8 @@
     }
 
     .faq-media {
-      /* width: 183.384px;
-      height: 241.566px; */
+      width: 50px;
+      height: 50px;
       display: none;
       inline-size: 260px;
       overflow: hidden;
