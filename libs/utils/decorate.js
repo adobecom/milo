@@ -480,6 +480,7 @@ export function isVideoAccessible(anchorTag) {
 function updateFirstVideo() {
   if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
     let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
+    if (!videoHolder) return;
     if (videoHolder.nodeName !== 'A') videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
     const firstVideoLabel = videoHolder.getAttribute('aria-label');
     videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
