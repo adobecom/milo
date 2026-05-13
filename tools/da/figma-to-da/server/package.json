@@ -1,0 +1,14 @@
+{
+  "name": "figma-to-da-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Local agent server for the Figma → DA prototyping workflow",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

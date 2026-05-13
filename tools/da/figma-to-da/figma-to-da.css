@@ -1,0 +1,215 @@
+:root {
+  --blue: #1473e6;
+  --blue-dark: #0d66d0;
+  --blue-light: #e8f1fd;
+  --gray-50: #f8f8f8;
+  --gray-100: #f0f0f0;
+  --gray-200: #e0e0e0;
+  --gray-500: #767676;
+  --gray-700: #4b4b4b;
+  --gray-900: #1d1d1d;
+  --green: #2d9d78;
+  --red: #e34850;
+  --radius: 6px;
+  --shadow: 0 2px 8px rgba(0 0 0 / 0.1);
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--gray-50);
+  color: var(--gray-900);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 20px 80px;
+}
+
+.app {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ── */
+.header { display: flex; flex-direction: column; gap: 4px; }
+.header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.header p { font-size: 14px; color: var(--gray-500); }
+
+/* ── Cards ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: var(--shadow);
+}
+
+.card-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--gray-500);
+}
+
+/* ── Inputs ── */
+label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 500; }
+
+input[type="text"],
+textarea {
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--gray-900);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--blue);
+  box-shadow: 0 0 0 2px rgba(20 115 230 / 0.2);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}
+
+input::placeholder, textarea::placeholder { color: var(--gray-500); }
+
+.hint { font-size: 12px; color: var(--gray-500); margin-top: -6px; }
+
+/* ── Button ── */
+.btn {
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue);
+  border: none;
+  border-radius: var(--radius);
+  padding: 11px 24px;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  align-self: flex-start;
+}
+
+.btn:hover:not(:disabled) { background: var(--blue-dark); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--blue);
+  border: 1px solid var(--gray-200);
+}
+
+.btn-ghost:hover:not(:disabled) { background: var(--blue-light); border-color: var(--blue); }
+
+/* ── Status panel ── */
+.status-panel { display: none; }
+.status-panel.visible { display: flex; }
+
+.status-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.status-text { display: flex; flex-direction: column; gap: 2px; }
+.status-stage { font-size: 15px; font-weight: 600; }
+.status-sub { font-size: 13px; color: var(--gray-500); }
+
+/* ── Stage progress dots ── */
+.stages {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stage-dot {
+  font-size: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  transition: background 0.3s, color 0.3s;
+}
+
+.stage-dot.active {
+  background: var(--blue-light);
+  color: var(--blue);
+  font-weight: 600;
+}
+
+.stage-dot.done {
+  background: #e8f5f0;
+  color: var(--green);
+}
+
+/* ── Result panel ── */
+.result-panel { display: none; }
+.result-panel.visible { display: flex; }
+
+.result-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.result-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--blue);
+  background: var(--blue-light);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  text-decoration: none;
+  font-weight: 500;
+  word-break: break-all;
+  transition: background 0.15s;
+}
+
+.result-url:hover { background: #d0e5fb; }
+
+.result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── Error state ── */
+.error-msg {
+  font-size: 13px;
+  color: var(--red);
+  background: #fff0f1;
+  border: 1px solid #f5c6c8;
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: none;
+}
+
+.error-msg.visible { display: block; }

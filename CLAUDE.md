@@ -55,6 +55,27 @@ Builds CSS scroll-driven animations for C2 blocks using the Scroll-Driven Animat
 
 ---
 
+### Figma → DA Prototyper (`tools/da/figma-to-da/`)
+
+A two-piece DA tool that turns a Figma URL into a live DA page with generated C2 blocks — "vibe code" for prototyping.
+
+**Frontend** — loaded in DA at `/tools/da/figma-to-da/figma-to-da.html`. Accepts a Figma URL and the local server URL, polls for progress, and shows the preview URL on completion.
+
+**Backend server** — a local Express server using the Claude Agent SDK. The agent fetches the Figma design, generates C2 block files (`libs/c2/blocks/`), registers them in `utils.js`, commits to a `prototype-<slug>` branch, and publishes the page to DA.
+
+**To run the server:**
+```sh
+cd tools/da/figma-to-da/server
+npm install
+ANTHROPIC_API_KEY=sk-...  REPO_PATH=/path/to/milo  npm start
+# then expose with:
+ngrok http 3001
+```
+
+Paste the ngrok HTTPS URL into the tool's "Agent Server URL" field.
+
+---
+
 ## Common development commands
 
 ```sh
