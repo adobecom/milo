@@ -344,7 +344,9 @@ async function openChatModal(initialMessage, el) {
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
       onBeforeEventSend,
-      onEvent: bcAnalytics,
+      onEvent: (event) => {
+        bcAnalytics(event);
+      },
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
