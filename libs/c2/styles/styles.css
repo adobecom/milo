@@ -1216,7 +1216,7 @@ p {
     z-index: 1;
     animation: dg-top-door ease-out both;
     animation-timeline: view();
-    animation-range: entry 0% entry 70%;
+    animation-range: exit 0% exit 70%;
   }
 
   .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section {
@@ -1233,7 +1233,7 @@ p {
   }
 
   @keyframes dg-top-door {
-    from { transform: translateY(-20vh); }
+    from { transform: translateY(20vh); }
     to { transform: translateY(0); }
   }
 
