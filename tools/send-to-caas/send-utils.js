@@ -198,11 +198,7 @@ export const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 
-  const mappings = {
-    cc: 'hawks',
-    dc: 'doccloud',
-  };
-  const originLC = mappings[origin.toLowerCase()] || origin;
+  const originLC = LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin;
   if (originLC) {
     return originLC;
   }
@@ -346,7 +342,7 @@ const getBulkPublishLangAttr = async (options) => {
   if (options.languageFirst) {
     const mappedGetLangFirst = (path, repo, fqdn) => getLanguageFirstCountryAndLang(
       path,
-      LANG_FIRST_SOURCE_MAPPINGS[repo] || repo,
+      LANG_FIRST_SOURCE_MAPPINGS[repo.toLowerCase()] || repo,
       fqdn,
     );
     return runLanguageFirstRetry(options, mappedGetLangFirst);
@@ -368,7 +364,7 @@ const getCountryAndLang = async (options, origin) => {
     const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
-      LANG_FIRST_SOURCE_MAPPINGS[origin] || origin,
+      LANG_FIRST_SOURCE_MAPPINGS[origin.toLowercase()] || origin,
       fqdn,
     );
   }
