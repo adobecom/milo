@@ -1,6 +1,34 @@
 import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
+const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
+
+function addCursorFollower(list) {
+  let activeMedia = null;
+
+  list.addEventListener('mousemove', (e) => {
+    if (!activeMedia || !DESKTOP_MQ.matches) return;
+    activeMedia.style.left = `${e.clientX + 20}px`;
+    activeMedia.style.top = `${e.clientY - 20}px`;
+  });
+
+  list.addEventListener('mouseover', (e) => {
+    if (!DESKTOP_MQ.matches) return;
+    const item = e.target.closest('.faq-item');
+    if (!item) return;
+    const media = item.querySelector('.faq-media');
+    if (!media || media === activeMedia) return;
+    activeMedia?.classList.remove('is-visible');
+    activeMedia = media;
+    activeMedia.classList.add('is-visible');
+  });
+
+  list.addEventListener('mouseleave', () => {
+    activeMedia?.classList.remove('is-visible');
+    activeMedia = null;
+  });
+}
+
 function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
@@ -40,6 +68,8 @@ function decorate(block) {
 
     list.append(item);
   });
+
+  addCursorFollower(list);
 
   const listCol = createTag('div', { class: 'faq-list-col' });
   listCol.append(list);
