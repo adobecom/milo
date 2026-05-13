@@ -4,15 +4,28 @@ import { displayPreflightVisuals } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;
 
-function waitForNetworkIdle(idleMs = 3000) {
+// Resolves after `idleMs` of no resource activity, or `maxMs` total — whichever comes first.
+function waitForNetworkIdle(idleMs = 2000, maxMs = 15000) {
   return new Promise((resolve) => {
-    let timer;
-    const observer = new PerformanceObserver(() => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { observer.disconnect(); resolve(); }, idleMs);
+    let idleTimer;
+    let maxTimer;
+    let observer;
+
+    const finish = () => {
+      clearTimeout(idleTimer);
+      clearTimeout(maxTimer);
+      observer.disconnect();
+      resolve();
+    };
+
+    observer = new PerformanceObserver(() => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(finish, idleMs);
     });
-    observer.observe({ entryTypes: ['resource'] });
-    timer = setTimeout(() => { observer.disconnect(); resolve(); }, idleMs);
+
+    observer.observe({ type: 'resource', buffered: true });
+    idleTimer = setTimeout(finish, idleMs);
+    maxTimer = setTimeout(finish, maxMs);
   });
 }
 
