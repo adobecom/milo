@@ -78,7 +78,14 @@ function handleBentoStack(el) {
 
   if (richContent) {
     richContent.classList.add('bento-stack-header');
-    section.style.setProperty('--card-sticky-top', `${richContent.offsetHeight}px`);
+    const measureHeight = () => {
+      section.style.setProperty('--card-sticky-top', `${richContent.offsetHeight}px`);
+    };
+    if (document.readyState === 'complete') {
+      measureHeight();
+    } else {
+      window.addEventListener('load', measureHeight, { once: true });
+    }
   }
 
   const cards = [...section.querySelectorAll('.explore-card')];
