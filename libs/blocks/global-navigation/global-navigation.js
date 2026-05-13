@@ -982,7 +982,7 @@ class Gnav {
     let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
     // If versions follow a predictable format (digit.digit), validate using a regex
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
+      unavVersion = '1.6';
     }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
@@ -1034,10 +1034,28 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
+      isARPEnabled: getConfig()?.unav?.isARPEnabled ?? false,
+      arpConfig: Promise.resolve({
+        sessionId: visitorGuid,
+        tokenCallback: (token) => console.log('[ARP] tokenCallback:', token),
+        successCallback: () => console.log('[ARP] successCallback: vendors initialized'),
+        errorCallback: (err) => console.error('[ARP] errorCallback:', err),
+        ...getConfig()?.unav?.arpConfig,
+        metadata: {
+          source: 'universal-navigation',
+          version: unavVersion,
+          ...getConfig()?.unav?.arpConfig?.metadata,
+        },
+      }),
     });
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
+    // TEMPORARY DEBUG logs
+    CONFIG.universalNav.universalNavConfig.arpConfig.then((resolved) => {
+      console.log('[ARP Debug] isARPEnabled:', CONFIG.universalNav.universalNavConfig.isARPEnabled);
+      console.log('[ARP Debug] arpConfig:', resolved);
+    });
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const updatePromoZIndex = () => {
