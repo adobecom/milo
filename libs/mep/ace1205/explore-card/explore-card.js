@@ -64,6 +64,32 @@ function decorate(block, root) {
   firstRow.prepend(linkContainer);
 }
 
+function handleBentoStack(el) {
+  const section = el.closest('.section');
+  if (!section?.classList.contains('bento') || !section.classList.contains('stack-mobile')) return;
+  if (section.hasAttribute('data-stack-initialized')) return;
+  section.setAttribute('data-stack-initialized', '');
+
+  const richContent = [...section.children].find((child) => (
+    !child.classList.contains('section-background')
+    && !child.classList.contains('section-metadata')
+    && !child.querySelector('.explore-card')
+  ));
+
+  if (richContent) {
+    richContent.classList.add('bento-stack-header');
+    section.style.setProperty('--card-sticky-top', `${richContent.offsetHeight}px`);
+  }
+
+  const cards = [...section.querySelectorAll('.explore-card')];
+  cards.forEach((card, i) => {
+    card.parentElement.style.setProperty('--stack-index', i + 1);
+    card.parentElement.style.setProperty('--stack-total', cards.length);
+    if (i === 0) card.parentElement.setAttribute('data-stack-first', '');
+  });
+}
+
 export default function init(el) {
   decorateViewportContent(el, decorate);
+  handleBentoStack(el);
 }
