@@ -1214,9 +1214,6 @@ p {
 
   .section:has(+ .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door))) {
     z-index: 1;
-  }
-
-  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
     animation: dg-top-door ease-out both;
     animation-timeline: view();
     animation-range: entry 0% entry 70%;
