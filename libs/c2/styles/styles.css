@@ -1212,7 +1212,6 @@ p {
     to { opacity: 0.75; }
   }
 
-  /* Top door: previous section sits on top; target slides down from under it */
   .section:has(+ .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door))) {
     z-index: 1;
   }
@@ -1234,14 +1233,6 @@ p {
   /* Expose the bottom door's view timeline to its siblings */
   main:has(.parallax-double-garage-door) {
     timeline-scope: --dg-floor;
-  }
-
-  /* All sections after the bottom door share the same scroll trigger */
-  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section ~ .section {
-    z-index: 1;
-    animation: dg-bottom-door ease-out both;
-    animation-timeline: --dg-floor;
-    animation-range: entry 0% entry 100%;
   }
 
   @keyframes dg-top-door {
