@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computed Attributes — Internal PRD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --red:#EB1000;--red-dim:rgba(235,16,0,0.15);
+  --black:#000;--white:#FFF;
+  --g100:#F5F5F5;--g200:#E8E8E8;--g400:#959595;--g500:#6E6E6E;--g600:#4B4B4B;--g700:#2C2C2C;--g800:#1A1A1A;
+  --green:#268E6C;--yellow:#D07B11;--alert:#D7373F;--blue:#1473E6;
+  --display:'Bebas Neue',Impact,sans-serif;
+  --body:'Source Sans 3','Adobe Clean',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:auto;}
+body{font-family:var(--body);background:var(--black);color:var(--white);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:clip;}
+body.loading{overflow:hidden;}
+
+/* ═══ LOADING SCREEN ═══ */
+.loader{position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:32px;}
+.loader svg{height:60px;opacity:0;}
+.loader-bar{width:200px;height:2px;background:var(--g800);border-radius:2px;overflow:hidden;opacity:0;}
+.loader-bar-fill{width:0%;height:100%;background:var(--red);border-radius:2px;}
+.loader-text{font-family:var(--mono);font-size:11px;color:var(--g500);letter-spacing:3px;text-transform:uppercase;opacity:0;}
+
+/* ═══ CUSTOM CURSOR ═══ */
+.cursor{position:fixed;top:0;left:0;width:20px;height:20px;border:1.5px solid rgba(235,16,0,0.6);border-radius:50%;pointer-events:none;z-index:10000;transform:translate(-50%,-50%);transition:width 0.3s cubic-bezier(0.16,1,0.3,1),height 0.3s cubic-bezier(0.16,1,0.3,1),border-color 0.3s,background 0.3s;mix-blend-mode:difference;}
+.cursor.hover{width:56px;height:56px;background:rgba(235,16,0,0.08);border-color:var(--red);}
+.cursor-dot{position:fixed;top:0;left:0;width:4px;height:4px;background:var(--red);border-radius:50%;pointer-events:none;z-index:10001;transform:translate(-50%,-50%);}
+@media(max-width:768px){.cursor,.cursor-dot{display:none;}}
+@media(pointer:coarse){.cursor,.cursor-dot{display:none;}}
+
+/* ═══ GRAIN OVERLAY ═══ */
+.grain{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:0.035;}
+.grain::after{content:'';position:absolute;inset:-200%;width:400%;height:400%;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");animation:grainAnim 0.5s steps(1) infinite;}
+@keyframes grainAnim{0%{transform:translate(0,0)}10%{transform:translate(-5%,-10%)}20%{transform:translate(-15%,5%)}30%{transform:translate(7%,-15%)}40%{transform:translate(-5%,15%)}50%{transform:translate(-15%,10%)}60%{transform:translate(15%,0%)}70%{transform:translate(0%,10%)}80%{transform:translate(3%,15%)}90%{transform:translate(-10%,10%)}100%{transform:translate(0,0)}}
+
+/* Red thread */
+body::before{content:'';position:fixed;top:0;left:0;bottom:0;width:4px;background:var(--red);z-index:200;}
+
+/* ═══ SCROLL PROGRESS ═══ */
+.scroll-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:201;transform-origin:left;transform:scaleX(0);background:var(--red);}
+
+/* ═══ NAV ═══ */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(0,0,0,0.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,0.06);transform:translateY(-100%);will-change:transform;}
+.nav-inner{max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:56px;}
+.nav-logo{display:flex;align-items:center;gap:12px;}
+.nav-logo svg{height:20px;}
+.nav-logo-text{font-family:var(--display);font-size:20px;letter-spacing:2px;color:var(--white);text-transform:uppercase;}
+.nav-links{display:flex;gap:2px;}
+.nav-links a{color:var(--g500);text-decoration:none;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:6px 10px;border-radius:4px;transition:color 0.2s;position:relative;}
+.nav-links a:hover,.nav-links a.active{color:var(--white);}
+.nav-links a.active::after{content:'';position:absolute;bottom:0;left:10px;right:10px;height:2px;background:var(--red);border-radius:1px;}
+.nav-tag{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:1px;}
+@media(max-width:1000px){.nav-links{display:none;}}
+
+/* ═══ HERO ═══ */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;z-index:0;}
+.hero-bg svg{width:100%;height:100%;opacity:0.04;}
+.hero-content{position:relative;z-index:1;text-align:center;max-width:1000px;padding:0 40px;}
+.hero-label{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--red);margin-bottom:24px;opacity:0;visibility:hidden;}
+.hero h1{font-family:var(--display);font-size:clamp(60px,12vw,160px);line-height:0.9;letter-spacing:4px;text-transform:uppercase;margin-bottom:24px;overflow:hidden;}
+.hero h1 .red{color:var(--red);}
+.hero h1 .line{display:block;overflow:hidden;}
+.hero h1 .line-inner{display:block;transform:translateY(110%);will-change:transform;}
+.hero-sub{font-size:20px;color:var(--g400);max-width:600px;margin:0 auto 48px;font-weight:300;opacity:0;visibility:hidden;}
+.hero-meta-row{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;}
+.hero-meta-row .hm{text-align:center;opacity:0;visibility:hidden;}
+.hero-meta-row .hm-label{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--g500);margin-bottom:4px;}
+.hero-meta-row .hm-val{font-size:14px;font-weight:600;}
+.hero-meta-row .hm-val.pending{color:var(--yellow);}
+.scroll-cue{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;text-decoration:none;opacity:0;visibility:hidden;}
+.scroll-cue span{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--g500);}
+.scroll-cue .arrow{width:28px;height:28px;border:1px solid var(--g700);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:bob 2s infinite;}
+.scroll-cue .arrow svg{width:12px;height:12px;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(6px);}}
+
+/* ═══ FULL-WIDTH SECTION ═══ */
+.fw-section{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 0;}
+.fw-section .fw-inner{max-width:1400px;margin:0 auto;padding:0 40px;width:100%;position:relative;z-index:2;}
+.fw-section .fw-bg{position:absolute;inset:0;z-index:0;pointer-events:none;}
+
+/* ═══ REVEAL ANIMATION ═══ */
+.reveal{opacity:0;transform:translateY(60px);will-change:transform,opacity;}
+
+/* ═══ SECTION TYPOGRAPHY ═══ */
+.sec-num{font-family:var(--display);font-size:clamp(80px,10vw,140px);color:rgba(235,16,0,0.08);line-height:1;position:absolute;top:-20px;left:-10px;z-index:0;pointer-events:none;will-change:transform;}
+.sec-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:var(--red);margin-bottom:12px;}
+.sec-title{font-family:var(--display);font-size:clamp(32px,5vw,64px);line-height:1;letter-spacing:2px;text-transform:uppercase;margin-bottom:20px;}
+.sec-body{font-size:17px;color:var(--g400);max-width:640px;margin-bottom:24px;font-weight:300;line-height:1.7;}
+.sec-body.wide{max-width:100%;}
+.sec-quote{font-size:24px;font-weight:300;font-style:italic;color:var(--g400);border-left:3px solid var(--red);padding-left:24px;margin:32px 0;max-width:600px;line-height:1.5;}
+
+/* ═══ DIVIDER ═══ */
+.div-line{height:1px;background:rgba(255,255,255,0.06);max-width:1400px;margin:0 auto;transform-origin:left;transform:scaleX(0);will-change:transform;}
+
+/* ═══ HORIZONTAL CAROUSEL ═══ */
+.hscroll-wrap{position:relative;width:100%;overflow:hidden;padding:32px 0;}
+.hscroll-track{display:flex;gap:20px;padding:0;width:max-content;cursor:grab;user-select:none;}
+.hscroll-track.dragging{cursor:grabbing;}
+.hscroll-card{flex-shrink:0;width:340px;background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:32px;position:relative;overflow:hidden;pointer-events:auto;transition:border-color 0.3s,box-shadow 0.3s;will-change:transform;}
+.hscroll-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform 0.5s cubic-bezier(0.16,1,0.3,1);}
+.hscroll-card:hover::before{transform:scaleX(1);}
+.hscroll-card:hover{border-color:rgba(255,255,255,0.12);box-shadow:0 20px 60px rgba(0,0,0,0.4);}
+.hscroll-card .hc-icon{font-size:32px;margin-bottom:16px;}
+.hscroll-card .hc-title{font-family:var(--display);font-size:24px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.hscroll-card .hc-text{font-size:14px;color:var(--g400);line-height:1.6;}
+.hscroll-controls{display:flex;align-items:center;gap:16px;margin-top:16px;}
+.hscroll-btn{width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--white);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);}
+.hscroll-btn:hover{background:var(--red);border-color:var(--red);transform:scale(1.1);}
+.hscroll-dots{display:flex;gap:6px;}
+.hscroll-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);transition:all 0.3s;cursor:pointer;}
+.hscroll-dot.active{background:var(--red);width:24px;border-radius:4px;}
+
+/* ═══ CUSTOMER GRID ═══ */
+.cust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:32px 0;}
+@media(max-width:900px){.cust-grid{grid-template-columns:1fr;}}
+.cust-card{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:28px;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);will-change:transform;}
+.cust-card:hover{border-color:rgba(255,255,255,0.15);box-shadow:0 30px 60px rgba(0,0,0,0.3);transform:translateY(-4px);}
+.cust-card .cc-name{font-family:var(--display);font-size:28px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.cust-card .cc-role{font-size:12px;color:var(--g500);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+.cust-card .cc-text{font-size:14px;color:var(--g400);line-height:1.6;margin-bottom:16px;}
+.badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.badge-warn{background:rgba(208,123,17,0.12);color:var(--yellow);}
+.badge-danger{background:rgba(215,55,63,0.1);color:var(--alert);}
+.badge-ok{background:rgba(38,142,108,0.1);color:var(--green);}
+.badge-info{background:rgba(20,115,230,0.1);color:var(--blue);}
+
+/* ═══ OUTCOMES TABLE ═══ */
+.table-wrap{overflow-x:auto;margin:24px 0;border-radius:12px;border:1px solid rgba(255,255,255,0.06);}
+table{width:100%;border-collapse:collapse;}
+th{background:var(--g800);padding:12px 16px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g500);border-bottom:1px solid rgba(255,255,255,0.06);}
+td{padding:14px 16px;font-size:14px;color:var(--g400);border-bottom:1px solid rgba(255,255,255,0.06);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr{transition:background 0.3s;}
+tr:hover td{background:rgba(255,255,255,0.02);}
+
+/* ═══ RISK GAUGE ═══ */
+.risk-row{display:flex;gap:12px;flex-wrap:wrap;margin:32px 0;}
+.risk-pill{flex:1;min-width:160px;background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;cursor:pointer;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden;will-change:transform;}
+.risk-pill:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px);box-shadow:0 20px 40px rgba(0,0,0,0.3);}
+.risk-pill .rp-bar{position:absolute;bottom:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform 0.6s cubic-bezier(0.16,1,0.3,1);}
+.risk-pill.visible .rp-bar{transform:scaleX(1);}
+.risk-pill .rp-bar.med{background:var(--yellow);}
+.risk-pill .rp-bar.low{background:var(--green);}
+.risk-pill .rp-name{font-family:var(--display);font-size:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+.risk-pill .rp-level{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.risk-pill .rp-detail{font-size:13px;color:var(--g500);margin-top:8px;max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.16,1,0.3,1),opacity 0.4s;opacity:0;}
+.risk-pill.open .rp-detail{max-height:200px;opacity:1;}
+
+/* ═══ USE CASE TABS ═══ */
+.uc-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid rgba(255,255,255,0.06);width:fit-content;}
+.uc-tab{padding:10px 24px;font-family:var(--display);font-size:18px;letter-spacing:2px;text-transform:uppercase;color:var(--g500);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);}
+.uc-tab:hover{color:var(--white);}
+.uc-tab.active{color:var(--white);border-bottom-color:var(--red);}
+.uc-content{display:none;opacity:0;transform:translateY(20px);}.uc-content.active{display:block;animation:tabIn 0.5s cubic-bezier(0.16,1,0.3,1) forwards;}
+@keyframes tabIn{to{opacity:1;transform:translateY(0);}}
+
+/* ═══ ASSUMPTION STRIPS ═══ */
+.astrip{display:flex;flex-direction:column;gap:8px;margin:24px 0;}
+.astrip-item{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px 20px;display:grid;grid-template-columns:40px 70px 1fr auto auto;gap:14px;align-items:center;font-size:14px;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);will-change:transform,border-color;}
+.astrip-item:hover{border-color:rgba(255,255,255,0.12);transform:translateX(4px);background:rgba(26,26,26,0.8);}
+.astrip-item .a-id{font-family:var(--mono);font-size:13px;color:var(--g500);font-weight:600;}
+.astrip-item .a-area{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g500);}
+.astrip-item .a-text{color:var(--g400);}
+@media(max-width:800px){.astrip-item{grid-template-columns:1fr;}}
+
+/* ═══ DISCOVERY TIMELINE ═══ */
+.disc-list{display:flex;flex-direction:column;gap:0;margin:24px 0;border-left:2px solid rgba(235,16,0,0.2);padding-left:32px;}
+.disc-item{position:relative;padding:20px 0;transition:all 0.3s;}
+.disc-item:hover{transform:translateX(4px);}
+.disc-item::before{content:'';position:absolute;left:-38px;top:24px;width:10px;height:10px;border-radius:50%;background:var(--red);border:2px solid var(--black);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1),box-shadow 0.3s;}
+.disc-item:hover::before{transform:scale(1.4);box-shadow:0 0 20px rgba(235,16,0,0.4);}
+.disc-item .di-id{font-family:var(--mono);font-size:12px;color:var(--g500);margin-bottom:4px;}
+.disc-item .di-text{font-size:15px;color:var(--g400);margin-bottom:8px;line-height:1.6;}
+.disc-item .di-meta{display:flex;gap:10px;flex-wrap:wrap;}
+
+/* ═══ GAP CARDS ═══ */
+.gap-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:32px 0;counter-reset:gap;}
+@media(max-width:1000px){.gap-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}}
+.gap-card{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:24px;counter-increment:gap;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);will-change:transform;}
+.gap-card:hover{border-color:rgba(235,16,0,0.3);transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.4);}
+.gap-card::before{content:counter(gap);font-family:var(--display);font-size:48px;color:rgba(235,16,0,0.15);line-height:1;display:block;margin-bottom:8px;transition:color 0.3s;}
+.gap-card:hover::before{color:rgba(235,16,0,0.4);}
+.gap-card .gc-t{font-size:15px;font-weight:700;margin-bottom:4px;}
+.gap-card .gc-d{font-size:13px;color:var(--g500);line-height:1.5;}
+
+/* ═══ VERDICT ═══ */
+.verdict-box{border-left:4px solid var(--red);padding:32px 36px;margin:32px 0;background:rgba(235,16,0,0.04);border-radius:0 12px 12px 0;transition:all 0.5s;}
+.verdict-box:hover{background:rgba(235,16,0,0.08);}
+.verdict-box p{font-size:18px;color:var(--g400);line-height:1.7;max-width:800px;}
+.verdict-box strong{color:var(--red);}
+
+/* ═══ CALLOUT ═══ */
+.callout{border-radius:12px;padding:20px 24px;margin:20px 0;border:1px solid;transition:transform 0.3s cubic-bezier(0.16,1,0.3,1);}
+.callout:hover{transform:translateX(4px);}
+.callout-warn{background:rgba(208,123,17,0.06);border-color:rgba(208,123,17,0.15);}
+.callout-err{background:rgba(215,55,63,0.05);border-color:rgba(215,55,63,0.12);}
+.callout-title{font-size:13px;font-weight:700;margin-bottom:4px;}
+.callout-warn .callout-title{color:var(--yellow);}
+.callout-err .callout-title{color:var(--alert);}
+.callout p{font-size:14px;color:var(--g400);margin:0;}
+
+/* ═══ STEP CARDS ═══ */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0;}
+@media(max-width:900px){.steps{grid-template-columns:1fr;}}
+.step-card{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:28px;position:relative;overflow:hidden;transition:all 0.5s cubic-bezier(0.16,1,0.3,1);will-change:transform;}
+.step-card:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.step-card .step-n{font-family:var(--display);font-size:64px;color:rgba(235,16,0,0.1);position:absolute;top:-8px;right:12px;line-height:1;transition:color 0.3s;}
+.step-card:hover .step-n{color:rgba(235,16,0,0.25);}
+.step-card .step-t{font-family:var(--display);font-size:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;position:relative;}
+.step-card .step-d{font-size:14px;color:var(--g400);line-height:1.6;position:relative;}
+
+/* ═══ DESIGN DECISION PILLS ═══ */
+.dd-row{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0;}
+.dd-pill{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:100px;padding:12px 24px;font-size:14px;color:var(--g400);display:flex;align-items:center;gap:8px;transition:all 0.3s cubic-bezier(0.16,1,0.3,1);}
+.dd-pill:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-2px);}
+.dd-pill .dd-label{font-weight:700;color:var(--white);font-size:12px;text-transform:uppercase;letter-spacing:1px;}
+.dd-pill .dd-alert{color:var(--alert);font-weight:700;}
+
+/* ═══ REF GRID ═══ */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:24px 0;}
+.ref-card{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px;transition:all 0.4s cubic-bezier(0.16,1,0.3,1);will-change:transform;}
+.ref-card:hover{border-color:rgba(235,16,0,0.3);transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.3);}
+.ref-card .rf-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.ref-card .rf-desc{font-size:13px;color:var(--g500);line-height:1.4;}
+.ref-card .rf-link{font-size:11px;color:var(--red);margin-top:8px;display:block;transition:letter-spacing 0.3s;}
+.ref-card:hover .rf-link{letter-spacing:2px;}
+
+/* ═══ INTERACTIVE DEMO ═══ */
+.demo-app{width:100%;max-width:960px;margin:40px auto;border-radius:16px;border:1px solid rgba(255,255,255,0.08);background:#0D0D0D;overflow:hidden;position:relative;}
+.demo-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid rgba(255,255,255,0.06);}
+.demo-progress{display:flex;align-items:center;gap:0;}
+.demo-step-ind{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g600);transition:color 0.4s;}
+.demo-step-ind span{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--g700);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;transition:all 0.4s;}
+.demo-step-ind.active{color:var(--white);}
+.demo-step-ind.active span{border-color:var(--red);background:var(--red);color:var(--white);}
+.demo-step-ind.done{color:var(--g500);}
+.demo-step-ind.done span{border-color:var(--green);background:var(--green);color:var(--white);}
+.demo-connector{width:32px;height:1px;background:var(--g700);margin:0 12px;transition:background 0.4s;}
+.demo-connector.done{background:var(--green);}
+.demo-reset{background:none;border:1px solid var(--g700);color:var(--g500);font-family:var(--mono);font-size:10px;padding:6px 14px;border-radius:6px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;transition:all 0.3s;opacity:0;pointer-events:none;}
+.demo-reset.show{opacity:1;pointer-events:auto;}
+.demo-reset:hover{border-color:var(--red);color:var(--red);}
+.demo-body{position:relative;min-height:420px;padding:32px 28px;}
+.demo-screen{position:absolute;inset:0;padding:32px 28px;opacity:0;pointer-events:none;will-change:transform,opacity;}
+.demo-screen.active{position:relative;opacity:1;pointer-events:auto;}
+
+/* Screen 1: Event Picker */
+.demo-prompt{font-family:var(--display);font-size:28px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;text-align:center;}
+.demo-prompt em{font-style:normal;color:var(--red);}
+.demo-prompt-sub{font-size:13px;color:var(--g500);text-align:center;margin-bottom:24px;}
+.demo-event-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:700px){.demo-event-grid{grid-template-columns:repeat(2,1fr);}}
+.demo-evt{background:var(--g800);border:1.5px solid rgba(255,255,255,0.06);border-radius:10px;padding:20px;cursor:pointer;transition:all 0.35s cubic-bezier(0.16,1,0.3,1);position:relative;overflow:hidden;}
+.demo-evt:hover{border-color:rgba(255,255,255,0.15);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.3);}
+.demo-evt.selected{border-color:var(--red);background:rgba(235,16,0,0.06);}
+.demo-evt.selected .demo-evt-check{opacity:1;transform:scale(1);}
+.demo-evt.disabled{opacity:0.3;pointer-events:none;transform:none;}
+.demo-evt-check{position:absolute;top:12px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.5);transition:all 0.35s cubic-bezier(0.16,1,0.3,1);}
+.demo-evt-check svg{width:12px;height:12px;}
+.demo-evt-icon{font-size:24px;margin-bottom:10px;}
+.demo-evt-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--g500);margin-bottom:4px;}
+.demo-evt-name{font-size:14px;font-weight:700;margin-bottom:4px;}
+.demo-evt-detail{font-size:11px;color:var(--g500);font-family:var(--mono);}
+.demo-evt-color{position:absolute;bottom:0;left:0;right:0;height:2px;transform:scaleX(0);transform-origin:left;transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);}
+.demo-evt.selected .demo-evt-color{transform:scaleX(1);}
+
+/* Screen 2: Evaluator */
+.demo-eval-layout{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:start;min-height:340px;}
+.demo-eval-events{display:flex;flex-direction:column;gap:12px;padding-top:20px;}
+.demo-eval-card{background:var(--g800);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:16px;opacity:0;}
+.demo-eval-card .evc-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--g500);margin-bottom:2px;}
+.demo-eval-card .evc-name{font-size:13px;font-weight:700;margin-bottom:4px;}
+.demo-eval-card .evc-ts{font-size:10px;color:var(--g500);font-family:var(--mono);}
+.demo-eval-arrows{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 8px;min-height:300px;}
+.demo-eval-arrow{width:60px;height:2px;position:relative;margin:40px 0;opacity:0;}
+.demo-eval-arrow::after{content:'';position:absolute;right:-1px;top:-4px;border:5px solid transparent;border-left-color:var(--red);}
+.demo-eval-arrow .arrow-line{height:100%;background:var(--red);transform-origin:left;transform:scaleX(0);}
+.demo-eval-center{display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:12px;}
+.demo-eval-box{background:var(--g800);border:1.5px dashed rgba(235,16,0,0.3);border-radius:10px;padding:20px 24px;min-width:260px;opacity:0;}
+.demo-eval-box-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--red);margin-bottom:14px;}
+.demo-eval-rule{margin-bottom:12px;}
+.demo-eval-rule:last-child{margin-bottom:0;}
+.demo-eval-rule-label{font-size:11px;color:var(--g500);margin-bottom:2px;}
+.demo-eval-rule-code{font-size:12px;font-family:var(--mono);padding:6px 10px;background:rgba(0,0,0,0.3);border-radius:4px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.demo-eval-check{color:var(--green);opacity:0;transition:opacity 0.3s;font-weight:700;}
+.demo-eval-check.show{opacity:1;}
+.demo-arrows-out{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 8px;min-height:300px;}
+
+/* Screen 3: Profile */
+.demo-profile-layout{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:12px;}
+.demo-profile-box{background:linear-gradient(180deg,var(--g800),rgba(13,13,13,0.8));border:1.5px solid rgba(38,142,108,0.25);border-radius:12px;padding:24px 28px;width:100%;max-width:500px;position:relative;}
+.demo-profile-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--green);margin-bottom:4px;}
+.demo-profile-sub{font-size:11px;color:var(--g500);font-family:var(--mono);margin-bottom:20px;}
+.demo-trait{border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:0;transform:translateY(10px);}
+.demo-trait:last-child{margin-bottom:0;}
+.demo-trait-name{font-size:12px;font-weight:700;margin-bottom:6px;}
+.demo-trait-meta{display:flex;gap:16px;font-size:10px;font-family:var(--mono);color:var(--g500);}
+.demo-trait-meta .green{color:var(--green);}
+.demo-profile-footer{background:rgba(38,142,108,0.08);border-radius:6px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-top:16px;opacity:0;}
+.demo-profile-footer svg{flex-shrink:0;}
+.demo-profile-footer span{font-size:11px;color:var(--green);font-weight:700;}
+.demo-profile-stats{display:flex;gap:32px;justify-content:center;margin-top:8px;}
+.demo-stat{text-align:center;opacity:0;}
+.demo-stat-val{font-family:var(--display);font-size:36px;letter-spacing:1px;line-height:1;}
+.demo-stat-label{font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+
+/* ═══ 3D TILT CARD SHINE ═══ */
+.tilt-card{transform-style:preserve-3d;will-change:transform;}
+.tilt-shine{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;transition:opacity 0.3s;background:radial-gradient(600px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,0.06),transparent 40%);}
+.tilt-card:hover .tilt-shine{opacity:1;}
+
+/* ═══ MARQUEE ═══ */
+.marquee-wrap{overflow:hidden;padding:24px 0;border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04);}
+.marquee-track{display:flex;gap:64px;width:max-content;animation:marquee 30s linear infinite;}
+.marquee-item{font-family:var(--display);font-size:clamp(32px,4vw,48px);color:rgba(255,255,255,0.10);text-transform:uppercase;letter-spacing:4px;white-space:nowrap;}
+.marquee-item .dot{color:var(--red);margin:0 24px;}
+@keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ═══ FOOTER ═══ */
+footer{text-align:center;padding:60px 40px;color:var(--g500);font-size:12px;border-top:1px solid rgba(255,255,255,0.06);}
+</style>
+</head>
+<body class="loading">
+
+<!-- LOADING SCREEN -->
+<div class="loader" id="loader">
+  <svg viewBox="0 0 30 26" xmlns="http://www.w3.org/2000/svg"><path d="M19 0h11v26L19 0zM11 0H0v26L11 0zm4 9.6L22.5 26h-5.1l-3-7.4H9.1L15 9.6z" fill="#EB1000"/></svg>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+  <div class="loader-text">Loading Experience</div>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- GRAIN OVERLAY -->
+<div class="grain"></div>
+
+<!-- SCROLL PROGRESS -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <svg viewBox="0 0 30 26" xmlns="http://www.w3.org/2000/svg" height="20"><path d="M19 0h11v26L19 0zM11 0H0v26L11 0zm4 9.6L22.5 26h-5.1l-3-7.4H9.1L15 9.6z" fill="#EB1000"/></svg>
+      <div class="nav-logo-text">Computed Attributes</div>
+    </div>
+    <div class="nav-links">
+      <a href="#mechanism">How It Works</a>
+      <a href="#challenge">The Challenge</a>
+      <a href="#why">Why It Matters</a>
+      <a href="#usecases">Use Cases</a>
+      <a href="#solution">Setup</a>
+      <a href="#verdict">Get Started</a>
+    </div>
+    <div class="nav-tag">For Growth Teams</div>
+  </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero">
+  <div class="hero-bg"><svg viewBox="0 0 1400 800" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="hg" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0L0 0 0 60" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="0.5"/></pattern></defs><rect width="1400" height="800" fill="url(#hg)"/></svg></div>
+  <div class="hero-content">
+    <div class="hero-label">Computed Attributes for Growth Teams</div>
+    <h1>
+      <span class="line"><span class="line-inner">Target.</span></span>
+      <span class="line"><span class="line-inner"><span class="red">Faster.</span></span></span>
+      <span class="line"><span class="line-inner">Smarter.</span></span>
+    </h1>
+    <p class="hero-sub">Turn raw behavioral data into lightweight edge signals — and run faster, more precise campaigns without the profile bloat.</p>
+    <div class="hero-meta-row">
+      <div class="hm"><div class="hm-label">Platform</div><div class="hm-val">Adobe Experience Platform</div></div>
+      <div class="hm"><div class="hm-label">Evaluation</div><div class="hm-val">Edge — milliseconds</div></div>
+      <div class="hm"><div class="hm-label">Audience</div><div class="hm-val">Growth PMs & Campaign Ops</div></div>
+    </div>
+  </div>
+  <a href="#mechanism" class="scroll-cue"><span>See how it works</span><div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="var(--g500)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></a>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <div class="marquee-item">Faster Targeting<span class="dot">·</span>Smaller Profiles<span class="dot">·</span>Edge Evaluation<span class="dot">·</span>Real-Time Signals<span class="dot">·</span>Precise Campaigns<span class="dot">·</span>Behavioral Traits<span class="dot">·</span>Zero Latency</div>
+    <div class="marquee-item">Faster Targeting<span class="dot">·</span>Smaller Profiles<span class="dot">·</span>Edge Evaluation<span class="dot">·</span>Real-Time Signals<span class="dot">·</span>Precise Campaigns<span class="dot">·</span>Behavioral Traits<span class="dot">·</span>Zero Latency</div>
+  </div>
+</div>
+
+<!-- ═══════════════ HOW IT WORKS ═══════════════ -->
+<section class="fw-section" id="mechanism" style="background:var(--g800);">
+  <div class="fw-inner">
+    <div class="sec-label reveal">How It Works</div>
+    <div class="sec-title reveal">Your users act. The edge <span style="color:var(--red)">remembers.</span><br>No storage bloat.</div>
+    <p class="sec-body reveal">Today, every user action is stored as a raw event on the profile — and your campaigns have to sift through all of them. Computed Attributes change the game: they evaluate behavior as it happens at the edge, compress it into a simple trait, and make it instantly available for targeting. Pick two events below to see it in action.</p>
+
+    <div class="demo-app reveal" id="demoApp">
+      <div class="demo-header">
+        <div class="demo-progress">
+          <div class="demo-step-ind active" data-step="1"><span>1</span> Select</div>
+          <div class="demo-connector"></div>
+          <div class="demo-step-ind" data-step="2"><span>2</span> Evaluate</div>
+          <div class="demo-connector"></div>
+          <div class="demo-step-ind" data-step="3"><span>3</span> Store</div>
+        </div>
+        <button class="demo-reset" id="demoReset">Reset</button>
+      </div>
+      <div class="demo-body">
+        <!-- Screen 1: Pick Events -->
+        <div class="demo-screen active" id="demoScreen1">
+          <div class="demo-prompt">Pick any <em>2 events</em> to process</div>
+          <div class="demo-prompt-sub">Click two events below to see how Computed Attributes compress them into lightweight traits</div>
+          <div class="demo-event-grid" id="demoGrid"></div>
+        </div>
+        <!-- Screen 2: Evaluator -->
+        <div class="demo-screen" id="demoScreen2">
+          <div class="demo-eval-layout">
+            <div class="demo-eval-events" id="evalEvents"></div>
+            <div class="demo-eval-arrows">
+              <div class="demo-eval-arrow" id="evalArrow1"><div class="arrow-line"></div></div>
+              <div class="demo-eval-arrow" id="evalArrow2"><div class="arrow-line"></div></div>
+            </div>
+            <div class="demo-eval-center">
+              <div class="demo-eval-box" id="evalBox">
+                <div class="demo-eval-box-title">Edge Evaluator</div>
+                <div id="evalRules"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Screen 3: Profile -->
+        <div class="demo-screen" id="demoScreen3">
+          <div class="demo-profile-layout">
+            <div class="demo-profile-stats">
+              <div class="demo-stat" id="statEvents"><div class="demo-stat-val" style="color:var(--red)">0</div><div class="demo-stat-label">Raw Events Stored</div></div>
+              <div class="demo-stat" id="statTraits"><div class="demo-stat-val" style="color:var(--green)">2</div><div class="demo-stat-label">Traits on Profile</div></div>
+              <div class="demo-stat" id="statSize"><div class="demo-stat-val" style="color:var(--blue)">94%</div><div class="demo-stat-label">Size Reduction</div></div>
+            </div>
+            <div class="demo-profile-box" id="profileBox">
+              <div class="demo-profile-title">Edge Profile</div>
+              <div class="demo-profile-sub">xdm:traitMembership</div>
+              <div id="profileTraits"></div>
+              <div class="demo-profile-footer" id="profileFooter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#268E6C" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>No raw events stored on profile</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ THE CHALLENGE ═══════════════ -->
+<section class="fw-section" id="challenge" style="padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.05">01</div>
+    <div class="sec-label reveal">The Challenge</div>
+    <div class="sec-title reveal">Your campaigns are slower<br>than your <span style="color:var(--red)">customers</span></div>
+    <p class="sec-body reveal">Every time a user views a product, launches an app, or starts a checkout, that action lands on their profile as a raw event. Thousands of them. By the time your campaign evaluates all that data, the moment has passed.</p>
+    <div class="sec-quote reveal">"We wanted to target users who browsed Photoshop in the last week. The segment took so long to evaluate at the edge that the offer rendered after they'd already left the page."</div>
+
+    <div class="hscroll-wrap reveal" data-carousel>
+      <div class="hscroll-track">
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-icon">🐢</div><div class="hc-title">Campaigns miss the moment</div><div class="hc-text">Heavy profiles slow edge evaluation. Personalization that should fire in milliseconds arrives too late — after the user has already moved on.</div></div>
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-icon">📦</div><div class="hc-title">You're burning profile space</div><div class="hc-text">Every stored event counts against your entitlements. You're forced to choose: keep 90 days of behavioral history, or stay within license limits.</div></div>
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-icon">🧩</div><div class="hc-title">Simple questions, complex setup</div><div class="hc-text">"Has this user viewed a product page recently?" should be a checkbox — not a custom PQL expression that requires engineering support to build.</div></div>
+      </div>
+      <div class="hscroll-controls">
+        <button class="hscroll-btn magnetic" data-dir="-1">←</button>
+        <div class="hscroll-dots"></div>
+        <button class="hscroll-btn magnetic" data-dir="1">→</button>
+      </div>
+    </div>
+
+    <div class="sec-title reveal" style="font-size:clamp(20px,3vw,36px);margin-top:60px;">Sound familiar?</div>
+    <div class="cust-grid">
+      <div class="cust-card tilt-card reveal"><div class="tilt-shine"></div><div class="cc-name">Web Growth</div><div class="cc-role">Campaign targeting</div><div class="cc-text">You want to target users who browsed a product category in the last 30 days — but storing those page views bloats profiles and slows everything down.</div><span class="badge badge-info">Solved with traits</span></div>
+      <div class="cust-card tilt-card reveal"><div class="tilt-shine"></div><div class="cc-name">App Engagement</div><div class="cc-role">In-app campaigns</div><div class="cc-text">You need to know if someone is an active user, a power user, or lapsed — across platforms, in real time, without querying event history.</div><span class="badge badge-info">Solved with traits</span></div>
+      <div class="cust-card tilt-card reveal"><div class="tilt-shine"></div><div class="cc-name">Lifecycle</div><div class="cc-role">Retention & upsell</div><div class="cc-text">Subscription status, renewal dates, trial conversions — these should be instant signals you can act on, not events you have to reconstruct.</div><span class="badge badge-info">Solved with traits</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- ═══════════════ WHY IT MATTERS ═══════════════ -->
+<section class="fw-section" id="why" style="padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.03">02</div>
+    <div class="sec-label reveal">Why It Matters</div>
+    <div class="sec-title reveal">Faster campaigns.<br>Smaller profiles. <span style="color:var(--red)">Zero compromise.</span></div>
+    <p class="sec-body reveal">Traits give you the behavioral targeting you need without the performance cost. Here's what changes for your campaigns.</p>
+    <div class="table-wrap reveal">
+      <table><thead><tr><th>What changes</th><th>Before (raw events)</th><th>After (traits)</th></tr></thead><tbody>
+        <tr><td><strong>Edge evaluation speed</strong></td><td>Slows as events accumulate — can miss the moment</td><td><span class="badge badge-ok">Millisecond evaluation</span> regardless of history</td></tr>
+        <tr><td><strong>Profile size</strong></td><td>Thousands of raw events per user</td><td><span class="badge badge-ok">~94% smaller</span> — one compact trait per signal</td></tr>
+        <tr><td><strong>Targeting precision</strong></td><td>Complex PQL queries over event history</td><td><span class="badge badge-ok">Simple boolean</span> — "is this user X?" answered instantly</td></tr>
+        <tr><td><strong>Signal retention</strong></td><td>15-day limit on boolean signals</td><td><span class="badge badge-ok">Up to 120 days</span> — configurable TTL per trait</td></tr>
+        <tr><td><strong>Setup effort</strong></td><td>Engineering-dependent PQL + data pipeline work</td><td><span class="badge badge-ok">Self-serve</span> — define in Segment Builder, publish</td></tr>
+      </tbody></table>
+    </div>
+
+    <div class="risk-row reveal" style="margin-top:40px;">
+      <div class="risk-pill" onclick="this.classList.toggle('open')"><div class="rp-name">Speed</div><div class="rp-level" style="color:var(--green)">Instant</div><div class="rp-detail">Traits are pre-computed at the edge. Your campaign doesn't wait for segment evaluation — the answer is already there.</div><div class="rp-bar low"></div></div>
+      <div class="risk-pill" onclick="this.classList.toggle('open')"><div class="rp-name">Precision</div><div class="rp-level" style="color:var(--green)">Exact</div><div class="rp-detail">No more approximations or stale batch data. Traits update the moment behavior happens — your targeting reflects reality.</div><div class="rp-bar low"></div></div>
+      <div class="risk-pill" onclick="this.classList.toggle('open')"><div class="rp-name">Efficiency</div><div class="rp-level" style="color:var(--green)">Lean</div><div class="rp-detail">Stop paying for event storage you don't need. Traits compress thousands of events into a single signal — freeing entitlements for what matters.</div><div class="rp-bar low"></div></div>
+      <div class="risk-pill" onclick="this.classList.toggle('open')"><div class="rp-name">Autonomy</div><div class="rp-level" style="color:var(--green)">Self-serve</div><div class="rp-detail">Define traits in Segment Builder. Set a TTL. Publish. No engineering tickets, no pipeline work, no waiting.</div><div class="rp-bar low"></div></div>
+      <div class="risk-pill" onclick="this.classList.toggle('open')"><div class="rp-name">Governance</div><div class="rp-level" style="color:var(--green)">Built in</div><div class="rp-detail">DULE labels, RBAC/ABAC controls, privacy enforcement, and full audit trails — all inherited automatically from AEP.</div><div class="rp-bar low"></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- ═══════════════ USE CASES ═══════════════ -->
+<section class="fw-section" id="usecases" style="padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.03">03</div>
+    <div class="sec-label reveal">Use Cases</div>
+    <div class="sec-title reveal">What you can do <span style="color:var(--red)">today</span> —<br>and what's coming next</div>
+    <div class="uc-tabs reveal"><button class="uc-tab active" onclick="ucSwitch(event,'mvp')">Available Now</button><button class="uc-tab" onclick="ucSwitch(event,'post')">Coming Soon</button></div>
+    <div class="uc-content active" id="uc-mvp">
+      <p class="sec-body wide">Boolean traits give you persistent true/false signals at the edge — with TTLs up to 120 days. That's 8x longer than today's 15-day limit, and they evaluate in milliseconds.</p>
+      <div class="table-wrap"><table><thead><tr><th>Campaign Goal</th><th>Trait Example</th><th>TTL</th></tr></thead><tbody>
+        <tr><td><strong>Re-engage product browsers</strong></td><td>"Viewed Photoshop page in last 30 days" → target with trial offer</td><td><span class="badge badge-ok">30 days</span></td></tr>
+        <tr><td><strong>Convert checkout abandoners</strong></td><td>"Started checkout but didn't purchase" → trigger recovery email</td><td><span class="badge badge-ok">7 days</span></td></tr>
+        <tr><td><strong>Identify power users</strong></td><td>"Used Edit PDF 3+ times this month" → upsell to Pro plan</td><td><span class="badge badge-ok">60 days</span></td></tr>
+        <tr><td><strong>Retain active subscribers</strong></td><td>"Subscription renewed" → suppress churn campaigns</td><td><span class="badge badge-ok">120 days</span></td></tr>
+        <tr><td><strong>Target by lifecycle stage</strong></td><td>"Trial user, day 5" → nudge toward conversion</td><td><span class="badge badge-ok">14 days</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="uc-content" id="uc-post">
+      <div class="hscroll-wrap" data-carousel><div class="hscroll-track">
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-title">Value Traits</div><div class="hc-text">Go beyond true/false. Attach real values like purchase amounts, latest country, or plan tier — and target based on them.</div><div style="margin-top:12px;"><span class="badge badge-info">Richer targeting</span></div></div>
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-title">Composite Traits</div><div class="hc-text">Combine multiple signals: "VIP" = active subscriber AND high-engagement AND recent purchaser. One trait, one check.</div><div style="margin-top:12px;"><span class="badge badge-info">Audience building</span></div></div>
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-title">Frequency Counting</div><div class="hc-text">Know not just if a user did something, but how often. Target users who viewed 5+ products, launched the app 10+ times, etc.</div><div style="margin-top:12px;"><span class="badge badge-info">Engagement tiers</span></div></div>
+        <div class="hscroll-card tilt-card"><div class="tilt-shine"></div><div class="hc-title">Batch & Streaming</div><div class="hc-text">Extend beyond edge evaluation to streaming and batch ingestion — enabling traits at every scale of your campaign operations.</div><div style="margin-top:12px;"><span class="badge badge-ok">Full pipeline</span></div></div>
+      </div>
+      <div class="hscroll-controls">
+        <button class="hscroll-btn magnetic" data-dir="-1">←</button>
+        <div class="hscroll-dots"></div>
+        <button class="hscroll-btn magnetic" data-dir="1">→</button>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- ═══════════════ HOW TO SET UP ═══════════════ -->
+<section class="fw-section" id="solution" style="background:var(--g800);padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.05">04</div>
+    <div class="sec-label reveal">Setup</div>
+    <div class="sec-title reveal">Three steps. No engineering<br>tickets. <span style="color:var(--red)">You own it.</span></div>
+    <p class="sec-body reveal">Creating a trait is as straightforward as building a segment. Define the behavior you care about, set how long it should persist, and publish. The platform handles everything else.</p>
+
+    <div class="dd-row reveal">
+      <div class="dd-pill"><span class="dd-label">TTL</span> 1–120 days, you choose</div>
+      <div class="dd-pill"><span class="dd-label">Builder</span> Visual Segment Builder UI</div>
+      <div class="dd-pill"><span class="dd-label">Eval</span> Edge — sub-millisecond</div>
+      <div class="dd-pill"><span class="dd-label">Governance</span> DULE + RBAC inherited</div>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step-card tilt-card"><div class="tilt-shine"></div><div class="step-n">1</div><div class="step-t">Enable</div><div class="step-d">Turn on trait evaluation for your sandbox. One-time setup — your platform team can help if needed.</div></div>
+      <div class="step-card tilt-card"><div class="tilt-shine"></div><div class="step-n">2</div><div class="step-t">Define</div><div class="step-d">Open Segment Builder. Define the behavior ("viewed product page"). Set a TTL (30 days). Publish. Done.</div></div>
+      <div class="step-card tilt-card"><div class="tilt-shine"></div><div class="step-n">3</div><div class="step-t">Target</div><div class="step-d">Reference your trait in any audience definition. It evaluates at the edge, in real time, every time a user qualifies.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ GOOD TO KNOW ═══════════════ -->
+<section class="fw-section" style="padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.03">05</div>
+    <div class="sec-label reveal">Good to Know</div>
+    <div class="sec-title reveal">A few things to keep<br>in <span style="color:var(--red)">mind</span></div>
+    <div class="astrip reveal">
+      <div class="astrip-item"><div class="a-id">01</div><div class="a-area">Scope</div><div class="a-text">Boolean traits (true/false) are available now. Frequency, value, and composite traits are coming in future releases.</div><div><span class="badge badge-ok">Available</span></div><div><span class="badge badge-info">Expanding</span></div></div>
+      <div class="astrip-item"><div class="a-id">02</div><div class="a-area">Data</div><div class="a-text">When you enable traits for a dataset, raw events are no longer stored on the profile. The trait replaces them — that's how the size savings work.</div><div><span class="badge badge-info">By design</span></div><div></div></div>
+      <div class="astrip-item"><div class="a-id">03</div><div class="a-area">TTL</div><div class="a-text">Each trait has a configurable time-to-live from 1 to 120 days. After expiry, the trait clears automatically — no manual cleanup.</div><div><span class="badge badge-ok">Flexible</span></div><div></div></div>
+      <div class="astrip-item"><div class="a-id">04</div><div class="a-area">Privacy</div><div class="a-text">All AEP governance applies automatically: DULE labels, consent enforcement, RBAC access controls, and full audit trails.</div><div><span class="badge badge-ok">Inherited</span></div><div></div></div>
+      <div class="astrip-item"><div class="a-id">05</div><div class="a-area">Scale</div><div class="a-text">Designed for high-throughput workloads. Edge evaluation handles thousands of requests per second without degradation.</div><div><span class="badge badge-ok">Production ready</span></div><div></div></div>
+    </div>
+  </div>
+</section>
+
+<div class="div-line"></div>
+
+<!-- ═══════════════ GET STARTED ═══════════════ -->
+<section class="fw-section" id="verdict" style="background:var(--g800);padding:100px 0;">
+  <div class="fw-inner" style="position:relative;">
+    <div class="sec-num" data-speed="-0.05">06</div>
+    <div class="sec-label reveal">Get Started</div>
+    <div class="sec-title reveal">Faster campaigns start<br>with <span style="color:var(--red)">one trait.</span></div>
+    <p class="sec-body reveal">You don't need to migrate everything at once. Start with your highest-impact targeting scenario — a single trait — and see the difference in evaluation speed and profile efficiency.</p>
+
+    <div class="gap-grid reveal">
+      <div class="gap-card tilt-card"><div class="tilt-shine"></div><div class="gc-t">Pick one signal</div><div class="gc-d">What's the single behavior you wish you could target instantly?</div></div>
+      <div class="gap-card tilt-card"><div class="tilt-shine"></div><div class="gc-t">Build the trait</div><div class="gc-d">Open Segment Builder, define the condition, set a TTL, and publish.</div></div>
+      <div class="gap-card tilt-card"><div class="tilt-shine"></div><div class="gc-t">Wire it up</div><div class="gc-d">Add the trait to an existing audience. It starts evaluating at the edge immediately.</div></div>
+      <div class="gap-card tilt-card"><div class="tilt-shine"></div><div class="gc-t">Measure</div><div class="gc-d">Compare campaign speed, profile size, and targeting precision before vs. after.</div></div>
+      <div class="gap-card tilt-card"><div class="tilt-shine"></div><div class="gc-t">Scale</div><div class="gc-d">Once it works for one signal, apply the pattern to every behavior that matters.</div></div>
+    </div>
+
+    <div class="verdict-box reveal">
+      <p><strong>The best campaigns hit the right user at the right moment.</strong> Traits make that possible by evaluating behavior at the edge, in milliseconds, without the storage overhead. Start with one trait. See the speed. Then scale.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ RESOURCES ═══════════════ -->
+<section class="fw-section" style="padding:80px 0;">
+  <div class="fw-inner">
+    <div class="sec-label reveal">Resources</div>
+    <div class="sec-title reveal">Learn more. <span style="color:var(--red)">Go deeper.</span></div>
+    <div class="ref-grid">
+      <div class="ref-card tilt-card reveal"><div class="tilt-shine"></div><div class="rf-name">Getting Started Guide</div><div class="rf-desc">Step-by-step walkthrough for your first trait</div><span class="rf-link">→ View guide</span></div>
+      <div class="ref-card tilt-card reveal"><div class="tilt-shine"></div><div class="rf-name">Use Case Library</div><div class="rf-desc">Trait examples by campaign type and goal</div><span class="rf-link">→ Browse examples</span></div>
+      <div class="ref-card tilt-card reveal"><div class="tilt-shine"></div><div class="rf-name">Traits FAQ</div><div class="rf-desc">Common questions about scope, TTL, and governance</div><span class="rf-link">→ Read FAQ</span></div>
+      <div class="ref-card tilt-card reveal"><div class="tilt-shine"></div><div class="rf-name">Talk to Your Platform Team</div><div class="rf-desc">Get sandbox enablement and onboarding support</div><span class="rf-link">→ Request access</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <svg viewBox="0 0 30 26" xmlns="http://www.w3.org/2000/svg" height="18" style="display:block;margin:0 auto 12px;opacity:0.2;"><path d="M19 0h11v26L19 0zM11 0H0v26L11 0zm4 9.6L22.5 26h-5.1l-3-7.4H9.1L15 9.6z" fill="#FFF"/></svg>
+  © 2026 Adobe. All Rights Reserved. · Computed Attributes for Growth Teams
+</footer>
+
+<!-- GSAP + ScrollTrigger + ScrollTo -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+
+<script>
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+// ═══ LOADING SCREEN ═══
+const loader = document.getElementById('loader');
+const loaderTl = gsap.timeline({
+  onComplete: () => {
+    gsap.to(loader, {
+      clipPath: 'inset(0 0 100% 0)',
+      duration: 0.8,
+      ease: 'power3.inOut',
+      onComplete: () => {
+        loader.style.display = 'none';
+        document.body.classList.remove('loading');
+        initHero();
+        initScrollAnimations();
+      }
+    });
+  }
+});
+
+loaderTl
+  .set(loader, { clipPath: 'inset(0 0 0 0)' })
+  .to(loader.querySelector('svg'), { opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.7)' })
+  .to(loader.querySelector('.loader-bar'), { opacity: 1, duration: 0.3 }, '-=0.2')
+  .to(loader.querySelector('.loader-text'), { opacity: 1, duration: 0.3 }, '-=0.2')
+  .to(loader.querySelector('.loader-bar-fill'), { width: '100%', duration: 1.4, ease: 'power2.inOut' }, '-=0.1')
+  .to(loader.querySelector('svg'), { opacity: 0, y: -20, duration: 0.3 }, '+=0.2')
+  .to(loader.querySelector('.loader-bar'), { opacity: 0, duration: 0.2 }, '-=0.2')
+  .to(loader.querySelector('.loader-text'), { opacity: 0, duration: 0.2 }, '-=0.2');
+
+// ═══ CUSTOM CURSOR ═══
+const cursor = document.getElementById('cursor');
+const cursorDot = document.getElementById('cursorDot');
+let mouseX = -100, mouseY = -100, cursorX = -100, cursorY = -100;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  gsap.to(cursorDot, { x: mouseX, y: mouseY, duration: 0.1, overwrite: true });
+});
+
+gsap.ticker.add(() => {
+  cursorX += (mouseX - cursorX) * 0.15;
+  cursorY += (mouseY - cursorY) * 0.15;
+  gsap.set(cursor, { x: cursorX, y: cursorY });
+});
+
+const hoverTargets = 'a, button, .risk-pill, .uc-tab, .hscroll-card, .cust-card, .step-card, .gap-card, .ref-card, .dd-pill, .demo-evt, .demo-reset';
+document.querySelectorAll(hoverTargets).forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+});
+document.addEventListener('mouseover', e => {
+  if (e.target.closest('.demo-evt')) cursor.classList.add('hover');
+});
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('.demo-evt') && !e.relatedTarget?.closest('.demo-evt')) cursor.classList.remove('hover');
+});
+
+// ═══ SCROLL PROGRESS ═══
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+  gsap.set('#scrollProgress', { scaleX: pct });
+}, { passive: true });
+
+// ═══ HERO ANIMATION ═══
+function initHero() {
+  const heroTl = gsap.timeline();
+
+  heroTl
+    .to('.hero .line-inner', {
+      y: '0%',
+      duration: 1.1,
+      stagger: 0.12,
+      ease: 'power4.out'
+    })
+    .to('.hero-label', {
+      opacity: 1, visibility: 'visible', y: 0,
+      duration: 0.6, ease: 'power3.out'
+    }, '-=0.6')
+    .to('.hero-sub', {
+      opacity: 1, visibility: 'visible', y: 0,
+      duration: 0.6, ease: 'power3.out'
+    }, '-=0.3')
+    .to('.hero-meta-row .hm', {
+      opacity: 1, visibility: 'visible', y: 0,
+      duration: 0.5, stagger: 0.08, ease: 'power3.out'
+    }, '-=0.2')
+    .to('.scroll-cue', {
+      opacity: 1, visibility: 'visible',
+      duration: 0.5, ease: 'power3.out'
+    }, '-=0.2');
+
+  gsap.to('#mainNav', { y: 0, duration: 0.6, ease: 'power3.out', delay: 0.3 });
+}
+
+// ═══ SCROLL ANIMATIONS ═══
+function initScrollAnimations() {
+
+  // Standard reveals
+  gsap.utils.toArray('.reveal').forEach(el => {
+    gsap.fromTo(el,
+      { opacity: 0, y: 60 },
+      {
+        opacity: 1, y: 0,
+        duration: 0.9, ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', toggleActions: 'play none none none' }
+      }
+    );
+  });
+
+  // Divider lines
+  gsap.utils.toArray('.div-line').forEach(line => {
+    gsap.to(line, {
+      scaleX: 1, duration: 1.2, ease: 'power3.inOut',
+      scrollTrigger: { trigger: line, start: 'top 90%', toggleActions: 'play none none none' }
+    });
+  });
+
+  // Section numbers parallax
+  gsap.utils.toArray('.sec-num').forEach(num => {
+    gsap.to(num, {
+      y: -80, ease: 'none',
+      scrollTrigger: { trigger: num.parentElement, start: 'top bottom', end: 'bottom top', scrub: 0.5 }
+    });
+  });
+
+  // Risk pill bars
+  gsap.utils.toArray('.risk-pill').forEach(pill => {
+    ScrollTrigger.create({
+      trigger: pill, start: 'top 85%',
+      onEnter: () => pill.classList.add('visible')
+    });
+  });
+
+  // Gap cards stagger
+  gsap.fromTo('.gap-card',
+    { opacity: 0, y: 40, scale: 0.95 },
+    {
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.6, stagger: 0.1, ease: 'power3.out',
+      scrollTrigger: { trigger: '.gap-grid', start: 'top 80%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Assumption strips stagger
+  gsap.fromTo('.astrip-item',
+    { opacity: 0, x: -30 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.5, stagger: 0.08, ease: 'power3.out',
+      scrollTrigger: { trigger: '.astrip', start: 'top 80%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Discovery items
+  gsap.fromTo('.disc-item',
+    { opacity: 0, x: -20 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.5, stagger: 0.1, ease: 'power3.out',
+      scrollTrigger: { trigger: '.disc-list', start: 'top 80%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Customer cards
+  gsap.fromTo('.cust-card',
+    { opacity: 0, y: 40, rotateX: 5 },
+    {
+      opacity: 1, y: 0, rotateX: 0,
+      duration: 0.7, stagger: 0.12, ease: 'power3.out',
+      scrollTrigger: { trigger: '.cust-grid', start: 'top 80%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Step cards
+  gsap.fromTo('.step-card',
+    { opacity: 0, y: 40, scale: 0.95 },
+    {
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.6, stagger: 0.12, ease: 'power3.out',
+      scrollTrigger: { trigger: '.steps', start: 'top 80%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // DD pills
+  gsap.fromTo('.dd-pill',
+    { opacity: 0, y: 20, scale: 0.9 },
+    {
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.4, stagger: 0.06, ease: 'back.out(1.7)',
+      scrollTrigger: { trigger: '.dd-row', start: 'top 85%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Ref cards
+  gsap.fromTo('.ref-card',
+    { opacity: 0, y: 30 },
+    {
+      opacity: 1, y: 0,
+      duration: 0.5, stagger: 0.08, ease: 'power3.out',
+      scrollTrigger: { trigger: '.ref-grid', start: 'top 85%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Hero parallax on scroll
+  gsap.to('.hero-content', {
+    y: -100, opacity: 0.3, ease: 'none',
+    scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.3 }
+  });
+
+  // Verdict box entrance
+  gsap.fromTo('.verdict-box',
+    { opacity: 0, x: -40 },
+    {
+      opacity: 1, x: 0,
+      duration: 0.8, ease: 'power3.out',
+      scrollTrigger: { trigger: '.verdict-box', start: 'top 85%', toggleActions: 'play none none none' }
+    }
+  );
+
+  // Table rows
+  gsap.utils.toArray('tbody tr').forEach((row, i) => {
+    gsap.fromTo(row,
+      { opacity: 0, x: -20 },
+      {
+        opacity: 1, x: 0,
+        duration: 0.4, delay: i * 0.06, ease: 'power3.out',
+        scrollTrigger: { trigger: row, start: 'top 90%', toggleActions: 'play none none none' }
+      }
+    );
+  });
+}
+
+// ═══ NAV ACTIVE STATE ═══
+window.addEventListener('scroll', () => {
+  const sy = window.scrollY;
+  let cur = '';
+  document.querySelectorAll('.fw-section[id]').forEach(s => {
+    if (sy >= s.offsetTop - 200) cur = s.id;
+  });
+  document.querySelectorAll('.nav-links a').forEach(l => {
+    l.classList.toggle('active', l.getAttribute('href') === '#' + cur);
+  });
+}, { passive: true });
+
+// ═══ USE CASE TAB SWITCH ═══
+function ucSwitch(e, id) {
+  document.querySelectorAll('.uc-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.uc-content').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('uc-' + id).classList.add('active');
+}
+
+// ═══ 3D TILT EFFECT ═══
+document.querySelectorAll('.tilt-card').forEach(card => {
+  card.addEventListener('mousemove', e => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / centerY * -6;
+    const rotateY = (x - centerX) / centerX * 6;
+
+    gsap.to(card, {
+      rotateX, rotateY,
+      duration: 0.4, ease: 'power2.out',
+      transformPerspective: 800
+    });
+
+    card.style.setProperty('--mx', x + 'px');
+    card.style.setProperty('--my', y + 'px');
+  });
+
+  card.addEventListener('mouseleave', () => {
+    gsap.to(card, {
+      rotateX: 0, rotateY: 0,
+      duration: 0.6, ease: 'elastic.out(1, 0.4)'
+    });
+  });
+});
+
+// ═══ MAGNETIC BUTTONS ═══
+document.querySelectorAll('.magnetic').forEach(btn => {
+  btn.addEventListener('mousemove', e => {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    gsap.to(btn, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: 'power2.out' });
+  });
+  btn.addEventListener('mouseleave', () => {
+    gsap.to(btn, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+  });
+});
+
+// ═══ CAROUSEL ENGINE ═══
+document.querySelectorAll('[data-carousel]').forEach(wrap => {
+  const track = wrap.querySelector('.hscroll-track');
+  const cards = [...track.querySelectorAll('.hscroll-card')];
+  const dotsContainer = wrap.querySelector('.hscroll-dots');
+  const btnL = wrap.querySelector('[data-dir="-1"]');
+  const btnR = wrap.querySelector('[data-dir="1"]');
+  if (!cards.length) return;
+
+  let currentIndex = 0;
+  const gap = 20;
+
+  if (dotsContainer) {
+    cards.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'hscroll-dot' + (i === 0 ? ' active' : '');
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    });
+  }
+
+  function getCardWidth() { return cards[0].offsetWidth + gap; }
+
+  function getMaxIndex() {
+    const wrapWidth = wrap.offsetWidth;
+    const trackWidth = cards.length * getCardWidth() - gap;
+    if (trackWidth <= wrapWidth) return 0;
+    return Math.ceil((trackWidth - wrapWidth) / getCardWidth());
+  }
+
+  function goTo(index) {
+    const max = getMaxIndex();
+    currentIndex = Math.max(0, Math.min(index, max));
+    gsap.to(track, { x: -(currentIndex * getCardWidth()), duration: 0.6, ease: 'power3.out' });
+    if (dotsContainer) {
+      dotsContainer.querySelectorAll('.hscroll-dot').forEach((d, i) => {
+        d.classList.toggle('active', i === currentIndex);
+      });
+    }
+  }
+
+  if (btnL) btnL.addEventListener('click', () => goTo(currentIndex - 1));
+  if (btnR) btnR.addEventListener('click', () => goTo(currentIndex + 1));
+
+  let isDragging = false, startX = 0, trackX = 0;
+  track.addEventListener('mousedown', e => {
+    isDragging = true;
+    startX = e.clientX;
+    trackX = -(currentIndex * getCardWidth());
+    track.classList.add('dragging');
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    gsap.set(track, { x: trackX + (e.clientX - startX) });
+  });
+  window.addEventListener('mouseup', e => {
+    if (!isDragging) return;
+    isDragging = false;
+    track.classList.remove('dragging');
+    const dx = e.clientX - startX;
+    const threshold = getCardWidth() * 0.25;
+    if (dx < -threshold) goTo(currentIndex + 1);
+    else if (dx > threshold) goTo(currentIndex - 1);
+    else goTo(currentIndex);
+  });
+
+  let touchStartX = 0;
+  track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const threshold = getCardWidth() * 0.25;
+    if (dx < -threshold) goTo(currentIndex + 1);
+    else if (dx > threshold) goTo(currentIndex - 1);
+  });
+
+  window.addEventListener('resize', () => goTo(currentIndex));
+});
+
+// ═══ SMOOTH SCROLL NAV ═══
+document.querySelectorAll('.nav-links a, .scroll-cue').forEach(link => {
+  link.addEventListener('click', e => {
+    const href = link.getAttribute('href');
+    if (href && href.startsWith('#')) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        gsap.to(window, { scrollTo: { y: target, offsetY: 60 }, duration: 1, ease: 'power3.inOut' });
+      }
+    }
+  });
+});
+
+// ═══ INTERACTIVE DEMO ═══
+(function() {
+  const EVENTS = [
+    { id:'e1', icon:'🔍', name:'Viewed Product Page', detail:'adobe.com/products/photoshop', color:'#1473E6', pql:'page.type == "product"', trait:'Product Page Viewer', ttl:'30 days' },
+    { id:'e2', icon:'📱', name:'App Launch (Acrobat)', detail:'platform: iOS / v24.3', color:'#D07B11', pql:'event.type == "appLaunch"', trait:'Active Acrobat User', ttl:'90 days' },
+    { id:'e3', icon:'🛒', name:'Checkout Started', detail:'cart total: $59.99', color:'#268E6C', pql:'event.type == "checkout"', trait:'Checkout Intent', ttl:'7 days' },
+    { id:'e4', icon:'⌨️', name:'Search Performed', detail:'query: "pdf editor"', color:'#1473E6', pql:'event.type == "search"', trait:'Active Searcher', ttl:'14 days' },
+    { id:'e5', icon:'🔧', name:'Tool Used (Acrobat)', detail:'tool: "Edit PDF"', color:'#D07B11', pql:'event.tool != null', trait:'Acrobat Power User', ttl:'60 days' },
+    { id:'e6', icon:'💳', name:'Subscription Renewed', detail:'plan: Creative Cloud', color:'#268E6C', pql:'subscription.status == "renewed"', trait:'Paying Subscriber', ttl:'120 days' },
+  ];
+
+  const grid = document.getElementById('demoGrid');
+  const selected = [];
+  let demoStep = 1;
+
+  function buildGrid() {
+    grid.innerHTML = '';
+    EVENTS.forEach((evt, i) => {
+      const card = document.createElement('div');
+      card.className = 'demo-evt';
+      card.dataset.idx = i;
+      card.innerHTML = `
+        <div class="demo-evt-check"><svg viewBox="0 0 24 24" fill="none" stroke="#FFF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+        <div class="demo-evt-icon">${evt.icon}</div>
+        <div class="demo-evt-type">Experience Event</div>
+        <div class="demo-evt-name">${evt.name}</div>
+        <div class="demo-evt-detail">${evt.detail}</div>
+        <div class="demo-evt-color" style="background:${evt.color}"></div>
+      `;
+      card.addEventListener('click', () => onSelectEvent(card, i));
+      grid.appendChild(card);
+    });
+    gsap.fromTo('.demo-evt', { opacity: 0, y: 20, scale: 0.95 }, {
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.4, stagger: 0.06, ease: 'back.out(1.7)'
+    });
+  }
+
+  function onSelectEvent(card, idx) {
+    if (card.classList.contains('selected')) {
+      card.classList.remove('selected');
+      const si = selected.indexOf(idx);
+      if (si > -1) selected.splice(si, 1);
+      grid.querySelectorAll('.demo-evt').forEach(c => c.classList.remove('disabled'));
+      return;
+    }
+    if (selected.length >= 2) return;
+    selected.push(idx);
+    card.classList.add('selected');
+    if (selected.length === 2) {
+      grid.querySelectorAll('.demo-evt').forEach(c => {
+        if (!c.classList.contains('selected')) c.classList.add('disabled');
+      });
+      setTimeout(() => goToStep2(), 600);
+    }
+  }
+
+  function setStep(n) {
+    demoStep = n;
+    document.querySelectorAll('.demo-step-ind').forEach(el => {
+      const s = parseInt(el.dataset.step);
+      el.classList.remove('active', 'done');
+      if (s === n) el.classList.add('active');
+      else if (s < n) el.classList.add('done');
+    });
+    document.querySelectorAll('.demo-connector').forEach((c, i) => {
+      c.classList.toggle('done', i < n - 1);
+    });
+  }
+
+  function switchScreen(fromId, toId, cb) {
+    const from = document.getElementById(fromId);
+    const to = document.getElementById(toId);
+    gsap.to(from, {
+      opacity: 0, x: -40, duration: 0.4, ease: 'power3.in',
+      onComplete: () => {
+        from.classList.remove('active');
+        gsap.set(from, { x: 0 });
+        to.classList.add('active');
+        gsap.fromTo(to, { opacity: 0, x: 40 }, {
+          opacity: 1, x: 0, duration: 0.5, ease: 'power3.out',
+          onComplete: cb
+        });
+      }
+    });
+  }
+
+  function goToStep2() {
+    setStep(2);
+    const evtA = EVENTS[selected[0]];
+    const evtB = EVENTS[selected[1]];
+
+    document.getElementById('evalEvents').innerHTML = [evtA, evtB].map(ev => `
+      <div class="demo-eval-card">
+        <div class="evc-type">Experience Event</div>
+        <div class="evc-name">${ev.name}</div>
+        <div class="evc-ts" style="color:${ev.color}">${ev.detail}</div>
+      </div>
+    `).join('');
+
+    document.getElementById('evalRules').innerHTML = [evtA, evtB].map((ev, i) => `
+      <div class="demo-eval-rule">
+        <div class="demo-eval-rule-label">PQL Rule ${i + 1}:</div>
+        <div class="demo-eval-rule-code" style="color:${ev.color}">${ev.pql} <span class="demo-eval-check" id="evalCheck${i}">✓</span></div>
+      </div>
+    `).join('');
+
+    switchScreen('demoScreen1', 'demoScreen2', () => {
+      const tl = gsap.timeline();
+      tl.fromTo('.demo-eval-card', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.4, stagger: 0.15, ease: 'power3.out' })
+        .fromTo('#evalArrow1', { opacity: 0 }, { opacity: 1, duration: 0.1 }, '-=0.1')
+        .fromTo('#evalArrow1 .arrow-line', { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: 'power2.out' })
+        .fromTo('#evalArrow2', { opacity: 0 }, { opacity: 1, duration: 0.1 }, '-=0.3')
+        .fromTo('#evalArrow2 .arrow-line', { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: 'power2.out' }, '-=0.2')
+        .fromTo('#evalBox', { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)' }, '-=0.1')
+        .add(() => { document.getElementById('evalCheck0').classList.add('show'); }, '+=0.4')
+        .add(() => { document.getElementById('evalCheck1').classList.add('show'); }, '+=0.3')
+        .add(() => { setTimeout(() => goToStep3(), 800); }, '+=0.3');
+    });
+  }
+
+  function goToStep3() {
+    setStep(3);
+    const evtA = EVENTS[selected[0]];
+    const evtB = EVENTS[selected[1]];
+    document.getElementById('demoReset').classList.add('show');
+
+    document.getElementById('profileTraits').innerHTML = [evtA, evtB].map(ev => `
+      <div class="demo-trait" style="border-color:${ev.color}22; background:${ev.color}08">
+        <div class="demo-trait-name" style="color:${ev.color}">TRAIT: ${ev.trait}</div>
+        <div class="demo-trait-meta">
+          <span><span class="green">realized:</span> true</span>
+          <span>TTL: ${ev.ttl}</span>
+        </div>
+      </div>
+    `).join('');
+
+    switchScreen('demoScreen2', 'demoScreen3', () => {
+      const tl = gsap.timeline();
+      tl.fromTo('.demo-stat', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'power3.out' })
+        .fromTo('#profileBox', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }, '-=0.2')
+        .fromTo('.demo-trait', { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.15, ease: 'power3.out' }, '-=0.2')
+        .fromTo('#profileFooter', { opacity: 0 }, { opacity: 1, duration: 0.4 }, '-=0.1');
+    });
+  }
+
+  document.getElementById('demoReset').addEventListener('click', () => {
+    selected.length = 0;
+    demoStep = 1;
+    setStep(1);
+    document.getElementById('demoReset').classList.remove('show');
+    const active = document.querySelector('.demo-screen.active');
+    gsap.to(active, {
+      opacity: 0, scale: 0.95, duration: 0.3, ease: 'power3.in',
+      onComplete: () => {
+        active.classList.remove('active');
+        gsap.set(active, { scale: 1 });
+        const s1 = document.getElementById('demoScreen1');
+        s1.classList.add('active');
+        gsap.fromTo(s1, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power3.out' });
+        buildGrid();
+      }
+    });
+  });
+
+  buildGrid();
+})();
+
+// ═══ KEYBOARD NAVIGATION ═══
+const sections = [...document.querySelectorAll('.fw-section[id], .hero')];
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    const sy = window.scrollY + window.innerHeight * 0.3;
+    const next = sections.find(s => s.offsetTop > sy + 10);
+    if (next) gsap.to(window, { scrollTo: { y: next, offsetY: 0 }, duration: 0.8, ease: 'power3.inOut' });
+  }
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    const sy = window.scrollY;
+    const prev = [...sections].reverse().find(s => s.offsetTop < sy - 10);
+    if (prev) gsap.to(window, { scrollTo: { y: prev, offsetY: 0 }, duration: 0.8, ease: 'power3.inOut' });
+  }
+});
+</script>
+</body>
+</html>
