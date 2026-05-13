@@ -1,6 +1,6 @@
-/* eslint-disable no-undef */
+/* eslint-disable no-undef, no-underscore-dangle */
 const bcAnalytics = (event) => {
-  if (_satellite?.track) {
+  if (window?._satellite?.track) {
     switch (event.eventType) {
       case 'query:submitted':
         window.performance.mark('query:submitted');
