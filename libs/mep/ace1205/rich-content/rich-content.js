@@ -1,5 +1,5 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
   if (!header) return;
@@ -18,21 +18,59 @@ function decorateText(el) {
   hangOpeningQuote(firstText);
 }
 
-function promoteParagraphTitle(content, headingSize = '2') {
+function promoteParagraphTitle(content, headingSize = '2', skipFirst = false) {
   if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
-  const firstP = content.querySelector('p');
-  if (!firstP) return;
-  const bodyClass = [...firstP.classList].find((c) => c.startsWith('body-'));
-  if (bodyClass) firstP.classList.replace(bodyClass, `title-${headingSize}`);
+  const ps = [...content.querySelectorAll('p')];
+  const target = skipFirst ? ps[1] : ps[0];
+  if (!target) return;
+  const bodyClass = [...target.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) target.classList.replace(bodyClass, `title-${headingSize}`);
 }
 
-function decorate(block) {
+function decorateJumpLinks(content, foreground) {
+  const paras = [...(content?.querySelectorAll('p') ?? [])];
+  const jumpPara = paras.findLast((p) => p.querySelector('a') && [...p.childNodes].some(
+    (n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'),
+  ));
+  if (!jumpPara) return;
+
+  const anchors = [...jumpPara.querySelectorAll('a')];
+  const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
+
+  anchors.forEach((anchor) => {
+    const badge = createTag('span', { class: 'jump-link-badge' });
+    const label = createTag('span', { class: 'jump-link-label' }, anchor.textContent.trim());
+    anchor.textContent = '';
+    anchor.classList.add('jump-link-anchor');
+    anchor.append(badge, label);
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrollToHashedElement(anchor.hash);
+    });
+    nav.append(anchor);
+  });
+
+  jumpPara.remove();
+  foreground.append(nav);
+}
+
+function decorate(block, root = block) {
   const foreground = block.children[0];
   const content = foreground?.children[0];
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
-  promoteParagraphTitle(content);
+  const isJumpLink = root.classList.contains('jump-link');
+  promoteParagraphTitle(content, '2', isJumpLink);
+
+  if (!isJumpLink) return;
+
+  const firstP = content?.querySelector('p:has(picture, img)');
+  const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
+  if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  const iconImg = firstP?.querySelector('img[src]');
+  if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
+  decorateJumpLinks(content, foreground);
 }
 
 export default function init(el) {
