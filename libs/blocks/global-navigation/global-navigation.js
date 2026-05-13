@@ -286,7 +286,17 @@ export const CONFIG = {
             aupContext: {
               apiKey: getConfig().imsClientId,
               appId: 'adobe_com',
+              // appName: 'Adobecom',
+              // appVersion: "1.0.0",
+              // environment: "stage",
+              releaseName: 'adobe-com-stable',
+              // cdnEnvironment: "stage",
               // clientId: getConfig().imsClientId,
+              // colorScheme: "dark",
+              // enablePerformanceMeasurement: true,
+              // locale: "en-US",
+              // spectrumScale: "medium",
+              // spectrumTheme: "spectrum",
             },
             sharedContextConfig: {
               enableLocalSection: true,
