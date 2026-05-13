@@ -1,7 +1,8 @@
 /**
  * DA authorization header resolver. Prefers a direct DA token from env;
- * otherwise mints a Bearer token via the IMS rolling-import flow. The IMS
- * exchange is memoized so concurrent stages share one token.
+ * otherwise mints a Bearer token via the IMS OAuth Server-to-Server flow
+ * (`client_credentials` grant). The IMS exchange is memoized so concurrent
+ * stages share one token.
  */
 
 import process from 'node:process';
@@ -29,37 +30,38 @@ function getDirectToken() {
 }
 
 /**
- * @returns {Record<string, string> | null}
+ * @returns {{ imsUrl: string, clientId: string, clientSecret: string, scopes?: string } | null}
  */
-function getRollingImportEnv() {
-  const env = {
-    imsUrl: getEnv('ROLLING_IMPORT_IMS_URL'),
-    clientId: getEnv('ROLLING_IMPORT_CLIENT_ID'),
-    clientSecret: getEnv('ROLLING_IMPORT_CLIENT_SECRET'),
-    code: getEnv('ROLLING_IMPORT_CODE'),
-    grantType: getEnv('ROLLING_IMPORT_GRANT_TYPE'),
-  };
+function getImsEnv() {
+  const imsUrl = getEnv('ROLLING_IMPORT_IMS_URL');
+  const clientId = getEnv('ROLLING_IMPORT_CLIENT_ID');
+  const clientSecret = getEnv('ROLLING_IMPORT_CLIENT_SECRET');
+  const scopes = getEnv('ROLLING_IMPORT_SCOPES');
 
-  return Object.values(env).every(Boolean) ? env : null;
+  if (!imsUrl || !clientId || !clientSecret) return null;
+  return { imsUrl, clientId, clientSecret, scopes };
 }
 
 /**
  * @param {typeof fetch} fetchImpl
  * @returns {Promise<string>}
  */
-async function fetchRollingImportToken(fetchImpl) {
-  const env = getRollingImportEnv();
+async function fetchImsToken(fetchImpl) {
+  const env = getImsEnv();
   if (!env) {
     throw new Error(
-      'Push requires DA_SOURCE_TOKEN or DA_TOKEN, or the full ROLLING_IMPORT_* IMS credential set.',
+      'Push requires DA_SOURCE_TOKEN or DA_TOKEN, or the IMS OAuth Server-to-Server '
+      + 'credential set: ROLLING_IMPORT_IMS_URL, ROLLING_IMPORT_CLIENT_ID, '
+      + 'ROLLING_IMPORT_CLIENT_SECRET (and ROLLING_IMPORT_SCOPES if your integration '
+      + 'requires explicit scopes).',
     );
   }
 
   const params = new URLSearchParams();
   params.append('client_id', env.clientId);
   params.append('client_secret', env.clientSecret);
-  params.append('code', env.code);
-  params.append('grant_type', env.grantType);
+  params.append('grant_type', 'client_credentials');
+  if (env.scopes) params.append('scope', env.scopes);
 
   const response = await fetchJson(env.imsUrl, {
     method: 'POST',
@@ -70,7 +72,11 @@ async function fetchRollingImportToken(fetchImpl) {
   }, { fetchImpl });
 
   if (!response.ok) {
-    throw new Error(`Failed to retrieve IMS token: HTTP ${response.status}`);
+    // Capture IMS's response body so callers can see what was actually wrong
+    // (most common: scope missing or not bound to the integration).
+    let detail = '';
+    try { detail = ` — ${await response.text()}`; } catch { /* ignore */ }
+    throw new Error(`Failed to retrieve IMS token: HTTP ${response.status}${detail}`);
   }
 
   const json = await response.json();
@@ -91,7 +97,7 @@ export async function getDaAuthHeader(fetchImpl = fetch) {
   const directToken = getDirectToken();
   if (directToken) return directToken;
 
-  imsTokenPromise ||= fetchRollingImportToken(fetchImpl).catch((error) => {
+  imsTokenPromise ||= fetchImsToken(fetchImpl).catch((error) => {
     imsTokenPromise = null;
     throw error;
   });

@@ -124,8 +124,7 @@ test('runPush can exchange rolling-import IMS credentials for a DA bearer token'
     ROLLING_IMPORT_IMS_URL: process.env.ROLLING_IMPORT_IMS_URL,
     ROLLING_IMPORT_CLIENT_ID: process.env.ROLLING_IMPORT_CLIENT_ID,
     ROLLING_IMPORT_CLIENT_SECRET: process.env.ROLLING_IMPORT_CLIENT_SECRET,
-    ROLLING_IMPORT_CODE: process.env.ROLLING_IMPORT_CODE,
-    ROLLING_IMPORT_GRANT_TYPE: process.env.ROLLING_IMPORT_GRANT_TYPE,
+    ROLLING_IMPORT_SCOPES: process.env.ROLLING_IMPORT_SCOPES,
   };
 
   delete process.env.DA_SOURCE_TOKEN;
@@ -133,8 +132,9 @@ test('runPush can exchange rolling-import IMS credentials for a DA bearer token'
   process.env.ROLLING_IMPORT_IMS_URL = 'https://ims.example/token';
   process.env.ROLLING_IMPORT_CLIENT_ID = 'client-id';
   process.env.ROLLING_IMPORT_CLIENT_SECRET = 'client-secret';
-  process.env.ROLLING_IMPORT_CODE = 'auth-code';
-  process.env.ROLLING_IMPORT_GRANT_TYPE = 'authorization_code';
+  process.env.ROLLING_IMPORT_SCOPES = 'openid,AdobeID,aem.frontend.all';
+  delete process.env.ROLLING_IMPORT_CODE;
+  delete process.env.ROLLING_IMPORT_GRANT_TYPE;
 
   const authHeaders = [];
   const logged = [];
