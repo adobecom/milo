@@ -132,9 +132,10 @@ function addDividers(node, selector) {
   });
 }
 
-function addPillEventListeners(div, onClose) {
+function addPillEventListeners(div, overlay, onClose) {
   div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
-    div.classList.toggle('mep-hidden');
+    const isHidden = div.classList.toggle('mep-hidden');
+    if (!isHidden) overlay?.showPopover?.();
   });
   div.querySelector('.mep-close').addEventListener('click', () => {
     const overlayEl = document.querySelector('.mep-preview-overlay');
@@ -732,7 +733,6 @@ async function createPreviewPill() {
   pill.append(await getMepPopup(mepConfig));
   overlay.append(pill);
   document.body.append(overlay);
-  overlay.showPopover?.();
   let onClose;
   if (window.lenis?.options) {
     const originalPrevent = window.lenis.options.prevent;
@@ -742,7 +742,7 @@ async function createPreviewPill() {
     };
     onClose = () => { window.lenis.options.prevent = originalPrevent; };
   }
-  addPillEventListeners(pill, onClose);
+  addPillEventListeners(pill, overlay, onClose);
 }
 function addHighlightData(manifests) {
   manifests.forEach(({ selectedVariant, manifest }) => {
