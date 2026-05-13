@@ -120,6 +120,17 @@
       transition: background-color 0.2s ease, color 0.2s ease;
       flex-shrink: 0;
       color: var(--s2a-color-content-knockout);
+
+      &::after {
+        content: '';
+        display: block;
+        width: 12px;
+        height: 12px;
+        background-color: currentColor;
+        mask-image: url('./assets/arrow.svg');
+        mask-repeat: no-repeat;
+        mask-size: contain;
+      }
     }
 
     .jump-link-label {
