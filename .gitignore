@@ -11,6 +11,7 @@ test-html-results/
 test-results/
 test-a11y-results/
 tmp
+nala/utils/auth.json
 libs/navigation/dist/
 *.mdc
 /.cursor*/
