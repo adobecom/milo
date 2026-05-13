@@ -137,7 +137,7 @@
       font-family: var(--s2a-font-family-title);
       font-size: var(--s2a-font-size-lg);
       line-height: var(--s2a-typography-line-height-title-4);
-      font-weight: 900;
+      font-weight: var(--s2a-font-weight-title);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
       white-space: nowrap;
     }
