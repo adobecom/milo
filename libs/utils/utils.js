@@ -121,6 +121,7 @@ const C2_BLOCKS = [
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'tour',
   'visually-hidden',
 ];
 
