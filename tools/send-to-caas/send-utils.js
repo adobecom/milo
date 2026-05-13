@@ -364,7 +364,7 @@ const getCountryAndLang = async (options, origin) => {
     const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
-      LANG_FIRST_SOURCE_MAPPINGS[origin.toLowercase()] || origin,
+      LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin,
       fqdn,
     );
   }
