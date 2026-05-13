@@ -64,7 +64,7 @@
     }
 
     .faq-media {
-      block-size: 75px;
+      block-size: 50px;
       border-radius: var(--s2a-border-radius-sm);
       display: block;
       flex-shrink: 0;
@@ -96,10 +96,12 @@
       padding-block: 0;
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
       position: relative;
+      cursor: pointer;
     }
 
     .faq-media {
-      block-size: 200px;
+      width: 183.384px;
+      height: 241.566px;
       display: none;
       inline-size: 260px;
       overflow: hidden;
