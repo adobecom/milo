@@ -22,9 +22,8 @@ function decorate(block) {
     const item = createTag('li', { class: 'faq-item' });
     const number = createTag('span', { class: 'faq-number eyebrow' }, String(i + 1).padStart(2, '0'));
 
-    const text = createTag('div', { class: 'faq-text' });
+    const text = createTag('div', { class: 'faq-text title-4' });
     if (textCol) {
-      textCol.querySelectorAll('p').forEach((p) => p.classList.add('title-4'));
       text.append(...textCol.childNodes);
     }
 
@@ -49,6 +48,5 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  console.log('el', el);
   decorateViewportContent(el, decorate);
 }

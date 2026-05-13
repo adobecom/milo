@@ -1,17 +1,12 @@
 .faq-redesign {
   padding-block: var(--s2a-spacing-2xl);
-  padding-inline: var(--s2a-spacing-md);
   position: relative;
 
   .faq-headline {
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
     margin-block-end: var(--s2a-spacing-lg);
     padding-block: var(--s2a-spacing-sm);
-
-    :is(h1, h2, h3, h4, h5, h6) {
-      color: var(--s2a-color-content-knockout);
-      margin: 0;
-    }
+    color: var(--s2a-color-content-knockout);
   }
 
   .faq-list {
@@ -27,6 +22,7 @@
     gap: var(--s2a-spacing-md);
     padding-block: var(--s2a-spacing-md);
     transition: background 0.2s ease;
+    color: var(--s2a-color-content-knockout);
 
     &:hover {
       background: var(--s2a-color-transparent-white-08);
@@ -34,18 +30,14 @@
   }
 
   .faq-number {
-    color: var(--s2a-color-content-eyebrow);
+    color: var(--s2a-color-content-knockout);
     flex-shrink: 0;
     min-inline-size: var(--s2a-spacing-32);
   }
 
   .faq-text {
     flex: 1;
-
-    .title-4 {
-      color: var(--s2a-color-content-knockout);
-      margin: 0;
-    }
+    margin: 0;
   }
 
   .faq-media {
@@ -58,7 +50,6 @@
     display: flex;
     gap: var(--s2a-spacing-xs);
     padding-block: var(--s2a-spacing-124);
-    padding-inline: var(--s2a-spacing-64);
 
     .faq-headline {
       flex: 1;
@@ -96,7 +87,6 @@
 @media (width >= 1280px) {
   .faq-redesign {
     padding-block: var(--s2a-spacing-124);
-    padding-inline: var(--s2a-spacing-124);
 
     .faq-headline {
       flex: 0 0 1;
@@ -130,8 +120,3 @@
   }
 }
 
-@media (width >= 1440px) {
-  .faq-redesign {
-    padding-inline: var(--s2a-spacing-160);
-  }
-}
