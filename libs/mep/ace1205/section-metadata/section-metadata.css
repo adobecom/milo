@@ -201,6 +201,23 @@
     gap: 20vh;
     overflow: visible;
   }
+
+  .section.bento.stack-mobile .bento-stack-header {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+  }
+
+  .section.bento.stack-mobile > :has(.explore-card) {
+    position: sticky;
+    top: var(--card-sticky-top, 0px);
+    z-index: var(--stack-index, 1);
+    /* Derived animation variables — inherited by .explore-card children */
+    --bento-stack-offset: calc((var(--stack-index, 1) - 1) * 0.5rem);
+    --bento-stack-shrink: calc((var(--stack-total, 1) - var(--stack-index, 1)) * 1rem);
+    --bento-stack-contrast: calc(var(--stack-index, 1) / var(--stack-total, 1));
+    --bento-offset-adjuster: 50px;
+  }
 }
 
 /* tablet up */
