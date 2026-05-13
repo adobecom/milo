@@ -194,6 +194,13 @@
   .section[class*='grid-width-'] {
     display: block;
   }
+
+  .section.bento.stack-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 20vh;
+    overflow: visible;
+  }
 }
 
 /* tablet up */
