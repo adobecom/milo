@@ -1240,7 +1240,6 @@ p {
     timeline-scope: --dg-floor;
   }
 
-  /* Pull next section up to close the visual gap left by bottom door's translateY(-20vh) */
   .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section + .section {
     margin-top: -20vh;
   }
