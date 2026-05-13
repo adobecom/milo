@@ -175,9 +175,9 @@ html:has(meta[name="foundation"][content="c2"]) {
       }
 
       h3 {
-        font-size: var(--s2a-typography-font-size-title-4);
-        line-height: var(--s2a-typography-line-height-title-4);
-        letter-spacing: var(--s2a-typography-letter-spacing-title-4);
+        font-size: var(--s2a-typography-font-size-title-5);
+        line-height: var(--s2a-typography-line-height-title-5);
+        letter-spacing: var(--s2a-typography-letter-spacing-title-5);
         margin: 0;
       }
     }
