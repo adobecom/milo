@@ -1240,11 +1240,9 @@ p {
     timeline-scope: --dg-floor;
   }
 
-  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section ~ .section {
-    z-index: 1;
-    animation: dg-bottom-door ease-out;
-    animation-timeline: --dg-floor;
-    animation-range: entry 0% entry 100%;
+  /* Pull next section up to close the visual gap left by bottom door's translateY(-20vh) */
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section + .section {
+    margin-top: -20vh;
   }
 
   @keyframes dg-top-door {
