@@ -1212,13 +1212,11 @@ p {
     to { opacity: 0.75; }
   }
 
-  /* Section above acts as ceiling — parallax section slides out from under it */
   .section:has(+ .section.parallax-double-garage-door),
   .section:has(+ .section:has(.parallax-double-garage-door)) {
     z-index: 2;
   }
 
-  /* Garage door: slides in on entry, slides out on exit */
   .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
     overflow: clip;
     animation: dg-top-door ease-out both, dg-exit ease-out both;

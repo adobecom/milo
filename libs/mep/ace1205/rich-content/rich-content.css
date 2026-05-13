@@ -75,7 +75,7 @@
     .eyebrow:has(picture, img) {
       display: flex;
       align-items: center;
-      gap: var(--s2a-spacing-xs, 8px);
+      gap: var(--s2a-spacing-xs);
 
       picture,
       img {
@@ -87,7 +87,7 @@
     .jump-links {
       display: flex;
       flex-direction: column;
-      gap: var(--s2a-spacing-md, 16px);
+      gap: var(--s2a-spacing-md);
       align-items: flex-start;
       margin-top: auto;
       padding-block-end: var(--s2a-spacing-4xl);
@@ -96,7 +96,7 @@
 
     .jump-link-anchor {
       display: flex;
-      gap: var(--s2a-spacing-xs, 8px);
+      gap: var(--s2a-spacing-xs);
       align-items: center;
       text-decoration: none;
       color: var(--s2a-color-content-knockout);
@@ -207,16 +207,15 @@
   .rich-content.jump-link {
     &.hero { height: 580px; }
 
-    .foreground .content {
-      padding-block-start: var(--s2a-layout-md);
-      padding-inline: var(--s2a-spacing-xl);
-    }
+    .foreground .content,
+    .jump-links { padding-inline: var(--s2a-spacing-xl); }
+
+    .foreground .content { padding-block-start: var(--s2a-layout-md); }
 
     .jump-links {
       flex-direction: row;
-      gap: var(--s2a-spacing-xl, 32px);
+      gap: var(--s2a-spacing-xl);
       align-items: center;
-      padding-inline: var(--s2a-spacing-xl);
     }
 
     .jump-link-label { font-size: var(--s2a-typography-font-size-title-4); }
@@ -256,15 +255,12 @@
         padding-block-start: var(--s2a-layout-lg);
       }
 
-      .foreground .content {
-        padding-block-start: 0;
-        padding-inline: var(--s2a-spacing-2xl);
-      }
+      .foreground .content,
+      .jump-links { padding-inline: var(--s2a-spacing-2xl); }
 
-      .jump-links {
-        padding-block-end: var(--s2a-layout-sm);
-        padding-inline: var(--s2a-spacing-2xl);
-      }
+      .foreground .content { padding-block-start: 0; }
+
+      .jump-links { padding-block-end: var(--s2a-layout-sm); }
 
       .jump-link-label {
         font-size: var(--s2a-typography-font-size-title-5);
@@ -296,8 +292,7 @@
     height: 1085px;
     padding-inline: var(--grid-padding);
 
-    .foreground .content { padding-inline: 0; }
-
+    .foreground .content,
     .jump-links { padding-inline: 0; }
   }
 }
