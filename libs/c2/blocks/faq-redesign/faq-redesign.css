@@ -23,7 +23,6 @@
     gap: var(--s2a-spacing-md);
     padding-block: var(--s2a-spacing-md);
     transition: background 0.2s ease;
-    color: var(--s2a-color-content-knockout);
 
     &:hover {
       background: var(--s2a-color-transparent-white-08);
@@ -39,6 +38,8 @@
   .faq-text {
     flex: 1;
     margin: 0;
+    font-family: var(--s2a-font-family-title);
+    letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
 
   .faq-media {
