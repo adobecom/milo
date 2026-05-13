@@ -102,6 +102,8 @@ function injectCaasBadges() {
 
 function removeCaasBadges() {
   document.querySelectorAll(`a.${CAAS_BADGE_CLASS}`).forEach((el) => el.remove());
+  // Clear derived paths so they don't sit in the DOM as invisible state.
+  document.querySelectorAll('[data-card-path]').forEach((el) => delete el.dataset.cardPath);
 }
 
 let caasObserver;
@@ -115,6 +117,12 @@ function watchForCaasBlocks() {
     if (hasCaasMutation) injectCaasBadges();
   });
   caasObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function unwatchForCaasBlocks() {
+  if (!caasObserver) return;
+  caasObserver.disconnect();
+  caasObserver = null;
 }
 
 function updatePreviewButton(popup, pageId) {
@@ -180,9 +188,11 @@ function updatePreviewButton(popup, pageId) {
     document.body.dataset.mepCaasHighlight = mepCaasHighlightCheckbox.checked;
     if (mepCaasHighlightCheckbox.checked) {
       simulateHref.searchParams.set('mepCaasHighlight', true);
+      watchForCaasBlocks();
       injectCaasBadges();
     } else {
       simulateHref.searchParams.delete('mepCaasHighlight');
+      unwatchForCaasBlocks();
       removeCaasBadges();
     }
   }
@@ -1057,8 +1067,10 @@ export default async function decoratePreviewMode() {
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
-  watchForCaasBlocks();
-  if (document.body.dataset.mepCaasHighlight === 'true') injectCaasBadges();
+  if (document.body.dataset.mepCaasHighlight === 'true') {
+    watchForCaasBlocks();
+    injectCaasBadges();
+  }
   // Adjust badge positions after a short delay to allow rendering
   setTimeout(() => {
     adjustBadgesForZeroHeightSections();

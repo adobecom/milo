@@ -683,16 +683,17 @@ body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-m
   display: none;
 }
 
-/* CaaS region highlights ----------------------------------------------------- */
-body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx']),
-body[data-mep-caas-highlight='true'] [data-country='xx'] {
+/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated
+   [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
   outline: 2px dashed transparent;
   outline-offset: 2px;
   position: relative !important;
 }
 
-body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx'])::before,
-body[data-mep-caas-highlight='true'] [data-country='xx']::before {
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
   font-size: 14px !important;
   font-weight: 400 !important;
   min-height: 20px !important;
@@ -719,25 +720,31 @@ body[data-mep-caas-highlight='true'] [data-country='xx']::before {
 }
 
 /* Market-specific (any country code other than xx) - green */
-body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx']) {
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
   outline-color: #28a745;
 }
 
-body[data-mep-caas-highlight='true'] [data-country]:not([data-country='xx'])::before {
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
   content: '🔗 caas-market: ' attr(data-card-path);
   background-color: #d4edda !important;
   border: 1px solid #28a745;
 }
 
 /* Lang-first / global (xx) - yellow */
-body[data-mep-caas-highlight='true'] [data-country='xx'] {
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
   outline-color: #ffc107;
 }
 
-body[data-mep-caas-highlight='true'] [data-country='xx']::before {
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
   content: '🔗 caas-lang: ' attr(data-card-path);
   background-color: #fff3cd !important;
   border: 1px solid #ffc107;
+}
+
+/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the
+   badge would otherwise show "🔗 caas-market: " with an empty path. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
+  content: none;
 }
 
 /* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
