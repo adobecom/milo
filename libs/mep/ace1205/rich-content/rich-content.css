@@ -267,8 +267,8 @@
       }
 
       .jump-link-label {
-        font-size: var(--s2a-typography-font-size-title-4);
-        line-height: var(--s2a-typography-line-height-title-4);
+        font-size: var(--s2a-typography-font-size-title-5);
+        line-height: var(--s2a-typography-line-height-title-5);
       }
     }
   }
