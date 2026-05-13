@@ -243,7 +243,43 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const { locale } = getConfig();
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
+  const { env, locale } = getConfig();
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env?.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    logWebClient('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    logWebClient('stage', stage);
+    src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
@@ -485,7 +521,6 @@ function decorateFloatingButton(el) {
   el.append(floatingButton);
 
   const mainElement = document.querySelector('main');
-  const gnavElement = document.querySelector('header.global-navigation');
 
   const hideFloatingButton = () => {
     floatingContainer.setAttribute('aria-hidden', 'true');
@@ -508,9 +543,7 @@ function decorateFloatingButton(el) {
 
   const handleScroll = (target) => {
     const mainHeight = mainElement.scrollHeight;
-    const gnavHeight = gnavElement.offsetHeight;
-    const gnavPosition = window.getComputedStyle(gnavElement).position;
-    const threshold = (window.scrollY + window.innerHeight - (gnavPosition === 'fixed' ? 0 : gnavHeight));
+    const threshold = window.scrollY + window.innerHeight - mainElement.offsetTop;
     const targetStyle = window.getComputedStyle(target);
     const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
     const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
@@ -636,42 +669,4 @@ export default async function init(el) {
     button.onclick = openSusiLightModal;
     el.appendChild(button);
   }
-
-  const logWebClient = (text, src) => {
-    // eslint-disable-next-line no-console
-    console.log(text, src);
-  };
-
-  const { env } = getConfig();
-  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
-
-  if (env?.name === 'prod') {
-    src = prod;
-  }
-
-  if (webClient === 'prod') {
-    logWebClient('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    logWebClient('stage', stage);
-    src = stage;
-  } else if (webClient === 'baseProd') {
-    logWebClient('baseProd', baseProd);
-    src = baseProd;
-  } else if (webClient === 'baseStage') {
-    logWebClient('baseStage', baseStage);
-    src = baseStage;
-  }
-
-  if (webClientVersion) {
-    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
-    src = pr;
-  }
-
-  loadScript(src);
 }

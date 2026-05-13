@@ -182,7 +182,7 @@
   align-items: center;
   user-select: none;
   align-self: start;
-  margin-right: -4px;
+  margin-right: -8px;
   margin-top: 10px;
   height: 32px;
   width: 32px;
@@ -431,6 +431,8 @@
 .dialog-modal.bc-susi-modal .bc-susi-modal-title {
   padding: 20px var(--bc-susi-standard-padding) 12px;
   margin: 0;
+  font-size: 22px;
+  letter-spacing: -2%;
 }
 
 /* hero */
@@ -819,6 +821,11 @@
     line-height: 55px;
   }
 
+  .bc-susi-modal button.dialog-close {
+    right: 24px;
+    top: 24px;
+  }
+  
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
   }

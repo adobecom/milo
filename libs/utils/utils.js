@@ -2283,6 +2283,10 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
+    if (!CSS.supports('animation-timeline: view()')
+      && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
+    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');

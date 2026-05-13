@@ -752,30 +752,24 @@ class Gnav {
     if (promo) localNav.classList.add('has-promo');
     this.elements.localNav = localNav;
     firstElem.textContent = title.trim();
-    const isAtTop = () => {
-      const rect = this.elements.localNav.getBoundingClientRect();
-      // note: ios safari changes between -0.34375, 0, and 0.328125
-      return rect.top === 0;
-    };
+    const stickyObserver = new IntersectionObserver(
+      ([entry]) => {
+        this.elements.localNav?.classList.toggle('is-sticky', entry.boundingClientRect.top <= 0);
+      },
+      { threshold: [1] },
+    );
+    stickyObserver.observe(this.elements.localNav);
     window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
-      if (classList.contains('feds-localnav--active')) {
-        trigger({
-          element: curtain,
-          event: e,
-          type: 'localNav-curtain',
-          animatedElement: itemWrapper,
-          animationType: 'transition',
-        });
-      }
-      if (isAtTop()) {
-        if (!classList?.contains('is-sticky')) {
-          classList?.add('is-sticky');
-        }
-      } else {
-        classList?.remove('is-sticky');
-      }
-    });
+      if (!classList?.contains('feds-localnav--active')) return;
+      trigger({
+        element: curtain,
+        event: e,
+        type: 'localNav-curtain',
+        animatedElement: itemWrapper,
+        animationType: 'transition',
+      });
+    }, { passive: true });
   };
 
   decorateTopnavWrapper = async () => {
