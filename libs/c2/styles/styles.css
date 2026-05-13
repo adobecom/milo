@@ -1212,13 +1212,19 @@ p {
     to { opacity: 0.75; }
   }
 
+  /* Section above sits on top — parallax section slides out from under it */
   .section:has(+ .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door))) {
-    z-index: 1;
-    animation: dg-top-door ease-out both;
-    animation-timeline: view();
-    animation-range: exit 0% exit 70%;
+    z-index: 2;
   }
 
+  /* Top door: parallax section slides down from under the section above */
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
+    animation: dg-top-door ease-out both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 70%;
+  }
+
+  /* Bottom door: slides up as parallax section enters */
   .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section {
     view-timeline-name: --dg-floor;
     z-index: 1;
@@ -1227,13 +1233,20 @@ p {
     animation-range: entry 0% entry 100%;
   }
 
-  /* Expose the bottom door's view timeline to its siblings */
+  /* Expose bottom door timeline so subsequent sections move with it */
   main:has(.parallax-double-garage-door) {
     timeline-scope: --dg-floor;
   }
 
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) + .section ~ .section {
+    z-index: 1;
+    animation: dg-bottom-door ease-out both;
+    animation-timeline: --dg-floor;
+    animation-range: entry 0% entry 100%;
+  }
+
   @keyframes dg-top-door {
-    from { transform: translateY(20vh); }
+    from { transform: translateY(-20vh); }
     to { transform: translateY(0); }
   }
 
