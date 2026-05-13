@@ -8,8 +8,8 @@ function addCursorFollower(list) {
 
   list.addEventListener('mousemove', (e) => {
     if (!activeMedia || !DESKTOP_MQ.matches) return;
-    activeMedia.style.left = `${e.clientX + 20}px`;
-    activeMedia.style.top = `${e.clientY - 20}px`;
+    activeMedia.style.left = `${e.clientX + 16}px`;
+    activeMedia.style.top = `${e.clientY}px`;
   });
 
   list.addEventListener('mouseover', (e) => {
