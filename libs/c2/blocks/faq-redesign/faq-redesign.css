@@ -38,9 +38,9 @@
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
 
-  .faq-media {
+  /* .faq-media {
     display: none;
-  }
+  } */
 }
 
 @media (width >= 768px) {
