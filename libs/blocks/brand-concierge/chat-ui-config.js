@@ -409,7 +409,7 @@ export default {
     '--product-card-button-font-size': '15px',
     '--product-card-button-position': 'end',
     '--product-card-max-width': '378.66px',
-    '--product-card-title-font-size': '24px',
+    '--product-card-title-font-size': '20px',
     '--product-card-title-font-weight': '700',
     '--prompt-pill-container-padding': '0px 11px',
     '--prompt-pill-container-list-gap': '10px',
