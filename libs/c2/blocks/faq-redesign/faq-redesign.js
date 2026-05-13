@@ -6,10 +6,19 @@ const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 function addCursorFollower(list) {
   let activeMedia = null;
 
+  const setPosition = (media, e) => {
+    media.style.left = `${e.clientX - 2}px`;
+    media.style.top = `${e.clientY}px`;
+  };
+
+  const hide = () => {
+    activeMedia?.classList.remove('is-visible');
+    activeMedia = null;
+  };
+
   list.addEventListener('mousemove', (e) => {
     if (!activeMedia || !DESKTOP_MQ.matches) return;
-    activeMedia.style.left = `${e.clientX - 2}px`;
-    activeMedia.style.top = `${e.clientY}px`;
+    setPosition(activeMedia, e);
   });
 
   list.addEventListener('mouseover', (e) => {
@@ -20,13 +29,12 @@ function addCursorFollower(list) {
     if (!media || media === activeMedia) return;
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
+    setPosition(activeMedia, e);
     activeMedia.classList.add('is-visible');
   });
 
-  list.addEventListener('mouseleave', () => {
-    activeMedia?.classList.remove('is-visible');
-    activeMedia = null;
-  });
+  list.addEventListener('mouseleave', hide);
+  document.addEventListener('scroll', hide, { passive: true });
 }
 
 function decorate(block) {
