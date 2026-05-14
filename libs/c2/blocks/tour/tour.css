@@ -22,12 +22,20 @@
  * the block never exceeds 596px even if the modal allows more. */
 .tour {
   background: var(--s2a-color-background-default);
+  border-radius: 16px;
+  box-shadow: 0 100px 80px 0 rgba(0, 0, 0, 0.14),
+              0 41.778px 16.711px 0 rgba(0, 0, 0, 0.1),
+              0 22.336px 8.935px 0 rgba(0, 0, 0, 0.08),
+              0 12.522px 5.009px 0 rgba(0, 0, 0, 0.07),
+              0 6.65px 2.66px 0 rgba(0, 0, 0, 0.06),
+              0 2.767px 1.107px 0 rgba(0, 0, 0, 0.04);
   color: var(--s2a-color-content-default);
-  display: block;
+  display: flex;
+  flex-direction: column;
   font-family: var(--body-font-family, adobe-clean, sans-serif);
   max-width: 596px;
   overflow-x: clip;
-  padding-top: var(--s2a-spacing-md);
+  padding-top: 16px;
   width: 100%;
 }
 
@@ -79,14 +87,35 @@
   flex-direction: column;
 }
 
+/* Z-pattern alignment + padding (mobile + desktop) */
+.tour-section:nth-of-type(even) {
+  align-items: flex-start;
+  padding-bottom: 24px;
+  padding-inline: 24px;
+}
+
+.tour-section:last-of-type {
+  align-items: center;
+  padding-bottom: 8px;
+  padding-top: 80px;
+  padding-inline: 8px;
+}
+
+.tour-section:nth-of-type(odd):not(:last-of-type) {
+  align-items: flex-end;
+  padding-top: 124px;
+  padding-inline: 8px;
+}
+
 /* ── Counter: ( X/Y ) ─────────────────────────────── */
 
 .tour-counter {
-  color: var(--s2a-color-content-default);
+  color: var(--s2a-color-background-knockout);
   font-family: var(--s2a-font-family-label, adobe-clean, sans-serif);
   font-size: var(--s2a-typography-font-size-label);
   font-weight: 700;
   letter-spacing: var(--s2a-typography-letter-spacing-label);
+  line-height: var(--s2a-typography-line-height-label);
   margin-block-end: var(--s2a-spacing-md);
 }
 
@@ -97,12 +126,40 @@
   flex-direction: column;
 }
 
+/* Section 1 (odd non-last): 287px content width */
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
+  max-width: 287px;
+}
+
+/* Sections 2 & 3: 286px content width */
+.tour-section:nth-of-type(even) .tour-content,
+.tour-section:last-of-type .tour-content {
+  max-width: 286px;
+}
+
 .tour-content p {
   margin-block: 0;
 }
 
 .tour-content p + p {
   margin-block-start: var(--s2a-spacing-lg);
+}
+
+/* Section 1 (odd non-last): body-sm */
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-content p {
+  color: var(--s2a-color-background-knockout);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+}
+
+/* Sections 2 & 3 (even + last): body-xs */
+.tour-section:nth-of-type(even) .tour-content p,
+.tour-section:last-of-type .tour-content p {
+  color: var(--s2a-color-background-knockout);
+  font-size: var(--s2a-typography-font-size-body-xs);
+  line-height: var(--s2a-typography-line-height-body-xs);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-xs);
 }
 
 /* ── Media area ───────────────────────────────────── */
@@ -124,8 +181,9 @@
   width: 100%;
 }
 
-/* Section 2 (even): image constrained at mobile */
+/* Section 2 (even): image flush left, rounded right corners only */
 .tour-section:nth-of-type(even) .tour-media {
+  margin-inline-start: -24px;
   padding-inline-end: var(--s2a-spacing-lg);
   width: min(495px, 100%);
 }
