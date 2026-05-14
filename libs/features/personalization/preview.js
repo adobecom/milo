@@ -303,7 +303,8 @@ function annotateOffers() {
     if (!osi) return;
     const isPrice = el.matches('span[is="inline-price"]');
     const type = isPrice ? 'price' : 'checkoutUrl';
-    const ostUrl = `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}&type=${type}`;
+    const pageMarket = getResolvedPageMarket();
+    const ostUrl = `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}&type=${type}${pageMarket ? `&country=${encodeURIComponent(pageMarket)}` : ''}`;
     mepMasStudioUrls.set(el, ostUrl);
     el.dataset.masBlock = 'offer';
   });
@@ -353,7 +354,7 @@ function injectMasCardActionStack(card) {
       'a',
       {
         class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
-        href: `https://milo.adobe.com/tools/ost?osi=${encodeURIComponent(osi)}`,
+        href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
         target: '_blank',
         rel: 'noopener noreferrer',
       },

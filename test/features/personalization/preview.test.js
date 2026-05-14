@@ -1173,8 +1173,8 @@ describe('M@S card action stack', () => {
     expect(editHref).to.include('fragmentId=card-1');
     expect(editHref).to.include('page=fragment-editor');
     expect(editHref).to.not.include('query=');
-    expect(stack.querySelector('.mep-mas-card-action-ost')?.getAttribute('href'))
-      .to.equal('https://milo.adobe.com/tools/ost?osi=OSI-FIRST');
+    const ostHref = stack.querySelector('.mep-mas-card-action-ost')?.getAttribute('href');
+    expect(ostHref).to.include('/tools/ost?osi=OSI-FIRST&country=US');
     const copyBtn = stack.querySelector('.mep-mas-card-action-copy');
     expect(copyBtn).to.exist;
     expect(copyBtn.getAttribute('data-fragment-id')).to.equal('frag-1');
@@ -1192,7 +1192,7 @@ describe('M@S card action stack', () => {
     injectMasBadges();
 
     const ost = card.querySelector('.mep-mas-card-action-ost');
-    expect(ost?.getAttribute('href')).to.equal('https://milo.adobe.com/tools/ost?osi=OSI-A');
+    expect(ost?.getAttribute('href')).to.include('/tools/ost?osi=OSI-A&country=US');
   });
 
   it('omits the Edit OSI button when no [data-wcs-osi] exists on or inside the card (display-only card)', () => {
