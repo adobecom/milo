@@ -1,7 +1,7 @@
 import { scanPage, readBlockAnimations } from './scanner.js';
 import StyleManager from './style-manager.js';
-import { buildPanel, loadStoredState, saveState } from './panel.js';
-import { serializeState, deserializeState, CONTROLS } from './controls.js';
+import { buildPanel, loadStoredState, saveState, loadStaggerState, saveStaggerState } from './panel.js';
+import { serializeState, deserializeState, CONTROLS, buildStaggerCssRules } from './controls.js';
 
 (function init() { // eslint-disable-line wrap-iife
   if (document.getElementById('page-animator-panel')) return;
@@ -18,10 +18,20 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
   const blockStateMap = readBlockAnimations();
   const blockSourceIds = new Set(Object.keys(blockStateMap));
   const stateMap = { ...blockStateMap, ...(loadStoredState() || {}) };
+  const staggerMap = loadStaggerState() || {};
 
   // Restore persisted animations
   Object.entries(stateMap).forEach(([animId, state]) => {
     styleManager.updateRule(animId, state);
+  });
+
+  // Restore persisted stagger animations
+  Object.entries(staggerMap).forEach(([sectionId, staggerState]) => {
+    const section = tree.find((s) => s.id === sectionId);
+    if (!section) return;
+    const blockIds = section.blocks.map((b) => b.id);
+    const staggerCss = buildStaggerCssRules(sectionId, blockIds, staggerState);
+    styleManager.updateStaggerRule(sectionId, staggerCss);
   });
 
   const callbacks = {
@@ -41,9 +51,18 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
         el.style.removeProperty(c.cssVar);
       });
     },
+    onStaggerUpdate(sectionId, blockIds, staggerState) {
+      const css = buildStaggerCssRules(sectionId, blockIds, staggerState);
+      styleManager.updateStaggerRule(sectionId, css);
+      saveStaggerState(staggerMap);
+    },
+    onStaggerReset(sectionId) {
+      styleManager.removeStaggerRule(sectionId);
+    },
   };
 
-  let currentPanel = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds);
+  // eslint-disable-next-line max-len
+  let currentPanel = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds, staggerMap);
 
   // Check what fixed element is covering the top-right corner (where our panel header will be).
   // Using elementFromPoint before the panel is injected gives us the exact gnav element.
@@ -84,7 +103,7 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
     tab.onclick = () => panelEl.classList.toggle('pa-open');
 
     panelEl.querySelector('#pa-download-btn').addEventListener('click', () => {
-      const json = serializeState(tree, stateMap);
+      const json = serializeState(tree, stateMap, staggerMap);
       const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -101,11 +120,21 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
         try {
           const text = await input.files[0].text();
           const json = JSON.parse(text);
-          const imported = deserializeState(json);
-          Object.assign(stateMap, imported);
-          Object.entries(imported).forEach(([id, state]) => styleManager.updateRule(id, state));
+          const { stateMap: importedState, staggerMap: importedStagger } = deserializeState(json);
+          Object.assign(stateMap, importedState);
+          Object.entries(importedState).forEach(([id, st]) => styleManager.updateRule(id, st));
+          Object.assign(staggerMap, importedStagger);
+          Object.entries(importedStagger).forEach(([sectionId, staggerState]) => {
+            const section = tree.find((s) => s.id === sectionId);
+            if (!section) return;
+            const blockIds = section.blocks.map((b) => b.id);
+            const css = buildStaggerCssRules(sectionId, blockIds, staggerState);
+            styleManager.updateStaggerRule(sectionId, css);
+          });
           saveState(stateMap);
-          const fresh = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds);
+          saveStaggerState(staggerMap);
+          // eslint-disable-next-line max-len
+          const fresh = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds, staggerMap);
           panelEl.replaceWith(fresh);
           fresh.classList.add('pa-open');
           currentPanel = fresh;

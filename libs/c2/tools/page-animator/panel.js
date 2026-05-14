@@ -1,6 +1,7 @@
-import { CONTROLS, getDefaultState } from './controls.js';
+import { CONTROLS, getDefaultState, STAGGER_CONTROLS, getDefaultStaggerState } from './controls.js';
 
 const STORAGE_KEY = `pa:${window.location.pathname}`;
+const STAGGER_KEY = `pa-stagger:${window.location.pathname}`;
 
 export function loadStoredState() {
   try {
@@ -14,14 +15,27 @@ export function saveState(stateMap) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stateMap));
 }
 
+export function loadStaggerState() {
+  try {
+    return JSON.parse(localStorage.getItem(STAGGER_KEY) || 'null');
+  } catch {
+    return null;
+  }
+}
+
+export function saveStaggerState(map) {
+  localStorage.setItem(STAGGER_KEY, JSON.stringify(map));
+}
+
 export function buildPanel(
   tree,
   stateMap,
   callbacks,
   blockStateMap = {},
   blockSourceIds = new Set(),
+  staggerMap = {},
 ) {
-  const { onLiveUpdate, onCommitUpdate, onReset } = callbacks;
+  const { onLiveUpdate, onCommitUpdate, onReset, onStaggerUpdate, onStaggerReset } = callbacks;
 
   const panel = document.createElement('div');
   panel.id = 'page-animator-panel';
@@ -46,7 +60,8 @@ export function buildPanel(
       <div class="pa-instructions-dots">
         <span class="pa-dot"></span> No animation &nbsp;
         <span class="pa-dot" style="background:#0d66d0"></span> Panel animation &nbsp;
-        <span class="pa-dot" style="background:#2d9e5f"></span> From DA block
+        <span class="pa-dot" style="background:#2d9e5f"></span> From DA block &nbsp;
+        <span class="pa-dot" style="background:#c064c8"></span> Has stagger
       </div>
     </div>
     <div class="pa-tree" id="pa-tree"></div>
@@ -91,13 +106,14 @@ export function buildPanel(
 
       if (ctrl.type === 'range') {
         const val = state[ctrl.cssVar] ?? ctrl.default;
+        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">ℹ︎<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
         div.innerHTML = `
-          <div class="pa-control-label">${ctrl.label} <span>${val}${ctrl.unit}</span></div>
+          <div class="pa-control-label">${ctrl.label}${tip} <span class="pa-val">${val}${ctrl.unit}</span></div>
           <input type="range" min="${ctrl.min}" max="${ctrl.max}" step="${ctrl.step}" value="${val}" data-var="${ctrl.cssVar}" data-unit="${ctrl.unit}">
         `;
 
         const input = div.querySelector('input');
-        const valSpan = div.querySelector('span');
+        const valSpan = div.querySelector('.pa-val');
 
         input.addEventListener('input', () => {
           const num = parseFloat(input.value);
@@ -118,7 +134,8 @@ export function buildPanel(
       } else {
         const val = state[ctrl.cssVar] ?? ctrl.default;
         const opts = ctrl.options.map((o) => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
-        div.innerHTML = `<div class="pa-control-label">${ctrl.label}</div><select>${opts}</select>`;
+        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">ℹ︎<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
+        div.innerHTML = `<div class="pa-control-label">${ctrl.label}${tip}</div><select>${opts}</select>`;
         const select = div.querySelector('select');
         select.addEventListener('change', () => {
           if (!stateMap[item.id]) stateMap[item.id] = getDefaultState();
@@ -172,6 +189,68 @@ export function buildPanel(
     return wrap;
   }
 
+  function buildStaggerControls(section) {
+    const blockIds = section.blocks.map((b) => b.id);
+    const state = staggerMap[section.id] || getDefaultStaggerState();
+    const wrap = document.createElement('div');
+    wrap.className = 'pa-stagger-controls';
+
+    const heading = document.createElement('div');
+    heading.className = 'pa-stagger-heading';
+    heading.textContent = 'Stagger Effect';
+    wrap.appendChild(heading);
+
+    STAGGER_CONTROLS.forEach((ctrl) => {
+      const div = document.createElement('div');
+      div.className = 'pa-control';
+      const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">ℹ︎<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
+
+      if (ctrl.type === 'range') {
+        const val = state[ctrl.cssVar] ?? ctrl.default;
+        div.innerHTML = `
+          <div class="pa-control-label">${ctrl.label}${tip} <span class="pa-val">${val}${ctrl.unit}</span></div>
+          <input type="range" min="${ctrl.min}" max="${ctrl.max}" step="${ctrl.step}" value="${val}" data-var="${ctrl.cssVar}">
+        `;
+        const input = div.querySelector('input');
+        const valSpan = div.querySelector('.pa-val');
+        input.addEventListener('input', () => {
+          const num = parseFloat(input.value);
+          valSpan.textContent = `${num}${ctrl.unit}`;
+          if (!staggerMap[section.id]) staggerMap[section.id] = getDefaultStaggerState();
+          staggerMap[section.id][ctrl.cssVar] = num;
+          onStaggerUpdate(section.id, blockIds, staggerMap[section.id]);
+          saveStaggerState(staggerMap);
+        });
+      } else {
+        const val = state[ctrl.cssVar] ?? ctrl.default;
+        const opts = ctrl.options.map((o) => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
+        div.innerHTML = `<div class="pa-control-label">${ctrl.label}${tip}</div><select>${opts}</select>`;
+        const select = div.querySelector('select');
+        select.addEventListener('change', () => {
+          if (!staggerMap[section.id]) staggerMap[section.id] = getDefaultStaggerState();
+          staggerMap[section.id][ctrl.cssVar] = select.value;
+          onStaggerUpdate(section.id, blockIds, staggerMap[section.id]);
+          saveStaggerState(staggerMap);
+        });
+      }
+      wrap.appendChild(div);
+    });
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'pa-reset-btn';
+    resetBtn.textContent = 'Reset stagger';
+    resetBtn.addEventListener('click', () => {
+      delete staggerMap[section.id];
+      onStaggerReset(section.id);
+      saveStaggerState(staggerMap);
+      // eslint-disable-next-line no-use-before-define
+      renderTree();
+    });
+    wrap.appendChild(resetBtn);
+
+    return wrap;
+  }
+
   function renderTree() {
     const treeEl = panel.querySelector('#pa-tree');
     treeEl.innerHTML = '';
@@ -200,7 +279,8 @@ export function buildPanel(
           const isSelected = item.id === selectedId;
           const hasAnim = !!stateMap[item.id];
           const fromBlock = blockSourceIds.has(item.id);
-          row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}`;
+          const hasStagger = item.id === section.id && !!staggerMap[section.id]?.['--pa-stagger-drift'];
+          row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}${hasStagger ? ' pa-has-stagger' : ''}`;
           row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
           // eslint-disable-next-line no-use-before-define
           row.addEventListener('click', () => selectItem(item));
@@ -208,6 +288,9 @@ export function buildPanel(
 
           if (isSelected) {
             group.appendChild(buildControls(item));
+            if (item.id === section.id && section.blocks.length > 1) {
+              group.appendChild(buildStaggerControls(section));
+            }
           }
         });
       }
