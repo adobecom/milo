@@ -6,20 +6,34 @@ export default class StyleManager {
     this.el.id = 'page-animator-styles';
     document.head.appendChild(this.el);
     this.rules = new Map();
-    this._flush();
+    this.renderStyles();
   }
 
-  _flush() {
+  renderStyles() {
     this.el.textContent = [...this.rules.values()].join('\n');
   }
 
   updateRule(animId, state) {
     this.rules.set(animId, buildCssRule(animId, state));
-    this._flush();
+    this.renderStyles();
   }
 
   removeRule(animId) {
     this.rules.delete(animId);
-    this._flush();
+    this.renderStyles();
+  }
+
+  updateStaggerRule(sectionId, css) {
+    if (css) {
+      this.rules.set(`stagger:${sectionId}`, css);
+    } else {
+      this.rules.delete(`stagger:${sectionId}`);
+    }
+    this.renderStyles();
+  }
+
+  removeStaggerRule(sectionId) {
+    this.rules.delete(`stagger:${sectionId}`);
+    this.renderStyles();
   }
 }

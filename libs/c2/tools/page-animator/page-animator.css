@@ -180,15 +180,66 @@
 }
 
 .pa-control-label {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
   margin-bottom: 4px;
   color: #999;
   font-size: 11px;
 }
 
-.pa-control-label span {
+.pa-control-label .pa-val {
   color: #e0e0e0;
+  justify-self: end;
+}
+
+.pa-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: #999;
+  font-size: 10px;
+  cursor: default;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+.pa-tooltip::before {
+  content: '';
+  inset: -6px 0 0 -14px;
+  position: absolute;
+  border: 1px solid rgb(255 255 255 / 70%);
+  margin: 10px;
+  z-index: 1;
+  border-radius: 10px;
+  width: 12px;
+  height: 12px;
+} 
+
+.pa-tooltip:hover {
+  color: #aaa;
+}
+
+.pa-tooltip-text {
+  display: none;
+  position: absolute;
+  bottom: calc(70% + 6px);
+  left: 50%;
+  transform: translateX(-20%);
+  background: #1a1a1a;
+  border: 1px solid #444;
+  color: #ccc;
+  font-size: 11px;
+  line-height: 1.4;
+  padding: 6px 8px;
+  border-radius: 4px;
+  width: 200px;
+  white-space: normal;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.pa-tooltip:hover .pa-tooltip-text {
+  display: block;
 }
 
 .pa-control input[type='range'] {
@@ -246,4 +297,23 @@
 
 .pa-item.pa-from-block .pa-dot {
   background: #2d9e5f;
+}
+
+.pa-item.pa-has-stagger .pa-dot {
+  background: #c064c8;
+}
+
+.pa-stagger-controls {
+  padding: 12px 16px;
+  border-top: 2px solid #333;
+  background: #1e1e1e;
+}
+
+.pa-stagger-heading {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-bottom: 10px;
 }
