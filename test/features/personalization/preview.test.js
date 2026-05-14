@@ -895,6 +895,25 @@ describe('M@S badge market resolution', () => {
       host.remove();
     });
 
+    it('annotates an inline-price that already has data-mas-block="ost" stamped by M@S', () => {
+      // M@S can pre-stamp data-mas-block="ost" on inline-price elements before
+      // MEP runs. The old guard (if el.dataset.masBlock) skipped these, leaving
+      // mepMasStudioUrls empty and the click handler unable to open OST.
+      const host = createTag('span', {
+        is: 'inline-price',
+        'data-wcs-osi': 'pre-stamped-osi',
+        'data-mas-block': 'ost',
+      });
+      document.body.append(host);
+
+      injectMasBadges();
+
+      expect(mepMasStudioUrls.has(host), 'URL should be registered for pre-stamped ost element').to.be.true;
+      expect(mepMasStudioUrls.get(host)).to.include('/tools/ost?osi=pre-stamped-osi');
+      expect(host.dataset.masBlock).to.equal('ost');
+      host.remove();
+    });
+
     it('stamps data-mas-market on offer hosts using the host\'s own data-ims-country', () => {
       // Offer hosts ARE the checkout-link / inline-price element, so the
       // ims-country attribute lives on the host itself (set by M@S

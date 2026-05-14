@@ -298,7 +298,7 @@ const OST_BASE_URL = 'https://milo.adobe.com/tools/ost';
 // type=price/checkoutUrl pre-selects the correct OST tab. Idempotent.
 function annotateOffers() {
   document.querySelectorAll(MAS_OSI_SELECTOR).forEach((el) => {
-    if (el.dataset.masBlock) return;
+    if (mepMasStudioUrls.has(el)) return;
     const osi = el.getAttribute('data-wcs-osi');
     if (!osi) return;
     const isPrice = el.matches('span[is="inline-price"]');
@@ -306,7 +306,7 @@ function annotateOffers() {
     const pageMarket = getResolvedPageMarket();
     const ostUrl = `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}&type=${type}${pageMarket ? `&country=${encodeURIComponent(pageMarket)}` : ''}`;
     mepMasStudioUrls.set(el, ostUrl);
-    el.dataset.masBlock = 'offer';
+    if (!el.dataset.masBlock) el.dataset.masBlock = 'offer';
   });
 }
 
