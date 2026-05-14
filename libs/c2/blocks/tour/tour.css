@@ -52,8 +52,9 @@
 }
 
 /*
- * Figma: s2a/typography/title-6 — responsive sizing via C2 foundation.
- * Font family and weight override: Adobe Clean Display Black.
+ * Figma: both eyebrow and title use the same style — Adobe Clean
+ * Display Black, 18px. Using title-6 token for responsive sizing
+ * (16px mobile, 18px desktop).
  */
 .tour-title p,
 .tour-title h1,
@@ -64,7 +65,9 @@
 .tour-title h6 {
   color: var(--s2a-color-content-label);
   font-family: var(--font-family-adobe-clean-display, 'Adobe Clean Display', adobe-clean, sans-serif);
+  font-size: var(--s2a-typography-font-size-title-6);
   font-weight: 900;
+  line-height: var(--s2a-typography-line-height-title-6);
   letter-spacing: -0.48px;
   margin: 0;
 }
