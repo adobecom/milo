@@ -34,6 +34,99 @@ const webClientVersion = params.get('webclientversion');
 let floatingButtonClicked = false;
 let bcToken;
 
+function floatingElement(targetEl, el, focusableEl = null) {
+  const getTargetHeight = (target) => {
+    const { marginBottom } = window.getComputedStyle(target);
+    return target.scrollHeight + (parseFloat(marginBottom) * 2);
+  };
+
+  const hideFloating = () => {
+    if (focusableEl) {
+      focusableEl.setAttribute('aria-hidden', 'true');
+      focusableEl.setAttribute('tabindex', '-1');
+      focusableEl.blur();
+    }
+    targetEl.classList.add('floating-hidden');
+    targetEl.classList.remove('floating-show');
+  };
+
+  const showFloating = () => {
+    if (focusableEl) {
+      focusableEl.removeAttribute('aria-hidden');
+      focusableEl.removeAttribute('tabindex');
+    }
+    targetEl.classList.remove('floating-hidden');
+    targetEl.classList.add('floating-show');
+  };
+
+  const mainElement = document.querySelector('main');
+  const mainTop = mainElement.offsetTop;
+  let mainHeight = mainElement.scrollHeight;
+  let targetHeight = getTargetHeight(targetEl);
+  let elHeight = el.scrollHeight;
+
+  const floatingSpacer = createTag('div', { class: 'bc-spacer' });
+  floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
+  mainElement.append(floatingSpacer);
+
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = Math.floor(entry.borderBoxSize?.[0]?.blockSize);
+      if (entry.target === el) {
+        elHeight = size ?? el.scrollHeight;
+      } else if (entry.target === mainElement) {
+        mainHeight = size ?? mainElement.scrollHeight;
+      } else if (entry.target === targetEl) {
+        targetHeight = getTargetHeight(targetEl);
+      }
+    }
+  });
+  ro.observe(el);
+  ro.observe(mainElement);
+  ro.observe(targetEl);
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloating();
+  }
+
+  const handleScroll = (target) => {
+    const threshold = window.scrollY + window.innerHeight - mainTop;
+    const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+    const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
+
+    if (threshold > mainHeight) {
+      target.style.bottom = `${threshold - mainHeight}px`;
+      if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
+        hideFloating();
+      } else {
+        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+      }
+    } else {
+      showFloating();
+      target.style.bottom = '0';
+    }
+    if (variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay) {
+      if (window.scrollY > topDelay && threshold <= mainHeight) {
+        showFloating();
+      }
+      if (window.scrollY < topDelay
+        || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
+        hideFloating();
+      }
+    }
+  };
+
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(targetEl);
+      scrollPending = false;
+    });
+  }, { passive: true });
+}
+
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
 }
@@ -524,62 +617,13 @@ function decorateFloatingButton(el) {
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  const mainElement = document.querySelector('main');
-
-  const hideFloatingButton = () => {
-    floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tabindex', '-1');
-    floatingContainer.blur();
-    floatingButton.classList.add('floating-hidden');
-    floatingButton.classList.remove('floating-show');
-  };
-
-  const showFloatingButton = () => {
-    floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tabindex');
-    floatingButton.classList.remove('floating-hidden');
-    floatingButton.classList.add('floating-show');
-  };
-
-  if (variants.isHero || variants.floatingDelay) {
-    hideFloatingButton();
-  }
-
-  const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const threshold = window.scrollY + window.innerHeight - mainElement.offsetTop;
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
-
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      if (variants.isFloatingAnchorHide) {
-        hideFloatingButton();
-      } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
-      }
-    } else {
-      showFloatingButton();
-      target.style.bottom = '0';
-    }
-    if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        showFloatingButton();
-      }
-      if (window.scrollY < scrollDelay) {
-        hideFloatingButton();
-      }
-    }
-  };
-
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  floatingElement(floatingButton, el, floatingContainer);
 }
 
 function handleConsent(el) {
@@ -630,6 +674,10 @@ export default async function init(el) {
     if (classItem.includes('floating-delay')) {
       variants.floatingDelay = true;
       variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+    if (classItem.includes('floating-anchor-delay')) {
+      variants.floatingAnchorDelay = true;
+      variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
     }
   });
 
