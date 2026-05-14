@@ -46,7 +46,7 @@
 
 .tour-title {
   background: var(--s2a-color-background-default);
-  padding-block: var(--s2a-spacing-md);
+  padding-block: 0 var(--s2a-spacing-md);
   padding-inline-end: calc(var(--s2a-spacing-md) + 48px);
   padding-inline-start: var(--s2a-spacing-md);
 }
@@ -211,6 +211,19 @@
  * content.
  */
 @media (min-width: 769px) {
+  /* Hide drawer handle on desktop/tablet — mobile only */
+  .tour::before {
+    display: none;
+  }
+
+  .tour {
+    padding-top: 0;
+  }
+
+  .tour-title {
+    padding-block-start: var(--s2a-spacing-md);
+  }
+
   /* Z-pattern alignment */
   .tour-section:nth-of-type(even) {
     align-items: flex-start;
