@@ -204,13 +204,14 @@
 
   .section.bento.stack-mobile .bento-stack-header {
     position: sticky;
-    top: 0;
+    top: var(--global-height-nav, 104px);
     z-index: 0;
   }
 
-  .section.bento.stack-mobile > :has(.explore-card) {
+  .section.bento.stack-mobile > :has(.explore-card),
+  .section.bento.stack-mobile > .explore-card {
     position: sticky;
-    top: var(--card-sticky-top, 0px);
+    top: calc(var(--card-sticky-top, 104px) + var(--global-height-nav, 64px));
     z-index: var(--stack-index, 1);
     /* Derived animation variables — inherited by .explore-card children */
     --bento-stack-offset: calc((var(--stack-index, 1) - 1) * 0.5rem);
@@ -220,19 +221,14 @@
   }
 
   .section.bento.stack-mobile .explore-card {
-    animation: bentoMobileStackSlides linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
+    animation: bentoMobileStackSlides linear both, bentoItemsShrink linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% exit 100%, entry 0% exit 100%;
   }
 
-  .section.bento.stack-mobile > [data-stack-first] .explore-card {
-    animation-name: bentoMobileStackSlidesIgnoreOpacity;
-  }
-
-  .section.bento.stack-mobile .explore-card-container {
-    animation: bentoItemsShrink linear both;
-    animation-timeline: view();
-    animation-range: entry 0% exit 100%;
+  .section.bento.stack-mobile > [data-stack-first] .explore-card,
+  .section.bento.stack-mobile > [data-stack-first].explore-card {
+    animation-name: bentoMobileStackSlidesIgnoreOpacity, bentoItemsShrink;
   }
 }
 

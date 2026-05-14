@@ -66,34 +66,39 @@ function decorate(block, root) {
 
 function handleBentoStack(el) {
   const section = el.closest('.section');
-  if (!section?.classList.contains('bento') || !section.classList.contains('stack-mobile')) return;
-  if (section.hasAttribute('data-stack-initialized')) return;
-  section.setAttribute('data-stack-initialized', '');
+  // Check raw section-metadata text before JS processes it, so we can register
+  // the load listener without waiting for section-metadata's init to finish.
+  const metadata = section?.querySelector('.section-metadata');
+  if (!metadata?.textContent.toLowerCase().includes('stack-mobile')) return;
 
-  const richContent = [...section.children].find((child) => (
-    !child.classList.contains('section-background')
-    && !child.classList.contains('section-metadata')
-    && !child.querySelector('.explore-card')
-  ));
+  const setup = () => {
+    if (section.hasAttribute('data-stack-initialized')) return;
+    section.setAttribute('data-stack-initialized', '');
 
-  if (richContent) {
-    richContent.classList.add('bento-stack-header');
-    const measureHeight = () => {
-      section.style.setProperty('--card-sticky-top', `${richContent.offsetHeight}px`);
-    };
-    if (document.readyState === 'complete') {
-      measureHeight();
-    } else {
-      window.addEventListener('load', measureHeight, { once: true });
+    const richContent = [...section.children].find((child) => (
+      !child.classList.contains('section-background')
+      && !child.classList.contains('section-metadata')
+      && !child.querySelector('.explore-card')
+    ));
+
+    if (richContent) {
+      richContent.classList.add('bento-stack-header');
     }
-  }
 
-  const cards = [...section.querySelectorAll('.explore-card')];
-  cards.forEach((card, i) => {
-    card.parentElement.style.setProperty('--stack-index', i + 1);
-    card.parentElement.style.setProperty('--stack-total', cards.length);
-    if (i === 0) card.parentElement.setAttribute('data-stack-first', '');
-  });
+    const cards = [...section.querySelectorAll('.explore-card')];
+    cards.forEach((card, i) => {
+      const wrapper = card.parentElement === section ? card : card.parentElement;
+      wrapper.style.setProperty('--stack-index', i + 1);
+      wrapper.style.setProperty('--stack-total', cards.length);
+      if (i === 0) wrapper.setAttribute('data-stack-first', '');
+    });
+  };
+
+  if (document.readyState === 'complete') {
+    setup();
+  } else {
+    window.addEventListener('load', setup, { once: true });
+  }
 }
 
 export default function init(el) {
