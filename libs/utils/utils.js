@@ -2264,14 +2264,16 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
+    const lerpRef = { value: 0.06 };
+    const lerpState = { mode: 'base' };
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
       autoRaf: true,
-      lerp,
+      lerp: lerpRef.value,
+      wheelMultiplier: 0.65,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
@@ -2279,10 +2281,21 @@ async function loadPostLCP(config) {
     window.addEventListener('wheel', (e) => {
       if (Math.abs(e.deltaY) > fsThreshold) {
         window.lenis.options.lerp = fsFactor;
+        lerpState.mode = 'fast';
         clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        fsScrollTimer = setTimeout(() => {
+          window.lenis.options.lerp = lerpRef.value;
+          lerpState.mode = 'base';
+        }, fsDelay);
       }
     }, { passive: true });
+    if (PAGE_URL.searchParams.get('vqapanel') === 'on') {
+      import('../c2/scroll-debug.js').then(({ default: initScrollDebug }) => initScrollDebug({
+        lenis: window.lenis,
+        lerpRef,
+        lerpState,
+      }));
+    }
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
