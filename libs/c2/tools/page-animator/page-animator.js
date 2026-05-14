@@ -3,7 +3,7 @@ import StyleManager from './style-manager.js';
 import { buildPanel, loadStoredState, saveState } from './panel.js';
 import { serializeState, deserializeState, CONTROLS } from './controls.js';
 
-(function init() {
+(function init() { // eslint-disable-line wrap-iife
   if (document.getElementById('page-animator-panel')) return;
 
   // Inject stylesheet
@@ -65,14 +65,15 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
 
   // Route wheel events explicitly to the tree — prevents page scroll from stealing focus
   currentPanel.addEventListener('wheel', (e) => {
-    const tree = currentPanel.querySelector('#pa-tree');
-    if (!tree) return;
+    const treeEl = currentPanel.querySelector('#pa-tree');
+    if (!treeEl) return;
     e.preventDefault();
     e.stopPropagation();
-    tree.scrollTop += e.deltaY;
+    treeEl.scrollTop += e.deltaY;
   }, { passive: false });
 
   document.body.appendChild(currentPanel);
+  currentPanel.classList.add('pa-open');
 
   const tab = document.createElement('div');
   tab.id = 'page-animator-tab';
@@ -112,40 +113,11 @@ import { serializeState, deserializeState, CONTROLS } from './controls.js';
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('[page-animator] Import failed:', err);
+          // eslint-disable-next-line no-alert
           alert(`Import failed: ${err.message}`);
         }
       });
       input.click();
-    });
-
-    panelEl.querySelector('#pa-da-btn').addEventListener('click', async () => {
-      const token = window.adobeIMS?.getAccessToken()?.token;
-
-      if (!token) {
-        alert('Sign in to Adobe first, then try again.');
-        return;
-      }
-
-      const json = serializeState(tree, stateMap);
-      const daPath = `${window.location.pathname}.animations.json`;
-      let res;
-      try {
-        res = await fetch(`https://admin.da.live/source${daPath}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify(json, null, 2),
-        });
-      } catch (err) {
-        alert(`DA save failed: ${err.message}`);
-        return;
-      }
-
-      if (!res.ok) {
-        alert(`DA save failed: ${res.status} ${res.statusText}`);
-        return;
-      }
-
-      window.open(`https://da.live${daPath}`, '_blank');
     });
   }
 

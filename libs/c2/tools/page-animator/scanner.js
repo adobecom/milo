@@ -1,6 +1,6 @@
 import { generateAnimId } from './controls.js';
 
-const SKIP_CLASSES = new Set(['section-metadata', 'visually-hidden', 'animation']);
+const SKIP_CLASSES = new Set(['section-metadata', 'visually-hidden', 'animation', 'section-background']);
 
 export function scanPage() {
   return [...document.querySelectorAll('.section')].map((section, sIdx) => {

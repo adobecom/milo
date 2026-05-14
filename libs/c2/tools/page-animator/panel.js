@@ -14,7 +14,13 @@ export function saveState(stateMap) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(stateMap));
 }
 
-export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockSourceIds = new Set()) {
+export function buildPanel(
+  tree,
+  stateMap,
+  callbacks,
+  blockStateMap = {},
+  blockSourceIds = new Set(),
+) {
   const { onLiveUpdate, onCommitUpdate, onReset } = callbacks;
 
   const panel = document.createElement('div');
@@ -25,56 +31,53 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
       <div class="pa-header-actions">
         <button class="pa-btn" id="pa-import-btn">Import</button>
         <button class="pa-btn" id="pa-download-btn">&#8595; JSON</button>
-        <button class="pa-btn" id="pa-da-btn">Save to DA</button>
+        <button class="pa-btn" id="pa-help-btn">Instructions</button>
+      </div>
+    </div>
+    <div class="pa-instructions" id="pa-instructions" hidden>
+      <ul>
+        <li>Click a section label to collapse or expand it.</li>
+        <li>Click any item in the tree to open its controls. Click again to close. This will also scroll the page to the item and highlight it on the page.</li>
+        <li>Adjust sliders and dropdowns to configure the animation. Scroll the page near the item you are editing to see the animation work in real time as you scroll.</li>
+        <li>Click the <strong>json</strong> button to save a copy of the current animation panel to you local machine. This can be shared with others to share progress.</li>
+        <li>Click the <strong>import</strong> button to load a saved copy of the animation panel from your local machine. Navigate to where you saved "page-animations.json". You can use this to collaborate with others or to start from a saved state. This will overwrite the current animation panel.</li>
+        <li>Click <strong>Reset animation</strong> to remove an animation from an element.</li>
+      </ul>
+      <div class="pa-instructions-dots">
+        <span class="pa-dot"></span> No animation &nbsp;
+        <span class="pa-dot" style="background:#0d66d0"></span> Panel animation &nbsp;
+        <span class="pa-dot" style="background:#2d9e5f"></span> From DA block
       </div>
     </div>
     <div class="pa-tree" id="pa-tree"></div>
   `;
 
+  panel.querySelector('#pa-help-btn').addEventListener('click', () => {
+    const instructions = panel.querySelector('#pa-instructions');
+    instructions.hidden = !instructions.hidden;
+  });
+
   let selectedId = null;
   let selectedEl = null;
+  const collapsedSections = new Set();
 
-  function selectItem(item) {
-    if (selectedEl) selectedEl.classList.remove('pa-highlight');
-    selectedId = item.id;
-    selectedEl = item.el;
-    selectedEl.classList.add('pa-highlight');
-    selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    renderTree();
-  }
-
-  function renderTree() {
-    const treeEl = panel.querySelector('#pa-tree');
-    treeEl.innerHTML = '';
-
-    tree.forEach((section) => {
-      const group = document.createElement('div');
-      group.className = 'pa-section-group';
-
-      const sLabel = document.createElement('div');
-      sLabel.className = 'pa-section-label';
-      sLabel.textContent = section.label;
-      group.appendChild(sLabel);
-
-      const allItems = [{ id: section.id, label: 'Section itself', el: section.el }, ...section.blocks];
-
-      allItems.forEach((item) => {
-        const row = document.createElement('div');
-        const isSelected = item.id === selectedId;
-        const hasAnim = !!stateMap[item.id];
-        const fromBlock = blockSourceIds.has(item.id);
-        row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}`;
-        row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
-        row.addEventListener('click', () => selectItem(item));
-        group.appendChild(row);
-
-        if (isSelected) {
-          group.appendChild(buildControls(item));
-        }
-      });
-
-      treeEl.appendChild(group);
-    });
+  function buildCopyHtml(item) {
+    const sectionNode = tree.find(
+      (s) => s.id === item.id || s.blocks.some((b) => b.id === item.id),
+    );
+    let header;
+    if (sectionNode.id === item.id) {
+      header = 'animation';
+    } else {
+      const blockClass = item.el.classList[0];
+      const sameClass = sectionNode.blocks.filter((b) => b.el.classList[0] === blockClass);
+      const sibIdx = sameClass.findIndex((b) => b.id === item.id);
+      const variantToken = blockClass.includes('-') ? `(${blockClass})` : blockClass;
+      header = sibIdx > 0 ? `animation ${variantToken} ${sibIdx + 1}` : `animation ${variantToken}`;
+    }
+    const state = stateMap[item.id] || getDefaultState();
+    const rows = CONTROLS.map((c) => `<tr><td>${c.cssVar}</td><td>${state[c.cssVar] ?? c.default}</td></tr>`).join('');
+    return `<table><tr><td colspan="2">${header}</td></tr>${rows}</table>`;
   }
 
   function buildControls(item) {
@@ -145,6 +148,7 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
         onReset(item.el, item.id);
         saveState(stateMap);
       }
+      // eslint-disable-next-line no-use-before-define
       renderTree();
     });
     wrap.appendChild(resetBtn);
@@ -168,21 +172,63 @@ export function buildPanel(tree, stateMap, callbacks, blockStateMap = {}, blockS
     return wrap;
   }
 
-  function buildCopyHtml(item) {
-    const sectionNode = tree.find((s) => s.id === item.id || s.blocks.some((b) => b.id === item.id));
-    let header;
-    if (sectionNode.id === item.id) {
-      header = 'animation';
-    } else {
-      const blockClass = item.el.classList[0];
-      const sameClass = sectionNode.blocks.filter((b) => b.el.classList[0] === blockClass);
-      const sibIdx = sameClass.findIndex((b) => b.id === item.id);
-      const variantToken = blockClass.includes('-') ? `(${blockClass})` : blockClass;
-      header = sibIdx > 0 ? `animation ${variantToken} ${sibIdx + 1}` : `animation ${variantToken}`;
+  function renderTree() {
+    const treeEl = panel.querySelector('#pa-tree');
+    treeEl.innerHTML = '';
+
+    tree.forEach((section) => {
+      const group = document.createElement('div');
+      group.className = 'pa-section-group';
+
+      const isCollapsed = collapsedSections.has(section.id);
+
+      const sLabel = document.createElement('div');
+      sLabel.className = `pa-section-label${isCollapsed ? ' pa-collapsed' : ''}`;
+      sLabel.textContent = section.label;
+      sLabel.addEventListener('click', () => {
+        if (collapsedSections.has(section.id)) collapsedSections.delete(section.id);
+        else collapsedSections.add(section.id);
+        renderTree();
+      });
+      group.appendChild(sLabel);
+
+      if (!isCollapsed) {
+        const allItems = [{ id: section.id, label: 'Section itself', el: section.el }, ...section.blocks];
+
+        allItems.forEach((item) => {
+          const row = document.createElement('div');
+          const isSelected = item.id === selectedId;
+          const hasAnim = !!stateMap[item.id];
+          const fromBlock = blockSourceIds.has(item.id);
+          row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}`;
+          row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
+          // eslint-disable-next-line no-use-before-define
+          row.addEventListener('click', () => selectItem(item));
+          group.appendChild(row);
+
+          if (isSelected) {
+            group.appendChild(buildControls(item));
+          }
+        });
+      }
+
+      treeEl.appendChild(group);
+    });
+  }
+
+  function selectItem(item) {
+    if (selectedEl) selectedEl.classList.remove('pa-highlight');
+    if (selectedId === item.id) {
+      selectedId = null;
+      selectedEl = null;
+      renderTree();
+      return;
     }
-    const state = stateMap[item.id] || getDefaultState();
-    const rows = CONTROLS.map((c) => `<tr><td>${c.cssVar}</td><td>${state[c.cssVar] ?? c.default}</td></tr>`).join('');
-    return `<table><tr><td colspan="2">${header}</td></tr>${rows}</table>`;
+    selectedId = item.id;
+    selectedEl = item.el;
+    selectedEl.classList.add('pa-highlight');
+    selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    renderTree();
   }
 
   renderTree();
