@@ -1,12 +1,6 @@
 import { signal } from '../../../deps/htm-preact.js';
-import { getConfig } from '../../../utils/utils.js';
 import { setStatus } from './status.js';
 import { origin } from './franklin.js';
-
-function getLocConfigPath() {
-  const { env } = getConfig();
-  return env?.name === 'prod' ? '/.milo/config.json' : '/.milo/config-stage.json';
-}
 
 export const telemetry = { application: { appName: 'Adobe Localization' } };
 
@@ -31,6 +25,13 @@ export const canRefresh = signal(false);
 export const serviceStatus = signal('');
 export const serviceStatusDate = signal();
 export const isLOCV3RolloutFlow = signal(false);
+
+function getLocConfigPath() {
+  if (!heading.value.name) {
+    return '/.milo/config.json';
+  }
+  return heading.value.env === 'prod' ? '/.milo/config.json' : '/.milo/config-stage.json';
+}
 
 export function getSiteConfig() {
   setStatus('siteConfig', 'info', 'Getting site settings.');
