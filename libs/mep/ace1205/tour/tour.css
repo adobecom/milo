@@ -26,6 +26,7 @@
   display: block;
   font-family: var(--body-font-family, adobe-clean, sans-serif);
   max-width: 596px;
+  overflow-x: clip;
   padding-top: var(--s2a-spacing-md);
   width: 100%;
 }
