@@ -1,0 +1,261 @@
+/* tour
+ * A scrollable, vertically-stacked set of sections rendered inside
+ * a Milo dialog-modal fragment.
+ * Figma: page 9482:51322, Frame 2147230527 (desktop).
+ *
+ * Structure:
+ *   Row 0  → .tour-title  (eyebrow + headline)
+ *   Rows 1+ → .tour-section
+ *   One     → .tour-cta    (sticky at bottom)
+ *
+ * Z-pattern (desktop only):
+ *   Section 1 (odd non-last): items-end (RIGHT)
+ *   Section 2 (even):         items-start (LEFT)
+ *   Section 3 (last):         items-center (CENTER)
+ *
+ * Mobile-first: mobile styles are the default, desktop overrides
+ * are inside @media (min-width: 769px).
+ */
+
+/* Modal width is controlled by the C2 foundation dialog-modal CSS.
+ * max-width:596px is a safety cap matching the Figma frame width —
+ * the block never exceeds 596px even if the modal allows more. */
+.tour {
+  background: var(--s2a-color-background-default);
+  color: var(--s2a-color-content-default);
+  display: block;
+  font-family: var(--body-font-family, adobe-clean, sans-serif);
+  max-width: 596px;
+  padding-top: var(--s2a-spacing-md);
+  width: 100%;
+}
+
+/* Figma 9622:83435 — grab handle, 52px wide, 3px thick */
+.tour::before {
+  background: var(--s2a-color-gray-300);
+  border-radius: 2px;
+  content: '';
+  display: block;
+  height: 3px;
+  margin: 0 auto var(--s2a-spacing-md);
+  width: 52px;
+}
+
+/* ── Modal title ─────────────────────────────────── */
+
+.tour-title {
+  background: var(--s2a-color-background-default);
+  padding-block: var(--s2a-spacing-md);
+  padding-inline-end: calc(var(--s2a-spacing-md) + 48px);
+  padding-inline-start: var(--s2a-spacing-md);
+}
+
+/*
+ * Figma: s2a/typography/title-6 — responsive sizing via C2 foundation.
+ * Font family and weight override: Adobe Clean Display Black.
+ */
+.tour-title p,
+.tour-title h1,
+.tour-title h2,
+.tour-title h3,
+.tour-title h4,
+.tour-title h5,
+.tour-title h6 {
+  color: var(--s2a-color-content-label);
+  font-family: var(--font-family-adobe-clean-display, 'Adobe Clean Display', adobe-clean, sans-serif);
+  font-weight: 900;
+  letter-spacing: -0.48px;
+  margin: 0;
+}
+
+/* ── Section ──────────────────────────────────────── */
+
+.tour-section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Counter: ( X/Y ) ─────────────────────────────── */
+
+.tour-counter {
+  color: var(--s2a-color-content-default);
+  font-family: var(--s2a-font-family-label, adobe-clean, sans-serif);
+  font-size: var(--s2a-typography-font-size-label);
+  font-weight: 700;
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
+  margin-block-end: var(--s2a-spacing-md);
+}
+
+/* ── Text content area ────────────────────────────── */
+
+.tour-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.tour-content p {
+  margin-block: 0;
+}
+
+.tour-content p + p {
+  margin-block-start: var(--s2a-spacing-lg);
+}
+
+/* ── Media area ───────────────────────────────────── */
+
+.tour-media {
+  margin-block-start: var(--s2a-spacing-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+.tour-media picture {
+  display: block;
+}
+
+.tour-media img {
+  border-radius: var(--s2a-border-radius-sm);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+/* Section 2 (even): image constrained at mobile */
+.tour-section:nth-of-type(even) .tour-media {
+  padding-inline-end: var(--s2a-spacing-lg);
+  width: min(495px, 100%);
+}
+
+.tour-section:nth-of-type(even) .tour-media img {
+  border-radius: 0 var(--s2a-border-radius-sm) var(--s2a-border-radius-sm) 0;
+  max-width: 495px;
+}
+
+/* Section 3 (last): full-width, black bg for letterboxing */
+.tour-section:last-of-type .tour-media {
+  background: #000;
+  border-radius: var(--s2a-border-radius-sm);
+  width: 100%;
+}
+
+/* Section 1 (odd non-last): constrained at mobile */
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
+  margin-inline: auto;
+  width: min(287px, 100%);
+}
+
+/* ── Transition (standalone element between sections) ─ */
+
+/*
+ * Figma 9543:116727 — separate div between sections, centred,
+ * py-[80px].  Full modal width so it's independent of the
+ * section Z-pattern alignment.
+ */
+.tour-transition {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--s2a-layout-sm);
+  width: 100%;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- different context */
+.tour-transition img {
+  border-radius: var(--s2a-border-radius-sm);
+  max-width: 160px;
+  width: auto;
+}
+
+/* ── Promo CTA container (sticky at bottom) ──────── */
+
+/*
+ * Button styling (border-radius, colors, icon, arrow) is handled by
+ * the shared C2 promo-cta component.  This block only owns the
+ * sticky positioning and frosted backdrop of the CTA bar.
+ */
+.tour-cta {
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0%), #fff);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding-block: 10px;
+  padding-inline: 40px;
+  position: sticky;
+  width: 100%;
+  z-index: 1;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- different context */
+.tour-cta p,
+.tour-cta .action-area {
+  line-height: 0;
+  margin: 0;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- CTA context */
+.tour-cta p {
+  line-height: 0;
+  margin: 0;
+}
+
+/* ── Desktop (769px and above) ───────────────────── */
+
+/*
+ * Z-pattern layout, content max-widths, and fixed media widths
+ * only apply at desktop. Mobile uses linear layout with full-width
+ * content.
+ */
+@media (min-width: 769px) {
+  /* Z-pattern alignment */
+  .tour-section:nth-of-type(even) {
+    align-items: flex-start;
+  }
+
+  .tour-section:last-of-type {
+    align-items: center;
+    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-xs);
+    padding-inline: var(--s2a-spacing-xs);
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) {
+    align-items: flex-end;
+    padding-inline: var(--s2a-spacing-xs);
+    padding-block-start: var(--s2a-layout-lg);
+  }
+
+  /* Content max-widths per section */
+  .tour-section:nth-of-type(even) .tour-content {
+    max-width: 286px;
+    padding-block-end: var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-lg);
+  }
+
+  .tour-section:last-of-type .tour-content {
+    max-width: 394px;
+    padding-block-end: var(--s2a-spacing-lg);
+    text-align: center;
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
+    margin-inline-end: 100px;
+    max-width: 287px;
+  }
+
+  /* Fixed media widths */
+  .tour-section:nth-of-type(even) .tour-media {
+    width: 100%;
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
+    margin-inline: 0;
+    width: 387px;
+  }
+
+  /* Desktop CTA bar: Figma 9659:9817 — blur 50px, 96px bar */
+  .tour-cta {
+    backdrop-filter: blur(50px);
+    padding-block: var(--s2a-spacing-20);
+    padding-inline: var(--s2a-spacing-lg);
+  }
+}
