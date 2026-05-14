@@ -1,8 +1,8 @@
 const CONFIG = {
-  spacing: 40, // default 16
-  mobileSpacing: 45, // 24
-  dotSize: 1.2, // 1
-  mouseRadius: 60, // 125
+  spacing: 16, // default 16
+  mobileSpacing: 24, // 24
+  dotSize: 1, // 1
+  mouseRadius: 125, // 125
   repelForce: 20,
   spring: 0.01,
   damping: 0.59,

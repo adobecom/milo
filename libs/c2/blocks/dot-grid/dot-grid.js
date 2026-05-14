@@ -98,8 +98,8 @@ const ANIM = {
   mobileSlideDuration: 300,
   mobileArcAlpha: 0.6,
   // Kept as separate objects so each breakpoint can be retuned independently.
-  mobileSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0.90, scale: 0.85 },
-  desktopSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0.90, scale: 0.85 },
+  mobileSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0, scale: 0.85 },
+  desktopSlide: { stagger: 0.45, staggerX: 0.20, startX: 0.55, startY: 0, scale: 0.85 },
 
   // Arc shape + feel
   arcStagger: 0.50,
@@ -256,10 +256,10 @@ function parseAuthoredContent(el) {
   const titleEl = titleRow.firstElementChild;
   const textBlockEl = textRow.firstElementChild;
   const ctaEl = ctaRow.firstElementChild;
-  // TODO: mobile UI 1st col, desktop UI 2nd col
-  const [mobileMockupCol, desktopMockupCol] = mockupRow.children;
-  const mobileMockupImgEl = mobileMockupCol.querySelector('picture');
-  const desktopMockupImgEl = desktopMockupCol.querySelector('picture');
+  const [mobileMockupCol, desktopMockupCol, desktopPanelCol] = mockupRow.children;
+  const mobileMockupImgEl = mobileMockupCol?.querySelector('picture');
+  const desktopMockupImgEl = desktopMockupCol?.querySelector('picture');
+  const desktopPanelImgEl = desktopPanelCol?.querySelector('picture');
   return {
     titleEl,
     cards,
@@ -267,6 +267,7 @@ function parseAuthoredContent(el) {
     ctaEl,
     mobileMockupImgEl,
     desktopMockupImgEl,
+    desktopPanelImgEl,
   };
 }
 
@@ -329,10 +330,14 @@ const ADBE_LOGO = `
 
 function buildStage(el) {
   const {
-    titleEl, cards: cardDefs, textBlockEl, ctaEl, mobileMockupImgEl, desktopMockupImgEl,
+    titleEl, cards: cardDefs, textBlockEl, ctaEl,
+    mobileMockupImgEl, desktopMockupImgEl, desktopPanelImgEl,
   } = parseAuthoredContent(el);
   const desktopMockupWrapper = createTag('div', { class: 'acrobat-desktop-mockup' });
   if (desktopMockupImgEl) desktopMockupWrapper.appendChild(desktopMockupImgEl);
+  const desktopPanelWrapper = createTag('div', { class: 'acrobat-desktop-panel' });
+  if (desktopPanelImgEl) desktopPanelWrapper.appendChild(desktopPanelImgEl);
+  desktopMockupWrapper.appendChild(desktopPanelWrapper);
   const mobileMockupWrapper = createTag('div', { class: 'acrobat-mobile-mockup' });
   if (mobileMockupImgEl) mobileMockupWrapper.appendChild(mobileMockupImgEl);
   const stage = createTag(
@@ -369,6 +374,7 @@ export default async function init(el) {
     canvas, adbeLogoPath,
   } = buildStage(el);
   const desktopMockupEl = stage.querySelector('.acrobat-desktop-mockup');
+  const desktopPanelEl = stage.querySelector('.acrobat-desktop-panel');
 
   // dasharray >> path length so the full dash covers the path with no snake effect
   const adbeLogoLength = Math.max(adbeLogoPath.getTotalLength(), 3000) * 2 + 500;
@@ -466,7 +472,8 @@ export default async function init(el) {
     const middleAngle = arcAngle - Math.PI / 2;
     const rotationOffset = ANIM.arcSpan * 0.5 - ANIM.arcSpan * 1.5 * arcRotationProgress;
     const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
-    const flattenProgress = easeInOutCubic(Math.min(1, phase.arcToGrid * 2));
+    const flattenRaw = clamp01((phase.arcToGrid - 0.5) / 0.5);
+    const flattenProgress = 0.20 * easeInOutCubic(flattenRaw);
     let tangentDirectionX = 0;
     let tangentDirectionY = 0;
     let arcMidpointX = 0;
@@ -998,6 +1005,12 @@ export default async function init(el) {
       stage.style.setProperty('--cta-y', `${mockupTranslateY - panY}px`);
       const ctaVisiblePx = viewportHeight - cachedAcrobatCtaTop + panY;
       ctaEl.style.opacity = Math.max(0, Math.min(1, ctaVisiblePx / 60)).toFixed(3);
+      if (desktopPanelEl) {
+        const media = desktopPanelEl.querySelector('picture');
+        const panelRevealT = clamp01((phase.slotting - 0.6) / 0.4);
+        const panelEase = easeOutCubic(panelRevealT);
+        media.style.transform = `translateX(${((1 - panelEase) * 100).toFixed(2)}%)`;
+      }
     }
   }
 

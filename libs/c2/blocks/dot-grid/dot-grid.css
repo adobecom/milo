@@ -16,7 +16,6 @@
   overflow: hidden;
   width: 100%;
   height: 100vh;
-  background: #f6f6f6;
   isolation: isolate;
 }
 
@@ -111,7 +110,7 @@
   overflow: hidden;
   width: min(68.6vw, 971px);
   aspect-ratio: 971 / 576;
-  border-radius: 10px;
+  border-radius: 18px; 
   box-shadow: 0 20px 60px rgb(0 0 0 / 60%);
   transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
   transform-origin: center center;
@@ -126,6 +125,24 @@
   width: 100%;
   height: 100%;
   object-fit: fill;
+}
+
+.dot-grid .acrobat-desktop-panel {
+  position: absolute;
+  margin: 10px;
+  inset: 0;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.dot-grid .acrobat-desktop-panel picture {
+  transform: translateX(100%);
+  will-change: transform;
+  padding: 10px;
+  width: auto;
+  height: 95%;
 }
 
 .dot-grid .acrobat-mobile-mockup {
@@ -267,6 +284,10 @@
 
 @media (width <= 767px) {
   .dot-grid .acrobat-desktop-mockup {
+    display: none !important;
+  }
+
+  .dot-grid .acrobat-desktop-panel {
     display: none !important;
   }
 
