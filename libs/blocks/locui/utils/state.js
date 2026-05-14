@@ -26,11 +26,14 @@ export const serviceStatus = signal('');
 export const serviceStatusDate = signal();
 export const isLOCV3RolloutFlow = signal(false);
 
+const LOC_CONFIG_PATH = '/.milo/config.json';
+const LOC_CONFIG_STAGE_PATH = '/.milo/config-stage.json';
+
 function getLocConfigPath() {
   if (!heading.value.name) {
-    return '/.milo/config.json';
+    return LOC_CONFIG_PATH;
   }
-  return heading.value.env === 'prod' ? '/.milo/config.json' : '/.milo/config-stage.json';
+  return heading.value.env === 'prod' ? LOC_CONFIG_PATH : LOC_CONFIG_STAGE_PATH;
 }
 
 export function getSiteConfig() {
@@ -44,8 +47,8 @@ export function getSiteConfig() {
     }
     const primaryPath = getLocConfigPath();
     let resp = await fetch(`${origin}${primaryPath}`);
-    if (!resp.ok && primaryPath !== '/.milo/config.json') {
-      resp = await fetch(`${origin}/.milo/config.json`);
+    if (!resp.ok && primaryPath !== LOC_CONFIG_PATH) {
+      resp = await fetch(`${origin}${LOC_CONFIG_PATH}`);
     }
     if (!resp.ok) {
       setStatus('siteConfig', 'error', 'Error getting site settings.');
