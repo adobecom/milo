@@ -177,7 +177,6 @@ export const LOCALES = {
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
-export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -563,6 +562,15 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   return lingoSiteMappingPromise;
 }
 
+export function initBulkPublisherLingoMapping() {
+  lingoSiteMappingPromise = fetch(
+    'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
+  ).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  });
+}
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
@@ -822,10 +830,9 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
   requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeaderName, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, state.floodgateColor]);
   }
   return requestHeaders;
 };
@@ -1239,6 +1246,7 @@ export const defaultState = {
   andLogicTags: [],
   autoCountryLang: false,
   fetchCardsFromFloodgateTree: false,
+  floodgateColor: '',
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

@@ -406,7 +406,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
     },
   );
 
-  // Test 9: Brand Concierge web client pre-load
+  // Test 9: Brand Concierge web client load (lazy, on first modal open)
   test(
     `[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`,
     async ({ page, baseURL }) => {
@@ -422,8 +422,18 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(bc.block).toBeVisible();
       });
 
-      await test.step('step-3: Verify web client main.js script is pre-loaded into the DOM', async () => {
-        // Script is injected as the final step of init(), before any modal opens.
+      await test.step('step-3: Verify web client script is NOT yet loaded before modal opens', async () => {
+        // BC M2 fast-follows changed the loader: web-client main.js is
+        // injected lazily inside openChatModal, not as a final init step.
+        await expect(bc.webClientScript).toHaveCount(0);
+      });
+
+      await test.step('step-4: Trigger modal by clicking the first prompt card', async () => {
+        await bc.promptButtons.first().click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-5: Verify web client main.js is now attached after modal open', async () => {
         await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
 
         const scriptSrc = await bc.webClientScript.first().getAttribute('src');
@@ -445,7 +455,14 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(bc.block).toBeVisible();
       });
 
-      await test.step('step-2: Verify baseStage web agent script is loaded', async () => {
+      await test.step('step-2: Trigger modal so the web client script is loaded', async () => {
+        // Web client is loaded lazily inside openChatModal; trigger it
+        // through a prompt card click.
+        await bc.promptButtons.first().click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-3: Verify baseStage web agent script is loaded', async () => {
         // baseStage uses experience-platform-brand-concierge-web-agent on experience-stage.adobe.net
         await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
 

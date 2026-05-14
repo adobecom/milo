@@ -34,9 +34,10 @@ Never use `min-width:` / `max-width:` shorthand.
 
 | Class | Behaviour |
 |-------|-----------|
-| `.container` | Standard: max-width **1440 px** content area. |
-| `.container.wide` | HD: max-width **1920 px** content area. |
+| `.container` | max-width **1920 px** content area. Fixed side margins on mobile, percentage based above |
+| `.container.fixed` | max-width **1920 px** content area. Fixed side margins on all viewports |
 | `.container.fluid` | No max-width cap (stretches to **2560 px** max). |
+
 
 Blocks should respect whichever container they are placed inside.
 Do not hardcode max-width on a block unless explicitly required by
