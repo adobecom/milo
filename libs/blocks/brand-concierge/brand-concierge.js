@@ -627,6 +627,19 @@ function decorateFloatingButton(el) {
   floatingElement(floatingButton, el, floatingContainer);
 }
 
+function updatePillVisibility(el) {
+  const cards = el.querySelector('.bc-prompt-cards');
+  if (!cards) return;
+  const buttons = [...cards.querySelectorAll('.prompt-card-button')];
+  buttons.forEach((btn) => { btn.style.display = ''; });
+  const containerRight = cards.getBoundingClientRect().right;
+  buttons.forEach((btn) => {
+    if (btn.getBoundingClientRect().right > containerRight) {
+      btn.style.display = 'none';
+    }
+  });
+}
+
 function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();
@@ -728,11 +741,12 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     const mainEl = document.querySelector('main');
-    if (mainEl) {
-      const updatePadding = () => { mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`; };
-      window.addEventListener('resize', updatePadding);
-      requestAnimationFrame(updatePadding);
-    }
+    const updateLayout = () => {
+      if (mainEl) mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`;
+      updatePillVisibility(el);
+    };
+    window.addEventListener('resize', updateLayout);
+    requestAnimationFrame(updateLayout);
   }
 
   const loginTestButton = params.get('susi-test-btn');
