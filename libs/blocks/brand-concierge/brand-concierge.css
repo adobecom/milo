@@ -989,13 +989,11 @@
   background: #1A1A1A;
 }
 
-/* Mobile: stack vertically, pills scroll horizontally */
+/* Mobile phone: hide pills, expand input to fill bar */
 @media screen and (max-width: 599px) {
   .brand-concierge.floating-input {
     border-radius: 16px 16px 0 0;
     bottom: 0;
-    flex-direction: column;
-    gap: 10px;
     left: 0;
     max-width: none;
     padding: 16px;
@@ -1003,21 +1001,14 @@
     width: 100%;
   }
 
+  .brand-concierge.floating-input .bc-prompt-cards {
+    display: none;
+  }
+
   .brand-concierge.floating-input .bc-input-field {
+    flex: 1;
     max-width: none;
     min-width: 0;
-    width: 100%;
-  }
-
-  .brand-concierge.floating-input .bc-prompt-cards {
-    overflow-x: auto;
-    scrollbar-width: none;
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .brand-concierge.floating-input .bc-prompt-cards::-webkit-scrollbar {
-    display: none;
   }
 }
 
