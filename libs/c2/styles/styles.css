@@ -917,7 +917,6 @@ p {
   gap: var(--s2a-spacing-sm);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   line-height: var(--s2a-typography-line-height-eyebrow);
-  min-height: 56px;
   padding-block: var(--s2a-spacing-sm);
   padding-inline-end: var(--s2a-spacing-sm);
   padding-inline-start: var(--s2a-spacing-sm);
