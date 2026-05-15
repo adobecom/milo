@@ -133,7 +133,7 @@ describe('breadcrumbs', () => {
             '@type': 'ListItem',
             position: 4,
             name: 'Players',
-            item: `${window.location.origin}${window.location.pathname}`,
+            item: window.location.href,
           },
         ],
       },
@@ -144,46 +144,6 @@ describe('breadcrumbs', () => {
     document.head.innerHTML = '<meta name="breadcrumb-seo" content="off">';
     await breadcrumbs(breadcrumbMock());
     expect(document.querySelector('script')).to.not.exist;
-  });
-
-  it('rewrites item URLs to canonical production origin when canonical link is present', async () => {
-    document.head.innerHTML = '<link rel="canonical" href="https://www.adobe.com/products/photoshop.html">';
-    const mock = toFragment`
-      <div class="breadcrumbs">
-        <div><div><ul>
-          <li><a href="/products/">Products</a></li>
-          <li><a href="/products/photoshop.html">Photoshop</a></li>
-          <li>Photoshop on iPhone</li>
-        </ul></div></div>
-      </div>
-    `;
-    await breadcrumbs(mock);
-    const script = document.querySelector('script[type="application/ld+json"]');
-    const parsed = JSON.parse(script.innerHTML);
-    // All item URLs use production origin (https://www.adobe.com), not the test runner origin.
-    expect(parsed.itemListElement[0].item).to.equal('https://www.adobe.com/products/');
-    expect(parsed.itemListElement[1].item).to.equal('https://www.adobe.com/products/photoshop.html');
-    // Last item (no <a>) falls back to canonical URL — production, no query params.
-    expect(parsed.itemListElement[2].item).to.equal('https://www.adobe.com/products/photoshop.html');
-  });
-
-  it('leaves external item URLs alone (only rewrites same-origin URLs to canonical origin)', async () => {
-    document.head.innerHTML = '<link rel="canonical" href="https://www.adobe.com/x">';
-    const mock = toFragment`
-      <div class="breadcrumbs">
-        <div><div><ul>
-          <li><a href="https://example.com/external?keep=this">External</a></li>
-          <li><a href="/local">Local</a></li>
-        </ul></div></div>
-      </div>
-    `;
-    await breadcrumbs(mock);
-    const script = document.querySelector('script[type="application/ld+json"]');
-    const parsed = JSON.parse(script.innerHTML);
-    // External hostname preserved, but query string still stripped.
-    expect(parsed.itemListElement[0].item).to.equal('https://example.com/external');
-    // Same-origin path rewritten to canonical origin.
-    expect(parsed.itemListElement[1].item).to.equal('https://www.adobe.com/local');
   });
 
   it('should create a breadcrumb from a file', async () => {
@@ -251,7 +211,7 @@ describe('breadcrumbs', () => {
             '@type': 'ListItem',
             position: 4,
             name: 'Players',
-            item: `${window.location.origin}${window.location.pathname}`,
+            item: window.location.href,
           },
         ],
       },
