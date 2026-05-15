@@ -68,7 +68,7 @@ The first row is the block header. It defines which element in the section to an
 
 | Variant | Target |
 |---|---|
-| `animation` | The section itself |
+| `animation` | The section block |
 | `animation marquee` | First `.marquee` in the section |
 | `animation (base-card)` | First `.base-card` in the section (use parens for hyphenated names) |
 | `animation text 2` | Second `.text` in the section |

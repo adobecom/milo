@@ -272,7 +272,7 @@ export function buildPanel(
       group.appendChild(sLabel);
 
       if (!isCollapsed) {
-        const allItems = [{ id: section.id, label: 'Section itself', el: section.el }, ...section.blocks];
+        const allItems = [{ id: section.id, label: 'Section block', el: section.el }, ...section.blocks];
 
         allItems.forEach((item) => {
           const row = document.createElement('div');
@@ -284,6 +284,18 @@ export function buildPanel(
           row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
           // eslint-disable-next-line no-use-before-define
           row.addEventListener('click', () => selectItem(item));
+          row.addEventListener('mouseenter', () => {
+            if (item.id !== selectedId) {
+              item.el.classList.add('pa-highlight');
+              item.el.setAttribute('data-pa-label', item.label);
+            }
+          });
+          row.addEventListener('mouseleave', () => {
+            if (item.id !== selectedId) {
+              item.el.classList.remove('pa-highlight');
+              item.el.removeAttribute('data-pa-label');
+            }
+          });
           group.appendChild(row);
 
           if (isSelected) {
@@ -300,7 +312,10 @@ export function buildPanel(
   }
 
   function selectItem(item) {
-    if (selectedEl) selectedEl.classList.remove('pa-highlight');
+    if (selectedEl) {
+      selectedEl.classList.remove('pa-highlight');
+      selectedEl.removeAttribute('data-pa-label');
+    }
     if (selectedId === item.id) {
       selectedId = null;
       selectedEl = null;
@@ -310,6 +325,7 @@ export function buildPanel(
     selectedId = item.id;
     selectedEl = item.el;
     selectedEl.classList.add('pa-highlight');
+    selectedEl.setAttribute('data-pa-label', item.label);
     selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     renderTree();
   }
