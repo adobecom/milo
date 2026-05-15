@@ -600,7 +600,9 @@ async function decorateArticleFeed(
     // eslint-disable-next-line no-await-in-loop
     await fetchBlogArticleIndex();
   }
-  blogIndex.data.sort((a, b) => calculateExcelDate(Number(b.date)).getTime() - calculateExcelDate(Number(a.date)).getTime());
+  blogIndex.data.sort((a, b) => (
+    calculateExcelDate(Number(b.date)).getTime() - calculateExcelDate(Number(a.date)).getTime()
+  ));
   await filterArticles(feed, limit, offset);
   const articles = feed.data;
 
