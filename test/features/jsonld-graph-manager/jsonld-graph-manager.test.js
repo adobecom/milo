@@ -1143,3 +1143,119 @@ describe('AggregateRating quality thresholds', () => {
     expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
   });
 });
+
+// ---------------------------------------------------------------------------
+// softwareapplication-default-offer (synthesize free Offer for primary SA)
+// ---------------------------------------------------------------------------
+describe('SoftwareApplication default Offer synthesis', () => {
+  it('synthesizes a free Offer when SoftwareApplication is present without offers', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offer = graph.find((n) => n['@type'] === 'Offer');
+    expect(offer).to.exist;
+    expect(offer['@id']).to.equal(`${PAGE_URL}#offer`);
+    expect(offer.price).to.equal('0');
+    expect(offer.priceCurrency).to.equal('USD');
+    expect(offer.availability).to.equal('https://schema.org/InStock');
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+  });
+
+  it('synthesizes the default Offer for WebApplication (SA subtype) lacking offers', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Compress PDF',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offer = graph.find((n) => n['@type'] === 'Offer');
+    expect(offer).to.exist;
+    expect(offer.price).to.equal('0');
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app['@type']).to.equal('WebApplication');
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+  });
+
+  it('does NOT synthesize a default Offer when SoftwareApplication already supplies offers', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: [
+        {
+          '@type': 'Offer',
+          '@id': `${PAGE_URL}#paid`,
+          price: '19.99',
+          priceCurrency: 'USD',
+        },
+      ],
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offers = graph.filter((n) => n['@type'] === 'Offer');
+    // Only the producer's offer exists; no synthesized free Offer.
+    expect(offers).to.have.length(1);
+    expect(offers[0]['@id']).to.equal(`${PAGE_URL}#paid`);
+    expect(offers[0].price).to.equal('19.99');
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#paid` }]);
+  });
+
+  it('does NOT synthesize a default Offer when no SoftwareApplication is present', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'Article',
+      headline: 'Hello',
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
+  });
+
+  it('synthesizes the default Offer when SoftwareApplication.offers is an empty array', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: [],
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offer = graph.find((n) => n['@type'] === 'Offer');
+    expect(offer).to.exist;
+    expect(offer.price).to.equal('0');
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
+  });
+
+  it('preserves distinct producer fragments (#paid, #free-trial) — repeatable-types rule', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+      offers: [
+        { '@type': 'Offer', '@id': 'https://producer.example/path#paid', price: '19.99', priceCurrency: 'USD' },
+        { '@type': 'Offer', '@id': 'https://producer.example/path#free-trial', price: '0.00', priceCurrency: 'USD' },
+      ],
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const offers = graph.filter((n) => n['@type'] === 'Offer');
+    expect(offers).to.have.length(2);
+    const ids = offers.map((o) => o['@id']).sort();
+    // Producer fragments preserved; URL prefix canonicalized to current page.
+    expect(ids).to.deep.equal([`${PAGE_URL}#free-trial`, `${PAGE_URL}#paid`]);
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.offers).to.deep.equal([
+      { '@id': `${PAGE_URL}#paid` },
+      { '@id': `${PAGE_URL}#free-trial` },
+    ]);
+  });
+});

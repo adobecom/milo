@@ -125,6 +125,14 @@ export function normalizeNode(node) {
   }
   const rule = RULES[type];
   if (!rule) return out;
+  if (rule.repeatable && typeof out['@id'] === 'string') {
+    const hashIdx = out['@id'].lastIndexOf('#');
+    const producerFragment = hashIdx >= 0 ? out['@id'].slice(hashIdx) : null;
+    if (producerFragment && producerFragment !== rule.idFragment) {
+      out['@id'] = `${canonicalUrl()}${producerFragment}`;
+      return out;
+    }
+  }
   out['@id'] = pageScopedId(type);
   return out;
 }
@@ -429,6 +437,25 @@ export class JsonLdGraphManager {
       this.sources.delete(ratingId);
       for (const n of this.graph.values()) {
         if (n.aggregateRating?.['@id'] === ratingId) delete n.aggregateRating;
+      }
+    }
+    const saId = pageScopedId('SoftwareApplication');
+    const sa = this.graph.get(saId);
+    if (sa) {
+      const hasOffers = sa.offers != null && !(Array.isArray(sa.offers) && sa.offers.length === 0);
+      if (!hasOffers) {
+        const offerId = pageScopedId('Offer');
+        if (!this.graph.has(offerId)) {
+          this.graph.set(offerId, {
+            '@type': 'Offer',
+            '@id': offerId,
+            price: '0',
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+          });
+          this.sources.set(offerId, 'generated');
+        }
+        sa.offers = [{ '@id': offerId }];
       }
     }
     const nodes = sortNodes([...this.graph.values()]);
