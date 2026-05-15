@@ -61,6 +61,8 @@ function floatingElement(targetEl, el, focusableEl = null) {
 
   const mainElement = document.querySelector('main');
   const mainTop = mainElement.offsetTop;
+  const hasDelay = variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay;
+  const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
   let mainHeight = mainElement.scrollHeight;
   let targetHeight = getTargetHeight(targetEl);
   let elHeight = el.scrollHeight;
@@ -72,12 +74,11 @@ function floatingElement(targetEl, el, focusableEl = null) {
   const ro = new ResizeObserver((entries) => {
     for (const entry of entries) {
       const size = Math.floor(entry.borderBoxSize?.[0]?.blockSize);
-      if (entry.target === el) {
-        elHeight = size ?? el.scrollHeight;
-      } else if (entry.target === mainElement) {
-        mainHeight = size ?? mainElement.scrollHeight;
-      } else if (entry.target === targetEl) {
-        targetHeight = getTargetHeight(targetEl);
+      switch (entry.target) {
+        case el: elHeight = size ?? el.scrollHeight; break;
+        case mainElement: mainHeight = size ?? mainElement.scrollHeight; break;
+        case targetEl: targetHeight = getTargetHeight(targetEl); break;
+        default: break;
       }
     }
   });
@@ -90,9 +91,9 @@ function floatingElement(targetEl, el, focusableEl = null) {
   }
 
   const handleScroll = (target) => {
+    // only values that need to be calculated on scroll are here, to optimize performance
     const threshold = window.scrollY + window.innerHeight - mainTop;
     const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
-    const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
 
     if (threshold > mainHeight) {
       target.style.bottom = `${threshold - mainHeight}px`;
@@ -105,7 +106,7 @@ function floatingElement(targetEl, el, focusableEl = null) {
       showFloating();
       target.style.bottom = '0';
     }
-    if (variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay) {
+    if (hasDelay) {
       if (window.scrollY > topDelay && threshold <= mainHeight) {
         showFloating();
       }
