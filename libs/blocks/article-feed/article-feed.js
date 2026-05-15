@@ -596,8 +596,14 @@ async function decorateArticleFeed(
   articleCards.append(container);
 
   const pageEnd = offset + limit;
+  if (offset === 0) {
+    while (!blogIndex.complete) {
+      // eslint-disable-next-line no-await-in-loop
+      await fetchBlogArticleIndex();
+    }
+    blogIndex.data.sort((a, b) => getArticleDate(b) - getArticleDate(a));
+  }
   await filterArticles(feed, limit, offset);
-  if (offset === 0) feed.data.sort((a, b) => getArticleDate(b) - getArticleDate(a));
   const articles = feed.data;
 
   if (articles.length) {
