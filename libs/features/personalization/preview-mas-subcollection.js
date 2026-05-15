@@ -160,8 +160,8 @@ export function injectSubCollectionBadge(container, pageMarket) {
       target: '_blank',
       rel: 'noopener noreferrer',
     },
-    labelText,
   );
+  a.textContent = labelText;
   a.dataset.mepMasSubId = active.id;
   a.dataset.mepMasMarket = pageMarket || '';
   // CRITICAL: insert OUTSIDE the container, not inside. The container is a

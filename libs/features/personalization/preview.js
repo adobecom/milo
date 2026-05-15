@@ -337,7 +337,7 @@ function injectMasCardActionStack(card) {
   const marketSuffix = market ? ` \u00b7 ${market}` : '';
   const mismatchClass = mismatch ? ` ${CARD_ACTIONS_CLASS}-mismatch` : '';
 
-  stack.append(createTag(
+  const editLink = createTag(
     'a',
     {
       class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
@@ -345,12 +345,13 @@ function injectMasCardActionStack(card) {
       target: '_blank',
       rel: 'noopener noreferrer',
     },
-    `Edit Card${marketSuffix}`,
-  ));
+  );
+  editLink.textContent = `Edit Card${marketSuffix}`;
+  stack.append(editLink);
 
   const osi = getCardFirstOsi(card);
   if (osi) {
-    stack.append(createTag(
+    const ostLink = createTag(
       'a',
       {
         class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
@@ -358,8 +359,9 @@ function injectMasCardActionStack(card) {
         target: '_blank',
         rel: 'noopener noreferrer',
       },
-      `View in OST${marketSuffix}`,
-    ));
+    );
+    ostLink.textContent = `View in OST${marketSuffix}`;
+    stack.append(ostLink);
   }
 
   const fragmentId = getCardFragmentId(card);
@@ -417,8 +419,8 @@ function buildMasBadge(url, surface, market, pageMarket) {
     const chip = createTag(
       'span',
       { class: `${MAS_BADGE_CLASS}-market ${MAS_BADGE_CLASS}-market-${state}` },
-      market.toUpperCase(),
     );
+    chip.textContent = market.toUpperCase();
     a.append(' \u00b7 ', chip);
   }
   return a;
@@ -1505,32 +1507,29 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
     const pageMarketSource = liveCountry ? 'mas-commerce-service' : 'page locale';
 
-    const masHTML = `
-    <h6 class="mep-section-header">M@S</h6>
-    <div class="mep-section-data">
-      <span>Mas Geo Detection</span>
-      <span>${geoDetectionOn ? 'on' : 'off'}</span>
-      <span>Geo Source</span>
-      <span>${escapeHtml(geoDetectionSource)}</span>
-      <span>Page Market</span>
-      <span>${escapeHtml(pageMarket)}</span>
-      <span>Market Source</span>
-      <span>${escapeHtml(pageMarketSource)}</span>
-      <span>Surfaces Detected</span>
-      <span>${masSurfaces}</span>
-      <span class="mep-mas-subitem">Collections</span>
-      <span>${masCounts.collection}</span>
-      <span class="mep-mas-subitem">Sub-collections</span>
-      <span>${masCounts.subCollection}</span>
-      <span class="mep-mas-subitem">Cards</span>
-      <span>${masCounts.card}</span>
-      <span class="mep-mas-subitem">Inline Fields</span>
-      <span>${masCounts.inlineField}</span>
-      <span class="mep-mas-subitem">Standalone Offers</span>
-      <span>${masCounts.standaloneOffer}</span>
-    </div>
-  `;
-    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, masHTML));
+    const section = createTag('div', { class: 'mep-section' });
+    section.append(createTag('h6', { class: 'mep-section-header' }, 'M@S'));
+    const data = createTag('div', { class: 'mep-section-data' });
+    const rows = [
+      ['Mas Geo Detection', geoDetectionOn ? 'on' : 'off'],
+      ['Geo Source', geoDetectionSource],
+      ['Page Market', pageMarket],
+      ['Market Source', pageMarketSource],
+      ['Surfaces Detected', masSurfaces],
+      ['Collections', masCounts.collection, true],
+      ['Sub-collections', masCounts.subCollection, true],
+      ['Cards', masCounts.card, true],
+      ['Inline Fields', masCounts.inlineField, true],
+      ['Standalone Offers', masCounts.standaloneOffer, true],
+    ];
+    rows.forEach(([label, value, sub]) => {
+      data.append(createTag('span', sub ? { class: 'mep-mas-subitem' } : null, label));
+      const valueSpan = createTag('span');
+      valueSpan.textContent = String(value);
+      data.append(valueSpan);
+    });
+    section.append(data);
+    mepPopupBody[1].append(section);
   }
   buildSummaryMas();
 
