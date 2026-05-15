@@ -287,6 +287,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -294,6 +295,10 @@ export const CONFIG = {
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
+              },
+              managePeopleConfig: {
+                enableWorkflow: true,
+                ...getConfig().unav?.profile?.managePeopleConfig,
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
@@ -1057,6 +1062,26 @@ class Gnav {
           },
         }),
       }),
+      fetchAUPSDKInstance: async () => {
+        // Initialize AUP SDK — required by UNav 1.6 for fetchAUPSDKInstance
+        const { base, imsClientId } = getConfig();
+        await loadScript(
+          `https://shared-components.${environment}.adobe.com/component-loader_PR/1.0.739-1361-20-1778701107907.pr/main.js`,
+          null,
+          { mode: 'async' }
+        );
+        return await AUPSDK.preloadSDK('adobe-com-stable', {
+          appId: 'adobe_com',
+          apiKey: imsClientId,
+          getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
+          getProfile: () => window.adobeIMS?.getProfile(),
+          environment,
+          cdnEnvironment: environment,
+          appName: 'adobecom',
+          appVersion: '1.0',
+          colorScheme: isDarkMode() ? 'dark' : 'light',
+        });
+      },
     });
 
     // Exposing UNAV config for consumers
