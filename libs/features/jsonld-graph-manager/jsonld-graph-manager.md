@@ -379,6 +379,14 @@ The previous `external-reference-includes-url` rule is retired. Because every re
 | Name | Severity | Requirement |
 |---|---|---|
 | `offer-price` | error | An Offer node MUST have `price` and `priceCurrency` properties. (Required for the Google software-app rich result. Evaluated for any Offer node referenced by `SoftwareApplication.offers`.) |
+| `softwareapplication-default-offer` | info | **TODO (planned).** When a `SoftwareApplication` (or subtype) is the primary entity of the page and has no `offers` property, the manager will synthesize a default free Offer (`{ "@type": "Offer", "price": "0", "priceCurrency": "USD" }`) so the page is eligible for the Google Software App rich result. Google's rich-result spec requires `offers.price` *unconditionally* on SoftwareApplication; both `offers` and one of (`aggregateRating`, `review`) must be present for the rich result to render. The free-Offer default reflects the Adobe.com norm — products are gateway-free with paid tiers. Producers that need a non-free Offer (paid-only SA pages, distinct paid + trial offers) supply their own; the default is only synthesized when `offers` is entirely absent. |
+
+#### AggregateRating
+
+| Name | Severity | Requirement |
+|---|---|---|
+| `aggregaterating-min-rating-value` | error | An AggregateRating node MUST have `ratingValue` ≥ 3.2 (on the default 1–5 scale). When the threshold is not met, the manager omits the AggregateRating node from the graph AND removes any `aggregateRating` reference from host entities so consumers do not see a dangling `@id`. (Milo policy, not a Google rule: poor ratings under the Adobe brand are worse than no rating signal. Threshold is configurable per future policy revision.) |
+| `aggregaterating-min-rating-count` | error | An AggregateRating node MUST have `ratingCount` ≥ 100. When the threshold is not met, the manager omits the AggregateRating node from the graph AND removes any `aggregateRating` reference from host entities. (Milo policy, not a Google rule: small-sample ratings are noisy and brittle; below-threshold counts are suppressed to avoid surfacing statistical accidents to consumers. Threshold is configurable per future policy revision.) |
 
 #### BreadcrumbList
 

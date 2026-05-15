@@ -12,6 +12,7 @@ import {
   extractInlineEntities,
   rewriteCrossPageRefs,
   canonicalizeOrgId,
+  aggregateRatingMeetsThresholds,
   siteRoot,
   defaultOrg,
   JsonLdGraphManager,
@@ -1062,6 +1063,82 @@ describe('AggregateRating singleton', () => {
     expect(rating.ratingValue).to.equal('4.61');
     expect(rating.ratingCount).to.equal('269519');
     // The SA reference points at the canonical aggregateRating @id.
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AggregateRating quality thresholds (Milo policy, not Google)
+// ---------------------------------------------------------------------------
+describe('AggregateRating quality thresholds', () => {
+  it('aggregateRatingMeetsThresholds passes when both ratingValue >= 3.2 and ratingCount >= 100', () => {
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '4.5', ratingCount: '100' })).to.be.true;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '3.2', ratingCount: '100' })).to.be.true;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: 4.5, ratingCount: 100 })).to.be.true;
+  });
+
+  it('aggregateRatingMeetsThresholds fails when ratingValue is below 3.2', () => {
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '3.1', ratingCount: '500' })).to.be.false;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '1.0', ratingCount: '10000' })).to.be.false;
+  });
+
+  it('aggregateRatingMeetsThresholds fails when ratingCount is below 100', () => {
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '4.9', ratingCount: '99' })).to.be.false;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '5.0', ratingCount: '1' })).to.be.false;
+  });
+
+  it('aggregateRatingMeetsThresholds fails on missing or non-numeric fields', () => {
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '4.5' })).to.be.false;
+    expect(aggregateRatingMeetsThresholds({ ratingCount: '500' })).to.be.false;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: 'high', ratingCount: '500' })).to.be.false;
+    expect(aggregateRatingMeetsThresholds(null)).to.be.false;
+    expect(aggregateRatingMeetsThresholds(undefined)).to.be.false;
+  });
+
+  it('end-to-end: AggregateRating with ratingValue 2.5 is omitted from the graph', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'WebApplication',
+      '@id': `${PAGE_URL}#webapplication`,
+      name: 'Low-rated app',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '2.5', ratingCount: '5000' },
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    // No AggregateRating node in the graph.
+    expect(graph.find((n) => n['@type'] === 'AggregateRating')).to.not.exist;
+    // The SA reference to aggregateRating is removed (no dangling @id).
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.aggregateRating).to.be.undefined;
+  });
+
+  it('end-to-end: AggregateRating with ratingCount 50 is omitted from the graph', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Niche tool',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.9', ratingCount: '50' },
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((n) => n['@type'] === 'AggregateRating')).to.not.exist;
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(app.aggregateRating).to.be.undefined;
+  });
+
+  it('end-to-end: AggregateRating meeting both thresholds is emitted normally', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Healthy app',
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '3.2', ratingCount: '100' },
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const rating = graph.find((n) => n['@type'] === 'AggregateRating');
+    expect(rating).to.exist;
+    expect(rating['@id']).to.equal(`${PAGE_URL}#aggregaterating`);
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app.aggregateRating).to.deep.equal({ '@id': `${PAGE_URL}#aggregaterating` });
   });

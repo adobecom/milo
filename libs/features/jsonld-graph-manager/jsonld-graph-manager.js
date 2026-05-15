@@ -51,6 +51,18 @@ export function siteRoot(hostname = window.location.hostname) {
 
 const ADOBE_CORPORATE_LOGO = 'https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg';
 
+const AGGREGATE_RATING_MIN_VALUE = 3.2;
+const AGGREGATE_RATING_MIN_COUNT = 100;
+
+export function aggregateRatingMeetsThresholds(node) {
+  if (!node) return false;
+  const value = Number(node.ratingValue);
+  const count = Number(node.ratingCount);
+  if (!Number.isFinite(value) || value < AGGREGATE_RATING_MIN_VALUE) return false;
+  if (!Number.isFinite(count) || count < AGGREGATE_RATING_MIN_COUNT) return false;
+  return true;
+}
+
 export function defaultOrg(hostname) {
   const root = siteRoot(hostname);
   const isBusiness = root.includes('business');
@@ -409,6 +421,15 @@ export class JsonLdGraphManager {
       const prevSrc = this.sources.get(orgId) ?? 'bootDom';
       this.graph.set(orgId, mergeNodes(org, this.graph.get(orgId), 'generated', prevSrc));
       this.sources.set(orgId, 'generated');
+    }
+    const ratingId = pageScopedId('AggregateRating');
+    const rating = this.graph.get(ratingId);
+    if (rating && !aggregateRatingMeetsThresholds(rating)) {
+      this.graph.delete(ratingId);
+      this.sources.delete(ratingId);
+      for (const n of this.graph.values()) {
+        if (n.aggregateRating?.['@id'] === ratingId) delete n.aggregateRating;
+      }
     }
     const nodes = sortNodes([...this.graph.values()]);
     injectLinks(nodes);
