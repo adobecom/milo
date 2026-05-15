@@ -4,9 +4,9 @@
   right: 0;
   width: 320px;
   height: 100vh;
-  background: rgb(0 0 0 /  90%);
+  background: linear-gradient(135deg, rgba(89 48 255 / 40%) 0%, rgba(139 92 246 / 60%) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid rgba(89 48 255 / 25%);
   border-right: none;
   color: #e0e0e0;
   font-size: 13px;
@@ -18,6 +18,14 @@
   transition: transform 0.2s ease;
   border-radius: 10px 0 0 10px;
   overflow: clip;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 90%);
+    z-index: -1;
+  }
 }
 
 #page-animator-panel.pa-open {
@@ -29,25 +37,38 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  background: rgb(0 0 0 /  90%);
+  background: linear-gradient(135deg, rgba(89 48 255 / 40%) 0%, rgba(139 92 246 / 60%) 100%);
   backdrop-filter: blur(10px);
-  border: 1px solid rgb(255 255 255 / 40%);
+  border: 1px solid rgba(89 48 255 / 55%);
   border-right: none;
   color: white;
+  overflow: clip;
   padding: 10px 5px;
   writing-mode: vertical-rl;
   cursor: pointer;
   z-index: 999999;
-  border-radius: 4px 0 0 4px;
+  border-radius: 6px 0 0 6px;
   font-size: 12px;
   font-weight: 600;
   user-select: none;
-  transition: right 0.2s ease, background 0.2s ease;
+  transition: right 0.2s ease, padding 0.1s ease-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 90%);
+    z-index: -1;
+  }
 }
 
 #page-animator-tab:hover {
-  background: rgb(255 255 255 / 90%);
-  color: rgb(0 0 0);
+  color: rgb(255 255 255);
+  padding-right: 7px;
+  
+  &::before {
+    background: linear-gradient(90deg, rgb(42 24 115 / 80%) 0%, rgb(20 17 26) 80%);
+  }
 }
 
 #page-animator-panel.pa-open + #page-animator-tab {
@@ -59,7 +80,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  background: rgb(255  255 255 / 10%);
+  background: linear-gradient(-5deg, rgba(89 48 255 / 10%) 0%, rgba(139 92 246 / 25%) 100%);
   font-weight: 600;
   font-size: 14px;
   flex-shrink: 0;
@@ -153,7 +174,7 @@
 }
 
 .pa-item.pa-selected {
-  background: #f1f1f1;
+  background: rgb(241 241 241 / 80%);
   color: #000;
 }
 
@@ -172,7 +193,7 @@
 .pa-controls {
   padding: 12px 16px;
   border-top: 1px solid #2a2a2a;
-  background: #252525;
+  background: rgb(99 95 105 / 21%);
 }
 
 .pa-control {
@@ -286,7 +307,7 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 3px dashed rgb(255 0 0 / 50%);
+  border: 3px dashed rgb(117 85 199);
   margin: 10px;
   z-index: 1;
   border-radius: 10px;
@@ -297,7 +318,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  background: rgb(255 0 0 / 100%);
+  background: rgb(117 85 199);
   color: #fff;
   font-size: 11px;
   font-weight: 600;
