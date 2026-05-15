@@ -46,6 +46,7 @@ import { serializeState, deserializeState, CONTROLS, buildStaggerCssRules } from
     },
     onReset(el, animId) {
       el.classList.remove('pa-highlight');
+      el.removeAttribute('data-pa-label');
       styleManager.removeRule(animId);
       CONTROLS.filter((c) => c.cssVar.startsWith('--')).forEach((c) => {
         el.style.removeProperty(c.cssVar);
