@@ -596,7 +596,9 @@ async function decorateArticleFeed(
   articleCards.append(container);
 
   const pageEnd = offset + limit;
-  if (offset === 0) {
+  const { hostname } = window.location;
+  const isDaBlog = hostname === 'blog.adobe.com' || hostname.includes('da-blog') || hostname === 'localhost';
+  if (offset === 0 && isDaBlog) {
     while (!blogIndex.complete) {
       // eslint-disable-next-line no-await-in-loop
       await fetchBlogArticleIndex();
