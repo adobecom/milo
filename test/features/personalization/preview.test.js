@@ -21,6 +21,7 @@ const {
 const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../libs/utils/utils.js');
 const { mepMasStudioUrls } = await import('../../../libs/blocks/merch/mas-mep-utils.js');
 const { mepMasSubCollections } = await import('../../../libs/features/personalization/preview-mas-subcollection.js');
+const { mepCaasConfigUrls } = await import('../../../libs/blocks/caas/utils.js');
 
 const config = {
   miloLibs: 'https://main--milo--adobecom.aem.live/libs',
@@ -771,6 +772,29 @@ describe('M@S badge market resolution', () => {
       document.head.append(svc);
       expect(getResolvedPageMarket()).to.equal('gb');
     });
+
+    it('returns the akamaiLocale param when locale maps to an empty country (root locale prefix)', () => {
+      // locale.prefix='/' → getMiloLocaleSettings returns country:'' (falsy)
+      // so the function falls through to the akamaiLocale branch.
+      const origLocale = getConfig().locale;
+      getConfig().locale = { ...origLocale, prefix: '/' };
+      window.history.replaceState({}, '', `${window.location.pathname}?akamaiLocale=fr${window.location.hash}`);
+      try {
+        expect(getResolvedPageMarket()).to.equal('fr');
+      } finally {
+        getConfig().locale = origLocale;
+      }
+    });
+
+    it('returns null when no market signal exists at all (empty locale country + no akamaiLocale)', () => {
+      const origLocale = getConfig().locale;
+      getConfig().locale = { ...origLocale, prefix: '/' };
+      try {
+        expect(getResolvedPageMarket()).to.be.null;
+      } finally {
+        getConfig().locale = origLocale;
+      }
+    });
   });
 
   describe('getCardMarket (Case B — per-card derivation from checkout link)', () => {
@@ -1294,6 +1318,43 @@ describe('M@S card action stack', () => {
     // No sibling <a> badge for standalone cards anymore (replaced by the stack).
     expect(card.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
   });
+
+  it('Copy Fragment ID shows "Copy failed" when clipboard.writeText rejects', async () => {
+    const card = seedCard({
+      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-fail',
+      withFragment: 'frag-fail',
+    });
+    const writeStub = sinon.stub().rejects(new Error('denied'));
+    const original = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: writeStub } });
+    try {
+      injectMasBadges();
+      const copyBtn = card.querySelector('.mep-mas-card-action-copy');
+      copyBtn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(copyBtn.textContent).to.equal('Copy failed');
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original });
+    }
+  });
+
+  it('Copy Fragment ID flashes "Copied!" immediately when clipboard API is absent', async () => {
+    const card = seedCard({
+      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-noclip',
+      withFragment: 'frag-noclip',
+    });
+    const original = navigator.clipboard;
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+    try {
+      injectMasBadges();
+      const copyBtn = card.querySelector('.mep-mas-card-action-copy');
+      copyBtn.click();
+      expect(copyBtn.textContent).to.equal('Copied!');
+    } finally {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original });
+    }
+  });
 });
 
 describe('M@S markets dropdown defer-populate (cold-cache race)', () => {
@@ -1803,5 +1864,400 @@ describe('M@S markets UI visibility', () => {
     const popup = getActivePopup();
     expect(popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]')).to.be.null;
     expect(popup.querySelector('.mep-mas-market-dropdown')).to.be.null;
+  });
+});
+
+describe('CaaS highlight badges', () => {
+  function getCaasPopup() {
+    const popups = document.querySelectorAll('.mep-popup');
+    return popups[popups.length - 1];
+  }
+
+  beforeEach(() => {
+    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
+    delete document.body.dataset.mepCaasHighlight;
+    setConfig(config);
+  });
+
+  afterEach(() => {
+    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
+    delete document.body.dataset.mepCaasHighlight;
+  });
+
+  it('injects an Edit in CaaS Configurator badge when the checkbox is toggled on', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-1');
+    document.body.append(block);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+
+    const badge = block.previousElementSibling;
+    expect(badge?.classList?.contains('mep-caas-edit-badge'), 'badge injected before the block').to.be.true;
+    expect(badge?.getAttribute('href')).to.equal('https://caas-config.adobe.com/config-1');
+    expect(badge?.getAttribute('target')).to.equal('_blank');
+    expect(badge?.textContent).to.equal('Edit in CaaS Configurator');
+  });
+
+  it('removes badges when the checkbox is toggled off', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-2');
+    document.body.append(block);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    expect(block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'), 'badge present after on').to.be.true;
+
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event('change'));
+    expect(document.querySelector('a.mep-caas-edit-badge'), 'badge gone after off').to.be.null;
+  });
+
+  it('is idempotent — toggling on twice does not duplicate the badge', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-3');
+    document.body.append(block);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    checkbox.dispatchEvent(new Event('change'));
+
+    expect(document.querySelectorAll('a.mep-caas-edit-badge').length).to.equal(1);
+  });
+
+  it('skips [data-caas-block] elements with no mepCaasConfigUrls entry', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    document.body.append(block);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+
+    expect(document.querySelector('a.mep-caas-edit-badge'), 'no badge without WeakMap entry').to.be.null;
+  });
+
+  it('derives data-card-path from data-card-url after badge injection', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-4');
+    document.body.append(block);
+
+    const card = document.createElement('div');
+    card.dataset.cardUrl = 'https://www.adobe.com/cards/photoshop.html';
+    document.body.append(card);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+
+    expect(card.dataset.cardPath).to.equal('/cards/photoshop.html');
+  });
+
+  it('clears data-card-path when badges are removed', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-5');
+    document.body.append(block);
+
+    const card = document.createElement('div');
+    card.dataset.cardUrl = 'https://www.adobe.com/cards/photoshop.html';
+    document.body.append(card);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    expect(card.dataset.cardPath, 'path set after inject').to.equal('/cards/photoshop.html');
+
+    checkbox.checked = false;
+    checkbox.dispatchEvent(new Event('change'));
+    expect(card.dataset.cardPath, 'path cleared after remove').to.be.undefined;
+  });
+
+  it('auto-injects badges on decoratePreviewMode when ?mepCaasHighlight=true is in the URL', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-6');
+    document.body.append(block);
+
+    window.history.replaceState(null, '', `${window.location.pathname}?mepCaasHighlight=true`);
+    try {
+      await decoratePreviewMode();
+      expect(
+        block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'),
+        'badge auto-injected from URL param on init',
+      ).to.be.true;
+    } finally {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  });
+
+  it('sets data-card-path to empty string when data-card-url is not a parseable URL', async () => {
+    const block = document.createElement('div');
+    block.dataset.caasBlock = 'true';
+    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-7');
+    document.body.append(block);
+
+    const card = document.createElement('div');
+    card.dataset.cardUrl = 'just-a-bare-word-no-scheme';
+    document.body.append(card);
+
+    await decoratePreviewMode();
+    const popup = getCaasPopup();
+    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+
+    expect(card.dataset.cardPath).to.equal('');
+  });
+});
+
+describe('data-card-url click handling', () => {
+  let windowOpenStub;
+  let getComputedStyleStub;
+
+  beforeEach(async () => {
+    document.querySelectorAll('.mep-preview-overlay, [data-card-url]').forEach((el) => el.remove());
+    delete document.body.dataset.mepCaasHighlight;
+    windowOpenStub = sinon.stub(window, 'open');
+    const originalGetComputedStyle = window.getComputedStyle;
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((el, pseudo) => {
+      if (pseudo === '::before') return { display: 'block', content: '"badge"', width: '400px' };
+      return originalGetComputedStyle(el, pseudo);
+    });
+    setConfig(config);
+    await decoratePreviewMode();
+    document.body.dataset.mepCaasHighlight = 'true';
+  });
+
+  afterEach(() => {
+    windowOpenStub.restore();
+    getComputedStyleStub.restore();
+    delete document.body.dataset.mepCaasHighlight;
+    document.querySelectorAll('.mep-preview-overlay, [data-card-url]').forEach((el) => el.remove());
+  });
+
+  it('opens data-card-url when clicked in the badge area', () => {
+    const card = document.createElement('div');
+    card.dataset.cardUrl = 'https://business.adobe.com/foo.html';
+    document.body.append(card);
+    card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+
+    expect(windowOpenStub.called, 'window.open called for card-url element').to.be.true;
+  });
+
+  it('rewrites a prod-domain card URL to the current host when ?milolibs= is in the URL', () => {
+    window.history.replaceState(null, '', `${window.location.pathname}?milolibs=some-branch`);
+    try {
+      const card = document.createElement('div');
+      card.dataset.cardUrl = 'https://www.adobe.com/products/photoshop.html';
+      document.body.append(card);
+      card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+      card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+
+      expect(windowOpenStub.called).to.be.true;
+      const openedUrl = windowOpenStub.firstCall?.args[0] ?? '';
+      expect(openedUrl, 'prod domain rewritten to current host').to.include(window.location.host);
+      expect(openedUrl, 'pathname preserved').to.include('/products/photoshop.html');
+    } finally {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  });
+
+  it('does not open when all highlight modes are off', () => {
+    delete document.body.dataset.mepCaasHighlight;
+    delete document.body.dataset.mepHighlight;
+    delete document.body.dataset.mepFragments;
+    const card = document.createElement('div');
+    card.dataset.cardUrl = 'https://business.adobe.com/foo.html';
+    document.body.append(card);
+    card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
+
+    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+
+    expect(windowOpenStub.called, 'no open when all highlights off').to.be.false;
+  });
+});
+
+describe('handleChildCardBadgeClick — nested ost/offer inside inline', () => {
+  let windowOpenStub;
+
+  beforeEach(() => {
+    document.querySelectorAll('[data-mas-block="inline"], [data-mas-block="ost"]').forEach((el) => el.remove());
+    document.body.dataset.mepMasHighlight = 'true';
+    watchForMasContent();
+    windowOpenStub = sinon.stub(window, 'open');
+  });
+
+  afterEach(() => {
+    windowOpenStub.restore();
+    sinon.restore();
+    delete document.body.dataset.mepMasHighlight;
+    document.querySelectorAll('[data-mas-block="inline"], [data-mas-block="ost"]').forEach((el) => el.remove());
+  });
+
+  it('fires ost URL when clicking in the moved-below badge zone of a nested ost', () => {
+    const inline = document.createElement('div');
+    inline.dataset.masBlock = 'inline';
+    const ost = document.createElement('span');
+    ost.dataset.masBlock = 'ost';
+    inline.append(ost);
+    document.body.append(inline);
+
+    mepMasStudioUrls.set(inline, 'https://mas.adobe.com/inline-studio');
+    mepMasStudioUrls.set(ost, 'https://milo.adobe.com/tools/ost?osi=OSI-NESTED&type=price&country=US');
+
+    // rect: top=0, right=500, height=50. Moved zone: yMin=54, yMax=76
+    sinon.stub(ost, 'getBoundingClientRect').returns({ top: 0, right: 500, height: 50 });
+    sinon.stub(inline, 'getBoundingClientRect').returns({ top: 0, right: 500, height: 50 });
+
+    ost.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 490, clientY: 58 }));
+
+    expect(windowOpenStub.calledOnce, 'OST URL opened from moved badge zone').to.be.true;
+    expect(windowOpenStub.firstCall.args[0]).to.include('osi=OSI-NESTED');
+  });
+
+  it('does NOT fire for a nested ost clicked in the old top zone (badge moved below, click misses)', () => {
+    const inline = document.createElement('div');
+    inline.dataset.masBlock = 'inline';
+    const ost = document.createElement('span');
+    ost.dataset.masBlock = 'ost';
+    inline.append(ost);
+    document.body.append(inline);
+
+    mepMasStudioUrls.set(ost, 'https://milo.adobe.com/tools/ost?osi=OSI-MISS&type=price&country=US');
+
+    // rect: top=10, right=500, height=50. Moved zone: yMin=64, yMax=86
+    sinon.stub(ost, 'getBoundingClientRect').returns({ top: 10, right: 500, height: 50 });
+    sinon.stub(inline, 'getBoundingClientRect').returns({ top: 10, right: 500, height: 50 });
+
+    ost.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 490, clientY: 5 }));
+
+    expect(windowOpenStub.called, 'click in pre-fix zone should not fire').to.be.false;
+  });
+});
+
+describe('injectMasBadges — stale badge replacement when market changes', () => {
+  beforeEach(() => {
+    document.querySelectorAll('[data-mas-block], a.mep-mas-edit-badge').forEach((el) => el.remove());
+    document.head.querySelectorAll('mas-commerce-service').forEach((el) => el.remove());
+  });
+
+  afterEach(() => {
+    document.querySelectorAll('[data-mas-block], a.mep-mas-edit-badge').forEach((el) => el.remove());
+    document.head.querySelectorAll('mas-commerce-service').forEach((el) => el.remove());
+  });
+
+  it('removes and replaces the sibling badge when the resolved market changes between passes', () => {
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-stale');
+
+    injectMasBadges();
+    const firstBadge = container.previousElementSibling;
+    expect(firstBadge?.classList?.contains('mep-mas-edit-badge'), 'first badge exists after initial pass').to.be.true;
+    const firstMarket = firstBadge.dataset.mepMasMarket;
+
+    // data-ims-country on the element overrides the page market in getCardMarket.
+    const differentMarket = firstMarket === 'de' ? 'fr' : 'de';
+    container.setAttribute('data-ims-country', differentMarket);
+
+    injectMasBadges();
+
+    const newBadge = container.previousElementSibling;
+    expect(newBadge?.classList?.contains('mep-mas-edit-badge'), 'new badge present after re-stamp').to.be.true;
+    expect(newBadge.dataset.mepMasMarket, 'new badge reflects updated market').to.equal(differentMarket);
+    expect(document.querySelectorAll('a.mep-mas-edit-badge').length, 'only one badge — stale one removed').to.equal(1);
+  });
+});
+
+describe('masAemLoadHandler — aem:load event handler', () => {
+  beforeEach(() => {
+    document.querySelectorAll('[data-mas-block], merch-card').forEach((el) => el.remove());
+    document.body.dataset.mepMasHighlight = 'true';
+    watchForMasContent();
+  });
+
+  afterEach(() => {
+    delete document.body.dataset.mepMasHighlight;
+    document.querySelectorAll('[data-mas-block], merch-card').forEach((el) => el.remove());
+  });
+
+  it('ignores aem:load when mepMasHighlight is off', () => {
+    delete document.body.dataset.mepMasHighlight;
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    const aemFragment = document.createElement('aem-fragment');
+    container.append(aemFragment);
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-off');
+
+    aemFragment.dispatchEvent(new CustomEvent('aem:load', { bubbles: true, detail: null }));
+
+    expect(document.querySelector('a.mep-mas-edit-badge'), 'no badge injected when highlight is off').to.be.null;
+  });
+
+  it('ignores aem:load when target is not an AEM-FRAGMENT element', () => {
+    const div = document.createElement('div');
+    document.body.append(div);
+
+    div.dispatchEvent(new CustomEvent('aem:load', { bubbles: true, detail: null }));
+
+    expect(document.querySelector('a.mep-mas-edit-badge'), 'no badge for non-aem-fragment target').to.be.null;
+  });
+
+  it('ignores aem:load when the aem-fragment is not inside a [data-mas-block="collection"]', () => {
+    const aemFragment = document.createElement('aem-fragment');
+    document.body.append(aemFragment);
+
+    aemFragment.dispatchEvent(new CustomEvent('aem:load', { bubbles: true, detail: null }));
+
+    expect(document.querySelector('a.mep-mas-edit-badge'), 'no badge when fragment has no collection container').to.be.null;
+  });
+
+  it('stores sub-collections and schedules a re-stamp when aem:load fires with sub-collection detail', async () => {
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    const aemFragment = document.createElement('aem-fragment');
+    container.append(aemFragment);
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-subs');
+
+    const detail = {
+      referencesTree: [{ identifier: 'sub-id-1', fieldName: 'subFilter', referencesTree: [] }],
+      references: { 'sub-id-1': { value: { fields: { label: 'Sub One' } } } },
+    };
+    aemFragment.dispatchEvent(new CustomEvent('aem:load', { bubbles: true, detail }));
+
+    expect(mepMasSubCollections.get(container)?.length, 'sub-collections stored on the container').to.equal(1);
+    expect(mepMasSubCollections.get(container)[0].id).to.equal('sub-id-1');
+
+    await new Promise((resolve) => { setTimeout(resolve, MAS_RESTAMP_DEBOUNCE_MS + 100); });
+    expect(document.querySelector('a.mep-mas-edit-badge'), 'collection badge injected after debounced re-stamp').to.exist;
   });
 });
