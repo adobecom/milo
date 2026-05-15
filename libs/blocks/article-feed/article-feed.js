@@ -4,6 +4,7 @@ import {
   loadTaxonomy,
   getArticleTaxonomy,
   buildArticleCard,
+  getArticleDate,
 } from './article-helpers.js';
 
 import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
@@ -596,6 +597,7 @@ async function decorateArticleFeed(
 
   const pageEnd = offset + limit;
   await filterArticles(feed, limit, offset);
+  if (offset === 0) feed.data.sort((a, b) => getArticleDate(b) - getArticleDate(a));
   const articles = feed.data;
 
   if (articles.length) {
