@@ -902,7 +902,7 @@ a.mep-mas-edit-badge:focus {
 }
 
 /* Card action stack — three stacked actions in the top-right of every
-   highlighted card: Edit Card, Edit OSI, Copy Fragment ID. Real DOM (not
+   highlighted card: Edit Card, View in OST, Copy Fragment ID. Real DOM (not
    a ::before pseudo) so the Copy button can host a clipboard handler.
    Anchored by the card host's position:relative + overflow:visible above. */
 body[data-mep-mas-highlight='true'] .mep-mas-card-actions {
@@ -939,7 +939,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit {
   border: 1px solid #fd7e14;
 }
 
-/* Edit OSI (blue) — matches the offer/ost palette. */
+/* View in OST (blue) — matches the offer/ost palette. */
 body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost {
   background-color: #cfe2ff;
   color: #0a3677;
@@ -984,7 +984,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
-  content: '🔗 Edit OSI';
+  content: '🔗 View in OST';
   position: absolute;
   top: -10px;
   right: -2px;
@@ -1000,10 +1000,11 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   letter-spacing: 0.5px;
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 112px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::before {
-  content: '🔗 Edit OSI · ' attr(data-mas-market);
+  content: '🔗 View in OST · ' attr(data-mas-market);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market-mismatch='true']::before {
@@ -1013,7 +1014,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market-mis
 }
 
 /* Suppress the per-offer pseudo when nested in a card — the card's action
-   stack already has a consolidated "Edit OSI" button. Outline preserved. */
+   stack already has a consolidated "View in OST" button. Outline preserved. */
 body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='offer']::before {
   content: none;
 }
@@ -1021,7 +1022,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='off
 /* Inline (mas-field) surface — overhanging top-right ::before to avoid
    disturbing document flow inside paragraphs/headings. */
 body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
-  content: '🔗 Edit Inline Field in M@S Studio';
+  content: '🔗 Edit Inline Field';
   position: absolute;
   top: -10px;
   right: -2px;
@@ -1037,10 +1038,11 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
   letter-spacing: 0.5px;
   cursor: pointer;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 130px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::before {
-  content: '🔗 Edit Inline Field in M@S Studio · ' attr(data-mas-market);
+  content: '🔗 Edit Inline Field · ' attr(data-mas-market);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mismatch='true']::before {
@@ -1049,11 +1051,17 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mi
   border-color: #ffc107;
 }
 
+/* When an ost/offer badge is nested inside an inline (mas-field) host, flip it
+   below its element so it doesn't overlap the inline badge above. */
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'] :is([data-mas-block='ost'], [data-mas-block='offer'])::before {
+  top: calc(100% + 4px);
+}
+
 /* OST surface — standalone <a class="merch"> autoblock. Unified palette
    with the offer surface; the difference is internal (OST captures the
    full authoring URL, offer derives a minimal one from the OSI). */
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
-  content: '🔗 Edit OSI';
+  content: '🔗 View in OST';
   position: absolute;
   top: -10px;
   right: -2px;
@@ -1073,7 +1081,8 @@ body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::before {
-  content: '🔗 Edit OSI · ' attr(data-mas-market);
+  content: '🔗 View in OST · ' attr(data-mas-market);
+  min-width: 112px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-mismatch='true']::before {

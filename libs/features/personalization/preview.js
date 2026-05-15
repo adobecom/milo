@@ -138,10 +138,10 @@ const MAS_BADGE_CLASS = 'mep-mas-edit-badge';
 const MAS_LABELS = {
   collection: 'Edit Collection in M@S Studio',
   card: 'Edit Card in M@S Studio',
-  inline: 'Edit Inline Field in M@S Studio',
-  ost: 'Edit in OSI',
+  inline: 'Edit Inline Field',
+  ost: 'View in OST',
   // 'offer' surface is CSS-only (::before pseudo) — label kept for symmetry.
-  offer: 'Edit in OSI',
+  offer: 'View in OST',
 };
 
 // Mirrors SELECTOR_MAS_INLINE_PRICE et al. from ../mas/web-components/src/
@@ -320,7 +320,7 @@ function getCardFragmentId(card) {
   return card.querySelector('aem-fragment[fragment]')?.getAttribute('fragment') || null;
 }
 
-// Edit OSI uses the first OSI — M@S confirmed all OSIs in a card are equivalent.
+// View in OST uses the first OSI — M@S confirmed all OSIs in a card are equivalent.
 function getCardFirstOsi(card) {
   return card.querySelector('[data-wcs-osi]')?.getAttribute('data-wcs-osi') || null;
 }
@@ -358,7 +358,7 @@ function injectMasCardActionStack(card) {
         target: '_blank',
         rel: 'noopener noreferrer',
       },
-      `Edit OSI${marketSuffix}`,
+      `View in OST${marketSuffix}`,
     ));
   }
 
@@ -492,30 +492,36 @@ const PSEUDO_BADGE_HIT = {
 
 // Pseudos can't carry an href — delegate clicks in the hit box to open the captured URL.
 // preventDefault + stopPropagation suppress the host's normal navigation (checkout/CTA).
+// Iterate all candidates: nested surfaces (e.g. offer inside inline) appear first in
+// composedPath, so we try each until one whose hit box actually contains the click.
 function handleChildCardBadgeClick(e) {
   if (document.body.dataset.mepMasHighlight !== 'true') return;
   // composedPath() crosses shadow boundaries — clicks originate inside the
   // merch-card / commerce-element shadow roots.
-  const host = e.composedPath().find((n) => {
+  const candidates = e.composedPath().filter((n) => {
     if (n?.nodeType !== 1) return false;
     const surface = n.dataset?.masBlock;
     return surface === 'offer' || surface === 'inline' || surface === 'ost';
   });
-  if (!host) return;
-  const url = mepMasStudioUrls.get(host);
-  if (!url) return;
-  const hit = PSEUDO_BADGE_HIT[host.dataset.masBlock];
-  if (!hit) return;
-  const rect = host.getBoundingClientRect();
-  const yMin = rect.top + hit.top;
-  const inBadge = e.clientX >= rect.right - hit.w
-    && e.clientX <= rect.right
-    && e.clientY >= yMin
-    && e.clientY <= yMin + hit.h;
-  if (!inBadge) return;
-  e.preventDefault();
-  e.stopPropagation();
-  window.open(url, '_blank', 'noopener,noreferrer');
+  for (const host of candidates) {
+    const url = mepMasStudioUrls.get(host);
+    if (!url) continue;
+    const hit = PSEUDO_BADGE_HIT[host.dataset.masBlock];
+    if (!hit) continue;
+    const rect = host.getBoundingClientRect();
+    const isNestedInInline = host.dataset.masBlock !== 'inline' && !!host.closest('[data-mas-block="inline"]');
+    const hitTop = isNestedInInline ? rect.height + 4 : hit.top;
+    const yMin = rect.top + hitTop;
+    const inBadge = e.clientX >= rect.right - hit.w
+      && e.clientX <= rect.right
+      && e.clientY >= yMin
+      && e.clientY <= yMin + hit.h;
+    if (!inBadge) continue;
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
 }
 
 let masObserver;
@@ -1440,7 +1446,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Total</span>
         <span>${lingoData.total}</span>
       ` : `
-        <span>Page Updates</span>
+        <span>Mep Lingo Updates</span>
         <span>${lingoData.updates}</span>
       `}
         <span>Lang First / Lingo</span>
@@ -1465,7 +1471,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   // Sub-collections are a sub-row (live inside the parent collection payload, not a separate
   // DOM surface). Counts query real elements (merch-card, mas-field, MAS_OSI_SELECTOR) — the
   // [data-mas-block] stamps only land while mep.preview is on. Standalone Offers excludes
-  // card-internal offers (those add a ~5x multiplier per card; per-card "Edit OSI" handles them).
+  // card-internal offers (~5x multiplier per card; per-card "View in OST" handles them).
   function buildSummaryMas() {
     const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
     let subCollectionCount = 0;
@@ -1504,6 +1510,14 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const masHTML = `
     <h6 class="mep-section-header">M@S</h6>
     <div class="mep-section-data">
+      <span>Mas Geo Detection</span>
+      <span>${geoDetectionOn ? 'on' : 'off'}</span>
+      <span>Geo Source</span>
+      <span>${escapeHtml(geoDetectionSource)}</span>
+      <span>Page Market</span>
+      <span>${escapeHtml(pageMarket)}</span>
+      <span>Market Source</span>
+      <span>${escapeHtml(pageMarketSource)}</span>
       <span>Surfaces Detected</span>
       <span>${masSurfaces}</span>
       <span class="mep-mas-subitem">Collections</span>
@@ -1516,14 +1530,6 @@ export async function getMepPopup(mepConfig, isMmm = false) {
       <span>${masCounts.inlineField}</span>
       <span class="mep-mas-subitem">Standalone Offers</span>
       <span>${masCounts.standaloneOffer}</span>
-      <span>Geo Detection</span>
-      <span>${geoDetectionOn ? 'on' : 'off'}</span>
-      <span>Geo Source</span>
-      <span>${escapeHtml(geoDetectionSource)}</span>
-      <span>Page Market</span>
-      <span>${escapeHtml(pageMarket)}</span>
-      <span>Market Source</span>
-      <span>${escapeHtml(pageMarketSource)}</span>
     </div>
   `;
     mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, masHTML));

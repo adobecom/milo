@@ -813,7 +813,7 @@ describe('M@S badge market resolution', () => {
     it('upgrades a card surface from page-market to per-card-market and marks the action stack mismatch when they differ', () => {
       // Page market is "us" (default test locale) but this card's checkout link
       // resolves to GB — Edit Card label should end with "· GB" and the
-      // mismatch class should land on the Edit Card / Edit OSI buttons.
+      // mismatch class should land on the Edit Card / View in OST buttons.
       const wrap = document.createElement('div');
       wrap.dataset.masBlock = 'card';
       wrap.append(createTag('a', {
@@ -1147,7 +1147,7 @@ describe('M@S per-child-card badges (Tier 3b — collection children)', () => {
 });
 
 describe('M@S card action stack', () => {
-  // Real DOM overlay (Edit Card / Edit OSI / Copy Fragment ID) injected into
+  // Real DOM overlay (Edit Card / View in OST / Copy Fragment ID) injected into
   // every <merch-card data-mas-block='card'> by injectMasCardActionStack.
   beforeEach(() => {
     document.querySelectorAll('[data-mas-block], a.mep-mas-edit-badge, .mep-mas-card-actions').forEach((el) => el.remove());
@@ -1173,7 +1173,7 @@ describe('M@S card action stack', () => {
     return card;
   }
 
-  it('builds Edit Card / Edit OSI / Copy Fragment ID actions when the card has a Studio URL, an OSI, and a fragment id', () => {
+  it('builds Edit Card / View in OST / Copy Fragment ID actions when the card has a Studio URL, an OSI, and a fragment id', () => {
     const card = seedCard({
       studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
       withFragment: 'frag-1',
@@ -1214,7 +1214,7 @@ describe('M@S card action stack', () => {
     expect(ost?.getAttribute('href')).to.include('/tools/ost?osi=OSI-A&country=US');
   });
 
-  it('omits the Edit OSI button when no [data-wcs-osi] exists on or inside the card (display-only card)', () => {
+  it('omits the View in OST button when no [data-wcs-osi] exists on or inside the card (display-only card)', () => {
     const card = seedCard({
       studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
       osiAttrs: [],
@@ -1532,7 +1532,7 @@ describe('M@S summary counts (highlight-independent)', () => {
     const childCard1 = document.createElement('merch-card');
     const childCard2 = document.createElement('merch-card');
     // Card-internal offers should NOT be counted in "Standalone Offers" — the
-    // per-card "Edit OSI" action stack already exposes them, and counting
+    // per-card "View in OST" action stack already exposes them, and counting
     // them here would inflate the row by ~5x cards. Add one to each child
     // to prove the filter excludes them.
     const childOffer1 = document.createElement('span');
