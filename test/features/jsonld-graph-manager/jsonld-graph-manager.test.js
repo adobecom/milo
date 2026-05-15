@@ -11,6 +11,7 @@ import {
   injectLinks,
   extractInlineEntities,
   rewriteCrossPageRefs,
+  canonicalizeBreadcrumbItems,
   canonicalizeOrgId,
   aggregateRatingMeetsThresholds,
   siteRoot,
@@ -1258,5 +1259,69 @@ describe('SoftwareApplication default Offer synthesis', () => {
       { '@id': `${PAGE_URL}#paid` },
       { '@id': `${PAGE_URL}#free-trial` },
     ]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// canonicalizeBreadcrumbItems (rewrite item URLs to canonical production origin)
+// ---------------------------------------------------------------------------
+describe('canonicalizeBreadcrumbItems', () => {
+  it('is a no-op on non-BreadcrumbList nodes', () => {
+    const node = { '@type': 'WebPage', '@id': `${PAGE_URL}#webpage`, url: 'https://example.com/foo' };
+    canonicalizeBreadcrumbItems(node);
+    expect(node.url).to.equal('https://example.com/foo');
+  });
+
+  it('is a no-op when canonical link is missing', () => {
+    document.head.querySelector('link[rel="canonical"]')?.remove();
+    const node = {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${window.location.origin}/foo?q=1` },
+      ],
+    };
+    canonicalizeBreadcrumbItems(node);
+    expect(node.itemListElement[0].item).to.equal(`${window.location.origin}/foo?q=1`);
+    setCanonical(); // restore for subsequent tests
+  });
+
+  it('rewrites same-origin item URLs to canonical production origin and strips query/hash', () => {
+    const node = {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'A', item: `${window.location.origin}/products?milolibs=hgpa&jsonld-graph-manager=true#section` },
+        { '@type': 'ListItem', position: 2, name: 'B', item: `${window.location.origin}/products/photoshop.html` },
+      ],
+    };
+    canonicalizeBreadcrumbItems(node);
+    expect(node.itemListElement[0].item).to.equal('https://www.adobe.com/products');
+    expect(node.itemListElement[1].item).to.equal('https://www.adobe.com/products/photoshop.html');
+  });
+
+  it('preserves external-host items (query/hash still stripped)', () => {
+    const node = {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'External', item: 'https://example.com/x?keep=this#anchor' },
+      ],
+    };
+    canonicalizeBreadcrumbItems(node);
+    expect(node.itemListElement[0].item).to.equal('https://example.com/x');
+  });
+
+  it('end-to-end: producer breadcrumb on a non-prod hostname is rewritten in managed graph', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${window.location.origin}/products` },
+        { '@type': 'ListItem', position: 2, name: 'Photoshop', item: `${window.location.origin}/products/photoshop.html?ratings-token=abc` },
+      ],
+    }));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const bc = graph.find((n) => n['@type'] === 'BreadcrumbList');
+    expect(bc.itemListElement[0].item).to.equal('https://www.adobe.com/products');
+    expect(bc.itemListElement[1].item).to.equal('https://www.adobe.com/products/photoshop.html');
   });
 });

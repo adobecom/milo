@@ -159,6 +159,29 @@ export function canonicalizeReferences(node) {
   }
 }
 
+function canonicalOrigin() {
+  const link = document.head.querySelector('link[rel="canonical"]');
+  if (!link?.href) return null;
+  try { return new URL(link.href).origin; } catch { return null; }
+}
+
+export function canonicalizeBreadcrumbItems(node) {
+  if (node['@type'] !== 'BreadcrumbList') return;
+  const items = node.itemListElement;
+  if (!Array.isArray(items)) return;
+  const prodOrigin = canonicalOrigin();
+  if (!prodOrigin) return;
+  const currentOrigin = window.location.origin;
+  for (const li of items) {
+    if (!li || typeof li.item !== 'string') continue;
+    try {
+      const u = new URL(li.item, window.location.href);
+      const origin = u.origin === currentOrigin ? prodOrigin : u.origin;
+      li.item = `${origin}${u.pathname}`;
+    } catch { /* leave as-is */ }
+  }
+}
+
 const PARENT_PAGE_PROPS = ['isPartOf', 'mainEntityOfPage'];
 
 function maybeRewriteWebPageRef(val) {
@@ -392,6 +415,7 @@ export class JsonLdGraphManager {
           const toMerge = [node, ...inlined];
           for (const n of toMerge) {
             rewriteCrossPageRefs(n);
+            canonicalizeBreadcrumbItems(n);
             canonicalizeReferences(n);
           }
           for (const n of toMerge) {
