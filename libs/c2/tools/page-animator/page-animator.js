@@ -79,18 +79,6 @@ import { serializeState, deserializeState, CONTROLS, buildStaggerCssRules } from
       node = node.parentElement;
     }
   }
-  currentPanel.style.top = `${gnavHeight}px`;
-  currentPanel.style.height = `calc(100vh - ${gnavHeight}px)`;
-
-  // Route wheel events explicitly to the tree — prevents page scroll from stealing focus
-  currentPanel.addEventListener('wheel', (e) => {
-    const treeEl = currentPanel.querySelector('#pa-tree');
-    if (!treeEl) return;
-    e.preventDefault();
-    e.stopPropagation();
-    treeEl.scrollTop += e.deltaY;
-  }, { passive: false });
-
   document.body.appendChild(currentPanel);
   currentPanel.classList.add('pa-open');
 
@@ -100,7 +88,19 @@ import { serializeState, deserializeState, CONTROLS, buildStaggerCssRules } from
   currentPanel.insertAdjacentElement('afterend', tab);
 
   function wireListeners(panelEl) {
+    panelEl.style.top = `${gnavHeight}px`;
+    panelEl.style.height = `calc(100vh - ${gnavHeight}px)`;
+
     tab.onclick = () => panelEl.classList.toggle('pa-open');
+
+    // Route wheel events explicitly to the tree — prevents page scroll from stealing focus
+    panelEl.addEventListener('wheel', (e) => {
+      const treeEl = panelEl.querySelector('#pa-tree');
+      if (!treeEl) return;
+      e.preventDefault();
+      e.stopPropagation();
+      treeEl.scrollTop += e.deltaY;
+    }, { passive: false });
 
     panelEl.querySelector('#pa-download-btn').addEventListener('click', () => {
       const json = serializeState(tree, stateMap, staggerMap);
