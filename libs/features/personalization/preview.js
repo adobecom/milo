@@ -503,25 +503,23 @@ function handleChildCardBadgeClick(e) {
     const surface = n.dataset?.masBlock;
     return surface === 'offer' || surface === 'inline' || surface === 'ost';
   });
-  for (const host of candidates) {
-    const url = mepMasStudioUrls.get(host);
-    if (!url) continue;
+  const match = candidates.find((host) => {
+    if (!mepMasStudioUrls.get(host)) return false;
     const hit = PSEUDO_BADGE_HIT[host.dataset.masBlock];
-    if (!hit) continue;
+    if (!hit) return false;
     const rect = host.getBoundingClientRect();
     const isNestedInInline = host.dataset.masBlock !== 'inline' && !!host.closest('[data-mas-block="inline"]');
     const hitTop = isNestedInInline ? rect.height + 4 : hit.top;
     const yMin = rect.top + hitTop;
-    const inBadge = e.clientX >= rect.right - hit.w
+    return e.clientX >= rect.right - hit.w
       && e.clientX <= rect.right
       && e.clientY >= yMin
       && e.clientY <= yMin + hit.h;
-    if (!inBadge) continue;
-    e.preventDefault();
-    e.stopPropagation();
-    window.open(url, '_blank', 'noopener,noreferrer');
-    return;
-  }
+  });
+  if (!match) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.open(mepMasStudioUrls.get(match), '_blank', 'noopener,noreferrer');
 }
 
 let masObserver;
