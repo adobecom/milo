@@ -4,7 +4,7 @@ import {
   loadTaxonomy,
   getArticleTaxonomy,
   buildArticleCard,
-  getArticleDate,
+  calculateExcelDate,
 } from './article-helpers.js';
 
 import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
@@ -596,14 +596,12 @@ async function decorateArticleFeed(
   articleCards.append(container);
 
   const pageEnd = offset + limit;
-  const { hostname } = window.location;
-  const isDaBlog = hostname === 'blog.adobe.com' || hostname.includes('da-blog') || hostname === 'localhost';
-  if (offset === 0 && isDaBlog) {
+  if (offset === 0) {
     while (!blogIndex.complete) {
       // eslint-disable-next-line no-await-in-loop
       await fetchBlogArticleIndex();
     }
-    blogIndex.data.sort((a, b) => getArticleDate(b) - getArticleDate(a));
+    blogIndex.data.sort((a, b) => calculateExcelDate(Number(b.date)).getTime() - calculateExcelDate(Number(a.date)).getTime());
   }
   await filterArticles(feed, limit, offset);
   const articles = feed.data;
