@@ -1162,6 +1162,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
     expect(offer.price).to.equal('0');
     expect(offer.priceCurrency).to.equal('USD');
     expect(offer.availability).to.equal('https://schema.org/InStock');
+    expect(offer.category).to.equal('Free Trial');
     const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
     expect(app.offers).to.deep.equal([{ '@id': `${PAGE_URL}#offer` }]);
   });

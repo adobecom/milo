@@ -452,6 +452,7 @@ export class JsonLdGraphManager {
             price: '0',
             priceCurrency: 'USD',
             availability: 'https://schema.org/InStock',
+            category: 'Free Trial',
           });
           this.sources.set(offerId, 'generated');
         }
