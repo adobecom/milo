@@ -736,10 +736,11 @@ export const getLanguageFirstCountryAndLang = async (path, origin, fqdn) => {
 export async function getCountryAndLang({ autoCountryLang, country, language, source }) {
   const locales = getMetadata('caas-locales') || '';
   const langFirst = await getLingoActive();
+  const isNewsSource = Array.from([source].flat()).some((s) => s?.toLowerCase().includes('news'));
   let geoCountry = null;
   /* if it is a language first localized page don't use the milo locales.
     This can be changed after lang-first localization is supported from the milo utils */
-  if (langFirst && autoCountryLang) {
+  if ((langFirst || isNewsSource) && autoCountryLang) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
     let langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
     let countryStr = LOCALES[pathArr[2]] ?? 'xx';
@@ -749,8 +750,6 @@ export async function getCountryAndLang({ autoCountryLang, country, language, so
     if (typeof fallbackCountry === 'object') {
       fallbackCountry = fallbackCountry.ietf?.split('-')[1] ?? 'xx';
     }
-
-    const isNewsSource = Array.from([source].flat()).some((s) => s?.toLowerCase().includes('news'));
 
     if (!isNewsSource) {
       const primeSource = Array.from([source].flat())[0];
@@ -972,11 +971,11 @@ export const getConfig = async (originalState, strs = {}) => {
     isLingoSite = await getLangFirstParam(originSelection.split(',')[0], country, language);
   }
   // handle news source separately as it is not a lingo site
-  if (originSelection?.toLowerCase().includes('news') && isLingoActive) {
-    isLingoSite = 'true';
-  }
-  const getLingoResults = (isLingoActive && isLingoSite) ? 'true' : 'false';
-  const langFirst = state.langFirst ? `&langFirst=${getLingoResults}` : '';
+  const isNewsOrigin = originSelection?.toLowerCase().includes('news');
+  if (isNewsOrigin) isLingoSite = 'true';
+
+  const getLingoResults = ((isLingoActive || isNewsOrigin) && isLingoSite) ? 'true' : 'false';
+  const langFirst = (state.langFirst || isNewsOrigin) ? `&langFirst=${getLingoResults}` : '';
 
   const navigationStyle = state.container === 'carousel'
     && state.paginationAnimationStyle.includes('Modern')
