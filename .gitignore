@@ -24,3 +24,6 @@ CLAUDE.md
 *.woff
 *.woff2
 *.eot
+
+wrangler.toml
+.wrangler
