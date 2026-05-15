@@ -13,6 +13,8 @@ const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/m
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
+const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
+
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
 const isValidModal = (u) => VALID_MODAL_RE.test(u);
@@ -187,20 +189,26 @@ const getDateProp = (dateStr, errorMsg) => {
 
 const processRepoForFloodgate = (repo, fgColor) => {
   if (repo && fgColor && fgColor !== 'default') {
-    return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
+    const fgInfix = `-fg-${fgColor}`;
+    if (repo.endsWith(fgInfix)) {
+      return repo.slice(0, repo.lastIndexOf(fgInfix));
+    }
   }
   return repo;
+};
+
+export const getFloodgateColorFromHost = (host) => {
+  const parts = host?.split('.')[0].split('--') || [];
+  const repo = parts.length >= 3 ? parts.slice(1, -1).join('--') : '';
+  const match = repo.match(/-fg-(\w+)$/);
+  return match ? match[1] : '';
 };
 
 export const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 
-  const mappings = {
-    cc: 'hawks',
-    dc: 'doccloud',
-  };
-  const originLC = mappings[origin.toLowerCase()] || origin;
+  const originLC = LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin;
   if (originLC) {
     return originLC;
   }
@@ -342,7 +350,12 @@ export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   if (options.languageFirst) {
-    return runLanguageFirstRetry(options, getLanguageFirstCountryAndLang);
+    const mappedGetLangFirst = (path, repo, fqdn) => getLanguageFirstCountryAndLang(
+      path,
+      LANG_FIRST_SOURCE_MAPPINGS[repo.toLowerCase()] || repo,
+      fqdn,
+    );
+    return runLanguageFirstRetry(options, mappedGetLangFirst);
   }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
@@ -359,7 +372,11 @@ const getCountryAndLang = async (options, origin) => {
   if (langFirst) {
     const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
     const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
-    return getLanguageFirstCountryAndLang(window.location.pathname, origin, fqdn);
+    return getLanguageFirstCountryAndLang(
+      window.location.pathname,
+      LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin,
+      fqdn,
+    );
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
