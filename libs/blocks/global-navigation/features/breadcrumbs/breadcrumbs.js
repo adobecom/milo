@@ -26,7 +26,8 @@ const setBreadcrumbSEO = (breadcrumbs) => {
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
     let itemUrl = link?.href;
     if (!itemUrl && idx === list.length - 1) {
-      itemUrl = window.location.href;
+      const canonical = document.head.querySelector('link[rel="canonical"]')?.href;
+      itemUrl = canonical || `${window.location.origin}${window.location.pathname}`;
     }
     breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
