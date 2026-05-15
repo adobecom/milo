@@ -219,7 +219,7 @@
 }
 
 .notification.ribbon.space-between .foreground .copy-wrap {
-  margin-inline-end: var(--spacing-s);
+  margin-inline-end: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
