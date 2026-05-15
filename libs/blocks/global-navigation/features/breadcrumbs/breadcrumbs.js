@@ -21,19 +21,35 @@ const setBreadcrumbSEO = (breadcrumbs) => {
     itemListElement: [],
   };
 
+  const canonicalHref = document.head.querySelector('link[rel="canonical"]')?.href;
+  let prodOrigin = null;
+  try { prodOrigin = canonicalHref ? new URL(canonicalHref).origin : null; } catch { /* noop */ }
+
+  const toProductionUrl = (rawUrl, isLast) => {
+    if (!rawUrl) {
+      if (!isLast) return undefined;
+      return canonicalHref || `${window.location.origin}${window.location.pathname}`;
+    }
+    try {
+      const u = new URL(rawUrl, window.location.href);
+      if (prodOrigin && u.origin === window.location.origin) {
+        return `${prodOrigin}${u.pathname}`;
+      }
+      return `${u.origin}${u.pathname}`;
+    } catch {
+      return rawUrl;
+    }
+  };
+
   breadcrumbs.querySelectorAll('ul > li').forEach((item, idx, list) => {
     const link = item.querySelector('a');
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
-    let itemUrl = link?.href;
-    if (!itemUrl && idx === list.length - 1) {
-      const canonical = document.head.querySelector('link[rel="canonical"]')?.href;
-      itemUrl = canonical || `${window.location.origin}${window.location.pathname}`;
-    }
+    const isLast = idx === list.length - 1;
     breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
       position: idx + 1,
       name,
-      item: itemUrl,
+      item: toProductionUrl(link?.href, isLast),
     });
   });
   const script = toFragment`<script type="application/ld+json">${JSON.stringify(
