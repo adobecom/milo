@@ -177,19 +177,6 @@ export async function loadTaxonomy() {
 }
 
 /**
- * Returns a comparable timestamp for an article's date field.
- * Handles Excel serial numbers, ISO strings, and missing values.
- * @param {Object} article
- * @returns {number}
- */
-export function getArticleDate(article) {
-  const { date } = article;
-  if (!date || date === '0') return 0;
-  if (!date.toString().includes('-')) return calculateExcelDate(Number(date)).getTime();
-  return new Date(date.replace(/-/g, '/')).getTime();
-}
-
-/**
  * Format date to locale.
  *
  * @param {number} date The date to format

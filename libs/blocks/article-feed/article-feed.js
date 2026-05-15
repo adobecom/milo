@@ -4,7 +4,6 @@ import {
   loadTaxonomy,
   getArticleTaxonomy,
   buildArticleCard,
-  getArticleDate,
   calculateExcelDate,
 } from './article-helpers.js';
 
