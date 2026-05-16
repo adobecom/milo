@@ -349,13 +349,50 @@ function lanaLog(msg, severity = 'info') {
   }
 }
 
+export function parseIgnoreParam(search = window.location.search) {
+  const raw = new URLSearchParams(search).get('jsonld-graph-manager-ignore');
+  if (!raw) return new Set();
+  return new Set(raw.split(',').map((s) => s.trim().toLowerCase()).filter(Boolean));
+}
+
+const IGNORE_TYPES = parseIgnoreParam();
+
+export function shouldIgnoreScript(scriptEl, ignoreTypes) {
+  if (!ignoreTypes || ignoreTypes.size === 0) return false;
+  let data;
+  try { data = JSON.parse(scriptEl.textContent); } catch { return false; }
+  if (!data || typeof data !== 'object') return false;
+  const isGraphContainer = !Array.isArray(data) && '@graph' in data;
+  if (isGraphContainer && ignoreTypes.has('graph')) return true;
+  let nodes;
+  if (isGraphContainer) {
+    nodes = Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
+  } else {
+    nodes = Array.isArray(data) ? data : [data];
+  }
+  const types = nodes
+    .map((n) => (typeof n?.['@type'] === 'string' ? n['@type'].toLowerCase() : null))
+    .filter(Boolean);
+  const matched = types.filter((t) => ignoreTypes.has(t));
+  if (matched.length === 0) return false;
+  if (matched.length < types.length) {
+    const kept = types.filter((t) => !matched.includes(t));
+    lanaLog(
+      `Ignored script has mixed types: matched [${matched.join(',')}], also contains [${kept.join(',')}]. Skipping entire script. Split producer into separate scripts, or use 'graph' to bypass intentionally.`,
+      'warn',
+    );
+  }
+  return true;
+}
+
 export class JsonLdGraphManager {
-  constructor() {
+  constructor(options = {}) {
     this.graph = new Map();
     this.sources = new Map();
     this.queue = [];
     this.observer = null;
     this.isProcessing = false;
+    this.ignoreTypes = options.ignoreTypes ?? IGNORE_TYPES;
     this.debouncedRebuild = debounce(() => this.rebuild(), DEBOUNCE_MS);
   }
 
@@ -388,6 +425,14 @@ export class JsonLdGraphManager {
   }
 
   enqueue(scriptEl, source = 'runtime') {
+    if (shouldIgnoreScript(scriptEl, this.ignoreTypes)) {
+      debugLog('ignored', () => ({
+        source,
+        location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,
+        payload: scriptEl.textContent.trim().slice(0, 200),
+      }));
+      return;
+    }
     debugLog('enqueue', () => ({
       source,
       location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,

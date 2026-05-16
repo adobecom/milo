@@ -331,6 +331,13 @@ The previous `external-reference-includes-url` rule is retired. Because every re
 
 `webpage-canonical-singleton` replaces the prior `webpage-singleton`. Schema.org allows `isPartOf` to point at a cross-page resource and Google's rich-result spec doesn't constrain it, but a managed page-graph that contains two WebPage nodes is internally inconsistent for our consumers (the WebPage of the rendered page is the only one with full link wiring). We therefore rewrite cross-page `isPartOf`/`mainEntityOfPage` to the current canonical `#webpage` id. This is policy choice C from the design review — to be revisited if a consumer ever surfaces a need for cross-page parent linkage.
 
+**Interaction with `ignore-types-bypass`.** The rules in this section apply to the *managed graph* — the script the manager emits. When a producer script is bypassed via the ignore-types query parameter (`ignore-types-bypass`), its nodes do not enter the managed graph and these rules are evaluated as if the producer had not contributed at all:
+
+- `webpage-canonical-singleton` and `organization-singleton` (error): not at risk. The manager always synthesizes baseline WebPage and Organization (`manager-baseline-graph`); ignoring `WebPage` or `Organization` only means a producer-supplied node remains on the page as a sibling — the managed graph still has exactly one of each.
+- `breadcrumblist-singleton` (error): satisfied by the "when applicable" semantics. Ignoring `BreadcrumbList` leaves the managed graph with zero BreadcrumbList nodes, which is allowed.
+- `webpage-breadcrumb-link` (warn): only evaluated when BreadcrumbList is present in the managed graph, so ignoring it disables the rule for that page.
+- `required-primary-type` (warn): **at risk.** Ignoring the sole primary type (e.g., the only `Article` / `SoftwareApplication` on the page) leaves the managed graph without a primary entity and breaks the `WebPage.mainEntity` link. Callers opt into this risk explicitly by including a primary type in their ignore list.
+
 ### 3.5 Linking
 
 | Name | Severity | Requirement |
@@ -362,6 +369,7 @@ The previous `external-reference-includes-url` rule is retired. Because every re
 | `organization-id-aliases` | info | Producer-supplied non-canonical Organization `@id` values whose fragment matches `#org`, `#publisher`, or `#adobe` are rewritten to the canonical `#organization` fragment in reference stubs (objects with `@id` but no `@type`). Full Organization nodes already get the canonical `@id` via the identity rewrite. (Defensive measure for known producer drift; producer-side fix-up is preferred long-term.) |
 | `aggregaterating-extraction` | info | AggregateRating objects embedded as inline property values (typically on `SoftwareApplication`, `Article`, `Product`, etc.) are hoisted to the top-level `@graph` and merged into the canonical AggregateRating node at `{canonicalPageURL}#aggregaterating`. The inline value is replaced with `{ "@id": "<canonical-aggregaterating-id>" }`. |
 | `breadcrumblist-items-canonical-origin` | info | The manager rewrites every `BreadcrumbList.itemListElement[*].item` URL so that it describes the canonical production resource. Item URLs whose hostname matches the current rendering origin are rewritten to the origin of `<link rel="canonical">`. External-host URLs preserve their origin. Query strings and `#hash` are stripped from every item URL. The rewrite is skipped when no canonical link is present (the manager cannot invent a production origin). (Defensive normalization for producer drift: most breadcrumb integrations emit `link.href`, which resolves to the current rendering hostname; this ensures the canonical graph's breadcrumb URLs describe the production resource regardless of where the page is rendered. Producer-side fix-up is preferred long-term.) |
+| `ignore-types-bypass` | info | When the URL query parameter `jsonld-graph-manager-ignore` is set to a non-empty comma-separated list, the manager bypasses every producer script whose top-level content matches an entry in the list. A match is: (a) the script content is `{ "@graph": [...] }` and the list contains the pseudo-type `graph`; (b) any top-level `@type` value in the script equals an ignore-list entry, compared case-insensitively. Bypassed scripts are NOT parsed for ingestion, NOT removed from the DOM, and do NOT contribute to the managed graph — they remain on the page exactly as the producer emitted them. The list is empty by default; absent or empty list = nothing is bypassed. The singleton and linking rules in §3.4 / §3.5 apply only to the managed graph; ignored scripts on the page are independent of those constraints. If a single producer script carries multiple top-level `@type` values and only some match the ignore list, the entire script is bypassed and a Lana warning is logged — producers should split into separate scripts or callers should use `graph` to bypass the whole container intentionally. |
 | `source-priority` | error | When the same node is contributed by multiple sources, scalar conflicts are resolved by source priority: graph-manager-generated > Milo feature/block runtime > third-party runtime > initial page DOM (`bootDom`). Object fields merge by key with the same precedence; relationship arrays are unioned by `@id`. This applies to all types unless a type-specific override exists. The recorded source for a node is ratcheted to the maximum-priority source that has contributed to it; subsequent merges of lower-priority sources keep the higher source as the "previous" source for priority comparison, ensuring a generated default cannot be overwritten by later `bootDom` payloads arriving out of order. (Codifies that runtime producers — for example, the review block's `aggregateRating` — win over hardcoded `bootDom` values, ensuring the freshest data reaches consumers.) |
 
 ### 3.8 Type-specific rules
@@ -647,6 +655,8 @@ The manager is feature-gated by AEM page metadata so it can be enabled or disabl
 
 **Debug flag:** `jsonld-graph-manager-debug` (URL query parameter only, `true` to enable)
 
+**Ignore-types flag:** `jsonld-graph-manager-ignore` (URL query parameter only, comma-separated list of schema.org type names, case-insensitive). Default empty. Producer scripts whose top-level content matches any entry on the list are bypassed entirely — the manager does not parse, normalize, merge, or remove them from the DOM. The pseudo-type `graph` matches any script whose top-level content is a `{ "@graph": [...] }` container, regardless of the types nested inside. Example: `jsonld-graph-manager-ignore=breadcrumblist,faqpage,howto,videoobject,graph`. Governed by `ignore-types-bypass` (§3.7); see the rule-interaction note in §3.4 for caveats when ignoring primary or singleton types.
+
 ### 6.2 Observability And Diagnostics
 
 The manager should expose both local debugging output and production-safe warning and error reporting.
@@ -656,6 +666,7 @@ The manager should expose both local debugging output and production-safe warnin
 Add `jsonld-graph-manager-debug=true` to the URL query string to enable lifecycle logging via `console.log`. Events logged in queue order:
 
 - **enqueue** — source (`bootDom` or `runtime`), DOM location, original captured payload
+- **ignored** — source, DOM location, payload (truncated); the script matched `jsonld-graph-manager-ignore` and was bypassed
 - **rebuild** — batch size, current graph size
 - **parsed** — source, node count, `@type` values found
 - **removed from DOM** — parent element of the ingested script

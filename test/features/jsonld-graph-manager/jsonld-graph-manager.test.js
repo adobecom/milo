@@ -14,6 +14,8 @@ import {
   canonicalizeBreadcrumbItems,
   canonicalizeOrgId,
   aggregateRatingMeetsThresholds,
+  shouldIgnoreScript,
+  parseIgnoreParam,
   siteRoot,
   defaultOrg,
   JsonLdGraphManager,
@@ -1323,5 +1325,133 @@ describe('canonicalizeBreadcrumbItems', () => {
     const bc = graph.find((n) => n['@type'] === 'BreadcrumbList');
     expect(bc.itemListElement[0].item).to.equal('https://www.adobe.com/products');
     expect(bc.itemListElement[1].item).to.equal('https://www.adobe.com/products/photoshop.html');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ignore-types bypass (jsonld-graph-manager-ignore query param)
+// ---------------------------------------------------------------------------
+describe('ignore-types bypass', () => {
+  it('parseIgnoreParam: empty / absent / whitespace yields empty Set', () => {
+    expect(parseIgnoreParam('')).to.deep.equal(new Set());
+    expect(parseIgnoreParam('?jsonld-graph-manager-ignore=')).to.deep.equal(new Set());
+    expect(parseIgnoreParam('?jsonld-graph-manager-ignore= , ,')).to.deep.equal(new Set());
+  });
+
+  it('parseIgnoreParam: trims, lowercases, and drops empty entries', () => {
+    const set = parseIgnoreParam('?jsonld-graph-manager-ignore=BreadcrumbList, FAQPage ,,howto,');
+    expect(set).to.deep.equal(new Set(['breadcrumblist', 'faqpage', 'howto']));
+  });
+
+  it('shouldIgnoreScript returns false when ignoreTypes is empty', () => {
+    const script = makeScript({ '@type': 'BreadcrumbList', itemListElement: [] });
+    expect(shouldIgnoreScript(script, new Set())).to.be.false;
+  });
+
+  it('shouldIgnoreScript matches single-node @type case-insensitively', () => {
+    const script = makeScript({ '@type': 'BreadcrumbList', itemListElement: [] });
+    expect(shouldIgnoreScript(script, new Set(['breadcrumblist']))).to.be.true;
+    expect(shouldIgnoreScript(script, new Set(['BREADCRUMBLIST']))).to.be.false;
+    // BREADCRUMBLIST in the ignore Set wouldn't match because the Set holds the user-supplied
+    // value verbatim; parseIgnoreParam is what does the lowercasing. Test via parseIgnoreParam.
+    expect(shouldIgnoreScript(script, parseIgnoreParam('?jsonld-graph-manager-ignore=BREADCRUMBLIST'))).to.be.true;
+  });
+
+  it('shouldIgnoreScript matches the @graph pseudo-type', () => {
+    const script = makeScript({ '@context': 'https://schema.org', '@graph': [{ '@type': 'SoftwareApplication', name: 'X' }] });
+    expect(shouldIgnoreScript(script, new Set(['graph']))).to.be.true;
+    // The inner type's name does NOT match unless 'graph' is also present.
+    expect(shouldIgnoreScript(script, new Set(['softwareapplication']))).to.be.true;
+  });
+
+  it('shouldIgnoreScript returns false on unparseable JSON', () => {
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.textContent = '{ this is not JSON';
+    expect(shouldIgnoreScript(script, new Set(['breadcrumblist']))).to.be.false;
+  });
+
+  it('end-to-end: ignored single-type script remains in the DOM and is absent from managed graph', () => {
+    const bcScript = makeScript({
+      '@type': 'BreadcrumbList',
+      itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.adobe.com/' }],
+    });
+    document.head.appendChild(bcScript);
+    const manager = trackedManager({ ignoreTypes: new Set(['breadcrumblist']) });
+    manager.init();
+    // Producer script preserved verbatim.
+    expect(document.head.contains(bcScript)).to.be.true;
+    // Managed graph contains no BreadcrumbList node.
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((n) => n['@type'] === 'BreadcrumbList')).to.not.exist;
+  });
+
+  it('end-to-end: ignoring one type does not affect siblings — Article still ingested', () => {
+    const bcScript = makeScript({ '@type': 'BreadcrumbList', itemListElement: [] });
+    const articleScript = makeScript({ '@type': 'Article', headline: 'Hello' });
+    document.head.appendChild(bcScript);
+    document.head.appendChild(articleScript);
+    const manager = trackedManager({ ignoreTypes: new Set(['breadcrumblist']) });
+    manager.init();
+    expect(document.head.contains(bcScript)).to.be.true;
+    // Article was a normal producer: script removed, node ingested.
+    expect(document.head.contains(articleScript)).to.be.false;
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((n) => n['@type'] === 'Article')).to.exist;
+  });
+
+  it('end-to-end: @graph container ignored when list contains \'graph\'', () => {
+    const graphScript = makeScript({
+      '@context': 'https://schema.org',
+      '@graph': [
+        { '@type': 'SoftwareApplication', '@id': `${PAGE_URL}#softwareapplication`, name: 'Bypassed' },
+      ],
+    });
+    document.head.appendChild(graphScript);
+    const manager = trackedManager({ ignoreTypes: new Set(['graph']) });
+    manager.init();
+    expect(document.head.contains(graphScript)).to.be.true;
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    // The nested SoftwareApplication did NOT enter the managed graph.
+    expect(graph.find((n) => n['@type'] === 'SoftwareApplication')).to.not.exist;
+  });
+
+  it('mixed-type script with one ignored type skips whole script and warns via Lana', () => {
+    const lanaSpy = sinon.spy();
+    const previousLana = window.lana;
+    window.lana = { log: lanaSpy };
+    try {
+      const mixedScript = makeScript([
+        { '@type': 'Article', headline: 'Kept' },
+        { '@type': 'BreadcrumbList', itemListElement: [] },
+      ]);
+      document.head.appendChild(mixedScript);
+      const manager = trackedManager({ ignoreTypes: new Set(['breadcrumblist']) });
+      manager.init();
+      // Whole script preserved.
+      expect(document.head.contains(mixedScript)).to.be.true;
+      // Article did NOT make it into the managed graph (whole-script bypass).
+      const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+      expect(graph.find((n) => n['@type'] === 'Article')).to.not.exist;
+      // Lana warning fired.
+      const warnCall = lanaSpy.getCalls().find((c) => c.args[1]?.severity === 'warn');
+      expect(warnCall, 'expected a Lana warn-severity log').to.exist;
+      expect(warnCall.args[0]).to.match(/mixed types/i);
+    } finally {
+      window.lana = previousLana;
+    }
+  });
+
+  it('runtime path (MutationObserver simulation): runtime-ingested ignored script is bypassed', () => {
+    const manager = trackedManager({ ignoreTypes: new Set(['faqpage']) });
+    manager.init();
+    const faqScript = makeScript({ '@type': 'FAQPage', mainEntity: [] });
+    document.head.appendChild(faqScript);
+    // Simulate the MutationObserver path explicitly.
+    manager.enqueue(faqScript, 'runtime');
+    manager.rebuild();
+    expect(document.head.contains(faqScript)).to.be.true;
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((n) => n['@type'] === 'FAQPage')).to.not.exist;
   });
 });
