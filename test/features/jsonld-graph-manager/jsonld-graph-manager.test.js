@@ -57,7 +57,10 @@ function trackedManager(...args) {
 function resetManager() {
   activeManagers.forEach((m) => m.destroy?.());
   activeManagers.clear();
-  window.miloJsonLdGraphManager = null;
+  if (window.miloJsonLd) {
+    window.miloJsonLd.manager = null;
+    window.miloJsonLd.htmlJsonLd = null;
+  }
   document.head.querySelector('script[data-milo-jsonld="graph"]')?.remove();
   document.head.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());
   document.body.querySelectorAll('script[type="application/ld+json"]').forEach((s) => s.remove());

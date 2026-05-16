@@ -2662,6 +2662,17 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    // Snapshot JSON-LD scripts present in <head> before any block decoration
+    // can emit its own. Producer-runtime scripts that arrive during section
+    // processing are distinguishable later via `isHtmlJsonLd()` in
+    // libs/utils/jsonld-ns.js. Idempotent — repeated loadArea calls don't
+    // reset the snapshot.
+    window.miloJsonLd = window.miloJsonLd ?? {};
+    if (!window.miloJsonLd.htmlJsonLd) {
+      window.miloJsonLd.htmlJsonLd = new WeakSet();
+      document.head.querySelectorAll('script[type="application/ld+json"]')
+        .forEach((el) => window.miloJsonLd.htmlJsonLd.add(el));
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();

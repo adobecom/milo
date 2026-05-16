@@ -557,8 +557,9 @@ export class JsonLdGraphManager {
 }
 
 export default async function init() {
-  if (window.miloJsonLdGraphManager) return;
+  window.miloJsonLd = window.miloJsonLd ?? {};
+  if (window.miloJsonLd.manager) return;
   const manager = new JsonLdGraphManager();
-  window.miloJsonLdGraphManager = manager;
+  window.miloJsonLd.manager = manager;
   manager.init();
 }
