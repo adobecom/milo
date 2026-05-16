@@ -98,8 +98,16 @@ export function pageScopedId(type) {
 
 export function flattenPayload(data) {
   if (!data || typeof data !== 'object') return [];
-  if (Array.isArray(data)) return data;
-  if (data['@graph']) return Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
+  if (Array.isArray(data)) return data.flatMap(flattenPayload);
+  if (data['@graph'] != null) {
+    const innerArr = Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
+    const innerFlat = innerArr.flatMap(flattenPayload);
+    const rest = { ...data };
+    delete rest['@graph'];
+    delete rest['@context'];
+    if (rest['@type']) return [rest, ...innerFlat];
+    return innerFlat;
+  }
   return [data];
 }
 

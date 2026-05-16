@@ -170,7 +170,7 @@ The manager performs an immediate boot write, then batches later rewrites on a d
 
 The shape of the managed `<script>` and `@graph`, including required and optional attributes, identity rules, singletons, and entity linkage, is defined in §3 Requirements. The manager's job is to produce output that satisfies every `error`-severity rule there.
 
-Accepted input forms include a single JSON-LD object, an array of JSON-LD objects, or an object containing `@graph`. All accepted forms are flattened into one internal graph representation before transforms run.
+Accepted input forms include a single JSON-LD object, an array of JSON-LD objects, or an object containing `@graph`. All accepted forms are recursively flattened into one internal graph representation before transforms run: an array element that is itself a `@graph` wrapper is spliced in as siblings rather than retained as a node; a wrapper that carries both `@type` and `@graph` (e.g., `{ "@type": "WebPage", "name": "X", "@graph": [...] }`) is split into the typed-node-without-`@graph` plus the inner nodes; nested wrappers are flattened to any depth. This ensures the managed `@graph` never contains a node whose own property is `@graph`.
 
 Non-managed JSON-LD scripts are candidates for ingestion and removal regardless of where they appear in the document; the manager ignores its own managed graph (identified by the `data-milo-jsonld="graph"` attribute) during scan and observation.
 

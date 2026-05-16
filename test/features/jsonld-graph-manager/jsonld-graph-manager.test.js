@@ -91,6 +91,43 @@ describe('flattenPayload', () => {
     const result = flattenPayload({ '@graph': [{ '@type': 'Article' }] });
     expect(result).to.deep.equal([{ '@type': 'Article' }]);
   });
+
+  it('recursively flattens an array containing a @graph wrapper (no wrapper passes through)', () => {
+    const input = [
+      { '@type': 'Article', headline: 'Outer' },
+      { '@context': 'https://schema.org', '@graph': [{ '@type': 'VideoObject', name: 'Inner' }] },
+    ];
+    const result = flattenPayload(input);
+    expect(result).to.have.length(2);
+    expect(result[0]).to.deep.equal({ '@type': 'Article', headline: 'Outer' });
+    expect(result[1]).to.deep.equal({ '@type': 'VideoObject', name: 'Inner' });
+    // No element with a residual @graph property.
+    expect(result.some((n) => '@graph' in n)).to.be.false;
+  });
+
+  it('preserves typed-wrapper fields when the object has both @type and @graph', () => {
+    const input = {
+      '@type': 'WebPage',
+      name: 'Page X',
+      '@graph': [{ '@type': 'Article', headline: 'Inner' }],
+    };
+    const result = flattenPayload(input);
+    expect(result).to.have.length(2);
+    // Wrapper's non-@graph fields preserved as a node (minus @graph itself).
+    expect(result[0]).to.deep.equal({ '@type': 'WebPage', name: 'Page X' });
+    expect(result[1]).to.deep.equal({ '@type': 'Article', headline: 'Inner' });
+  });
+
+  it('flattens nested @graph wrappers recursively', () => {
+    const input = { '@graph': [{ '@graph': [{ '@type': 'Article' }] }] };
+    expect(flattenPayload(input)).to.deep.equal([{ '@type': 'Article' }]);
+  });
+
+  it('drops a pure @graph wrapper without @type and emits only inner nodes', () => {
+    const input = { '@context': 'https://schema.org', '@graph': [{ '@type': 'Article' }, { '@type': 'BreadcrumbList' }] };
+    const result = flattenPayload(input);
+    expect(result).to.deep.equal([{ '@type': 'Article' }, { '@type': 'BreadcrumbList' }]);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -1453,5 +1490,25 @@ describe('ignore-types bypass', () => {
     expect(document.head.contains(faqScript)).to.be.true;
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     expect(graph.find((n) => n['@type'] === 'FAQPage')).to.not.exist;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Recursive flatten: graph wrappers nested inside arrays do not leak into output
+// ---------------------------------------------------------------------------
+describe('end-to-end: graph wrapper inside array script', () => {
+  it('does not emit a wrapper node and ingests inner content correctly', () => {
+    document.head.appendChild(makeScript([
+      { '@type': 'Article', headline: 'Outer article' },
+      { '@context': 'https://schema.org', '@graph': [{ '@type': 'VideoObject', name: 'Inner video' }] },
+    ]));
+    const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    // No managed node carries a residual @graph property.
+    expect(graph.some((n) => '@graph' in n), 'no embedded graph wrapper in output').to.be.false;
+    // Inner VideoObject is present as a top-level node.
+    expect(graph.find((n) => n['@type'] === 'VideoObject')).to.exist;
+    expect(graph.find((n) => n['@type'] === 'Article')).to.exist;
   });
 });
