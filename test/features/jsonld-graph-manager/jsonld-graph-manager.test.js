@@ -1397,8 +1397,42 @@ describe('ignore-types bypass', () => {
   it('shouldIgnoreScript matches the @graph pseudo-type', () => {
     const script = makeScript({ '@context': 'https://schema.org', '@graph': [{ '@type': 'SoftwareApplication', name: 'X' }] });
     expect(shouldIgnoreScript(script, new Set(['graph']))).to.be.true;
-    // The inner type's name does NOT match unless 'graph' is also present.
-    expect(shouldIgnoreScript(script, new Set(['softwareapplication']))).to.be.true;
+    // The inner type's name does NOT match unless 'graph' is also present —
+    // a @graph wrapper is a single top-level item with no @type; matching by
+    // @type only works against top-level items, not nested @graph contents.
+    expect(shouldIgnoreScript(script, new Set(['softwareapplication']))).to.be.false;
+    // Either id (graph OR inner @type) makes the script match when both are listed.
+    expect(shouldIgnoreScript(script, new Set(['graph', 'softwareapplication']))).to.be.true;
+  });
+
+  it('shouldIgnoreScript matches a @graph wrapper nested inside a top-level array (real-world DA Express case)', () => {
+    // Real-world example: [{@context, @graph: [WebPage, Org, SA, ...]}]
+    const script = makeScript([
+      { '@context': 'https://schema.org', '@graph': [{ '@type': 'WebPage' }, { '@type': 'SoftwareApplication' }] },
+    ]);
+    expect(shouldIgnoreScript(script, new Set(['graph']))).to.be.true;
+    // Without 'graph' in the ignore list, the wrapper is not bypassed.
+    expect(shouldIgnoreScript(script, new Set(['webpage']))).to.be.false;
+  });
+
+  it('shouldIgnoreScript matches an item that carries both @type and @graph (mixed warning)', () => {
+    const lanaSpy = sinon.spy();
+    const previousLana = window.lana;
+    window.lana = { log: lanaSpy };
+    try {
+      const script = makeScript({ '@type': 'WebPage', name: 'P', '@graph': [{ '@type': 'Article' }] });
+      // Ignoring 'webpage' alone matches the @type id but not the 'graph' id → mixed → warn.
+      expect(shouldIgnoreScript(script, new Set(['webpage']))).to.be.true;
+      const warnCall = lanaSpy.getCalls().find((c) => c.args[1]?.severity === 'warn');
+      expect(warnCall, 'expected mixed-types Lana warn').to.exist;
+      // Ignoring both 'graph' and 'webpage' — no mixed warning.
+      lanaSpy.resetHistory();
+      expect(shouldIgnoreScript(script, new Set(['webpage', 'graph']))).to.be.true;
+      const warnCall2 = lanaSpy.getCalls().find((c) => c.args[1]?.severity === 'warn');
+      expect(warnCall2, 'no warn when all ids match').to.not.exist;
+    } finally {
+      window.lana = previousLana;
+    }
   });
 
   it('shouldIgnoreScript returns false on unparseable JSON', () => {
@@ -1510,5 +1544,37 @@ describe('end-to-end: graph wrapper inside array script', () => {
     // Inner VideoObject is present as a top-level node.
     expect(graph.find((n) => n['@type'] === 'VideoObject')).to.exist;
     expect(graph.find((n) => n['@type'] === 'Article')).to.exist;
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Real-world DA Express scenario: producer ships [{@graph:[...]}] and user
+// ignores 'graph' → manager must NOT ingest any of the wrapped nodes.
+// ---------------------------------------------------------------------------
+describe('end-to-end: ignore=graph against an array-wrapped pre-baked graph', () => {
+  it('bypasses the wrapped script entirely; baseline graph still synthesized', () => {
+    document.head.appendChild(makeScript([
+      {
+        '@context': 'https://schema.org',
+        '@graph': [
+          { '@type': 'WebPage', '@id': `${PAGE_URL}#webpage`, name: 'Producer WP' },
+          { '@type': 'SoftwareApplication', '@id': `${PAGE_URL}#softwareapplication`, name: 'Bypassed App' },
+          { '@type': 'BreadcrumbList', '@id': `${PAGE_URL}#breadcrumb`, itemListElement: [] },
+          { '@type': 'FAQPage', '@id': `${PAGE_URL}#faq`, mainEntity: [] },
+        ],
+      },
+    ]));
+    const manager = trackedManager({ ignoreTypes: new Set(['graph']) });
+    manager.init();
+    const managed = document.head.querySelector('script[data-milo-jsonld="graph"]');
+    expect(managed).to.exist;
+    const graph = JSON.parse(managed.textContent)['@graph'];
+    // None of the producer's wrapped nodes leaked in.
+    expect(graph.find((n) => n.name === 'Producer WP')).to.not.exist;
+    expect(graph.find((n) => n.name === 'Bypassed App')).to.not.exist;
+    expect(graph.find((n) => n['@type'] === 'FAQPage')).to.not.exist;
+    // Baseline still synthesized.
+    expect(graph.find((n) => n['@type'] === 'WebPage' && !n.name)).to.exist;
+    expect(graph.find((n) => n['@type'] === 'Organization')).to.exist;
   });
 });

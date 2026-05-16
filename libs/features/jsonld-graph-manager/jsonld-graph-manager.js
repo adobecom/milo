@@ -370,21 +370,18 @@ export function shouldIgnoreScript(scriptEl, ignoreTypes) {
   let data;
   try { data = JSON.parse(scriptEl.textContent); } catch { return false; }
   if (!data || typeof data !== 'object') return false;
-  const isGraphContainer = !Array.isArray(data) && '@graph' in data;
-  if (isGraphContainer && ignoreTypes.has('graph')) return true;
-  let nodes;
-  if (isGraphContainer) {
-    nodes = Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
-  } else {
-    nodes = Array.isArray(data) ? data : [data];
+  const items = Array.isArray(data) ? data : [data];
+  const ids = [];
+  for (const item of items) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    if ('@graph' in item) ids.push('graph');
+    if (typeof item['@type'] === 'string') ids.push(item['@type'].toLowerCase());
   }
-  const types = nodes
-    .map((n) => (typeof n?.['@type'] === 'string' ? n['@type'].toLowerCase() : null))
-    .filter(Boolean);
-  const matched = types.filter((t) => ignoreTypes.has(t));
+  if (ids.length === 0) return false;
+  const matched = ids.filter((id) => ignoreTypes.has(id));
   if (matched.length === 0) return false;
-  if (matched.length < types.length) {
-    const kept = types.filter((t) => !matched.includes(t));
+  if (matched.length < ids.length) {
+    const kept = ids.filter((id) => !matched.includes(id));
     lanaLog(
       `Ignored script has mixed types: matched [${matched.join(',')}], also contains [${kept.join(',')}]. Skipping entire script. Split producer into separate scripts, or use 'graph' to bypass intentionally.`,
       'warn',
