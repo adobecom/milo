@@ -1394,25 +1394,30 @@ describe('ignore-types bypass', () => {
     expect(shouldIgnoreScript(script, parseIgnoreParam('?jsonld-graph-manager-ignore=BREADCRUMBLIST'))).to.be.true;
   });
 
-  it('shouldIgnoreScript matches the @graph pseudo-type', () => {
+  it('shouldIgnoreScript matches the @graph pseudo-type or any nested @type', () => {
     const script = makeScript({ '@context': 'https://schema.org', '@graph': [{ '@type': 'SoftwareApplication', name: 'X' }] });
+    // 'graph' pseudo-type matches the wrapper directly.
     expect(shouldIgnoreScript(script, new Set(['graph']))).to.be.true;
-    // The inner type's name does NOT match unless 'graph' is also present —
-    // a @graph wrapper is a single top-level item with no @type; matching by
-    // @type only works against top-level items, not nested @graph contents.
-    expect(shouldIgnoreScript(script, new Set(['softwareapplication']))).to.be.false;
-    // Either id (graph OR inner @type) makes the script match when both are listed.
-    expect(shouldIgnoreScript(script, new Set(['graph', 'softwareapplication']))).to.be.true;
+    // Type-name matching recurses into the @graph contents — SA inside the wrapper
+    // matches an 'softwareapplication' ignore even when 'graph' is not listed.
+    expect(shouldIgnoreScript(script, new Set(['softwareapplication']))).to.be.true;
+    // An ignore-list entry that does NOT appear anywhere in the script is a no-match.
+    expect(shouldIgnoreScript(script, new Set(['breadcrumblist']))).to.be.false;
   });
 
-  it('shouldIgnoreScript matches a @graph wrapper nested inside a top-level array (real-world DA Express case)', () => {
-    // Real-world example: [{@context, @graph: [WebPage, Org, SA, ...]}]
+  it('shouldIgnoreScript: type-name matching recurses through a top-level array containing a wrapper (real-world DA Express case)', () => {
+    // Real-world: [{@context, @graph: [WebPage, SoftwareApplication, BreadcrumbList, ...]}]
     const script = makeScript([
-      { '@context': 'https://schema.org', '@graph': [{ '@type': 'WebPage' }, { '@type': 'SoftwareApplication' }] },
+      { '@context': 'https://schema.org', '@graph': [{ '@type': 'WebPage' }, { '@type': 'SoftwareApplication' }, { '@type': 'BreadcrumbList' }] },
     ]);
+    // 'graph' matches the wrapper.
     expect(shouldIgnoreScript(script, new Set(['graph']))).to.be.true;
-    // Without 'graph' in the ignore list, the wrapper is not bypassed.
-    expect(shouldIgnoreScript(script, new Set(['webpage']))).to.be.false;
+    // 'webpage' matches the nested WebPage even though it's inside the wrapper.
+    expect(shouldIgnoreScript(script, new Set(['webpage']))).to.be.true;
+    // 'breadcrumblist' likewise.
+    expect(shouldIgnoreScript(script, new Set(['breadcrumblist']))).to.be.true;
+    // A type not present anywhere is a no-match.
+    expect(shouldIgnoreScript(script, new Set(['faqpage']))).to.be.false;
   });
 
   it('shouldIgnoreScript matches an item that carries both @type and @graph (mixed warning)', () => {
@@ -1576,5 +1581,37 @@ describe('end-to-end: ignore=graph against an array-wrapped pre-baked graph', ()
     // Baseline still synthesized.
     expect(graph.find((n) => n['@type'] === 'WebPage' && !n.name)).to.exist;
     expect(graph.find((n) => n['@type'] === 'Organization')).to.exist;
+  });
+
+  it('bypasses a wrapped script when a NESTED @type matches the ignore list (recursive type matching)', () => {
+    // Producer ships a pre-baked graph that contains BreadcrumbList nested inside @graph.
+    // User passes ignore=breadcrumblist without 'graph' — should still bypass the wrapper.
+    document.head.appendChild(makeScript([
+      {
+        '@context': 'https://schema.org',
+        '@graph': [
+          { '@type': 'WebPage', '@id': `${PAGE_URL}#webpage`, name: 'Wrapped WP' },
+          { '@type': 'BreadcrumbList', '@id': `${PAGE_URL}#breadcrumb`, itemListElement: [] },
+        ],
+      },
+    ]));
+    const lanaSpy = sinon.spy();
+    const previousLana = window.lana;
+    window.lana = { log: lanaSpy };
+    try {
+      const manager = trackedManager({ ignoreTypes: new Set(['breadcrumblist']) });
+      manager.init();
+      const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+      // No wrapped nodes ingested (script bypassed).
+      expect(graph.find((n) => n.name === 'Wrapped WP')).to.not.exist;
+      expect(graph.find((n) => n['@type'] === 'BreadcrumbList')).to.not.exist;
+      // Mixed-types warning fired because WebPage was also bypassed but not on the list.
+      const warnCall = lanaSpy.getCalls().find((c) => c.args[1]?.severity === 'warn');
+      expect(warnCall, 'expected mixed-types Lana warn').to.exist;
+      expect(warnCall.args[0]).to.match(/breadcrumblist/);
+      expect(warnCall.args[0]).to.match(/webpage/);
+    } finally {
+      window.lana = previousLana;
+    }
   });
 });

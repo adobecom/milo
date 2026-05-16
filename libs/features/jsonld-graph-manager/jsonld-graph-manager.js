@@ -370,18 +370,26 @@ export function shouldIgnoreScript(scriptEl, ignoreTypes) {
   let data;
   try { data = JSON.parse(scriptEl.textContent); } catch { return false; }
   if (!data || typeof data !== 'object') return false;
+
+  // 'graph' pseudo-type short-circuits: if the script contains any @graph wrapper
+  // (directly or as a top-level array element) and 'graph' is on the ignore list,
+  // bypass the whole script with no further analysis.
   const items = Array.isArray(data) ? data : [data];
-  const ids = [];
-  for (const item of items) {
-    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
-    if ('@graph' in item) ids.push('graph');
-    if (typeof item['@type'] === 'string') ids.push(item['@type'].toLowerCase());
-  }
-  if (ids.length === 0) return false;
-  const matched = ids.filter((id) => ignoreTypes.has(id));
+  const hasWrapper = items.some((item) => (
+    item && typeof item === 'object' && !Array.isArray(item) && '@graph' in item
+  ));
+  if (hasWrapper && ignoreTypes.has('graph')) return true;
+
+  // Type-name matching recurses into @graph wrappers via flattenPayload, so an
+  // ignored type matches whether it appears at top level or inside a wrapped graph.
+  const types = flattenPayload(data)
+    .map((n) => (typeof n?.['@type'] === 'string' ? n['@type'].toLowerCase() : null))
+    .filter(Boolean);
+  if (types.length === 0) return false;
+  const matched = types.filter((t) => ignoreTypes.has(t));
   if (matched.length === 0) return false;
-  if (matched.length < ids.length) {
-    const kept = ids.filter((id) => !matched.includes(id));
+  if (matched.length < types.length) {
+    const kept = types.filter((t) => !matched.includes(t));
     lanaLog(
       `Ignored script has mixed types: matched [${matched.join(',')}], also contains [${kept.join(',')}]. Skipping entire script. Split producer into separate scripts, or use 'graph' to bypass intentionally.`,
       'warn',
