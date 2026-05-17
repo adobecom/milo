@@ -1292,13 +1292,23 @@ export default async function init(el) {
     const scrollPct = animTotal ? (scrollTimeline.current / animTotal) * 100 : 0;
     const text = [
       `stage:    ${getActiveStage()}`,
-      `breakpt:  ${getBreakpointLabel()}`,
+      `breakpt:  ${getBreakpointLabel()}  (${viewportWidth}×${viewportHeight})`,
       `scroll:   ${scrollPct.toFixed(1)}%  (${scrollTimeline.current.toFixed(0)} / ${animTotal})`,
+      '─────────────────────────────',
+      `slideT:   ${phase.slideT.toFixed(3)}`,
       `arcPan:   ${phase.arcPan.toFixed(3)}`,
       `arcToGrd: ${phase.arcToGrid.toFixed(3)}`,
+      `settle:   ${arcTextPanProgressCached.toFixed(3)}`,
       `slotting: ${phase.slotting.toFixed(3)}`,
+      '─────────────────────────────',
+      `peelStart:${PEEL_START_SCROLL.toFixed(0)}  gridEnd:${timing.gridEnd}`,
+      `acbStart: ${timing.slottingStart}  acbDur:${timing.slottingDuration}`,
+      '─────────────────────────────',
+      `colSprd:  ${cardGridLayout.columnSpread.toFixed(3)}`,
+      `rowGap:   ${cardGridLayout.rowGap.toFixed(3)}`,
+      `arcGridY: ${verticalPan.arcGridY.toFixed(1)}px`,
+      `postRevY: ${(frame.isMobile ? verticalPan.mobilePostRevealY : verticalPan.deskPostRevealY).toFixed(1)}px`,
       `blockH:   ${el.offsetHeight}px`,
-      `viewH:    ${window.innerHeight}px`,
     ].join('\n');
     if (text === lastDebugText) return;
     lastDebugText = text;
