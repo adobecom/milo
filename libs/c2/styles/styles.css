@@ -1092,14 +1092,9 @@ p {
     animation-range: entry 0% cover 40%;
 
     @media (width >= 1280px) {
-      --gd-grow-from: -110vh;
-      --gd-reveal-from: 50vh;
-      animation-range: entry 0% cover 50%;
-    }
-
-    @media (width >= 1920px) {
       --gd-grow-from: -70vh;
       --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 50%;
     }
 
     .section-background img {
