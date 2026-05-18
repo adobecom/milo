@@ -145,7 +145,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
   const eventName = `${eventType}:${modPrefix.split('_')[0]}-${modCurrPrefix.split('_')[0]}|Geo_Routing_Modal`;
   const locale = config.locale.prefix?.replace('/', '') || 'us';
   const cookie = getCookie('international') || 'none';
-  link.setAttribute('daa-ll', `${eventName}|locale:${locale}|country:${akamaiCode || 'none'}|cookie:${cookie}`);
+  link.setAttribute('daa-ll', `${eventName}|locale:${locale}|country:${akamaiCode || 'none'}|intl:${cookie}`);
   link.addEventListener('click', async () => {
     // set cookie so legacy code on adobecom still works properly.
     const domain = window.location.host === 'adobe.com'
@@ -502,7 +502,7 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         const akamaiCode = await getCountry();
-        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|cookie:${storedInter || 'none'}`;
+        const eventString = `Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:${storedInter || 'none'}`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
@@ -527,7 +527,7 @@ export default async function loadGeoRouting(
       if (details) {
         handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
-        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|cookie:none`;
+        const eventString = `Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal|locale:${config.locale.prefix?.replace('/', '') || 'us'}|country:${akamaiCode}|intl:none`;
         sendAnalyticsFunc(new Event(eventString));
         if (config.lingoProjectSuccessLogging === 'on') {
           window.lana.log(eventString, { sampleRate: 10, tags: 'lingo,lingo-georouting-load', severity: 'i' });
