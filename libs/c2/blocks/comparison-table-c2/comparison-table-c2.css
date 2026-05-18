@@ -49,7 +49,7 @@
   .header-content {
     padding-bottom: var(--s2a-spacing-xl);
     position: sticky;
-    top: var(--ct-nav-height, 0px);
+    top: calc(var(--ct-nav-height, 0px) + var(--s2a-spacing-xl));
     z-index: 10;
 
     &.is-sticky {

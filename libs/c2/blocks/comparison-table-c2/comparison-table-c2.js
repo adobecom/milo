@@ -502,34 +502,57 @@ function setupStickyHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
+  // header element has height:0 on C2 pages; query the fixed <nav> child directly.
   function getNavOffset() {
-    const navEl = document.querySelector('header');
+    const navEl = document.querySelector('header > nav') || document.querySelector('header');
     const pos = navEl ? getComputedStyle(navEl).position : '';
-    return ((pos === 'sticky' || pos === 'fixed') ? navEl.offsetHeight : 0)
+    return ((pos === 'fixed' || pos === 'sticky')
+      ? Math.max(0, Math.round(navEl.getBoundingClientRect().bottom)) : 0)
       + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
   }
 
-  function setNavHeightVar() {
-    document.documentElement.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
-  }
-  setNavHeightVar();
-  const navEl = document.querySelector('header');
-  if (navEl) {
-    new ResizeObserver(setNavHeightVar).observe(navEl);
-    // UniversalNav loads async — retry after it has likely applied position:fixed
-    requestAnimationFrame(() => requestAnimationFrame(setNavHeightVar));
-    setTimeout(setNavHeightVar, 500);
-  }
+  const setTop = () => { headerContent.style.setProperty('--ct-nav-height', `${getNavOffset()}px`); };
 
   // 1px sentinel: when it leaves the viewport the header is stuck.
   const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;margin-bottom:-1px' });
   headerContent.before(sentinel);
 
-  const observer = new IntersectionObserver(
-    ([entry]) => { headerContent.classList.toggle('is-sticky', !entry.isIntersecting); },
-    { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
-  );
-  observer.observe(sentinel);
+  let stickyObserver;
+  const setupObserver = () => {
+    stickyObserver?.disconnect();
+    stickyObserver = new IntersectionObserver(
+      ([entry]) => {
+        setTop();
+        headerContent.classList.toggle('is-sticky', !entry.isIntersecting);
+      },
+      { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
+    );
+    stickyObserver.observe(sentinel);
+  };
+
+  const attachNav = (navEl) => {
+    new ResizeObserver(() => { setTop(); setupObserver(); }).observe(navEl);
+    setTop();
+    setupObserver();
+  };
+
+  // Federal nav loads async — watch for <nav> being added to <header>
+  const existingNav = document.querySelector('header > nav');
+  if (existingNav) {
+    attachNav(existingNav);
+  } else {
+    const headerEl = document.querySelector('header');
+    setupObserver(); // initial observer with offset 0 until nav loads
+    if (headerEl) {
+      const mo = new MutationObserver(() => {
+        const navEl = document.querySelector('header > nav');
+        if (!navEl) return;
+        mo.disconnect();
+        attachNav(navEl);
+      });
+      mo.observe(headerEl, { childList: true });
+    }
+  }
 }
 
 function setupTooltipDefaults(el) {
