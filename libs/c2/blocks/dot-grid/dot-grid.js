@@ -100,7 +100,7 @@ const ANIM = {
   arcYTilt: 25,
   arcXTilt: 10,
 
-  // Slide-in (arc entry): X offset + scale + opacity fade; no Y so there's no pan-up
+  // Slide-in (arc entry): X offset + scale + opacity fade; no Y (no pan-up)
   slideStagger: 0.45, // per-card stagger fraction (fanIdx=7 first, fanIdx=0 last)
   slideScaleStart: 0.85, // scale at slide start, grows to 1.0 on arrival
   slideStartX: 0.55, // base X offset as fraction of viewport width
@@ -619,7 +619,7 @@ export default async function init(el) {
     const fanCenterX = viewportWidth * 0.5 - arcRadius * Math.sin(arcAngle);
     const fanCenterY = viewportHeight * 0.5
       + arcRadius * Math.cos(arcAngle)
-      - viewportHeight * 0.15;
+      - viewportHeight * 0.12;
     const middleAngle = arcAngle - Math.PI / 2;
     const rotationOffset = ANIM.arcSpan * 0.5 - ANIM.arcSpan * 1.5 * arcRotationProgress;
     const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
@@ -1070,8 +1070,10 @@ export default async function init(el) {
     scrollTimeline.current = readScrollProgress() * animScrollTotal;
 
     const blockTop = cachedBlockDocTop - window.scrollY;
-    const slideEarly = viewportHeight * 0.75;
-    const prePinContrib = Math.max(0, slideEarly - blockTop);
+    const slideEarly = viewportHeight * 1.0;
+    // Clamp blockTop ≥ 0 so prePinContrib holds at slideEarly post-pin instead of
+    // growing further. Without this, slideT velocity doubles at scroll=0.
+    const prePinContrib = Math.max(0, slideEarly - Math.max(0, blockTop));
     const slideScroll = scrollTimeline.current + prePinContrib;
     phase.slideT = clamp01(slideScroll / (slideEarly + ANIM.slideOverlap));
 
