@@ -24,6 +24,7 @@ const miloIgnore = isCI
     'features/commerce/**',
     'features/promotions/**',
     'features/osttools/**',
+    'features/dafloodgate/**',
   ]
   : []; // In local runs → allow @mas annotations to work
 
