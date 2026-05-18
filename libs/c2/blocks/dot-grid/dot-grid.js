@@ -764,7 +764,7 @@ export default async function init(el) {
     const slotGridLeft = chromeLeft
       + (ACROBAT_MOBILE_MOCKUP_WIDTH - 2 * slotWidth - ACROBAT_MOBILE_SLOT_COLUMN_GAP) / 2;
     const rowPitch = tallSlotH + labelStripHeight + ACROBAT_MOBILE_SLOT_ROW_GAP;
-    const firstRowCenterY = canvasTop + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2;
+    const firstRowCenterY = canvasTop + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2 + 30;
     return { slotWidth, cardSlotScale, slotGridLeft, rowPitch, firstRowCenterY };
   }
 
@@ -1032,7 +1032,7 @@ export default async function init(el) {
     card.el.style.opacity = 1;
     card.el.style.boxShadow = '';
     card.el.style.zIndex = '';
-    setLabelPos(card, centerX, centerY, scale, 1);
+    setLabelPos(card, centerX, centerY, scale, Math.max(0, 1 - phase.slotting * 2));
   }
 
   // Card rendering: 3-branch state machine — exactly one branch runs per card per frame.

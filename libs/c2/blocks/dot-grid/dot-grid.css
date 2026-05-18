@@ -155,7 +155,7 @@
   height: 230px;
   overflow: hidden;
   background: #ececec;
-  border-radius: 8px;
+  border-radius: 10px;
   transform-origin: center center;
   cursor: default;
   will-change: transform, opacity;
