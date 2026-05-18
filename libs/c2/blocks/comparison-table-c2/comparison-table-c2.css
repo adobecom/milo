@@ -41,7 +41,7 @@
   .header-content {
     padding-bottom: var(--s2a-spacing-xl);
     position: sticky;
-    top: var(--feds-totalheight-nav, 63px);
+    top: var(--feds-totalheight-nav);
     z-index: 10;
 
     &.is-sticky {
@@ -102,11 +102,6 @@
     border: 1px solid var(--ct-card-border);
     padding: var(--s2a-spacing-md);
     background: var(--ct-bg-white);
-    transition: box-shadow 0.2s ease;
-
-    &:hover {
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    }
 
     &:last-of-type {
       border: 2.5px solid var(--ct-highlight-border);
@@ -588,7 +583,7 @@
     }
   }
 
-  @media (width >= 768px) {
+  @media (width >= 900px) {
     padding: var(--s2a-spacing-3xl) 0;
 
     .header-content-wrapper,

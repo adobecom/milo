@@ -603,6 +603,18 @@ function setupStickyHeader(el) {
   window.addEventListener('scroll', onScroll, { passive: true });
 }
 
+function setupTooltipDefaults(el) {
+  const mq = window.matchMedia('(max-width: 899px)');
+  const applyPositions = (isMobile) => {
+    el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+      tooltip.classList.remove('top', 'bottom', 'right', 'left');
+      tooltip.classList.add(isMobile ? 'bottom' : 'right');
+    });
+  };
+  applyPositions(mq.matches);
+  mq.addEventListener('change', (e) => applyPositions(e.matches));
+}
+
 function decorate(el) {
   el.classList.add('con-block');
   const [headerChild, ...tableChildren] = [...el.children];
@@ -615,5 +627,6 @@ export default function init(el) {
   setEqualHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
+  setupTooltipDefaults(el);
   setAccessibilityLabels(el);
 }
