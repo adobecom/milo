@@ -7,7 +7,7 @@ function addCursorFollower(list) {
   let activeMedia = null;
   let mouseX = 0;
   let mouseY = 0;
-  let isOverList = false;
+  let isScrolling = false;
   let scrollEndTimer = null;
 
   const setPosition = (media) => {
@@ -41,9 +41,13 @@ function addCursorFollower(list) {
   };
 
   const onScroll = () => {
+    isScrolling = true;
     hide();
     clearTimeout(scrollEndTimer);
-    scrollEndTimer = setTimeout(() => activateItemAt(mouseX, mouseY), 150);
+    scrollEndTimer = setTimeout(() => {
+      isScrolling = false;
+      activateItemAt(mouseX, mouseY);
+    }, 150);
   };
 
   // Global tracking keeps mouseX/mouseY current for the scroll-end check.
@@ -60,7 +64,7 @@ function addCursorFollower(list) {
   });
 
   list.addEventListener('mouseover', (e) => {
-    if (!DESKTOP_MQ.matches) return;
+    if (!DESKTOP_MQ.matches || isScrolling) return;
     activateItemAt(e.clientX, e.clientY);
   });
 
@@ -71,6 +75,7 @@ function addCursorFollower(list) {
   });
 
   list.addEventListener('mouseleave', () => {
+    isScrolling = false;
     hide();
     clearTimeout(scrollEndTimer);
     document.removeEventListener('scroll', onScroll);
