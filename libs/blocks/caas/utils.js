@@ -12,6 +12,9 @@ import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
+// CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
+export const mepCaasConfigUrls = new WeakMap();
+
 export const LANGS = {
   en: 'en',
   de: 'de',
@@ -1225,11 +1228,16 @@ export const initCaas = async (state, caasStrs, el) => {
   if (!caasEl) return;
 
   const appEl = caasEl.parentElement;
+  const preservedConfigUrl = mepCaasConfigUrls.get(caasEl);
   caasEl.remove();
 
   const newEl = document.createElement('div');
   newEl.id = 'caas';
   newEl.className = 'caas-preview';
+  if (preservedConfigUrl) {
+    newEl.dataset.caasBlock = '';
+    mepCaasConfigUrls.set(newEl, preservedConfigUrl);
+  }
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);

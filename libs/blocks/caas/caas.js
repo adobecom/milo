@@ -1,4 +1,5 @@
 import {
+  mepCaasConfigUrls,
   decodeCompressedString,
   initCaas,
   loadCaasFiles,
@@ -60,6 +61,8 @@ const loadCaas = async (a) => {
   a.insertAdjacentElement('afterend', modalDiv);
 
   a.insertAdjacentElement('afterend', block);
+  block.dataset.caasBlock = '';
+  mepCaasConfigUrls.set(block, a.href);
   a.remove();
 
   const langFirst = getMetadata('langfirst');
