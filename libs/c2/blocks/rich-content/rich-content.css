@@ -25,7 +25,7 @@
     z-index: 2;
 
     [class*="body-"]:not(.action-area) {
-      max-width: 680px;
+      max-width: 650px;
     }
   }
 

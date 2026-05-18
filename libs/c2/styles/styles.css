@@ -1097,6 +1097,24 @@ p {
       animation-range: entry 0% cover 50%;
     }
 
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background-image: var(--section-bg-url);
+      background-size: cover;
+      background-position: center;
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2000 819'%3E%3Cpath fill='white' d='M 762 346 L 1236 346 L 1236 614 L 1080 614 L 1080 700 L 930 700 L 930 614 L 762 614 Z'/%3E%3C/svg%3E");
+      mask-size: cover;
+      mask-position: top center;
+      mask-repeat: no-repeat;
+      animation: garage-door-bg-scale ease-out both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 70%;
+    }
+
     .section-background img {
       animation: garage-door-bg-scale ease-out both;
       animation-timeline: view();

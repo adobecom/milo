@@ -35,6 +35,29 @@ function decorate(block) {
   promoteParagraphTitle(content);
 }
 
+function setSectionBgVar(el) {
+  const section = el.closest('.section');
+  if (!section) return;
+  const set = (img) => {
+    const src = img.currentSrc || img.src;
+    if (src) section.style.setProperty('--section-bg-url', `url("${src}")`);
+  };
+  const watchImg = (img) => {
+    set(img);
+    if (!img.currentSrc) img.addEventListener('load', () => set(img), { once: true });
+  };
+  const img = section.querySelector('.section-background img');
+  if (img) { watchImg(img); return; }
+  const mo = new MutationObserver(() => {
+    const found = section.querySelector('.section-background img');
+    if (!found) return;
+    mo.disconnect();
+    watchImg(found);
+  });
+  mo.observe(section, { childList: true, subtree: true });
+}
+
 export default function init(el) {
   decorateViewportContent(el, decorate);
+  setSectionBgVar(el);
 }
