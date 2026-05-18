@@ -5,10 +5,13 @@ const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
 function addCursorFollower(list) {
   let activeMedia = null;
+  let mouseX = 0;
+  let mouseY = 0;
+  let rafPending = false;
 
-  const setPosition = (media, e) => {
-    media.style.left = `${e.clientX - 2}px`;
-    media.style.top = `${e.clientY}px`;
+  const setPosition = (media) => {
+    media.style.left = `${mouseX - 2}px`;
+    media.style.top = `${mouseY}px`;
   };
 
   const hide = () => {
@@ -16,25 +19,52 @@ function addCursorFollower(list) {
     activeMedia = null;
   };
 
+  const activate = (media) => {
+    if (media === activeMedia) return;
+    activeMedia?.classList.remove('is-visible');
+    activeMedia = media;
+    setPosition(activeMedia);
+    activeMedia.classList.add('is-visible');
+  };
+
+  // After each scroll frame, check what's actually under the cursor
+  // and show/hide accordingly — avoids the stale-hide problem where
+  // mouseover never re-fires after scroll stops.
+  const syncWithCursor = () => {
+    rafPending = false;
+    const el = document.elementFromPoint(mouseX, mouseY);
+    const item = el?.closest?.('.faq-item');
+    if (item && list.contains(item)) {
+      const media = item.querySelector('.faq-media');
+      if (media) { activate(media); return; }
+    }
+    hide();
+  };
+
   list.addEventListener('mousemove', (e) => {
-    if (!activeMedia || !DESKTOP_MQ.matches) return;
-    setPosition(activeMedia, e);
+    if (!DESKTOP_MQ.matches) return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (activeMedia) setPosition(activeMedia);
   });
 
   list.addEventListener('mouseover', (e) => {
     if (!DESKTOP_MQ.matches) return;
+    mouseX = e.clientX;
+    mouseY = e.clientY;
     const item = e.target.closest('.faq-item');
     if (!item) return;
     const media = item.querySelector('.faq-media');
-    if (!media || media === activeMedia) return;
-    activeMedia?.classList.remove('is-visible');
-    activeMedia = media;
-    setPosition(activeMedia, e);
-    activeMedia.classList.add('is-visible');
+    if (media) activate(media);
   });
 
   list.addEventListener('mouseleave', hide);
-  document.addEventListener('scroll', hide, { passive: true });
+
+  document.addEventListener('scroll', () => {
+    if (!DESKTOP_MQ.matches || rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(syncWithCursor);
+  }, { passive: true });
 }
 
 function decorate(block) {
