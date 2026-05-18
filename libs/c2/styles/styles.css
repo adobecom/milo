@@ -892,19 +892,7 @@ p {
 }
 
 
-/* ── Promo CTA ────────────────────────────────────────────────────────────────
- * Shared button used by hub-hero-modal (sticky at bottom) and hub-hero
- * (anchor CTA in hero section).  Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158.
- *
- * Authored as a plain <a> (or <a> containing an optional product <img>):
- *   <a class="promo-cta" href="...">
- *     <img src="icon.png" alt="">   ← optional 32×32 product icon
- *     Button label
- *   </a>
- *
- * The ::after pseudo-element renders the 32×32 rounded arrow box.
- * Figma dimensions: 295×56px at rest; width grows with label text.
- * ──────────────────────────────────────────────────────────────────────────── */
+/* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158 */
 .promo-cta {
   align-items: center;
   background: var(--s2a-color-background-knockout);
@@ -918,16 +906,12 @@ p {
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   line-height: var(--s2a-typography-line-height-eyebrow);
   padding-block: var(--s2a-spacing-sm);
-  padding-inline-end: var(--s2a-spacing-sm);
-  padding-inline-start: var(--s2a-spacing-sm);
+  padding-inline: var(--s2a-spacing-sm);
   text-decoration: none;
   transition: background 0.2s ease;
   white-space: nowrap;
 }
 
-/* Optional product icon (e.g. Acrobat PDF icon) inside the link.
- * Figma uses overflow-clip on the icon container — the icon asset
- * provides its own visual rounding; no CSS border-radius needed. */
 .promo-cta img {
   block-size: 32px;
   flex-shrink: 0;
@@ -936,11 +920,7 @@ p {
   overflow: hidden;
 }
 
-/*
- * Arrow indicator — 32×32 rounded box with subtle white fill and border.
- * Default: right arrow (S2_Icon_UIArrow_N). Variants swap the icon SVG.
- * Figma node I12438:6048;11390:25665.
- */
+/* Figma I12438:6048;11390:25665 */
 .promo-cta::after {
   background: var(--s2a-color-transparent-white-16) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
   block-size: 32px;
@@ -952,12 +932,11 @@ p {
   inline-size: 32px;
 }
 
-/* Variant: down arrow — single SVG rotated 90° per Figma 11596:18519 */
+/* Figma 11596:18519 */
 .promo-cta.arrow-down::after {
   transform: rotate(90deg);
 }
 
-/* Variant: full-width pill — stretches to fill parent (e.g. "View featured offer") */
 .promo-cta.full-width {
   display: flex;
   width: 100%;

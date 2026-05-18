@@ -1,25 +1,5 @@
-/* tour
- * A scrollable, vertically-stacked set of sections rendered inside
- * a Milo dialog-modal fragment.
- * Figma: page 9482:51322, Frame 2147230527 (desktop).
- *
- * Structure:
- *   Row 0  → .tour-title  (eyebrow + headline)
- *   Rows 1+ → .tour-section
- *   One     → .tour-cta    (sticky at bottom)
- *
- * Z-pattern (desktop only):
- *   Section 1 (odd non-last): items-end (RIGHT)
- *   Section 2 (even):         items-start (LEFT)
- *   Section 3 (last):         items-center (CENTER)
- *
- * Mobile-first: mobile styles are the default, desktop overrides
- * are inside @media (min-width: 769px).
- */
-
-/* Modal width is controlled by the C2 foundation dialog-modal CSS.
- * max-width:596px is a safety cap matching the Figma frame width —
- * the block never exceeds 596px even if the modal allows more. */
+/* Tour block — Figma 9482:51322 Frame 2147230527
+ * Z-pattern: Section 1 (odd non-last) right, Section 2 (even) left, Section 3 (last) center */
 .tour {
   background: var(--s2a-color-background-default);
   border-radius: 16px;
@@ -32,7 +12,6 @@
   color: var(--s2a-color-content-default);
   display: flex;
   flex-direction: column;
-  font-family: var(--body-font-family, adobe-clean, sans-serif);
   max-width: 596px;
   overflow-x: clip;
   padding-top: 16px;
@@ -50,8 +29,6 @@
   width: 52px;
 }
 
-/* ── Modal title ─────────────────────────────────── */
-
 .tour-title {
   background: var(--s2a-color-background-default);
   padding-block: 0 var(--s2a-spacing-md);
@@ -59,11 +36,6 @@
   padding-inline-start: var(--s2a-spacing-md);
 }
 
-/*
- * Figma: both eyebrow and title use the same style — Adobe Clean
- * Display Black, 18px. Using title-6 token for responsive sizing
- * (16px mobile, 18px desktop).
- */
 .tour-title p,
 .tour-title h1,
 .tour-title h2,
@@ -72,7 +44,7 @@
 .tour-title h5,
 .tour-title h6 {
   color: var(--s2a-color-content-label);
-  font-family: var(--font-family-adobe-clean-display, 'Adobe Clean Display', adobe-clean, sans-serif);
+  font-family: var(--heading-font-family);
   font-size: var(--s2a-typography-font-size-title-6);
   font-weight: 900;
   line-height: var(--s2a-typography-line-height-title-6);
@@ -80,14 +52,11 @@
   margin: 0;
 }
 
-/* ── Section ──────────────────────────────────────── */
-
 .tour-section {
   display: flex;
   flex-direction: column;
 }
 
-/* Z-pattern alignment + padding (mobile + desktop) */
 .tour-section:nth-of-type(even) {
   align-items: flex-start;
   padding-bottom: 24px;
@@ -96,8 +65,7 @@
 
 .tour-section:last-of-type {
   align-items: center;
-  padding-bottom: 8px;
-  padding-top: 80px;
+  padding-block: 80px 8px;
   padding-inline: 8px;
 }
 
@@ -107,11 +75,8 @@
   padding-inline: 8px;
 }
 
-/* ── Counter: ( X/Y ) ─────────────────────────────── */
-
 .tour-counter {
   color: var(--s2a-color-background-knockout);
-  font-family: var(--s2a-font-family-label, adobe-clean, sans-serif);
   font-size: var(--s2a-typography-font-size-label);
   font-weight: 700;
   letter-spacing: var(--s2a-typography-letter-spacing-label);
@@ -119,19 +84,14 @@
   margin-block-end: var(--s2a-spacing-md);
 }
 
-/* ── Text content area ────────────────────────────── */
-
 .tour-content {
   display: flex;
   flex-direction: column;
 }
 
-/* Section 1 (odd non-last): 287px content width */
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
-  max-width: 287px;
+  max-width: 286px;
 }
-
-/* Sections 2 & 3: 286px content width */
 .tour-section:nth-of-type(even) .tour-content,
 .tour-section:last-of-type .tour-content {
   max-width: 286px;
@@ -145,7 +105,6 @@
   margin-block-start: var(--s2a-spacing-lg);
 }
 
-/* Section 1 (odd non-last): body-sm */
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content p {
   color: var(--s2a-color-background-knockout);
   font-size: var(--s2a-typography-font-size-body-sm);
@@ -153,7 +112,6 @@
   letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
 }
 
-/* Sections 2 & 3 (even + last): body-xs */
 .tour-section:nth-of-type(even) .tour-content p,
 .tour-section:last-of-type .tour-content p {
   color: var(--s2a-color-background-knockout);
@@ -161,8 +119,6 @@
   line-height: var(--s2a-typography-line-height-body-xs);
   letter-spacing: var(--s2a-typography-letter-spacing-body-xs);
 }
-
-/* ── Media area ───────────────────────────────────── */
 
 .tour-media {
   margin-block-start: var(--s2a-spacing-lg);
@@ -181,7 +137,6 @@
   width: 100%;
 }
 
-/* Section 2 (even): image flush left, rounded right corners only */
 .tour-section:nth-of-type(even) .tour-media {
   margin-inline-start: -24px;
   padding-inline-end: var(--s2a-spacing-lg);
@@ -193,26 +148,18 @@
   max-width: 495px;
 }
 
-/* Section 3 (last): full-width, black bg for letterboxing */
 .tour-section:last-of-type .tour-media {
   background: #000;
   border-radius: var(--s2a-border-radius-sm);
   width: 100%;
 }
 
-/* Section 1 (odd non-last): constrained at mobile */
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
   margin-inline: auto;
-  width: min(287px, 100%);
+  width: min(286px, 100%);
 }
 
-/* ── Transition (standalone element between sections) ─ */
-
-/*
- * Figma 9543:116727 — separate div between sections, centred,
- * py-[80px].  Full modal width so it's independent of the
- * section Z-pattern alignment.
- */
+/* Figma 9543:116727 */
 .tour-transition {
   display: flex;
   justify-content: center;
@@ -227,13 +174,6 @@
   width: auto;
 }
 
-/* ── Promo CTA container (sticky at bottom) ──────── */
-
-/*
- * Button styling (border-radius, colors, icon, arrow) is handled by
- * the shared C2 promo-cta component.  This block only owns the
- * sticky positioning and frosted backdrop of the CTA bar.
- */
 .tour-cta {
   align-items: center;
   backdrop-filter: blur(10px);
@@ -255,21 +195,7 @@
   margin: 0;
 }
 
-/* stylelint-disable-next-line no-descending-specificity -- CTA context */
-.tour-cta p {
-  line-height: 0;
-  margin: 0;
-}
-
-/* ── Desktop (769px and above) ───────────────────── */
-
-/*
- * Z-pattern layout, content max-widths, and fixed media widths
- * only apply at desktop. Mobile uses linear layout with full-width
- * content.
- */
 @media (min-width: 769px) {
-  /* Hide drawer handle on desktop/tablet — mobile only */
   .tour::before {
     display: none;
   }
@@ -282,7 +208,6 @@
     padding-block-start: var(--s2a-spacing-md);
   }
 
-  /* Z-pattern alignment */
   .tour-section:nth-of-type(even) {
     align-items: flex-start;
   }
@@ -299,7 +224,6 @@
     padding-block-start: var(--s2a-layout-lg);
   }
 
-  /* Content max-widths per section */
   .tour-section:nth-of-type(even) .tour-content {
     max-width: 286px;
     padding-block-end: var(--s2a-spacing-lg);
@@ -314,10 +238,9 @@
 
   .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
     margin-inline-end: 100px;
-    max-width: 287px;
+    max-width: 286px;
   }
 
-  /* Fixed media widths */
   .tour-section:nth-of-type(even) .tour-media {
     width: 100%;
   }
@@ -327,7 +250,7 @@
     width: 387px;
   }
 
-  /* Desktop CTA bar: Figma 9659:9817 — blur 50px, 96px bar */
+  /* Figma 9659:9817 */
   .tour-cta {
     backdrop-filter: blur(50px);
     padding-block: var(--s2a-spacing-20);

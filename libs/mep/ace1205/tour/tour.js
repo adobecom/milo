@@ -1,5 +1,5 @@
 import { decorateBlockText, decorateTextOverrides } from '../../../utils/decorate.js';
-import { createTag } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
 /*
  * Explicit C2 text config.  The module-level `isC2` constant in decorate.js
@@ -9,6 +9,8 @@ import { createTag } from '../../../utils/utils.js';
  * C2 config directly to bypass the cached constant.
  */
 const C2_TEXT_CONFIG = { heading: '6', body: 'sm', button: 'lg' };
+
+const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 
 function decorateSection(block) {
   const rows = [...block.children];
@@ -100,11 +102,17 @@ function decorateSection(block) {
         }
         const icon = prev?.querySelector('img');
         if (icon) {
+          if (icon.hasAttribute('src') && isSvgUrl(icon.src)) {
+            icon.src = getFederatedUrl(icon.getAttribute('src'));
+          }
           prev.remove();
           link.prepend(icon);
         } else {
           const inlineIcon = actionArea.querySelector('picture img');
           if (inlineIcon) {
+            if (inlineIcon.hasAttribute('src') && isSvgUrl(inlineIcon.src)) {
+              inlineIcon.src = getFederatedUrl(inlineIcon.getAttribute('src'));
+            }
             inlineIcon.closest('picture')?.remove();
             link.prepend(inlineIcon);
           }
