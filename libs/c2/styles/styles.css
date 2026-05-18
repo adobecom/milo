@@ -899,7 +899,6 @@ p {
   border-radius: var(--s2a-border-radius-12);
   color: var(--s2a-color-content-knockout);
   display: inline-flex;
-  font-family: var(--s2a-font-family-eyebrow, var(--body-font-family));
   font-size: var(--s2a-typography-font-size-eyebrow);
   font-weight: var(--s2a-font-weight-eyebrow);
   gap: var(--s2a-spacing-sm);
