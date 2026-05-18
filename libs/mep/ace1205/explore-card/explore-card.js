@@ -92,6 +92,22 @@ function handleBentoStack(el) {
       wrapper.style.setProperty('--stack-total', cards.length);
       if (i === 0) wrapper.setAttribute('data-stack-first', '');
     });
+
+    // Equalize wrapper heights so all cards hit the section bottom constraint at 
+    // the same scroll position, producing a synchronized exit. Only active on
+    // mobile where the stacking layout applies; resets on resize to desktop.
+    const mq = window.matchMedia('(width < 768px)');
+    const wrappers = cards.map((c) => (c.parentElement === section ? c : c.parentElement));
+    const equalizeHeights = () => {
+      // Clear first so getBoundingClientRect returns natural card heights, not minHeight values.
+      wrappers.forEach((w) => { w.style.minHeight = ''; });
+      if (!mq.matches) return;
+      const maxHeight = Math.max(...cards.map((c) => c.getBoundingClientRect().height));
+      if (maxHeight <= 0) return;
+      wrappers.forEach((w) => { w.style.minHeight = `${maxHeight}px`; });
+    };
+    window.addEventListener('resize', equalizeHeights);
+    requestAnimationFrame(() => requestAnimationFrame(equalizeHeights));
   };
 
   if (document.readyState === 'complete') {

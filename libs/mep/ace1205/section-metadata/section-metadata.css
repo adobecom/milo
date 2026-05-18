@@ -130,7 +130,7 @@
       }
 
       .content-aux {
-        aspect-ratio: 1 / 1.2;
+        aspect-ratio: 1.02 / 1;
       }
     }
   }
@@ -198,7 +198,7 @@
   .section.bento.stack-mobile {
     display: flex;
     flex-direction: column;
-    gap: 20vh;
+    gap: 3vh;
     overflow: visible;
   }
 
@@ -211,19 +211,19 @@
   .section.bento.stack-mobile > :has(.explore-card),
   .section.bento.stack-mobile > .explore-card {
     position: sticky;
-    top: calc(var(--card-sticky-top, 104px) + var(--global-height-nav, 64px));
+    top: calc(var(--card-sticky-top, 114px) + var(--global-height-nav, 64px));
     z-index: var(--stack-index, 1);
-    /* Derived animation variables — inherited by .explore-card children */
-    --bento-stack-offset: calc((var(--stack-index, 1) - 1) * 0.5rem);
-    --bento-stack-shrink: calc((var(--stack-total, 1) - var(--stack-index, 1)) * 1rem);
-    --bento-stack-contrast: calc(var(--stack-index, 1) / var(--stack-total, 1));
-    --bento-offset-adjuster: 50px;
   }
 
   .section.bento.stack-mobile .explore-card {
+    --bento-stack-offset: calc((var(--stack-index, 1) - 1) * 0.5rem);
+    --bento-stack-shrink: calc((var(--stack-total, 1) - var(--stack-index, 1)) * 1rem);
+    --bento-stack-brightness: calc(var(--stack-index, 1) / var(--stack-total, 1));
+    --bento-offset-adjuster: 50px;
+
     animation: bentoMobileStackSlides linear both, bentoItemsShrink linear both;
-    animation-timeline: view(), view();
-    animation-range: entry 0% exit 100%, entry 0% exit 100%;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
   }
 
   .section.bento.stack-mobile > [data-stack-first] .explore-card,
@@ -235,7 +235,7 @@
 @keyframes bentoMobileStackSlides {
   0% {
     transform: translateY(var(--bento-stack-offset));
-    filter: contrast(1);
+    filter: brightness(1);
     opacity: 0;
   }
 
@@ -243,9 +243,13 @@
     opacity: 1;
   }
 
+  20% {
+    filter: brightness(1);
+  }
+
   100% {
     transform: translateY(calc(var(--bento-stack-offset) - var(--bento-offset-adjuster)));
-    filter: contrast(var(--bento-stack-contrast));
+    filter: brightness(var(--bento-stack-brightness));
   }
 }
 
@@ -253,11 +257,18 @@
   0% {
     transform: translateY(var(--bento-stack-offset));
     filter: contrast(1);
+    opacity: 1;
+  }
+
+  20% {
+    filter: contrast(1);
+    opacity: 1;
   }
 
   100% {
     transform: translateY(calc(var(--bento-stack-offset) - var(--bento-offset-adjuster)));
-    filter: contrast(var(--bento-stack-contrast));
+    filter: contrast(var(--bento-stack-brightness));
+    opacity: 0.2;
   }
 }
 
