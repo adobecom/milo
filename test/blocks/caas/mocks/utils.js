@@ -2,6 +2,8 @@ import { stub } from 'sinon';
 
 export const getConfig = () => ({});
 
+export const isBot = () => false;
+
 export const loadStyle = stub();
 
 export const loadScript = stub();

@@ -487,11 +487,15 @@ export default async function loadGeoRouting(
   if (storedLocale || storedLocale === '') {
     const urlLocaleGeo = urlLocale.split('_')[0];
     const storedLocaleGeo = storedLocale.split('_')[0];
-    // Show modal when url and cookie disagree
+    // Show modal when url and cookie disagree. Skip if base matches and cookie geo is in locale row
     if (urlLocaleGeo !== storedLocaleGeo) {
       const localeMatches = json.georouting.data.filter(
         (d) => d.prefix === storedLocale,
       );
+      const storedLocaleBase = config.locales?.[storedLocale]?.base;
+      const isSameBase = storedLocaleBase === urlLocale
+        && getCodes(urlGeoData).includes(storedLocaleGeo);
+      if (isSameBase) return;
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         handleOverflow(await showModal(details));
