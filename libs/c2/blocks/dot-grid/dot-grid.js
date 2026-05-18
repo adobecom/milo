@@ -474,7 +474,7 @@ function setCardTransform(el, {
 }
 
 function arcCardShadow(opacity) {
-  const a = opacity.toFixed(2);
+  const a = typeof opacity === 'number' ? opacity.toFixed(3) : opacity;
   return `0 4px 7.1px 0 rgba(0,0,0,${a}), 0 18px 25.1px 0 rgba(0,0,0,${a}), 0 60px 60px 0 rgba(0,0,0,${a})`;
 }
 
@@ -993,12 +993,11 @@ export default async function init(el) {
       tiltY: cardYTilt,
     });
     card.el.style.opacity = Math.min(1, cardSlideT / 0.25).toFixed(3);
-    if (cardSlideT >= 1) {
-      const shadow = cardPeelProgress < 1 ? arcCardShadow(0.15 * (1 - cardPeelProgress)) : '';
-      if (shadow !== card.lastShadowStep) {
-        card.lastShadowStep = shadow;
-        card.el.style.boxShadow = shadow;
-      }
+    const shadowAlpha = 0.15 * (1 - cardPeelProgress);
+    const shadowAlphaKey = shadowAlpha.toFixed(3);
+    if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
+      card.lastArcShadowAlphaKey = shadowAlphaKey;
+      card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
     const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
     setLabelPos(card, currentX, currentY, scale, peelReveal);
