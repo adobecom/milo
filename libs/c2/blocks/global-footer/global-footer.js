@@ -97,7 +97,7 @@ const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
 
 const CONFIG = {
-  socialPlatforms: ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
+  socialPlatforms: ['facebook', 'instagram', 'twitter', 'x', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
   delays: { decoration: 3000 },
   containerBreakpoint: 767,
 };

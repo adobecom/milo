@@ -31,13 +31,13 @@ export default async function init(el) {
   const [head, ...tail] = rows;
   formatHeader(head);
   rows = tail;
-  const upsMap = { 2: 'two-up', 3: 'three-up', 4: 'four-up' };
+  const upsMap = { 2: 'two-up', 3: 'three-up', 4: 'four-up', 6: 'six-up' };
   // TODO: Infer parallax class from authoring
   el.appendChild(createTag('div', { class: `news-items parallax-stagger-ltr ${upsMap[rows.length || 3]}` }, rows));
   rows.forEach((row) => {
     row.classList.add('news-item');
     row.querySelector(':scope > div:not([class])').classList.add('foreground');
-    decorateBlockText(row, { heading: '4' });
+    decorateBlockText(row, { heading: '5' });
     const contents = row.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
     contents.forEach((content, indx) => {
       const linkEl = content.querySelector('a');
