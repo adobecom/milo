@@ -474,8 +474,8 @@ function setCardTransform(el, {
 }
 
 function arcCardShadow(opacity) {
-  const a = typeof opacity === 'number' ? opacity.toFixed(3) : opacity;
-  return `0 4px 7.1px 0 rgba(0,0,0,${a}), 0 18px 25.1px 0 rgba(0,0,0,${a}), 0 60px 60px 0 rgba(0,0,0,${a})`;
+  const a = (opacity * 1.8).toFixed(3);
+  return `0 12px 20px 0 rgba(0,0,0,${a})`;
 }
 
 const ADBE_LOGO = `
