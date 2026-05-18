@@ -18,10 +18,9 @@ export const SUB_COLLECTION_BADGE_CLASS = 'mep-mas-sub-collection-badge';
 // container -> Array<{ id, label, queryLabel }>
 export const mepMasSubCollections = new WeakMap();
 
-// Walks the referencesTree carried by aem:load.detail (mirrors the shape
-// in mas/web-components/src/merch-card-collection.js). Sub-collections are
-// nodes whose fieldName isn't 'cards' or 'variations'. Recurses for nested
-// catalog hierarchies.
+// Walks referencesTree from aem:load.detail (shape: mas/web-components/
+// src/merch-card-collection.js). Sub-collections have fields.queryLabel
+// — that's what the sidenav matches against. Recurses for nested catalogs.
 export function extractSubCollections(payload) {
   if (!payload) return [];
   const { references, referencesTree } = payload;
@@ -31,17 +30,17 @@ export function extractSubCollections(payload) {
   function walk(nodes) {
     nodes.forEach((node) => {
       if (!node || typeof node !== 'object') return;
-      const { identifier, fieldName } = node;
-      if (!identifier || seen.has(identifier)) return;
-      if (fieldName === 'cards' || fieldName === 'variations') return;
-      const fields = references[identifier]?.value?.fields;
-      if (fields && (fields.label || fields.queryLabel)) {
-        seen.add(identifier);
-        out.push({
-          id: identifier,
-          label: fields.label || '',
-          queryLabel: fields.queryLabel || '',
-        });
+      const { identifier } = node;
+      if (identifier && !seen.has(identifier)) {
+        const fields = references[identifier]?.value?.fields;
+        if (fields?.queryLabel) {
+          seen.add(identifier);
+          out.push({
+            id: identifier,
+            label: fields.label || '',
+            queryLabel: fields.queryLabel,
+          });
+        }
       }
       if (Array.isArray(node.referencesTree) && node.referencesTree.length) {
         walk(node.referencesTree);

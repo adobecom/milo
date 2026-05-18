@@ -81,17 +81,17 @@ describe('extractSubCollections', () => {
     ]);
   });
 
-  it('skips fieldName === "cards" (leaf merch-card refs)', () => {
+  it('skips entries without "queryLabel" (cards and variations carry only "label")', () => {
     const payload = buildPayload([
-      { id: 'card-a', label: 'A', queryLabel: 'a', fieldName: 'cards' },
+      { id: 'card-a', label: 'A', fieldName: 'cards' },
       { id: 'sub-design', label: 'Design', queryLabel: 'design' },
     ]);
     expect(extractSubCollections(payload).map((e) => e.id)).to.deep.equal(['sub-design']);
   });
 
-  it('skips fieldName === "variations"', () => {
+  it('skips entries without "queryLabel" even when fieldName is set', () => {
     const payload = buildPayload([
-      { id: 'var-x', label: 'X', queryLabel: 'x', fieldName: 'variations' },
+      { id: 'var-x', label: 'X', fieldName: 'variations' },
     ]);
     expect(extractSubCollections(payload)).to.deep.equal([]);
   });

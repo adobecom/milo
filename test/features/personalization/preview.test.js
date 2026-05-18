@@ -726,7 +726,6 @@ describe('M@S highlight badges', () => {
     const chip = badge.querySelector('.mep-mas-edit-badge-market');
     expect(chip, 'market chip should be a child element').to.exist;
     expect(chip.textContent).to.equal('US');
-    expect(chip.classList.contains('mep-mas-edit-badge-market-match')).to.be.true;
     expect(chip.classList.contains('mep-mas-edit-badge-market-mismatch')).to.be.false;
   });
 });
@@ -2250,7 +2249,7 @@ describe('masAemLoadHandler — aem:load event handler', () => {
 
     const detail = {
       referencesTree: [{ identifier: 'sub-id-1', fieldName: 'subFilter', referencesTree: [] }],
-      references: { 'sub-id-1': { value: { fields: { label: 'Sub One' } } } },
+      references: { 'sub-id-1': { value: { fields: { label: 'Sub One', queryLabel: 'sub-one' } } } },
     };
     aemFragment.dispatchEvent(new CustomEvent('aem:load', { bubbles: true, detail }));
 

@@ -135,14 +135,9 @@ function unwatchForCaasBlocks() {
 }
 
 const MAS_BADGE_CLASS = 'mep-mas-edit-badge';
-const MAS_LABELS = {
-  collection: 'Edit Collection in M@S Studio',
-  card: 'Edit Card in M@S Studio',
-  inline: 'Edit Inline Field',
-  ost: 'View in OST',
-  // 'offer' surface is CSS-only (::before pseudo) — label kept for symmetry.
-  offer: 'View in OST',
-};
+// Only 'collection' reaches buildMasBadge. Card uses an action stack;
+// inline/ost/offer render via CSS ::before pseudos.
+const MAS_LABELS = { collection: 'Edit Collection in M@S Studio' };
 
 // Mirrors SELECTOR_MAS_INLINE_PRICE et al. from ../mas/web-components/src/
 // constants.js. Inlined rather than imported to avoid a hard runtime
@@ -150,6 +145,7 @@ const MAS_LABELS = {
 const MAS_OSI_SELECTOR = [
   'span[is="inline-price"][data-wcs-osi]',
   'a[is="checkout-link"][data-wcs-osi]',
+  'a[is="upt-link"][data-wcs-osi]',
   'button[is="checkout-button"][data-wcs-osi]',
   'sp-button[data-wcs-osi]',
 ].join(',');
@@ -208,10 +204,13 @@ export function getCardMarket(el, pageMarket) {
       if (country) return normCountryCode(country.toLowerCase());
     } catch (e) { /* skip and try next candidate */ }
   }
+  // Only checkout-mixin and upt-link set data-ims-country; display-only
+  // (inline-price) cards fall back to pageMarket.
   return pageMarket;
 }
 
-// 'unknown' when either side is unresolved — consumers skip the chip color for it.
+// Returns 'unknown' when either side is unresolved — only 'mismatch' is
+// surfaced visually.
 function classifyMarket(cardMarket, pageMarket) {
   if (!cardMarket || !pageMarket) return 'unknown';
   return cardMarket === pageMarket ? 'match' : 'mismatch';
@@ -412,14 +411,13 @@ function buildMasBadge(url, surface, market, pageMarket) {
       target: '_blank',
       rel: 'noopener noreferrer',
     },
-    MAS_LABELS[surface] || 'Edit in M@S Studio',
+    MAS_LABELS[surface],
   );
   if (market) {
-    const state = classifyMarket(market, pageMarket);
-    const chip = createTag(
-      'span',
-      { class: `${MAS_BADGE_CLASS}-market ${MAS_BADGE_CLASS}-market-${state}` },
-    );
+    const chip = createTag('span', { class: `${MAS_BADGE_CLASS}-market` });
+    if (classifyMarket(market, pageMarket) === 'mismatch') {
+      chip.classList.add(`${MAS_BADGE_CLASS}-market-mismatch`);
+    }
     chip.textContent = market.toUpperCase();
     a.append(' \u00b7 ', chip);
   }
