@@ -195,9 +195,7 @@ describe('findFragments (floodgate-workflows)', () => {
     });
 
     it('does not filter fragments when accessMode is undefined', async () => {
-      const cmp = makeCmp({
-        files: [`/${ORG}/${REPO}/some/page`],
-      });
+      const cmp = makeCmp({ files: [`/${ORG}/${REPO}/some/page`] });
       const html = `
         <a href="https://main--${REPO}--${ORG}.aem.page/fragments/shared">shared</a>
         <a href="https://main--${REPO}--${ORG}.aem.page/drafts/promo/fragments/hero">draft</a>`;
