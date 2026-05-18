@@ -98,8 +98,9 @@ function changeTabs(e, config) {
   }
   const parent = target.parentNode;
   const tabsBlock = target.closest('.tabs');
-  const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
-  const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
+  // const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
+  // const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
+  const content = getContentElement(parent, 3);
   const blockId = tabsBlock.id;
 
   const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
@@ -413,10 +414,10 @@ const init = async (block) => {
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  if (!block.classList.contains('segmented-control')) {
-    tabList.insertAdjacentElement('afterend', paddleRight);
-    block.prepend(paddleLeft);
-  }
+  // if (!block.classList.contains('segmented-control')) {
+  //   tabList.insertAdjacentElement('afterend', paddleRight);
+  //   block.prepend(paddleLeft);
+  // }
   initPaddles(tabList, paddleLeft, paddleRight);
 
   // Tab Sections

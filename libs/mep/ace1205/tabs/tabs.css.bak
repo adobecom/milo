@@ -29,7 +29,7 @@
   --tabs-pill-text-color: var(--s2a-color-gray-700);
   --tabs-pill-text-selected-color: var(--s2a-color-gray-25);
   --tabs-paddle-bs-color: #0000001a; /* check- #0000001a ≈ 10%; nearest s2a: --s2a-color-transparent-black-08 (8%) or --s2a-color-transparent-black-12 (12%) */
-  --m-rounded-corners-tabs: var(--s2a-border-radius-lg);
+  --m-rounded-corners-tabs: var(--s2a-border-radius-sm);
 }
 
 :root .dark {
@@ -117,12 +117,6 @@
   scroll-snap-type: x mandatory;
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   scrollbar-width: none; /* Firefox 64 */
-  box-shadow: none;
-  padding: 1px; /* check- no s2a spacing token for 1px; minimum s2a spacing is --s2a-spacing-2 (2px) */
-  background: var(--s2a-color-gray-100);
-  border-radius: var(--m-rounded-corners-tabs);
-  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
-  min-height: var(--s2a-spacing-40);
 }
 
 .tabs .tabList::-webkit-scrollbar {
@@ -140,25 +134,24 @@
 
 .tabs .tabList .tab-list-container {
   display: flex;
-  width: auto;
-  min-width: 300px; /* check- no s2a token for 300px */
+  width: var(--grid-container-width);
   margin: var(--spacing-xxs) auto; /* check- --spacing-xxs is not an s2a token; s2a has --s2a-spacing-4 (4px) */
   box-sizing: content-box;
 }
 
-/* center tabs — centering is handled by .tabs-wrapper; pseudo-elements not needed */
+/* center tabs */
 .tabs.center > .tabList::after,
 .tabs.center > .tabList::before {
+  content: "";
+  margin: auto;
+}
+
+.tabs.center.segmented-control > .tabList:is(::after, ::before) {
   content: none;
 }
 
-.tabs .tabs-wrapper {
-  display: flex;
-  width: 100%;
-}
-
-.tabs.center .tabs-wrapper {
-  justify-content: center;
+.tabs.center:not(.same-width) .tabList .tab-list-container {
+  width: auto;
 }
 
 /* mweb design */
@@ -194,21 +187,25 @@
 }
 
 .tabs .tabList button {
-  color: var(--tabs-pill-bg-color);
+  color: var(--tabs-pill-text-color);
   cursor: pointer;
+  float: left;
   font-family: var(--body-font-family);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-weight: 400;
   margin: 0;
-  border-radius: var(--m-rounded-corners-tabs);
+  margin-inline-start: var(--s2a-spacing-16);
+  border-radius: 75px; /* check- 75px pill shape; --s2a-border-radius-round is 999px (same intent, different value) */
   border: none;
-  padding: 10px; /* check- no s2a spacing token for 10px; between --s2a-spacing-8 (8px) and --s2a-spacing-12 (12px) */
+  padding: 0.2em 1em; /* check- em-based padding; no s2a token equivalent */
   text-decoration: none;
   transition: color 0.1s ease-in-out;
   white-space: nowrap;
   width: auto;
   z-index: 1;
-  font-size: var(--type-body-xs-size); /* check- --type-body-xs-size is not an s2a token; s2a equivalent is --s2a-typography-font-size-body-xs */
-  flex: 1 0 auto;
+}
+
+.tabs.same-width .tabList button {
+  flex: 1;
 }
 
 .tabs .paddle {
@@ -230,6 +227,10 @@
   margin-top: 1px;
 }
 */
+
+.tabs .tabList button:first-of-type {
+  margin-inline-start: 0;
+}
 
 .tabs .tabList button:hover {
   color: var(--tabs-pill-text-color);
@@ -254,6 +255,7 @@
 .tabs .tabList button[aria-checked="true"] {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color);
+  text-shadow: 0.4px 0 0 var(--tabs-pill-text-color);
 }
 
 .tabs .tabList button.l-button {
@@ -352,6 +354,47 @@
 
 .tabs .paddle:disabled svg {
   opacity: 0;
+}
+
+/* Segmented Control Variant */
+.tabs.segmented-control .tabs-wrapper {
+  display: flex;
+  width: 100%;
+}
+
+.tabs.segmented-control.center .tabs-wrapper {
+  justify-content: center;
+}
+
+.tabs.segmented-control .tabList {
+  box-shadow: none;
+  padding: 1px; /* check- no s2a spacing token for 1px; minimum s2a spacing is --s2a-spacing-2 (2px) */
+  background: var(--s2a-color-gray-100);
+  border-radius: var(--m-rounded-corners-tabs);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+  min-height: var(--s2a-spacing-40);
+}
+
+.tabs.segmented-control .tabList .tab-list-container {
+  min-width: 300px; /* check- no s2a token for 300px */
+  width: auto;
+}
+
+.tabs.segmented-control .tabList button {
+  padding: 10px; /* check- no s2a spacing token for 10px; between --s2a-spacing-8 (8px) and --s2a-spacing-12 (12px) */
+  border-radius: var(--m-rounded-corners-tabs);
+  border: none;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  color: var(--tabs-pill-bg-color);
+  font-size: var(--type-body-xs-size); /* check- --type-body-xs-size is not an s2a token; s2a equivalent is --s2a-typography-font-size-body-xs */
+  flex: 1 0 auto;
+}
+
+.tabs.segmented-control .tabList button[aria-selected="true"],
+.tabs.segmented-control .tabList button[aria-checked="true"] {
+  background: var(--tabs-pill-bg-color);
+  /* color: var(--color-white); */
+  color: var(--s2a-color-gray-25);
 }
 
 /* Section Metadata */
