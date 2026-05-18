@@ -7,8 +7,8 @@ function addCursorFollower(list) {
   let activeMedia = null;
   let mouseX = 0;
   let mouseY = 0;
-  let rafPending = false;
   let isOverList = false;
+  let scrollEndTimer = null;
 
   const setPosition = (media) => {
     media.style.left = `${mouseX - 2}px`;
@@ -28,16 +28,29 @@ function addCursorFollower(list) {
     activeMedia.classList.add('is-visible');
   };
 
-  // Global tracking keeps mouseX/mouseY accurate even when cursor is outside the
-  // list — without this, stale coords cause syncWithCursor to re-activate the
-  // image after the cursor has already left.
+  // Activates the image for whichever .faq-item is under the given coordinates.
+  // mouseover doesn't re-fire when the page scrolls under a stationary cursor,
+  // so we share this logic with the scroll-end handler.
+  const activateItemAt = (x, y) => {
+    const el = document.elementFromPoint(x, y);
+    const item = el?.closest?.('.faq-item');
+    if (item && list.contains(item)) {
+      const media = item.querySelector('.faq-media');
+      if (media) activate(media);
+    }
+  };
+
+  const onScroll = () => {
+    hide();
+    clearTimeout(scrollEndTimer);
+    scrollEndTimer = setTimeout(() => activateItemAt(mouseX, mouseY), 150);
+  };
+
+  // Global tracking keeps mouseX/mouseY current for the scroll-end check.
   document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
   }, { passive: true });
-
-  list.addEventListener('mouseenter', () => { isOverList = true; });
-  list.addEventListener('mouseleave', () => { isOverList = false; hide(); });
 
   list.addEventListener('mousemove', (e) => {
     if (!DESKTOP_MQ.matches || !activeMedia) return;
@@ -48,31 +61,20 @@ function addCursorFollower(list) {
 
   list.addEventListener('mouseover', (e) => {
     if (!DESKTOP_MQ.matches) return;
-    const item = e.target.closest('.faq-item');
-    if (!item) return;
-    const media = item.querySelector('.faq-media');
-    if (media) activate(media);
+    activateItemAt(e.clientX, e.clientY);
   });
 
-  // On scroll, check what item is actually under the cursor — but only when the
-  // cursor is inside the list. If isOverList is false, hide immediately.
-  const syncWithCursor = () => {
-    rafPending = false;
-    if (!isOverList) { hide(); return; }
-    const el = document.elementFromPoint(mouseX, mouseY);
-    const item = el?.closest?.('.faq-item');
-    if (item && list.contains(item)) {
-      const media = item.querySelector('.faq-media');
-      if (media) { activate(media); return; }
-    }
-    hide();
-  };
+  // Attach scroll listener only while cursor is over the list.
+  list.addEventListener('mouseenter', () => {
+    if (!DESKTOP_MQ.matches) return;
+    document.addEventListener('scroll', onScroll, { passive: true });
+  });
 
-  document.addEventListener('scroll', () => {
-    if (!DESKTOP_MQ.matches || rafPending) return;
-    rafPending = true;
-    requestAnimationFrame(syncWithCursor);
-  }, { passive: true });
+  list.addEventListener('mouseleave', () => {
+    hide();
+    clearTimeout(scrollEndTimer);
+    document.removeEventListener('scroll', onScroll);
+  });
 }
 
 function decorate(block) {
