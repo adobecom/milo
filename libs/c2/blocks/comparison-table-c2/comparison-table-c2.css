@@ -9,7 +9,7 @@
   --ct-text-secondary: var(--s2a-color-gray-600);
   --ct-text-muted: var(--s2a-color-gray-500);
   --ct-highlight-border: var(--s2a-color-gray-900);
-  --ct-font-family: var(--s2a-font-family-default);
+  --ct-font-family: var(--s2a-font-weight-body);
   --ct-checkmark-color: var(--s2a-color-gray-900);
   --ct-hd-max-width: var(--grid-max-width-wide);
   --ct-hd-width: var(--s2a-grid-container-width);
