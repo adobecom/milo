@@ -116,7 +116,7 @@ const ANIM = {
   // Mockup positioning
   desktopPeekStartH: 960,
   desktopPeekAmount: 0.30,
-  mobileHeadlineY: 0.28,
+  mobileHeadlineY: 0.12,
 
   // Mockup animation
   desktopMockupStartScale: 2.5,
@@ -473,6 +473,11 @@ function setCardTransform(el, {
   el.style.transform = `translate(${translateX}px,${translateY}px) scale(${scale}) rotate(${rotation}deg) perspective(900px) rotateY(${tiltY.toFixed(2)}deg) rotateX(${tiltX.toFixed(2)}deg)`;
 }
 
+function arcCardShadow(opacity) {
+  const a = typeof opacity === 'number' ? opacity.toFixed(3) : opacity;
+  return `0 4px 7.1px 0 rgba(0,0,0,${a}), 0 18px 25.1px 0 rgba(0,0,0,${a}), 0 60px 60px 0 rgba(0,0,0,${a})`;
+}
+
 const ADBE_LOGO = `
 <svg class="adbe-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
   <path class="adbe-logo-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
@@ -580,6 +585,8 @@ export default async function init(el) {
   let cachedAcrobatCtaTop = 0;
   // eslint-disable-next-line prefer-const
   let cachedDeskPostRevealNeeded = 0;
+  // eslint-disable-next-line prefer-const
+  let cachedMobilePostRevealDistance = ANIM.mobilePostRevealScroll;
 
   // Per-frame arc geometry — built once by buildArcCtx().
   let arcAngle = Math.atan2(1, 1);
@@ -709,7 +716,7 @@ export default async function init(el) {
       timing.gridEnd = MOBILE_GRID_END;
       timing.slottingStart = MOBILE_GRID_END + ANIM.mobileSettleDuration;
       timing.slottingDuration = ANIM.mobileSlottingDuration;
-      timing.postRevealScrollDistance = ANIM.mobilePostRevealScroll;
+      timing.postRevealScrollDistance = cachedMobilePostRevealDistance;
       timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
     } else {
       timing.gridEnd = ANIM.desktopPeelEnd;
@@ -872,7 +879,12 @@ export default async function init(el) {
       const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
       const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       titleEl.style.top = `${headlineRestY}px`;
-      ctaEl.style.top = `${chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24}px`;
+      const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
+      ctaEl.style.top = `${ctaRestY}px`;
+      const ctaH = ctaEl.offsetHeight || 40;
+      const mobilePostRevealNeeded = Math.max(0, ctaRestY + ctaH + 20 - viewportHeight);
+      cachedMobilePostRevealDistance = mobilePostRevealNeeded > 0
+        ? ANIM.mobilePostRevealScroll : 0;
     }
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
@@ -985,7 +997,7 @@ export default async function init(el) {
     const shadowAlphaKey = shadowAlpha.toFixed(3);
     if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
       card.lastArcShadowAlphaKey = shadowAlphaKey;
-      // card.el.style.boxShadow = arcCardShadow(shadowAlpha);
+      card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
     const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
     setLabelPos(card, currentX, currentY, scale, peelReveal);
@@ -1018,7 +1030,7 @@ export default async function init(el) {
       scale,
     });
     card.el.style.opacity = 1;
-    // card.el.style.boxShadow = '';
+    card.el.style.boxShadow = '';
     card.el.style.zIndex = '';
     setLabelPos(card, centerX, centerY, scale, 1);
   }
@@ -1100,7 +1112,8 @@ export default async function init(el) {
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
       const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
-      const chromeRestY = headlineRestY + cachedHeadlineH + 24;
+      const liveHeadlineH = titleEl.offsetHeight || cachedHeadlineH;
+      const chromeRestY = headlineRestY + liveHeadlineH + 24;
       mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       const postRevealNeeded = Math.max(0, ctaRestY + 60 - viewportHeight);
