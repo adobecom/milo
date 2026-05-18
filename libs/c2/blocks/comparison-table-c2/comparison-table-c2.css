@@ -114,7 +114,7 @@
     border: 4px solid var(--ct-bg-white);
     padding: var(--s2a-spacing-md);
     background: var(--ct-bg-white);
-    animation: ct-card-fade linear both;
+    animation: ct-card-fade linear forwards;
     animation-timeline: --ct-table;
     animation-range: exit -200px exit 0%;
 
