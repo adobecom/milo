@@ -10,7 +10,7 @@ const ORG_MAP = {
   'da-cc': 'DA CC',
   upp: 'DA UPP HOMEPAGE',
   'da-genuine': 'DA GENUINE',
-  'da-federal': 'DA FEDERAL',
+  'edu': 'EDU',
 };
 
 (async function init() {
