@@ -238,8 +238,12 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
   // Wrap price/CTA containers (everything after the plan-name row) so sticky
   // can animate their height without touching the name row.
   const collapsible = createTag('div', { class: 'header-item-collapsible' });
-  [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1).forEach((c) => collapsible.appendChild(c));
-  if (collapsible.children.length) headerItem.appendChild(collapsible);
+  const collapsibleInner = createTag('div');
+  [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1).forEach((c) => collapsibleInner.appendChild(c));
+  if (collapsibleInner.children.length) {
+    collapsible.appendChild(collapsibleInner);
+    headerItem.appendChild(collapsible);
+  }
 }
 
 function decorateHeader(el, headerContent) {
@@ -498,74 +502,23 @@ function setupStickyHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
-  const headerCards = () => headerContent.querySelectorAll('.header-item-card');
-
   function getNavOffset() {
     const navEl = document.querySelector('header');
-    const navIsSticky = navEl && getComputedStyle(navEl).position === 'sticky';
-    return (navIsSticky ? navEl.offsetHeight : 0)
+    const pos = navEl ? getComputedStyle(navEl).position : '';
+    return ((pos === 'sticky' || pos === 'fixed') ? navEl.offsetHeight : 0)
       + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
   }
 
-  const DURATION = 300;
-  const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
-  const FADE_ZONE = 200;
-  let isCollapsed = false;
-  let storedHeights = [];
-  let lastScrollY = window.scrollY;
-
-  function updateTop() {
-    headerContent.style.top = `${getNavOffset()}px`;
+  function setNavHeightVar() {
+    document.documentElement.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
   }
-  updateTop();
-  window.addEventListener('resize', updateTop, { passive: true });
-
-  function collapsibles() {
-    return Array.from(headerContent.querySelectorAll('.header-item-collapsible'));
-  }
-
-  function collapse() {
-    if (isCollapsed) return;
-    isCollapsed = true;
-    const els = collapsibles();
-    // Batch-read full heights (for expand target) and current visual heights
-    // (handles mid-expand-animation case — prevents jump to scrollHeight)
-    storedHeights = els.map((c) => c.scrollHeight);
-    const snapHeights = els.map((c, i) => {
-      const h = getComputedStyle(c).height;
-      return h === 'auto' ? `${storedHeights[i]}px` : h;
-    });
-    // Batch-write: freeze at current visual height, no transition
-    els.forEach((c, i) => {
-      c.style.transition = 'none';
-      c.style.height = snapHeights[i];
-    });
-    // Double rAF: browser commits explicit-height frame before transition starts
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      if (!isCollapsed) return; // expand() may have fired before this rAF
-      els.forEach((c) => {
-        c.style.transition = `height ${DURATION}ms ${EASE}`;
-        c.style.height = '0';
-      });
-    }));
-  }
-
-  function expand() {
-    if (!isCollapsed) return;
-    isCollapsed = false;
-    collapsibles().forEach((c, i) => {
-      c.style.transition = `height ${DURATION}ms ${EASE}`;
-      c.style.height = `${storedHeights[i] || c.scrollHeight}px`;
-    });
-    // Clear explicit height after transition so natural layout can resume
-    setTimeout(() => {
-      if (!isCollapsed) collapsibles().forEach((c) => { c.style.height = ''; c.style.transition = ''; });
-    }, DURATION + 50);
-  }
-
-  function resetCollapsibles() {
-    isCollapsed = false;
-    collapsibles().forEach((c) => { c.style.height = ''; c.style.transition = ''; });
+  setNavHeightVar();
+  const navEl = document.querySelector('header');
+  if (navEl) {
+    new ResizeObserver(setNavHeightVar).observe(navEl);
+    // UniversalNav loads async — retry after it has likely applied position:fixed
+    requestAnimationFrame(() => requestAnimationFrame(setNavHeightVar));
+    setTimeout(setNavHeightVar, 500);
   }
 
   // 1px sentinel: when it leaves the viewport the header is stuck.
@@ -573,34 +526,10 @@ function setupStickyHeader(el) {
   headerContent.before(sentinel);
 
   const observer = new IntersectionObserver(
-    ([entry]) => {
-      const stuck = !entry.isIntersecting;
-      headerContent.classList.toggle('is-sticky', stuck);
-      if (!stuck) resetCollapsibles();
-    },
+    ([entry]) => { headerContent.classList.toggle('is-sticky', !entry.isIntersecting); },
     { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
   );
   observer.observe(sentinel);
-
-  // Single scroll listener: handles both collapse direction and fade-out.
-  function onScroll() {
-    const currentScrollY = window.scrollY;
-    const delta = currentScrollY - lastScrollY;
-    lastScrollY = currentScrollY;
-
-    const stuck = headerContent.classList.contains('is-sticky');
-
-    if (stuck) {
-      const dist = el.getBoundingClientRect().bottom - getNavOffset();
-      const opacity = dist < FADE_ZONE ? Math.max(0, dist / FADE_ZONE).toFixed(3) : '';
-      headerCards().forEach((card) => { card.style.opacity = opacity; });
-      if (delta > 0) collapse();
-      else if (delta < 0) expand();
-    } else {
-      headerCards().forEach((card) => { card.style.opacity = ''; });
-    }
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
 }
 
 function setupTooltipDefaults(el) {

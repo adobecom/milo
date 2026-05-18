@@ -15,12 +15,19 @@
   --ct-hd-width: var(--s2a-grid-container-width);
 }
 
+@keyframes ct-card-fade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .comparison-table-c2 {
   font-family: var(--ct-font-family);
   color: var(--ct-text-primary);
   background-color: transparent;
   padding: var(--s2a-spacing-xl) 0;
   position: relative;
+  view-timeline-name: --ct-table;
+  view-timeline-axis: block;
 
   :is(p, h1, h2, h3, h4, h5, h6) {
     margin: 0;
@@ -42,7 +49,7 @@
   .header-content {
     padding-bottom: var(--s2a-spacing-xl);
     position: sticky;
-    top: var(--feds-totalheight-nav);
+    top: var(--ct-nav-height, 0px);
     z-index: 10;
 
     &.is-sticky {
@@ -55,6 +62,10 @@
       .header-item-card {
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
         transition: box-shadow 250ms ease;
+      }
+
+      .header-item-collapsible {
+        grid-template-rows: 0fr;
       }
     }
   }
@@ -103,6 +114,9 @@
     border: 4px solid var(--ct-bg-white);
     padding: var(--s2a-spacing-md);
     background: var(--ct-bg-white);
+    animation: ct-card-fade linear both;
+    animation-timeline: --ct-table;
+    animation-range: exit -200px exit 0%;
 
     &:last-of-type {
       border: 4px solid var(--ct-highlight-border);
@@ -555,7 +569,14 @@
   }
 
   .header-item-collapsible {
+    display: grid;
+    grid-template-rows: 1fr;
     overflow: hidden;
+    transition: grid-template-rows 300ms cubic-bezier(0.42, 0, 0, 1);
+
+    > div {
+      min-block-size: 0;
+    }
   }
 
   .mobile-filter-select {
