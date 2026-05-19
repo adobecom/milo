@@ -1,4 +1,6 @@
 .offer-hero {
+  /* Escape the .container's padding-inline so the block can fill the
+     viewport edge-to-edge; .hero-cards then caps width at --grid-max-width. */
   margin-inline: calc(50% - 50vw);
 
   .hero {
@@ -75,9 +77,9 @@
   }
 
   .hero-cards {
-    padding-inline: var(--s2a-spacing-24);
-    max-width: 1920px;
+    max-width: var(--grid-max-width-default);
     margin-inline: auto;
+    padding-inline: var(--s2a-spacing-24);
   }
 
   .hero-card {
@@ -90,16 +92,16 @@
     flex-direction: column;
     background: var(--s2a-color-gray-75, #f5f5f5);
     border-radius: var(--s2a-border-radius-16);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+    box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
     overflow: hidden;
   }
 
+  /* Transparent in-flow spacer that reserves the image-area height; the actual
+     media element absolutely fills the entire tile underneath. */
   .content-aux {
-    aspect-ratio: 3 / 2;
-    display: block;
-    height: auto;
-    order: -1;
+    aspect-ratio: 109 / 100;
     width: 100%;
+    order: -1;
   }
 
   .hero-card-media {
@@ -132,10 +134,10 @@
   .hero-card-text {
     position: relative;
     z-index: 1;
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-32) var(--s2a-spacing-32);
+    padding: var(--s2a-spacing-32);
     display: flex;
     flex-direction: column;
-    gap: var(--s2a-spacing-4);
+    gap: var(--s2a-spacing-2);
   }
 
   :is(.hero-card-title, .hero-card-body-text) {
@@ -164,6 +166,27 @@
       &::after {
         content: ' \203A';
       }
+    }
+  }
+}
+
+@media (width > 768px) {
+  .offer-hero {
+    .content-aux {
+      aspect-ratio: 152 / 123;
+    }
+
+    .hero-card-text {
+      padding: var(--s2a-spacing-48);
+      gap: var(--s2a-spacing-4);
+    }
+  }
+}
+
+@media (width >= 1280px) {
+  .offer-hero {
+    .content-aux {
+      aspect-ratio: 173 / 140;
     }
   }
 }

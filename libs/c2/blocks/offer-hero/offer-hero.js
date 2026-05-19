@@ -14,7 +14,7 @@ const CARD_SHADOWS = [
   '15px 15px 15px 0px rgba(0,0,0,0.25)',
   '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
 ];
-const INSET_SHADOW = 'inset 0 0 0 1px rgba(255,255,255,0.10)';
+const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
 const isSvgSrc = (s) => /\.svg(\?.*)?$/i.test(s || '');
 const isVideoSrc = (s) => /\.(mp4|webm)(\?.*)?$/i.test(s || '');
 
@@ -279,7 +279,8 @@ function initAnimation(block) {
   function updateEyebrow() {
     if (!eyebrow) return;
     if (medias[0]) {
-      eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - 40}px`;
+      const gap = window.innerWidth >= 768 ? 40 : 24;
+      eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap}px`;
     }
     if (heroCopy) {
       const r = heroCopy.getBoundingClientRect();
@@ -300,10 +301,19 @@ function initAnimation(block) {
     if (heroCopy) { heroCopy.style.opacity = ''; heroCopy.style.transform = ''; }
     cardTexts.forEach((el) => { el.style.opacity = ''; });
 
-    // Measure natural in-flow position + size of each tile.
-    naturalBoxes = tiles.map((el) => {
-      const r = el.getBoundingClientRect();
-      return { x: r.left, y: r.top, w: r.width, h: r.height };
+    // Measure card cells, then force each row's height to its max so all
+    // cards in a row resolve to the same height. Column count comes from the
+    // grid's actual computed template (the framework's `.two-up` defines it).
+    const cardRects = cards.map((el) => el.getBoundingClientRect());
+    const gridCols = getComputedStyle(cards[0].parentElement).gridTemplateColumns;
+    const colsPerRow = gridCols.split(' ').filter(Boolean).length || 1;
+    naturalBoxes = cardRects.map((r, i) => {
+      const rowStart = Math.floor(i / colsPerRow) * colsPerRow;
+      let rowMaxH = 0;
+      for (let j = rowStart; j < rowStart + colsPerRow && j < cardRects.length; j += 1) {
+        if (cardRects[j].height > rowMaxH) rowMaxH = cardRects[j].height;
+      }
+      return { x: r.left, y: r.top, w: r.width, h: rowMaxH };
     });
 
     // Lock card heights so cards reserve grid space after tiles become absolute.
