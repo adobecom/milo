@@ -528,41 +528,61 @@ function setupStickyHeader(el) {
   let savedCardHeight = 0;
   let wasSticky = false;
   let minHeightGen = 0;
+  let isPastThreshold = false;
+  let lastScrollY = window.scrollY;
+
+  const applySticky = () => {
+    if (!wasSticky) {
+      minHeightGen += 1;
+      savedCardHeight = cardsContainer?.offsetHeight ?? 0;
+      headerContent.style.minHeight = `${savedCardHeight}px`;
+    }
+    wasSticky = true;
+    cardsContainer?.classList.add('is-sticky');
+  };
+
+  const removeSticky = () => {
+    const transitioningOut = wasSticky;
+    wasSticky = false;
+    cardsContainer?.classList.remove('is-sticky');
+    if (transitioningOut && savedCardHeight) {
+      headerContent.style.minHeight = `${savedCardHeight}px`;
+      const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
+      const gen = minHeightGen;
+      collapsible?.addEventListener('transitionend', () => {
+        if (gen === minHeightGen) headerContent.style.minHeight = '';
+      }, { once: true });
+    } else {
+      headerContent.style.minHeight = '';
+    }
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!isPastThreshold) return;
+    const currentY = window.scrollY;
+    if (currentY === lastScrollY) return;
+    const scrollingDown = currentY > lastScrollY;
+    lastScrollY = currentY;
+    if (scrollingDown && !wasSticky) applySticky();
+    else if (!scrollingDown && wasSticky) removeSticky();
+  }, { passive: true });
+
   const setupObserver = () => {
     stickyObserver?.disconnect();
     stickyObserver = new IntersectionObserver(
       ([entry]) => {
         setTop();
-        // Only sticky when scrolled above the nav (not when table is below the fold)
-        const isSticky = !entry.isIntersecting
+        const beyondThreshold = !entry.isIntersecting
           && !!entry.rootBounds
           && entry.boundingClientRect.bottom <= entry.rootBounds.top;
-        if (isSticky) {
-          // Only capture height when first entering sticky — cards are collapsed on resize
-          // so reading offsetHeight then would give the wrong (collapsed) value
-          if (!wasSticky) {
-            minHeightGen += 1; // invalidate any pending transitionend listeners
-            savedCardHeight = cardsContainer?.offsetHeight ?? 0;
-            headerContent.style.minHeight = `${savedCardHeight}px`;
-          }
-          wasSticky = true;
-          cardsContainer?.classList.add('is-sticky');
+        if (beyondThreshold) {
+          const wasAlreadyPast = isPastThreshold;
+          isPastThreshold = true;
+          lastScrollY = window.scrollY;
+          if (!wasAlreadyPast || wasSticky) applySticky();
         } else {
-          const transitioningOut = wasSticky;
-          wasSticky = false;
-          cardsContainer?.classList.remove('is-sticky');
-          if (transitioningOut && savedCardHeight) {
-            // Hold min-height through the expand transition so the grid row stays stable
-            headerContent.style.minHeight = `${savedCardHeight}px`;
-            const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
-            const gen = minHeightGen;
-            collapsible?.addEventListener('transitionend', () => {
-              if (gen === minHeightGen) headerContent.style.minHeight = '';
-            }, { once: true });
-          } else {
-            // Not actually transitioning (e.g. resize while not sticky) — clear immediately
-            headerContent.style.minHeight = '';
-          }
+          isPastThreshold = false;
+          removeSticky();
         }
       },
       { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
