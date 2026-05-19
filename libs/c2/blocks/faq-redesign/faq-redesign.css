@@ -108,18 +108,38 @@
     }
 
     .faq-media {
-      width: 100px;
-      height: 100px;
       display: none;
-      overflow: hidden;
+      height: 320px;
+      overflow: visible;
       pointer-events: none;
       position: fixed;
+      width: 280px;
       z-index: 100;
 
       &.is-visible {
         display: block;
         transform: translateY(-100%);
       }
+
+      picture {
+        border-radius: var(--s2a-border-radius-sm);
+        inset: 0;
+        overflow: hidden;
+        position: absolute;
+
+        img {
+          block-size: 100%;
+          display: block;
+          inline-size: 100%;
+          object-fit: cover;
+        }
+      }
+
+      /* Stacking rotations — first in DOM is bottom of the pile */
+      picture:nth-child(1) { transform: rotate(-5deg); }
+      picture:nth-child(2) { transform: rotate(3deg); }
+      picture:nth-child(3) { transform: rotate(0deg); }
+      picture:only-child   { transform: none; }
     }
   }
 }

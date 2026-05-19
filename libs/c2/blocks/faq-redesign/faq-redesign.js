@@ -111,10 +111,10 @@ function decorate(block) {
     item.append(number, text);
 
     if (mediaCol) {
-      const pic = mediaCol.querySelector('picture');
-      if (pic) {
+      const pics = [...mediaCol.querySelectorAll('picture')];
+      if (pics.length) {
         const media = createTag('div', { class: 'faq-media' });
-        media.append(pic);
+        pics.forEach((pic) => media.append(pic));
         item.append(media);
       }
     }
