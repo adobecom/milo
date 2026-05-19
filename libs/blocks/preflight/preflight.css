@@ -808,11 +808,20 @@ picture:has(.asset-meta),
   display: block;
 }
 
-.asset-meta.no-picture-tag {
+*:has(> .asset-meta.no-picture-tag) {
   position: relative;
-  top: unset;
-  left: unset;
-  right: unset;
+}
+
+.asset-meta.no-picture-tag {
+  position: absolute;
+  top: 30px;
+  left: 0px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+}
+
+.asset-meta.no-picture-tag .asset-meta-entry {
+  white-space: nowrap;
 }
 
 picture:hover .asset-meta,
