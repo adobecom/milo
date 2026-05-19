@@ -272,7 +272,11 @@ function decorateHeader(el, headerContent) {
   const headerItemHeader = createTag('div', { class: 'header-item header-item-header' });
   headerItemHeader.appendChild(createTag('h2', { class: 'title-4' }, 'Compare plans'));
   headerContentWrapper.prepend(headerItemHeader);
-  headerContent.after(createTag('div', { class: 'header-content-dummy', 'aria-hidden': true }));
+  const headerCardsContainer = createTag('div', { class: 'header-cards-container' });
+  const cardItems = [...headerContentWrapper.querySelectorAll('.header-item.header-item-card')];
+  cardItems.forEach((card) => headerCardsContainer.appendChild(card));
+  el.style.setProperty('--ct-card-count', cardItems.length);
+  headerContent.after(headerCardsContainer);
 }
 
 function createAccessibilityHeaderRow(el) {
@@ -511,11 +515,15 @@ function setupStickyHeader(el) {
       + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
   }
 
-  const setTop = () => { headerContent.style.setProperty('--ct-nav-height', `${getNavOffset()}px`); };
+  const cardsContainer = el.querySelector('.header-cards-container');
 
-  // 1px sentinel: when it leaves the viewport the header is stuck.
-  const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;margin-bottom:-1px' });
-  headerContent.before(sentinel);
+  const setTop = () => {
+    if (cardsContainer) cardsContainer.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
+  };
+
+  // 1px sentinel inside headerContent — stays in normal flow, out of the outer grid.
+  const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;' });
+  headerContent.prepend(sentinel);
 
   let stickyObserver;
   const setupObserver = () => {
@@ -523,7 +531,17 @@ function setupStickyHeader(el) {
     stickyObserver = new IntersectionObserver(
       ([entry]) => {
         setTop();
-        headerContent.classList.toggle('is-sticky', !entry.isIntersecting);
+        // Only sticky when scrolled above the nav (not when table is below the fold)
+        const isSticky = !entry.isIntersecting
+          && !!entry.rootBounds
+          && entry.boundingClientRect.bottom <= entry.rootBounds.top;
+        if (isSticky) {
+          // Hold grid row height so table below doesn't jump when cards collapse
+          headerContent.style.minHeight = `${cardsContainer?.offsetHeight ?? 0}px`;
+        } else {
+          headerContent.style.minHeight = '';
+        }
+        cardsContainer?.classList.toggle('is-sticky', isSticky);
       },
       { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
     );
