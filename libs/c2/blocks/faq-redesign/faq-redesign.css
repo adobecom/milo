@@ -109,11 +109,11 @@
 
     .faq-media {
       display: none;
-      height: 100px;
+      height: 320px;
       overflow: visible;
       pointer-events: none;
       position: fixed;
-      width: 100px;
+      width: 280px;
       z-index: 100;
 
       &.is-visible {
