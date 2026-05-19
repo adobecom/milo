@@ -1,62 +1,8 @@
 import { createTag } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
 
-/* ────────────────────────────────────────────────────────────────────────────
- * SCROLL-DRIVEN ANIMATION OVERVIEW
- * Block is 600vh tall and pin-scrolled. Page scroll (px) is normalized to 0..1
- * across the pinned range, then stretched onto an abstract timeline budget
- * `animScrollTotal` (≈4552 on desktop, ≈2977 on mobile). All phase boundaries
- * below are positions on that abstract budget — independent of viewport or
- * block height.
- *
- *   abstract scroll units (desktop):
- *   0       135                     1132                    2832            4552
- *   │        │                       │                       │               │
- *   ├────────┴───────────────────────┤                       │               │
- *   │  arcPan: 0 → 1 by scroll 1350  │ (continues invisibly  │               │
- *   │  Cards arc-rotate in from      │  past gridEnd; cards  │               │
- *   │  upper-right. Slide-in pre-pin │  already off arc)     │               │
- *   │  rises cards into formation.   │                       │               │
- *   │        │                       │                       │               │
- *   │        ├───────────────────────┤                       │               │
- *   │        │ arcToGrid: 0 → 1      │                       │               │
- *   │        │ Arc flattens, cards   │                       │               │
- *   │        │ peel onto flat grid   │                       │               │
- *   │        │ (staggered by fanIdx) │                       │               │
- *   │        │                       │                       │               │
- *   │        │                       ├───────────────────────┤               │
- *   │        │                       │ settle (no phase var) │               │
- *   │        │                       │ Cards rest on grid;   │               │
- *   │        │                       │ column compression +  │               │
- *   │        │                       │ text-block pans up;   │               │
- *   │        │                       │ ADBE logo draws in.   │               │
- *   │        │                       │ Driven by             │               │
- *   │        │                       │ arcTextPanProgress.   │               │
- *   │        │                       │                       │               │
- *   │        │                       │                       ├───────────────┤
- *   │        │                       │                       │ slotting: 0→1 │
- *   │        │                       │                       │ Cards glide   │
- *   │        │                       │                       │ into Acrobat  │
- *   │        │                       │                       │ mockup slots; │
- *   │        │                       │                       │ mockup +      │
- *   │        │                       │                       │ title + CTA   │
- *   │        │                       │                       │ slide up.     │
- *   PEEL_START_  ANIM.arcPanEnd (1350)  gridEnd                slottingStart    +slottingDuration
- *   SCROLL (135)                     (DESKTOP_PEEL_END_      (DESKTOP_        (4552 = total)
- *                                     SCROLL = 1132)         SLOTTING_START
- *                                                            = 2832)
- *
- * Phase signals overlap and gap intentionally:
- *   - arcToGrid starts later than arcPan (10% intro window before peel begins)
- *     and finishes earlier (peel runs over a shorter scroll distance than the
- *     rotation; the remaining arcPan progress past gridEnd is invisible).
- *   - The 37%-of-timeline gap between gridEnd and slottingStart is the "settle"
- *     period — no phase variable, but compression / text pan / logo draw run
- *     during it, driven by arcTextPanProgressCached.
- *
- * Mobile collapses the settle gap and adds a post-reveal pan after slotting;
- * see refreshFrameProfile() for the mobile timing constants.
- * ──────────────────────────────────────────────────────────────────────────── */
+// Scroll-driven animation: arc → peel → settle → slotting. See README.md
+// for the full phase timeline and design rationale.
 
 // TODO: finalize breakpoints
 const BREAKPOINTS = {
@@ -99,6 +45,9 @@ const ANIM = {
   arcLiftZoom: 1.00,
   arcYTilt: 25,
   arcXTilt: 10,
+  arcPushDistance: 60, // px each card is pushed outward along arc normal when peel begins
+  arcFanDepthDelta: 0.30, // fanIdx=7 sits at 1.0×, fanIdx=0 at (1 - delta)× scale to fake depth
+  arcShadowAlpha: 0.15, // base shadow opacity for arc-phase cards; fades with peel
 
   // Slide-in (arc entry): X offset + scale + opacity fade; no Y (no pan-up)
   slideStagger: 0.45, // per-card stagger fraction (fanIdx=7 first, fanIdx=0 last)
@@ -106,6 +55,7 @@ const ANIM = {
   slideStartX: 0.55, // base X offset as fraction of viewport width
   slideStaggerX: 0.20, // additional X offset per later card (fraction of vW)
   slideOverlap: 200, // scroll units into arc rotation when slide fully completes
+  slideOpacityRampTo: 0.25, // cardSlideT value at which slide-in opacity reaches 1
 
   // Grid layout
   baseColumnSpread: 1.20,
@@ -460,8 +410,11 @@ function buildCardStack(cardScene, cardDefs) {
       labelEl,
       baseX: 0,
       baseY: 0,
-      visualCx: 0,
-      visualCy: 0,
+      // NaN sentinel: render passes overwrite these with finite values once a
+      // card has been positioned. getCanvasCardCenter checks for finiteness so
+      // a legitimate x=0 doesn't fall through to the baseX fallback.
+      visualCx: NaN,
+      visualCy: NaN,
     };
   });
 }
@@ -579,13 +532,9 @@ export default async function init(el) {
   let mobileAcrobatMockupRestTop = 0;
   let cachedHeadlineH = 60;
   // Desktop/tablet: computed in resize(), used by getDesktopMockupFrame() and post-reveal pan.
-  // eslint-disable-next-line prefer-const
   let cachedAcrobatWinTop = 0;
-  // eslint-disable-next-line prefer-const
   let cachedAcrobatCtaTop = 0;
-  // eslint-disable-next-line prefer-const
   let cachedDeskPostRevealNeeded = 0;
-  // eslint-disable-next-line prefer-const
   let cachedMobilePostRevealDistance = ANIM.mobilePostRevealScroll;
 
   // Per-frame arc geometry — built once by buildArcCtx().
@@ -619,7 +568,7 @@ export default async function init(el) {
     const fanCenterX = viewportWidth * 0.5 - arcRadius * Math.sin(arcAngle);
     const fanCenterY = viewportHeight * 0.5
       + arcRadius * Math.cos(arcAngle)
-      - viewportHeight * 0.12;
+      - viewportHeight * 0.1;
     const middleAngle = arcAngle - Math.PI / 2;
     const rotationOffset = ANIM.arcSpan * 0.5 - ANIM.arcSpan * 1.5 * arcRotationProgress;
     const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
@@ -838,8 +787,8 @@ export default async function init(el) {
 
   function getCanvasCardCenter(card) {
     return {
-      x: card.visualCx !== 0 ? card.visualCx : card.baseX + card.width / 2,
-      y: card.visualCy !== 0 ? card.visualCy : card.baseY + card.height / 2,
+      x: Number.isFinite(card.visualCx) ? card.visualCx : card.baseX + card.width / 2,
+      y: Number.isFinite(card.visualCy) ? card.visualCy : card.baseY + card.height / 2,
     };
   }
 
@@ -934,7 +883,7 @@ export default async function init(el) {
     const cardPeelProgress = getCardArcToGridProgress(card);
     const fanPos = getFanCenter(card);
     const { arcZoom } = arcGeometry;
-    const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * 0.30;
+    const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcFanDepthDelta;
     const fanScale = cardScale * (1 + ANIM.arcLiftZoom) * fanDepth * arcZoom;
 
     const gridCenterX = card.baseX + card.width / 2;
@@ -945,8 +894,8 @@ export default async function init(el) {
     const cardArcPushProgress = clamp01((phase.arcPan - arcLocalDelay) / arcLocalWin);
     const cardArcPushEase = easeInOutCubic(cardArcPushProgress);
 
-    const pushedX = fanPos.x + fanPos.rx * 60 * cardArcPushEase;
-    const pushedY = fanPos.y + fanPos.ry * 60 * cardArcPushEase;
+    const pushedX = fanPos.x + fanPos.rx * ANIM.arcPushDistance * cardArcPushEase;
+    const pushedY = fanPos.y + fanPos.ry * ANIM.arcPushDistance * cardArcPushEase;
 
     const totalPeelEase = easeOutCubic(cardPeelProgress);
     const currentX = pushedX + (gridCenterX - pushedX) * totalPeelEase;
@@ -992,8 +941,8 @@ export default async function init(el) {
       tiltX: cardXTilt,
       tiltY: cardYTilt,
     });
-    card.el.style.opacity = Math.min(1, cardSlideT / 0.25).toFixed(3);
-    const shadowAlpha = 0.15 * (1 - cardPeelProgress);
+    card.el.style.opacity = Math.min(1, cardSlideT / ANIM.slideOpacityRampTo).toFixed(3);
+    const shadowAlpha = ANIM.arcShadowAlpha * (1 - cardPeelProgress);
     const shadowAlphaKey = shadowAlpha.toFixed(3);
     if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
       card.lastArcShadowAlphaKey = shadowAlphaKey;
@@ -1270,64 +1219,44 @@ export default async function init(el) {
   }
 
   // ──────────────────── Debug overlay (?dotgriddebug) ────────────────────
-  const debugEnabled = new URLSearchParams(window.location.search).has('dotgriddebug');
-  let debugEl = null;
-  if (debugEnabled) {
-    debugEl = createTag('div', { class: 'dot-grid-debug' });
-    debugEl.style.cssText = 'position:fixed;top:8px;left:8px;z-index:99999;'
-      + 'background:rgba(0,0,0,0.78);color:#0f0;padding:8px 12px;'
-      + 'font:12px/1.4 monospace;border-radius:4px;pointer-events:none;'
-      + 'white-space:pre;font-variant-numeric:tabular-nums;';
-    document.body.appendChild(debugEl);
-  }
-  let lastDebugText = '';
-
-  function getActiveStage() {
-    const c = scrollTimeline.current;
-    if (c < PEEL_START_SCROLL) return 'arc-pan';
-    if (c < timing.gridEnd) return 'peel';
-    if (c < timing.slottingStart) return 'settle';
-    if (c < timing.slottingStart + timing.slottingDuration) return 'slotting';
-    if (timing.postRevealScrollDistance > 0) return 'post-reveal';
-    return 'done';
-  }
-
-  function getBreakpointLabel() {
-    if (frame.isMobile) return 'mobile';
-    if (frame.isTablet) return 'tablet';
-    return 'desktop';
-  }
-
-  // TODO: remove after done debugging
-  function updateDebugOverlay() {
-    if (!debugEl) return;
-    document.querySelector('header').style.display = 'none';
-    const animTotal = timing.slottingStart + timing.slottingDuration
-      + timing.postRevealScrollDistance;
-    const scrollPct = animTotal ? (scrollTimeline.current / animTotal) * 100 : 0;
-    const text = [
-      `stage:    ${getActiveStage()}`,
-      `breakpt:  ${getBreakpointLabel()}  (${viewportWidth}×${viewportHeight})`,
-      `scroll:   ${scrollPct.toFixed(1)}%  (${scrollTimeline.current.toFixed(0)} / ${animTotal})`,
-      '─────────────────────────────',
-      `slideT:   ${phase.slideT.toFixed(3)}`,
-      `arcPan:   ${phase.arcPan.toFixed(3)}`,
-      `arcToGrd: ${phase.arcToGrid.toFixed(3)}`,
-      `settle:   ${arcTextPanProgressCached.toFixed(3)}`,
-      `slotting: ${phase.slotting.toFixed(3)}`,
-      '─────────────────────────────',
-      `peelStart:${PEEL_START_SCROLL.toFixed(0)}  gridEnd:${timing.gridEnd}`,
-      `acbStart: ${timing.slottingStart}  acbDur:${timing.slottingDuration}`,
-      '─────────────────────────────',
-      `colSprd:  ${cardGridLayout.columnSpread.toFixed(3)}`,
-      `rowGap:   ${cardGridLayout.rowGap.toFixed(3)}`,
-      `arcGridY: ${verticalPan.arcGridY.toFixed(1)}px`,
-      `postRevY: ${(frame.isMobile ? verticalPan.mobilePostRevealY : verticalPan.deskPostRevealY).toFixed(1)}px`,
-      `blockH:   ${el.offsetHeight}px`,
-    ].join('\n');
-    if (text === lastDebugText) return;
-    lastDebugText = text;
-    debugEl.textContent = text;
+  // Lazily loaded from dot-grid-debug.js only when ?dotgriddebug is set.
+  let debug = null;
+  if (new URLSearchParams(window.location.search).has('dotgriddebug')) {
+    const { default: createDebugOverlay } = await import('./dot-grid-debug.js');
+    debug = createDebugOverlay(() => {
+      const c = scrollTimeline.current;
+      let stageLabel = 'done';
+      if (c < PEEL_START_SCROLL) stageLabel = 'arc-pan';
+      else if (c < timing.gridEnd) stageLabel = 'peel';
+      else if (c < timing.slottingStart) stageLabel = 'settle';
+      else if (c < timing.slottingStart + timing.slottingDuration) stageLabel = 'slotting';
+      else if (timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
+      let breakpoint = 'desktop';
+      if (frame.isMobile) breakpoint = 'mobile';
+      else if (frame.isTablet) breakpoint = 'tablet';
+      return {
+        stage: stageLabel,
+        breakpoint,
+        viewportWidth,
+        viewportHeight,
+        scrollCurrent: c,
+        animTotal: timing.slottingStart + timing.slottingDuration
+          + timing.postRevealScrollDistance,
+        phase,
+        settle: arcTextPanProgressCached,
+        peelStartScroll: PEEL_START_SCROLL,
+        gridEnd: timing.gridEnd,
+        slottingStart: timing.slottingStart,
+        slottingDuration: timing.slottingDuration,
+        columnSpread: cardGridLayout.columnSpread,
+        rowGap: cardGridLayout.rowGap,
+        arcGridY: verticalPan.arcGridY,
+        postRevealY: frame.isMobile
+          ? verticalPan.mobilePostRevealY
+          : verticalPan.deskPostRevealY,
+        blockHeight: el.offsetHeight,
+      };
+    });
   }
 
   // ──────────────────── Render loop ────────────────────
@@ -1349,8 +1278,7 @@ export default async function init(el) {
     canvasGrid.update();
     canvasGrid.draw();
     updateCardPositions();
-    // TODO: remove after done debugging
-    updateDebugOverlay();
+    debug?.update();
     rafId = requestAnimationFrame(loop);
   }
 
@@ -1391,16 +1319,20 @@ export default async function init(el) {
   }, { rootMargin: '200px 0px' });
   io.observe(el);
 
-  new MutationObserver((_, observer) => {
+  // Watch only el's immediate parent for childList changes — a document.body
+  // subtree observer would fire on every DOM mutation across the page.
+  const removalObserver = new MutationObserver((_, observer) => {
     if (document.contains(el)) return;
     stopLoop();
     io.disconnect();
     window.removeEventListener('resize', onResize);
     canvasGrid.destroy();
-    // TODO: remove after done debugging
-    debugEl?.remove();
+    debug?.destroy();
     observer.disconnect();
-  }).observe(document.body, { childList: true, subtree: true });
+  });
+  if (el.parentElement) {
+    removalObserver.observe(el.parentElement, { childList: true });
+  }
 
   return el;
 }

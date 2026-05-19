@@ -44,7 +44,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 1.5;
-  color: rgb(0 0 0 / 64%);
+  color: var(--s2a-color-transparent-black-64);
 }
 
 .dot-grid .text-block a {
@@ -53,7 +53,7 @@
   gap: 4px;
   font-size: 14px;
   font-weight: 700;
-  color: #000;
+  color: var(--s2a-color-gray-1000);
   text-decoration: none;
 }
 
@@ -192,7 +192,7 @@
   white-space: nowrap;
   font-size: 12px;
   font-weight: 700;
-  color: #000;
+  color: var(--s2a-color-gray-1000);
   letter-spacing: -0.24px;
   background: #e1e1f1;
   border-radius: 2px;
@@ -220,7 +220,7 @@
   font-weight: 900;
   line-height: 1;
   letter-spacing: min(-0.117vw, -1.68px);
-  color: #000;
+  color: var(--s2a-color-gray-1000);
 }
 
 .dot-grid .acrobat-title .subcopy {
@@ -230,7 +230,7 @@
   font-size: 16px;
   font-weight: 400;
   line-height: 20px;
-  color: #131313;
+  color: var(--s2a-color-gray-900);
 }
 
 .dot-grid .acrobat-cta {
@@ -244,7 +244,7 @@
   height: 40px;
   padding: 0 20px;
   white-space: nowrap;
-  background: #000;
+  background: var(--s2a-color-gray-1000);
   border-radius: 9999px;
   transform: translateX(-50%) translateY(var(--cta-y, 150vh));
   pointer-events: none;
@@ -260,7 +260,7 @@
   white-space: nowrap;
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--s2a-color-gray-25);
   text-decoration: none;
 }
 
