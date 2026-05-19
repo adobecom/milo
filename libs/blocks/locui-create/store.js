@@ -76,6 +76,7 @@ export async function getUserToken() {
     userToken = accessToken.value;
     authenticated.value = true;
   } catch {
+    // eslint-disable-next-line no-console
     console.error('Sharepoint login failed. Unable to get User-Token!');
     authenticated.value = false;
   }
@@ -97,6 +98,7 @@ async function fetchLocales(tenantBaseUrl, configName = 'config') {
     }
     return null;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error during fetchLocaleDetailsFromOrigin:', error.message);
     return null;
   }
@@ -127,6 +129,7 @@ export async function fetchLocaleDetails() {
     locales.value = processedLocales.filter((locItem) => locItem.livecopies !== '');
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error during fetchLocaleDetails:', error.message);
   }
   loading.value = false;
