@@ -76,6 +76,7 @@ export async function getUserToken() {
     userToken = accessToken.value;
     authenticated.value = true;
   } catch {
+    // eslint-disable-next-line no-console
     console.error('Sharepoint login failed. Unable to get User-Token!');
     authenticated.value = false;
   }
@@ -83,10 +84,10 @@ export async function getUserToken() {
   return userToken;
 }
 
-async function fetchLocales(tenantBaseUrl) {
+async function fetchLocales(tenantBaseUrl, configName = 'config') {
   try {
     const response = await fetch(
-      `${tenantBaseUrl}/.milo/config.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
+      `${tenantBaseUrl}/.milo/${configName}.json?sheet=${LOCALES}&sheet=${LOCALE_GROUPS}`,
     );
     if (!response.ok) {
       throw new Error(`Server Error: ${response.status}`);
@@ -97,6 +98,7 @@ async function fetchLocales(tenantBaseUrl) {
     }
     return null;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error during fetchLocaleDetailsFromOrigin:', error.message);
     return null;
   }
@@ -105,7 +107,13 @@ async function fetchLocales(tenantBaseUrl) {
 export async function fetchLocaleDetails() {
   try {
     loading.value = true;
-    let localeData = await fetchLocales(origin);
+    let localeData = null;
+    if (env.value === 'stage' || env.value === 'local') {
+      localeData = await fetchLocales(origin, 'config-stage');
+    }
+    if (!localeData) {
+      localeData = await fetchLocales(origin);
+    }
     if (!localeData) {
       localeData = await fetchLocales('https://main--federal--adobecom.aem.page');
     }
@@ -121,6 +129,7 @@ export async function fetchLocaleDetails() {
     locales.value = processedLocales.filter((locItem) => locItem.livecopies !== '');
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error('Error during fetchLocaleDetails:', error.message);
   }
   loading.value = false;

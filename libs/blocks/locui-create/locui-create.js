@@ -28,8 +28,8 @@ function Create() {
     const setup = async () => {
       try {
         await getUserToken();
-        await fetchLocaleDetails();
         env.value = getEnvQueryParam();
+        await fetchLocaleDetails();
         const searchParams = new URLSearchParams(window.location.search);
         const projectKey = searchParams.get('projectKey');
         const workflow = searchParams.get('workflow');

@@ -76,12 +76,17 @@ export function setSelectedLocalesAndRegions() {
   }, {});
   const selectedLocale = [];
   const activeLocales = {};
+  const isPromoteOrSingleRollout = userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout
+    || userWorkflowType.value === USER_WORKFLOW_TYPE.single_rollout;
   languages.forEach((loc) => {
     const { language, locales } = loc;
-    const { livecopies, languagecode } = localeByLanguage[language] || {};
+    const { livecopies, defaultlocales, languagecode } = localeByLanguage[language] || {};
+    const visibleLivecopies = isPromoteOrSingleRollout
+      ? livecopies
+      : (defaultlocales || livecopies);
     const livecopiesArr = [];
-    if (livecopies) {
-      const newLivecopies = livecopies.split(',').map((locale) => `${languagecode}|${locale}`);
+    if (visibleLivecopies) {
+      const newLivecopies = visibleLivecopies.split(',').map((locale) => `${languagecode}|${locale}`);
       livecopiesArr.push(...newLivecopies);
     }
     if (locales.length > 0) {
@@ -110,7 +115,7 @@ export function getLanguageDetails(langs) {
       action: 'Rollout',
       langCode: langDetails.languagecode,
       language: langDetails.language,
-      locales: langDetails.livecopies?.split(','),
+      locales: (langDetails.defaultlocales || langDetails.livecopies)?.split(','),
       workflow: '',
     };
   });
