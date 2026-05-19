@@ -21,7 +21,7 @@ function buildItem(row, num, isFirst) {
   const questionText = heading.textContent.trim();
   const answerNodes = [...cell.children].filter((n) => n !== heading);
 
-  const headingTag = createTag(heading.tagName, { class: 'faq-question title-5' }, questionText);
+  const headingTag = createTag(heading.tagName, { class: 'faq-question heading-5' }, questionText);
   const icon = createTag('span', { class: 'faq-icon', 'aria-hidden': 'true' });
   const summary = createTag('summary', {
     class: 'faq-trigger',
