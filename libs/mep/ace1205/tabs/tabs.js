@@ -5,7 +5,6 @@
 import { createTag, MILO_EVENTS, getConfig, localizeLinkAsync } from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
-const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
 const tabColor = {};
 const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
@@ -26,14 +25,6 @@ const isTabInTabListView = (tab) => {
 const scrollTabIntoView = (e, inline = 'center') => {
   const isElInView = isTabInTabListView(e);
   if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline });
-};
-
-const setAttributes = (el, attrs) => {
-  Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]));
-};
-
-const removeAttributes = (el, attrsKeys) => {
-  attrsKeys.forEach((key) => el.removeAttribute(key));
 };
 
 const scrollStackedMobile = (content) => {
@@ -96,10 +87,8 @@ function changeTabs(e, config) {
     window.location.assign(redirectionUrl);
     return;
   }
-  const parent = target.parentNode;
+  const parent = target.closest('.tab-list-container');
   const tabsBlock = target.closest('.tabs');
-  // const hasSegmentedControl = tabsBlock.classList.contains('segmented-control');
-  // const content = hasSegmentedControl ? getContentElement(parent, 3) : getContentElement(parent, 2);
   const content = getContentElement(parent, 3);
   const blockId = tabsBlock.id;
 
@@ -214,75 +203,6 @@ function initTabs(elm, config, rootElem) {
   if (config) configTabs(config, rootElem);
 }
 
-function previousTab(current, i, arr) {
-  const next = arr[i + 1];
-  // The tab before the first visible tab
-  return (next && !isTabInTabListView(current) && isTabInTabListView(next));
-}
-
-function nextTab(current, i, arr) {
-  const previous = arr[i - 1];
-  // The tab after the last visible tab
-  return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
-}
-
-function initPaddles(tabList, left, right) {
-  const tabListItems = tabList.querySelectorAll('[role="tab"]');
-  const tabListItemsArray = [...tabListItems];
-  const firstTab = tabListItemsArray[0];
-  const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
-
-  left.addEventListener('click', () => {
-    const previous = tabListItemsArray.find(previousTab);
-    if (previous) {
-      scrollTabIntoView(previous, 'end');
-    } else {
-      /* c8 ignore next 3 */
-      const { width } = tabList.getBoundingClientRect();
-      tabList.scrollBy({ left: -(width / 2), behavior: 'smooth' });
-    }
-  });
-  right.addEventListener('click', () => {
-    const next = tabListItemsArray.find(nextTab);
-    if (next) {
-      scrollTabIntoView(next, 'start');
-    } else {
-      /* c8 ignore next 3 */
-      const { width } = tabList.getBoundingClientRect();
-      tabList.scrollBy({ left: width / 2, behavior: 'smooth' });
-    }
-  });
-
-  const options = {
-    root: tabList,
-    rootMargin: '0px',
-    threshold: 0.9,
-  };
-
-  const callback = (entries) => {
-    entries.forEach((entry) => {
-      if (entry.target === firstTab) {
-        if (entry.isIntersecting) {
-          setAttributes(left, { disabled: '', 'aria-hidden': true });
-        } else {
-          removeAttributes(left, ['disabled', 'aria-hidden']);
-        }
-      } else if (entry.target === lastTab) {
-        if (entry.isIntersecting) {
-          setAttributes(right, { disabled: '', 'aria-hidden': true });
-        } else {
-          removeAttributes(right, ['disabled', 'aria-hidden']);
-        }
-      }
-    });
-  };
-
-  const observer = new IntersectionObserver(callback, options);
-
-  observer.observe(firstTab);
-  observer.observe(lastTab);
-}
-
 const handleDeferredImages = (block) => {
   /* c8 ignore next 6 */
   const loadLazyImages = () => {
@@ -348,11 +268,9 @@ const init = async (block) => {
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
   block.append(tabContent);
 
-  // const isRadio = block.classList.contains('radio'); // remove this feature
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tabList');
-  // tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
@@ -362,11 +280,8 @@ const init = async (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
 
   if (tabListItems) {
-    // const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
-    // const btnClass = (pillVariant && handlePillSize(pillVariant))
     const buttonVariant = [...block.classList].find((variant) => variant.includes('button'));
     const btnClass = buttonVariant ? handleButtonSize(buttonVariant) : 'heading-xs';
-    // || (block.classList.contains('segmented-control') && 'heading-xxs')
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
@@ -375,21 +290,20 @@ const init = async (block) => {
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
-        // [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'aria-selected': (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
         'daa-ll': `tab-${tabId}-${tabName}`,
-        // ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
         'aria-controls': controlId,
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
-      tabListContainer.append(tabBtn);
+      const btnWrapper = createTag('div', { class: 'btn-wrapper' });
+      btnWrapper.append(tabBtn);
+      tabListContainer.append(btnWrapper);
 
       const tabContentAttributes = {
         id: `tab-panel-${tabId}-${tabName}`,
-        // ...(isRadio ? { } : { role: 'tabpanel' }),
         role: 'tabpanel',
         class: 'tabpanel',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
@@ -401,24 +315,10 @@ const init = async (block) => {
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
-    // tabListContainer.dataset.pretext = config.pretext; // no longer needed as radio is gone
   }
-
-  // For segmented-control variant, wrap tabList in tabs-wrapper container
-  // if (block.classList.contains('segmented-control')) {
   const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
-  // }
-
-  // Tab Paddles
-  const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
-  const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  if (!block.classList.contains('segmented-control')) {
-    tabList.insertAdjacentElement('afterend', paddleRight);
-    block.prepend(paddleLeft);
-  }
-  initPaddles(tabList, paddleLeft, paddleRight);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
