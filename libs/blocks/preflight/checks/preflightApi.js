@@ -27,6 +27,7 @@ import {
   runChecks as runChecksSeo,
 } from './seo.js';
 import { runChecks as runChecksStructure } from './structure.js';
+import { runChecks as runChecksMerch } from './merch.js';
 import { SEVERITY } from './constants.js';
 
 let checksSuite = null;
@@ -64,6 +65,7 @@ export default {
     runChecks: runChecksSeo,
   },
   structure: { runChecks: runChecksStructure },
+  merch: { runChecks: runChecksMerch },
 };
 
 export const getChecksSuite = () => {
@@ -108,12 +110,14 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   const performance = await Promise.all(runChecksPerformance(url, area));
   const seo = isASO ? await fetchPreflightChecks() : runChecksSeo({ url, area });
   const structure = await Promise.all(runChecksStructure({ area }));
+  const merch = await Promise.all(runChecksMerch({ area }));
   return {
     accessibility,
     assets,
     performance,
     seo,
     structure,
+    merch,
   };
 };
 
@@ -150,6 +154,7 @@ export async function getPreflightResults(options = {}) {
     ...(res.performance || []),
     ...(res.seo || []),
     ...(res.structure || []),
+    ...(res.merch || []),
   ];
 
   const result = {

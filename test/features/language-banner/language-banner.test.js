@@ -16,6 +16,16 @@ const mockMarkets = {
   it: { prefix: 'it', lang: 'it', text: 'Visualizza questa pagina in Italiano.', continueText: 'Continuare' },
 };
 
+const parseTestFetchUrl = (req) => {
+  const href = typeof req === 'string' ? req : (req?.url ?? '');
+  try {
+    const parsed = new URL(String(href), window.location.origin);
+    return { hostname: parsed.hostname, pathname: parsed.pathname };
+  } catch {
+    return { hostname: '', pathname: '' };
+  }
+};
+
 describe('Language Banner', () => {
   const sandbox = sinon.createSandbox();
 
@@ -176,15 +186,26 @@ describe('Language Banner', () => {
 
     beforeEach(async () => {
       openStub = sandbox.stub(window, 'open');
+      sandbox.stub(window, 'fetch').callsFake((url) => {
+        const { hostname } = parseTestFetchUrl(url);
+        if (hostname === 'geo2.adobe.com') {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ country: 'DE' }),
+          });
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+      });
       setConfigForTest();
       setLangRoutingConfig({ showBanner: true, markets: [mockMarkets.de] });
       await init();
     });
 
     it('fires an analytics event when the banner is shown', () => {
+      sessionStorage.setItem('akamai', 'de');
       expect(window._satellite.track.calledOnce).to.be.true;
       const [, payload] = window._satellite.track.firstCall.args;
-      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner');
+      expect(payload.data.web.webInteraction.name).to.equal('de-us|language-banner|locale:us|country:de|intl:none|pref-lang:en');
     });
 
     it('sets international cookie and navigates on continue click', async () => {
@@ -248,16 +269,6 @@ describe('Language Banner', () => {
           prefix: 'fr', lang: 'fr', languageName: 'Français', text: 'FR', continueText: 'Continuer', supportedRegions: 'de,fr',
         },
       ],
-    };
-
-    const parseTestFetchUrl = (req) => {
-      const href = typeof req === 'string' ? req : (req?.url ?? '');
-      try {
-        const parsed = new URL(String(href), window.location.origin);
-        return { hostname: parsed.hostname, pathname: parsed.pathname };
-      } catch {
-        return { hostname: '', pathname: '' };
-      }
     };
 
     const defaultFetchForLanguageBanner = (marketPayload, headOk = true) => (url, opts) => {

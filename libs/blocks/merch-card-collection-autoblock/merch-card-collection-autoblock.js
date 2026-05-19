@@ -1,6 +1,7 @@
 import { createTag, getConfig, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
+import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
   getOptions,
@@ -320,6 +321,17 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(container, el.href);
+    container.dataset.masBlock = 'collection';
+    // Attach BEFORE the replaceWith below — M@S removes aem-fragment
+    // immediately after dispatching aem:load. Dynamic import keeps
+    // preview-only code out of the production bundle.
+    const { attachAemLoadListener } = await import(
+      '../../features/personalization/preview-mas-subcollection.js'
+    );
+    attachAemLoadListener(aemFragment, container);
+  }
   const paragraph = el.parentElement;
   const toReplace = paragraph?.tagName === 'P' && hasOnlyTargetContent(paragraph, el)
     ? paragraph

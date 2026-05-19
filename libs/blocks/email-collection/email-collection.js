@@ -16,6 +16,9 @@ import {
   isUserGuest,
   validateImsToken,
   FORM_FIELDS,
+  removePhoneNumberFormat,
+  getPhoneFieldConfig,
+  validatePhoneNumber,
 } from './utils.js';
 
 const miloConfig = getConfig();
@@ -65,6 +68,77 @@ export const [showHideMessage, setMessageEls] = (() => {
     },
   ];
 })();
+
+function validateInput(input) {
+  const { value, type, id } = input;
+  const emailRegex = /^[\p{L}\p{N}._%+-]+@[\p{L}\p{N}.-]+\.[\p{L}\p{N}-]{2,}$/u;
+  if ((type !== 'email' && !input.checkValidity())
+  || (type === 'email' && !value)) return 'required';
+  if (type === 'email' && !emailRegex.test(value)) return 'email';
+  if (id === 'phone-number' && !validatePhoneNumber(value)) return 'phone';
+  return '';
+}
+
+function showInputError(form, input, placeholders) {
+  const { id } = input;
+  const label = form.querySelector(`label[for="${id}"]`);
+  const error = form.querySelector(`div[id$="${id}"]`);
+  const errorType = validateInput(input);
+  if (error) error.textContent = placeholders[errorType];
+
+  if (errorType) input.setAttribute('aria-describedby', error.id);
+  else input.removeAttribute('aria-describedby');
+
+  input.classList.toggle('invalid', errorType);
+  label.classList.toggle('invalid', errorType);
+  error?.classList.toggle('hidden', !errorType);
+
+  return !!errorType;
+}
+
+async function formatPhoneNumber(input) {
+  if (!input) return;
+  const config = getPhoneFieldConfig();
+  if (!config) return;
+  const { code, format: formatNumber } = config;
+  input.value = input.value.replace(code, '');
+  const form = input.closest('form');
+  const { placeholders } = await getFormData('config');
+  const isInvalid = showInputError(form, input, placeholders);
+  if (isInvalid) return;
+  const newNumber = formatNumber(input.value);
+  input.value = newNumber;
+}
+
+async function validateForm(form) {
+  const inputs = form.querySelectorAll('input:not([readonly]), select');
+  let isInvalidForm = false;
+  let focusInvalid;
+  const { placeholders } = await getFormData('config');
+  inputs.forEach((input) => {
+    if (!showInputError(form, input, placeholders)) return;
+    isInvalidForm = true;
+
+    /* eslint-disable */ 
+    if (!input._hasChangeListener) {
+      input.addEventListener('change', () => showInputError(form, input, placeholders));
+      input._hasChangeListener = true;
+    }
+    /* eslint-enable */
+    const autocompleteValue = input.getAttribute('autocomplete');
+    input.setAttribute('autocomplete', 'off');
+    input.addEventListener('input', () => {
+      input.setAttribute('autocomplete', autocompleteValue);
+    }, { once: true });
+
+    focusInvalid = focusInvalid ?? input;
+  });
+
+  focusInvalid?.blur();
+  setTimeout(() => focusInvalid?.focus(), 50);
+
+  return !isInvalidForm;
+}
 
 export function overrideForegroundContent() {
   const params = new URLSearchParams(window.location.search);
@@ -127,7 +201,22 @@ async function insertProgress(el, size = 'm') {
   el.replaceChildren(theme);
 }
 
-function decorateSelect({ data, id, placeholder, selectValue }) {
+function applyAttributes(input, attributes) {
+  Object.entries(attributes).forEach(([attrKey, attrValue]) => {
+    if (attrKey === 'disabled' && !input.value) return;
+    input?.setAttribute(attrKey, attrValue);
+  });
+}
+
+function addErrorElement(container, key) {
+  const input = container.querySelector('input, select');
+  const shouldAdd = input.getAttribute('disabled') === null;
+  if (!shouldAdd) return;
+  const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
+  container.append(error);
+}
+
+function createSelect({ data, id, placeholder, selectValue }) {
   const selectWrapper = createTag('div', { class: 'select-wrapper' });
   const select = createTag('select', { id, name: id });
   const optionPlaceholder = createTag('option', { value: '' }, placeholder?.trim());
@@ -139,46 +228,16 @@ function decorateSelect({ data, id, placeholder, selectValue }) {
   });
 
   select.value = selectValue ?? '';
+  const { attributes } = FORM_FIELDS[id];
+  applyAttributes(select, attributes);
   selectWrapper.appendChild(select);
   return selectWrapper;
 }
 
-async function decorateInput(key, value) {
-  const profile = await getIMSProfile();
-  const inputValue = profile[key];
+function createInput(params) {
+  const { key, placeholder, labelText, inputValue } = params;
   const { tag, attributes } = FORM_FIELDS[key];
-  const [labelText, placeholder] = value.split('|');
-  let input;
-
-  const label = createTag(
-    'label',
-    { for: key, class: 'body-xs' },
-    labelText.trim(),
-  );
-
-  if (key === 'country') {
-    const { country: countries } = await getFormData('config');
-    input = decorateSelect({
-      data: Object.entries(countries).map((country) => ({ key: country[0], value: country[1] })),
-      id: key,
-      placeholder: placeholder ?? labelText,
-      ...(countries[inputValue] && { selectValue: inputValue }),
-    });
-  }
-
-  if (key === 'state') {
-    const { state: states } = await getFormData('config');
-    const fields = getFormData('fields');
-    const { country } = profile;
-    if (!fields.country || !states?.[country]) return null;
-    input = decorateSelect({
-      data: states[country],
-      id: key,
-      placeholder: placeholder ?? labelText,
-    });
-  }
-
-  input = input ?? createTag(
+  const input = createTag(
     tag,
     {
       name: key,
@@ -187,21 +246,77 @@ async function decorateInput(key, value) {
       ...(inputValue && { value: inputValue }),
     },
   );
+  applyAttributes(input, attributes);
 
-  const tempInput = input.querySelector('select') ?? input;
-  Object.entries(attributes).forEach(([attrKey, attrValue]) => {
-    if (attrKey === 'disabled' && !tempInput.value) return;
-    tempInput?.setAttribute(attrKey, attrValue);
-  });
+  return input;
+}
 
-  label.classList.toggle('required', tempInput.getAttribute('required'));
+const decorateConfig = {
+  country: async (params) => {
+    const { key, placeholder, labelText, inputValue } = params;
+    const { country: countries } = await getFormData('config');
+    return createSelect({
+      data: Object.entries(countries).map((country) => ({ key: country[0], value: country[1] })),
+      id: key,
+      placeholder: placeholder ?? labelText,
+      ...(countries[inputValue] && { selectValue: inputValue }),
+    });
+  },
+  state: async (params) => {
+    const { key, placeholder, labelText } = params;
+    const { state: states } = await getFormData('config');
+    const fields = getFormData('fields');
+    const { country } = await getIMSProfile();
+    if (!fields.country || !states?.[country]) return null;
+    return createSelect({
+      data: states[country],
+      id: key,
+      placeholder: placeholder ?? labelText,
+    });
+  },
+  'phone-number': (params) => {
+    const input = createInput(params);
+    input.addEventListener('change', (e) => {
+      const { target } = e;
+      if (!target.value) return;
+      formatPhoneNumber(target);
+    });
+    return input;
+  },
+  'phone-country-code': (params) => {
+    const { code, icon } = getPhoneFieldConfig() ?? {};
+    if (!code) return null;
+    const { labelText } = params;
+    const input = createInput({ ...params, inputValue: code });
+    const countryCodeContainer = createTag('div', { class: 'phone-country-code-container' });
+    countryCodeContainer.style.setProperty('--phone-country-ch-size', `${labelText.length}ch`);
+    const flagIcon = createTag('img', { src: icon, alt: '', class: 'phone-country-icon', 'aria-hidden': 'true' });
+    countryCodeContainer.append(flagIcon, input);
+    return countryCodeContainer;
+  },
+  default: (params) => (createInput(params)),
+};
+
+async function decorateInput(key, value) {
+  const profile = await getIMSProfile();
+  const inputValue = profile[key];
+  const { attributes } = FORM_FIELDS[key];
+  const [labelText, placeholder] = value.split('|');
+  const decorateFunction = decorateConfig[key] ?? decorateConfig.default;
+
+  const label = createTag(
+    'label',
+    { for: key, class: 'body-xs' },
+    labelText.trim(),
+  );
+  const input = await decorateFunction({ key, placeholder, labelText, inputValue });
+  if (!input) return null;
+
+  label.classList.toggle('required', attributes.required);
   const container = createTag('div', { class: 'input-container' });
   container.append(label, input);
 
-  if (tempInput.getAttribute('disabled') === null) {
-    const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
-    container.append(error);
-  }
+  addErrorElement(container, key);
 
   return container;
 }
@@ -225,6 +340,7 @@ async function submitForm(form) {
     organization,
     state,
     country,
+    'phone-number': phoneNumber,
   } = Object.fromEntries(new FormData(form));
   const button = form.querySelector('button[type="submit"]');
   const buttonContent = button.textContent;
@@ -236,8 +352,13 @@ async function submitForm(form) {
     const { imsClientId } = miloConfig;
     const { mpsSname } = getFormData('metadata');
     const { consentId } = await getFormData('consent');
-    const { country: countryField } = getFormData('fields');
+    const { country: countryField, 'phone-number': phoneNumberField } = getFormData('fields');
     const { country: profileCountry, userId: guid } = await getIMSProfile();
+
+    const phoneNumberObject = phoneNumberField && phoneNumber ? {
+      phoneNumber: removePhoneNumberFormat(phoneNumber),
+      phoneCountryCode: getPhoneFieldConfig().code.replace('+', ''),
+    } : {};
 
     const { ecid, aepCmp, aepOtherConsents } = await getAEPData();
     const bodyData = {
@@ -254,6 +375,7 @@ async function submitForm(form) {
       aepOtherConsents,
       isGuest,
       ...(countryField && { countryCode: profileCountry ?? country }),
+      ...phoneNumberObject,
     };
 
     const { error, data, status } = await runtimePost(
@@ -267,7 +389,7 @@ async function submitForm(form) {
     }
 
     messageParams.email = email;
-    const { subscribed } = data;
+    const { subscribed } = data || {};
     messageParams.subscribed = subscribed;
   } catch (e) {
     messageParams.errorMsg = e.message;
@@ -293,62 +415,6 @@ function setMaxHeightToForm(formContainer, restore) {
   });
 }
 
-function validateInput(input) {
-  const { value, type } = input;
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if ((type !== 'email' && !input.checkValidity())
-  || (type === 'email' && !value)) return 'required';
-  if (type === 'email' && !emailRegex.test(value)) return 'email';
-  return '';
-}
-
-function showInputError(form, input, placeholders) {
-  const { id } = input;
-  const label = form.querySelector(`label[for=${id}]`);
-  const error = form.querySelector(`div[id$=${id}]`);
-  const errorType = validateInput(input);
-  if (error) error.textContent = placeholders[errorType];
-
-  if (errorType) input.setAttribute('aria-describedby', error.id);
-  else input.removeAttribute('aria-describedby');
-
-  input.classList.toggle('invalid', errorType);
-  label.classList.toggle('invalid', errorType);
-  error?.classList.toggle('hidden', !errorType);
-
-  return !!errorType;
-}
-
-async function validateForm(form) {
-  const inputs = form.querySelectorAll('input:not([readonly]), select');
-  let isInvalidForm = false;
-  let focusInvalid;
-  const { placeholders } = await getFormData('config');
-  inputs.forEach((input) => {
-    if (!showInputError(form, input, placeholders)) return;
-    isInvalidForm = true;
-
-    /* eslint-disable */ 
-    if (!input._hasChangeListener) {
-      input.addEventListener('change', () => showInputError(form, input, placeholders));
-      input._hasChangeListener = true;
-    }
-    /* eslint-enable */
-    const autocompleteValue = input.getAttribute('autocomplete');
-    input.setAttribute('autocomplete', 'off');
-    input.addEventListener('input', () => {
-      input.setAttribute('autocomplete', autocompleteValue);
-    }, { once: true });
-
-    focusInvalid = focusInvalid ?? input;
-  });
-
-  focusInvalid?.blur();
-  setTimeout(() => focusInvalid?.focus(), 50);
-
-  return !isInvalidForm;
-}
-
 async function decorateConsentString() {
   const { consentDiv } = await getFormData('consent');
   if (!consentDiv) return null;
@@ -356,7 +422,7 @@ async function decorateConsentString() {
 
   const { subscriptionName } = getFormData('metadata');
   const regex = /{{subscription-name}}/g;
-  consentDiv.innerHTML = consentDiv.innerHTML.replaceAll(regex, subscriptionName);
+  consentDiv.innerHTML = consentDiv.innerHTML.replaceAll(regex, subscriptionName ?? '');
 
   return consentDiv;
 }
@@ -383,7 +449,22 @@ async function decorateForm(el, foreground) {
     inputs.unshift(firstRow);
   }
 
+  if (fields['phone-number']) {
+    const phoneNumberIdx = inputs.findIndex((i) => i.querySelector('#phone-number'));
+    const phoneCountryCodeIdx = inputs.findIndex((i) => i.querySelector('#phone-country-code'));
+    if (phoneNumberIdx !== -1 && phoneCountryCodeIdx !== -1) {
+      const phoneNumber = inputs[phoneNumberIdx];
+      const phoneCountryCode = inputs[phoneCountryCodeIdx];
+      const phoneContainer = createTag('div', { class: 'phone-container' });
+      phoneContainer.append(phoneCountryCode, phoneNumber);
+      const insertIdx = Math.min(phoneNumberIdx, phoneCountryCodeIdx);
+      inputs.splice(Math.max(phoneNumberIdx, phoneCountryCodeIdx), 1);
+      inputs.splice(insertIdx, 1, phoneContainer);
+    }
+  }
+
   form.append(...inputs);
+
   const submitButton = text.querySelector('.button-container');
   const consentString = await decorateConsentString();
 
@@ -492,6 +573,9 @@ function decorateText(elChildren) {
 }
 
 async function checkIsSubscribed() {
+  const { consentId } = await getFormData('consent');
+  if (consentId?.toLowerCase().startsWith('cs8a')) return false;
+
   const isGuest = await isUserGuest();
   if (isGuest) return false;
   const { mpsSname } = getFormData('metadata');
