@@ -137,6 +137,8 @@
     padding: var(--s2a-spacing-32);
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-end;
     gap: var(--s2a-spacing-2);
   }
 
@@ -164,7 +166,8 @@
       text-decoration: none;
 
       &::after {
-        content: ' \203A';
+        content: '\203A';
+        margin-inline-start: var(--s2a-spacing-8);
       }
     }
   }

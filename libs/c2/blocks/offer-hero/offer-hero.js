@@ -1,7 +1,7 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-const FIGMA_STACK_W = 722;
+const STACK_W = 722;
 const STACK_REF = [
   { dx: 55.47, dy: 96.86, w: 358, h: 419, rot: -6 },
   { dx: 167.35, dy: -14.85, w: 458, h: 570, rot: 2 },
@@ -15,19 +15,19 @@ const CARD_SHADOWS = [
   '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
 ];
 const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
-const isSvgSrc = (s) => /\.svg(\?.*)?$/i.test(s || '');
-const isVideoSrc = (s) => /\.(mp4|webm)(\?.*)?$/i.test(s || '');
+const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
+const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 
-const lerp = (a, b, t) => a + (b - a) * t;
-const clamp01 = (v) => {
-  if (v < 0) return 0;
-  if (v > 1) return 1;
-  return v;
+const lerp = (from, to, amount) => from + (to - from) * amount;
+const clamp01 = (value) => {
+  if (value < 0) return 0;
+  if (value > 1) return 1;
+  return value;
 };
 // All CARD_SHADOWS_OUT differ from CARD_SHADOWS only in alpha (zeroed). Scale
 // every rgba alpha in the shadow string by `factor` to interpolate.
-const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_m, args) => {
-  const [r, g, b, a] = args.split(',').map((s) => s.trim());
+const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
+  const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
 });
 
@@ -142,14 +142,14 @@ function initAnimation(block) {
   let isSettled = false;
   let willChangeOn = false;
   let eyebrowVisible = false;
-  let v3Observer = null;
+  let bottomObserver = null;
   let rafId = 0;
   let running = false;
-  const v3PlayedThrough = new Set();
+  const playedVideos = new Set();
   const gnav = document.querySelector('header');
-  const cardTexts = cards.flatMap((c) => [
-    c.querySelector('.hero-card-title'),
-    c.querySelector('.hero-card-body-text'),
+  const cardTexts = cards.flatMap((card) => [
+    card.querySelector('.hero-card-title'),
+    card.querySelector('.hero-card-body-text'),
   ]).filter(Boolean);
 
   function positionCopy() {
@@ -157,12 +157,14 @@ function initAnimation(block) {
     heroCopy.style.top = `${gnav.getBoundingClientRect().bottom + 124}px`;
   }
 
-  function ensureEndedHandler(v) {
-    if (v.dataset.heroEndedBound) return;
-    v.dataset.heroEndedBound = '1';
-    v.addEventListener('ended', () => {
-      v3PlayedThrough.add(v);
-      if (v.duration && Number.isFinite(v.duration)) v.currentTime = v.duration - 0.05;
+  function ensureEndedHandler(video) {
+    if (video.dataset.heroEndedBound) return;
+    video.dataset.heroEndedBound = '1';
+    video.addEventListener('ended', () => {
+      playedVideos.add(video);
+      if (video.duration && Number.isFinite(video.duration)) {
+        video.currentTime = video.duration - 0.05;
+      }
     }, { once: true });
   }
 
@@ -171,44 +173,44 @@ function initAnimation(block) {
   function autoplayTop() {
     const split = getSplit();
     for (let i = 0; i < split; i += 1) {
-      const v = videos[i];
-      if (v && !v3PlayedThrough.has(v)) {
-        ensureEndedHandler(v);
-        v.currentTime = 0;
-        v.loop = false;
-        v.play()?.catch(() => {});
+      const video = videos[i];
+      if (video && !playedVideos.has(video)) {
+        ensureEndedHandler(video);
+        video.currentTime = 0;
+        video.loop = false;
+        video.play()?.catch(() => {});
       }
     }
   }
 
   function watchBottom() {
-    if (v3Observer) return;
+    if (bottomObserver) return;
     const split = getSplit();
     videos.slice(split).filter(Boolean).forEach(ensureEndedHandler);
-    v3Observer = new IntersectionObserver((entries) => {
+    bottomObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const v = videos[medias.indexOf(entry.target)];
-        if (!v || v3PlayedThrough.has(v)) return;
+        const video = videos[medias.indexOf(entry.target)];
+        if (!video || playedVideos.has(video)) return;
         if (entry.isIntersecting) {
-          v.loop = false;
-          v.play()?.catch(() => {});
+          video.loop = false;
+          video.play()?.catch(() => {});
         } else {
-          v.pause();
+          video.pause();
         }
       });
     }, { threshold: 0.7 });
-    medias.slice(split).filter(Boolean).forEach((m) => v3Observer.observe(m));
+    medias.slice(split).filter(Boolean).forEach((media) => bottomObserver.observe(media));
   }
 
   function stopBottom() {
-    if (v3Observer) { v3Observer.disconnect(); v3Observer = null; }
+    if (bottomObserver) { bottomObserver.disconnect(); bottomObserver = null; }
   }
 
   function resetVideos() {
-    v3PlayedThrough.clear();
-    videos.forEach((v) => {
-      delete v.dataset.heroEndedBound;
-      try { v.pause(); v.loop = false; v.currentTime = 0; } catch (e) { /* noop */ }
+    playedVideos.clear();
+    videos.forEach((video) => {
+      delete video.dataset.heroEndedBound;
+      try { video.pause(); video.loop = false; video.currentTime = 0; } catch (e) { /* noop */ }
     });
   }
 
@@ -223,9 +225,9 @@ function initAnimation(block) {
     }
     stopBottom();
     if (opts?.reverse) {
-      videos.forEach((v) => {
-        if (v3PlayedThrough.has(v)) return;
-        try { v.pause(); v.loop = false; } catch (e) { /* noop */ }
+      videos.forEach((video) => {
+        if (playedVideos.has(video)) return;
+        try { video.pause(); video.loop = false; } catch (e) { /* noop */ }
       });
     } else {
       resetVideos();
@@ -244,35 +246,35 @@ function initAnimation(block) {
     return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
   }
 
-  function applyAnimation(p) {
+  function applyAnimation(progress) {
     if (heroCopy) {
-      const t = clamp01(p / 0.6);
-      heroCopy.style.opacity = String(1 - t);
-      heroCopy.style.transform = `translateY(${-80 * t}px)`;
+      const copyFade = clamp01(progress / 0.6);
+      heroCopy.style.opacity = String(1 - copyFade);
+      heroCopy.style.transform = `translateY(${-80 * copyFade}px)`;
     }
 
     tiles.forEach((tile, i) => {
-      const n = naturalBoxes[i];
-      const s = stackBoxes[i];
-      tile.style.width = `${lerp(s.w, n.w, p)}px`;
-      tile.style.height = `${lerp(s.h, n.h, p)}px`;
-      tile.style.transform = `translate(${lerp(s.x - n.x, 0, p)}px, ${lerp(s.y - n.y, 0, p)}px) rotate(${lerp(s.rot, 0, p)}deg)`;
+      const natural = naturalBoxes[i];
+      const stack = stackBoxes[i];
+      tile.style.width = `${lerp(stack.w, natural.w, progress)}px`;
+      tile.style.height = `${lerp(stack.h, natural.h, progress)}px`;
+      tile.style.transform = `translate(${lerp(stack.x - natural.x, 0, progress)}px, ${lerp(stack.y - natural.y, 0, progress)}px) rotate(${lerp(stack.rot, 0, progress)}deg)`;
       if (CARD_SHADOWS[i]) {
-        tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - p)}, ${INSET_SHADOW}`;
+        tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
       }
     });
 
     // power2.out easing: 1 - (1 - t)², 0.025 stagger.
-    cardTexts.forEach((el, i) => {
-      const t = clamp01((p - (0.6 + i * 0.025)) / 0.2);
-      el.style.opacity = String(1 - (1 - t) * (1 - t));
+    cardTexts.forEach((textEl, i) => {
+      const textProgress = clamp01((progress - (0.6 + i * 0.025)) / 0.2);
+      textEl.style.opacity = String(1 - (1 - textProgress) * (1 - textProgress));
     });
 
-    const animating = p > 0.001 && p < 0.999;
+    const animating = progress > 0.001 && progress < 0.999;
     if (animating !== willChangeOn) {
       willChangeOn = animating;
-      const wc = animating ? 'transform, width, height' : '';
-      tiles.forEach((t) => { t.style.willChange = wc; });
+      const willChangeValue = animating ? 'transform, width, height' : '';
+      tiles.forEach((tile) => { tile.style.willChange = willChangeValue; });
     }
   }
 
@@ -283,8 +285,8 @@ function initAnimation(block) {
       eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap}px`;
     }
     if (heroCopy) {
-      const r = heroCopy.getBoundingClientRect();
-      const show = r.top + r.height / 2 < 0;
+      const rect = heroCopy.getBoundingClientRect();
+      const show = rect.top + rect.height / 2 < 0;
       if (show !== eyebrowVisible) {
         eyebrowVisible = show;
         eyebrow.classList.toggle('is-visible', show);
@@ -294,70 +296,72 @@ function initAnimation(block) {
 
   function computeLayouts() {
     // Clear inline styles from any previous run so the natural layout is measurable.
-    tiles.forEach((t) => {
-      t.style.cssText = '';
+    tiles.forEach((tile) => {
+      tile.style.cssText = '';
     });
-    cards.forEach((c) => { c.style.height = ''; });
+    cards.forEach((card) => { card.style.height = ''; });
     if (heroCopy) { heroCopy.style.opacity = ''; heroCopy.style.transform = ''; }
-    cardTexts.forEach((el) => { el.style.opacity = ''; });
+    cardTexts.forEach((textEl) => { textEl.style.opacity = ''; });
 
     // Measure card cells, then force each row's height to its max so all
     // cards in a row resolve to the same height. Column count comes from the
     // grid's actual computed template (the framework's `.two-up` defines it).
-    const cardRects = cards.map((el) => el.getBoundingClientRect());
+    const cardRects = cards.map((card) => card.getBoundingClientRect());
     const gridCols = getComputedStyle(cards[0].parentElement).gridTemplateColumns;
     const colsPerRow = gridCols.split(' ').filter(Boolean).length || 1;
-    naturalBoxes = cardRects.map((r, i) => {
+    naturalBoxes = cardRects.map((rect, i) => {
       const rowStart = Math.floor(i / colsPerRow) * colsPerRow;
       let rowMaxH = 0;
       for (let j = rowStart; j < rowStart + colsPerRow && j < cardRects.length; j += 1) {
         if (cardRects[j].height > rowMaxH) rowMaxH = cardRects[j].height;
       }
-      return { x: r.left, y: r.top, w: r.width, h: rowMaxH };
+      return { x: rect.left, y: rect.top, w: rect.width, h: rowMaxH };
     });
 
     // Lock card heights so cards reserve grid space after tiles become absolute.
-    cards.forEach((c, i) => { c.style.height = `${naturalBoxes[i].h}px`; });
+    cards.forEach((card, i) => { card.style.height = `${naturalBoxes[i].h}px`; });
 
     // Stack composition derived from Figma.
     const vw = window.innerWidth;
     const dyNudges = [-50, -42, -136, -190];
     const copyBottom = heroCopy ? heroCopy.getBoundingClientRect().bottom : 540;
     const stackTop = copyBottom + 74;
-    const stackScale = vw < 768 ? Math.max((vw - 48) / FIGMA_STACK_W, 0.3) : 1;
-    const stackLeft = (vw - FIGMA_STACK_W * stackScale) / 2;
-    stackBoxes = STACK_REF.map((s, i) => ({
-      x: stackLeft + s.dx * stackScale,
-      y: stackTop + (s.dy + 14.85) * stackScale + (dyNudges[i] || 0),
-      w: s.w * stackScale,
-      h: s.h * stackScale,
-      rot: s.rot,
+    const stackScale = vw < 768 ? Math.max((vw - 48) / STACK_W, 0.3) : 1;
+    const stackLeft = (vw - STACK_W * stackScale) / 2;
+    stackBoxes = STACK_REF.map((ref, i) => ({
+      x: stackLeft + ref.dx * stackScale,
+      y: stackTop + (ref.dy + 14.85) * stackScale + (dyNudges[i] || 0),
+      w: ref.w * stackScale,
+      h: ref.h * stackScale,
+      rot: ref.rot,
     }));
 
     // Pin tiles absolutely AND apply current state synchronously so first paint
     // is correct. Without the immediate applyAnimation, a width-less absolute
     // tile collapses to 0 between this function and the first rAF tick.
-    tiles.forEach((t) => {
-      t.style.position = 'absolute';
-      t.style.top = '0';
-      t.style.left = '0';
-      t.style.transformOrigin = 'top left';
+    tiles.forEach((tile) => {
+      tile.style.position = 'absolute';
+      tile.style.top = '0';
+      tile.style.left = '0';
+      tile.style.transformOrigin = 'top left';
     });
     applyAnimation(getProgress());
   }
 
   function tick() {
     if (!running) return;
-    const p = getProgress();
-    applyAnimation(p);
+    const progress = getProgress();
+    applyAnimation(progress);
     updateEyebrow();
 
-    if (p >= 0.85) setSettled(true);
+    if (progress >= 0.85) setSettled(true);
     else if (isSettled) setSettled(false, { reverse: true });
 
-    videos.forEach((v) => {
-      if (!v.duration || !Number.isFinite(v.duration)) return;
-      if (!isSettled && !v3PlayedThrough.has(v) && v.currentTime > 0.02) v.currentTime = 0;
+    videos.forEach((video) => {
+      if (!video.duration || !Number.isFinite(video.duration)) return;
+      if (!isSettled && !playedVideos.has(video) && video.currentTime > 0.02) {
+        video.currentTime = 0;
+      }
     });
 
     rafId = requestAnimationFrame(tick);
