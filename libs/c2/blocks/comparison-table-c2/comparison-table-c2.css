@@ -116,7 +116,7 @@
     background: var(--ct-bg-white);
     animation: ct-card-fade linear forwards;
     animation-timeline: --ct-table;
-    animation-range: exit -200px exit 0%;
+    animation-range: cover 75% cover 90%;
 
     &:last-of-type {
       border: 4px solid var(--ct-highlight-border);
