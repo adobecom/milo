@@ -59,7 +59,13 @@
   }
 
   .header-cards-container {
-    display: contents;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s2a-spacing-md);
+    width: 100%;
+    max-width: var(--ct-hd-max-width);
+    margin-inline: auto;
+    box-sizing: border-box;
 
     &.is-sticky {
       align-items: stretch;

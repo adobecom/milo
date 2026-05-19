@@ -476,7 +476,7 @@ function setupResponsiveHiding(el) {
       });
     }
 
-    el.querySelector('.header-item-header')?.classList.toggle('hidden', isMobile);
+    el.querySelector('.header-item-header')?.classList.remove('hidden');
     hideElements(el.querySelectorAll('.header-item:not(.header-item-header)'), isMobile);
     el.querySelectorAll('.table-row').forEach((row) => hideElements(row.querySelectorAll('.table-cell'), isMobile));
     syncAccessibilityHeaders(el);
