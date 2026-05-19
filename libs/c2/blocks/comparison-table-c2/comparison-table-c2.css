@@ -91,7 +91,7 @@
       gap: var(--s2a-spacing-md);
       align-self: start;
       position: sticky;
-      top: var(--ct-nav-height);
+      top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
       z-index: 10;
     }
   }

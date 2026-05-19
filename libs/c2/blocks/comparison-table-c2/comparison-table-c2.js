@@ -526,6 +526,7 @@ function setupStickyHeader(el) {
   headerContent.prepend(sentinel);
 
   let stickyObserver;
+  let savedCardHeight = 0;
   const setupObserver = () => {
     stickyObserver?.disconnect();
     stickyObserver = new IntersectionObserver(
@@ -536,12 +537,23 @@ function setupStickyHeader(el) {
           && !!entry.rootBounds
           && entry.boundingClientRect.bottom <= entry.rootBounds.top;
         if (isSticky) {
-          // Hold grid row height so table below doesn't jump when cards collapse
-          headerContent.style.minHeight = `${cardsContainer?.offsetHeight ?? 0}px`;
+          // Save full expanded height, then hold the grid row while cards collapse
+          savedCardHeight = cardsContainer?.offsetHeight ?? 0;
+          headerContent.style.minHeight = `${savedCardHeight}px`;
+          cardsContainer?.classList.add('is-sticky');
         } else {
-          headerContent.style.minHeight = '';
+          // Hold min-height at saved value through the expand transition, then clear
+          headerContent.style.minHeight = savedCardHeight ? `${savedCardHeight}px` : '';
+          cardsContainer?.classList.remove('is-sticky');
+          const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
+          if (collapsible && savedCardHeight) {
+            collapsible.addEventListener('transitionend', () => {
+              headerContent.style.minHeight = '';
+            }, { once: true });
+          } else {
+            headerContent.style.minHeight = '';
+          }
         }
-        cardsContainer?.classList.toggle('is-sticky', isSticky);
       },
       { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
     );
