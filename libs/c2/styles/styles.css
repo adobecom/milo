@@ -729,6 +729,10 @@ p {
   letter-spacing: var(--s2a-typography-letter-spacing-caption);
 }
 
+.breadcrumbs {
+  display: none;
+}
+
 .spacing-none { padding-block: var(--s2a-viewport-vertical-padding-none); }
 .spacing-2xs  { padding-block: var(--s2a-viewport-vertical-padding-2xs); }
 .spacing-xs   { padding-block: var(--s2a-viewport-vertical-padding-xs); }
