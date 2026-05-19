@@ -38,6 +38,8 @@ merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"] .pric
   font-weight: 400;
 }
 
+merch-card[id] span[is='inline-price'],
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
 merch-card[variant="mini-compare-chart"] .card-heading [is="inline-price"][data-template="price"] {
   display: inline;
 }
@@ -56,13 +58,31 @@ merch-card[id] [slot='heading-m'] [is="inline-price"] .price.price-strikethrough
   color: #ff0000;
 }
 
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix:before {
+    white-space: pre;
+    content: "\A";
+}
+
+merch-card[variant^="plans"][id] [slot="heading-m"] p {
+  font-size: 24px;
+  line-height: 30px;
+}
+
+merch-card[variant^="plans"][id] [slot="heading-m"] p:has([data-template="strikethrough"]) {
+  font-size: 14px;
+}
+
+merch-card[variant^="plans"][id] [slot="heading-m"] span.price.price-annual:not(.price-strikethrough):not(.price-promo-strikethrough):not(.price-legal),
+merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-prefix,
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual,
 merch-card[id] [slot='heading-m'] [is="inline-price"] .price-annual-suffix {
+  font-size: 14px;
+  line-height: 1.5;
   position: relative;
   top: -3px;
 }
 
-merch-card [slot='heading-m'] [is="inline-price"] .price-annual::before {
+merch-card:not([id]) [slot='heading-m'] [is="inline-price"] .price-annual::before {
   content: '(';
 }
 
