@@ -869,7 +869,7 @@
 }
 
 .brand-concierge.floating-input .bc-input-field {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   max-width: 500px;
   min-width: 280px;
 }
@@ -905,7 +905,7 @@
 /* Prompt pills */
 .brand-concierge.floating-input .bc-prompt-cards {
   display: flex;
-  flex: 1;
+  flex: 0 1 auto;
   flex-wrap: nowrap;
   gap: 8px;
   overflow: hidden;
