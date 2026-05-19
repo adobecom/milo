@@ -527,6 +527,8 @@ function setupStickyHeader(el) {
 
   let stickyObserver;
   let savedCardHeight = 0;
+  let wasSticky = false;
+  let minHeightGen = 0;
   const setupObserver = () => {
     stickyObserver?.disconnect();
     stickyObserver = new IntersectionObserver(
@@ -537,20 +539,29 @@ function setupStickyHeader(el) {
           && !!entry.rootBounds
           && entry.boundingClientRect.bottom <= entry.rootBounds.top;
         if (isSticky) {
-          // Save full expanded height, then hold the grid row while cards collapse
-          savedCardHeight = cardsContainer?.offsetHeight ?? 0;
-          headerContent.style.minHeight = `${savedCardHeight}px`;
+          // Only capture height when first entering sticky — cards are collapsed on resize
+          // so reading offsetHeight then would give the wrong (collapsed) value
+          if (!wasSticky) {
+            minHeightGen += 1; // invalidate any pending transitionend listeners
+            savedCardHeight = cardsContainer?.offsetHeight ?? 0;
+            headerContent.style.minHeight = `${savedCardHeight}px`;
+          }
+          wasSticky = true;
           cardsContainer?.classList.add('is-sticky');
         } else {
-          // Hold min-height at saved value through the expand transition, then clear
-          headerContent.style.minHeight = savedCardHeight ? `${savedCardHeight}px` : '';
+          const transitioningOut = wasSticky;
+          wasSticky = false;
           cardsContainer?.classList.remove('is-sticky');
-          const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
-          if (collapsible && savedCardHeight) {
-            collapsible.addEventListener('transitionend', () => {
-              headerContent.style.minHeight = '';
+          if (transitioningOut && savedCardHeight) {
+            // Hold min-height through the expand transition so the grid row stays stable
+            headerContent.style.minHeight = `${savedCardHeight}px`;
+            const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
+            const gen = minHeightGen;
+            collapsible?.addEventListener('transitionend', () => {
+              if (gen === minHeightGen) headerContent.style.minHeight = '';
             }, { once: true });
           } else {
+            // Not actually transitioning (e.g. resize while not sticky) — clear immediately
             headerContent.style.minHeight = '';
           }
         }
