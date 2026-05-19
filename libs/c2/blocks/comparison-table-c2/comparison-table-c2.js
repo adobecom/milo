@@ -583,23 +583,23 @@ function setupStickyHeader(el) {
     observer.observe(sentinel);
   };
 
-  const watchNav = (nav) => {
-    new ResizeObserver(() => { syncTop(); observe(); }).observe(nav);
-    syncTop();
-    observe();
-  };
+  syncTop();
+  observe();
+
+  const watchNavResize = (nav) => new ResizeObserver(() => { syncTop(); observe(); }).observe(nav);
 
   const nav = document.querySelector('header > nav');
-  if (nav) { watchNav(nav); return; }
+  if (nav) { watchNavResize(nav); return; }
 
-  observe();
   const header = document.querySelector('header');
   if (!header) return;
   const mo = new MutationObserver(() => {
     const newNav = document.querySelector('header > nav');
     if (!newNav) return;
     mo.disconnect();
-    watchNav(newNav);
+    syncTop();
+    observe();
+    watchNavResize(newNav);
   });
   mo.observe(header, { childList: true });
 }
