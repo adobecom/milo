@@ -16,10 +16,12 @@ describe('RequestHandler', () => {
     fetchStub.restore();
   });
 
-  it('should return 401 status for unauthorized access', async () => {
+  it('should return 401 Response for unauthorized access', async () => {
     fetchStub.resolves(new Response(null, { status: 401 }));
     const response = await requestHandler.daFetch('https://main--da-hello--sukamat.aem.page/file1');
-    expect(response).to.equal(401);
+    expect(response).to.be.instanceOf(Response);
+    expect(response.status).to.equal(401);
+    expect(response.ok).to.be.false;
   });
 
   it('should return response for authorized access', async () => {

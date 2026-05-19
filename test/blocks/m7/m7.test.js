@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import init, { generateM7Link } from '../../../libs/blocks/m7/m7.js';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, getCountry } from '../../../libs/utils/utils.js';
 
 describe('m7business autoblock', () => {
   before(async () => {
@@ -48,6 +48,26 @@ describe('m7business autoblock', () => {
     await init(a);
     expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual&ms=EDU');
     window.adobeIMS = buIms;
+  });
+
+  it('Converts education plans link to M7 link with akamai locale', async () => {
+    const originalSearch = window.location.search;
+    window.history.replaceState({}, null, `${window.location.pathname}?mas-geo-detection=on`);
+    const akamaiCountry = await getCountry();
+    const country = akamaiCountry?.toUpperCase() || 'US';
+
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
+    const buIms = window.adobeIMS;
+    window.adobeIMS = { initialized: true, getProfile: () => {}, isSignedInUser: () => false };
+    const a = document.createElement('a');
+    a.setAttribute('href', 'https://www.adobe.com/creativecloud/education-plans.html');
+    await init(a);
+    expect(a.href).to.equal(`https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=${country}&pa=ccsn_direct_individual&ms=EDU`);
+    window.adobeIMS = buIms;
+    window.history.replaceState({}, null, `${window.location.pathname}${originalSearch}`);
   });
 
   it('Handles the errors gracefully', async () => {
