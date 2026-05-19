@@ -15,14 +15,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    .body-md {
-      color: var(--s2a-color-content-title);
-      font-family: var(--heading-font-family);
-      font-size: var(--s2a-typography-font-size-title-4);
-      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-      letter-spacing: var(--s2a-font-letter-spacing-4xl);
-      line-height: var(--s2a-typography-line-height-title-4);
-      margin: 0;
+    .title-4 {
       max-width: 400px;
     }
   }
@@ -38,16 +31,6 @@
       inline-size: 50px;
       object-fit: contain;
     }
-
-    .title-2 {
-      color: var(--s2a-color-content-title);
-      font-family: var(--heading-font-family);
-      font-size: var(--s2a-typography-font-size-super);
-      font-weight: var(--s2a-font-weight-adobe-clean-display-black);
-      letter-spacing: var(--s2a-typography-letter-spacing-super);
-      line-height: var(--s2a-typography-line-height-super);
-      margin: 0;
-    }
   }
 
   .pm-promo-area {
@@ -60,8 +43,8 @@
     border-radius: var(--s2a-border-radius-md);
     display: flex;
     gap: var(--s2a-spacing-md);
-    padding-block: var(--s2a-spacing-12);
-    padding-inline: var(--s2a-spacing-20) var(--s2a-spacing-12);
+    padding-block: var(--s2a-spacing-sm);
+    padding-inline: var(--s2a-spacing-lg) var(--s2a-spacing-sm);
     text-decoration: none;
 
     .pm-promo-text {
@@ -103,7 +86,7 @@
     .pm-foreground {
       flex: 1;
 
-      .body-md {
+      .title-4 {
         max-width: min(476px, 80%);
       }
     }
