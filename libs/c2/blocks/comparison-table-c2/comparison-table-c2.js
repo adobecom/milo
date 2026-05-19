@@ -121,7 +121,7 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
     if (!isFirstVisible || !parent) return;
     const firstHeaderItem = parent.querySelector('.header-item:first-child');
     if (col.classList.contains('header-item') && firstHeaderItem !== col) {
-      parent.insertBefore(col, firstHeaderItem.nextSibling);
+      parent.prepend(col);
       return;
     }
     const rowHeader = parent.querySelector('.table-row-header');
@@ -137,12 +137,11 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
 function createMobileFilterSelect({ headerTitles, headerItemIndex, el }) {
   const select = createTag('select', { class: 'mobile-filter-select', name: 'column-filter' });
   headerTitles.forEach((title, index) => {
-    const columnIndex = index + 1;
     if (!title
-      || (headerItemIndex === 2 && columnIndex === 3)
-      || (headerItemIndex === 3 && columnIndex === 2)) return;
-    const option = createTag('option', { value: columnIndex }, title);
-    if (columnIndex === headerItemIndex) option.selected = true;
+      || (headerItemIndex === 1 && index === 2)
+      || (headerItemIndex === 2 && index === 1)) return;
+    const option = createTag('option', { value: index }, title);
+    if (index === headerItemIndex) option.selected = true;
     select.appendChild(option);
   });
   select.addEventListener('change', (e) => handleSelectChange(e, { headerItemIndex, el, headerTitles }));
@@ -264,7 +263,7 @@ function decorateHeader(el, headerContent) {
     decorateHeaderItem({
       headerItem,
       headerTitles,
-      headerItemIndex: headerItemIndex + 1,
+      headerItemIndex,
       el,
       headerItemsCount: headerItems.length,
     });
@@ -446,8 +445,7 @@ function setupResponsiveHiding(el) {
     const arr = [...elements];
     if (arr.length <= 2) return;
     arr.forEach((element, index) => {
-      const isEdge = index === 0 || index === arr.length - 1;
-      element.classList.toggle('hidden', isMobile && !isEdge);
+      element.classList.toggle('hidden', isMobile && index >= 2);
     });
   };
 
