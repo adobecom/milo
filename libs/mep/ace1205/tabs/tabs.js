@@ -414,10 +414,10 @@ const init = async (block) => {
   // Tab Paddles
   const paddleLeft = createTag('button', { class: 'paddle paddle-left', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to left' }, PADDLE);
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
-  // if (!block.classList.contains('segmented-control')) {
-  //   tabList.insertAdjacentElement('afterend', paddleRight);
-  //   block.prepend(paddleLeft);
-  // }
+  if (!block.classList.contains('segmented-control')) {
+    tabList.insertAdjacentElement('afterend', paddleRight);
+    block.prepend(paddleLeft);
+  }
   initPaddles(tabList, paddleLeft, paddleRight);
 
   // Tab Sections

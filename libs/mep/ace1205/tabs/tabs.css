@@ -28,7 +28,7 @@
   --tabs-pill-text-focus-color: var(--s2a-color-gray-25);
   --tabs-pill-text-color: var(--s2a-color-gray-700);
   --tabs-pill-text-selected-color: var(--s2a-color-gray-25);
-  --tabs-paddle-bs-color: #0000001a; /* check- #0000001a ≈ 10%; nearest s2a: --s2a-color-transparent-black-08 (8%) or --s2a-color-transparent-black-12 (12%) */
+  --tabs-paddle-bs-color: var(--s2a-color-transparent-black-08); /* check- #0000001a ≈ 10%; nearest s2a: --s2a-color-transparent-black-08 (8%) or --s2a-color-transparent-black-12 (12%) */
   --m-rounded-corners-tabs: var(--s2a-border-radius-lg);
 }
 
@@ -55,7 +55,7 @@
   --tabs-pill-text-focus-color: var(--s2a-color-gray-25);
   --tabs-mobile-stacked-bg-color: var(--s2a-color-gray-25);
   --tabs-mobile-stacked-text-color: var(--s2a-color-gray-900);
-  --tabs-paddle-bs-color: #ffffff1a; /* check- #ffffff1a ≈ 10%; nearest s2a: --s2a-color-transparent-white-08 (8%) or --s2a-color-transparent-white-12 (12%) */
+  --tabs-paddle-bs-color: var(--s2a-color-transparent-white-08); /* check- #ffffff1a ≈ 10%; nearest s2a: --s2a-color-transparent-white-08 (8%) or --s2a-color-transparent-white-12 (12%) */
 }
 
 .tabs {
@@ -110,7 +110,7 @@
   position: relative;
   display: flex;
   z-index: 2;
-  margin: 0 var(--spacing-m); /* check- --spacing-m is not an s2a token; s2a equivalent is --s2a-spacing-md (16px) */
+  margin: 0 var(--s2a-spacing-md); /* check- --spacing-m is not an s2a token; s2a equivalent is --s2a-spacing-md (16px) */
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
   overflow-y: hidden;
@@ -142,7 +142,7 @@
   display: flex;
   width: auto;
   min-width: 300px; /* check- no s2a token for 300px */
-  margin: var(--spacing-xxs) auto; /* check- --spacing-xxs is not an s2a token; s2a has --s2a-spacing-4 (4px) */
+  margin: var(--s2a-spacing-2xs) auto; /* check- --spacing-xxs is not an s2a token; s2a has --s2a-spacing-4 (4px) */
   box-sizing: content-box;
 }
 
@@ -207,7 +207,7 @@
   white-space: nowrap;
   width: auto;
   z-index: 1;
-  font-size: var(--type-body-xs-size); /* check- --type-body-xs-size is not an s2a token; s2a equivalent is --s2a-typography-font-size-body-xs */
+  font-size: var(--s2a-typography-font-size-body-xs); /* check- changed to new value */
   flex: 1 0 auto;
 }
 
@@ -247,7 +247,7 @@
 }
 
 .tabs .tabList button:focus-visible {
-  outline: var(--s2a-border-width-md) solid #4145ca; /* check- #4145ca has no s2a match; --s2a-color-focus-ring-default is #3b63fb */
+  outline: var(--s2a-color-focus-ring-default) solid #4145ca; /* check- #4145ca has no s2a match; --s2a-color-focus-ring-default is #3b63fb */
 }
 
 .tabs .tabList button[aria-selected="true"],
@@ -258,20 +258,20 @@
 
 .tabs .tabList button.l-button {
   font-size: var(--s2a-font-size-md);
-  line-height: 20.8px; /* check- no s2a line-height token for 20.8px; nearest are --s2a-font-line-height-18 (18px) and --s2a-font-line-height-20 (20px) */
+  line-height: var(--s2a-font-line-height-sm); /* check- no s2a line-height token for 20.8px; nearest are --s2a-font-line-height-18 (18px) and --s2a-font-line-height-20 (20px) */
   height: var(--s2a-spacing-40);
 }
 
 .tabs .tabList button.m-button {
   font-size: var(--s2a-font-size-sm);
-  line-height: 18.2px; /* check- no s2a line-height token for 18.2px; nearest is --s2a-font-line-height-18 (18px) */
+  line-height: var(--s2a-font-line-height-xs); /* check- no s2a line-height token for 18.2px; nearest is --s2a-font-line-height-18 (18px) */
   height: var(--s2a-spacing-32);
 }
 
 .tabs .tabList button.s-button {
   font-size: var(--s2a-font-size-xs);
   line-height: 15.6px; /* check- no s2a line-height token for 15.6px; nearest is --s2a-font-line-height-16 (16px) */
-  height: var(--s2a-spacing-24);
+  height: var(--s2a-font-line-height-2xs);
 }
 
 /* Tabs: .quiet */
