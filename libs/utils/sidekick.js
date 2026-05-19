@@ -42,6 +42,16 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     loadScript(src);
   };
 
+  // forgePageCommenter — newer iteration of page-commenter on the
+  // page-commenter-poc Cloudflare Worker (D1-backed CRUD, IIFE reads identity
+  // from the AEM Sidekick profile). Distinct from forge-annotations above so
+  // both can coexist during the rollout.
+  const forgePageCommenterListener = () => {
+    if (document.getElementById('pc-toolbar')) return;
+    const src = window.forgeSources?.pageCommenter || 'https://page-commenter-poc.jingleh12345.workers.dev/page-commenter.js';
+    loadScript(src);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
@@ -50,6 +60,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
   sk.addEventListener('custom:forge-adjustments', forgeAdjustmentsListener);
   sk.addEventListener('custom:forge-annotations', forgeAnnotationsListener);
+  sk.addEventListener('custom:forge-page-commenter', forgePageCommenterListener);
 
   // Color code publish button
   stylePublish(sk);
