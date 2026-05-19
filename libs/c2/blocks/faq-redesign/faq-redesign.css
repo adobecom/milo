@@ -109,11 +109,11 @@
 
     .faq-media {
       display: none;
-      height: 320px;
+      height: 100px;
       overflow: visible;
       pointer-events: none;
       position: fixed;
-      width: 280px;
+      width: 100px;
       z-index: 100;
 
       &.is-visible {
@@ -136,10 +136,10 @@
       }
 
       /* Stacking rotations — first in DOM is bottom of the pile */
-      picture:nth-child(1) { transform: rotate(-5deg); }
+      /* picture:nth-child(1) { transform: rotate(-5deg); }
       picture:nth-child(2) { transform: rotate(3deg); }
       picture:nth-child(3) { transform: rotate(0deg); }
-      picture:only-child   { transform: none; }
+      picture:only-child   { transform: none; } */
     }
   }
 }
