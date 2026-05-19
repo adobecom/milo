@@ -52,9 +52,10 @@ function setEqualHeight(el) {
   };
 
   const configs = [
-    ['.header-content-wrapper', '.header-item', '.sub-header-item-container:not(:last-of-type)', '.sub-header-item-container'],
+    ['.header-cards-container', '.header-item-card', '.sub-header-item-container:not(:last-of-type)', '.header-cards-container'],
     ['.table-row', '.table-cell', 'div', '.table-row'],
-    ['.header-content-wrapper', '.header-item', '.description', '.header-item'],
+    ['.header-cards-container', '.header-item-card', '.description', '.header-cards-container'],
+    ['.header-cards-container', '.header-item-card', 'h1, h2, h3, h4, h5, h6', '.header-cards-container'],
   ];
 
   const observers = configs.map(([parent, child, target, observeSelector]) => setupHeightHandler(
