@@ -884,6 +884,11 @@ img:hover ~ .asset-meta,
   padding: 2px 10px;
 }
 
+.preflight h3 {
+  margin: 16px 0;
+  font-family: var(--body-font-family);
+}
+
 .dialog-modal#preflight table td h3 {
   font-size: 16px;
 }
