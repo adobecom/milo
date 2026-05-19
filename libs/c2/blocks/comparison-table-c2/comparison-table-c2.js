@@ -505,52 +505,48 @@ function setupStickyHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
-  // header element has height:0 on C2 pages; query the fixed <nav> child directly.
-  function getNavOffset() {
-    const navEl = document.querySelector('header > nav') || document.querySelector('header');
-    const pos = navEl ? getComputedStyle(navEl).position : '';
-    return ((pos === 'fixed' || pos === 'sticky')
-      ? Math.max(0, Math.round(navEl.getBoundingClientRect().bottom)) : 0)
-      + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
-  }
 
   const cardsContainer = el.querySelector('.header-cards-container');
-
-  const setTop = () => {
-    if (cardsContainer) cardsContainer.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
-  };
-
-  // 1px sentinel inside headerContent — stays in normal flow, out of the outer grid.
+  const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
   const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;' });
   headerContent.prepend(sentinel);
 
-  let stickyObserver;
-  let savedCardHeight = 0;
-  let wasSticky = false;
-  let minHeightGen = 0;
+  let observer;
   let isPastThreshold = false;
   let lastScrollY = window.scrollY;
+  let wasSticky = false;
+  let savedHeight = 0;
+  let heightGen = 0;
+
+  const getNavOffset = () => {
+    const nav = document.querySelector('header > nav') || document.querySelector('header');
+    const pos = nav ? getComputedStyle(nav).position : '';
+    const navBottom = (pos === 'fixed' || pos === 'sticky')
+      ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
+    return navBottom + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
+  };
+
+  const syncTop = () => cardsContainer?.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
 
   const applySticky = () => {
     if (!wasSticky) {
-      minHeightGen += 1;
-      savedCardHeight = cardsContainer?.offsetHeight ?? 0;
-      headerContent.style.minHeight = `${savedCardHeight}px`;
+      heightGen += 1;
+      savedHeight = cardsContainer?.offsetHeight ?? 0;
+      headerContent.style.minHeight = `${savedHeight}px`;
     }
     wasSticky = true;
     cardsContainer?.classList.add('is-sticky');
   };
 
   const removeSticky = () => {
-    const transitioningOut = wasSticky;
+    const wasTransitioning = wasSticky;
     wasSticky = false;
     cardsContainer?.classList.remove('is-sticky');
-    if (transitioningOut && savedCardHeight) {
-      headerContent.style.minHeight = `${savedCardHeight}px`;
-      const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
-      const gen = minHeightGen;
+    if (wasTransitioning && savedHeight) {
+      headerContent.style.minHeight = `${savedHeight}px`;
+      const gen = heightGen;
       collapsible?.addEventListener('transitionend', () => {
-        if (gen === minHeightGen) headerContent.style.minHeight = '';
+        if (gen === heightGen) headerContent.style.minHeight = '';
       }, { once: true });
     } else {
       headerContent.style.minHeight = '';
@@ -559,60 +555,53 @@ function setupStickyHeader(el) {
 
   window.addEventListener('scroll', () => {
     if (!isPastThreshold) return;
-    const currentY = window.scrollY;
-    if (currentY === lastScrollY) return;
-    const scrollingDown = currentY > lastScrollY;
-    lastScrollY = currentY;
-    if (scrollingDown && !wasSticky) applySticky();
-    else if (!scrollingDown && wasSticky) removeSticky();
+    const y = window.scrollY;
+    if (y === lastScrollY) return;
+    const goingDown = y > lastScrollY;
+    lastScrollY = y;
+    if (goingDown && !wasSticky) applySticky();
+    else if (!goingDown && wasSticky) removeSticky();
   }, { passive: true });
 
-  const setupObserver = () => {
-    stickyObserver?.disconnect();
-    stickyObserver = new IntersectionObserver(
-      ([entry]) => {
-        setTop();
-        const beyondThreshold = !entry.isIntersecting
-          && !!entry.rootBounds
-          && entry.boundingClientRect.bottom <= entry.rootBounds.top;
-        if (beyondThreshold) {
-          const wasAlreadyPast = isPastThreshold;
-          isPastThreshold = true;
-          lastScrollY = window.scrollY;
-          if (!wasAlreadyPast || wasSticky) applySticky();
-        } else {
-          isPastThreshold = false;
-          removeSticky();
-        }
-      },
-      { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` },
-    );
-    stickyObserver.observe(sentinel);
+  const observe = () => {
+    observer?.disconnect();
+    observer = new IntersectionObserver(([entry]) => {
+      syncTop();
+      const past = !entry.isIntersecting
+        && !!entry.rootBounds
+        && entry.boundingClientRect.bottom <= entry.rootBounds.top;
+      if (past) {
+        const alreadyPast = isPastThreshold;
+        isPastThreshold = true;
+        lastScrollY = window.scrollY;
+        if (!alreadyPast || wasSticky) applySticky();
+      } else {
+        isPastThreshold = false;
+        removeSticky();
+      }
+    }, { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` });
+    observer.observe(sentinel);
   };
 
-  const attachNav = (navEl) => {
-    new ResizeObserver(() => { setTop(); setupObserver(); }).observe(navEl);
-    setTop();
-    setupObserver();
+  const watchNav = (nav) => {
+    new ResizeObserver(() => { syncTop(); observe(); }).observe(nav);
+    syncTop();
+    observe();
   };
 
-  // Federal nav loads async — watch for <nav> being added to <header>
-  const existingNav = document.querySelector('header > nav');
-  if (existingNav) {
-    attachNav(existingNav);
-  } else {
-    const headerEl = document.querySelector('header');
-    setupObserver(); // initial observer with offset 0 until nav loads
-    if (headerEl) {
-      const mo = new MutationObserver(() => {
-        const navEl = document.querySelector('header > nav');
-        if (!navEl) return;
-        mo.disconnect();
-        attachNav(navEl);
-      });
-      mo.observe(headerEl, { childList: true });
-    }
-  }
+  const nav = document.querySelector('header > nav');
+  if (nav) { watchNav(nav); return; }
+
+  observe();
+  const header = document.querySelector('header');
+  if (!header) return;
+  const mo = new MutationObserver(() => {
+    const newNav = document.querySelector('header > nav');
+    if (!newNav) return;
+    mo.disconnect();
+    watchNav(newNav);
+  });
+  mo.observe(header, { childList: true });
 }
 
 function setupTooltipDefaults(el) {
