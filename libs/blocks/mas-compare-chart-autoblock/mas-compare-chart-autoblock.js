@@ -47,6 +47,7 @@ export async function createCompareChart(el, options) {
     ? paragraph
     : el;
 
+  compareChart.className = el.className;
   toReplace.replaceWith(compareChart);
   await checkReady(compareChart);
 }
