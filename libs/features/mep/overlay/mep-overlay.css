@@ -1,14 +1,23 @@
 :root {
-  --mep-primary-100: rgba(34, 136, 0, 1);
+  --mep-primary-100: rgb(34, 136, 0);
   --mep-primary-87: rgba(34, 136, 0, 0.87);
-  --mep-dark-44: rgba(44, 44, 44, 1);
-  --mep-white-100: rgba(255, 255, 255, 1);
+  --mep-primary-60: rgba(34, 136, 0, 0.60);
+
+  --mep-dark-34: rgb(34, 34, 34);
+  --mep-dark-44: rgb(44, 44, 44);
+
+  --mep-white-100: rgb(255, 255, 255);
+  --mep-white-87: rgba(255, 255, 255, 0.87);
+  --mep-white-60: rgba(255, 255, 255, 0.60);
+  --mep-white-12: rgba(255, 255, 255, 0.12);
+
   --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 }
 
+
 .mep-fab {
-  position: absolute;
+  position: fixed;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -22,7 +31,7 @@
 
 .mep-fab:hover {
   cursor: pointer;
-  background: var(--mep-primary-87);
+  background: var(--mep-primary-60);
   box-shadow: var(--mep-elevation-4);
 }
 
@@ -30,9 +39,71 @@
   background: var(--mep-dark-44);
 }
 
-.mep-overlay {
-  position: absolute;
+.mep-drawer {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+  max-width: 280px;
   left: 0;
-  height: 100%;
   color: var(--mep-white-100);
+  background: var(--mep-dark-34);
+  box-shadow: var(--mep-elevation-4);
 } 
+
+.mep-drawer .mep-header {
+  flex-shrink: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+  background: var(--mep-dark-44);
+  border-bottom: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-header svg {
+  fill: var(--mep-white-100);
+}
+
+.mep-drawer .mep-header svg:hover {
+  cursor: pointer;
+  fill: var(--mep-white-60);
+}
+
+.mep-drawer .mep-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  padding: 8px;
+}
+
+.mep-drawer .mep-body .mep-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border-radius: 8px;
+  background: var(--mep-dark-44);
+  border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-footer {
+  flex-shrink: 0;
+  display: flex;
+  padding: 16px;
+  background: var(--mep-dark-44);
+  border-top: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-footer .con-button {
+  flex: 1;
+  text-align: center;
+  color: var(--mep-white-100);
+  background: var(--mep-primary-100);
+  border-color: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-footer .con-button:hover {
+  background: var(--mep-primary-60);
+}
