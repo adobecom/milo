@@ -20,7 +20,7 @@ let taxonomyModule;
  * @param {number} date The date to format
  * @returns {string} The formatted date
  */
-function calculateExcelDate(date) {
+export function calculateExcelDate(date) {
   return new Date(Math.round((date - (1 + 25567 + 1)) * 86400 * 1000));
 }
 

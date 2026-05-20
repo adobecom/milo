@@ -255,4 +255,27 @@ describe('market.js — getValidatedMarket()', () => {
     const result = await getValidatedMarket();
     expect(result).to.equal('de');
   });
+
+  it('returns null for bot user agents so URL-prefix country is used', async () => {
+    const originalUserAgent = navigator.userAgent;
+    Object.defineProperty(navigator, 'userAgent', { value: 'Tokowaka-AI/1.0', writable: true });
+    const mockData = {
+      languages: {
+        data: [{
+          prefix: '',
+          langName: 'English',
+          defaultMarket: 'us',
+          supportedRegions: 'us,gb,de',
+        }],
+      },
+    };
+    setConfig({ marketsConfig: mockData, locale: { prefix: '' } });
+    sessionStorage.setItem('akamai', 'gb');
+    try {
+      const result = await getValidatedMarket();
+      expect(result).to.be.null;
+    } finally {
+      Object.defineProperty(navigator, 'userAgent', { value: originalUserAgent, writable: true });
+    }
+  });
 });
