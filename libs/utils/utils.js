@@ -125,6 +125,7 @@ const C2_BLOCKS = [
   'router-marquee',
   'section-metadata',
   'visually-hidden',
+  'product-marquee-grid',
 ];
 
 const AUTO_BLOCKS = [
