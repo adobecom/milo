@@ -23,6 +23,7 @@ const SYNTHETIC_BLOCKS = [
   'featured-card',
   'product-card',
   'links-card',
+  'promo-card-small',
 ];
 
 // eslint-disable-next-line import/prefer-default-export

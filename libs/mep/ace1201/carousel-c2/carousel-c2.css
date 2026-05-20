@@ -81,7 +81,7 @@
               animation-fill-mode: var(--carousel-animation-fill);
               animation-range: var(--carousel-text-animation-range);
 
-              :is([class*="title-"]) {
+              :is([class*="heading-"]) {
                 margin-bottom: 8px;
               }
 

@@ -115,9 +115,14 @@ describe('MMM', () => {
     const mepPopupBody = mmmPopup.querySelector('.mep-popup-body');
     expect(mepPopupBody).to.exist;
     const radios = mepPopupBody.querySelectorAll('select');
+    // 3 = Lingo region + 2 variant selects. M@S market select is gated on
+    // hasMasSurfaces() and this fixture has no M@S content.
     expect(radios.length).to.equal(3);
     const checkboxes = mepPopupBody.querySelectorAll('input[type="checkbox"]');
-    expect(checkboxes.length).to.equal(3);
+    // 5 = mepHighlight + mepFragments + mepCaasHighlight + mepMasHighlight +
+    // mepPreviewButton. mepMasMarketCheckbox is gated on (hasMas && lingoOk);
+    // showManifestsCheckbox is gated on !isMmm.
+    expect(checkboxes.length).to.equal(5);
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
@@ -154,6 +159,19 @@ describe('MMM', () => {
     const event = new Event('change');
     newManifest.dispatchEvent(event);
     expect(previewButton.href).to.include('%2Fadded-manifest.json');
+  });
+
+  it('does not crash and preserves loading state when fetchData returns null', async () => {
+    const [,, thirdButton] = document.body.querySelectorAll('dt button');
+    const thirdDd = document.body.querySelectorAll('dd')[2];
+    expect(thirdDd.querySelector('.loading')).to.exist;
+
+    window.fetch = stub().returns(Promise.resolve({ ok: false }));
+    thirdButton.click();
+    await delay(50);
+
+    expect(thirdDd.classList.contains('placeholder-resolved')).to.be.false;
+    expect(thirdDd.querySelector('.loading')).to.exist;
   });
 
   it('Test filters', async () => {

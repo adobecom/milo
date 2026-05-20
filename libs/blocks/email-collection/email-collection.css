@@ -2,6 +2,9 @@
   --form-error-color: #D7373F;
   --form-padding: 56px;
   --focus-outline-margin: 5px;
+  --phone-country-code-gap: 6px;
+  --phone-country-code-icon: 20px;
+  --form-input-padding: 12px;
 }
 
 .email-collection .foreground {
@@ -106,6 +109,10 @@
   margin-bottom: 16px;
 }
 
+.email-collection .heading-l:has(+ form) {
+  margin-bottom: 12px;
+}
+
 .email-collection form {
   display: flex;
   flex-direction: column;
@@ -148,7 +155,7 @@
   border: 2px #DADADA solid;
   border-radius: 8px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 var(--form-input-padding);
 }
 
 .email-collection .select-wrapper {
@@ -180,6 +187,39 @@
   width: 20px;
   height: 20px;
   pointer-events: none;
+}
+
+.email-collection .phone-container {
+  display: flex;
+  gap: 16px;
+}
+
+.email-collection .phone-container .input-container:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.email-collection .phone-container .phone-country-code-container {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.email-collection .phone-container .phone-country-code-container input {
+  max-width: var(--phone-country-ch-size);
+  min-width: calc(4ch + var(--phone-country-code-icon) + var(--phone-country-code-gap) + 2 * var(--form-input-padding));
+  margin-bottom: 0;
+  padding-left: 50%;
+}
+
+.email-collection .phone-container .phone-country-code-container .phone-country-icon {
+  width: var(--phone-country-code-icon);
+  height: var(--phone-country-code-icon);
+  object-fit: contain;
+  position: absolute;
+  left: calc(50% - var(--phone-country-code-gap));
+  top: 50%;
+  transform: translate(-100%, -50%);
+  z-index: 1;
 }
 
 .email-collection .split-row,
@@ -232,6 +272,10 @@
 
   .email-collection.no-image {
     max-width: 700px;
+  }
+
+  .email-collection.no-image.small-width {
+    max-width: 500px;
   }
 }
 
