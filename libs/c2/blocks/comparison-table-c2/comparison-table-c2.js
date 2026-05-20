@@ -18,8 +18,12 @@ function setEqualHeight(el) {
   }));
 
   const setupHeightHandler = (handler, parentSelector) => {
+    let timer;
     const resizeObserver = new ResizeObserver((entries) => {
-      if (entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) handler();
+      if (!entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) return;
+      if (el.querySelector('.header-cards-container.is-sticky')) return;
+      clearTimeout(timer);
+      timer = setTimeout(handler, 350);
     });
     el.querySelectorAll(parentSelector).forEach((element) => resizeObserver.observe(element));
     return resizeObserver;
@@ -510,7 +514,6 @@ function setupStickyHeader(el) {
   if (!headerContent) return;
 
   const cardsContainer = el.querySelector('.header-cards-container');
-  const collapsible = cardsContainer?.querySelector('.header-item-collapsible');
   const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;' });
   headerContent.prepend(sentinel);
 
@@ -518,8 +521,6 @@ function setupStickyHeader(el) {
   let isPastThreshold = false;
   let lastScrollY = window.scrollY;
   let wasSticky = false;
-  let savedHeight = 0;
-  let heightGen = 0;
 
   const getNavOffset = () => {
     const nav = document.querySelector('header > nav') || document.querySelector('header');
@@ -531,11 +532,27 @@ function setupStickyHeader(el) {
 
   const syncTop = () => cardsContainer?.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
 
+  // minHeight is set once (and on resize) to lock the placeholder height.
+  // It is never cleared during scroll — only updated when not sticky.
+  const updateMinHeight = () => {
+    if (wasSticky) return;
+    const h = cardsContainer?.offsetHeight ?? 0;
+    if (h > 0) headerContent.style.minHeight = `${h}px`;
+  };
+
+  let rDebounce;
+  if (cardsContainer) {
+    // 350ms debounce outlasts the 300ms collapse/expand transition
+    new ResizeObserver(() => {
+      clearTimeout(rDebounce);
+      rDebounce = setTimeout(updateMinHeight, 350);
+    }).observe(cardsContainer);
+  }
+  window.addEventListener('resize', updateMinHeight, { passive: true });
+  requestAnimationFrame(updateMinHeight);
+
   const applySticky = () => {
     if (wasSticky) return;
-    heightGen += 1;
-    if (!savedHeight) savedHeight = cardsContainer?.offsetHeight ?? 0;
-    if (savedHeight) headerContent.style.minHeight = `${savedHeight}px`;
     wasSticky = true;
     cardsContainer?.classList.add('is-sticky');
   };
@@ -544,12 +561,6 @@ function setupStickyHeader(el) {
     if (!wasSticky) return;
     wasSticky = false;
     cardsContainer?.classList.remove('is-sticky');
-    if (!savedHeight) { headerContent.style.minHeight = ''; return; }
-    headerContent.style.minHeight = `${savedHeight}px`;
-    const gen = heightGen;
-    const clear = () => { if (gen === heightGen && !wasSticky) headerContent.style.minHeight = ''; };
-    collapsible?.addEventListener('transitionend', clear, { once: true });
-    setTimeout(clear, 500);
   };
 
   window.addEventListener('scroll', () => {
@@ -573,7 +584,7 @@ function setupStickyHeader(el) {
         const alreadyPast = isPastThreshold;
         isPastThreshold = true;
         lastScrollY = window.scrollY;
-        if (!alreadyPast || wasSticky) applySticky();
+        if (!alreadyPast) applySticky();
       } else {
         isPastThreshold = false;
         removeSticky();
