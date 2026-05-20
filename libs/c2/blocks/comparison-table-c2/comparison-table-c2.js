@@ -548,7 +548,6 @@ function setupStickyHeader(el) {
       rDebounce = setTimeout(updateMinHeight, 350);
     }).observe(cardsContainer);
   }
-  window.addEventListener('resize', updateMinHeight, { passive: true });
   requestAnimationFrame(updateMinHeight);
 
   const applySticky = () => {
