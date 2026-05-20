@@ -835,11 +835,11 @@
    floating-input variant
    ============================================================================= */
 .brand-concierge.floating-input {
-  --bc-fi-bar-bg: rgba(248 248 248 / 85%);
+  --bc-fi-bar-bg: rgba(248 248 248 / 65%);
   --bc-fi-bar-border: rgba(0 0 0 / 12%);
   --bc-fi-input-bg: rgba(255 255 255 / 85%);
   --bc-fi-pill-bg: rgba(255 255 255 / 94%);
-  --bc-fi-pill-border: rgba(0 0 0 / 12%);
+  --bc-fi-pill-border: #8F8F8F;
   --bc-fi-text: #292929;
   --bc-fi-pill-text: #292929;
 
@@ -890,7 +890,7 @@
   backdrop-filter: none;
   background:
     linear-gradient(var(--bc-fi-input-bg), var(--bc-fi-input-bg)) padding-box,
-    linear-gradient(135deg, #D73220, #D92361, #7155FA) border-box;
+    linear-gradient(135deg, #7155FA, #D92361, #D73220) border-box;
   border: 2px solid transparent;
 }
 
@@ -900,6 +900,17 @@
   max-height: 48px;
   min-height: 48px;
   padding: 12px 0;
+}
+
+/* Center label icon and submit button in the fixed-height input */
+.brand-concierge.floating-input .bc-input-field-label {
+  align-self: center;
+  margin-top: 0;
+}
+
+.brand-concierge.floating-input .input-field-button {
+  align-self: center;
+  margin-bottom: 0;
 }
 
 /* Prompt pills */
@@ -964,7 +975,7 @@
 .brand-concierge.floating-input.dark .bc-input-field::before {
   background:
     linear-gradient(#111, #111) padding-box,
-    linear-gradient(135deg, #D73220, #D92361, #7155FA) border-box;
+    linear-gradient(135deg, #7155FA, #D92361, #D73220) border-box;
 }
 
 .brand-concierge.floating-input.dark .bc-input-field-container textarea::placeholder {
