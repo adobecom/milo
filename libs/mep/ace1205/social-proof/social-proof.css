@@ -129,3 +129,9 @@
     to   { transform: translate(0%, 0%); }
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .social-proof * {
+    animation: none !important;
+  }
+}
