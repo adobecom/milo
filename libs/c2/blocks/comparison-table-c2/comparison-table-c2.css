@@ -49,6 +49,7 @@
     max-width: var(--grid-max-width-wide);
     margin-inline: auto;
     box-sizing: border-box;
+    padding-bottom: var(--s2a-spacing-xs);
 
     &.is-sticky {
       align-items: stretch;
@@ -76,7 +77,6 @@
       grid-column: 2 / -1;
       grid-row: 1;
       grid-template-columns: repeat(var(--ct-card-count), 1fr);
-      gap: var(--s2a-spacing-md);
       align-self: start;
       position: sticky;
       top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
@@ -350,7 +350,7 @@
 
   .table-container {
     border: none;
-    border-bottom: var(--s2a-border-width-md) solid var(--s2a-color-gray-100);
+    border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
     background-color: transparent;
 
     .table-row .table-cell:nth-child(even) div {
@@ -363,6 +363,8 @@
   }
 
   .table-column-header {
+    border-bottom: var(--s2a-border-width-md) solid var(--s2a-color-transparent-black-16);
+
     button {
       width: 100%;
       min-height: 56px;
@@ -405,7 +407,7 @@
     padding: 0;
 
     &:not(:last-child) {
-      border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-gray-100);
+      border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
     }
 
     .table-cell:not(.hidden):not(:nth-child(2)) div {
