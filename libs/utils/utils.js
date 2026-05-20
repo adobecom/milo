@@ -1291,7 +1291,11 @@ function getBlockData(block) {
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
 
-  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock) return { name, isInvalid: true };
+  const PAGE_AGNOSTIC_BLOCKS = ['preflight'];
+  const isPageAgnostic = PAGE_AGNOSTIC_BLOCKS.includes(name);
+  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock && !isPageAgnostic) {
+    return { name, isInvalid: true };
+  }
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1313,7 +1317,7 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
+  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
   if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
