@@ -49,11 +49,6 @@
     .pm-promo-text {
       color: var(--s2a-color-content-knockout);
       flex: 1;
-      font-family: var(--body-font-family);
-      font-size: var(--s2a-typography-font-size-eyebrow);
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-      line-height: var(--s2a-typography-line-height-eyebrow);
       padding-inline-start: var(--s2a-spacing-2xs);
     }
 

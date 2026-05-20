@@ -32,7 +32,7 @@ function decorate(block) {
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   if (ctaLink) {
     promoArea.append(createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
-      createTag('span', { class: 'pm-promo-text' }, ctaLink.textContent.trim()),
+      createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
       createTag('span', { class: 'pm-promo-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
     ]));
   }
