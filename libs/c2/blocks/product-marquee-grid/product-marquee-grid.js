@@ -7,11 +7,8 @@ function decorate(block) {
   const col = block.children[0]?.children[0];
   if (!col) return;
 
-  const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
   const iconEl = col.querySelector('p img[src*=".svg"]');
-  if (iconEl && isSvgUrl(iconEl.src)) {
-    iconEl.src = getFederatedUrl(iconEl.src);
-  }
+  if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
   const ctaLink = col.querySelector('p:has(em a) em a, p:has(strong a) strong a');
   col.querySelector('p:has(em a), p:has(strong a)')?.remove();

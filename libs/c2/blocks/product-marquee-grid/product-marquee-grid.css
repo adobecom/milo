@@ -84,8 +84,6 @@
     }
 
     .pm-foreground {
-      flex: 1;
-
       .title-4 {
         max-width: min(476px, 80%);
       }
