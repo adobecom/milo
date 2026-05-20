@@ -1,0 +1,38 @@
+:root {
+  --mep-primary-100: rgba(34, 136, 0, 1);
+  --mep-primary-87: rgba(34, 136, 0, 0.87);
+  --mep-dark-44: rgba(44, 44, 44, 1);
+  --mep-white-100: rgba(255, 255, 255, 1);
+  --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
+  --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
+}
+
+.mep-fab {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 0;
+  padding: 8px 12px;
+  border-radius: 0 100% 100% 0;
+  color: var(--mep-white-100);
+  background: var(--mep-primary-100);
+  box-shadow: var(--mep-elevation-3);
+}
+
+.mep-fab:hover {
+  cursor: pointer;
+  background: var(--mep-primary-87);
+  box-shadow: var(--mep-elevation-4);
+}
+
+.mep-fab.disabled {
+  background: var(--mep-dark-44);
+}
+
+.mep-overlay {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  color: var(--mep-white-100);
+} 

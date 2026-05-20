@@ -1723,6 +1723,7 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+    if (config.mep?.preview) await import('../mep/overlay/mep-overlay.js');
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
