@@ -92,14 +92,25 @@ const TRUSTED_DOMAINS = ['.adobe.com'];
 const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
 
 export function isTrustedUrl(url) {
-  if (!url) return false;
-  if (url.startsWith('/') && !url.startsWith('//')) return true;
+  if (typeof url !== 'string' || !url) return false;
+  let parsed;
   try {
-    const { hostname, protocol } = new URL(url);
-    if (protocol !== 'https:') return false;
-    return TRUSTED_DOMAINS.some(
-      (domain) => hostname === domain.slice(1) || hostname.endsWith(domain),
-    ) || TRUSTED_AEM_PATTERN.test(hostname);
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
   } catch {
     return false;
   }
@@ -1462,7 +1473,13 @@ function parseManifestUrlAndAddSource(manifestString, source) {
   if (!manifestString) return [];
   return manifestString.toLowerCase()
     .split(/,|(\s+)|(\\n)/g)
-    .filter((path) => path?.trim())
+    .map((path) => path?.trim())
+    .filter((path) => {
+      if (!path) return false;
+      if (isTrustedUrl(path)) return true;
+      log(`Blocked untrusted ${source} manifest URL: ${path}`);
+      return false;
+    })
     .map((manifestPath) => ({ manifestPath, source: [source] }));
 }
 
@@ -1504,7 +1521,7 @@ export const combineMepSources = async (
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
-      if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) {
+      if (!isSameOriginManifestPath(manifestPath)) {
         log(`Blocked external mep manifest URL: ${manifestPath}`);
         return;
       }
