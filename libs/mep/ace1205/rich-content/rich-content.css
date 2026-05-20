@@ -210,7 +210,12 @@
     .foreground .content,
     .jump-links { padding-inline: var(--s2a-spacing-xl); }
 
-    .foreground .content { padding-block-start: var(--s2a-layout-md); }
+    .foreground .content {
+      padding-block-start: var(--s2a-layout-md);
+
+      .heading-2,
+      .eyebrow { max-width: 530px; }
+    }
 
     .jump-links {
       flex-direction: row;
@@ -254,7 +259,12 @@
       .foreground .content,
       .jump-links { padding-inline: var(--s2a-spacing-2xl); }
 
-      .foreground .content { padding-block-start: 0; }
+      .foreground .content {
+        padding-block-start: 0;
+
+        .heading-2,
+        .eyebrow { max-width: 656px; }
+      }
 
       .jump-links { padding-block-end: var(--s2a-layout-sm); }
 
