@@ -4,7 +4,7 @@
 }
 
 .comparison-table-c2 {
-  font-family: var(--s2a-font-family-default);
+  font-family: var(--body-font-family);
   color: var(--s2a-color-gray-900);
   background-color: transparent;
   padding: var(--s2a-spacing-2xl) 0;
