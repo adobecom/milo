@@ -908,6 +908,72 @@ describe('getCountryAndLang', () => {
       partialLoadCount: 75,
     });
   });
+
+  describe('getConfig langFirst fix — uses Lingo mapping not Milo locale', () => {
+    // MWPW-191949: getConfig() must resolve country/lang via getLanguageFirstCountryAndLang
+    // (Lingo site-mapping lookup) not getCountryAndLang (Milo URL-prefix locale).
+    // The failure mode: Milo locale returns country='de', language='en' for /de/ pages
+    // which causes getLangFirstParam to return false (isPermittedLingoSiteLocale fails).
+    // The fix: Lingo lookup returns country='xx', language='de' which passes the check.
+    let metaLangFirst;
+    let ogFetch;
+    const lingoMapping = {
+      'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
+      'site-locales': {
+        data: [
+          { uniqueSiteId: 'hawks-site', baseSite: '/de', regionalSites: 'at,ch' },
+          { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'us,ca' },
+        ],
+      },
+    };
+
+    beforeEach(() => {
+      metaLangFirst = document.createElement('meta');
+      metaLangFirst.setAttribute('name', 'langfirst');
+      metaLangFirst.setAttribute('content', 'true');
+      document.head.appendChild(metaLangFirst);
+      ogFetch = window.fetch;
+      window.fetch = stub().callsFake((url) => {
+        const urlStr = typeof url === 'string' ? url : (url?.url ?? url?.href ?? '');
+        if (urlStr.includes('lingo-site-mapping.json')) {
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(lingoMapping) });
+        }
+        return ogFetch(url);
+      });
+      // Reset the module-level lingo mapping cache so our mock is used
+      initBulkPublisherLingoMapping();
+    });
+
+    afterEach(() => {
+      if (metaLangFirst?.parentNode) metaLangFirst.parentNode.removeChild(metaLangFirst);
+      if (ogFetch) window.fetch = ogFetch;
+    });
+
+    it('should include &langFirst=true in endpoint when on a Lingo site page', async () => {
+      setConfig({ pathname: '/de/page', locales: { '': { ietf: 'en-US' }, de: { ietf: 'de-DE' } } });
+      const lingoState = { ...defaultState, source: ['hawks'], langFirst: true };
+      const config = await getConfig(lingoState, strings);
+      expect(config.collection.endpoint).to.include('&langFirst=true');
+    });
+
+    it('should include &langFirst=false in endpoint when not a Lingo site locale', async () => {
+      // /jp/ is not in the hawks lingo mapping above → getLangFirstParam returns false
+      setConfig({ pathname: '/jp/page', locales: { '': { ietf: 'en-US' } } });
+      const lingoState = { ...defaultState, source: ['hawks'], langFirst: true };
+      const config = await getConfig(lingoState, strings);
+      expect(config.collection.endpoint).to.include('&langFirst=false');
+    });
+
+    it('news source: &langFirst=true regardless of Lingo mapping (MWPW-191949)', async () => {
+      // getIsLingoLocale short-circuits for origin='news' before touching the mapping,
+      // and the post-fix override (isLingoSite = 'true') still runs unconditionally.
+      // Neither the lingo mapping lookup nor the fix path should change this.
+      setConfig({ pathname: '/en/news/some-article', locales: { '': { ietf: 'en-US' } } });
+      const newsState = { ...defaultState, source: ['news'], langFirst: true };
+      const config = await getConfig(newsState, strings);
+      expect(config.collection.endpoint).to.include('&langFirst=true');
+    });
+  });
 });
 
 describe('getFloodgateCaasConfig', () => {
