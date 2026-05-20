@@ -43,8 +43,7 @@
     border-radius: var(--s2a-border-radius-md);
     display: flex;
     gap: var(--s2a-spacing-md);
-    padding-block: var(--s2a-spacing-sm);
-    padding-inline: var(--s2a-spacing-lg) var(--s2a-spacing-sm);
+    padding: var(--s2a-spacing-sm);
     text-decoration: none;
 
     .pm-promo-text {
@@ -55,6 +54,7 @@
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
       letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
       line-height: var(--s2a-typography-line-height-eyebrow);
+      padding-inline-start: var(--s2a-spacing-2xs);
     }
 
     .pm-promo-chevron {
