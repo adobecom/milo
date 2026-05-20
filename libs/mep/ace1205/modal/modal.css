@@ -130,12 +130,12 @@
   border: none;
   border-radius: var(--s2a-border-radius-sm, 8px);
   cursor: pointer;
-  height: 32px;
+  height: 48px;
   padding: 0;
   position: absolute;
   right: var(--s2a-spacing-md, 16px);
   top: var(--s2a-spacing-20, 20px);
-  width: 32px;
+  width: 48px;
   z-index: 1;
 }
 
