@@ -33,6 +33,19 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     await loadScript(scriptUrl);
   };
 
+  // Allow demos to override Forge script sources.
+  const forgeAdjustmentsListener = () => {
+    if (document.querySelector('[data-replay="host"]')) return;
+    const src = window.forgeSources?.adjustments || 'http://localhost:3001/overlay.js';
+    loadScript(src);
+  };
+
+  const forgeAnnotationsListener = () => {
+    if (document.getElementById('page-commenter-root')) return;
+    const src = window.forgeSources?.annotations || 'https://page-commenter.jingleh12345.workers.dev/page-commenter.js';
+    loadScript(src);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
@@ -44,6 +57,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // Auto-open annotations panel when ?pcThread= is in the URL (e.g. from a
   // Slack deep-link to a specific thread).
   if (new URLSearchParams(window.location.search).get('pcThread')) annotationsListener();
+  sk.addEventListener('custom:forge-adjustments', forgeAdjustmentsListener);
+  sk.addEventListener('custom:forge-annotations', forgeAnnotationsListener);
 
   // Color code publish button
   stylePublish(sk);
