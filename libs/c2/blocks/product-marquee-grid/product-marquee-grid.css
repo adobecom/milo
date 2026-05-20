@@ -15,7 +15,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    .title-4 {
+    .heading-4 {
       max-width: 400px;
     }
   }
@@ -79,7 +79,7 @@
     }
 
     .pm-foreground {
-      .title-4 {
+      .heading-4 {
         max-width: min(476px, 80%);
       }
     }
