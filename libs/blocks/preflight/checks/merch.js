@@ -1,4 +1,5 @@
 import { getConfig } from '../../../utils/utils.js';
+import { getMiloLocaleSettings } from '../../merch/merch.js';
 import { SEVERITY } from './constants.js';
 
 const API_BASE = 'https://www.adobe.com/mas/io/fragment';
@@ -18,7 +19,7 @@ export function findFragmentElements(area = document) {
 }
 
 export async function checkFragmentPublished(uuid, locale) {
-  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale });
+  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale, source: 'milo-preflight' });
   const url = `${API_BASE}?${params.toString()}`;
   try {
     const res = await fetch(url);
@@ -30,8 +31,7 @@ export async function checkFragmentPublished(uuid, locale) {
 
 function resolveLocale(locale) {
   if (locale) return locale;
-  const ietf = getConfig()?.locale?.ietf || 'en-US';
-  return ietf.replace('-', '_');
+  return getMiloLocaleSettings(getConfig()?.locale).locale;
 }
 
 export async function checkUnpublishedFragments({ area = document, locale } = {}) {

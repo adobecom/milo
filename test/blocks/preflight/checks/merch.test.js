@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { getConfig, updateConfig } from '../../../../libs/utils/utils.js';
 import {
   findFragmentElements,
   checkFragmentPublished,
@@ -32,6 +33,7 @@ function stubFetch() {
     return Promise.resolve({ status: 500 });
   });
 }
+
 
 describe('Preflight M@S Unpublished Fragments check', () => {
   let area;
@@ -100,5 +102,25 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(url).to.include('api_key=wcms-commerce-ims-ro-user-milo');
     expect(url).to.include('locale=en_US');
     expect(url).to.include(`id=${UUID_PUBLISHED}`);
+  });
+
+  it('appends source=milo-preflight query param', async () => {
+    await checkFragmentPublished(UUID_PUBLISHED, 'en_US');
+    const url = fetchStub.firstCall.args[0];
+    expect(url).to.include('source=milo-preflight');
+  });
+
+  it('resolves locale from getMiloLocaleSettings when no locale provided', async () => {
+    updateConfig({ ...getConfig(), locale: { prefix: '/de' } });
+    await checkUnpublishedFragments({ area });
+    const url = fetchStub.firstCall.args[0];
+    expect(url).to.include('locale=de_DE');
+  });
+
+  it('resolves es_PR for Puerto Rico prefix via getMiloLocaleSettings', async () => {
+    updateConfig({ ...getConfig(), locale: { prefix: '/pr' } });
+    await checkUnpublishedFragments({ area });
+    const url = fetchStub.firstCall.args[0];
+    expect(url).to.include('locale=es_PR');
   });
 });
