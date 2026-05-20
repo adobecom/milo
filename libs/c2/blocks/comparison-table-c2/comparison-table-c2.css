@@ -491,7 +491,6 @@
 
   .table-cell {
     padding: var(--s2a-spacing-md) 0;
-    min-height: var(--s2a-spacing-4xl);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -761,10 +760,6 @@
       > p:has(strong) {
         text-align: center;
       }
-    }
-
-    .table-row-header {
-      min-height: var(--s2a-spacing-4xl);
     }
 
     .header-item-card {
