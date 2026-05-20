@@ -13,7 +13,7 @@ function decorate(block) {
   const ctaLink = col.querySelector('p:has(em a) em a, p:has(strong a) strong a');
   col.querySelector('p:has(em a), p:has(strong a)')?.remove();
 
-  const heading = col.querySelector('h1, h2, h3, h4');
+  const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('title-super');
 
   const bodyEls = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
