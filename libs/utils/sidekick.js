@@ -27,12 +27,29 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  // Forge — AI design-edit overlay (Brad Johnson) + page-commenter (Jingle Huang).
+  // Sources resolve via window.forgeSources so demos can repoint at a tunnel /
+  // staging host without redeploying milo.
+  const forgeAdjustmentsListener = () => {
+    if (document.querySelector('[data-replay="host"]')) return;
+    const src = window.forgeSources?.adjustments || 'http://localhost:3001/overlay.js';
+    loadScript(src);
+  };
+
+  const forgeAnnotationsListener = () => {
+    if (document.getElementById('page-commenter-root')) return;
+    const src = window.forgeSources?.annotations || 'https://page-commenter.jingleh12345.workers.dev/page-commenter.js';
+    loadScript(src);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
+  sk.addEventListener('custom:forge-adjustments', forgeAdjustmentsListener);
+  sk.addEventListener('custom:forge-annotations', forgeAnnotationsListener);
 
   // Color code publish button
   stylePublish(sk);

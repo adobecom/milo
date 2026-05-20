@@ -88,6 +88,22 @@
     },
     {
       "containerId": "tools",
+      "title": "Adjustments",
+      "id": "forge-adjustments",
+      "environments": ["dev", "preview", "live"],
+      "event": "forge-adjustments",
+      "excludePaths": ["*.json"]
+    },
+    {
+      "containerId": "tools",
+      "title": "Annotations",
+      "id": "forge-annotations",
+      "environments": ["dev", "preview", "live"],
+      "event": "forge-annotations",
+      "excludePaths": ["*.json"]
+    },
+    {
+      "containerId": "tools",
       "id": "offerpreview",
       "title": "Offer preview",
       "environments": [ "edit" ],
