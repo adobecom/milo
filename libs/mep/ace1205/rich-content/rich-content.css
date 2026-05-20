@@ -62,7 +62,7 @@
       padding-block-start: var(--s2a-layout-sm);
       padding-inline: var(--s2a-spacing-lg);
 
-      .title-2,
+      .heading-2,
       .eyebrow {
         max-width: 656px;
       }
@@ -134,10 +134,10 @@
     }
 
     .jump-link-label {
-      font-family: var(--s2a-font-family-title);
+      font-family: var(--s2a-font-family-heading);
       font-size: var(--s2a-font-size-lg);
-      line-height: var(--s2a-typography-line-height-title-4);
-      font-weight: var(--s2a-font-weight-title);
+      line-height: var(--s2a-typography-line-height-heading-4);
+      font-weight: var(--s2a-font-weight-heading);
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
       white-space: nowrap;
     }
@@ -201,7 +201,7 @@
   }
 
   .section:has(.rich-content.jump-link.hero) {
-    height: 580px;
+    height: auto;
   }
 
   .rich-content.jump-link {
@@ -218,7 +218,7 @@
       align-items: center;
     }
 
-    .jump-link-label { font-size: var(--s2a-typography-font-size-title-4); }
+    .jump-link-label { font-size: var(--s2a-typography-font-size-heading-4); }
   }
 
   .section.bento .rich-content.grid-full-width {
@@ -230,10 +230,6 @@
 @media (width >= 1024px) {
   .section:has(.rich-content.hero) {
     height: 1040px;
-  }
-
-  .section:has(.rich-content.jump-link.hero) {
-    height: 814px;
   }
 
   .rich-content {
@@ -263,8 +259,8 @@
       .jump-links { padding-block-end: var(--s2a-layout-sm); }
 
       .jump-link-label {
-        font-size: var(--s2a-typography-font-size-title-5);
-        line-height: var(--s2a-typography-line-height-title-5);
+        font-size: var(--s2a-typography-font-size-heading-5);
+        line-height: var(--s2a-typography-line-height-heading-5);
       }
     }
   }
