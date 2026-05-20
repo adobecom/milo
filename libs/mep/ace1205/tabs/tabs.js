@@ -27,15 +27,6 @@ const scrollTabIntoView = (e, inline = 'center') => {
   if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline });
 };
 
-const scrollStackedMobile = (content) => {
-  if (!window.matchMedia('(max-width: 600px)').matches) return;
-  const rects = content.getBoundingClientRect();
-  const stickyTop = document.querySelector('.feds-localnav') ?? document.querySelector('.global-navigation, .gnav');
-  const navHeight = stickyTop?.scrollHeight || 0;
-  const topOffset = rects.top + window.scrollY - navHeight - 1;
-  window.scrollTo({ top: topOffset, behavior: 'smooth' });
-};
-
 export function getRedirectionUrl(linkedTabsList, targetId) {
   if (!targetId || !linkedTabsList[targetId] || window.location.pathname === linkedTabsList[targetId]) return '';
   const currentUrl = new URL(window.location.href);
@@ -113,7 +104,6 @@ function changeTabs(e, config) {
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent?.removeAttribute('hidden');
-  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
 }

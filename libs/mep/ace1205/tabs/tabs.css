@@ -1,7 +1,7 @@
 :root {
   /* Tab Colors */
-  --tabs-text-color: var(--s2a-color-transparent-black-64); 
   
+  /* --tabs-text-color: var(--s2a-color-transparent-black-64);  */
   --tabs-active-text-color: #2c2c2c; /* check- nearest s2a is --s2a-color-gray-800 (#292929) */
   --tabs-active-bg-color: var(--s2a-color-gray-25);
   --tabs-mobile-stacked-bg-color: #242424; /* check- nearest s2a is --s2a-color-gray-800 (#292929) */
@@ -13,7 +13,7 @@
   --tabs-pill-bg-color: transparent;
   --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
   --tabs-pill-bg-color-hover: transparent;
-  --tabs-pill-text-hover-color: var(--s2a-color-transparent-black-24);/* confirm color */
+  --tabs-pill-text-color-hover: var(--s2a-color-transparent-black-24);/* confirm color */
   --tabs-pill-bg-color-active: var(--s2a-color-background-knockout);
   --tabs-pill-text-selected-color: var(--s2a-color-content-knockout); 
   --tabs-pill-bg-focus: var(--s2a-color-gray-700);
