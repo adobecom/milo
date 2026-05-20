@@ -536,6 +536,10 @@ function setupStickyHeader(el) {
   // It is never cleared during scroll — only updated when not sticky.
   const updateMinHeight = () => {
     if (wasSticky) return;
+    if (window.matchMedia('(max-width: 899px)').matches) {
+      headerContent.style.minHeight = '';
+      return;
+    }
     const h = cardsContainer?.offsetHeight ?? 0;
     if (h > 0) headerContent.style.minHeight = `${h}px`;
   };

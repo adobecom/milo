@@ -21,7 +21,6 @@
     width: 100%;
     max-width: var(--grid-max-width-wide);
     margin-inline: auto;
-    padding-inline: max(var(--grid-margin-width), calc((100% - var(--grid-max-width-default)) / 2));
     box-sizing: border-box;
   }
 
@@ -50,10 +49,12 @@
     margin-inline: auto;
     box-sizing: border-box;
     padding-bottom: var(--s2a-spacing-xs);
+    position: sticky;
+    top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
+    z-index: 10;
 
     &.is-sticky {
       align-items: stretch;
-      background-color: var(--color-background);
 
       .header-item-card {
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
@@ -78,9 +79,9 @@
       grid-row: 1;
       grid-template-columns: repeat(var(--ct-card-count), 1fr);
       align-self: start;
-      position: sticky;
       top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
-      z-index: 10;
+      background-color: transparent;
+
     }
   }
 
