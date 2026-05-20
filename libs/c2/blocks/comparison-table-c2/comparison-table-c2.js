@@ -412,6 +412,9 @@ function decorateTable({ el, tableChildren, expandMetadata, tableIndex }) {
     tableElement.appendChild(decorateTableCells({ tableChild, arePrimaryColumns, el }));
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
+  arePrimaryColumns.forEach((isPrimary, colIndex) => {
+    if (isPrimary) el.querySelector(`.header-item-card[data-column-index="${colIndex}"]`)?.classList.add(COLUMN_TYPES.PRIMARY);
+  });
   tableContainer.appendChild(tableElement);
   return tableContainer;
 }

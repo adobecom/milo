@@ -126,7 +126,7 @@
     animation-timeline: --ct-table;
     animation-range: cover 75% cover 85%;
 
-    &:last-of-type {
+    &.primary {
       border: var(--s2a-border-width-lg) solid var(--s2a-color-gray-900);
     }
 
@@ -429,7 +429,6 @@
     font-weight: var(--s2a-font-weight-adobe-clean-bold);
     line-height: var(--s2a-typography-line-height-eyebrow);
     letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-    color: var(--s2a-color-content-eyebrow);
     padding: var(--s2a-spacing-md) 0;
     display: inline;
     margin-inline-end: var(--s2a-spacing-sm);
@@ -526,10 +525,6 @@
     svg {
       top: unset;
     }
-  }
-
-  .table-container .primary-cell .icon-checkmark path {
-    color: var(--s2a-color-green-900);
   }
 
   .icon-checkmark svg {
