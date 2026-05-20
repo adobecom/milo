@@ -77,7 +77,7 @@
       display: grid;
       grid-column: 2 / -1;
       grid-row: 1;
-      grid-template-columns: repeat(var(--ct-card-count), 1fr);
+      grid-template-columns: repeat(var(--ct-card-count), minmax(0, 1fr));
       align-self: start;
       top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
       background-color: transparent;
