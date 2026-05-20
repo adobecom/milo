@@ -976,9 +976,11 @@ p {
 
       &:hover {
         background-color: var(--s2a-color-transparent-white-12);
+        color: var(--s2a-color-gray-25);
       }
       &:active {
         background-color: var(--s2a-color-transparent-white-16);
+        color: var(--s2a-color-gray-25);
       }
     }
 
