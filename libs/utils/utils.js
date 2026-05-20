@@ -1,4 +1,7 @@
 /* eslint-disable no-console */
+const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
+export const isBot = () => BOT_REGEX.test(navigator.userAgent);
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -915,6 +918,8 @@ function setCountry() {
 }
 
 export async function getCountry(skipFallback = false) {
+  if (isBot()) return null;
+
   const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
   const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
   const country = akamaiLocale || sessionStorage.getItem('akamai');
@@ -948,6 +953,7 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
 }
 
 export async function resolveDetectedMarketCountry() {
+  if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
@@ -992,7 +998,7 @@ export async function getLingoRegion() {
   return regionKey ? regions[regionKey] : null;
 }
 
-export async function getMepLingoPrefix() {
+export async function getGeoLocalePrefix() {
   const region = await getLingoRegion();
   return region?.prefix ?? null;
 }
@@ -1074,7 +1080,7 @@ export async function localizeLinkAsync(
     const isFragment = effectiveHref.includes('/fragments/');
     if (isBasePage) {
       const isRegularFragment = isFragment && !isMepLingoLink;
-      prefix = (aTag && !isRegularFragment) ? await getMepLingoPrefix() : (locale?.prefix ?? '');
+      prefix = (aTag && !isRegularFragment) ? await getGeoLocalePrefix() : (locale?.prefix ?? '');
       base = locale?.prefix?.replace('/', '') ?? '';
     } else {
       const basePrefix = locale?.base === '' ? '' : `/${locale?.base}`;
@@ -1789,7 +1795,7 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-function getPlaceholderPaths(config) {
+export function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
   if (config.env.name !== 'prod'
@@ -2655,7 +2661,7 @@ function loadLingoIndexes(area = document) {
     loadQueryIndexes(config.locale.prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     return;
   }
-  getMepLingoPrefix().then((prefix) => {
+  getGeoLocalePrefix().then((prefix) => {
     if (prefix) {
       loadQueryIndexes(prefix, [...area.querySelectorAll('.section a')].map((a) => a.href).filter(Boolean));
     }

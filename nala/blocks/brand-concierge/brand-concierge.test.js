@@ -271,7 +271,12 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       await test.step('step-4: Verify floating button appears after scrolling past hero', async () => {
         await page.evaluate(() => {
           const el = document.querySelector('.brand-concierge.hero');
-          window.scrollTo(0, el.scrollHeight + 1);
+          window.scrollTo(0, el.scrollHeight + 100);
+          // Webkit doesn't always fire a `scroll` event for programmatic
+          // scrollTo in headless mode, so the BC scroll handler never runs.
+          // Dispatch one manually so the handler updates the floating-hidden
+          // class regardless of browser quirk.
+          window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForTimeout(1000);
         await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
@@ -355,6 +360,162 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       // Skipping a11y test: known color-contrast violation on bc-floating-input (MWPW-190449)
+    },
+  );
+
+  // Test 8: Brand Concierge modal open/close via floating button
+  test(
+    `[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[8].path}${miloLibs}`);
+
+      await test.step('step-1: Go to Brand Concierge floating button page', async () => {
+        await page.goto(`${baseURL}${features[8].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page).toHaveURL(`${baseURL}${features[8].path}${miloLibs}`);
+      });
+
+      await test.step('step-2: Verify modal is not present initially', async () => {
+        await expect(bc.modal).toHaveCount(0);
+      });
+
+      await test.step('step-3: Click floating button opens modal with mount + close button', async () => {
+        await expect(bc.floatingButton).toBeVisible();
+        await bc.floatingButtonContainer.click();
+
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalCloseButton).toBeVisible();
+      });
+
+      await test.step('step-4: Press Escape dismisses modal', async () => {
+        await page.keyboard.press('Escape');
+        await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+      });
+
+      await test.step('step-5: Floating button is still attached after modal close', async () => {
+        await expect(bc.floatingButton).toBeAttached();
+      });
+
+      await test.step('step-6: Re-open modal via click and close via close button', async () => {
+        await bc.floatingButtonContainer.click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await bc.modalCloseButton.click();
+        await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+      });
+    },
+  );
+
+  // Test 9: Brand Concierge web client pre-load
+  test(
+    `[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[9].path}${miloLibs}`);
+      const { data } = features[9];
+
+      await test.step('step-1: Go to Brand Concierge default page', async () => {
+        await page.goto(`${baseURL}${features[9].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+      });
+
+      await test.step('step-2: Verify BC block is initialized', async () => {
+        await expect(bc.block).toBeVisible();
+      });
+
+      await test.step('step-3: Verify web client main.js script is pre-loaded into the DOM', async () => {
+        // Script is injected as the final step of init(), before any modal opens.
+        await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
+
+        const scriptSrc = await bc.webClientScript.first().getAttribute('src');
+        expect(scriptSrc).toContain(data.scriptPattern);
+      });
+    },
+  );
+
+  // Test 10: Brand Concierge ?webclient=baseStage URL parameter
+  test(
+    `[Test Id - ${features[10].tcid}] ${features[10].name},${features[10].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[10].path}${miloLibs}`);
+      const { data } = features[10];
+
+      await test.step('step-1: Navigate with ?webclient=baseStage query', async () => {
+        await page.goto(`${baseURL}${features[10].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(bc.block).toBeVisible();
+      });
+
+      await test.step('step-2: Verify baseStage web agent script is loaded', async () => {
+        // baseStage uses experience-platform-brand-concierge-web-agent on experience-stage.adobe.net
+        await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
+
+        const scripts = await page.locator('script').evaluateAll(
+          (nodes) => nodes.map((n) => n.getAttribute('src')).filter(Boolean),
+        );
+        const matched = scripts.find((src) => src.includes(data.scriptPattern)
+          && src.includes(data.envPattern));
+        expect(matched, `Expected script src containing both "${data.scriptPattern}" and "${data.envPattern}"`).toBeTruthy();
+      });
+    },
+  );
+
+  // Test 11: Hero floating button has aria-hidden when initially hidden
+  test(
+    `[Test Id - ${features[11].tcid}] ${features[11].name},${features[11].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[11].path}${miloLibs}`);
+
+      await test.step('step-1: Go to Hero floating button page', async () => {
+        await page.goto(`${baseURL}${features[11].path}${miloLibs}`);
+        await page.waitForLoadState('networkidle');
+      });
+
+      await test.step('step-2: Verify floating button is in hidden state', async () => {
+        await expect(bc.floatingButtonHidden).toBeAttached({ timeout: 10000 });
+      });
+
+      await test.step('step-3: Verify floating button container has aria-hidden=true', async () => {
+        await expect(bc.floatingButtonContainer).toHaveAttribute('aria-hidden', 'true');
+      });
+
+      await test.step('step-4: After scrolling past hero, aria-hidden is removed', async () => {
+        await page.evaluate(() => {
+          const el = document.querySelector('.brand-concierge.hero');
+          if (el) window.scrollTo(0, el.scrollHeight + 1);
+        });
+        await page.waitForTimeout(1000);
+
+        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+        const ariaHidden = await bc.floatingButtonContainer.getAttribute('aria-hidden');
+        expect(ariaHidden).toBeNull();
+      });
+    },
+  );
+
+  // Test 12: Consent — block is hidden when C0002 cookie group is not granted
+  test(
+    `[Test Id - ${features[12].tcid}] ${features[12].name},${features[12].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[12].path}${miloLibs}`);
+
+      await test.step('step-1: Stub window.adobePrivacy before navigation (no C0002 consent)', async () => {
+        await page.addInitScript(() => {
+          // Provide a fake adobePrivacy that reports no C0002 consent.
+          Object.defineProperty(window, 'adobePrivacy', {
+            configurable: true,
+            value: { activeCookieGroups: () => ['C0001'] },
+          });
+        });
+      });
+
+      await test.step('step-2: Go to Brand Concierge page', async () => {
+        await page.goto(`${baseURL}${features[12].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+      });
+
+      await test.step('step-3: Verify block has hide-block class', async () => {
+        await expect(bc.block).toHaveClass(/hide-block/, { timeout: 10000 });
+      });
     },
   );
 });
