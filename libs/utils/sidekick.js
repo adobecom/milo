@@ -46,6 +46,14 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     loadScript(src);
   };
 
+  // Publish aggregates pending state from sibling Forge tools (data-forge-raw
+  // stashes from Adjustments, pa:* localStorage from Animator) and shows a
+  // review panel. The script toggles its own panel on repeat clicks.
+  const forgePublishListener = () => {
+    const src = window.forgeSources?.publish || 'http://localhost:3001/forge-publish.js';
+    loadScript(src);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
@@ -59,6 +67,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   if (new URLSearchParams(window.location.search).get('pcThread')) annotationsListener();
   sk.addEventListener('custom:forge-adjustments', forgeAdjustmentsListener);
   sk.addEventListener('custom:forge-annotations', forgeAnnotationsListener);
+  sk.addEventListener('custom:forge-publish', forgePublishListener);
 
   // Color code publish button
   stylePublish(sk);
