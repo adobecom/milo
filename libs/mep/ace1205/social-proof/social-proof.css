@@ -2,7 +2,6 @@
   overflow: clip;
   border-radius: var(--s2a-border-radius-24);
   container-type: inline-size;
-  --animation-curve: cubic-bezier(0.42, 0, 0, 1);
   --animation-timeline: --social-proof-view;
   --animation-range: entry 10% contain 60%;
   --animation-fill: both;
@@ -13,7 +12,7 @@
     --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
     view-timeline-name: --social-proof-view;
     view-timeline-axis: block;
-    animation: social-proof-stretch var(--animation-curve);
+    animation: social-proof-stretch var(--parallax-easing);
     animation-timeline: var(--animation-timeline);
     animation-range: var(--animation-range);
     animation-fill-mode: var(--animation-fill);
@@ -32,7 +31,7 @@
       gap: var(--s2a-spacing-md);
       padding-inline: var(--s2a-spacing-md);
       max-width: 460px;
-      animation: social-proof-content-enter var(--animation-curve);
+      animation: social-proof-content-enter var(--parallax-easing);
       animation-timeline: var(--animation-timeline);
       animation-range: var(--animation-range);
       animation-fill-mode: var(--animation-fill);
@@ -58,7 +57,7 @@
           object-fit: cover;
           width: 100%;
           height: 100%;
-          animation: social-proof-image-zoom var(--animation-curve);
+          animation: social-proof-image-zoom var(--parallax-easing);
           animation-timeline: var(--animation-timeline);
           animation-range: var(--animation-range);
           animation-fill-mode: var(--animation-fill);
