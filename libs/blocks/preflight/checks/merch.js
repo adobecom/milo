@@ -19,10 +19,10 @@ export function findFragmentElements(area = document) {
 }
 
 export async function checkFragmentPublished(uuid, locale) {
-  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale });
+  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale, source: 'milo-preflight' });
   const url = `${API_BASE}?${params.toString()}`;
   try {
-    const res = await fetch(url, { headers: { 'X-Request-Source': 'milo-preflight' } });
+    const res = await fetch(url);
     return { uuid, httpStatus: res.status, published: res.status === 200 };
   } catch {
     return { uuid, httpStatus: 0, published: false };

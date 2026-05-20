@@ -34,9 +34,6 @@ function stubFetch() {
   });
 }
 
-function getCalledHeaders(fetchStub, callIndex = 0) {
-  return fetchStub.getCall(callIndex)?.args[1]?.headers ?? {};
-}
 
 describe('Preflight M@S Unpublished Fragments check', () => {
   let area;
@@ -107,10 +104,10 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(url).to.include(`id=${UUID_PUBLISHED}`);
   });
 
-  it('sends X-Request-Source: milo-preflight header', async () => {
+  it('appends source=milo-preflight query param', async () => {
     await checkFragmentPublished(UUID_PUBLISHED, 'en_US');
-    const headers = getCalledHeaders(fetchStub);
-    expect(headers['X-Request-Source']).to.equal('milo-preflight');
+    const url = fetchStub.firstCall.args[0];
+    expect(url).to.include('source=milo-preflight');
   });
 
   it('resolves locale from getMiloLocaleSettings when no locale provided', async () => {
