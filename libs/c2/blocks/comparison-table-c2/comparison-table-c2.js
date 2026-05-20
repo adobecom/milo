@@ -534,7 +534,7 @@ function setupStickyHeader(el) {
   const applySticky = () => {
     if (!wasSticky) {
       heightGen += 1;
-      savedHeight = cardsContainer?.offsetHeight ?? 0;
+      if (!savedHeight) savedHeight = cardsContainer?.offsetHeight ?? 0;
       headerContent.style.minHeight = `${savedHeight}px`;
     }
     wasSticky = true;

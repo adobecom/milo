@@ -350,7 +350,6 @@
 
   .table-container {
     border: none;
-    border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
     background-color: transparent;
 
     .table-row .table-cell:nth-child(even) div {
@@ -405,10 +404,7 @@
     grid-template-columns: 1fr 1fr;
     gap: 0;
     padding: 0;
-
-    &:not(:last-child) {
-      border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
-    }
+    border-bottom: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
 
     .table-cell:not(.hidden):not(:nth-child(2)) div {
       background-color: transparent;
