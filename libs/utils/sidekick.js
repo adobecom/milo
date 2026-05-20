@@ -33,28 +33,13 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     await loadScript(scriptUrl);
   };
 
-  // Allow demos to override Forge script sources.
-  const forgeAdjustmentsListener = () => {
-    if (document.querySelector('[data-replay="host"]')) return;
-    const src = window.forgeSources?.adjustments || 'http://localhost:3001/overlay.js';
-    loadScript(src);
-  };
-
-  const forgeAnnotationsListener = () => {
-    if (document.getElementById('page-commenter-root')) return;
-    const src = window.forgeSources?.annotations || 'https://page-commenter.jingleh12345.workers.dev/page-commenter.js';
-    loadScript(src);
-  };
-
-  // Publish aggregates pending state from sibling Forge tools (data-forge-raw
-  // stashes from Adjustments, pa:* localStorage from Animator) and shows a
-  // review panel. The script toggles its own panel on repeat clicks.
-  const forgePublishListener = () => {
-    const src = window.forgeSources?.publish || 'http://localhost:3001/forge-publish.js';
-    loadScript(src);
-  };
-
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
+
+  let forgeModule;
+  const onForge = async (e) => {
+    forgeModule ??= (await import('./forge-sidekick.js')).default;
+    forgeModule(e.type, { loadScript });
+  };
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
@@ -65,9 +50,9 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   // Auto-open annotations panel when ?pcThread= is in the URL (e.g. from a
   // Slack deep-link to a specific thread).
   if (new URLSearchParams(window.location.search).get('pcThread')) annotationsListener();
-  sk.addEventListener('custom:forge-adjustments', forgeAdjustmentsListener);
-  sk.addEventListener('custom:forge-annotations', forgeAnnotationsListener);
-  sk.addEventListener('custom:forge-publish', forgePublishListener);
+  ['forge-adjustments', 'forge-annotations', 'forge-animator', 'forge-publish'].forEach((id) => {
+    sk.addEventListener(`custom:${id}`, onForge);
+  });
 
   // Color code publish button
   stylePublish(sk);
