@@ -126,9 +126,9 @@
 }
 
 .dialog-modal button.dialog-close {
-  background: rgb(0 0 0 / 5%) !important;
-  border: none !important;
-  border-radius: var(--s2a-border-radius-sm, 8px) !important;
+  background: #f2f2f2 !important;
+  border: 1px solid rgb(0 0 0 / 10%) !important;
+  border-radius: 6px !important;
   cursor: pointer !important;
   height: 48px !important;
   padding: 0 !important;

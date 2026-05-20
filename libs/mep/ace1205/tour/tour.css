@@ -36,7 +36,16 @@
   padding-inline-start: var(--s2a-spacing-md);
 }
 
-.tour-title p,
+.tour-title .eyebrow {
+  color: var(--s2a-color-content-eyebrow);
+  font-family: var(--body-font-family);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  font-weight: normal;
+  line-height: var(--s2a-typography-line-height-body-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+  margin: 0;
+}
+
 .tour-title h1,
 .tour-title h2,
 .tour-title h3,
