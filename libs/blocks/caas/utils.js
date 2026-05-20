@@ -296,9 +296,12 @@ export const loadCaasFiles = async () => {
 export const loadCaasTags = async (tagsUrl) => {
   let errorMsg = '';
   if (tagsUrl) {
-    const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
+    const urlObj = new URL(tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`);
+    if (urlObj.hostname !== window.location.hostname && !urlObj.searchParams.has('s')) {
+      urlObj.searchParams.set('s', window.location.host);
+    }
     try {
-      const resp = await fetchWithTimeout(url);
+      const resp = await fetchWithTimeout(urlObj.toString());
       if (resp.ok) {
         const json = await resp.json();
         return {
