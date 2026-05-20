@@ -925,6 +925,8 @@ span.hang-opening-quote {
 
 [dir="rtl"] span.hang-opening-quote {
   transform: translateX(100%);
+}
+
 /* Needed for garage door JS animation in browsers without animation-timeline support */
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;

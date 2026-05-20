@@ -1,7 +1,23 @@
 .social-proof {
+  overflow: clip;
   border-radius: var(--s2a-border-radius-24);
+  container-type: inline-size;
+  --animation-curve: cubic-bezier(0.42, 0, 0, 1);
+  --animation-timeline: --social-proof-view;
+  --animation-range: entry 10% contain 60%;
+  --animation-fill: both;
 
   > div {
+    --stretch-target: 100cqi;
+    --stretch-peak: min(2560px, 100vw);
+    --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
+    view-timeline-name: --social-proof-view;
+    view-timeline-axis: block;
+    animation: social-proof-stretch var(--animation-curve);
+    animation-timeline: var(--animation-timeline);
+    animation-range: var(--animation-range);
+    animation-fill-mode: var(--animation-fill);
+    will-change: transform;
     display: flex;
     flex-direction: column-reverse;
     gap: var(--s2a-spacing-lg);
@@ -9,11 +25,18 @@
     border-radius: inherit;
 
     .foreground {
+      --animation-range: entry 0% contain 20%;
+
       display: flex;
       flex-direction: column;
       gap: var(--s2a-spacing-md);
       padding-inline: var(--s2a-spacing-md);
       max-width: 460px;
+      animation: social-proof-content-enter var(--animation-curve);
+      animation-timeline: var(--animation-timeline);
+      animation-range: var(--animation-range);
+      animation-fill-mode: var(--animation-fill);
+      will-change: transform;
 
       .content p:last-child {
         color: var(--s2a-color-content-subtle);
@@ -32,8 +55,14 @@
         height: 100%;
 
         img {
+          object-fit: cover;
           width: 100%;
           height: 100%;
+          animation: social-proof-image-zoom var(--animation-curve);
+          animation-timeline: var(--animation-timeline);
+          animation-range: var(--animation-range);
+          animation-fill-mode: var(--animation-fill);
+          will-change: transform;
         }
       }
     }
@@ -81,5 +110,22 @@
 @media (width >= 1440px) {
   .social-proof > div .foreground {
     padding: var(--s2a-layout-md);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @keyframes social-proof-stretch {
+    from { transform: scaleX(var(--stretch-from)); }
+    to   { transform: scaleX(1); }
+  }
+
+  @keyframes social-proof-image-zoom {
+    from { transform: scale(var(--stretch-from)); }
+    to   { transform: scale(1); }
+  }
+
+  @keyframes social-proof-content-enter {
+    from { transform: translate(-5%, 20%); }
+    to   { transform: translate(0%, 0%); }
   }
 }
