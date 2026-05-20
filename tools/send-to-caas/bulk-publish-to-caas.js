@@ -9,12 +9,13 @@ import {
 import {
   getCardMetadata,
   getCaasProps,
+  getFloodgateColorFromHost,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { getGrayboxExperienceId, initBulkPublisherLingoMapping } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -184,13 +185,18 @@ const processData = async (data, accessToken) => {
     return;
   }
 
+  const hostFgColor = getFloodgateColorFromHost(host);
+  const floodgateColor = hostFgColor || publishToFloodgate;
+
   let domain = `https://${host}`;
 
   if (usePreview) {
     domain = `https://${previewHost}`;
-  } else if (publishToFloodgate !== 'default') {
+  } else if (floodgateColor !== 'default' && !hostFgColor) {
     domain = `https://main--${repo}--${owner}.aem.live`;
   }
+
+  initBulkPublisherLingoMapping();
 
   for (const page of data) {
     if (!keepGoing) break;
@@ -216,7 +222,7 @@ const processData = async (data, accessToken) => {
         prodUrl,
         host,
         repo,
-        floodgatecolor: publishToFloodgate,
+        floodgatecolor: floodgateColor,
         languageFirst,
       });
 

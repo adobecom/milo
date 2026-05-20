@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 
 import {
   checkUrl,
+  getFloodgateColorFromHost,
   getKeyValPairs,
   getOrigin,
   runLanguageFirstRetry,
@@ -162,5 +163,43 @@ describe('runLanguageFirstRetry (language-first retry)', () => {
     const result = await runLanguageFirstRetry(baseOptions, getLangFirst, noDelay);
     expect(result).to.equal('en-xx');
     expect(callCount).to.be.greaterThan(1);
+  });
+});
+
+describe('getFloodgateColorFromHost', () => {
+  it('should extract color from aem.live fg host', () => {
+    expect(getFloodgateColorFromHost('main--da-events-fg-pink--adobecom.aem.live')).to.equal('pink');
+  });
+
+  it('should extract color from aem.page fg host', () => {
+    expect(getFloodgateColorFromHost('main--da-events-fg-blue--adobecom.aem.page')).to.equal('blue');
+  });
+
+  it('should return empty string for non-fg aem host', () => {
+    expect(getFloodgateColorFromHost('main--da-events--adobecom.aem.live')).to.equal('');
+  });
+
+  it('should return empty string for production host', () => {
+    expect(getFloodgateColorFromHost('business.adobe.com')).to.equal('');
+  });
+});
+
+describe('getOrigin with DA floodgate repos', () => {
+  it('should strip -fg-{color} from DA repo to get correct origin', () => {
+    setConfig({ project: '', repo: 'da-events-fg-pink' });
+    const result = getOrigin('pink');
+    expect(result).to.equal('da-events');
+  });
+
+  it('should return repo as-is when it does not contain -fg-{color}', () => {
+    setConfig({ project: '', repo: 'bacom' });
+    const result = getOrigin('pink');
+    expect(result).to.equal('bacom');
+  });
+
+  it('should return repo as-is when floodgate color is default', () => {
+    setConfig({ project: '', repo: 'da-events' });
+    const result = getOrigin('default');
+    expect(result).to.equal('da-events');
   });
 });
