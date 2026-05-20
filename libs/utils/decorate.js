@@ -100,7 +100,7 @@ function elContainsText(el) {
 }
 
 const isC2 = getMetadata('foundation') === 'c2';
-const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'lg' } : ['m', 's', 'm'];
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'md' } : ['m', 's', 'm'];
 
 export function decorateBlockText(el, config = blockTextConfig, type = null) {
   const sizeMap = Array.isArray(config)
