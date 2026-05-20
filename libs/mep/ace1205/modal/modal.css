@@ -278,9 +278,9 @@
 }
 
 .dialog-modal {
-  /* Figma: visible button 32×32, X icon 12px (48×48 frame is touch hit-target) */
-  --dialog-modal-close-size: 32px;
-  --dialog-modal-close-icon-size: 12px;
+  /* Figma: visible button 48×48, X icon 16px */
+  --dialog-modal-close-size: 48px;
+  --dialog-modal-close-icon-size: 16px;
   --dialog-modal-close-line-width: calc(var(--dialog-modal-close-icon-size) * 1.33);
   --dialog-modal-close-line-thickness: 2px;
   border-radius: var(--s2a-spacing-md);
