@@ -532,28 +532,24 @@ function setupStickyHeader(el) {
   const syncTop = () => cardsContainer?.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
 
   const applySticky = () => {
-    if (!wasSticky) {
-      heightGen += 1;
-      if (!savedHeight) savedHeight = cardsContainer?.offsetHeight ?? 0;
-      headerContent.style.minHeight = `${savedHeight}px`;
-    }
+    if (wasSticky) return;
+    heightGen += 1;
+    if (!savedHeight) savedHeight = cardsContainer?.offsetHeight ?? 0;
+    if (savedHeight) headerContent.style.minHeight = `${savedHeight}px`;
     wasSticky = true;
     cardsContainer?.classList.add('is-sticky');
   };
 
   const removeSticky = () => {
-    const wasTransitioning = wasSticky;
+    if (!wasSticky) return;
     wasSticky = false;
     cardsContainer?.classList.remove('is-sticky');
-    if (wasTransitioning && savedHeight) {
-      headerContent.style.minHeight = `${savedHeight}px`;
-      const gen = heightGen;
-      collapsible?.addEventListener('transitionend', () => {
-        if (gen === heightGen) headerContent.style.minHeight = '';
-      }, { once: true });
-    } else {
-      headerContent.style.minHeight = '';
-    }
+    if (!savedHeight) { headerContent.style.minHeight = ''; return; }
+    headerContent.style.minHeight = `${savedHeight}px`;
+    const gen = heightGen;
+    const clear = () => { if (gen === heightGen && !wasSticky) headerContent.style.minHeight = ''; };
+    collapsible?.addEventListener('transitionend', clear, { once: true });
+    setTimeout(clear, 500);
   };
 
   window.addEventListener('scroll', () => {
