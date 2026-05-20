@@ -14,10 +14,10 @@ function decorate(block) {
   col.querySelector('p:has(em a), p:has(strong a)')?.remove();
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
-  heading?.classList.add('title-super');
+  heading?.classList.add('heading-super');
 
   const bodyEls = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  bodyEls.forEach((el) => el.classList.add('title-4'));
+  bodyEls.forEach((el) => el.classList.add('heading-4'));
 
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
   if (iconEl) {
