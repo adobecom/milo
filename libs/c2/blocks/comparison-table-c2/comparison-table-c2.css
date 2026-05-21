@@ -597,11 +597,11 @@
   .header-item-collapsible {
     display: grid;
     grid-template-rows: 1fr;
-    overflow: hidden;
     transition: grid-template-rows 300ms ease-out;
 
     > div {
       min-block-size: 0;
+      overflow: hidden;
     }
   }
 
