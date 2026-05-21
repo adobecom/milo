@@ -52,12 +52,12 @@ export async function createCompareChart(el, options) {
   const aemFragment = createTag('aem-fragment', attrs);
   const compareChart = createTag(MAS_COMPARE_CHART, { consonant: '' }, aemFragment);
   const paragraph = el.parentElement;
+  paragraph.parentElement.className = 'mas-compare-chart-container';
   const toReplace = paragraph?.tagName === 'P' && hasOnlyTargetContent(paragraph, el)
     ? paragraph
     : el;
 
   compareChart.className = el.className;
-  toReplace.parentElement?.classList.add('compare-chart-container');
   toReplace.replaceWith(compareChart);
   await checkReady(compareChart);
 }

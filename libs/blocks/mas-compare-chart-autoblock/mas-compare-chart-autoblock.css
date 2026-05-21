@@ -1,3 +1,9 @@
+.mas-compare-chart-container mas-compare-chart {
+  display: block;
+  width: 100%;
+  margin-inline: auto;
+}
+
 .compare-chart-container .table-text {
   overflow-wrap: normal;
   margin: 0;
