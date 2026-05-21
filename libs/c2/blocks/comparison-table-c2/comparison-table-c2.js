@@ -538,17 +538,31 @@ function setupStickyHeader(el) {
         }, 0)
       : 0;
   };
+  const freezeCollapsibleTransition = () => {
+    cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = 'none'; });
+    // eslint-disable-next-line chai-friendly/no-unused-expressions
+    cardsContainer.offsetHeight; // force layout so transition:none commits before class change
+  };
+  const thawCollapsibleTransition = () => {
+    requestAnimationFrame(() => {
+      cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = ''; });
+    });
+  };
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
+    if (isMobileLayout()) freezeCollapsibleTransition();
     cardsContainer.classList.add('is-sticky');
     if (storedCollapsibleH > 0) cardsContainer.style.marginBottom = `${storedCollapsibleH}px`;
+    if (isMobileLayout()) thawCollapsibleTransition();
   };
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
+    if (isMobileLayout()) freezeCollapsibleTransition();
     cardsContainer.classList.remove('is-sticky');
     cardsContainer.style.marginBottom = '';
+    if (isMobileLayout()) thawCollapsibleTransition();
   };
   const updateThreshold = () => {
     if (wasSticky || window.scrollY >= threshold) return;

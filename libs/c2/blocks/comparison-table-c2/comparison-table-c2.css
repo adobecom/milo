@@ -160,21 +160,21 @@
     }
 
     .sub-header-item-container {
-      align-items: center;
-      justify-content: center;
+      align-items: flex-start;
+      justify-content: flex-start;
 
       .description {
-        text-align: center;
+        text-align: left;
       }
 
       :is(h1, h2, h3, h4, h5, h6) {
-        text-align: center;
-        justify-content: center;
-        align-items: center;
+        text-align: left;
+        justify-content: flex-start;
+        align-items: flex-start;
       }
 
       .price {
-        justify-content: center;
+        justify-content: flex-start;
       }
     }
 
@@ -620,17 +620,22 @@
   .mobile-title-row {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     margin-top: var(--s2a-spacing-md);
     width: 100%;
 
+    :is(h1, h2, h3, h4, h5, h6) {
+      flex: 1;
+      text-align: left;
+      justify-content: flex-start;
+      align-items: flex-start;
+      margin-top: 0;
+    }
+
     &::after {
       content: '';
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
+      flex-shrink: 0;
       width: var(--s2a-spacing-20);
       height: var(--s2a-spacing-20);
       background: url('./img/down-arrow-filter.svg') center / contain no-repeat;
