@@ -925,7 +925,7 @@
 .brand-concierge.floating-input .prompt-card-button {
   background: var(--bc-fi-pill-bg);
   border-color: var(--bc-fi-pill-border);
-  border-radius: 18px;
+  border-radius: 26px;
   flex: 0 0 auto;
   height: 36px;
   padding: 0;
@@ -950,8 +950,7 @@
 }
 
 .brand-concierge.floating-input .prompt-card-text .card-icon {
-  flex-shrink: 0;
-  margin-top: 0;
+  display: none;
 }
 
 .brand-concierge.floating-input .prompt-card-text p {
