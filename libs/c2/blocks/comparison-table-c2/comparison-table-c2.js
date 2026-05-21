@@ -239,8 +239,6 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
     lastIndex = separatorIndex;
   });
 
-  // Wrap price/CTA containers (everything after the plan-name row) so sticky
-  // can animate their height without touching the name row.
   const collapsible = createTag('div', { class: 'header-item-collapsible' });
   const collapsibleInner = createTag('div');
   [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1).forEach((c) => collapsibleInner.appendChild(c));
@@ -514,13 +512,11 @@ function setupStickyHeader(el) {
   if (!headerContent) return;
 
   const cardsContainer = el.querySelector('.header-cards-container');
-  const sentinel = createTag('div', { style: 'height:1px;pointer-events:none;' });
-  headerContent.prepend(sentinel);
+  if (!cardsContainer) return;
 
-  let observer;
-  let isPastThreshold = false;
-  let lastScrollY = window.scrollY;
   let wasSticky = false;
+  let rDebounce;
+  let threshold = Infinity;
 
   const getNavOffset = () => {
     const nav = document.querySelector('header > nav') || document.querySelector('header');
@@ -530,76 +526,79 @@ function setupStickyHeader(el) {
     return navBottom + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
   };
 
-  const syncTop = () => cardsContainer?.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
+  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
 
-  // minHeight is set once (and on resize) to lock the placeholder height.
-  // It is never cleared during scroll — only updated when not sticky.
+  const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
+
   const updateMinHeight = () => {
     if (wasSticky) return;
-    if (window.matchMedia('(max-width: 899px)').matches) {
+    if (isMobileLayout()) {
       headerContent.style.minHeight = '';
-      return;
+      cardsContainer.style.minHeight = '';
+    } else {
+      cardsContainer.style.minHeight = '';
+      const h = cardsContainer.offsetHeight ?? 0;
+      headerContent.style.minHeight = h > 0 ? `${h}px` : '';
     }
-    const h = cardsContainer?.offsetHeight ?? 0;
-    if (h > 0) headerContent.style.minHeight = `${h}px`;
   };
 
-  let rDebounce;
-  if (cardsContainer) {
-    // 350ms debounce outlasts the 300ms collapse/expand transition
-    new ResizeObserver(() => {
-      clearTimeout(rDebounce);
-      rDebounce = setTimeout(updateMinHeight, 350);
-    }).observe(cardsContainer);
-  }
+  new ResizeObserver(() => {
+    clearTimeout(rDebounce);
+    rDebounce = setTimeout(updateMinHeight, 350);
+  }).observe(cardsContainer);
   requestAnimationFrame(updateMinHeight);
 
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
-    cardsContainer?.classList.add('is-sticky');
+    if (isMobileLayout()) {
+      const collapsibleH = [...cardsContainer.querySelectorAll('.header-item-collapsible')]
+        .reduce((max, e) => Math.max(max, e.offsetHeight), 0);
+      cardsContainer.classList.add('is-sticky');
+      if (collapsibleH > 0) cardsContainer.style.marginBottom = `${collapsibleH}px`;
+    } else {
+      cardsContainer.classList.add('is-sticky');
+    }
   };
 
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
-    cardsContainer?.classList.remove('is-sticky');
+    cardsContainer.classList.remove('is-sticky');
+    cardsContainer.style.marginBottom = '';
+  };
+
+  const getFlowTop = () => {
+    let top = 0;
+    let node = cardsContainer;
+    while (node && node !== document.documentElement) {
+      top += node.offsetTop;
+      node = node.offsetParent;
+    }
+    return top;
+  };
+
+  const updateThreshold = () => {
+    threshold = getFlowTop() - getNavOffset() - 24;
+    if (window.scrollY < threshold && wasSticky) removeSticky();
   };
 
   window.addEventListener('scroll', () => {
-    if (!isPastThreshold) return;
     const y = window.scrollY;
-    if (y === lastScrollY) return;
-    const goingDown = y > lastScrollY;
-    lastScrollY = y;
-    if (goingDown && !wasSticky) applySticky();
-    else if (!goingDown && wasSticky) removeSticky();
+    if (y >= threshold && !wasSticky) applySticky();
+    else if (y < threshold && wasSticky) removeSticky();
   }, { passive: true });
 
-  const observe = () => {
-    observer?.disconnect();
-    observer = new IntersectionObserver(([entry]) => {
-      syncTop();
-      const past = !entry.isIntersecting
-        && !!entry.rootBounds
-        && entry.boundingClientRect.bottom <= entry.rootBounds.top;
-      if (past) {
-        const alreadyPast = isPastThreshold;
-        isPastThreshold = true;
-        lastScrollY = window.scrollY;
-        if (!alreadyPast) applySticky();
-      } else {
-        isPastThreshold = false;
-        removeSticky();
-      }
-    }, { rootMargin: `${-(getNavOffset() + 1)}px 0px 0px 0px` });
-    observer.observe(sentinel);
-  };
+  const watchNavResize = (nav) => new ResizeObserver(() => {
+    syncTop();
+    updateThreshold();
+  }).observe(nav);
 
-  syncTop();
-  observe();
-
-  const watchNavResize = (nav) => new ResizeObserver(() => { syncTop(); observe(); }).observe(nav);
+  requestAnimationFrame(() => {
+    syncTop();
+    updateThreshold();
+    if (window.scrollY >= threshold) applySticky();
+  });
 
   const nav = document.querySelector('header > nav');
   if (nav) { watchNavResize(nav); return; }
@@ -611,7 +610,7 @@ function setupStickyHeader(el) {
     if (!newNav) return;
     mo.disconnect();
     syncTop();
-    observe();
+    updateThreshold();
     watchNavResize(newNav);
   });
   mo.observe(header, { childList: true });
