@@ -1,12 +1,12 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-const STACK_W = 722;
+const STACK_W = 836;
 const STACK_REF = [
-  { dx: 55.47, dy: 96.86, w: 358, h: 419, rot: -6 },
-  { dx: 167.35, dy: -14.85, w: 458, h: 570, rot: 2 },
-  { dx: -1.41, dy: 249.91, w: 261, h: 277, rot: -14 },
-  { dx: 366.10, dy: 201.23, w: 358, h: 389, rot: 3 },
+  { dx: 90.94, dy: 116.93, w: 418.531, h: 489.484, rot: -6 },
+  { dx: 202.94, dy: 0, w: 535.885, h: 666.645, rot: -2 },
+  { dx: 36.78, dy: 275.30, w: 304.543, h: 324.33, rot: -15 },
+  { dx: 417.44, dy: 272.79, w: 418.531, h: 455.136, rot: 3 },
 ];
 const CARD_SHADOWS = [
   null,
@@ -323,14 +323,13 @@ function initAnimation(block) {
 
     // Stack composition derived from Figma.
     const vw = window.innerWidth;
-    const dyNudges = [-50, -42, -136, -190];
     const copyBottom = heroCopy ? heroCopy.getBoundingClientRect().bottom : 540;
     const stackTop = copyBottom + 74;
     const stackScale = vw < 768 ? Math.max((vw - 48) / STACK_W, 0.3) : 1;
     const stackLeft = (vw - STACK_W * stackScale) / 2;
-    stackBoxes = STACK_REF.map((ref, i) => ({
+    stackBoxes = STACK_REF.map((ref) => ({
       x: stackLeft + ref.dx * stackScale,
-      y: stackTop + (ref.dy + 14.85) * stackScale + (dyNudges[i] || 0),
+      y: stackTop + ref.dy * stackScale,
       w: ref.w * stackScale,
       h: ref.h * stackScale,
       rot: ref.rot,
