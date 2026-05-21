@@ -542,10 +542,6 @@ function setupStickyHeader(el) {
     }
   };
 
-  new ResizeObserver(() => {
-    clearTimeout(rDebounce);
-    rDebounce = setTimeout(updateMinHeight, 350);
-  }).observe(cardsContainer);
   requestAnimationFrame(updateMinHeight);
 
   const applySticky = () => {
@@ -582,6 +578,11 @@ function setupStickyHeader(el) {
     threshold = getFlowTop() - getNavOffset() - 24;
     if (window.scrollY < threshold && wasSticky) removeSticky();
   };
+
+  new ResizeObserver(() => {
+    clearTimeout(rDebounce);
+    rDebounce = setTimeout(() => { updateMinHeight(); updateThreshold(); }, 350);
+  }).observe(cardsContainer);
 
   let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
