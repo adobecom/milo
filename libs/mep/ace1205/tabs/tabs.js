@@ -80,6 +80,7 @@ function moveIndicator(indicator, target, container) {
 
 function changeTabs(e, config) {
   const { target } = e;
+  if (target.getAttribute('aria-selected') === 'true') return;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
