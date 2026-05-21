@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import {
   getOptions,
   initService,
@@ -9,6 +9,7 @@ import {
 
 const COMPARE_CHART_AUTOBLOCK_TIMEOUT = 5000;
 const seenFragments = new Set();
+let stylesLoaded;
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
@@ -35,6 +36,14 @@ async function checkReady(compareChart) {
   }
 }
 
+function loadCompareChartStyles() {
+  const { base } = getConfig();
+  stylesLoaded ||= new Promise((resolve) => {
+    loadStyle(`${base}/blocks/mas-compare-chart-autoblock/mas-compare-chart-autoblock.css`, resolve);
+  });
+  return stylesLoaded;
+}
+
 export async function createCompareChart(el, options) {
   const attrs = { fragment: options.fragment };
   if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
@@ -48,6 +57,7 @@ export async function createCompareChart(el, options) {
     : el;
 
   compareChart.className = el.className;
+  toReplace.parentElement?.classList.add('compare-chart-container');
   toReplace.replaceWith(compareChart);
   await checkReady(compareChart);
 }
@@ -57,7 +67,9 @@ export default async function init(el) {
   if (!options.fragment) return;
 
   options = overrideOptions(options.fragment, options);
+  const stylesPromise = loadCompareChartStyles();
   await initService();
   await loadMasComponent(MAS_COMPARE_CHART);
+  await stylesPromise;
   await createCompareChart(el, options);
 }

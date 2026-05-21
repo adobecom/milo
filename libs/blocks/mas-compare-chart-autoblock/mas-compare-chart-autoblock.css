@@ -1,0 +1,30 @@
+.compare-chart-container .table-text {
+  overflow-wrap: normal;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--spacing-50);
+  align-self: stretch;
+  color: var(--color-gray-700-variant);
+  font-style: normal;
+  font-weight: var(--ax-body-weight-bold);
+  line-height: var(--heading-line-height);
+  font-family: var(--body-font-family);
+  font-size: var(--ax-body-xs-size);
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+
+.compare-chart-container .table-text:has(strong) {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  display: block;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin: auto var(--spacing-100) auto 0;
+  box-sizing: border-box;
+  width: var(--header-cell-width);
+}
