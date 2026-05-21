@@ -574,7 +574,7 @@ function setupStickyHeader(el) {
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
     storedCollapsibleH = isMobileLayout()
       ? [...cardsContainer.querySelectorAll('.header-item-collapsible')]
-        .reduce((max, e) => Math.max(max, e.offsetHeight), 0)
+        .reduce((max, e) => Math.max(max, e.children[0]?.scrollHeight ?? 0), 0)
       : 0;
   };
   const applySticky = () => {
@@ -609,6 +609,15 @@ function setupStickyHeader(el) {
     clearTimeout(rDebounce);
     rDebounce = setTimeout(() => { updateMinHeight(); updateThreshold(); }, 350);
   }).observe(cardsContainer);
+
+  window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
+    clearTimeout(rDebounce);
+    if (wasSticky) removeSticky();
+    threshold = Infinity;
+    updateMinHeight();
+    syncTop();
+    updateThreshold();
+  });
 
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
