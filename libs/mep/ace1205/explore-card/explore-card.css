@@ -117,7 +117,7 @@
     margin-bottom: var(--s2a-spacing-2xl);
   }
 
-  [class*='title-'] {
+  [class*='heading-'] {
     margin-top: auto;
     margin-bottom: var(--s2a-spacing-xs);
   }

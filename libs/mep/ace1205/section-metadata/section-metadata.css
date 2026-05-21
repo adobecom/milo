@@ -69,6 +69,16 @@
     border-radius: var(--s2a-border-radius-md);
     z-index: inherit;
 
+    &.dark {
+      .explore-card-content::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0 0 0 / 0%) 60.93%, rgba(0 0 0 / 59%) 90%);
+        z-index: 1;
+      }
+    }
+
     .explore-card-container:hover [class*='body-'] {
       opacity: initial;
     }
@@ -78,6 +88,14 @@
     padding-inline: 0;
     padding-bottom: var(--s2a-spacing-xl);
     padding-top: 0;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255 255 255 / 0%) 60.93%, rgba(255 255 255 / 59%) 90%);
+      z-index: 1;
+    }
 
     & [class*='heading-'] {
       z-index: 1;
@@ -102,9 +120,13 @@
     .explore-card-foreground {
       aspect-ratio: 1 / 1.2;
 
-      img,
-      video {
+      img {
         object-fit: cover;
+        object-position: top;
+      }
+
+      video {
+        object-fit: contain;
         object-position: top;
       }
     }
@@ -222,6 +244,11 @@
       .explore-card-content {
         .content-aux {
           aspect-ratio: 4 / 1.65;
+        }
+
+        [class*='heading-'],
+        [class*='body-'] {
+          width: 50vw;
         }
       }
     }
