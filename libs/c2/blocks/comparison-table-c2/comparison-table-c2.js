@@ -547,6 +547,7 @@ function setupStickyHeader(el) {
   let rDebounce;
   let threshold = Infinity;
   let lastScrollY = window.scrollY;
+  let storedCollapsibleH = 0;
 
   const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
   const getNavOffset = () => {
@@ -571,16 +572,16 @@ function setupStickyHeader(el) {
     cardsContainer.style.minHeight = '';
     const h = isMobileLayout() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
+    storedCollapsibleH = isMobileLayout()
+      ? [...cardsContainer.querySelectorAll('.header-item-collapsible')]
+        .reduce((max, e) => Math.max(max, e.offsetHeight), 0)
+      : 0;
   };
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
-    const collapsibleH = isMobileLayout()
-      ? [...cardsContainer.querySelectorAll('.header-item-collapsible')]
-        .reduce((max, e) => Math.max(max, e.offsetHeight), 0)
-      : 0;
     cardsContainer.classList.add('is-sticky');
-    if (collapsibleH > 0) cardsContainer.style.marginBottom = `${collapsibleH}px`;
+    if (storedCollapsibleH > 0) cardsContainer.style.marginBottom = `${storedCollapsibleH}px`;
   };
   const removeSticky = () => {
     if (!wasSticky) return;
