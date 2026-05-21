@@ -101,9 +101,13 @@
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
   max-width: 286px;
 }
-.tour-section:nth-of-type(even) .tour-content,
+.tour-section:nth-of-type(even) .tour-content {
+  max-width: 286px;
+}
+
 .tour-section:last-of-type .tour-content {
   max-width: 286px;
+  text-align: center;
 }
 
 .tour-content p {
@@ -191,7 +195,7 @@
   display: flex;
   justify-content: center;
   padding-block: 10px;
-  padding-inline: 40px;
+  padding-inline: 16px;
   position: sticky;
   width: 100%;
   z-index: 1;
