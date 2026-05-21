@@ -75,16 +75,16 @@ describe('Preflight M@S Unpublished Fragments check', () => {
   });
 
   it('findFragmentElements keeps fragment whose direct parent is merch-card-collection inside a merch-card', () => {
-    const area = document.createElement('div');
+    const nestedArea = document.createElement('div');
     const UUID_INNER = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
-    area.innerHTML = `
+    nestedArea.innerHTML = `
       <merch-card>
         <merch-card-collection>
           <aem-fragment fragment="${UUID_INNER}"></aem-fragment>
         </merch-card-collection>
       </merch-card>
     `;
-    const entries = findFragmentElements(area);
+    const entries = findFragmentElements(nestedArea);
     expect(entries).to.have.length(1);
     expect(entries[0].uuid).to.equal(UUID_INNER);
   });
