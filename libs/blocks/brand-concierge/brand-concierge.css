@@ -1003,13 +1003,12 @@
 /* Mobile phone: hide pills, expand input to fill bar */
 @media screen and (max-width: 599px) {
   .brand-concierge.floating-input {
-    border-radius: 16px 16px 0 0;
-    bottom: 0;
-    left: 0;
+    bottom: 16px;
+    left: 50%;
     max-width: none;
     padding: 16px;
-    transform: none;
-    width: 100%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
   }
 
   .brand-concierge.floating-input .bc-prompt-cards {
@@ -1017,6 +1016,27 @@
   }
 
   .brand-concierge.floating-input .bc-input-field {
+    flex: 1;
+    max-width: none;
+    min-width: 0;
+  }
+}
+
+/* Tablet: mobile-hide-drawer removes the bar entirely, leaving only the input */
+@media screen and (min-width: 600px) and (max-width: 959px) {
+  .brand-concierge.floating-input.mobile-hide-drawer {
+    backdrop-filter: none;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+  }
+
+  .brand-concierge.floating-input.mobile-hide-drawer .bc-prompt-cards {
+    display: none;
+  }
+
+  .brand-concierge.floating-input.mobile-hide-drawer .bc-input-field {
     flex: 1;
     max-width: none;
     min-width: 0;
