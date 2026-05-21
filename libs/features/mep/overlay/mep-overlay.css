@@ -71,6 +71,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   position: fixed;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   min-width: 200px;
   max-width: 280px;
   left: 0;
@@ -160,6 +161,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-body {
   flex-grow: 1;
+  overflow-y: auto;
 }
 
 .mep-drawer .mep-body .mep-tab-content {
