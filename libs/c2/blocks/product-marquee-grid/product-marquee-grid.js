@@ -37,7 +37,9 @@ function decorate(block) {
     ]));
   }
 
-  block.replaceChildren(foreground, promoArea);
+  const content = createTag('div', { class: 'pm-content' });
+  content.append(foreground, promoArea);
+  block.replaceChildren(content);
 }
 
 export default function init(el) {
