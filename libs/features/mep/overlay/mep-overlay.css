@@ -1,4 +1,19 @@
 :root {
+  --mep-overline-font: normal 500 14px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
+  --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
+
+  --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 125% var(--Font-adobe-clean, "Adobe Clean");
+
+  --mep-h2-font: normal 500 var(--Static-Title-Medium-Size, 16px) / var(--Static-Title-Medium-Line-Height, 24px) "Adobe Clean";
+  --mep-h2-letter-spacing: var(--Static-Title-Medium-Tracking, 0.15px);
+
+  --mep-body-font: normal 400 var(--Static-Body-Medium-Size, 14px) / var(--Static-Body-Medium-Line-Height, 20px) "Adobe Clean";
+  --mep-body-letter-spacing: var(--Static-Body-Medium-Tracking, 0.25px);
+
+  --mep-tab-label-font: normal 700 var(--Component-Tabs-Mobile-font-size, 18px) / 125% var(--Font-adobe-clean, "Adobe Clean");
+
+  --mep-radio-label-font: normal 400 16px / 150% var(--Font-adobe-clean, "Adobe Clean");
+
   --mep-primary-100: rgb(34, 136, 0);
   --mep-primary-87: rgba(34, 136, 0, 0.87);
   --mep-primary-60: rgba(34, 136, 0, 0.60);
@@ -15,7 +30,6 @@
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 }
 
-
 .mep-fab {
   position: fixed;
   display: flex;
@@ -23,16 +37,30 @@
   justify-content: center;
   left: 0;
   padding: 8px 12px;
+  border: none;
   border-radius: 0 100% 100% 0;
   color: var(--mep-white-100);
   background: var(--mep-primary-100);
   box-shadow: var(--mep-elevation-3);
+  opacity: 1;
+  transform: translateX(0%);
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.mep-fab svg {
+  fill: var(--mep-white-100);
 }
 
 .mep-fab:hover {
   cursor: pointer;
   background: var(--mep-primary-60);
   box-shadow: var(--mep-elevation-4);
+}
+
+body:has(#mep-drawer:popover-open) .mep-fab {
+  opacity: 0;
+  transform: translateX(-100%);
+  pointer-events: none;
 }
 
 .mep-fab.disabled {
@@ -46,23 +74,76 @@
   min-width: 200px;
   max-width: 280px;
   left: 0;
+  margin: 0;
+  border: none;
+  padding: 0;
   color: var(--mep-white-100);
   background: var(--mep-dark-34);
   box-shadow: var(--mep-elevation-4);
-} 
+}
+
+.mep-drawer:popover-open {
+  opacity: 1;
+  transform: translateX(0%);
+  transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+}
+
+@starting-style {
+  .mep-drawer:popover-open {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+.mep-drawer:not(:popover-open) {
+  opacity: 0;
+  transform: translateX(-100%);
+  transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
+}
 
 .mep-drawer .mep-header {
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
   top: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 12px;
   background: var(--mep-dark-44);
   border-bottom: 1px solid var(--mep-white-12);
 }
 
-.mep-drawer .mep-header svg {
+.mep-drawer .mep-header .mep-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 12px;
+}
+
+.mep-drawer .mep-header .mep-navigation .icon-close {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.mep-drawer .mep-header .mep-tabs {
+  display: flex;
+}
+
+.mep-drawer .mep-header .mep-tabs .mep-tab {
+  text-align: center;
+  flex: 1;
+  padding: 14px;
+}
+
+.mep-drawer .mep-header .mep-tabs .mep-tab:hover {
+  cursor: pointer;
+}
+
+.mep-drawer .mep-header .mep-tabs .mep-tab.active {
+  color: var(--mep-primary-100);
+  border-bottom: 2px solid var(--mep-primary-100);
+}
+
+.mep-drawer .mep-header .mep-navigation svg {
   fill: var(--mep-white-100);
 }
 
@@ -72,11 +153,19 @@
 }
 
 .mep-drawer .mep-body {
-  display: flex;
+  flex-grow: 1;
+}
+
+.mep-drawer .mep-body .mep-tab-content {
+  display: none;
   flex-direction: column;
   gap: 8px;
   flex-grow: 1;
   padding: 8px;
+}
+
+.mep-drawer .mep-body .mep-tab-content[data-tab].active {
+  display: flex;
 }
 
 .mep-drawer .mep-body .mep-card {
@@ -106,4 +195,5 @@
 
 .mep-drawer .mep-footer .con-button:hover {
   background: var(--mep-primary-60);
+  border: 2px solid var(--mep-primary-60);
 }
