@@ -509,7 +509,6 @@ function setupStickyHeader(el) {
   let rDebounce;
   let threshold = Infinity;
   let lastScrollY = window.scrollY;
-  let storedCollapsibleH = 0;
 
   const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
   const getNavOffset = () => {
@@ -534,40 +533,18 @@ function setupStickyHeader(el) {
     cardsContainer.style.minHeight = '';
     const h = isMobileLayout() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
-    storedCollapsibleH = isMobileLayout()
-      ? [...cardsContainer.querySelectorAll('.header-item-card')]
-        .reduce((max, card) => {
-          const collH = card.querySelector('.header-item-collapsible')?.children[0]?.scrollHeight ?? 0;
-          const btnH = card.querySelector('.btn-section')?.scrollHeight ?? 0;
-          return Math.max(max, collH + btnH);
-        }, 0)
-      : 0;
   };
-  const freezeCollapsibleTransition = () => {
-    cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = 'none'; });
-    // eslint-disable-next-line chai-friendly/no-unused-expressions
-    cardsContainer.offsetHeight; // force layout so transition:none commits before class change
-  };
-  const thawCollapsibleTransition = () => {
-    requestAnimationFrame(() => {
-      cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = ''; });
-    });
-  };
+
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
-    if (isMobileLayout()) freezeCollapsibleTransition();
     cardsContainer.classList.add('is-sticky');
-    if (storedCollapsibleH > 0) cardsContainer.style.marginBottom = `${storedCollapsibleH}px`;
-    if (isMobileLayout()) thawCollapsibleTransition();
   };
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
-    if (isMobileLayout()) freezeCollapsibleTransition();
     cardsContainer.classList.remove('is-sticky');
     cardsContainer.style.marginBottom = '';
-    if (isMobileLayout()) thawCollapsibleTransition();
   };
   const updateThreshold = () => {
     if (wasSticky || window.scrollY >= threshold) return;
