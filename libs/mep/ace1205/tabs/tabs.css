@@ -61,11 +61,14 @@
 .tabs .tabList .tab-list-container {
   display: flex;
   width: auto;
-  min-width: 300px; 
+  min-width: 300px;
   box-sizing: content-box;
   align-items: center;
   /* gap: var(--s2a-spacing-2xs); */
   align-self: stretch;
+
+  /* add slider - positioning context for the absolute indicator */
+  position: relative;
 }
 
 /* center tabs — centering is handled by .tabs-wrapper; pseudo-elements not needed */
@@ -132,34 +135,37 @@
   transition: color 0.1s ease-in-out;
   white-space: nowrap;
   width: auto;
+
+  /* add slider - keep button text above the indicator */
+  position: relative;
   z-index: 1;
   flex: 1 0 auto;
   background: transparent;
   height: 32px;
 }
 
-.tabs .tabList button:hover {
+/* .tabs .tabList button:hover {
   color: var(--tabs-pill-text-color-hover);
   border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-black-12);
   background: var(--s2a-color-background-default);
-}
+} */
 
-.tabs .tabList button:active {
+/* .tabs .tabList button:active {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
   border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
-}
+} */
 
 /* .tabs .tabList button:focus {
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
 } */
 
-.tabs .tabList button[data-pressed=""] {
+/* .tabs .tabList button[data-pressed=""] {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
   border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
-}
+} */
 
 .tabs .tabList button:focus-visible {
   outline: var(--s2a-color-focus-ring-default) solid #4145ca; /* check- #4145ca has no s2a match; --s2a-color-focus-ring-default is #3b63fb */
@@ -169,6 +175,13 @@
   color: var(--tabs-pill-text-selected-color);
   /* background: var(--tabs-pill-bg-color); */
   background: var(--tabs-pill-bg-color-selected);
+
+  /* add slider - delay both color and background until indicator finishes (0.25s matches indicator transition) */
+  transition: color 0s 0.25s, background 0s 0.25s;
+}
+
+.tabs .tabList button[aria-selected="true"]:hover {
+  background: transparent;
 }
 
 .tabs .tabList button.l-button {
@@ -228,3 +241,16 @@
   }
 } */
 
+/* add slider - pill that slides behind buttons to show selection */
+.tabs .tab-indicator {
+  position: absolute;
+  top: var(--s2a-spacing-2xs);
+  bottom: var(--s2a-spacing-2xs);
+  left: 0;
+  background: var(--tabs-pill-bg-color-selected);
+  border-radius: var(--m-rounded-corners-tabs);
+  transition: transform 0.25s ease, width 0.25s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+/* ---- */

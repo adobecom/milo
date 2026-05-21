@@ -69,6 +69,15 @@ function getContentElement(parent, traversalDepth) {
   return element.lastElementChild;
 }
 
+// add slider - positions the sliding pill indicator to match the target button's size and offset
+function moveIndicator(indicator, target, container) {
+  const btnRect = target.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  indicator.style.width = `${btnRect.width}px`;
+  indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
+}
+// ----
+
 function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
@@ -96,6 +105,10 @@ function changeTabs(e, config) {
     });
   target.setAttribute('aria-selected', true);
   target.setAttribute('tabindex', '0');
+  // add slider - slide indicator to the newly selected button
+  const indicator = parent.querySelector('.tab-indicator');
+  if (indicator) moveIndicator(indicator, target, parent);
+  // ----
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
@@ -316,6 +329,19 @@ const init = async (block) => {
     });
     tabListItems[0].parentElement.remove();
   }
+
+  // add slider - create the pill indicator, snap to first selected button without
+  // transition, then re-enable
+  const indicator = createTag('div', { class: 'tab-indicator' });
+  tabListContainer.prepend(indicator);
+  const firstActive = tabListContainer.querySelector('[aria-selected="true"]');
+  if (firstActive) {
+    indicator.style.transition = 'none';
+    moveIndicator(indicator, firstActive, tabListContainer);
+    requestAnimationFrame(() => { indicator.style.transition = ''; });
+  }
+  // ----
+
   const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
