@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What You Can (and Can't) Animate Cheaply</title>
+<script>
+/* Lenis 1.3.23 - inlined from lenis.min.js */
+(function(){var e=`1.3.23`;function t(e,t,n){return Math.max(e,Math.min(t,n))}function n(e,t,n){return(1-n)*e+n*t}function r(e,t,r,i){return n(e,t,1-Math.exp(-r*i))}function i(e,t){return(e%t+t)%t}var a=class{isRunning=!1;value=0;from=0;to=0;currentTime=0;lerp;duration;easing;onUpdate;advance(e){if(!this.isRunning)return;let n=!1;if(this.duration&&this.easing){this.currentTime+=e;let r=t(0,this.currentTime/this.duration,1);n=r>=1;let i=n?1:this.easing(r);this.value=this.from+(this.to-this.from)*i}else this.lerp?(this.value=r(this.value,this.to,this.lerp*60,e),Math.round(this.value)===Math.round(this.to)&&(this.value=this.to,n=!0)):(this.value=this.to,n=!0);n&&this.stop(),this.onUpdate?.(this.value,n)}stop(){this.isRunning=!1}fromTo(e,t,{lerp:n,duration:r,easing:i,onStart:a,onUpdate:o}){this.from=this.value=e,this.to=t,this.lerp=n,this.duration=r,this.easing=i,this.currentTime=0,this.isRunning=!0,a?.(),this.onUpdate=o}};function o(e,t){let n;return function(...r){clearTimeout(n),n=setTimeout(()=>{n=void 0,e.apply(this,r)},t)}}var s=class{width=0;height=0;scrollHeight=0;scrollWidth=0;debouncedResize;wrapperResizeObserver;contentResizeObserver;constructor(e,t,{autoResize:n=!0,debounce:r=250}={}){this.wrapper=e,this.content=t,n&&(this.debouncedResize=o(this.resize,r),this.wrapper instanceof Window?window.addEventListener(`resize`,this.debouncedResize):(this.wrapperResizeObserver=new ResizeObserver(this.debouncedResize),this.wrapperResizeObserver.observe(this.wrapper)),this.contentResizeObserver=new ResizeObserver(this.debouncedResize),this.contentResizeObserver.observe(this.content)),this.resize()}destroy(){this.wrapperResizeObserver?.disconnect(),this.contentResizeObserver?.disconnect(),this.wrapper===window&&this.debouncedResize&&window.removeEventListener(`resize`,this.debouncedResize)}resize=()=>{this.onWrapperResize(),this.onContentResize()};onWrapperResize=()=>{this.wrapper instanceof Window?(this.width=window.innerWidth,this.height=window.innerHeight):(this.width=this.wrapper.clientWidth,this.height=this.wrapper.clientHeight)};onContentResize=()=>{this.wrapper instanceof Window?(this.scrollHeight=this.content.scrollHeight,this.scrollWidth=this.content.scrollWidth):(this.scrollHeight=this.wrapper.scrollHeight,this.scrollWidth=this.wrapper.scrollWidth)};get limit(){return{x:this.scrollWidth-this.width,y:this.scrollHeight-this.height}}},c=class{events={};emit(e,...t){let n=this.events[e]||[];for(let e=0,r=n.length;e<r;e++)n[e]?.(...t)}on(e,t){return this.events[e]?this.events[e].push(t):this.events[e]=[t],()=>{this.events[e]=this.events[e]?.filter(e=>t!==e)}}off(e,t){this.events[e]=this.events[e]?.filter(e=>t!==e)}destroy(){this.events={}}};let l={passive:!1};function u(e,t){return e===1?16.666666666666668:e===2?t:1}var d=class{touchStart={x:0,y:0};lastDelta={x:0,y:0};window={width:0,height:0};emitter=new c;constructor(e,t={wheelMultiplier:1,touchMultiplier:1}){this.element=e,this.options=t,window.addEventListener(`resize`,this.onWindowResize),this.onWindowResize(),this.element.addEventListener(`wheel`,this.onWheel,l),this.element.addEventListener(`touchstart`,this.onTouchStart,l),this.element.addEventListener(`touchmove`,this.onTouchMove,l),this.element.addEventListener(`touchend`,this.onTouchEnd,l)}on(e,t){return this.emitter.on(e,t)}destroy(){this.emitter.destroy(),window.removeEventListener(`resize`,this.onWindowResize),this.element.removeEventListener(`wheel`,this.onWheel,l),this.element.removeEventListener(`touchstart`,this.onTouchStart,l),this.element.removeEventListener(`touchmove`,this.onTouchMove,l),this.element.removeEventListener(`touchend`,this.onTouchEnd,l)}onTouchStart=e=>{let{clientX:t,clientY:n}=e.targetTouches?e.targetTouches[0]:e;this.touchStart.x=t,this.touchStart.y=n,this.lastDelta={x:0,y:0},this.emitter.emit(`scroll`,{deltaX:0,deltaY:0,event:e})};onTouchMove=e=>{let{clientX:t,clientY:n}=e.targetTouches?e.targetTouches[0]:e,r=-(t-this.touchStart.x)*this.options.touchMultiplier,i=-(n-this.touchStart.y)*this.options.touchMultiplier;this.touchStart.x=t,this.touchStart.y=n,this.lastDelta={x:r,y:i},this.emitter.emit(`scroll`,{deltaX:r,deltaY:i,event:e})};onTouchEnd=e=>{this.emitter.emit(`scroll`,{deltaX:this.lastDelta.x,deltaY:this.lastDelta.y,event:e})};onWheel=e=>{let{deltaX:t,deltaY:n,deltaMode:r}=e,i=u(r,this.window.width),a=u(r,this.window.height);t*=i,n*=a,t*=this.options.wheelMultiplier,n*=this.options.wheelMultiplier,this.emitter.emit(`scroll`,{deltaX:t,deltaY:n,event:e})};onWindowResize=()=>{this.window={width:window.innerWidth,height:window.innerHeight}}};let f=e=>Math.min(1,1.001-2**(-10*e));var p=class{_isScrolling=!1;_isStopped=!1;_isLocked=!1;_preventNextNativeScrollEvent=!1;_resetVelocityTimeout=null;_rafId=null;isTouching;time=0;userData={};lastVelocity=0;velocity=0;direction=0;options;targetScroll;animatedScroll;animate=new a;emitter=new c;dimensions;virtualScroll;constructor({wrapper:t=window,content:n=document.documentElement,eventsTarget:r=t,smoothWheel:i=!0,syncTouch:a=!1,syncTouchLerp:o=.075,touchInertiaExponent:c=1.7,duration:l,easing:u,lerp:p=.1,infinite:m=!1,orientation:h=`vertical`,gestureOrientation:g=h===`horizontal`?`both`:`vertical`,touchMultiplier:_=1,wheelMultiplier:v=1,autoResize:y=!0,prevent:b,virtualScroll:x,overscroll:S=!0,autoRaf:C=!1,anchors:w=!1,autoToggle:T=!1,allowNestedScroll:E=!1,__experimental__naiveDimensions:D=!1,naiveDimensions:O=D,stopInertiaOnNavigate:k=!1}={}){window.lenisVersion=e,window.lenis||(window.lenis={}),window.lenis.version=e,h===`horizontal`&&(window.lenis.horizontal=!0),a===!0&&(window.lenis.touch=!0),(!t||t===document.documentElement)&&(t=window),typeof l==`number`&&typeof u!=`function`?u=f:typeof u==`function`&&typeof l!=`number`&&(l=1),this.options={wrapper:t,content:n,eventsTarget:r,smoothWheel:i,syncTouch:a,syncTouchLerp:o,touchInertiaExponent:c,duration:l,easing:u,lerp:p,infinite:m,gestureOrientation:g,orientation:h,touchMultiplier:_,wheelMultiplier:v,autoResize:y,prevent:b,virtualScroll:x,overscroll:S,autoRaf:C,anchors:w,autoToggle:T,allowNestedScroll:E,naiveDimensions:O,stopInertiaOnNavigate:k},this.dimensions=new s(t,n,{autoResize:y}),this.updateClassName(),this.targetScroll=this.animatedScroll=this.actualScroll,this.options.wrapper.addEventListener(`scroll`,this.onNativeScroll),this.options.wrapper.addEventListener(`scrollend`,this.onScrollEnd,{capture:!0}),(this.options.anchors||this.options.stopInertiaOnNavigate)&&this.options.wrapper.addEventListener(`click`,this.onClick),this.options.wrapper.addEventListener(`pointerdown`,this.onPointerDown),this.virtualScroll=new d(r,{touchMultiplier:_,wheelMultiplier:v}),this.virtualScroll.on(`scroll`,this.onVirtualScroll),this.options.autoToggle&&(this.checkOverflow(),this.rootElement.addEventListener(`transitionend`,this.onTransitionEnd)),this.options.autoRaf&&(this._rafId=requestAnimationFrame(this.raf))}destroy(){this.emitter.destroy(),this.options.wrapper.removeEventListener(`scroll`,this.onNativeScroll),this.options.wrapper.removeEventListener(`scrollend`,this.onScrollEnd,{capture:!0}),this.options.wrapper.removeEventListener(`pointerdown`,this.onPointerDown),(this.options.anchors||this.options.stopInertiaOnNavigate)&&this.options.wrapper.removeEventListener(`click`,this.onClick),this.virtualScroll.destroy(),this.dimensions.destroy(),this.cleanUpClassName(),this._rafId&&cancelAnimationFrame(this._rafId)}on(e,t){return this.emitter.on(e,t)}off(e,t){return this.emitter.off(e,t)}onScrollEnd=e=>{e instanceof CustomEvent||(this.isScrolling===`smooth`||this.isScrolling===!1)&&e.stopPropagation()};dispatchScrollendEvent=()=>{this.options.wrapper.dispatchEvent(new CustomEvent(`scrollend`,{bubbles:this.options.wrapper===window,detail:{lenisScrollEnd:!0}}))};get overflow(){let e=this.isHorizontal?`overflow-x`:`overflow-y`;return getComputedStyle(this.rootElement)[e]}checkOverflow(){[`hidden`,`clip`].includes(this.overflow)?this.internalStop():this.internalStart()}onTransitionEnd=e=>{e.propertyName?.includes(`overflow`)&&e.target===this.rootElement&&this.checkOverflow()};setScroll(e){this.isHorizontal?this.options.wrapper.scrollTo({left:e,behavior:`instant`}):this.options.wrapper.scrollTo({top:e,behavior:`instant`})}onClick=e=>{let t=e.composedPath().filter(e=>e instanceof HTMLAnchorElement&&e.href).map(e=>new URL(e.href)),n=new URL(window.location.href);if(this.options.anchors){let e=t.find(e=>n.host===e.host&&n.pathname===e.pathname&&e.hash);if(e){let t=typeof this.options.anchors==`object`&&this.options.anchors?this.options.anchors:void 0,n=`#${e.hash.split(`#`)[1]}`;this.scrollTo(n,t);return}}if(this.options.stopInertiaOnNavigate&&t.some(e=>n.host===e.host&&n.pathname!==e.pathname)){this.reset();return}};onPointerDown=e=>{e.button===1&&this.reset()};onVirtualScroll=e=>{if(typeof this.options.virtualScroll==`function`&&this.options.virtualScroll(e)===!1)return;let{deltaX:t,deltaY:n,event:r}=e;if(this.emitter.emit(`virtual-scroll`,{deltaX:t,deltaY:n,event:r}),r.ctrlKey||r.lenisStopPropagation)return;let i=r.type.includes(`touch`),a=r.type.includes(`wheel`);this.isTouching=r.type===`touchstart`||r.type===`touchmove`;let o=t===0&&n===0;if(this.options.syncTouch&&i&&r.type===`touchstart`&&o&&!this.isStopped&&!this.isLocked){this.reset();return}let s=this.options.gestureOrientation===`vertical`&&n===0||this.options.gestureOrientation===`horizontal`&&t===0;if(o||s)return;let c=r.composedPath();c=c.slice(0,c.indexOf(this.rootElement));let l=this.options.prevent,u=Math.abs(t)>=Math.abs(n)?`horizontal`:`vertical`;if(c.find(e=>e instanceof HTMLElement&&(typeof l==`function`&&l?.(e)||e.hasAttribute?.(`data-lenis-prevent`)||u===`vertical`&&e.hasAttribute?.(`data-lenis-prevent-vertical`)||u===`horizontal`&&e.hasAttribute?.(`data-lenis-prevent-horizontal`)||i&&e.hasAttribute?.(`data-lenis-prevent-touch`)||a&&e.hasAttribute?.(`data-lenis-prevent-wheel`)||this.options.allowNestedScroll&&this.hasNestedScroll(e,{deltaX:t,deltaY:n}))))return;if(this.isStopped||this.isLocked){r.cancelable&&r.preventDefault();return}if(!(this.options.syncTouch&&i||this.options.smoothWheel&&a)){this.isScrolling=`native`,this.animate.stop(),r.lenisStopPropagation=!0;return}let d=n;this.options.gestureOrientation===`both`?d=Math.abs(n)>Math.abs(t)?n:t:this.options.gestureOrientation===`horizontal`&&(d=t),(!this.options.overscroll||this.options.infinite||this.options.wrapper!==window&&this.limit>0&&(this.animatedScroll>0&&this.animatedScroll<this.limit||this.animatedScroll===0&&n>0||this.animatedScroll===this.limit&&n<0))&&(r.lenisStopPropagation=!0),r.cancelable&&r.preventDefault();let f=i&&this.options.syncTouch,p=i&&r.type===`touchend`;p&&(d=Math.sign(d)*Math.abs(this.velocity)**this.options.touchInertiaExponent),this.scrollTo(this.targetScroll+d,{programmatic:!1,...f?{lerp:p?this.options.syncTouchLerp:1}:{lerp:this.options.lerp,duration:this.options.duration,easing:this.options.easing}})};resize(){this.dimensions.resize(),this.animatedScroll=this.targetScroll=this.actualScroll,this.emit()}emit(){this.emitter.emit(`scroll`,this)}onNativeScroll=()=>{if(this._resetVelocityTimeout!==null&&(clearTimeout(this._resetVelocityTimeout),this._resetVelocityTimeout=null),this._preventNextNativeScrollEvent){this._preventNextNativeScrollEvent=!1;return}if(this.isScrolling===!1||this.isScrolling===`native`){let e=this.animatedScroll;this.animatedScroll=this.targetScroll=this.actualScroll,this.lastVelocity=this.velocity,this.velocity=this.animatedScroll-e,this.direction=Math.sign(this.animatedScroll-e),this.isStopped||(this.isScrolling=`native`),this.emit(),this.velocity!==0&&(this._resetVelocityTimeout=setTimeout(()=>{this.lastVelocity=this.velocity,this.velocity=0,this.isScrolling=!1,this.emit()},400))}};reset(){this.isLocked=!1,this.isScrolling=!1,this.animatedScroll=this.targetScroll=this.actualScroll,this.lastVelocity=this.velocity=0,this.animate.stop()}start(){if(this.isStopped){if(this.options.autoToggle){this.rootElement.style.removeProperty(`overflow`);return}this.internalStart()}}internalStart(){this.isStopped&&(this.reset(),this.isStopped=!1,this.emit())}stop(){if(!this.isStopped){if(this.options.autoToggle){this.rootElement.style.setProperty(`overflow`,`clip`);return}this.internalStop()}}internalStop(){this.isStopped||(this.reset(),this.isStopped=!0,this.emit())}raf=e=>{let t=e-(this.time||e);this.time=e,this.animate.advance(t*.001),this.options.autoRaf&&(this._rafId=requestAnimationFrame(this.raf))};scrollTo(e,{offset:n=0,immediate:r=!1,lock:i=!1,programmatic:a=!0,lerp:o=a?this.options.lerp:void 0,duration:s=a?this.options.duration:void 0,easing:c=a?this.options.easing:void 0,onStart:l,onComplete:u,force:d=!1,userData:p}={}){if((this.isStopped||this.isLocked)&&!d)return;let m=e,h=n;if(typeof m==`string`&&[`top`,`left`,`start`,`#`].includes(m))m=0;else if(typeof m==`string`&&[`bottom`,`right`,`end`].includes(m))m=this.limit;else{let e=null;if(typeof m==`string`?(e=document.querySelector(m),e||(m===`#top`?m=0:console.warn(`Lenis: Target not found`,m))):m instanceof HTMLElement&&m?.nodeType&&(e=m),e){if(this.options.wrapper!==window){let e=this.rootElement.getBoundingClientRect();h-=this.isHorizontal?e.left:e.top}let t=e.getBoundingClientRect(),n=getComputedStyle(e),r=this.isHorizontal?Number.parseFloat(n.scrollMarginLeft):Number.parseFloat(n.scrollMarginTop),i=getComputedStyle(this.rootElement),a=this.isHorizontal?Number.parseFloat(i.scrollPaddingLeft):Number.parseFloat(i.scrollPaddingTop);m=(this.isHorizontal?t.left:t.top)+this.animatedScroll-(Number.isNaN(r)?0:r)-(Number.isNaN(a)?0:a)}}if(typeof m==`number`){if(m+=h,this.options.infinite){if(a){this.targetScroll=this.animatedScroll=this.scroll;let e=m-this.animatedScroll;e>this.limit/2?m-=this.limit:e<-this.limit/2&&(m+=this.limit)}}else m=t(0,m,this.limit);if(m===this.targetScroll){l?.(this),u?.(this);return}if(this.userData=p??{},r){this.animatedScroll=this.targetScroll=m,this.setScroll(this.scroll),this.reset(),this.preventNextNativeScrollEvent(),this.emit(),u?.(this),this.userData={},requestAnimationFrame(()=>{this.dispatchScrollendEvent()});return}a||(this.targetScroll=m),typeof s==`number`&&typeof c!=`function`?c=f:typeof c==`function`&&typeof s!=`number`&&(s=1),this.animate.fromTo(this.animatedScroll,m,{duration:s,easing:c,lerp:o,onStart:()=>{i&&(this.isLocked=!0),this.isScrolling=`smooth`,l?.(this)},onUpdate:(e,t)=>{this.isScrolling=`smooth`,this.lastVelocity=this.velocity,this.velocity=e-this.animatedScroll,this.direction=Math.sign(this.velocity),this.animatedScroll=e,this.setScroll(this.scroll),a&&(this.targetScroll=e),t||this.emit(),t&&(this.reset(),this.emit(),u?.(this),this.userData={},requestAnimationFrame(()=>{this.dispatchScrollendEvent()}),this.preventNextNativeScrollEvent())}})}}preventNextNativeScrollEvent(){this._preventNextNativeScrollEvent=!0,requestAnimationFrame(()=>{this._preventNextNativeScrollEvent=!1})}hasNestedScroll(e,{deltaX:t,deltaY:n}){let r=Date.now();e._lenis||={};let i=e._lenis,a,o,s,c,l,u,d,f,p,m;if(r-(i.time??0)>2e3){i.time=Date.now();let t=window.getComputedStyle(e);if(i.computedStyle=t,a=[`auto`,`overlay`,`scroll`].includes(t.overflowX),o=[`auto`,`overlay`,`scroll`].includes(t.overflowY),l=[`auto`].includes(t.overscrollBehaviorX),u=[`auto`].includes(t.overscrollBehaviorY),i.hasOverflowX=a,i.hasOverflowY=o,!(a||o))return!1;d=e.scrollWidth,f=e.scrollHeight,p=e.clientWidth,m=e.clientHeight,s=d>p,c=f>m,i.isScrollableX=s,i.isScrollableY=c,i.scrollWidth=d,i.scrollHeight=f,i.clientWidth=p,i.clientHeight=m,i.hasOverscrollBehaviorX=l,i.hasOverscrollBehaviorY=u}else s=i.isScrollableX,c=i.isScrollableY,a=i.hasOverflowX,o=i.hasOverflowY,d=i.scrollWidth,f=i.scrollHeight,p=i.clientWidth,m=i.clientHeight,l=i.hasOverscrollBehaviorX,u=i.hasOverscrollBehaviorY;if(!(a&&s||o&&c))return!1;let h=Math.abs(t)>=Math.abs(n)?`horizontal`:`vertical`,g,_,v,y,b,x;if(h===`horizontal`)g=Math.round(e.scrollLeft),_=d-p,v=t,y=a,b=s,x=l;else if(h===`vertical`)g=Math.round(e.scrollTop),_=f-m,v=n,y=o,b=c,x=u;else return!1;return!x&&(g>=_||g<=0)?!0:(v>0?g<_:g>0)&&y&&b}get rootElement(){return this.options.wrapper===window?document.documentElement:this.options.wrapper}get limit(){return this.options.naiveDimensions?this.isHorizontal?this.rootElement.scrollWidth-this.rootElement.clientWidth:this.rootElement.scrollHeight-this.rootElement.clientHeight:this.dimensions.limit[this.isHorizontal?`x`:`y`]}get isHorizontal(){return this.options.orientation===`horizontal`}get actualScroll(){let e=this.options.wrapper;return this.isHorizontal?e.scrollX??e.scrollLeft:e.scrollY??e.scrollTop}get scroll(){return this.options.infinite?i(this.animatedScroll,this.limit):this.animatedScroll}get progress(){return this.limit===0?1:this.scroll/this.limit}get isScrolling(){return this._isScrolling}set isScrolling(e){this._isScrolling!==e&&(this._isScrolling=e,this.updateClassName())}get isStopped(){return this._isStopped}set isStopped(e){this._isStopped!==e&&(this._isStopped=e,this.updateClassName())}get isLocked(){return this._isLocked}set isLocked(e){this._isLocked!==e&&(this._isLocked=e,this.updateClassName())}get isSmooth(){return this.isScrolling===`smooth`}get className(){let e=`lenis`;return this.options.autoToggle&&(e+=` lenis-autoToggle`),this.isStopped&&(e+=` lenis-stopped`),this.isLocked&&(e+=` lenis-locked`),this.isScrolling&&(e+=` lenis-scrolling`),this.isScrolling===`smooth`&&(e+=` lenis-smooth`),e}updateClassName(){this.cleanUpClassName(),this.className.split(` `).forEach(e=>{this.rootElement.classList.add(e)})}cleanUpClassName(){for(let e of Array.from(this.rootElement.classList))(e===`lenis`||e.startsWith(`lenis-`))&&this.rootElement.classList.remove(e)}};globalThis.Lenis=p,globalThis.Lenis.prototype=p.prototype})();
+</script>
+<style>
+  :root {
+    --adobe-red: #FA0F00;
+    --gray-50: #FAFAFA;
+    --gray-75: #F5F5F5;
+    --gray-100: #EAEAEA;
+    --gray-200: #E1E1E1;
+    --gray-300: #CACACA;
+    --gray-400: #B3B3B3;
+    --gray-500: #8E8E8E;
+    --gray-600: #6E6E6E;
+    --gray-700: #4B4B4B;
+    --gray-800: #2C2C2C;
+    --gray-900: #1A1A1A;
+    --positive: #2D9D78;
+    --negative: #D7373F;
+    --warning: #E68619;
+    --informative: #0265DC;
+    --font-stack: 'Trebuchet MS', 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', sans-serif;
+    --mono-stack: 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-stack);
+    color: var(--gray-900);
+    background: var(--gray-50);
+    margin: 0;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 56px 24px 96px;
+  }
+
+  header {
+    border-bottom: 1px solid var(--gray-200);
+    padding-bottom: 24px;
+    margin-bottom: 48px;
+  }
+  header .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--adobe-red);
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 40px;
+    font-weight: 900;
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  .subtitle {
+    font-size: 17px;
+    color: var(--gray-600);
+    margin: 0;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 64px 0 16px;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 32px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  p { margin: 0 0 16px; font-size: 15px; }
+
+  code {
+    font-family: var(--mono-stack);
+    font-size: 0.92em;
+    background: var(--gray-100);
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: var(--gray-800);
+  }
+
+  /* Lenis (inlined from lenis.min.css) */
+  html.lenis, html.lenis body { height: auto; }
+  .lenis:not(.lenis-autoToggle).lenis-stopped { overflow: clip; }
+  .lenis [data-lenis-prevent], .lenis [data-lenis-prevent-wheel], .lenis [data-lenis-prevent-touch], .lenis [data-lenis-prevent-vertical], .lenis [data-lenis-prevent-horizontal] { overscroll-behavior: contain; }
+  .lenis.lenis-smooth iframe { pointer-events: none; }
+  .lenis.lenis-autoToggle { transition-property: overflow; transition-duration: 1ms; transition-behavior: allow-discrete; }
+
+  /* Lenis toggle */
+  .lenis-toggle {
+    position: fixed;
+    top: 72px;
+    right: 16px;
+    background: var(--gray-900);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-stack);
+    min-width: 110px;
+  }
+  .lenis-toggle .label {
+    color: var(--gray-400);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+  }
+  .lenis-toggle .switch {
+    width: 28px;
+    height: 16px;
+    background: var(--gray-700);
+    border-radius: 8px;
+    position: relative;
+    transition: background 0.15s ease;
+  }
+  .lenis-toggle.on .switch { background: var(--positive); }
+  .lenis-toggle .switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    transition: left 0.15s ease;
+  }
+  .lenis-toggle.on .switch::after { left: 14px; }
+  .lenis-toggle .state {
+    font-family: var(--mono-stack);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-400);
+    min-width: 24px;
+    text-align: right;
+  }
+  .lenis-toggle.on .state { color: #4ECCA3; }
+
+  /* Global FPS meter */
+  .fps-meter {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: var(--gray-900);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-family: var(--mono-stack);
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 110px;
+  }
+  .fps-meter .label {
+    color: var(--gray-400);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--font-stack);
+    font-weight: 700;
+  }
+  .fps-meter .value {
+    font-size: 22px;
+    font-weight: 700;
+    min-width: 42px;
+    text-align: right;
+    transition: color 0.2s ease;
+  }
+  .fps-meter.good .value { color: #4ECCA3; }
+  .fps-meter.warn .value { color: #FFD23F; }
+  .fps-meter.bad  .value { color: #FF6B6B; }
+
+  /* Pipeline diagram */
+  .pipeline {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin: 24px 0;
+  }
+  .pipeline-stage {
+    background: white;
+    padding: 18px 16px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--gray-200);
+    position: relative;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+  }
+  .pipeline-stage .stage-num {
+    font-family: var(--mono-stack);
+    font-size: 11px;
+    color: var(--gray-500);
+    margin-bottom: 6px;
+  }
+  .pipeline-stage .stage-name {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .pipeline-stage .stage-desc {
+    font-size: 13px;
+    color: var(--gray-600);
+    margin-bottom: 12px;
+  }
+  .pipeline-stage .stage-cost {
+    margin-top: auto;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--gray-100);
+    overflow: hidden;
+  }
+  .pipeline-stage .stage-cost::after {
+    content: '';
+    display: block;
+    height: 100%;
+    border-radius: 3px;
+  }
+  .pipeline-stage[data-cost="high"] .stage-cost::after { width: 100%; background: var(--negative); }
+  .pipeline-stage[data-cost="mid"]  .stage-cost::after { width: 60%;  background: var(--warning); }
+  .pipeline-stage[data-cost="low"]  .stage-cost::after { width: 25%;  background: var(--positive); }
+  .pipeline-stage .stage-cost-label {
+    margin-top: 6px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--gray-500);
+    font-weight: 700;
+  }
+
+  /* Demos */
+  .demo {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 18px 20px 20px;
+    margin: 14px 0;
+  }
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 16px;
+  }
+  .demo-title {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .demo-title code { font-size: 14px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .badge-bad  { background: rgba(215, 55, 63, 0.12);  color: var(--negative); }
+  .badge-mid  { background: rgba(230, 134, 25, 0.12); color: var(--warning); }
+  .badge-good { background: rgba(45, 157, 120, 0.12); color: var(--positive); }
+
+  .play-btn {
+    background: var(--gray-900);
+    color: white;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-family: var(--font-stack);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 80px;
+    transition: background 0.15s ease;
+  }
+  .play-btn:hover { background: var(--gray-700); }
+  .play-btn.playing { background: var(--adobe-red); }
+  .play-btn.playing:hover { background: #C20D00; }
+
+  /* Section-level Play All button on category headings */
+  h3 .play-all {
+    margin-left: auto;
+    background: var(--gray-900);
+    color: white;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 4px;
+    font-family: var(--font-stack);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: background 0.15s ease;
+  }
+  h3 .play-all:hover { background: var(--gray-700); }
+  h3 .play-all.playing { background: var(--adobe-red); }
+  h3 .play-all.playing:hover { background: #C20D00; }
+
+  .demo-stage {
+    height: 180px;
+    background: var(--gray-75);
+    border-radius: 6px;
+    padding: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .dot-grid {
+    display: block;
+    font-size: 0;
+    line-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+  .dot-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    width: 100%;
+    height: 100%;
+    gap: 3px;
+    font-family: var(--font-stack);
+    font-size: 4px;
+    line-height: 1.05;
+    color: rgba(255,255,255,0.5);
+    word-spacing: 1px;
+    box-sizing: border-box;
+    overflow: hidden;
+    /* Force GPU layer promotion so the 300-dot content is rasterized once and the
+       wrapper can be transformed/opacified by the compositor without re-paint.
+       Applied to every wrapper for parity across demos. */
+    will-change: transform;
+    transform: translateZ(0);
+  }
+  .dot {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 16px;
+    padding: 1px 2px;
+    background: var(--informative);
+    border-radius: 2px;
+    box-sizing: content-box;
+    overflow: hidden;
+  }
+  /* For font-size / line-height demos, drop the fixed sizing so the text actually
+     grows the box and forces a real layout cascade - siblings reposition every frame */
+  .anim-fontsize .dot,
+  .anim-lineheight .dot {
+    width: auto;
+    height: auto;
+    max-width: 80px;
+    overflow: visible;
+  }
+
+  /* Animation classes - applied to the wrapper, so each demo animates one element
+     whose change either composites cheaply (transform/opacity) or cascades to all
+     300 dots inside (width/padding/font-size/line-height) */
+  .anim-translate  .dot-wrapper { animation: animTranslate  1s ease-in-out infinite alternate; }
+  .anim-scale      .dot-wrapper { animation: animScale      1s ease-in-out infinite alternate; }
+  .anim-rotate     .dot-wrapper { animation: animRotate     1s ease-in-out infinite alternate; }
+  .anim-opacity    .dot-wrapper { animation: animOpacity    1s ease-in-out infinite alternate; }
+  .anim-bg         .dot-wrapper { animation: animBg         1s ease-in-out infinite alternate; }
+  .anim-shadow     .dot-wrapper { animation: animShadow     1s ease-in-out infinite alternate; }
+  .anim-filter     .dot-wrapper { animation: animFilter     1s ease-in-out infinite alternate; }
+  .anim-borderr    .dot-wrapper { animation: animBorderR    1s ease-in-out infinite alternate; }
+  .anim-width      .dot-wrapper { animation: animWidth      1s ease-in-out infinite alternate; }
+  .anim-padding    .dot-wrapper { animation: animPadding    1s ease-in-out infinite alternate; }
+  .anim-fontsize   .dot-wrapper { animation: animFontSize   1s ease-in-out infinite alternate; }
+  .anim-lineheight .dot-wrapper { animation: animLineHeight 1s ease-in-out infinite alternate; }
+
+  @keyframes animTranslate  { from { transform: translateY(0); }    to { transform: translateY(24px); } }
+  @keyframes animScale      { from { transform: scale(1); }         to { transform: scale(0.8); } }
+  @keyframes animRotate     { from { transform: rotate(0); }        to { transform: rotate(6deg); } }
+  @keyframes animOpacity    { from { opacity: 1; }                  to { opacity: 0.4; } }
+  @keyframes animBg         { from { background: transparent; }     to { background: rgba(250,15,0,0.55); } }
+  @keyframes animShadow     { from { box-shadow: inset 0 0 0 rgba(0,0,0,0), 0 0 0 rgba(0,0,0,0); } to { box-shadow: inset 0 0 80px 20px rgba(0,0,0,0.55), 0 0 60px 10px rgba(250,15,0,0.4); } }
+  @keyframes animFilter     { from { filter: blur(0); }             to { filter: blur(18px); } }
+  @keyframes animBorderR    { from { border-radius: 0; }            to { border-radius: 24px; } }
+  @keyframes animWidth      { from { width: 100%; }                 to { width: 25%; } }
+  @keyframes animPadding    { from { padding: 0; }                  to { padding: 40px; } }
+  @keyframes animFontSize   { from { font-size: 3px; }              to { font-size: 11px; } }
+  @keyframes animLineHeight { from { line-height: 1; }              to { line-height: 2.8; } }
+
+  /* Reference table */
+  .ref-table-wrap {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+  .ref-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .ref-table th {
+    background: var(--gray-75);
+    text-align: left;
+    padding: 12px 16px;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--gray-700);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .ref-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: top;
+  }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table .stage-cell {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .ref-table .stage-layout    { color: var(--negative); }
+  .ref-table .stage-paint     { color: var(--warning); }
+  .ref-table .stage-composite { color: var(--positive); }
+  .ref-table td.notes { color: var(--gray-600); font-size: 13px; }
+
+  /* References */
+  .refs-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+  }
+  .refs-list li {
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    margin-bottom: 8px;
+  }
+  .refs-list a {
+    color: var(--informative);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .refs-list a:hover { text-decoration: underline; }
+  .refs-list .ref-desc {
+    display: block;
+    color: var(--gray-600);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  .callout {
+    background: rgba(2, 101, 220, 0.06);
+    border-left: 3px solid var(--informative);
+    padding: 14px 20px;
+    border-radius: 0 6px 6px 0;
+    margin: 16px 0;
+    font-size: 15px;
+  }
+  .callout strong { color: var(--informative); }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 16px 0 24px;
+    padding: 14px 18px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 6px;
+    font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch {
+    width: 12px; height: 12px; border-radius: 50%; display: inline-block;
+  }
+  .legend-swatch.good { background: var(--positive); }
+  .legend-swatch.mid  { background: var(--warning); }
+  .legend-swatch.bad  { background: var(--negative); }
+
+  /* Table of contents */
+  .toc {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 20px 24px 22px;
+    margin: 0 0 48px;
+  }
+  .toc .toc-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-600);
+    margin: 0 0 12px;
+  }
+  .toc ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: toc;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 6px 20px;
+  }
+  .toc li { counter-increment: toc; line-height: 1.4; }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: var(--mono-stack);
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-right: 8px;
+  }
+  .toc a {
+    color: var(--gray-900);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s ease;
+  }
+  .toc a:hover { border-bottom-color: var(--adobe-red); }
+
+  /* Anchor offset so headings clear the fixed FPS meter when jumped to */
+  section[id] { scroll-margin-top: 24px; }
+
+  /* Recommendation list */
+  .recommendation-list {
+    list-style: none;
+    counter-reset: rec-counter;
+    padding: 0;
+    margin: 20px 0;
+  }
+  .recommendation-list > li {
+    counter-increment: rec-counter;
+    position: relative;
+    padding: 18px 20px 18px 56px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .recommendation-list > li::before {
+    content: counter(rec-counter);
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gray-900);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono-stack);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Code block (multi-line code samples) */
+  pre.code-block {
+    background: var(--gray-900);
+    color: #E6E6E6;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-family: var(--mono-stack);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  pre.code-block code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+    font-size: inherit;
+  }
+
+  @media (max-width: 720px) {
+    .pipeline { grid-template-columns: repeat(2, 1fr); }
+    .demo-stage { height: 140px; }
+    .dot-grid { grid-template-columns: repeat(30, 1fr); }
+    h1 { font-size: 32px; }
+    .fps-meter { top: auto; bottom: 16px; right: 16px; }
+    .lenis-toggle { top: auto; bottom: 70px; right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="fps-meter" id="fpsMeter">
+  <span class="label">FPS</span>
+  <span class="value" id="fpsValue">--</span>
+</div>
+
+<button class="lenis-toggle" id="lenisToggle" type="button" aria-pressed="false">
+  <span class="label">Lenis</span>
+  <span class="switch" aria-hidden="true"></span>
+  <span class="state" id="lenisState">Off</span>
+</button>
+
+<div class="container">
+
+<header>
+  <div class="eyebrow">Animation Performance Primer</div>
+  <h1>What You Can (and Can't) Animate Cheaply</h1>
+  <p class="subtitle">A short tour of the browser rendering pipeline, the properties that are cheap to animate, and the ones that quietly cost frames.</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <div class="toc-label">Contents</div>
+  <ol>
+    <li><a href="#rendering-pipeline">The Browser Rendering Pipeline</a></li>
+    <li><a href="#lenis">Add Lenis to the Equation</a></li>
+    <li><a href="#try-it">Try It: Watch the FPS Meter</a></li>
+    <li><a href="#reference">Property Reference</a></li>
+    <li><a href="#substitutes">Substituting Expensive Properties</a></li>
+    <li><a href="#platform">Why Windows and Mac Feel Different</a></li>
+    <li><a href="#recommendation">Overall Recommendations</a></li>
+    <li><a href="#further-reading">Further Reading</a></li>
+  </ol>
+</nav>
+
+<section id="rendering-pipeline">
+  <h2>The Browser Rendering Pipeline</h2>
+  <p>Every visual change a browser makes goes through up to four stages, in order. The earlier in the pipeline work is triggered, the more expensive the frame.</p>
+  <div class="pipeline">
+    <div class="pipeline-stage" data-cost="high">
+      <div class="stage-num">01</div>
+      <div class="stage-name">Style</div>
+      <div class="stage-desc">Recalculate which styles apply to each element.</div>
+      <div class="stage-cost"></div>
+      <div class="stage-cost-label">High cost</div>
+    </div>
+    <div class="pipeline-stage" data-cost="high">
+      <div class="stage-num">02</div>
+      <div class="stage-name">Layout</div>
+      <div class="stage-desc">Compute the geometry of every affected element.</div>
+      <div class="stage-cost"></div>
+      <div class="stage-cost-label">High cost</div>
+    </div>
+    <div class="pipeline-stage" data-cost="mid">
+      <div class="stage-num">03</div>
+      <div class="stage-name">Paint</div>
+      <div class="stage-desc">Rasterize pixels into layers.</div>
+      <div class="stage-cost"></div>
+      <div class="stage-cost-label">Medium cost</div>
+    </div>
+    <div class="pipeline-stage" data-cost="low">
+      <div class="stage-num">04</div>
+      <div class="stage-name">Composite</div>
+      <div class="stage-desc">Assemble layers on the GPU.</div>
+      <div class="stage-cost"></div>
+      <div class="stage-cost-label">Low cost</div>
+    </div>
+  </div>
+  <p>The browser has a 16.7 ms budget per frame to hold 60 FPS (8.3 ms for 120 FPS). Anything that pushes a frame over budget is dropped, which the eye reads as jank.</p>
+  <div class="callout">
+    <strong>The rule:</strong> animate only properties that stop at the <em>Composite</em> stage. Those are handled on the GPU and never block the main thread. Everything else has a CPU cost that scales with how much of the DOM is affected.
+  </div>
+</section>
+
+<section id="lenis">
+  <h2>Add Lenis to the Equation</h2>
+  <p><a href="https://lenis.darkroom.engineering/" target="_blank" rel="noopener">Lenis</a> is a popular JavaScript library that replaces the browser's native scrolling with a smoothed, inertia-based version. It intercepts wheel and touch events and drives the scroll position from a <code>requestAnimationFrame</code> loop on the <strong>main thread</strong>, every frame, even when nothing is scrolling. During scroll, that loop does real per-frame work competing for the same 16.7&nbsp;ms (or 8.3&nbsp;ms at 120&nbsp;FPS) frame budget as CSS animations and other JavaScript.</p>
+  <div class="callout">
+    <strong>Try it:</strong> use the <em>Lenis</em> toggle in the corner to enable or disable it. Scroll the page with Lenis on and off, and ideally do it once more with CPU throttling on (see the next section).
+    <p style="margin: 10px 0 0;"><strong>The FPS counter often won't move much when Lenis is on.</strong> That's not because Lenis is free - it's because Lenis's cost shows up as <em>input lag</em>, not dropped frames. Every wheel tick is intercepted and interpolated over many frames, so the page lags 50-150 ms behind the input even while every frame is drawn on time. With the CPU throttled, that delay becomes a real, felt jitter. Trust the felt experience, not the counter reading.</p>
+  </div>
+</section>
+
+<section id="try-it">
+  <h2>Try It: Watch the FPS Meter</h2>
+  <p>Each demo animates 500 boxes (each containing a small chunk of text) by changing one CSS property. Use <strong>Play all</strong> at the top of a category to run every demo in it simultaneously. Real pages rarely animate just one thing, so stacking multiple animations simulates that combined load.</p>
+
+  <div class="callout">
+    <strong>Run the tests with CPU throttling on too.</strong> The teams building modern web apps typically work on fast machines; most users don't. A mid-range Windows laptop running antivirus, a videoconferencing app, and a dozen browser tabs has a fraction of that headroom. To simulate it:
+    <ol style="margin: 10px 0 4px; padding-left: 20px;">
+      <li>Open Chrome DevTools (<code>Cmd+Option+I</code> on Mac, <code>F12</code> on Windows)</li>
+      <li>Click the <strong>Performance</strong> tab</li>
+      <li>Click the gear icon at the top-right of that panel</li>
+      <li>Set the <strong>CPU</strong> dropdown to <strong>4x slowdown</strong> (mid-range laptop) or <strong>6x slowdown</strong> (low-end)</li>
+      <li>Re-run the demos and compare the FPS readings</li>
+    </ol>
+    If the page is smooth at 4x slowdown, it'll be smooth for most users. If it isn't, that's the gap that needs to be closed.
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="legend-swatch good"></span> Cheap - composite only</div>
+    <div class="legend-item"><span class="legend-swatch mid"></span> Medium - triggers paint</div>
+    <div class="legend-item"><span class="legend-swatch bad"></span> Expensive - triggers layout</div>
+  </div>
+</section>
+
+<section>
+  <h3><span class="badge badge-good">Cheap</span> Compositor-only properties <button class="play-all" type="button">Play all</button></h3>
+  <p>These never leave the GPU. Animate mostly freely, even in continuous and scroll-linked contexts.</p>
+
+  <div class="demo" data-anim="translate">
+    <div class="demo-header">
+      <div class="demo-title"><code>transform: translate()</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="scale">
+    <div class="demo-header">
+      <div class="demo-title"><code>transform: scale()</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="rotate">
+    <div class="demo-header">
+      <div class="demo-title"><code>transform: rotate()</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="opacity">
+    <div class="demo-header">
+      <div class="demo-title"><code>opacity</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+</section>
+
+<section>
+  <h3><span class="badge badge-mid">Medium</span> Paint-triggering properties <button class="play-all" type="button">Play all</button></h3>
+  <p>These skip layout, but still require rasterizing new pixels. Acceptable in moderation; expensive on element-heavy pages or when larger values are used.</p>
+
+  <div class="demo" data-anim="bg">
+    <div class="demo-header">
+      <div class="demo-title"><code>background-color</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="shadow">
+    <div class="demo-header">
+      <div class="demo-title"><code>box-shadow</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="filter">
+    <div class="demo-header">
+      <div class="demo-title"><code>filter: blur()</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="borderr">
+    <div class="demo-header">
+      <div class="demo-title"><code>border-radius</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+</section>
+
+<section>
+  <h3><span class="badge badge-bad">Expensive</span> Layout-triggering properties <button class="play-all" type="button">Play all</button></h3>
+  <p>Every frame, the browser has to recompute geometry for the element and every element affected by it. Avoid in continuous or scroll-linked animations.</p>
+
+  <div class="demo" data-anim="width">
+    <div class="demo-header">
+      <div class="demo-title"><code>width</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="padding">
+    <div class="demo-header">
+      <div class="demo-title"><code>padding</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="fontsize">
+    <div class="demo-header">
+      <div class="demo-title"><code>font-size</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+
+  <div class="demo" data-anim="lineheight">
+    <div class="demo-header">
+      <div class="demo-title"><code>line-height</code></div>
+    </div>
+    <div class="demo-stage"><div class="dot-grid"></div></div>
+  </div>
+</section>
+
+<section id="reference">
+  <h2>Property Reference</h2>
+  <p>The deepest stage each property change triggers. Stages earlier than the listed one always fire too.</p>
+  <div class="ref-table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th>Deepest stage</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code>transform</code></td><td class="stage-cell stage-composite">Composite</td><td class="notes">Translate, scale, rotate, skew. The gold standard.</td></tr>
+        <tr><td><code>opacity</code></td><td class="stage-cell stage-composite">Composite</td><td class="notes">Element needs its own layer for full benefit.</td></tr>
+        <tr><td><code>color</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">OK for short transitions; expensive across many elements.</td></tr>
+        <tr><td><code>background-color</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Same.</td></tr>
+        <tr><td><code>background-image</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Avoid animating gradients on large surfaces.</td></tr>
+        <tr><td><code>background-position</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Use <code>transform</code> on the image instead.</td></tr>
+        <tr><td><code>background-size</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Use <code>transform: scale()</code> on the image instead.</td></tr>
+        <tr><td><code>border-color</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes"></td></tr>
+        <tr><td><code>border-radius</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Re-rasterizes the corners every frame.</td></tr>
+        <tr><td><code>box-shadow</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Especially expensive with large blur radius.</td></tr>
+        <tr><td><code>filter</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Blur, brightness, drop-shadow. Heavy on large surfaces.</td></tr>
+        <tr><td><code>backdrop-filter</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Re-samples everything behind the element. Expensive.</td></tr>
+        <tr><td><code>visibility</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes"></td></tr>
+        <tr><td><code>outline</code></td><td class="stage-cell stage-paint">Paint</td><td class="notes">Does not affect layout, unlike <code>border</code>.</td></tr>
+        <tr><td><code>width</code> / <code>height</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Reflow cascades through siblings and parents.</td></tr>
+        <tr><td><code>min-width</code> / <code>max-width</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Same.</td></tr>
+        <tr><td><code>min-height</code> / <code>max-height</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Same.</td></tr>
+        <tr><td><code>margin</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Affects sibling positions.</td></tr>
+        <tr><td><code>padding</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Affects own content and sometimes siblings.</td></tr>
+        <tr><td><code>top</code> / <code>left</code> / <code>right</code> / <code>bottom</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Use <code>transform: translate()</code> instead.</td></tr>
+        <tr><td><code>font-size</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Reflows text content.</td></tr>
+        <tr><td><code>font-weight</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Different weights have different glyph widths.</td></tr>
+        <tr><td><code>line-height</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Reflows every wrapped line.</td></tr>
+        <tr><td><code>letter-spacing</code> / <code>word-spacing</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Reflows.</td></tr>
+        <tr><td><code>text-align</code> / <code>vertical-align</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes"></td></tr>
+        <tr><td><code>border-width</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Border takes up space.</td></tr>
+        <tr><td><code>grid-template-*</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes">Re-lays out the whole grid.</td></tr>
+        <tr><td><code>flex-basis</code> / <code>flex-grow</code> / <code>flex-shrink</code></td><td class="stage-cell stage-layout">Layout</td><td class="notes"></td></tr>
+        <tr><td><code>gap</code> (grid / flex)</td><td class="stage-cell stage-layout">Layout</td><td class="notes"></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="substitutes">
+  <h2>Substituting Expensive Properties</h2>
+  <p>Some layout-triggering animations have a clean compositor-only equivalent. Others don't - the compositor substitute is an <em>approximation</em> with real trade-offs to be aware of before reaching for it. The table below splits the two.</p>
+
+  <h3>True equivalents</h3>
+  <p>These behave the same way the original property does, visually, while staying on the compositor.</p>
+  <div class="ref-table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr><th>Instead of animating&hellip;</th><th>Use&hellip;</th><th>Why it works</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>top</code> / <code>left</code> / <code>right</code> / <code>bottom</code></td>
+          <td><code>transform: translate()</code></td>
+          <td class="notes">Positioned elements don't push siblings either way, so the visual is identical - with no layout cost.</td>
+        </tr>
+        <tr>
+          <td><code>margin</code> for movement</td>
+          <td><code>transform: translate()</code></td>
+          <td class="notes">Same: the element moves without reflowing siblings. Use only when the surrounding layout doesn't need to react.</td>
+        </tr>
+        <tr>
+          <td><code>background-position</code> parallax</td>
+          <td><code>transform: translate3d()</code> on the image inside a clipping wrapper</td>
+          <td class="notes">Put the image on its own element with <code>overflow: hidden</code> on the parent; translating it gives the same parallax effect on the GPU.</td>
+        </tr>
+        <tr>
+          <td>Show / hide via <code>display</code></td>
+          <td><code>opacity</code> + <code>visibility</code> (with <code>transition-behavior: allow-discrete</code>)</td>
+          <td class="notes">Genuinely composite-friendly. Element keeps its space in layout but is visually removed.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Approximations (read the trade-off)</h3>
+  <p>These cost less on the compositor but they aren't visually identical to the original. The biggest caveat sits in the first row below.</p>
+  <div class="ref-table-wrap">
+    <table class="ref-table">
+      <thead>
+        <tr><th>Instead of animating&hellip;</th><th>Approximate with&hellip;</th><th>What's given up</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>width</code> / <code>height</code></td>
+          <td><code>transform: scaleX()</code> / <code>scaleY()</code></td>
+          <td class="notes">Children scale too, including text (which can blur sub-pixels and pixelate icons). Acceptable on a container that's <em>meant</em> to scale uniformly (e.g. a hover-grow card with no text), not on a generic resizable box.</td>
+        </tr>
+        <tr>
+          <td><code>width</code> / <code>height</code> (clipping a region)</td>
+          <td>Animate <code>clip-path</code> (e.g. <code>inset()</code>)</td>
+          <td class="notes">Clip-path animations can run on the compositor in modern Chrome when they don't change the element's box. Good for revealing content. The element still occupies its full size in layout.</td>
+        </tr>
+        <tr>
+          <td><code>font-size</code> growth</td>
+          <td><code>transform: scale()</code> on the text container</td>
+          <td class="notes">Same trade-off as above: sub-pixel rendering is interpolated, so the text can look blurry at intermediate scales. Best for short bursts; avoid for long-running scroll-driven growth.</td>
+        </tr>
+        <tr>
+          <td><code>line-height</code> per-line growth</td>
+          <td><em>No clean substitute.</em> Wrap each visible line in its own element manually, then animate each with <code>transform: translateY()</code>.</td>
+          <td class="notes">Per-line typography animation is fundamentally layout work because the browser has to decide where lines break. The split-into-spans workaround is brittle: re-wrapping on resize requires re-splitting.</td>
+        </tr>
+        <tr>
+          <td>Sibling-push hover effects</td>
+          <td><code>transform: scaleX()</code> on the hovered element + <code>overflow: hidden</code> on the parent</td>
+          <td class="notes">The hovered element grows visually, but its siblings don't move out of the way - they get clipped. Acceptable when the goal is emphasis, not spatial reorganization.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <strong>When in doubt:</strong> not every layout animation has a compositor-only equivalent. If the trade-off doesn't fit the use case, the next-best move is usually to <em>reduce the scope</em> of the animation - fewer elements, shorter duration, or skip the animation entirely on lower-end hardware.
+  </div>
+</section>
+
+<section id="platform">
+  <h2>Why Windows and Mac Feel Different</h2>
+  <p>The exact same page can run smoothly on a MacBook Air and stutter on a four-year-old Windows laptop. Four factors compound to produce that gap.</p>
+
+  <h3>1. Hardware diversity</h3>
+  <p>Apple ships ~5 chip variants per year (M1 / M2 / M3 / M4 and their Pro/Max tiers). Even the entry-level MacBook Air has a capable GPU. The hardware floor is high. On Windows, the range is enormous - from gaming laptops with discrete GPUs to corporate laptops from 2019 with Intel UHD integrated graphics.</p>
+
+  <h3>2. Unified memory on Apple Silicon</h3>
+  <p>On an M-series Mac, CPU and GPU share the same physical RAM. When the browser hands a layer to the GPU, <em>nothing is copied</em>. On a typical Windows laptop, GPU memory is either separate (discrete GPU, requiring PCIe transfers per frame for changed layers) or shared with system RAM through a slower memory path than Apple's unified design. So animations the GPU can "just play" on Mac carry an upload cost on Windows, every frame.</p>
+
+  <h3>3. The Chrome &rarr; GPU path</h3>
+  <p>Both platforms have had GPU-accelerated window compositors for nearly two decades: macOS via Quartz Extreme (2002) and Core Animation (2007), Windows via DWM (Vista, 2006). Both are mature. The practical difference is one level up, in how Chrome talks to the GPU.</p>
+  <p>On macOS, Chrome uses Apple's <strong>Metal</strong> API as its graphics backend (default since Chrome 100 in 2022). Metal is low-overhead and well-matched to Apple Silicon. On Windows, Chrome uses <strong>Direct3D 11</strong>, which carries more API and driver overhead on average - and driver quality varies far more across the wide Windows hardware ecosystem. For WebGL specifically, Chrome on Windows additionally translates calls through <strong>ANGLE</strong> (OpenGL ES &rarr; D3D), though that path only affects WebGL content, not general page rendering.</p>
+  <p>The net is that the Chrome-to-pixels path on Windows has more layers and more variance than on Mac, on top of the hardware diversity already noted.</p>
+
+  <h3>4. CPU headroom</h3>
+  <p>Even when an animation <em>can</em> stay on the GPU, pages include scroll handlers, style recalculation, and per-frame JavaScript like Lenis. On an M-series Mac, the CPU has enough headroom to absorb that work well inside the 16.7&nbsp;ms frame budget. On a four-year-old Windows laptop running antivirus, a videoconferencing app, and 30 browser tabs, the same work blows the budget and frames get dropped.</p>
+
+  <div class="callout">
+    <strong>Net effect:</strong> the work is the same on both platforms, but on Mac the Chrome-to-GPU path is shorter, the GPU is closer to memory, the hardware floor is much higher, and the CPU has more headroom. On Windows, all four advantages are weaker - so the same animation that costs nothing on a MacBook Air costs a dropped frame on a four-year-old corporate laptop.
+  </div>
+</section>
+
+<section id="recommendation">
+  <h2>Overall Recommendations</h2>
+  <p>The conclusions are straightforward:</p>
+
+  <ol class="recommendation-list">
+    <li>
+      <strong>Default to <code>transform</code> and <code>opacity</code> for every animation, on every device.</strong>
+      They stay cheap regardless of CPU pressure and scale safely from a current high-end laptop to a four-year-old corporate machine without per-platform tuning.
+    </li>
+    <li>
+      <strong>Be very selective with paint-triggering animations.</strong>
+      <code>background-color</code>, <code>box-shadow</code>, <code>filter</code>, and <code>border-radius</code> are cheaper than layout but still cost per-pixel work that scales with surface area. They're fine for short transitions on small elements (a hover state, a button press). Avoid them in continuous, scroll-linked, or page-wide animations.
+    </li>
+    <li>
+      <strong>Don't animate layout-triggering properties.</strong>
+      <code>width</code>, <code>height</code>, <code>margin</code>, <code>padding</code>, <code>top</code> / <code>left</code>, <code>font-size</code>, <code>line-height</code>, and the rest of the layout family trigger main-thread work the GPU cannot help with. Their cost compounds with everything else on the page (Lenis, scroll handlers, JS).
+    </li>
+  </ol>
+
+  <h3>If layout animations can't be dropped entirely</h3>
+  <p>The fallback is to feature-gate them on lower-end hardware and let only the machines that can carry the animations actually run them.</p>
+
+  <div class="callout">
+    <strong>This is a fallback, not the goal.</strong> The goal is animations that work smoothly for everyone. Anything that can't make that promise should either be rewritten with a compositor-only equivalent or gated so it only runs where the hardware can carry it.
+  </div>
+</section>
+
+<section id="further-reading">
+  <h2>Further Reading</h2>
+  <ul class="refs-list">
+    <li>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Animation_performance_and_frame_rate" target="_blank" rel="noopener">MDN &middot; Animation performance and frame rate</a>
+      <span class="ref-desc">Overview of how the rendering pipeline applies to animations.</span>
+    </li>
+    <li>
+      <a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/CSS_JavaScript_animation_performance" target="_blank" rel="noopener">MDN &middot; CSS and JavaScript animation performance</a>
+      <span class="ref-desc">Why CSS animations on the compositor outperform JS-driven equivalents.</span>
+    </li>
+    <li>
+      <a href="https://web.dev/articles/animations-guide" target="_blank" rel="noopener">web.dev &middot; Animations guide</a>
+      <span class="ref-desc">Google's practical guide with worked examples and DevTools tips.</span>
+    </li>
+    <li>
+      <a href="https://web.dev/articles/stick-to-compositor-only-properties-and-manage-layer-count" target="_blank" rel="noopener">web.dev &middot; Stick to compositor-only properties</a>
+      <span class="ref-desc">The original "transform and opacity only" recommendation.</span>
+    </li>
+  </ul>
+</section>
+
+</div>
+
+<script>
+  (function () {
+    var fpsValueEl = document.getElementById('fpsValue');
+    var fpsMeterEl = document.getElementById('fpsMeter');
+    var times = [];
+    var lastShown = 0;
+
+    function tick(now) {
+      while (times.length > 0 && times[0] <= now - 1000) times.shift();
+      times.push(now);
+      if (now - lastShown > 200) {
+        var fps = times.length;
+        fpsValueEl.textContent = fps;
+        fpsMeterEl.classList.remove('good', 'warn', 'bad');
+        if (fps >= 50) fpsMeterEl.classList.add('good');
+        else if (fps >= 30) fpsMeterEl.classList.add('warn');
+        else fpsMeterEl.classList.add('bad');
+        lastShown = now;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  document.querySelectorAll('.dot-grid').forEach(function (grid) {
+    var phrase = 'lorem ipsum dolor sit amet consectetur adipiscing elit sed do';
+    var dots = '';
+    for (var i = 0; i < 500; i++) dots += '<div class="dot">' + phrase + '</div>';
+    grid.innerHTML = '<div class="dot-wrapper">' + dots + '</div>';
+  });
+
+  (function () {
+    var btn = document.getElementById('lenisToggle');
+    var stateEl = document.getElementById('lenisState');
+    var lenis = null;
+    var rafId = null;
+
+    function start() {
+      if (!window.Lenis || lenis) return;
+      lenis = new window.Lenis({ smoothWheel: true, lerp: 0.06 });
+      function raf(time) {
+        lenis.raf(time);
+        rafId = requestAnimationFrame(raf);
+      }
+      rafId = requestAnimationFrame(raf);
+      btn.classList.add('on');
+      btn.setAttribute('aria-pressed', 'true');
+      stateEl.textContent = 'On';
+    }
+
+    function stop() {
+      if (!lenis) return;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = null;
+      lenis.destroy();
+      lenis = null;
+      btn.classList.remove('on');
+      btn.setAttribute('aria-pressed', 'false');
+      stateEl.textContent = 'Off';
+    }
+
+    btn.addEventListener('click', function () {
+      if (lenis) stop(); else start();
+    });
+  })();
+
+  document.querySelectorAll('.play-all').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var section = btn.closest('section');
+      var demos = section.querySelectorAll('.demo');
+      var anyPlaying = Array.from(demos).some(function (demo) {
+        return demo.querySelector('.dot-grid').classList.contains('anim-' + demo.dataset.anim);
+      });
+      var willPlay = !anyPlaying;
+      demos.forEach(function (demo) {
+        var grid = demo.querySelector('.dot-grid');
+        var cls = 'anim-' + demo.dataset.anim;
+        if (willPlay) grid.classList.add(cls);
+        else grid.classList.remove(cls);
+      });
+      btn.textContent = willPlay ? 'Stop all' : 'Play all';
+      btn.classList.toggle('playing', willPlay);
+    });
+  });
+</script>
+</body>
+</html>
