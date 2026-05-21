@@ -597,6 +597,7 @@ function setupStickyHeader(el) {
     updateMinHeight();
     syncTop();
     updateThreshold();
+    if (window.scrollY >= threshold) applySticky();
   });
 
   window.addEventListener('scroll', () => {
