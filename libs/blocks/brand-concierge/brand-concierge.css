@@ -831,6 +831,12 @@
   }
 }
 
+/* Modal width matches the floating-input bar */
+body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
+  max-width: calc(100% - 48px);
+  width: calc(100% - 48px);
+}
+
 /* =============================================================================
    floating-input variant
    ============================================================================= */
@@ -899,6 +905,24 @@
   border: 2px solid transparent;
 }
 
+/* Gradient glow — blurred layer behind the input, fades in on hover */
+.brand-concierge.floating-input .bc-input-field::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #7155FA, #D92361, #D73220);
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.brand-concierge.floating-input .bc-input-field:hover::after,
+.brand-concierge.floating-input .bc-input-field:has(textarea:focus-visible)::after {
+  opacity: 0.4;
+}
+
 /* Constrain textarea height within the fixed bar */
 .brand-concierge.floating-input .bc-input-field-container textarea,
 .brand-concierge.floating-input .bc-textarea-grow-wrap::after {
@@ -939,8 +963,8 @@
 }
 
 .brand-concierge.floating-input .prompt-card-button:hover {
-  border-color: var(--bc-fi-pill-border);
-  background: #fff;
+  background: #F8F8F8;
+  border-color: rgba(0 0 0 / 22%);
 }
 
 .brand-concierge.floating-input .prompt-card-text {
@@ -968,7 +992,7 @@
 .brand-concierge.floating-input.dark {
   --bc-fi-bar-bg: rgba(0 0 0 / 65%);
   --bc-fi-bar-border: rgba(255 255 255 / 21%);
-  --bc-fi-input-bg: #111;
+  --bc-fi-input-bg: #131313;
   --bc-fi-pill-bg: rgba(0 0 0 / 93%);
   --bc-fi-pill-border: #8F8F8F;
   --bc-fi-text: #DBDBDB;
