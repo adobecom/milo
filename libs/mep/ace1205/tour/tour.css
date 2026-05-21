@@ -64,7 +64,10 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
 .tour-title {
   background: var(--s2a-color-background-default);
-  padding-block: var(--s2a-spacing-md);
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   padding-inline-end: calc(var(--s2a-spacing-md) + 48px);
   padding-inline-start: var(--s2a-spacing-md);
 }
