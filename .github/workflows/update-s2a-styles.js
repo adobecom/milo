@@ -19,8 +19,8 @@ const DEPS_DIR = './libs/c2/styles/deps';
 // flat list of `.tgz` files; the package name has no consistent naming pattern,
 // so it is pinned here and bumped manually when a new release ships.
 const DEPS_RELEASE_BASE_URL = 'https://github.com/adobecom/consonant/raw/main/releases';
-const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.16.tgz';
-const DEPS_PACKAGE_SHA256 = '3a189fc72ff8193205c9ec120babdcec3c467077ef0ac3f74d45a74c2e04c908';
+const DEPS_PACKAGE = 'adobecom-s2a-tokens-0.0.17.tgz';
+const DEPS_PACKAGE_SHA256 = 'fc1f98e52b723fd2d7c7060826c66a1c0bd3afc4b730478ae6d9609f542bf4a4';
 // Path inside the extracted package that holds the CSS sources we want to
 // mirror into DEPS_DIR.
 const DEPS_PACKAGE_CSS_SUBPATH = path.join('css', 'dev');
