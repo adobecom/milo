@@ -68,7 +68,7 @@
 
 .tour-section:nth-of-type(even) {
   align-items: flex-start;
-  padding-bottom: 24px;
+  padding-block: 0 24px;
   padding-inline: 24px;
 }
 
@@ -80,7 +80,7 @@
 
 .tour-section:nth-of-type(odd):not(:last-of-type) {
   align-items: flex-end;
-  padding-top: 124px;
+  padding-block: 124px 0;
   padding-inline: 8px;
 }
 
