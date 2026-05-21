@@ -92,3 +92,10 @@
     }
   }
 }
+
+@media (width >= 1920px) {
+  .product-marquee-grid {
+    margin-inline: auto;
+    max-width: 1920px;
+  }
+}
