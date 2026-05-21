@@ -178,12 +178,12 @@
   /* background: var(--tabs-pill-bg-color); */
   background: var(--tabs-pill-bg-color-selected);
 
-  /* add slider - delay both color and background until indicator finishes (0.25s matches indicator transition) */
-  transition: color 0s 0.25s, background 0s 0.25s;
+  /* add slider - delay background until indicator finishes; color changes immediately so text stays visible */
+  transition: background 0s 0.25s;
 }
 
 .tabs .tabList button[aria-selected="true"]:hover {
-  background: transparent;
+  /* background: transparent; */
 }
 
 .tabs .tabList button.l-button {
