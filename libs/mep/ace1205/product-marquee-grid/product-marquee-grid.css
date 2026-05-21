@@ -2,12 +2,14 @@
 
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
-  display: flex;
-  flex-direction: column;
-  min-block-size: 494px;
-  overflow: hidden;
-  padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
-  padding-inline: var(--s2a-spacing-lg);
+
+  .pm-content {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 494px;
+    padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-lg);
+  }
 
   .pm-foreground {
     display: flex;
@@ -68,10 +70,12 @@
 
 @media (width >= 768px) {
   .product-marquee-grid {
-    flex-direction: row;
-    min-block-size: 500px;
-    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
-    padding-inline: var(--s2a-spacing-3xl);
+    .pm-content {
+      flex-direction: row;
+      min-block-size: 500px;
+      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+      padding-inline: var(--s2a-spacing-3xl);
+    }
 
     .pm-chiclet-row img.icon {
       block-size: 80px;
@@ -90,5 +94,12 @@
       margin-block-start: 0;
       min-width: 260px;
     }
+  }
+}
+
+@media (width >= 1920px) {
+  .product-marquee-grid .pm-content {
+    margin-inline: auto;
+    max-width: 1920px;
   }
 }
