@@ -12,6 +12,11 @@ export function findFragmentElements(area = document) {
   els.forEach((el) => {
     const uuid = el.getAttribute('fragment');
     if (!uuid) return;
+    // Skip if inside a merch-card that is itself inside a merch-card-collection —
+    // collection hydration loads those cards; only the collection's own fragment matters.
+    const closestCard = el.closest('merch-card');
+    const closestCollection = el.closest('merch-card-collection');
+    if (closestCard && closestCollection && closestCollection.contains(closestCard)) return;
     const card = el.closest('merch-card, merch-card-collection, mas-field') || el;
     entries.push({ uuid, el, card });
   });

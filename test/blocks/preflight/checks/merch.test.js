@@ -34,7 +34,6 @@ function stubFetch() {
   });
 }
 
-
 describe('Preflight M@S Unpublished Fragments check', () => {
   let area;
   let fetchStub;
@@ -55,6 +54,39 @@ describe('Preflight M@S Unpublished Fragments check', () => {
     expect(entries[0].card.tagName).to.equal('MERCH-CARD');
     expect(entries[1].uuid).to.equal(UUID_UNPUBLISHED);
     expect(entries[1].card.tagName).to.equal('MERCH-CARD');
+  });
+
+  it('findFragmentElements skips merch-card fragments inside a merch-card-collection', () => {
+    const collectionArea = document.createElement('div');
+    const UUID_COLLECTION = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
+    const UUID_CARD_IN_COLLECTION = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
+    collectionArea.innerHTML = `
+      <merch-card-collection>
+        <aem-fragment fragment="${UUID_COLLECTION}"></aem-fragment>
+        <merch-card>
+          <aem-fragment fragment="${UUID_CARD_IN_COLLECTION}"></aem-fragment>
+        </merch-card>
+      </merch-card-collection>
+    `;
+    const entries = findFragmentElements(collectionArea);
+    expect(entries).to.have.length(1);
+    expect(entries[0].uuid).to.equal(UUID_COLLECTION);
+    expect(entries[0].card.tagName).to.equal('MERCH-CARD-COLLECTION');
+  });
+
+  it('findFragmentElements keeps fragment whose direct parent is merch-card-collection inside a merch-card', () => {
+    const area = document.createElement('div');
+    const UUID_INNER = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+    area.innerHTML = `
+      <merch-card>
+        <merch-card-collection>
+          <aem-fragment fragment="${UUID_INNER}"></aem-fragment>
+        </merch-card-collection>
+      </merch-card>
+    `;
+    const entries = findFragmentElements(area);
+    expect(entries).to.have.length(1);
+    expect(entries[0].uuid).to.equal(UUID_INNER);
   });
 
   it('checkFragmentPublished returns published=true on 200', async () => {
