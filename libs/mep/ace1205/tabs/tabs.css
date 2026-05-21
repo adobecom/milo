@@ -1,6 +1,6 @@
 :root {
   /* Tab Colors */
-  
+
   /* --tabs-text-color: var(--s2a-color-transparent-black-64);  */
   --tabs-active-text-color: #2c2c2c; /* check- nearest s2a is --s2a-color-gray-800 (#292929) */
   --tabs-active-bg-color: var(--s2a-color-gray-25);
@@ -13,27 +13,12 @@
   --tabs-pill-bg-color: transparent;
   --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
   --tabs-pill-bg-color-hover: transparent;
-  --tabs-pill-text-color-hover: var(--s2a-color-transparent-black-24);/* confirm color */
-  --tabs-pill-bg-color-active: var(--s2a-color-background-knockout);
+  --tabs-pill-text-color-hover: var(--s2a-color-background-knockout);
+  --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); 
   --tabs-pill-text-selected-color: var(--s2a-color-content-knockout); 
   --tabs-pill-bg-focus: var(--s2a-color-gray-700);
   --tabs-pill-text-focus-color: var(--s2a-color-gray-25);
   --m-rounded-corners-tabs: 50px; /* no s2a spacing token */
-}
-
-:root .dark {
-  --tabs-text-color: #b6b6b6; /* check- between --s2a-color-gray-400 (#c6c6c6) and --s2a-color-gray-500 (#8f8f8f) */
-  --tabs-active-text-color: var(--s2a-color-gray-25);
-  --tabs-active-bg-color: #1e1e1e; /* check- between --s2a-color-gray-800 (#292929) and --s2a-color-gray-900 (#131313) */
-  --tabs-pill-bg-color: var(--s2a-color-gray-25);
-  --tabs-pill-bg-focus: #6d6d6d; /* check- nearest s2a is --s2a-color-gray-600 (#717171) */
-  --tabs-pill-bg-color-hover: #6d6d6d; /* check- nearest s2a is --s2a-color-gray-600 (#717171) */
-  --tabs-pill-bg-color-active: #393939; /* check- between --s2a-color-gray-700 (#505050) and --s2a-color-gray-800 (#292929) */
-  --tabs-pill-text-color: var(--s2a-color-gray-25);
-  --tabs-pill-text-selected-color: var(--s2a-color-gray-1000);
-  --tabs-pill-text-focus-color: var(--s2a-color-gray-25);
-  --tabs-mobile-stacked-bg-color: var(--s2a-color-gray-25);
-  --tabs-mobile-stacked-text-color: var(--s2a-color-gray-900);
 }
 
 .tabs {
@@ -98,14 +83,6 @@
   justify-content: center;
 }
 
-/* mweb design */
-
-/*
-.tabs.no-border-bottom .tab-content {
-  border-bottom: none;
-}
-*/
-
 /* contained tabs content */
 [role='tabpanel'] > .section > .content,
 .tabs.contained .tab-content .tab-content-container {
@@ -149,7 +126,7 @@
   line-height: var(--s2a-font-line-height-2xs);
   margin: 0;
   border-radius: var(--m-rounded-corners-tabs);
-  border: none;
+  border: var(--s2a-border-width-md) solid transparent;
   padding: 0 var(--s2a-spacing-lg);
   text-decoration: none;
   transition: color 0.1s ease-in-out;
@@ -158,20 +135,30 @@
   z-index: 1;
   flex: 1 0 auto;
   background: transparent;
+  height: 32px;
 }
 
 .tabs .tabList button:hover {
   color: var(--tabs-pill-text-color-hover);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-black-12);
+  background: var(--s2a-color-background-default);
 }
 
 .tabs .tabList button:active {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
 }
 
-.tabs .tabList button:focus {
+/* .tabs .tabList button:focus {
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
+} */
+
+.tabs .tabList button[data-pressed=""] {
+  color: var(--tabs-pill-text-selected-color);
+  background: var(--tabs-pill-bg-color-active);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
 }
 
 .tabs .tabList button:focus-visible {
@@ -202,46 +189,6 @@
   height: var(--s2a-font-line-height-2xs);
 }
 
-/* Tabs: .quiet */
-
-/*
-.tabs.quiet .tabList button {
-  border-width: 0 0 2px;
-  border-color: transparent;
-  background: transparent;
-  padding-right: 0;
-  padding-left: 0;
-  margin-inline-start: 24px;
-}
-
-.tabs.quiet:is(.no-top-border, .no-border) .tabList,
-.tabs.quiet:is(.no-top-border, .no-border) .paddle,
-.tabs.quiet:is(.no-bottom-border, .no-border) .tab-content {
-  border-bottom: none;
-  box-shadow: none;
-  background: none;
-}
-
-.tabs.quiet .tabList {
-  padding-bottom: 1px;
-}
-*/
-
-/*
-.tabs.quiet .tabList button:first-of-type {
-  margin-inline-start: 0;
-}
-
-.tabs.quiet .tabList button:hover {
-  border-bottom-color: var(--tabs-border-hover-color);
-}
-
-.tabs.quiet .tabList button[aria-selected="true"],
-.tabs.quiet .tabList button[aria-checked="true"] {
-  border-bottom-color: var(--tabs-active-color);
-}
-*/
-
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
@@ -249,65 +196,35 @@
   background: transparent;
 }
 
-.tabs-background-transparent .tabs .tabList button[aria-selected="true"] {
-  border-bottom-color: var(--tabs-active-bg-color);
+.tabs.left .tabs-wrapper {
+  justify-content: flex-start;
 }
 
-@media screen and (min-width: 600px) {
-}
+/* .tabs-background-transparent .tabs .tabList button[aria-selected="true"] {
+  border-bottom-color: var(--tabs-active-bg-color);
+} */
 
 @media screen and (min-width: 1200px) {
   [role='tabpanel'] > .section[class*='-up'] > .content,
   [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
   }
-
-  /*
-  .tabs.quiet .tabList button {
-    padding-top: 18px;
-    padding-bottom: 18px;
-  }
-  */
 }
 
-@media screen and (max-width: 599px) {
-  .tabs.stacked-mobile .tabList {
-    margin: 0;
+/* @media screen and (max-width: 599px) {
+  .tabs {
+    overflow-x: hidden;
   }
 
-  .tabs.stacked-mobile .tabList .tab-list-container {
-    flex-direction: column;
-    margin: 30px auto; /* check- no s2a spacing token for 30px; between --s2a-spacing-24 (24px) and --s2a-spacing-32 (32px) */
+  .tabs .tabs-wrapper {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
-  .tabs.stacked-mobile .tabList button {
-    font-size: var(--s2a-font-size-xl);
-    white-space: unset;
-    word-wrap: break-word;
-    line-height: 25px; /* check- no s2a line-height token for 25px; between --s2a-font-line-height-24 (24px) and --s2a-font-line-height-32 (32px) */
-    padding: var(--s2a-spacing-8);
-    border-radius: 0;
-    border: 0;
-    margin-bottom: var(--s2a-spacing-8);
+  .tabs .tabList .tab-list-container {
+    min-width: max-content;
   }
+} */
 
-  .tabs.stacked-mobile .tabList button:last-of-type {
-    margin-bottom: 0;
-  }
-
-  .tabs.stacked-mobile .tabList button[aria-selected="true"] {
-    background-color: var(--tabs-mobile-stacked-bg-color);
-    color: var(--tabs-mobile-stacked-text-color);
-  }
-
-  .tabs.stacked-mobile.center .tabList .tab-list-container {
-    width: 100%;
-    margin: 0 30px 30px; /* check- no s2a spacing token for 30px; between --s2a-spacing-24 (24px) and --s2a-spacing-32 (32px) */
-  }
-
-  /*
-  .tabs.stacked-mobile.quiet .tabList button {
-    margin-inline-start: 0;
-  }
-  */
-}
