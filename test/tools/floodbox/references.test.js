@@ -158,7 +158,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set([
         '/test-org/test-repo/fragments/from-link',
@@ -180,7 +180,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set([
         '/test-org/test-repo/some/dir/fragments/a',
@@ -201,7 +201,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set(['/test-org/test-repo/some/dir/fragments/ok']));
     });
@@ -217,7 +217,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set(['/test-org/test-repo/absolute/fragments/foo']));
     });
@@ -246,7 +246,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set([
         '/test-org/test-repo/events/events-shared/fragments/sm/blank',
@@ -280,7 +280,7 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set());
     });
@@ -304,9 +304,100 @@ describe('References', () => {
         htmlPaths: dirHtmlPaths,
         org,
         repo,
-        includeChronoBoxFragments: true,
+        config: { chronoBoxFragmentsEnabled: true },
       });
       expect(result).to.eql(new Set(['/test-org/test-repo/events/ok']));
+    });
+  });
+
+  describe('draftsOnly access mode', () => {
+    it('filters out fragments outside /drafts when accessMode is draftsOnly', async () => {
+      requestHandlerStub
+        .onFirstCall().resolves({
+          ok: true,
+          text: async () => `
+            <a href="https://main--test-repo--test-org.aem.page/fragments/shared/hero">shared</a>
+            <a href="https://main--test-repo--test-org.aem.page/drafts/campaign/fragments/hero">draft</a>
+          `,
+        })
+        .onSecondCall().resolves({ ok: true, text: async () => '' });
+
+      const result = await findFragmentsAndAssets({
+        accessToken,
+        htmlPaths,
+        org,
+        repo,
+        config: { accessMode: 'draftsOnly' },
+      });
+      expect(result).to.eql(new Set(['/test-org/test-repo/drafts/campaign/fragments/hero']));
+    });
+
+    it('keeps all fragments when accessMode is not draftsOnly', async () => {
+      requestHandlerStub
+        .onFirstCall().resolves({
+          ok: true,
+          text: async () => `
+            <a href="https://main--test-repo--test-org.aem.page/fragments/shared/hero">shared</a>
+            <a href="https://main--test-repo--test-org.aem.page/drafts/campaign/fragments/hero">draft</a>
+          `,
+        })
+        .onSecondCall().resolves({ ok: true, text: async () => '' });
+
+      const result = await findFragmentsAndAssets({
+        accessToken,
+        htmlPaths,
+        org,
+        repo,
+        config: {},
+      });
+      expect(result).to.eql(new Set([
+        '/test-org/test-repo/fragments/shared/hero',
+        '/test-org/test-repo/drafts/campaign/fragments/hero',
+      ]));
+    });
+
+    it('returns an empty set when all fragments are outside /drafts in draftsOnly mode', async () => {
+      requestHandlerStub
+        .onFirstCall().resolves({
+          ok: true,
+          text: async () => '<a href="https://main--test-repo--test-org.aem.page/fragments/shared/hero">shared</a>',
+        })
+        .onSecondCall().resolves({ ok: true, text: async () => '' });
+
+      const result = await findFragmentsAndAssets({
+        accessToken,
+        htmlPaths,
+        org,
+        repo,
+        config: { accessMode: 'draftsOnly' },
+      });
+      expect(result).to.eql(new Set());
+    });
+
+    it('draftsOnly filter applies after chrono-box extraction', async () => {
+      const dirHtmlPaths = ['/some/dir/page1', '/some/dir/page2'];
+      const cbHtml = (json) => `
+        <div class="chrono-box">
+          <div>
+            <div>schedule</div>
+            <div>${json}</div>
+          </div>
+        </div>`;
+      const html = `
+        <a href="https://main--test-repo--test-org.aem.page/fragments/shared">shared</a>
+        ${cbHtml('[{"pathToFragment":"/drafts/campaign/hero"},{"pathToFragment":"fragments/non-draft"}]')}`;
+      requestHandlerStub
+        .onFirstCall().resolves({ ok: true, text: async () => html })
+        .onSecondCall().resolves({ ok: true, text: async () => '' });
+
+      const result = await findFragmentsAndAssets({
+        accessToken,
+        htmlPaths: dirHtmlPaths,
+        org,
+        repo,
+        config: { accessMode: 'draftsOnly', chronoBoxFragmentsEnabled: true },
+      });
+      expect(result).to.eql(new Set(['/test-org/test-repo/drafts/campaign/hero']));
     });
   });
 });

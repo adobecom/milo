@@ -9,6 +9,16 @@ import {
   normCountryCode,
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
+import { getMarketConfig, marketsLangForLocale } from '../../utils/market.js';
+import { mepCaasConfigUrls } from '../../blocks/caas/utils.js';
+import { mepMasStudioUrls } from '../../blocks/merch/mas-mep-utils.js';
+import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../blocks/merch/merch.js';
+import {
+  extractSubCollections,
+  injectSubCollectionBadge,
+  removeSubCollectionBadges,
+  mepMasSubCollections,
+} from './preview-mas-subcollection.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 export function escapeHtml(str) {
@@ -28,6 +38,569 @@ export const API_URLS = {
   report: `${API_DOMAIN}/get-report`,
 };
 
+const CAAS_BADGE_CLASS = 'mep-caas-edit-badge';
+const PREVIEW_HOST_RE = /\.(aem|hlx)\.(page|live)$/;
+const BLOG_PATH_RE = /^\/(?:[^/]+\/)?blog\//i;
+const PREVIEW_REPO_HOST_RE = /^(.+?)--(.+?)--adobecom\.aem\.(page|live)$/;
+
+function rewriteForPreviewHost(url) {
+  if (!url) return url;
+  const isPreview = PREVIEW_HOST_RE.test(window.location.host)
+    || window.location.search.includes('milolibs=');
+  if (!isPreview) return url;
+  try {
+    const u = new URL(url);
+    const { prodDomains = ['business.adobe.com', 'www.adobe.com', 'news.adobe.com'] } = getConfig();
+    if (!prodDomains.includes(u.host)) return u.toString();
+    u.protocol = window.location.protocol;
+    u.host = window.location.host;
+    if (PREVIEW_HOST_RE.test(u.host)) u.pathname = u.pathname.replace(/\.html$/, '');
+    return u.toString();
+  } catch { return url; }
+}
+
+function rewriteBlogPreviewHost(url) {
+  if (!url) return null;
+  const m = window.location.host.match(PREVIEW_REPO_HOST_RE);
+  if (!m) return null;
+  const [, branch, repo, env] = m;
+  if (repo.endsWith('-blog')) return null;
+  try {
+    const u = new URL(url);
+    if (u.host !== 'business.adobe.com') return null;
+    if (!BLOG_PATH_RE.test(u.pathname)) return null;
+    u.protocol = window.location.protocol;
+    u.host = `${branch}--${repo}-blog--adobecom.aem.${env}`;
+    u.pathname = u.pathname.replace(/\.html$/, '');
+    return u.toString();
+  } catch { return null; }
+}
+
+function derivePathsForCards(root = document) {
+  root.querySelectorAll('[data-card-url]:not([data-card-path])').forEach((el) => {
+    const href = el.dataset.cardUrl;
+    if (!href) { el.dataset.cardPath = ''; return; }
+    try {
+      el.dataset.cardPath = new URL(href).pathname;
+    } catch {
+      el.dataset.cardPath = '';
+    }
+  });
+}
+
+function injectCaasBadges() {
+  document.querySelectorAll('[data-caas-block]').forEach((el) => {
+    const prev = el.previousElementSibling;
+    if (prev?.classList?.contains(CAAS_BADGE_CLASS)) return;
+    const url = mepCaasConfigUrls.get(el);
+    if (!url) return;
+    const a = createTag(
+      'a',
+      {
+        class: CAAS_BADGE_CLASS,
+        href: url,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
+      'Edit in CaaS Configurator',
+    );
+    el.insertAdjacentElement('beforebegin', a);
+  });
+  derivePathsForCards();
+}
+
+function removeCaasBadges() {
+  document.querySelectorAll(`a.${CAAS_BADGE_CLASS}`).forEach((el) => el.remove());
+  // Clear derived paths so they don't sit in the DOM as invisible state.
+  document.querySelectorAll('[data-card-path]').forEach((el) => delete el.dataset.cardPath);
+}
+
+let caasObserver;
+function watchForCaasBlocks() {
+  if (caasObserver) return;
+  caasObserver = new MutationObserver((mutations) => {
+    if (document.body.dataset.mepCaasHighlight !== 'true') return;
+    const hasCaasMutation = mutations.some((m) => [...m.addedNodes].some((n) => (n.nodeType === 1)
+      && (n.matches?.('[data-caas-block], [data-card-url]')
+        || n.querySelector?.('[data-caas-block], [data-card-url]'))));
+    if (hasCaasMutation) injectCaasBadges();
+  });
+  caasObserver.observe(document.body, { childList: true, subtree: true });
+}
+
+function unwatchForCaasBlocks() {
+  if (!caasObserver) return;
+  caasObserver.disconnect();
+  caasObserver = null;
+}
+
+const MAS_BADGE_CLASS = 'mep-mas-edit-badge';
+// Only 'collection' reaches buildMasBadge. Card uses an action stack;
+// inline/ost/offer render via CSS ::before pseudos.
+const MAS_LABELS = { collection: 'Edit Collection in M@S Studio' };
+
+// Mirrors SELECTOR_MAS_INLINE_PRICE et al. from ../mas/web-components/src/
+// constants.js. Inlined rather than imported to avoid a hard runtime
+// dependency on M@S's web-components package.
+const MAS_OSI_SELECTOR = [
+  'span[is="inline-price"][data-wcs-osi]',
+  'a[is="checkout-link"][data-wcs-osi]',
+  'a[is="upt-link"][data-wcs-osi]',
+  'button[is="checkout-button"][data-wcs-osi]',
+  'sp-button[data-wcs-osi]',
+].join(',');
+
+export function updateMasNoContentMessage(show) {
+  document.querySelectorAll('.mep-mas-no-content').forEach((el) => {
+    el.hidden = !show;
+  });
+}
+
+// Each selector catches a different M@S code path:
+//   - [data-mas-block]  autoblock-stamped surface (preview-only)
+//   - <merch-card>      web component (incl. collection children)
+//   - [data-wcs-osi]    any commerce-bound element (covers standalone offers)
+// Snapshot at call time — re-open the popup if M@S content hydrates after.
+export function hasMasSurfaces() {
+  return !!document.querySelector('[data-mas-block], merch-card, [data-wcs-osi]');
+}
+
+// Page-level market, most-to-least authoritative:
+//   1. <mas-commerce-service country=…>   what M@S sends to WCS
+//   2. getMiloLocaleSettings(locale).country   fallback before the service initializes
+//   3. ?akamaiLocale=   spoof param; M@S ignores it when geo-detect is OFF, so
+//      the chip will show the URL-path country (signaling the spoof didn't take)
+export function getResolvedPageMarket() {
+  try {
+    const masCountry = document.head.querySelector('mas-commerce-service')?.getAttribute('country');
+    if (masCountry) return normCountryCode(masCountry.toLowerCase());
+    const { locale } = getConfig() || {};
+    const masSettings = getMiloLocaleSettings(locale);
+    if (masSettings?.country) return normCountryCode(masSettings.country.toLowerCase());
+    const akamai = new URLSearchParams(window.location.search).get('akamaiLocale');
+    if (akamai) return normCountryCode(akamai.toLowerCase());
+    return null;
+  } catch (e) { return null; }
+}
+
+// Per-host market, most-to-least authoritative:
+//   1. data-ims-country (set post-WCS by M@S checkout-mixin)
+//   2. country= query param on a commerce href — what was REQUESTED of WCS
+//   3. pageMarket fallback — inline-price always falls here (no per-element country)
+export function getCardMarket(el, pageMarket) {
+  if (!el) return pageMarket;
+  // For offer/ost surfaces the host IS the checkout-link, so check it first.
+  const selfImsCountry = el.getAttribute?.('data-ims-country');
+  if (selfImsCountry) return normCountryCode(selfImsCountry.toLowerCase());
+  const imsCountry = el.querySelector?.('a[data-ims-country]')?.getAttribute('data-ims-country');
+  if (imsCountry) return normCountryCode(imsCountry.toLowerCase());
+  const candidates = [];
+  if (el.tagName === 'A' && el.href) candidates.push(el);
+  el.querySelectorAll?.('a[href*="country="]').forEach((a) => candidates.push(a));
+  for (const a of candidates) {
+    try {
+      const url = new URL(a.href, window.location.origin);
+      const country = url.searchParams.get('country');
+      if (country) return normCountryCode(country.toLowerCase());
+    } catch (e) { /* skip and try next candidate */ }
+  }
+  // Only checkout-mixin and upt-link set data-ims-country; display-only
+  // (inline-price) cards fall back to pageMarket.
+  return pageMarket;
+}
+
+// Returns 'unknown' when either side is unresolved — only 'mismatch' is
+// surfaced visually.
+function classifyMarket(cardMarket, pageMarket) {
+  if (!cardMarket || !pageMarket) return 'unknown';
+  return cardMarket === pageMarket ? 'match' : 'mismatch';
+}
+
+// Child cards have no authoring <a href> (M@S renders them from collection
+// metadata) — clone the parent's captured Studio URL and substitute
+// content-type + identifier. Keeps us aligned with the parent's URL
+// convention rather than inventing a format. Returns null when undeducible.
+export function deriveChildCardStudioUrl(parentUrl, childFragmentId) {
+  if (!parentUrl || !childFragmentId) return null;
+  try {
+    const u = new URL(parentUrl, window.location.origin);
+    const hash = (u.hash || '').replace(/^#/, '');
+    const hashParams = new URLSearchParams(hash);
+    if (hashParams.get('content-type') === 'merch-card-collection') {
+      hashParams.set('content-type', 'merch-card');
+    }
+    if (hashParams.has('query')) hashParams.set('query', childFragmentId);
+    else if (hashParams.has('fragment')) hashParams.set('fragment', childFragmentId);
+    else hashParams.set('query', childFragmentId);
+    u.hash = `#${hashParams.toString()}`;
+    return u.toString();
+  } catch (e) { return null; }
+}
+
+// Rewrites query=/fragment= -> fragmentId= and page=content -> page=fragment-editor.
+// Scoped to content-type=merch-card; other types pass through unchanged.
+export function toFragmentEditorUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url, window.location.origin);
+    const hash = (u.hash || '').replace(/^#/, '');
+    const hp = new URLSearchParams(hash);
+    if (hp.get('content-type') !== 'merch-card') return url;
+    const id = hp.get('fragmentId') || hp.get('query') || hp.get('fragment');
+    if (!id) return url;
+    hp.delete('query');
+    hp.delete('fragment');
+    hp.set('fragmentId', id);
+    hp.set('page', 'fragment-editor');
+    u.hash = `#${hp.toString()}`;
+    return u.toString();
+  } catch (e) { return url; }
+}
+
+function stampMarket(host, pageMarket) {
+  const market = getCardMarket(host, pageMarket);
+  if (!market) return;
+  host.dataset.masMarket = market.toUpperCase();
+  if (pageMarket && market !== pageMarket) {
+    host.dataset.masMarketMismatch = 'true';
+  } else {
+    delete host.dataset.masMarketMismatch;
+  }
+}
+
+function annotateCollectionChildren() {
+  const pageMarket = getResolvedPageMarket();
+  document.querySelectorAll('[data-mas-block="collection"]').forEach((container) => {
+    const parentUrl = mepMasStudioUrls.get(container);
+    if (!parentUrl) return;
+    // Re-stamp every pass — data-ims-country arrives async post-WCS.
+    container.querySelectorAll('merch-card').forEach((child) => {
+      if (child.offsetParent === null) return;
+      if (!child.dataset.masBlock) {
+        const aemFragment = child.querySelector('aem-fragment[fragment]');
+        const fragmentId = aemFragment?.getAttribute('fragment');
+        if (!fragmentId) return;
+        const childUrl = deriveChildCardStudioUrl(parentUrl, fragmentId);
+        if (!childUrl) return;
+        mepMasStudioUrls.set(child, childUrl);
+        child.dataset.masBlock = 'card';
+      }
+      stampMarket(child, pageMarket);
+    });
+  });
+}
+
+// Pinned to milo.adobe.com so derived OST links work the same everywhere
+// (DA preview, .aem.page, localhost). OSIs are environment-independent.
+const OST_BASE_URL = 'https://milo.adobe.com/tools/ost';
+
+// type=price/checkoutUrl pre-selects the correct OST tab. Idempotent.
+function annotateOffers() {
+  document.querySelectorAll(MAS_OSI_SELECTOR).forEach((el) => {
+    if (mepMasStudioUrls.has(el)) return;
+    const osi = el.getAttribute('data-wcs-osi');
+    if (!osi) return;
+    const isPrice = el.matches('span[is="inline-price"]');
+    const type = isPrice ? 'price' : 'checkoutUrl';
+    const pageMarket = getResolvedPageMarket();
+    const ostUrl = `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}&type=${type}${pageMarket ? `&country=${encodeURIComponent(pageMarket)}` : ''}`;
+    mepMasStudioUrls.set(el, ostUrl);
+    if (!el.dataset.masBlock) el.dataset.masBlock = 'offer';
+  });
+}
+
+// Real DOM (not ::before) — three independent click targets + Copy needs a clipboard handler.
+const CARD_ACTIONS_CLASS = 'mep-mas-card-actions';
+const CARD_ACTION_EDIT_CLASS = 'mep-mas-card-action-edit';
+const CARD_ACTION_OST_CLASS = 'mep-mas-card-action-ost';
+const CARD_ACTION_COPY_CLASS = 'mep-mas-card-action-copy';
+
+function getCardFragmentId(card) {
+  return card.querySelector('aem-fragment[fragment]')?.getAttribute('fragment') || null;
+}
+
+// View in OST uses the first OSI — M@S confirmed all OSIs in a card are equivalent.
+function getCardFirstOsi(card) {
+  return card.querySelector('[data-wcs-osi]')?.getAttribute('data-wcs-osi') || null;
+}
+
+// Rebuild every pass — M@S can replace subtrees; diffing isn't worth it.
+function injectMasCardActionStack(card) {
+  const studioUrl = mepMasStudioUrls.get(card);
+  if (!studioUrl) return;
+  card.querySelectorAll(`:scope > .${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+
+  const stack = createTag('div', { class: CARD_ACTIONS_CLASS });
+  const market = card.dataset.masMarket;
+  const mismatch = card.dataset.masMarketMismatch === 'true';
+  const marketSuffix = market ? ` \u00b7 ${market}` : '';
+  const mismatchClass = mismatch ? ` ${CARD_ACTIONS_CLASS}-mismatch` : '';
+
+  const editLink = createTag(
+    'a',
+    {
+      class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
+      href: toFragmentEditorUrl(studioUrl),
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+  );
+  editLink.textContent = `Edit Card${marketSuffix}`;
+  stack.append(editLink);
+
+  const osi = getCardFirstOsi(card);
+  if (osi) {
+    const ostLink = createTag(
+      'a',
+      {
+        class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
+        href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+      },
+    );
+    ostLink.textContent = `View in OST${marketSuffix}`;
+    stack.append(ostLink);
+  }
+
+  const fragmentId = getCardFragmentId(card);
+  if (fragmentId) {
+    const copyBtn = createTag(
+      'button',
+      {
+        type: 'button',
+        class: CARD_ACTION_COPY_CLASS,
+        'data-fragment-id': fragmentId,
+        title: `Copy fragment id: ${fragmentId}`,
+      },
+      'Copy Fragment ID',
+    );
+    copyBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const id = copyBtn.dataset.fragmentId;
+      const restore = () => { copyBtn.textContent = 'Copy Fragment ID'; copyBtn.classList.remove(`${CARD_ACTION_COPY_CLASS}-copied`); };
+      const flash = () => {
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add(`${CARD_ACTION_COPY_CLASS}-copied`);
+        setTimeout(restore, 1500);
+      };
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(id).then(flash).catch(() => {
+          copyBtn.textContent = 'Copy failed';
+          setTimeout(restore, 1500);
+        });
+      } else {
+        flash();
+      }
+    });
+    stack.append(copyBtn);
+  }
+
+  card.append(stack);
+}
+
+// Collection surfaces use this sibling-placed badge. Cards: real-DOM action
+// stack (injectMasCardActionStack). Inline/ost/offer: ::before pseudos.
+function buildMasBadge(url, surface, market, pageMarket) {
+  const a = createTag(
+    'a',
+    {
+      class: `${MAS_BADGE_CLASS} ${MAS_BADGE_CLASS}-${surface}`,
+      href: url,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    },
+    MAS_LABELS[surface],
+  );
+  if (market) {
+    const chip = createTag('span', { class: `${MAS_BADGE_CLASS}-market` });
+    if (classifyMarket(market, pageMarket) === 'mismatch') {
+      chip.classList.add(`${MAS_BADGE_CLASS}-market-mismatch`);
+    }
+    chip.textContent = market.toUpperCase();
+    a.append(' \u00b7 ', chip);
+  }
+  return a;
+}
+
+export function injectMasBadges() {
+  annotateCollectionChildren();
+  annotateOffers();
+  const pageMarket = getResolvedPageMarket();
+  // Re-stamp every pass — chips upgrade from pageMarket fallback to data-ims-country post-WCS.
+  document.querySelectorAll('[data-mas-block="card"], [data-mas-block="inline"], [data-mas-block="ost"], [data-mas-block="offer"]')
+    .forEach((host) => stampMarket(host, pageMarket));
+  let visibleCount = 0;
+  document.querySelectorAll('[data-mas-block]').forEach((el) => {
+    const surface = el.dataset.masBlock;
+    if (surface === 'card') {
+      injectMasCardActionStack(el);
+      visibleCount += 1;
+      return;
+    }
+    // offer/inline/ost use ::before pseudos — sibling <a> shifted layout in paragraphs/headings.
+    if (surface === 'offer' || surface === 'inline' || surface === 'ost') {
+      visibleCount += 1;
+      return;
+    }
+    const url = mepMasStudioUrls.get(el);
+    if (!url) return;
+    const market = getCardMarket(el, pageMarket);
+    // Hop past a sub-collection badge wedged between the parent badge and the container.
+    // Without this hop the idempotence check below misses the parent, rebuilds it every
+    // pass, and strands the previous sub badge.
+    let prev = el.previousElementSibling;
+    if (prev?.classList?.contains('mep-mas-sub-collection-badge')) {
+      prev = prev.previousElementSibling;
+    }
+    if (prev?.classList?.contains(MAS_BADGE_CLASS)) {
+      // Skip rebuild unless market changed — handles mid-hydration data-ims-country arrivals.
+      if (prev.dataset.mepMasMarket === (market || '')) {
+        visibleCount += 1;
+        return;
+      }
+      prev.remove();
+    }
+    const a = buildMasBadge(url, surface, market, pageMarket);
+    a.dataset.mepMasMarket = market || '';
+    el.insertAdjacentElement('beforebegin', a);
+    visibleCount += 1;
+  });
+  document.querySelectorAll('[data-mas-block="collection"]').forEach((container) => {
+    injectSubCollectionBadge(container, pageMarket);
+  });
+  updateMasNoContentMessage(visibleCount === 0);
+}
+
+export function removeMasBadges() {
+  document.querySelectorAll(`a.${MAS_BADGE_CLASS}`).forEach((el) => el.remove());
+  // Cards: real DOM, must strip. Pseudos (offer/inline/ost) hide via body[data-mep-mas-highlight].
+  document.querySelectorAll(`.${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+  removeSubCollectionBadges();
+  updateMasNoContentMessage(false);
+}
+
+// Hit boxes for the ::before badges in preview.css — keep in sync if CSS sizes change.
+// Anchored to the host's right edge: `w` extends leftward, negative `top` overhangs above.
+// Slightly larger than the visible badge for click forgiveness.
+const PSEUDO_BADGE_HIT = {
+  offer: { w: 130, h: 22, top: -14 },
+  inline: { w: 240, h: 22, top: -14 },
+  ost: { w: 130, h: 22, top: -14 },
+};
+
+// Pseudos can't carry an href — delegate clicks in the hit box to open the captured URL.
+// preventDefault + stopPropagation suppress the host's normal navigation (checkout/CTA).
+// Iterate all candidates: nested surfaces (e.g. offer inside inline) appear first in
+// composedPath, so we try each until one whose hit box actually contains the click.
+function handleChildCardBadgeClick(e) {
+  if (document.body.dataset.mepMasHighlight !== 'true') return;
+  // composedPath() crosses shadow boundaries — clicks originate inside the
+  // merch-card / commerce-element shadow roots.
+  const candidates = e.composedPath().filter((n) => {
+    if (n?.nodeType !== 1) return false;
+    const surface = n.dataset?.masBlock;
+    return surface === 'offer' || surface === 'inline' || surface === 'ost';
+  });
+  const match = candidates.find((host) => {
+    if (!mepMasStudioUrls.get(host)) return false;
+    const hit = PSEUDO_BADGE_HIT[host.dataset.masBlock];
+    if (!hit) return false;
+    const rect = host.getBoundingClientRect();
+    const isNestedInInline = host.dataset.masBlock !== 'inline' && !!host.closest('[data-mas-block="inline"]');
+    const hitTop = isNestedInInline ? rect.height + 4 : hit.top;
+    const yMin = rect.top + hitTop;
+    return e.clientX >= rect.right - hit.w
+      && e.clientX <= rect.right
+      && e.clientY >= yMin
+      && e.clientY <= yMin + hit.h;
+  });
+  if (!match) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.open(mepMasStudioUrls.get(match), '_blank', 'noopener,noreferrer');
+}
+
+let masObserver;
+let masRestampTimer;
+// Named handler refs so unwatchForMasContent can remove them.
+let masChildCardClickHandler;
+let masAemLoadHandler;
+let masRestampClickHandler;
+// Exported for tests. Long enough for M@S hydration after a tab/accordion
+// switch, short enough to feel responsive.
+export const MAS_RESTAMP_DEBOUNCE_MS = 300;
+export function watchForMasContent() {
+  if (masObserver) return;
+
+  masChildCardClickHandler = handleChildCardBadgeClick;
+  document.addEventListener('click', masChildCardClickHandler, true);
+
+  // Fallback for the race where highlight is enabled AFTER parent aem-fragment loaded
+  // (autoblock listener missed it). aem:load bubbles+composed, so one document listener
+  // catches every fragment regardless of nesting.
+  masAemLoadHandler = (event) => {
+    if (document.body.dataset.mepMasHighlight !== 'true') return;
+    const fragment = event.target;
+    if (!fragment || fragment.tagName !== 'AEM-FRAGMENT') return;
+    const container = fragment.closest('[data-mas-block="collection"]');
+    if (!container) return;
+    const subs = extractSubCollections(event.detail);
+    if (subs.length) {
+      mepMasSubCollections.set(container, subs);
+      clearTimeout(masRestampTimer);
+      masRestampTimer = setTimeout(() => injectMasBadges(), MAS_RESTAMP_DEBOUNCE_MS);
+    }
+  };
+  document.addEventListener('aem:load', masAemLoadHandler, true);
+
+  // Tabs/accordions/filter chips toggle aria-selected/hidden — the childList observer
+  // doesn't fire for that. Debounced to coalesce rapid clicks and let M@S hydrate.
+  masRestampClickHandler = () => {
+    if (document.body.dataset.mepMasHighlight !== 'true') return;
+    clearTimeout(masRestampTimer);
+    masRestampTimer = setTimeout(() => injectMasBadges(), MAS_RESTAMP_DEBOUNCE_MS);
+  };
+  document.addEventListener('click', masRestampClickHandler, true);
+
+  // Re-injection triggers:
+  //   - new [data-mas-block] / <merch-card> nodes (collection children)
+  //   - aem-fragment[fragment] insertion (M@S sometimes appends post-mount; miss permanently)
+  //   - data-ims-country attribute (post-WCS market upgrade)
+  const isMasMutation = (n) => n.nodeType === 1 && (
+    n.matches?.('[data-mas-block], merch-card, aem-fragment[fragment]')
+    || n.querySelector?.('[data-mas-block], merch-card, aem-fragment[fragment]')
+  );
+  masObserver = new MutationObserver((mutations) => {
+    if (document.body.dataset.mepMasHighlight !== 'true') return;
+    const hit = mutations.some((m) => {
+      if (m.type === 'attributes') return m.attributeName === 'data-ims-country';
+      return [...m.addedNodes].some(isMasMutation);
+    });
+    if (hit) injectMasBadges();
+  });
+  masObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['data-ims-country'],
+  });
+}
+
+function unwatchForMasContent() {
+  if (!masObserver) return;
+  document.removeEventListener('click', masChildCardClickHandler, true);
+  document.removeEventListener('aem:load', masAemLoadHandler, true);
+  document.removeEventListener('click', masRestampClickHandler, true);
+  masObserver.disconnect();
+  masObserver = null;
+  masChildCardClickHandler = null;
+  masAemLoadHandler = null;
+  masRestampClickHandler = null;
+  clearTimeout(masRestampTimer);
+}
+
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
     'option:checked, input[type="text"]',
@@ -35,10 +608,14 @@ function updatePreviewButton(popup, pageId) {
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
-    const isHidden = selected.closest('select')?.disabled;
-    const isMepLingoSelect = selected.closest('select')?.id?.startsWith('mepLingoRegionSelect');
+    const parentSelect = selected.closest('select');
+    const isHidden = parentSelect?.disabled;
+    const parentSelectId = parentSelect?.id || '';
+    // Spoofer dropdowns drive ?akamaiLocale; no data-manifest = serializes as "undefined--…".
+    const isSpooferSelect = parentSelectId.startsWith('mepLingoRegionSelect')
+      || parentSelectId.startsWith('mepMasMarketSelect');
 
-    if (!selected.value || isHidden || isMepLingoSelect) return;
+    if (!selected.value || isHidden || isSpooferSelect) return;
 
     let { value } = selected;
 
@@ -83,6 +660,39 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.delete('mepFragments');
   }
 
+  const mepCaasHighlightCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepCaasHighlightCheckbox${pageId}`,
+  );
+
+  if (mepCaasHighlightCheckbox) {
+    document.body.dataset.mepCaasHighlight = mepCaasHighlightCheckbox.checked;
+    if (mepCaasHighlightCheckbox.checked) {
+      simulateHref.searchParams.set('mepCaasHighlight', true);
+      watchForCaasBlocks();
+      injectCaasBadges();
+    } else {
+      simulateHref.searchParams.delete('mepCaasHighlight');
+      unwatchForCaasBlocks();
+      removeCaasBadges();
+    }
+  }
+
+  const mepMasHighlightCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepMasHighlightCheckbox${pageId}`,
+  );
+  if (mepMasHighlightCheckbox) {
+    document.body.dataset.mepMasHighlight = mepMasHighlightCheckbox.checked;
+    if (mepMasHighlightCheckbox.checked) {
+      simulateHref.searchParams.set('mepMasHighlight', true);
+      watchForMasContent();
+      injectMasBadges();
+    } else {
+      simulateHref.searchParams.delete('mepMasHighlight');
+      unwatchForMasContent();
+      removeMasBadges();
+    }
+  }
+
   const mepPreviewButtonCheckbox = popup.querySelector(
     `input[type="checkbox"]#mepPreviewButtonCheckbox${pageId}`,
   );
@@ -92,15 +702,55 @@ function updatePreviewButton(popup, pageId) {
     simulateHref.searchParams.delete('mepButton');
   }
 
+  // Three popup shapes for the region/market spoofer (see getMepPopup):
+  //   1) Lingo + M@S: checkbox toggles which dropdown writes ?akamaiLocale
+  //   2) Lingo only:  Lingo dropdown writes ?akamaiLocale unconditionally
+  //   3) Non-Lingo + M@S: standalone M@S dropdown writes ?akamaiLocale +
+  //      ?mepMasMarket=true (re-pre-selects on reload)
+  const mepMasMarketCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepMasMarketCheckbox${pageId}`,
+  );
   const mepLingoRegionSelect = popup.querySelector(
     `select#mepLingoRegionSelect${pageId}`,
   );
-  if (mepLingoRegionSelect) {
-    const selectedRegion = mepLingoRegionSelect.value;
-    if (selectedRegion) {
-      simulateHref.searchParams.set('akamaiLocale', selectedRegion);
+  const mepMasMarketSelect = popup.querySelector(
+    `select#mepMasMarketSelect${pageId}`,
+  );
+  const mepMasMarketWrapper = popup.querySelector('.mep-mas-market-dropdown');
+  const masMarketOn = !!mepMasMarketCheckbox?.checked;
+  if (mepLingoRegionSelect) mepLingoRegionSelect.disabled = masMarketOn;
+  // Only Lingo+M@S gates the dropdown on the checkbox; the standalone variant is always visible.
+  if (mepMasMarketWrapper && !mepMasMarketWrapper.classList.contains('standalone')) {
+    mepMasMarketWrapper.hidden = !masMarketOn;
+  }
+  if (masMarketOn) {
+    simulateHref.searchParams.set('mepMasMarket', 'true');
+    const masVal = mepMasMarketSelect?.value;
+    if (masVal) {
+      simulateHref.searchParams.set('akamaiLocale', masVal);
     } else {
       simulateHref.searchParams.delete('akamaiLocale');
+    }
+  } else if (!mepMasMarketCheckbox && mepMasMarketSelect) {
+    // Standalone shape (non-Lingo + M@S): dropdown is authoritative,
+    // mepMasMarket=true persists the selection across reloads.
+    const masVal = mepMasMarketSelect.value;
+    if (masVal) {
+      simulateHref.searchParams.set('mepMasMarket', 'true');
+      simulateHref.searchParams.set('akamaiLocale', masVal);
+    } else {
+      simulateHref.searchParams.delete('mepMasMarket');
+      simulateHref.searchParams.delete('akamaiLocale');
+    }
+  } else {
+    simulateHref.searchParams.delete('mepMasMarket');
+    if (mepLingoRegionSelect) {
+      const selectedRegion = mepLingoRegionSelect.value;
+      if (selectedRegion) {
+        simulateHref.searchParams.set('akamaiLocale', selectedRegion);
+      } else {
+        simulateHref.searchParams.delete('akamaiLocale');
+      }
     }
   }
 
@@ -396,6 +1046,22 @@ async function mmmToggleManifests(event, popup, pageId) {
   }
 }
 function addMepPopupListeners(popup, pageId) {
+  // One-way auto-check: flipping Highlight M@S ON also pre-toggles "Use M@S markets instead"
+  // so the dropdown unhides in the same click. Never auto-unchecks. Must run BEFORE the
+  // blanket change listener below so the first updatePreviewButton sees the auto-check.
+  const mepMasHighlightCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepMasHighlightCheckbox${pageId}`,
+  );
+  const mepMasMarketCheckbox = popup.querySelector(
+    `input[type="checkbox"]#mepMasMarketCheckbox${pageId}`,
+  );
+  if (mepMasHighlightCheckbox && mepMasMarketCheckbox) {
+    mepMasHighlightCheckbox.addEventListener('change', (event) => {
+      if (event.target.checked && !mepMasMarketCheckbox.checked) {
+        mepMasMarketCheckbox.checked = true;
+      }
+    });
+  }
   popup.querySelectorAll('select, input[type="checkbox"]').forEach((input) => {
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
@@ -427,6 +1093,9 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   const urlParams = new URLSearchParams(window.location.search);
   const highlightParam = urlParams.get('mepHighlight');
   const fragmentsParam = urlParams.get('mepFragments');
+  const caasHighlightParam = urlParams.get('mepCaasHighlight');
+  const masHighlightParam = urlParams.get('mepMasHighlight');
+  const masMarketParam = urlParams.get('mepMasMarket');
 
   let mepHighlightChecked = '';
   if (page?.highlight || highlightParam === 'true') {
@@ -438,6 +1107,18 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     mepFragmentsChecked = 'checked="checked"';
     document.body.dataset.mepFragments = true;
   }
+  let mepCaasHighlightChecked = '';
+  if (caasHighlightParam === 'true') {
+    mepCaasHighlightChecked = 'checked="checked"';
+    document.body.dataset.mepCaasHighlight = true;
+  }
+  let mepMasHighlightChecked = '';
+  if (masHighlightParam === 'true') {
+    mepMasHighlightChecked = 'checked="checked"';
+    document.body.dataset.mepMasHighlight = true;
+  }
+  const masMarketChecked = masMarketParam === 'true';
+  const mepMasMarketCheckedAttr = masMarketChecked ? 'checked="checked"' : '';
   const PREVIEW_BUTTON_ID = 'preview-button';
   const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
   const mepPopup = createTag('div', {
@@ -494,19 +1175,38 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   }
   BuildOptionsManifestLisMMM();
 
+  // Visibility gates for the market spoofers. Computed once per popup-build:
+  //   - lingoOk: page exposes Lingo regions, so the existing Lingo dropdown
+  //     and its companion "Use M@S markets instead" checkbox make sense.
+  //   - hasMas:  page has any M@S surface (collection / card / inline / OST
+  //     / offer); without one, neither M@S control is useful.
+  // Resulting render matrix:
+  //                          Lingo dropdown    M@S checkbox    M@S dropdown
+  //   Lingo + no M@S         shown             hidden          hidden
+  //   Lingo + M@S            shown             shown           gated by checkbox
+  //   non-Lingo + no M@S     "no Lingo" hint   hidden          hidden
+  //   non-Lingo + M@S        "no Lingo" hint   hidden          shown standalone
+  // Standalone variant drops the green left border (a visual link to the
+  // adjacent toggle) since there's no checkbox to anchor to.
+  const lingoOk = lingoActive() && regionKeys.length > 0;
+  const hasMas = hasMasSurfaces();
+
   function buildOptionsLingoSelect() {
-    if (lingoActive() && regionKeys.length > 0) {
+    if (lingoOk) {
       const regionOptions = regionKeys.map((key) => {
         const country = key.split('_')[0];
-        const currentAkamaiLocale = urlParams.get('akamaiLocale');
+        // M@S Markets mode disables the Lingo dropdown — surfacing a "selected" option would
+        // mislead since its value no longer drives akamaiLocale.
+        const currentAkamaiLocale = masMarketChecked ? null : urlParams.get('akamaiLocale');
         const selected = currentAkamaiLocale === country ? ' selected' : '';
         return `<option value="${country}"${selected}>${key}</option>`;
       }).join('');
 
+      const disabledAttr = masMarketChecked ? ' disabled' : '';
       return `
         <div class="mep-experience-dropdown">
           <label for="mepLingoRegionSelect${pageId}">Supported Lingo Geos</label>
-          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants">
+          <select name="mepLingoRegion${pageId}" id="mepLingoRegionSelect${pageId}" class="mep-manifest-variants"${disabledAttr}>
             <option value="">-- Select Region --</option>
             ${regionOptions}
           </select>
@@ -514,6 +1214,56 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     } return '<div>(No Lingo supported geos for this page.)</div>';
   }
   const regionDropdownHTML = buildOptionsLingoSelect();
+
+  // Sync read from cache — do NOT await getMarketConfig(). Cold cache renders the placeholder;
+  // the deferred reload at the end of getMepPopup picks up live data. Returns '' on no M@S.
+  function buildOptionsMasMarketSelect() {
+    if (!hasMas) return '';
+    const cached = config?.marketsConfig;
+    const languages = cached?.languages?.data ?? cached?.data ?? [];
+    const lang = languages.length
+      ? marketsLangForLocale({ languages }, config?.locale)
+      : null;
+    const supported = lang?.supportedRegions
+      ?.split(',').map((m) => m.trim().toLowerCase())
+      .filter(Boolean) || [];
+
+    // Standalone (non-Lingo + M@S): always visible, pre-selected from
+    // akamaiLocale. Lingo + M@S: hidden until the companion checkbox flips.
+    const standalone = !lingoOk;
+    const hiddenAttr = standalone || masMarketChecked ? '' : 'hidden';
+    const currentAkamaiLocale = (standalone || masMarketChecked)
+      ? urlParams.get('akamaiLocale')
+      : null;
+    const opts = supported.map((c) => {
+      const selected = currentAkamaiLocale === c ? ' selected' : '';
+      return `<option value="${c}"${selected}>${c}</option>`;
+    }).join('');
+    // Always emit <select> (disabled when empty) — keeps shape stable; no downstream branches.
+    const disabledAttr = supported.length === 0 ? ' disabled' : '';
+    const placeholderOpt = supported.length === 0
+      ? '<option value="">-- No M@S markets for this page --</option>'
+      : '<option value="">-- Select Market --</option>';
+    const standaloneClass = standalone ? ' standalone' : '';
+    return `
+      <div class="mep-experience-dropdown mep-mas-market-dropdown${standaloneClass}" ${hiddenAttr}>
+        <label for="mepMasMarketSelect${pageId}">Supported M@S Markets</label>
+        <select name="mepMasMarket${pageId}" id="mepMasMarketSelect${pageId}" class="mep-manifest-variants"${disabledAttr}>
+          ${placeholderOpt}
+          ${opts}
+        </select>
+      </div>`;
+  }
+  // Warm the cache for next popup open. Fire-and-forget.
+  if (!config?.marketsConfig) getMarketConfig();
+  const masMarketDropdownHTML = buildOptionsMasMarketSelect();
+  // Checkbox only makes sense between two dropdowns — suppress on non-Lingo (M@S alone).
+  const masMarketToggleHTML = (hasMas && lingoOk) ? `
+    <div class="mep-mas-market-toggle">
+      <input type="checkbox" name="mepMasMarket${pageId}"
+        id="mepMasMarketCheckbox${pageId}" ${mepMasMarketCheckedAttr} value="true">
+      <label for="mepMasMarketCheckbox${pageId}">Use M@S markets</label>
+    </div>` : '';
 
   function buildOptionsToggles() {
     const mepToggleOptions = createTag('div', { class: 'mep-section' });
@@ -561,6 +1311,17 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         id="mepFragmentsCheckbox${pageId}" ${mepFragmentsChecked} value="true">
         <label for="mepFragmentsCheckbox${pageId}">Highlight fragments</label>
       </div>
+      <div>
+        <input type="checkbox" name="mepCaasHighlight${pageId}"
+        id="mepCaasHighlightCheckbox${pageId}" ${mepCaasHighlightChecked} value="true">
+        <label for="mepCaasHighlightCheckbox${pageId}">Highlight CaaS</label>
+      </div>
+      <div>
+        <input type="checkbox" name="mepMasHighlight${pageId}"
+        id="mepMasHighlightCheckbox${pageId}" ${mepMasHighlightChecked} value="true">
+        <label for="mepMasHighlightCheckbox${pageId}">Highlight M@S</label>
+        <div class="mep-mas-no-content" hidden>No M@S content found on this page.</div>
+      </div>
       ${showManifestsCheckbox}
       <div>
         <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
@@ -569,6 +1330,8 @@ export async function getMepPopup(mepConfig, isMmm = false) {
       </div>
     </div>
     ${regionDropdownHTML}
+    ${masMarketToggleHTML}
+    ${masMarketDropdownHTML}
     <div>New manifest location or path*</div>
     <input type="text" name="new-manifest${pageId}" class="new-manifest">
   `;
@@ -681,7 +1444,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Total</span>
         <span>${lingoData.total}</span>
       ` : `
-        <span>Page Updates</span>
+        <span>Mep Lingo Updates</span>
         <span>${lingoData.updates}</span>
       `}
         <span>Lang First / Lingo</span>
@@ -702,6 +1465,72 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   }
   await buildSummaryLingo();
 
+  // M@S summary. Surfaces Detected = Collections + Cards + Inline Fields + Standalone Offers.
+  // Sub-collections are a sub-row (live inside the parent collection payload, not a separate
+  // DOM surface). Counts query real elements (merch-card, mas-field, MAS_OSI_SELECTOR) — the
+  // [data-mas-block] stamps only land while mep.preview is on. Standalone Offers excludes
+  // card-internal offers (~5x multiplier per card; per-card "View in OST" handles them).
+  function buildSummaryMas() {
+    const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
+    let subCollectionCount = 0;
+    collectionContainers.forEach((c) => {
+      subCollectionCount += mepMasSubCollections.get(c)?.length || 0;
+    });
+    const standaloneOfferCount = [...document.querySelectorAll(MAS_OSI_SELECTOR)]
+      .filter((el) => !el.closest('merch-card')).length;
+    const masCounts = {
+      collection: collectionContainers.length,
+      subCollection: subCollectionCount,
+      card: document.querySelectorAll('merch-card').length,
+      inlineField: document.querySelectorAll('mas-field').length,
+      standaloneOffer: standaloneOfferCount,
+    };
+    const masSurfaces = masCounts.collection
+      + masCounts.card
+      + masCounts.inlineField
+      + masCounts.standaloneOffer;
+    const geoDetectionOn = isMasGeoDetectionEnabled();
+    const masGeoDetectionParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+    const masGeoDetectionMeta = getMetadata('mas-geo-detection');
+    let geoDetectionSource = 'none';
+    if (geoDetectionOn) {
+      geoDetectionSource = masGeoDetectionParam ? 'URL param' : 'Metadata';
+    } else if (masGeoDetectionParam || masGeoDetectionMeta) {
+      geoDetectionSource = masGeoDetectionParam ? 'URL param (off)' : 'Metadata (off)';
+    }
+
+    const svc = document.head.querySelector('mas-commerce-service');
+    const liveCountry = svc?.getAttribute('country');
+    const localeCountry = getMiloLocaleSettings(config.locale)?.country;
+    const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
+    const pageMarketSource = liveCountry ? 'mas-commerce-service' : 'page locale';
+
+    const section = createTag('div', { class: 'mep-section' });
+    section.append(createTag('h6', { class: 'mep-section-header' }, 'M@S'));
+    const data = createTag('div', { class: 'mep-section-data' });
+    const rows = [
+      ['Mas Geo Detection', geoDetectionOn ? 'on' : 'off'],
+      ['Geo Source', geoDetectionSource],
+      ['Page Market', pageMarket],
+      ['Market Source', pageMarketSource],
+      ['Surfaces Detected', masSurfaces],
+      ['Collections', masCounts.collection, true],
+      ['Sub-collections', masCounts.subCollection, true],
+      ['Cards', masCounts.card, true],
+      ['Inline Fields', masCounts.inlineField, true],
+      ['Standalone Offers', masCounts.standaloneOffer, true],
+    ];
+    rows.forEach(([label, value, sub]) => {
+      data.append(createTag('span', sub ? { class: 'mep-mas-subitem' } : null, label));
+      const valueSpan = createTag('span');
+      valueSpan.textContent = String(value);
+      data.append(valueSpan);
+    });
+    section.append(data);
+    mepPopupBody[1].append(section);
+  }
+  buildSummaryMas();
+
   // Inject Overlay
   function compileOverlay() {
     mepPopup.append(mepPopupHeader, mepPopupTabs, ...mepPopupBody);
@@ -716,6 +1545,20 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     if (previewButton) updatePreviewButton(mepPopup, pageId);
   }
   compileOverlay();
+
+  // Cold-cache defer-populate: if marketsConfig wasn't ready at build time, await the fetch
+  // and re-render the dropdown in place. Guarded so it never clobbers user selection.
+  if (!config?.marketsConfig) {
+    getMarketConfig().then(() => {
+      const wrapper = mepPopup.querySelector('.mep-mas-market-dropdown');
+      if (!wrapper) return;
+      const existingSelect = wrapper.querySelector('select');
+      if (existingSelect?.value) return;
+      wrapper.outerHTML = buildOptionsMasMarketSelect();
+      const newSelect = mepPopup.querySelector(`select#mepMasMarketSelect${pageId}`);
+      newSelect?.addEventListener('change', () => updatePreviewButton(mepPopup, pageId));
+    });
+  }
 
   return mepPopup;
 }
@@ -842,13 +1685,14 @@ function addFragmentBadgeClickHandlers() {
   document.body.addEventListener('click', (e) => {
     const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
     const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
-    if (!isHighlightEnabled && !isFragmentsEnabled) return;
+    const isCaasHighlightEnabled = document.body.dataset.mepCaasHighlight === 'true';
+    if (!isHighlightEnabled && !isFragmentsEnabled && !isCaasHighlightEnabled) return;
 
     // Ignore clicks from within the MEP popup
     if (e.target.closest('.mep-preview-overlay')) return;
 
     // Find the badged element that was clicked (includes non-fragment badges)
-    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default]');
+    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]');
     if (!fragment) return;
 
     const elementStyle = window.getComputedStyle(fragment);
@@ -861,7 +1705,12 @@ function addFragmentBadgeClickHandlers() {
     const badgeHeight = parseFloat(beforeStyles.height)
       || parseFloat(beforeStyles.minHeight)
       || 35;
-    const fragmentPath = fragment.dataset.path || fragment.dataset.fragmentPath;
+    let fragmentPath = fragment.dataset.path
+      || fragment.dataset.fragmentPath
+      || fragment.dataset.cardUrl;
+    if (fragment.dataset.cardUrl) {
+      fragmentPath = rewriteBlogPreviewHost(fragmentPath) || rewriteForPreviewHost(fragmentPath);
+    }
     const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
     const handleBadgeClick = () => {
       e.preventDefault();
@@ -932,10 +1781,22 @@ export async function saveToMmm() {
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
+  // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
+  // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
+  // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
+  getMarketConfig();
   await createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
+  if (document.body.dataset.mepCaasHighlight === 'true') {
+    watchForCaasBlocks();
+    injectCaasBadges();
+  }
+  if (document.body.dataset.mepMasHighlight === 'true') {
+    watchForMasContent();
+    injectMasBadges();
+  }
   // Adjust badge positions after a short delay to allow rendering
   setTimeout(() => {
     adjustBadgesForZeroHeightSections();

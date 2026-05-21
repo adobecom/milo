@@ -14,13 +14,14 @@ function stripHash(p) {
 }
 
 class References {
-  constructor(accessToken, htmlPaths, org, repo, signal, options = {}) {
+  constructor(accessToken, htmlPaths, org, repo, signal, config = {}) {
     this.accessToken = accessToken;
     this.org = org;
     this.repo = repo;
     this.htmlPaths = htmlPaths;
     this.signal = signal;
-    this.includeChronoBoxFragments = !!options.includeChronoBoxFragments;
+    this.includeChronoBoxFragments = config.chronoBoxFragmentsEnabled;
+    this.accessMode = config.accessMode;
 
     // eslint-disable-next-line no-useless-escape
     this.referencePattern = new RegExp(`https?:\/\/[^/]*--${repo}--${org}\\.[^/]*(?:page|live)(\/.*(?:fragments\/|\\.(?:pdf|svg|json))[^?#]*)`);
@@ -137,6 +138,15 @@ class References {
         }
       }));
     }
+
+    if (this.accessMode === 'draftsOnly') {
+      fragmentsAndAssets.forEach((p) => {
+        if (!p.startsWith(`/${this.org}/${this.repo}/drafts/`)) {
+          fragmentsAndAssets.delete(p);
+        }
+      });
+    }
+
     return fragmentsAndAssets;
   }
 }
@@ -147,7 +157,7 @@ function findFragmentsAndAssets({
   org,
   repo,
   signal,
-  includeChronoBoxFragments,
+  config,
 }) {
   const references = new References(
     accessToken,
@@ -155,7 +165,7 @@ function findFragmentsAndAssets({
     org,
     repo,
     signal,
-    { includeChronoBoxFragments },
+    config,
   );
   return references.getReferencedFragmentsAndAssets();
 }
