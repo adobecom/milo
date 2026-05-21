@@ -556,7 +556,6 @@ function setupStickyHeader(el) {
   }).observe(nav);
 
   requestAnimationFrame(() => {
-    updateMinHeight();
     syncTop();
     updateThreshold();
     if (window.scrollY >= threshold) applySticky();
@@ -571,7 +570,6 @@ function setupStickyHeader(el) {
     clearTimeout(rDebounce);
     if (wasSticky) removeSticky();
     threshold = Infinity;
-    updateMinHeight();
     syncTop();
     updateThreshold();
     if (window.scrollY >= threshold) applySticky();
