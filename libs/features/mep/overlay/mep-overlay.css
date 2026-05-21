@@ -117,6 +117,12 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   padding: 16px 12px;
 }
 
+.mep-drawer .mep-header .mep-navigation a,
+.mep-drawer .mep-header .mep-navigation button {
+  display: flex;
+  align-items: center;
+}
+
 .mep-drawer .mep-header .mep-navigation .icon-close {
   background: none;
   border: none;
