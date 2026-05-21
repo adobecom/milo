@@ -3,6 +3,10 @@
   to { opacity: 0; }
 }
 
+.comparison-table-c2 .ct-tooltip-content {
+  display: none;
+}
+
 .comparison-table-c2 .dotted-underline {
   text-decoration: none;
   background-image: radial-gradient(circle, currentColor 1.5px, transparent 1.5px);
@@ -179,10 +183,12 @@
 
     > .sub-header-item-container {
       > p:not(:has(strong, em, a, picture)) {
-        font-size: var(--s2a-typography-font-size-caption);
+        font-size: var(--s2a-typography-font-size-label);
+        font-family: var(--s2a-font-family-label);
+        font-weight: var(--s2a-font-weight-label);
+        line-height: var(--s2a-typography-line-height-label);
+        letter-spacing: var(--s2a-typography-letter-spacing-label);
         color: var(--s2a-color-gray-600);
-        font-weight: var(--s2a-font-weight-body);
-        line-height: var(--s2a-typography-line-height-caption);
       }
 
       > p:has(strong) {
@@ -234,11 +240,11 @@
     }
 
     :is(h1, h2, h3, h4, h5, h6) {
-      font-size: var(--s2a-typography-font-size-heading-4);
+      font-size: var(--s2a-typography-font-size-heading-5);
       font-family: var(--heading-font-family);
       font-weight: var(--s2a-font-weight-heading);
-      line-height: var(--s2a-typography-line-height-heading-4);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
+      line-height: var(--s2a-typography-line-height-heading-5);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -659,15 +665,16 @@
   }
 
   .price {
-    font-size: var(--s2a-typography-font-size-eyebrow);
-    font-weight: var(--s2a-font-weight-adobe-clean-bold);
-    line-height: var(--s2a-typography-line-height-eyebrow);
+    font-size: var(--s2a-typography-font-size-body-md);
+    font-weight: var(--s2a-font-weight-body);
+    line-height: var(--s2a-typography-line-height-body-md);
     color: var(--s2a-color-gray-900);
     display: flex;
     justify-content: flex-start;
 
     &.price-strikethrough {
-      font-size: var(--s2a-typography-font-size-caption);
+      color: var(--s2a-color-transparent-black-64);
+      text-decoration: line-through;
     }
   }
 

@@ -314,17 +314,22 @@ function decorateUnderlineTooltipTriggers(el) {
     tooltipTriggerCount += 1;
     const id = `ct-tooltip-${tooltipTriggerCount}`;
 
+    const tooltipSpan = createTag('span', {
+      id,
+      role: 'tooltip',
+      class: 'ct-tooltip-content',
+    }, tooltipText);
+
     const trigger = createTag('a', {
       href: '#',
       class: 'dotted-underline milo-tooltip',
-      'aria-label': `${label}, Tooltip`,
       'data-tooltip': tooltipText,
       'data-tooltip-position': position,
       'aria-describedby': id,
     }, label);
     trigger.addEventListener('click', (e) => e.preventDefault());
 
-    u.replaceWith(trigger, createTag('span', { id, role: 'tooltip', class: 'sr-only' }, tooltipText));
+    u.replaceWith(trigger, tooltipSpan);
   });
 }
 
