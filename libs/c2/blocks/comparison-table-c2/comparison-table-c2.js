@@ -583,10 +583,14 @@ function setupStickyHeader(el) {
     if (window.scrollY < threshold && wasSticky) removeSticky();
   };
 
+  let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
-    if (y >= threshold && !wasSticky) applySticky();
-    else if (y < threshold && wasSticky) removeSticky();
+    const goingDown = y > lastScrollY;
+    lastScrollY = y;
+    if (y < threshold) { if (wasSticky) removeSticky(); return; }
+    if (goingDown && !wasSticky) applySticky();
+    else if (!goingDown && wasSticky) removeSticky();
   }, { passive: true });
 
   const watchNavResize = (nav) => new ResizeObserver(() => {
