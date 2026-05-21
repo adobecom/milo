@@ -1033,17 +1033,8 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   background-color: #222;
 }
 
-/* Mobile phone: hide pills, expand input to fill bar */
-@media screen and (max-width: 599px) {
-  .brand-concierge.floating-input {
-    bottom: 16px;
-    left: 50%;
-    max-width: none;
-    padding: 16px;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);
-  }
-
+/* Tablet and below: hide pills, expand input to fill bar */
+@media screen and (max-width: 768px) {
   .brand-concierge.floating-input .bc-prompt-cards {
     display: none;
   }
@@ -1052,6 +1043,18 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
     flex: 1;
     max-width: none;
     min-width: 0;
+  }
+}
+
+/* Mobile phone: tighten bar layout */
+@media screen and (max-width: 599px) {
+  .brand-concierge.floating-input {
+    bottom: 16px;
+    left: 50%;
+    max-width: none;
+    padding: 16px;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
   }
 }
 
