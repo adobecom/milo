@@ -31,56 +31,82 @@ async function buildOverlay() {
     return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
   }
 
-  function generateFAB() {
-    const mepFabDiv = createTag('div', { class: 'mep-fab', style: `top: ${gnavOffset + marginOffset}px` });
+  function buildFAB() {
+    const mepFabDiv = createTag('button', { class: 'mep-fab', style: `top: ${gnavOffset + marginOffset}px`, popovertarget: 'mep-drawer' });
     const mepIconLogoSvg = parseSvg(svgData.svg['icon-mep']);
     mepFabDiv.appendChild(mepIconLogoSvg);
     bodyEl.appendChild(mepFabDiv);
   }
 
-  function generateDrawer() {
-    // Header
-    const mepHeaderDiv = createTag('div', { class: 'mep-header' });
-    const mepLogoSvg = parseSvg(svgData.svg['logo-mep']);
-    const mepCloseSvg = parseSvg(svgData.svg['icon-close']);
-    mepHeaderDiv.append(mepLogoSvg, mepCloseSvg);
+  function buildDrawer() {
+    const navigationDiv = createTag('div', { class: 'mep-navigation' });
 
-    // Body
+    const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank' });
+    logoLink.appendChild(parseSvg(svgData.svg['logo-mep']));
+    navigationDiv.appendChild(logoLink);
+
+    const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
+    closeBtn.appendChild(parseSvg(svgData.svg['icon-close']));
+    navigationDiv.appendChild(closeBtn);
+
+    const mepTabsDiv = createTag('div', { class: 'mep-tabs' });
     const mepContentDiv = createTag('div', { class: 'mep-body' });
 
-    const cards = [1, 2, 3];
-    cards.forEach((card) => {
-      const cardDiv = createTag('div', { class: 'mep-card' }, `Card ${card}`);
-      mepContentDiv.appendChild(cardDiv);
+    const tabs = [
+      { name: 'Actions', cards: [1, 2, 3] },
+      { name: 'Summary', cards: [4, 5, 6] },
+    ];
+
+    tabs.forEach(({ name, cards }, index) => {
+      const active = index === 0 ? ' active' : '';
+      mepTabsDiv.appendChild(createTag('div', { class: `mep-tab${active}`, 'data-tab': index }, name));
+      const contentEl = createTag('div', { class: `mep-tab-content${active}`, 'data-tab': index });
+      cards.forEach((n) => contentEl.appendChild(createTag('div', { class: 'mep-card' }, `Card ${n}`)));
+      mepContentDiv.appendChild(contentEl);
     });
 
-    // Footer
+    const mepHeaderDiv = createTag('div', { class: 'mep-header' });
+    mepHeaderDiv.append(navigationDiv, mepTabsDiv);
+
     const mepFooterDiv = createTag('div', { class: 'mep-footer' });
-    const previewBtn = createTag(
-      'a',
-      {
-        class: 'con-button button-l fill',
-        title: 'Preview',
-        href: '#',
-      },
-      'Preview',
-    );
-    mepFooterDiv.append(previewBtn);
+    mepFooterDiv.append(createTag('a', { class: 'con-button button-l fill', title: 'Preview', href: '#' }, 'Preview'));
 
-    // Drawer
-    const mepDrawerDiv = createTag('div', { class: 'mep-drawer', style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)` });
+    const mepDrawerDiv = createTag('div', { id: 'mep-drawer', class: 'mep-drawer', popover: 'manual', style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)` });
     mepDrawerDiv.append(mepHeaderDiv, mepContentDiv, mepFooterDiv);
-
     bodyEl.appendChild(mepDrawerDiv);
   }
 
-  generateFAB();
-  generateDrawer();
+  buildFAB();
+  buildDrawer();
+}
+
+function changeTab(tabIndex) {
+  const tabs = document.querySelectorAll('[data-tab]');
+
+  tabs.forEach((tab) => {
+    const index = tab.getAttribute('data-tab');
+    if (index === tabIndex) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+}
+
+function addEventListeners() {
+  const tabs = document.querySelectorAll('.mep-tab');
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const index = tab.getAttribute('data-tab');
+      changeTab(index);
+    });
+  });
 }
 
 async function init() {
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   await buildOverlay();
+  addEventListeners();
 }
 
 init();
