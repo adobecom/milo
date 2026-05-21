@@ -251,8 +251,7 @@
   left: 0;
   background: var(--tabs-pill-bg-color-selected);
   border-radius: var(--m-rounded-corners-tabs);
-  transition: transform 0.25s ease, width 0.25s ease;
+  transition: transform 0.25s ease, width 0.35s ease;
   pointer-events: none;
   z-index: 0;
 }
-/* ---- */
