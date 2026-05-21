@@ -9,67 +9,6 @@ const hasTextNode = (...nodeLists) => nodeLists.some(
   ),
 );
 
-function setEqualHeight(el) {
-  const calculateMaxHeight = (elements) => Math.max(...elements.map((p) => {
-    const styles = window.getComputedStyle(p);
-    return p.offsetHeight
-      - parseFloat(styles.paddingTop) - parseFloat(styles.paddingBottom)
-      - parseFloat(styles.borderTopWidth) - parseFloat(styles.borderBottomWidth);
-  }));
-
-  const setupHeightHandler = (handler, parentSelector) => {
-    let timer;
-    const resizeObserver = new ResizeObserver((entries) => {
-      if (!entries.some((entry) => entry.contentBoxSize || entry.borderBoxSize)) return;
-      if (el.querySelector('.header-cards-container.is-sticky')) return;
-      clearTimeout(timer);
-      timer = setTimeout(handler, 350);
-    });
-    el.querySelectorAll(parentSelector).forEach((element) => resizeObserver.observe(element));
-    return resizeObserver;
-  };
-
-  const performEqualHeightForElements = (parentSelector, childSelector, targetSelector) => {
-    el.querySelectorAll(parentSelector).forEach((parent) => {
-      const children = parent.querySelectorAll(childSelector);
-      if (!children.length) return;
-      const elementsByPosition = [];
-
-      children.forEach((child) => {
-        const targets = child.querySelectorAll(targetSelector);
-        targets.forEach((target, index) => {
-          if (!elementsByPosition[index]) elementsByPosition[index] = [];
-          target.style.minHeight = 'auto';
-          elementsByPosition[index].push(target);
-        });
-      });
-
-      elementsByPosition.forEach((elements) => {
-        if (!elements.length) return;
-        const maxHeight = calculateMaxHeight(elements);
-        elements.forEach((element) => {
-          if (maxHeight === 0) element.classList.add('zero-height');
-          element.style.minHeight = `${maxHeight}px`;
-        });
-      });
-    });
-  };
-
-  const configs = [
-    ['.header-cards-container', '.header-item-card', '.sub-header-item-container:not(:last-of-type)', '.header-cards-container'],
-    ['.table-row', '.table-cell', 'div', '.table-row'],
-    ['.header-cards-container', '.header-item-card', '.description', '.header-cards-container'],
-    ['.header-cards-container', '.header-item-card', 'h1, h2, h3, h4, h5, h6', '.header-cards-container'],
-  ];
-
-  const observers = configs.map(([parent, child, target, observeSelector]) => setupHeightHandler(
-    () => performEqualHeightForElements(parent, child, target),
-    observeSelector,
-  ));
-
-  return () => observers.forEach((observer) => observer?.disconnect());
-}
-
 const getFirstVisibleColumnIndex = (el) => {
   const firstVisible = [...el.querySelectorAll('.header-item[data-column-index]')]
     .find((item) => !item.classList.contains('hidden'));
@@ -679,7 +618,6 @@ function decorate(el) {
 
 export default function init(el) {
   decorate(el);
-  setEqualHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
   setupTooltips(el);
