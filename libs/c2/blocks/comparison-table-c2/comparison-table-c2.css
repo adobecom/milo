@@ -64,7 +64,7 @@
     padding-bottom: var(--s2a-spacing-xs);
     position: sticky;
     top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
-    z-index: 10;
+    z-index: 2;
     transition: margin-bottom 300ms cubic-bezier(0.42, 0, 0, 1);
 
     &.is-sticky {
@@ -598,7 +598,7 @@
     display: grid;
     grid-template-rows: 1fr;
     overflow: hidden;
-    transition: grid-template-rows 300ms cubic-bezier(0.42, 0, 0, 1);
+    transition: grid-template-rows 300ms ease-out;
 
     > div {
       min-block-size: 0;

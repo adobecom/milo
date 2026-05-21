@@ -540,14 +540,15 @@ function setupStickyHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
-
   const cardsContainer = el.querySelector('.header-cards-container');
   if (!cardsContainer) return;
 
   let wasSticky = false;
   let rDebounce;
   let threshold = Infinity;
+  let lastScrollY = window.scrollY;
 
+  const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
   const getNavOffset = () => {
     const nav = document.querySelector('header > nav') || document.querySelector('header');
     const pos = nav ? getComputedStyle(nav).position : '';
@@ -555,45 +556,7 @@ function setupStickyHeader(el) {
       ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
     return navBottom + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
   };
-
   const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
-
-  const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
-
-  const updateMinHeight = () => {
-    if (wasSticky) return;
-    if (isMobileLayout()) {
-      headerContent.style.minHeight = '';
-      cardsContainer.style.minHeight = '';
-    } else {
-      cardsContainer.style.minHeight = '';
-      const h = cardsContainer.offsetHeight ?? 0;
-      headerContent.style.minHeight = h > 0 ? `${h}px` : '';
-    }
-  };
-
-  requestAnimationFrame(updateMinHeight);
-
-  const applySticky = () => {
-    if (wasSticky) return;
-    wasSticky = true;
-    if (isMobileLayout()) {
-      const collapsibleH = [...cardsContainer.querySelectorAll('.header-item-collapsible')]
-        .reduce((max, e) => Math.max(max, e.offsetHeight), 0);
-      cardsContainer.classList.add('is-sticky');
-      if (collapsibleH > 0) cardsContainer.style.marginBottom = `${collapsibleH}px`;
-    } else {
-      cardsContainer.classList.add('is-sticky');
-    }
-  };
-
-  const removeSticky = () => {
-    if (!wasSticky) return;
-    wasSticky = false;
-    cardsContainer.classList.remove('is-sticky');
-    cardsContainer.style.marginBottom = '';
-  };
-
   const getFlowTop = () => {
     let top = 0;
     let node = cardsContainer;
@@ -603,18 +566,49 @@ function setupStickyHeader(el) {
     }
     return top;
   };
-
-  const updateThreshold = () => {
-    threshold = getFlowTop() - getNavOffset() - 24;
-    if (window.scrollY < threshold && wasSticky) removeSticky();
+  const updateMinHeight = () => {
+    if (wasSticky) return;
+    cardsContainer.style.minHeight = '';
+    const h = isMobileLayout() ? 0 : (cardsContainer.offsetHeight ?? 0);
+    headerContent.style.minHeight = h > 0 ? `${h}px` : '';
   };
+  const applySticky = () => {
+    if (wasSticky) return;
+    wasSticky = true;
+    const collapsibleH = isMobileLayout()
+      ? [...cardsContainer.querySelectorAll('.header-item-collapsible')]
+        .reduce((max, e) => Math.max(max, e.offsetHeight), 0)
+      : 0;
+    cardsContainer.classList.add('is-sticky');
+    if (collapsibleH > 0) cardsContainer.style.marginBottom = `${collapsibleH}px`;
+  };
+  const removeSticky = () => {
+    if (!wasSticky) return;
+    wasSticky = false;
+    cardsContainer.classList.remove('is-sticky');
+    cardsContainer.style.marginBottom = '';
+  };
+  const updateThreshold = () => {
+    if (wasSticky) return;
+    threshold = getFlowTop() - getNavOffset() - 24;
+  };
+  const watchNavResize = (nav) => new ResizeObserver(() => {
+    syncTop();
+    updateThreshold();
+  }).observe(nav);
+
+  requestAnimationFrame(updateMinHeight);
+  requestAnimationFrame(() => {
+    syncTop();
+    updateThreshold();
+    if (window.scrollY >= threshold) applySticky();
+  });
 
   new ResizeObserver(() => {
     clearTimeout(rDebounce);
     rDebounce = setTimeout(() => { updateMinHeight(); updateThreshold(); }, 350);
   }).observe(cardsContainer);
 
-  let lastScrollY = window.scrollY;
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
@@ -624,20 +618,8 @@ function setupStickyHeader(el) {
     else if (!goingDown && wasSticky) removeSticky();
   }, { passive: true });
 
-  const watchNavResize = (nav) => new ResizeObserver(() => {
-    syncTop();
-    updateThreshold();
-  }).observe(nav);
-
-  requestAnimationFrame(() => {
-    syncTop();
-    updateThreshold();
-    if (window.scrollY >= threshold) applySticky();
-  });
-
   const nav = document.querySelector('header > nav');
   if (nav) { watchNavResize(nav); return; }
-
   const header = document.querySelector('header');
   if (!header) return;
   const mo = new MutationObserver(() => {
