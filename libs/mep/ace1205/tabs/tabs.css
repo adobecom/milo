@@ -133,6 +133,8 @@
   padding: 0 var(--s2a-spacing-lg);
   text-decoration: none;
   transition: color 0.1s ease-in-out;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
   white-space: nowrap;
   width: auto;
 
