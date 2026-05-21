@@ -589,7 +589,7 @@ function setupStickyHeader(el) {
     cardsContainer.style.marginBottom = '';
   };
   const updateThreshold = () => {
-    if (wasSticky) return;
+    if (wasSticky || window.scrollY >= threshold) return;
     threshold = getFlowTop() - getNavOffset() - 24;
   };
   const watchNavResize = (nav) => new ResizeObserver(() => {
