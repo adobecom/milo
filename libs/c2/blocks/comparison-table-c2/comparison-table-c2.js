@@ -318,7 +318,11 @@ function decorateUnderlineTooltipTriggers(el) {
       id,
       role: 'tooltip',
       class: 'ct-tooltip-content',
-    }, tooltipText);
+    });
+    tooltipSpan.append(
+      createTag('span', { 'aria-label': 'Tooltip :', role: 'tooltip' }),
+      tooltipText,
+    );
 
     const trigger = createTag('a', {
       href: '#',

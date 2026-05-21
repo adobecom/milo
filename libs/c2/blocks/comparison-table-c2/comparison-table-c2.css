@@ -7,6 +7,15 @@
   display: none;
 }
 
+.comparison-table-c2 .milo-tooltip:focus + .ct-tooltip-content,
+.comparison-table-c2 .milo-tooltip:hover + .ct-tooltip-content {
+  display: block;
+  position: absolute;
+  left: -10000px;
+  width: auto;
+  height: auto;
+}
+
 .comparison-table-c2 .dotted-underline {
   text-decoration: none;
   background-image: radial-gradient(circle, currentColor 1.5px, transparent 1.5px);
