@@ -29,8 +29,8 @@ function decorate(block) {
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(chicletRow, ...bodyEls);
 
-  const promoArea = createTag('div', { class: 'pm-promo-area' });
   if (ctaLink) {
+    const promoArea = createTag('div', { class: 'pm-promo-area' });
     promoArea.append(createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
       createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
       createTag('span', { class: 'pm-promo-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
