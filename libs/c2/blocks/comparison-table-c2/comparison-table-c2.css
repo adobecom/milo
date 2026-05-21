@@ -65,7 +65,7 @@
     position: sticky;
     top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
     z-index: 2;
-    transition: margin-bottom 300ms cubic-bezier(0.42, 0, 0, 1);
+    transition: margin-bottom 300ms ease-out;
 
     &.is-sticky {
       align-items: stretch;
