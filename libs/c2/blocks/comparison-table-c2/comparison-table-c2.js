@@ -535,16 +535,34 @@ function setupStickyHeader(el) {
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
   };
 
+  const suppressTransitions = () => {
+    cardsContainer.style.transition = 'none';
+    cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = 'none'; });
+    // eslint-disable-next-line chai-friendly/no-unused-expressions
+    cardsContainer.offsetHeight; // force reflow so transition:none commits before class change
+  };
+  const restoreTransitions = () => requestAnimationFrame(() => {
+    cardsContainer.style.transition = '';
+    cardsContainer.querySelectorAll('.header-item-collapsible').forEach((c) => { c.style.transition = ''; });
+  });
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
+    if (!isMobileLayout()) { cardsContainer.classList.add('is-sticky'); return; }
+    const preHeight = cardsContainer.offsetHeight;
+    suppressTransitions();
     cardsContainer.classList.add('is-sticky');
+    const delta = preHeight - cardsContainer.offsetHeight;
+    if (delta > 0) cardsContainer.style.marginBottom = `${delta}px`;
+    restoreTransitions();
   };
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
+    suppressTransitions();
     cardsContainer.classList.remove('is-sticky');
     cardsContainer.style.marginBottom = '';
+    restoreTransitions();
   };
   const updateThreshold = () => {
     if (wasSticky || window.scrollY >= threshold) return;
