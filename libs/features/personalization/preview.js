@@ -1085,7 +1085,7 @@ function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
   return target === 'postlcp' ? 'on post LCP' : target;
 }
-export async function getMepPopup(mepConfig, isMmm = false) {
+export async function getMepPopup(mepConfig, isMmm = false, readOnly = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
 
@@ -1546,6 +1546,25 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   }
   compileOverlay();
 
+  if (readOnly) {
+    mepPopup.querySelectorAll('select, input[type="text"], input[type="checkbox"]').forEach((el) => {
+      el.disabled = true;
+    });
+    mepPopup.querySelectorAll(`a[data-id="${PREVIEW_BUTTON_ID}"], a.mep-edit-manifest`).forEach((a) => {
+      a.removeAttribute('active');
+      a.setAttribute('aria-disabled', 'true');
+      a.style.cursor = 'default';
+      a.addEventListener('click', (e) => e.preventDefault());
+    });
+    mepPopup.querySelectorAll('.mep-manifest-toggle').forEach((toggle) => {
+      toggle.setAttribute('aria-disabled', 'true');
+      toggle.style.cursor = 'default';
+      toggle.addEventListener('click', (e) => e.stopPropagation(), true);
+    });
+    const notice = createTag('div', { class: 'mep-readonly-notice' }, 'Sign in to AEM Sidekick to change experiences.');
+    mepPopup.querySelector('.mep-popup-footer')?.prepend(notice);
+  }
+
   // Cold-cache defer-populate: if marketsConfig wasn't ready at build time, await the fetch
   // and re-render the dropdown in place. Guarded so it never clobbers user selection.
   if (!config?.marketsConfig) {
@@ -1556,6 +1575,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
       if (existingSelect?.value) return;
       wrapper.outerHTML = buildOptionsMasMarketSelect();
       const newSelect = mepPopup.querySelector(`select#mepMasMarketSelect${pageId}`);
+      if (readOnly) newSelect?.setAttribute('disabled', '');
       newSelect?.addEventListener('change', () => updatePreviewButton(mepPopup, pageId));
     });
   }
@@ -1563,7 +1583,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   return mepPopup;
 }
 
-async function createPreviewPill() {
+async function createPreviewPill(readOnly = false) {
   const mepConfig = parseMepConfig();
   if (!mepConfig) return;
   const { activities } = mepConfig;
@@ -1573,7 +1593,7 @@ async function createPreviewPill() {
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
   mepBadge.innerHTML = getPillText(activities?.length);
   pill.append(mepBadge);
-  pill.append(await getMepPopup(mepConfig));
+  pill.append(await getMepPopup(mepConfig, false, readOnly));
   overlay.append(pill);
   document.body.append(overlay);
   let onClose;
@@ -1778,14 +1798,27 @@ export async function saveToMmm() {
       throw new Error(res.message || 'Network response failed');
     });
 }
+// POC: infers sidekick auth by checking for `env-switcher` in the plugin bar's
+// shadow DOM — only present when sidekick has authenticated (siteStore.status 200).
+// Fragile: breaks silently if sidekick restructures its internals.
+// A better path: ask the sidekick team to expose an `authenticated` attribute on
+// <aem-sidekick>, then replace this with hasAttribute('authenticated').
+// TODO: file request with sidekick team.
+function checkSidekickAuth() {
+  const pluginBarShadow = document.querySelector('aem-sidekick')
+    ?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot;
+  return !!pluginBarShadow?.querySelector('env-switcher');
+}
+
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
+  const readOnly = getConfig().env?.name === 'prod' && !checkSidekickAuth();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
   getMarketConfig();
-  await createPreviewPill();
+  await createPreviewPill(readOnly);
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
