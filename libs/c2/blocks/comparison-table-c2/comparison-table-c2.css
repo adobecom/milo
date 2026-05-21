@@ -3,6 +3,19 @@
   to { opacity: 0; }
 }
 
+.comparison-table-c2 .dotted-underline {
+  text-decoration: none;
+  background-image: radial-gradient(circle, currentColor 1.5px, transparent 1.5px);
+  background-repeat: repeat-x;
+  background-size: 6px 4px;
+  background-position: 0 100%;
+  padding-bottom: 4px;
+  cursor: pointer;
+  display: inline;
+  min-width: unset;
+  min-height: unset;
+}
+
 .comparison-table-c2 {
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-900);
@@ -444,7 +457,6 @@
     .milo-tooltip {
       position: relative;
       display: inline;
-      border-bottom: var(--s2a-border-width-sm) dotted currentColor;
       cursor: default;
     }
 

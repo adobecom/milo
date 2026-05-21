@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 import { getMetadata as getSectionMetadata } from '../section-metadata/section-metadata.js';
 
 const COLUMN_TYPES = { PRIMARY: 'primary' };
@@ -342,10 +342,40 @@ function hasOnlyParagraphs(el) {
     && !el.querySelector('.icon');
 }
 
+let tooltipTriggerCount = 0;
+let tooltipListenersAdded = false;
+
+function decorateUnderlineTooltipTriggers(el) {
+  el.querySelectorAll('u').forEach((u) => {
+    const parts = u.textContent.split('|').map((p) => p.trim());
+    const [label, position, tooltipText] = parts;
+
+    if (!tooltipText) {
+      const span = createTag('span', { class: 'dotted-underline', tabindex: '0' }, label);
+      u.replaceWith(span);
+      return;
+    }
+
+    tooltipTriggerCount += 1;
+    const id = `ct-tooltip-${tooltipTriggerCount}`;
+
+    const trigger = createTag('span', {
+      class: 'dotted-underline milo-tooltip',
+      tabindex: '0',
+      'data-tooltip': tooltipText,
+      'data-tooltip-position': position,
+      'aria-describedby': id,
+    }, label);
+
+    u.replaceWith(trigger);
+  });
+}
+
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
   if (childIndex === 0) {
     child.setAttribute('role', 'rowheader');
+    decorateUnderlineTooltipTriggers(child);
     if (hasMinimalContent(child)) child.classList.add('minimal-content');
     if (hasOnlyParagraphs(child)) child.classList.add('text-only');
   } else {
@@ -621,16 +651,29 @@ function setupStickyHeader(el) {
   mo.observe(header, { childList: true });
 }
 
-function setupTooltipDefaults(el) {
+function setupTooltips(el) {
+  const tooltips = el.querySelectorAll('.milo-tooltip');
+  if (!tooltips.length) return;
+
   const mq = window.matchMedia('(max-width: 899px)');
   const applyPositions = (isMobile) => {
-    el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+    tooltips.forEach((tooltip) => {
+      const authoredPos = tooltip.dataset.tooltipPosition;
       tooltip.classList.remove('top', 'bottom', 'right', 'left');
-      tooltip.classList.add(isMobile ? 'bottom' : 'right');
+      tooltip.classList.add(authoredPos || (isMobile ? 'bottom' : 'right'));
     });
   };
   applyPositions(mq.matches);
   mq.addEventListener('change', (e) => applyPositions(e.matches));
+
+  if (!tooltipListenersAdded) {
+    tooltipListenersAdded = true;
+    const { base } = getConfig();
+    loadStyle(`${base}/features/icons/icons.css`);
+    import('../../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+      addTooltipListeners();
+    });
+  }
 }
 
 function decorate(el) {
@@ -645,6 +688,6 @@ export default function init(el) {
   setEqualHeight(el);
   setupStickyHeader(el);
   setupResponsiveHiding(el);
-  setupTooltipDefaults(el);
+  setupTooltips(el);
   setAccessibilityLabels(el);
 }
