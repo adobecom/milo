@@ -506,19 +506,23 @@ function setupStickyHeader(el) {
   if (!cardsContainer) return;
 
   let wasSticky = false;
-  let rDebounce;
   let threshold = Infinity;
   let lastScrollY = window.scrollY;
+  let resizeTimer;
 
-  const isMobileLayout = () => window.matchMedia('(max-width: 899px)').matches;
-  const getNavOffset = () => {
-    const nav = document.querySelector('header > nav') || document.querySelector('header');
-    const pos = nav ? getComputedStyle(nav).position : '';
-    const navBottom = (pos === 'fixed' || pos === 'sticky')
+  const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
+
+  const getNavHeight = () => {
+    const nav = document.querySelector('header > nav') ?? document.querySelector('header');
+    if (!nav) return 0;
+    const pos = getComputedStyle(nav).position;
+    const bottom = (pos === 'fixed' || pos === 'sticky')
       ? Math.max(0, Math.round(nav.getBoundingClientRect().bottom)) : 0;
-    return navBottom + (document.querySelector('.feds-localnav')?.offsetHeight || 0);
+    return bottom + (document.querySelector('.feds-localnav')?.offsetHeight ?? 0);
   };
-  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavOffset()}px`);
+
+  const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
+
   const getFlowTop = () => {
     let top = 0;
     let node = cardsContainer;
@@ -528,23 +532,29 @@ function setupStickyHeader(el) {
     }
     return top;
   };
+
   const updateMinHeight = () => {
     if (wasSticky) return;
-    cardsContainer.style.minHeight = '';
-    const h = isMobileLayout() ? 0 : (cardsContainer.offsetHeight ?? 0);
+    const h = isMobile() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
+  };
+
+  const updateThreshold = () => {
+    if (wasSticky || window.scrollY >= threshold) return;
+    threshold = getFlowTop() - getNavHeight() - 24;
   };
 
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
-    if (!isMobileLayout()) { cardsContainer.classList.add('is-sticky'); return; }
+    if (!isMobile()) { cardsContainer.classList.add('is-sticky'); return; }
     const nextEl = cardsContainer.nextElementSibling;
     const preHeight = cardsContainer.offsetHeight;
     cardsContainer.classList.add('is-sticky');
     const delta = preHeight - cardsContainer.offsetHeight;
     if (delta > 0 && nextEl) nextEl.style.marginTop = `${delta}px`;
   };
+
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
@@ -552,33 +562,20 @@ function setupStickyHeader(el) {
     cardsContainer.classList.remove('is-sticky');
     if (nextEl) nextEl.style.marginTop = '';
   };
-  const updateThreshold = () => {
-    if (wasSticky || window.scrollY >= threshold) return;
-    threshold = getFlowTop() - getNavOffset() - 24;
-  };
-  const watchNavResize = (nav) => new ResizeObserver(() => {
-    syncTop();
-    updateThreshold();
-  }).observe(nav);
 
   requestAnimationFrame(() => {
+    updateMinHeight();
     syncTop();
     updateThreshold();
     if (window.scrollY >= threshold) applySticky();
   });
 
-  new ResizeObserver(() => {
-    clearTimeout(rDebounce);
-    rDebounce = setTimeout(() => { updateMinHeight(); updateThreshold(); }, 350);
-  }).observe(cardsContainer);
-
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
-    clearTimeout(rDebounce);
     if (wasSticky) removeSticky();
     threshold = Infinity;
+    updateMinHeight();
     syncTop();
     updateThreshold();
-    if (window.scrollY >= threshold) applySticky();
   });
 
   window.addEventListener('scroll', () => {
@@ -590,8 +587,14 @@ function setupStickyHeader(el) {
     else if (!goingDown && wasSticky) removeSticky();
   }, { passive: true });
 
+  new ResizeObserver(() => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { updateMinHeight(); syncTop(); updateThreshold(); }, 350);
+  }).observe(cardsContainer);
+
+  const navObserver = new ResizeObserver(() => { syncTop(); updateThreshold(); });
   const nav = document.querySelector('header > nav');
-  if (nav) { watchNavResize(nav); return; }
+  if (nav) { navObserver.observe(nav); return; }
   const header = document.querySelector('header');
   if (!header) return;
   const mo = new MutationObserver(() => {
@@ -600,7 +603,7 @@ function setupStickyHeader(el) {
     mo.disconnect();
     syncTop();
     updateThreshold();
-    watchNavResize(newNav);
+    navObserver.observe(newNav);
   });
   mo.observe(header, { childList: true });
 }
