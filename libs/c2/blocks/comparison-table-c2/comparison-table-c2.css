@@ -78,6 +78,10 @@
       .header-item-collapsible {
         grid-template-rows: 0fr;
       }
+
+      .btn-section {
+        display: none;
+      }
     }
   }
 
@@ -145,34 +149,32 @@
     }
 
     > .header-item-collapsible {
-      flex: 1;
-
       > div {
         display: flex;
         flex-direction: column;
-
-        > .sub-header-item-container:last-of-type {
-          margin-top: auto;
-        }
       }
     }
 
+    > .btn-section {
+      margin-top: auto;
+    }
+
     .sub-header-item-container {
-      align-items: flex-start;
-      justify-content: flex-start;
+      align-items: center;
+      justify-content: center;
 
       .description {
-        text-align: left;
+        text-align: center;
       }
 
       :is(h1, h2, h3, h4, h5, h6) {
-        text-align: left;
-        justify-content: flex-start;
-        align-items: flex-start;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
       }
 
       .price {
-        justify-content: flex-start;
+        justify-content: center;
       }
     }
 
@@ -208,14 +210,9 @@
 
     &:first-child {
       padding-bottom: var(--s2a-spacing-xs);
-      padding-right: var(--s2a-spacing-lg);
-
-      &:not(:has(.mobile-filter-select)) {
-        padding-right: 0;
-      }
     }
 
-    &:last-of-type {
+    &.btn-section {
       padding: var(--s2a-spacing-lg) 0 0;
     }
 
@@ -224,10 +221,13 @@
       padding: 0;
       font-size: var(--s2a-typography-font-size-label);
       line-height: var(--s2a-typography-line-height-label);
-      min-height: 15px;
       display: block;
       color: var(--s2a-color-gray-600);
       font-weight: var(--s2a-font-weight-body);
+
+      &:empty {
+        display: none;
+      }
 
       em a {
         color: var(--s2a-color-gray-900);
@@ -282,7 +282,6 @@
       justify-content: center;
       gap: var(--s2a-spacing-xs);
       width: 100%;
-      margin-top: var(--s2a-spacing-sm);
       flex-wrap: wrap;
       flex-direction: column;
 
@@ -296,18 +295,18 @@
       }
     }
 
-    &:last-of-type p,
+    &.btn-section p,
     p:last-child:has(a) {
       width: 100%;
     }
 
-    &:last-of-type p em,
+    &.btn-section p em,
     p:last-child em {
       display: flex;
       width: 100%;
     }
 
-    &:last-of-type a,
+    &.btn-section a,
     p:last-child a {
       display: flex;
       width: 100%;
@@ -326,7 +325,7 @@
       transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
     }
 
-    &:last-of-type strong a,
+    &.btn-section strong a,
     p:last-child strong a {
       background-color: var(--s2a-color-blue-900);
       border: var(--s2a-border-width-md) solid var(--s2a-color-blue-900);
@@ -339,7 +338,7 @@
       }
     }
 
-    &:last-of-type em a,
+    &.btn-section em a,
     p:last-child em a {
       background-color: transparent;
       border: var(--s2a-border-width-md) solid var(--s2a-color-gray-900);
@@ -606,20 +605,36 @@
   }
 
   .mobile-filter-select {
-    width: var(--s2a-spacing-20);
-    height: var(--s2a-spacing-20);
-    background: transparent url('./img/down-arrow-filter.svg') center no-repeat;
-    display: block;
-    cursor: pointer;
-    color: transparent;
     position: absolute;
-    border: none;
-    top: 0;
-    right: 0;
-    border-radius: 0;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    -webkit-appearance: auto;
+    appearance: auto;
 
     option {
       color: var(--s2a-color-gray-900);
+    }
+  }
+
+  .mobile-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-top: var(--s2a-spacing-md);
+    width: 100%;
+
+    &::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: var(--s2a-spacing-20);
+      height: var(--s2a-spacing-20);
+      background: url('./img/down-arrow-filter.svg') center / contain no-repeat;
+      pointer-events: none;
     }
   }
 
@@ -703,6 +718,10 @@
     }
 
     .mobile-filter-select {
+      display: none;
+    }
+
+    .mobile-title-row::after {
       display: none;
     }
 

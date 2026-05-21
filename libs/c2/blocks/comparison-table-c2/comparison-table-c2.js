@@ -135,6 +135,16 @@ function createSubHeaderContainer({
 
   if (containerIndex === 0 && headerItemsCount > 3) {
     const select = createMobileFilterSelect({ headerTitles, headerItemIndex, el });
+    const heading = container.querySelector('h1, h2, h3, h4, h5, h6');
+    if (heading) {
+      const headingId = `ct-col-title-${headerItemIndex}`;
+      heading.id = headingId;
+      select.setAttribute('aria-labelledby', headingId);
+      const titleRow = createTag('div', { class: 'mobile-title-row' });
+      heading.replaceWith(titleRow);
+      titleRow.appendChild(heading);
+    }
+    container.classList.add('has-filter-select');
     container.appendChild(select);
   }
   if (!isLast) return container;
@@ -180,10 +190,16 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
 
   const collapsible = createTag('div', { class: 'header-item-collapsible' });
   const collapsibleInner = createTag('div');
-  [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1).forEach((c) => collapsibleInner.appendChild(c));
+  const subContainers = [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1);
+  subContainers.slice(0, -1).forEach((c) => collapsibleInner.appendChild(c));
   if (collapsibleInner.children.length) {
     collapsible.appendChild(collapsibleInner);
     headerItem.appendChild(collapsible);
+  }
+  const btnSection = subContainers[subContainers.length - 1];
+  if (btnSection) {
+    btnSection.classList.add('btn-section');
+    headerItem.appendChild(btnSection);
   }
 }
 
@@ -514,8 +530,12 @@ function setupStickyHeader(el) {
     const h = isMobileLayout() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
     storedCollapsibleH = isMobileLayout()
-      ? [...cardsContainer.querySelectorAll('.header-item-collapsible')]
-        .reduce((max, e) => Math.max(max, e.children[0]?.scrollHeight ?? 0), 0)
+      ? [...cardsContainer.querySelectorAll('.header-item-card')]
+        .reduce((max, card) => {
+          const collH = card.querySelector('.header-item-collapsible')?.children[0]?.scrollHeight ?? 0;
+          const btnH = card.querySelector('.btn-section')?.scrollHeight ?? 0;
+          return Math.max(max, collH + btnH);
+        }, 0)
       : 0;
   };
   const applySticky = () => {
