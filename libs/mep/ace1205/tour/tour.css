@@ -47,7 +47,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   flex-direction: column;
   max-width: 596px;
   overflow-x: clip;
-  padding-top: 16px;
+  padding-top: 13px;
   width: 100%;
 }
 
