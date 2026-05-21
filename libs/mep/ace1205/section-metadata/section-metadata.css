@@ -65,9 +65,6 @@
     grid-auto-rows: initial;
   }
 
-  &.bento:not(.container):not(.wide) { padding-inline: var(--s2a-spacing-lg);}
-  &.bento:not(.container):not(.wide)[class*='combo'] { padding-bottom: var(--s2a-spacing-lg);}
-
   &.bento .explore-card {
     border-radius: var(--s2a-border-radius-md);
     z-index: inherit;
@@ -82,7 +79,7 @@
     padding-bottom: var(--s2a-spacing-xl);
     padding-top: 0;
 
-    & [class*='title-'] {
+    & [class*='heading-'] {
       z-index: 1;
     }
 
@@ -93,7 +90,7 @@
       z-index: 1;
     }
 
-    [class*='title-'],
+    [class*='heading-'],
     [class*='body-'] {
       padding-inline: var(--s2a-spacing-xl);
     }
@@ -123,14 +120,14 @@
 
   &.bento .grid-full-width {
     .explore-card-content {
-      [class*='title-'],
+      [class*='heading-'],
       > :nth-child(1):not(img):not(video) {
         text-align: start;
         margin-top: auto;
       }
 
       .content-aux {
-        aspect-ratio: 1 / 1.2;
+        aspect-ratio: 1.02 / 1;
       }
     }
   }
@@ -212,7 +209,7 @@
 
   .section.bento {
     .explore-card-content {
-      & [class*='title-'] {
+      & [class*='heading-'] {
         margin-top: 0;
       }
 
@@ -224,7 +221,7 @@
     & .grid-full-width {
       .explore-card-content {
         .content-aux {
-          aspect-ratio: 4 / 1.8;
+          aspect-ratio: 4 / 1.65;
         }
       }
     }
@@ -268,7 +265,7 @@
       padding-bottom: var(--s2a-spacing-3xl);
       min-height: initial;
 
-      [class*='title-'],
+      [class*='heading-'],
       [class*='body-'] {
         padding-inline: var(--s2a-spacing-3xl);
       }
