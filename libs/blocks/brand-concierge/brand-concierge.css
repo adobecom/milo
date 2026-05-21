@@ -885,6 +885,11 @@
   background: var(--bc-fi-input-bg);
 }
 
+/* Tooltip matches pill styling */
+.brand-concierge.floating-input .bc-input-tooltip {
+  color: #000
+}
+
 /* Gradient border on the input pill */
 .brand-concierge.floating-input .bc-input-field::before {
   backdrop-filter: none;
@@ -964,7 +969,7 @@
   --bc-fi-bar-bg: rgba(0 0 0 / 65%);
   --bc-fi-bar-border: rgba(255 255 255 / 21%);
   --bc-fi-input-bg: #111;
-  --bc-fi-pill-bg: #111;
+  --bc-fi-pill-bg: rgba(0 0 0 / 93%);
   --bc-fi-pill-border: #8F8F8F;
   --bc-fi-text: #DBDBDB;
   --bc-fi-pill-text: #DBDBDB;
@@ -986,17 +991,22 @@
 }
 
 .brand-concierge.floating-input.dark .input-field-button {
-  color: #111;
+  color: #C6C6C6;
 }
 
 .brand-concierge.floating-input.dark .input-field-button:disabled {
-  background: #2C2C2C;
-  color: #444;
+  color: #C6C6C6;
   pointer-events: none;
 }
 
+.brand-concierge.floating-input.dark .bc-input-field-container:hover,
+.brand-concierge.floating-input.dark .bc-input-field-container:has(textarea:focus-visible) {
+  background: #292929;
+}
+
 .brand-concierge.floating-input.dark .prompt-card-button:hover {
-  background: #1A1A1A;
+  border: 1px solid #C6C6C6;
+  background-color: #222;
 }
 
 /* Mobile phone: hide pills, expand input to fill bar */
