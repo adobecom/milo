@@ -135,3 +135,7 @@ a[is='checkout-link'].con-button > span {
   top: 50%; 
   transform: translate(-50%,-50%);
 }
+
+.price-strikethrough.price-labels-hidden span:is(.price-tax-inclusivity, .price-unit-type) {
+  display: none;
+}
