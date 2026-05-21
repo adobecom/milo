@@ -369,11 +369,7 @@ function decorateUnderlineTooltipTriggers(el) {
     }, label);
     trigger.addEventListener('click', (e) => e.preventDefault());
 
-    const tooltipContent = createTag('span', { id, role: 'tooltip', class: 'sr-only' }, tooltipText);
-
-    const frag = document.createDocumentFragment();
-    frag.append(trigger, tooltipContent);
-    u.replaceWith(frag);
+    u.replaceWith(trigger, createTag('span', { id, role: 'tooltip', class: 'sr-only' }, tooltipText));
   });
 }
 
