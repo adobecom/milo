@@ -379,6 +379,14 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
     max-width: calc((100% - 6px) - 2em);
   }
 
+  .dialog-modal.commerce-frame.crm,
+  .dialog-modal.commerce-frame.d2p,
+  .dialog-modal.commerce-frame.twp {
+    width: 1030px;
+    max-width: 90vw;
+  }
+
+
   .dialog-modal.commerce-frame {
     width: 1024px;
     height: 850px;

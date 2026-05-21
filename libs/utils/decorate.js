@@ -111,7 +111,7 @@ export function decorateBlockText(el, config = blockTextConfig, type = null) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`${isC2 ? 'title' : 'heading'}-${sizeMap.heading}`));
+      headings.forEach((h) => h.classList.add(`heading-${sizeMap.heading}`));
       if (sizeMap.detail || isC2) {
         const prevSib = headings[0]?.previousElementSibling;
         prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
@@ -233,7 +233,7 @@ function applyTextOverrides(el, override, targetEl) {
   });
 }
 
-const textOverridesConfig = isC2 ? ['title-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+const textOverridesConfig = isC2 ? ['heading-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
 
 export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
@@ -480,6 +480,7 @@ export function isVideoAccessible(anchorTag) {
 function updateFirstVideo() {
   if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
     let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
+    if (!videoHolder) return;
     if (videoHolder.nodeName !== 'A') videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
     const firstVideoLabel = videoHolder.getAttribute('aria-label');
     videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);

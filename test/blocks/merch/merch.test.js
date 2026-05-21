@@ -3,6 +3,7 @@ import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
@@ -360,6 +361,48 @@ describe('Merch Block', () => {
     it('renders merch link to GB price', async () => {
       const el = await validatePriceSpan('.merch.price.gb', {});
       expect(/£/.test(el.textContent)).to.be.true;
+    });
+
+    it('MEP Highlight M@S: stamps data-mas-block=ost and captures original /tools/ost href when mep.preview is on', async () => {
+      setConfig({ ...config, mep: { preview: true } });
+      // Earlier tests consume the canned mock anchors via replaceWith; build
+      // a fresh link in a scoped container.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap', class: 'merch-mep-ost-test' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const originalHref = link.href;
+      expect(originalHref).to.include('/tools/ost?');
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal('ost');
+      const captured = mepMasStudioUrls.get(renderedEl);
+      expect(captured).to.equal(originalHref);
+      expect(captured).to.include('osi=03');
+      expect(captured).to.include('type=price');
+      expect(captured).to.include('term=false');
+      wrap.remove();
+    });
+
+    it('MEP Highlight M@S: does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      // beforeEach calls setConfig(config) with no mep.preview.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap-off', class: 'merch-mep-ost-test-off' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(renderedEl)).to.equal(undefined);
+      wrap.remove();
     });
   });
 

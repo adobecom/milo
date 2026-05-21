@@ -4,6 +4,7 @@ import {
   loadTaxonomy,
   getArticleTaxonomy,
   buildArticleCard,
+  calculateExcelDate,
 } from './article-helpers.js';
 
 import { createTag, getConfig, createIntersectionObserver } from '../../utils/utils.js';
@@ -595,6 +596,13 @@ async function decorateArticleFeed(
   articleCards.append(container);
 
   const pageEnd = offset + limit;
+  while (!blogIndex.complete) {
+    // eslint-disable-next-line no-await-in-loop
+    await fetchBlogArticleIndex();
+  }
+  blogIndex.data.sort((a, b) => (
+    calculateExcelDate(Number(b.date)).getTime() - calculateExcelDate(Number(a.date)).getTime()
+  ));
   await filterArticles(feed, limit, offset);
   const articles = feed.data;
 
