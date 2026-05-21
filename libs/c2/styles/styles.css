@@ -941,8 +941,11 @@ p {
   width: 100%;
 }
 
-.promo-cta:hover {
-  background: var(--s2a-color-gray-800);
+/* Active state: arrow box inverts to white bg with black arrow - Figma Component Playground */
+.promo-cta:active::after {
+  background: #000 url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
+  border-color: #000;
+  filter: invert(1);
 }
 
 .promo-cta:focus-visible {

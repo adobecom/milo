@@ -1,5 +1,38 @@
 /* Tour block — Figma 9482:51322 Frame 2147230527
  * Z-pattern: Section 1 (odd non-last) right, Section 2 (even) left, Section 3 (last) center */
+
+/* Override modal wrapper width constraint to ensure tour reaches full 596px on desktop */
+.dialog-modal:has(.tour) {
+  max-width: 596px;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .dialog-modal:has(.tour) {
+    width: 596px;
+  }
+}
+
+/* Remove spacing from fragment/section wrappers so .tour aligns with .dialog-modal top */
+.dialog-modal:has(.tour) > .fragment,
+.dialog-modal:has(.tour) > .fragment > .section {
+  margin: 0;
+  padding: 0;
+}
+
+/* Close button override for tour modal — Figma 9506:107274 */
+.dialog-modal:has(.tour) button.dialog-close {
+  height: 48px;
+  width: 48px;
+  right: 16px;
+  top: 16px;
+}
+
+html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
+  left: 16px;
+  right: auto;
+}
+
 .tour {
   background: var(--s2a-color-background-default);
   border-radius: 16px;
@@ -25,7 +58,7 @@
   content: '';
   display: block;
   height: 3px;
-  margin: 0 auto var(--s2a-spacing-md);
+  margin: 0 auto 0;
   width: 52px;
 }
 
@@ -79,8 +112,9 @@
 }
 
 .tour-section:nth-of-type(odd):not(:last-of-type) {
-  align-items: flex-end;
-  padding-block: 124px 0;
+  align-self: flex-end;
+  align-items: flex-start;
+  padding-block: var(--s2a-layout-lg) 0;
   padding-inline: 8px;
 }
 
@@ -99,7 +133,7 @@
 }
 
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
-  max-width: 286px;
+  max-width: 287px;
 }
 .tour-section:nth-of-type(even) .tour-content {
   max-width: 286px;
@@ -168,8 +202,9 @@
 }
 
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
-  margin-inline: auto;
-  width: min(286px, 100%);
+  min-width: 286px;
+  max-width: 387px;
+  width: 100%;
 }
 
 /* Figma 9543:116727 */
@@ -204,8 +239,17 @@
 /* stylelint-disable-next-line no-descending-specificity -- different context */
 .tour-cta p,
 .tour-cta .action-area {
+  display: flex;
+  justify-content: center;
   line-height: 0;
   margin: 0;
+  width: 100%;
+}
+
+/* Remove all focus outlines on CTA button - focus is set programmatically */
+.tour-cta .promo-cta:focus,
+.tour-cta .promo-cta:focus-visible {
+  outline: none;
 }
 
 @media (min-width: 769px) {
@@ -214,11 +258,7 @@
   }
 
   .tour {
-    padding-top: 0;
-  }
-
-  .tour-title {
-    padding-block-start: var(--s2a-spacing-md);
+    padding-top: 16px;
   }
 
   .tour-section:nth-of-type(even) {
@@ -232,7 +272,8 @@
   }
 
   .tour-section:nth-of-type(odd):not(:last-of-type) {
-    align-items: flex-end;
+    align-self: flex-end;
+    align-items: flex-start;
     padding-inline: var(--s2a-spacing-xs);
     padding-block-start: var(--s2a-layout-lg);
   }
@@ -263,10 +304,10 @@
     width: 387px;
   }
 
-  /* Figma 9659:9817 */
+  /* Figma 9659:9817, 10408:45591 — CTA bar 596×96px, blur 100px */
   .tour-cta {
-    backdrop-filter: blur(50px);
-    padding-block: var(--s2a-spacing-20);
-    padding-inline: var(--s2a-spacing-lg);
+    backdrop-filter: blur(100px);
+    padding-block: 24px;
+    padding-inline: 24px;
   }
 }
