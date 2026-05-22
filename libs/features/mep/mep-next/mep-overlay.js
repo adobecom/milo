@@ -24,11 +24,26 @@ async function buildOverlay() {
   const svgUrl = new URL('./mep-svg.json', import.meta.url);
   const svgData = await fetch(svgUrl).then((r) => r.json());
 
+  const cardUrl = new URL('./mep-card.json', import.meta.url);
+  const cardData = await fetch(cardUrl).then((r) => r.json());
+
   const marginOffset = 16;
   const gnavOffset = await getGnavOffset();
 
   function parseSvg(svgString) {
     return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
+  }
+
+  function buildCard(card) {
+    const mepCardDiv = createTag('div', { class: 'mep-card' });
+    if (card?.header) {
+      const mepIconCloseSvg = parseSvg(svgData.svg['icon-expand-circle-down']);
+      const headerDiv = createTag('h1', {}, card.header);
+      const cardBodyDiv = createTag('div', { class: 'mep-card-body' }, 'Card Body');
+      headerDiv.appendChild(mepIconCloseSvg);
+      mepCardDiv.append(headerDiv, cardBodyDiv);
+    }
+    return mepCardDiv;
   }
 
   function buildFAB() {
@@ -45,23 +60,24 @@ async function buildOverlay() {
     logoLink.appendChild(parseSvg(svgData.svg['logo-mep']));
     navigationDiv.appendChild(logoLink);
 
-    const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
-    closeBtn.appendChild(parseSvg(svgData.svg['icon-close']));
-    navigationDiv.appendChild(closeBtn);
+    const mepCloseBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
+    mepCloseBtn.appendChild(parseSvg(svgData.svg['icon-close']));
+    navigationDiv.appendChild(mepCloseBtn);
 
     const mepTabsDiv = createTag('div', { class: 'mep-tabs' });
     const mepContentDiv = createTag('div', { class: 'mep-body' });
 
     const tabs = [
-      { name: 'Actions', cards: [1, 2, 3] },
-      { name: 'Summary', cards: [4, 5, 6] },
+      { name: 'Actions' },
+      { name: 'Summary' },
     ];
 
-    tabs.forEach(({ name, cards }, index) => {
+    tabs.forEach(({ name }, index) => {
       const active = index === 0 ? ' active' : '';
       mepTabsDiv.appendChild(createTag('div', { class: `mep-tab${active}`, 'data-tab': index }, name));
       const contentEl = createTag('div', { class: `mep-tab-content${active}`, 'data-tab': index });
-      cards.forEach((n) => contentEl.appendChild(createTag('div', { class: 'mep-card' }, `Card ${n}`)));
+      const section = cardData[name.toLowerCase()] ?? {};
+      Object.values(section).forEach((card) => contentEl.appendChild(buildCard(card)));
       mepContentDiv.appendChild(contentEl);
     });
 
@@ -93,6 +109,10 @@ function changeTab(tabIndex) {
   });
 }
 
+function toggleCard(event) {
+  event.target.closest('.mep-card').classList.toggle('expanded');
+}
+
 function addEventListeners() {
   const tabs = document.querySelectorAll('.mep-tab');
   tabs.forEach((tab) => {
@@ -100,6 +120,16 @@ function addEventListeners() {
       const index = tab.getAttribute('data-tab');
       changeTab(index);
     });
+  });
+
+  const cards = document.querySelectorAll('.mep-card');
+  cards.forEach((card) => {
+    const icon = card.querySelector('svg');
+    if (icon) {
+      icon.addEventListener('click', (event) => {
+        toggleCard(event);
+      });
+    }
   });
 }
 
