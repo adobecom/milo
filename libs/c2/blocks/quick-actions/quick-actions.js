@@ -41,7 +41,7 @@ function buildTile(tileRow) {
 
 function decorate(block) {
   const header = decorateSectionHeader(block);
-  const grid = createTag('div', { class: 'quick-actions-grid' });
+  const grid = createTag('div', { class: 'quick-actions-grid six-up' });
 
   [...block.children].forEach((row) => {
     if (row.children.length >= 2) grid.append(buildTile(row));
