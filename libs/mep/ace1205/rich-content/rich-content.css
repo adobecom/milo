@@ -79,8 +79,8 @@
 
       picture,
       img {
-        width: 24px;
-        height: 24px;
+        width: var(--s2a-spacing-24);
+        height: var(--s2a-spacing-24);
       }
     }
 
@@ -124,8 +124,8 @@
       &::after {
         content: '';
         display: block;
-        width: 12px;
-        height: 12px;
+        width: var(--s2a-spacing-12);
+        height: var(--s2a-spacing-12);
         background-color: currentColor;
         mask-image: url('./assets/arrow.svg');
         mask-repeat: no-repeat;
