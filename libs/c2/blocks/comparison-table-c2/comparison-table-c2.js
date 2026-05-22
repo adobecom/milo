@@ -515,7 +515,6 @@ function setupCollapsingHeader(el) {
 
   let wasCollapsed = false;
   let lastScrollY = window.scrollY;
-  let resizeTimer;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
@@ -531,12 +530,6 @@ function setupCollapsingHeader(el) {
   const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
-
-  const updateMinHeight = () => {
-    if (wasCollapsed) return;
-    const h = isMobile() ? 0 : (cardsContainer.offsetHeight ?? 0);
-    headerContent.style.minHeight = h > 0 ? `${h}px` : '';
-  };
 
   const applyCollapsed = () => {
     if (wasCollapsed) return;
@@ -560,7 +553,6 @@ function setupCollapsingHeader(el) {
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
     removeCollapsed();
-    updateMinHeight();
     syncTop();
   });
 
@@ -575,8 +567,7 @@ function setupCollapsingHeader(el) {
   }, { passive: true });
 
   new ResizeObserver(() => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { updateMinHeight(); syncTop(); }, 350);
+    syncTop();
   }).observe(cardsContainer);
 }
 
