@@ -199,9 +199,6 @@ function initTabs(elm, config, rootElem) {
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => changeTabs(e, config));
-    // if (elm?.classList.contains('segmented-control')) {
-    //   tab.addEventListener('focus', () => scrollTabIntoView(tab));
-    // }
     tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
   if (config) configTabs(config, rootElem);
@@ -302,16 +299,8 @@ const init = async (block) => {
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
-      // handle button press and release states
       tabBtn.addEventListener('click', (e) => changeTabs(e, config));
       // tabBtn.addEventListener('focus', () => scrollTabIntoView(tabBtn));
-      tabBtn.addEventListener('pointerdown', () => tabBtn.setAttribute('data-pressed', ''));
-      tabBtn.addEventListener('pointerleave', (e) => {
-        if (e.buttons > 0) tabBtn.removeAttribute('data-pressed');
-      });
-      tabBtn.addEventListener('pointerup', () => tabBtn.removeAttribute('data-pressed'));
-      tabBtn.addEventListener('pointerup', () => tabBtn.removeAttribute('data-pressed'));
-      tabBtn.addEventListener('pointercancel', () => tabBtn.removeAttribute('data-pressed'));
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
