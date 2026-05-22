@@ -516,6 +516,7 @@ function setupCollapsingHeader(el) {
   let wasCollapsed = false;
   let isExpanding = false;
   let lastScrollY = window.scrollY;
+  let cachedMobileDelta = null;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
@@ -543,11 +544,13 @@ function setupCollapsingHeader(el) {
     wasCollapsed = true;
     if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
     const firstCard = cardsContainer.querySelector('.header-item-card:not(.hidden)');
-    const delta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
-      .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
+    if (cachedMobileDelta === null) {
+      cachedMobileDelta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
+        .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
+    }
     cardsContainer.classList.add('is-collapsed');
     const tableContainer = cardsContainer.nextElementSibling;
-    if (delta > 0 && tableContainer) tableContainer.style.marginTop = `${delta}px`;
+    if (cachedMobileDelta > 0 && tableContainer) tableContainer.style.marginTop = `${cachedMobileDelta}px`;
   };
 
   const removeCollapsed = () => {
@@ -560,9 +563,13 @@ function setupCollapsingHeader(el) {
   };
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
-    removeCollapsed();
+    cachedMobileDelta = null;
     syncTop();
     syncHeaderHeight();
+  });
+
+  window.addEventListener('resize', () => {
+    removeCollapsed();
   });
 
   window.addEventListener('scroll', () => {
@@ -575,16 +582,11 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  let expandDebounceTimer;
+  const nav = document.querySelector('header > nav') ?? document.querySelector('header');
+  if (nav) new ResizeObserver(syncTop).observe(nav);
+
   new ResizeObserver(() => {
-    syncTop();
-    if (!isExpanding && !cardsContainer.classList.contains('is-collapsed')) syncHeaderHeight();
-    if (!isExpanding) return;
-    clearTimeout(expandDebounceTimer);
-    expandDebounceTimer = setTimeout(() => {
-      isExpanding = false;
-      syncHeaderHeight();
-    }, 50);
+    if (!isExpanding) syncHeaderHeight();
   }).observe(cardsContainer);
 }
 
