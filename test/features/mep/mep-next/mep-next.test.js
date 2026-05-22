@@ -8,6 +8,8 @@ const {
   default: decoratePreviewMode,
   escapeHtml,
   parsePageAndUrl,
+} = await import('../../../../libs/features/mep/mep-next/mep-next.js');
+const {
   injectMasBadges,
   removeMasBadges,
   updateMasNoContentMessage,
@@ -17,7 +19,7 @@ const {
   toFragmentEditorUrl,
   watchForMasContent,
   MAS_RESTAMP_DEBOUNCE_MS,
-} = await import('../../../../libs/features/mep/mep-next/mep-next.js');
+} = await import('../../../../libs/features/mep/mep-next/mep-mas.js');
 const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
 const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
 const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
