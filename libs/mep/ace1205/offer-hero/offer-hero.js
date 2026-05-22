@@ -41,11 +41,10 @@ function decorate(block) {
   if (svgImg && heroEyebrow) {
     const picturePara = svgImg.closest('p');
     heroEyebrow.classList.add('app-icon');
-    heroEyebrow.prepend(createTag('img', {
-      src: getFederatedUrl(svgImg.getAttribute('src')),
-      alt: '',
-      class: 'app-icon-img',
-    }));
+    svgImg.src = getFederatedUrl(svgImg.src);
+    svgImg.alt = '';
+    svgImg.classList.add('app-icon-img');
+    heroEyebrow.prepend(svgImg);
     if (picturePara && picturePara !== heroEyebrow) picturePara.remove();
   }
 
