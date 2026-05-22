@@ -5,12 +5,13 @@ const BATCH_SIZE = 25;
 const BATCH_DELAY = 2000;
 
 export class BulkAction {
-  constructor({ org, repo, accessToken, callback }) {
+  constructor({ org, repo, accessToken, callback, signal }) {
     this.org = org;
     this.repo = repo;
     this.callback = callback;
     this.accessToken = accessToken;
-    this.requestHandler = new RequestHandler(accessToken);
+    this.signal = signal;
+    this.requestHandler = new RequestHandler(accessToken, { signal });
     this.batchCount = 0;
   }
 
@@ -20,42 +21,57 @@ export class BulkAction {
     return cleanedPath;
   }
 
-  static delay = () => new Promise((resolve) => {
-    setTimeout(resolve, BATCH_DELAY);
+  static delay = (signal) => new Promise((resolve) => {
+    const id = setTimeout(resolve, BATCH_DELAY);
+    if (signal) {
+      signal.addEventListener('abort', () => {
+        clearTimeout(id);
+        resolve();
+      }, { once: true });
+    }
   });
 
   async previewOrPublishPath({ path, action, isDelete = false }) {
-    const cleanedPath = BulkAction.cleanUpPath(path);
-    const method = isDelete ? 'DELETE' : 'POST';
-    const opts = { method };
-    const aemUrl = `${AEM_ORIGIN}/${action}/${this.org}/${this.repo}/main${cleanedPath}`;
-    const resp = await this.requestHandler.daFetch(aemUrl, opts);
-    if (!resp.ok) {
-      // eslint-disable-next-line no-console
-      console.error(`Failed to ${action} : ${resp.status} :: ${aemUrl}`);
-      this.callback({ statusCode: resp.status, aemUrl, errorMsg: `Failed to ${action}` });
-    } else {
-      this.callback({ statusCode: resp.status, aemUrl });
+    if (this.signal?.aborted) return;
+    try {
+      const cleanedPath = BulkAction.cleanUpPath(path);
+      const method = isDelete ? 'DELETE' : 'POST';
+      const opts = { method };
+      const aemUrl = `${AEM_ORIGIN}/${action}/${this.org}/${this.repo}/main${cleanedPath}`;
+      const resp = await this.requestHandler.daFetch(aemUrl, opts);
+      if (!resp.ok) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to ${action} : ${resp.status} :: ${aemUrl}`);
+        this.callback({ statusCode: resp.status, aemUrl, path, errorMsg: `Failed to ${action}` });
+      } else {
+        this.callback({ statusCode: resp.status, aemUrl, path });
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') throw err;
     }
   }
 
   async previewOrPublishPaths({ paths, action, isDelete = false }) {
     for (let i = 0; i < paths.length; i += BATCH_SIZE) {
+      if (this.signal?.aborted) break;
       const batch = paths.slice(i, i + BATCH_SIZE);
       // eslint-disable-next-line no-console,no-plusplus
       console.log(`Batch number : ${++this.batchCount}`);
+      // eslint-disable-next-line no-await-in-loop
       await Promise.all(batch.map((path) => this.previewOrPublishPath({ path, action, isDelete })));
+      if (this.signal?.aborted) break;
       // eslint-disable-next-line no-console
       console.log(`Waiting for ${BATCH_DELAY / 1000} seconds before processing the next batch...`);
-      await BulkAction.delay();
+      // eslint-disable-next-line no-await-in-loop
+      await BulkAction.delay(this.signal);
     }
   }
 }
 
 async function previewOrPublishPaths({
-  org, repo, paths, action, accessToken, callback, isDelete = false,
+  org, repo, paths, action, accessToken, callback, isDelete = false, signal,
 }) {
-  const bulkAction = new BulkAction({ org, repo, accessToken, callback });
+  const bulkAction = new BulkAction({ org, repo, accessToken, callback, signal });
   // eslint-disable-next-line no-console
   console.log(`Action: ${action} :: isDelete: ${isDelete}`);
   await bulkAction.previewOrPublishPaths({ paths, action, isDelete });

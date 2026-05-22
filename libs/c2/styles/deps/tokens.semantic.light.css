@@ -30,13 +30,13 @@
   --s2a-color-content-default: var(--s2a-color-gray-1000);
   --s2a-color-content-disabled: var(--s2a-color-gray-400);
   --s2a-color-content-eyebrow: var(--s2a-color-transparent-black-64);
+  --s2a-color-content-heading: var(--s2a-color-content-default);
   --s2a-color-content-inverse: var(--s2a-color-content-knockout);
   --s2a-color-content-knockout: var(--s2a-color-gray-25);
   --s2a-color-content-label: var(--s2a-color-content-default);
   --s2a-color-content-strong: var(--s2a-color-gray-900);
   --s2a-color-content-subheading: var(--s2a-color-gray-1000);
   --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
-  --s2a-color-content-title: var(--s2a-color-content-default);
   --s2a-color-content-utility-error: var(--s2a-color-red-900);
 
   /* Color / Focus Ring */

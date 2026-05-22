@@ -5,11 +5,12 @@ import RequestHandler from '../../../tools/floodbox/request-handler.js';
 describe('Promote', () => {
   const accessToken = 'testToken';
   const org = 'testOrg';
-  const repo = 'testRepo-pink';
+  const repo = 'testRepo-fg-pink';
+  const color = 'pink';
   const expName = 'testExp';
   const files = [
-    { path: '/testOrg/testRepo-pink/content/test1.html', ext: 'html' },
-    { path: '/testOrg/testRepo-pink/content/test2.json', ext: 'json' },
+    { path: '/testOrg/testRepo-fg-pink/content/test1.html', ext: 'html' },
+    { path: '/testOrg/testRepo-fg-pink/content/test2.json', ext: 'json' },
   ];
   const callback = sinon.spy();
   let promoteType = 'floodgate';
@@ -32,7 +33,7 @@ describe('Promote', () => {
     uploadContentStub.resolves({ statusCode: 200 });
 
     await promoteFiles({
-      accessToken, org, repo, promoteType, files, callback,
+      accessToken, org, repo, promoteType, files, callback, color,
     });
 
     sinon.assert.callCount(daFetchStub, files.length);
@@ -45,7 +46,7 @@ describe('Promote', () => {
     daFetchStub.resolves({ ok: false, status: 404 });
 
     await promoteFiles({
-      accessToken, org, repo, promoteType, files, callback,
+      accessToken, org, repo, promoteType, files, callback, color,
     });
 
     sinon.assert.callCount(daFetchStub, files.length);
@@ -58,7 +59,7 @@ describe('Promote', () => {
     uploadContentStub.resolves({ statusCode: 500, errorMsg: 'Failed to upload file' });
 
     await promoteFiles({
-      accessToken, org, repo, promoteType, files, callback,
+      accessToken, org, repo, promoteType, files, callback, color,
     });
 
     sinon.assert.callCount(daFetchStub, files.length);
@@ -73,10 +74,10 @@ describe('Promote', () => {
     uploadContentStub.resolves({ statusCode: 200 });
 
     const fileArr = [
-      { path: '/testOrg/testRepo-pink/content/image.png', ext: 'png' },
+      { path: '/testOrg/testRepo-fg-pink/content/image.png', ext: 'png' },
     ];
     await promoteFiles({
-      accessToken, org, repo, promoteType, files: fileArr, callback,
+      accessToken, org, repo, promoteType, files: fileArr, callback, color,
     });
 
     sinon.assert.callCount(daFetchStub, fileArr.length);

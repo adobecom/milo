@@ -11218,6 +11218,16 @@ const caasTags = {
               'cq:movedTo': '',
               tags: {},
             },
+            edu: {
+              path: '/content/cq:tags/caas/source/edu',
+              tagID: 'caas:source/edu',
+              name: 'edu',
+              tagImage: '',
+              title: 'Edu',
+              description: '',
+              'cq:movedTo': '',
+              tags: {},
+            },
             marketo: {
               path: '/content/cq:tags/caas/source/marketo',
               tagID: 'caas:source/marketo',

@@ -193,6 +193,7 @@ const defaultOptions = {
   source: {
     bacom: 'Bacom',
     doccloud: 'DocCloud',
+    edu: 'Edu',
     events: 'Events',
     experienceleague: 'Experience League',
     hawks: 'Hawks',

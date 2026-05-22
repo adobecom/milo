@@ -3,13 +3,14 @@ import searchAndReplace from '../../../tools/floodbox/search-replace.js';
 
 describe('searchAndReplace', () => {
   it('should replace floodgate URLs correctly', () => {
-    const content = 'https://main--repo-pink--org.aem.page/folder/page1';
+    const content = 'https://main--repo-fg-pink--org.aem.page/folder/page1';
     const result = searchAndReplace({
       content,
       searchType: 'floodgate',
       org: 'org',
-      repo: 'repo-pink',
+      repo: 'repo-fg-pink',
       expName: 'expName',
+      color: 'pink',
     });
     expect(result).to.equal('https://main--repo--org.aem.page/folder/page1');
   });
@@ -50,8 +51,9 @@ describe('searchAndReplace', () => {
       content,
       searchType: 'floodgate',
       org: 'org',
-      repo: 'repo-pink',
+      repo: 'repo-fg-pink',
       expName: 'expName',
+      color: 'pink',
     });
     expect(result).to.equal('');
   });
@@ -62,8 +64,9 @@ describe('searchAndReplace', () => {
       content,
       searchType: 'floodgate',
       org: 'org',
-      repo: 'repo-pink',
+      repo: 'repo-fg-pink',
       expName: 'expName',
+      color: 'pink',
     });
     expect(result).to.equal(content);
   });
