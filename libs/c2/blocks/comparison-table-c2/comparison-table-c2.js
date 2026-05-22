@@ -533,6 +533,7 @@ function setupCollapsingHeader(el) {
 
   const syncHeaderHeight = () => {
     if (isMobile()) { headerContent.style.minHeight = ''; return; }
+    if (wasCollapsed) return;
     headerContent.style.minHeight = `${cardsContainer.offsetHeight}px`;
   };
 
@@ -572,18 +573,13 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  let heightInitialized = false;
-  const ro = new ResizeObserver(() => {
+  let heightDebounce = null;
+  window.addEventListener('resize', syncHeaderHeight, { passive: true });
+  new ResizeObserver(() => {
     syncTop();
-    if (!heightInitialized && cardsContainer.offsetHeight > 0) {
-      syncHeaderHeight();
-      heightInitialized = true;
-    }
-  });
-  ro.observe(cardsContainer);
-  window.addEventListener('resize', () => {
-    if (!wasCollapsed) syncHeaderHeight();
-  }, { passive: true });
+    clearTimeout(heightDebounce);
+    heightDebounce = setTimeout(syncHeaderHeight, 150);
+  }).observe(cardsContainer);
 }
 
 function setupTooltips(el) {
