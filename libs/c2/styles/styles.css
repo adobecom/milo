@@ -975,16 +975,22 @@ p {
 
 /* Hover state - Figma 11390:25218
  * Arrow box background lightens, border stays transparent-white-12 */
-.promo-cta:hover::after {
+.promo-cta:hover:not(:active)::after {
   background-color: var(--s2a-color-transparent-white-24);
   background-image: url('../assets/img/promo-arrow-right.svg');
 }
 
 /* Active state - Figma 11390:25227 - inverts to white bg with black arrow */
 .promo-cta:active::after {
-  background: var(--s2a-color-background-default) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
-  border-color: var(--s2a-color-background-default);
-  filter: invert(1);
+  background: var(--s2a-color-background-default) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px !important;
+  border-color: var(--s2a-color-background-default) !important;
+  filter: invert(1) !important;
+}
+
+/* Focus state - custom outline for keyboard navigation */
+.promo-cta:focus-visible {
+  outline: 2px solid var(--s2a-color-content-knockout);
+  outline-offset: 2px;
 }
 
 .dark {
