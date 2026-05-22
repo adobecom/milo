@@ -192,14 +192,18 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
   const collapsibleInner = createTag('div');
   const subContainers = [...headerItem.querySelectorAll('.sub-header-item-container')].slice(1);
   subContainers.slice(0, -1).forEach((c) => collapsibleInner.appendChild(c));
-  const btnSection = subContainers[subContainers.length - 1];
-  if (btnSection) {
-    btnSection.classList.add('btn-section');
-    collapsibleInner.appendChild(btnSection);
-  }
   if (collapsibleInner.children.length) {
     collapsible.appendChild(collapsibleInner);
     headerItem.appendChild(collapsible);
+  }
+  const btnSection = subContainers[subContainers.length - 1];
+  if (btnSection) {
+    btnSection.classList.add('btn-section');
+    const btnWrap = createTag('div', { class: 'btn-section-wrap' });
+    const btnInner = createTag('div');
+    btnInner.appendChild(btnSection);
+    btnWrap.appendChild(btnInner);
+    headerItem.appendChild(btnWrap);
   }
 }
 
