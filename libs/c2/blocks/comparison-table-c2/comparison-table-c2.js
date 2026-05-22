@@ -572,10 +572,18 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  new ResizeObserver(() => {
+  let heightInitialized = false;
+  const ro = new ResizeObserver(() => {
     syncTop();
+    if (!heightInitialized && cardsContainer.offsetHeight > 0) {
+      syncHeaderHeight();
+      heightInitialized = true;
+    }
+  });
+  ro.observe(cardsContainer);
+  window.addEventListener('resize', () => {
     if (!wasCollapsed) syncHeaderHeight();
-  }).observe(cardsContainer);
+  }, { passive: true });
 }
 
 function setupTooltips(el) {
