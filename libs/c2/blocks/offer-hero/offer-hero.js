@@ -118,7 +118,7 @@ function decorate(block) {
     if (learnMore) cardText.append(learnMore);
 
     const tile = createTag('div', { class: 'hero-card-tile' });
-    tile.append(createTag('div', { class: 'content-aux' }), media, cardText);
+    tile.append(media, cardText);
 
     const card = createTag('div', { class: 'hero-card' });
     card.append(tile);
@@ -133,13 +133,25 @@ function decorate(block) {
 function initAnimation(block) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const heroCopy = block.querySelector('.hero-copy');
-  const eyebrow = block.querySelector('.hero-eyebrow');
-  const cards = [...block.querySelectorAll('.hero-card')];
-  const tiles = [...block.querySelectorAll('.hero-card-tile')];
-  const medias = [...block.querySelectorAll('.hero-card-media')];
-  const videos = [...block.querySelectorAll('.hero-card-media video')];
+  let heroCopy;
+  let eyebrow;
+  let cards = [];
+  let tiles = [];
+  let medias = [];
+  let videos = [];
+  let cardTexts = [];
 
+  function refreshRefs() {
+    heroCopy = block.querySelector('.hero-copy');
+    eyebrow = block.querySelector('.hero-eyebrow');
+    cards = [...block.querySelectorAll('.hero-card')];
+    tiles = [...block.querySelectorAll('.hero-card-tile')];
+    medias = [...block.querySelectorAll('.hero-card-media')];
+    videos = [...block.querySelectorAll('.hero-card-media video')];
+    cardTexts = [...block.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
+  }
+
+  refreshRefs();
   if (tiles.length !== 4) return;
 
   let naturalBoxes = [];
@@ -150,7 +162,6 @@ function initAnimation(block) {
   let rafId = 0;
   let running = false;
   const gnav = document.querySelector('header');
-  const cardTexts = [...block.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
 
   function positionCopy() {
     if (!heroCopy || !gnav) return;
@@ -161,7 +172,6 @@ function initAnimation(block) {
     if (isSettled === next) return;
     isSettled = next;
     if (next) {
-      if (videoObserver) return;
       videoObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const video = videos[medias.indexOf(entry.target)];
@@ -271,38 +281,32 @@ function initAnimation(block) {
     rafId = requestAnimationFrame(tick);
   }
 
-  function startLoop() {
-    if (running) return;
-    running = true;
-    tick();
-  }
-
-  function stopLoop() {
-    running = false;
-    cancelAnimationFrame(rafId);
-    rafId = 0;
-  }
-
   function setup() {
+    if (tiles[0] && !block.contains(tiles[0])) {
+      refreshRefs();
+      if (videoObserver) { videoObserver.disconnect(); videoObserver = null; }
+      isSettled = false;
+    }
+    if (tiles.length !== 4) return;
     positionCopy();
     computeLayouts();
     updateEyebrow();
   }
 
   setup();
-  document.fonts?.ready?.then(setup);
 
   const io = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) startLoop();
-    else stopLoop();
+    if (entry.isIntersecting) {
+      if (!running) { running = true; tick(); }
+    } else {
+      running = false;
+      cancelAnimationFrame(rafId);
+    }
   }, { rootMargin: '200px 0px' });
   io.observe(block);
 
   let resizeTimer;
-  const reSetup = () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(setup, 120);
-  };
+  const reSetup = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(setup, 120); };
   new ResizeObserver(reSetup).observe(block);
   window.addEventListener('resize', reSetup);
 }
