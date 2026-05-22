@@ -575,15 +575,16 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  cardsContainer.addEventListener('transitionend', () => {
-    if (!isExpanding) return;
-    isExpanding = false;
-    syncHeaderHeight();
-  });
-
+  let expandDebounceTimer;
   new ResizeObserver(() => {
     syncTop();
     if (!isExpanding && !cardsContainer.classList.contains('is-collapsed')) syncHeaderHeight();
+    if (!isExpanding) return;
+    clearTimeout(expandDebounceTimer);
+    expandDebounceTimer = setTimeout(() => {
+      isExpanding = false;
+      syncHeaderHeight();
+    }, 50);
   }).observe(cardsContainer);
 }
 
