@@ -26,6 +26,8 @@ import {
   removeCaasBadges,
   watchForCaasBlocks,
   unwatchForCaasBlocks,
+  rewriteForPreviewHost,
+  rewriteBlogPreviewHost,
 } from './mep-caas.js';
 
 export function escapeHtml(str) {
@@ -44,43 +46,6 @@ export const API_URLS = {
   save: `${API_DOMAIN}/save-mep-call`,
   report: `${API_DOMAIN}/get-report`,
 };
-
-const PREVIEW_HOST_RE = /\.(aem|hlx)\.(page|live)$/;
-const BLOG_PATH_RE = /^\/(?:[^/]+\/)?blog\//i;
-const PREVIEW_REPO_HOST_RE = /^(.+?)--(.+?)--adobecom\.aem\.(page|live)$/;
-
-function rewriteForPreviewHost(url) {
-  if (!url) return url;
-  const isPreview = PREVIEW_HOST_RE.test(window.location.host)
-    || window.location.search.includes('milolibs=');
-  if (!isPreview) return url;
-  try {
-    const u = new URL(url);
-    const { prodDomains = ['business.adobe.com', 'www.adobe.com', 'news.adobe.com'] } = getConfig();
-    if (!prodDomains.includes(u.host)) return u.toString();
-    u.protocol = window.location.protocol;
-    u.host = window.location.host;
-    if (PREVIEW_HOST_RE.test(u.host)) u.pathname = u.pathname.replace(/\.html$/, '');
-    return u.toString();
-  } catch { return url; }
-}
-
-function rewriteBlogPreviewHost(url) {
-  if (!url) return null;
-  const m = window.location.host.match(PREVIEW_REPO_HOST_RE);
-  if (!m) return null;
-  const [, branch, repo, env] = m;
-  if (repo.endsWith('-blog')) return null;
-  try {
-    const u = new URL(url);
-    if (u.host !== 'business.adobe.com') return null;
-    if (!BLOG_PATH_RE.test(u.pathname)) return null;
-    u.protocol = window.location.protocol;
-    u.host = `${branch}--${repo}-blog--adobecom.aem.${env}`;
-    u.pathname = u.pathname.replace(/\.html$/, '');
-    return u.toString();
-  } catch { return null; }
-}
 
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
