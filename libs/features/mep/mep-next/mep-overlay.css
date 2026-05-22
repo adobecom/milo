@@ -1,4 +1,6 @@
 :root {
+  interpolate-size: allow-keywords;
+
   --mep-overline-font: normal 500 14px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
   --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
 
@@ -184,6 +186,49 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-radius: 8px;
   background: var(--mep-dark-44);
   border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-body .mep-card svg {
+  fill: var(--mep-white-100);
+  transition: transform 0.3s ease;
+}
+
+.mep-drawer .mep-body .mep-card svg:hover {
+  cursor: pointer;
+  fill: var(--mep-white-60);
+}
+
+.mep-drawer .mep-body .mep-card.expanded svg {
+  transform: rotate(-180deg);
+  
+}
+
+.mep-drawer .mep-body .mep-card:not(.expanded) svg {
+  transform: rotate(0);
+}
+
+.mep-drawer .mep-body .mep-card .mep-card-body {
+  flex-direction: column;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.mep-drawer .mep-body .mep-card.expanded .mep-card-body {
+  height: auto
+}
+
+.mep-drawer .mep-body .mep-card:not(.expanded) .mep-card-body {
+  height: 0;
+}
+
+.mep-drawer .mep-body .mep-card h1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+  font: var(--mep-h1-font);
+  letter-spacing: var(--mep-h1-letter-spacing);
 }
 
 .mep-drawer .mep-footer {
