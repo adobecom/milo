@@ -37,7 +37,7 @@ function decorate(block) {
     ]));
   }
 
-  const content = createTag('div', { class: 'pm-content' });
+  const content = createTag('div', { class: 'pm-content container' });
   content.append(foreground, promoArea);
   block.replaceChildren(content);
 }
