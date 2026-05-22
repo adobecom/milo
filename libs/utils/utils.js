@@ -2374,7 +2374,7 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
+    import('../features/mep/mep-next/mep-next.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {

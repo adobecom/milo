@@ -1,6 +1,6 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
 import { fetchData, DATA_TYPE } from '../../features/personalization/personalization.js';
-import { getMepPopup, API_URLS } from '../../features/personalization/preview.js';
+import { getMepPopup, API_URLS } from '../../features/mep/mep-next/mep-next.js';
 
 const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
@@ -908,5 +908,5 @@ export default async function init(el) {
     createFiltersForm(el);
   }
   subscribeToSearchCriteriaChanges();
-  loadStyle('/libs/features/personalization/preview.css');
+  loadStyle('/libs/features/mep/mep-next/mep-next.css');
 }
