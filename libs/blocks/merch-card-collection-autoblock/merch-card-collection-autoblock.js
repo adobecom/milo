@@ -330,7 +330,7 @@ export async function createCollection(el, options) {
     // immediately after dispatching aem:load. Dynamic import keeps
     // preview-only code out of the production bundle.
     const { attachAemLoadListener } = await import(
-      '../../features/personalization/preview-mas-subcollection.js'
+      '../../features/mep/mep-next/mas-subcollection.js'
     );
     attachAemLoadListener(aemFragment, container);
   }

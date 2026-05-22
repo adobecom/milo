@@ -18,7 +18,7 @@ import {
   injectSubCollectionBadge,
   removeSubCollectionBadges,
   mepMasSubCollections,
-} from './preview-mas-subcollection.js';
+} from '../mep/mep-next/mas-subcollection.js';
 import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 export function escapeHtml(str) {
