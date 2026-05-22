@@ -160,7 +160,7 @@
     animation-range: cover 75% cover 85%;
 
     &.primary {
-      border: var(--s2a-border-width-lg) solid var(--s2a-color-gray-900);
+      border: var(--s2a-border-width-lg) solid var(--s2a-color-border-knockout);
     }
 
     > .header-item-collapsible {
@@ -202,9 +202,9 @@
       }
 
       > p:has(strong) {
-        font-size: var(--s2a-typography-font-size-heading-5);
+        font-size: var(--s2a-typography-font-size-heading-4);
         font-weight: var(--s2a-font-weight-heading);
-        line-height: var(--s2a-typography-line-height-heading-5);
+        line-height: var(--s2a-typography-line-height-heading-4);
         color: var(--s2a-color-gray-900);
         word-break: break-word;
         text-align: left;
@@ -246,11 +246,11 @@
     }
 
     :is(h1, h2, h3, h4, h5, h6) {
-      font-size: var(--s2a-typography-font-size-heading-5);
+      font-size: var(--s2a-typography-font-size-heading-4);
       font-family: var(--heading-font-family);
       font-weight: var(--s2a-font-weight-heading);
-      line-height: var(--s2a-typography-line-height-heading-5);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
+      line-height: var(--s2a-typography-line-height-heading-4);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
       display: flex;
       justify-content: center;
       align-items: center;
