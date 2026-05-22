@@ -177,25 +177,6 @@
   background: var(--tabs-pill-bg-focus);
 } */
 
-
-.tabs .tabList button.l-button {
-  font-size: var(--s2a-font-size-md);
-  line-height: var(--s2a-font-line-height-sm); /* check- no s2a line-height token for 20.8px; nearest are --s2a-font-line-height-18 (18px) and --s2a-font-line-height-20 (20px) */
-  height: var(--s2a-spacing-40);
-}
-
-.tabs .tabList button.m-button {
-  font-size: var(--s2a-font-size-sm);
-  line-height: var(--s2a-font-line-height-xs); /* check- no s2a line-height token for 18.2px; nearest is --s2a-font-line-height-18 (18px) */
-  height: var(--s2a-spacing-32);
-}
-
-.tabs .tabList button.s-button {
-  font-size: var(--s2a-font-size-xs);
-  line-height: 15.6px; /* check- no s2a line-height token for 15.6px; nearest is --s2a-font-line-height-16 (16px) */
-  height: var(--s2a-font-line-height-2xs);
-}
-
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
@@ -223,3 +204,4 @@
     width: auto;
   }
 }
+

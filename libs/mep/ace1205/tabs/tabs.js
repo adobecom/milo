@@ -215,14 +215,6 @@ const handleDeferredImages = (block) => {
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };
 
-const handleButtonSize = (button) => {
-  const sizes = ['s', 'm', 'l', 'xl'];
-  const variant = button.substring(0, button.indexOf('-button'));
-  const size = sizes.findIndex((tshirt) => variant.startsWith(tshirt));
-  // return `${sizes[size]?.[0] ?? sizes[1]}-button`;
-  return `${sizes[size] ?? sizes[1]}-button`;
-};
-
 export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
@@ -281,14 +273,12 @@ const init = async (block) => {
   const tabListItems = rows[0].querySelectorAll(':scope li');
 
   if (tabListItems) {
-    const buttonVariant = [...block.classList].find((variant) => variant.includes('button'));
-    const btnClass = buttonVariant ? handleButtonSize(buttonVariant) : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: 'tab',
-        class: btnClass,
+        class: 'tan-btn',
         id: `tab-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
         'aria-selected': (i === 0) ? 'true' : 'false',
