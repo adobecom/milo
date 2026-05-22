@@ -514,7 +514,6 @@ function setupCollapsingHeader(el) {
   if (!cardsContainer) return;
 
   let wasCollapsed = false;
-  let threshold = Infinity;
   let lastScrollY = window.scrollY;
   let resizeTimer;
 
@@ -531,27 +530,12 @@ function setupCollapsingHeader(el) {
 
   const syncTop = () => cardsContainer.style.setProperty('--ct-nav-height', `${getNavHeight()}px`);
 
-  const getFlowTop = () => {
-    let top = 0;
-    let node = cardsContainer;
-    while (node && node !== document.documentElement) {
-      top += node.offsetTop;
-      node = node.offsetParent;
-    }
-    return top;
-  };
+  const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
   const updateMinHeight = () => {
     if (wasCollapsed) return;
     const h = isMobile() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
-  };
-
-  const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
-
-  const updateThreshold = () => {
-    if (wasCollapsed) return;
-    threshold = getFlowTop() - getStickyTop();
   };
 
   const applyCollapsed = () => {
@@ -575,25 +559,24 @@ function setupCollapsingHeader(el) {
   };
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
-    if (wasCollapsed) removeCollapsed();
-    threshold = Infinity;
+    removeCollapsed();
     updateMinHeight();
     syncTop();
-    setTimeout(() => { threshold = getFlowTop() - getStickyTop(); }, 0);
   });
 
   window.addEventListener('scroll', () => {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;
-    if (y < threshold) { removeCollapsed(); return; }
+    const isStuck = cardsContainer.getBoundingClientRect().top <= getStickyTop();
+    if (!isStuck) { removeCollapsed(); return; }
     if (goingDown && !wasCollapsed) applyCollapsed();
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
   new ResizeObserver(() => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { updateMinHeight(); syncTop(); updateThreshold(); }, 350);
+    resizeTimer = setTimeout(() => { updateMinHeight(); syncTop(); }, 350);
   }).observe(cardsContainer);
 }
 
