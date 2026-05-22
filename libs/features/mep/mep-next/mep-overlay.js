@@ -36,6 +36,7 @@ async function buildOverlay() {
 
   function buildCardContent(card) {
     const pageId = 1; // placeholder
+
     function buildLoadManifest() {
       const mepManifestInput = createTag('input', { class: 'mep-load-manifest', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
       return mepManifestInput;
@@ -68,7 +69,7 @@ async function buildOverlay() {
   }
 
   function buildCard(card) {
-    const mepCardDiv = createTag('div', { class: 'mep-card' });
+    const mepCardDiv = createTag('div', { class: 'mep-card expanded' });
     if (card?.header) {
       const mepIconCloseSvg = parseSvg(svgData.svg['icon-expand-circle-down']);
       const headerDiv = createTag('h1', {}, card.header);
