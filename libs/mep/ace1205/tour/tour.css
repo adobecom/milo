@@ -249,12 +249,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   width: 100%;
 }
 
-/* Remove all focus outlines on CTA button - focus is set programmatically */
-.tour-cta .promo-cta:focus,
-.tour-cta .promo-cta:focus-visible {
-  outline: none;
-}
-
 @media (min-width: 769px) {
   .tour::before {
     display: none;

@@ -892,7 +892,7 @@ p {
 }
 
 
-/* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158 */
+/* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158, 11390:25185 */
 .promo-cta {
   align-items: center;
   background: var(--s2a-color-background-knockout);
@@ -907,7 +907,6 @@ p {
   padding-block: var(--s2a-spacing-sm);
   padding-inline: var(--s2a-spacing-sm);
   text-decoration: none;
-  transition: background 0.2s ease;
   white-space: nowrap;
 }
 
@@ -919,7 +918,7 @@ p {
   overflow: hidden;
 }
 
-/* Figma I12438:6048;11390:25665 */
+/* Figma I12438:6048;11390:25665 - Arrow icon container */
 .promo-cta::after {
   background: var(--s2a-color-transparent-white-16) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
   block-size: 32px;
@@ -929,28 +928,63 @@ p {
   display: inline-flex;
   flex-shrink: 0;
   inline-size: 32px;
+  transition: background 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
 }
 
-/* Figma 11596:18519 */
+/* Figma 11596:18519 - Arrow direction variants */
 .promo-cta.arrow-down::after {
   transform: rotate(90deg);
 }
 
+.promo-cta.arrow-left::after {
+  transform: rotate(180deg);
+}
+
+.promo-cta.arrow-up::after {
+  transform: rotate(-90deg);
+}
+
+/* Layout variants */
 .promo-cta.full-width {
   display: flex;
   width: 100%;
 }
 
-/* Active state: arrow box inverts to white bg with black arrow - Figma Component Playground */
-.promo-cta:active::after {
-  background: #000 url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
-  border-color: #000;
-  filter: invert(1);
+/* Size variant: 12px (smaller) - Figma example "View featured offer" */
+.promo-cta.size-small {
+  font-size: var(--s2a-typography-font-size-label);
+  gap: var(--s2a-spacing-xs);
+  padding-block: var(--s2a-spacing-xs);
+  padding-inline: var(--s2a-spacing-xs);
 }
 
-.promo-cta:focus-visible {
-  outline: 2px solid var(--s2a-color-content-knockout);
-  outline-offset: var(--s2a-spacing-2xs);
+.promo-cta.size-small img {
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+.promo-cta.size-small::after {
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+/* No-icon variant (text + arrow only) */
+.promo-cta.no-icon {
+  padding-inline-start: var(--s2a-spacing-md);
+}
+
+/* Hover state - Figma 11390:25218
+ * Arrow box background lightens, border stays transparent-white-12 */
+.promo-cta:hover::after {
+  background-color: var(--s2a-color-transparent-white-24);
+  background-image: url('../assets/img/promo-arrow-right.svg');
+}
+
+/* Active state - Figma 11390:25227 - inverts to white bg with black arrow */
+.promo-cta:active::after {
+  background: var(--s2a-color-background-default) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
+  border-color: var(--s2a-color-background-default);
+  filter: invert(1);
 }
 
 .dark {

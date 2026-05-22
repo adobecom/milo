@@ -50,6 +50,11 @@ function decorateSection(block) {
 
   // Extract one sticky CTA from the first section row only.
   // Figma spec: a single frosted CTA bar sticks at the bottom of the modal.
+  // The CTA supports variants via block-level classes (e.g., tour (arrow-down)):
+  //   arrow-down, arrow-left, arrow-up — arrow direction
+  //   size-small — smaller 24px icons
+  //   full-width — stretches CTA to 100% width
+  //   no-icon — text + arrow only (hides product icon)
   let modalCta = null;
 
   const sections = sectionRows.map((row, index) => {
@@ -123,6 +128,16 @@ function decorateSection(block) {
         link.classList.remove('con-button', 'blue', 'outline', 'fill');
         link.classList.add('promo-cta');
         link.setAttribute('daa-ll', link.textContent.trim());
+
+        // Apply promo-cta variants from block-level classes
+        // Authors can use: tour (arrow-down), tour (size-small), etc.
+        const variantClasses = ['arrow-down', 'arrow-left', 'arrow-up', 'size-small', 'full-width', 'no-icon'];
+        variantClasses.forEach((variant) => {
+          if (block.classList.contains(variant)) {
+            link.classList.add(variant);
+          }
+        });
+
         modalCta = createTag('div', { class: 'tour-cta' });
         modalCta.append(actionArea);
       }
