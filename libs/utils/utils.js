@@ -113,6 +113,7 @@ const C2_BLOCKS = [
   'box',
   'brand-concierge',
   'carousel-c2',
+  'comparison-table-c2',
   'elastic-carousel',
   'explore-card',
   'global-footer',
