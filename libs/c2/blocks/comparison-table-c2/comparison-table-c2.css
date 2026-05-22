@@ -222,12 +222,8 @@
     background: transparent;
     position: relative;
 
-    &:first-child {
-      padding-bottom: var(--s2a-spacing-xs);
-    }
-
     &.btn-section {
-      padding: var(--s2a-spacing-lg) 0 0;
+      padding: var(--s2a-spacing-20) 0 0;
     }
 
     .description {
