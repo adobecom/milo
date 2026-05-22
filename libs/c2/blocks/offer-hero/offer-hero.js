@@ -19,13 +19,7 @@ const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
 const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 
 const lerp = (from, to, amount) => from + (to - from) * amount;
-const clamp01 = (value) => {
-  if (value < 0) return 0;
-  if (value > 1) return 1;
-  return value;
-};
-// All CARD_SHADOWS_OUT differ from CARD_SHADOWS only in alpha (zeroed). Scale
-// every rgba alpha in the shadow string by `factor` to interpolate.
+const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -42,7 +36,6 @@ function decorate(block) {
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
   heroCell.classList.add('hero-copy');
 
-  // Milo auto-decorates <a href="…svg"> to <picture><img src="…svg">; detect by src.
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
   if (svgImg && heroEyebrow) {
@@ -99,18 +92,30 @@ function decorate(block) {
         tabindex: '-1',
         'aria-hidden': 'true',
       });
-      // createTag/setAttribute only sets defaultMuted — force live property for muted-autoplay.
       videoEl.muted = true;
-      // Posters are authored from arbitrary frames; paint the first video frame over the poster.
       videoEl.addEventListener('loadedmetadata', () => {
-        try { videoEl.currentTime = 0.001; } catch (e) { /* noop */ }
+        try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
       }, { once: true });
       (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
     }
 
+    const learnMore = textCell.querySelector('a');
+    if (learnMore) {
+      learnMore.classList.add('learn-more');
+      const trailing = learnMore.nextSibling;
+      if (trailing instanceof Text) {
+        trailing.textContent = trailing.textContent.replace(/^[\s.,;:!?]+/, '');
+      }
+      learnMore.remove();
+    }
+    const bodyParas = paras.filter((p) => p.textContent.trim() !== '');
+
     const cardText = createTag('div', { class: 'hero-card-text' });
-    if (heading) cardText.append(heading);
-    cardText.append(...paras);
+    const textWrapper = createTag('div', { class: 'hero-card-text-wrapper' });
+    if (heading) textWrapper.append(heading);
+    textWrapper.append(...bodyParas);
+    cardText.append(textWrapper);
+    if (learnMore) cardText.append(learnMore);
 
     const tile = createTag('div', { class: 'hero-card-tile' });
     tile.append(createTag('div', { class: 'content-aux' }), media, cardText);
@@ -141,101 +146,38 @@ function initAnimation(block) {
   let stackBoxes = [];
   let isSettled = false;
   let willChangeOn = false;
-  let eyebrowVisible = false;
-  let bottomObserver = null;
+  let videoObserver = null;
   let rafId = 0;
   let running = false;
-  const playedVideos = new Set();
   const gnav = document.querySelector('header');
-  const cardTexts = cards.flatMap((card) => [
-    card.querySelector('.hero-card-title'),
-    card.querySelector('.hero-card-body-text'),
-  ]).filter(Boolean);
+  const cardTexts = [...block.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
 
   function positionCopy() {
     if (!heroCopy || !gnav) return;
     heroCopy.style.top = `${gnav.getBoundingClientRect().bottom + 124}px`;
   }
 
-  function ensureEndedHandler(video) {
-    if (video.dataset.heroEndedBound) return;
-    video.dataset.heroEndedBound = '1';
-    video.addEventListener('ended', () => {
-      playedVideos.add(video);
-      if (video.duration && Number.isFinite(video.duration)) {
-        video.currentTime = video.duration - 0.05;
-      }
-    }, { once: true });
-  }
-
-  const getSplit = () => (window.innerWidth < 768 ? 1 : 2);
-
-  function autoplayTop() {
-    const split = getSplit();
-    for (let i = 0; i < split; i += 1) {
-      const video = videos[i];
-      if (video && !playedVideos.has(video)) {
-        ensureEndedHandler(video);
-        video.currentTime = 0;
-        video.loop = false;
-        video.play()?.catch(() => {});
-      }
-    }
-  }
-
-  function watchBottom() {
-    if (bottomObserver) return;
-    const split = getSplit();
-    videos.slice(split).filter(Boolean).forEach(ensureEndedHandler);
-    bottomObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const video = videos[medias.indexOf(entry.target)];
-        if (!video || playedVideos.has(video)) return;
-        if (entry.isIntersecting) {
-          video.loop = false;
-          video.play()?.catch(() => {});
-        } else {
-          video.pause();
-        }
-      });
-    }, { threshold: 0.7 });
-    medias.slice(split).filter(Boolean).forEach((media) => bottomObserver.observe(media));
-  }
-
-  function stopBottom() {
-    if (bottomObserver) { bottomObserver.disconnect(); bottomObserver = null; }
-  }
-
-  function resetVideos() {
-    playedVideos.clear();
-    videos.forEach((video) => {
-      delete video.dataset.heroEndedBound;
-      try { video.pause(); video.loop = false; video.currentTime = 0; } catch (e) { /* noop */ }
-    });
-  }
-
-  function setSettled(next, opts) {
+  function setSettled(next) {
     if (isSettled === next) return;
     isSettled = next;
-    block.dataset.heroSettled = String(next);
     if (next) {
-      autoplayTop();
-      watchBottom();
+      if (videoObserver) return;
+      videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          const video = videos[medias.indexOf(entry.target)];
+          if (!video || video.ended) return;
+          if (entry.isIntersecting) video.play()?.catch(() => {});
+          else video.pause();
+        });
+      }, { threshold: 0.7 });
+      medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
       return;
     }
-    stopBottom();
-    if (opts?.reverse) {
-      videos.forEach((video) => {
-        if (playedVideos.has(video)) return;
-        try { video.pause(); video.loop = false; } catch (e) { /* noop */ }
-      });
-    } else {
-      resetVideos();
-    }
+    videoObserver?.disconnect();
+    videoObserver = null;
+    videos.forEach((video) => video.pause());
   }
 
-  // Trigger range mirrors the original ScrollTrigger: cards[0].top from
-  // viewport-bottom (progress 0) to slotTargetTop (progress 1).
   function getProgress() {
     if (!cards[0]) return 0;
     const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
@@ -256,15 +198,17 @@ function initAnimation(block) {
     tiles.forEach((tile, i) => {
       const natural = naturalBoxes[i];
       const stack = stackBoxes[i];
-      tile.style.width = `${lerp(stack.w, natural.w, progress)}px`;
-      tile.style.height = `${lerp(stack.h, natural.h, progress)}px`;
-      tile.style.transform = `translate(${lerp(stack.x - natural.x, 0, progress)}px, ${lerp(stack.y - natural.y, 0, progress)}px) rotate(${lerp(stack.rot, 0, progress)}deg)`;
+      const sx = lerp(stack.w / natural.w, 1, progress);
+      const sy = lerp(stack.h / natural.h, 1, progress);
+      const tx = lerp(stack.x - natural.x, 0, progress);
+      const ty = lerp(stack.y - natural.y, 0, progress);
+      const rot = lerp(stack.rot, 0, progress);
+      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
       if (CARD_SHADOWS[i]) {
         tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
       }
     });
 
-    // power2.out easing: 1 - (1 - t)², 0.025 stagger.
     cardTexts.forEach((textEl, i) => {
       const textProgress = clamp01((progress - (0.6 + i * 0.025)) / 0.2);
       textEl.style.opacity = String(1 - (1 - textProgress) * (1 - textProgress));
@@ -273,55 +217,32 @@ function initAnimation(block) {
     const animating = progress > 0.001 && progress < 0.999;
     if (animating !== willChangeOn) {
       willChangeOn = animating;
-      const willChangeValue = animating ? 'transform, width, height' : '';
-      tiles.forEach((tile) => { tile.style.willChange = willChangeValue; });
+      tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
     }
   }
 
   function updateEyebrow() {
     if (!eyebrow) return;
     if (medias[0]) {
-      const gap = window.innerWidth >= 768 ? 40 : 24;
+      const gap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
       eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap}px`;
     }
     if (heroCopy) {
       const rect = heroCopy.getBoundingClientRect();
-      const show = rect.top + rect.height / 2 < 0;
-      if (show !== eyebrowVisible) {
-        eyebrowVisible = show;
-        eyebrow.classList.toggle('is-visible', show);
-      }
+      eyebrow.classList.toggle('is-visible', rect.top + rect.height / 2 < 0);
     }
   }
 
   function computeLayouts() {
-    // Clear inline styles from any previous run so the natural layout is measurable.
-    tiles.forEach((tile) => {
-      tile.style.cssText = '';
-    });
-    cards.forEach((card) => { card.style.height = ''; });
+    tiles.forEach((tile) => { tile.style.transform = ''; });
     if (heroCopy) { heroCopy.style.opacity = ''; heroCopy.style.transform = ''; }
     cardTexts.forEach((textEl) => { textEl.style.opacity = ''; });
 
-    // Measure card cells, then force each row's height to its max so all
-    // cards in a row resolve to the same height. Column count comes from the
-    // grid's actual computed template (the framework's `.two-up` defines it).
-    const cardRects = cards.map((card) => card.getBoundingClientRect());
-    const gridCols = getComputedStyle(cards[0].parentElement).gridTemplateColumns;
-    const colsPerRow = gridCols.split(' ').filter(Boolean).length || 1;
-    naturalBoxes = cardRects.map((rect, i) => {
-      const rowStart = Math.floor(i / colsPerRow) * colsPerRow;
-      let rowMaxH = 0;
-      for (let j = rowStart; j < rowStart + colsPerRow && j < cardRects.length; j += 1) {
-        if (cardRects[j].height > rowMaxH) rowMaxH = cardRects[j].height;
-      }
-      return { x: rect.left, y: rect.top, w: rect.width, h: rowMaxH };
+    naturalBoxes = cards.map((card) => {
+      const rect = card.getBoundingClientRect();
+      return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
     });
 
-    // Lock card heights so cards reserve grid space after tiles become absolute.
-    cards.forEach((card, i) => { card.style.height = `${naturalBoxes[i].h}px`; });
-
-    // Stack composition derived from Figma.
     const vw = window.innerWidth;
     const copyBottom = heroCopy ? heroCopy.getBoundingClientRect().bottom : 540;
     const stackTop = copyBottom + 74;
@@ -335,15 +256,6 @@ function initAnimation(block) {
       rot: ref.rot,
     }));
 
-    // Pin tiles absolutely AND apply current state synchronously so first paint
-    // is correct. Without the immediate applyAnimation, a width-less absolute
-    // tile collapses to 0 between this function and the first rAF tick.
-    tiles.forEach((tile) => {
-      tile.style.position = 'absolute';
-      tile.style.top = '0';
-      tile.style.left = '0';
-      tile.style.transformOrigin = 'top left';
-    });
     applyAnimation(getProgress());
   }
 
@@ -354,14 +266,7 @@ function initAnimation(block) {
     updateEyebrow();
 
     if (progress >= 0.85) setSettled(true);
-    else if (isSettled) setSettled(false, { reverse: true });
-
-    videos.forEach((video) => {
-      if (!video.duration || !Number.isFinite(video.duration)) return;
-      if (!isSettled && !playedVideos.has(video) && video.currentTime > 0.02) {
-        video.currentTime = 0;
-      }
-    });
+    else if (isSettled) setSettled(false);
 
     rafId = requestAnimationFrame(tick);
   }
@@ -393,9 +298,6 @@ function initAnimation(block) {
   }, { rootMargin: '200px 0px' });
   io.observe(block);
 
-  // ResizeObserver catches the block resizing after CSS/fonts settle on
-  // initial load — without this the first measurement can be stale and the
-  // animation positions tiles using the wrong column widths.
   let resizeTimer;
   const reSetup = () => {
     clearTimeout(resizeTimer);
