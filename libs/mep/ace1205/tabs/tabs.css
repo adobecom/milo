@@ -146,11 +146,9 @@
   height: 32px;
 }
 
-/* .tabs .tabList button:hover {
+.tabs .tabList button:hover {
   color: var(--tabs-pill-text-color-hover);
-  border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-black-12);
-  background: var(--s2a-color-background-default);
-} */
+}
 
 /* .tabs .tabList button:active {
   color: var(--tabs-pill-text-selected-color);
@@ -254,4 +252,24 @@
   transition: transform 0.25s ease, width 0.35s ease;
   pointer-events: none;
   z-index: 0;
+}
+
+@media screen and (max-width: 599px) {
+  .tabs.left .tabs-wrapper {
+    justify-content: flex-start;
+  }
+  
+  .tabs.right .tabs-wrapper {
+    justify-content: flex-end;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .tabs.left .tabs-wrapper {
+    justify-content: flex-start;
+  }
+  
+  .tabs.right .tabs-wrapper {
+    justify-content: flex-end;
+  }
 }
