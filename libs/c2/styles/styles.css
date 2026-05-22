@@ -917,12 +917,13 @@ p {
   overflow: hidden;
 }
 
-/* Figma I12438:6048;11390:25665 - Arrow icon container */
+/* Figma I12438:6048;11390:25665 - Arrow icon container, 32×32px total including border */
 .promo-cta::after {
   background: var(--s2a-color-transparent-white-16) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
   block-size: 32px;
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   border-radius: 6px; /* Figma — no S2A 6px token */
+  box-sizing: border-box; /* Include border in 32px dimensions */
   content: '' / '';
   display: inline-flex;
   flex-shrink: 0;
@@ -963,6 +964,7 @@ p {
 
 .promo-cta.size-small::after {
   block-size: 24px;
+  box-sizing: border-box; /* Include border in 24px dimensions */
   inline-size: 24px;
 }
 
