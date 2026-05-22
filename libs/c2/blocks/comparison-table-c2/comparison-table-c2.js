@@ -567,13 +567,6 @@ function setupStickyHeader(el) {
     if (nextEl) nextEl.style.marginTop = '';
   };
 
-  requestAnimationFrame(() => {
-    updateMinHeight();
-    syncTop();
-    updateThreshold();
-    if (window.scrollY >= threshold) applySticky();
-  });
-
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
     if (wasSticky) removeSticky();
     threshold = Infinity;
