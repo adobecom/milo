@@ -531,6 +531,11 @@ function setupCollapsingHeader(el) {
 
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
+  const syncHeaderHeight = () => {
+    if (isMobile()) { headerContent.style.minHeight = ''; return; }
+    headerContent.style.minHeight = `${cardsContainer.offsetHeight}px`;
+  };
+
   const applyCollapsed = () => {
     if (wasCollapsed) return;
     wasCollapsed = true;
@@ -554,6 +559,7 @@ function setupCollapsingHeader(el) {
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
     removeCollapsed();
     syncTop();
+    syncHeaderHeight();
   });
 
   window.addEventListener('scroll', () => {
@@ -568,6 +574,7 @@ function setupCollapsingHeader(el) {
 
   new ResizeObserver(() => {
     syncTop();
+    if (!wasCollapsed) syncHeaderHeight();
   }).observe(cardsContainer);
 }
 
