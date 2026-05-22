@@ -129,14 +129,39 @@ function decorateSection(block) {
         link.classList.add('promo-cta');
         link.setAttribute('daa-ll', link.textContent.trim());
 
-        // Apply promo-cta variants from block-level classes
-        // Authors can use: tour (arrow-down), tour (size-small), etc.
-        const variantClasses = ['arrow-down', 'arrow-left', 'arrow-up', 'size-small', 'full-width', 'no-icon'];
-        variantClasses.forEach((variant) => {
-          if (block.classList.contains(variant)) {
-            link.classList.add(variant);
-          }
+        // Create icon button element
+        const iconButton = createTag('span', {
+          class: 'icon-button arrow',
+          'aria-hidden': 'true',
         });
+
+        // Apply arrow direction variants from block-level classes
+        if (block.classList.contains('arrow-down')) {
+          iconButton.classList.add('down');
+        } else if (block.classList.contains('arrow-left')) {
+          iconButton.classList.add('left');
+        } else if (block.classList.contains('arrow-up')) {
+          iconButton.classList.add('up');
+        }
+        // Default is right arrow (no additional class needed)
+
+        // Apply size variant
+        if (block.classList.contains('size-small')) {
+          link.classList.add('size-small');
+          iconButton.classList.add('small');
+        }
+
+        // Apply other variants
+        if (block.classList.contains('full-width')) {
+          link.classList.add('full-width');
+        }
+
+        // Append icon button to link (unless no-icon variant)
+        if (!block.classList.contains('no-icon')) {
+          link.append(iconButton);
+        } else {
+          link.classList.add('no-icon');
+        }
 
         modalCta = createTag('div', { class: 'tour-cta' });
         modalCta.append(actionArea);

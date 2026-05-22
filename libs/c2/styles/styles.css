@@ -943,6 +943,98 @@ p {
 }
 
 
+/* Icon Button Component — Reusable icon-only button (32×32px default) */
+.icon-button {
+  align-items: center;
+  background: var(--s2a-color-transparent-white-16);
+  block-size: 32px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  border-radius: 6px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: 32px;
+  justify-content: center;
+  transition: background 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+/* Icon type modifiers - background-image only */
+.icon-button.arrow {
+  background-image: url('../assets/img/promo-arrow-right.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.icon-button.close {
+  background-image: url('../assets/img/icon-close.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.icon-button.play {
+  background-image: url('../assets/img/icon-play.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.icon-button.pause {
+  background-image: url('../assets/img/icon-pause.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.icon-button.plus {
+  background-image: url('../assets/img/icon-plus.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+/* Arrow direction variants */
+.icon-button.arrow.down {
+  transform: rotate(90deg);
+}
+
+.icon-button.arrow.left {
+  transform: rotate(180deg);
+}
+
+.icon-button.arrow.up {
+  transform: rotate(-90deg);
+}
+
+/* Size variant - 24×24px for smaller contexts */
+.icon-button.small {
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+/* Hover state */
+.icon-button:hover {
+  background-color: var(--s2a-color-transparent-white-24);
+}
+
+/* Active state */
+.icon-button:active {
+  background-color: var(--s2a-color-content-knockout);
+  border-color: var(--s2a-color-content-knockout);
+}
+
+/* Active state for arrow - swap to black icon */
+.icon-button.arrow:active {
+  background-image: url('../assets/img/promo-arrow-right-black.svg');
+}
+
+/* Focus state for accessibility */
+.icon-button:focus-visible {
+  outline: 2px solid var(--s2a-color-content-knockout);
+  outline-offset: 2px;
+}
+
 /* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158, 11390:25185 */
 .promo-cta {
   align-items: center;
@@ -968,32 +1060,6 @@ p {
   overflow: hidden;
 }
 
-/* Figma I12438:6048;11390:25665 - Arrow icon container, 32×32px total including border */
-.promo-cta::after {
-  background: var(--s2a-color-transparent-white-16) url('../assets/img/promo-arrow-right.svg') no-repeat center / 12px 12px;
-  block-size: 32px;
-  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
-  border-radius: 6px; /* Figma — no S2A 6px token */
-  box-sizing: border-box; /* Include border in 32px dimensions */
-  content: '' / '';
-  display: inline-flex;
-  flex-shrink: 0;
-  inline-size: 32px;
-  transition: background 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-}
-
-/* Figma 11596:18519 - Arrow direction variants */
-.promo-cta.arrow-down::after {
-  transform: rotate(90deg);
-}
-
-.promo-cta.arrow-left::after {
-  transform: rotate(180deg);
-}
-
-.promo-cta.arrow-up::after {
-  transform: rotate(-90deg);
-}
 
 /* Layout variants */
 .promo-cta.full-width {
@@ -1013,30 +1079,11 @@ p {
   inline-size: 24px;
 }
 
-.promo-cta.size-small::after {
-  block-size: 24px;
-  box-sizing: border-box; /* Include border in 24px dimensions */
-  inline-size: 24px;
-}
-
 /* No-icon variant (text + arrow only) */
 .promo-cta.no-icon {
   padding-inline-start: var(--s2a-spacing-md);
 }
 
-/* Hover state - Figma 11390:25218
- * Arrow box background lightens, border stays transparent-white-12 */
-.promo-cta:hover:not(:active)::after {
-  background-color: var(--s2a-color-transparent-white-24);
-  background-image: url('../assets/img/promo-arrow-right.svg');
-}
-
-/* Active state - Figma 11390:25227 - white bg with black arrow */
-.promo-cta:active::after {
-  background-color: var(--s2a-color-content-knockout) !important;
-  background-image: url('../assets/img/promo-arrow-right-black.svg') !important;
-  border-color: var(--s2a-color-content-knockout) !important;
-}
 
 /* Focus state - custom outline for keyboard navigation */
 .promo-cta:focus-visible {
