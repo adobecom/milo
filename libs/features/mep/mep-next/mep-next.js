@@ -10,7 +10,6 @@ import {
   resolveDetectedMarketCountry,
 } from '../../../utils/utils.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
-import { mepCaasConfigUrls } from '../../../blocks/caas/utils.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import { mepMasSubCollections } from './mep-mas-subcollection.js';
 import { US_GEO, getFileName, normalizePath } from '../../personalization/personalization.js';
@@ -22,6 +21,12 @@ import {
   watchForMasContent,
   unwatchForMasContent,
 } from './mep-mas.js';
+import {
+  injectCaasBadges,
+  removeCaasBadges,
+  watchForCaasBlocks,
+  unwatchForCaasBlocks,
+} from './mep-caas.js';
 
 export function escapeHtml(str) {
   if (str == null || str === '') return str;
@@ -40,7 +45,6 @@ export const API_URLS = {
   report: `${API_DOMAIN}/get-report`,
 };
 
-const CAAS_BADGE_CLASS = 'mep-caas-edit-badge';
 const PREVIEW_HOST_RE = /\.(aem|hlx)\.(page|live)$/;
 const BLOG_PATH_RE = /^\/(?:[^/]+\/)?blog\//i;
 const PREVIEW_REPO_HOST_RE = /^(.+?)--(.+?)--adobecom\.aem\.(page|live)$/;
@@ -76,64 +80,6 @@ function rewriteBlogPreviewHost(url) {
     u.pathname = u.pathname.replace(/\.html$/, '');
     return u.toString();
   } catch { return null; }
-}
-
-function derivePathsForCards(root = document) {
-  root.querySelectorAll('[data-card-url]:not([data-card-path])').forEach((el) => {
-    const href = el.dataset.cardUrl;
-    if (!href) { el.dataset.cardPath = ''; return; }
-    try {
-      el.dataset.cardPath = new URL(href).pathname;
-    } catch {
-      el.dataset.cardPath = '';
-    }
-  });
-}
-
-function injectCaasBadges() {
-  document.querySelectorAll('[data-caas-block]').forEach((el) => {
-    const prev = el.previousElementSibling;
-    if (prev?.classList?.contains(CAAS_BADGE_CLASS)) return;
-    const url = mepCaasConfigUrls.get(el);
-    if (!url) return;
-    const a = createTag(
-      'a',
-      {
-        class: CAAS_BADGE_CLASS,
-        href: url,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-      },
-      'Edit in CaaS Configurator',
-    );
-    el.insertAdjacentElement('beforebegin', a);
-  });
-  derivePathsForCards();
-}
-
-function removeCaasBadges() {
-  document.querySelectorAll(`a.${CAAS_BADGE_CLASS}`).forEach((el) => el.remove());
-  // Clear derived paths so they don't sit in the DOM as invisible state.
-  document.querySelectorAll('[data-card-path]').forEach((el) => delete el.dataset.cardPath);
-}
-
-let caasObserver;
-function watchForCaasBlocks() {
-  if (caasObserver) return;
-  caasObserver = new MutationObserver((mutations) => {
-    if (document.body.dataset.mepCaasHighlight !== 'true') return;
-    const hasCaasMutation = mutations.some((m) => [...m.addedNodes].some((n) => (n.nodeType === 1)
-      && (n.matches?.('[data-caas-block], [data-card-url]')
-        || n.querySelector?.('[data-caas-block], [data-card-url]'))));
-    if (hasCaasMutation) injectCaasBadges();
-  });
-  caasObserver.observe(document.body, { childList: true, subtree: true });
-}
-
-function unwatchForCaasBlocks() {
-  if (!caasObserver) return;
-  caasObserver.disconnect();
-  caasObserver = null;
 }
 
 function updatePreviewButton(popup, pageId) {
