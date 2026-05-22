@@ -581,7 +581,6 @@ function setupCollapsingHeader(el) {
     syncHeaderHeight();
   });
 
-  window.addEventListener('resize', syncHeaderHeight, { passive: true });
   new ResizeObserver(() => {
     syncTop();
     if (!isExpanding && !cardsContainer.classList.contains('is-collapsed')) syncHeaderHeight();
