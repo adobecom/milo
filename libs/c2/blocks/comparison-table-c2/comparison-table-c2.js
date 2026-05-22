@@ -514,6 +514,7 @@ function setupCollapsingHeader(el) {
   if (!cardsContainer) return;
 
   let wasCollapsed = false;
+  let isExpanding = false;
   let lastScrollY = window.scrollY;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
@@ -552,6 +553,7 @@ function setupCollapsingHeader(el) {
   const removeCollapsed = () => {
     if (!wasCollapsed) return;
     wasCollapsed = false;
+    isExpanding = true;
     cardsContainer.classList.remove('is-collapsed');
     const tableContainer = cardsContainer.nextElementSibling;
     if (tableContainer) tableContainer.style.marginTop = '';
@@ -573,12 +575,16 @@ function setupCollapsingHeader(el) {
     if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
-  let heightDebounce = null;
+  cardsContainer.addEventListener('transitionend', () => {
+    if (!isExpanding) return;
+    isExpanding = false;
+    syncHeaderHeight();
+  });
+
   window.addEventListener('resize', syncHeaderHeight, { passive: true });
   new ResizeObserver(() => {
     syncTop();
-    clearTimeout(heightDebounce);
-    heightDebounce = setTimeout(syncHeaderHeight, 150);
+    if (!isExpanding && !cardsContainer.classList.contains('is-collapsed')) syncHeaderHeight();
   }).observe(cardsContainer);
 }
 
