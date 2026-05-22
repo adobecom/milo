@@ -394,9 +394,9 @@ describe('removeSubCollectionBadges', () => {
 
 describe('integration: injectMasBadges renders sub-collection badge for active filter', () => {
   it('renders the sub-collection badge between the parent badge and the container (both outside the grid)', async () => {
-    // Import lazily so the preview module evaluates against the same DOM
+    // Import lazily so the module evaluates against the same DOM
     // we've already prepped via buildCollectionContainer below.
-    const preview = await import('../../../../libs/features/mep/mep-next/mep-next.js');
+    const preview = await import('../../../../libs/features/mep/mep-next/mep-mas.js');
     const { container } = buildCollectionContainer({ filter: 'photo' });
     mepMasSubCollections.set(container, [
       { id: 'sub-photo', label: 'Photo', queryLabel: 'photo' },
