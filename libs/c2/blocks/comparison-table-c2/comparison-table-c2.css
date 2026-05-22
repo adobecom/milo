@@ -90,10 +90,6 @@
       .header-item-collapsible {
         grid-template-rows: 0fr;
       }
-
-      .btn-section {
-        display: none;
-      }
     }
   }
 
@@ -161,14 +157,16 @@
     }
 
     > .header-item-collapsible {
+      flex: 1;
+
       > div {
         display: flex;
         flex-direction: column;
-      }
-    }
 
-    > .btn-section {
-      margin-top: auto;
+        > .btn-section {
+          margin-top: auto;
+        }
+      }
     }
 
     .sub-header-item-container {
