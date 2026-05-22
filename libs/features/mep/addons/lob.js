@@ -36,15 +36,28 @@ function resolvePendingPromise(promise, resolve) {
 }
 
 function awaitWindowProperty(property, timeout = 5000, interval = 100) {
-  if (window[property] && !window[property].then) return Promise.resolve(window[property]);
+  const alloyObj = window[property];
+  // console.log(`FROM AWAIT WINDOW PROPERTY`);
+  // console.log(`alloyObj: ${alloyObj}`);
+  // console.log(`alloyObj.then: ${alloyObj?.then}`);
+  // console.log(`alloyObj.get: ${alloyObj?.get}`);
+  // console.log(`alloyObj.set: ${alloyObj?.set}`);
+  if (alloyObj && !alloyObj.then && typeof alloyObj?.get === 'function' && typeof alloyObj?.set === 'function') return Promise.resolve(window[property]);
   return new Promise((resolve) => {
     let timeoutRef;
     const intervalRef = setInterval(() => {
-      if (!window[property]) return;
+      const val = window[property];
+      // console.log(`FROM INTERVAL`);
+      // console.log(`alloyObj: ${val}`);
+      // console.log(`alloyObj.then: ${val}.${val?.then}`);
+      // console.log(`alloyObj.get: ${val}.${val?.get}`);
+      // console.log(`alloyObj.set: ${val}.${val?.set}`);
+      if (!val) return;
+      if (!val.then && (typeof val.get !== 'function' || typeof val.set !== 'function')) return;
       clearTimeout(timeoutRef);
       clearInterval(intervalRef);
-      if (window[property].then) resolvePendingPromise(window[property], resolve);
-      else resolve(window[property]);
+      if (val.then) resolvePendingPromise(val, resolve);
+      else resolve(val);
     }, interval);
 
     timeoutRef = setTimeout(() => {
@@ -57,6 +70,13 @@ function awaitWindowProperty(property, timeout = 5000, interval = 100) {
 
 function addAlloyTracking(lobObject) {
   awaitWindowProperty('alloy_all').then((alloyAll) => {
+    // console.log(`alloyAll: ${alloyAll} FOUND`);
+    // const alloyObj = window['alloy_all'];
+    // console.log(`FROM addAlloyTracking FUNCTION`);
+    // console.log(`alloyObj: ${alloyObj}`);
+    // console.log(`alloyObj.then: ${alloyObj?.then}`);
+    // console.log(`alloyObj.get: ${alloyObj?.get}`);
+    // console.log(`alloyObj.set: ${alloyObj?.set}`);
     if (!alloyAll || !lobObject) return;
     const spectraValues = {
       modelLineOfBusiness: 'spectraLob',
