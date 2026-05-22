@@ -10,7 +10,8 @@
       "header": "Spoof Geo"
     },
     "load-manifest": {
-      "header": "Load Manifest"
+      "header": "Load Manifest",
+      "placeholder": "Enter manifest path"
     }
   },
   "summary": {

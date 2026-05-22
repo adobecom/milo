@@ -30,6 +30,8 @@
 
   --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
+
+  --mep-chevron-down-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M16.59 8.29504L12 12.875L7.41 8.29504L6 9.70504L12 15.705L18 9.70504L16.59 8.29504Z' fill='white'/%3E%3C/svg%3E");
 }
 
 .mep-fab {
@@ -188,37 +190,47 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border: 1px solid var(--mep-white-12);
 }
 
-.mep-drawer .mep-body .mep-card svg {
+.mep-drawer .mep-body .mep-card h1 svg {
   fill: var(--mep-white-100);
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.mep-drawer .mep-body .mep-card svg:hover {
+.mep-drawer .mep-body .mep-card h1 svg:hover {
   cursor: pointer;
   fill: var(--mep-white-60);
 }
 
-.mep-drawer .mep-body .mep-card.expanded svg {
+.mep-drawer .mep-body .mep-card.expanded h1 svg {
   transform: rotate(-180deg);
-  
 }
 
-.mep-drawer .mep-body .mep-card:not(.expanded) svg {
+.mep-drawer .mep-body .mep-card:not(.expanded) h1 svg {
   transform: rotate(0);
 }
 
 .mep-drawer .mep-body .mep-card .mep-card-body {
+  display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: height 0.3s ease;
+  gap: 16px;
+  height: 0;
+  opacity: 0;
+  transition:
+    height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mep-drawer .mep-body .mep-card.expanded .mep-card-body {
-  height: auto
+  height: auto;
+  padding-top: 16px;
+  opacity: 1;
 }
 
 .mep-drawer .mep-body .mep-card:not(.expanded) .mep-card-body {
   height: 0;
+  padding: 0;
+  opacity: 0;
 }
 
 .mep-drawer .mep-body .mep-card h1 {
@@ -229,6 +241,77 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   margin: 0;
   font: var(--mep-h1-font);
   letter-spacing: var(--mep-h1-letter-spacing);
+}
+
+.mep-drawer .mep-body .mep-card input:not([type="radio"]),
+.mep-drawer .mep-body .mep-card select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  align-self: stretch;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 4px;
+  outline: none;
+  border: 1px solid var(--mep-white-60);
+  background: var(--mep-dark-22, #222);
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row {
+  display: flex;
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: var(--mep-radio-label-font);
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row label svg:nth-child(1) {
+  display: none;
+  fill: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row label svg:nth-child(2) {
+  display: block;
+  fill: var(--mep-white-12);
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"] {
+  margin: 0;
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(1) {
+  display: block;
+}
+
+.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(2) {
+  display: none;
+}
+
+.mep-drawer .mep-body .mep-card input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.mep-drawer .mep-body .mep-card input[type="radio"]:checked {
+  border-color: var(--mep-primary-100);
+}
+
+.mep-drawer .mep-body .mep-card select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: var(--mep-chevron-down-svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 32px;
+}
+
+.mep-drawer .mep-body .mep-card input:focus {
+  border-color: var(--mep-white-100);
 }
 
 .mep-drawer .mep-footer {
@@ -250,4 +333,22 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 .mep-drawer .mep-footer .con-button:hover {
   background: var(--mep-primary-60);
   border: 2px solid var(--mep-primary-60);
+}
+
+.mep-drawer .mep-body .mep-spoof-geo-options {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.mep-drawer .mep-body .mep-spoof-geo-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.mep-drawer .mep-body .mep-spoof-geo-option label {
+  cursor: pointer;
+  font: var(--mep-body-font);
 }

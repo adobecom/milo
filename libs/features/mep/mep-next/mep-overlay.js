@@ -34,12 +34,47 @@ async function buildOverlay() {
     return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
   }
 
+  function buildCardContent(card) {
+    const pageId = 1; // placeholder
+    function buildLoadManifest() {
+      const mepManifestInput = createTag('input', { class: 'mep-load-manifest', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
+      return mepManifestInput;
+    }
+
+    function buildSpoofGeo() {
+      const options = ['MEP Lingo', 'Lingo M@S'].map((val, i) => {
+        const mepInput = createTag('input', { type: 'radio', name: `spoof-geo-${pageId}`, value: val, ...(i === 0 && { checked: true }) });
+        const label = createTag('label', { for: `spoof-geo-${val}` }, val);
+        ['icon-radio-unchecked', 'icon-radio-checked'].map((icon) => label.prepend(parseSvg(svgData.svg[icon])));
+
+        return createTag('div', { class: 'mep-radio-row' }, [mepInput, label]);
+      });
+      const select = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo-${pageId}` });
+      return [...options, select];
+    }
+
+    function buildDefault() {
+      return createTag('div', {}, 'No content available');
+    }
+
+    switch (card.header) {
+      case 'Load Manifest':
+        return buildLoadManifest();
+      case 'Spoof Geo':
+        return buildSpoofGeo();
+      default:
+        return buildDefault();
+    }
+  }
+
   function buildCard(card) {
     const mepCardDiv = createTag('div', { class: 'mep-card' });
     if (card?.header) {
       const mepIconCloseSvg = parseSvg(svgData.svg['icon-expand-circle-down']);
       const headerDiv = createTag('h1', {}, card.header);
-      const cardBodyDiv = createTag('div', { class: 'mep-card-body' }, 'Card Body');
+      const cardBodyDiv = createTag('div', { class: 'mep-card-body' });
+      const content = buildCardContent(card);
+      cardBodyDiv.append(...(Array.isArray(content) ? content : [content]));
       headerDiv.appendChild(mepIconCloseSvg);
       mepCardDiv.append(headerDiv, cardBodyDiv);
     }
@@ -113,7 +148,21 @@ function toggleCard(event) {
   event.target.closest('.mep-card').classList.toggle('expanded');
 }
 
+function toggleRadio(event) {
+  console.log(event.target.closest('.mep-radio-row'));
+  const input = event.target.closest('.mep-radio-row').querySelector('input[type="radio"]');
+  input.checked = true;
+}
+
 function addEventListeners() {
+  const toggles = document.querySelectorAll('.mep-radio-row label');
+  toggles.forEach((toggle) => {
+    toggle.addEventListener('click', (event) => {
+      toggles.forEach((t) => t.classList.remove('active'));
+      toggleRadio(event);
+    });
+  });
+
   const tabs = document.querySelectorAll('.mep-tab');
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
