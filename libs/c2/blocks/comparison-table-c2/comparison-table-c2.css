@@ -468,6 +468,26 @@
       position: relative;
       display: inline;
       cursor: default;
+
+      &::before {
+        background-color: var(--s2a-color-background-knockout);
+      }
+
+      &::after {
+        border-color: transparent var(--s2a-color-background-knockout) transparent transparent;
+      }
+
+      &.left::after {
+        border-color: transparent transparent transparent var(--s2a-color-background-knockout);
+      }
+
+      &.top::after {
+        border-color: var(--s2a-color-background-knockout) transparent transparent;
+      }
+
+      &.bottom::after {
+        border-color: transparent transparent var(--s2a-color-background-knockout);
+      }
     }
 
     &:has(wbr):has(a) {
