@@ -9,10 +9,10 @@ const {
   mepMasSubCollections,
   SUB_COLLECTION_BADGE_CLASS,
   getSubCollectionsFor,
-} = await import('../../../libs/features/personalization/preview-mas-subcollection.js');
+} = await import('../../../../libs/features/mep/mep-next/mas-subcollection.js');
 
-const { mepMasStudioUrls } = await import('../../../libs/blocks/merch/mas-mep-utils.js');
-const { setConfig } = await import('../../../libs/utils/utils.js');
+const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
+const { setConfig } = await import('../../../../libs/utils/utils.js');
 
 setConfig({
   miloLibs: 'https://main--milo--adobecom.aem.live/libs',
@@ -396,7 +396,7 @@ describe('integration: injectMasBadges renders sub-collection badge for active f
   it('renders the sub-collection badge between the parent badge and the container (both outside the grid)', async () => {
     // Import lazily so the preview module evaluates against the same DOM
     // we've already prepped via buildCollectionContainer below.
-    const preview = await import('../../../libs/features/personalization/preview.js');
+    const preview = await import('../../../../libs/features/personalization/preview.js');
     const { container } = buildCollectionContainer({ filter: 'photo' });
     mepMasSubCollections.set(container, [
       { id: 'sub-photo', label: 'Photo', queryLabel: 'photo' },
