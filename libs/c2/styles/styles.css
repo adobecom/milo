@@ -982,10 +982,9 @@ p {
 
 /* Active state - Figma 11390:25227 - white bg with black arrow */
 .promo-cta:active::after {
-  background-color: #fff !important;
-  background-image: url('../assets/img/promo-arrow-right.svg') !important;
-  border-color: #fff !important;
-  filter: invert(1) !important;
+  background-color: var(--s2a-color-content-knockout) !important;
+  background-image: url('../assets/img/promo-arrow-right-black.svg') !important;
+  border-color: var(--s2a-color-content-knockout) !important;
 }
 
 /* Focus state - custom outline for keyboard navigation */
