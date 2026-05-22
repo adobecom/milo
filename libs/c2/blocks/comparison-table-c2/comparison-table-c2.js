@@ -586,9 +586,9 @@ function setupCollapsingHeader(el) {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;
-    if (y < threshold) { if (wasCollapsed) removeCollapsed(); return; }
+    if (y < threshold) { removeCollapsed(); return; }
     if (goingDown && !wasCollapsed) applyCollapsed();
-    else if (!goingDown && wasCollapsed) removeCollapsed();
+    if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
   new ResizeObserver(() => {
