@@ -1709,7 +1709,7 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+    if (config.mep?.preview) await import('../mep/mep-next/mep-next.js').then(({ saveToMmm }) => saveToMmm());
     if (config.mep?.preview) await import('../mep/mep-next/mep-overlay.js');
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);

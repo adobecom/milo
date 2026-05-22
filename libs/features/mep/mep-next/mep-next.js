@@ -8,18 +8,18 @@ import {
   lingoActive,
   normCountryCode,
   resolveDetectedMarketCountry,
-} from '../../utils/utils.js';
-import { getMarketConfig, marketsLangForLocale } from '../../utils/market.js';
-import { mepCaasConfigUrls } from '../../blocks/caas/utils.js';
-import { mepMasStudioUrls } from '../../blocks/merch/mas-mep-utils.js';
-import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../blocks/merch/merch.js';
+} from '../../../utils/utils.js';
+import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
+import { mepCaasConfigUrls } from '../../../blocks/caas/utils.js';
+import { mepMasStudioUrls } from '../../../blocks/merch/mas-mep-utils.js';
+import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
 import {
   extractSubCollections,
   injectSubCollectionBadge,
   removeSubCollectionBadges,
   mepMasSubCollections,
-} from '../mep/mep-next/mas-subcollection.js';
-import { US_GEO, getFileName, normalizePath } from './personalization.js';
+} from './mas-subcollection.js';
+import { US_GEO, getFileName, normalizePath } from '../../personalization/personalization.js';
 
 export function escapeHtml(str) {
   if (str == null || str === '') return str;
@@ -1780,7 +1780,7 @@ export async function saveToMmm() {
 }
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
+  loadStyle(`${miloLibs || codeRoot}/features/mep/mep-next/mep-next.css`);
   // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
