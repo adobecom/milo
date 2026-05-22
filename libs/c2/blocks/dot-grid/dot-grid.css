@@ -111,7 +111,7 @@
   width: min(68.6vw, 971px);
   aspect-ratio: 971 / 576;
   border-radius: 18px; 
-  box-shadow: 0 20px 60px rgb(0 0 0 / 60%);
+  box-shadow: 0 40px 80px rgb(0 0 0 / 20%);
   transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
   transform-origin: center center;
   pointer-events: none;
@@ -300,8 +300,8 @@
     overflow: hidden;
     width: 294px;
     height: 536px;
-    border-radius: 14px;
-    box-shadow: 0 12px 60px rgb(0 0 0 / 60%);
+    border-radius: var(--s2a-border-radius-md);
+    box-shadow: 0 40px 80px rgb(0 0 0 / 20%);
     transform: translateY(var(--mockup-y, 100vh)) scale(var(--mockup-scale, 2));
     transform-origin: center center;
     pointer-events: none;
