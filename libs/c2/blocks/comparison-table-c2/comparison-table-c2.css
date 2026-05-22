@@ -79,7 +79,7 @@
     top: calc(var(--ct-nav-height) + var(--s2a-spacing-lg));
     z-index: 2;
 
-    &.is-sticky {
+    &.is-collapsed {
       align-items: stretch;
 
       .header-item-card {

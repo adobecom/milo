@@ -557,11 +557,11 @@ function setupStickyHeader(el) {
   const applySticky = () => {
     if (wasSticky) return;
     wasSticky = true;
-    if (!isMobile()) { cardsContainer.classList.add('is-sticky'); return; }
+    if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
     const firstCard = cardsContainer.querySelector('.header-item-card:not(.hidden)');
     const delta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
       .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
-    cardsContainer.classList.add('is-sticky');
+    cardsContainer.classList.add('is-collapsed');
     const tableContainer = cardsContainer.nextElementSibling;
     if (delta > 0 && tableContainer) tableContainer.style.marginTop = `${delta}px`;
   };
@@ -569,7 +569,7 @@ function setupStickyHeader(el) {
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
-    cardsContainer.classList.remove('is-sticky');
+    cardsContainer.classList.remove('is-collapsed');
     const tableContainer = cardsContainer.nextElementSibling;
     if (tableContainer) tableContainer.style.marginTop = '';
   };
