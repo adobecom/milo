@@ -14,13 +14,7 @@
 @property --grid-max-width {
   syntax: '<length>';
   inherits: true;
-  initial-value: 1440px;
-}
-
-@property --parallax-stagger-progress {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
+  initial-value: 1920px;
 }
 
 :root {
@@ -325,7 +319,7 @@
   --s2a-font-size-9xl: var(--s2a-font-size-72);
   --s2a-font-size-10xl: var(--s2a-font-size-80);
   --s2a-font-size-11xl: var(--s2a-font-size-96);
-  --s2a-font-weight-title: var(--s2a-font-weight-adobe-clean-display-black);
+  --s2a-font-weight-heading: var(--s2a-font-weight-adobe-clean-display-black);
   --s2a-font-weight-body: var(--s2a-font-weight-adobe-clean-regular);
   --s2a-font-weight-eyebrow: var(--s2a-font-weight-adobe-clean-bold);
   --s2a-font-weight-label: var(--s2a-font-weight-adobe-clean-bold);
@@ -369,7 +363,7 @@
   --s2a-color-content-strong: var(--s2a-color-gray-900);
   --s2a-color-content-subheading: var(--s2a-color-gray-1000);
   --s2a-color-content-subtle: var(--s2a-color-transparent-black-64);
-  --s2a-color-content-title: var(--s2a-color-content-default);
+  --s2a-color-content-heading: var(--s2a-color-content-default);
   --s2a-color-content-utility-error: var(--s2a-color-red-900);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-900);
   --s2a-color-focus-ring-knockout: var(--s2a-color-gray-25);
@@ -384,12 +378,12 @@
   --s2a-viewport-vertical-padding-xl: var(--s2a-layout-sm);
   --s2a-layout-guide-gap: var(--s2a-spacing-xs);
   --s2a-typography-font-size-super: var(--s2a-font-size-7xl);
-  --s2a-typography-font-size-title-1: var(--s2a-font-size-5xl);
-  --s2a-typography-font-size-title-2: var(--s2a-font-size-3xl);
-  --s2a-typography-font-size-title-3: var(--s2a-font-size-2xl);
-  --s2a-typography-font-size-title-4: var(--s2a-font-size-xl);
-  --s2a-typography-font-size-title-5: var(--s2a-font-size-lg);
-  --s2a-typography-font-size-title-6: var(--s2a-font-size-md);
+  --s2a-typography-font-size-heading-1: var(--s2a-font-size-5xl);
+  --s2a-typography-font-size-heading-2: var(--s2a-font-size-3xl);
+  --s2a-typography-font-size-heading-3: var(--s2a-font-size-2xl);
+  --s2a-typography-font-size-heading-4: var(--s2a-font-size-xl);
+  --s2a-typography-font-size-heading-5: var(--s2a-font-size-lg);
+  --s2a-typography-font-size-heading-6: var(--s2a-font-size-md);
   --s2a-typography-font-size-body-xs: var(--s2a-font-size-xs);
   --s2a-typography-font-size-body-sm: var(--s2a-font-size-sm);
   --s2a-typography-font-size-body-md: var(--s2a-font-size-md);
@@ -398,12 +392,12 @@
   --s2a-typography-font-size-label: var(--s2a-font-size-sm);
   --s2a-typography-font-size-caption: var(--s2a-font-size-xs);
   --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-lg);
-  --s2a-typography-letter-spacing-title-1: var(--s2a-font-letter-spacing-lg);
-  --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-3xl);
-  --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-4xl);
-  --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-4xl);
-  --s2a-typography-letter-spacing-title-5: var(--s2a-font-letter-spacing-5xl);
-  --s2a-typography-letter-spacing-title-6: var(--s2a-font-letter-spacing-5xl);
+  --s2a-typography-letter-spacing-heading-1: var(--s2a-font-letter-spacing-lg);
+  --s2a-typography-letter-spacing-heading-2: var(--s2a-font-letter-spacing-3xl);
+  --s2a-typography-letter-spacing-heading-3: var(--s2a-font-letter-spacing-4xl);
+  --s2a-typography-letter-spacing-heading-4: var(--s2a-font-letter-spacing-4xl);
+  --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-5xl);
+  --s2a-typography-letter-spacing-heading-6: var(--s2a-font-letter-spacing-5xl);
   --s2a-typography-letter-spacing-body-xs: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-letter-spacing-body-sm: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-letter-spacing-body-md: var(--s2a-font-letter-spacing-6xl);
@@ -412,12 +406,12 @@
   --s2a-typography-letter-spacing-label: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-letter-spacing-caption: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-line-height-super: var(--s2a-font-line-height-3xl);
-  --s2a-typography-line-height-title-1: var(--s2a-font-line-height-xl);
-  --s2a-typography-line-height-title-2: var(--s2a-font-line-height-lg);
-  --s2a-typography-line-height-title-3: var(--s2a-font-line-height-md);
-  --s2a-typography-line-height-title-4: var(--s2a-font-line-height-sm);
-  --s2a-typography-line-height-title-5: var(--s2a-font-line-height-sm);
-  --s2a-typography-line-height-title-6: var(--s2a-font-line-height-xs);
+  --s2a-typography-line-height-heading-1: var(--s2a-font-line-height-xl);
+  --s2a-typography-line-height-heading-2: var(--s2a-font-line-height-lg);
+  --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-md);
+  --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-sm);
+  --s2a-typography-line-height-heading-5: var(--s2a-font-line-height-sm);
+  --s2a-typography-line-height-heading-6: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-body-xs: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-body-sm: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-body-md: var(--s2a-font-line-height-sm);
@@ -437,11 +431,11 @@
   /* Grid sizes */
   --grid-gutter: var(--s2a-spacing-xs);
   --grid-columns: 6;
-  --grid-margin-width-base: 24px;
+  --grid-margin-width-base: var(--s2a-spacing-24);
+  --grid-margin-width-fixed: var(--s2a-spacing-24);
   --grid-margin-width: var(--grid-margin-width-base);
   --grid-margin-width-target: var(--grid-margin-width-base);
-  --grid-max-width-default: 1440px;
-  --grid-max-width-wide: 1920px;
+  --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
 
   /* Regional font variations */
@@ -485,6 +479,10 @@
   --s2a-color-background-default: var(--s2a-color-gray-900);
   --s2a-color-background-inverse: var(--s2a-color-gray-25);
   --s2a-color-background-subtle: var(--s2a-color-gray-700);
+  --s2a-color-border-default: var(--s2a-color-gray-300);
+  --s2a-color-border-inverse: var(--s2a-color-gray-1000);
+  --s2a-color-border-knockout: var(--s2a-color-gray-25);
+  --s2a-color-border-strong: var(--s2a-color-gray-25);
   --s2a-color-content-default: var(--s2a-color-gray-25);
   --s2a-color-content-eyebrow: var(--s2a-color-transparent-white-48);
   --s2a-color-content-inverse: var(--s2a-color-gray-1000);
@@ -492,7 +490,7 @@
   --s2a-color-content-strong: var(--s2a-color-gray-600);
   --s2a-color-content-subheading: var(--s2a-color-content-knockout);
   --s2a-color-content-subtle: var(--s2a-color-transparent-white-64);
-  --s2a-color-content-title: var(--s2a-color-content-knockout);
+  --s2a-color-content-heading: var(--s2a-color-content-knockout);
   --s2a-color-focus-ring-default: var(--s2a-color-blue-500);
 
   /* Milo-specific declarations */
@@ -523,7 +521,7 @@ body {
   line-height: var(--s2a-typography-line-height-body-md);
   letter-spacing: var(--s2a-typography-letter-spacing-body-md);
   background-color: var(--s2a-color-background-default);
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
@@ -586,7 +584,7 @@ blockquote {
 }
 
 a {
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
 
   &.standalone-link {
     &::after {
@@ -626,10 +624,10 @@ a {
   }
 }
 
-h1, h2, h3, h4, h5, h6, [class*="title-"] {
+h1, h2, h3, h4, h5, h6, [class*="heading-"] {
   margin: 0;
   font-family: var(--heading-font-family);
-  font-weight: var(--s2a-font-weight-title);
+  font-weight: var(--s2a-font-weight-heading);
   line-height: 1;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
@@ -643,46 +641,46 @@ h1, h2, h3, h4, h5, h6, [class*="title-"] {
   }
 }
 
-.title-super {
+.heading-super {
   font-size: var(--s2a-typography-font-size-super);
   line-height: var(--s2a-typography-line-height-super);
   letter-spacing: var(--s2a-typography-letter-spacing-super);
 }
 
-h1, .title-1 {
-  font-size: var(--s2a-typography-font-size-title-1);
-  line-height: var(--s2a-typography-line-height-title-1);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-1);
+h1, .heading-1 {
+  font-size: var(--s2a-typography-font-size-heading-1);
+  line-height: var(--s2a-typography-line-height-heading-1);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
 }
 
-h2, .title-2 {
-  font-size: var(--s2a-typography-font-size-title-2);
-  line-height: var(--s2a-typography-line-height-title-2);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-2);
+h2, .heading-2 {
+  font-size: var(--s2a-typography-font-size-heading-2);
+  line-height: var(--s2a-typography-line-height-heading-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
 }
 
-h3, .title-3 {
-  font-size: var(--s2a-typography-font-size-title-3);
-  line-height: var(--s2a-typography-line-height-title-3);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-3);
+h3, .heading-3 {
+  font-size: var(--s2a-typography-font-size-heading-3);
+  line-height: var(--s2a-typography-line-height-heading-3);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-3);
 }
 
-h4, .title-4 {
-  font-size: var(--s2a-typography-font-size-title-4);
-  line-height: var(--s2a-typography-line-height-title-4);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-4);
+h4, .heading-4 {
+  font-size: var(--s2a-typography-font-size-heading-4);
+  line-height: var(--s2a-typography-line-height-heading-4);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
 }
 
-h5, .title-5 {
-  font-size: var(--s2a-typography-font-size-title-5);
-  line-height: var(--s2a-typography-line-height-title-5);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-5);
+h5, .heading-5 {
+  font-size: var(--s2a-typography-font-size-heading-5);
+  line-height: var(--s2a-typography-line-height-heading-5);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
 }
 
-h6, .title-6 {
-  font-size: var(--s2a-typography-font-size-title-6);
-  line-height: var(--s2a-typography-line-height-title-6);
-  letter-spacing: var(--s2a-typography-letter-spacing-title-6);
+h6, .heading-6 {
+  font-size: var(--s2a-typography-font-size-heading-6);
+  line-height: var(--s2a-typography-line-height-heading-6);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
 }
 
 p {
@@ -729,6 +727,10 @@ p {
   letter-spacing: var(--s2a-typography-letter-spacing-caption);
 }
 
+.breadcrumbs {
+  display: none;
+}
+
 .spacing-none { padding-block: var(--s2a-viewport-vertical-padding-none); }
 .spacing-2xs  { padding-block: var(--s2a-viewport-vertical-padding-2xs); }
 .spacing-xs   { padding-block: var(--s2a-viewport-vertical-padding-xs); }
@@ -766,14 +768,14 @@ p {
   max-width: none;
   padding-inline: var(--grid-padding);
 
-  &.wide {
-    --grid-max-width: var(--grid-max-width-wide);
-    --grid-max-width-target: var(--grid-max-width-wide);
-  }
-
   &.fluid {
     --grid-max-width: var(--grid-max-width-fluid);
     --grid-margin-width: 0px; /* Keep unit for calc */
+  }
+
+  &.fixed {
+    --grid-margin-width: var(--grid-margin-width-fixed);
+    --grid-margin-width-target: var(--grid-margin-width-fixed);
   }
 
   .container {
@@ -784,7 +786,8 @@ p {
 [class*="up"] {
   &.two-up,
   &.three-up,
-  &.four-up {
+  &.four-up,
+  &.six-up {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--grid-gutter);
@@ -992,6 +995,20 @@ p {
   }
 }
 
+span.hang-opening-quote {
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] span.hang-opening-quote {
+  transform: translateX(100%);
+}
+
+/* Needed for garage door JS animation in browsers without animation-timeline support */
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+  z-index: 1;
+}
+
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1095,19 +1112,26 @@ p {
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
     @media (width >= 768px) {
-      animation-name: enable-parallax-stagger;
+      view-timeline: --parallax-stagger-timeline block;
+      view-timeline-inset: 40% 10%;
+      animation-name: none;
 
       > :not([class*="section-"]) {
         --parallax-stagger-row-index: 0;
 
-        transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
+        animation-name: enable-parallax-stagger;
+        animation-timing-function: var(--parallax-easing);
+        animation-fill-mode: both;
+        animation-timeline: --parallax-stagger-timeline;
+        animation-range: var(--parallax-range-start) var(--parallax-range-end);
         will-change: transform;
       }
 
       /* Prolong animation for 2 rows */
       &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
-      &.four-up:has(> :nth-child(5 of :not([class*="section-"]))) {
+      &.four-up:has(> :nth-child(5 of :not([class*="section-"]))),
+      &.six-up:has(> :nth-child(7 of :not([class*="section-"]))) {
         --parallax-range-end-name: cover;
         --parallax-range-end-length: 70%;
       }
@@ -1115,7 +1139,8 @@ p {
       /* Prolong animation for 3+ rows */
       &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
-      &.four-up:has(> :nth-child(9 of :not([class*="section-"]))) {
+      &.four-up:has(> :nth-child(9 of :not([class*="section-"]))),
+      &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
         --parallax-range-end-length: 80%;
       }
 
@@ -1123,47 +1148,60 @@ p {
       &.two-up { --parallax-stagger-cols: 2; }
       &.three-up { --parallax-stagger-cols: 3; }
       &.four-up { --parallax-stagger-cols: 4; }
+      &.six-up { --parallax-stagger-cols: 6; }
 
       /* Column stagger indices per -up class */
       &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
       &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+      &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
+      &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
 
       &.two-up   > :nth-child(2n of :not([class*="section-"])),
       &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+      &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
+      &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
       &.three-up > :nth-child(3n of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+      &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
+      &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
 
-      &.four-up  > :nth-child(4n of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+      &.four-up  > :nth-child(4n of :not([class*="section-"])),
+      &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+      &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+
+      &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
       /* Row stagger indices per -up class */
       /* Row 1 */
       &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
       &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])) {
+      &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+      &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
         --parallax-stagger-row-index: 1;
       }
 
       /* Row 2 */
       &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
       &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+      &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+      &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
         --parallax-stagger-row-index: 2;
       }
 
       /* Row 3 */
       &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
       &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])) {
+      &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
+      &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
         --parallax-stagger-row-index: 3;
       }
 
       /* Row 4 */
       &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
       &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])) {
+      &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
+      &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
         --parallax-stagger-row-index: 4;
       }
     }
@@ -1184,16 +1222,12 @@ p {
   }
 
   @keyframes enable-parallax-stagger {
-    from { --parallax-stagger-progress: 1; }
-    to { --parallax-stagger-progress: 0; }
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    to { transform: translate3d(0, 0, 0); }
   }
 
   /* Garage door parallax (rich content over section w/ bkg) declarations */
   /* TODO: decide if this is general enough to be global */
-  .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
-    z-index: 1;
-  }
-
   .section.parallax-garage-door-reveal {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
@@ -1257,6 +1291,7 @@ p {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    will-change: transform;
     position: sticky;
     top: 0;
     z-index: 0;
@@ -1341,6 +1376,7 @@ p {
 
     &.three-up { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     &.four-up { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    &.six-up { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   }
 }
 
@@ -1354,22 +1390,22 @@ p {
     --s2a-viewport-vertical-padding-lg: var(--s2a-layout-lg);
     --s2a-viewport-vertical-padding-xl: var(--s2a-layout-xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-9xl);
-    --s2a-typography-font-size-title-1: var(--s2a-font-size-7xl);
-    --s2a-typography-font-size-title-2: var(--s2a-font-size-6xl);
-    --s2a-typography-font-size-title-3: var(--s2a-font-size-3xl);
-    --s2a-typography-font-size-title-4: var(--s2a-font-size-2xl);
-    --s2a-typography-font-size-title-5: var(--s2a-font-size-xl);
+    --s2a-typography-font-size-heading-1: var(--s2a-font-size-7xl);
+    --s2a-typography-font-size-heading-2: var(--s2a-font-size-6xl);
+    --s2a-typography-font-size-heading-3: var(--s2a-font-size-3xl);
+    --s2a-typography-font-size-heading-4: var(--s2a-font-size-2xl);
+    --s2a-typography-font-size-heading-5: var(--s2a-font-size-xl);
     --s2a-typography-font-size-body-xs: var(--s2a-font-size-sm);
     --s2a-typography-font-size-body-lg: var(--s2a-font-size-lg);
     --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-md);
-    --s2a-typography-letter-spacing-title-1: var(--s2a-font-letter-spacing-sm);
-    --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-xl);
-    --s2a-typography-letter-spacing-title-5: var(--s2a-font-letter-spacing-4xl);
+    --s2a-typography-letter-spacing-heading-1: var(--s2a-font-letter-spacing-sm);
+    --s2a-typography-letter-spacing-heading-2: var(--s2a-font-letter-spacing-xl);
+    --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
     --s2a-typography-line-height-super: var(--s2a-font-line-height-4xl);
-    --s2a-typography-line-height-title-1: var(--s2a-font-line-height-3xl);
-    --s2a-typography-line-height-title-2: var(--s2a-font-line-height-2xl);
-    --s2a-typography-line-height-title-3: var(--s2a-font-line-height-lg);
-    --s2a-typography-line-height-title-4: var(--s2a-font-line-height-md);
+    --s2a-typography-line-height-heading-1: var(--s2a-font-line-height-3xl);
+    --s2a-typography-line-height-heading-2: var(--s2a-font-line-height-2xl);
+    --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-lg);
+    --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-md);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
   }
 }
@@ -1383,30 +1419,30 @@ p {
     --s2a-viewport-vertical-padding-lg: var(--s2a-layout-xl);
     --s2a-viewport-vertical-padding-xl: var(--s2a-layout-2xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-11xl);
-    --s2a-typography-font-size-title-1: var(--s2a-font-size-10xl);
-    --s2a-typography-font-size-title-2: var(--s2a-font-size-7xl);
-    --s2a-typography-font-size-title-3: var(--s2a-font-size-6xl);
-    --s2a-typography-font-size-title-4: var(--s2a-font-size-4xl);
-    --s2a-typography-font-size-title-5: var(--s2a-font-size-2xl);
-    --s2a-typography-font-size-title-6: var(--s2a-font-size-lg);
+    --s2a-typography-font-size-heading-1: var(--s2a-font-size-10xl);
+    --s2a-typography-font-size-heading-2: var(--s2a-font-size-7xl);
+    --s2a-typography-font-size-heading-3: var(--s2a-font-size-6xl);
+    --s2a-typography-font-size-heading-4: var(--s2a-font-size-4xl);
+    --s2a-typography-font-size-heading-5: var(--s2a-font-size-2xl);
+    --s2a-typography-font-size-heading-6: var(--s2a-font-size-lg);
     --s2a-typography-font-size-body-lg: var(--s2a-font-size-xl);
     --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-xs);
-    --s2a-typography-letter-spacing-title-2: var(--s2a-font-letter-spacing-lg);
-    --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-xl);
-    --s2a-typography-letter-spacing-title-4: var(--s2a-font-letter-spacing-2xl);
-    --s2a-typography-letter-spacing-title-5: var(--s2a-font-letter-spacing-3xl);
+    --s2a-typography-letter-spacing-heading-2: var(--s2a-font-letter-spacing-lg);
+    --s2a-typography-letter-spacing-heading-3: var(--s2a-font-letter-spacing-xl);
+    --s2a-typography-letter-spacing-heading-4: var(--s2a-font-letter-spacing-2xl);
+    --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-3xl);
     --s2a-typography-line-height-super: var(--s2a-font-line-height-6xl);
-    --s2a-typography-line-height-title-1: var(--s2a-font-line-height-5xl);
-    --s2a-typography-line-height-title-2: var(--s2a-font-line-height-3xl);
-    --s2a-typography-line-height-title-3: var(--s2a-font-line-height-2xl);
-    --s2a-typography-line-height-title-4: var(--s2a-font-line-height-lg);
-    --s2a-typography-line-height-title-5: var(--s2a-font-line-height-md);
+    --s2a-typography-line-height-heading-1: var(--s2a-font-line-height-5xl);
+    --s2a-typography-line-height-heading-2: var(--s2a-font-line-height-3xl);
+    --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-2xl);
+    --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-lg);
+    --s2a-typography-line-height-heading-5: var(--s2a-font-line-height-md);
   }
 }
 
 @media (width >= 1440px) {
   :root {
     /* tokens.responsive.xl */
-    --s2a-typography-letter-spacing-title-5: var(--s2a-font-letter-spacing-4xl);
+    --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
   }
 }

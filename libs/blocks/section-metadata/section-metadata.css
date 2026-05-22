@@ -198,6 +198,7 @@
   padding-right: var(--grid-margins-width);
   display: grid;
   gap: var(--spacing-m);
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .section[class*='grid-width-'] > .content,
@@ -272,10 +273,6 @@ main > .section[class*='-up'] > .content {
 
   .section.two-up.reverse-mobile > div:nth-child(2) {
     order: 1;
-  }
-
-  .section[class*='grid-width-'] {
-    display: block;
   }
 
   .section:has(> .show-more-button),

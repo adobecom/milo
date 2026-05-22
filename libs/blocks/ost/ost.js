@@ -160,10 +160,12 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
+  const countryParam = searchParameters.get('country');
   const attributes = { 'allow-override': 'true' };
   if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
   }
+  if (countryParam) attributes.country = countryParam.toUpperCase();
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
   masCommerceService = await loadMasComponent(COMMERCE_LIBRARY);
@@ -197,7 +199,10 @@ export async function loadOstEnv() {
   searchParameters.delete('exclusive');
   defaultPlaceholderOptions.forceTaxExclusive = exclusive;
 
-  const searchOfferSelectorId = searchParameters.get('osi');
+  const osiParam = searchParameters.get('osi') ?? '';
+  const osiParts = osiParam.split(',');
+  const searchOfferSelectorId = osiParts[0] || undefined;
+  const initialReferenceOsi = osiParts[1] || undefined;
   searchParameters.delete('osi');
 
   [
@@ -236,6 +241,7 @@ export async function loadOstEnv() {
   const repo = searchParameters.get('repo');
 
   let { country, language } = getMiloLocaleSettings();
+  if (countryParam) country = countryParam;
   const { locales } = getConfig();
   const log = Log.module('ost');
   const metadata = {};
@@ -311,6 +317,7 @@ export async function loadOstEnv() {
     language,
     searchParameters: ostSearchParameters,
     searchOfferSelectorId,
+    initialReferenceOsi,
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,

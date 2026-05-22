@@ -4,6 +4,7 @@ import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 import init from '../../../libs/blocks/merch-card-collection-autoblock/merch-card-collection-autoblock.js';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: '/libs' };
@@ -329,6 +330,51 @@ describe('merch-card-collection autoblock', () => {
       const listIndex = sidenavChildren.indexOf(sidenavList);
       const checkboxIndex = sidenavChildren.indexOf(checkboxGroup);
       expect(checkboxIndex).to.be.greaterThan(listIndex);
+    });
+  });
+
+  describe('MEP Highlight M@S Content markers', () => {
+    beforeEach(() => { document.body.innerHTML = ''; });
+    afterEach(() => { document.body.innerHTML = ''; });
+
+    it('createCollection stamps data-mas-block=collection on the container and captures original href in mepMasStudioUrls when mep.preview is on', async () => {
+      setConfig({ ...conf, mep: { preview: true } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-collection-test-wrap';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const container = wrap.querySelector('.collection-container');
+      expect(container, 'collection container should be created inside the test wrap').to.exist;
+      expect(container.dataset.masBlock).to.equal('collection');
+      expect(mepMasStudioUrls.get(container)).to.equal(studioHref);
+    });
+
+    it('createCollection does NOT stamp or capture href when mep.preview is off', async () => {
+      // The MEP block is gated atomically — both stamps absent means the
+      // dynamic import + attachAemLoadListener were skipped too. (We can't
+      // spy aem:load directly: M@S's <merch-card> attaches its own internal
+      // listener via handleAemFragmentEvents.)
+      setConfig({ ...conf, mep: { preview: false } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-collection-test-wrap-off';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const container = wrap.querySelector('.collection-container');
+      expect(container, 'collection container should be created inside the test wrap').to.exist;
+      expect(container.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(container)).to.equal(undefined);
     });
   });
 });
