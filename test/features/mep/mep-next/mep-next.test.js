@@ -20,7 +20,7 @@ const {
 } = await import('../../../../libs/features/mep/mep-next/mep-next.js');
 const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
 const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
-const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mas-subcollection.js');
+const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
 const { mepCaasConfigUrls } = await import('../../../../libs/blocks/caas/utils.js');
 
 const config = {
