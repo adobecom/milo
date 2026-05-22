@@ -547,9 +547,11 @@ function setupStickyHeader(el) {
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
   };
 
+  const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
+
   const updateThreshold = () => {
-    if (wasSticky || window.scrollY >= threshold) return;
-    threshold = getFlowTop() - getNavHeight() - 24;
+    if (wasSticky) return;
+    threshold = getFlowTop() - getStickyTop();
   };
 
   const applySticky = () => {
@@ -577,7 +579,7 @@ function setupStickyHeader(el) {
     threshold = Infinity;
     updateMinHeight();
     syncTop();
-    updateThreshold();
+    setTimeout(() => { threshold = getFlowTop() - getStickyTop(); }, 0);
   });
 
   window.addEventListener('scroll', () => {
