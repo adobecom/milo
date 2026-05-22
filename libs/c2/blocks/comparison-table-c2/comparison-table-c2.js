@@ -593,21 +593,6 @@ function setupStickyHeader(el) {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => { updateMinHeight(); syncTop(); updateThreshold(); }, 350);
   }).observe(cardsContainer);
-
-  const navObserver = new ResizeObserver(() => { syncTop(); updateThreshold(); });
-  const nav = document.querySelector('header > nav');
-  if (nav) { navObserver.observe(nav); return; }
-  const header = document.querySelector('header');
-  if (!header) return;
-  const mo = new MutationObserver(() => {
-    const newNav = document.querySelector('header > nav');
-    if (!newNav) return;
-    mo.disconnect();
-    syncTop();
-    updateThreshold();
-    navObserver.observe(newNav);
-  });
-  mo.observe(header, { childList: true });
 }
 
 function setupTooltips(el) {
