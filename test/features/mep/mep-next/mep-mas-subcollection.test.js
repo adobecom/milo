@@ -9,7 +9,7 @@ const {
   mepMasSubCollections,
   SUB_COLLECTION_BADGE_CLASS,
   getSubCollectionsFor,
-} = await import('../../../../libs/features/mep/mep-next/mas-subcollection.js');
+} = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
 
 const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
 const { setConfig } = await import('../../../../libs/utils/utils.js');
