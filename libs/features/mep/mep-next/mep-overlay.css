@@ -72,6 +72,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  font-size: 16px;
   min-width: 200px;
   max-width: 280px;
   left: 0;
