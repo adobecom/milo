@@ -465,10 +465,6 @@
     }
 
     .milo-tooltip {
-      position: relative;
-      display: inline;
-      cursor: default;
-
       &::before {
         background-color: var(--s2a-color-background-knockout);
       }
