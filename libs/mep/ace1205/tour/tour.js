@@ -125,7 +125,7 @@ function decorateSection(block) {
       }
       actionArea.remove();
       if (index === 0 && link) {
-        link.classList.remove('con-button', 'blue', 'outline', 'fill');
+        link.classList.remove('con-button', 'blue', 'outline', 'fill', 'button-lg', 'button-md', 'button-sm');
         link.classList.add('promo-cta');
         link.setAttribute('daa-ll', link.textContent.trim());
 
