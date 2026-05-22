@@ -79,8 +79,8 @@
 
       picture,
       img {
-        width: var(--s2a-spacing-24);
-        height: var(--s2a-spacing-24);
+        width: 24px;
+        height: 24px;
       }
     }
 
@@ -123,8 +123,8 @@
       &::after {
         content: '';
         display: block;
-        width: var(--s2a-spacing-12);
-        height: var(--s2a-spacing-12);
+        width: 12px;
+        height: 12px;
         background-color: currentColor;
         mask-image: url('./assets/arrow.svg');
         mask-repeat: no-repeat;
@@ -221,8 +221,6 @@
       gap: var(--s2a-spacing-xl);
       align-items: center;
     }
-
-    .jump-link-label { font-size: var(--s2a-typography-font-size-heading-4); }
   }
 
   .section.bento .rich-content.grid-full-width {
@@ -266,11 +264,6 @@
       }
 
       .jump-links { padding-block-end: var(--s2a-layout-sm); }
-
-      .jump-link-label {
-        font-size: var(--s2a-typography-font-size-heading-5);
-        line-height: var(--s2a-typography-line-height-heading-5);
-      }
     }
   }
 }
