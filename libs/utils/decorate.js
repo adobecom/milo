@@ -763,3 +763,14 @@ export function decorateViewportContent(el, decorateFn) {
   }
   return viewports;
 }
+
+export function hangOpeningQuote(el) {
+  if (!el) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = el.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  el.textContent = el.textContent.slice(1);
+  const span = createTag('span', { class: 'hang-opening-quote' }, quote);
+  el.prepend(span);
+}

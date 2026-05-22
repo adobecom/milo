@@ -521,7 +521,7 @@ body {
   line-height: var(--s2a-typography-line-height-body-md);
   letter-spacing: var(--s2a-typography-letter-spacing-body-md);
   background-color: var(--s2a-color-background-default);
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
@@ -584,7 +584,7 @@ blockquote {
 }
 
 a {
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
 
   &.standalone-link {
     &::after {
@@ -832,7 +832,7 @@ p {
   background-color: color-mix(in srgb, var(--cta-background) var(--cta-transparency), transparent);
   border-radius: var(--s2a-border-radius-md);
   border: var(--s2a-border-width-sm) solid var(--cta-border-color);
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -914,8 +914,18 @@ p {
   .con-button.fill {
     --cta-background: var(--s2a-color-gray-25);
     --cta-border-color: var(--s2a-color-gray-25);
+
     color: var(--s2a-color-gray-1000);
   }
+}
+
+span.hang-opening-quote {
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] span.hang-opening-quote {
+  transform: translateX(100%);
 }
 
 /* Needed for garage door JS animation in browsers without animation-timeline support */
