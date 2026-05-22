@@ -120,7 +120,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 12px;
+  padding: 12px;
 }
 
 .mep-drawer .mep-header .mep-navigation a,
