@@ -853,7 +853,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   background: var(--bc-fi-bar-bg);
   border: 1px solid var(--bc-fi-bar-border);
   border-radius: 16px;
-  bottom: 16px;
+  bottom: 14px;
   box-shadow: 0 8px 32px rgba(0 0 0 / 12%);
   box-sizing: border-box;
   display: flex;
@@ -877,7 +877,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 .brand-concierge.floating-input .bc-input-field {
   flex: 1 1 auto;
   max-width: 500px;
-  min-width: 280px;
+  min-width: 340px;
 }
 
 .brand-concierge.floating-input .bc-input-field-container {
@@ -923,12 +923,15 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   opacity: 0.4;
 }
 
-/* Constrain textarea height within the fixed bar */
+/* Constrain textarea to a single line — text overflows left as user types */
 .brand-concierge.floating-input .bc-input-field-container textarea,
 .brand-concierge.floating-input .bc-textarea-grow-wrap::after {
   max-height: 48px;
   min-height: 48px;
+  overflow: hidden;
+  overflow-wrap: normal;
   padding: 12px 0;
+  white-space: nowrap;
 }
 
 /* Center label icon and submit button in the fixed-height input */
@@ -940,6 +943,16 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 .brand-concierge.floating-input .input-field-button {
   align-self: center;
   margin-bottom: 0;
+}
+
+.brand-concierge.floating-input .input-field-button,
+.brand-concierge.floating-input .input-field-button:hover {
+  background: transparent;
+  color: #0004;
+}
+
+.brand-concierge.floating-input .input-field-button:disabled {
+  color: #0004;
 }
 
 /* Prompt pills */
