@@ -274,10 +274,6 @@ main > .section[class*='-up'] > .content {
     order: 1;
   }
 
-  .section[class*='grid-width-'] {
-    display: block;
-  }
-
   .section:has(> .show-more-button),
   .section.show-all {
     margin-inline: 30px;
