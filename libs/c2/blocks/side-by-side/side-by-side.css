@@ -1,8 +1,12 @@
-.side-2-side {
+.side-by-side {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-xs);
   padding-inline: var(--s2a-spacing-lg);
+
+  &.dark {
+    background: unset;
+  }
 
   .card {
     border-radius: var(--s2a-border-radius-md);
@@ -14,7 +18,7 @@
 
     picture,
     video,
-    img {
+    img:not(.accessibility-control) {
       display: block;
       width: 100%;
       height: 100%;
@@ -31,7 +35,7 @@
 
     position: relative;
     overflow: hidden;
-    color: var(--s2a-color-content-knockout);
+    /* color: var(--s2a-color-content-knockout); */
     min-height: 305px;
     aspect-ratio: 33/37;
 
@@ -40,12 +44,12 @@
       inset: 0;
     }
 
-    /* Dark scrim — Figma gradient stops kept as raw values; no token match */
     .media::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(150deg, rgb(0 0 0 / 92%) 6%, rgb(0 0 0 / 0%) 32%);
+      background: linear-gradient(144deg, rgba(0, 0, 0, 0.92) 6.95%, rgba(0, 0, 0, 0.00) 27.98%);
+      filter: blur(0px);
       pointer-events: none;
     }
 
@@ -57,28 +61,6 @@
       flex-direction: column;
       gap: var(--s2a-spacing-xs);
       max-width: 320px;
-    }
-
-    .video-container.video-holder .pause-play-wrapper {
-      left: unset;
-      right: var(--s2a-spacing-md);
-      bottom: var(--s2a-spacing-md);
-      width: var(--s2a-spacing-xl);
-      height: var(--s2a-spacing-xl);
-      /* 6px and #2e2e2e have no semantic token match — Figma-specified raw values */
-      border-radius: 6px;
-      background: #2e2e2e;
-      padding: 0;
-
-      .offset-filler:hover {
-        width: inherit;
-        height: inherit;
-      }
-
-      img.accessibility-control:is(.pause-icon, .play-icon) {
-        width: var(--s2a-spacing-20);
-        height: var(--s2a-spacing-20);
-      }
     }
   }
 
@@ -111,7 +93,7 @@
 
 
 @media (width >= 768px) {
-  .side-2-side {
+  .side-by-side {
     grid-template-columns: 1.81fr 1fr;
     align-items: start;
 
@@ -136,7 +118,7 @@
 }
 
 @media (width >= 1280px) {
-  .side-2-side {
+  .side-by-side {
     .card-overlay {
       .foreground {
         padding: var(--s2a-spacing-2xl);
@@ -150,17 +132,11 @@
         padding: var(--s2a-spacing-xl);
       }
     }
-
-    .media .video-container.video-holder .pause-play-wrapper {
-      left: unset;
-      right: var(--s2a-spacing-xl);
-      bottom: var(--s2a-spacing-xl);
-    }
   }
 }
 
 @media (width >= 1440px) {
-  .side-2-side {
+  .side-by-side {
     padding-inline: var(--grid-padding);
   }
 }

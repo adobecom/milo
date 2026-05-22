@@ -1,4 +1,4 @@
-.side-2-side {
+.side-by-side {
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-xs);
@@ -111,7 +111,7 @@
 
 
 @media (width >= 768px) {
-  .side-2-side {
+  .side-by-side {
     grid-template-columns: 1.81fr 1fr;
     align-items: start;
 
@@ -136,7 +136,7 @@
 }
 
 @media (width >= 1280px) {
-  .side-2-side {
+  .side-by-side {
     .card-overlay {
       .foreground {
         padding: var(--s2a-spacing-2xl);
@@ -160,7 +160,7 @@
 }
 
 @media (width >= 1440px) {
-  .side-2-side {
+  .side-by-side {
     padding-inline: var(--grid-padding);
   }
 }
