@@ -556,19 +556,20 @@ function setupStickyHeader(el) {
     if (wasSticky) return;
     wasSticky = true;
     if (!isMobile()) { cardsContainer.classList.add('is-sticky'); return; }
-    const nextEl = cardsContainer.nextElementSibling;
-    const preHeight = cardsContainer.offsetHeight;
+    const firstCard = cardsContainer.querySelector('.header-item-card:not(.hidden)');
+    const delta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
+      .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
     cardsContainer.classList.add('is-sticky');
-    const delta = preHeight - cardsContainer.offsetHeight;
-    if (delta > 0 && nextEl) nextEl.style.marginTop = `${delta}px`;
+    const tableContainer = cardsContainer.nextElementSibling;
+    if (delta > 0 && tableContainer) tableContainer.style.marginTop = `${delta}px`;
   };
 
   const removeSticky = () => {
     if (!wasSticky) return;
     wasSticky = false;
-    const nextEl = cardsContainer.nextElementSibling;
     cardsContainer.classList.remove('is-sticky');
-    if (nextEl) nextEl.style.marginTop = '';
+    const tableContainer = cardsContainer.nextElementSibling;
+    if (tableContainer) tableContainer.style.marginTop = '';
   };
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {

@@ -94,6 +94,12 @@
     }
   }
 
+  @media (max-width: 899px) {
+    .header-cards-container + .table-container {
+      transition: margin-top 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
   @media (width >= 900px) {
     .header-content {
       grid-column: 1;
