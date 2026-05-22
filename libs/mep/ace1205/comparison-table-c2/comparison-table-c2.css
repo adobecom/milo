@@ -45,7 +45,6 @@
   .header-content-wrapper,
   .table-container {
     width: 100%;
-    max-width: var(--grid-max-width-wide);
     margin-inline: auto;
     box-sizing: border-box;
   }
@@ -57,6 +56,10 @@
   .header-content {
     padding-bottom: var(--s2a-spacing-xl);
     box-sizing: border-box;
+
+    .header-item {
+      align-items: flex-start;
+    }
   }
 
   .header-content-wrapper {
@@ -71,7 +74,6 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--s2a-spacing-xs);
     width: 100%;
-    max-width: var(--grid-max-width-wide);
     margin-inline: auto;
     box-sizing: border-box;
     padding-bottom: var(--s2a-spacing-xs);
@@ -707,7 +709,6 @@
     grid-template-columns: minmax(100px, 1fr) repeat(var(--ct-card-count), minmax(100px, 1fr));
     column-gap: var(--s2a-spacing-md);
     width: var(--s2a-grid-container-width);
-    max-width: var(--grid-max-width-wide);
     margin-inline: auto;
     padding: var(--s2a-layout-sm) 0;
 
