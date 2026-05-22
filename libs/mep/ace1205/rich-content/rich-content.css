@@ -133,11 +133,11 @@
     }
 
     .jump-link-label {
-      font-family: var(--s2a-font-family-heading);
+      font-family: var(--heading-font-family);
       font-size: var(--s2a-typography-font-size-heading-4);
       line-height: var(--s2a-typography-line-height-heading-4);
       font-weight: var(--s2a-font-weight-heading);
-      letter-spacing: var(--s2a-font-letter-spacing-4xl);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
       white-space: nowrap;
     }
   }
