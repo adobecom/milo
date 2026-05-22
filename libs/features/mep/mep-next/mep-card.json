@@ -1,0 +1,33 @@
+{
+  "actions" :{
+    "highlight": {
+      "header": "Highlight"
+    },
+    "toggles": {
+      "header": "Toggles"
+    },
+    "spoof-geo": {
+      "header": "Spoof Geo"
+    },
+    "load-manifest": {
+      "header": "Load Manifest"
+    }
+  },
+  "summary": {
+    "page": {
+      "header": "Page"
+    },
+    "consent": {
+      "header": "Consent"
+    },
+    "lingo": {
+      "header": "Lingo"
+    },
+    "mas": {
+      "header": "M@S"
+    },
+    "caas": {
+      "header": "CaaS"
+    }
+  }
+}
