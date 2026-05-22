@@ -506,14 +506,14 @@ function setAccessibilityLabels(el) {
   });
 }
 
-function setupStickyHeader(el) {
+function setupCollapsingHeader(el) {
   if (el.classList.contains('static-header')) return;
   const headerContent = el.querySelector('.header-content');
   if (!headerContent) return;
   const cardsContainer = el.querySelector('.header-cards-container');
   if (!cardsContainer) return;
 
-  let wasSticky = false;
+  let wasCollapsed = false;
   let threshold = Infinity;
   let lastScrollY = window.scrollY;
   let resizeTimer;
@@ -542,7 +542,7 @@ function setupStickyHeader(el) {
   };
 
   const updateMinHeight = () => {
-    if (wasSticky) return;
+    if (wasCollapsed) return;
     const h = isMobile() ? 0 : (cardsContainer.offsetHeight ?? 0);
     headerContent.style.minHeight = h > 0 ? `${h}px` : '';
   };
@@ -550,13 +550,13 @@ function setupStickyHeader(el) {
   const getStickyTop = () => parseFloat(getComputedStyle(cardsContainer).top) || 0;
 
   const updateThreshold = () => {
-    if (wasSticky) return;
+    if (wasCollapsed) return;
     threshold = getFlowTop() - getStickyTop();
   };
 
-  const applySticky = () => {
-    if (wasSticky) return;
-    wasSticky = true;
+  const applyCollapsed = () => {
+    if (wasCollapsed) return;
+    wasCollapsed = true;
     if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
     const firstCard = cardsContainer.querySelector('.header-item-card:not(.hidden)');
     const delta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
@@ -566,16 +566,16 @@ function setupStickyHeader(el) {
     if (delta > 0 && tableContainer) tableContainer.style.marginTop = `${delta}px`;
   };
 
-  const removeSticky = () => {
-    if (!wasSticky) return;
-    wasSticky = false;
+  const removeCollapsed = () => {
+    if (!wasCollapsed) return;
+    wasCollapsed = false;
     cardsContainer.classList.remove('is-collapsed');
     const tableContainer = cardsContainer.nextElementSibling;
     if (tableContainer) tableContainer.style.marginTop = '';
   };
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
-    if (wasSticky) removeSticky();
+    if (wasCollapsed) removeCollapsed();
     threshold = Infinity;
     updateMinHeight();
     syncTop();
@@ -586,9 +586,9 @@ function setupStickyHeader(el) {
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;
-    if (y < threshold) { if (wasSticky) removeSticky(); return; }
-    if (goingDown && !wasSticky) applySticky();
-    else if (!goingDown && wasSticky) removeSticky();
+    if (y < threshold) { if (wasCollapsed) removeCollapsed(); return; }
+    if (goingDown && !wasCollapsed) applyCollapsed();
+    else if (!goingDown && wasCollapsed) removeCollapsed();
   }, { passive: true });
 
   new ResizeObserver(() => {
@@ -631,7 +631,7 @@ function decorate(el) {
 
 export default function init(el) {
   decorate(el);
-  setupStickyHeader(el);
+  setupCollapsingHeader(el);
   setupResponsiveHiding(el);
   setupTooltips(el);
   setAccessibilityLabels(el);
