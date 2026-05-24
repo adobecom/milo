@@ -1014,6 +1014,7 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
+    const isARPEnabled = getConfig()?.unav?.isARPEnabled ?? false;
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1034,28 +1035,38 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
-      isARPEnabled: getConfig()?.unav?.isARPEnabled ?? false,
-      arpConfig: Promise.resolve({
-        sessionId: visitorGuid,
-        tokenCallback: (token) => console.log('[ARP] tokenCallback:', token),
-        successCallback: () => console.log('[ARP] successCallback: vendors initialized'),
-        errorCallback: (err) => console.error('[ARP] errorCallback:', err),
-        ...getConfig()?.unav?.arpConfig,
-        metadata: {
-          source: 'universal-navigation',
-          version: unavVersion,
-          ...getConfig()?.unav?.arpConfig?.metadata,
-        },
+      isARPEnabled,
+      ...(isARPEnabled && {
+        arpConfig: Promise.resolve({
+          sessionId: visitorGuid,
+          tokenCallback: (token) => {
+            window.adobeArp = window.adobeArp || {};
+            window.adobeArp.sessionToken = token;
+            console.log('[ARP] tokenCallback:', token);
+          },
+          successCallback: () => console.log('[ARP] successCallback: vendors initialized'),
+          errorCallback: (err) => {
+            lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' });
+            console.error('[ARP] errorCallback:', err);
+          },
+          ...getConfig()?.unav?.arpConfig,
+          metadata: {
+            source: 'universal-navigation',
+            version: unavVersion,
+            ...getConfig()?.unav?.arpConfig?.metadata,
+          },
+        }),
       }),
     });
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     // TEMPORARY DEBUG logs
-    CONFIG.universalNav.universalNavConfig.arpConfig.then((resolved) => {
-      console.log('[ARP Debug] isARPEnabled:', CONFIG.universalNav.universalNavConfig.isARPEnabled);
+    console.log('[ARP Debug] isARPEnabled:', CONFIG.universalNav.universalNavConfig.isARPEnabled);
+    CONFIG.universalNav.universalNavConfig.arpConfig?.then((resolved) => {
       console.log('[ARP Debug] arpConfig:', resolved);
     });
+
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const updatePromoZIndex = () => {
