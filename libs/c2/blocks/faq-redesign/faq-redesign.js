@@ -3,24 +3,64 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
-// Creates an independent spring tracker for a single picture element.
-// Each picture gets its own stiffness (k) so they lag by different amounts,
-// creating visible separation as the cursor moves.
-// C = 2 * decay (24) is shared — damping is consistent.
-function createSpring(el, k, c = 24) {
+// Module-level cursor tracking — one global listener, shared by all instances.
+// posHistory stores the last 800ms of positions to support Ddelay lookup.
+let mouseX = 0;
+let mouseY = 0;
+const posHistory = [];
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  posHistory.push({ x: e.clientX, y: e.clientY, ts: performance.now() });
+  const cutoff = performance.now() - 800;
+  while (posHistory.length > 1 && posHistory[0].ts < cutoff) posHistory.shift();
+}, { passive: true });
+
+// Returns the interpolated cursor position from `delaySec` seconds ago.
+// This is the exact JS equivalent of AE's Ddelay expression parameter.
+function getDelayedPos(delaySec) {
+  if (!posHistory.length) return [mouseX - 2, mouseY];
+  const targetTs = performance.now() - delaySec * 1000;
+  for (let i = posHistory.length - 1; i >= 0; i--) {
+    if (posHistory[i].ts <= targetTs) {
+      if (i + 1 < posHistory.length) {
+        const a = posHistory[i];
+        const b = posHistory[i + 1];
+        const ratio = (targetTs - a.ts) / (b.ts - a.ts);
+        return [a.x + (b.x - a.x) * ratio - 2, a.y + (b.y - a.y) * ratio];
+      }
+      return [posHistory[i].x - 2, posHistory[i].y];
+    }
+  }
+  return [posHistory[0].x - 2, posHistory[0].y];
+}
+
+// Spring tracker for one picture element.
+//
+// Exact match to AE inertial bounce parameters:
+//   freq = 4   → ωd = 4·2π = 25.13 rad/s
+//   decay = 12 → damping rate α = 12
+//   ω₀ = √(α² + ωd²) = √(144 + 631) = √775 ≈ 27.8 rad/s
+//   K = ω₀² = 775,  C = 2·α = 24
+//
+// Layer separation comes from Ddelay (temporal lag), not different K values.
+// All three layers share K=775, C=24 — exactly as in AE.
+function createSpring(el, delaySec) {
+  const K = 775;
+  const C = 24;
   let sx = 0; let sy = 0;
   let svx = 0; let svy = 0;
   let rafId = null;
   let prevTs = null;
-  let getTarget;
 
   function tick(ts) {
     const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
     prevTs = ts;
 
-    const [tx, ty] = getTarget();
-    svx += ((tx - sx) * k - svx * c) * dt;
-    svy += ((ty - sy) * k - svy * c) * dt;
+    const [tx, ty] = getDelayedPos(delaySec);
+    svx += ((tx - sx) * K - svx * C) * dt;
+    svy += ((ty - sy) * K - svy * C) * dt;
     sx += svx * dt;
     sy += svy * dt;
 
@@ -31,8 +71,7 @@ function createSpring(el, k, c = 24) {
   }
 
   return {
-    start(x, y, targetFn) {
-      getTarget = targetFn;
+    start(x, y) {
       sx = x; sy = y; svx = 0; svy = 0; prevTs = null;
       el.style.left = `${sx}px`;
       el.style.top = `${sy}px`;
@@ -47,16 +86,14 @@ function createSpring(el, k, c = 24) {
 function addCursorFollower(list) {
   let activeMedia = null;
   let springs = [];
-  let mouseX = 0;
-  let mouseY = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  // Each picture layer gets a progressively softer spring so they separate
-  // during cursor movement. Tuned to AE: amp=0.5, freq=4, decay=12.
-  // base K ≈ amp * [(freq*2π)² + decay²] ≈ 387.
-  // Subsequent layers subtract 100 per step → more lag → visual depth.
-  const SPRING_K = [400, 280, 180];
+  // Ddelay per layer — exact match to AE Ddelay = 0.30:
+  // layer 0: tracks cursor at t+0s (real-time)
+  // layer 1: tracks cursor at t−0.30s
+  // layer 2: tracks cursor at t−0.60s
+  const DELAYS = [0, 0.30, 0.60];
 
   const hide = () => {
     springs.forEach((s) => s.stop());
@@ -71,20 +108,26 @@ function addCursorFollower(list) {
     springs = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
-    activeMedia.classList.add('is-visible');
 
     const pics = [...media.querySelectorAll('picture')];
+
+    // Pre-position all pictures at cursor before revealing — prevents a
+    // single-frame flash at an unset (0,0) position.
+    pics.forEach((pic) => {
+      pic.style.left = `${mouseX - 2}px`;
+      pic.style.top = `${mouseY}px`;
+    });
+
+    activeMedia.classList.add('is-visible');
+
     springs = pics.map((pic, i) => {
-      const k = SPRING_K[i] ?? SPRING_K[SPRING_K.length - 1];
-      const spring = createSpring(pic, k);
-      // Each picture starts at the cursor and immediately begins tracking.
-      // The target function always reads the latest mouse coords.
-      spring.start(mouseX - 2, mouseY, () => [mouseX - 2, mouseY]);
+      const delay = DELAYS[i] ?? DELAYS[DELAYS.length - 1];
+      const spring = createSpring(pic, delay);
+      spring.start(mouseX - 2, mouseY);
       return spring;
     });
   };
 
-  // Activates the image for whichever .faq-item is under the given coordinates.
   const activateItemAt = (x, y) => {
     const el = document.elementFromPoint(x, y);
     const item = el?.closest?.('.faq-item');
@@ -103,18 +146,6 @@ function addCursorFollower(list) {
       activateItemAt(mouseX, mouseY);
     }, 150);
   };
-
-  // Global tracking keeps mouseX/mouseY current for the scroll-end check.
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  }, { passive: true });
-
-  list.addEventListener('mousemove', (e) => {
-    if (!DESKTOP_MQ.matches) return;
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
 
   list.addEventListener('mouseover', (e) => {
     if (!DESKTOP_MQ.matches || isScrolling) return;

@@ -128,15 +128,7 @@
     }
 
     .faq-media.is-visible picture {
-      animation: faq-fade-in 0.12s ease both;
       display: block;
     }
-
-    .faq-media.is-visible picture:nth-child(2) { animation-delay: 0.04s; }
-    .faq-media.is-visible picture:nth-child(3) { animation-delay: 0.08s; }
   }
-}
-
-@keyframes faq-fade-in {
-  from { opacity: 0; transform: translateY(-100%) translateY(8px); }
 }
