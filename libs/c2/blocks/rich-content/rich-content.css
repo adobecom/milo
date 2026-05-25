@@ -186,23 +186,6 @@
     z-index: 1;
     display: flex;
     justify-content: center;
-
-    a {
-      display: inline-flex;
-      align-items: center;
-      height: 40px;
-      padding-inline: var(--s2a-spacing-24);
-      border-radius: 75px;
-      background: var(--s2a-color-gray-25);
-      backdrop-filter: blur(16.5px);
-      color: var(--s2a-color-gray-800);
-      font-family: var(--s2a-font-family-adobe-clean);
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      font-size: var(--s2a-font-size-14);
-      text-decoration: none;
-      white-space: nowrap;
-      font-style: normal;
-    }
   }
 }
 
