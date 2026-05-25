@@ -3,8 +3,52 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
+// Replicates the AE damped oscillator spring (amp=0.5, freq=4, decay=12).
+// Formula: p(t) = 1 - e^(-decay*t) * [cos(freq*2π*t) + (decay/freq*2π)*sin(freq*2π*t)]
+// Returns a cancel function that stops the animation and resets the element.
+function springIn(el, { amp = 0.5, freq = 4, decay = 12, delay = 0 } = {}) {
+  let rafId;
+  let startTime = null;
+  const TAU = 2 * Math.PI;
+
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.85) translateY(10px)';
+
+  function tick(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = (ts - startTime) / 1000;
+
+    if (elapsed < delay) {
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+
+    const t = elapsed - delay;
+    const envelope = Math.exp(-decay * t);
+    const spring = envelope * (Math.cos(freq * TAU * t) + (decay / (freq * TAU)) * Math.sin(freq * TAU * t));
+    const p = 1 - spring; // 0→1 with overshoot
+
+    el.style.opacity = String(Math.min(1, p * 3));
+    el.style.transform = `scale(${0.85 + 0.15 * p}) translateY(${10 * (1 - p)}px)`;
+
+    if (t < 1) {
+      rafId = requestAnimationFrame(tick);
+    } else {
+      el.style.cssText = '';
+    }
+  }
+
+  rafId = requestAnimationFrame(tick);
+
+  return () => {
+    cancelAnimationFrame(rafId);
+    el.style.cssText = '';
+  };
+}
+
 function addCursorFollower(list) {
   let activeMedia = null;
+  let stopAnimations = [];
   let mouseX = 0;
   let mouseY = 0;
   let isScrolling = false;
@@ -16,16 +60,20 @@ function addCursorFollower(list) {
   };
 
   const hide = () => {
+    stopAnimations.forEach((stop) => stop());
+    stopAnimations = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = null;
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
+    stopAnimations.forEach((stop) => stop());
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
     setPosition(activeMedia);
     activeMedia.classList.add('is-visible');
+    stopAnimations = [...media.querySelectorAll('picture')].map((pic, i) => springIn(pic, { delay: i * 0.05 }));
   };
 
   // Activates the image for whichever .faq-item is under the given coordinates.
