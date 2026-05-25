@@ -20,6 +20,7 @@ const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 
 const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
+const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -34,18 +35,18 @@ function decorate(block) {
   if (!heroCell) return;
 
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
-  heroCell.classList.add('hero-copy');
+  heroCell.classList.add('hero-content');
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
   if (svgImg && heroEyebrow) {
-    const picturePara = svgImg.closest('p');
+    const pictureEl = svgImg.closest('p');
     heroEyebrow.classList.add('app-icon');
     svgImg.src = getFederatedUrl(svgImg.src);
     svgImg.alt = '';
     svgImg.classList.add('app-icon-img');
     heroEyebrow.prepend(svgImg);
-    if (picturePara && picturePara !== heroEyebrow) picturePara.remove();
+    if (pictureEl && pictureEl !== heroEyebrow) pictureEl.remove();
   }
 
   const heroSection = createTag('div', { class: 'hero' });
@@ -132,7 +133,7 @@ function decorate(block) {
 function initAnimation(block) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  let heroCopy;
+  let heroContent;
   let eyebrow;
   let cards = [];
   let tiles = [];
@@ -141,7 +142,7 @@ function initAnimation(block) {
   let cardTexts = [];
 
   function refreshRefs() {
-    heroCopy = block.querySelector('.hero-copy');
+    heroContent = block.querySelector('.hero-content');
     eyebrow = block.querySelector('.hero-eyebrow');
     cards = [...block.querySelectorAll('.hero-card')];
     tiles = [...block.querySelectorAll('.hero-card-tile')];
@@ -155,6 +156,7 @@ function initAnimation(block) {
 
   let naturalBoxes = [];
   let stackBoxes = [];
+  let rtl = false;
   let isSettled = false;
   let willChangeOn = false;
   let videoObserver = null;
@@ -162,9 +164,9 @@ function initAnimation(block) {
   let running = false;
   const gnav = document.querySelector('header');
 
-  function positionCopy() {
-    if (!heroCopy || !gnav) return;
-    heroCopy.style.top = `${gnav.getBoundingClientRect().bottom + 124}px`;
+  function positionContent() {
+    if (!heroContent || !gnav) return;
+    heroContent.parentElement.style.paddingTop = `${gnav.getBoundingClientRect().bottom + 124}px`;
   }
 
   function setSettled(next) {
@@ -198,10 +200,10 @@ function initAnimation(block) {
   }
 
   function applyAnimation(progress) {
-    if (heroCopy) {
-      const copyFade = clamp01(progress / 0.6);
-      heroCopy.style.opacity = String(1 - copyFade);
-      heroCopy.style.transform = `translateY(${-80 * copyFade}px)`;
+    if (heroContent) {
+      const contentFade = clamp01(progress / 0.6);
+      heroContent.style.opacity = String(1 - contentFade);
+      heroContent.style.transform = `translateY(${-80 * contentFade}px)`;
     }
 
     tiles.forEach((tile, i) => {
@@ -209,7 +211,10 @@ function initAnimation(block) {
       const stack = stackBoxes[i];
       const sx = lerp(stack.w / natural.w, 1, progress);
       const sy = lerp(stack.h / natural.h, 1, progress);
-      const tx = lerp(stack.x - natural.x, 0, progress);
+      const txTarget = rtl
+        ? (stack.x + stack.w) - (natural.x + natural.w)
+        : stack.x - natural.x;
+      const tx = lerp(txTarget, 0, progress);
       const ty = lerp(stack.y - natural.y, 0, progress);
       const rot = lerp(stack.rot, 0, progress);
       tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
@@ -236,15 +241,15 @@ function initAnimation(block) {
       const gap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
       eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap}px`;
     }
-    if (heroCopy) {
-      const rect = heroCopy.getBoundingClientRect();
+    if (heroContent) {
+      const rect = heroContent.getBoundingClientRect();
       eyebrow.classList.toggle('is-visible', rect.top + rect.height / 2 < 0);
     }
   }
 
   function computeLayouts() {
     tiles.forEach((tile) => { tile.style.transform = ''; });
-    if (heroCopy) { heroCopy.style.opacity = ''; heroCopy.style.transform = ''; }
+    if (heroContent) { heroContent.style.opacity = ''; heroContent.style.transform = ''; }
     cardTexts.forEach((textEl) => { textEl.style.opacity = ''; });
 
     naturalBoxes = cards.map((card) => {
@@ -253,16 +258,17 @@ function initAnimation(block) {
     });
 
     const vw = window.innerWidth;
-    const copyBottom = heroCopy ? heroCopy.getBoundingClientRect().bottom : 540;
-    const stackTop = copyBottom + 74;
+    const contentBottom = heroContent ? heroContent.getBoundingClientRect().bottom : 540;
+    const stackTop = contentBottom + 74;
     const stackScale = vw < 768 ? Math.max((vw - 48) / STACK_W, 0.3) : 1;
     const stackLeft = (vw - STACK_W * stackScale) / 2;
+    rtl = isRtl(block);
     stackBoxes = STACK_REF.map((ref) => ({
-      x: stackLeft + ref.dx * stackScale,
+      x: stackLeft + (rtl ? STACK_W - ref.dx - ref.w : ref.dx) * stackScale,
       y: stackTop + ref.dy * stackScale,
       w: ref.w * stackScale,
       h: ref.h * stackScale,
-      rot: ref.rot,
+      rot: rtl ? -ref.rot : ref.rot,
     }));
 
     applyAnimation(getProgress());
@@ -287,7 +293,7 @@ function initAnimation(block) {
       isSettled = false;
     }
     if (tiles.length !== 4) return;
-    positionCopy();
+    positionContent();
     computeLayouts();
     updateEyebrow();
   }

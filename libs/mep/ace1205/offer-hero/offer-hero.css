@@ -1,17 +1,11 @@
 .offer-hero {
-  margin-inline: calc(50% - 50vw);
-
   .hero {
     position: relative;
-    height: 100vh;
+    min-height: 100vh;
     z-index: 1;
   }
 
-  .hero-copy {
-    position: absolute;
-    top: 196px;
-    left: 0;
-    right: 0;
+  .hero-content {
     padding-inline: var(--s2a-spacing-lg);
     display: flex;
     flex-direction: column;
@@ -109,6 +103,10 @@
     padding-top: calc(100% * 100 / 109);
   }
 
+  &:dir(rtl) .hero-card-tile {
+    transform-origin: top right;
+  }
+
   .hero-card-media {
     position: absolute;
     inset: 0;
@@ -130,6 +128,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      object-position: top;
       pointer-events: none;
       user-select: none;
     }
@@ -179,12 +178,16 @@
       content: '\203A';
       margin-inline-start: var(--s2a-spacing-xs);
     }
+
+    &:dir(rtl)::after {
+      content: '\2039';
+    }
   }
 }
 
 @media (width > 768px) {
   .offer-hero {
-    .hero-copy {
+    .hero-content {
       padding-inline: 0;
 
       :is(h1, h2, h3, h4, h5, h6) {
@@ -216,7 +219,7 @@
 
 @media (width >= 1280px) {
   .offer-hero {
-    .hero-copy {
+    .hero-content {
       padding-inline: 120px;
 
       :is(h1, h2, h3, h4, h5, h6) {
