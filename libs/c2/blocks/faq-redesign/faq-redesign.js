@@ -22,13 +22,12 @@ function addCursorFollower(list) {
   let prevTime = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
-  let springRafs = [];
+  let springRaf = null;
   let springGen = 0;
 
   const stopSpring = () => {
     springGen++;
-    springRafs.forEach((raf) => { if (raf) cancelAnimationFrame(raf); });
-    springRafs = [];
+    if (springRaf) { cancelAnimationFrame(springRaf); springRaf = null; }
   };
 
   const resetPictures = (media) => {
@@ -38,8 +37,9 @@ function addCursorFollower(list) {
     });
   };
 
-  // Each picture springs in independently, staggered by DDELAY_MS * index —
-  // matching AE where each layer's keyframe is offset by one Ddelay increment.
+  // Single RAF loop drives all pictures — prevents per-picture desync.
+  // Each picture springs in staggered by DDELAY_MS * index, matching AE where
+  // each layer's keyframe is offset by one Ddelay from the previous.
   const startSpring = (media, vY) => {
     stopSpring();
     const pictures = [...media.querySelectorAll('picture')];
@@ -52,46 +52,49 @@ function addCursorFollower(list) {
     pictures.forEach((pic) => { pic.style.opacity = '0'; pic.style.transform = 'none'; });
 
     const gen = springGen;
+    const springStart = performance.now();
+    // Capture effective velocity once at spring start — not per-frame
+    const effectiveVY = Math.abs(vY) < 150 ? Math.sign(vY || -1) * 150 : vY;
+    const lastPicEnd = DDELAY_MS * (pictures.length - 1) + 500;
 
-    pictures.forEach((pic, i) => {
-      // First picture fires immediately (i=0 → 0ms), matching AE where layer 1
-      // keyframe is at t=0 and each subsequent layer is offset by one Ddelay.
-      const startTime = performance.now() + DDELAY_MS * i;
+    const tick = (now) => {
+      if (springGen !== gen) return;
 
-      const tick = (now) => {
-        if (springGen !== gen) return; // stale tick from a previous spring, discard
-        if (now < startTime) {
-          springRafs[i] = requestAnimationFrame(tick);
-          return;
-        }
+      const elapsed = now - springStart;
 
-        const t = (now - startTime) / 1000;
+      pictures.forEach((pic, i) => {
+        const picElapsed = elapsed - DDELAY_MS * i;
+        if (picElapsed <= 0) return; // not started yet
+
+        const t = picElapsed / 1000;
 
         // Opacity: fast fade-in over first 0.05s
         pic.style.opacity = String(Math.min(1, t / 0.05));
 
-        // AE expression (exact):
-        //   easeFactor = easeOut(t, 0, timeMax, 1, 0)  → cubic ease-out 1→0
-        //   bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
-        //   value + bounce * easeFactor
-        const easeFactor = Math.pow(Math.max(0, 1 - t / TIME_MAX), 2);
-        const effectiveVY = Math.abs(vY) < 100 ? Math.sign(vY || 1) * 100 : vY;
-        const bounce = effectiveVY * VELOCITY_SCALE * AMP
-          * Math.sin(FREQ * t * 2 * Math.PI)
-          / Math.exp(DECAY * t);
-        pic.style.transform = `translateY(${bounce * easeFactor}px)`;
-
         if (t < 0.5) {
-          springRafs[i] = requestAnimationFrame(tick);
+          // AE expression:
+          //   easeFactor = easeOut(t, 0, timeMax, 1, 0)
+          //   bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
+          //   value + bounce * easeFactor
+          const easeFactor = Math.pow(Math.max(0, 1 - t / TIME_MAX), 2);
+          const bounce = effectiveVY * VELOCITY_SCALE * AMP
+            * Math.sin(FREQ * t * 2 * Math.PI)
+            / Math.exp(DECAY * t);
+          pic.style.transform = `translateY(${bounce * easeFactor}px)`;
         } else {
           pic.style.opacity = '1';
           pic.style.transform = 'none';
-          springRafs[i] = null;
         }
-      };
+      });
 
-      springRafs[i] = requestAnimationFrame(tick);
-    });
+      if (elapsed < lastPicEnd) {
+        springRaf = requestAnimationFrame(tick);
+      } else {
+        springRaf = null;
+      }
+    };
+
+    springRaf = requestAnimationFrame(tick);
   };
 
   const setPosition = (media) => {
@@ -145,10 +148,14 @@ function addCursorFollower(list) {
   };
 
   // Global tracking keeps mouseX/mouseY and velocity current for the scroll-end check.
+  // EMA smoothing (α=0.35) prevents single noisy samples from spiking spring amplitude.
   document.addEventListener('mousemove', (e) => {
     const now = performance.now();
     const dt = now - prevTime;
-    if (dt > 0) mouseVY = (e.clientY - prevY) / (dt / 1000);
+    if (dt > 0) {
+      const instant = (e.clientY - prevY) / (dt / 1000);
+      mouseVY = mouseVY * 0.65 + instant * 0.35;
+    }
     prevY = e.clientY;
     prevTime = now;
     mouseX = e.clientX;
