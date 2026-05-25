@@ -251,7 +251,6 @@
   to { transform: scale(1) translateY(0); }
 }
 
-/* registered so they interpolate correctly inside keyframes */
 @property --rc-pull-offset {
   syntax: '<length>';
   inherits: true;
@@ -315,8 +314,6 @@
       animation-range: entry 0% exit 0%;
     }
 
-    /* before section: margin-bottom compensates so section stays flush with video
-       as it exits; animation tracks the section itself exiting upward */
     .section:has(+ .section .rich-content.video) {
       position: relative;
       z-index: 2;
@@ -327,7 +324,6 @@
       animation-range: exit 0% exit 100%;
     }
 
-    /* after section: margin-top compensates gap; sweeps in from below as it enters */
     .section:has(.rich-content.video) + .section {
       position: relative;
       z-index: 2;
