@@ -331,7 +331,7 @@
       animation: rc-section-pull-up linear both;
       animation-duration: auto;
       animation-timeline: view();
-      animation-range: exit 0% exit 60%;
+      animation-range: exit 0% exit 100%;
     }
 
     .section:has(.rich-content.video) + .section {
