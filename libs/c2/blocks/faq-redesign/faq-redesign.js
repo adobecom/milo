@@ -3,70 +3,85 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
-// Spring-based cursor follower.
-// The position of the media element tracks the cursor with damped-oscillator
-// physics, matching the AE inertial-bounce expression (amp=0.5, freq=4, decay=12).
-// k  = amp * [decay² + (freq·2π)²] ≈ 0.5 * 775 ≈ 387
-// c  = 2 · decay = 24
+// Creates an independent spring tracker for a single picture element.
+// Each picture gets its own stiffness (k) so they lag by different amounts,
+// creating visible separation as the cursor moves.
+// C = 2 * decay (24) is shared — damping is consistent.
+function createSpring(el, k, c = 24) {
+  let sx = 0; let sy = 0;
+  let svx = 0; let svy = 0;
+  let rafId = null;
+  let prevTs = null;
+  let getTarget;
+
+  function tick(ts) {
+    const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
+    prevTs = ts;
+
+    const [tx, ty] = getTarget();
+    svx += ((tx - sx) * k - svx * c) * dt;
+    svy += ((ty - sy) * k - svy * c) * dt;
+    sx += svx * dt;
+    sy += svy * dt;
+
+    el.style.left = `${sx}px`;
+    el.style.top = `${sy}px`;
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  return {
+    start(x, y, targetFn) {
+      getTarget = targetFn;
+      sx = x; sy = y; svx = 0; svy = 0; prevTs = null;
+      el.style.left = `${sx}px`;
+      el.style.top = `${sy}px`;
+      rafId = requestAnimationFrame(tick);
+    },
+    stop() {
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; prevTs = null; }
+    },
+  };
+}
+
 function addCursorFollower(list) {
   let activeMedia = null;
+  let springs = [];
   let mouseX = 0;
   let mouseY = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  const K = 387; // spring stiffness
-  const C = 24;  // damping coefficient
-
-  let sx = 0; let sy = 0;    // current spring position
-  let svx = 0; let svy = 0;  // spring velocity
-  let rafId = null;
-  let prevTs = null;
-
-  function springTick(ts) {
-    if (!activeMedia) { rafId = null; return; }
-    const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
-    prevTs = ts;
-
-    const tx = mouseX - 2;
-    const ty = mouseY;
-
-    svx += ((tx - sx) * K - svx * C) * dt;
-    svy += ((ty - sy) * K - svy * C) * dt;
-    sx += svx * dt;
-    sy += svy * dt;
-
-    activeMedia.style.left = `${sx}px`;
-    activeMedia.style.top = `${sy}px`;
-
-    rafId = requestAnimationFrame(springTick);
-  }
+  // Each picture layer gets a progressively softer spring so they separate
+  // during cursor movement. Tuned to AE: amp=0.5, freq=4, decay=12.
+  // base K ≈ amp * [(freq*2π)² + decay²] ≈ 387.
+  // Subsequent layers subtract 100 per step → more lag → visual depth.
+  const SPRING_K = [400, 280, 180];
 
   const hide = () => {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; prevTs = null; }
+    springs.forEach((s) => s.stop());
+    springs = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = null;
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    springs.forEach((s) => s.stop());
+    springs = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
-
-    // Snap spring to cursor on entry — velocity zero so the spring immediately
-    // starts chasing any cursor movement with full inertial bounce.
-    sx = mouseX - 2;
-    sy = mouseY;
-    svx = 0;
-    svy = 0;
-    prevTs = null;
-
-    activeMedia.style.left = `${sx}px`;
-    activeMedia.style.top = `${sy}px`;
     activeMedia.classList.add('is-visible');
 
-    rafId = requestAnimationFrame(springTick);
+    const pics = [...media.querySelectorAll('picture')];
+    springs = pics.map((pic, i) => {
+      const k = SPRING_K[i] ?? SPRING_K[SPRING_K.length - 1];
+      const spring = createSpring(pic, k);
+      // Each picture starts at the cursor and immediately begins tracking.
+      // The target function always reads the latest mouse coords.
+      spring.start(mouseX - 2, mouseY, () => [mouseX - 2, mouseY]);
+      return spring;
+    });
   };
 
   // Activates the image for whichever .faq-item is under the given coordinates.
@@ -99,7 +114,6 @@ function addCursorFollower(list) {
     if (!DESKTOP_MQ.matches) return;
     mouseX = e.clientX;
     mouseY = e.clientY;
-    // Spring tick reads mouseX/mouseY directly — no explicit setPosition call needed.
   });
 
   list.addEventListener('mouseover', (e) => {

@@ -40,10 +40,6 @@
     font-family: var(--s2a-font-family-title);
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
-
-  /* .faq-media {
-    display: none;
-  } */
 }
 
 @media (width >= 768px) {
@@ -100,39 +96,27 @@
 
     .faq-item {
       block-size: 100px;
+      cursor: pointer;
       gap: var(--s2a-spacing-md);
       padding-block: 0;
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
-      position: relative;
-      cursor: pointer;
     }
 
+    /* Transparent wrapper — each picture is independently fixed-positioned
+       and tracked by its own spring. .is-visible toggles picture visibility. */
     .faq-media {
-      display: none;
-      height: 320px;
-      overflow: visible;
-      pointer-events: none;
-      position: fixed;
-      width: 280px;
-      z-index: 100;
-
-      &.is-visible {
-        display: block;
-        transform: translateY(-100%);
-
-        picture {
-          animation: faq-fade-in 0.12s ease both;
-        }
-
-        picture:nth-child(2) { animation-delay: 0.04s; }
-        picture:nth-child(3) { animation-delay: 0.08s; }
-      }
+      display: contents;
 
       picture {
+        block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
-        inset: 0;
+        display: none;
+        inline-size: 280px;
         overflow: hidden;
-        position: absolute;
+        pointer-events: none;
+        position: fixed;
+        transform: translateY(-100%);
+        z-index: 100;
 
         img {
           block-size: 100%;
@@ -142,9 +126,17 @@
         }
       }
     }
+
+    .faq-media.is-visible picture {
+      animation: faq-fade-in 0.12s ease both;
+      display: block;
+    }
+
+    .faq-media.is-visible picture:nth-child(2) { animation-delay: 0.04s; }
+    .faq-media.is-visible picture:nth-child(3) { animation-delay: 0.08s; }
   }
 }
 
 @keyframes faq-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(-100%) translateY(8px); }
 }
