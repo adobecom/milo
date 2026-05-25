@@ -1292,8 +1292,7 @@ export default async function init(el) {
 
   const io = new IntersectionObserver(([entry]) => {
     if (entry.isIntersecting) {
-      cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
-      cachedBlockHeight = el.offsetHeight;
+      resize();
       startLoop();
     } else {
       stopLoop();
