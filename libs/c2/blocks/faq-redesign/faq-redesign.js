@@ -4,13 +4,14 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 const REDUCED_MOTION_MQ = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-// AE expression parameters (KEyframes layer sliders)
+// AE expression parameters — exact values from KEyframes layer sliders
 const AMP = 0.5;
 const FREQ = 4.0;
 const DECAY = 12.0;
+const TIME_MAX = 12.0;
 const DDELAY_MS = 300;
-// Scale mouse px/s down to match AE composition units
-const VELOCITY_SCALE = 0.06;
+// Browser px/s → AE composition units. AE velocity is much smaller in scale.
+const VELOCITY_SCALE = 0.25;
 
 function addCursorFollower(list) {
   let activeMedia = null;
@@ -59,14 +60,19 @@ function addCursorFollower(list) {
 
         const t = (now - startTime) / 1000;
 
-        // Opacity: linear fade-in over first 0.15s
-        pic.style.opacity = String(Math.min(1, t / 0.15));
+        // Opacity: fast fade-in over first 0.05s
+        pic.style.opacity = String(Math.min(1, t / 0.05));
 
-        // AE expression: bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
-        const bounce = vY * VELOCITY_SCALE * AMP
+        // AE expression (exact):
+        //   easeFactor = easeOut(t, 0, timeMax, 1, 0)  → cubic ease-out 1→0
+        //   bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
+        //   value + bounce * easeFactor
+        const easeFactor = Math.pow(Math.max(0, 1 - t / TIME_MAX), 2);
+        const effectiveVY = Math.abs(vY) < 100 ? Math.sign(vY || 1) * 100 : vY;
+        const bounce = effectiveVY * VELOCITY_SCALE * AMP
           * Math.sin(FREQ * t * 2 * Math.PI)
           / Math.exp(DECAY * t);
-        pic.style.transform = `translateY(${bounce}px)`;
+        pic.style.transform = `translateY(${bounce * easeFactor}px)`;
 
         if (t < 0.5) {
           springRafs[i] = requestAnimationFrame(tick);
