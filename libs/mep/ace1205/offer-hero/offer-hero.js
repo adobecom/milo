@@ -69,7 +69,7 @@ function decorate(block) {
   const cardsEl = createTag('div', { class: 'hero-cards two-up' });
   rows.slice(2).forEach((row) => {
     if (row.children.length !== 2) return;
-    const [mediaCell, textCell] = row.children;
+    const [textCell, mediaCell] = row.children;
 
     decorateBlockText(textCell, { heading: '6', body: 'md' });
     const heading = textCell.querySelector(':is(h1, h2, h3, h4, h5, h6)');
