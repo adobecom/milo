@@ -217,6 +217,12 @@
   }
 }
 
+@media (width >= 1024px) {
+  .rich-content.video {
+    padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset) + 20px);
+  }
+}
+
 .section:has(.rich-content.video) {
   background: var(--s2a-color-background-inverse);
 
