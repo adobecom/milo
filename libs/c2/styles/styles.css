@@ -1044,10 +1044,10 @@ p {
   display: inline-flex;
   font-size: var(--s2a-typography-font-size-eyebrow);
   font-weight: var(--s2a-font-weight-eyebrow);
-  gap: var(--s2a-spacing-12); /* Figma: 12px padding */
+  gap: var(--s2a-spacing-12);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   line-height: var(--s2a-typography-line-height-eyebrow);
-  padding: var(--s2a-spacing-12); /* Figma: 12px padding on all sides */
+  padding: var(--s2a-spacing-12);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -1070,8 +1070,8 @@ p {
 /* Size variant: 12px (smaller) - Figma 11390:25706 "View featured offer" */
 .promo-cta.size-small {
   font-size: var(--s2a-typography-font-size-label);
-  gap: var(--s2a-spacing-12); /* Same 12px gap as standard */
-  padding: var(--s2a-spacing-12); /* Same 12px padding as standard */
+  gap: var(--s2a-spacing-12);
+  padding: var(--s2a-spacing-12);
 }
 
 .promo-cta.size-small img {

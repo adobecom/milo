@@ -68,13 +68,11 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-inline-end: calc(var(--s2a-spacing-md) + 48px);
-  padding-inline-start: var(--s2a-spacing-md);
+  padding-inline: var(--s2a-spacing-md) calc(var(--s2a-spacing-md) + 48px);
 }
 
 .tour-title .eyebrow {
   color: var(--s2a-color-content-eyebrow);
-  font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-body-sm);
   font-weight: normal;
   line-height: var(--s2a-typography-line-height-body-sm);
@@ -89,7 +87,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 .tour-title h5,
 .tour-title h6 {
   color: var(--s2a-color-content-label);
-  font-family: var(--heading-font-family);
   font-size: var(--s2a-typography-font-size-title-6);
   font-weight: 900;
   line-height: var(--s2a-typography-line-height-title-6);
@@ -136,7 +133,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 }
 
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
-  max-width: 287px;
+  max-width: 286px;
 }
 .tour-section:nth-of-type(even) .tour-content {
   max-width: 286px;
