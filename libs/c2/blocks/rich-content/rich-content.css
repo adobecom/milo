@@ -251,11 +251,6 @@
   to { transform: scale(1) translateY(0); }
 }
 
-@keyframes rc-bg-parallax {
-  from { transform: scale(1.08) translateY(-5%); }
-  to { transform: scale(1.08) translateY(5%); }
-}
-
 /* registered so they interpolate correctly inside keyframes */
 @property --rc-pull-offset {
   syntax: '<length>';
@@ -318,13 +313,6 @@
       animation-duration: auto;
       animation-timeline: view();
       animation-range: entry 0% exit 0%;
-    }
-
-    .rich-content.video .video-bg img {
-      animation: rc-bg-parallax linear both;
-      animation-duration: auto;
-      animation-timeline: view();
-      animation-range: cover 0% cover 100%;
     }
 
     /* before section: margin-bottom compensates so section stays flush with video
