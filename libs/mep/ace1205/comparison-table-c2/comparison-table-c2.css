@@ -1,6 +1,8 @@
-@keyframes ct-card-fade {
-  from { opacity: 1; }
-  to { opacity: 0; }
+@supports (animation-timeline: view()) {
+  @keyframes ct-card-fade {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
 }
 
 .comparison-table-c2 {
@@ -9,8 +11,10 @@
   background-color: transparent;
   padding: var(--s2a-spacing-2xl) 0;
   position: relative;
-  view-timeline-name: --ct-table;
-  view-timeline-axis: block;
+  @supports (animation-timeline: view()) {
+    view-timeline-name: --ct-table;
+    view-timeline-axis: block;
+  }
 
   :is(p, h1, h2, h3, h4, h5, h6) {
     margin: 0;
@@ -157,9 +161,16 @@
     border: var(--s2a-border-width-lg) solid var(--s2a-color-gray-25);
     padding: var(--s2a-spacing-md);
     background: var(--s2a-color-gray-25);
-    animation: ct-card-fade linear forwards;
-    animation-timeline: --ct-table;
-    animation-range: cover 75% cover 85%;
+
+    @supports (animation-timeline: view()) {
+      animation: ct-card-fade linear forwards;
+      animation-timeline: --ct-table;
+      animation-range: cover 75% cover 85%;
+
+      @media (prefers-reduced-motion: reduce) {
+        animation: none;
+      }
+    }
 
     &.primary {
       border: var(--s2a-border-width-lg) solid var(--s2a-color-border-knockout);
@@ -288,6 +299,24 @@
       text-align: center;
       word-break: break-word;
       color: var(--s2a-color-gray-900);
+    }
+
+    @media (max-width: 899px) {
+      align-items: flex-start;
+
+      .description {
+        text-align: left;
+      }
+
+      :is(h1, h2, h3, h4, h5, h6) {
+        justify-content: flex-start;
+        align-items: flex-start;
+        text-align: left;
+      }
+
+      :is(p, h1, h2, h3, h4, h5, h6) {
+        text-align: left;
+      }
     }
 
     .btn-container {
