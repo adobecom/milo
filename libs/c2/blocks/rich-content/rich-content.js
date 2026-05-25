@@ -84,6 +84,10 @@ function decorateVideoVariant(el) {
     el.append(ctaCell);
   }
   ctaRow?.remove();
+
+  const actionArea = el.querySelector('.action-area');
+  actionArea?.classList.add('dark');
+  actionArea?.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
 
 export default function init(el) {
