@@ -85,6 +85,34 @@
 }
 
 @media (width >= 1280px) {
+  @keyframes faq-image-spring {
+    0% {
+      opacity: 0;
+      transform: translateY(calc(-50% + 10px));
+    }
+
+    20% {
+      opacity: 1;
+    }
+
+    45% {
+      transform: translateY(calc(-50% - 2.5px));
+    }
+
+    62% {
+      transform: translateY(calc(-50% + 0.6px));
+    }
+
+    80% {
+      transform: translateY(calc(-50% - 0.1px));
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(-50%);
+    }
+  }
+
   .faq-redesign {
     padding-block: var(--s2a-spacing-124);
 
@@ -109,13 +137,20 @@
       opacity: 0;
       position: absolute;
       transform: translateY(-50%);
-      transition: opacity 0.2s ease;
       z-index: 1;
     }
 
     .faq-item:hover .faq-media {
+      animation: faq-image-spring 0.45s linear 0.3s both;
       display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .faq-redesign .faq-item:hover .faq-media {
+      animation: none;
       opacity: 1;
+      transform: translateY(-50%);
     }
   }
 }
