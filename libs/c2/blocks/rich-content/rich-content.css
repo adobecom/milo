@@ -351,12 +351,6 @@
       animation-range: exit 0% exit 100%;
     }
 
-    /* video section sits below surrounding sections in the stack */
-    .section:has(.rich-content.video) {
-      position: relative;
-      z-index: 1;
-    }
-
     /* after section: margin-top compensates gap; sweeps in from below as it enters */
     .section:has(.rich-content.video) + .section {
       position: relative;
