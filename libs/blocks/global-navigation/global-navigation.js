@@ -1019,7 +1019,7 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
-    const isARPEnabled = getConfig()?.unav?.isARPEnabled ?? false;
+    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? false;
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1040,8 +1040,8 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
-      isARPEnabled,
-      ...(isARPEnabled && {
+      isArpEnabled,
+      ...(isArpEnabled && {
         arpConfig: Promise.resolve({
           sessionId: visitorGuid,
           tokenCallback: (token) => {
@@ -1087,7 +1087,7 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     // TEMPORARY DEBUG logs
-    console.log('[ARP Debug] isARPEnabled:', CONFIG.universalNav.universalNavConfig.isARPEnabled);
+    console.log('[ARP Debug] isArpEnabled:', CONFIG.universalNav.universalNavConfig.isArpEnabled);
     CONFIG.universalNav.universalNavConfig.arpConfig?.then((resolved) => {
       console.log('[ARP Debug] arpConfig:', resolved);
     });
