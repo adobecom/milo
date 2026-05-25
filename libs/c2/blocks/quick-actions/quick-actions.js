@@ -15,19 +15,18 @@ function decorateSectionHeader(block) {
 }
 
 function buildTile(tileRow) {
-  const iconCell = tileRow.children[0];
+  const mediaCell = tileRow.children[0];
   const labelCell = tileRow.children[1];
   const labelLink = labelCell?.querySelector('a');
 
   const tile = createTag('a', { class: 'quick-actions-tile', href: labelLink?.href || '#' });
 
-  // milo's decorateSVG converts SVG links to <picture> before init() runs
-  const iconPic = iconCell?.querySelector('picture');
-  const iconImg = iconPic?.querySelector('img') ?? iconCell?.querySelector('img');
-  if (iconImg) {
-    iconImg.classList.add('quick-actions-icon');
-    iconImg.alt = '';
-    tile.append(iconPic ?? iconImg);
+  const mediaPic = mediaCell?.querySelector('picture');
+  const mediaImg = mediaPic?.querySelector('img') ?? mediaCell?.querySelector('img');
+  if (mediaImg) {
+    mediaImg.alt = '';
+    (mediaPic ?? mediaImg).classList.add('quick-actions-media');
+    tile.append(mediaPic ?? mediaImg);
   }
 
   if (labelLink) {

@@ -3,7 +3,6 @@
   .quick-actions-header {
     grid-column: 1 / -1;
     display: flex;
-    flex-direction: row;
     align-items: center;
     justify-content: space-between;
     gap: var(--s2a-spacing-24);
@@ -28,14 +27,13 @@
   }
 
   .quick-actions-tile {
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    padding: var(--s2a-spacing-16);
-    background: var(--s2a-color-background-knockout);
+    position: relative;
+    overflow: clip;
+    block-size: 98px;
+    /* design uses #f6f6f6 — no exact --s2a- token; --s2a-color-background-subtle (#f8f8f8) is closest */
+    background: var(--s2a-color-background-subtle);
     border-radius: var(--s2a-border-radius-md);
     text-decoration: none;
-    min-block-size: 98px;
 
     &:focus-visible {
       outline: 2px solid var(--s2a-color-focus-ring-default);
@@ -43,19 +41,29 @@
     }
   }
 
-  .quick-actions-icon {
+  .quick-actions-media {
+    position: absolute;
+    inset: 0;
     display: block;
-    inline-size: 20px;
-    block-size: 20px;
+  }
+
+  .quick-actions-media img,
+  img.quick-actions-media {
+    inline-size: 100%;
+    block-size: 100%;
     object-fit: contain;
-    filter: brightness(0) invert(1);
+    display: block;
   }
 
   .quick-actions-tile-footer {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
-    margin-block-start: auto;
+    padding-block-end: var(--s2a-spacing-16);
+    padding-inline: var(--s2a-spacing-16);
 
     &::after {
       content: "";
@@ -66,6 +74,7 @@
       background-image: url('../../assets/img/chevron-right.svg');
       background-size: contain;
       background-repeat: no-repeat;
+      filter: brightness(0);
       transition: transform 0.5s var(--parallax-easing);
     }
   }
@@ -87,7 +96,7 @@
     font-size: var(--s2a-font-size-lg);
     line-height: var(--s2a-font-line-height-xs);
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
-    color: var(--s2a-color-content-knockout);
+    color: var(--s2a-color-content-default);
   }
 }
 
@@ -111,13 +120,12 @@
     }
 
     .quick-actions-tile {
-      min-block-size: 200px;
-      padding: var(--s2a-spacing-24);
+      block-size: 200px;
     }
 
-    .quick-actions-icon {
-      inline-size: 24px;
-      block-size: 24px;
+    .quick-actions-tile-footer {
+      padding-block-end: var(--s2a-spacing-24);
+      padding-inline: var(--s2a-spacing-24);
     }
   }
 }
