@@ -121,15 +121,13 @@
       position: fixed;
       transform: translate3d(-9999px, -9999px, 0);
       transform-style: preserve-3d;
-      transition: opacity 180ms ease, visibility 0s linear 180ms;
-      visibility: hidden;
+      transition: opacity 180ms ease;
       will-change: transform, opacity;
       z-index: 100;
 
       &.is-visible {
         opacity: 1;
         transition: opacity 220ms ease;
-        visibility: visible;
       }
 
       .faq-media-inner {

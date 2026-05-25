@@ -1,7 +1,7 @@
 import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
-const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
+const DESKTOP_MQ = window.matchMedia('(min-width: 1280px)');
 const CURSOR_OFFSET_X = 28;
 const CURSOR_OFFSET_Y = -20;
 const FOLLOW_EASE = 0.18;
@@ -85,7 +85,9 @@ function addCursorFollower(list) {
 
   list.addEventListener('mouseover', (e) => {
     if (!DESKTOP_MQ.matches) return;
-    const item = e.target.closest('.faq-item');
+    const target = e.target instanceof Element ? e.target : e.target?.parentElement;
+    if (!target) return;
+    const item = target.closest('.faq-item');
     if (!item) return;
     const media = item.querySelector('.faq-media');
     if (!media || media === activeMedia) return;
