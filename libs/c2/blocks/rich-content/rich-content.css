@@ -261,16 +261,60 @@
   to { padding-top: 60px; }
 }
 
+/* registered so they interpolate correctly inside keyframes */
+@property --rc-pull-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 80px;
+}
+
+@property --rc-sweep-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 200px;
+}
+
+/* mobile */
+.section:has(+ .section .rich-content.video),
+.section:has(.rich-content.video) + .section {
+  --rc-pull-offset: 80px;
+  --rc-sweep-offset: 200px;
+}
+
+@media (width >= 768px) {
+  .section:has(+ .section .rich-content.video),
+  .section:has(.rich-content.video) + .section {
+    --rc-pull-offset: 65px;
+    --rc-sweep-offset: 180px;
+  }
+}
+
+@media (width >= 1024px) {
+  /* 1440 laptop reference: pull=80px, sweep=230px */
+  .section:has(+ .section .rich-content.video),
+  .section:has(.rich-content.video) + .section {
+    --rc-pull-offset: 80px;
+    --rc-sweep-offset: 230px;
+  }
+}
+
+@media (width >= 1920px) {
+  .section:has(+ .section .rich-content.video),
+  .section:has(.rich-content.video) + .section {
+    --rc-pull-offset: 100px;
+    --rc-sweep-offset: 300px;
+  }
+}
+
 @keyframes rc-section-pull-up {
   from { transform: translateY(0); }
-  to { transform: translateY(-80px); }
+  to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
 }
 
 @keyframes rc-section-sweep-in {
-  from { transform: translateY(280px); }
+  from { transform: translateY(var(--rc-sweep-offset)); }
   to { transform: translateY(0); }
 }
-
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -300,7 +344,7 @@
     .section:has(+ .section .rich-content.video) {
       position: relative;
       z-index: 2;
-      margin-bottom: -80px;
+      margin-bottom: calc(var(--rc-pull-offset) * -1);
       animation: rc-section-pull-up linear both;
       animation-duration: auto;
       animation-timeline: view();
@@ -317,7 +361,7 @@
     .section:has(.rich-content.video) + .section {
       position: relative;
       z-index: 2;
-      margin-top: -230px;
+      margin-top: calc(var(--rc-sweep-offset) * -1);
       animation: rc-section-sweep-in linear both;
       animation-duration: auto;
       animation-timeline: view();
