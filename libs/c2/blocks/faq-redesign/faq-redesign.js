@@ -3,90 +3,119 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
-// Module-level cursor tracking — one global listener, shared by all instances.
+// AE Effect Controls — exact values from the screenshot
+const AMP = 0.50;
+const FREQ = 4.00;
+const DECAY = 12.00;
+const TIME_MAX = 12.00;
+const DDELAY = 0.30; // stagger between layers
+
+// Module-level cursor tracking with smoothed velocity.
+// velocity = v in the AE formula: velocityAtTime(key(n).time - frameDuration/10)
 let mouseX = 0;
 let mouseY = 0;
+let cursorVX = 0;
+let cursorVY = 0;
+let prevMouseX = 0;
+let prevMouseY = 0;
+let prevMouseTs = 0;
 
 document.addEventListener('mousemove', (e) => {
+  const now = performance.now();
+  const dt = (now - prevMouseTs) / 1000;
+  if (dt > 0 && dt < 0.1) {
+    const rawVX = (e.clientX - prevMouseX) / dt;
+    const rawVY = (e.clientY - prevMouseY) / dt;
+    // Exponential moving average to smooth out per-frame jitter
+    cursorVX = cursorVX * 0.6 + rawVX * 0.4;
+    cursorVY = cursorVY * 0.6 + rawVY * 0.4;
+  }
+  prevMouseX = e.clientX;
+  prevMouseY = e.clientY;
+  prevMouseTs = now;
   mouseX = e.clientX;
   mouseY = e.clientY;
 }, { passive: true });
 
-// Spring tracker for one picture element.
+// Implements the exact AE inertial bounce expression per layer:
+//   position = cursor + v * amp * sin(freq * 2π * t) * exp(−decay * t)
 //
-// C = 2·decay = 2·12 = 24  (exact AE match)
+// Where:
+//   cursor  = current mouse position (base value, updates every frame)
+//   v       = cursor velocity captured at hover moment
+//   t       = elapsed time since hover − delaySec (Ddelay stagger)
 //
-// K varies per layer to create visual separation during cursor movement.
-// All layers share the same damping (C=24) so oscillations decay at the
-// same rate — only the responsiveness differs, matching the Ddelay stagger
-// intent in AE where back layers trail the front layer.
-//
-//   Layer 0 (front): K=775  → exact AE freq=4  (ω₀=√775, ωd≈25 rad/s ≈ 4 Hz)
-//   Layer 1 (mid):   K=500  → slightly softer, more lag
-//   Layer 2 (back):  K=280  → softest, most lag
-function createSpring(el, k, c = 24) {
-  let sx = 0; let sy = 0;
-  let svx = 0; let svy = 0;
+// Before Ddelay expires or after TIME_MAX: direct cursor follow (no bounce).
+function createBounce(el, delaySec) {
+  let entryVX = 0;
+  let entryVY = 0;
+  let entryTs = 0;
   let rafId = null;
-  let prevTs = null;
 
   function tick(ts) {
-    const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
-    prevTs = ts;
+    const t = (ts - entryTs) / 1000 - delaySec;
 
-    svx += ((mouseX - 2 - sx) * k - svx * c) * dt;
-    svy += ((mouseY - sy) * k - svy * c) * dt;
-    sx += svx * dt;
-    sy += svy * dt;
+    let x;
+    let y;
 
-    el.style.left = `${sx}px`;
-    el.style.top = `${sy}px`;
+    if (t <= 0 || t > TIME_MAX) {
+      // Outside active bounce window: follow cursor directly
+      x = mouseX - 2;
+      y = mouseY;
+    } else {
+      // AE formula: value + v * amp * sin(freq * 2π * t) * exp(−decay * t)
+      const wave = AMP * Math.sin(FREQ * 2 * Math.PI * t) * Math.exp(-DECAY * t);
+      x = (mouseX - 2) + entryVX * wave;
+      y = mouseY + entryVY * wave;
+    }
+
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
 
     rafId = requestAnimationFrame(tick);
   }
 
   return {
-    start(x, y) {
-      sx = x; sy = y; svx = 0; svy = 0; prevTs = null;
-      el.style.left = `${sx}px`;
-      el.style.top = `${sy}px`;
+    start() {
+      entryVX = cursorVX;
+      entryVY = cursorVY;
+      entryTs = performance.now();
+      el.style.left = `${mouseX - 2}px`;
+      el.style.top = `${mouseY}px`;
       rafId = requestAnimationFrame(tick);
     },
     stop() {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; prevTs = null; }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     },
   };
 }
 
 function addCursorFollower(list) {
   let activeMedia = null;
-  let springs = [];
+  let bounces = [];
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  // K per layer — front layer matches AE exactly (K=775 = ω₀² for freq=4, decay=12).
-  // Back layers use progressively softer springs to trail behind, replicating
-  // the visual stagger that Ddelay=0.30 creates between layers in AE.
-  const SPRING_K = [775, 500, 280];
+  // Ddelay per layer: 0s, 0.30s, 0.60s — exact AE stagger
+  const DELAYS = [0, DDELAY, DDELAY * 2];
 
   const hide = () => {
-    springs.forEach((s) => s.stop());
-    springs = [];
+    bounces.forEach((b) => b.stop());
+    bounces = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = null;
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
-    springs.forEach((s) => s.stop());
-    springs = [];
+    bounces.forEach((b) => b.stop());
+    bounces = [];
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
 
     const pics = [...media.querySelectorAll('picture')];
 
-    // Pre-position all pictures at the cursor before revealing to avoid
-    // a single-frame flash at an unset position.
+    // Pre-position all pictures at cursor before making them visible
     pics.forEach((pic) => {
       pic.style.left = `${mouseX - 2}px`;
       pic.style.top = `${mouseY}px`;
@@ -94,11 +123,11 @@ function addCursorFollower(list) {
 
     activeMedia.classList.add('is-visible');
 
-    springs = pics.map((pic, i) => {
-      const k = SPRING_K[i] ?? SPRING_K[SPRING_K.length - 1];
-      const spring = createSpring(pic, k);
-      spring.start(mouseX - 2, mouseY);
-      return spring;
+    bounces = pics.map((pic, i) => {
+      const delay = DELAYS[i] ?? DELAYS[DELAYS.length - 1];
+      const bounce = createBounce(pic, delay);
+      bounce.start();
+      return bounce;
     });
   };
 
