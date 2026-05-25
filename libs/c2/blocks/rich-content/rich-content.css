@@ -112,7 +112,7 @@
   align-items: center;
   gap: var(--s2a-spacing-3xl);
   padding-block: var(--s2a-layout-sm);
-  overflow: hidden;
+  overflow: clip;
 
   .video-bg {
     position: absolute;
@@ -238,6 +238,38 @@
 
     .rich-content.video {
       background: transparent;
+    }
+  }
+}
+
+.rich-content.video .video-container {
+  transform-origin: center bottom;
+}
+
+@keyframes rc-video-enter {
+  from { transform: scale(0.94) translateY(30px); }
+  to { transform: scale(1) translateY(0); }
+}
+
+@keyframes rc-bg-parallax {
+  from { transform: scale(1.08) translateY(-5%); }
+  to { transform: scale(1.08) translateY(5%); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .rich-content.video .video-container {
+      animation: rc-video-enter linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: entry 0% exit 0%;
+    }
+
+    .rich-content.video .video-bg img {
+      animation: rc-bg-parallax linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
     }
   }
 }
