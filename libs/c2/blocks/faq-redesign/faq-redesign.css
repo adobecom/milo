@@ -40,6 +40,10 @@
     font-family: var(--s2a-font-family-title);
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
+
+  /* .faq-media {
+    display: none;
+  } */
 }
 
 @media (width >= 768px) {
@@ -96,27 +100,32 @@
 
     .faq-item {
       block-size: 100px;
-      cursor: pointer;
       gap: var(--s2a-spacing-md);
       padding-block: 0;
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+      position: relative;
+      cursor: pointer;
     }
 
-    /* Transparent wrapper — each picture is independently fixed-positioned
-       and tracked by its own spring. .is-visible toggles picture visibility. */
     .faq-media {
-      display: contents;
+      display: none;
+      block-size: 320px;
+      inline-size: 280px;
+      overflow: visible;
+      pointer-events: none;
+      position: fixed;
+      z-index: 100;
+
+      &.is-visible {
+        display: block;
+        transform: translateY(-100%);
+      }
 
       picture {
-        block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
-        display: none;
-        inline-size: 280px;
+        inset: 0;
         overflow: hidden;
-        pointer-events: none;
-        position: fixed;
-        transform: translateY(-100%);
-        z-index: 100;
+        position: absolute;
 
         img {
           block-size: 100%;
@@ -125,10 +134,6 @@
           object-fit: cover;
         }
       }
-    }
-
-    .faq-media.is-visible picture {
-      display: block;
     }
   }
 }
