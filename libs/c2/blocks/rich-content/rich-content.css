@@ -155,7 +155,9 @@
     .video-container {
       position: relative;
       box-sizing: border-box;
-      width: 100%;
+      max-width: 214px;
+      margin-inline: auto;
+      aspect-ratio: 9 / 16;
       border-radius: 22.542px;
       border: 9px solid rgba(255, 255, 255, 0.05);
       background: rgba(255, 255, 255, 0.05);
@@ -165,7 +167,8 @@
       video {
         display: block;
         width: 100%;
-        height: auto;
+        height: 100%;
+        object-fit: cover;
         outline: none;
       }
     }
@@ -182,6 +185,26 @@
     z-index: 1;
     display: flex;
     justify-content: center;
+  }
+}
+
+@media (width >= 768px) {
+  .rich-content.video {
+    .media {
+      padding-inline: unset;
+      max-width: var(--grid-width-10);
+
+      .video-container {
+        max-width: unset;
+        margin-inline: unset;
+        aspect-ratio: 16 / 9;
+
+        video {
+          height: auto;
+          object-fit: unset;
+        }
+      }
+    }
   }
 }
 
