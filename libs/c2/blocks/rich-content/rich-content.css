@@ -148,7 +148,11 @@
     z-index: 1;
     width: 100%;
 
-    .media-wrap {
+    p {
+      margin: 0;
+    }
+
+    .video-container {
       position: relative;
       box-sizing: border-box;
       width: 100%;
@@ -158,26 +162,18 @@
       backdrop-filter: blur(18.133974075317383px);
       overflow: hidden;
 
-      picture,
-      img {
-        display: block;
-        width: 100%;
-        height: auto;
-      }
-
       video {
         display: block;
         width: 100%;
         height: auto;
         outline: none;
       }
+    }
 
-      &:has(picture) video {
-        position: absolute;
-        inset: 0;
-        height: 100%;
-        object-fit: cover;
-      }
+    p:has(em > strong > a) {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--s2a-spacing-3xl);
     }
   }
 
