@@ -1,16 +1,10 @@
-.dot-grid,
-.dot-grid * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 .dot-grid {
   position: relative;
   height: var(--dot-grid-scroll-height, 600vh);
 }
 
 .dot-grid-stage {
+  box-sizing: border-box;
   position: sticky;
   top: 0;
   overflow: hidden;
@@ -138,6 +132,7 @@
 }
 
 .dot-grid .acrobat-desktop-panel picture {
+  box-sizing: border-box;
   transform: translateX(100%);
   will-change: transform;
   padding: 10px;
@@ -183,6 +178,7 @@
 }
 
 .dot-grid .card-label-outer {
+  box-sizing: border-box;
   position: absolute;
   top: 0;
   left: 0;
@@ -215,6 +211,7 @@
 }
 
 .dot-grid .acrobat-title .heading {
+  margin: 0;
   white-space: nowrap;
   font-size: min(3.889vw, 56px);
   font-weight: 900;
@@ -224,6 +221,7 @@
 }
 
 .dot-grid .acrobat-title .subcopy {
+  box-sizing: border-box;
   margin: 0 auto;
   max-width: 616px;
   padding-top: 8px;
@@ -234,6 +232,7 @@
 }
 
 .dot-grid .acrobat-cta {
+  box-sizing: border-box;
   position: absolute;
   top: 0;
   left: 50%;

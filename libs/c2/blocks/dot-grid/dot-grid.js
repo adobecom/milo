@@ -4,7 +4,6 @@ import { debounce } from '../../../utils/action.js';
 // Scroll-driven animation: arc → peel → settle → slotting. See README.md
 // for the full phase timeline and design rationale.
 
-// TODO: finalize breakpoints
 const BREAKPOINTS = {
   mobile: () => window.innerWidth <= 767,
   tablet: () => window.innerWidth >= 768 && window.innerWidth <= 1279,
@@ -333,8 +332,6 @@ function createCanvasGrid(canvas, {
   };
 }
 
-// TODO: author product UI?
-// TODO: finalize authoring structure
 function parseAuthoredContent(el) {
   const [titleRow, imageRow1, imageRow2, textRow, ctaRow, mockupRow] = [...el.children];
   const cards = [];
@@ -419,7 +416,6 @@ function buildCardStack(cardScene, cardDefs) {
   });
 }
 
-// TODO: can this be handled via css
 function setCardTransform(el, {
   translateX, translateY, scale, rotation = 0, tiltX = 0, tiltY = 0,
 }) {
@@ -1134,7 +1130,6 @@ export default async function init(el) {
     interactive = shouldBeInteractive;
     const pointerEventsValue = interactive ? 'auto' : 'none';
     titleEl.style.pointerEvents = pointerEventsValue;
-    // TODO: when can this be interactive?
     textBlockEl.style.pointerEvents = pointerEventsValue;
     ctaEl.style.pointerEvents = pointerEventsValue;
   }
