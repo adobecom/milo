@@ -72,18 +72,14 @@
       flex-shrink: 0;
       inline-size: 74px;
       overflow: hidden;
-    }
 
-    .faq-media-inner,
-    .faq-media picture,
-    .faq-media img {
-      block-size: 100%;
-      display: block;
-      inline-size: 100%;
-    }
-
-    .faq-media img {
-      object-fit: cover;
+      picture,
+      img {
+        block-size: 100%;
+        display: block;
+        inline-size: 100%;
+        object-fit: cover;
+      }
     }
   }
 }
@@ -104,49 +100,22 @@
       position: relative;
     }
 
-    /* Outer container: handles position only, no animation transforms */
     .faq-media {
       block-size: 200px;
-      border-radius: 0;
-      flex-shrink: unset;
+      display: none;
       inline-size: 260px;
       inset-block-start: 50%;
       inset-inline-end: calc(100% + var(--s2a-spacing-md));
-      overflow: visible;
-      pointer-events: none;
+      opacity: 0;
       position: absolute;
       transform: translateY(-50%);
+      transition: opacity 0.2s ease;
       z-index: 1;
     }
 
-    /* Inner wrapper: opacity controlled by CSS, transform controlled by JS spring */
-    .faq-media-inner {
-      block-size: 100%;
-      inline-size: 100%;
-      opacity: 0;
-      transition: opacity 200ms ease-out;
-      will-change: transform, opacity;
-    }
-
-    .faq-media.is-visible .faq-media-inner {
+    .faq-item:hover .faq-media {
+      display: block;
       opacity: 1;
-    }
-
-    .faq-media picture {
-      block-size: 100%;
-      border-radius: var(--s2a-border-radius-sm);
-      box-shadow: 0 20px 48px rgb(0 0 0 / 35%), 0 8px 20px rgb(0 0 0 / 30%);
-      display: block;
-      inline-size: 100%;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .faq-media img {
-      block-size: 100%;
-      display: block;
-      inline-size: 100%;
-      object-fit: cover;
     }
   }
 }
