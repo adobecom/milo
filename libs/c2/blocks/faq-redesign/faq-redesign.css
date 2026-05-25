@@ -119,6 +119,13 @@
       &.is-visible {
         display: block;
         transform: translateY(-100%);
+
+        picture {
+          animation: faq-fade-in 0.12s ease both;
+        }
+
+        picture:nth-child(2) { animation-delay: 0.04s; }
+        picture:nth-child(3) { animation-delay: 0.08s; }
       }
 
       picture {
@@ -138,4 +145,6 @@
   }
 }
 
-
+@keyframes faq-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+}

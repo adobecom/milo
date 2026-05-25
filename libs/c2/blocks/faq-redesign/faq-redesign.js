@@ -3,82 +3,73 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
-// Replicates the AE damped oscillator spring (amp=0.5, freq=4, decay=12).
-// Formula: p(t) = 1 - e^(-decay*t) * [cos(freq*2π*t) + (decay/freq*2π)*sin(freq*2π*t)]
-// Returns a cancel function that stops the animation and resets the element.
-function springIn(el, { amp = 0.5, freq = 4, decay = 12, delay = 0 } = {}) {
-  let rafId;
-  let startTime = null;
-  const TAU = 2 * Math.PI;
-
-  el.style.opacity = '0';
-  el.style.transform = 'scale(0.85) translateY(10px)';
-
-  function tick(ts) {
-    if (!startTime) startTime = ts;
-    const elapsed = (ts - startTime) / 1000;
-
-    if (elapsed < delay) {
-      rafId = requestAnimationFrame(tick);
-      return;
-    }
-
-    const t = elapsed - delay;
-    const envelope = Math.exp(-decay * t);
-    const spring = envelope * (Math.cos(freq * TAU * t) + (decay / (freq * TAU)) * Math.sin(freq * TAU * t));
-    const p = 1 - spring; // 0→1 with overshoot
-
-    el.style.opacity = String(Math.min(1, p * 3));
-    el.style.transform = `scale(${0.85 + 0.15 * p}) translateY(${10 * (1 - p)}px)`;
-
-    if (t < 1) {
-      rafId = requestAnimationFrame(tick);
-    } else {
-      el.style.cssText = '';
-    }
-  }
-
-  rafId = requestAnimationFrame(tick);
-
-  return () => {
-    cancelAnimationFrame(rafId);
-    el.style.cssText = '';
-  };
-}
-
+// Spring-based cursor follower.
+// The position of the media element tracks the cursor with damped-oscillator
+// physics, matching the AE inertial-bounce expression (amp=0.5, freq=4, decay=12).
+// k  = amp * [decay² + (freq·2π)²] ≈ 0.5 * 775 ≈ 387
+// c  = 2 · decay = 24
 function addCursorFollower(list) {
   let activeMedia = null;
-  let stopAnimations = [];
   let mouseX = 0;
   let mouseY = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  const setPosition = (media) => {
-    media.style.left = `${mouseX - 2}px`;
-    media.style.top = `${mouseY}px`;
-  };
+  const K = 387; // spring stiffness
+  const C = 24;  // damping coefficient
+
+  let sx = 0; let sy = 0;    // current spring position
+  let svx = 0; let svy = 0;  // spring velocity
+  let rafId = null;
+  let prevTs = null;
+
+  function springTick(ts) {
+    if (!activeMedia) { rafId = null; return; }
+    const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
+    prevTs = ts;
+
+    const tx = mouseX - 2;
+    const ty = mouseY;
+
+    svx += ((tx - sx) * K - svx * C) * dt;
+    svy += ((ty - sy) * K - svy * C) * dt;
+    sx += svx * dt;
+    sy += svy * dt;
+
+    activeMedia.style.left = `${sx}px`;
+    activeMedia.style.top = `${sy}px`;
+
+    rafId = requestAnimationFrame(springTick);
+  }
 
   const hide = () => {
-    stopAnimations.forEach((stop) => stop());
-    stopAnimations = [];
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; prevTs = null; }
     activeMedia?.classList.remove('is-visible');
     activeMedia = null;
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
-    stopAnimations.forEach((stop) => stop());
+    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
     activeMedia?.classList.remove('is-visible');
     activeMedia = media;
-    setPosition(activeMedia);
+
+    // Snap spring to cursor on entry — velocity zero so the spring immediately
+    // starts chasing any cursor movement with full inertial bounce.
+    sx = mouseX - 2;
+    sy = mouseY;
+    svx = 0;
+    svy = 0;
+    prevTs = null;
+
+    activeMedia.style.left = `${sx}px`;
+    activeMedia.style.top = `${sy}px`;
     activeMedia.classList.add('is-visible');
-    stopAnimations = [...media.querySelectorAll('picture')].map((pic, i) => springIn(pic, { delay: i * 0.05 }));
+
+    rafId = requestAnimationFrame(springTick);
   };
 
   // Activates the image for whichever .faq-item is under the given coordinates.
-  // mouseover doesn't re-fire when the page scrolls under a stationary cursor,
-  // so we share this logic with the scroll-end handler.
   const activateItemAt = (x, y) => {
     const el = document.elementFromPoint(x, y);
     const item = el?.closest?.('.faq-item');
@@ -105,10 +96,10 @@ function addCursorFollower(list) {
   }, { passive: true });
 
   list.addEventListener('mousemove', (e) => {
-    if (!DESKTOP_MQ.matches || !activeMedia) return;
+    if (!DESKTOP_MQ.matches) return;
     mouseX = e.clientX;
     mouseY = e.clientY;
-    setPosition(activeMedia);
+    // Spring tick reads mouseX/mouseY directly — no explicit setPosition call needed.
   });
 
   list.addEventListener('mouseover', (e) => {
@@ -116,7 +107,6 @@ function addCursorFollower(list) {
     activateItemAt(e.clientX, e.clientY);
   });
 
-  // Attach scroll listener only while cursor is over the list.
   list.addEventListener('mouseenter', () => {
     if (!DESKTOP_MQ.matches) return;
     document.addEventListener('scroll', onScroll, { passive: true });
