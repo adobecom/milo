@@ -21,72 +21,87 @@ function addCursorFollower(list) {
   let prevTime = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
-  let springRaf = null;
+  let springRafs = [];
 
   const stopSpring = () => {
-    if (springRaf) {
-      cancelAnimationFrame(springRaf);
-      springRaf = null;
-    }
+    springRafs.forEach((raf) => { if (raf) cancelAnimationFrame(raf); });
+    springRafs = [];
   };
 
+  const resetPictures = (media) => {
+    [...media.querySelectorAll('picture')].forEach((pic) => {
+      pic.style.opacity = '';
+      pic.style.transform = '';
+    });
+  };
+
+  // Each picture springs in independently, staggered by DDELAY_MS * index —
+  // matching AE where each layer's keyframe is offset by one Ddelay increment.
   const startSpring = (media, vY) => {
     stopSpring();
+    const pictures = [...media.querySelectorAll('picture')];
 
     if (REDUCED_MOTION_MQ.matches) {
-      media.style.opacity = '1';
-      media.style.transform = 'translateY(-100%)';
+      pictures.forEach((pic) => { pic.style.opacity = '1'; });
       return;
     }
 
-    media.style.opacity = '0';
-    media.style.transform = 'translateY(-100%)';
+    pictures.forEach((pic) => { pic.style.opacity = '0'; pic.style.transform = 'none'; });
 
-    const startTime = performance.now() + DDELAY_MS;
+    pictures.forEach((pic, i) => {
+      const startTime = performance.now() + DDELAY_MS * (i + 1);
 
-    const tick = (now) => {
-      if (now < startTime) {
-        springRaf = requestAnimationFrame(tick);
-        return;
-      }
+      const tick = (now) => {
+        if (now < startTime) {
+          springRafs[i] = requestAnimationFrame(tick);
+          return;
+        }
 
-      const t = (now - startTime) / 1000; // seconds since spring start
+        const t = (now - startTime) / 1000;
 
-      // Opacity: linear fade-in over first 0.15s
-      media.style.opacity = String(Math.min(1, t / 0.15));
+        // Opacity: linear fade-in over first 0.15s
+        pic.style.opacity = String(Math.min(1, t / 0.15));
 
-      // AE expression: bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
-      const bounce = vY * VELOCITY_SCALE * AMP
-        * Math.sin(FREQ * t * 2 * Math.PI)
-        / Math.exp(DECAY * t);
-      media.style.transform = `translateY(calc(-100% + ${bounce}px))`;
+        // AE expression: bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
+        const bounce = vY * VELOCITY_SCALE * AMP
+          * Math.sin(FREQ * t * 2 * Math.PI)
+          / Math.exp(DECAY * t);
+        pic.style.transform = `translateY(${bounce}px)`;
 
-      if (t < 0.5) {
-        springRaf = requestAnimationFrame(tick);
-      } else {
-        media.style.opacity = '1';
-        media.style.transform = 'translateY(-100%)';
-        springRaf = null;
-      }
-    };
+        if (t < 0.5) {
+          springRafs[i] = requestAnimationFrame(tick);
+        } else {
+          pic.style.opacity = '1';
+          pic.style.transform = 'none';
+          springRafs[i] = null;
+        }
+      };
 
-    springRaf = requestAnimationFrame(tick);
+      springRafs[i] = requestAnimationFrame(tick);
+    });
   };
 
   const setPosition = (media) => {
     media.style.left = `${mouseX - 2}px`;
     media.style.top = `${mouseY}px`;
+    media.style.transform = 'translateY(-100%)';
   };
 
   const hide = () => {
     stopSpring();
-    activeMedia?.classList.remove('is-visible');
-    activeMedia = null;
+    if (activeMedia) {
+      resetPictures(activeMedia);
+      activeMedia.classList.remove('is-visible');
+      activeMedia = null;
+    }
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
-    activeMedia?.classList.remove('is-visible');
+    if (activeMedia) {
+      resetPictures(activeMedia);
+      activeMedia.classList.remove('is-visible');
+    }
     stopSpring();
     activeMedia = media;
     setPosition(activeMedia);
