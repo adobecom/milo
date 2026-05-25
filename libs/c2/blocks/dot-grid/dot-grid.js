@@ -1001,7 +1001,6 @@ export default async function init(el) {
   }
 
   // ──────────────────── Per-frame loop phases ────────────────────
-  let interactive = false;
 
   function readScrollProgress() {
     const blockTop = cachedBlockDocTop - window.scrollY;
@@ -1121,17 +1120,6 @@ export default async function init(el) {
     const adbeLogoFadeOut = 1 - clamp01((phase.slotting - 0.4) / 0.3);
     stage.style.setProperty('--adbe-draw', adbeLogoDrawProgress);
     stage.style.setProperty('--adbe-opacity', adbeLogoFadeIn * adbeLogoFadeOut);
-  }
-
-  // Enable clicks once the mockup transition has essentially landed.
-  function updateInteractivity() {
-    const shouldBeInteractive = phase.slotting >= 0.95;
-    if (shouldBeInteractive === interactive) return;
-    interactive = shouldBeInteractive;
-    const pointerEventsValue = interactive ? 'auto' : 'none';
-    titleEl.style.pointerEvents = pointerEventsValue;
-    textBlockEl.style.pointerEvents = pointerEventsValue;
-    ctaEl.style.pointerEvents = pointerEventsValue;
   }
 
   function updateCompressionAndPan() {
@@ -1266,7 +1254,6 @@ export default async function init(el) {
     buildArcCtx();
     updateMockupAndTitleTransform();
     updateAdbeLogo();
-    updateInteractivity();
     updateCompressionAndPan();
     updateTextBlock();
     positionCards();
