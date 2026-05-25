@@ -267,7 +267,7 @@
 }
 
 @keyframes rc-section-sweep-in {
-  from { transform: translateY(80px); }
+  from { transform: translateY(280px); }
   to { transform: translateY(0); }
 }
 
@@ -317,7 +317,7 @@
     .section:has(.rich-content.video) + .section {
       position: relative;
       z-index: 2;
-      margin-top: -80px;
+      margin-top: -230px;
       animation: rc-section-sweep-in linear both;
       animation-duration: auto;
       animation-timeline: view();
