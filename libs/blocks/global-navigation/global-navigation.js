@@ -1057,6 +1057,33 @@ class Gnav {
           appName: 'adobecom',
           appVersion: '1.0',
           colorScheme: isDarkMode() ? 'dark' : 'light',
+          showDialog: async (element, attributes, closeCallback) => {
+            // Create a native browser dialog
+            const dialog = document.createElement('dialog');
+
+            // Optional basic styling
+            dialog.style.padding = '0';
+            dialog.style.border = 'none';
+            dialog.style.borderRadius = '12px';
+
+            // The SDK-provided element already contains the mini app UI
+            dialog.appendChild(element);
+            document.body.appendChild(dialog);
+
+            // If user closes dialog manually
+            dialog.addEventListener('close', () => {
+              closeCallback({ type: 'close' });
+              dialog.remove();
+            });
+
+            // If user presses ESC
+            dialog.addEventListener('cancel', () => {
+              closeCallback({ type: 'cancel' });
+              dialog.remove();
+            });
+
+            dialog.showModal();
+          },
         });
       },
     });
