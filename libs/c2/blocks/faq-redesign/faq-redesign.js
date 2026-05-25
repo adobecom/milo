@@ -23,8 +23,10 @@ function addCursorFollower(list) {
   let isScrolling = false;
   let scrollEndTimer = null;
   let springRafs = [];
+  let springGen = 0;
 
   const stopSpring = () => {
+    springGen++;
     springRafs.forEach((raf) => { if (raf) cancelAnimationFrame(raf); });
     springRafs = [];
   };
@@ -49,10 +51,15 @@ function addCursorFollower(list) {
 
     pictures.forEach((pic) => { pic.style.opacity = '0'; pic.style.transform = 'none'; });
 
+    const gen = springGen;
+
     pictures.forEach((pic, i) => {
-      const startTime = performance.now() + DDELAY_MS * (i + 1);
+      // First picture fires immediately (i=0 → 0ms), matching AE where layer 1
+      // keyframe is at t=0 and each subsequent layer is offset by one Ddelay.
+      const startTime = performance.now() + DDELAY_MS * i;
 
       const tick = (now) => {
+        if (springGen !== gen) return; // stale tick from a previous spring, discard
         if (now < startTime) {
           springRafs[i] = requestAnimationFrame(tick);
           return;
