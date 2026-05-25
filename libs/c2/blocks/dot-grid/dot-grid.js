@@ -23,8 +23,8 @@ const LABEL_CLEARANCE = 28;
 // ── Animation tunables — edit here to adjust timing and feel ─────────────
 const ANIM = {
   // Arc rotation timeline (abstract scroll units)
-  arcPanEnd: 1350,
-  arcIntroFraction: 0.10,
+  arcPanEnd: 1350, // post-pin scroll units to complete a full rotation
+  peelStartScroll: 135, // absolute scroll position where peel begins
 
   // Desktop/tablet peel + settle
   desktopPeelEnd: 1132,
@@ -48,13 +48,19 @@ const ANIM = {
   arcFanDepthDelta: 0.30, // fanIdx=7 sits at 1.0×, fanIdx=0 at (1 - delta)× scale to fake depth
   arcShadowAlpha: 0.15, // base shadow opacity for arc-phase cards; fades with peel
 
-  // Slide-in (arc entry): X offset + scale + opacity fade; no Y (no pan-up)
+  // Slide-in (arc entry): X offset + scale + opacity fade. Continuous arc
+  // rotation through pre-pin (see arcPrePinRatio) keeps the slide-in feeling
+  // rotational, so no Y counter-translation is added here.
   slideStagger: 0.45, // per-card stagger fraction (fanIdx=7 first, fanIdx=0 last)
   slideScaleStart: 0.85, // scale at slide start, grows to 1.0 on arrival
   slideStartX: 0.55, // base X offset as fraction of viewport width
   slideStaggerX: 0.20, // additional X offset per later card (fraction of vW)
   slideOverlap: 200, // scroll units into arc rotation when slide fully completes
   slideOpacityRampTo: 0.25, // cardSlideT value at which slide-in opacity reaches 1
+  // Fraction of pre-pin scroll that drives arc rotation. >0 makes the arc
+  // visibly rotate during slide-in so the transition into post-pin rotation is
+  // continuous, not "off → on" at the pin moment.
+  arcPrePinRatio: 0.125,
 
   // Grid layout
   baseColumnSpread: 1.20,
@@ -88,7 +94,7 @@ const CANVAS = {
 
 // Derived scroll boundaries — computed from ANIM; do not edit directly.
 /** Scroll unit at which card peel starts (end of the arc-rotation intro window). */
-const PEEL_START_SCROLL = ANIM.arcPanEnd * ANIM.arcIntroFraction;
+const PEEL_START_SCROLL = ANIM.peelStartScroll;
 /** Full arc→grid scroll span reference; mobile settle timing anchors here. */
 const DESKTOP_ARC_REFERENCE_END = ANIM.arcPanEnd + 1000;
 const DESKTOP_SLOTTING_START = ANIM.desktopPeelEnd + ANIM.arcSettleDuration;
@@ -472,7 +478,7 @@ function buildStage(el) {
   };
 }
 
-export default async function init(el) {
+export default function init(el) {
   const {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
     canvas, adbeLogoPath,
@@ -899,7 +905,9 @@ export default async function init(el) {
     const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
-    // Per-card slide-in: X offset from right + scale ramp + opacity fade; no Y (no pan-up)
+    // Per-card slide-in: X offset from right + scale ramp + opacity fade. The
+    // sense of continuous rotation through pre-pin comes from arcPrePinRatio
+    // (in updateAnimationProgress), not from a Y offset here.
     const slideStaggerFrac = (1 - card.fanIdx / FAN_LAST_INDEX) * ANIM.slideStagger;
     const cardSlideT = clamp01((phase.slideT - slideStaggerFrac) / (1 - slideStaggerFrac));
     const slideE = easeOutSine(cardSlideT);
@@ -1021,7 +1029,10 @@ export default async function init(el) {
     const slideScroll = scrollTimeline.current + prePinContrib;
     phase.slideT = clamp01(slideScroll / (slideEarly + ANIM.slideOverlap));
 
-    phase.arcPan = clamp01(scrollTimeline.current / ANIM.arcPanEnd);
+    // Mix prePinContrib into arcPan so rotation runs continuously through
+    // slide-in — eliminates the "translation → rotation" snap at the pin moment.
+    const arcScroll = scrollTimeline.current + prePinContrib * ANIM.arcPrePinRatio;
+    phase.arcPan = clamp01(arcScroll / ANIM.arcPanEnd);
     const rawArcToGridProgress = (scrollTimeline.current - PEEL_START_SCROLL)
       / (timing.gridEnd - PEEL_START_SCROLL);
     phase.arcToGrid = clamp01(rawArcToGridProgress);
@@ -1205,40 +1216,41 @@ export default async function init(el) {
   // Lazily loaded from dot-grid-debug.js only when ?dotgriddebug is set.
   let debug = null;
   if (new URLSearchParams(window.location.search).has('dotgriddebug')) {
-    const { default: createDebugOverlay } = await import('./dot-grid-debug.js');
-    debug = createDebugOverlay(() => {
-      const c = scrollTimeline.current;
-      let stageLabel = 'done';
-      if (c < PEEL_START_SCROLL) stageLabel = 'arc-pan';
-      else if (c < timing.gridEnd) stageLabel = 'peel';
-      else if (c < timing.slottingStart) stageLabel = 'settle';
-      else if (c < timing.slottingStart + timing.slottingDuration) stageLabel = 'slotting';
-      else if (timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
-      let breakpoint = 'desktop';
-      if (frame.isMobile) breakpoint = 'mobile';
-      else if (frame.isTablet) breakpoint = 'tablet';
-      return {
-        stage: stageLabel,
-        breakpoint,
-        viewportWidth,
-        viewportHeight,
-        scrollCurrent: c,
-        animTotal: timing.slottingStart + timing.slottingDuration
-          + timing.postRevealScrollDistance,
-        phase,
-        settle: arcTextPanProgressCached,
-        peelStartScroll: PEEL_START_SCROLL,
-        gridEnd: timing.gridEnd,
-        slottingStart: timing.slottingStart,
-        slottingDuration: timing.slottingDuration,
-        columnSpread: cardGridLayout.columnSpread,
-        rowGap: cardGridLayout.rowGap,
-        arcGridY: verticalPan.arcGridY,
-        postRevealY: frame.isMobile
-          ? verticalPan.mobilePostRevealY
-          : verticalPan.deskPostRevealY,
-        blockHeight: el.offsetHeight,
-      };
+    import('./dot-grid-debug.js').then(({ default: createDebugOverlay }) => {
+      debug = createDebugOverlay(() => {
+        const c = scrollTimeline.current;
+        let stageLabel = 'done';
+        if (c < PEEL_START_SCROLL) stageLabel = 'arc-pan';
+        else if (c < timing.gridEnd) stageLabel = 'peel';
+        else if (c < timing.slottingStart) stageLabel = 'settle';
+        else if (c < timing.slottingStart + timing.slottingDuration) stageLabel = 'slotting';
+        else if (timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
+        let breakpoint = 'desktop';
+        if (frame.isMobile) breakpoint = 'mobile';
+        else if (frame.isTablet) breakpoint = 'tablet';
+        return {
+          stage: stageLabel,
+          breakpoint,
+          viewportWidth,
+          viewportHeight,
+          scrollCurrent: c,
+          animTotal: timing.slottingStart + timing.slottingDuration
+            + timing.postRevealScrollDistance,
+          phase,
+          settle: arcTextPanProgressCached,
+          peelStartScroll: PEEL_START_SCROLL,
+          gridEnd: timing.gridEnd,
+          slottingStart: timing.slottingStart,
+          slottingDuration: timing.slottingDuration,
+          columnSpread: cardGridLayout.columnSpread,
+          rowGap: cardGridLayout.rowGap,
+          arcGridY: verticalPan.arcGridY,
+          postRevealY: frame.isMobile
+            ? verticalPan.mobilePostRevealY
+            : verticalPan.deskPostRevealY,
+          blockHeight: el.offsetHeight,
+        };
+      });
     });
   }
 
