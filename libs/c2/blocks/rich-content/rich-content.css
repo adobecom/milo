@@ -173,10 +173,10 @@
       }
     }
 
-    p:has(em > strong > a) {
+    .action-area {
       display: flex;
       justify-content: center;
-      margin-top: var(--s2a-spacing-3xl);
+      margin-top: var(--s2a-spacing-lg);
     }
   }
 
@@ -203,6 +203,10 @@
           height: auto;
           object-fit: unset;
         }
+      }
+
+      .action-area {
+        margin-top: var(--s2a-spacing-xl);
       }
     }
   }

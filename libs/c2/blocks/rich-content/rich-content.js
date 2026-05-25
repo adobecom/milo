@@ -55,6 +55,7 @@ function decorateVideoMedia(mediaCell) {
 }
 
 function decorateVideoVariant(el) {
+  decorateBlockText(el);
   const [mediaRow, ctaRow] = [...el.children];
 
   // Extract background image from second column and make it the block background
@@ -76,7 +77,7 @@ function decorateVideoVariant(el) {
   }
   mediaRow?.remove();
 
-  // Promote CTA cell to direct block child
+  // Promote CTA cell to direct block child (if authored as a separate row)
   if (ctaRow?.children[0]) {
     const ctaCell = ctaRow.children[0];
     ctaCell.classList.add('cta-area');
