@@ -4,51 +4,27 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
 // Module-level cursor tracking — one global listener, shared by all instances.
-// posHistory stores the last 800ms of positions to support Ddelay lookup.
 let mouseX = 0;
 let mouseY = 0;
-const posHistory = [];
 
 document.addEventListener('mousemove', (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
-  posHistory.push({ x: e.clientX, y: e.clientY, ts: performance.now() });
-  const cutoff = performance.now() - 800;
-  while (posHistory.length > 1 && posHistory[0].ts < cutoff) posHistory.shift();
 }, { passive: true });
-
-// Returns the interpolated cursor position from `delaySec` seconds ago.
-// This is the exact JS equivalent of AE's Ddelay expression parameter.
-function getDelayedPos(delaySec) {
-  if (!posHistory.length) return [mouseX - 2, mouseY];
-  const targetTs = performance.now() - delaySec * 1000;
-  for (let i = posHistory.length - 1; i >= 0; i--) {
-    if (posHistory[i].ts <= targetTs) {
-      if (i + 1 < posHistory.length) {
-        const a = posHistory[i];
-        const b = posHistory[i + 1];
-        const ratio = (targetTs - a.ts) / (b.ts - a.ts);
-        return [a.x + (b.x - a.x) * ratio - 2, a.y + (b.y - a.y) * ratio];
-      }
-      return [posHistory[i].x - 2, posHistory[i].y];
-    }
-  }
-  return [posHistory[0].x - 2, posHistory[0].y];
-}
 
 // Spring tracker for one picture element.
 //
-// Exact match to AE inertial bounce parameters:
-//   freq = 4   → ωd = 4·2π = 25.13 rad/s
-//   decay = 12 → damping rate α = 12
-//   ω₀ = √(α² + ωd²) = √(144 + 631) = √775 ≈ 27.8 rad/s
-//   K = ω₀² = 775,  C = 2·α = 24
+// C = 2·decay = 2·12 = 24  (exact AE match)
 //
-// Layer separation comes from Ddelay (temporal lag), not different K values.
-// All three layers share K=775, C=24 — exactly as in AE.
-function createSpring(el, delaySec) {
-  const K = 775;
-  const C = 24;
+// K varies per layer to create visual separation during cursor movement.
+// All layers share the same damping (C=24) so oscillations decay at the
+// same rate — only the responsiveness differs, matching the Ddelay stagger
+// intent in AE where back layers trail the front layer.
+//
+//   Layer 0 (front): K=775  → exact AE freq=4  (ω₀=√775, ωd≈25 rad/s ≈ 4 Hz)
+//   Layer 1 (mid):   K=500  → slightly softer, more lag
+//   Layer 2 (back):  K=280  → softest, most lag
+function createSpring(el, k, c = 24) {
   let sx = 0; let sy = 0;
   let svx = 0; let svy = 0;
   let rafId = null;
@@ -58,9 +34,8 @@ function createSpring(el, delaySec) {
     const dt = prevTs ? Math.min((ts - prevTs) / 1000, 0.033) : 0.016;
     prevTs = ts;
 
-    const [tx, ty] = getDelayedPos(delaySec);
-    svx += ((tx - sx) * K - svx * C) * dt;
-    svy += ((ty - sy) * K - svy * C) * dt;
+    svx += ((mouseX - 2 - sx) * k - svx * c) * dt;
+    svy += ((mouseY - sy) * k - svy * c) * dt;
     sx += svx * dt;
     sy += svy * dt;
 
@@ -89,11 +64,10 @@ function addCursorFollower(list) {
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  // Ddelay per layer — exact match to AE Ddelay = 0.30:
-  // layer 0: tracks cursor at t+0s (real-time)
-  // layer 1: tracks cursor at t−0.30s
-  // layer 2: tracks cursor at t−0.60s
-  const DELAYS = [0, 0.30, 0.60];
+  // K per layer — front layer matches AE exactly (K=775 = ω₀² for freq=4, decay=12).
+  // Back layers use progressively softer springs to trail behind, replicating
+  // the visual stagger that Ddelay=0.30 creates between layers in AE.
+  const SPRING_K = [775, 500, 280];
 
   const hide = () => {
     springs.forEach((s) => s.stop());
@@ -111,8 +85,8 @@ function addCursorFollower(list) {
 
     const pics = [...media.querySelectorAll('picture')];
 
-    // Pre-position all pictures at cursor before revealing — prevents a
-    // single-frame flash at an unset (0,0) position.
+    // Pre-position all pictures at the cursor before revealing to avoid
+    // a single-frame flash at an unset position.
     pics.forEach((pic) => {
       pic.style.left = `${mouseX - 2}px`;
       pic.style.top = `${mouseY}px`;
@@ -121,8 +95,8 @@ function addCursorFollower(list) {
     activeMedia.classList.add('is-visible');
 
     springs = pics.map((pic, i) => {
-      const delay = DELAYS[i] ?? DELAYS[DELAYS.length - 1];
-      const spring = createSpring(pic, delay);
+      const k = SPRING_K[i] ?? SPRING_K[SPRING_K.length - 1];
+      const spring = createSpring(pic, k);
       spring.start(mouseX - 2, mouseY);
       return spring;
     });
