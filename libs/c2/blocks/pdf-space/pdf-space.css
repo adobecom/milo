@@ -1,8 +1,8 @@
-.dot-grid {
+.pdf-space {
   height: 600vh;
 }
 
-.dot-grid-stage {
+.pdf-space-stage {
   position: sticky;
   top: 0;
   overflow: hidden;
@@ -11,7 +11,7 @@
   isolation: isolate;
 }
 
-.dot-grid .text-block {
+.pdf-space .text-block {
   position: absolute;
   top: 0;
   left: 0;
@@ -21,7 +21,7 @@
   will-change: transform, opacity;
 }
 
-.dot-grid .text-block .heading {
+.pdf-space .text-block .heading {
   margin: 0 0 var(--s2a-spacing-8);
   font-size: var(--s2a-font-size-20);
   font-weight: var(--s2a-font-weight-heading);
@@ -30,7 +30,7 @@
   color: var(--s2a-color-gray-1000);
 }
 
-.dot-grid .text-block p {
+.pdf-space .text-block p {
   margin: 0 0 var(--s2a-spacing-12);
   font-size: var(--s2a-font-size-16);
   font-weight: var(--s2a-font-weight-body);
@@ -38,7 +38,7 @@
   color: var(--s2a-color-transparent-black-64);
 }
 
-.dot-grid .text-block a {
+.pdf-space .text-block a {
   display: inline-flex;
   align-items: center;
   gap: var(--s2a-spacing-4);
@@ -48,12 +48,12 @@
   text-decoration: none;
 }
 
-.dot-grid canvas {
+.pdf-space canvas {
   position: absolute;
   inset: 0;
 }
 
-.dot-grid .adbe-logo-svg {
+.pdf-space .adbe-logo-svg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -66,7 +66,7 @@
   will-change: opacity;
 }
 
-.dot-grid .adbe-logo-svg path {
+.pdf-space .adbe-logo-svg path {
   fill: none;
   stroke: #e1e1ef;
   stroke-width: 1.5;
@@ -74,7 +74,7 @@
   stroke-dashoffset: calc(var(--adbe-logo-length, 9999) * (1 - var(--adbe-draw, 0)));
 }
 
-.dot-grid .card-scene {
+.pdf-space .card-scene {
   position: absolute;
   inset: 0;
   z-index: 25;
@@ -83,12 +83,12 @@
   pointer-events: none;
 }
 
-.dot-grid .card-stack {
+.pdf-space .card-stack {
   position: absolute;
   inset: 0;
 }
 
-.dot-grid .acrobat-desktop-mockup {
+.pdf-space .acrobat-desktop-mockup {
   position: absolute;
   left: calc((100vw - min(68.6vw, 971px)) / 2);
   z-index: 20;
@@ -102,15 +102,15 @@
   contain: layout style paint;
 }
 
-.dot-grid .acrobat-desktop-mockup picture,
-.dot-grid .acrobat-desktop-mockup img {
+.pdf-space .acrobat-desktop-mockup picture,
+.pdf-space .acrobat-desktop-mockup img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: fill;
 }
 
-.dot-grid .acrobat-desktop-panel {
+.pdf-space .acrobat-desktop-panel {
   position: absolute;
   inset: 10px;
   display: flex;
@@ -119,7 +119,7 @@
   overflow: hidden;
 }
 
-.dot-grid .acrobat-desktop-panel picture {
+.pdf-space .acrobat-desktop-panel picture {
   box-sizing: border-box;
   transform: translateX(100%);
   will-change: transform;
@@ -128,11 +128,11 @@
   height: 95%;
 }
 
-.dot-grid .acrobat-mobile-mockup {
+.pdf-space .acrobat-mobile-mockup {
   display: none;
 }
 
-.dot-grid .card {
+.pdf-space .card {
   position: absolute;
   top: 0;
   left: 0;
@@ -145,7 +145,7 @@
   contain: layout style;
 }
 
-.dot-grid .card picture {
+.pdf-space .card picture {
   position: absolute;
   inset: 0;
   display: block;
@@ -153,14 +153,14 @@
   height: 100%;
 }
 
-.dot-grid .card picture img {
+.pdf-space .card picture img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.dot-grid .card-label-outer {
+.pdf-space .card-label-outer {
   box-sizing: border-box;
   position: absolute;
   top: 0;
@@ -179,7 +179,7 @@
   will-change: transform, opacity;
 }
 
-.dot-grid .acrobat-title {
+.pdf-space .acrobat-title {
   position: absolute;
   left: calc((100vw - min(68.6vw, 971px)) / 2);
   z-index: 19;
@@ -190,7 +190,7 @@
   will-change: transform, opacity;
 }
 
-.dot-grid .acrobat-title .heading {
+.pdf-space .acrobat-title .heading {
   margin: 0;
   white-space: nowrap;
   font-size: min(3.889vw, var(--s2a-font-size-56));
@@ -201,7 +201,7 @@
   color: var(--s2a-color-gray-1000);
 }
 
-.dot-grid .acrobat-title .subcopy {
+.pdf-space .acrobat-title .subcopy {
   box-sizing: border-box;
   margin: 0 auto;
   max-width: 616px;
@@ -212,7 +212,7 @@
   color: var(--s2a-color-gray-900);
 }
 
-.dot-grid .acrobat-cta {
+.pdf-space .acrobat-cta {
   position: absolute;
   left: 50%;
   z-index: 19;
@@ -223,7 +223,7 @@
   will-change: transform;
 }
 
-.dot-grid .acrobat-cta a {
+.pdf-space .acrobat-cta a {
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -239,33 +239,33 @@
 }
 
 @media (width >= 768px) and (width <= 1279px) {
-  .dot-grid .acrobat-desktop-mockup {
+  .pdf-space .acrobat-desktop-mockup {
     width: clamp(680px, 70vw, 971px);
     left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
   }
 
-  .dot-grid .acrobat-title {
+  .pdf-space .acrobat-title {
     left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
     width: clamp(680px, 70vw, 971px);
   }
 
   /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
 
-  .dot-grid .text-block {
+  .pdf-space .text-block {
     min-width: 292px;
   }
 }
 
 @media (width <= 767px) {
-  .dot-grid .acrobat-desktop-mockup {
+  .pdf-space .acrobat-desktop-mockup {
     display: none;
   }
 
-  .dot-grid .acrobat-desktop-panel {
+  .pdf-space .acrobat-desktop-panel {
     display: none;
   }
 
-  .dot-grid .acrobat-mobile-mockup {
+  .pdf-space .acrobat-mobile-mockup {
     position: absolute;
     top: 0;
     left: calc((100% - 294px) / 2);
@@ -281,26 +281,26 @@
     contain: layout style paint;
   }
 
-  .dot-grid .acrobat-mobile-mockup picture,
-  .dot-grid .acrobat-mobile-mockup img {
+  .pdf-space .acrobat-mobile-mockup picture,
+  .pdf-space .acrobat-mobile-mockup img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: fill;
   }
 
-  .dot-grid .card-label-outer {
+  .pdf-space .card-label-outer {
     font-size: 13px;
   }
 
-  .dot-grid .acrobat-title {
+  .pdf-space .acrobat-title {
     left: calc((100% - 294px) / 2);
     z-index: 18;
     width: 294px;
     transform: translateY(var(--title-y, 100vh)) scale(var(--title-scale, 1));
   }
 
-  .dot-grid .acrobat-title .heading {
+  .pdf-space .acrobat-title .heading {
     margin-bottom: 6px;
     white-space: normal;
     font-size: var(--s2a-font-size-32);
@@ -308,12 +308,12 @@
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_96);
   }
 
-  .dot-grid .acrobat-cta {
+  .pdf-space .acrobat-cta {
     z-index: 18;
     transform: translateX(-50%) translateY(var(--cta-y, 100vh));
   }
 
-  .dot-grid .text-block {
+  .pdf-space .text-block {
     width: 273px;
     text-align: left;
   }

@@ -1,4 +1,4 @@
-# dot-grid
+# pdf-space
 
 Scroll-driven hero animation: cards fan in along an arc, peel onto a flat
 grid, then glide into the slots of an Acrobat product mockup.
@@ -69,7 +69,7 @@ for the mobile timing constants.
 
 ## Tuning the animation
 
-All visual parameters live in the `ANIM` object at the top of `dot-grid.js`,
+All visual parameters live in the `ANIM` object at the top of `pdf-space.js`,
 grouped by phase. This section is the reference — pair it with the phase
 timeline above. Numbers in the tables below are the current defaults.
 
@@ -209,7 +209,7 @@ through the post-reveal pan stays roughly 1:1 with the pan motion.
 
 The block uses **two stacking contexts**:
 
-1. `.dot-grid-stage` — the outer context (the sticky stage element).
+1. `.pdf-space-stage` — the outer context (the sticky stage element).
 2. `.card-scene` — an inner context, established by setting `z-index: 25` on
    it inside the stage.
 
@@ -220,7 +220,7 @@ numbers below, but they don't actually compete — the `.card-scene` block
 always sits at root z=25, so its entire interior renders above everything
 at z < 25 in the root layer.
 
-### Root layer (inside `.dot-grid-stage`, set in `dot-grid.css`)
+### Root layer (inside `.pdf-space-stage`, set in `pdf-space.css`)
 
 Bottom → top:
 
@@ -233,7 +233,7 @@ Bottom → top:
 | 20 | `.acrobat-desktop-mockup`, `.acrobat-mobile-mockup` | The product mockup the cards slot into. |
 | 25 | `.card-scene` | Cards always paint above the mockup. **Establishes a new stacking context.** |
 
-### Card layer (inside `.card-scene`, set in `dot-grid.js`)
+### Card layer (inside `.card-scene`, set in `pdf-space.js`)
 
 All values here are relative to the `.card-scene` stacking context — they
 don't interact with the root layer numbers above. Cards have **no inline
@@ -267,7 +267,7 @@ z-index — they share the card layer and rely on document order.
 
 ## Debug overlay
 
-Append `?dotgriddebug` to the URL to lazy-load `dot-grid-debug.js` and
+Append `?pdfspacedebug` to the URL to lazy-load `pdf-space-debug.js` and
 overlay live phase values, scroll position, and computed layout numbers.
 Production builds never download the debug module.
 
@@ -275,6 +275,6 @@ Production builds never download the debug module.
 
 | File | Purpose |
 | --- | --- |
-| `dot-grid.js` | Block entry: parses authored content, drives rAF loop, owns animation state. |
-| `dot-grid.css` | Stage layout, card styling, breakpoint overrides. |
-| `dot-grid-debug.js` | Optional debug HUD; dynamic-imported only when `?dotgriddebug` is set. |
+| `pdf-space.js` | Block entry: parses authored content, drives rAF loop, owns animation state. |
+| `pdf-space.css` | Stage layout, card styling, breakpoint overrides. |
+| `pdf-space-debug.js` | Optional debug HUD; dynamic-imported only when `?pdfspacedebug` is set. |

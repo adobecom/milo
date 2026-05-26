@@ -3,7 +3,7 @@ import { debounce } from '../../../utils/action.js';
 
 // Scroll-driven animation: arc → peel → settle → slotting. See README.md
 
-// Keep these breakpoints in sync with the matching MQ ranges in dot-grid.css.
+// Keep these breakpoints in sync with the matching MQ ranges in pdf-space.css.
 const BREAKPOINTS = {
   mobile: () => window.innerWidth <= 767,
   tablet: () => window.innerWidth >= 768 && window.innerWidth <= 1279,
@@ -71,7 +71,7 @@ const ANIM = {
   mobileArcAngle: 0.6,
 };
 
-// ── Canvas dot-grid tunables ──────────────────────────────────────────────────
+// ── Canvas dot-pattern tunables ───────────────────────────────────────────────
 const CANVAS = {
   spacing: 16,
   mobileSpacing: 24,
@@ -435,7 +435,7 @@ function buildStage(el) {
   if (mobileMockupImgEl) mobileMockupWrapper.appendChild(mobileMockupImgEl);
   const stage = createTag(
     'div',
-    { class: 'dot-grid-stage' },
+    { class: 'pdf-space-stage' },
     `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>`,
   );
   const cardScene = stage.querySelector('.card-scene');
@@ -1195,11 +1195,11 @@ export default function init(el) {
     textBlockEl.style.opacity = textOpacity;
   }
 
-  // ──────────────────── Debug overlay (?dotgriddebug) ────────────────────
-  // Lazily loaded from dot-grid-debug.js only when ?dotgriddebug is set.
+  // ──────────────────── Debug overlay (?pdfspacedebug) ───────────────────
+  // Lazily loaded from pdf-space-debug.js only when ?pdfspacedebug is set.
   let debug = null;
-  if (new URLSearchParams(window.location.search).has('dotgriddebug')) {
-    import('./dot-grid-debug.js').then(({ default: createDebugOverlay }) => {
+  if (new URLSearchParams(window.location.search).has('pdfspacedebug')) {
+    import('./pdf-space-debug.js').then(({ default: createDebugOverlay }) => {
       debug = createDebugOverlay(() => {
         const c = scrollCurrent;
         let stageLabel = 'done';

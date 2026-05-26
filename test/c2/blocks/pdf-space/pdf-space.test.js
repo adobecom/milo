@@ -22,23 +22,23 @@ window.MutationObserver = function MockMO() {
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
-const { default: init } = await import('../../../../libs/c2/blocks/dot-grid/dot-grid.js');
+const { default: init } = await import('../../../../libs/c2/blocks/pdf-space/pdf-space.js');
 
-describe('dot-grid', () => {
+describe('pdf-space', () => {
   let block;
 
   before(async () => {
-    block = document.querySelector('.dot-grid');
+    block = document.querySelector('.pdf-space');
     await init(block);
   });
 
-  it('replaces the authored block with a single .dot-grid-stage', () => {
-    const stages = block.querySelectorAll(':scope > .dot-grid-stage');
+  it('replaces the authored block with a single .pdf-space-stage', () => {
+    const stages = block.querySelectorAll(':scope > .pdf-space-stage');
     expect(stages.length).to.equal(1);
   });
 
   it('creates a canvas inside the stage', () => {
-    expect(block.querySelector('.dot-grid-stage canvas')).to.exist;
+    expect(block.querySelector('.pdf-space-stage canvas')).to.exist;
   });
 
   it('mounts the card-scene container', () => {
@@ -62,7 +62,7 @@ describe('dot-grid', () => {
   });
 
   it('renders the inline ADBE logo SVG inside the stage', () => {
-    expect(block.querySelector('.dot-grid-stage .adbe-logo-svg')).to.exist;
+    expect(block.querySelector('.pdf-space-stage .adbe-logo-svg')).to.exist;
   });
 
   it('builds card labels from the authored text', () => {

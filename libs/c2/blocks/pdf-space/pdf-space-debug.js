@@ -1,7 +1,7 @@
 import { createTag } from '../../../utils/utils.js';
 
 /**
- * Dot-grid debug overlay (?dotgriddebug). Dynamic-imported only when the
+ * PDF-space debug overlay (?pdfspacedebug). Dynamic-imported only when the
  * query param is present so production never pays for it.
  *
  * @param {() => object} getState — called each update with the current
@@ -11,7 +11,7 @@ import { createTag } from '../../../utils/utils.js';
  *   arcGridY, postRevealY, blockHeight.
  */
 export default function createDebugOverlay(getState) {
-  const el = createTag('div', { class: 'dot-grid-debug' });
+  const el = createTag('div', { class: 'pdf-space-debug' });
   el.style.cssText = 'position:fixed;top:8px;left:8px;z-index:99999;'
     + 'background:rgba(0,0,0,0.78);color:#0f0;padding:8px 12px;'
     + 'font:12px/1.4 monospace;border-radius:4px;pointer-events:none;'

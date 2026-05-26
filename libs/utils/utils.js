@@ -113,7 +113,7 @@ const C2_BLOCKS = [
   'box',
   'brand-concierge',
   'carousel-c2',
-  'dot-grid',
+  'pdf-space',
   'elastic-carousel',
   'explore-card',
   'faq',
