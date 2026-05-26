@@ -364,6 +364,7 @@
       min-width: 100px;
       min-height: 36px;
       box-sizing: border-box;
+      text-align: center;
       transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
     }
 
