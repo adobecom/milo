@@ -1,12 +1,10 @@
 .faq-redesign {
-  padding-block: var(--s2a-spacing-2xl);
-  position: relative;
+  /* No outer padding-block — headline and items each manage their own */
 
   .faq-headline {
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
-    margin-block-end: var(--s2a-spacing-lg);
-    padding-block: var(--s2a-spacing-sm);
     color: var(--s2a-color-content-knockout);
+    padding-block: var(--s2a-spacing-md); /* 16px — Figma mobile */
   }
 
   .faq-list {
@@ -18,11 +16,15 @@
   .faq-item {
     align-items: center;
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
+    color: var(--s2a-color-content-knockout);
     display: flex;
     gap: var(--s2a-spacing-md);
-    padding-block: var(--s2a-spacing-md);
+    padding-block: var(--s2a-spacing-xl); /* 32px — Figma mobile */
     transition: background 0.2s ease;
-    color: var(--s2a-color-content-knockout);
+
+    &:first-child {
+      border-block-start: none;
+    }
 
     &:hover {
       background: var(--s2a-color-transparent-white-08);
@@ -37,23 +39,38 @@
 
   .faq-text {
     flex: 1;
+    font-family: var(--s2a-font-family-title);
+    letter-spacing: var(--s2a-font-letter-spacing-4xl);
     margin: 0;
   }
 
+  /* Figma mobile: image shown inline at 80×81px */
   .faq-media {
-    display: none;
+    block-size: 81px;
+    border-radius: var(--s2a-border-radius-sm);
+    flex-shrink: 0;
+    inline-size: 80px;
+    overflow: hidden;
+
+    picture,
+    img {
+      block-size: 100%;
+      display: block;
+      inline-size: 100%;
+      object-fit: cover;
+    }
   }
 }
 
 @media (width >= 768px) {
   .faq-redesign {
     display: flex;
-    gap: var(--s2a-spacing-xs);
-    padding-block: var(--s2a-spacing-124);
+    gap: var(--s2a-spacing-xs); /* 8px — Figma: gap-[--s2a-blur-xs] */
+    padding-block: var(--s2a-layout-lg); /* 124px — Figma: py-[--s2a-layout-lg] */
 
     .faq-headline {
       flex: 1;
-      margin-block-end: 0;
+      padding-block: var(--s2a-spacing-sm); /* 12px — Figma tablet */
     }
 
     .faq-list-col {
@@ -61,32 +78,27 @@
     }
 
     .faq-item {
-      gap: var(--s2a-spacing-lg);
-      padding-block: var(--s2a-spacing-lg);
+      gap: var(--s2a-spacing-lg); /* 24px — Figma tablet */
+      padding-block: var(--s2a-spacing-lg); /* 24px — Figma tablet */
+
+      /* All items including first get top border at tablet — Figma tablet shows
+         a divider above every row */
+      &:first-child {
+        border-block-start: 1px solid var(--s2a-color-transparent-white-32);
+      }
     }
 
+    /* Figma tablet: 74.355 × 75.284px ≈ 74×75px */
     .faq-media {
       block-size: 75px;
-      border-radius: var(--s2a-border-radius-sm);
-      display: block;
-      flex-shrink: 0;
       inline-size: 74px;
-      overflow: hidden;
-
-      picture,
-      img {
-        block-size: 100%;
-        display: block;
-        inline-size: 100%;
-        object-fit: cover;
-      }
     }
   }
 }
 
 @media (width >= 1280px) {
   .faq-redesign {
-    padding-block: var(--s2a-spacing-124);
+    padding-block: var(--s2a-layout-lg);
 
     .faq-headline {
       flex: 0 0 1;
@@ -100,11 +112,11 @@
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
     }
 
+    /* Desktop: image detaches from the row and becomes a fixed cursor follower */
     .faq-media {
-      block-size: 100vh;
+      block-size: 320px;
       display: none;
-      inline-size: 100vw;
-      inset: 0;
+      inline-size: 280px;
       overflow: visible;
       pointer-events: none;
       position: fixed;
@@ -112,17 +124,14 @@
 
       &.is-visible {
         display: block;
+        transform: translateY(-100%);
       }
 
       picture {
-        block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
-        inline-size: 280px;
-        inset: auto;
-        left: 0;
+        inset: 0;
         overflow: hidden;
         position: absolute;
-        top: 0;
         transform-origin: 50% 100%;
         transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
         will-change: transform, opacity;
