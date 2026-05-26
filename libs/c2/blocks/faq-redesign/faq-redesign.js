@@ -2,233 +2,178 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
+const STIFFNESS = 0.34;
+const INTRO_STEP = 0.009;
+const EXIT_STEP = 0.08;
+const ROTATE_LERP = 0.12;
+const TARGET = { x: -8, y: -14 };
+const SCROLL_SETTLE_MS = 150;
 
-// Animation tuning ------------------------------------------------------------
-
-const STIFFNESS = 0.34; // spring strength for cursor follow
-const INTRO_STEP = 0.009; // per-frame linear progress added to intro
-const EXIT_STEP = 0.08; // per-frame linear progress added to exit
-const ROTATE_LERP = 0.12; // how fast rotation chases its velocity target
-const TARGET_OFFSET = { x: -8, y: -14 }; // final picture anchor relative to cursor
-const SCROLL_SETTLE_MS = 150; // wait after scroll before re-activating
-
-// One config per visual layer. Length controls how many pictures animate.
 const LAYERS = [
-  { spawn: { x: 120, y: -120 }, stagger: { x: 0, y: -6 }, follow: 0.32, rotateCoeff: 0.03 },
-  { spawn: { x: 108, y: -108 }, stagger: { x: 8, y: 0 }, follow: 0.42, rotateCoeff: 0.07 },
-  { spawn: { x: 96, y: -96 }, stagger: { x: 16, y: 6 }, follow: 0.68, rotateCoeff: 0.14 },
+  { spawn: { x: 120, y: -120 }, stagger: { x: 0, y: -6 }, follow: 0.32, rot: 0.03 },
+  { spawn: { x: 108, y: -108 }, stagger: { x: 8, y: 0 }, follow: 0.42, rot: 0.07 },
+  { spawn: { x: 96, y: -96 }, stagger: { x: 16, y: 6 }, follow: 0.68, rot: 0.14 },
 ];
 
-// Animation primitives --------------------------------------------------------
-
 // Two-piece curve: ramps to peak 1.324 at intro=0.52, eases back to 1.0 at intro=1.
-function introScale(intro) {
-  if (intro < 0.52) return 0.18 + intro * 2.2;
-  return 1.34 - (intro - 0.52) * 0.708;
-}
-
-// React's compounded eased ramp — stores easedIntro back as next frame's input.
-// Convergence is fast (~8 frames), but a CSS transition smooths the visual.
-function advanceIntro(intro) {
-  const next = Math.min(intro + INTRO_STEP, 1);
-  return 1 - (1 - next) ** 2.2;
-}
-
-function createLayer(pic, config, mouseX, mouseY) {
-  return {
-    pic,
-    config,
-    x: mouseX + config.spawn.x,
-    y: mouseY + config.spawn.y,
-    intro: 0,
-    exit: 0,
-    rotate: 0,
-  };
-}
-
-function stepSpring(layer, mouseX, mouseY, velocityX) {
-  const { config } = layer;
-  const targetX = mouseX + TARGET_OFFSET.x;
-  const targetY = mouseY + TARGET_OFFSET.y;
-  layer.x += (targetX - layer.x) * STIFFNESS * config.follow;
-  layer.y += (targetY - layer.y) * STIFFNESS * config.follow;
-  const rotateTarget = velocityX * config.rotateCoeff;
-  layer.rotate += (rotateTarget - layer.rotate) * ROTATE_LERP;
+function introScale(t) {
+  return t < 0.52 ? 0.18 + t * 2.2 : 1.34 - (t - 0.52) * 0.708;
 }
 
 function render(layer) {
-  const { config, pic } = layer;
+  const { config: c, pic } = layer;
   const fade = 1 - layer.exit;
-  const scale = introScale(layer.intro) * fade;
-  const x = layer.x + config.stagger.x;
-  const y = layer.y + config.stagger.y;
-  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
+  const s = introScale(layer.intro) * fade;
+  pic.style.transform = `translate3d(${layer.x + c.stagger.x}px, ${layer.y + c.stagger.y}px, 0) translate(-50%, -100%) scale(${s}) rotate(${layer.rotate}deg)`;
   pic.style.opacity = String(fade);
 }
 
-function resetPic(pic) {
-  pic.style.transform = '';
-  pic.style.opacity = '';
+function step(layer, x, y, vx) {
+  const c = layer.config;
+  layer.x += (x + TARGET.x - layer.x) * STIFFNESS * c.follow;
+  layer.y += (y + TARGET.y - layer.y) * STIFFNESS * c.follow;
+  layer.rotate += (vx * c.rot - layer.rotate) * ROTATE_LERP;
 }
 
 function hideMedia(media) {
   if (!media) return;
   media.classList.remove('is-visible');
-  media.querySelectorAll('picture').forEach(resetPic);
+  media.querySelectorAll('picture').forEach((p) => {
+    p.style.transform = '';
+    p.style.opacity = '';
+  });
 }
 
-// Cursor follower -------------------------------------------------------------
-
 function addCursorFollower(list) {
-  const cursor = { x: 0, y: 0, prevX: 0, vx: 0, hasPrev: false };
-  let activeItem = null;
-  let activeLayers = [];
-  let exitingSets = [];
-  let rafId = null;
-  let isScrolling = false;
-  let scrollEndTimer = null;
+  const cur = { x: 0, y: 0, prevX: 0, vx: 0, hasPrev: false };
+  let active = null;
+  let layers = [];
+  let exits = [];
+  let raf = null;
+  let scrolling = false;
+  let scrollTimer = null;
 
-  const updateCursor = (e) => {
-    if (cursor.hasPrev) cursor.vx = e.clientX - cursor.prevX;
-    cursor.prevX = e.clientX;
-    cursor.x = e.clientX;
-    cursor.y = e.clientY;
-    cursor.hasPrev = true;
+  const setCur = (e) => {
+    if (cur.hasPrev) cur.vx = e.clientX - cur.prevX;
+    cur.prevX = e.clientX;
+    cur.x = e.clientX;
+    cur.y = e.clientY;
+    cur.hasPrev = true;
   };
 
   const tick = () => {
-    activeLayers.forEach((layer) => {
-      stepSpring(layer, cursor.x, cursor.y, cursor.vx);
-      layer.intro = advanceIntro(layer.intro);
-      render(layer);
+    layers.forEach((l) => {
+      step(l, cur.x, cur.y, cur.vx);
+      const n = Math.min(l.intro + INTRO_STEP, 1);
+      l.intro = 1 - (1 - n) ** 2.2;
+      render(l);
     });
-
-    exitingSets = exitingSets.filter(({ media, layers }) => {
+    exits = exits.filter(({ media, layers: ls }) => {
       let alive = false;
-      layers.forEach((layer) => {
-        layer.exit = Math.min(layer.exit + EXIT_STEP, 1);
-        stepSpring(layer, cursor.x, cursor.y, cursor.vx);
-        render(layer);
-        if (layer.exit < 1) alive = true;
+      ls.forEach((l) => {
+        l.exit = Math.min(l.exit + EXIT_STEP, 1);
+        step(l, cur.x, cur.y, cur.vx);
+        render(l);
+        if (l.exit < 1) alive = true;
       });
       if (!alive) hideMedia(media);
       return alive;
     });
-
-    rafId = (activeLayers.length || exitingSets.length)
-      ? requestAnimationFrame(tick)
-      : null;
+    raf = (layers.length || exits.length) ? requestAnimationFrame(tick) : null;
   };
 
-  const startRaf = () => {
-    if (!rafId) rafId = requestAnimationFrame(tick);
-  };
+  const startRaf = () => { if (!raf) raf = requestAnimationFrame(tick); };
 
   const activate = (item) => {
-    if (item === activeItem) return;
-    if (activeItem) hideMedia(activeItem.querySelector('.faq-media'));
-
+    if (item === active) return;
+    if (active) hideMedia(active.querySelector('.faq-media'));
     const media = item.querySelector('.faq-media');
     if (!media) return;
-
-    // If the user re-hovers an item whose exit is still in-flight, drop the
-    // pending exit so it can't call hideMedia on us mid-animation.
-    exitingSets = exitingSets.filter((set) => set.media !== media);
-
-    activeItem = item;
-    const pics = [...media.querySelectorAll('picture')].slice(0, LAYERS.length);
-    activeLayers = pics.map((pic, i) => createLayer(pic, LAYERS[i], cursor.x, cursor.y));
-
+    // Drop any in-flight exit for this item so it can't hide us mid-animation.
+    exits = exits.filter((e) => e.media !== media);
+    active = item;
+    layers = [...media.querySelectorAll('picture')].slice(0, LAYERS.length).map((pic, i) => ({
+      pic,
+      config: LAYERS[i],
+      x: cur.x + LAYERS[i].spawn.x,
+      y: cur.y + LAYERS[i].spawn.y,
+      intro: 0,
+      exit: 0,
+      rotate: 0,
+    }));
     media.classList.add('is-visible');
-    activeLayers.forEach(render);
+    layers.forEach(render);
     startRaf();
   };
 
   const deactivate = () => {
-    if (!activeItem) return;
-    exitingSets.push({
-      media: activeItem.querySelector('.faq-media'),
-      layers: activeLayers,
-    });
-    activeItem = null;
-    activeLayers = [];
+    if (!active) return;
+    exits.push({ media: active.querySelector('.faq-media'), layers });
+    active = null;
+    layers = [];
     startRaf();
   };
 
-  const activateAtPoint = (x, y) => {
+  const activateAt = (x, y) => {
     const item = document.elementFromPoint(x, y)?.closest('.faq-item');
     if (item && list.contains(item)) activate(item);
   };
 
   const onScroll = () => {
-    isScrolling = true;
+    scrolling = true;
     deactivate();
-    clearTimeout(scrollEndTimer);
-    scrollEndTimer = setTimeout(() => {
-      isScrolling = false;
-      activateAtPoint(cursor.x, cursor.y);
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      scrolling = false;
+      activateAt(cur.x, cur.y);
     }, SCROLL_SETTLE_MS);
   };
 
-  document.addEventListener('mousemove', updateCursor, { passive: true });
-
+  document.addEventListener('mousemove', setCur, { passive: true });
   list.addEventListener('mouseover', (e) => {
-    if (!DESKTOP_MQ.matches || isScrolling) return;
-    updateCursor(e);
-    activateAtPoint(e.clientX, e.clientY);
+    if (!DESKTOP_MQ.matches || scrolling) return;
+    setCur(e);
+    activateAt(e.clientX, e.clientY);
   });
-
   list.addEventListener('mouseenter', () => {
     if (!DESKTOP_MQ.matches) return;
     document.addEventListener('scroll', onScroll, { passive: true });
   });
-
   list.addEventListener('mouseleave', () => {
-    isScrolling = false;
+    scrolling = false;
     deactivate();
-    clearTimeout(scrollEndTimer);
+    clearTimeout(scrollTimer);
     document.removeEventListener('scroll', onScroll);
   });
-}
-
-// DOM construction ------------------------------------------------------------
-
-function buildHeadline(headingCol) {
-  const headline = createTag('div', { class: 'faq-headline' });
-  if (!headingCol) return headline;
-  decorateBlockText(headingCol, { heading: '2' });
-  headline.append(...headingCol.childNodes);
-  return headline;
-}
-
-function buildMedia(mediaCol) {
-  if (!mediaCol) return null;
-  const pics = [...mediaCol.querySelectorAll('picture')];
-  if (!pics.length) return null;
-  const media = createTag('div', { class: 'faq-media' });
-  pics.forEach((pic) => media.append(pic));
-  return media;
-}
-
-function buildItem(row, index) {
-  const [textCol, mediaCol] = row.children;
-  const item = createTag('li', { class: 'faq-item' });
-  const number = createTag('span', { class: 'faq-number eyebrow' }, String(index + 1).padStart(2, '0'));
-  const text = createTag('div', { class: 'faq-text title-4' });
-  if (textCol) text.append(...textCol.childNodes);
-  item.append(number, text);
-  const media = buildMedia(mediaCol);
-  if (media) item.append(media);
-  return item;
 }
 
 function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
 
-  const headline = buildHeadline(rows[0]?.children[0]);
+  const headline = createTag('div', { class: 'faq-headline' });
+  const headingCol = rows[0]?.children[0];
+  if (headingCol) {
+    decorateBlockText(headingCol, { heading: '2' });
+    headline.append(...headingCol.childNodes);
+  }
+
   const list = createTag('ol', { class: 'faq-list' });
-  rows.slice(1).forEach((row, i) => list.append(buildItem(row, i)));
+  rows.slice(1).forEach((row, i) => {
+    const [textCol, mediaCol] = row.children;
+    const item = createTag('li', { class: 'faq-item' });
+    const number = createTag('span', { class: 'faq-number eyebrow' }, String(i + 1).padStart(2, '0'));
+    const text = createTag('div', { class: 'faq-text title-4' });
+    if (textCol) text.append(...textCol.childNodes);
+    item.append(number, text);
+    const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
+    if (pics.length) {
+      const media = createTag('div', { class: 'faq-media' });
+      pics.forEach((p) => media.append(p));
+      item.append(media);
+    }
+    list.append(item);
+  });
 
   addCursorFollower(list);
 
