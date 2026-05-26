@@ -1035,6 +1035,22 @@ p {
   outline-offset: 2px;
 }
 
+/* Promo CTA hover - triggered by hovering anywhere on the CTA */
+.promo-cta:hover .icon-button {
+  background-color: var(--s2a-color-transparent-white-24);
+}
+
+/* Promo CTA active - triggered by clicking anywhere on the CTA */
+.promo-cta:active .icon-button {
+  background-color: var(--s2a-color-content-knockout);
+  border-color: var(--s2a-color-content-knockout);
+}
+
+/* Promo CTA active arrow - swap to black icon when clicking anywhere on CTA */
+.promo-cta:active .icon-button.arrow {
+  background-image: url('../assets/img/promo-arrow-right-black.svg');
+}
+
 /* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158, 11390:25185 */
 .promo-cta {
   align-items: center;
