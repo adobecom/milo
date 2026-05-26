@@ -1804,21 +1804,49 @@ export async function saveToMmm() {
 // A better path: ask the sidekick team to expose an `authenticated` attribute on
 // <aem-sidekick>, then replace this with hasAttribute('authenticated').
 // TODO: file request with sidekick team.
-function checkSidekickAuth() {
-  const pluginBarShadow = document.querySelector('aem-sidekick')
+function getPluginBarShadow() {
+  return document.querySelector('aem-sidekick')
     ?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot;
-  return !!pluginBarShadow?.querySelector('env-switcher');
+}
+
+function checkSidekickAuth() {
+  return !!getPluginBarShadow()?.querySelector('env-switcher');
+}
+
+// Watches for env-switcher to appear in the plugin-action-bar shadow root.
+// POC/temporary — sidekick team has been asked to expose an `authenticated`
+// attribute on <aem-sidekick> so this observer can be replaced with a one-liner.
+function waitForSidekickAuth() {
+  return new Promise((resolve) => {
+    if (checkSidekickAuth()) { resolve(true); return; }
+    const shadow = getPluginBarShadow();
+    if (!shadow) { resolve(false); return; }
+    const observer = new MutationObserver(() => {
+      if (shadow.querySelector('env-switcher')) {
+        observer.disconnect();
+        resolve(true);
+      }
+    });
+    observer.observe(shadow, { childList: true, subtree: true });
+  });
 }
 
 export default async function decoratePreviewMode() {
   const { miloLibs, codeRoot, mep } = getConfig();
-  const readOnly = getConfig().env?.name === 'prod' && !checkSidekickAuth();
+  const envName = getConfig().env?.name;
+  const readOnly = envName === 'prod' && !checkSidekickAuth();
   loadStyle(`${miloLibs || codeRoot}/features/personalization/preview.css`);
   // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
   getMarketConfig();
   await createPreviewPill(readOnly);
+  if (envName === 'prod' && readOnly && getPluginBarShadow()) {
+    waitForSidekickAuth().then(() => {
+      document.querySelector('.mep-preview-overlay')?.remove();
+      createPreviewPill(false);
+    });
+  }
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
