@@ -1,4 +1,5 @@
 .quick-actions {
+  position: relative;
 
   .quick-actions-header {
     grid-column: 1 / -1;
@@ -13,7 +14,7 @@
       min-inline-size: 0;
       margin: 0;
       font-weight: var(--s2a-font-weight-adobe-clean-black);
-      color: var(--s2a-color-content-title);
+      color: var(--s2a-color-content-heading);
     }
 
     .con-button {
@@ -139,7 +140,7 @@
 @media (width >= 1280px) {
   .quick-actions {
     .quick-actions-header {
-      padding-block-end: var(--s2a-spacing-40);
+      padding-block-end: var(--s2a-spacing-32);
     }
   }
 }
