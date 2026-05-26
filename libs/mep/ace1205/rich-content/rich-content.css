@@ -307,8 +307,25 @@
   to { transform: translateY(0); }
 }
 
+@keyframes rc-video-section-slow {
+  from { transform: translateY(0); }
+  to { transform: translateY(50vh); }
+}
+
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    body {
+      timeline-scope: --rc-video-garage;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) {
+      view-timeline-name: --rc-video-garage;
+      animation: rc-video-section-slow linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+
     .section.parallax-video-garage-door .rich-content.video .video-container {
       animation: rc-video-enter linear both;
       animation-duration: auto;
@@ -326,14 +343,17 @@
       animation-range: exit 0% exit 100%;
     }
 
-    .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+    .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
       position: relative;
       z-index: 2;
-      margin-top: calc(var(--rc-sweep-offset) * -1);
-      animation: rc-section-sweep-in linear both;
+      animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
-      animation-timeline: view();
-      animation-range: entry 0% entry 100%;
+      animation-timeline: --rc-video-garage;
+      animation-range: exit 0% exit 100%;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+      margin-top: calc(var(--rc-sweep-offset) * -1);
     }
   }
 }
