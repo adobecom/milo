@@ -271,35 +271,35 @@
 }
 
 /* mobile */
-.section:has(+ .section.video-garage-door .rich-content.video),
-.section.video-garage-door:has(.rich-content.video),
-.section.video-garage-door:has(.rich-content.video) + .section {
+.section:has(+ .section.parallax-video-garage-door .rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video) + .section {
   --rc-pull-offset: 80px;
   --rc-sweep-offset: 200px;
 }
 
 @media (width >= 768px) {
-  .section:has(+ .section.video-garage-door .rich-content.video),
-  .section.video-garage-door:has(.rich-content.video),
-  .section.video-garage-door:has(.rich-content.video) + .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
     --rc-pull-offset: 65px;
     --rc-sweep-offset: 180px;
   }
 }
 
 @media (width >= 1024px) {
-  .section:has(+ .section.video-garage-door .rich-content.video),
-  .section.video-garage-door:has(.rich-content.video),
-  .section.video-garage-door:has(.rich-content.video) + .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
     --rc-pull-offset: 200px;
     --rc-sweep-offset: 230px;
   }
 }
 
 @media (width >= 1920px) {
-  .section:has(+ .section.video-garage-door .rich-content.video),
-  .section.video-garage-door:has(.rich-content.video),
-  .section.video-garage-door:has(.rich-content.video) + .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
     --rc-pull-offset: 100px;
     --rc-sweep-offset: 300px;
   }
@@ -317,14 +317,14 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    .section.video-garage-door .rich-content.video .video-container {
+    .section.parallax-video-garage-door .rich-content.video .video-container {
       animation: rc-video-enter linear both;
       animation-duration: auto;
       animation-timeline: view();
       animation-range: entry 0% exit 0%;
     }
 
-    .section:has(+ .section.video-garage-door .rich-content.video) {
+    .section:has(+ .section.parallax-video-garage-door .rich-content.video) {
       position: relative;
       z-index: 2;
       margin-bottom: calc(var(--rc-pull-offset) * -1);
@@ -334,7 +334,7 @@
       animation-range: exit 0% exit 100%;
     }
 
-    .section.video-garage-door:has(.rich-content.video) + .section {
+    .section.parallax-video-garage-door:has(.rich-content.video) + .section {
       position: relative;
       z-index: 2;
       margin-top: calc(var(--rc-sweep-offset) * -1);
