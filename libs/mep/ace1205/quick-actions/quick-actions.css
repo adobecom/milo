@@ -72,7 +72,7 @@
       inline-size: 4.5px;
       block-size: 7.5px;
       flex-shrink: 0;
-      background-image: url('../../assets/img/chevron-right.svg');
+      background-image: url('../../../c2/assets/img/chevron-right.svg');
       background-size: contain;
       background-repeat: no-repeat;
       filter: brightness(0);
