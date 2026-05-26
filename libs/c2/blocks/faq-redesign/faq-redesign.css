@@ -81,8 +81,7 @@
       gap: var(--s2a-spacing-lg); /* 24px — Figma tablet */
       padding-block: var(--s2a-spacing-lg); /* 24px — Figma tablet */
 
-      /* All items including first get top border at tablet — Figma tablet shows
-         a divider above every row */
+      /* All items including first get top border at tablet */
       &:first-child {
         border-block-start: 1px solid var(--s2a-color-transparent-white-32);
       }
@@ -101,7 +100,7 @@
     padding-block: var(--s2a-layout-lg);
 
     .faq-headline {
-      flex: 0 0 1;
+      flex: 0 0 auto;
     }
 
     .faq-item {
@@ -112,29 +111,33 @@
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
     }
 
-    /* Desktop: image detaches from the row and becomes a fixed cursor follower */
+    /* Desktop: detaches from flow and becomes a zero-size fixed anchor at the
+       viewport origin. JS applies translate3d(cursor_x, cursor_y) directly to
+       each picture, so the container must be at left:0 top:0 with no transform
+       of its own — any transform here would fight the JS positioning. */
     .faq-media {
-      block-size: 320px;
+      block-size: 0;
       display: none;
-      inline-size: 280px;
+      inline-size: 0;
+      left: 0;
       overflow: visible;
       pointer-events: none;
       position: fixed;
+      top: 0;
       z-index: 100;
 
       &.is-visible {
         display: block;
-        transform: translateY(-100%);
       }
 
       picture {
+        block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
-        inset: 0;
+        inline-size: 280px;
+        left: 0;
         overflow: hidden;
         position: absolute;
-        transform-origin: 50% 100%;
-        transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
-        will-change: transform, opacity;
+        top: 0;
 
         img {
           block-size: 100%;
