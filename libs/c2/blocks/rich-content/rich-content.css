@@ -189,7 +189,7 @@
 }
 
 @media (width >= 1024px) {
-  .rich-content.video {
+  .section.parallax-video-garage-door .rich-content.video {
     padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset) + 20px);
   }
 }
