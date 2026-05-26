@@ -26,15 +26,6 @@ function promoteParagraphHeading(content, headingSize = '2') {
   if (bodyClass) firstP.classList.replace(bodyClass, `heading-${headingSize}`);
 }
 
-function decorate(block) {
-  const foreground = block.children[0];
-  const content = foreground?.children[0];
-  content?.classList.add('content');
-  foreground?.classList.add('foreground');
-  decorateText(content);
-  promoteParagraphHeading(content);
-}
-
 function decorateVideoVariant(container) {
   const row = container.children[0];
   if (!row) return;
@@ -57,6 +48,20 @@ function decorateVideoVariant(container) {
   container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
 
+function decorate(container, el) {
+  if (el.classList.contains('video')) {
+    decorateVideoVariant(container);
+    return;
+  }
+
+  const foreground = container.children[0];
+  const content = foreground?.children[0];
+  content?.classList.add('content');
+  foreground?.classList.add('foreground');
+  decorateText(content);
+  promoteParagraphHeading(content);
+}
+
 export default function init(el) {
-  decorateViewportContent(el, el.classList.contains('video') ? decorateVideoVariant : decorate);
+  decorateViewportContent(el, decorate);
 }
