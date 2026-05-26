@@ -28,6 +28,3 @@ mcp-server.log
 *.woff
 *.woff2
 *.eot
-
-wrangler.toml
-.wrangler
