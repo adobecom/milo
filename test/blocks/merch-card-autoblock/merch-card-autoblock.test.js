@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
 // TODO: Remove once mas-field is published to @adobecom/mas-platform.
 // All other MAS components (merch-card, merch-quantity-select, etc.) resolve via the import map
@@ -569,6 +570,82 @@ describe('merch-card-autoblock autoblock', () => {
       expect(badgeText).to.equal('EXCLUSIVE');
       expect(badge.getAttribute('background-color')).to.equal('#1976D2');
       // Badge color is disabled for simplified-pricing-express variant
+    });
+  });
+
+  describe('MEP Highlight M@S Content markers', () => {
+    // Defensive clear — prior describes can leak async-hydrated <merch-card> nodes.
+    beforeEach(() => { document.body.innerHTML = ''; });
+    afterEach(() => { document.body.innerHTML = ''; });
+
+    it('createCard stamps data-mas-block=card and captures original href in mepMasStudioUrls when mep.preview is on', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}], mep: { preview: true } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=a657fd3d9f67';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card: ACOM / Catalog / Test Card';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-card-test-wrap';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const card = wrap.querySelector('merch-card');
+      expect(card, 'merch-card should be created inside the test container').to.exist;
+      expect(card.dataset.masBlock).to.equal('card');
+      expect(mepMasStudioUrls.get(card)).to.equal(studioHref);
+    });
+
+    it('createCard does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}] });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=a657fd3d9f67';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card: ACOM / Catalog / Test Card';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-card-test-wrap-off';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const card = wrap.querySelector('merch-card');
+      expect(card, 'merch-card should be created inside the test container').to.exist;
+      expect(card.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(card)).to.equal(undefined);
+    });
+
+    it('createInline stamps data-mas-block=inline and captures original href on the mas-field wrapper when mep.preview is on', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}], mep: { preview: true } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=description';
+      const a = document.createElement('a');
+      a.href = studioHref;
+      a.textContent = '[[my-card:description]]';
+      const wrap = document.createElement('div');
+      wrap.id = 'mep-inline-test-wrap';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const masField = wrap.querySelector('mas-field');
+      expect(masField, 'mas-field should be created inside the test container').to.exist;
+      expect(masField.dataset.masBlock).to.equal('inline');
+      expect(mepMasStudioUrls.get(masField)).to.equal(studioHref);
+    });
+
+    it('createInline does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}] });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=description';
+      const a = document.createElement('a');
+      a.href = studioHref;
+      a.textContent = '[[my-card:description]]';
+      const wrap = document.createElement('div');
+      wrap.id = 'mep-inline-test-wrap-off';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const masField = wrap.querySelector('mas-field');
+      expect(masField, 'mas-field should be created inside the test container').to.exist;
+      expect(masField.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(masField)).to.equal(undefined);
     });
   });
 });

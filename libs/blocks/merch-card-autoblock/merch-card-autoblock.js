@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
+import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
   getOptions,
@@ -145,6 +146,11 @@ export async function createCard(el, options) {
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
+  // For the "Edit Card" mep preview badge.
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(merchCard, el.href);
+    merchCard.dataset.masBlock = 'card';
+  }
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
     parent.replaceWith(merchCard);
@@ -162,6 +168,10 @@ async function createInline(el, options) {
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(masField, el.href);
+    masField.dataset.masBlock = 'inline';
+  }
   el.replaceWith(masField);
   await checkReady(masField);
   normalizeBlockFieldWrappers(masField);

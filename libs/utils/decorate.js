@@ -100,7 +100,7 @@ function elContainsText(el) {
 }
 
 const isC2 = getMetadata('foundation') === 'c2';
-const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'lg' } : ['m', 's', 'm'];
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'md' } : ['m', 's', 'm'];
 
 export function decorateBlockText(el, config = blockTextConfig, type = null) {
   const sizeMap = Array.isArray(config)
@@ -111,7 +111,7 @@ export function decorateBlockText(el, config = blockTextConfig, type = null) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`${isC2 ? 'title' : 'heading'}-${sizeMap.heading}`));
+      headings.forEach((h) => h.classList.add(`heading-${sizeMap.heading}`));
       if (sizeMap.detail || isC2) {
         const prevSib = headings[0]?.previousElementSibling;
         prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
@@ -233,7 +233,7 @@ function applyTextOverrides(el, override, targetEl) {
   });
 }
 
-const textOverridesConfig = isC2 ? ['title-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+const textOverridesConfig = isC2 ? ['heading-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
 
 export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
@@ -762,4 +762,15 @@ export function decorateViewportContent(el, decorateFn) {
     decorateTextOverrides(el);
   }
   return viewports;
+}
+
+export function hangOpeningQuote(el) {
+  if (!el) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = el.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  el.textContent = el.textContent.slice(1);
+  const span = createTag('span', { class: 'hang-opening-quote' }, quote);
+  el.prepend(span);
 }
