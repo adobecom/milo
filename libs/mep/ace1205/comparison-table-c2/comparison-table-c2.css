@@ -564,18 +564,6 @@
       color: var(--s2a-color-gray-900);
     }
 
-    div {
-      border: none;
-      border-radius: 0;
-      width: 100%;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: transparent !important;
-    }
-
     > p:nth-child(2) {
       margin-top: var(--s2a-spacing-3xs);
       font-size: var(--s2a-typography-font-size-caption);
@@ -594,16 +582,16 @@
   }
 
   .icon-checkmark svg {
-    width: var(--s2a-spacing-20);
-    height: var(--s2a-spacing-20);
+    width:  20px;
+    height:  20px;
   }
 
   .icon-dash {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: var(--s2a-spacing-20);
-    height: var(--s2a-spacing-20);
+    width: 20px;
+    height: 20px;
 
     svg {
       width: var(--s2a-spacing-md);
@@ -613,14 +601,11 @@
   }
 
   .toggle-icon {
-    width: var(--s2a-spacing-20);
-    height: var(--s2a-spacing-20);
+    width:  20px;
+    height:  20px;
     position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    background-image: none !important;
 
     &::before {
       content: '';
@@ -695,8 +680,8 @@
     &::after {
       content: '';
       flex-shrink: 0;
-      width: var(--s2a-spacing-20);
-      height: var(--s2a-spacing-20);
+      width:  20px;
+      height:  20px;
       background: url('./img/down-arrow-filter.svg') center / contain no-repeat;
       pointer-events: none;
     }
@@ -791,7 +776,6 @@
     }
 
     .sub-header-item-container:first-child {
-      padding-right: 0;
       padding-bottom: var(--s2a-spacing-xs);
     }
 
