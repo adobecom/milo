@@ -141,18 +141,13 @@
 }
 
 .tabs .tabList button.tab-button:hover {
-  color: var(--tabs-pill-text-color-hover);
+  color: var(--tabs-active-text-color);
 }
 
 .tabs .tabList button.tab-button[aria-selected="true"] {
-  color: var(--tabs-pill-text-color);
+  color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-selected);
-  transition: background 0s 0.25s;
-  animation: tab-color-snap 0.01s 0.25s forwards;
-}
-
-@keyframes tab-color-snap {
-  to { color: var(--tabs-pill-text-selected-color); }
+  transition: background 0s 0.25s, color 0.2s 0s ease-out;
 }
 
 /* add slider - pill that slides behind buttons to show selection */
