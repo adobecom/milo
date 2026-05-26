@@ -2,6 +2,7 @@
   --logo-ticker-gap: var(--s2a-spacing-80);
   --logo-ticker-logo-height: 36px;
   --logo-ticker-dir: 1;
+  --logo-ticker-drift-distance: 240px;
 
   position: relative;
   width: 100%;
@@ -70,8 +71,8 @@
     }
 
     @keyframes logo-ticker-drift {
-      from { translate: calc(120px * var(--logo-ticker-dir)); }
-      to { translate: calc(-120px * var(--logo-ticker-dir)); }
+      from { translate: calc(var(--logo-ticker-drift-distance) * var(--logo-ticker-dir)); }
+      to { translate: calc(calc(-1 * var(--logo-ticker-drift-distance)) * var(--logo-ticker-dir)); }
     }
   }
 }
