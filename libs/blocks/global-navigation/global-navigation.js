@@ -1019,7 +1019,7 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
-    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? false;
+    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
