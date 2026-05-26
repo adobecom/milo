@@ -102,23 +102,26 @@
 
     .faq-media {
       display: none;
-      height: 320px;
-      overflow: visible;
+      inset: 0;
       pointer-events: none;
       position: fixed;
-      width: 280px;
       z-index: 100;
 
       &.is-visible {
         display: block;
-        transform: translateY(-100%);
       }
 
       picture {
+        block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
-        inset: 0;
+        inline-size: 280px;
+        inset: auto;
+        left: 0;
         overflow: hidden;
         position: absolute;
+        top: 0;
+        transform-origin: 50% 100%;
+        will-change: transform, opacity;
 
         img {
           block-size: 100%;

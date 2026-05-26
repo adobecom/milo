@@ -3,46 +3,157 @@ import { decorateBlockText, decorateViewportContent } from '../../../utils/decor
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
 
+const STIFFNESS = 0.34;
+const FOLLOW_SPEED = [0.32, 0.42, 0.68];
+const SPAWN_OFFSET = [
+  { x: 120, y: -120 },
+  { x: 108, y: -108 },
+  { x: 96, y: -96 },
+];
+const STAGGER = [
+  { x: 0, y: -6 },
+  { x: 8, y: 0 },
+  { x: 16, y: 6 },
+];
+const TARGET_OFFSET = { x: -8, y: -14 };
+const INTRO_STEP = 0.038;
+const EXIT_STEP = 0.08;
+
+function introScale(intro) {
+  if (intro < 0.52) return 0.18 + intro * 2.2;
+  return 1.34 - (intro - 0.52) * 0.708;
+}
+
+function applyTransform(pic, state, i) {
+  const x = state.x + STAGGER[i].x;
+  const y = state.y + STAGGER[i].y;
+  const fade = 1 - state.exit;
+  const scale = introScale(state.intro) * fade;
+  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale})`;
+  pic.style.opacity = String(fade);
+}
+
+function clearPic(pic) {
+  pic.style.transform = '';
+  pic.style.opacity = '';
+}
+
 function addCursorFollower(list) {
-  let activeMedia = null;
   let mouseX = 0;
   let mouseY = 0;
+  let activeItem = null;
+  let activeSet = [];
+  let exitingSets = [];
+  let rafId = null;
   let isScrolling = false;
   let scrollEndTimer = null;
 
-  const setPosition = (media) => {
-    media.style.left = `${mouseX - 2}px`;
-    media.style.top = `${mouseY}px`;
+  const stepSpring = (state, i) => {
+    const targetX = mouseX + TARGET_OFFSET.x;
+    const targetY = mouseY + TARGET_OFFSET.y;
+    state.x += (targetX - state.x) * STIFFNESS * FOLLOW_SPEED[i];
+    state.y += (targetY - state.y) * STIFFNESS * FOLLOW_SPEED[i];
   };
 
-  const hide = () => {
-    activeMedia?.classList.remove('is-visible');
-    activeMedia = null;
+  const tick = () => {
+    activeSet.forEach(({ pic, state }, i) => {
+      stepSpring(state, i);
+      const nextIntro = Math.min(state.intro + INTRO_STEP, 1);
+      state.intro = 1 - (1 - nextIntro) ** 2.2;
+      applyTransform(pic, state, i);
+    });
+
+    exitingSets = exitingSets.filter((set) => {
+      let alive = false;
+      set.pics.forEach(({ pic, state }, i) => {
+        state.exit = Math.min(state.exit + EXIT_STEP, 1);
+        stepSpring(state, i);
+        applyTransform(pic, state, i);
+        if (state.exit < 1) alive = true;
+      });
+      if (!alive) {
+        set.media?.classList.remove('is-visible');
+        set.pics.forEach(({ pic }) => clearPic(pic));
+      }
+      return alive;
+    });
+
+    if (!activeSet.length && !exitingSets.length) {
+      rafId = null;
+      return;
+    }
+    rafId = requestAnimationFrame(tick);
   };
 
-  const activate = (media) => {
-    if (media === activeMedia) return;
-    activeMedia?.classList.remove('is-visible');
-    activeMedia = media;
-    setPosition(activeMedia);
-    activeMedia.classList.add('is-visible');
+  const startRaf = () => {
+    if (rafId) return;
+    rafId = requestAnimationFrame(tick);
   };
 
-  // Activates the image for whichever .faq-item is under the given coordinates.
-  // mouseover doesn't re-fire when the page scrolls under a stationary cursor,
-  // so we share this logic with the scroll-end handler.
+  const instantHide = (item) => {
+    const media = item.querySelector('.faq-media');
+    media?.classList.remove('is-visible');
+    media?.querySelectorAll('picture').forEach(clearPic);
+  };
+
+  const activate = (item) => {
+    if (item === activeItem) return;
+    if (activeItem) instantHide(activeItem);
+
+    activeItem = item;
+    const media = item.querySelector('.faq-media');
+    if (!media) return;
+
+    const pics = [...media.querySelectorAll('picture')].slice(0, 3);
+    activeSet = pics.map((pic, i) => ({
+      pic,
+      state: {
+        x: mouseX + SPAWN_OFFSET[i].x,
+        y: mouseY + SPAWN_OFFSET[i].y,
+        intro: 0,
+        exit: 0,
+      },
+    }));
+
+    media.classList.add('is-visible');
+    activeSet.forEach(({ pic, state }, i) => applyTransform(pic, state, i));
+    startRaf();
+  };
+
+  const deactivate = () => {
+    if (!activeItem || !activeSet.length) {
+      activeItem = null;
+      activeSet = [];
+      return;
+    }
+    exitingSets.push({
+      media: activeItem.querySelector('.faq-media'),
+      pics: activeSet,
+    });
+    activeItem = null;
+    activeSet = [];
+    startRaf();
+  };
+
   const activateItemAt = (x, y) => {
     const el = document.elementFromPoint(x, y);
     const item = el?.closest?.('.faq-item');
-    if (item && list.contains(item)) {
-      const media = item.querySelector('.faq-media');
-      if (media) activate(media);
-    }
+    if (item && list.contains(item)) activate(item);
   };
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  }, { passive: true });
+
+  list.addEventListener('mouseover', (e) => {
+    if (!DESKTOP_MQ.matches || isScrolling) return;
+    activateItemAt(e.clientX, e.clientY);
+  });
 
   const onScroll = () => {
     isScrolling = true;
-    hide();
+    deactivate();
     clearTimeout(scrollEndTimer);
     scrollEndTimer = setTimeout(() => {
       isScrolling = false;
@@ -50,25 +161,6 @@ function addCursorFollower(list) {
     }, 150);
   };
 
-  // Global tracking keeps mouseX/mouseY current for the scroll-end check.
-  document.addEventListener('mousemove', (e) => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  }, { passive: true });
-
-  list.addEventListener('mousemove', (e) => {
-    if (!DESKTOP_MQ.matches || !activeMedia) return;
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-    setPosition(activeMedia);
-  });
-
-  list.addEventListener('mouseover', (e) => {
-    if (!DESKTOP_MQ.matches || isScrolling) return;
-    activateItemAt(e.clientX, e.clientY);
-  });
-
-  // Attach scroll listener only while cursor is over the list.
   list.addEventListener('mouseenter', () => {
     if (!DESKTOP_MQ.matches) return;
     document.addEventListener('scroll', onScroll, { passive: true });
@@ -76,7 +168,7 @@ function addCursorFollower(list) {
 
   list.addEventListener('mouseleave', () => {
     isScrolling = false;
-    hide();
+    deactivate();
     clearTimeout(scrollEndTimer);
     document.removeEventListener('scroll', onScroll);
   });
@@ -86,7 +178,6 @@ function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
 
-  // Row 1: section headline
   const headingCol = rows[0]?.children[0];
   const headline = createTag('div', { class: 'faq-headline' });
   if (headingCol) {
@@ -94,7 +185,6 @@ function decorate(block) {
     headline.append(...headingCol.childNodes);
   }
 
-  // Rows 2-N: list items
   const list = createTag('ol', { class: 'faq-list' });
   rows.slice(1).forEach((row, i) => {
     const textCol = row.children[0];
