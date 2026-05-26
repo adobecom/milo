@@ -21,8 +21,7 @@ const EXIT_STEP = 0.08;
 
 function introScale(intro) {
   const eased = 1 - (1 - intro) ** 2.2;
-  if (eased < 0.52) return 0.18 + eased * 2.2;
-  return 1.34 - (eased - 0.52) * 0.708;
+  return 0.18 + eased * 0.82;
 }
 
 function applyTransform(pic, state, i) {
