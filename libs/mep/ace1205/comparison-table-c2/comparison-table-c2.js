@@ -10,17 +10,14 @@ const hasTextNode = (...nodeLists) => nodeLists.some(
 );
 
 const getFirstVisibleColumnIndex = (el) => {
-  const firstVisible = [...el.querySelectorAll('.header-item[data-column-index]')]
-    .find((item) => !item.classList.contains('hidden'));
+  const firstVisible = el.querySelector('.header-item[data-column-index]:not(.hidden)');
   return firstVisible ? parseInt(firstVisible.getAttribute('data-column-index'), 10) : -1;
 };
 
 function syncAccessibilityHeaders(el) {
   const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
-  if (!accessibilityHeaderRow) return;
-
   const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
-  if (!visibleHeaderItems.length) return;
+  if (!accessibilityHeaderRow || !visibleHeaderItems.length) return;
 
   const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
 
@@ -197,14 +194,13 @@ function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, hea
     headerItem.appendChild(collapsible);
   }
   const btnSection = subContainers[subContainers.length - 1];
-  if (btnSection) {
-    btnSection.classList.add('btn-section');
-    const btnWrap = createTag('div', { class: 'btn-section-wrap' });
-    const btnInner = createTag('div');
-    btnInner.appendChild(btnSection);
-    btnWrap.appendChild(btnInner);
-    headerItem.appendChild(btnWrap);
-  }
+  if (!btnSection) return;
+  btnSection.classList.add('btn-section');
+  const btnWrap = createTag('div', { class: 'btn-section-wrap' });
+  const btnInner = createTag('div');
+  btnInner.appendChild(btnSection);
+  btnWrap.appendChild(btnInner);
+  headerItem.appendChild(btnWrap);
 }
 
 function decorateHeader(el, headerContent) {
