@@ -100,7 +100,7 @@ function elContainsText(el) {
 }
 
 const isC2 = getMetadata('foundation') === 'c2';
-const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'lg' } : ['m', 's', 'm'];
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'md' } : ['m', 's', 'm'];
 
 export function decorateBlockText(el, config = blockTextConfig, type = null) {
   const sizeMap = Array.isArray(config)
@@ -762,4 +762,15 @@ export function decorateViewportContent(el, decorateFn) {
     decorateTextOverrides(el);
   }
   return viewports;
+}
+
+export function hangOpeningQuote(el) {
+  if (!el) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = el.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  el.textContent = el.textContent.slice(1);
+  const span = createTag('span', { class: 'hang-opening-quote' }, quote);
+  el.prepend(span);
 }

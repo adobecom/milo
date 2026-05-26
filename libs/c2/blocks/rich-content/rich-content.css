@@ -31,14 +31,14 @@
 
   &.center .foreground .content {
     align-items: center;
+
+    .action-area {
+      justify-content: center;
+    }
   }
 
   .action-area {
     margin-top: calc(var(--s2a-spacing-24) - var(--content-gap));
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--content-gap);
   }
 }
 

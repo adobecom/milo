@@ -116,6 +116,7 @@ const C2_BLOCKS = [
   'carousel-c2',
   'elastic-carousel',
   'explore-card',
+  'faq',
   'global-footer',
   'global-navigation',
   'martech-metadata',
@@ -125,7 +126,9 @@ const C2_BLOCKS = [
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'social-proof',
   'visually-hidden',
+  'product-marquee-grid',
 ];
 
 const AUTO_BLOCKS = [
