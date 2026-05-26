@@ -35,33 +35,28 @@ function decorate(block) {
   promoteParagraphHeading(content);
 }
 
-function decorateVideoVariant(el) {
-  decorateBlockText(el);
-  const [mediaRow, ctaRow] = [...el.children];
+function decorateVideoVariant(container) {
+  const row = container.children[0];
+  if (!row) return;
 
-  if (mediaRow?.children[0]) {
-    const mediaCell = mediaRow.children[0];
+  const [ctaCell, mediaCell] = [...row.children];
+
+  if (mediaCell) {
     mediaCell.classList.add('media');
-    el.append(mediaCell);
+    container.append(mediaCell);
   }
-  mediaRow?.remove();
 
-  if (ctaRow?.children[0]) {
-    const ctaCell = ctaRow.children[0];
+  if (ctaCell) {
+    decorateBlockText(ctaCell);
     ctaCell.classList.add('cta-area');
-    el.append(ctaCell);
+    container.append(ctaCell);
   }
-  ctaRow?.remove();
 
-  const actionArea = el.querySelector('.action-area');
-  actionArea?.classList.add('dark');
-  actionArea?.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
+  row.remove();
+  container.querySelector('.action-area')?.classList.add('dark');
+  container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
 
 export default function init(el) {
-  if (el.classList.contains('video')) {
-    decorateVideoVariant(el);
-    return;
-  }
-  decorateViewportContent(el, decorate);
+  decorateViewportContent(el, el.classList.contains('video') ? decorateVideoVariant : decorate);
 }

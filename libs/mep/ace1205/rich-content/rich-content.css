@@ -185,6 +185,10 @@
     display: flex;
     justify-content: center;
   }
+
+  .action-area.dark {
+    background-color: unset;
+  }
 }
 
 @media (width >= 768px) {
