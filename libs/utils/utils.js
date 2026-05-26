@@ -127,6 +127,7 @@ const C2_BLOCKS = [
   'section-metadata',
   'social-proof',
   'visually-hidden',
+  'product-marquee-grid',
 ];
 
 const AUTO_BLOCKS = [
