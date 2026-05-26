@@ -17,9 +17,9 @@ abstract scroll units (desktop):
 │        │                       │                       │               │
 ├────────┴───────────────────────┤                       │               │
 │  arcPan: 0 → 1 by scroll 1350  │ (arc pan completes    │               │
-│  Cards arc-rotate in from      │  before gridEnd;      │               │
-│  upper-right. Slide-in pre-pin │  rotation done first) │               │
-│  rises cards into formation.   │                       │               │
+│  Cards rotate CCW around       │  before gridEnd;      │               │
+│  fanCenter from lower-right    │  rotation done first) │               │
+│  through to upper-left.        │                       │               │
 │        │                       │                       │               │
 │        ├───────────────────────┤                       │               │
 │        │ arcToGrid: 0 → 1      │                       │               │
@@ -96,61 +96,69 @@ they sum to `animScrollTotal` (excluding any post-reveal pan).
 
 **Recipe — slow rotation feel without changing phase boundaries:**
 
-Lower `arcSweepMultiplier` (e.g. 1.0 → 0.7). Rotation sweeps a smaller total
-angle over the same scroll distance, so it visibly slows without compressing
-peel or moving any phase boundary. See the next section.
+Lower `arcSweepMultiplier` (e.g. 1.0 → 0.7) and scale `arcCwStart` by the
+same factor (e.g. 0.50 → 0.35). Both halves of the rotation slow together,
+so the pre-pin and post-pin rates stay matched.
 
 ### Arc rotation feel
 
-`arcPanEnd` and `arcSweepMultiplier` are easy to confuse — they're two
-different knobs:
+The rotation is one continuous sweep spanning pre-pin and arc-pan, driven
+by two terms summed into `rotationOffset`:
 
-- `arcPanEnd` is the scroll-distance budget for `arcPan` to go 0 → 1. Lowering
-  it makes `arcPan` advance faster per scroll unit. But because peel timing
-  depends on the same `arcPan` progress, this also shifts when peel starts
-  visually — not what you usually want if you're aiming for "slower rotation".
-- `arcSweepMultiplier` scales the total angular sweep applied per unit of
-  `arcPan`. Lowering it makes the rotation cover less angle without changing
-  the scroll budget or peel timing. Use this when you want rotation to *feel*
-  slower while keeping phase boundaries put.
+- **`cwBoost = arcCwStart * (blockTop / vh)`** — decays linearly from
+  `arcCwStart` to 0 as the block scrolls into pin.
+- **`arcSpan * arcSweepMultiplier * phase.arcPan`** — runs post-pin.
+
+For a constant perceived rate across pin, pick
+`arcCwStart ≈ arcSpan * arcSweepMultiplier / arcPanScroll_in_vh`. With the
+defaults (arc-pan = ~1.63 vh), that lands at ~0.49; we use 0.50.
+
+`arcPanEnd` and `arcSweepMultiplier` look similar but do different things:
+
+- `arcPanEnd` is the scroll budget for `arcPan` 0 → 1. Lowering it shortens
+  arc-pan, but also pulls peel start earlier (peel uses the same `arcPan`).
+- `arcSweepMultiplier` scales the total angle swept by `arcPan`. Use this
+  to change rotation speed without moving any phase boundary.
 
 | Key | Default | What it does |
 | --- | ---: | --- |
-| `arcPanEnd` | 1350 | Scroll units for `arcPan` to go 0 → 1 (rotation speed per scroll). |
-| `arcSweepMultiplier` | 1 | Multiplier on `arcSpan` for total sweep. Lower = visibly slower rotation, independent of peel timing. Independent of `arcStagger`. |
+| `arcCwStart` | 0.50 | Extra CW rotation (rad) at pre-pin start, decaying to 0 at pin. Sets both the off-screen starting angle and the pre-pin rotation rate. |
+| `arcApexLift` | 0.10 | Vertical bias of the arc apex (card 7's rest y) as a fraction of vh. Card 7 lands at `vh * (0.5 - arcApexLift)`. |
+| `arcPanEnd` | 1350 | Scroll units for `arcPan` to go 0 → 1. |
+| `arcSweepMultiplier` | 1 | Multiplier on `arcSpan` for total post-pin sweep. |
 | `arcSpan` | 0.80 | Angular span (radians) of the arc fan. Wider = cards spread further along the arc. |
-| `arcStagger` | 0.50 | Per-card peel-wave lag. 0 = all cards peel simultaneously; values near 1 = fully staggered (last card hasn't started peeling when first finishes). |
+| `arcStagger` | 0.50 | Per-card peel-wave lag. 0 = all cards peel simultaneously; values near 1 = fully staggered. |
 | `arcLiftZoom` | 1.00 | Scale boost during arc phase. Higher = bigger card "pop" before peel. |
-| `arcFanDepthDelta` | 0.30 | Fake-depth scale falloff across the fan: fanIdx=7 at 1.0×, fanIdx=0 at `(1 - delta)×`. Higher = stronger illusion of depth. |
+| `arcFanDepthDelta` | 0.30 | Fake-depth scale falloff across the fan: fanIdx=7 at 1.0×, fanIdx=0 at `(1 - delta)×`. |
 | `arcYTilt` | 25 | Y-axis 3D tilt magnitude (degrees) per card during arc. |
 | `arcXTilt` | 10 | X-axis 3D tilt, paired with `arcYTilt`. |
-| `arcPushDistance` | 60 | Pixels each card pushes outward along the arc normal as peel begins. Higher = bigger "explosion" before peel collapses cards toward the grid. |
+| `arcPushDistance` | 60 | Pixels each card pushes outward along the arc normal as peel begins. |
 | `arcShadowAlpha` | 0.15 | Base shadow opacity on arc cards; fades to 0 through peel. |
 
-### Slide-in (pre-pin entry)
+### Pre-pin pan-up compensation
 
-While the block is scrolling into pin (before `position: sticky` engages),
-cards enter from the right and converge on their arc positions.
+The sticky stage scrolls naturally with the page until it pins, which would
+pull every card up in the viewport along with the stage. To keep the
+rotation reading as an orbit around `fanCenter`, each card's `translateY`
+is offset by `-prePinOffset` (= `max(0, blockTop)`). At pin the offset is 0
+and post-pin behavior is unchanged.
 
-`arcPrePinRatio` is the key knob here. By default, `arcPan` is 0 until the
-block is fully pinned, which causes a visible "click" — translation snaps
-into rotation. Mixing a fraction of pre-pin scroll into `arcPan` makes the
-arc visibly rotate during slide-in so the transition is continuous.
+The topmost cards sit at negative stage-local Y early in pre-pin and are
+clipped at the stage's `overflow: hidden` edge; they reveal as the stage
+rises while their viewport position stays put.
 
-The tradeoff: higher ratios mean rotation runs while the block is still
-partially above the fold, so on shorter viewports the upper-row card can
-clip against the previous section's `overflow: hidden` edge as it rotates.
-Tune against the shortest viewport you care about.
+### Card entry ramps
+
+`slideT` (0 → 1 across pre-pin + first ~200 scroll units post-pin) drives
+the per-card opacity fade-in and scale ramp during entry. Cards' positions
+come entirely from the arc rotation — there's no horizontal slide-in.
 
 | Key | Default | What it does |
 | --- | ---: | --- |
-| `arcPrePinRatio` | 0.1 | Fraction of pre-pin scroll mixed into `arcPan`. Higher = smoother pin handoff, but risks clipping on short viewports. |
-| `slideStagger` | 0.45 | Per-card arrival lag. `fanIdx=7` slides in first, `fanIdx=0` last. Higher = larger gap between first and last arrivals. |
-| `slideScaleStart` | 0.85 | Scale at slide start; grows to 1.0 on arrival. Lower = cards enter visibly smaller. |
-| `slideStartX` | 0.55 | Base X offset at slide start, as fraction of vW. Higher = cards enter from further right. |
-| `slideStaggerX` | 0.20 | Additional X offset per later card (fraction of vW). |
-| `slideOverlap` | 200 | Scroll units into the post-pin window when slide-in fully completes. |
-| `slideOpacityRampTo` | 0.25 | Value of per-card slide progress at which opacity reaches 1. Lower = sharper appear. |
+| `slideStagger` | 0.45 | Per-card arrival lag. `fanIdx=7` is first, `fanIdx=0` last. |
+| `slideScaleStart` | 0.85 | Scale at entry; grows to 1.0 over `slideT`. |
+| `slideOverlap` | 200 | Scroll units past pin where `slideT` reaches 1. |
+| `slideOpacityRampTo` | 0.25 | Per-card `slideT` value at which opacity hits 1. Lower = sharper appear. |
 
 ### Grid layout (post-peel resting positions)
 

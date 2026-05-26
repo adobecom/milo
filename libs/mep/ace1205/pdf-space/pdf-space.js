@@ -38,13 +38,15 @@ const ANIM = {
   arcXTilt: 10,
   arcPushDistance: 60,
   arcShadowAlpha: 0.15,
+  arcCwStart: 0.50,
+  // Vertical bias of the arc apex as a fraction of vh. Card 7 (top of arc)
+  // rests at viewport y = vh * (0.5 - arcApexLift). 0 = centered, 0.1 = 10%
+  // above center.
+  arcApexLift: 0.10,
 
-  // Slide-in (pre-pin entry)
-  arcPrePinRatio: 0.1,
+  // Slide-in opacity & scale ramps
   slideStagger: 0.45,
   slideScaleStart: 0.85,
-  slideStartX: 0.55,
-  slideStaggerX: 0.20,
   slideOverlap: 200,
   slideOpacityRampTo: 0.25,
 
@@ -165,14 +167,6 @@ function easeInOutCubic(t) {
 }
 function easeOutCubic(t) {
   return 1 - ((1 - t) ** 3);
-}
-// Quadratic ease-in for first 8%, then constant velocity — essentially linear after ramp.
-function arcRotationEase(t) {
-  const k = 0.08;
-  const a = 1 / (k * (2 - k));
-  const v0 = a * k * k;
-  const s = 2 * a * k;
-  return t <= k ? a * t * t : v0 + s * (t - k);
 }
 function easeOutSine(t) {
   return Math.sin((t * Math.PI) / 2);
@@ -556,6 +550,7 @@ export default function init(el) {
   let cachedTextBlockWidth = 0;
   let cachedBlockDocTop = 0;
   let cachedBlockHeight = 0;
+  let prePinOffset = 0;
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
@@ -566,17 +561,16 @@ export default function init(el) {
 
   // Precompute per-frame arc constants once so getFanCenter doesn't recompute for each card.
   function buildArcCtx() {
-    const arcRotationProgress = arcRotationEase(phase.arcPan);
     const arcZoom = 1.4 - 0.4 * easeOutCubic(phase.arcToGrid);
     const arcRadius = Math.max(viewportWidth, viewportHeight) * 1.2 * arcZoom;
     const fanCenterX = viewportWidth * 0.5 - arcRadius * Math.sin(arcAngle);
-    const fanCenterY = viewportHeight * 0.5
-      + arcRadius * Math.cos(arcAngle)
-      - viewportHeight * 0.1;
+    const fanCenterY = viewportHeight * (0.5 - ANIM.arcApexLift)
+      + arcRadius * Math.cos(arcAngle);
     const middleAngle = arcAngle - Math.PI / 2;
-    const rotationOffset = ANIM.arcSpan * 0.5
-      - ANIM.arcSpan * ANIM.arcSweepMultiplier * arcRotationProgress;
-    const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
+    const cwBoost = ANIM.arcCwStart * clamp01(prePinOffset / viewportHeight);
+    const rotationOffset = ANIM.arcSpan * 0.5 + cwBoost
+      - ANIM.arcSpan * ANIM.arcSweepMultiplier * phase.arcPan;
+    const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * phase.arcPan);
     const flattenRaw = clamp01((phase.arcToGrid - 0.5) / 0.5);
     const flattenProgress = 0.20 * easeInOutCubic(flattenRaw);
     let tangentDirectionX = 0;
@@ -914,19 +908,15 @@ export default function init(el) {
     const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
-    // Per-card slide-in: X offset from right + scale ramp + opacity fade. The
-    // sense of continuous rotation through pre-pin comes from arcPrePinRatio
-    // (in updateAnimationProgress), not from a Y offset here.
     const slideStaggerFrac = (1 - card.fanIdx / FAN_LAST_INDEX) * ANIM.slideStagger;
     const cardSlideT = clamp01((phase.slideT - slideStaggerFrac) / (1 - slideStaggerFrac));
     const slideE = easeOutSine(cardSlideT);
-    const slideX = viewportWidth
-      * (ANIM.slideStartX + (1 - card.fanIdx / FAN_LAST_INDEX) * ANIM.slideStaggerX)
-      * (1 - slideE);
     const slideScaleMul = ANIM.slideScaleStart + (1 - ANIM.slideScaleStart) * slideE;
 
-    card.visualCx = currentX + slideX;
-    card.visualCy = currentY;
+    const compensatedY = currentY - prePinOffset;
+
+    card.visualCx = currentX;
+    card.visualCy = compensatedY;
 
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
@@ -947,8 +937,8 @@ export default function init(el) {
     const cardXTilt = -screenYNorm * ANIM.arcXTilt * tiltFactor;
 
     setCardTransform(card.el, {
-      translateX: currentX + slideX - card.width / 2,
-      translateY: currentY - card.height / 2,
+      translateX: currentX - card.width / 2,
+      translateY: compensatedY - card.height / 2,
       scale: scale * slideScaleMul,
       rotation,
       tiltX: cardXTilt,
@@ -962,7 +952,7 @@ export default function init(el) {
       card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
     const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
-    setLabelPos(card, currentX, currentY, scale, peelReveal);
+    setLabelPos(card, currentX, compensatedY, scale, peelReveal);
   }
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
@@ -1026,24 +1016,16 @@ export default function init(el) {
     const blockTop = cachedBlockDocTop - scrollY;
     const panRange = Math.max(1, cachedBlockHeight - viewportHeight);
     scrollCurrent = clamp01(-blockTop / panRange) * animScrollTotal;
+    prePinOffset = Math.max(0, blockTop);
 
     const slideEarly = viewportHeight;
-    // Clamp blockTop ≥ 0 so prePinContrib holds at slideEarly post-pin instead of
-    // growing further. Without this, slideT velocity doubles at scroll=0.
     const prePinContrib = Math.max(0, slideEarly - Math.max(0, blockTop));
-    const slideScroll = scrollCurrent + prePinContrib;
-    phase.slideT = clamp01(slideScroll / (slideEarly + ANIM.slideOverlap));
-
-    // Mix prePinContrib into arcPan so rotation runs continuously through
-    // slide-in — eliminates the "translation → rotation" snap at the pin moment.
-    const arcScroll = scrollCurrent + prePinContrib * ANIM.arcPrePinRatio;
-    phase.arcPan = clamp01(arcScroll / ANIM.arcPanEnd);
-    const rawArcToGridProgress = (scrollCurrent - ANIM.peelStartScroll)
-      / (timing.gridEnd - ANIM.peelStartScroll);
-    phase.arcToGrid = clamp01(rawArcToGridProgress);
-    const rawSlottingProgress = (scrollCurrent - timing.slottingStart)
-      / timing.slottingDuration;
-    phase.slotting = clamp01(rawSlottingProgress);
+    phase.slideT = clamp01((scrollCurrent + prePinContrib) / (slideEarly + ANIM.slideOverlap));
+    phase.arcPan = clamp01(scrollCurrent / ANIM.arcPanEnd);
+    phase.arcToGrid = clamp01(
+      (scrollCurrent - ANIM.peelStartScroll) / (timing.gridEnd - ANIM.peelStartScroll),
+    );
+    phase.slotting = clamp01((scrollCurrent - timing.slottingStart) / timing.slottingDuration);
   }
 
   let arcTextPanProgressCached = 0;
