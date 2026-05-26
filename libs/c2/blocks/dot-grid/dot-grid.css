@@ -22,18 +22,18 @@
 }
 
 .dot-grid .text-block .heading {
-  margin: 0 0 8px;
-  font-size: 20px;
-  font-weight: 900;
+  margin: 0 0 var(--s2a-spacing-8);
+  font-size: var(--s2a-font-size-20);
+  font-weight: var(--s2a-font-weight-heading);
   line-height: 1.2;
   letter-spacing: -0.4px;
-  color: #111;
+  color: var(--s2a-color-gray-1000);
 }
 
 .dot-grid .text-block p {
-  margin: 0 0 12px;
-  font-size: 16px;
-  font-weight: 400;
+  margin: 0 0 var(--s2a-spacing-12);
+  font-size: var(--s2a-font-size-16);
+  font-weight: var(--s2a-font-weight-body);
   line-height: 1.5;
   color: var(--s2a-color-transparent-black-64);
 }
@@ -41,9 +41,9 @@
 .dot-grid .text-block a {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  font-weight: 700;
+  gap: var(--s2a-spacing-4);
+  font-size: var(--s2a-font-size-14);
+  font-weight: var(--s2a-font-weight-label);
   color: var(--s2a-color-gray-1000);
   text-decoration: none;
 }
@@ -51,7 +51,6 @@
 .dot-grid canvas {
   position: absolute;
   inset: 0;
-  z-index: 0;
 }
 
 .dot-grid .adbe-logo-svg {
@@ -170,12 +169,12 @@
   align-items: center;
   padding: 5px 6.3px;
   white-space: nowrap;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-label);
   color: var(--s2a-color-gray-1000);
   letter-spacing: -0.24px;
   background: #e1e1f1;
-  border-radius: 2px;
+  border-radius: var(--s2a-border-radius-2);
   transform-origin: top left;
   will-change: transform, opacity;
 }
@@ -194,10 +193,11 @@
 .dot-grid .acrobat-title .heading {
   margin: 0;
   white-space: nowrap;
-  font-size: min(3.889vw, 56px);
-  font-weight: 900;
+  font-size: min(3.889vw, var(--s2a-font-size-56));
+  font-weight: var(--s2a-font-weight-heading);
   line-height: 1;
-  letter-spacing: min(-0.117vw, -1.68px);
+  /* stylelint-disable-next-line custom-property-pattern */
+  letter-spacing: min(-0.117vw, var(--s2a-font-letter-spacing-neg-1_68));
   color: var(--s2a-color-gray-1000);
 }
 
@@ -205,10 +205,10 @@
   box-sizing: border-box;
   margin: 0 auto;
   max-width: 616px;
-  padding-top: 8px;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 20px;
+  padding-top: var(--s2a-spacing-8);
+  font-size: var(--s2a-font-size-16);
+  font-weight: var(--s2a-font-weight-body);
+  line-height: var(--s2a-font-line-height-20);
   color: var(--s2a-color-gray-900);
 }
 
@@ -218,7 +218,7 @@
   z-index: 19;
   display: flex;
   background: var(--s2a-color-gray-1000);
-  border-radius: 9999px;
+  border-radius: var(--s2a-border-radius-round);
   transform: translateX(-50%) translateY(var(--cta-y, 150vh));
   will-change: transform;
 }
@@ -228,11 +228,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 40px;
-  padding: 0 20px;
+  height: var(--s2a-spacing-40);
+  padding: 0 var(--s2a-spacing-20);
   white-space: nowrap;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--s2a-font-size-14);
+  font-weight: var(--s2a-font-weight-label);
   color: var(--s2a-color-gray-25);
   text-decoration: none;
   border-radius: inherit;
@@ -258,11 +258,11 @@
 
 @media (width <= 767px) {
   .dot-grid .acrobat-desktop-mockup {
-    display: none !important;
+    display: none;
   }
 
   .dot-grid .acrobat-desktop-panel {
-    display: none !important;
+    display: none;
   }
 
   .dot-grid .acrobat-mobile-mockup {
@@ -303,8 +303,9 @@
   .dot-grid .acrobat-title .heading {
     margin-bottom: 6px;
     white-space: normal;
-    font-size: 32px;
-    letter-spacing: -0.96px;
+    font-size: var(--s2a-font-size-32);
+    /* stylelint-disable-next-line custom-property-pattern */
+    letter-spacing: var(--s2a-font-letter-spacing-neg-0_96);
   }
 
   .dot-grid .acrobat-cta {

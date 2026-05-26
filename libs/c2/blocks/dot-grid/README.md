@@ -195,12 +195,14 @@ into place; useful for emphasis.
 ### Mobile-specific timing
 
 Mobile compresses the settle gap and adds a post-reveal pan after slotting.
+The post-reveal scroll budget is computed at resize time from how far the
+stack overflows the viewport (mirrors the desktop pattern), so scroll velocity
+through the post-reveal pan stays roughly 1:1 with the pan motion.
 
 | Key | Default | What it does |
 | --- | ---: | --- |
 | `mobileSettleDuration` | 468 | Compressed settle gap on mobile (replaces `arcSettleDuration`). |
 | `mobileSlottingDuration` | 900 | Mobile slotting animation length. |
-| `mobilePostRevealScroll` | 500 | Extra scroll past slotting to pan the Acrobat UI up so the CTA clears a tall stack. Only applied when the layout actually overflows; otherwise treated as 0. |
 | `mobileArcAngle` | 0.6 | Fixed mobile arc angle (rad). Desktop uses `atan2(vH, vW)` so arc shape varies with aspect ratio; mobile pins this to keep the arc consistent at narrow widths. |
 
 ## Z-index layering
@@ -224,7 +226,7 @@ Bottom → top:
 
 | z-index | Element | Purpose |
 | ---: | --- | --- |
-| 0 | `canvas` | Dot-grid backdrop. |
+| auto | `canvas` | Dot-grid backdrop — implicit bottom of the stack (first child, no `z-index`). |
 | 10 | `.adbe-logo-svg` | Big Adobe logo flourish that draws in during settle. |
 | 12 | `.text-block` | Marketing copy that pans in during settle. |
 | 18 (mobile) / 19 (desktop) | `.acrobat-title`, `.acrobat-cta` | Headline + CTA. Sit just below the mockup so they tuck behind it during the slot transition but stay above the dot grid and ADBE logo. |
