@@ -5,6 +5,7 @@
   --tabs-container-background-color: var(--s2a-color-transparent-black-04);
   
   /* Pill colors */
+  --tabs-pill-font-size: var(--s2a-typography-font-size-label);
   --tabs-pill-text-color: var(--s2a-color-transparent-black-64);
   --tabs-pill-bg-color: transparent;
   --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
@@ -32,12 +33,13 @@
   overflow: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
   scrollbar-width: none; /* Firefox 64 */
   box-shadow: none;
   background: var(--tabs-container-background-color); 
   border-radius: var(--m-rounded-corners-tabs);
   min-height: var(--s2a-spacing-40);
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .tabs .tabList::-webkit-scrollbar {
@@ -63,6 +65,10 @@
   position: relative; /* for slider */
 }
 
+.tabs .tabs-wrapper {
+  justify-content: center;
+}
+
 /* center tabs — centering is handled by .tabs-wrapper; pseudo-elements not needed */
 .tabs.center > .tabList::after,
 .tabs.center > .tabList::before {
@@ -72,10 +78,6 @@
 .tabs .tabs-wrapper {
   display: flex;
   width: 100%;
-}
-
-.tabs.center .tabs-wrapper {
-  justify-content: center;
 }
 
 /* contained tabs content */
@@ -110,11 +112,11 @@
   align-self: stretch;
 }
 
-.tabs .tabList button {
+.tabs .tabList button.tab-button {
   color: var(--tabs-pill-text-color);
   cursor: pointer;
   font-family: var(--body-font-family);
-  font-size: var(--s2a-font-size-sm); 
+  font-size: var(--tabs-pill-font-size); 
   text-align: center;
   font-style: normal;
   font-weight: 700;
@@ -138,11 +140,11 @@
   height: 32px;
 }
 
-.tabs .tabList button:hover {
+.tabs .tabList button.tab-button:hover {
   color: var(--tabs-pill-text-color-hover);
 }
 
-.tabs .tabList button[aria-selected="true"] {
+.tabs .tabList button.tab-button[aria-selected="true"] {
   color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color-selected);
   transition: background 0s 0.25s;
@@ -166,13 +168,13 @@
   z-index: 0;
 }
 
-/* .tabs .tabList button:active {
+/* .tabs .tabList button.tab-button:active {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
   border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
 } */
 
-/* .tabs .tabList button:focus {
+/* .tabs .tabList button.tab-button:focus {
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
 } */
@@ -180,17 +182,38 @@
 /* Section Metadata */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
-.tabs-background-transparent .tabs .tabList button[aria-selected="true"] {
+.tabs-background-transparent .tabs .tabList button.tab-button[aria-selected="true"] {
   background: transparent;
 }
 
-/* .tabs-background-transparent .tabs .tabList button[aria-selected="true"] {
+/* .tabs-background-transparent .tabs .tabList button.tab-button[aria-selected="true"] {
   border-bottom-color: var(--tabs-active-bg-color);
 } */
+
+@media screen and (max-width: 599px) {
+  .tabs .tabs-wrapper {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs .tabs-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs [role='tablist'] {
+    overflow: visible;
+  }
+}
 
 @media screen and (min-width: 600px) {
   .tabs.left .tabs-wrapper {
     justify-content: flex-start;
+    width: 100vw;
   }
   
   .tabs.right .tabs-wrapper {

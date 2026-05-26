@@ -9,22 +9,29 @@ const tabColor = {};
 const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
 
-const isTabInTabListView = (tab) => {
+const getScrollContainer = (tab) => {
   const tabList = tab.closest('[role="tablist"]');
-  const tabRect = tab.getBoundingClientRect();
-  const tabListRect = tabList.getBoundingClientRect();
-
-  const tabLeft = Math.round(tabRect.left);
-  const tabRight = Math.round(tabRect.right);
-  const tabListLeft = Math.round(tabListRect.left);
-  const tabListRight = Math.round(tabListRect.right);
-
-  return (tabLeft >= tabListLeft && tabRight <= tabListRight);
+  return tabList.scrollWidth > tabList.clientWidth ? tabList : tabList.parentElement;
 };
 
-const scrollTabIntoView = (e, inline = 'center') => {
-  const isElInView = isTabInTabListView(e);
-  if (!isElInView) e.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline });
+const isTabInTabListView = (tab) => {
+  const container = getScrollContainer(tab);
+  const tabRect = tab.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  return (
+    Math.round(tabRect.left) >= Math.round(containerRect.left)
+    && Math.round(tabRect.right) <= Math.round(containerRect.right)
+  );
+};
+
+const scrollTabIntoView = (tab) => {
+  if (isTabInTabListView(tab)) return;
+  const container = getScrollContainer(tab);
+  const tabRect = tab.getBoundingClientRect();
+  const containerRect = container.getBoundingClientRect();
+  const scrollLeft = container.scrollLeft + tabRect.left - containerRect.left
+    - (containerRect.width - tabRect.width) / 2;
+  container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
 };
 
 export function getRedirectionUrl(linkedTabsList, targetId) {
@@ -201,7 +208,7 @@ function initTabs(elm, config, rootElem) {
     tab.addEventListener('click', (e) => changeTabs(e, config));
     tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
-  if (config) configTabs(config, rootElem);
+  if (config) configTabs(config, rootElem); // config will always exist
 }
 
 const handleDeferredImages = (block) => {
@@ -272,13 +279,13 @@ const init = async (block) => {
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
 
-  if (tabListItems) {
+  if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: 'tab',
-        class: 'tan-btn',
+        class: 'tab-button',
         id: `tab-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
         'aria-selected': (i === 0) ? 'true' : 'false',
@@ -289,8 +296,6 @@ const init = async (block) => {
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
-      tabBtn.addEventListener('click', (e) => changeTabs(e, config));
-      // tabBtn.addEventListener('focus', () => scrollTabIntoView(tabBtn));
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
@@ -303,15 +308,13 @@ const init = async (block) => {
         'data-block-id': `tabs-${tabId}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
-      tabListContent.setAttribute('aria-labelledby', `tab-${tabId}-${tabName}`);
       if (i > 0) tabListContent.setAttribute('hidden', '');
       tabContentContainer.append(tabListContent);
     });
     tabListItems[0].parentElement.remove();
   }
 
-  // add slider - create the pill indicator, snap to first selected button without
-  // transition, then re-enable
+  // Tab indicator
   const indicator = createTag('div', { class: 'tab-indicator' });
   tabListContainer.prepend(indicator);
   const firstActive = tabListContainer.querySelector('[aria-selected="true"]');
@@ -320,7 +323,6 @@ const init = async (block) => {
     moveIndicator(indicator, firstActive, tabListContainer);
     requestAnimationFrame(() => { indicator.style.transition = ''; });
   }
-  // ----
 
   const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
