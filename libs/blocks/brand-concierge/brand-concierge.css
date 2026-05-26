@@ -845,7 +845,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   --bc-fi-bar-border: rgba(0 0 0 / 12%);
   --bc-fi-input-bg: rgba(255 255 255 / 85%);
   --bc-fi-pill-bg: rgba(255 255 255 / 94%);
-  --bc-fi-pill-border: #8F8F8F;
+  --bc-fi-pill-border: rgba(0 0 0 / 12%);
   --bc-fi-text: #292929;
   --bc-fi-pill-text: #292929;
 
@@ -853,14 +853,14 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   background: var(--bc-fi-bar-bg);
   border: 1px solid var(--bc-fi-bar-border);
   border-radius: 16px;
-  bottom: 14px;
+  bottom: 24px;
   box-shadow: 0 8px 32px rgba(0 0 0 / 12%);
   box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 24px;
   left: 50%;
-  max-width: 1440px;
+  max-width: 1412px;
   padding: 20px 24px;
   position: fixed;
   transform: translateX(-50%);
