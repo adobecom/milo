@@ -127,6 +127,15 @@
           object-fit: cover;
         }
       }
+
+      &.is-visible picture:last-child {
+        animation: faq-image-scale-in 350ms ease-out both;
+      }
     }
   }
+}
+
+@keyframes faq-image-scale-in {
+  from { transform: scale(0.6); }
+  to   { transform: scale(1); }
 }
