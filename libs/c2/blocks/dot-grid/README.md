@@ -201,7 +201,67 @@ Mobile compresses the settle gap and adds a post-reveal pan after slotting.
 | `mobileSettleDuration` | 468 | Compressed settle gap on mobile (replaces `arcSettleDuration`). |
 | `mobileSlottingDuration` | 900 | Mobile slotting animation length. |
 | `mobilePostRevealScroll` | 500 | Extra scroll past slotting to pan the Acrobat UI up so the CTA clears a tall stack. Only applied when the layout actually overflows; otherwise treated as 0. |
-| `mobileArcAlpha` | 0.6 | Fixed mobile arc angle (rad). Desktop uses `atan2(vH, vW)` so arc shape varies with aspect ratio; mobile pins this to keep the arc consistent at narrow widths. |
+| `mobileArcAngle` | 0.6 | Fixed mobile arc angle (rad). Desktop uses `atan2(vH, vW)` so arc shape varies with aspect ratio; mobile pins this to keep the arc consistent at narrow widths. |
+
+## Z-index layering
+
+The block uses **two stacking contexts**:
+
+1. `.dot-grid-stage` — the outer context (the sticky stage element).
+2. `.card-scene` — an inner context, established by setting `z-index: 25` on
+   it inside the stage.
+
+Because `.card-scene` is its own stacking context, any z-index applied to a
+card inside it is **scoped to that inner context**. The card z-indexes set
+by JS (in the 20s and 30s) look like they overlap with the root layer
+numbers below, but they don't actually compete — the `.card-scene` block
+always sits at root z=25, so its entire interior renders above everything
+at z < 25 in the root layer.
+
+### Root layer (inside `.dot-grid-stage`, set in `dot-grid.css`)
+
+Bottom → top:
+
+| z-index | Element | Purpose |
+| ---: | --- | --- |
+| 0 | `canvas` | Dot-grid backdrop. |
+| 10 | `.adbe-logo-svg` | Big Adobe logo flourish that draws in during settle. |
+| 12 | `.text-block` | Marketing copy that pans in during settle. |
+| 18 (mobile) / 19 (desktop) | `.acrobat-title`, `.acrobat-cta` | Headline + CTA. Sit just below the mockup so they tuck behind it during the slot transition but stay above the dot grid and ADBE logo. |
+| 20 | `.acrobat-desktop-mockup`, `.acrobat-mobile-mockup` | The product mockup the cards slot into. |
+| 25 | `.card-scene` | Cards always paint above the mockup. **Establishes a new stacking context.** |
+
+### Card layer (inside `.card-scene`, set in `dot-grid.js`)
+
+All values here are relative to the `.card-scene` stacking context — they
+don't interact with the root layer numbers above. Cards have **no inline
+z-index at rest**; JS only assigns one during the arc and peel phases, when
+fan ordering matters.
+
+The base offsets are chosen so that during the staggered peel wave — when
+some cards are still on the arc while others have already lifted off via
+`arcPushDistance` — **any peeling card sits above any non-peeling card**.
+
+| Card state | z-index range | Where it's set |
+| --- | ---: | --- |
+| Arc rest / sliding in (peel not yet started) | 20..27 | `renderArcPeelToGrid` |
+| Currently peeling | 32..39 | `renderArcPeelToGrid` |
+| Peel complete (`peelProgress >= 0.995`) | (cleared) | `renderArcPeelToGrid` |
+| Slotting into mockup | (cleared) | `renderGridToSlot` |
+
+Within each band the formula is `base + (FAN_LAST_INDEX - card.fanIdx)`, so:
+
+- `fanIdx=0` (lower-right of the arc, peels first) → highest z within band.
+- `fanIdx=7` (upper-left of the arc, peels last) → lowest z within band.
+
+That ordering makes the cards at the "front" of the fan (which visually
+overlap the others) render on top.
+
+### Card labels
+
+Labels are appended to `.card-stack` *after* their cards in DOM order, so
+they paint above their owning card naturally. They never get an explicit
+z-index — they share the card layer and rely on document order.
 
 ## Debug overlay
 

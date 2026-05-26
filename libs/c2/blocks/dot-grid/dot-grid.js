@@ -71,7 +71,7 @@ const ANIM = {
   mobileSettleDuration: 468,
   mobileSlottingDuration: 900,
   mobilePostRevealScroll: 500,
-  mobileArcAlpha: 0.6,
+  mobileArcAngle: 0.6,
 };
 
 // ── Canvas dot-grid tunables ──────────────────────────────────────────────────
@@ -378,16 +378,12 @@ function buildCardStack(cardScene, cardDefs) {
   return cardDefs.map((def) => {
     const cardEl = def.el;
     cardEl.classList.add('card');
-    cardEl.style.left = '0';
-    cardEl.style.top = '0';
     const cardImg = cardEl.querySelector('img');
     if (cardImg) cardImg.decoding = 'async';
     stackRoot.appendChild(cardEl);
     let labelEl = null;
     if (def.label) {
       labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
-      labelEl.style.left = '0';
-      labelEl.style.top = '0';
       labelEl.style.opacity = '0';
       stackRoot.appendChild(labelEl);
     }
@@ -410,6 +406,8 @@ function buildCardStack(cardScene, cardDefs) {
       // a legitimate x=0 doesn't fall through to the baseX fallback.
       visualCx: NaN,
       visualCy: NaN,
+      lastZIndex: '',
+      lastArcShadowAlphaKey: '',
     };
   });
 }
@@ -451,7 +449,6 @@ function buildStage(el) {
   const sceneCards = buildCardStack(cardScene, cardDefs);
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
-  textBlockEl.style.left = '0';
   ctaEl.classList.add('acrobat-cta');
   [titleEl, textBlockEl].forEach((e) => {
     e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
@@ -817,7 +814,7 @@ export default function init(el) {
         card.el.style.height = `${card.height}px`;
       });
     }
-    arcAngle = frame.isMobile ? ANIM.mobileArcAlpha : Math.atan2(viewportHeight, viewportWidth);
+    arcAngle = frame.isMobile ? ANIM.mobileArcAngle : Math.atan2(viewportHeight, viewportWidth);
     cachedHeadlineH = titleEl?.offsetHeight || 80;
     if (frame.isMobile) {
       const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
@@ -844,7 +841,7 @@ export default function init(el) {
       const peekWinTop = viewportHeight - ANIM.desktopPeekAmount * aH;
       const peekStackTop = peekWinTop - cachedHeadlineH - ACROBAT_DESKTOP_GAP_ABOVE;
       const peekRange = ANIM.desktopPeekStartH - viewportHeight;
-      const peekBlend = Math.max(0, Math.min(1, peekRange / 320));
+      const peekBlend = clamp01(peekRange / 320);
       const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
       cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
       cachedAcrobatCtaTop = cachedAcrobatWinTop + aH + ACROBAT_DESKTOP_GAP_BELOW;
@@ -1100,7 +1097,7 @@ export default function init(el) {
       stage.style.setProperty('--title-opacity', titleOpacity);
       stage.style.setProperty('--cta-y', `${mockupTranslateY - panY}px`);
       const ctaVisiblePx = viewportHeight - cachedAcrobatCtaTop + panY;
-      ctaEl.style.opacity = Math.max(0, Math.min(1, ctaVisiblePx / 60)).toFixed(3);
+      ctaEl.style.opacity = clamp01(ctaVisiblePx / 60).toFixed(3);
       if (desktopPanelEl) {
         const media = desktopPanelEl.querySelector('picture');
         const panelRevealT = clamp01((phase.slotting - 0.6) / 0.4);
@@ -1275,14 +1272,13 @@ export default function init(el) {
 
   resize();
 
-  (function prewarmCardTextures() {
-    sceneCards.forEach((card) => {
-      card.el.querySelector('img')?.decode?.().catch(() => {});
-    });
-    stage.querySelectorAll('.acrobat-desktop-mockup img, .acrobat-mobile-mockup img').forEach((img) => {
-      img.decode?.().catch(() => {});
-    });
-  }());
+  // Prewarm card + mockup image decode so the first animated frame doesn't stall on img decode.
+  sceneCards.forEach((card) => {
+    card.el.querySelector('img')?.decode?.().catch(() => {});
+  });
+  stage.querySelectorAll('.acrobat-desktop-mockup img, .acrobat-mobile-mockup img').forEach((img) => {
+    img.decode?.().catch(() => {});
+  });
 
   const startLoop = () => {
     if (running) return;
