@@ -858,7 +858,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   left: 50%;
   max-width: 1440px;
   padding: 20px 24px;
@@ -876,7 +876,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 
 .brand-concierge.floating-input .bc-input-field {
   flex: 1 1 auto;
-  max-width: 500px;
   min-width: 340px;
 }
 
@@ -955,12 +954,18 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   color: #0004;
 }
 
+.brand-concierge.floating-input .input-field-button:not(:disabled) {
+  background: var(--bc-button-color);
+  color: #fff;
+}
+
+
 /* Prompt pills */
 .brand-concierge.floating-input .bc-prompt-cards {
   display: flex;
   flex: 0 1 auto;
   flex-wrap: nowrap;
-  gap: 8px;
+  gap: 10px;
   overflow: hidden;
 }
 
@@ -987,7 +992,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   font-size: 14px;
   gap: 6px;
   line-height: 1.4;
-  padding: 6px 16px;
+  padding: 4px 16px;
   white-space: nowrap;
 }
 
@@ -1034,6 +1039,10 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 .brand-concierge.floating-input.dark .input-field-button:disabled {
   color: #C6C6C6;
   pointer-events: none;
+}
+
+.brand-concierge.floating-input.dark .input-field-button:not(:disabled) {
+  color: #131313;
 }
 
 .brand-concierge.floating-input.dark .bc-input-field-container:hover,
