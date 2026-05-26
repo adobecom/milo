@@ -1,5 +1,5 @@
 .faq-redesign {
-  /* No outer padding-block — headline and items each manage their own */
+  position: relative;
 
   .faq-headline {
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
@@ -111,19 +111,14 @@
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
     }
 
-    /* Desktop: detaches from flow and becomes a zero-size fixed anchor at the
-       viewport origin. JS applies translate3d(cursor_x, cursor_y) directly to
-       each picture, so the container must be at left:0 top:0 with no transform
-       of its own — any transform here would fight the JS positioning. */
     .faq-media {
-      block-size: 0;
+      block-size: 100vh;
       display: none;
-      inline-size: 0;
-      left: 0;
+      inline-size: 100vw;
+      inset: 0;
       overflow: visible;
       pointer-events: none;
       position: fixed;
-      top: 0;
       z-index: 100;
 
       &.is-visible {
@@ -134,10 +129,14 @@
         block-size: 320px;
         border-radius: var(--s2a-border-radius-sm);
         inline-size: 280px;
+        inset: auto;
         left: 0;
         overflow: hidden;
         position: absolute;
         top: 0;
+        transform-origin: 50% 100%;
+        transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
+        will-change: transform, opacity;
 
         img {
           block-size: 100%;
