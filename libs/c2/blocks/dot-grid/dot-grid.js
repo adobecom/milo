@@ -20,64 +20,58 @@ const FAN_LAST_INDEX = FAN_COUNT - 1;
 /** Row pitch / compression math uses this tallest-card metric. */
 const ROW_METRIC_HEIGHT = 264;
 const LABEL_CLEARANCE = 28;
-// ── Animation tunables — edit here to adjust timing and feel ─────────────
+// Animation tunables. See README.md "Tuning the animation" for what each
+// option does and recipes for common tweaks.
 const ANIM = {
-  // Arc rotation timeline (abstract scroll units)
-  arcPanEnd: 1350, // post-pin scroll units to complete a full rotation
-  peelStartScroll: 135, // absolute scroll position where peel begins
-
-  // Desktop/tablet peel + settle
+  // Phase scroll boundaries (desktop)
+  peelStartScroll: 535,
   desktopPeelEnd: 1132,
-  desktopSlottingDuration: 1720,
-  arcSettleDuration: 1700,
+  arcSettleDuration: 1600,
+  desktopSlottingDuration: 1420,
 
-  // Mobile peel + settle
-  mobileSettleDuration: 468,
-  mobileSlottingDuration: 900,
-  mobilePostRevealScroll: 500,
-
-  mobileArcAlpha: 0.6,
-
-  // Arc shape + feel
-  arcStagger: 0.50,
+  // Arc rotation feel
+  arcPanEnd: 1350,
+  arcSweepMultiplier: 1,
   arcSpan: 0.80,
+  arcStagger: 0.50,
   arcLiftZoom: 1.00,
+  arcFanDepthDelta: 0.30,
   arcYTilt: 25,
   arcXTilt: 10,
-  arcPushDistance: 60, // px each card is pushed outward along arc normal when peel begins
-  arcFanDepthDelta: 0.30, // fanIdx=7 sits at 1.0×, fanIdx=0 at (1 - delta)× scale to fake depth
-  arcShadowAlpha: 0.15, // base shadow opacity for arc-phase cards; fades with peel
+  arcPushDistance: 60,
+  arcShadowAlpha: 0.15,
 
-  // Slide-in (arc entry): X offset + scale + opacity fade. Continuous arc
-  // rotation through pre-pin (see arcPrePinRatio) keeps the slide-in feeling
-  // rotational, so no Y counter-translation is added here.
-  slideStagger: 0.45, // per-card stagger fraction (fanIdx=7 first, fanIdx=0 last)
-  slideScaleStart: 0.85, // scale at slide start, grows to 1.0 on arrival
-  slideStartX: 0.55, // base X offset as fraction of viewport width
-  slideStaggerX: 0.20, // additional X offset per later card (fraction of vW)
-  slideOverlap: 200, // scroll units into arc rotation when slide fully completes
-  slideOpacityRampTo: 0.25, // cardSlideT value at which slide-in opacity reaches 1
-  // Fraction of pre-pin scroll that drives arc rotation. >0 makes the arc
-  // visibly rotate during slide-in so the transition into post-pin rotation is
-  // continuous, not "off → on" at the pin moment.
-  arcPrePinRatio: 0.125,
+  // Slide-in (pre-pin entry)
+  arcPrePinRatio: 0.1,
+  slideStagger: 0.45,
+  slideScaleStart: 0.85,
+  slideStartX: 0.55,
+  slideStaggerX: 0.20,
+  slideOverlap: 200,
+  slideOpacityRampTo: 0.25,
 
-  // Grid layout
+  // Grid layout (post-peel resting positions)
   baseColumnSpread: 1.20,
   baseRowGap: 0.60,
   columnCompressionTarget: 0.675,
   cardScaleDesktop: 1.035,
 
-  // Mockup positioning
+  // Mockup positioning (resize-time, not scroll-driven)
   desktopPeekStartH: 960,
   desktopPeekAmount: 0.30,
   mobileHeadlineY: 0.12,
 
-  // Mockup animation
+  // Mockup slot-in scale curve (driven by phase.slotting 0 → 1)
   desktopMockupStartScale: 2.5,
   desktopMockupEndScale: 1.0,
   mobileMockupStartScale: 2.0,
   mobileMockupEndScale: 1.0,
+
+  // Mobile-specific timing
+  mobileSettleDuration: 468,
+  mobileSlottingDuration: 900,
+  mobilePostRevealScroll: 500,
+  mobileArcAlpha: 0.6,
 };
 
 // ── Canvas dot-grid tunables ──────────────────────────────────────────────────
@@ -93,15 +87,13 @@ const CANVAS = {
 };
 
 // Derived scroll boundaries — computed from ANIM; do not edit directly.
-/** Scroll unit at which card peel starts (end of the arc-rotation intro window). */
-const PEEL_START_SCROLL = ANIM.peelStartScroll;
 /** Full arc→grid scroll span reference; mobile settle timing anchors here. */
 const DESKTOP_ARC_REFERENCE_END = ANIM.arcPanEnd + 1000;
 const DESKTOP_SLOTTING_START = ANIM.desktopPeelEnd + ANIM.arcSettleDuration;
 const MOBILE_GRID_END = Math.round(
-  PEEL_START_SCROLL + (DESKTOP_ARC_REFERENCE_END - PEEL_START_SCROLL) * 0.39,
+  ANIM.peelStartScroll + (DESKTOP_ARC_REFERENCE_END - ANIM.peelStartScroll) * 0.39,
 );
-const MOBILE_PAN_START = Math.round((PEEL_START_SCROLL + MOBILE_GRID_END) / 2);
+const MOBILE_PAN_START = Math.round((ANIM.peelStartScroll + MOBILE_GRID_END) / 2);
 /** Column spread used to pin marketing text X during arc (settled spread minus post-peel trim). */
 const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM.columnCompressionTarget - 0.15;
 
@@ -572,7 +564,8 @@ export default function init(el) {
       + arcRadius * Math.cos(arcAngle)
       - viewportHeight * 0.1;
     const middleAngle = arcAngle - Math.PI / 2;
-    const rotationOffset = ANIM.arcSpan * 0.5 - ANIM.arcSpan * 1.5 * arcRotationProgress;
+    const rotationOffset = ANIM.arcSpan * 0.5
+      - ANIM.arcSpan * ANIM.arcSweepMultiplier * arcRotationProgress;
     const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * arcRotationProgress);
     const flattenRaw = clamp01((phase.arcToGrid - 0.5) / 0.5);
     const flattenProgress = 0.20 * easeInOutCubic(flattenRaw);
@@ -1033,8 +1026,8 @@ export default function init(el) {
     // slide-in — eliminates the "translation → rotation" snap at the pin moment.
     const arcScroll = scrollTimeline.current + prePinContrib * ANIM.arcPrePinRatio;
     phase.arcPan = clamp01(arcScroll / ANIM.arcPanEnd);
-    const rawArcToGridProgress = (scrollTimeline.current - PEEL_START_SCROLL)
-      / (timing.gridEnd - PEEL_START_SCROLL);
+    const rawArcToGridProgress = (scrollTimeline.current - ANIM.peelStartScroll)
+      / (timing.gridEnd - ANIM.peelStartScroll);
     phase.arcToGrid = clamp01(rawArcToGridProgress);
     const rawSlottingProgress = (scrollTimeline.current - timing.slottingStart)
       / timing.slottingDuration;
@@ -1121,8 +1114,8 @@ export default function init(el) {
   // Mobile: delayed to 85% through peel so it doesn't draw during arc/peel.
   function updateAdbeLogo() {
     const adbeLogoPeelStart = frame.isMobile
-      ? PEEL_START_SCROLL + (MOBILE_GRID_END - PEEL_START_SCROLL) * 0.85
-      : PEEL_START_SCROLL;
+      ? ANIM.peelStartScroll + (MOBILE_GRID_END - ANIM.peelStartScroll) * 0.85
+      : ANIM.peelStartScroll;
     const adbeLogoSpan = timing.slottingStart - adbeLogoPeelStart;
     const rawAdbeLogoProgress = (scrollTimeline.current - adbeLogoPeelStart) / adbeLogoSpan;
     const adbeLogoProgress = clamp01(rawAdbeLogoProgress);
@@ -1220,7 +1213,7 @@ export default function init(el) {
       debug = createDebugOverlay(() => {
         const c = scrollTimeline.current;
         let stageLabel = 'done';
-        if (c < PEEL_START_SCROLL) stageLabel = 'arc-pan';
+        if (c < ANIM.peelStartScroll) stageLabel = 'arc-pan';
         else if (c < timing.gridEnd) stageLabel = 'peel';
         else if (c < timing.slottingStart) stageLabel = 'settle';
         else if (c < timing.slottingStart + timing.slottingDuration) stageLabel = 'slotting';
@@ -1238,7 +1231,7 @@ export default function init(el) {
             + timing.postRevealScrollDistance,
           phase,
           settle: arcTextPanProgressCached,
-          peelStartScroll: PEEL_START_SCROLL,
+          peelStartScroll: ANIM.peelStartScroll,
           gridEnd: timing.gridEnd,
           slottingStart: timing.slottingStart,
           slottingDuration: timing.slottingDuration,
