@@ -9,7 +9,7 @@
   --tabs-pill-text-color: var(--s2a-color-transparent-black-64);
   --tabs-pill-bg-color: transparent;
   --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
-  --tabs-pill-text-color-hover: var(--s2a-color-background-knockout);
+  --tabs-pill-text-color-hover: #2c2c2c;
   --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); 
   --tabs-pill-text-selected-color: var(--s2a-color-content-knockout); 
   --tabs-pill-bg-focus: var(--s2a-color-gray-700);
@@ -20,7 +20,6 @@
 .tabs {
   position: relative;
   margin: 0;
-  /* color: var(--tabs-active-text-color); */
   background-color: var(--tabs-active-bg-color);
   z-index: 1;
 }
@@ -37,9 +36,7 @@
   box-shadow: none;
   background: var(--tabs-container-background-color); 
   border-radius: var(--m-rounded-corners-tabs);
-  min-height: var(--s2a-spacing-40);
-  margin-left: 20px;
-  margin-right: 20px;
+  margin: 0 var(--s2a-spacing-20);
 }
 
 .tabs .tabList::-webkit-scrollbar {
@@ -49,10 +46,6 @@
 .tabs .tab-headline {
   margin-top: var(--spacing-xxl); /* check- --spacing-xxl is not an s2a token */
   margin-bottom: var(--spacing-xl); /* check- --spacing-xl is not an s2a token */
-}
-
-.tabs.center .tab-headline {
-  text-align: center;
 }
 
 .tabs .tabList .tab-list-container {
@@ -67,12 +60,6 @@
 
 .tabs .tabs-wrapper {
   justify-content: center;
-}
-
-/* center tabs — centering is handled by .tabs-wrapper; pseudo-elements not needed */
-.tabs.center > .tabList::after,
-.tabs.center > .tabList::before {
-  content: none;
 }
 
 .tabs .tabs-wrapper {
@@ -119,7 +106,7 @@
   font-size: var(--tabs-pill-font-size); 
   text-align: center;
   font-style: normal;
-  font-weight: 700;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-font-line-height-2xs);
   margin: 0;
   border-radius: var(--m-rounded-corners-tabs);
@@ -137,11 +124,11 @@
   z-index: 1;
   flex: 1 0 auto;
   background: var(--tabs-pill-bg-color);
-  height: 32px;
+  height: var(--s2a-spacing-xl);
 }
 
 .tabs .tabList button.tab-button:hover {
-  color: var(--tabs-active-text-color);
+  color: var(--tabs-pill-text-color-hover);
 }
 
 .tabs .tabList button.tab-button[aria-selected="true"] {

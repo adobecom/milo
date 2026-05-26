@@ -105,13 +105,13 @@ function changeTabs(e, config) {
   parent
     .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
-      t.setAttribute('aria-selected', false);
+      t.setAttribute('aria-selected', 'false');
       t.setAttribute('tabindex', '-1');
       if (Object.keys(tabColor).length) {
         t.style.backgroundColor = '';
       }
     });
-  target.setAttribute('aria-selected', true);
+  target.setAttribute('aria-selected', 'true');
   target.setAttribute('tabindex', '0');
   // add slider - slide indicator to the newly selected button
   const indicator = parent.querySelector('.tab-indicator');
