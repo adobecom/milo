@@ -2,127 +2,30 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
-const REDUCED_MOTION_MQ = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-// AE expression parameters — exact values from KEyframes layer sliders
-const AMP = 0.5;
-const FREQ = 4.0;
-const DECAY = 12.0;
-const TIME_MAX = 12.0;
-const DDELAY_MS = 300;
-// Browser px/s → AE composition units. AE velocity is much smaller in scale.
-const VELOCITY_SCALE = 0.25;
 
 function addCursorFollower(list) {
   let activeMedia = null;
   let mouseX = 0;
   let mouseY = 0;
-  let mouseVY = 0;
-  let prevY = 0;
-  let prevTime = 0;
   let isScrolling = false;
   let scrollEndTimer = null;
-  let springRaf = null;
-  let springGen = 0;
-
-  const stopSpring = () => {
-    springGen++;
-    if (springRaf) { cancelAnimationFrame(springRaf); springRaf = null; }
-  };
-
-  const resetPictures = (media) => {
-    [...media.querySelectorAll('picture')].forEach((pic) => {
-      pic.style.opacity = '';
-      pic.style.transform = '';
-    });
-  };
-
-  // Single RAF loop drives all pictures — prevents per-picture desync.
-  // Each picture springs in staggered by DDELAY_MS * index, matching AE where
-  // each layer's keyframe is offset by one Ddelay from the previous.
-  const startSpring = (media, vY) => {
-    stopSpring();
-    const pictures = [...media.querySelectorAll('picture')];
-
-    if (REDUCED_MOTION_MQ.matches) {
-      pictures.forEach((pic) => { pic.style.opacity = '1'; });
-      return;
-    }
-
-    pictures.forEach((pic) => { pic.style.opacity = '0'; pic.style.transform = 'none'; });
-
-    const gen = springGen;
-    const springStart = performance.now();
-    // Capture effective velocity once at spring start — not per-frame
-    const effectiveVY = Math.abs(vY) < 150 ? Math.sign(vY || -1) * 150 : vY;
-    const lastPicEnd = DDELAY_MS * (pictures.length - 1) + 500;
-
-    const tick = (now) => {
-      if (springGen !== gen) return;
-
-      const elapsed = now - springStart;
-
-      pictures.forEach((pic, i) => {
-        const picElapsed = elapsed - DDELAY_MS * i;
-        if (picElapsed <= 0) return; // not started yet
-
-        const t = picElapsed / 1000;
-
-        // Opacity: fast fade-in over first 0.05s
-        pic.style.opacity = String(Math.min(1, t / 0.05));
-
-        if (t < 0.5) {
-          // AE expression:
-          //   easeFactor = easeOut(t, 0, timeMax, 1, 0)
-          //   bounce = v * amp * sin(freq * t * 2π) / exp(decay * t)
-          //   value + bounce * easeFactor
-          const easeFactor = Math.pow(Math.max(0, 1 - t / TIME_MAX), 2);
-          const bounce = effectiveVY * VELOCITY_SCALE * AMP
-            * Math.sin(FREQ * t * 2 * Math.PI)
-            / Math.exp(DECAY * t);
-          pic.style.transform = `translateY(${bounce * easeFactor}px)`;
-        } else {
-          pic.style.opacity = '1';
-          pic.style.transform = 'none';
-        }
-      });
-
-      if (elapsed < lastPicEnd) {
-        springRaf = requestAnimationFrame(tick);
-      } else {
-        springRaf = null;
-      }
-    };
-
-    springRaf = requestAnimationFrame(tick);
-  };
 
   const setPosition = (media) => {
     media.style.left = `${mouseX - 2}px`;
     media.style.top = `${mouseY}px`;
-    media.style.transform = 'translateY(-100%)';
   };
 
   const hide = () => {
-    stopSpring();
-    if (activeMedia) {
-      resetPictures(activeMedia);
-      activeMedia.classList.remove('is-visible');
-      activeMedia = null;
-    }
+    activeMedia?.classList.remove('is-visible');
+    activeMedia = null;
   };
 
   const activate = (media) => {
     if (media === activeMedia) return;
-    if (activeMedia) {
-      resetPictures(activeMedia);
-      activeMedia.classList.remove('is-visible');
-    }
-    stopSpring();
+    activeMedia?.classList.remove('is-visible');
     activeMedia = media;
     setPosition(activeMedia);
     activeMedia.classList.add('is-visible');
-    startSpring(activeMedia, mouseVY);
   };
 
   // Activates the image for whichever .faq-item is under the given coordinates.
@@ -147,17 +50,8 @@ function addCursorFollower(list) {
     }, 150);
   };
 
-  // Global tracking keeps mouseX/mouseY and velocity current for the scroll-end check.
-  // EMA smoothing (α=0.35) prevents single noisy samples from spiking spring amplitude.
+  // Global tracking keeps mouseX/mouseY current for the scroll-end check.
   document.addEventListener('mousemove', (e) => {
-    const now = performance.now();
-    const dt = now - prevTime;
-    if (dt > 0) {
-      const instant = (e.clientY - prevY) / (dt / 1000);
-      mouseVY = mouseVY * 0.65 + instant * 0.35;
-    }
-    prevY = e.clientY;
-    prevTime = now;
     mouseX = e.clientX;
     mouseY = e.clientY;
   }, { passive: true });
