@@ -174,13 +174,13 @@
     line-height: var(--s2a-typography-line-height-label);
     text-decoration: none;
 
-    &::after {
-      content: '\203A';
+    svg {
       margin-inline-start: var(--s2a-spacing-xs);
+      vertical-align: middle;
     }
 
-    &:dir(rtl)::after {
-      content: '\2039';
+    &:dir(rtl) svg {
+      transform: scaleX(-1);
     }
   }
 }

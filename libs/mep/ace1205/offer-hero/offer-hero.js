@@ -15,6 +15,9 @@ const CARD_SHADOWS = [
   '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
 ];
 const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
+const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true">
+  <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
 const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
 const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 
@@ -106,6 +109,7 @@ function decorate(block) {
       if (trailing instanceof Text) {
         trailing.textContent = trailing.textContent.replace(/^[\s.,;:!?]+/, '');
       }
+      learnMore.insertAdjacentHTML('beforeend', CHEVRON);
       learnMore.remove();
     }
     const bodyParas = paras.filter((p) => p.textContent.trim() !== '');
@@ -239,7 +243,8 @@ function initAnimation(block) {
     if (!eyebrow) return;
     if (medias[0]) {
       const gap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
-      eyebrow.style.top = `${medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap}px`;
+      const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
+      eyebrow.style.transform = `translateY(${offset}px)`;
     }
     if (heroContent) {
       const rect = heroContent.getBoundingClientRect();
