@@ -47,6 +47,28 @@ export const API_URLS = {
   report: `${API_DOMAIN}/get-report`,
 };
 
+function toActivity({
+  name, event, manifest, variantNames, selectedVariantName,
+  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+}) {
+  let pathname = manifest;
+  try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
+  return {
+    targetActivityName: name,
+    variantNames,
+    selectedVariantName,
+    url: manifest,
+    disabled,
+    source,
+    eventStart: event?.start,
+    eventEnd: event?.end,
+    pathname,
+    analyticsTitle,
+    geoRestriction,
+    mktgAction,
+  };
+}
+
 function updatePreviewButton(popup, pageId) {
   const selectedInputs = popup.querySelectorAll(
     'option:checked, input[type="text"]',
@@ -279,28 +301,6 @@ function parseMepConfig() {
   const { mep, locale } = config;
   if (!mep || !locale) return null;
   const { experiments, prefix, highlight } = mep;
-  const activities = experiments.map((experiment) => {
-    const {
-      name, event, manifest, variantNames, selectedVariantName,
-      disabled, analyticsTitle, source, geoRestriction, mktgAction,
-    } = experiment;
-    let pathname = manifest;
-    try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
-    return {
-      targetActivityName: name,
-      variantNames,
-      selectedVariantName,
-      url: manifest,
-      disabled,
-      source,
-      eventStart: event?.start,
-      eventEnd: event?.end,
-      pathname,
-      analyticsTitle,
-      geoRestriction,
-      mktgAction,
-    };
-  });
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
 
   return {
@@ -308,13 +308,13 @@ function parseMepConfig() {
       url,
       page,
       target: getMetadata('target') || 'off',
-      personalization: (getMetadata('personalization')) ? 'on' : 'off',
+      personalization: getMetadata('personalization') ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
       locale: locale?.ietf,
       region: locale?.region,
       highlight,
     },
-    activities,
+    activities: experiments.map(toActivity),
   };
 }
 function formatDate(dateTime, format = 'local') {
@@ -1248,4 +1248,47 @@ export default async function decoratePreviewMode() {
     adjustBadgesForZeroHeightSections();
     adjustStackedBadges();
   }, 100);
+}
+
+const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
+
+export function getManifestsFound() {
+  const mepconfig = parseMepConfig();
+  return mepconfig?.activities?.length ?? 0;
+}
+
+export function getFoundation() {
+  return (getMetadata('foundation') || 'c1').toUpperCase();
+}
+
+export function getTargetIntegration() {
+  const { page } = parseMepConfig();
+  const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
+  if (mepTarget === undefined) return page.target;
+  return { postlcp: 'on post LCP' }[mepTarget] ?? mepTarget;
+}
+
+export function getLocale() {
+  const { page } = parseMepConfig();
+  return page.locale?.toLowerCase();
+}
+
+export function getLastSeen() {
+  const { page } = parseMepConfig();
+  return formatDate(new Date(page.lastSeen));
+}
+
+export function getPersonalization() {
+  const { page } = parseMepConfig();
+  return page.personalization;
+}
+
+export function getPerformanceConsent() {
+  const { consentState } = getConfig().mep;
+  return consentState?.functional ? 'on' : 'off';
+}
+
+export function getAdvertisingConsent() {
+  const { consentState } = getConfig().mep;
+  return consentState?.advertising ? 'on' : 'off';
 }
