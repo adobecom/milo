@@ -101,8 +101,11 @@
     }
 
     .faq-media {
+      block-size: 100vh;
       display: none;
+      inline-size: 100vw;
       inset: 0;
+      overflow: visible;
       pointer-events: none;
       position: fixed;
       z-index: 100;
