@@ -35,6 +35,33 @@ function decorate(block) {
   promoteParagraphHeading(content);
 }
 
+function decorateVideoVariant(el) {
+  decorateBlockText(el);
+  const [mediaRow, ctaRow] = [...el.children];
+
+  if (mediaRow?.children[0]) {
+    const mediaCell = mediaRow.children[0];
+    mediaCell.classList.add('media');
+    el.append(mediaCell);
+  }
+  mediaRow?.remove();
+
+  if (ctaRow?.children[0]) {
+    const ctaCell = ctaRow.children[0];
+    ctaCell.classList.add('cta-area');
+    el.append(ctaCell);
+  }
+  ctaRow?.remove();
+
+  const actionArea = el.querySelector('.action-area');
+  actionArea?.classList.add('dark');
+  actionArea?.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
+}
+
 export default function init(el) {
+  if (el.classList.contains('video')) {
+    decorateVideoVariant(el);
+    return;
+  }
   decorateViewportContent(el, decorate);
 }

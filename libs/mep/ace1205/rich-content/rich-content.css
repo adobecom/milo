@@ -126,3 +126,216 @@
     object-position: unset;
   }
 }
+
+/* video variant */
+.rich-content.video {
+  background: var(--s2a-color-background-inverse);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-3xl);
+  padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
+  padding-bottom: var(--s2a-layout-sm);
+  overflow: clip;
+
+  .media {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+
+    p {
+      margin: 0;
+    }
+
+    .video-container {
+      position: relative;
+      box-sizing: border-box;
+      max-width: 214px;
+      margin-inline: auto;
+      aspect-ratio: 9 / 16;
+      border-radius: 22.542px;
+      border: 9px solid rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(18.133974075317383px);
+      overflow: hidden;
+
+      video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        outline: none;
+      }
+    }
+
+    .action-area {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--s2a-spacing-lg);
+
+      &.dark {
+        background-color: unset;
+      }
+    }
+  }
+
+  .cta-area {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+@media (width >= 768px) {
+  .rich-content.video {
+    .media {
+      padding-inline: unset;
+      max-width: var(--grid-width-10);
+
+      .video-container {
+        max-width: unset;
+        margin-inline: unset;
+        aspect-ratio: 16 / 9;
+
+        video {
+          height: auto;
+          object-fit: unset;
+        }
+      }
+
+      .action-area {
+        margin-top: var(--s2a-spacing-xl);
+      }
+    }
+  }
+}
+
+@media (width >= 1024px) {
+  .section.parallax-video-garage-door .rich-content.video {
+    padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset) + 20px);
+  }
+}
+
+.section:has(.rich-content.video) {
+  background: var(--s2a-color-background-inverse);
+
+  &.has-background {
+    .section-background {
+      overflow: hidden;
+
+      img {
+        filter: blur(30px);
+        transform: scale(1.08);
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    .rich-content.video {
+      background: transparent;
+    }
+  }
+}
+
+.rich-content.video .video-container {
+  transform-origin: center bottom;
+}
+
+@keyframes rc-video-enter {
+  from { transform: scale(0.94) translateY(30px); }
+  to { transform: scale(1) translateY(0); }
+}
+
+@property --rc-pull-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 80px;
+}
+
+@property --rc-sweep-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 200px;
+}
+
+/* mobile */
+.section:has(+ .section.parallax-video-garage-door .rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video) + .section {
+  --rc-pull-offset: 80px;
+  --rc-sweep-offset: 200px;
+}
+
+@media (width >= 768px) {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+    --rc-pull-offset: 65px;
+    --rc-sweep-offset: 180px;
+  }
+}
+
+@media (width >= 1024px) {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+    --rc-pull-offset: 200px;
+    --rc-sweep-offset: 230px;
+  }
+}
+
+@media (width >= 1920px) {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+    --rc-pull-offset: 100px;
+    --rc-sweep-offset: 300px;
+  }
+}
+
+@keyframes rc-section-pull-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
+}
+
+@keyframes rc-section-sweep-in {
+  from { transform: translateY(var(--rc-sweep-offset)); }
+  to { transform: translateY(0); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .section.parallax-video-garage-door .rich-content.video .video-container {
+      animation: rc-video-enter linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: entry 0% exit 0%;
+    }
+
+    .section:has(+ .section.parallax-video-garage-door .rich-content.video) {
+      position: relative;
+      z-index: 2;
+      margin-bottom: calc(var(--rc-pull-offset) * -1);
+      animation: rc-section-pull-up linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+      position: relative;
+      z-index: 2;
+      margin-top: calc(var(--rc-sweep-offset) * -1);
+      animation: rc-section-sweep-in linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+  }
+}
