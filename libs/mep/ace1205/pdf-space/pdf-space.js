@@ -23,7 +23,7 @@ const OFFSCREEN_SENTINEL = -9999;
 const ANIM = {
   // Phase scroll boundaries (desktop)
   peelStartScroll: 535,
-  desktopPeelEnd: 1132,
+  desktopPeelEnd: 1532,
   arcSettleDuration: 1600,
   desktopSlottingDuration: 1420,
 

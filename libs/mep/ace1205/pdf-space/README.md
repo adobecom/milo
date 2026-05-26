@@ -3,22 +3,22 @@
 Scroll-driven hero animation: cards fan in along an arc, peel onto a flat
 grid, then glide into the slots of an Acrobat product mockup.
 
-The block element is **600vh** tall and pin-scrolled (sticky stage at
+The block element is **650vh** tall and pin-scrolled (sticky stage at
 `top: 0`). Page scroll (px) is normalized to `0..1` across the pinned range,
 then stretched onto an abstract timeline budget `animScrollTotal`
-(~4152 on desktop, ~3111 on mobile). All phase boundaries below are positions
+(~4552 on desktop, ~3111 on mobile). All phase boundaries below are positions
 on that abstract budget — independent of viewport or block height.
 
 ## Phase timeline (desktop)
 
 ```
 abstract scroll units (desktop):
-0       535                     1132                    2732            4152
+0       535                     1532                    3132            4552
 │        │                       │                       │               │
 ├────────┴───────────────────────┤                       │               │
-│  arcPan: 0 → 1 by scroll 1350  │ (continues invisibly  │               │
-│  Cards arc-rotate in from      │  past gridEnd; cards  │               │
-│  upper-right. Slide-in pre-pin │  already off arc)     │               │
+│  arcPan: 0 → 1 by scroll 1350  │ (arc pan completes    │               │
+│  Cards arc-rotate in from      │  before gridEnd;      │               │
+│  upper-right. Slide-in pre-pin │  rotation done first) │               │
 │  rises cards into formation.   │                       │               │
 │        │                       │                       │               │
 │        ├───────────────────────┤                       │               │
@@ -45,9 +45,9 @@ abstract scroll units (desktop):
 │        │                       │                       │ title + CTA   │
 │        │                       │                       │ slide up.     │
 ANIM.peelStart-  ANIM.arcPanEnd      gridEnd                slottingStart    +slottingDuration
-Scroll (535)     (1350 duration)     (ANIM.desktopPeelEnd  (DESKTOP_         (4152 = total
-                                      = 1132)              SLOTTING_START    if post-reveal=0)
-                                                           = 2732)
+Scroll (535)     (1350 duration)     (ANIM.desktopPeelEnd  (DESKTOP_         (4552 = total
+                                      = 1532)              SLOTTING_START    if post-reveal=0)
+                                                           = 3132)
 ```
 
 ## Why the phases overlap and gap
@@ -81,7 +81,7 @@ they sum to `animScrollTotal` (excluding any post-reveal pan).
 | Key | Default | What it does |
 | --- | ---: | --- |
 | `peelStartScroll` | 535 | Scroll position where peel begins. Raise to give the arc more rotation airtime before cards start peeling onto the grid; lower to start peeling sooner. |
-| `desktopPeelEnd` | 1132 | Scroll position where peel completes (all cards parked on the flat grid). Peel window = `peelStartScroll → desktopPeelEnd`. |
+| `desktopPeelEnd` | 1532 | Scroll position where peel completes (all cards parked on the flat grid). Peel window = `peelStartScroll → desktopPeelEnd`. |
 | `arcSettleDuration` | 1600 | Scroll gap between peel-end and slotting-start. Drives column compression, marketing-text pan-up, and the ADBE logo draw. Shorter = snappier transition into the mockup; longer = more breathing room for the marketing copy to land. |
 | `desktopSlottingDuration` | 1420 | Length of the slot-into-mockup animation. Shorter = snappier slot-in; longer = more cinematic mockup arrival. |
 
