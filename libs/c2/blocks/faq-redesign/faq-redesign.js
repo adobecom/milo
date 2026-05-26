@@ -16,7 +16,7 @@ const STAGGER = [
   { x: 16, y: 6 },
 ];
 const TARGET_OFFSET = { x: -8, y: -14 };
-const INTRO_STEP = 0.01;
+const INTRO_STEP = 0.038;
 const EXIT_STEP = 0.08;
 
 function introScale(intro) {
