@@ -1,4 +1,12 @@
 import { createTag, loadStyle } from '../../../utils/utils.js';
+import {
+  getManifestsFound,
+  getFoundation,
+  getTargetIntegration,
+  getPersonalization,
+  getPerformanceConsent,
+  getAdvertisingConsent,
+} from './mep-next.js';
 
 function getGnavOffset() {
   return new Promise((resolve) => {
@@ -43,29 +51,49 @@ async function buildOverlay() {
     }
 
     function buildSpoofGeo() {
-      const options = ['MEP Lingo', 'Lingo M@S'].map((val, i) => {
-        const mepInput = createTag('input', { type: 'radio', name: `spoof-geo-${pageId}`, value: val, ...(i === 0 && { checked: true }) });
+      const options = card.radios.map((val, i) => {
+        const radioInput = createTag('input', { type: 'radio', name: `spoof-geo-${pageId}`, value: val, ...(i === 0 && { checked: true }) });
         const label = createTag('label', { for: `spoof-geo-${val}` }, val);
         ['icon-radio-unchecked', 'icon-radio-checked'].map((icon) => label.prepend(parseSvg(svgData.svg[icon])));
 
-        return createTag('div', { class: 'mep-radio-row' }, [mepInput, label]);
+        return createTag('div', { class: 'mep-radio-row' }, [radioInput, label]);
       });
       const select = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo-${pageId}` });
       return [...options, select];
+    }
+
+    const itemActions = {
+      'Manifests Found': getManifestsFound,
+      Foundation: getFoundation,
+      'Target Integration': getTargetIntegration,
+      Personalization: getPersonalization, // placeholder
+      Performance: getPerformanceConsent,
+      Advertising: getAdvertisingConsent,
+    };
+
+    function buildSummaryData() {
+      return card.label?.map((item) => {
+        const mepRowEl = createTag('div', { class: 'mep-row' });
+        const mepLabelEl = createTag('h2', {}, item);
+        const mepValueEl = createTag('div', { class: 'mep-row-value' }, itemActions[item]?.());
+        mepRowEl.append(mepLabelEl, mepValueEl);
+        return mepRowEl;
+      });
     }
 
     function buildDefault() {
       return createTag('div', {}, 'No content available');
     }
 
-    switch (card.header) {
-      case 'Load Manifest':
-        return buildLoadManifest();
-      case 'Spoof Geo':
-        return buildSpoofGeo();
-      default:
-        return buildDefault();
-    }
+    const cardActions = {
+      'Load Manifest': () => buildLoadManifest(),
+      'Spoof Geo': () => buildSpoofGeo(),
+      Page: () => buildSummaryData(),
+      Consent: () => buildSummaryData(),
+      Lingo: () => buildSummaryData(),
+    };
+
+    return cardActions[card.header]?.() || buildDefault();
   }
 
   function buildCard(card) {

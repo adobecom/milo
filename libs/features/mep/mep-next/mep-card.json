@@ -7,7 +7,11 @@
       "header": "Toggles"
     },
     "spoof-geo": {
-      "header": "Spoof Geo"
+      "header": "Spoof Geo",
+      "radios": [
+        "MEP Lingo",
+        "Lingo M@S"
+      ]
     },
     "load-manifest": {
       "header": "Load Manifest",
@@ -16,13 +20,31 @@
   },
   "summary": {
     "page": {
-      "header": "Page"
+      "header": "Page",
+      "label": [
+        "Manifests Found",
+        "Foundation",
+        "Target Integration",
+        "Personalization"
+      ]
     },
     "consent": {
-      "header": "Consent"
+      "header": "Consent",
+      "label": [
+        "Performance",
+        "Advertising"
+      ]
     },
     "lingo": {
-      "header": "Lingo"
+      "header": "Lingo",
+      "label": [
+        "Mep Lingo Updates",
+        "Lang First / Lingo",
+        "Geo Folder",
+        "Country Cookie",
+        "User Country",
+        "Geo + User"
+      ]
     },
     "mas": {
       "header": "M@S"
