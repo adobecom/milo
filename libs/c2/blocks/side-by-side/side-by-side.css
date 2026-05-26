@@ -2,7 +2,6 @@
   display: grid;
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-xs);
-  padding-inline: var(--s2a-spacing-lg);
 
   &.dark {
     background: unset;
