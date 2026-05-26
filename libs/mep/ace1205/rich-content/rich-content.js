@@ -26,8 +26,35 @@ function promoteParagraphHeading(content, headingSize = '2') {
   if (bodyClass) firstP.classList.replace(bodyClass, `heading-${headingSize}`);
 }
 
-function decorate(block) {
-  const foreground = block.children[0];
+function decorateVideoVariant(container) {
+  const row = container.children[0];
+  if (!row) return;
+
+  const [ctaCell, mediaCell] = [...row.children];
+
+  if (mediaCell) {
+    mediaCell.classList.add('media');
+    container.append(mediaCell);
+  }
+
+  if (ctaCell) {
+    decorateBlockText(ctaCell);
+    ctaCell.classList.add('cta-area');
+    container.append(ctaCell);
+  }
+
+  row.remove();
+  container.querySelector('.action-area')?.classList.add('dark');
+  container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
+}
+
+function decorate(container, el) {
+  if (el.classList.contains('video')) {
+    decorateVideoVariant(container);
+    return;
+  }
+
+  const foreground = container.children[0];
   const content = foreground?.children[0];
   content?.classList.add('content');
   foreground?.classList.add('foreground');
