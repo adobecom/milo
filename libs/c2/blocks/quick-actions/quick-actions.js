@@ -15,8 +15,8 @@ function decorateSectionHeader(block) {
 }
 
 function buildTile(tileRow) {
-  const mediaCell = tileRow.children[0];
-  const labelCell = tileRow.children[1];
+  const labelCell = tileRow.children[0];
+  const mediaCell = tileRow.children[1];
   const labelLink = labelCell?.querySelector('a');
 
   const tile = createTag('a', { class: 'quick-actions-tile', href: labelLink?.href || '#' });
