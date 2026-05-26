@@ -100,7 +100,7 @@
     padding-block: var(--s2a-layout-lg);
 
     .faq-headline {
-      flex: 0 0 auto;
+      flex: 0 0 1;
     }
 
     .faq-item {
