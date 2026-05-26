@@ -337,7 +337,7 @@
       position: relative;
       z-index: 2;
       margin-bottom: calc(var(--rc-pull-offset) * -1);
-      animation: rc-section-pull-up linear both;
+      animation: rc-section-pull-up cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: view();
       animation-range: exit 0% exit 100%;
