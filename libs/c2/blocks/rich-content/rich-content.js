@@ -35,49 +35,17 @@ function decorate(block) {
   promoteParagraphHeading(content);
 }
 
-// --- video variant ---
-
-function decorateVideoMedia(mediaCell) {
-  const link = mediaCell.querySelector('a[href]');
-  if (!link) return;
-
-  const isVideoLink = /\.mp4($|\?)/i.test(link.href) || link.href.includes('/video/');
-  if (!isVideoLink) return;
-
-  const picture = mediaCell.querySelector('picture');
-  const video = createTag('video', { autoplay: '', muted: '', loop: '', playsinline: '' });
-  video.append(createTag('source', { src: link.href, type: 'video/mp4' }));
-
-  const wrap = createTag('div', { class: 'media-wrap' });
-  if (picture) wrap.append(picture);
-  wrap.append(video);
-  link.replaceWith(wrap);
-}
-
 function decorateVideoVariant(el) {
   decorateBlockText(el);
   const [mediaRow, ctaRow] = [...el.children];
 
-  // Extract background image from second column and make it the block background
-  if (mediaRow?.children[1]) {
-    const bgPicture = mediaRow.children[1].querySelector('picture');
-    if (bgPicture) {
-      const bgDiv = createTag('div', { class: 'video-bg' });
-      bgDiv.append(bgPicture);
-      el.prepend(bgDiv);
-    }
-  }
-
-  // Promote media cell to direct block child
   if (mediaRow?.children[0]) {
     const mediaCell = mediaRow.children[0];
     mediaCell.classList.add('media');
-    decorateVideoMedia(mediaCell);
     el.append(mediaCell);
   }
   mediaRow?.remove();
 
-  // Promote CTA cell to direct block child (if authored as a separate row)
   if (ctaRow?.children[0]) {
     const ctaCell = ctaRow.children[0];
     ctaCell.classList.add('cta-area');
