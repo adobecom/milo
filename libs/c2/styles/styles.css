@@ -56,7 +56,7 @@
   --s2a-color-blue-600: #729efd;
   --s2a-color-blue-700: #5d89ff;
   --s2a-color-blue-800: #4b75ff;
-  --s2a-color-blue-900: #3b63fb;
+  --s2a-color-blue-900: #d73220; /* MOCK token bump: blue → red */
   --s2a-color-blue-1000: #274dea;
   --s2a-color-blue-1100: #1d3ecf;
   --s2a-color-blue-1200: #1532ad;
@@ -653,7 +653,7 @@ p {
 }
 
 .body-lg {
-  font-size: var(--s2a-typography-font-size-body-lg);
+  font-size: var(--s2a-typography-font-size-body-sm); /* MOCK token bump: body-lg shrunk to body-sm size */
   line-height: var(--s2a-typography-line-height-body-lg);
   letter-spacing: var(--s2a-typography-letter-spacing-body-lg);
 }
