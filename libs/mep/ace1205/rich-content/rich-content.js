@@ -77,8 +77,8 @@ function decorateVideoVariant(container) {
 }
 
 function decorate(block, root = block) {
-  if (el.classList.contains('video')) {
-    decorateVideoVariant(container);
+  if (root.classList.contains('video')) {
+    decorateVideoVariant(block);
     return;
   }
 
