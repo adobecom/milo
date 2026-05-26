@@ -16,12 +16,13 @@ const STAGGER = [
   { x: 16, y: 6 },
 ];
 const TARGET_OFFSET = { x: -8, y: -14 };
-const INTRO_STEP = 0.019;
+const INTRO_STEP = 0.01;
 const EXIT_STEP = 0.08;
 
 function introScale(intro) {
-  if (intro < 0.52) return 0.18 + intro * 2.2;
-  return 1.34 - (intro - 0.52) * 0.708;
+  const eased = 1 - (1 - intro) ** 2.2;
+  if (eased < 0.52) return 0.18 + eased * 2.2;
+  return 1.34 - (eased - 0.52) * 0.708;
 }
 
 function applyTransform(pic, state, i) {
@@ -58,8 +59,7 @@ function addCursorFollower(list) {
   const tick = () => {
     activeSet.forEach(({ pic, state }, i) => {
       stepSpring(state, i);
-      const nextIntro = Math.min(state.intro + INTRO_STEP, 1);
-      state.intro = 1 - (1 - nextIntro) ** 2.2;
+      state.intro = Math.min(state.intro + INTRO_STEP, 1);
       applyTransform(pic, state, i);
     });
 
