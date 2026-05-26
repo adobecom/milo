@@ -194,9 +194,15 @@ function createCanvasGrid(canvas, {
   getCards,
   getCardCenter,
   getState,
+  pointerTarget,
 }) {
   const context = canvas.getContext('2d');
-  const mouse = { x: OFFSCREEN_SENTINEL, y: OFFSCREEN_SENTINEL };
+  // Last pointer position, in viewport coords (what `e.clientX/Y` gives us).
+  const pointerViewport = { x: OFFSCREEN_SENTINEL, y: OFFSCREEN_SENTINEL };
+  // Same pointer, translated into canvas-local coords (what the dots use).
+  // Recomputed each frame in update() because scroll can move the canvas
+  // under a stationary cursor without firing a new mousemove.
+  const pointerCanvas = { x: OFFSCREEN_SENTINEL, y: OFFSCREEN_SENTINEL };
   let dots = [];
   let settled = true;
 
@@ -228,10 +234,25 @@ function createCanvasGrid(canvas, {
     buildGrid();
   }
 
+  function syncPointerCanvas() {
+    if (pointerViewport.x === OFFSCREEN_SENTINEL) {
+      pointerCanvas.x = OFFSCREEN_SENTINEL;
+      pointerCanvas.y = OFFSCREEN_SENTINEL;
+      return;
+    }
+    const rect = canvas.getBoundingClientRect();
+    const localX = pointerViewport.x - rect.left;
+    const localY = pointerViewport.y - rect.top;
+    const inside = localX >= 0 && localY >= 0 && localX <= rect.width && localY <= rect.height;
+    pointerCanvas.x = inside ? localX : OFFSCREEN_SENTINEL;
+    pointerCanvas.y = inside ? localY : OFFSCREEN_SENTINEL;
+  }
+
   function update() {
     if (isMobile()) return;
-    const mouseParked = mouse.x === OFFSCREEN_SENTINEL;
-    if (mouseParked && settled) return;
+    syncPointerCanvas();
+    const pointerParked = pointerCanvas.x === OFFSCREEN_SENTINEL;
+    if (pointerParked && settled) return;
 
     const activeCards = getCards();
 
@@ -240,8 +261,8 @@ function createCanvasGrid(canvas, {
     let boost = 0;
     activeCards.forEach((card) => {
       const { x, y } = getCardCenter(card);
-      const dx = mouse.x - x;
-      const dy = mouse.y - y;
+      const dx = pointerCanvas.x - x;
+      const dy = pointerCanvas.y - y;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist < 280) boost = Math.max(boost, 1 - dist / 280);
     });
@@ -253,8 +274,8 @@ function createCanvasGrid(canvas, {
     let maxDisturbance = 0;
     for (let i = 0; i < dots.length; i += 1) {
       const dot = dots[i];
-      const deltaX = dot.x - mouse.x;
-      const deltaY = dot.y - mouse.y;
+      const deltaX = dot.x - pointerCanvas.x;
+      const deltaY = dot.y - pointerCanvas.y;
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       if (distance < currentMouseRadius && distance > 0) {
         const force = (1 - distance / currentMouseRadius) * currentRepelForce;
@@ -271,7 +292,7 @@ function createCanvasGrid(canvas, {
         + Math.abs(dot.x - dot.originX) + Math.abs(dot.y - dot.originY);
       if (disturb > maxDisturbance) maxDisturbance = disturb;
     }
-    settled = mouseParked && maxDisturbance < 0.05;
+    settled = pointerParked && maxDisturbance < 0.05;
     if (settled) {
       for (let i = 0; i < dots.length; i += 1) {
         const dot = dots[i];
@@ -301,25 +322,25 @@ function createCanvasGrid(canvas, {
 
   const handleMouseMove = (e) => {
     if (isMobile()) return;
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
+    pointerViewport.x = e.clientX;
+    pointerViewport.y = e.clientY;
     settled = false;
   };
   const handleMouseLeave = () => {
-    mouse.x = OFFSCREEN_SENTINEL;
-    mouse.y = OFFSCREEN_SENTINEL;
+    pointerViewport.x = OFFSCREEN_SENTINEL;
+    pointerViewport.y = OFFSCREEN_SENTINEL;
   };
 
-  canvas.addEventListener('mousemove', handleMouseMove, { passive: true });
-  canvas.addEventListener('mouseleave', handleMouseLeave, { passive: true });
+  pointerTarget.addEventListener('mousemove', handleMouseMove, { passive: true });
+  pointerTarget.addEventListener('mouseleave', handleMouseLeave, { passive: true });
 
   return {
     resize,
     update,
     draw,
     destroy() {
-      canvas.removeEventListener('mousemove', handleMouseMove);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
+      pointerTarget.removeEventListener('mousemove', handleMouseMove);
+      pointerTarget.removeEventListener('mouseleave', handleMouseLeave);
     },
   };
 }
@@ -782,6 +803,7 @@ export default function init(el) {
     getCards: () => sceneCards,
     getCardCenter: getCanvasCardCenter,
     getState: () => ({ arcToGridProgress: phase.arcToGrid }),
+    pointerTarget: el,
   });
 
   function syncMockupWrappers() {

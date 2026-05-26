@@ -63,6 +63,7 @@
   height: auto;
   opacity: var(--adbe-opacity, 0);
   transform: translate(-50%, -50%);
+  pointer-events: none;
   will-change: opacity;
 }
 
