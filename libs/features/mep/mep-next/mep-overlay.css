@@ -77,8 +77,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   flex-direction: column;
   overflow: hidden;
   font-size: 16px;
-  min-width: 200px;
-  max-width: 280px;
+  width: 260px;
   left: 0;
   margin: 0;
   border: none;
@@ -169,6 +168,24 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   overflow-y: auto;
 }
 
+.mep-drawer .mep-body::-webkit-scrollbar {
+  width: 12px;
+}
+
+.mep-drawer .mep-body::-webkit-scrollbar-track {
+  border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-body::-webkit-scrollbar-thumb {
+  background: var(--mep-dark-44);
+  border-radius: 12px;
+  border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-body::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-white-12);
+}
+
 .mep-drawer .mep-body .mep-tab-content {
   display: none;
   flex-direction: column;
@@ -241,6 +258,18 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   margin: 0;
   font: var(--mep-h1-font);
   letter-spacing: var(--mep-h1-letter-spacing);
+}
+
+.mep-drawer .mep-body .mep-card .mep-card-body .mep-row h2 {
+  margin: 0;
+  font: var(--mep-h2-font);
+  letter-spacing: var(--mep-h2-letter-spacing);
+}
+
+.mep-drawer .mep-body .mep-card .mep-card-body .mep-row .mep-row-value {
+  color: var(--mep-white-60);
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
 }
 
 .mep-drawer .mep-body .mep-card input:not([type="radio"]),
