@@ -213,11 +213,13 @@ function decorateHeader(el, headerContent) {
   headerContentWrapper.append(...headerContent.children);
   headerContent.append(headerContentWrapper);
   const headerItems = [...headerContentWrapper.children];
-  const headerTitles = headerItems.map((item) => {
+  const headerTitles = headerItems.map((item, i) => {
+    if (i === 0) return '';
     const titleElement = item.querySelector('h1, h2, h3, h4, h5, h6');
     return titleElement ? titleElement.textContent.trim() : '';
   });
   headerItems.forEach((headerItem, headerItemIndex) => {
+    if (headerItemIndex === 0) return;
     if (!headerItem.innerHTML?.trim()) {
       headerItem.remove();
       return;
@@ -231,7 +233,11 @@ function decorateHeader(el, headerContent) {
     });
   });
   const headerItemHeader = createTag('div', { class: 'header-item header-item-header' });
-  headerItemHeader.appendChild(createTag('h2', { class: 'title-4' }, 'Compare plans'));
+  const firstItem = headerItems[0];
+  if (firstItem) {
+    headerItemHeader.append(...firstItem.children);
+    firstItem.remove();
+  }
   headerContentWrapper.prepend(headerItemHeader);
   const headerCardsContainer = createTag('div', { class: 'header-cards-container' });
   const cardItems = [...headerContentWrapper.querySelectorAll('.header-item.header-item-card')];
