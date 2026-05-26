@@ -18,10 +18,12 @@ const STAGGER = [
 const TARGET_OFFSET = { x: -8, y: -14 };
 const INTRO_STEP = 0.009;
 const EXIT_STEP = 0.08;
+const ROTATE_COEFF = [0.03, 0.07, 0.14];
+const ROTATE_LERP = 0.12;
 
 function introScale(intro) {
   if (intro < 0.52) return 0.18 + intro * 2.2;
-  return 1.34 - (intro - 0.52) * 0.42;
+  return 1.34 - (intro - 0.52) * 0.708;
 }
 
 function applyTransform(pic, state, i) {
@@ -29,7 +31,7 @@ function applyTransform(pic, state, i) {
   const y = state.y + STAGGER[i].y;
   const fade = 1 - state.exit;
   const scale = introScale(state.intro) * fade;
-  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale})`;
+  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${state.rotate}deg)`;
   pic.style.opacity = String(fade);
 }
 
@@ -41,6 +43,8 @@ function clearPic(pic) {
 function addCursorFollower(list) {
   let mouseX = 0;
   let mouseY = 0;
+  let prevMouseX = 0;
+  let velocityX = 0;
   let activeItem = null;
   let activeSet = [];
   let exitingSets = [];
@@ -53,6 +57,8 @@ function addCursorFollower(list) {
     const targetY = mouseY + TARGET_OFFSET.y;
     state.x += (targetX - state.x) * STIFFNESS * FOLLOW_SPEED[i];
     state.y += (targetY - state.y) * STIFFNESS * FOLLOW_SPEED[i];
+    const rotateTarget = velocityX * ROTATE_COEFF[i];
+    state.rotate += (rotateTarget - state.rotate) * ROTATE_LERP;
   };
 
   const tick = () => {
@@ -112,6 +118,7 @@ function addCursorFollower(list) {
         y: mouseY + SPAWN_OFFSET[i].y,
         intro: 0,
         exit: 0,
+        rotate: 0,
       },
     }));
 
@@ -142,6 +149,8 @@ function addCursorFollower(list) {
   };
 
   document.addEventListener('mousemove', (e) => {
+    velocityX = e.clientX - prevMouseX;
+    prevMouseX = e.clientX;
     mouseX = e.clientX;
     mouseY = e.clientY;
   }, { passive: true });
