@@ -51,6 +51,7 @@
 .pdf-space canvas {
   position: absolute;
   inset: 0;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
 }
 
 .pdf-space .adbe-logo-svg {

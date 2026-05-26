@@ -845,7 +845,7 @@ export default function init(el) {
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       ctaEl.style.top = `${ctaRestY}px`;
       const ctaH = ctaEl.offsetHeight || ACROBAT_CTA_HEIGHT;
-      cachedMobilePostRevealDistance = Math.max(0, ctaRestY + ctaH + 20 - viewportHeight);
+      cachedMobilePostRevealDistance = Math.max(0, ctaRestY + ctaH + 80 - viewportHeight);
     }
     cachedTextBlockWidth = textBlockEl.offsetWidth;
     positionCards();
@@ -865,7 +865,7 @@ export default function init(el) {
       const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
       cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
       cachedAcrobatCtaTop = cachedAcrobatWinTop + aH + ACROBAT_DESKTOP_GAP_BELOW;
-      cachedDeskPostRevealNeeded = Math.max(0, cachedAcrobatCtaTop + ctaH + 20 - viewportHeight);
+      cachedDeskPostRevealNeeded = Math.max(0, cachedAcrobatCtaTop + ctaH + 80 - viewportHeight);
       titleEl.style.top = `${stackTop}px`;
       desktopMockupEl.style.top = `${cachedAcrobatWinTop}px`;
       ctaEl.style.top = `${cachedAcrobatCtaTop}px`;
@@ -1076,7 +1076,7 @@ export default function init(el) {
       const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
-      const postRevealNeeded = Math.max(0, ctaRestY + 60 - viewportHeight);
+      const postRevealNeeded = Math.max(0, ctaRestY + 120 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
       verticalPan.mobilePostRevealY = postRevealPanY;
