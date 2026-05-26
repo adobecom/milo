@@ -301,12 +301,14 @@ function initAnimation(block) {
   setup();
 
   const io = new IntersectionObserver(([entry]) => {
-    if (entry.isIntersecting) {
-      if (!running) { running = true; tick(); }
-    } else {
+    if (!entry.isIntersecting) {
       running = false;
       cancelAnimationFrame(rafId);
+      return;
     }
+    if (running) return;
+    running = true;
+    tick();
   }, { rootMargin: '200px 0px' });
   io.observe(block);
 

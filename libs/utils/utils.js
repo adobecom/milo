@@ -121,7 +121,6 @@ const C2_BLOCKS = [
   'martech-metadata',
   'modal',
   'news',
-  'offer-hero',
   'region-nav',
   'rich-content',
   'router-marquee',
