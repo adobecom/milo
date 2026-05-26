@@ -38,6 +38,7 @@
     /* color: var(--s2a-color-content-knockout); */
     min-height: 305px;
     aspect-ratio: 33/37;
+    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-12);
 
     .media {
       position: absolute;
