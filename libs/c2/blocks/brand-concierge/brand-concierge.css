@@ -540,14 +540,14 @@
   border-color: var(--bc-dark-border-color);
 }
 
-.c2-dark .bc-input-field::before {
-  /* border: 3px solid transparent;
+/* .c2-dark .bc-input-field::before {
+  border: 3px solid transparent;
   background: linear-gradient(to right, #4facfe, #00f2fe) border-box;
   mask: 
     linear-gradient(#fff 0 0) padding-box, 
     linear-gradient(#fff 0 0);
-  mask-composite: exclude; */
-}
+  mask-composite: exclude;
+} */
 
 .dark .bc-input-field:has(textarea:focus-visible)::before {
   border-color: var(--bc-dark-border-color-secondary);
