@@ -76,7 +76,6 @@ function getContentElement(parent, traversalDepth) {
   return element.lastElementChild;
 }
 
-// add slider - positions the sliding pill indicator to match the target button's size and offset
 function moveIndicator(indicator, target, container) {
   const btnRect = target.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();

@@ -10,11 +10,11 @@
   --tabs-pill-bg-color: transparent;
   --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
   --tabs-pill-text-color-hover: #2c2c2c;
-  --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); 
   --tabs-pill-text-selected-color: var(--s2a-color-content-knockout); 
-  --tabs-pill-bg-focus: var(--s2a-color-gray-700);
-  --tabs-pill-text-focus-color: var(--s2a-color-gray-25);
-  --m-rounded-corners-tabs: 50px; /* no s2a spacing token */
+  --tabs-pill-bg-focus: var(--s2a-color-gray-700); /* keep for testing ace1205 focus feature if needed */
+  --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); /* keep for testing ace1205 active feature if needed */
+  --tabs-pill-text-focus-color: var(--s2a-color-gray-25); /* keep for testing ace1205 focus feature if needed */
+  --m-rounded-corners-tabs: 50px;
 }
 
 .tabs {
@@ -59,12 +59,9 @@
 }
 
 .tabs .tabs-wrapper {
-  justify-content: center;
-}
-
-.tabs .tabs-wrapper {
   display: flex;
   width: 100%;
+  justify-content: center;
 }
 
 /* contained tabs content */
@@ -161,16 +158,12 @@
   background: var(--tabs-pill-bg-focus);
 } */
 
-/* Section Metadata */
+/* Section Metadata - keep for testing ace1205 when merch is available */
 .tabs-background-transparent .tabs,
 .tabs-background-transparent .tabs .tabList,
 .tabs-background-transparent .tabs .tabList button.tab-button[aria-selected="true"] {
   background: transparent;
 }
-
-/* .tabs-background-transparent .tabs .tabList button.tab-button[aria-selected="true"] {
-  border-bottom-color: var(--tabs-active-bg-color);
-} */
 
 @media screen and (max-width: 599px) {
   .tabs .tabs-wrapper {
