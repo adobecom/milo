@@ -1292,3 +1292,47 @@ export function getAdvertisingConsent() {
   const { consentState } = getConfig().mep;
   return consentState?.advertising ? 'on' : 'off';
 }
+
+export function getLingoUpdates() {
+  const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
+  const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
+  return `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`;
+}
+
+export function getLangFirst() {
+  return lingoActive() ? 'on' : 'off';
+}
+
+export function getGeoFolder() {
+  const { page } = parseMepConfig();
+  return page.geo || 'Us (None)';
+}
+
+export function getCountryCookie() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const countryParam = normCountryCode(searchParams.get('country'));
+  const countryCookie = countryParam
+    || normCountryCode(getCookie('country'))
+    || 'None';
+  return countryCookie ?? '';
+}
+
+export async function getUserCountry() {
+  return await resolveDetectedMarketCountry() ?? '';
+}
+
+export async function getGeoUser() {
+  const { locale } = getConfig();
+  if (!Object.keys(locale?.regions || {}).length || !lingoActive()) return 'Not Applicable';
+  return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
+}
+
+// const lingoData = {
+//     langFirst: lingoActive() ? 'on' : 'off',
+//     geoFolder: page.geo || 'Us (None)',
+//     countryCookie: escapeHtml(countryCookie) ?? '',
+//     userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
+//     geoUser: await getGeoUserSupport(),
+//     updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
+//     total: regionalFragments.length + fallbackFragments.length,
+//   };

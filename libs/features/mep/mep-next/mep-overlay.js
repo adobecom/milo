@@ -6,21 +6,28 @@ import {
   getPersonalization,
   getPerformanceConsent,
   getAdvertisingConsent,
+  getLingoUpdates,
+  getLangFirst,
+  getGeoFolder,
+  getCountryCookie,
+  getUserCountry,
+  getGeoUser,
 } from './mep-next.js';
 
 function getGnavOffset() {
+  const calcHeight = () => {
+    const header = document.querySelector('header');
+    const fedsLocalNav = document.querySelector('.feds-localnav');
+    if (!header?.offsetHeight) return 0;
+    return header.offsetHeight + (fedsLocalNav?.offsetHeight || 0);
+  };
+
   return new Promise((resolve) => {
-    const headerEl = document.querySelector('header');
-    if (headerEl?.offsetHeight) {
-      resolve(headerEl.offsetHeight);
-      return;
-    }
+    const height = calcHeight();
+    if (height) { resolve(height); return; }
     const observer = new MutationObserver(() => {
-      const el = document.querySelector('header');
-      if (el?.offsetHeight) {
-        observer.disconnect();
-        resolve(el.offsetHeight);
-      }
+      const h = calcHeight();
+      if (h) { observer.disconnect(); resolve(h); }
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   });
@@ -62,30 +69,37 @@ async function buildOverlay() {
       return [...options, select];
     }
 
-    const itemActions = {
+    const getData = { // Key needs to match Json label
       'Manifests Found': getManifestsFound,
       Foundation: getFoundation,
       'Target Integration': getTargetIntegration,
-      Personalization: getPersonalization, // placeholder
+      Personalization: getPersonalization,
       Performance: getPerformanceConsent,
       Advertising: getAdvertisingConsent,
+      'Mep Lingo Updates': getLingoUpdates,
+      'Lang First': getLangFirst,
+      'Geo Folder': getGeoFolder,
+      'Country Cookie': getCountryCookie,
+      'User Country': getUserCountry,
+      'Geo + User': async () => getGeoUser(),
     };
 
-    function buildSummaryData() {
-      return card.label?.map((item) => {
+    async function buildSummaryData() {
+      return Promise.all(card.label?.map(async (item) => {
         const mepRowEl = createTag('div', { class: 'mep-row' });
         const mepLabelEl = createTag('h2', {}, item);
-        const mepValueEl = createTag('div', { class: 'mep-row-value' }, itemActions[item]?.());
+        const value = await getData[item]?.();
+        const mepValueEl = createTag('div', { class: 'mep-row-value' }, value);
         mepRowEl.append(mepLabelEl, mepValueEl);
         return mepRowEl;
-      });
+      }));
     }
 
     function buildDefault() {
       return createTag('div', {}, 'No content available');
     }
 
-    const cardActions = {
+    const buildCards = { // Key needs to match Json header
       'Load Manifest': () => buildLoadManifest(),
       'Spoof Geo': () => buildSpoofGeo(),
       Page: () => buildSummaryData(),
@@ -93,18 +107,18 @@ async function buildOverlay() {
       Lingo: () => buildSummaryData(),
     };
 
-    return cardActions[card.header]?.() || buildDefault();
+    return buildCards[card.header]?.() || buildDefault();
   }
 
   function buildCard(card) {
     const mepCardDiv = createTag('div', { class: 'mep-card expanded' });
     if (card?.header) {
-      const mepIconCloseSvg = parseSvg(svgData.svg['icon-expand-circle-down']);
       const headerDiv = createTag('h1', {}, card.header);
+      headerDiv.appendChild(parseSvg(svgData.svg['icon-expand-circle-down']));
       const cardBodyDiv = createTag('div', { class: 'mep-card-body' });
-      const content = buildCardContent(card);
-      cardBodyDiv.append(...(Array.isArray(content) ? content : [content]));
-      headerDiv.appendChild(mepIconCloseSvg);
+      Promise.resolve(buildCardContent(card)).then((content) => {
+        cardBodyDiv.append(...[content].flat());
+      });
       mepCardDiv.append(headerDiv, cardBodyDiv);
     }
     return mepCardDiv;
@@ -178,7 +192,6 @@ function toggleCard(event) {
 }
 
 function toggleRadio(event) {
-  console.log(event.target.closest('.mep-radio-row'));
   const input = event.target.closest('.mep-radio-row').querySelector('input[type="radio"]');
   input.checked = true;
 }

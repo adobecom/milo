@@ -267,6 +267,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-body .mep-card .mep-card-body .mep-row .mep-row-value {
+  text-transform: capitalize;
   color: var(--mep-white-60);
   font: var(--mep-body-font);
   letter-spacing: var(--mep-body-letter-spacing);
