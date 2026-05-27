@@ -1257,6 +1257,12 @@ export function getManifestsFound() {
   return mepconfig?.activities?.length ?? 0;
 }
 
+export function getPageId() {
+  const mepConfig = parseMepConfig();
+  const { page } = mepConfig ?? {};
+  return page?.pageId ? `-${page.pageId}` : '';
+}
+
 export function getFoundation() {
   return (getMetadata('foundation') || 'c1').toUpperCase();
 }

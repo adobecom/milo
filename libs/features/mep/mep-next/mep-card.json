@@ -1,14 +1,38 @@
 {
   "actions" :{
     "highlight": {
-      "header": "Highlight"
+      "header": "Highlight",
+      "label": [
+        {
+          "title": "Lingo",
+          "description": "0 Page Updates"
+        },
+        {
+          "title": "Caas",
+          "description": "0 Page Updates"
+        },
+        {
+          "title": "M@S",
+          "description": "0 Page Updates"
+        }
+      ]
     },
     "toggles": {
-      "header": "Toggles"
+      "header": "Toggle",
+      "label": [
+        {
+          "title": "Preview Link",
+          "description": "Add mepButton=off"
+        },
+        {
+          "title": "Manifest Manager",
+          "description": "Data for last 7 days"
+        }
+      ]
     },
     "spoof-geo": {
       "header": "Spoof Geo",
-      "radios": [
+      "label": [
         "MEP Lingo",
         "Lingo M@S"
       ]
