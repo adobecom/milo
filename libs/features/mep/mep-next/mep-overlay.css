@@ -382,3 +382,67 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   cursor: pointer;
   font: var(--mep-body-font);
 }
+
+.mep-drawer .mep-body .mep-card .mep-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.mep-drawer .mep-body .mep-card .mep-toggle-row h2 {
+  margin: 0;
+  font: var(--mep-h2-font);
+  letter-spacing: var(--mep-h2-letter-spacing);
+}
+
+.mep-drawer .mep-body .mep-card .mep-toggle-row .mep-row-value {
+  margin: 0;
+  color: var(--mep-white-60);
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+}
+
+.mep-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 32px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.mep-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.mep-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 100px;
+  background: var(--mep-white-12);
+  transition: background 0.2s ease;
+}
+
+.mep-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mep-white-100);
+  transition: transform 0.2s ease;
+}
+
+.mep-switch input:checked + .mep-switch-track {
+  background: var(--mep-primary-100);
+}
+
+.mep-switch input:checked + .mep-switch-track::after {
+  transform: translateX(20px);
+}
