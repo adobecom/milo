@@ -93,6 +93,7 @@ const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
 
 export function isTrustedUrl(url) {
   if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
   let parsed;
   try {
     parsed = new URL(url, window.location.origin);

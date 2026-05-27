@@ -759,6 +759,17 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl('/\n/evil.com/script.js')).to.be.false;
       expect(isTrustedUrl('/\r/evil.com/script.js')).to.be.false;
     });
+    it('rejects malformed scheme prefixes (CDN slash-collapse bypass)', () => {
+      expect(isTrustedUrl('https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HTTPS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HtTpS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('http:/evil.com/script.js')).to.be.false;
+      // eslint-disable-next-line no-script-url
+      expect(isTrustedUrl('javascript:alert(1)')).to.be.false;
+    });
     it('rejects non-string inputs', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
