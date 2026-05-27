@@ -32,23 +32,14 @@
     text-align: left;
     will-change: transform, opacity;
 
-    /* Designer-specified fixed sizing across breakpoints. Doesn't match any
-       responsive heading-N or body-md variant; the 21px line-height has no
-       semantic token, hence hardcoded. Same with letter-spacing -0.48. */
     .heading {
       margin: 0 0 var(--s2a-spacing-xs);
-      font-size: var(--s2a-font-size-lg);
-      line-height: 21px;
       color: var(--s2a-color-gray-1000);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
     }
 
     p {
       margin: 0 0 var(--s2a-spacing-sm);
-      font-size: var(--s2a-font-size-md);
-      line-height: 1.25;
       color: var(--s2a-color-transparent-black-64);
-      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     }
 
     a {
@@ -109,7 +100,7 @@
     z-index: 40;
     overflow: hidden;
     width: var(--acrobat-mobile-mockup-width);
-    height: 536px;
+    height: var(--acrobat-mobile-mockup-height);
     border-radius: var(--s2a-border-radius-md);
     box-shadow: 0 40px 80px rgb(0 0 0 / 20%);
     transform: translateY(var(--mockup-y, 100vh)) scale(var(--mockup-scale, 2));
@@ -202,9 +193,8 @@
     padding: 5px 6px;
     white-space: nowrap;
 
-    /* Deliberate one-off: card labels are 10px at every breakpoint and don't
-       follow the .label type scale (which would be 14px at tablet+). */
-    font-size: 10px;
+    /* Deliberate one-off: card labels are 10px at every breakpoint */
+    font-size: 0.625rem;
     font-weight: var(--s2a-font-weight-label);
     color: var(--s2a-color-gray-1000);
     background: #e1e1f1;
@@ -225,9 +215,6 @@
 
     .heading {
       margin-bottom: 6px;
-      white-space: normal;
-      font-size: var(--s2a-font-size-3xl);
-      letter-spacing: var(--s2a-font-letter-spacing-3xl);
       color: var(--s2a-color-gray-1000);
     }
 
@@ -256,7 +243,7 @@
       align-items: center;
       justify-content: center;
       height: 40px;
-      padding: 0 var(--s2a-spacing-20);
+      padding: 0 var(--s2a-spacing-lg);
       white-space: nowrap;
       color: var(--s2a-color-gray-25);
       text-decoration: none;
@@ -293,8 +280,6 @@
       .heading {
         margin-bottom: 0;
         white-space: nowrap;
-        font-size: min(3.889vw, var(--s2a-font-size-7xl));
-        letter-spacing: min(-0.117vw, var(--s2a-font-letter-spacing-lg));
       }
     }
 

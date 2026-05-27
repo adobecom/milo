@@ -464,11 +464,10 @@ function buildStage(el) {
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
   ctaEl.classList.add('acrobat-cta');
-  [titleEl, textBlockEl].forEach((e) => {
-    e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
-  });
+  titleEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading', 'heading-2');
+  textBlockEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading', 'heading-6');
   titleEl.querySelector('p')?.classList.add('subcopy', 'body-md');
-  textBlockEl.querySelector('p')?.classList.add('subcopy');
+  textBlockEl.querySelector('p')?.classList.add('subcopy', 'body-md');
   textBlockEl.querySelector('a')?.classList.add('label');
   ctaEl.querySelector('a')?.classList.add('label');
 
@@ -501,6 +500,7 @@ export default function init(el) {
   adbeLogoPath.style.strokeDasharray = adbeLogoLength;
   stage.style.setProperty('--adbe-logo-length', adbeLogoLength);
   stage.style.setProperty('--acrobat-mobile-mockup-width', `${ACROBAT_MOBILE_MOCKUP_WIDTH}px`);
+  stage.style.setProperty('--acrobat-mobile-mockup-height', `${ACROBAT_MOBILE_MOCKUP_HEIGHT}px`);
 
   // ──────────────────── Animation state ────────────────────
   let viewportWidth = 0;
@@ -1284,7 +1284,7 @@ export default function init(el) {
   }
 
   // ──────────────────── Bootstrap ────────────────────
-  const onResize = debounce(resize, 120);
+  const onResize = debounce(resize, 150);
   window.addEventListener('resize', onResize);
 
   resize();
