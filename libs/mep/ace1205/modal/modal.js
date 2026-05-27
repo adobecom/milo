@@ -288,8 +288,10 @@ export async function getModal(details, custom) {
 
     if (iframe.title) {
       dialog.setAttribute('aria-label', iframe.title);
-    } else {
-      iframe.onload = () => {
+      return;
+    }
+
+    iframe.onload = () => {
         try {
           if (!isSameOrigin(iframe) && iframe.title) {
             dialog.setAttribute('aria-label', iframe.title);
@@ -304,7 +306,6 @@ export async function getModal(details, custom) {
           // Cross-origin iframe, can't access content
         }
       };
-    }
 
     iframe.addEventListener('load', () => {
       if (!isSameOrigin(iframe)) return;
@@ -314,10 +315,12 @@ export async function getModal(details, custom) {
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
-    } else {
-      /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
-      The height auto adjustment feature is applicable only to dialogs
-      with the `commerce-frame` or `dynamic-height` classes */
+    }
+
+    /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
+    The height auto adjustment feature is applicable only to dialogs
+    with the `commerce-frame` or `dynamic-height` classes */
+    if (!dialog.classList.contains('commerce-frame') && !dialog.classList.contains('dynamic-height')) {
       iframe.style.height = '100%';
     }
     if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
@@ -334,11 +337,12 @@ export function getHashParams(hashStr) {
   return hashStr.split(':').reduce((params, part) => {
     if (part.startsWith('#')) {
       params.hash = part;
-    } else {
-      const [key, val] = part.split('=');
-      if (key === 'delay') {
-        params.delay = parseInt(val, 10) * 1000;
-      }
+      return params;
+    }
+
+    const [key, val] = part.split('=');
+    if (key === 'delay') {
+      params.delay = parseInt(val, 10) * 1000;
     }
     return params;
   }, {});
@@ -392,29 +396,30 @@ window.addEventListener('hashchange', async (e) => {
     } catch (error) {
       /* do nothing */
     }
-  } else {
-    const details = await findDetails(window.location.hash, null);
-    const oldUrl = new URL(e.oldURL);
-    const { hash } = oldUrl;
-    const isFromIms = hash.includes(`old_hash=${details.id}`) && hash.includes('from_ims=true');
+    return;
+  }
 
-    const { path: oldDialogPath } = await findDetails(oldUrl.hash, null);
-    const oldDialog = !isFromIms && oldDialogPath ? safeQuerySelector(`.dialog-modal${oldUrl.hash}`) : null;
-    if (oldDialog) {
-      const potentialScrollTarget = !!safeQuerySelector(window.location.hash);
-      const persistPrevHash = prevHash;
-      closeModal(oldDialog, !potentialScrollTarget);
-      prevHash = potentialScrollTarget ? '' : persistPrevHash;
-    }
+  const details = await findDetails(window.location.hash, null);
+  const oldUrl = new URL(e.oldURL);
+  const { hash } = oldUrl;
+  const isFromIms = hash.includes(`old_hash=${details.id}`) && hash.includes('from_ims=true');
 
-    if (isDeepLink) return;
-    if (details) getModal(details);
-    isDeepLink = details?.path && details?.id && isFromIms;
-    if (!hash || isFromIms || oldDialog) return;
+  const { path: oldDialogPath } = await findDetails(oldUrl.hash, null);
+  const oldDialog = !isFromIms && oldDialogPath ? safeQuerySelector(`.dialog-modal${oldUrl.hash}`) : null;
+  if (oldDialog) {
+    const potentialScrollTarget = !!safeQuerySelector(window.location.hash);
+    const persistPrevHash = prevHash;
+    closeModal(oldDialog, !potentialScrollTarget);
+    prevHash = potentialScrollTarget ? '' : persistPrevHash;
+  }
 
-    const hashElement = safeQuerySelector(`${hash}:not(.dialog-modal)`);
-    if (hash.includes('=') || !hashElement) {
-      prevHash = hash;
-    }
+  if (isDeepLink) return;
+  if (details) getModal(details);
+  isDeepLink = details?.path && details?.id && isFromIms;
+  if (!hash || isFromIms || oldDialog) return;
+
+  const hashElement = safeQuerySelector(`${hash}:not(.dialog-modal)`);
+  if (hash.includes('=') || !hashElement) {
+    prevHash = hash;
   }
 });

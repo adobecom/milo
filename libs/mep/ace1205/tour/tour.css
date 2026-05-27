@@ -80,15 +80,10 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   margin: 0;
 }
 
-.tour-title h1,
-.tour-title h2,
-.tour-title h3,
-.tour-title h4,
-.tour-title h5,
-.tour-title h6 {
+.tour-title :is(h1, h2, h3, h4, h5, h6) {
   color: var(--s2a-color-content-label);
   font-size: var(--s2a-typography-font-size-title-6);
-  font-weight: 900;
+  font-weight: var(--s2a-font-weight-heading);
   line-height: var(--s2a-typography-line-height-title-6);
   letter-spacing: -0.48px;
   margin: 0;
@@ -121,7 +116,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 .tour-counter {
   color: var(--s2a-color-background-knockout);
   font-size: var(--s2a-typography-font-size-label);
-  font-weight: 700;
+  font-weight: var(--s2a-font-weight-caption);
   letter-spacing: var(--s2a-typography-letter-spacing-label);
   line-height: var(--s2a-typography-line-height-label);
   margin-block-end: var(--s2a-spacing-md);

@@ -943,114 +943,6 @@ p {
 }
 
 
-/* Icon Button Component — Reusable icon-only button (32×32px default) */
-.icon-button {
-  align-items: center;
-  background: var(--s2a-color-transparent-white-16);
-  block-size: 32px;
-  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
-  border-radius: 6px;
-  box-sizing: border-box;
-  display: inline-flex;
-  flex-shrink: 0;
-  inline-size: 32px;
-  justify-content: center;
-  transition: background 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-}
-
-/* Icon type modifiers - background-image only */
-.icon-button.arrow {
-  background-image: url('../assets/img/promo-arrow-right.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-}
-
-.icon-button.close {
-  background-image: url('../assets/img/icon-close.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-}
-
-.icon-button.play {
-  background-image: url('../assets/img/icon-play.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-}
-
-.icon-button.pause {
-  background-image: url('../assets/img/icon-pause.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-}
-
-.icon-button.plus {
-  background-image: url('../assets/img/icon-plus.svg');
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 12px 12px;
-}
-
-/* Arrow direction variants */
-.icon-button.arrow.down {
-  transform: rotate(90deg);
-}
-
-.icon-button.arrow.left {
-  transform: rotate(180deg);
-}
-
-.icon-button.arrow.up {
-  transform: rotate(-90deg);
-}
-
-/* Size variant - 24×24px for smaller contexts */
-.icon-button.small {
-  block-size: 24px;
-  inline-size: 24px;
-}
-
-/* Hover state */
-.icon-button:hover {
-  background-color: var(--s2a-color-transparent-white-24);
-}
-
-/* Active state */
-.icon-button:active {
-  background-color: var(--s2a-color-content-knockout);
-  border-color: var(--s2a-color-content-knockout);
-}
-
-/* Active state for arrow - swap to black icon */
-.icon-button.arrow:active {
-  background-image: url('../assets/img/promo-arrow-right-black.svg');
-}
-
-/* Focus state for accessibility */
-.icon-button:focus-visible {
-  outline: 2px solid var(--s2a-color-content-knockout);
-  outline-offset: 2px;
-}
-
-/* Promo CTA hover - triggered by hovering anywhere on the CTA */
-.promo-cta:hover .icon-button {
-  background-color: var(--s2a-color-transparent-white-24);
-}
-
-/* Promo CTA active - triggered by clicking anywhere on the CTA */
-.promo-cta:active .icon-button {
-  background-color: var(--s2a-color-content-knockout);
-  border-color: var(--s2a-color-content-knockout);
-}
-
-/* Promo CTA active arrow - swap to black icon when clicking anywhere on CTA */
-.promo-cta:active .icon-button.arrow {
-  background-image: url('../assets/img/promo-arrow-right-black.svg');
-}
-
 /* Promo CTA — Figma: lOFnBFhsYyFWPbSdiPa9us 12438:6158, 11390:25185 */
 .promo-cta {
   align-items: center;
@@ -1105,6 +997,61 @@ p {
 .promo-cta:focus-visible {
   outline: 2px solid var(--s2a-color-content-knockout);
   outline-offset: 2px;
+}
+
+/* Icon button (arrow) - scoped to promo-cta */
+.promo-cta .icon-button {
+  align-items: center;
+  background-color: var(--s2a-color-transparent-white-16);
+  block-size: 32px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  border-radius: 6px;
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: 32px;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+
+}
+
+.promo-cta .icon-button.arrow {
+  background-image: url('../assets/img/promo-arrow-right.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 12px 12px;
+}
+
+.promo-cta .icon-button.arrow.down {
+  transform: rotate(90deg);
+}
+
+.promo-cta .icon-button.arrow.left {
+  transform: rotate(180deg);
+}
+
+.promo-cta .icon-button.arrow.up {
+  transform: rotate(-90deg);
+}
+
+.promo-cta .icon-button.small {
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+/* Promo CTA hover - triggered by hovering anywhere on the CTA */
+.promo-cta:hover .icon-button {
+  background-color: var(--s2a-color-transparent-white-24);
+}
+
+/* Promo CTA active - triggered by clicking anywhere on the CTA */
+.promo-cta:active .icon-button {
+  background-color: var(--s2a-color-content-knockout);
+  border-color: var(--s2a-color-content-knockout);
+}
+
+.promo-cta:active .icon-button.arrow {
+  background-image: url('../assets/img/promo-arrow-right-black.svg');
 }
 
 .dark {
