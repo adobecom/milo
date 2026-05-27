@@ -6,7 +6,6 @@
 }
 
 .comparison-table-c2 {
-  --ct-easing: cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--body-font-family);
   color: var(--s2a-color-gray-900);
   background-color: transparent;
@@ -104,7 +103,7 @@
     .header-cards-container + .table-container {
       transition-property: margin-top;
       transition-duration: 300ms;
-      transition-timing-function: var(--ct-easing);
+      transition-timing-function: var(--parallax-easing);
     }
   }
 
@@ -619,7 +618,7 @@
     grid-template-rows: 1fr;
     transition-property: grid-template-rows;
     transition-duration: 300ms;
-    transition-timing-function: var(--ct-easing);
+    transition-timing-function: var(--parallax-easing);
 
     > div {
       min-block-size: 0;
