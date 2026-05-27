@@ -259,11 +259,11 @@
     }
 
     :is(h1, h2, h3, h4, h5, h6) {
-      font-size: var(--s2a-typography-font-size-heading-4);
+      font-size: var(--s2a-typography-font-size-heading-5);
       font-family: var(--heading-font-family);
       font-weight: var(--s2a-font-weight-heading);
-      line-height: var(--s2a-typography-line-height-heading-4);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
+      line-height: var(--s2a-typography-line-height-heading-5);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -424,9 +424,9 @@
       width: 100%;
       min-height: 56px;
       border: none;
-      font-size: var(--s2a-typography-font-size-heading-4);
-      line-height: var(--s2a-typography-line-height-heading-4);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
+      font-size: var(--s2a-typography-font-size-heading-5);
+      line-height: var(--s2a-typography-line-height-heading-5);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
       font-weight: var(--s2a-font-weight-heading);
       text-align: left;
       background-color: transparent;
