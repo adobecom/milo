@@ -47,7 +47,8 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   flex-direction: column;
   max-width: 596px;
   overflow-x: clip;
-  padding-top: 13px;
+  padding-block-start: 13px;
+  padding-block-end: 0;
   width: 100%;
 }
 
@@ -102,7 +103,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
 .tour-section:last-of-type {
   align-items: center;
-  padding-block: 80px 8px;
+  padding-block: 80px 24px;
   padding-inline: 8px;
 }
 
@@ -224,7 +225,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   bottom: 0;
   display: flex;
   justify-content: center;
-  padding-block: 10px;
+  padding-block: 16px;
   padding-inline: 16px;
   position: sticky;
   width: 100%;
@@ -256,7 +257,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
   .tour-section:last-of-type {
     align-items: center;
-    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-xs);
+    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-lg);
     padding-inline: var(--s2a-spacing-xs);
   }
 
