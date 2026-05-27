@@ -342,7 +342,7 @@
       justify-content: center;
       align-items: center;
       border-radius: var(--s2a-border-radius-round);
-      padding: 14px var(--s2a-spacing-lg);
+      padding: 14px var(--s2a-spacing-md);
       font-size: var(--s2a-typography-font-size-label);
       font-weight: var(--s2a-font-weight-label);
       line-height: var(--s2a-typography-line-height-label);
@@ -800,6 +800,15 @@
       }
     }
 
+    .sub-header-item-container {
+      &.btn-section a,
+      p:last-child a {
+        padding: 14px var(--s2a-spacing-lg);
+      }
+    }
+  }
+
+  @media (width >= 1440px) {
     .ct-header-item-card {
       padding: var(--s2a-spacing-lg);
     }
