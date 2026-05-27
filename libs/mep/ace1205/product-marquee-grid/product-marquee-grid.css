@@ -1,0 +1,95 @@
+.product-marquee-grid {
+  background: var(--s2a-color-background-default);
+
+  .pm-content {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 494px;
+    padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
+  }
+
+  .pm-foreground {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .heading-4 {
+      max-width: 400px;
+    }
+  }
+
+  .pm-chiclet-row {
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-lg);
+
+    img.icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+      object-fit: contain;
+    }
+  }
+
+  .pm-promo-area {
+    margin-block-start: var(--s2a-spacing-lg);
+  }
+
+  .pm-promo-button {
+    align-items: center;
+    background: var(--s2a-color-background-knockout);
+    border-radius: var(--s2a-border-radius-md);
+    display: flex;
+    gap: var(--s2a-spacing-md);
+    padding: var(--s2a-spacing-sm);
+    text-decoration: none;
+
+    .pm-promo-text {
+      color: var(--s2a-color-content-knockout);
+      flex: 1;
+      padding-inline-start: var(--s2a-spacing-2xs);
+    }
+
+    .pm-promo-chevron {
+      align-items: center;
+      background: var(--s2a-color-transparent-white-16);
+      block-size: 32px;
+      border-radius: var(--s2a-border-radius-sm);
+      color: var(--s2a-color-content-knockout);
+      display: flex;
+      flex-shrink: 0;
+      inline-size: 32px;
+      justify-content: center;
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .product-marquee-grid {
+    .pm-content {
+      --grid-margin-width: var(--s2a-spacing-3xl);
+      flex-direction: row;
+      min-block-size: 500px;
+      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+    }
+
+    .pm-chiclet-row img.icon {
+      block-size: 80px;
+      inline-size: 80px;
+    }
+
+    .pm-foreground {
+      .heading-4 {
+        max-width: min(476px, 80%);
+      }
+    }
+
+    .pm-promo-area {
+      align-self: flex-end;
+      flex: 0 0 25%;
+      margin-block-start: 0;
+      min-width: 260px;
+    }
+  }
+}
