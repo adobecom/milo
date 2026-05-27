@@ -50,7 +50,6 @@ function hideMedia(media) {
   });
 }
 
-
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
@@ -111,8 +110,12 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    if (!media.matches(':popover-open')) media.showPopover();
+    // Apply spawn transforms BEFORE opening the popover so the pictures
+    // are already at their spawn position when they become visible —
+    // otherwise the CSS transition fires from (0,0) → spawn and the
+    // pictures appear to fly in from the page corner.
     activeLayers.forEach(renderLayer);
+    if (!media.matches(':popover-open')) media.showPopover();
     startLoop();
   };
 
