@@ -59,6 +59,7 @@ function decorateVideoVariant(container) {
   if (!row) return;
 
   const [ctaCell, mediaCell] = [...row.children];
+  if (!ctaCell && !mediaCell) return;
 
   if (mediaCell) {
     mediaCell.classList.add('media');

@@ -295,7 +295,6 @@
   }
 }
 
-/* video variant */
 .rich-content.video {
   background: var(--s2a-color-background-inverse);
   display: flex;
@@ -321,10 +320,10 @@
       max-width: 214px;
       margin-inline: auto;
       aspect-ratio: 9 / 16;
-      border-radius: 22.542px;
+      border-radius: var(--s2a-border-radius-24);
       border: 9px solid rgba(255, 255, 255, 0.05);
       background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(18.133974075317383px);
+      backdrop-filter: blur(var(--s2a-blur-16));
       overflow: hidden;
 
       video {
@@ -372,7 +371,6 @@
 
         video {
           height: auto;
-          object-fit: unset;
         }
       }
 
