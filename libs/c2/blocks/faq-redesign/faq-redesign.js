@@ -9,11 +9,19 @@ const ROTATE_LERP = 0.12;
 const TARGET = { x: -8, y: -14 };
 const SCROLL_SETTLE_MS = 150;
 
-const LAYERS = [
-  { spawn: { x: 120, y: -120 }, stagger: { x: 0, y: -6 }, follow: 0.32, rot: 0.03 },
-  { spawn: { x: 108, y: -108 }, stagger: { x: 8, y: 0 }, follow: 0.42, rot: 0.07 },
-  { spawn: { x: 96, y: -96 }, stagger: { x: 16, y: 6 }, follow: 0.68, rot: 0.14 },
-];
+// Layer config interpolates between a "back" layer (i=0: slow follow, furthest
+// spawn, least tilt) and a "front" layer (i=n-1: fast follow, closest spawn,
+// most tilt). Stagger accumulates linearly so more pictures = wider fan.
+function makeLayer(i, n) {
+  const t = n > 1 ? i / (n - 1) : 0;
+  const spawn = 120 - t * 24; // 120 → 96
+  return {
+    spawn: { x: spawn, y: -spawn },
+    stagger: { x: i * 8, y: i * 6 - 6 },
+    follow: 0.32 + t * 0.36, // 0.32 → 0.68
+    rot: 0.03 + t * 0.11, // 0.03 → 0.14
+  };
+}
 
 // Two-piece curve: ramps to peak 1.324 at intro=0.52, eases back to 1.0 at intro=1.
 function introScale(t) {
@@ -92,15 +100,19 @@ function addCursorFollower(list) {
     // Drop any in-flight exit for this item so it can't hide us mid-animation.
     exits = exits.filter((e) => e.media !== media);
     active = item;
-    layers = [...media.querySelectorAll('picture')].slice(0, LAYERS.length).map((pic, i) => ({
-      pic,
-      config: LAYERS[i],
-      x: cur.x + LAYERS[i].spawn.x,
-      y: cur.y + LAYERS[i].spawn.y,
-      intro: 0,
-      exit: 0,
-      rotate: 0,
-    }));
+    const pics = [...media.querySelectorAll('picture')];
+    layers = pics.map((pic, i) => {
+      const config = makeLayer(i, pics.length);
+      return {
+        pic,
+        config,
+        x: cur.x + config.spawn.x,
+        y: cur.y + config.spawn.y,
+        intro: 0,
+        exit: 0,
+        rotate: 0,
+      };
+    });
     media.classList.add('is-visible');
     layers.forEach(render);
     startRaf();
