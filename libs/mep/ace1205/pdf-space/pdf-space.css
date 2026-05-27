@@ -193,11 +193,11 @@
     .heading {
       margin: 0;
       white-space: nowrap;
-      font-size: min(3.889vw, var(--s2a-font-size-56));
+      font-size: min(3.889vw, var(--s2a-typography-font-size-title-2));
       font-weight: var(--s2a-font-weight-heading);
-      line-height: 1;
+      line-height: var(--s2a-typography-line-height-title-2);
       /* stylelint-disable-next-line custom-property-pattern */
-      letter-spacing: min(-0.117vw, var(--s2a-font-letter-spacing-neg-1_68));
+      letter-spacing: min(-0.117vw, var(--s2a-typography-letter-spacing-title-2));
       color: var(--s2a-color-gray-1000);
     }
 
