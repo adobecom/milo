@@ -32,16 +32,13 @@ const DRAWER_CSS = `
 
   .concierge {
     position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; right: 0; bottom: 0;
     width: var(--concierge-width);
     background: #fff;
     border-left: 1px solid rgba(0,0,0,0.08);
     box-shadow: -4px 0 16px rgba(0,0,0,0.04);
     z-index: 2147483000;
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
     font-family: adobe-clean, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #292929;
     overflow: hidden;
@@ -74,8 +71,9 @@ const DRAWER_CSS = `
   .bc-poc-gnav {
     display: inline-flex;
     align-items: center;
+    align-self: center;
     gap: 8px;
-    margin: 0 16px;
+    margin: 0 12px;
     height: 36px;
     padding: 0 6px 0 14px;
     border: 1px solid rgba(0,0,0,0.12);
@@ -86,6 +84,7 @@ const DRAWER_CSS = `
     color: #6E6E6E;
     cursor: pointer;
     transition: all 0.2s ease;
+    box-sizing: border-box;
   }
   .bc-poc-gnav:hover { border-color: rgba(0,0,0,0.22); color: #292929; }
   .bc-poc-gnav .bc-poc-gnav-icon { display: inline-flex; flex-shrink: 0; }
@@ -99,9 +98,7 @@ const DRAWER_CSS = `
 
   /* Collapsed (icon-only) state when drawer is open */
   .bc-poc-gnav.is-collapsed {
-    width: 36px; padding: 0;
-    justify-content: center;
-    gap: 0;
+    width: 36px; padding: 0; justify-content: center; gap: 0;
   }
   .bc-poc-gnav.is-collapsed .bc-poc-gnav-label,
   .bc-poc-gnav.is-collapsed .bc-poc-gnav-send { display: none; }
@@ -114,6 +111,36 @@ const DRAWER_CSS = `
     z-index: 2147483001;
     box-shadow: 0 2px 8px rgba(0,0,0,0.12);
   }
+
+  /* --- Suggestion dropdown --- */
+  .bc-poc-dropdown {
+    position: fixed;
+    z-index: 2147483002;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 8px;
+    min-width: 320px;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: adobe-clean, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  .bc-poc-suggestion {
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 14px;
+    line-height: 20px;
+    color: #292929;
+    cursor: pointer;
+  }
+  .bc-poc-suggestion:hover { background: rgba(0,0,0,0.04); }
 
   /* --- push fixed/sticky Adobe elements off the drawer area --- */
   html.has-concierge header.global-navigation,
@@ -183,7 +210,6 @@ const GNAV_PILL_HTML = `
 `;
 
 const GNAV_SELECTOR = 'header.global-navigation';
-
 const GNAV_ANCHOR_SELECTOR = [
   '.feds-signIn-link',
   '.feds-profile',
@@ -196,7 +222,9 @@ let drawerOpen = false;
 let drawerEl = null;
 let styleEl = null;
 let gnavPillEl = null;
-let webAgentLoaded = false;
+let dropdownEl = null;
+let pendingMessage = null;
+let webAgentBootstrapped = false;
 
 function waitForCondition(checkFn, timeout = 10000, interval = 100) {
   return new Promise((resolve) => {
@@ -208,6 +236,10 @@ function waitForCondition(checkFn, timeout = 10000, interval = 100) {
     };
     tick();
   });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 function buildChatConfig(isStage) {
@@ -240,8 +272,8 @@ function attachAuthHook(surfaceURL) {
 }
 
 async function bootstrapWebAgent() {
-  if (webAgentLoaded) return;
-  webAgentLoaded = true;
+  if (webAgentBootstrapped) return;
+  webAgentBootstrapped = true;
 
   const isStage = getConfig()?.env?.name !== 'prod';
   const scriptSrc = isStage ? WEB_AGENT_STAGE : WEB_AGENT_PROD;
@@ -260,6 +292,12 @@ async function bootstrapWebAgent() {
   });
 }
 
+function hideDropdown() {
+  if (!dropdownEl) return;
+  dropdownEl.remove();
+  dropdownEl = null;
+}
+
 function closeDrawer() {
   if (!drawerOpen) return;
   drawerOpen = false;
@@ -272,6 +310,7 @@ function closeDrawer() {
 function openDrawer() {
   if (drawerOpen) return;
   drawerOpen = true;
+  hideDropdown();
 
   document.documentElement.classList.add('has-concierge');
   document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
@@ -283,6 +322,10 @@ function openDrawer() {
     drawerEl.setAttribute('aria-label', 'AI assistant');
     drawerEl.innerHTML = `${HEADER_HTML}<div class="bc-poc-mount"><div id="${MOUNT_ID}"></div></div>`;
     drawerEl.querySelector('.bc-poc-close')?.addEventListener('click', closeDrawer);
+
+    const mountEl = drawerEl.querySelector(`#${MOUNT_ID}`);
+    if (pendingMessage && mountEl) mountEl.dataset.initialMessage = pendingMessage;
+
     document.documentElement.append(drawerEl);
   } else {
     drawerEl.style.display = '';
@@ -293,15 +336,51 @@ function openDrawer() {
   bootstrapWebAgent();
 }
 
+function showDropdown() {
+  if (dropdownEl || !gnavPillEl) return;
+
+  const suggestions = chatUIConfig.arrays?.['welcome.examples'] || [];
+  if (!suggestions.length) return;
+
+  dropdownEl = document.createElement('div');
+  dropdownEl.className = 'bc-poc-dropdown';
+  dropdownEl.setAttribute('role', 'menu');
+  dropdownEl.innerHTML = suggestions
+    .map((s) => `<button type="button" class="bc-poc-suggestion" role="menuitem">${escapeHtml(s.text)}</button>`)
+    .join('');
+
+  const rect = gnavPillEl.getBoundingClientRect();
+  dropdownEl.style.top = `${rect.bottom + 8}px`;
+  dropdownEl.style.right = `${Math.max(8, window.innerWidth - rect.right)}px`;
+
+  document.body.append(dropdownEl);
+
+  dropdownEl.querySelectorAll('.bc-poc-suggestion').forEach((btn, i) => {
+    btn.addEventListener('click', () => {
+      pendingMessage = suggestions[i].text;
+      hideDropdown();
+      openDrawer();
+    });
+  });
+}
+
+function onPillClick(e) {
+  e.stopPropagation();
+  if (drawerOpen) {
+    closeDrawer();
+    return;
+  }
+  if (dropdownEl) hideDropdown();
+  else showDropdown();
+}
+
 async function injectGnavPill() {
   gnavPillEl = document.createElement('button');
   gnavPillEl.type = 'button';
   gnavPillEl.className = 'bc-poc-gnav';
   gnavPillEl.setAttribute('aria-label', 'Ask a question');
   gnavPillEl.innerHTML = GNAV_PILL_HTML;
-  gnavPillEl.addEventListener('click', () => {
-    if (drawerOpen) closeDrawer(); else openDrawer();
-  });
+  gnavPillEl.addEventListener('click', onPillClick);
 
   const found = await waitForCondition(() => document.querySelector(GNAV_SELECTOR), 15000);
   const gnav = found ? document.querySelector(GNAV_SELECTOR) : null;
@@ -320,8 +399,6 @@ async function injectGnavPill() {
     document.body.append(gnavPillEl);
     console.warn('[bc-drawer-poc] no GNAV matched; using floating fallback');
   }
-
-  if (drawerOpen) gnavPillEl.classList.add('is-collapsed');
 }
 
 export default function injectBcDrawerPoc() {
@@ -331,10 +408,17 @@ export default function injectBcDrawerPoc() {
   styleEl.textContent = DRAWER_CSS.trim();
   document.head.append(styleEl);
 
+  document.addEventListener('click', (e) => {
+    if (!dropdownEl) return;
+    if (dropdownEl.contains(e.target) || gnavPillEl?.contains(e.target)) return;
+    hideDropdown();
+  });
+
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      hideDropdown();
       if (drawerOpen) {
         document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
       }
@@ -342,5 +426,4 @@ export default function injectBcDrawerPoc() {
   });
 
   injectGnavPill();
-  openDrawer();
 }
