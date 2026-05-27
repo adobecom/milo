@@ -10,13 +10,13 @@ const hasTextNode = (...nodeLists) => nodeLists.some(
 );
 
 const getFirstVisibleColumnIndex = (el) => {
-  const firstVisible = el.querySelector('.header-item[data-column-index]:not(.hidden)');
+  const firstVisible = el.querySelector('.ct-header-item-card[data-column-index]:not(.hidden)');
   return firstVisible ? parseInt(firstVisible.getAttribute('data-column-index'), 10) : -1;
 };
 
 function syncAccessibilityHeaders(el) {
   const accessibilityHeaderRow = el.querySelector('.accessibility-header-row');
-  const visibleHeaderItems = [...el.querySelectorAll('.header-item:not(.hidden)')];
+  const visibleHeaderItems = [...el.querySelectorAll('.ct-header-item-card:not(.hidden)')];
   if (!accessibilityHeaderRow || !visibleHeaderItems.length) return;
 
   const visibleColumnIndices = new Set(visibleHeaderItems.map((item) => item.getAttribute('data-column-index')));
@@ -35,7 +35,7 @@ function syncAccessibilityHeaders(el) {
 }
 
 function updateVisibleSelects({ el, headerTitles }) {
-  const visibleSelects = [...el.querySelectorAll('.header-item:not(.hidden) .mobile-filter-select')];
+  const visibleSelects = [...el.querySelectorAll('.ct-header-item-card:not(.hidden) .mobile-filter-select')];
   const selectedIndices = new Set(visibleSelects.map((s) => parseInt(s.value, 10)));
 
   visibleSelects.forEach((selectItem) => {
@@ -60,8 +60,8 @@ function handleSelectChange(e, { headerItemIndex, el, headerTitles }) {
     col.classList.remove('hidden');
     const parent = col.parentNode;
     if (!isFirstVisible || !parent) return;
-    const firstHeaderItem = parent.querySelector('.header-item:first-child');
-    if (col.classList.contains('header-item') && firstHeaderItem !== col) {
+    const firstHeaderItem = parent.querySelector('.ct-header-item-card:first-child');
+    if (col.classList.contains('ct-header-item-card') && firstHeaderItem !== col) {
       parent.prepend(col);
       return;
     }
@@ -159,7 +159,7 @@ function createSubHeaderContainer({
 }
 
 function decorateHeaderItem({ headerItem, headerTitles, headerItemIndex, el, headerItemsCount }) {
-  headerItem.classList.add('header-item', 'header-item-card');
+  headerItem.classList.add('ct-header-item-card');
   headerItem.setAttribute('data-column-index', headerItemIndex);
   const childrenArray = [...headerItem.children];
   let containerIndex = 0;
@@ -227,7 +227,7 @@ function decorateHeader(el, headerContent) {
       headerItemsCount: headerItems.length,
     });
   });
-  const headerItemHeader = createTag('div', { class: 'header-item header-item-header' });
+  const headerItemHeader = createTag('div', { class: 'ct-header-item-header' });
   const firstItem = headerItems[0];
   if (firstItem) {
     headerItemHeader.append(...firstItem.children);
@@ -235,7 +235,7 @@ function decorateHeader(el, headerContent) {
   }
   headerContentWrapper.prepend(headerItemHeader);
   const headerCardsContainer = createTag('div', { class: 'header-cards-container' });
-  const cardItems = [...headerContentWrapper.querySelectorAll('.header-item.header-item-card')];
+  const cardItems = [...headerContentWrapper.querySelectorAll('.ct-header-item-card')];
   cardItems.forEach((card) => headerCardsContainer.appendChild(card));
   el.style.setProperty('--ct-card-count', cardItems.length);
   headerContent.after(headerCardsContainer);
@@ -244,7 +244,7 @@ function decorateHeader(el, headerContent) {
 function createAccessibilityHeaderRow(el) {
   const headerRow = createTag('div', { class: 'table-row accessibility-header-row', role: 'row' });
   headerRow.appendChild(createTag('div', { class: 'accessibility-header-cell', role: 'cell', 'data-column-index': -1 }));
-  [...el.querySelectorAll('.header-item[data-column-index]')].forEach((headerItem) => {
+  [...el.querySelectorAll('.ct-header-item-card[data-column-index]')].forEach((headerItem) => {
     const titleElement = headerItem.querySelector('h1, h2, h3, h4, h5, h6');
     const headerCell = createTag('div', { role: 'columnheader' });
     headerCell.setAttribute('data-column-index', headerItem.getAttribute('data-column-index'));
@@ -416,7 +416,7 @@ function decorateTable({ el, tableChildren, expandMetadata, tableIndex }) {
   });
   tableElement.insertBefore(createAccessibilityHeaderRow(el), tableElement.firstChild);
   arePrimaryColumns.forEach((isPrimary, colIndex) => {
-    if (isPrimary) el.querySelector(`.header-item-card[data-column-index="${colIndex}"]`)?.classList.add(COLUMN_TYPES.PRIMARY);
+    if (isPrimary) el.querySelector(`.ct-header-item-card[data-column-index="${colIndex}"]`)?.classList.add(COLUMN_TYPES.PRIMARY);
   });
   tableContainer.appendChild(tableElement);
   return tableContainer;
@@ -472,17 +472,17 @@ function setupResponsiveHiding(el) {
     const isMobile = e ? e.matches : compactLayoutQuery.matches;
 
     if (!isMobile) {
-      reorderElementsByColumnIndex(el.querySelectorAll('.header-item[data-column-index]'));
+      reorderElementsByColumnIndex(el.querySelectorAll('.ct-header-item-card[data-column-index]'));
       el.querySelectorAll('.table-row').forEach((row) => {
         reorderElementsByColumnIndex(row.querySelectorAll('.table-cell'));
       });
-      [...el.querySelectorAll('.header-item[data-column-index] .mobile-filter-select')].forEach((select) => {
-        select.value = select?.closest('.header-item')?.getAttribute('data-column-index');
+      [...el.querySelectorAll('.ct-header-item-card[data-column-index] .mobile-filter-select')].forEach((select) => {
+        select.value = select?.closest('.ct-header-item-card')?.getAttribute('data-column-index');
       });
     }
 
-    el.querySelector('.header-item-header')?.classList.remove('hidden');
-    hideElements(el.querySelectorAll('.header-item:not(.header-item-header)'), isMobile);
+    el.querySelector('.ct-header-item-header')?.classList.remove('hidden');
+    hideElements(el.querySelectorAll('.ct-header-item-card'), isMobile);
     el.querySelectorAll('.table-row').forEach((row) => hideElements(row.querySelectorAll('.table-cell'), isMobile));
     syncAccessibilityHeaders(el);
   };
@@ -544,7 +544,7 @@ function setupCollapsingHeader(el) {
     if (wasCollapsed) return;
     wasCollapsed = true;
     if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
-    const firstCard = cardsContainer.querySelector('.header-item-card:not(.hidden)');
+    const firstCard = cardsContainer.querySelector('.ct-header-item-card:not(.hidden)');
     if (cachedMobileDelta === null) {
       cachedMobileDelta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
         .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
