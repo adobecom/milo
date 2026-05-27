@@ -49,13 +49,6 @@
     flex-shrink: 0;
     inline-size: 80px;
     overflow: hidden;
-    background: transparent;
-    border: 0;
-    display: block;
-    inset: auto;
-    margin: 0;
-    padding: 0;
-    position: static;
 
     picture,
     img {
@@ -64,6 +57,22 @@
       inline-size: 100%;
       object-fit: cover;
     }
+  }
+}
+
+/* Reset all popover UA defaults below desktop. The popover attribute brings
+   position: fixed, inset: 0, margin: auto, border, padding, background, and
+   display: none when closed — none of which we want for the inline thumbnail.
+   At desktop the popover API takes over (see the @media 1280 block). */
+@media (width < 1280px) {
+  .hover-list .hover-list-media {
+    background: transparent;
+    border: 0;
+    display: block;
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    position: static;
   }
 }
 
@@ -118,11 +127,18 @@
       }
     }
 
+    /* Override UA popover defaults to make this a transparent full-viewport
+       stage. Display is left to the popover API: closed → display: none,
+       open → top layer + display: block. */
     .hover-list-media {
+      background: transparent;
       block-size: 100vh;
+      border: 0;
       inline-size: 100vw;
       inset: 0;
+      margin: 0;
       overflow: visible;
+      padding: 0;
       pointer-events: none;
       position: fixed;
       z-index: 100;
