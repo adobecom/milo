@@ -91,8 +91,9 @@
     }
 
     .faq-media {
-      block-size: 75px;
-      inline-size: 74px;
+      aspect-ratio: 1;
+      block-size: auto;
+      flex: 0 0 25%;
     }
   }
 }
