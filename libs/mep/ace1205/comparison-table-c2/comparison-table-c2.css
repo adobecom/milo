@@ -753,9 +753,9 @@
       padding-top: var(--s2a-spacing-lg);
 
       :is(h1, h2, h3, h4, h5, h6) {
-        font-size: var(--s2a-typography-font-size-heading-3);
+        font-size: var(--s2a-typography-font-size-heading-4);
         font-weight: var(--s2a-font-weight-adobe-clean-bold);
-        line-height: var(--s2a-typography-line-height-heading-3);
+        line-height: var(--s2a-typography-line-height-heading-4);
       }
     }
 
