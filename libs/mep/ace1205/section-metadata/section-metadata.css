@@ -182,6 +182,28 @@
   }
 }
 
+.section.scrim .section-background {
+  &::after {
+    --scrim-stop: 80%;
+    --scrim-dir: right;
+
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      to var(--scrim-dir),
+      rgb(0 0 0 / 60%) var(--scrim-stop),
+      rgb(0 0 0 / 40%) calc((var(--scrim-stop) + 100%) / 2),
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  [dir='rtl'] &::after {
+    --scrim-dir: left;
+  }
+}
+
 /* mobile only */
 @media (width < 768px) {
   .section-background .mobile-only {
@@ -225,6 +247,10 @@
         }
       }
     }
+  }
+
+  .section.scrim .section-background::after {
+    --scrim-stop: 60%;
   }
 }
 
