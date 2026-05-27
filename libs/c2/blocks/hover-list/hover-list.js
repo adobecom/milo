@@ -91,8 +91,8 @@ function addCursorFollower(list) {
 
   const activate = (item) => {
     if (item === activeItem) return;
-    if (activeItem) hideMedia(activeItem.querySelector('.faq-media'));
-    const media = item.querySelector('.faq-media');
+    if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+    const media = item.querySelector('.hover-list-media');
     if (!media) return;
     // Drop pending exit for this item so it can't hide us mid-animation.
     exitingGroups = exitingGroups.filter((g) => g.media !== media);
@@ -117,14 +117,14 @@ function addCursorFollower(list) {
 
   const deactivate = () => {
     if (!activeItem) return;
-    exitingGroups.push({ media: activeItem.querySelector('.faq-media'), layers: activeLayers });
+    exitingGroups.push({ media: activeItem.querySelector('.hover-list-media'), layers: activeLayers });
     activeItem = null;
     activeLayers = [];
     startLoop();
   };
 
   const activateAtPoint = (x, y) => {
-    const item = document.elementFromPoint(x, y)?.closest('.faq-item');
+    const item = document.elementFromPoint(x, y)?.closest('.hover-list-item');
     if (item && list.contains(item)) activate(item);
   };
 
@@ -160,24 +160,24 @@ function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
 
-  const headline = createTag('div', { class: 'faq-headline' });
+  const headline = createTag('div', { class: 'hover-list-headline' });
   const headingCol = rows[0]?.children[0];
   if (headingCol) {
     decorateBlockText(headingCol, { heading: '2' });
     headline.append(...headingCol.childNodes);
   }
 
-  const list = createTag('ol', { class: 'faq-list' });
+  const list = createTag('ol', { class: 'hover-list-items' });
   rows.slice(1).forEach((row, i) => {
     const [textCol, mediaCol] = row.children;
-    const item = createTag('li', { class: 'faq-item' });
-    const number = createTag('span', { class: 'faq-number eyebrow' }, String(i + 1).padStart(2, '0'));
-    const text = createTag('div', { class: 'faq-text heading-4' });
+    const item = createTag('li', { class: 'hover-list-item' });
+    const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1).padStart(2, '0'));
+    const text = createTag('div', { class: 'hover-list-text heading-4' });
     if (textCol) text.append(...textCol.childNodes);
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
-      const media = createTag('div', { class: 'faq-media' });
+      const media = createTag('div', { class: 'hover-list-media' });
       pics.forEach((p) => media.append(p));
       item.append(media);
     }
@@ -185,7 +185,7 @@ function decorate(block) {
   });
 
   addCursorFollower(list);
-  const listCol = createTag('div', { class: 'faq-list-col' });
+  const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
   block.replaceChildren(headline, listCol);
 }

@@ -126,7 +126,7 @@ const C2_BLOCKS = [
   'section-metadata',
   'visually-hidden',
   'product-marquee-grid',
-  'faq-redesign',
+  'hover-list',
 ];
 
 const AUTO_BLOCKS = [
