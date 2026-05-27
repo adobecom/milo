@@ -33,32 +33,17 @@ function stepLayer(layer, mx, my, vx) {
   layer.rotate += (vx * c.rot - layer.rotate) * ROTATE_LERP;
 }
 
-function renderLayer(layer, offsetX = 0, offsetY = 0) {
+function renderLayer(layer) {
   const { config: c, pic } = layer;
   const fade = 1 - layer.exit;
   const scale = introScale(layer.intro) * fade;
-  const x = layer.x + c.stagger.x - offsetX;
-  const y = layer.y + c.stagger.y - offsetY;
-  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
+  pic.style.transform = `translate3d(${layer.x + c.stagger.x}px, ${layer.y + c.stagger.y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
   pic.style.opacity = String(fade);
-}
-
-// position: fixed is contained by the nearest ancestor with transform / filter
-// / perspective (e.g. parallax-garage-door-reveal sections). Find it so we can
-// compensate the picture's position back to viewport coords.
-function findFixedContainer(el) {
-  let p = el.parentElement;
-  while (p && p !== document.documentElement) {
-    const cs = getComputedStyle(p);
-    if (cs.transform !== 'none' || cs.filter !== 'none' || cs.perspective !== 'none') return p;
-    p = p.parentElement;
-  }
-  return null;
 }
 
 function hideMedia(media) {
   if (!media) return;
-  media.classList.remove('is-visible');
+  if (media.matches(':popover-open')) media.hidePopover();
   media.querySelectorAll('picture').forEach((p) => {
     p.style.transform = '';
     p.style.opacity = '';
@@ -67,19 +52,12 @@ function hideMedia(media) {
 
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
-  const fixedContainer = findFixedContainer(list);
   let activeItem = null;
   let activeLayers = [];
   let exitingGroups = [];
   let rafId = null;
   let isScrolling = false;
   let scrollEndTimer = null;
-
-  const getOffset = () => {
-    if (!fixedContainer) return { x: 0, y: 0 };
-    const r = fixedContainer.getBoundingClientRect();
-    return { x: r.left, y: r.top };
-  };
 
   const updateCursor = (e) => {
     cursor.vx = cursor.hasPrev ? e.clientX - cursor.x : 0;
@@ -89,19 +67,18 @@ function addCursorFollower(list) {
   };
 
   const tick = () => {
-    const o = getOffset();
     activeLayers.forEach((l) => {
       stepLayer(l, cursor.x, cursor.y, cursor.vx);
       const n = Math.min(l.intro + INTRO_STEP, 1);
       l.intro = 1 - (1 - n) ** 2.2;
-      renderLayer(l, o.x, o.y);
+      renderLayer(l);
     });
     exitingGroups = exitingGroups.filter(({ media, layers }) => {
       let alive = false;
       layers.forEach((l) => {
         l.exit = Math.min(l.exit + EXIT_STEP, 1);
         stepLayer(l, cursor.x, cursor.y, cursor.vx);
-        renderLayer(l, o.x, o.y);
+        renderLayer(l);
         if (l.exit < 1) alive = true;
       });
       if (!alive) hideMedia(media);
@@ -133,9 +110,16 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    media.classList.add('is-visible');
-    const o = getOffset();
-    activeLayers.forEach((l) => renderLayer(l, o.x, o.y));
+    // Suppress the CSS transition for the very first render so the picture
+    // appears at its spawn position instantly. The popover's display: none →
+    // block change otherwise causes the transition to fire from default
+    // (transform: none, top-left) to the spawn transform.
+    activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
+    activeLayers.forEach(renderLayer);
+    if (!media.matches(':popover-open')) media.showPopover();
+    requestAnimationFrame(() => {
+      activeLayers.forEach((l) => { l.pic.style.transition = ''; });
+    });
     startLoop();
   };
 
@@ -201,7 +185,7 @@ function decorate(block) {
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
-      const media = createTag('div', { class: 'hover-list-media' });
+      const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });
       pics.forEach((p) => media.append(p));
       item.append(media);
     }
