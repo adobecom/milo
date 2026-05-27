@@ -6,7 +6,7 @@ const STIFFNESS = 0.34;
 const ROTATE_LERP = 0.12;
 const INTRO_STEP = 0.009;
 const EXIT_STEP = 0.08;
-const TARGET_OFFSET = { x: -8, y: -14 };
+const TARGET_OFFSET = { x: -4, y: -4 };
 const SCROLL_SETTLE_MS = 150;
 
 // Interpolates layer config from back (slow, far spawn, least tilt) to front.
@@ -110,11 +110,7 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    // The popover's display: none → block change makes the CSS transition
-    // on the picture fire from default (transform: none, anchored at 0,0)
-    // to the spawn position — pictures appear to fly in from the page
-    // corner. Suppress the transition on the first render, then restore
-    // it next frame so subsequent spring updates animate smoothly.
+
     activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
     activeLayers.forEach(renderLayer);
     if (!media.matches(':popover-open')) media.showPopover();
