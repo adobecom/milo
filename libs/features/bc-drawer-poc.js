@@ -7,6 +7,20 @@ const MOUNT_ID = 'brand-concierge-mount';
 const WEB_AGENT_PROD = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
 const WEB_AGENT_STAGE = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
 
+const AI_ICON = `<svg viewBox="0 0 20 20" width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bc-poc-grad-1" x1="6.75" y1="1.75" x2="19.29" y2="3.04" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D73220"/><stop offset=".33" stop-color="#D92361"/><stop offset="1" stop-color="#7155FA"/>
+    </linearGradient>
+    <linearGradient id="bc-poc-grad-2" x1="1.75" y1="12.75" x2="7.75" y2="13.37" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#D73220"/><stop offset=".33" stop-color="#D92361"/><stop offset="1" stop-color="#7155FA"/>
+    </linearGradient>
+  </defs>
+  <path d="M9.92 13.25c-.22 0-.44-.06-.64-.17-.48-.28-.73-.83-.61-1.37l.73-3.38L7.08 5.77c-.37-.41-.44-1.01-.16-1.49.28-.48.84-.73 1.37-.61l3.38.73 2.56-2.32c.41-.37 1.01-.44 1.49-.16.48.28.72.83.61 1.37l-.73 3.38 2.32 2.56c.37.41.44 1.01.16 1.49-.28.48-.83.73-1.37.61l-3.37-.73-2.56 2.32c-.24.22-.55.33-.86.33z" fill="url(#bc-poc-grad-1)"/>
+  <path d="M3.35 18.25c-.13 0-.26-.03-.38-.1-.28-.16-.42-.49-.36-.81l.31-1.42-.97-1.07c-.22-.24-.26-.6-.1-.88.17-.28.49-.42.81-.36l1.42.31 1.07-.97c.24-.22.6-.26.88-.1.28.16.42.49.36.81l-.31 1.42.97 1.07c.22.24.26.6.1.88-.17.28-.5.42-.81.36l-1.42-.31-1.07.97c-.14.13-.32.2-.5.2z" fill="url(#bc-poc-grad-2)"/>
+</svg>`;
+
+const SEND_ICON = '<svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M18.65 9.97c0-.29-.17-.56-.44-.68L4.06 2.93c-.26-.12-.56-.08-.78.1-.22.18-.32.46-.26.74l1.27 6.24-1.22 6.23c-.05.25.03.5.2.68.02.02.04.04.07.06.22.17.52.21.78.1l14.1-6.41c.27-.12.44-.39.44-.68zM14.41 9.23l-8.75.03L4.78 4.9 14.4 9.23zM4.82 15.1l.85-4.35 8.76-.02L4.82 15.1z"/></svg>';
 const CLOSE_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg>';
 const EXPAND_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9v4h4M13 7V3H9M3 13l5-5M13 3l-5 5"/></svg>';
 
@@ -34,9 +48,7 @@ const DRAWER_CSS = `
   }
 
   .bc-poc-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 12px 16px;
     border-bottom: 1px solid rgba(0,0,0,0.08);
     flex-shrink: 0;
@@ -50,22 +62,49 @@ const DRAWER_CSS = `
   .bc-poc-header-actions { display: flex; gap: 4px; }
   .bc-poc-iconbtn {
     background: transparent; border: none; padding: 6px; cursor: pointer;
-    color: #6E6E6E; border-radius: 50%; display: inline-flex;
-    align-items: center; justify-content: center;
+    color: #6E6E6E; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
   }
   .bc-poc-iconbtn:hover { background: rgba(0,0,0,0.06); color: #131313; }
 
-  .bc-poc-mount {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-    overflow: hidden;
+  .bc-poc-mount { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+  .bc-poc-mount #${MOUNT_ID} { position: absolute; inset: 0; overflow: auto; }
+
+  /* --- GNAV "Ask" pill --- */
+  .bc-poc-gnav {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 16px;
+    height: 36px;
+    padding: 0 6px 0 14px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 18px;
+    background: #fff;
+    font-family: adobe-clean, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    color: #6E6E6E;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
-  .bc-poc-mount #${MOUNT_ID} {
-    position: absolute;
-    inset: 0;
-    overflow: auto;
+  .bc-poc-gnav:hover { border-color: rgba(0,0,0,0.22); color: #292929; }
+  .bc-poc-gnav .bc-poc-gnav-icon { display: inline-flex; flex-shrink: 0; }
+  .bc-poc-gnav .bc-poc-gnav-label { white-space: nowrap; }
+  .bc-poc-gnav .bc-poc-gnav-send {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: #F1F1F1; color: #6E6E6E;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
+
+  /* Collapsed (icon-only) state when drawer is open */
+  .bc-poc-gnav.is-collapsed {
+    width: 36px; padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+  .bc-poc-gnav.is-collapsed .bc-poc-gnav-label,
+  .bc-poc-gnav.is-collapsed .bc-poc-gnav-send { display: none; }
 
   /* --- push fixed/sticky Adobe elements off the drawer area --- */
   html.has-concierge header.global-navigation,
@@ -128,6 +167,34 @@ const HEADER_HTML = `
   </header>
 `;
 
+const GNAV_PILL_HTML = `
+  <span class="bc-poc-gnav-icon" aria-hidden="true">${AI_ICON}</span>
+  <span class="bc-poc-gnav-label">Ask a question</span>
+  <span class="bc-poc-gnav-send" aria-hidden="true">${SEND_ICON}</span>
+`;
+
+const GNAV_SELECTOR = [
+  '.feds-header-wrapper',
+  'header.global-navigation',
+  '.global-navigation',
+  '.feds-header',
+].join(',');
+
+const GNAV_ANCHOR_SELECTOR = [
+  '.feds-cta-wrapper',
+  '.feds-signIn-link',
+  '.feds-utilities',
+  '.gnav-toggle',
+  '.feds-profile',
+  '.signin',
+].join(',');
+
+let drawerOpen = false;
+let drawerEl = null;
+let styleEl = null;
+let gnavPillEl = null;
+let webAgentLoaded = false;
+
 function waitForCondition(checkFn, timeout = 10000, interval = 100) {
   return new Promise((resolve) => {
     const start = Date.now();
@@ -169,37 +236,9 @@ function attachAuthHook(surfaceURL) {
   };
 }
 
-export default async function injectBcDrawerPoc() {
-  if (document.documentElement.classList.contains('has-concierge')) return;
-
-  document.documentElement.classList.add('has-concierge');
-  document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
-
-  const style = document.createElement('style');
-  style.textContent = DRAWER_CSS.trim();
-  document.head.append(style);
-
-  const drawer = document.createElement('aside');
-  drawer.className = 'concierge';
-  drawer.setAttribute('role', 'complementary');
-  drawer.setAttribute('aria-label', 'AI assistant');
-  drawer.innerHTML = `${HEADER_HTML}<div class="bc-poc-mount"><div id="${MOUNT_ID}"></div></div>`;
-  document.documentElement.append(drawer);
-
-  drawer.querySelector('.bc-poc-close')?.addEventListener('click', () => {
-    drawer.remove();
-    style.remove();
-    document.documentElement.classList.remove('has-concierge');
-    document.documentElement.style.removeProperty('--concierge-width');
-  });
-
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
-    }, 100);
-  });
+async function bootstrapWebAgent() {
+  if (webAgentLoaded) return;
+  webAgentLoaded = true;
 
   const isStage = getConfig()?.env?.name !== 'prod';
   const scriptSrc = isStage ? WEB_AGENT_STAGE : WEB_AGENT_PROD;
@@ -210,11 +249,85 @@ export default async function injectBcDrawerPoc() {
     window.lana?.log('BC drawer POC: bootstrap API not available', { tags: 'bc-drawer-poc', severity: 'error' });
     return;
   }
-
   window.adobe.concierge.bootstrap({
     instanceName: 'alloy',
     stylingConfigurations: buildChatConfig(isStage),
     selector: `#${MOUNT_ID}`,
     onBeforeEventSend: attachAuthHook(window.location.href),
   });
+}
+
+function closeDrawer() {
+  if (!drawerOpen) return;
+  drawerOpen = false;
+  if (drawerEl) drawerEl.style.display = 'none';
+  document.documentElement.classList.remove('has-concierge');
+  document.documentElement.style.removeProperty('--concierge-width');
+  if (gnavPillEl) gnavPillEl.classList.remove('is-collapsed');
+}
+
+function openDrawer() {
+  if (drawerOpen) return;
+  drawerOpen = true;
+
+  document.documentElement.classList.add('has-concierge');
+  document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
+
+  if (!drawerEl) {
+    drawerEl = document.createElement('aside');
+    drawerEl.className = 'concierge';
+    drawerEl.setAttribute('role', 'complementary');
+    drawerEl.setAttribute('aria-label', 'AI assistant');
+    drawerEl.innerHTML = `${HEADER_HTML}<div class="bc-poc-mount"><div id="${MOUNT_ID}"></div></div>`;
+    drawerEl.querySelector('.bc-poc-close')?.addEventListener('click', closeDrawer);
+    document.documentElement.append(drawerEl);
+  } else {
+    drawerEl.style.display = '';
+  }
+
+  if (gnavPillEl) gnavPillEl.classList.add('is-collapsed');
+
+  bootstrapWebAgent();
+}
+
+async function injectGnavPill() {
+  const found = await waitForCondition(() => document.querySelector(GNAV_SELECTOR));
+  if (!found) return;
+  const gnav = document.querySelector(GNAV_SELECTOR);
+
+  gnavPillEl = document.createElement('button');
+  gnavPillEl.type = 'button';
+  gnavPillEl.className = 'bc-poc-gnav';
+  gnavPillEl.setAttribute('aria-label', 'Ask a question');
+  gnavPillEl.innerHTML = GNAV_PILL_HTML;
+  gnavPillEl.addEventListener('click', () => {
+    if (drawerOpen) closeDrawer(); else openDrawer();
+  });
+
+  const anchor = gnav.querySelector(GNAV_ANCHOR_SELECTOR);
+  if (anchor) anchor.parentNode.insertBefore(gnavPillEl, anchor);
+  else gnav.append(gnavPillEl);
+
+  if (drawerOpen) gnavPillEl.classList.add('is-collapsed');
+}
+
+export default function injectBcDrawerPoc() {
+  if (styleEl) return;
+
+  styleEl = document.createElement('style');
+  styleEl.textContent = DRAWER_CSS.trim();
+  document.head.append(styleEl);
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (drawerOpen) {
+        document.documentElement.style.setProperty('--concierge-width', `${DRAWER_WIDTH}px`);
+      }
+    }, 100);
+  });
+
+  injectGnavPill();
+  openDrawer();
 }
