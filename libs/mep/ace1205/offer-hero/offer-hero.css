@@ -78,10 +78,10 @@
     max-width: var(--grid-max-width-default);
     margin-inline: auto;
     padding-inline: var(--s2a-spacing-lg);
-
-    &.two-up {
-      align-items: stretch;
-    }
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--grid-gutter);
+    align-items: stretch;
   }
 
   .hero-card {
@@ -174,9 +174,6 @@
 
   .learn-more {
     color: var(--s2a-color-content-label);
-    font-weight: var(--s2a-font-weight-label);
-    font-size: var(--s2a-typography-font-size-label);
-    line-height: var(--s2a-typography-line-height-label);
     text-decoration: none;
 
     svg {
@@ -215,6 +212,10 @@
 
     .hero-eyebrow {
       --hero-eyebrow-gap: var(--s2a-spacing-2xl);
+    }
+
+    .hero-cards {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .hero-card-tile {
