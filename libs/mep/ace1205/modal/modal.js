@@ -288,24 +288,24 @@ export async function getModal(details, custom) {
 
     if (iframe.title) {
       dialog.setAttribute('aria-label', iframe.title);
-      return;
+      return dialog;
     }
 
     iframe.onload = () => {
-        try {
-          if (!isSameOrigin(iframe) && iframe.title) {
-            dialog.setAttribute('aria-label', iframe.title);
-            return;
-          }
-
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
-          if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
-          if (!iframe.title && iframeHeading) iframe.title = iframeHeading;
-        } catch (e) {
-          // Cross-origin iframe, can't access content
+      try {
+        if (!isSameOrigin(iframe) && iframe.title) {
+          dialog.setAttribute('aria-label', iframe.title);
+          return;
         }
-      };
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+        const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
+        if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
+        if (!iframe.title && iframeHeading) iframe.title = iframeHeading;
+      } catch (e) {
+        // Cross-origin iframe, can't access content
+      }
+    };
 
     iframe.addEventListener('load', () => {
       if (!isSameOrigin(iframe)) return;
