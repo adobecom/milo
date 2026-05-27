@@ -36,6 +36,13 @@
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
   --bc-keyboard-focus-color: #5574F7;
+  --bc-dark-text-color: #fff;
+  --bc-dark-text-color-secondary: #aba8a6;
+  --bc-dark-border-color: rgba(255 255 255 / 20%);
+  --bc-dark-border-color-secondary: rgba(255 255 255 / 30%);
+  --bc-dark-input-background: linear-gradient(180deg, rgb(255 255 255 / 5%) 0%, rgb(0 0 0 / 0%) 50%), radial-gradient(3285.59% 141.42% at 100% 100%, rgb(255 255 255 / 6%) 0%, rgb(213 73 235 / 6%) 56.22%, rgb(252 67 46 / 6%) 75%, rgb(255 137 0 / 6%) 100%), rgb(255 255 255 / 3%);
+  --bc-dark-button-color: rgba(255 255 255 / 80%);
+  --bc-dark-button-hover-color: rgba(255 255 255 / 90%);
 
   box-sizing: border-box;
   padding: 40px 24px 12px;
@@ -465,6 +472,147 @@
   margin-top: 4px;
 }
 
+/* dark  / c2-dark */
+.dark .bc-header-title,
+.dark .bc-header-subtitle,
+.c2-dark .bc-header-title,
+.c2-dark .bc-header-subtitle {
+  color: var(--bc-dark-text-color);
+}
+
+.c2-dark .bc-header-title {
+  font-size: 32px;
+  line-height: 32px;
+}
+
+.c2-dark.input-first .bc-prompt-cards {
+  margin-bottom: 24px;
+}
+
+.dark .prompt-card-button,
+.c2-dark .prompt-card-button {
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid var(--bc-dark-border-color);
+  border-radius: 12px;
+}
+
+.c2-dark .prompt-card-button {
+  border: none;
+  border-radius: 18px;
+  position: relative;
+}
+
+.c2-dark .prompt-card-button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 18px;
+  border: 1.5px solid transparent;
+  background: linear-gradient(to right, rgba(225 29 26 / 16%), rgba(144 13 235 / 16%)) border-box;
+  mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.dark .prompt-card-button:hover {
+  border-color: var(--bc-dark-border-color-secondary);
+}
+
+.c2-dark .prompt-card-text {
+  grid-template-columns: auto;
+}
+
+.c2-dark .card-icon {
+  display: none;
+}
+
+.dark .prompt-card-text p,
+.c2-dark .prompt-card-text p {
+  color: var(--bc-dark-text-color-secondary);
+  margin: 0;
+}
+
+.dark .bc-input-field::before {
+  border-color: var(--bc-dark-border-color);
+}
+
+.c2-dark .bc-input-field::before {
+  /* border: 3px solid transparent;
+  background: linear-gradient(to right, #4facfe, #00f2fe) border-box;
+  mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude; */
+}
+
+.dark .bc-input-field:has(textarea:focus-visible)::before {
+  border-color: var(--bc-dark-border-color-secondary);
+}
+
+.c2-dark.input-first .bc-input-field {
+  margin-bottom: 24px;
+}
+
+.dark .bc-input-field-container,
+.c2-dark .bc-input-field-container {
+  background: var(--bc-dark-input-background);
+
+}
+
+.c2-dark .bc-input-field-container {
+  border-radius: 28px;
+  background: var(--bc-dark-input-background);
+  box-shadow: 0 2px 16px 0 rgba(255 255 255 / 4%) inset, 
+  0 40px 140px 0 rgba(211 59 16 / 5%), 
+  0 8px 32px 0 rgba(211 59 16 / 3%), 
+  0 0 10px 0 rgba(211 59 16 / 5%);
+}
+
+.dark .bc-input-field-container:hover,
+.dark .bc-input-field-container:has(textarea:focus-visible),
+.c2-dark .bc-input-field-container:hover,
+.c2-dark .bc-input-field-container:has(textarea:focus-visible) {
+  background: var(--bc-dark-input-background);
+}
+
+.dark .bc-input-field-container textarea,
+.c2-dark .bc-input-field-container textarea {
+  color: var(--bc-dark-text-color);
+}
+
+.dark .bc-input-field-container textarea::placeholder,
+.c2-dark .bc-input-field-container textarea::placeholder {
+  color: var(--bc-dark-text-color-secondary);
+}
+
+.dark .input-field-button,
+.c2-dark .input-field-button {
+  background: var(--bc-dark-button-color);
+  color: #000;
+}
+
+.dark .input-field-button:hover,
+.c2-dark .input-field-button:hover {
+  background: var(--bc-dark-button-hover-color);
+}
+
+.dark .input-field-button:disabled,
+.c2-dark .input-field-button:disabled {
+  background: transparent;
+  color: #fff4;
+}
+
+.dark .bc-legal,
+.dark .bc-legal a,
+.c2-dark .bc-legal,
+.c2-dark .bc-legal a {
+  color: var(--bc-dark-text-color-secondary);
+}
+
 /* Modal */
 @keyframes slide-up {
   from {
@@ -661,6 +809,11 @@
     padding: 56px 24px 12px;
   }
 
+  .c2-dark .bc-header-title {
+    font-size: 48px;
+    line-height: 48px;
+  }
+
   .bc-prompt-cards {
     flex-wrap: nowrap;
     gap: 16px;
@@ -750,7 +903,6 @@
   .hero .prompt-card-text,
   .pill-cards .prompt-card-text {
     display: grid;
-    grid-template-columns: 16px auto;
     padding: 8px 16px;
   }
 
@@ -798,6 +950,11 @@
   .bc-header,
   .hero .bc-header {
     padding: 0 24px;
+  }
+
+  .c2-dark .bc-header-title {
+    font-size: 56px;
+    line-height: 56px;
   }
 
   .bc-prompt-cards {

@@ -4,6 +4,7 @@ import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';
 
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
+const submitIconDark = '<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M14.5273 7.4668L10.5244 3.46973C10.2305 3.17578 9.75587 3.17774 9.46387 3.46973L5.4668 7.4668C5.17383 7.75977 5.17383 8.23438 5.4668 8.52735C5.61328 8.67383 5.80469 8.74708 5.99707 8.74708C6.18945 8.74708 6.38086 8.67384 6.52734 8.52735L9.25097 5.80372V15.75C9.25097 16.1641 9.58691 16.5 10.001 16.5C10.415 16.5 10.751 16.1641 10.751 15.75V5.81616L13.4668 8.52734C13.7607 8.82129 14.2353 8.81933 14.5273 8.52734C14.8203 8.23437 14.8203 7.7588 14.5273 7.4668Z"/></svg>';
 const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M9.91819 13.2491C9.69944 13.2491 9.47874 13.1924 9.27952 13.0772C8.79807 12.7989 8.55491 12.2471 8.67307 11.7041L9.40061 8.33011L7.08225 5.77249C6.7092 5.36038 6.64475 4.76077 6.92307 4.27933C7.20139 3.79691 7.75803 3.55374 8.29612 3.67288L11.6701 4.40042L14.2278 2.08206C14.6409 1.70706 15.2405 1.64554 15.7209 1.92288C16.2024 2.2012 16.4455 2.75296 16.3274 3.29593L15.5998 6.66995L17.9182 9.22757C18.2912 9.6387 18.3547 10.2383 18.0774 10.7198C17.7991 11.2002 17.2493 11.4453 16.7053 11.3282L13.3313 10.5987L10.7727 12.918C10.5315 13.1368 10.2258 13.2491 9.91819 13.2491ZM10.8918 8.53324L10.2873 11.333L12.4094 9.40921C12.7121 9.1348 13.1301 9.02151 13.5315 9.10745L16.3332 9.71292L14.4094 7.59085C14.134 7.28616 14.0217 6.86526 14.1096 6.46487L14.7131 3.66702L12.5911 5.59085C12.2864 5.86624 11.8664 5.97757 11.4651 5.89065L8.66722 5.28713L10.5911 7.4092C10.8664 7.71291 10.9787 8.13285 10.8918 8.53324Z" fill="url(#${svgId}-1)"/>
 <path d="M3.34569 18.252C3.21678 18.252 3.08788 18.2188 2.97069 18.1514C2.68846 17.9883 2.54393 17.6622 2.61229 17.3438L2.91893 15.9258L1.94432 14.8516C1.72557 14.6104 1.68748 14.2549 1.85057 13.9727C2.01366 13.6905 2.34178 13.5498 2.65819 13.6143L4.07616 13.9209L5.15038 12.9463C5.39257 12.7266 5.74608 12.6895 6.02929 12.8526C6.31152 13.0157 6.45605 13.3418 6.38769 13.6602L6.08105 15.0782L7.05566 16.1524C7.27441 16.3936 7.3125 16.7491 7.14941 17.0313C6.98632 17.3135 6.65722 17.4522 6.34179 17.3897L4.92382 17.0831L3.8496 18.0577C3.708 18.1856 3.52733 18.252 3.34569 18.252Z" fill="url(#${svgId}-2)"/>
@@ -18,6 +19,67 @@ const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgCl
   <stop offset="0.33" stop-color="#D92361"/>
   <stop offset="1" stop-color="#7155FA"/>
   </linearGradient>
+  </defs>
+</svg>`;
+
+const aiIconDark = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg xmlns="http://www.w3.org/2000/svg" class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none">
+  <g filter="url(#${svgId})">
+    <path d="M4.08,13.43c.29-.26.72-.31,1.05-.11.34.2.51.59.43.97l-.37,1.7,1.17,1.29c.26.29.31.72.11,1.05-.2.34-.59.5-.97.43l-1.7-.37-1.29,1.17c-.17.15-.39.23-.6.23-.15,0-.31-.04-.45-.12-.34-.2-.51-.59-.43-.97l.37-1.7-1.17-1.29c-.26-.29-.31-.72-.11-1.05.2-.34.59-.51.97-.43l1.7.37,1.29-1.17Z" fill="#FF6756"/>
+    <path d="M14.97.4c.5-.45,1.21-.52,1.79-.19.58.33.87,1,.73,1.65l-.87,4.05,2.78,3.07c.45.49.52,1.21.19,1.79-.33.58-.99.87-1.65.73l-4.05-.88-3.07,2.78c-.29.26-.66.4-1.03.4-.26,0-.53-.07-.77-.21-.58-.33-.87-1-.73-1.65l.87-4.05-2.78-3.07c-.45-.49-.52-1.21-.19-1.79.33-.58,1-.87,1.65-.73l4.05.87L14.97.4Z" fill="#FF6756"/>
+  </g>
+  <defs>
+    <filter id="${svgId}" x="0" y="0" width="19.7979" height="19.8018" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="0.5"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="1"/>
+      <feGaussianBlur stdDeviation="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="effect1_dropShadow_15538_1448" result="effect2_dropShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="2"/>
+      <feGaussianBlur stdDeviation="2"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="effect2_dropShadow_15538_1448" result="effect3_dropShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="3"/>
+      <feGaussianBlur stdDeviation="3.5"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="effect3_dropShadow_15538_1448" result="effect4_dropShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="5"/>
+      <feGaussianBlur stdDeviation="6"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.15 0"/>
+      <feBlend mode="normal" in2="effect4_dropShadow_15538_1448" result="effect5_dropShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="12"/>
+      <feGaussianBlur stdDeviation="15"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.988235 0 0 0 0 0.262745 0 0 0 0 0.180392 0 0 0 0.3 0"/>
+      <feBlend mode="normal" in2="effect5_dropShadow_15538_1448" result="effect6_dropShadow_15538_1448"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect6_dropShadow_15538_1448" result="shape"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dx="-1" dy="2"/>
+      <feGaussianBlur stdDeviation="2.5"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"/>
+      <feBlend mode="normal" in2="shape" result="effect7_innerShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dx="-1" dy="1.5"/>
+      <feGaussianBlur stdDeviation="1.75"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+      <feBlend mode="normal" in2="effect7_innerShadow_15538_1448" result="effect8_innerShadow_15538_1448"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dx="-1" dy="4"/>
+      <feGaussianBlur stdDeviation="2.5"/>
+      <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.05 0"/>
+      <feBlend mode="normal" in2="effect8_innerShadow_15538_1448" result="effect9_innerShadow_15538_1448"/>
+    </filter>
   </defs>
 </svg>`;
 
@@ -522,7 +584,9 @@ function decorateCards(el, cards) {
   const cardRows = cards.querySelectorAll(':scope > div');
   cardRows.forEach((card, index) => {
     const cardImage = card.querySelector('picture');
-    const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
+    const cardText = createTag('div', { class: 'prompt-card-text' }, `${variants.isDark || variants.isC2Dark
+      ? aiIconDark(`card-icon-${index + 1}`, 'card-icon', null, 80)
+      : aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
       'daa-ll': getAnalyticsLabel('1'),
@@ -554,7 +618,7 @@ function decorateInput(el, input) {
     class: 'bc-input-field-label',
     'aria-describedby': 'bc-label-tooltip',
     tabindex: 0,
-  }, `${aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
+  }, `${variants.isDark || variants.isC2Dark ? aiIconDark('ai-icon-input', 'input-icon', chatLabelText, 20) : aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
 
   fieldLabel.append(fieldLabelToolTip);
@@ -569,7 +633,7 @@ function decorateInput(el, input) {
     disabled: true,
     'aria-label': 'Send Message',
     'daa-ll': getAnalyticsLabel('1'),
-  }, submitIcon);
+  }, variants.isC2Dark ? submitIconDark : submitIcon);
   const textareaWrapper = createTag('div', { class: 'bc-textarea-grow-wrap' }, fieldInput);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldLabel, fieldLabelToolTip, textareaWrapper, fieldButton]);
 
@@ -670,6 +734,9 @@ export default async function init(el) {
   if (el.classList.contains('floating-anchor-hide')) {
     variants.isFloatingAnchorHide = true;
   }
+
+  if (el.classList.contains('dark')) variants.isDark = true;
+  if (el.classList.contains('c2-dark')) variants.isC2Dark = true;
 
   el.classList.forEach((classItem) => {
     if (classItem.includes('floating-delay')) {
