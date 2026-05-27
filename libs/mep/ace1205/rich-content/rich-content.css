@@ -321,10 +321,11 @@
       margin-inline: auto;
       aspect-ratio: 9 / 16;
       border-radius: var(--s2a-border-radius-24);
-      border: 9px solid rgba(255, 255, 255, 0.05);
-      background: rgba(255, 255, 255, 0.05);
+      border: 9px solid var(--s2a-color-transparent-white-04);
+      background: var(--s2a-color-transparent-white-04);
       backdrop-filter: blur(var(--s2a-blur-16));
       overflow: hidden;
+      transform-origin: center bottom;
 
       video {
         display: block;
@@ -397,7 +398,7 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.4);
+        background: var(--s2a-color-transparent-black-48);
       }
     }
 
@@ -405,10 +406,6 @@
       background: transparent;
     }
   }
-}
-
-.rich-content.video .video-container {
-  transform-origin: center bottom;
 }
 
 @keyframes rc-video-enter {
