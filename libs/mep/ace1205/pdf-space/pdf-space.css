@@ -40,6 +40,8 @@
       font-size: var(--s2a-font-size-lg);
       line-height: 21px;
       color: var(--s2a-color-gray-1000);
+      /* stylelint-disable-next-line custom-property-pattern */
+      letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
     }
 
     p {
@@ -47,6 +49,7 @@
       font-size: var(--s2a-font-size-md);
       line-height: 1.25;
       color: var(--s2a-color-transparent-black-64);
+      letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     }
 
     a {
