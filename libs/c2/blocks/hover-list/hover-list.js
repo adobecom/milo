@@ -6,7 +6,7 @@ const STIFFNESS = 0.34;
 const ROTATE_LERP = 0.12;
 const INTRO_STEP = 0.009;
 const EXIT_STEP = 0.08;
-const TARGET_OFFSET = { x: 140, y: 0 };
+const TARGET_OFFSET = { x: 14, y: -4 };
 const SCROLL_SETTLE_MS = 150;
 
 // Interpolates layer config from back (slow, far spawn, least tilt) to front.
