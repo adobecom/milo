@@ -34,14 +34,13 @@
 
     /* Designer-specified fixed sizing across breakpoints. Doesn't match any
        responsive heading-N or body-md variant; the 21px line-height has no
-       semantic token, hence hardcoded. */
+       semantic token, hence hardcoded. Same with letter-spacing -0.48. */
     .heading {
       margin: 0 0 var(--s2a-spacing-xs);
       font-size: var(--s2a-font-size-lg);
       line-height: 21px;
       color: var(--s2a-color-gray-1000);
-      /* stylelint-disable-next-line custom-property-pattern */
-      letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
     }
 
     p {
