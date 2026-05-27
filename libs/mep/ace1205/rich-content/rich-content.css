@@ -471,7 +471,7 @@
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    body {
+    body:has(.section.parallax-video-garage-door) {
       timeline-scope: --rc-video-garage;
     }
 
