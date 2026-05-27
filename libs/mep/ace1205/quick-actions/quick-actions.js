@@ -38,13 +38,15 @@ function buildTile(tileRow) {
   return tile;
 }
 
+const N_UP_MAP = { 2: 'two-up', 3: 'three-up', 4: 'four-up' };
+
 function decorate(block) {
   const header = decorateSectionHeader(block);
-  const grid = createTag('div', { class: 'quick-actions-grid six-up' });
+  const tileRows = [...block.children].filter((row) => row.children.length >= 2);
+  const nUp = N_UP_MAP[tileRows.length] || 'six-up';
+  const grid = createTag('div', { class: `quick-actions-grid ${nUp}` });
 
-  [...block.children].forEach((row) => {
-    if (row.children.length >= 2) grid.append(buildTile(row));
-  });
+  tileRows.forEach((row) => grid.append(buildTile(row)));
 
   block.innerHTML = '';
   if (header) block.append(header);
