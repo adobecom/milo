@@ -12,7 +12,7 @@ const SCROLL_SETTLE_MS = 150;
 // Interpolates layer config from back (slow, far spawn, least tilt) to front.
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
-  const s = 60 - t * 12;
+  const s = 120 - t * 24;
   return {
     spawn: { x: s, y: -s },
     stagger: { x: i * 8, y: i * 6 - 6 },
@@ -110,10 +110,11 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    // Suppress the CSS transition for the very first render so the picture
-    // appears at its spawn position instantly. The popover's display: none →
-    // block change otherwise causes the transition to fire from default
-    // (transform: none, top-left) to the spawn transform.
+    // The popover's display: none → block change makes the CSS transition
+    // on the picture fire from default (transform: none, anchored at 0,0)
+    // to the spawn position — pictures appear to fly in from the page
+    // corner. Suppress the transition on the first render, then restore
+    // it next frame so subsequent spring updates animate smoothly.
     activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
     activeLayers.forEach(renderLayer);
     if (!media.matches(':popover-open')) media.showPopover();
