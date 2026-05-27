@@ -1,10 +1,11 @@
 .faq-redesign {
   position: relative;
+  color: var(--s2a-color-content-knockout);
 
   .faq-headline {
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
     color: var(--s2a-color-content-knockout);
-    padding-block: var(--s2a-spacing-md); /* 16px — Figma mobile */
+    padding-block: var(--s2a-spacing-md);
   }
 
   .faq-list {
@@ -18,8 +19,7 @@
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
     color: var(--s2a-color-content-knockout);
     display: flex;
-    gap: var(--s2a-spacing-md);
-    padding-block: var(--s2a-spacing-xl); /* 32px — Figma mobile */
+    padding-block: var(--s2a-spacing-xl);
     transition: background 0.2s ease;
 
     &:first-child {
@@ -34,7 +34,8 @@
   .faq-number {
     color: var(--s2a-color-content-knockout);
     flex-shrink: 0;
-    min-inline-size: var(--s2a-spacing-32);
+    min-inline-size: var(--s2a-spacing-24);
+    padding: 2px 18px 2px 0;
   }
 
   .faq-text {
@@ -43,7 +44,6 @@
     margin: 0;
   }
 
-  /* Figma mobile: image shown inline at 80×81px */
   .faq-media {
     block-size: 81px;
     border-radius: var(--s2a-border-radius-sm);
@@ -64,12 +64,12 @@
 @media (width >= 768px) {
   .faq-redesign {
     display: flex;
-    gap: var(--s2a-spacing-xs); /* 8px — Figma: gap-[--s2a-blur-xs] */
-    padding-block: var(--s2a-layout-lg); /* 124px — Figma: py-[--s2a-layout-lg] */
+    gap: var(--s2a-spacing-xs);
+    padding-block: var(--s2a-layout-lg);
 
     .faq-headline {
       flex: 1;
-      padding-block: var(--s2a-spacing-sm); /* 12px — Figma tablet */
+      padding-block: var(--s2a-spacing-sm);
     }
 
     .faq-list-col {
@@ -77,16 +77,18 @@
     }
 
     .faq-item {
-      gap: var(--s2a-spacing-lg); /* 24px — Figma tablet */
-      padding-block: var(--s2a-spacing-lg); /* 24px — Figma tablet */
+      gap: var(--s2a-spacing-lg);
+      padding-block: var(--s2a-spacing-lg);
 
-      /* All items including first get top border at tablet */
       &:first-child {
         border-block-start: 1px solid var(--s2a-color-transparent-white-32);
       }
+
+      .faq-number {
+        padding: 2px 0;
+      }
     }
 
-    /* Figma tablet: 74.355 × 75.284px ≈ 74×75px */
     .faq-media {
       block-size: 75px;
       inline-size: 74px;
@@ -101,6 +103,10 @@
       cursor: pointer;
       gap: var(--s2a-spacing-md);
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+
+      .faq-number {
+        min-inline-size: var(--s2a-spacing-40);
+      }
     }
 
     .faq-media {
