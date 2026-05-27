@@ -43,12 +43,13 @@ function renderLayer(layer) {
 
 function hideMedia(media) {
   if (!media) return;
-  media.classList.remove('is-visible');
+  if (media.matches(':popover-open')) media.hidePopover();
   media.querySelectorAll('picture').forEach((p) => {
     p.style.transform = '';
     p.style.opacity = '';
   });
 }
+
 
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
@@ -110,7 +111,7 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    media.classList.add('is-visible');
+    if (!media.matches(':popover-open')) media.showPopover();
     activeLayers.forEach(renderLayer);
     startLoop();
   };
@@ -177,7 +178,7 @@ function decorate(block) {
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
-      const media = createTag('div', { class: 'hover-list-media' });
+      const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });
       pics.forEach((p) => media.append(p));
       item.append(media);
     }

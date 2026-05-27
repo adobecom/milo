@@ -60,6 +60,15 @@
   }
 }
 
+/* The popover attribute makes the UA hide the element when closed. Below
+   desktop we want the inline thumbnail visible, so force display: block.
+   At desktop the popover API controls visibility (top-layer when open). */
+@media (width < 1280px) {
+  .hover-list .hover-list-media {
+    display: block;
+  }
+}
+
 @media (width >= 768px) {
   .hover-list {
     display: flex;
@@ -111,19 +120,21 @@
       }
     }
 
+    /* Override UA popover defaults to make this a transparent full-viewport
+       stage. Display is left to the popover API: closed → display: none,
+       open → top layer + display: block. */
     .hover-list-media {
+      background: transparent;
       block-size: 100vh;
-      display: none;
+      border: 0;
       inline-size: 100vw;
       inset: 0;
+      margin: 0;
       overflow: visible;
+      padding: 0;
       pointer-events: none;
       position: fixed;
       z-index: 100;
-
-      &.is-visible {
-        display: block;
-      }
 
       picture {
         block-size: 320px;
