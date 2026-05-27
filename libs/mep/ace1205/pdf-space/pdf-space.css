@@ -168,7 +168,7 @@
     left: 0;
     display: inline-flex;
     align-items: center;
-    padding: 5px 6.3px;
+    padding: 5px 6px;
     white-space: nowrap;
     font-size: var(--s2a-font-size-12);
     font-weight: var(--s2a-font-weight-label);
