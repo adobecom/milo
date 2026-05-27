@@ -230,6 +230,176 @@ through the post-reveal pan stays roughly 1:1 with the pan motion.
 | `mobileSlottingDuration` | 900 | Mobile slotting animation length. |
 | `mobileArcAngle` | 0.6 | Fixed mobile arc angle (rad). Desktop uses `atan2(vH, vW)` so arc shape varies with aspect ratio; mobile pins this to keep the arc consistent at narrow widths. |
 
+## Authoring contract
+
+`parseAuthoredContent` expects exactly **6 rows** (direct children of the block element):
+
+| Row | Columns | Content |
+| --- | --- | --- |
+| 0 — title | 1 | Headline `<h2>`/`<h3>` + optional subcopy `<p>`. Gets class `acrobat-title`. |
+| 1 — image row 0 | 4 | One cell per card in grid row 0. Each cell: `<img>` + label text. |
+| 2 — image row 1 | 4 | One cell per card in grid row 1. Same format as row 1. |
+| 3 — text block | 1 | Marketing copy shown during settle + slotting. Gets class `text-block`. |
+| 4 — CTA | 1 | Call-to-action link. Gets class `acrobat-cta`. |
+| 5 — mockup | 3 | Col 0: mobile mockup `<picture>`. Col 1: desktop mockup `<picture>`. Col 2: desktop panel/sidebar `<picture>`. |
+
+Card image dimensions matter: `parseAuthoredContent` reads the `width` and `height` attributes of the card `<img>` to derive the card's aspect ratio and set `card.baseHeight`. Missing attributes fall back to `192×230`.
+
+Row 1 (grid row 1) is **hidden on mobile** (`mobileHidden: true`). The 4 cards from row 0 reflow into a 2×2 mobile grid where `mobileColIdx = colIdx % 2` and `mobileRowIdx = floor(colIdx / 2)`.
+
+## Card data model
+
+Each element of `sceneCards` is a plain object created by `buildCardStack`:
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `colIdx` | 0–3 | Column in the 2×4 authored grid. |
+| `rowIdx` | 0–1 | Row in the 2×4 authored grid. |
+| `mobileColIdx` | 0–1 | Column in the mobile 2×2 grid. |
+| `mobileRowIdx` | 0–1 | Row in the mobile 2×2 grid. |
+| `mobileHidden` | bool | `true` for row-1 cards; hidden on mobile. |
+| `fanIdx` | 0–7 | Arc position; see [Fan-index mapping](#fan-index-mapping). |
+| `width` | px | Rendered width — `CARD_WIDTH` on desktop, scaled on mobile; updated by `resize()`. |
+| `height` | px | Rendered height — aspect-ratio-derived, scaled on mobile; updated by `resize()`. |
+| `baseHeight` | px | Intrinsic card height from authored image (never changes after parse). |
+| `baseX` / `baseY` | px | Grid resting top-left corner; recomputed each frame by `positionCards()`. |
+| `visualCx` / `visualCy` | px | Center of the card as last rendered. `NaN` until the first render pass — `getCanvasCardCenter` falls back to `baseX/Y` when the value is not finite. |
+| `el` | Element | The card `<div>` inside `.card-stack`. |
+| `labelEl` | Element\|null | The `.card-label-outer` element rendered below the card. |
+| `lastZIndex` / `lastArcShadowAlphaKey` | string | Dirty-check cache — avoids writing unchanged inline styles every frame. |
+
+## Fan-index mapping
+
+Cards are authored in a 2×4 grid but mapped to 8 arc positions (`fanIdx` 0–7) by `FAN_INDEX_BY_GRID_POSITION`:
+
+```
+Authored grid → fanIdx:
+
+          col 0   col 1   col 2   col 3
+row 0  →    7       5       3       1
+row 1  →    6       4       2       0
+```
+
+`fanIdx = 0` (col 3 / row 1, lower-right) peels off the arc **first**.
+`fanIdx = 7` (col 0 / row 0, upper-left) peels off the arc **last**.
+
+On the arc the fan is evenly distributed from upper-left to lower-right; the stagger coefficient `ANIM.arcStagger` gates how much of the `arcToGrid` range each card uses before it starts peeling (`delay = fanIdx / FAN_LAST_INDEX * arcStagger`).
+
+## Render loop pipeline
+
+`loop()` is called once per animation frame (via `requestAnimationFrame`). The
+call order within each frame is fixed:
+
+1. **`refreshFrameProfile()`** — update `frame.isMobile/isTablet`; write
+   breakpoint-appropriate values into `timing.*`.
+2. **`updateAnimationProgress()`** — convert `window.scrollY + block geometry`
+   → `scrollCurrent` (abstract units) → `phase.{arcPan, arcToGrid, slotting, slideT}`.
+3. **`buildArcCtx()`** — precompute arc geometry (radius, center, angles, flatten
+   blend). Expensive trig done once per frame here so `getFanCenter` (called once
+   per card) only does cheap arithmetic.
+4. **`updateMockupAndTitleTransform()`** — drive mockup slot-in scale/translate
+   and title/CTA fade via CSS custom properties on `.pdf-space-stage`.
+5. **`updateAdbeLogo()`** — drive the stroke-dashoffset draw-on via
+   `--adbe-draw` and `--adbe-opacity`.
+6. **`updateCompressionAndPan()`** — update `cardGridLayout.columnSpread/rowGap`
+   (post-peel compression toward `columnCompressionTarget`) and
+   `verticalPan.arcGridY` (pan up to clear room for the marketing text).
+7. **`updateTextBlock()`** — position and fade the `.text-block` element.
+8. **`positionCards()`** — recompute `card.baseX/baseY` for all cards based on
+   current `cardGridLayout` and `frame`. Pure state update; no DOM writes.
+9. **`canvasGrid.update()`** — physics tick for the dot grid (spring, damping,
+   pointer repel).
+10. **`canvasGrid.draw()`** — clear and redraw the canvas.
+11. **`updateCardPositions()`** — apply `transform`, `opacity`, `boxShadow`, and
+    `zIndex` to each card element; also positions card labels.
+
+`buildArcCtx` (step 3) writes to the module-level `arcGeometry` object; all
+subsequent per-card calls to `getFanCenter` read from it without re-running trig.
+
+## CSS custom-property bridge
+
+JS writes these custom properties on `.pdf-space-stage` each frame; CSS reads
+them to drive transforms and visibility. Any CSS maintainer editing `pdf-space.css`
+should treat this table as the JS↔CSS contract — renaming a property here
+requires a matching change on the other side.
+
+| Property | Written by | Consumed by | Notes |
+| --- | --- | --- | --- |
+| `--mockup-y` | `updateMockupAndTitleTransform` | `.acrobat-desktop-mockup`, `.acrobat-mobile-mockup` | translateY for slot-in slide + post-reveal pan. |
+| `--mockup-scale` | same | same | Scale for slot-in zoom. |
+| `--title-y` | same | `.acrobat-title` | Same value as `--mockup-y` on desktop; on mobile identical offset. |
+| `--title-scale` | same | `.acrobat-title` | Subtle grow (0.92 → 1.0) on desktop only. |
+| `--title-opacity` | same | `.acrobat-title` | Fades title in during slotting. |
+| `--cta-y` | same | `.acrobat-cta` | Moves CTA in sync with mockup. |
+| `--adbe-draw` | `updateAdbeLogo` | `.adbe-logo-path` via `stroke-dashoffset` | 0 = fully drawn, 1 = invisible. |
+| `--adbe-opacity` | `updateAdbeLogo` | `.adbe-logo-svg` | Separate fade envelope (quick in, fades out at slotting). |
+| `--adbe-logo-length` | `buildStage` (once) | `.adbe-logo-path` via `stroke-dasharray` | Total path length × 2 + 500; set once at mount. |
+| `--acrobat-mobile-mockup-width` | `buildStage` (once) | mobile mockup centering | Set once at mount; CSS uses it for `width` and `left` offset. |
+
+The ADBE logo draw-on works by setting `stroke-dasharray = pathLength` and
+animating `stroke-dashoffset` from `pathLength → 0`. Because
+`getTotalLength()` can under-report on some browsers, the stored length is
+`max(getTotalLength(), 3000) * 2 + 500` (the buffer ensures the dash starts
+fully offscreen).
+
+## Canvas dot-grid
+
+`createCanvasGrid` is an isolated subsystem with its own event listeners. It
+renders a spring-physics dot grid behind the cards.
+
+**Physics (runs inside `canvasGrid.update()` each frame):**
+
+Each dot stores `(x, y, velocityX, velocityY, originX, originY)`. Per tick:
+
+1. If the pointer is within `CANVAS.mouseRadius` of a dot, apply an outward
+   repel impulse proportional to `(1 - distance / mouseRadius) * repelForce`.
+2. Add a spring force back toward `(originX, originY)`: `spring * (origin - pos)`.
+3. Multiply velocity by `damping` (0 < damping < 1) each tick to attenuate.
+4. Integrate velocity into position.
+
+**Card-proximity boost:** When the pointer is within 280 px of any card
+center, `mouseRadius` and `repelForce` scale up (max 2.5× and 1.8× respectively)
+so the dot field "breathes" more around interactive cards.
+
+**`settled` flag:** When the pointer has left the element AND all dots'
+combined positional error + velocity falls below 0.05, the grid is marked
+settled and the physics loop is skipped entirely (snap dots back to origin
+and bail). This avoids burning a full physics pass every frame when nothing
+is moving.
+
+**Pointer coordinate sync:** `pointerViewport` stores the last known cursor
+in `clientX/Y` (viewport space). Each frame `syncPointerCanvas()` translates
+it into canvas-local coordinates via `getBoundingClientRect()`. This
+translation runs every frame (not just on `mousemove`) because scroll can
+shift the canvas under a stationary cursor without firing a new event.
+
+**Fade:** Dot alpha = `0.45 * phase.arcToGrid`. The grid is fully transparent
+during the arc phase and reaches full opacity as cards settle onto the grid.
+
+**Mobile:** All physics are skipped on mobile; the canvas is cleared every
+frame but never drawn (early-return in `update()`).
+
+## Lifecycle management
+
+The rAF loop runs only while the block is in the visible viewport:
+
+- **Start / re-layout:** An `IntersectionObserver` with `rootMargin: '200px 0px'`
+  calls `resize()` then `startLoop()` when the block enters the extended viewport.
+  The 200 px buffer ensures the loop is warm before the block scrolls into view.
+- **Stop:** The same observer calls `stopLoop()` (which calls
+  `cancelAnimationFrame`) when the block leaves the extended viewport.
+- **Resize:** `window.resize` is debounced at 120 ms and calls `resize()`,
+  which recomputes viewport dimensions, card sizes, mockup geometry, and the
+  `timing.*` values for the active breakpoint.
+- **Cleanup:** A `MutationObserver` watches the block's **parent** for
+  `childList` changes. When the block is removed from the document it:
+  stops the rAF loop, disconnects both observers, removes the resize listener,
+  and calls `canvasGrid.destroy()` to remove pointer event listeners.
+
+`stopLoop` does not clean up observers — cleanup only happens on DOM removal.
+This keeps the re-entry path simple: if a SPA re-inserts the block, the
+`IntersectionObserver` will restart the loop automatically.
+
 ## Z-index layering
 
 The block uses **two stacking contexts**:
