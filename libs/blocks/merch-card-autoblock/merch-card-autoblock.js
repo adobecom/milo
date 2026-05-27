@@ -7,6 +7,8 @@ import {
   getOptions,
   overrideOptions,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -65,16 +67,29 @@ async function loadInlineDependencies() {
   await loadMasComponent(MAS_FIELD);
 }
 
-export async function checkReady(masElement) {
+export async function checkReady(masElement, fragment) {
+  if (isMasErrorEnv()) {
+    const showError = async () => {
+      const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
+      masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Frag'));
+    };
+    if (masElement.hasAttribute('failed')) {
+      showError();
+    } else {
+      new MutationObserver(async (_, obs) => {
+        if (masElement.hasAttribute('failed')) {
+          obs.disconnect();
+          showError();
+        }
+      }).observe(masElement, { attributes: true, attributeFilter: ['failed'] });
+    }
+  }
+
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }
@@ -126,7 +141,7 @@ async function createJsonLd(el, options) {
   const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   const fragmentEl = merchCard.querySelector('aem-fragment');
   const fields = fragmentEl?.data?.fields;
   const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
@@ -157,7 +172,7 @@ export async function createCard(el, options) {
   } else {
     el.replaceWith(merchCard);
   }
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   await postProcessAutoblock(merchCard, true);
 }
 
@@ -179,7 +194,7 @@ async function createInline(el, options) {
     masField.dataset.masBlock = 'inline';
   }
   el.replaceWith(masField);
-  await checkReady(masField);
+  await checkReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');

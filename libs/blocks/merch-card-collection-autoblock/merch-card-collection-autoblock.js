@@ -9,6 +9,8 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
   MAS_MERCH_CARD_COLLECTION,
@@ -340,9 +342,8 @@ export async function createCollection(el, options) {
 
   const success = await collection.checkReady();
   if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    if (isMasErrorEnv()) {
+      collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
     }
   }
   container.classList.add('collection-container', collection.variant);

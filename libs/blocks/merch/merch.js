@@ -1587,6 +1587,83 @@ export default async function init(el) {
   return null;
 }
 
+const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
+const MAS_FRAGMENT_API_KEY = 'wcms-commerce-ims-ro-user-milo';
+
+export function isMasErrorEnv(host = window.location.host) {
+  return host.includes('localhost') || host.includes('.aem.page');
+}
+
+let masErrorStylesInjected = false;
+function injectMasErrorStyles() {
+  if (masErrorStylesInjected) return;
+  masErrorStylesInjected = true;
+  const style = document.createElement('style');
+  style.textContent = `
+    .mas-frag-error {
+      position: relative;
+      border: 2px solid #c9444d;
+      border-radius: 8px;
+      padding: 24px 16px 16px;
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgba(201,68,77,.07) 0,
+        rgba(201,68,77,.07) 10px,
+        transparent 10px,
+        transparent 20px
+      );
+      text-align: center;
+      margin: 8px 0;
+      width: 300px;
+      height: 300px;
+    }
+    .mas-frag-error-badge {
+      position: absolute;
+      top: -1px;
+      right: 0;
+      background: #c9444d;
+      color: #fff;
+      font: bold 11px/1 sans-serif;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: 6px 10px 5px;
+      border-radius: 0 6px;
+    }
+    .mas-frag-error-label {
+      font: bold 14px/1.4 sans-serif;
+      color: #333;
+      margin: 8px 0 4px;
+    }
+    .mas-frag-error-id {
+      font: 13px/1.4 monospace;
+      color: #777;
+      margin: 0;
+      word-break: break-all;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+export async function createFragmentErrorEl(uuid, label = 'Frag') {
+  injectMasErrorStyles();
+  let badge = 'Load Error';
+  if (uuid) {
+    try {
+      const ietf = getConfig()?.locale?.ietf || 'en-US';
+      const locale = ietf.replace('-', '_');
+      const source = isMasErrorEnv() ? '&source=aem' : '';
+      const res = await fetch(`${MAS_FRAGMENT_API}?id=${uuid}&api_key=${MAS_FRAGMENT_API_KEY}&locale=${locale}${source}`);
+      if (res.status === 404) badge = 'Not Found';
+    } catch { /* network error */ }
+  }
+  const el = createTag('div', { class: 'mas-frag-error' });
+  const badgeEl = createTag('span', { class: 'mas-frag-error-badge' }, badge);
+  const labelEl = createTag('p', { class: 'mas-frag-error-label' }, `${label}:`);
+  const idEl = createTag('p', { class: 'mas-frag-error-id' }, uuid || 'unknown');
+  el.append(badgeEl, labelEl, idEl);
+  return el;
+}
+
 window.addEventListener('hashchange', updateModalState);
 
 window.addEventListener('popstate', updateModalState);
