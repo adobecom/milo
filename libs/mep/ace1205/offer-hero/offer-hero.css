@@ -1,3 +1,7 @@
+.section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast) {
+  z-index: 3;
+}
+
 .offer-hero {
   .hero {
     position: relative;
