@@ -397,7 +397,7 @@ function buildCardStack(cardScene, cardDefs) {
     stackRoot.appendChild(cardEl);
     let labelEl = null;
     if (def.label) {
-      labelEl = createTag('div', { class: 'card-label-outer label' }, def.label);
+      labelEl = createTag('div', { class: 'card-label-outer' }, def.label);
       labelEl.style.opacity = '0';
       stackRoot.appendChild(labelEl);
     }
@@ -464,10 +464,11 @@ function buildStage(el) {
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
   ctaEl.classList.add('acrobat-cta');
-  titleEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
-  textBlockEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading', 'heading-4');
+  [titleEl, textBlockEl].forEach((e) => {
+    e.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading');
+  });
   titleEl.querySelector('p')?.classList.add('subcopy', 'body-md');
-  textBlockEl.querySelector('p')?.classList.add('subcopy', 'body-md');
+  textBlockEl.querySelector('p')?.classList.add('subcopy');
   textBlockEl.querySelector('a')?.classList.add('label');
   ctaEl.querySelector('a')?.classList.add('label');
 

@@ -32,13 +32,20 @@
     text-align: left;
     will-change: transform, opacity;
 
+    /* Designer-specified fixed sizing across breakpoints. Doesn't match any
+       responsive heading-N or body-md variant; the 21px line-height has no
+       semantic token, hence hardcoded. */
     .heading {
       margin: 0 0 var(--s2a-spacing-xs);
+      font-size: var(--s2a-font-size-lg);
+      line-height: 21px;
       color: var(--s2a-color-gray-1000);
     }
 
     p {
       margin: 0 0 var(--s2a-spacing-sm);
+      font-size: var(--s2a-font-size-md);
+      line-height: 1.25;
       color: var(--s2a-color-transparent-black-64);
     }
 
@@ -192,7 +199,11 @@
     align-items: center;
     padding: 5px 6px;
     white-space: nowrap;
-    font-size: 13px;
+
+    /* Deliberate one-off: card labels are 10px at every breakpoint and don't
+       follow the .label type scale (which would be 14px at tablet+). */
+    font-size: 10px;
+    font-weight: var(--s2a-font-weight-label);
     color: var(--s2a-color-gray-1000);
     background: #e1e1f1;
     border-radius: var(--s2a-border-radius-2);
