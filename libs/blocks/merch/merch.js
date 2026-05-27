@@ -1599,8 +1599,7 @@ export async function createFragmentErrorEl(uuid, label = 'Frag') {
   let badge = 'Load Error';
   if (uuid) {
     try {
-      const ietf = getConfig()?.locale?.ietf || 'en-US';
-      const locale = ietf.replace('-', '_');
+      const { locale } = getMiloLocaleSettings(getConfig()?.locale);
       const source = isMasErrorEnv() ? '&source=aem' : '';
       const res = await fetch(`${MAS_FRAGMENT_API}?id=${uuid}&api_key=${MAS_FRAGMENT_API_KEY}&locale=${locale}${source}`);
       if (res.status === 404) badge = 'Not Found';
