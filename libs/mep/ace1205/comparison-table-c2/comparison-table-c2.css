@@ -662,6 +662,12 @@
     }
   }
 
+  .has-filter-select:focus-within .mobile-title-row {
+    outline: 2px solid var(--s2a-color-blue-900);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
   .mobile-title-row {
     display: flex;
     align-items: center;

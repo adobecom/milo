@@ -136,7 +136,6 @@ function createSubHeaderContainer({
     if (heading) {
       const headingId = `ct-col-title-${headerItemIndex}`;
       heading.id = headingId;
-      select.setAttribute('aria-labelledby', headingId);
       const titleRow = createTag('div', { class: 'mobile-title-row' });
       heading.replaceWith(titleRow);
       titleRow.appendChild(heading);
@@ -494,7 +493,7 @@ function setupResponsiveHiding(el) {
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
     replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
-      [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
+      [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
       [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
         const content = cellDiv.textContent.trim();
