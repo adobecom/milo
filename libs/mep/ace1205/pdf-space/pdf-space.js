@@ -43,6 +43,12 @@ const ANIM = {
   // rests at viewport y = vh * (0.5 - arcApexLift). 0 = centered, 0.1 = 10%
   // above center.
   arcApexLift: 0.10,
+  // Uniform downward Y translation applied during pre-pin, decaying to 0 by
+  // the time the block is fully pinned. Lets cards rise into their orbital
+  // position from below — keeps short viewports from clipping the lifted
+  // apex without lowering the at-rest arcApexLift. No X component and no
+  // per-card stagger, so cards still read as a rotating arc, not a slide.
+  prePinSlideY: 0.25,
 
   // Slide-in opacity & scale ramps
   slideStagger: 0.45,
@@ -915,8 +921,16 @@ export default function init(el) {
 
     const compensatedY = currentY - prePinOffset;
 
+    // Uniform pre-pin slide-down (no stagger, no X). Pushes all cards below
+    // their orbital position while pre-pin scroll is in flight, decaying to 0
+    // by the time phase.slideT reaches 1 (a bit past pin). Relative motion
+    // between cards stays purely orbital.
+    const prePinSlideOffset = viewportHeight * ANIM.prePinSlideY
+      * (1 - easeOutSine(phase.slideT));
+    const renderedY = compensatedY + prePinSlideOffset;
+
     card.visualCx = currentX;
-    card.visualCy = compensatedY;
+    card.visualCy = renderedY;
 
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
@@ -938,7 +952,7 @@ export default function init(el) {
 
     setCardTransform(card.el, {
       translateX: currentX - card.width / 2,
-      translateY: compensatedY - card.height / 2,
+      translateY: renderedY - card.height / 2,
       scale: scale * slideScaleMul,
       rotation,
       tiltX: cardXTilt,
@@ -952,7 +966,7 @@ export default function init(el) {
       card.el.style.boxShadow = arcCardShadow(shadowAlpha);
     }
     const peelReveal = clamp01((cardPeelProgress - 0.8) / 0.2);
-    setLabelPos(card, currentX, compensatedY, scale, peelReveal);
+    setLabelPos(card, currentX, renderedY, scale, peelReveal);
   }
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
