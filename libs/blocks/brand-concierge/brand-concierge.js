@@ -632,11 +632,14 @@ function updatePillVisibility(el) {
   if (!cards) return;
   const buttons = [...cards.querySelectorAll('.prompt-card-button')];
   buttons.forEach((btn) => { btn.style.display = ''; });
-  const containerRight = cards.getBoundingClientRect().right;
-  buttons.forEach((btn) => {
-    if (btn.getBoundingClientRect().right > containerRight) {
-      btn.style.display = 'none';
-    }
+  requestAnimationFrame(() => {
+    const { left: containerLeft, right: containerRight } = cards.getBoundingClientRect();
+    buttons.forEach((btn) => {
+      const { left, right } = btn.getBoundingClientRect();
+      if (right > containerRight || left < containerLeft) {
+        btn.style.display = 'none';
+      }
+    });
   });
 }
 

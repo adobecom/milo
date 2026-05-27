@@ -1021,7 +1021,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 .brand-concierge.floating-input.dark .bc-input-field::before {
   background:
     linear-gradient(#111, #111) padding-box,
-    linear-gradient(135deg, #7155FA, #D92361, #D73220) border-box;
+    linear-gradient(135deg, #D73220, #F98F06, #7155FA) border-box;
 }
 
 .brand-concierge.floating-input.dark .bc-input-field-container textarea::placeholder {
