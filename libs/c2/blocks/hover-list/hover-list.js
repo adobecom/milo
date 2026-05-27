@@ -110,12 +110,17 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    // Apply spawn transforms BEFORE opening the popover so the pictures
-    // are already at their spawn position when they become visible —
-    // otherwise the CSS transition fires from (0,0) → spawn and the
-    // pictures appear to fly in from the page corner.
+    // The popover's display: none → block change makes the CSS transition
+    // on the picture fire from default (transform: none, anchored at 0,0)
+    // to the spawn position — pictures appear to fly in from the page
+    // corner. Suppress the transition on the first render, then restore
+    // it next frame so subsequent spring updates animate smoothly.
+    activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
     activeLayers.forEach(renderLayer);
     if (!media.matches(':popover-open')) media.showPopover();
+    requestAnimationFrame(() => {
+      activeLayers.forEach((l) => { l.pic.style.transition = ''; });
+    });
     startLoop();
   };
 
