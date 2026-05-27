@@ -54,10 +54,11 @@
     }
 
     .pm-promo-chevron {
-      align-items: center;
+      border-radius: var(--s2a-border-radius-4);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
       background: var(--s2a-color-transparent-white-16);
+      align-items: center;
       block-size: 32px;
-      border-radius: var(--s2a-border-radius-sm);
       color: var(--s2a-color-content-knockout);
       display: flex;
       flex-shrink: 0;
@@ -73,7 +74,9 @@
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
-      flex-direction: row;
+      column-gap: var(--grid-gutter);
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     }
 
@@ -83,6 +86,8 @@
     }
 
     .pm-foreground {
+      grid-column: span 9;
+
       .heading-4 {
         max-width: min(467px, 80%);
       }
@@ -90,9 +95,9 @@
 
     .pm-promo-area {
       align-self: flex-end;
-      flex: 0 0 25%;
+      grid-column: span 3;
       margin-block-start: 0;
-      min-width: 260px;
+      min-inline-size: 260px;
     }
   }
 }
