@@ -182,23 +182,14 @@ const GNAV_PILL_HTML = `
   <span class="bc-poc-gnav-send" aria-hidden="true">${SEND_ICON}</span>
 `;
 
-const GNAV_SELECTOR = [
-  'header.global-navigation',
-  '.global-navigation',
-  '.feds-header-wrapper',
-  '.feds-header',
-  '.feds-topnav',
-  'header[class*="nav"]',
-  '.gnav',
-].join(',');
+const GNAV_SELECTOR = 'header.global-navigation';
 
 const GNAV_ANCHOR_SELECTOR = [
-  '.feds-cta-wrapper',
   '.feds-signIn-link',
-  '.feds-utilities',
   '.feds-profile',
-  '.gnav-toggle',
-  '.signin',
+  '.feds-utilities',
+  '[data-action="signin"]',
+  'a[daa-ll*="Sign-In"]',
 ].join(',');
 
 let drawerOpen = false;
