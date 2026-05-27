@@ -12,7 +12,7 @@ const SCROLL_SETTLE_MS = 150;
 // Interpolates layer config from back (slow, far spawn, least tilt) to front.
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
-  const s = 120 - t * 24;
+  const s = 60 - t * 12;
   return {
     spawn: { x: s, y: -s },
     stagger: { x: i * 8, y: i * 6 - 6 },
