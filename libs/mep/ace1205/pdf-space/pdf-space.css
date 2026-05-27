@@ -1,6 +1,19 @@
 .pdf-space {
   height: 650vh;
 
+  /*
+   * Stacking order within .pdf-space-stage (isolated stacking context):
+   *   10  .adbe-logo-svg              — drawn-on background mark
+   *   20  .text-block                  — marketing copy column
+   *   30  .acrobat-title, .acrobat-cta — title + CTA chrome
+   *   40  .acrobat-(mobile|desktop)-mockup — app-window chrome
+   *   50  .card-scene                  — animated card layer (own context)
+   *
+   * Cards inside .card-scene are layered by JS (renderArcPeelToGrid):
+   * fanIdx 0–7 → 0–7 at rest, 10–17 while peeling. These compete only
+   * with each other inside the scene, never with the chrome above.
+   */
+
   .pdf-space-stage {
     position: sticky;
     top: 0;
@@ -14,7 +27,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 12;
+    z-index: 20;
     width: 273px;
     text-align: left;
     will-change: transform, opacity;
@@ -69,7 +82,7 @@
   .card-scene {
     position: absolute;
     inset: 0;
-    z-index: 25;
+    z-index: 50;
     perspective: 900px;
     perspective-origin: 50% 50%;
     pointer-events: none;
@@ -84,7 +97,7 @@
     position: absolute;
     top: 0;
     left: calc((100% - var(--acrobat-mobile-mockup-width)) / 2);
-    z-index: 20;
+    z-index: 40;
     overflow: hidden;
     width: var(--acrobat-mobile-mockup-width);
     height: 536px;
@@ -106,7 +119,7 @@
   .acrobat-desktop-mockup {
     position: absolute;
     display: none;
-    z-index: 20;
+    z-index: 40;
     overflow: hidden;
     aspect-ratio: 971 / 576;
     border-radius: 18px;
@@ -190,7 +203,7 @@
   .acrobat-title {
     position: absolute;
     left: calc((100% - var(--acrobat-mobile-mockup-width)) / 2);
-    z-index: 18;
+    z-index: 30;
     width: var(--acrobat-mobile-mockup-width);
     text-align: center;
     opacity: var(--title-opacity, 0);
@@ -217,7 +230,7 @@
   .acrobat-cta {
     position: absolute;
     left: 50%;
-    z-index: 18;
+    z-index: 30;
     display: flex;
     background: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-round);
@@ -261,7 +274,6 @@
 
     .acrobat-title {
       left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
-      z-index: 19;
       width: clamp(680px, 70vw, 971px);
       transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
 
@@ -274,7 +286,6 @@
     }
 
     .acrobat-cta {
-      z-index: 19;
       transform: translateX(-50%) translateY(var(--cta-y, 150vh));
     }
   }

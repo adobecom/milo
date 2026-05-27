@@ -937,7 +937,9 @@ export default function init(el) {
 
     const isPeeling = cardPeelProgress > 0.01;
     if (cardPeelProgress < 0.995) {
-      const zBase = isPeeling ? 32 : 20;
+      // Card stacking is internal to .card-scene's isolated context — see the
+      // z-index legend at the top of pdf-space.css. Lower fanIdx renders on top.
+      const zBase = isPeeling ? 10 : 0;
       const zIndex = String(zBase + (FAN_LAST_INDEX - card.fanIdx));
       if (zIndex !== card.lastZIndex) {
         card.lastZIndex = zIndex;
