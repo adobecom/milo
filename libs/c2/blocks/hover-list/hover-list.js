@@ -33,17 +33,32 @@ function stepLayer(layer, mx, my, vx) {
   layer.rotate += (vx * c.rot - layer.rotate) * ROTATE_LERP;
 }
 
-function renderLayer(layer) {
+function renderLayer(layer, offsetX = 0, offsetY = 0) {
   const { config: c, pic } = layer;
   const fade = 1 - layer.exit;
   const scale = introScale(layer.intro) * fade;
-  pic.style.transform = `translate3d(${layer.x + c.stagger.x}px, ${layer.y + c.stagger.y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
+  const x = layer.x + c.stagger.x - offsetX;
+  const y = layer.y + c.stagger.y - offsetY;
+  pic.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
   pic.style.opacity = String(fade);
+}
+
+// position: fixed is contained by the nearest ancestor with transform / filter
+// / perspective (e.g. parallax-garage-door-reveal sections). Find it so we can
+// compensate the picture's position back to viewport coords.
+function findFixedContainer(el) {
+  let p = el.parentElement;
+  while (p && p !== document.documentElement) {
+    const cs = getComputedStyle(p);
+    if (cs.transform !== 'none' || cs.filter !== 'none' || cs.perspective !== 'none') return p;
+    p = p.parentElement;
+  }
+  return null;
 }
 
 function hideMedia(media) {
   if (!media) return;
-  if (media.matches(':popover-open')) media.hidePopover();
+  media.classList.remove('is-visible');
   media.querySelectorAll('picture').forEach((p) => {
     p.style.transform = '';
     p.style.opacity = '';
@@ -52,12 +67,19 @@ function hideMedia(media) {
 
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
+  const fixedContainer = findFixedContainer(list);
   let activeItem = null;
   let activeLayers = [];
   let exitingGroups = [];
   let rafId = null;
   let isScrolling = false;
   let scrollEndTimer = null;
+
+  const getOffset = () => {
+    if (!fixedContainer) return { x: 0, y: 0 };
+    const r = fixedContainer.getBoundingClientRect();
+    return { x: r.left, y: r.top };
+  };
 
   const updateCursor = (e) => {
     cursor.vx = cursor.hasPrev ? e.clientX - cursor.x : 0;
@@ -67,18 +89,19 @@ function addCursorFollower(list) {
   };
 
   const tick = () => {
+    const o = getOffset();
     activeLayers.forEach((l) => {
       stepLayer(l, cursor.x, cursor.y, cursor.vx);
       const n = Math.min(l.intro + INTRO_STEP, 1);
       l.intro = 1 - (1 - n) ** 2.2;
-      renderLayer(l);
+      renderLayer(l, o.x, o.y);
     });
     exitingGroups = exitingGroups.filter(({ media, layers }) => {
       let alive = false;
       layers.forEach((l) => {
         l.exit = Math.min(l.exit + EXIT_STEP, 1);
         stepLayer(l, cursor.x, cursor.y, cursor.vx);
-        renderLayer(l);
+        renderLayer(l, o.x, o.y);
         if (l.exit < 1) alive = true;
       });
       if (!alive) hideMedia(media);
@@ -110,17 +133,9 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    // The popover's display: none → block change makes the CSS transition
-    // on the picture fire from default (transform: none, anchored at 0,0)
-    // to the spawn position — pictures appear to fly in from the page
-    // corner. Suppress the transition on the first render, then restore
-    // it next frame so subsequent spring updates animate smoothly.
-    activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
-    activeLayers.forEach(renderLayer);
-    if (!media.matches(':popover-open')) media.showPopover();
-    requestAnimationFrame(() => {
-      activeLayers.forEach((l) => { l.pic.style.transition = ''; });
-    });
+    media.classList.add('is-visible');
+    const o = getOffset();
+    activeLayers.forEach((l) => renderLayer(l, o.x, o.y));
     startLoop();
   };
 
@@ -186,7 +201,7 @@ function decorate(block) {
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
-      const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });
+      const media = createTag('div', { class: 'hover-list-media' });
       pics.forEach((p) => media.append(p));
       item.append(media);
     }
