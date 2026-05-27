@@ -97,7 +97,7 @@ they sum to `animScrollTotal` (excluding any post-reveal pan).
 **Recipe — slow rotation feel without changing phase boundaries:**
 
 Lower `arcSweepMultiplier` (e.g. 1.0 → 0.7) and scale `arcCwStart` by the
-same factor (e.g. 0.50 → 0.35). Both halves of the rotation slow together,
+same factor (e.g. 0.55 → 0.39). Both halves of the rotation slow together,
 so the pre-pin and post-pin rates stay matched.
 
 ### Arc rotation feel
@@ -110,8 +110,11 @@ by two terms summed into `rotationOffset`:
 - **`arcSpan * arcSweepMultiplier * phase.arcPan`** — runs post-pin.
 
 For a constant perceived rate across pin, pick
-`arcCwStart ≈ arcSpan * arcSweepMultiplier / arcPanScroll_in_vh`. With the
-defaults (arc-pan = ~1.63 vh), that lands at ~0.49; we use 0.50.
+`arcCwStart ≈ arcSpan * arcSweepMultiplier / arcPanScroll_in_vh` (~0.49 at
+the defaults). `arcCwStart` also sets the off-screen starting angle — at
+pre-pin start it pushes the arc into the lower-right corner via rotation
+alone. Raising it lengthens that swing without changing post-pin rotation
+speed; lowering it makes cards start closer to their orbital rest position.
 
 `arcPanEnd` and `arcSweepMultiplier` look similar but do different things:
 
@@ -122,9 +125,9 @@ defaults (arc-pan = ~1.63 vh), that lands at ~0.49; we use 0.50.
 
 | Key | Default | What it does |
 | --- | ---: | --- |
-| `arcCwStart` | 0.50 | Extra CW rotation (rad) at pre-pin start, decaying to 0 at pin. Sets both the off-screen starting angle and the pre-pin rotation rate. |
+| `arcCwStart` | 0.55 | Extra CW rotation (rad) at pre-pin start, decaying to 0 at pin. Sets both the off-screen starting angle (rotates the arc into the lower-right corner before scrolling unwinds it) and the pre-pin rotation rate. |
 | `arcApexLift` | 0.10 | Vertical bias of the arc apex (card 7's rest y) as a fraction of vh. Card 7 lands at `vh * (0.5 - arcApexLift)`. |
-| `prePinSlideY` | 0.25 | Uniform downward Y offset (fraction of vh) applied during pre-pin, decaying to 0 by `phase.slideT = 1`. Pushes the whole arc below its orbital position so short viewports don't clip the lifted apex; no X component or per-card stagger, so the relative motion between cards stays purely orbital. Set to 0 to disable. |
+| `prePinSlideY` | 0.40 | Uniform downward Y offset (fraction of vh) applied during pre-pin, decaying via `1 - easeOutSine(phase.slideT)` to 0 by `phase.slideT = 1`. Pushes the whole arc below its orbital position so short viewports don't clip the lifted apex; no X component and no per-card stagger, so the relative motion between cards stays purely orbital. Set to 0 to disable. |
 | `arcPanEnd` | 1350 | Scroll units for `arcPan` to go 0 → 1. |
 | `arcSweepMultiplier` | 1 | Multiplier on `arcSpan` for total post-pin sweep. |
 | `arcSpan` | 0.80 | Angular span (radians) of the arc fan. Wider = cards spread further along the arc. |
@@ -153,19 +156,19 @@ short viewports would push the lifted apex past the top edge while the arc
 is still rotating. Rather than lowering the at-rest apex on those viewports,
 the renderer adds a **uniform pre-pin Y slide**: `vh * prePinSlideY *
 (1 - easeOutSine(phase.slideT))`. Every card receives the same downward
-offset, so cards rotate around the same translating center — orbit feel is
-preserved. The slide is fully gone by `phase.slideT = 1` (≈ `slideOverlap`
-scroll units past pin), so post-pin behavior is unchanged. Tune
-`prePinSlideY` upward if a target viewport still clips at the top during
-pre-pin; lower it for a subtler entry.
+offset, so cards rotate around the same translating center — relative
+motion between cards stays purely orbital. The slide fades out by
+`phase.slideT = 1` (≈ `slideOverlap` scroll units past pin); post-pin
+behavior is unchanged. Tune `prePinSlideY` upward if a target viewport
+still clips at the top during pre-pin; lower it for a subtler entry.
 
 ### Card entry ramps
 
-`slideT` (0 → 1 across pre-pin + first ~200 scroll units post-pin) drives
-the per-card opacity fade-in, scale ramp, and the uniform `prePinSlideY`
-described above. The per-card lag (`slideStagger`) only affects opacity
-and scale — the Y slide is unstaggered so cards stay coherent as a single
-rotating arc.
+`phase.slideT` (0 → 1 across pre-pin + first ~200 scroll units post-pin)
+drives the per-card opacity fade-in, scale ramp, and the uniform
+`prePinSlideY` described above. The per-card lag (`slideStagger`) only
+affects opacity and scale — the Y slide is unstaggered so cards stay
+coherent as a single rotating arc.
 
 | Key | Default | What it does |
 | --- | ---: | --- |

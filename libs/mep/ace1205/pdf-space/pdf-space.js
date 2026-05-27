@@ -38,7 +38,7 @@ const ANIM = {
   arcXTilt: 10,
   arcPushDistance: 60,
   arcShadowAlpha: 0.15,
-  arcCwStart: 0.50,
+  arcCwStart: 0.6,
   // Vertical bias of the arc apex as a fraction of vh. Card 7 (top of arc)
   // rests at viewport y = vh * (0.5 - arcApexLift). 0 = centered, 0.1 = 10%
   // above center.
@@ -48,7 +48,7 @@ const ANIM = {
   // position from below — keeps short viewports from clipping the lifted
   // apex without lowering the at-rest arcApexLift. No X component and no
   // per-card stagger, so cards still read as a rotating arc, not a slide.
-  prePinSlideY: 0.25,
+  prePinSlideY: 0.3,
 
   // Slide-in opacity & scale ramps
   slideStagger: 0.45,
