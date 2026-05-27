@@ -204,18 +204,11 @@
 
     > .sub-header-item-container {
       > p:not(:has(strong, em, a, picture)) {
-        font-size: var(--s2a-typography-font-size-label);
-        font-weight: var(--s2a-font-weight-label);
-        line-height: var(--s2a-typography-line-height-label);
-        letter-spacing: var(--s2a-typography-letter-spacing-label);
         color: var(--s2a-color-gray-600);
       }
 
       > p:has(strong) {
-        font-size: var(--s2a-typography-font-size-heading-4);
         font-weight: var(--s2a-font-weight-heading);
-        line-height: var(--s2a-typography-line-height-heading-4);
-        letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
         color: var(--s2a-color-gray-900);
         word-break: break-word;
         text-align: left;
@@ -258,11 +251,7 @@
     }
 
     :is(h1, h2, h3, h4, h5, h6) {
-      font-size: var(--s2a-typography-font-size-heading-5);
-      font-family: var(--heading-font-family);
       font-weight: var(--s2a-font-weight-heading);
-      line-height: var(--s2a-typography-line-height-heading-5);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -424,17 +413,12 @@
       width: 100%;
       min-height: 56px;
       border: none;
-      font-size: var(--s2a-typography-font-size-heading-5);
-      line-height: var(--s2a-typography-line-height-heading-5);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
-      font-weight: var(--s2a-font-weight-heading);
       text-align: left;
       background-color: transparent;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: var(--s2a-spacing-md) 0;
-      font-family: var(--heading-font-family);
       color: var(--s2a-color-gray-900);
       cursor: pointer;
       position: relative;
@@ -442,10 +426,6 @@
 
     :is(h1, h2, h3, h4, h5, h6) {
       max-width: calc(100% - var(--s2a-spacing-2xl));
-      font-size: var(--s2a-typography-font-size-heading-4);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
-      line-height: var(--s2a-typography-line-height-heading-4);
-      font-weight: var(--s2a-font-weight-heading);
     }
   }
 
@@ -465,6 +445,10 @@
     .table-cell:not(.hidden):not(:nth-child(2)) div {
       background-color: transparent;
     }
+
+    .eyebrow {
+      color: var(--s2a-color-content-default);
+    }
   }
 
   .header-content:not(.sticky) .header-content-wrapper .ct-header-item-card:nth-child(even) .sub-header-item-container:not(:last-of-type) {
@@ -477,10 +461,6 @@
 
   .table-row-header {
     text-align: center;
-    font-size: var(--s2a-typography-font-size-eyebrow);
-    font-weight: var(--s2a-font-weight-adobe-clean-bold);
-    line-height: var(--s2a-typography-line-height-eyebrow);
-    letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
     padding-block: var(--s2a-spacing-md);
     padding-inline: 0;
     display: inline;
@@ -528,9 +508,6 @@
       align-items: start;
       justify-content: center;
       flex-direction: column;
-      font-size: var(--s2a-typography-font-size-eyebrow);
-      line-height: var(--s2a-typography-line-height-eyebrow);
-      letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
       color: var(--s2a-color-content-default);
     }
 
@@ -757,10 +734,7 @@
       padding-top: var(--s2a-spacing-lg);
 
       :is(h1, h2, h3, h4, h5, h6) {
-        font-size: var(--s2a-typography-font-size-heading-4);
         font-weight: var(--s2a-font-weight-adobe-clean-bold);
-        line-height: var(--s2a-typography-line-height-heading-4);
-        letter-spacing: var(--s2a-typography-letter-spacing-heading-4);
       }
     }
 

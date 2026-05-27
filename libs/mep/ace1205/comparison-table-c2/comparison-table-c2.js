@@ -122,6 +122,12 @@ function createSubHeaderContainer({
 
   for (let i = startIndex; i < endIndex; i += 1) {
     if (childrenArray[i] && childrenArray[i].textContent.trim() !== '-') {
+      if (/^H[1-6]$/.test(childrenArray[i].tagName)) {
+        childrenArray[i].classList.add('heading-5');
+      } else if (containerIndex === 0 && childrenArray[i].tagName === 'P') {
+        if (childrenArray[i].querySelector('strong')) childrenArray[i].classList.add('heading-4');
+        else if (!childrenArray[i].querySelector('em, a, picture')) childrenArray[i].classList.add('label');
+      }
       container.appendChild(childrenArray[i]);
       const strongOrEm = childrenArray[i].querySelector('strong, em');
       if (isLast && !hasTextNode(strongOrEm?.parentElement?.childNodes, strongOrEm?.childNodes)) {
@@ -233,6 +239,7 @@ function decorateHeader(el, headerContent) {
     headerItemHeader.append(...firstItem.children);
     firstItem.remove();
   }
+  headerItemHeader.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-4');
   headerContentWrapper.prepend(headerItemHeader);
   const headerCardsContainer = createTag('div', { class: 'header-cards-container' });
   const cardItems = [...headerContentWrapper.querySelectorAll('.ct-header-item-card')];
@@ -282,6 +289,8 @@ function decorateTableToggleButton({
   const buttonElement = createTag('button', { 'aria-expanded': !!isExpanded });
 
   buttonElement.innerHTML = firstChild.innerHTML;
+  buttonElement.classList.add('heading-5');
+  buttonElement.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading-4');
   buttonElement.appendChild(createTag('span', { class: 'toggle-icon' }));
   buttonElement.addEventListener('click', () => {
     tableElement.classList.toggle('hide');
@@ -345,6 +354,7 @@ function decorateUnderlineTooltipTriggers(el) {
 function setupCellAttributes(child, childIndex, arePrimaryColumns) {
   child.classList.add(childIndex === 0 ? 'table-row-header' : 'table-cell');
   if (childIndex === 0) {
+    child.classList.add('eyebrow');
     child.setAttribute('role', 'rowheader');
     decorateUnderlineTooltipTriggers(child);
     if (hasMinimalContent(child)) child.classList.add('minimal-content');
