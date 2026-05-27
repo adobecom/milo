@@ -39,7 +39,6 @@
 
   .faq-text {
     flex: 1;
-    font-family: var(--s2a-font-family-title);
     letter-spacing: var(--s2a-font-letter-spacing-4xl);
     margin: 0;
   }

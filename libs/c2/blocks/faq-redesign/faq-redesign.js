@@ -163,7 +163,7 @@ function decorate(block) {
     const [textCol, mediaCol] = row.children;
     const item = createTag('li', { class: 'faq-item' });
     const number = createTag('span', { class: 'faq-number eyebrow' }, String(i + 1).padStart(2, '0'));
-    const text = createTag('div', { class: 'faq-text title-4' });
+    const text = createTag('div', { class: 'faq-text heading-4' });
     if (textCol) text.append(...textCol.childNodes);
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
