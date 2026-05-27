@@ -1,9 +1,11 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
+  display: flex;
   min-block-size: 494px;
 
   .pm-content {
     display: flex;
+    flex: 1;
     flex-direction: column;
     padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
   }
