@@ -1,12 +1,12 @@
 import { createTag } from '../../../utils/utils.js';
 import { debounce } from '../../../utils/action.js';
 
-// Scroll-driven animation: arc → peel → settle → slotting. See README.md
+// Scroll-driven animation: arc → peel → settle → slotting -> potential postReveal. See README.md
 
 // Keep these breakpoints in sync with the matching MQ ranges in pdf-space.css.
 const BREAKPOINTS = {
-  mobile: () => window.innerWidth <= 767,
-  tablet: () => window.innerWidth >= 768 && window.innerWidth <= 1279,
+  mobile: window.matchMedia('(max-width: 767px)'),
+  tablet: window.matchMedia('(min-width: 768px) and (max-width: 1279px)'),
 };
 
 const CARD_COLUMN_OFFSETS_RATIO = [-0.462, -0.154, 0.154, 0.462];
@@ -663,8 +663,8 @@ export default function init(el) {
   }
 
   function refreshFrameProfile() {
-    frame.isMobile = BREAKPOINTS.mobile();
-    frame.isTablet = !frame.isMobile && BREAKPOINTS.tablet();
+    frame.isMobile = BREAKPOINTS.mobile.matches;
+    frame.isTablet = !frame.isMobile && BREAKPOINTS.tablet.matches;
     frame.mobileLayout = frame.isMobile ? getMobileLayout() : null;
     if (frame.isMobile) {
       timing.gridEnd = MOBILE_GRID_END;
@@ -798,7 +798,7 @@ export default function init(el) {
   }
 
   const canvasGrid = createCanvasGrid(canvas, {
-    isMobile: BREAKPOINTS.mobile,
+    isMobile: () => BREAKPOINTS.mobile.matches,
     getViewport: () => ({ width: viewportWidth, height: viewportHeight }),
     getCards: () => sceneCards,
     getCardCenter: getCanvasCardCenter,
