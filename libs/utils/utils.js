@@ -126,6 +126,7 @@ const C2_BLOCKS = [
   'router-marquee',
   'section-metadata',
   'social-proof',
+  'split-aside',
   'visually-hidden',
   'product-marquee-grid',
 ];
