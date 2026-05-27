@@ -686,6 +686,22 @@ describe('MEP Utils', () => {
       );
       expect(manifests.length).to.equal(0);
     });
+    it('blocks malformed scheme prefixes across all personalization sources', async () => {
+      const bypassValue = [
+        'https:/evil.com/manifest.json',
+        'https:\\evil.com/manifest.json',
+        'HTTPS:/evil.com/manifest.json',
+        'http:/evil.com/manifest.json',
+      ].join(',');
+      const manifests = await combineMepSources(
+        bypassValue,
+        bypassValue,
+        undefined,
+        undefined,
+        bypassValue,
+      );
+      expect(manifests.length).to.equal(0);
+    });
     it('allows trusted AEM-hosted manifest URLs from personalization sources', async () => {
       const aemUrl = 'https://main--milo--adobecom.aem.page/path/manifest.json';
       const manifests = await combineMepSources(aemUrl, undefined, undefined, undefined);
