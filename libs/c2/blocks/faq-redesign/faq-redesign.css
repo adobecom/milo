@@ -96,17 +96,10 @@
 
 @media (width >= 1280px) {
   .faq-redesign {
-    padding-block: var(--s2a-layout-lg);
-
-    .faq-headline {
-      flex: 0 0 1;
-    }
-
     .faq-item {
       block-size: 100px;
       cursor: pointer;
       gap: var(--s2a-spacing-md);
-      padding-block: 0;
       padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
     }
 
