@@ -65,19 +65,13 @@
     grid-auto-rows: initial;
   }
 
+  &.bento .dark .explore-card-content [class*='body-'] {
+    color: inherit;
+  }
+
   &.bento .explore-card {
     border-radius: var(--s2a-border-radius-md);
     z-index: inherit;
-
-    &.dark {
-      .explore-card-content::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0 0 0 / 0%) 60.93%, rgba(0 0 0 / 59%) 90%);
-        z-index: 1;
-      }
-    }
 
     .explore-card-container:hover [class*='body-'] {
       opacity: initial;
@@ -89,16 +83,9 @@
     padding-bottom: var(--s2a-spacing-xl);
     padding-top: 0;
 
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(255 255 255 / 0%) 60.93%, rgba(255 255 255 / 59%) 90%);
-      z-index: 1;
-    }
-
     & [class*='heading-'] {
       z-index: 1;
+      margin-bottom: var(--s2a-spacing-2xs);
     }
 
     & [class*='body-'] {
@@ -106,15 +93,12 @@
       margin-bottom: 0;
       opacity: 1;
       z-index: 1;
+      color: var(--s2a-color-content-body-subtle);
     }
 
     [class*='heading-'],
     [class*='body-'] {
       padding-inline: var(--s2a-spacing-xl);
-    }
-
-    > :nth-child(1):not(img):not(video) {
-      margin-bottom: var(--s2a-spacing-xs);
     }
 
     .explore-card-foreground {
@@ -137,6 +121,28 @@
       height: auto;
       order: -1;
       width: 100%;
+    }
+  }
+
+  &.bento .scrim {
+    .explore-card-content {
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(255 255 255 / 0%) 60.93%, rgba(255 255 255 / 59%) 90%);
+        z-index: 1;
+      }
+    }
+
+    &.dark {
+      .explore-card-content::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0 0 0 / 0%) 60.93%, rgba(0 0 0 / 59%) 90%);
+        z-index: 1;
+      }
     }
   }
 
@@ -236,7 +242,7 @@
       }
 
       .content-aux {
-        aspect-ratio: 1 / 0.8;
+        aspect-ratio: 1 / 0.88;
       }
     }
 
@@ -248,7 +254,7 @@
 
         [class*='heading-'],
         [class*='body-'] {
-          width: 50vw;
+          max-width: 450px;
         }
       }
     }
