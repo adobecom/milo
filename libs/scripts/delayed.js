@@ -95,6 +95,15 @@ export const loadAriaAutomation = async () => {
   addAriaLabels();
 };
 
+// MWPW-196330 POC: opt-in BC drawer simulation via ?bcdrawer=1
+export const loadBcDrawerPoc = async () => {
+  const param = new URLSearchParams(window.location.search).get('bcdrawer');
+  if (!param || !['1', 'on', 'true'].includes(param.toLowerCase())) return;
+
+  const { default: injectBcDrawerPoc } = await import('../features/bc-drawer-poc.js');
+  injectBcDrawerPoc();
+};
+
 export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   const usp = new URLSearchParams(window.location.search);
   [
@@ -141,6 +150,7 @@ const loadDelayed = ([
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
     loadBlockNotifications(getConfig, loadStyle);
+    loadBcDrawerPoc();
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;
