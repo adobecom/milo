@@ -106,6 +106,15 @@ const DRAWER_CSS = `
   .bc-poc-gnav.is-collapsed .bc-poc-gnav-label,
   .bc-poc-gnav.is-collapsed .bc-poc-gnav-send { display: none; }
 
+  /* Fallback position when no GNAV is found in DOM */
+  .bc-poc-gnav.is-floating {
+    position: fixed;
+    top: 12px;
+    right: calc(var(--concierge-width, 0px) + 16px);
+    z-index: 2147483001;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+
   /* --- push fixed/sticky Adobe elements off the drawer area --- */
   html.has-concierge header.global-navigation,
   html.has-concierge header.feds-header-wrapper,
@@ -174,18 +183,21 @@ const GNAV_PILL_HTML = `
 `;
 
 const GNAV_SELECTOR = [
-  '.feds-header-wrapper',
   'header.global-navigation',
   '.global-navigation',
+  '.feds-header-wrapper',
   '.feds-header',
+  '.feds-topnav',
+  'header[class*="nav"]',
+  '.gnav',
 ].join(',');
 
 const GNAV_ANCHOR_SELECTOR = [
   '.feds-cta-wrapper',
   '.feds-signIn-link',
   '.feds-utilities',
-  '.gnav-toggle',
   '.feds-profile',
+  '.gnav-toggle',
   '.signin',
 ].join(',');
 
@@ -291,10 +303,6 @@ function openDrawer() {
 }
 
 async function injectGnavPill() {
-  const found = await waitForCondition(() => document.querySelector(GNAV_SELECTOR));
-  if (!found) return;
-  const gnav = document.querySelector(GNAV_SELECTOR);
-
   gnavPillEl = document.createElement('button');
   gnavPillEl.type = 'button';
   gnavPillEl.className = 'bc-poc-gnav';
@@ -304,9 +312,23 @@ async function injectGnavPill() {
     if (drawerOpen) closeDrawer(); else openDrawer();
   });
 
-  const anchor = gnav.querySelector(GNAV_ANCHOR_SELECTOR);
-  if (anchor) anchor.parentNode.insertBefore(gnavPillEl, anchor);
-  else gnav.append(gnavPillEl);
+  const found = await waitForCondition(() => document.querySelector(GNAV_SELECTOR), 15000);
+  const gnav = found ? document.querySelector(GNAV_SELECTOR) : null;
+
+  if (gnav) {
+    const anchor = gnav.querySelector(GNAV_ANCHOR_SELECTOR);
+    if (anchor) {
+      anchor.parentNode.insertBefore(gnavPillEl, anchor);
+      console.info('[bc-drawer-poc] pill inserted before', anchor);
+    } else {
+      gnav.append(gnavPillEl);
+      console.info('[bc-drawer-poc] pill appended to gnav', gnav);
+    }
+  } else {
+    gnavPillEl.classList.add('is-floating');
+    document.body.append(gnavPillEl);
+    console.warn('[bc-drawer-poc] no GNAV matched; using floating fallback');
+  }
 
   if (drawerOpen) gnavPillEl.classList.add('is-collapsed');
 }
