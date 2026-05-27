@@ -1,7 +1,7 @@
 import { getConfig, loadScript } from '../utils/utils.js';
 import chatUIConfig from '../blocks/brand-concierge/chat-ui-config.js';
 
-const DRAWER_WIDTH = 340;
+const DRAWER_WIDTH = 400;
 const MOUNT_ID = 'brand-concierge-mount';
 
 const WEB_AGENT_PROD = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
@@ -374,6 +374,43 @@ function onPillClick(e) {
   else showDropdown();
 }
 
+function propagateParamsToLinks() {
+  const params = new URLSearchParams(window.location.search);
+  const milolibs = params.get('milolibs');
+  const bcdrawer = params.get('bcdrawer');
+  if (!bcdrawer) return;
+
+  const sameHost = window.location.host;
+  const rewrite = (a) => {
+    if (a.dataset.bcPocRewritten) return;
+    const raw = a.getAttribute('href');
+    if (!raw || /^(#|mailto:|tel:|javascript:)/i.test(raw)) return;
+    try {
+      const url = new URL(a.href, window.location.href);
+      if (url.host && url.host !== sameHost) return;
+      if (milolibs) url.searchParams.set('milolibs', milolibs);
+      url.searchParams.set('bcdrawer', bcdrawer);
+      a.href = url.toString();
+      a.dataset.bcPocRewritten = '1';
+    } catch {
+      // ignore unparseable hrefs
+    }
+  };
+
+  document.querySelectorAll('a[href]').forEach(rewrite);
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((m) => {
+      m.addedNodes.forEach((n) => {
+        if (n.nodeType !== 1) return;
+        if (n.tagName === 'A' && n.hasAttribute('href')) rewrite(n);
+        n.querySelectorAll?.('a[href]').forEach(rewrite);
+      });
+    });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 async function injectGnavPill() {
   gnavPillEl = document.createElement('button');
   gnavPillEl.type = 'button';
@@ -426,4 +463,5 @@ export default function injectBcDrawerPoc() {
   });
 
   injectGnavPill();
+  propagateParamsToLinks();
 }
