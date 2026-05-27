@@ -6,13 +6,13 @@ const STIFFNESS = 0.34;
 const ROTATE_LERP = 0.12;
 const INTRO_STEP = 0.009;
 const EXIT_STEP = 0.08;
-const TARGET_OFFSET = { x: -8, y: -14 };
+const TARGET_OFFSET = { x: 14, y: -4 };
 const SCROLL_SETTLE_MS = 150;
 
 // Interpolates layer config from back (slow, far spawn, least tilt) to front.
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
-  const s = 60 - t * 12;
+  const s = 120 - t * 24;
   return {
     spawn: { x: s, y: -s },
     stagger: { x: i * 8, y: i * 6 - 6 },
@@ -43,7 +43,7 @@ function renderLayer(layer) {
 
 function hideMedia(media) {
   if (!media) return;
-  media.classList.remove('is-visible');
+  if (media.matches(':popover-open')) media.hidePopover();
   media.querySelectorAll('picture').forEach((p) => {
     p.style.transform = '';
     p.style.opacity = '';
@@ -110,8 +110,13 @@ function addCursorFollower(list) {
         rotate: 0,
       };
     });
-    media.classList.add('is-visible');
+
+    activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
     activeLayers.forEach(renderLayer);
+    if (!media.matches(':popover-open')) media.showPopover();
+    requestAnimationFrame(() => {
+      activeLayers.forEach((l) => { l.pic.style.transition = ''; });
+    });
     startLoop();
   };
 
@@ -177,7 +182,7 @@ function decorate(block) {
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
-      const media = createTag('div', { class: 'hover-list-media' });
+      const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });
       pics.forEach((p) => media.append(p));
       item.append(media);
     }
