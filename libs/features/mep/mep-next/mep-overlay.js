@@ -1,5 +1,6 @@
 import { createTag, loadStyle } from '../../../utils/utils.js';
 import {
+  getPageId,
   getManifestsFound,
   getFoundation,
   getTargetIntegration,
@@ -50,19 +51,35 @@ async function buildOverlay() {
   }
 
   function buildCardContent(card) {
-    const pageId = 1; // placeholder
+    const pageId = getPageId(); // placeholder
 
     function buildLoadManifest() {
       const mepManifestInput = createTag('input', { class: 'mep-load-manifest', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
       return mepManifestInput;
     }
 
-    function buildSpoofGeo() {
-      const options = card.radios.map((val, i) => {
-        const radioInput = createTag('input', { type: 'radio', name: `spoof-geo-${pageId}`, value: val, ...(i === 0 && { checked: true }) });
-        const label = createTag('label', { for: `spoof-geo-${val}` }, val);
-        ['icon-radio-unchecked', 'icon-radio-checked'].map((icon) => label.prepend(parseSvg(svgData.svg[icon])));
+    function buildToggle() {
+      return card.label.map((item) => {
+        const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}-${pageId}`;
+        const switchEl = createTag('label', { class: 'mep-switch', for: id }, [
+          createTag('input', { type: 'checkbox', id }),
+          createTag('span', { class: 'mep-switch-track' }),
+        ]);
+        const textEl = createTag('div', { class: 'mep-toggle-text' }, [
+          createTag('h2', {}, item.title),
+          createTag('p', { class: 'mep-row-value' }, item.description),
+        ]);
+        return createTag('div', { class: 'mep-toggle-row' }, [textEl, switchEl]);
+      });
+    }
 
+    function buildSpoofGeo() {
+      const options = card.label.map((val, index) => {
+        const id = `spoof-geo-${val}`;
+        const radioInput = createTag('input', { type: 'radio', id, name: `spoof-geo-${pageId}`, value: val });
+        radioInput.checked = index === 0;
+        const label = createTag('label', { for: id }, val);
+        ['icon-radio-unchecked', 'icon-radio-checked'].forEach((icon) => label.prepend(parseSvg(svgData.svg[icon])));
         return createTag('div', { class: 'mep-radio-row' }, [radioInput, label]);
       });
       const select = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo-${pageId}` });
@@ -101,6 +118,8 @@ async function buildOverlay() {
 
     const buildCards = { // Key needs to match Json header
       'Load Manifest': () => buildLoadManifest(),
+      Toggle: () => buildToggle(),
+      Highlight: () => buildToggle(),
       'Spoof Geo': () => buildSpoofGeo(),
       Page: () => buildSummaryData(),
       Consent: () => buildSummaryData(),
@@ -174,37 +193,19 @@ async function buildOverlay() {
   buildDrawer();
 }
 
-function changeTab(tabIndex) {
-  const tabs = document.querySelectorAll('[data-tab]');
+function addTabListeners() {
+  function changeTab(tabIndex) {
+    const tabs = document.querySelectorAll('[data-tab]');
 
-  tabs.forEach((tab) => {
-    const index = tab.getAttribute('data-tab');
-    if (index === tabIndex) {
-      tab.classList.add('active');
-    } else {
-      tab.classList.remove('active');
-    }
-  });
-}
-
-function toggleCard(event) {
-  event.target.closest('.mep-card').classList.toggle('expanded');
-}
-
-function toggleRadio(event) {
-  const input = event.target.closest('.mep-radio-row').querySelector('input[type="radio"]');
-  input.checked = true;
-}
-
-function addEventListeners() {
-  const toggles = document.querySelectorAll('.mep-radio-row label');
-  toggles.forEach((toggle) => {
-    toggle.addEventListener('click', (event) => {
-      toggles.forEach((t) => t.classList.remove('active'));
-      toggleRadio(event);
+    tabs.forEach((tab) => {
+      const index = tab.getAttribute('data-tab');
+      if (index === tabIndex) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
     });
-  });
-
+  }
   const tabs = document.querySelectorAll('.mep-tab');
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -212,6 +213,12 @@ function addEventListeners() {
       changeTab(index);
     });
   });
+}
+
+function addCardListeners() {
+  function toggleCard(event) {
+    event.target.closest('.mep-card').classList.toggle('expanded');
+  }
 
   const cards = document.querySelectorAll('.mep-card');
   cards.forEach((card) => {
@@ -222,6 +229,11 @@ function addEventListeners() {
       });
     }
   });
+}
+
+function addEventListeners() {
+  addTabListeners();
+  addCardListeners();
 }
 
 async function init() {
