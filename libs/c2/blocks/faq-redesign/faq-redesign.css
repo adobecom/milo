@@ -19,6 +19,7 @@
     border-block-start: 1px solid var(--s2a-color-transparent-white-32);
     color: var(--s2a-color-content-knockout);
     display: flex;
+    gap: var(--s2a-spacing-md);
     padding-block: var(--s2a-spacing-xl);
     transition: background 0.2s ease;
 
@@ -34,8 +35,6 @@
   .faq-number {
     color: var(--s2a-color-content-knockout);
     flex-shrink: 0;
-    min-inline-size: var(--s2a-spacing-24);
-    padding: 2px 18px 2px 0;
   }
 
   .faq-text {
@@ -85,7 +84,9 @@
       }
 
       .faq-number {
-        padding: 2px 0;
+        .faq-number {
+          min-inline-size: var(--s2a-spacing-24);
+        }
       }
     }
 
