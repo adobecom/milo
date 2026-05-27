@@ -1,5 +1,6 @@
 .faq {
-  --faq-transition: 0.2s ease;
+  --faq-transition-duration: 400ms;
+  --faq-transition: var(--faq-transition-duration) var(--parallax-easing);
 
   position: relative;
 }
@@ -17,6 +18,26 @@
   .faq:hover &:not(:hover, [open]),
   .faq:focus-within &:not(:focus-within, [open]) {
     opacity: 0.6;
+  }
+
+  &::details-content {
+    content-visibility: visible;
+    display: block;
+    block-size: auto;
+  }
+
+  > .faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows var(--faq-transition),
+      visibility 0s linear var(--faq-transition-duration);
+  }
+
+  &[open] > .faq-panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows var(--faq-transition), visibility 0s linear 0s;
   }
 }
 
@@ -57,8 +78,13 @@
   }
 }
 
-.faq-panel {
-  padding-block-end: var(--s2a-spacing-xl);
+.faq-panel-inner {
+  min-block-size: 0;
+  overflow: hidden;
+
+  > *:last-child {
+    margin-block-end: var(--s2a-spacing-xl);
+  }
 
   :is(p, ul, ol) + :is(p, ul, ol) {
     margin-block-start: var(--s2a-spacing-xs);
@@ -68,5 +94,11 @@
 @media (width >= 768px) {
   .faq-panel {
     max-inline-size: calc(548 / 16 * 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item > .faq-panel {
+    transition: none;
   }
 }
