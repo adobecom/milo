@@ -155,8 +155,13 @@
 
   :is(.hero-card-title, .hero-card-body-text, .learn-more) {
     margin: 0;
-    opacity: 0;
     will-change: opacity;
+  }
+
+  @media not (prefers-reduced-motion: reduce) {
+    :is(.hero-card-title, .hero-card-body-text, .learn-more) {
+      opacity: 0;
+    }
   }
 
   .hero-card-title {
@@ -177,10 +182,19 @@
     svg {
       margin-inline-start: var(--s2a-spacing-xs);
       vertical-align: middle;
+      transition: transform 0.5s var(--parallax-easing);
+    }
+
+    &:hover svg {
+      transform: translate3d(var(--s2a-spacing-4), 0, 0);
     }
 
     &:dir(rtl) svg {
       transform: scaleX(-1);
+    }
+
+    &:dir(rtl):hover svg {
+      transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
     }
   }
 }

@@ -15,7 +15,7 @@ const CARD_SHADOWS = [
   '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
 ];
 const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
-const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true">
+const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true" focusable="false">
   <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
@@ -222,9 +222,8 @@ function initAnimation(block) {
       const ty = lerp(stack.y - natural.y, 0, progress);
       const rot = lerp(stack.rot, 0, progress);
       tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
-      if (CARD_SHADOWS[i]) {
-        tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
-      }
+      if (!CARD_SHADOWS[i]) return;
+      tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
     });
 
     cardTexts.forEach((textEl, i) => {
@@ -233,10 +232,9 @@ function initAnimation(block) {
     });
 
     const animating = progress > 0.001 && progress < 0.999;
-    if (animating !== willChangeOn) {
-      willChangeOn = animating;
-      tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
-    }
+    if (animating === willChangeOn) return;
+    willChangeOn = animating;
+    tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
   }
 
   function updateEyebrow() {
@@ -246,10 +244,9 @@ function initAnimation(block) {
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    if (heroContent) {
-      const rect = heroContent.getBoundingClientRect();
-      eyebrow.classList.toggle('is-visible', rect.top + rect.height / 2 < 0);
-    }
+    if (!heroContent) return;
+    const rect = heroContent.getBoundingClientRect();
+    eyebrow.classList.toggle('is-visible', rect.top + rect.height / 2 < 0);
   }
 
   function computeLayouts() {
@@ -285,8 +282,7 @@ function initAnimation(block) {
     applyAnimation(progress);
     updateEyebrow();
 
-    if (progress >= 0.85) setSettled(true);
-    else if (isSettled) setSettled(false);
+    setSettled(progress >= 0.85);
 
     rafId = requestAnimationFrame(tick);
   }
