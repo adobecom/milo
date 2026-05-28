@@ -584,6 +584,7 @@ function setupCollapsingHeader(el) {
   });
 
   window.addEventListener('scroll', () => {
+    if (isMobile()) return;
     const y = window.scrollY;
     const goingDown = y > lastScrollY;
     lastScrollY = y;

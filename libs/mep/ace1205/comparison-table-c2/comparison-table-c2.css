@@ -100,6 +100,10 @@
   }
 
   @media (width < 900px) {
+    .header-cards-container {
+      position: static;
+    }
+
     .header-cards-container + .table-container {
       transition-property: margin-top;
       transition-duration: 300ms;
