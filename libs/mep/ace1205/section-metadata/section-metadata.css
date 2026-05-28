@@ -122,6 +122,19 @@
       order: -1;
       width: 100%;
     }
+
+    .standalone-link {
+      display: inline-block;
+      text-decoration: none;
+      color: var(--s2a-color-content-label);
+      margin-top: var(--s2a-spacing-md);
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+      }
+    }
   }
 
   &.bento .scrim {
@@ -160,7 +173,21 @@
     }
   }
 
-  &.bento .explore-card-link-container:hover { color: inherit; }
+  &.bento .explore-card-link-container {
+    box-sizing: border-box;
+
+    &:focus-visible {
+      border: 2px solid var(--color-accent-focus-ring);
+      outline-offset: none;
+      border-radius: var(--s2a-border-radius-16);
+      box-sizing: border-box;
+      overflow: clip;
+    }
+
+    &:hover {
+      color: inherit;
+    }
+  }
 
   &.bento .explore-card-link-container::before,
   &:has(.bento .explore-card-link-container:focus-visible) .explore-card-link-container::before {
