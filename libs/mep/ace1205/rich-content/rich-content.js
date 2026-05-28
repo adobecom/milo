@@ -54,7 +54,35 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+function decorateVideoVariant(container) {
+  const row = container.children[0];
+  if (!row) return;
+
+  const [ctaCell, mediaCell] = [...row.children];
+  if (!ctaCell && !mediaCell) return;
+
+  if (mediaCell) {
+    mediaCell.classList.add('media');
+    container.append(mediaCell);
+  }
+
+  if (ctaCell) {
+    decorateBlockText(ctaCell);
+    ctaCell.classList.add('cta-area');
+    container.append(ctaCell);
+  }
+
+  row.remove();
+  container.querySelector('.action-area')?.classList.add('dark');
+  container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
+}
+
 function decorate(block, root = block) {
+  if (root.classList.contains('video')) {
+    decorateVideoVariant(block);
+    return;
+  }
+
   const foreground = block.children[0];
   const content = foreground?.children[0];
   content?.classList.add('content');
