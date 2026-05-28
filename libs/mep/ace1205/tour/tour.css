@@ -22,15 +22,19 @@
 
 /* Close button override for tour modal — Figma 9506:107274 */
 .dialog-modal:has(.tour) button.dialog-close {
-  height: 48px;
-  width: 48px;
-  right: 16px;
-  top: 16px;
+  background: rgb(0 0 0 / 5%) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgb(0 0 0 / 10%) !important;
+  border-radius: var(--s2a-border-radius-sm) !important;
+  height: 48px !important;
+  width: 48px !important;
+  right: 16px !important;
+  top: 16px !important;
 }
 
 html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
-  left: 16px;
-  right: auto;
+  left: 16px !important;
+  right: auto !important;
 }
 
 .tour {
