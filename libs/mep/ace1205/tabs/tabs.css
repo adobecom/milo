@@ -1,4 +1,7 @@
 :root {
+  --tabs-base-alignment: flex-start;
+  --tabs-mobile-alignment: flex-start;
+
   /* Tab Colors */
   --tabs-active-text-color: #2c2c2c; /* keep for testing ace1205 */
   --tabs-active-bg-color: var(--s2a-color-gray-25);
@@ -22,6 +25,10 @@
   margin: 0;
   background-color: var(--tabs-active-bg-color);
   z-index: 1;
+}
+
+.tabs.background-transparent {
+  background: transparent;
 }
 
 .tabs .tabList {
@@ -61,7 +68,7 @@
 .tabs .tabs-wrapper {
   display: flex;
   width: 100%;
-  justify-content: center;
+  justify-content: var(--tabs-base-alignment);
 }
 
 /* contained tabs content */
@@ -171,7 +178,7 @@
     position: relative;
     left: 50%;
     transform: translateX(-50%);
-    justify-content: flex-start;
+    justify-content: var(--tabs-mobile-alignment);
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -186,9 +193,8 @@
 }
 
 @media screen and (min-width: 600px) {
-  .tabs.left .tabs-wrapper {
-    justify-content: flex-start;
-    width: 100vw;
+  .tabs.center .tabs-wrapper {
+    justify-content: center;
   }
   
   .tabs.right .tabs-wrapper {
