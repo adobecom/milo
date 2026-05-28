@@ -60,18 +60,6 @@
   object-fit: cover;
 }
 
-@media (width < 1280px) {
-  .hover-list-media {
-    background: transparent;
-    border: 0;
-    display: block;
-    inset: auto;
-    margin: 0;
-    padding: 0;
-    position: static;
-  }
-}
-
 @media (width >= 768px) {
   .hover-list {
     display: flex;
@@ -108,6 +96,18 @@
   }
 }
 
+@media (width < 1280px) {
+  .hover-list-media {
+    background: transparent;
+    border: 0;
+    display: block;
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    position: static;
+  }
+}
+
 @media (width >= 1280px) {
   .hover-list-item {
     block-size: 100px;
@@ -120,9 +120,6 @@
     min-inline-size: var(--s2a-spacing-40);
   }
 
-  /* Override UA popover defaults to make this a transparent full-viewport
-     stage. Display is left to the popover API: closed → display: none,
-     open → top layer + display: block. */
   .hover-list-media {
     background: transparent;
     block-size: 100vh;
@@ -134,7 +131,6 @@
     padding: 0;
     pointer-events: none;
     position: fixed;
-    z-index: 100;
   }
 
   .hover-list-media picture {
