@@ -193,7 +193,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   background: var(--mep-white-12);
 }
 
-.mep-drawer .mep-body .mep-tab-content {
+.mep-drawer .mep-tab-content {
   display: none;
   flex-direction: column;
   gap: 8px;
@@ -201,11 +201,11 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   padding: 8px;
 }
 
-.mep-drawer .mep-body .mep-tab-content[data-tab].active {
+.mep-drawer .mep-tab-content[data-tab].active {
   display: flex;
 }
 
-.mep-drawer .mep-body .mep-card {
+.mep-drawer .mep-card {
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -214,25 +214,17 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border: 1px solid var(--mep-white-12);
 }
 
-.mep-drawer .mep-body .mep-card h1 svg {
+.mep-drawer .mep-body h1 svg {
   fill: var(--mep-white-100);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.mep-drawer .mep-body .mep-card h1 svg:hover {
+.mep-drawer .mep-body h1 svg:hover {
   cursor: pointer;
   fill: var(--mep-white-60);
 }
 
-.mep-drawer .mep-body .mep-card.expanded h1 svg {
-  transform: rotate(-180deg);
-}
-
-.mep-drawer .mep-body .mep-card:not(.expanded) h1 svg {
-  transform: rotate(0);
-}
-
-.mep-drawer .mep-body .mep-card .mep-card-body {
+.mep-drawer .mep-body .mep-card-body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -243,6 +235,18 @@ body:has(#mep-drawer:popover-open) .mep-fab {
     height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mep-drawer .mep-body .mep-manifest-card select {
+  margin-top: 16px;
+}
+
+.mep-drawer .mep-body .mep-card.expanded h1 svg {
+  transform: rotate(-180deg);
+}
+
+.mep-drawer .mep-body .mep-card:not(.expanded) h1 svg {
+  transform: rotate(0);
 }
 
 .mep-drawer .mep-body .mep-card.expanded .mep-card-body {
@@ -257,7 +261,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   opacity: 0;
 }
 
-.mep-drawer .mep-body .mep-card h1 {
+.mep-drawer .mep-body h1 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -267,7 +271,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   letter-spacing: var(--mep-h1-letter-spacing);
 }
 
-.mep-drawer .mep-body .mep-card .mep-card-body .mep-row h2 {
+.mep-drawer .mep-body h2 {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -276,15 +280,15 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   letter-spacing: var(--mep-h2-letter-spacing);
 }
 
-.mep-drawer .mep-body .mep-card .mep-card-body .mep-row .mep-row-value {
+.mep-drawer .mep-body .mep-row-value {
   text-transform: capitalize;
   color: var(--mep-white-60);
   font: var(--mep-body-font);
   letter-spacing: var(--mep-body-letter-spacing);
 }
 
-.mep-drawer .mep-body .mep-card input:not([type="radio"]),
-.mep-drawer .mep-body .mep-card select {
+.mep-drawer .mep-body input:not([type="radio"]),
+.mep-drawer .mep-body select {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -298,50 +302,50 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   background: var(--mep-dark-22, #222);
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row {
+.mep-drawer .mep-radio-row {
   display: flex;
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row label {
+.mep-drawer .mep-radio-row label {
   display: flex;
   align-items: center;
   gap: 8px;
   font: var(--mep-radio-label-font);
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row label svg:nth-child(1) {
+.mep-drawer .mep-radio-row label svg:nth-child(1) {
   display: none;
   fill: var(--mep-primary-100);
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row label svg:nth-child(2) {
+.mep-drawer .mep-radio-row label svg:nth-child(2) {
   display: block;
   fill: var(--mep-white-12);
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"] {
+.mep-drawer .mep-radio-row input[type="radio"] {
   margin: 0;
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(1) {
+.mep-drawer .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(1) {
   display: block;
 }
 
-.mep-drawer .mep-body .mep-card .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(2) {
+.mep-drawer .mep-radio-row input[type="radio"]:checked ~ label svg:nth-child(2) {
   display: none;
 }
 
-.mep-drawer .mep-body .mep-card input[type="radio"] {
+.mep-drawer .mep-body input[type="radio"] {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
 
-.mep-drawer .mep-body .mep-card input[type="radio"]:checked {
+.mep-drawer .mep-body input[type="radio"]:checked {
   border-color: var(--mep-primary-100);
 }
 
-.mep-drawer .mep-body .mep-card select {
+.mep-drawer .mep-body select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -351,12 +355,12 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   padding-right: 32px;
 }
 
-.mep-drawer select option:hover {
+.mep-drawer .mep-body select option:hover {
   color: var(--mep-white-100);
   box-shadow: 0 0 10px 100px var(--mep-primary-80) inset;
 }
 
-.mep-drawer .mep-body .mep-card input:focus {
+.mep-drawer .mep-body input:focus {
   border-color: var(--mep-white-100);
 }
 
@@ -381,44 +385,32 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border: 2px solid var(--mep-primary-60);
 }
 
-.mep-drawer .mep-body .mep-spoof-geo-options {
-  display: flex;
-  gap: 16px;
-}
-
-.mep-drawer .mep-body .mep-spoof-geo-option {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-}
-
-.mep-drawer .mep-body .mep-spoof-geo-option label {
+.mep-drawer .mep-spoof-geo-option label {
   cursor: pointer;
   font: var(--mep-body-font);
 }
 
-.mep-drawer .mep-body .mep-card .mep-toggle-row {
+.mep-drawer .mep-toggle-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
 }
 
-.mep-drawer .mep-body .mep-card .mep-toggle-row h2 {
+.mep-drawer h2 {
   margin: 0;
   font: var(--mep-h2-font);
   letter-spacing: var(--mep-h2-letter-spacing);
 }
 
-.mep-drawer .mep-body .mep-card .mep-toggle-row .mep-row-value {
+.mep-drawer .mep-row-value {
   margin: 0;
   color: var(--mep-white-60);
   font: var(--mep-body-font);
   letter-spacing: var(--mep-body-letter-spacing);
 }
 
-.mep-switch {
+.mep-drawer .mep-switch {
   position: relative;
   display: inline-block;
   width: 52px;
@@ -427,14 +419,14 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   cursor: pointer;
 }
 
-.mep-switch input {
+.mep-drawer .mep-switch input {
   position: absolute;
   opacity: 0;
   width: 0;
   height: 0;
 }
 
-.mep-switch-track {
+.mep-drawer .mep-switch-track {
   position: absolute;
   inset: 0;
   border-radius: 100px;
@@ -442,7 +434,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   transition: background 0.2s ease;
 }
 
-.mep-switch-track::after {
+.mep-drawer .mep-switch-track::after {
   content: '';
   position: absolute;
   top: 4px;
@@ -454,17 +446,23 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   transition: transform 0.2s ease;
 }
 
-.mep-switch input:checked + .mep-switch-track {
+.mep-drawer .mep-switch input:checked + .mep-switch-track {
   background: var(--mep-primary-100);
 }
 
-.mep-switch input:checked + .mep-switch-track::after {
+.mep-drawer .mep-switch input:checked + .mep-switch-track::after {
   transform: translateX(20px);
 }
 
-.mep-drawer .mep-body .mep-card .mep-overline {
+.mep-drawer .mep-overline {
   text-transform: uppercase;
+  font-weight: 400;
   color: var(--mep-white-60);
   font: var(--mep-overline-font);
   letter-spacing: var(--mep-overline-letter-spacing);
+}
+
+.mep-drawer .mep-manifest-link {
+  display: inline-flex;
+  gap: 4px;
 }
