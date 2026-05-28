@@ -197,5 +197,6 @@ function decorate(block) {
 }
 
 export default function init(el) {
+  el.classList.add('container');
   decorateViewportContent(el, decorate);
 }
