@@ -98,7 +98,7 @@ function buildManifestCard(manifest, svgData) {
   });
 
   const card = createTag('div', { class: 'mep-card mep-manifest-card expanded' });
-  card.append(header, createTag('div', { class: 'mep-card-body' }, [...rows, select]));
+  card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
   return card;
 }
 
