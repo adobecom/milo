@@ -1,0 +1,1282 @@
+/** main classes */
+:root {
+  --hub-hero-height: 4200px;
+  --hub-hero-header-height: 375px;
+  --max-image-size: 388px;
+  --min-image-size: 164px;
+  --grid-img-width: 20vw;
+  --paralax-cubic: cubic-bezier(0.42, 0, 0, 1);
+  --paralax-easing: linear;
+  --hub-hero-carousel-container-height-desktop: 716px;
+  --hub-hero-carousel-container-height-tablet: 555px;
+  --hub-hero-carousel-item-max-width: 392px;
+  --hub-hero-carousel-item-min-width: 292px;
+  --hub-hero-carousel-item-hover-grow-index: 1.75;
+  --header-animation-range: contain 30% contain 45%;
+  --slide-animation-range: contain 0% contain 100%;
+  --grid-col-rise-animation-range: contain 0% contain 100%;
+  --grid-gap-animation-range: contain 0% contain 40%;
+  --carousel-items-top: 30%;
+  --carousel-item-media-height: 394px;
+  --slides: 4;
+  --start-gap: 6rem;
+  --end-gap: .5rem;
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
+
+  --grid-col-one-offset: -132px;
+  --grid-col-two-offset: 36px;
+  --grid-col-three-offset: 146px;
+  --grid-col-four-offset: 36px;
+  --grid-col-five-offset: -132px;
+}
+
+html[dir="rtl"] {
+  .hub-hero-carousel {
+    & .hub-hero-carousel-container {
+      & .hub-hero-carousel-item {
+        & .hub-hero-carousel-item-footer {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+        }
+
+        & .hub-hero-carousel-item-header {
+          &:after {
+            transform: rotate(180deg);
+            left: 0;
+            right: unset;
+          }
+
+          .eyebrow {
+            font-size: var(--s2a-font-size-md);
+            font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          }
+        }
+      }
+    }
+  }
+}
+
+.hub-hero {
+  max-width: 1920px;
+  height: var(--hub-hero-height);
+  margin-inline: auto;
+  view-timeline-name: --hub-hero;
+  view-timeline-axis: block;
+}
+
+.hub-hero-header {
+  --hub-hero-top-spacing: 7.75rem;
+  padding-top: var(--hub-hero-top-spacing);
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  animation: hubHeroHeaderFade var(--paralax-easing) both;
+  animation-timeline: --hub-hero;
+  animation-range: contain 0% contain 15%;
+  height: var(--hub-hero-header-height);
+
+  div {
+    position: absolute;
+    inset: 0;
+    top: var(--hub-hero-top-spacing);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--s2a-spacing-lg);
+
+    .eyebrow {
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      font-size: var(--s2a-typography-font-size-eyebrow);
+    }
+
+    p {
+      margin-bottom: 0;
+      max-width: 574px;
+    }
+
+    h1 {
+      color: var(--S2AC-Palette-static-black, black);
+      font-size: var(--s2a-typography-font-size-heading-1);
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+      line-height: var(--s2a-font-line-height-76);
+      word-wrap: break-word;
+    }
+  }
+
+  .action-area .con-button {
+    background-color: black;
+    color: white;
+    padding: var(--s2a-spacing-lg) 64px var(--s2a-spacing-lg) 54px;
+    border-radius: 12px;
+    font-size: var(--s2a-typography-font-size-eyebrow);
+    line-height: var(--s2a-typography-line-height-eyebrow);
+    position: relative;
+    cursor: pointer;
+    border: 0;
+
+    &::before {
+      content: "";
+      background-image: url('https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg');
+      position: absolute;
+      left: 12px;
+      height: 32px;
+      width: 32px;
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    &::after {
+      content: "";
+      background-image: url(../../assets/img/arrow-bottom.svg);
+      position: absolute;
+      padding: var(--s2a-spacing-xs);
+      height: 14px;
+      width: 14px;
+      right: 12px;
+      border-radius: 6px;
+      background-size: 42%;
+      background-repeat: no-repeat;
+      border: 1px solid var(--s2a-color-transparent-white-12);
+      background-color: var(--s2a-color-transparent-white-16);
+      background-position: center;
+    }
+  }
+}
+
+.hub-hero-image-grid-container {
+  display: flex;
+  flex-direction: row;
+  z-index: 1;
+  justify-content: center;
+  animation: hubHeroGridGapShrink var(--paralax-easing) both;
+  animation-timeline: --hub-hero;
+  animation-range: var(--grid-gap-animation-range);
+
+  .hub-hero-image-grid-container-col {
+    display: flex;
+    flex-direction: column;
+
+    &:nth-child(1) {
+      animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol1 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+      animation-timeline: --hub-hero, --hub-hero, view();
+      animation-range: var(--grid-gap-animation-range),
+        var(--grid-col-rise-animation-range),
+        entry 0% exit 100%;
+    }
+
+    &:nth-child(2) {
+      animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol2 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+      animation-timeline: --hub-hero, --hub-hero, view();
+      animation-range: var(--grid-gap-animation-range),
+        var(--grid-col-rise-animation-range),
+        entry 0% exit 100%;
+    }
+
+    &:nth-child(3) {
+      animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol3 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+      animation-timeline: --hub-hero, --hub-hero, view();
+      animation-range: var(--grid-gap-animation-range),
+        var(--grid-col-rise-animation-range),
+        entry 0% exit 100%;
+    }
+
+    &:nth-child(4) {
+      animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol4 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+      animation-timeline: --hub-hero, --hub-hero, view();
+      animation-range: var(--grid-gap-animation-range),
+        var(--grid-col-rise-animation-range),
+        entry 0% exit 100%;
+    }
+
+    &:nth-child(5) {
+      animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol5 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+      animation-timeline: --hub-hero, --hub-hero, view();
+      animation-range: var(--grid-gap-animation-range),
+        var(--grid-col-rise-animation-range),
+        entry 0% exit 100%;
+    }
+
+    div {
+      border-radius: var(--s2a-border-radius-sm);
+      overflow: hidden;
+    }
+
+    img {
+      max-width: var(--max-image-size);
+      min-width: var(--min-image-size);
+      width: var(--grid-img-width);
+    }
+  }
+}
+
+.hub-hero-carousel-header {
+  position: absolute;
+  top: -14%;
+  width: 100%;
+  text-align: center;
+  font-size: var(--s2a-typography-font-size-title-2);
+  animation: hubHeroCarouselHeaderFade var(--paralax-easing) both, hubHeroCarouselHeaderFloat var(--paralax-easing) both;
+  animation-timeline: --hub-hero;
+  animation-range: var(--header-animation-range);
+}
+
+.hub-hero-carousel-header>div {
+  display: flex;
+  flex-direction: column;
+  animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
+  animation-timeline: --hub-hero;
+  animation-range: var(--header-animation-range);
+}
+
+.hub-hero-carousel {
+  height: var(--hub-hero-carousel-container-height-desktop);
+  position: sticky;
+  top: var(--carousel-items-top);
+  overflow: visible;
+  margin: auto;
+  left: 0;
+  right: 0;
+  z-index: 1;
+
+  .hub-hero-carousel-container {
+    display: flex;
+    position: absolute;
+    justify-content: center;
+    left: 50%;
+    transform: translateX(-50%);
+
+    .hub-hero-carousel-item {
+      display: flex;
+      pointer-events: none;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+      width: var(--grid-img-width);
+      max-width: var(--max-image-size);
+      min-width: var(--min-image-size);
+      background-color: var(--s2a-color-gray-75);
+      border-radius: var(--s2a-border-radius-md);
+      cursor: pointer;
+      transition: background-color .2s var(--paralax-cubic);
+      contain: layout;
+
+      .hub-hero-carousel-item-header p {
+        font-size: var(--s2a-font-size-lg);
+        font-weight: var(--s2a-font-weight-adobe-clean-black);
+        color: var(--s2a-color-gray-1000);
+        margin: 0;
+        transition: color .1s var(--paralax-cubic);
+        line-height: var(--s2a-font-line-height-18);
+        display: -webkit-box;
+        overflow: hidden;
+      }
+
+      .hub-hero-carousel-item-media {
+        text-align: center;
+        overflow: hidden;
+        max-height: var(--carousel-item-media-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--s2a-border-radius-md);
+
+        img {
+          transition: transform 0.3s var(--paralax-cubic);
+          object-fit: cover;
+          display: block;
+        }
+      }
+
+      .hub-hero-carousel-item-footer {
+        display: flex;
+        flex-direction: column;
+        font-size: var(--s2a-font-size-md);
+        font-weight: var(--s2a-font-weight-adobe-clean-bold);
+        line-height: var(--s2a-typography-line-height-eyebrow);
+        --icon-size: 24px;
+
+        &::after {
+          content: "+";
+          position: absolute;
+          padding: var(--s2a-spacing-xs);
+          height: var(--icon-size);
+          width: var(--icon-size);
+          right: var(--s2a-spacing-lg);
+          bottom: calc(var(--s2a-spacing-xl) - var(--icon-size)/2);
+          color: white;
+          border-radius: 6px;
+          background-repeat: no-repeat;
+          border: 1px solid var(--s2a-color-transparent-white-12);
+          background-color: var(--s2a-color-transparent-white-16);
+          opacity: 0;
+          font-size: var(--s2a-font-size-2xl);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        :is(h1, h2, h3, h4, h5, h6) {
+          /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
+          font-family: var(--body-font-family);
+          font-size: var(--s2a-typography-font-size-eyebrow);
+          font-weight: var(--s2a-font-weight-adobe-clean-bold);
+          line-height: var(--s2a-typography-line-height-eyebrow);
+          letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+          margin: 0;
+          padding: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
+          transition: color .1s var(--paralax-cubic);
+          display: -webkit-box;
+          line-clamp: 1;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 1;
+          overflow: hidden;
+        }
+
+        p {
+          opacity: .6;
+          margin: 0;
+          transition: color .1s var(--paralax-cubic);
+          display: -webkit-box;
+          line-clamp: 2;
+          box-orient: vertical;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          overflow: hidden;
+        }
+      }
+    }
+  }
+}
+
+
+/** custom media rule 1 */
+@media (768px <=width < 1495px) {
+  .hub-hero-carousel {
+    .hub-hero-carousel-container {
+      transition: transform .3s var(--paralax-cubic);
+
+      &.stick-left {
+        transform: translateX(-48%);
+        left: 50%;
+      }
+
+      &.stick-right {
+        transform: translateX(calc(100vw - 100% - var(--s2a-spacing-sm))) !important;
+      }
+
+      .hub-hero-carousel-item {
+        width: calc(100vw / calc(var(--slides) - 1.5));
+      }
+
+      .hub-hero-carousel-item.hovered,
+      .hub-hero-carousel-item:focus-visible {
+        max-width: 33vw !important;
+      }
+    }
+  }
+}
+
+/** custom media rule - 3 */
+@media (width >=1940px) {
+  :root {
+    --grid-img-width: var(--max-image-size);
+  }
+}
+
+/** desktop only */
+@media (1280px <=width) {
+  :root {
+    --hub-hero-carousel-item-max-width: 20vw;
+  }
+
+  .hub-hero-carousel-container {
+    max-height: var(--hub-hero-carousel-container-height-desktop);
+
+    .hub-hero-carousel-item {
+      width: calc(100vw/calc(var(--slides) - 1));
+    }
+  }
+}
+
+/** tablet only */
+@media (768px <=width < 1280px) {
+  :root {
+    --hub-hero-header-height: 320px;
+    --start-gap: 2.75rem;
+    --grid-col-one-offset: 74px;
+    --grid-col-two-offset: 166px;
+    --grid-col-three-offset: 222px;
+    --grid-col-four-offset: 166px;
+    --grid-col-five-offset: 74px;
+  }
+
+  .hub-hero-carousel {
+    height: var(--hub-hero-carousel-container-height-tablet);
+
+    .hub-hero-carousel-container {
+      max-height: var(--hub-hero-carousel-container-height-tablet);
+    }
+  }
+}
+
+/** tablet up */
+@media (width >=768px) {
+
+  .hub-hero-carousel {
+    padding: 2px 0;
+
+    &.disable-hover {
+      pointer-events: none;
+    }
+
+
+    .hub-hero-carousel-container {
+      animation: carouselGapShrink var(--paralax-easing) both;
+      animation-timeline: --hub-hero;
+      animation-range: var(--grid-gap-animation-range);
+
+      .hub-hero-carousel-item-container {
+        position: relative;
+      }
+
+      .hub-hero-carousel-item {
+        transition: max-width .3s var(--paralax-cubic), width .3s var(--paralax-cubic), background-color .3s var(--paralax-cubic);
+
+        &.hovered,
+        &:focus-visible {
+          will-change: max-width, width;
+          background-color: var(--s2a-color-gray-1000);
+          max-width: 555px !important;
+          width: calc((100vw/calc(var(--slides))) * var(--hub-hero-carousel-item-hover-grow-index)) !important;
+
+          .hub-hero-carousel-item-media {
+
+            img {
+              transform: scale(1.2);
+            }
+          }
+
+          .hub-hero-carousel-item-footer p,
+          .hub-hero-carousel-item-header p {
+            color: var(--s2a-color-gray-25);
+          }
+
+          .hub-hero-carousel-item-footer {
+
+            h1,
+            h2,
+            h3,
+            h4,
+            h5,
+            h6 {
+              color: var(--s2a-color-gray-25);
+            }
+
+            h2 {
+              max-width: 80%;
+            }
+          }
+
+          .hub-hero-carousel-item-footer:after {
+            opacity: 1;
+          }
+        }
+
+        &:nth-child(1) {
+          animation: carouselSlideOffset1 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+          animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+          animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
+          animation-fill-mode: forwards, none, forwards;
+        }
+
+        &:nth-child(2) {
+          animation: carouselSlideOffset2 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+          animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+          animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
+          animation-fill-mode: forwards, none, forwards;
+        }
+
+        &:nth-child(3) {
+          z-index: -1;
+          visibility: hidden;
+          min-width: 0;
+          animation: carouselSlide3Transition var(--paralax-easing) forwards;
+          animation-timeline: --hub-hero;
+          animation-range: contain 0% contain 40%;
+        }
+
+        &:nth-child(4) {
+          animation: carouselSlideOffset4 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+          animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+          animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
+          animation-fill-mode: forwards, none, forwards;
+        }
+
+        &:nth-child(5) {
+          animation: carouselSlideOffset5 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+          animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+          animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
+          animation-fill-mode: forwards, none, forwards;
+        }
+
+        .hub-hero-carousel-item-footer,
+        .hub-hero-carousel-item-header {
+          position: absolute;
+          left: 0;
+          right: 0;
+        }
+
+        .hub-hero-carousel-item-footer {
+          bottom: 0;
+          transform: translateY(100%);
+
+        }
+
+        .hub-hero-carousel-item-header {
+          display: flex;
+          flex-direction: row;
+          padding: var(--s2a-spacing-lg);
+          gap: var(--s2a-spacing-md);
+          align-items: center;
+          line-height: var(--s2a-typography-line-height-eyebrow);
+          top: 0;
+          transform: translateY(-100%);
+        }
+      }
+    }
+  }
+}
+
+/* mobile only */
+@media (width < 768px) {
+  :root {
+    --hub-hero-header-height: 280px;
+    --start-gap: 2.5rem;
+    --carousel-item-media-height: 300px;
+    --grid-gap-animation-range: 15% 100%;
+    --grid-col-one-offset: -60px;
+    --grid-col-two-offset: 18px;
+    --grid-col-three-offset: 74px;
+    --grid-col-four-offset: 18px;
+    --grid-col-five-offset: -60px;
+    --hub-hero-carousel-width-mobile: 60vh;
+    --header-animation-range: contain 30% contain 35%;
+    --hub-hero-grip-col-float-mobile: 320%;
+  }
+
+  .hub-hero-carousel-header {
+    position: sticky;
+    top: 18%;
+    height: 0;
+    overflow: visible;
+
+    animation: hubHeroCarouselHeaderFade var(--paralax-easing) both, hubHeroCarouselHeaderFloat var(--paralax-easing) both, hubHeroCarouselHeaderMobileLeave var(--paralax-easing) both;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--header-animation-range), var(--header-animation-range), 90% 100%;
+  }
+
+  .hub-hero-image-grid-container {
+    display: flex;
+    flex-direction: row;
+    z-index: 1;
+    justify-content: center;
+    gap: 2.5rem;
+    animation-timeline: --hub-hero;
+    animation-range: var(--grid-gap-animation-range);
+
+    .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
+      visibility: hidden;
+
+      animation: hubHeroGridCarouselSlideHover var(--paralax-easing) both;
+      animation-timeline: --hub-hero;
+      animation-range: entry 100% exit -260%;
+
+      img {
+        width: 100%;
+        object-fit: none;
+      }
+    }
+
+    div {
+      text-align: center;
+    }
+
+    .hub-hero-image-grid-container-col {
+      &:nth-child(1) {
+        animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol1Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+        animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+        animation-range: var(--grid-gap-animation-range),
+          var(--grid-col-rise-animation-range),
+          var(--grid-gap-animation-range);
+      }
+
+      &:nth-child(2) {
+        animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol2Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+        animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+        animation-range: var(--grid-gap-animation-range),
+          var(--grid-col-rise-animation-range),
+          var(--grid-gap-animation-range);
+      }
+
+      &:nth-child(3) {
+        animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol3Mobile var(--paralax-easing) both;
+        animation-timeline: --hub-hero, --hub-hero;
+        animation-range: var(--grid-gap-animation-range),
+          var(--grid-col-rise-animation-range),
+          var(--grid-gap-animation-range);
+
+        div:nth-child(1) {
+          animation: hubHeroGridMobileFadeOut var(--paralax-easing) both;
+          animation-timeline: --hub-hero;
+          animation-range: var(--grid-gap-animation-range);
+        }
+      }
+
+      &:nth-child(4) {
+        animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol4Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+        animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+        animation-range: var(--grid-gap-animation-range),
+          var(--grid-col-rise-animation-range),
+          var(--grid-gap-animation-range);
+      }
+
+      &:nth-child(5) {
+        animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol5Mobile var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+        animation-timeline: --hub-hero, --hub-hero, view();
+        animation-range: var(--grid-gap-animation-range),
+          var(--grid-col-rise-animation-range),
+          var(--grid-gap-animation-range);
+      }
+    }
+  }
+
+  .hub-hero-carousel {
+    --offset-adjuster: 50px;
+    --offset-scale: .85;
+    --last-offset: 1.75rem;
+    --offset-variance-index: -2px;
+    --carousel-items-top: 36%;
+    --slide-one-header-footer-reveal: 36% 38%;
+    --slide-header-h: 55px;
+    --slide-footer-h: 84px;
+
+    position: relative;
+    /* override sticky from base styles — let translateY animation control visual position */
+    top: unset;
+    height: auto;
+    overflow: visible;
+    padding-bottom: calc(var(--last-offset) * var(--offset-scale));
+    width: 100%;
+    margin: 0;
+
+    .hub-hero-carousel-container {
+      top: 0%;
+      height: 100%;
+      position: relative;
+      transform: unset;
+      left: unset;
+      flex-direction: column;
+      display: grid;
+      gap: 20vh;
+
+      margin: auto;
+      max-width: var(--grid-img-width);
+      min-width: unset;
+      width: var(--grid-img-width);
+
+      animation: carouselMobileContainerExpand var(--paralax-easing) forwards;
+      animation-timeline: --hub-hero;
+      animation-range: 15% 65%;
+
+      .hub-hero-carousel-item {
+        position: sticky;
+        overflow: visible;
+        top: var(--carousel-items-top);
+        width: 100%;
+        max-width: 100%;
+        color: var(--s2a-color-gray-25);
+        background: transparent;
+        pointer-events: all;
+
+        animation: elasticMobileStackSlides var(--paralax-easing) both;
+        animation-timeline: view();
+        animation-range: entry 0% exit 100%;
+
+        &:nth-child(1) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
+          --stack-contrast: 0;
+          --stack-shrink: 4rem;
+          z-index: 1;
+          animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+
+          .hub-hero-carousel-item-container {
+            .hub-hero-carousel-item-header {
+              top: 0;
+              animation: slideOneHeaderReveal var(--paralax-easing) forwards;
+              animation-timeline: --hub-hero;
+              animation-range: var(--slide-one-header-footer-reveal);
+            }
+
+            .hub-hero-carousel-item-footer {
+              bottom: 0;
+              animation: slideOneFooterReveal var(--paralax-easing) forwards;
+              animation-timeline: --hub-hero;
+              animation-range: var(--slide-one-header-footer-reveal);
+            }
+          }
+
+        }
+
+        &:nth-child(2) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
+          z-index: 2;
+          --stack-contrast: .25;
+          --stack-shrink: 3rem;
+          margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 500px);
+          /* dwell gap after slide 1 locks */
+        }
+
+        /* middle (3rd) slide is reduced to 0 */
+
+        &:nth-child(4) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
+          z-index: 3;
+          --stack-contrast: .5;
+          --stack-shrink: 2rem;
+          margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
+        }
+
+        &:nth-child(5) {
+          --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1) - var(--offset-variance-index) * 1);
+          z-index: 4;
+          --stack-contrast: .75;
+          --stack-shrink: 1rem;
+          margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
+        }
+
+        &:last-child {
+          height: auto;
+        }
+
+        .hub-hero-carousel-item-container {
+          position: relative;
+          background-color: var(--s2a-color-gray-1000);
+          border-radius: var(--s2a-border-radius-md);
+          animation: elasticItemsShrink var(--paralax-easing) both;
+          animation-timeline: --hub-hero;
+          animation-range: entry 50% exit 100%;
+          overflow-x: clip;
+
+          .hub-hero-carousel-item-footer::after {
+            opacity: 1;
+          }
+
+          .hub-hero-carousel-item-footer,
+          .hub-hero-carousel-item-header {
+            position: absolute;
+          }
+
+          .hub-hero-carousel-item-header {
+            top: calc(var(--slide-header-h)*-1);
+            height: var(--slide-header-h);
+            background-color: black;
+            z-index: -1;
+            padding-bottom: var(--s2a-spacing-md);
+            border-top-right-radius: var(--s2a-border-radius-md);
+            border-top-left-radius: var(--s2a-border-radius-md);
+            width: 100%;
+
+            p {
+              color: var(--s2a-color-gray-25);
+              padding: var(--s2a-spacing-md);
+            }
+          }
+
+          .hub-hero-carousel-item-media {
+            video {
+              border-radius: var(--s2a-border-radius-0);
+              width: 100%;
+            }
+          }
+
+          .hub-hero-carousel-item-footer {
+            height: var(--slide-footer-h);
+            background-color: black;
+            padding-top: var(--s2a-spacing-md);
+            z-index: -1;
+            bottom: calc(var(--slide-footer-h) * -1);
+            border-bottom-left-radius: var(--s2a-border-radius-md);
+            border-bottom-right-radius: var(--s2a-border-radius-md);
+            width: 100%;
+          }
+
+        }
+      }
+    }
+  }
+}
+
+
+/** animations */
+
+@keyframes hubHeroGridGapExpand {
+  0% {
+    gap: var(--start-gap);
+  }
+
+  50% {
+    gap: calc(var(--start-gap) * 4);
+  }
+
+  100% {
+    gap: calc(var(--start-gap) * 4);
+  }
+}
+
+@keyframes hubHeroGridCarouselSlideHover {
+  0% {
+    width: var(--min-image-size);
+    transform: translateY(0%);
+  }
+
+  100% {
+    width: var(--hub-hero-carousel-width-mobile);
+    transform: translateY(-80px);
+  }
+}
+
+@keyframes carouselMobileContainerExpand {
+  0% {
+    width: var(--grid-img-width);
+    max-width: var(--grid-img-width);
+  }
+
+  50% {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  100% {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@keyframes carouselGapShrink {
+  0% {
+    gap: var(--start-gap);
+  }
+
+  100% {
+    gap: var(--end-gap);
+  }
+}
+
+@keyframes slideOneHeaderReveal {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-55px);
+  }
+}
+
+@keyframes slideOneFooterReveal {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(84px);
+  }
+}
+
+@keyframes elasticMobileStackSlidesIgnoreOpactity {
+  0% {
+    transform: translateY(-160px);
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  15% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+    opacity: .2;
+  }
+}
+
+
+@keyframes elasticMobileStackSlides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    filter: contrast(1);
+    opacity: 0;
+  }
+
+  3% {
+    opacity: 1;
+  }
+
+  25% {
+    filter: contrast(1);
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    filter: contrast(var(--stack-contrast));
+
+  }
+}
+
+@keyframes carouselSlideOffset1 {
+  0% {
+    transform: translate(0px, var(--grid-col-one-offset));
+  }
+
+  30% {
+    transform: translate(0px, 20%);
+  }
+
+  40% {
+    transform: translate(0px, 0%);
+  }
+}
+
+@keyframes carouselSlideOffset2 {
+  0% {
+    transform: translate(0px, var(--grid-col-two-offset));
+  }
+
+  30% {
+    transform: translate(0px, 0%);
+  }
+
+}
+
+@keyframes carouselSlide3Transition {
+  0% {
+    max-width: var(--grid-img-width);
+  }
+
+  75% {
+    max-width: var(--grid-img-width);
+    margin-inline: calc(var(--end-gap)/2 * -1);
+  }
+
+  100% {
+    max-width: 0%;
+    min-width: 0%;
+    margin-inline: calc(var(--end-gap)/2 * -1);
+  }
+}
+
+@keyframes carouselSlideOffset4 {
+  0% {
+    transform: translate(0px, var(--grid-col-four-offset));
+  }
+
+  45% {
+    transform: translate(0px, 0%);
+  }
+}
+
+@keyframes carouselSlideOffset5 {
+  0% {
+    transform: translate(0px, var(--grid-col-five-offset));
+  }
+
+  30% {
+    transform: translate(0px, 20%);
+  }
+
+  40% {
+    transform: translate(0px, 0%);
+  }
+}
+
+@keyframes elasticItemsShrink {
+  0% {
+    margin: 0
+  }
+
+  20% {
+    margin: 0
+  }
+
+  100% {
+    margin: 0 var(--stack-shrink);
+  }
+}
+
+@keyframes hubHeroCarouselHeaderMobileLeave {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(0, -100%);
+  }
+}
+
+@keyframes hubHeroCarouselHeaderFloat {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  10% {
+    transform: translate(0, 0);
+  }
+
+  100% {
+    transform: translate(0, -30%);
+  }
+}
+
+@keyframes hubHeroCarouselHeaderShrink {
+  0% {
+    gap: 4rem;
+  }
+
+  100% {
+    gap: 0rem;
+  }
+}
+
+@keyframes hubHeroCarouselHeaderFade {
+  0% {
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes hubHeroHeaderFade {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: .4;
+    transform: translateY(-10%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-15%);
+  }
+}
+
+@keyframes hubHeroGridGapShrink {
+  0% {
+    gap: var(--start-gap);
+  }
+
+  100% {
+    gap: var(--end-gap);
+  }
+}
+
+@keyframes hubHeroGridColFadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  70% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroGridMobileFadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes hubHeroGridCol1Mobile {
+  0% {
+    transform: translate(0, var(--grid-col-one-offset));
+  }
+
+  100% {
+    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+@keyframes hubHeroGridCol2Mobile {
+  0% {
+    transform: translate(0, var(--grid-col-two-offset));
+  }
+
+
+  100% {
+    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+@keyframes hubHeroGridCol3Mobile {
+  0% {
+    transform: translate(0, var(--grid-col-three-offset));
+  }
+
+  100% {
+    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+@keyframes hubHeroGridCol4Mobile {
+  0% {
+    transform: translate(0, var(--grid-col-four-offset));
+  }
+
+  100% {
+    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+@keyframes hubHeroGridCol5Mobile {
+  0% {
+    transform: translate(0, var(--grid-col-five-offset));
+  }
+
+  100% {
+    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
+  }
+}
+
+@keyframes hubHeroGridCol1 {
+  0% {
+    transform: translate(0, var(--grid-col-one-offset));
+  }
+
+  100% {
+    transform: translate(0, 0%);
+  }
+}
+
+@keyframes hubHeroGridCol2 {
+  0% {
+    transform: translate(0, var(--grid-col-two-offset));
+  }
+
+  100% {
+    transform: translate(0, -5%);
+  }
+}
+
+@keyframes hubHeroGridCol3 {
+  0% {
+    transform: translate(0, var(--grid-col-three-offset));
+  }
+
+  100% {
+    transform: translate(0, -200%);
+  }
+}
+
+@keyframes hubHeroGridCol4 {
+  0% {
+    transform: translate(0, var(--grid-col-four-offset));
+  }
+
+  100% {
+    transform: translate(0, -40%);
+  }
+}
+
+@keyframes hubHeroGridCol5 {
+  0% {
+    transform: translate(0, var(--grid-col-five-offset));
+  }
+
+  100% {
+    transform: translate(0, 60%);
+  }
+}
+
+@keyframes carouselSlideExpandSize {
+  0% {
+    max-width: var(--grid-img-width);
+  }
+
+  70% {
+    max-width: var(--grid-img-width);
+  }
+
+  100% {
+    max-width: var(--max-image-size);
+  }
+}
+
+@keyframes carouselSlideExpandLayout {
+  0% {
+    padding: 0 0;
+    pointer-events: none;
+  }
+
+  10% {
+    padding: 0 0;
+    pointer-events: none;
+  }
+
+  50% {
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    pointer-events: none;
+  }
+
+  51% {
+    pointer-events: all;
+  }
+
+  60% {
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    pointer-events: all;
+  }
+
+  100% {
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    pointer-events: all;
+  }
+}
