@@ -177,7 +177,7 @@ function decorate(block) {
     const [textCol, mediaCol] = row.children;
     const item = createTag('li', { class: 'hover-list-item' });
     const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1));
-    const text = createTag('div', { class: 'hover-list-text heading-4' });
+    const text = createTag('div', { class: 'hover-list-text heading-5' });
     if (textCol) text.append(...textCol.childNodes);
     item.append(number, text);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
