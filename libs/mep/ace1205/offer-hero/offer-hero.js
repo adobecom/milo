@@ -205,11 +205,20 @@ function initAnimation(block) {
         });
       }, { threshold: 0.7 });
       medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
+      cardTexts.forEach((textEl, i) => {
+        textEl.style.transition = `opacity 0.5s ease-in ${i * 50}ms`;
+        textEl.style.opacity = '1';
+      });
       return;
     }
     videoObserver?.disconnect();
     videoObserver = null;
     needsReset = true;
+    cardTexts.forEach((textEl) => {
+      textEl.style.transitionDelay = '';
+      textEl.style.transition = 'opacity 0.5s ease-out';
+      textEl.style.opacity = '0';
+    });
   }
 
   function getProgress() {
@@ -243,11 +252,6 @@ function initAnimation(block) {
       tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
       if (!CARD_SHADOWS[i]) return;
       tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
-    });
-
-    cardTexts.forEach((textEl, i) => {
-      const textProgress = clamp01((progress - (0.6 + i * 0.025)) / 0.2);
-      textEl.style.opacity = String(1 - (1 - textProgress) * (1 - textProgress));
     });
 
     const animating = progress > 0.001 && progress < 0.999;
@@ -309,10 +313,9 @@ function initAnimation(block) {
         if (!fade) return;
         fade.style.transition = 'none';
         fade.style.opacity = '1';
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          fade.style.transition = 'opacity 0.5s ease-in';
-          fade.style.opacity = '0';
-        }));
+        fade.getBoundingClientRect();
+        fade.style.transition = 'opacity 1s ease-in';
+        fade.style.opacity = '0';
       });
     }
 
