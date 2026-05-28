@@ -85,9 +85,6 @@ html[dir="rtl"] {
 
     h1 {
       color: var(--S2AC-Palette-static-black, black);
-      font-size: var(--s2a-typography-font-size-heading-1);
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      line-height: var(--s2a-font-line-height-76);
       word-wrap: break-word;
     }
   }
@@ -200,7 +197,7 @@ html[dir="rtl"] {
 
 .hub-hero-carousel-header {
   position: absolute;
-  top: -14%;
+  top: -18%;
   width: 100%;
   text-align: center;
   font-size: var(--s2a-typography-font-size-title-2);
@@ -257,9 +254,6 @@ html[dir="rtl"] {
         color: var(--s2a-color-gray-1000);
         margin: 0;
         transition: color .1s var(--paralax-cubic);
-        line-height: var(--s2a-font-line-height-18);
-        display: -webkit-box;
-        overflow: hidden;
       }
 
       .hub-hero-carousel-item-media {
@@ -413,6 +407,9 @@ html[dir="rtl"] {
 /** tablet up */
 @media (width >=768px) {
 
+  .hub-hero-image-grid-container-col:nth-child(2) div:nth-child(3) { display: none;}
+  .hub-hero-image-grid-container-col:nth-child(4) div:nth-child(3) { display: none;}
+
   .hub-hero-carousel {
     padding: 2px 0;
 
@@ -541,7 +538,7 @@ html[dir="rtl"] {
 /* mobile only */
 @media (width < 768px) {
   .hub-hero {
-    --hub-hero-height: 4460px;
+    --hub-hero-height: 4545px;
     --hub-hero-header-height: 332px;
     --start-gap: 2.5rem;
     --carousel-item-media-height: 300px;
@@ -552,13 +549,13 @@ html[dir="rtl"] {
     --grid-col-four-offset: 18px;
     --grid-col-five-offset: -60px;
     --hub-hero-carousel-width-mobile: 60vh;
-    --header-animation-range: contain 30% contain 35%;
+    --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: 320%;
   }
 
   .hub-hero-carousel-header {
     position: sticky;
-    top: 18%;
+    top: 20%;
     height: 0;
     overflow: visible;
 
@@ -647,7 +644,7 @@ html[dir="rtl"] {
     --last-offset: 1.75rem;
     --offset-variance-index: -2px;
     --carousel-items-top: 36%;
-    --slide-one-header-footer-reveal: 36% 38%;
+    --slide-one-header-footer-reveal: 36% 40%;
     --slide-header-h: 55px;
     --slide-footer-h: 84px;
 
@@ -887,7 +884,7 @@ html[dir="rtl"] {
 
 @keyframes elasticMobileFirstSlide {
   0% {
-    transform: translateY(-160px);
+    transform: translateY(-435px);
     filter: contrast(1);
     opacity: 1;
   }

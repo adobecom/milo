@@ -268,7 +268,7 @@ const handleCarousel = (slds) => {
   return decoratedCarousel;
 };
 
-const handleGridImages = (imageContainers) => {
+const handleGridImages = (imageContainers, slides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
   [...imageContainers[0].children]?.forEach((img) => {
     container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, img));
@@ -276,6 +276,12 @@ const handleGridImages = (imageContainers) => {
   [...imageContainers[1].children]?.forEach((img, index) => {
     container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
   });
+
+  const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
+  const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
+
+  col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
+  col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
 
   return container;
 };
@@ -292,7 +298,7 @@ export default async function init(el) {
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
   const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
 
-  const grid = handleGridImages(gridImages);
+  const grid = handleGridImages(gridImages, carouselImages);
   const elasticCarousel = handleCarousel(carouselImages);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
