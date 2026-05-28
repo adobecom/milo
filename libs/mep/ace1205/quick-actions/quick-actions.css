@@ -48,6 +48,11 @@
     inset-block-start: var(--s2a-spacing-8);
     inset-block-end: 52px; /* padding-block-end(16px) + 2 × line-height(18px) */
     display: block;
+    transition: transform 0.5s var(--parallax-easing);
+  }
+
+  .quick-actions-tile:hover .quick-actions-media {
+    transform: scale(1.05);
   }
 
   .quick-actions-media img,
