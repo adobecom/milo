@@ -115,6 +115,7 @@
     position: absolute;
     inset: 0;
     overflow: hidden;
+    isolation: isolate;
 
     picture {
       position: absolute;
@@ -138,6 +139,15 @@
     }
   }
 
+  .hero-card-media-fade {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--s2a-color-gray-75);
+  }
+
   .hero-card-text {
     position: relative;
     z-index: 1;
@@ -147,6 +157,7 @@
     align-items: flex-start;
     justify-content: flex-end;
     gap: var(--s2a-spacing-md);
+    padding: var(--s2a-spacing-xl);
   }
 
   .hero-card-text-wrapper {
@@ -226,10 +237,6 @@
       padding-top: calc(100% * 123 / 152);
     }
 
-    .hero-card-text {
-      padding: var(--s2a-spacing-3xl);
-    }
-
     .hero-card-text-wrapper {
       gap: var(--s2a-spacing-2xs);
     }
@@ -252,6 +259,10 @@
 
     .hero-card-tile {
       padding-top: calc(100% * 140 / 173);
+    }
+
+    .hero-card-text {
+      padding: var(--s2a-spacing-3xl);
     }
   }
 }

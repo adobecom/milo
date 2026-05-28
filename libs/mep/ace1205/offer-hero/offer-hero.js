@@ -110,6 +110,8 @@ function decorate(block) {
         try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
       }, { once: true });
       (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
+      const fade = createTag('div', { class: 'hero-card-media-fade' });
+      media.append(fade);
     }
 
     const learnMore = textCell.querySelector('a');
@@ -153,6 +155,7 @@ function initAnimation(block) {
   let tiles = [];
   let medias = [];
   let videos = [];
+  let fades = [];
   let cardTexts = [];
 
   function refreshRefs() {
@@ -162,6 +165,7 @@ function initAnimation(block) {
     tiles = [...block.querySelectorAll('.hero-card-tile')];
     medias = [...block.querySelectorAll('.hero-card-media')];
     videos = [...block.querySelectorAll('.hero-card-media video')];
+    fades = [...block.querySelectorAll('.hero-card-media-fade')];
     cardTexts = [...block.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
   }
 
@@ -176,6 +180,7 @@ function initAnimation(block) {
   let videoObserver = null;
   let rafId = 0;
   let running = false;
+  let needsReset = false;
   const gnav = document.querySelector('header');
 
   function positionContent() {
@@ -187,12 +192,16 @@ function initAnimation(block) {
     if (isSettled === next) return;
     isSettled = next;
     if (next) {
+      fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
+      if (needsReset) {
+        needsReset = false;
+        videos.forEach((video) => { video.currentTime = 0.001; });
+      }
       videoObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const video = videos[medias.indexOf(entry.target)];
-          if (!video || video.ended) return;
-          if (entry.isIntersecting) video.play()?.catch(() => {});
-          else video.pause();
+          if (!video || !entry.isIntersecting || video.ended) return;
+          video.play()?.catch(() => {});
         });
       }, { threshold: 0.7 });
       medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
@@ -200,7 +209,7 @@ function initAnimation(block) {
     }
     videoObserver?.disconnect();
     videoObserver = null;
-    videos.forEach((video) => video.pause());
+    needsReset = true;
   }
 
   function getProgress() {
@@ -247,16 +256,14 @@ function initAnimation(block) {
     tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
   }
 
-  function updateEyebrow() {
+  function updateEyebrow(progress) {
     if (!eyebrow) return;
     if (medias[0]) {
       const gap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    if (!heroContent) return;
-    const rect = heroContent.getBoundingClientRect();
-    eyebrow.classList.toggle('is-visible', rect.top + rect.height / 2 < 0);
+    eyebrow.classList.toggle('is-visible', progress >= 0.7);
   }
 
   function computeLayouts() {
@@ -290,9 +297,24 @@ function initAnimation(block) {
     if (!running) return;
     const progress = getProgress();
     applyAnimation(progress);
-    updateEyebrow();
+    updateEyebrow(progress);
 
     setSettled(progress >= 0.85);
+
+    if (needsReset && progress <= 0.1) {
+      needsReset = false;
+      videos.forEach((video, i) => {
+        video.currentTime = 0.001;
+        const fade = fades[i];
+        if (!fade) return;
+        fade.style.transition = 'none';
+        fade.style.opacity = '1';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          fade.style.transition = 'opacity 0.5s ease-in';
+          fade.style.opacity = '0';
+        }));
+      });
+    }
 
     rafId = requestAnimationFrame(tick);
   }
@@ -306,7 +328,7 @@ function initAnimation(block) {
     if (tiles.length !== 4) return;
     positionContent();
     computeLayouts();
-    updateEyebrow();
+    updateEyebrow(getProgress());
   }
 
   setup();
