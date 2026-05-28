@@ -5,7 +5,7 @@ html[dir="rtl"] {
     left: 0;
     right: unset;
   }
-  
+
   .hub-hero-carousel-item-header {
     &:after {
       transform: rotate(180deg);
@@ -116,7 +116,7 @@ html[dir="rtl"] {
 
     &::after {
       content: "";
-      background-image: url('https: //www.adobe.com/dc-shared/fragments/tests/2026/q2/ace1205/fragments/assets/arrow-bottom.svg');
+      background-image: url('https://www.adobe.com/dc-shared/fragments/tests/2026/q2/ace1205/fragments/assets/arrow-bottom.svg');
       position: absolute;
       padding: var(--s2a-spacing-xs);
       height: 14px;
