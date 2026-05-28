@@ -1,13 +1,15 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import experiments from './mocks/preview.js';
+import experiments from '../../personalization/mocks/preview.js';
 
-document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
+document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
   default: decoratePreviewMode,
   escapeHtml,
   parsePageAndUrl,
+} = await import('../../../../libs/features/mep/mep-next/mep-next.js');
+const {
   injectMasBadges,
   removeMasBadges,
   updateMasNoContentMessage,
@@ -17,11 +19,11 @@ const {
   toFragmentEditorUrl,
   watchForMasContent,
   MAS_RESTAMP_DEBOUNCE_MS,
-} = await import('../../../libs/features/personalization/preview.js');
-const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../libs/utils/utils.js');
-const { mepMasStudioUrls } = await import('../../../libs/blocks/merch/mas-mep-utils.js');
-const { mepMasSubCollections } = await import('../../../libs/features/personalization/preview-mas-subcollection.js');
-const { mepCaasConfigUrls } = await import('../../../libs/blocks/caas/utils.js');
+} = await import('../../../../libs/features/mep/mep-next/mep-mas.js');
+const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
+const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
+const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
+const { mepCaasConfigUrls } = await import('../../../../libs/blocks/caas/utils.js');
 
 const config = {
   miloLibs: 'https://main--milo--adobecom.aem.live/libs',

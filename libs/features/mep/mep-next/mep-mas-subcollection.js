@@ -10,8 +10,8 @@
 // <aem-fragment> immediately after dispatching aem:load, so its rawData
 // can't be read after the fact.
 
-import { createTag } from '../../utils/utils.js';
-import { mepMasStudioUrls } from '../../blocks/merch/mas-mep-utils.js';
+import { createTag } from '../../../utils/utils.js';
+import { mepMasStudioUrls } from '../../../blocks/merch/mas-mep-utils.js';
 
 export const SUB_COLLECTION_BADGE_CLASS = 'mep-mas-sub-collection-badge';
 
