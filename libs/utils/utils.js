@@ -1439,6 +1439,25 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function decoratePictures(area) {
+  area.querySelectorAll('picture').forEach((picture) => {
+    const mediaSources = [...picture.querySelectorAll('source[media]')];
+    if (!mediaSources.length) return;
+    const anchor = picture.firstElementChild;
+    mediaSources.forEach((source) => {
+      const srcset = source.getAttribute('srcset')
+        ?.replace(/\bwidth=\d+/, 'width=3000')
+        .replace(/&optimize=[^&]*/g, '');
+      if (!srcset) return;
+      const newSource = document.createElement('source');
+      if (source.type) newSource.setAttribute('type', source.type);
+      newSource.setAttribute('media', '(min-width: 1920px)');
+      newSource.setAttribute('srcset', srcset);
+      picture.insertBefore(newSource, anchor);
+    });
+  });
+}
+
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
@@ -1884,6 +1903,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
