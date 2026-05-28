@@ -390,7 +390,7 @@
       overflow: hidden;
 
       img {
-        filter: blur(var(--s2a-blur-30));
+        filter: blur(var(--s2a-blur-md));
         transform: scale(1.08);
       }
 
