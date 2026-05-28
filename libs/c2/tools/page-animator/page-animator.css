@@ -159,6 +159,14 @@
   content: '▸ ';
 }
 
+.pa-section-blocks {
+  color: #a0a0a0;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: 2px;
+}
+
 .pa-item {
   padding: 6px 16px 6px 28px;
   cursor: pointer;

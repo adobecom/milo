@@ -74,7 +74,7 @@ export function buildPanel(
 
   let selectedId = null;
   let selectedEl = null;
-  const collapsedSections = new Set();
+  const collapsedSections = new Set(tree.map((s) => s.id));
 
   function buildCopyHtml(item) {
     const sectionNode = tree.find(
@@ -263,7 +263,11 @@ export function buildPanel(
 
       const sLabel = document.createElement('div');
       sLabel.className = `pa-section-label${isCollapsed ? ' pa-collapsed' : ''}`;
-      sLabel.textContent = section.label;
+      const names = section.blocks.map((b) => b.label);
+      const suffix = names.length
+        ? ` · ${names[0]}${names.length > 1 ? ` +${names.length - 1}` : ''}`
+        : '';
+      sLabel.innerHTML = `${section.label}<span class="pa-section-blocks">${suffix}</span>`;
       sLabel.addEventListener('click', () => {
         if (collapsedSections.has(section.id)) collapsedSections.delete(section.id);
         else collapsedSections.add(section.id);
