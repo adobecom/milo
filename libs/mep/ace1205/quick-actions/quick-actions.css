@@ -105,7 +105,7 @@
     font-size: var(--s2a-font-size-lg);
     line-height: var(--s2a-font-line-height-xs);
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_2);
-    color: var(--s2a-color-content-subtle);
+    color: var(--s2a-color-content-default);
   }
 }
 
@@ -134,7 +134,6 @@
 
     .quick-actions-tile-label {
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
-      color: var(--s2a-color-content-default);
     }
 
     .quick-actions-media {
