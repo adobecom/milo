@@ -17,19 +17,6 @@ function buildTrack(el, logos) {
   return track;
 }
 
-// TODO: temporarily overriding svg colors. Should upload to feds
-function recolorIcons(root) {
-  const ICON_FILL = 'var(--s2a-color-content-default)';
-  function recolorSvg(svg) {
-    svg.setAttribute('fill', ICON_FILL);
-    svg.querySelectorAll('[fill]:not([fill="none"])').forEach((node) => {
-      node.setAttribute('fill', ICON_FILL);
-    });
-  }
-  root.querySelectorAll('svg').forEach(recolorSvg);
-  return root;
-}
-
 function syncTrackMetrics(track) {
   const firstSet = track.firstElementChild;
   if (!firstSet) return;
@@ -44,7 +31,6 @@ export default function init(el) {
   if (!logos.length) return;
 
   const track = buildTrack(el, logos);
-  recolorIcons(track);
   el.replaceChildren(track);
 
   syncTrackMetrics(track);
