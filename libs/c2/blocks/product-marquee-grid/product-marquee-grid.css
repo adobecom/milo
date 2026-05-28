@@ -74,9 +74,7 @@
 
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
-      column-gap: var(--grid-gutter);
-      display: grid;
-      grid-template-columns: repeat(12, minmax(0, 1fr));
+      flex-direction: row;
       padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     }
 
@@ -86,8 +84,6 @@
     }
 
     .pm-foreground {
-      grid-column: span 9;
-
       .heading-4 {
         max-width: min(467px, 80%);
       }
@@ -95,9 +91,9 @@
 
     .pm-promo-area {
       align-self: flex-end;
-      grid-column: span 3;
+      flex: 0 0 25%;
       margin-block-start: 0;
-      min-inline-size: 260px;
+      min-width: 260px;
     }
   }
 }
