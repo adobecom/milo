@@ -1,67 +1,103 @@
 .hover-list {
   position: relative;
   color: var(--s2a-color-content-knockout);
+}
 
-  .hover-list-headline {
-    border-block-start: 1px solid var(--s2a-color-transparent-white-32);
-    color: var(--s2a-color-content-knockout);
-    padding-block: var(--s2a-spacing-md);
+.hover-list-headline {
+  border-block-start: 1px solid var(--s2a-color-transparent-white-32);
+  color: var(--s2a-color-content-knockout);
+  padding-block: var(--s2a-spacing-md);
+}
+
+.hover-list-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hover-list-item {
+  align-items: center;
+  border-block-start: 1px solid var(--s2a-color-transparent-white-32);
+  color: var(--s2a-color-content-knockout);
+  display: flex;
+  gap: var(--s2a-spacing-md);
+  padding-block: var(--s2a-spacing-xl);
+  transition: background 0.2s ease;
+
+  &:first-child {
+    border-block-start: none;
   }
 
-  .hover-list-items {
-    list-style: none;
-    margin: 0;
-    padding: 0;
+  &:hover {
+    background: var(--s2a-color-transparent-white-08);
+  }
+}
+
+.hover-list-number {
+  color: var(--s2a-color-content-knockout);
+  flex-shrink: 0;
+}
+
+.hover-list-text {
+  flex: 1;
+  letter-spacing: var(--s2a-font-letter-spacing-4xl);
+  margin: 0;
+}
+
+.hover-list-media {
+  block-size: 81px;
+  border-radius: var(--s2a-border-radius-sm);
+  flex-shrink: 0;
+  inline-size: 80px;
+  overflow: hidden;
+}
+
+.hover-list-media picture,
+.hover-list-media img {
+  block-size: 100%;
+  display: block;
+  inline-size: 100%;
+  object-fit: cover;
+}
+
+@media (width >= 768px) {
+  .hover-list {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+    padding-block: var(--s2a-layout-lg);
+  }
+
+  .hover-list-headline {
+    flex: 1;
+    padding-block: var(--s2a-spacing-sm);
+  }
+
+  .hover-list-col {
+    flex: 1;
   }
 
   .hover-list-item {
-    align-items: center;
-    border-block-start: 1px solid var(--s2a-color-transparent-white-32);
-    color: var(--s2a-color-content-knockout);
-    display: flex;
-    gap: var(--s2a-spacing-md);
-    padding-block: var(--s2a-spacing-xl);
-    transition: background 0.2s ease;
+    gap: var(--s2a-spacing-lg);
+    padding-block: var(--s2a-spacing-lg);
 
     &:first-child {
-      border-block-start: none;
-    }
-
-    &:hover {
-      background: var(--s2a-color-transparent-white-08);
+      border-block-start: 1px solid var(--s2a-color-transparent-white-32);
     }
   }
 
   .hover-list-number {
-    color: var(--s2a-color-content-knockout);
-    flex-shrink: 0;
-  }
-
-  .hover-list-text {
-    flex: 1;
-    letter-spacing: var(--s2a-font-letter-spacing-4xl);
-    margin: 0;
+    min-inline-size: var(--s2a-spacing-24);
   }
 
   .hover-list-media {
-    block-size: 81px;
-    border-radius: var(--s2a-border-radius-sm);
-    flex-shrink: 0;
-    inline-size: 80px;
-    overflow: hidden;
-
-    picture,
-    img {
-      block-size: 100%;
-      display: block;
-      inline-size: 100%;
-      object-fit: cover;
-    }
+    aspect-ratio: 1;
+    block-size: auto;
+    flex: 0 0 25%;
   }
 }
 
 @media (width < 1280px) {
-  .hover-list .hover-list-media {
+  .hover-list-media {
     background: transparent;
     border: 0;
     display: block;
@@ -72,88 +108,42 @@
   }
 }
 
-@media (width >= 768px) {
-  .hover-list {
-    display: flex;
-    gap: var(--s2a-spacing-xs);
-    padding-block: var(--s2a-layout-lg);
-
-    .hover-list-headline {
-      flex: 1;
-      padding-block: var(--s2a-spacing-sm);
-    }
-
-    .hover-list-col {
-      flex: 1;
-    }
-
-    .hover-list-item {
-      gap: var(--s2a-spacing-lg);
-      padding-block: var(--s2a-spacing-lg);
-
-      &:first-child {
-        border-block-start: 1px solid var(--s2a-color-transparent-white-32);
-      }
-
-      .hover-list-number {
-        min-inline-size: var(--s2a-spacing-24);
-      }
-    }
-
-    .hover-list-media {
-      aspect-ratio: 1;
-      block-size: auto;
-      flex: 0 0 25%;
-    }
-  }
-}
-
 @media (width >= 1280px) {
-  .hover-list {
-    .hover-list-item {
-      block-size: 100px;
-      cursor: pointer;
-      gap: var(--s2a-spacing-md);
-      padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+  .hover-list-item {
+    block-size: 100px;
+    cursor: pointer;
+    gap: var(--s2a-spacing-md);
+    padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+  }
 
-      .hover-list-number {
-        min-inline-size: var(--s2a-spacing-40);
-      }
-    }
+  .hover-list-number {
+    min-inline-size: var(--s2a-spacing-40);
+  }
 
-    .hover-list-media {
-      background: transparent;
-      block-size: 100vh;
-      border: 0;
-      inline-size: 100vw;
-      inset: 0;
-      margin: 0;
-      overflow: visible;
-      padding: 0;
-      pointer-events: none;
-      position: fixed;
-      z-index: 100;
+  .hover-list-media {
+    background: transparent;
+    block-size: 100vh;
+    border: 0;
+    inline-size: 100vw;
+    inset: 0;
+    margin: 0;
+    overflow: visible;
+    padding: 0;
+    pointer-events: none;
+    position: fixed;
+  }
 
-      picture {
-        block-size: 320px;
-        border-radius: var(--s2a-border-radius-sm);
-        inline-size: 280px;
-        inset: auto;
-        left: 0;
-        overflow: hidden;
-        position: absolute;
-        top: 0;
-        transform-origin: 50% 100%;
-        transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
-        will-change: transform, opacity;
-
-        img {
-          block-size: 100%;
-          display: block;
-          inline-size: 100%;
-          object-fit: cover;
-        }
-      }
-    }
+  .hover-list-media picture {
+    block-size: 320px;
+    border-radius: var(--s2a-border-radius-sm);
+    inline-size: 280px;
+    inset: auto;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    transform-origin: 50% 100%;
+    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
+    will-change: transform, opacity;
   }
 }
