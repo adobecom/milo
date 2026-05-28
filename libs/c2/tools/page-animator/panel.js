@@ -50,6 +50,11 @@ export function buildPanel(
           </svg>
         </span>
         <strong>Page Animator</strong>
+        <button class="pa-icon-btn" id="pa-close-btn" aria-label="Close panel" title="Close panel">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+          </svg>
+        </button>
       </div>
       <div class="pa-header-actions">
         <button class="pa-btn" id="pa-import-btn" title="Import animations">Import</button>

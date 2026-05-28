@@ -266,6 +266,7 @@ function savePos(pos) {
 
   function wireListeners(panelEl) {
     toolbarBtn.onclick = () => setPanelOpen(panelEl, !panelEl.classList.contains('pa-open'));
+    panelEl.querySelector('#pa-close-btn').addEventListener('click', () => setPanelOpen(panelEl, false));
     syncThemeBtn(panelEl);
     syncFollowBtn(panelEl);
 

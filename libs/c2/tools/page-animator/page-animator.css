@@ -261,6 +261,28 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   background: var(--pc-accent-hover);
 }
 
+.pa-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--pc-fg-muted);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.pa-icon-btn:hover {
+  background: var(--pc-bg-hover-strong);
+  color: var(--pc-fg);
+}
+
 /* ─── Instructions ───────────────────────────────────────────────────────── */
 
 .pa-instructions {
