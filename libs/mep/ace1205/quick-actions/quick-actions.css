@@ -76,8 +76,8 @@
     &::after {
       content: "";
       display: block;
-      inline-size: 4.5px;
-      block-size: 7.5px;
+      inline-size: 3px;
+      block-size: 6px;
       flex-shrink: 0;
       background-image: url('../../../c2/assets/img/chevron-right.svg');
       background-size: contain;
@@ -149,6 +149,11 @@
       padding-block-end: var(--s2a-spacing-32);
       padding-inline: var(--s2a-spacing-32);
     }
+
+    .quick-actions-tile-footer::after {
+      inline-size: var(--s2a-spacing-2xs);
+      block-size: var(--s2a-spacing-xs);
+    }
   }
 }
 
@@ -177,6 +182,11 @@
       padding-block-end: var(--s2a-spacing-24);
       padding-inline: var(--s2a-spacing-24);
     }
+
+    .quick-actions-tile-footer::after {
+      inline-size: 3px;
+      block-size: 6px;
+    }
   }
 }
 
@@ -200,6 +210,11 @@
     line-height: var(--s2a-font-line-height-20);
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
   }
+
+  .quick-actions .quick-actions-tile-footer::after {
+    inline-size: 3.4px;
+    block-size: 6.7px;
+  }
 }
 
 @media (width >= 2560px) {
@@ -221,5 +236,10 @@
     font-size: var(--s2a-font-size-32);
     line-height: var(--s2a-font-line-height-32);
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_96);
+  }
+
+  .quick-actions .quick-actions-tile-footer::after {
+    inline-size: 5px;
+    block-size: 10px;
   }
 }
