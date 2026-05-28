@@ -16,7 +16,7 @@ const STACK_REF = [
   { dx: 90.94, dy: 116.93, w: 418.531, h: 489.484, rot: -6 },
   { dx: 202.94, dy: 0, w: 535.885, h: 666.645, rot: -2 },
   { dx: 36.78, dy: 275.30, w: 304.543, h: 324.33, rot: -15 },
-  { dx: 417.44, dy: 272.79, w: 418.531, h: 455.136, rot: 3 },
+  { dx: 417.44, dy: 220, w: 418.531, h: 455.136, rot: 3 },
 ];
 const CARD_SHADOWS = [
   null,
@@ -199,33 +199,33 @@ function initAnimation(block) {
       }
       videoObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          const video = videos[medias.indexOf(entry.target)];
-          if (!video || !entry.isIntersecting || video.ended) return;
-          video.play()?.catch(() => {});
+          const mediaIdx = medias.indexOf(entry.target);
+          const video = videos[mediaIdx];
+          if (!entry.isIntersecting) return;
+          if (video && !video.ended) video.play()?.catch(() => {});
+          const card = entry.target.closest('.hero-card');
+          if (!card || card.dataset.textFaded) return;
+          card.dataset.textFaded = '1';
+          const texts = [...card.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
+          texts.forEach((el, j) => {
+            el.style.transition = `opacity 0.5s ease-in ${200 + j * 150}ms`;
+            el.style.opacity = '1';
+          });
         });
       }, { threshold: 0.7 });
       medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
-      cardTexts.forEach((textEl, i) => {
-        textEl.style.transition = `opacity 0.5s ease-in ${i * 50}ms`;
-        textEl.style.opacity = '1';
-      });
       return;
     }
     videoObserver?.disconnect();
     videoObserver = null;
     needsReset = true;
-    cardTexts.forEach((textEl) => {
-      textEl.style.transitionDelay = '';
-      textEl.style.transition = 'opacity 0.5s ease-out';
-      textEl.style.opacity = '0';
-    });
   }
 
   function getProgress() {
     if (!cards[0]) return 0;
     const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
     const slotTargetTop = Math.round(navBottom + 124) + 60;
-    const startY = window.innerHeight;
+    const startY = window.innerWidth < 768 ? window.innerHeight * 1.2 : window.innerHeight;
     const range = startY - slotTargetTop;
     if (range <= 0) return 0;
     return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
@@ -241,15 +241,14 @@ function initAnimation(block) {
     tiles.forEach((tile, i) => {
       const natural = naturalBoxes[i];
       const stack = stackBoxes[i];
-      const sx = lerp(stack.w / natural.w, 1, progress);
-      const sy = lerp(stack.h / natural.h, 1, progress);
+      const s = lerp(Math.min(stack.w / natural.w, stack.h / natural.h), 1, progress);
       const txTarget = rtl
         ? (stack.x + stack.w) - (natural.x + natural.w)
         : stack.x - natural.x;
       const tx = lerp(txTarget, 0, progress);
       const ty = lerp(stack.y - natural.y, 0, progress);
       const rot = lerp(stack.rot, 0, progress);
-      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
+      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${s})`;
       if (!CARD_SHADOWS[i]) return;
       tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
     });
@@ -267,7 +266,8 @@ function initAnimation(block) {
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    eyebrow.classList.toggle('is-visible', progress >= 0.7);
+    const eyebrowThreshold = window.innerWidth < 768 ? 0.2 : 0.7;
+    eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
   }
 
   function computeLayouts() {
@@ -283,7 +283,7 @@ function initAnimation(block) {
     const vw = window.innerWidth;
     const contentBottom = heroContent ? heroContent.getBoundingClientRect().bottom : 540;
     const stackTop = contentBottom + 74;
-    const stackScale = vw < 768 ? Math.max((vw - 48) / STACK_W, 0.3) : 1;
+    const stackScale = vw < 768 ? 0.75 : 1;
     const stackLeft = (vw - STACK_W * stackScale) / 2;
     rtl = isRtl(block);
     stackBoxes = STACK_REF.map((ref) => ({
@@ -307,6 +307,8 @@ function initAnimation(block) {
 
     if (needsReset && progress <= 0.1) {
       needsReset = false;
+      cards.forEach((card) => { delete card.dataset.textFaded; });
+      cardTexts.forEach((textEl) => { textEl.style.transition = 'none'; textEl.style.opacity = '0'; });
       videos.forEach((video, i) => {
         video.currentTime = 0.001;
         const fade = fades[i];
