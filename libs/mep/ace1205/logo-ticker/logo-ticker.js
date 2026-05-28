@@ -10,7 +10,7 @@ function buildTrack(el, logos) {
     return logoSet;
   });
 
-  const track = createTag('div', { class: 'logo-ticker-track', role: 'image' }, logoSets);
+  const track = createTag('div', { class: 'logo-ticker-track', role: 'img' }, logoSets);
   if (el.children.length >= 2) {
     track.setAttribute('aria-label', el.children[1].textContent);
   }
