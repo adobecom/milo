@@ -408,6 +408,11 @@
   }
 }
 
+@keyframes rc-cta-counteract {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50vh); }
+}
+
 @keyframes rc-video-enter {
   from { transform: scale(0.94) translateY(30px); }
   to { transform: scale(1) translateY(0); }
@@ -503,11 +508,22 @@
       animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: --rc-video-garage;
-      animation-range: entry 50% exit 100%;
+      animation-range: entry 60% exit 100%;
     }
 
     .section.parallax-video-garage-door:has(.rich-content.video) + .section {
       margin-top: calc(var(--rc-sweep-offset) * -1);
+    }
+
+    .section.parallax-video-garage-door .rich-content.video .cta-area {
+      animation: rc-cta-counteract linear both;
+      animation-duration: auto;
+      animation-timeline: --rc-video-garage;
+      animation-range: exit 50% exit 100%;
+    }
+
+    .section.parallax-video-garage-door .rich-content.video :is(a, button) {
+      scroll-margin-top: calc(100vh - 200px);
     }
 
     @media (width >= 1440px) {
@@ -521,5 +537,6 @@
         animation-range: entry 90% exit 100%;
       }
     }
+
   }
 }
