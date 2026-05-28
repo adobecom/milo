@@ -149,9 +149,8 @@ function addCursorFollower(list) {
   };
 
   document.addEventListener('mousemove', updateCursor, { passive: true });
-  list.addEventListener('mouseover', (e) => {
+  list.addEventListener('mousemove', (e) => {
     if (!DESKTOP_MQ.matches || isScrolling) return;
-    updateCursor(e);
     activateAtPoint(e.clientX, e.clientY);
   });
   list.addEventListener('mouseenter', () => {
