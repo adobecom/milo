@@ -69,19 +69,13 @@ async function loadInlineDependencies() {
 
 export async function checkReady(masElement, fragment) {
   if (isMasErrorEnv()) {
-    const showError = async () => {
-      const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
-      masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Frag'));
-    };
+    const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
     if (masElement.hasAttribute('failed')) {
-      showError();
+      createFragmentErrorEl(uuid, 'Frag').then((el) => masElement.insertAdjacentElement('beforebegin', el));
     } else {
-      new MutationObserver(async (_, obs) => {
-        if (masElement.hasAttribute('failed')) {
-          obs.disconnect();
-          showError();
-        }
-      }).observe(masElement, { attributes: true, attributeFilter: ['failed'] });
+      masElement.addEventListener('aem:error', async (e) => {
+        masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Frag', e.detail?.status));
+      }, { once: true });
     }
   }
 

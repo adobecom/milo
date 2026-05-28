@@ -1594,10 +1594,12 @@ export function isMasErrorEnv(host = window.location.host) {
   return host.includes('localhost') || host.includes('.aem.page');
 }
 
-export async function createFragmentErrorEl(uuid, label = 'Frag') {
+export async function createFragmentErrorEl(uuid, label = 'Frag', status = null) {
   loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
   let badge = 'Load Error';
-  if (uuid) {
+  if (status === 404) {
+    badge = 'Not Found';
+  } else if (uuid) {
     try {
       const { locale } = getMiloLocaleSettings(getConfig()?.locale);
       const source = isMasErrorEnv() ? '&source=aem' : '';

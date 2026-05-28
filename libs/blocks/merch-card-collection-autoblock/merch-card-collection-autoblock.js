@@ -340,11 +340,15 @@ export async function createCollection(el, options) {
     : el;
   toReplace.replaceWith(container);
 
+  if (isMasErrorEnv()) {
+    collection.addEventListener('aem:error', async (e) => {
+      collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection', e.detail?.status));
+    }, { once: true });
+  }
+
   const success = await collection.checkReady();
-  if (!success) {
-    if (isMasErrorEnv()) {
-      collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
-    }
+  if (!success && isMasErrorEnv() && !collection.querySelector('.mas-frag-error')) {
+    collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
   }
   container.classList.add('collection-container', collection.variant);
 

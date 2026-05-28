@@ -1771,4 +1771,11 @@ describe('createFragmentErrorEl', () => {
     expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('unknown');
     expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
   });
+
+  it('shows Not Found when status 404 is passed directly without fetching', async () => {
+    fetchStub = sinon.stub(window, 'fetch');
+    const el = await createFragmentErrorEl('test-uuid', 'Frag', 404);
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Not Found');
+    expect(fetchStub.called).to.be.false;
+  });
 });
