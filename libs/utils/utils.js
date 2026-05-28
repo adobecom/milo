@@ -109,6 +109,7 @@ const C1_BLOCKS = [
 ];
 
 const C2_BLOCKS = [
+  'quick-actions',
   'base-card',
   'box',
   'brand-concierge',
