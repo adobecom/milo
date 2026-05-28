@@ -9,7 +9,6 @@ const EXIT_STEP = 0.08;
 const TARGET_OFFSET = { x: 14, y: -4 };
 const SCROLL_SETTLE_MS = 150;
 
-// Interpolates layer config from back (slow, far spawn, least tilt) to front.
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
   const s = 120 - t * 24;
@@ -21,7 +20,6 @@ function layerConfig(i, n) {
   };
 }
 
-// Scale curve: 0.6 → 1.0, monotonic ease-out, no overshoot.
 function introScale(intro) {
   const eased = 1 - (1 - intro) ** 2.2;
   return 0.6 + eased * 0.4;
@@ -97,7 +95,6 @@ function addCursorFollower(list) {
     activeLayers = [];
     const media = item.querySelector('.hover-list-media');
     if (!media) return;
-    // Drop pending exit for this item so it can't hide us mid-animation.
     exitingGroups = exitingGroups.filter((g) => g.media !== media);
     const pics = [...media.querySelectorAll('picture')];
     activeItem = item;
