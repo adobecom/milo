@@ -1510,7 +1510,7 @@ export async function buildCta(el, params) {
   return cta;
 }
 
-export async function shouldHideStPriceLabels(element) {
+export function shouldHideStPriceLabels(element) {
   const nextElSibling = element.nextElementSibling?.nodeName === 'BR'
     ? element.nextElementSibling.nextElementSibling
     : element.nextElementSibling;
@@ -1528,7 +1528,7 @@ async function buildPrice(el, params) {
   if (!context) return null;
   const service = await initService();
 
-  if (context.template === 'strikethrough' && await shouldHideStPriceLabels(el)) {
+  if (context.template === 'strikethrough' && shouldHideStPriceLabels(el)) {
     context.displayPerUnit = 'false';
     context.displayTax = 'false';
   }
