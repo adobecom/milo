@@ -91,10 +91,6 @@
     transform: translate3d(var(--s2a-spacing-4), 0, 0);
   }
 
-  [dir="rtl"] .quick-actions-tile:hover .quick-actions-tile-footer::after {
-    transform: translate3d(calc(var(--s2a-spacing-4) * -1), 0, 0);
-  }
-
   .quick-actions-tile-label {
     display: -webkit-box;
     -webkit-box-orient: vertical;
@@ -107,6 +103,14 @@
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_2);
     color: var(--s2a-color-content-default);
   }
+}
+
+[dir="rtl"] .quick-actions .quick-actions-tile-footer::after {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .quick-actions .quick-actions-tile:hover .quick-actions-tile-footer::after {
+  transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
 }
 
 @media (width < 768px) {
