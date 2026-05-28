@@ -1445,6 +1445,7 @@ export function decoratePictures(area) {
     if (!mediaSources.length) return;
     const anchor = picture.firstElementChild;
     mediaSources.forEach((source) => {
+      if (source.type === 'image/webp') return;
       const srcset = source.getAttribute('srcset')
         ?.replace(/\bwidth=\d+/, 'width=3000')
         .replace(/&optimize=[^&]*/g, '');
