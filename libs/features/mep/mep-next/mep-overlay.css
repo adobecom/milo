@@ -1,7 +1,7 @@
 :root {
   interpolate-size: allow-keywords;
 
-  --mep-overline-font: normal 500 14px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
+  --mep-overline-font: normal 500 12px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
   --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
 
   --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 125% var(--Font-adobe-clean, "Adobe Clean");
@@ -9,27 +9,27 @@
   --mep-h2-font: normal 500 var(--Static-Title-Medium-Size, 16px) / var(--Static-Title-Medium-Line-Height, 24px) "Adobe Clean";
   --mep-h2-letter-spacing: var(--Static-Title-Medium-Tracking, 0.15px);
 
-  --mep-body-font: normal 400 var(--Static-Body-Medium-Size, 14px) / var(--Static-Body-Medium-Line-Height, 20px) "Adobe Clean";
-  --mep-body-letter-spacing: var(--Static-Body-Medium-Tracking, 0.25px);
+  --mep-body-font: normal 400 var(--Static-Body-Medium-Size, 16px) / var(--Static-Body-Medium-Line-Height, 20px) "Adobe Clean";
+  --mep-body-letter-spacing: var(--Static-Body-Medium-Tracking, 0.15px);
 
   --mep-tab-label-font: normal 700 var(--Component-Tabs-Mobile-font-size, 18px) / 125% var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-radio-label-font: normal 400 16px / 150% var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-primary-100: rgb(34, 136, 0);
-  --mep-primary-87: rgba(34, 136, 0, 0.87);
   --mep-primary-60: rgba(34, 136, 0, 0.60);
 
   --mep-dark-34: rgb(34, 34, 34);
   --mep-dark-44: rgb(44, 44, 44);
 
   --mep-white-100: rgb(255, 255, 255);
-  --mep-white-87: rgba(255, 255, 255, 0.87);
   --mep-white-60: rgba(255, 255, 255, 0.60);
   --mep-white-12: rgba(255, 255, 255, 0.12);
 
   --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
+
+  --mep-highlight: #00ff73;
 
   --mep-chevron-down-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M16.59 8.29504L12 12.875L7.41 8.29504L6 9.70504L12 15.705L18 9.70504L16.59 8.29504Z' fill='white'/%3E%3C/svg%3E");
 }
@@ -77,7 +77,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   flex-direction: column;
   overflow: hidden;
   font-size: 16px;
-  width: 260px;
+  width: 280px;
   left: 0;
   margin: 0;
   border: none;
@@ -106,11 +106,18 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   transition: opacity 0.3s ease, transform 0.3s ease, display 0.3s allow-discrete, overlay 0.3s allow-discrete;
 }
 
+.mep-drawer a {
+  color: var(--mep-white-100);
+}
+
+.mep-drawer a:hover {
+  color: var(--mep-white-60);
+}
+
 .mep-drawer .mep-header {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  top: 0;
   background: var(--mep-dark-44);
   border-bottom: 1px solid var(--mep-white-12);
 }
@@ -261,6 +268,9 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-body .mep-card .mep-card-body .mep-row h2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin: 0;
   font: var(--mep-h2-font);
   letter-spacing: var(--mep-h2-letter-spacing);
@@ -284,6 +294,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-radius: 4px;
   outline: none;
   border: 1px solid var(--mep-white-60);
+  color: var(--mep-white-100);
   background: var(--mep-dark-22, #222);
 }
 
@@ -340,6 +351,11 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   padding-right: 32px;
 }
 
+.mep-drawer select option:hover {
+  color: var(--mep-white-100);
+  box-shadow: 0 0 10px 100px var(--mep-primary-80) inset;
+}
+
 .mep-drawer .mep-body .mep-card input:focus {
   border-color: var(--mep-white-100);
 }
@@ -367,7 +383,6 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-body .mep-spoof-geo-options {
   display: flex;
-  flex-direction: row;
   gap: 16px;
 }
 
@@ -445,4 +460,11 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-switch input:checked + .mep-switch-track::after {
   transform: translateX(20px);
+}
+
+.mep-drawer .mep-body .mep-card .mep-overline {
+  text-transform: uppercase;
+  color: var(--mep-white-60);
+  font: var(--mep-overline-font);
+  letter-spacing: var(--mep-overline-letter-spacing);
 }

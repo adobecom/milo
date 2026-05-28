@@ -13,6 +13,7 @@ import {
   getCountryCookie,
   getUserCountry,
   getGeoUser,
+  getManifestList,
 } from './mep-next.js';
 
 function getGnavOffset() {
@@ -50,8 +51,62 @@ async function buildOverlay() {
     return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
   }
 
+  function buildManifestList() {
+    const { manifests } = getManifestList();
+
+    function buildRow(label, value) {
+      const val = (typeof value === 'string' || value == null)
+        ? createTag('div', { class: 'mep-row-value' }, value ?? '')
+        : value;
+      return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), val]);
+    }
+
+    return manifests.map((manifest) => {
+      const link = createTag('a', { href: manifest.editUrl, target: '_blank' }, [
+        createTag('span', {}, `${manifest.index}. `),
+        createTag('span', { class: 'mep-manifest-filename' }, manifest.fileName),
+      ]);
+      const header = createTag('div', { class: 'mep-manifest-header' }, [
+        createTag('span', { class: 'mep-overline' }, 'Manifest'),
+        createTag('h1', {}, [link, parseSvg(svgData.svg['icon-expand-circle-down'])]),
+      ]);
+
+      const rows = [];
+      if (manifest.targetActivityName) rows.push(buildRow('Campaign', manifest.targetActivityName));
+
+      rows.push(buildRow('Experience', manifest.isDefaultSelected ? 'default (control)' : manifest.selectedVariantName));
+      rows.push(buildRow('Source', manifest.source));
+      rows.push(buildRow('Mktg Action', manifest.mktgAction));
+
+      if (manifest.geoRestriction) rows.push(buildRow('Geo', manifest.geoRestriction));
+      if (manifest.showActive) rows.push(buildRow('Active?', manifest.isActive));
+      if (manifest.lastSeen) rows.push(buildRow('Last Seen', manifest.lastSeen));
+
+      if (manifest.eventStart && manifest.eventEnd) {
+        const onRow = buildRow('On', manifest.eventStart);
+        onRow.querySelector('h2').append(createTag('a', { href: `?instant=${manifest.eventStartIso}`, target: '_blank' }, 'Instant'));
+        rows.push(onRow);
+        rows.push(buildRow('Off', manifest.eventEnd));
+      }
+
+      const select = createTag('select', { name: 'experiences', class: 'mep-manifest-variants' });
+      manifest.options.forEach((option) => {
+        const attrs = { name: option.name, value: option.value, title: option.title };
+        if (option.id) attrs.id = option.id;
+        if (option.dataManifest) attrs['data-manifest'] = option.dataManifest;
+        const optEl = createTag('option', attrs, option.label);
+        if (option.selected) optEl.selected = true;
+        select.append(optEl);
+      });
+
+      const card = createTag('div', { class: 'mep-card mep-manifest-card expanded' });
+      card.append(header, createTag('div', { class: 'mep-card-body' }, [...rows, select]));
+      return card;
+    });
+  }
+
   function buildCardContent(card) {
-    const pageId = getPageId(); // placeholder
+    const pageId = getPageId();
 
     function buildLoadManifest() {
       const mepManifestInput = createTag('input', { class: 'mep-load-manifest', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
@@ -174,6 +229,7 @@ async function buildOverlay() {
       mepTabsDiv.appendChild(createTag('div', { class: `mep-tab${active}`, 'data-tab': index }, name));
       const contentEl = createTag('div', { class: `mep-tab-content${active}`, 'data-tab': index });
       const section = cardData[name.toLowerCase()] ?? {};
+      if (name === 'Actions') buildManifestList().forEach((el) => contentEl.appendChild(el));
       Object.values(section).forEach((card) => contentEl.appendChild(buildCard(card)));
       mepContentDiv.appendChild(contentEl);
     });
