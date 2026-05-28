@@ -25,23 +25,25 @@ const CLOSE_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" 
 const EXPAND_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9v4h4M13 7V3H9M3 13l5-5M13 3l-5 5"/></svg>';
 
 const DRAWER_CSS = `
-  html.has-concierge body {
-    padding-right: var(--concierge-width);
-    box-sizing: border-box;
-  }
-
+  /* C1 (non-redesigned) pages: overlay on desktop, full-screen on mobile/tablet.
+     No body padding — content stays at full width and is covered by the drawer. */
   .concierge {
     position: fixed;
     top: 0; right: 0; bottom: 0;
     width: var(--concierge-width);
     background: #fff;
     border-left: 1px solid rgba(0,0,0,0.08);
-    box-shadow: -4px 0 16px rgba(0,0,0,0.04);
+    box-shadow: -4px 0 16px rgba(0,0,0,0.08);
     z-index: 2147483000;
     display: flex; flex-direction: column;
     font-family: adobe-clean, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     color: #292929;
     overflow: hidden;
+  }
+
+  /* Mobile / tablet / small dimension → full-screen modal takeover */
+  @media (max-width: 899px) {
+    .concierge { left: 0; width: 100%; border-left: none; }
   }
 
   .bc-poc-header {
@@ -142,47 +144,8 @@ const DRAWER_CSS = `
   }
   .bc-poc-suggestion:hover { background: rgba(0,0,0,0.04); }
 
-  /* --- push fixed/sticky Adobe elements off the drawer area --- */
-  html.has-concierge header.global-navigation,
-  html.has-concierge header.feds-header-wrapper,
-  html.has-concierge .global-navigation,
-  html.has-concierge .feds-header {
-    right: var(--concierge-width) !important;
-    width: auto !important;
-  }
-  html.has-concierge .local-nav,
-  html.has-concierge .milo-local-nav,
-  html.has-concierge .feds-localnav {
-    right: var(--concierge-width) !important;
-    width: auto !important;
-  }
-  html.has-concierge .sticky-bottom,
-  html.has-concierge [class*="sticky-bottom"],
-  html.has-concierge .floating-cta,
-  html.has-concierge .merch-card-sticky {
-    right: var(--concierge-width) !important;
-    width: auto !important;
-  }
-  html.has-concierge #onetrust-banner-sdk,
-  html.has-concierge #onetrust-consent-sdk {
-    right: var(--concierge-width) !important;
-    width: auto !important;
-  }
-  html.has-concierge #jarvis-chat-button,
-  html.has-concierge [class*="jarvis-chat"],
-  html.has-concierge .jarvis-launcher {
-    right: calc(var(--concierge-width) + 16px) !important;
-  }
-  html.has-concierge .marquee,
-  html.has-concierge .full-width,
-  html.has-concierge [class*="full-bleed"] {
-    max-width: calc(100vw - var(--concierge-width)) !important;
-  }
-  html.has-concierge .dialog-modal,
-  html.has-concierge [class*="modal-container"],
-  html.has-concierge .ucv3-iframe-wrapper {
-    right: var(--concierge-width) !important;
-  }
+  /* Overlay mode is intentional: no page elements are shifted or resized.
+     The drawer simply sits on top of content via z-index. */
 
   @supports not (selector(:has(*))) {
     .concierge { display: none; }
