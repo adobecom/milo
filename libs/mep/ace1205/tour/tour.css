@@ -1,0 +1,307 @@
+/* Tour block — Figma 9482:51322 Frame 2147230527
+ * Z-pattern: Section 1 (odd non-last) right, Section 2 (even) left, Section 3 (last) center */
+
+/* Override modal wrapper width constraint to ensure tour reaches full 596px on desktop */
+.dialog-modal:has(.tour) {
+  max-width: 596px;
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .dialog-modal:has(.tour) {
+    width: 596px;
+  }
+}
+
+/* Remove spacing from fragment/section wrappers so .tour aligns with .dialog-modal top */
+.dialog-modal:has(.tour) > .fragment,
+.dialog-modal:has(.tour) > .fragment > .section {
+  margin: 0;
+  padding: 0;
+}
+
+/* Close button override for tour modal — Figma 9506:107274 */
+.dialog-modal:has(.tour) button.dialog-close {
+  background: rgb(0 0 0 / 5%) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgb(0 0 0 / 10%) !important;
+  border-radius: var(--s2a-border-radius-sm) !important;
+  height: 48px !important;
+  width: 48px !important;
+  right: 16px !important;
+  top: 16px !important;
+}
+
+html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
+  left: 16px !important;
+  right: auto !important;
+}
+
+.tour {
+  background: var(--s2a-color-background-default);
+  border-radius: 16px;
+  box-shadow: 0 100px 80px 0 rgba(0, 0, 0, 0.14),
+              0 41.778px 16.711px 0 rgba(0, 0, 0, 0.1),
+              0 22.336px 8.935px 0 rgba(0, 0, 0, 0.08),
+              0 12.522px 5.009px 0 rgba(0, 0, 0, 0.07),
+              0 6.65px 2.66px 0 rgba(0, 0, 0, 0.06),
+              0 2.767px 1.107px 0 rgba(0, 0, 0, 0.04);
+  color: var(--s2a-color-content-default);
+  display: flex;
+  flex-direction: column;
+  max-width: 596px;
+  overflow-x: clip;
+  padding-block-start: 13px;
+  padding-block-end: 0;
+  width: 100%;
+}
+
+/* Figma 9622:83435 — grab handle, 52px wide, 3px thick */
+.tour::before {
+  background: var(--s2a-color-gray-300);
+  border-radius: 2px;
+  content: '';
+  display: block;
+  height: 3px;
+  margin: 0 auto 0;
+  width: 52px;
+}
+
+.tour-title {
+  background: var(--s2a-color-background-default);
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-inline: var(--s2a-spacing-md) calc(var(--s2a-spacing-md) + 48px);
+}
+
+.tour-title .eyebrow {
+  color: var(--s2a-color-content-eyebrow);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  font-weight: normal;
+  line-height: var(--s2a-typography-line-height-body-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+  margin: 0;
+}
+
+.tour-title :is(h1, h2, h3, h4, h5, h6) {
+  color: var(--s2a-color-content-label);
+  font-size: var(--s2a-typography-font-size-title-6);
+  font-weight: var(--s2a-font-weight-heading);
+  line-height: var(--s2a-typography-line-height-title-6);
+  letter-spacing: -0.48px;
+  margin: 0;
+}
+
+.tour-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.tour-section:nth-of-type(even) {
+  align-items: flex-start;
+  padding-block: 0 24px;
+  padding-inline: 24px;
+}
+
+.tour-section:last-of-type {
+  align-items: center;
+  padding-block: 80px 24px;
+  padding-inline: 8px;
+}
+
+.tour-section:nth-of-type(odd):not(:last-of-type) {
+  align-self: flex-end;
+  align-items: flex-start;
+  padding-block: var(--s2a-layout-lg) 0;
+  padding-inline: 8px;
+}
+
+.tour-counter {
+  color: var(--s2a-color-background-knockout);
+  font-size: var(--s2a-typography-font-size-label);
+  font-weight: var(--s2a-font-weight-caption);
+  letter-spacing: var(--s2a-typography-letter-spacing-label);
+  line-height: var(--s2a-typography-line-height-label);
+  margin-block-end: var(--s2a-spacing-md);
+}
+
+.tour-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
+  max-width: 286px;
+}
+.tour-section:nth-of-type(even) .tour-content {
+  max-width: 286px;
+}
+
+.tour-section:last-of-type .tour-content {
+  max-width: 286px;
+  text-align: center;
+}
+
+.tour-content p {
+  margin-block: 0;
+}
+
+.tour-content p + p {
+  margin-block-start: var(--s2a-spacing-lg);
+}
+
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-content p {
+  color: var(--s2a-color-background-knockout);
+  font-size: var(--s2a-typography-font-size-body-sm);
+  line-height: var(--s2a-typography-line-height-body-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+}
+
+.tour-section:nth-of-type(even) .tour-content p,
+.tour-section:last-of-type .tour-content p {
+  color: var(--s2a-color-background-knockout);
+  font-size: var(--s2a-typography-font-size-body-xs);
+  line-height: var(--s2a-typography-line-height-body-xs);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-xs);
+}
+
+.tour-media {
+  margin-block-start: var(--s2a-spacing-lg);
+  overflow: hidden;
+  position: relative;
+}
+
+.tour-media picture {
+  display: block;
+}
+
+.tour-media img {
+  border-radius: var(--s2a-border-radius-sm);
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.tour-section:nth-of-type(even) .tour-media {
+  margin-inline-start: -24px;
+  padding-inline-end: var(--s2a-spacing-lg);
+  width: min(495px, 100%);
+}
+
+.tour-section:nth-of-type(even) .tour-media img {
+  border-radius: 0 var(--s2a-border-radius-sm) var(--s2a-border-radius-sm) 0;
+  max-width: 495px;
+}
+
+.tour-section:last-of-type .tour-media {
+  background: #000;
+  border-radius: var(--s2a-border-radius-sm);
+  width: 100%;
+}
+
+.tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
+  min-width: 286px;
+  max-width: 387px;
+  width: 100%;
+}
+
+/* Figma 9543:116727 */
+.tour-transition {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--s2a-layout-sm);
+  width: 100%;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- different context */
+.tour-transition img {
+  border-radius: var(--s2a-border-radius-sm);
+  max-width: 160px;
+  width: auto;
+}
+
+.tour-cta {
+  align-items: center;
+  backdrop-filter: blur(10px);
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0%), #fff);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  padding-block: 16px;
+  padding-inline: 16px;
+  position: sticky;
+  width: 100%;
+  z-index: 1;
+}
+
+/* stylelint-disable-next-line no-descending-specificity -- different context */
+.tour-cta p,
+.tour-cta .action-area {
+  display: flex;
+  justify-content: center;
+  line-height: 0;
+  margin: 0;
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .tour::before {
+    display: none;
+  }
+
+  .tour {
+    padding-top: 16px;
+  }
+
+  .tour-section:nth-of-type(even) {
+    align-items: flex-start;
+  }
+
+  .tour-section:last-of-type {
+    align-items: center;
+    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-xs);
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) {
+    align-self: flex-end;
+    align-items: flex-start;
+    padding-inline: var(--s2a-spacing-xs);
+    padding-block-start: var(--s2a-layout-lg);
+  }
+
+  .tour-section:nth-of-type(even) .tour-content {
+    max-width: 286px;
+    padding-block-end: var(--s2a-spacing-lg);
+    padding-inline: var(--s2a-spacing-lg);
+  }
+
+  .tour-section:last-of-type .tour-content {
+    max-width: 394px;
+    padding-block-end: var(--s2a-spacing-lg);
+    text-align: center;
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
+    margin-inline-end: 100px;
+    max-width: 286px;
+  }
+
+  .tour-section:nth-of-type(even) .tour-media {
+    width: 100%;
+  }
+
+  .tour-section:nth-of-type(odd):not(:last-of-type) .tour-media {
+    margin-inline: 0;
+    width: 387px;
+  }
+
+  /* Figma 9659:9817, 10408:45591 — CTA bar 596×96px, blur 100px */
+  .tour-cta {
+    backdrop-filter: blur(100px);
+    padding-block: 24px;
+    padding-inline: 24px;
+  }
+}

@@ -129,6 +129,7 @@ const C2_BLOCKS = [
   'section-metadata',
   'side-by-side',
   'social-proof',
+  'tour',
   'visually-hidden',
   'product-marquee-grid',
   'hover-list',
