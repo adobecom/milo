@@ -103,6 +103,7 @@
 
     .explore-card-foreground {
       aspect-ratio: 1 / 1.2;
+      transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
 
       img {
         object-fit: cover;
@@ -186,6 +187,12 @@
 
     &:hover {
       color: inherit;
+
+      &+ .explore-card-background,
+      & .explore-card-foreground {
+        filter: brightness(0.98);
+        transform: scale(1.015);
+      }
     }
   }
 
@@ -195,6 +202,7 @@
   }
 
   &.bento .explore-card-background {
+    transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
     img,
     .video-container {
       opacity: 1;
