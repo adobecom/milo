@@ -1,0 +1,205 @@
+:root {
+  /* Tab Colors */
+  --tabs-active-text-color: #2c2c2c; /* keep for testing ace1205 */
+  --tabs-active-bg-color: var(--s2a-color-gray-25);
+  --tabs-container-background-color: var(--s2a-color-transparent-black-04);
+  
+  /* Pill colors */
+  --tabs-pill-font-size: var(--s2a-typography-font-size-label);
+  --tabs-pill-text-color: var(--s2a-color-transparent-black-64);
+  --tabs-pill-bg-color: transparent;
+  --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
+  --tabs-pill-text-color-hover: #2c2c2c;
+  --tabs-pill-text-selected-color: var(--s2a-color-content-knockout); 
+  --tabs-pill-bg-focus: var(--s2a-color-gray-700); /* keep for testing ace1205 focus feature if needed */
+  --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); /* keep for testing ace1205 active feature if needed */
+  --tabs-pill-text-focus-color: var(--s2a-color-gray-25); /* keep for testing ace1205 focus feature if needed */
+  --m-rounded-corners-tabs: 50px;
+}
+
+.tabs {
+  position: relative;
+  margin: 0;
+  background-color: var(--tabs-active-bg-color);
+  z-index: 1;
+}
+
+.tabs .tabList {
+  position: relative;
+  display: flex;
+  z-index: 2;
+  /* ScrollProps - If content exceeds height of container, overflow! */
+  overflow: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox 64 */
+  box-shadow: none;
+  background: var(--tabs-container-background-color); 
+  border-radius: var(--m-rounded-corners-tabs);
+  margin: 0 var(--s2a-spacing-20);
+}
+
+.tabs .tabList::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+.tabs .tab-headline {
+  margin-top: var(--spacing-xxl); /* check- --spacing-xxl is not an s2a token */
+  margin-bottom: var(--spacing-xl); /* check- --spacing-xl is not an s2a token */
+}
+
+.tabs .tabList .tab-list-container {
+  display: flex;
+  width: auto;
+  min-width: 300px;
+  box-sizing: content-box;
+  align-items: center;
+  align-self: stretch;
+  position: relative; /* for slider */
+}
+
+.tabs .tabs-wrapper {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+/* contained tabs content */
+[role='tabpanel'] > .section > .content,
+.tabs.contained .tab-content .tab-content-container {
+  width: var(--grid-container-width);
+  margin: 0 auto;
+}
+
+.tab-content [role='tabpanel'] .section {
+  position: relative;
+}
+
+.tab-content [role='tabpanel'] .section picture.section-background {
+  z-index: 0;
+}
+
+.tab-content [role='tabpanel'] .section > .content {
+  z-index: 1;
+  position: relative;
+}
+
+.tab-content [role='tabpanel'] .section[class*='-up'] > .content {
+  width: 100%;
+}
+
+.tabs .tabList .btn-wrapper {
+  display: flex;
+  padding: var(--s2a-spacing-2xs);
+  flex-direction: column;
+  align-items: flex-start;
+  align-self: stretch;
+}
+
+.tabs .tabList button.tab-button {
+  color: var(--tabs-pill-text-color);
+  cursor: pointer;
+  font-family: var(--body-font-family);
+  font-size: var(--tabs-pill-font-size); 
+  text-align: center;
+  font-style: normal;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: var(--s2a-font-line-height-2xs);
+  margin: 0;
+  border-radius: var(--m-rounded-corners-tabs);
+  border: var(--s2a-border-width-md) solid transparent;
+  padding: 0 var(--s2a-spacing-lg);
+  text-decoration: none;
+  transition: color 0.1s ease-in-out;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  width: auto;
+
+  /* add slider - keep button text above the indicator */
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+  background: var(--tabs-pill-bg-color);
+  height: var(--s2a-spacing-xl);
+}
+
+.tabs .tabList button.tab-button:hover {
+  color: var(--tabs-pill-text-color-hover);
+}
+
+.tabs .tabList button.tab-button[aria-selected="true"] {
+  color: var(--tabs-pill-text-selected-color);
+  background: var(--tabs-pill-bg-color-selected);
+  transition: background 0s 0.25s, color 0.2s 0s ease-out;
+}
+
+/* add slider - pill that slides behind buttons to show selection */
+.tabs .tab-indicator {
+  position: absolute;
+  top: var(--s2a-spacing-2xs);
+  bottom: var(--s2a-spacing-2xs);
+  left: 0;
+  background: var(--tabs-pill-bg-color-selected);
+  border-radius: var(--m-rounded-corners-tabs);
+  transition: transform 0.25s ease, width 0.35s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* .tabs .tabList button.tab-button:active {
+  color: var(--tabs-pill-text-selected-color);
+  background: var(--tabs-pill-bg-color-active);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-background-knockout);
+} */
+
+/* .tabs .tabList button.tab-button:focus {
+  color: var(--tabs-pill-text-focus-color);
+  background: var(--tabs-pill-bg-focus);
+} */
+
+/* Section Metadata - keep for testing ace1205 when merch is available */
+.tabs-background-transparent .tabs,
+.tabs-background-transparent .tabs .tabList,
+.tabs-background-transparent .tabs .tabList button.tab-button[aria-selected="true"] {
+  background: transparent;
+}
+
+@media screen and (max-width: 599px) {
+  .tabs .tabs-wrapper {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .tabs .tabs-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tabs [role='tablist'] {
+    overflow: visible;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  .tabs.left .tabs-wrapper {
+    justify-content: flex-start;
+    width: 100vw;
+  }
+  
+  .tabs.right .tabs-wrapper {
+    justify-content: flex-end;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  [role='tabpanel'] > .section[class*='-up'] > .content,
+  [role='tabpanel'] > .section[class*='grid-width-'] > .content {
+    width: auto;
+  }
+}
+
