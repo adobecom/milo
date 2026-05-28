@@ -1594,7 +1594,7 @@ export function isMasErrorEnv(host = window.location.host) {
   return host.includes('localhost') || host.includes('.aem.page');
 }
 
-export async function createFragmentErrorEl(uuid, label = 'Frag', status = null) {
+export async function createFragmentErrorEl(uuid, label = 'Card', status = null) {
   loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
   let badge = 'Load Error';
   if (status === 404) {

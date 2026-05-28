@@ -71,10 +71,10 @@ export async function checkReady(masElement, fragment) {
   if (isMasErrorEnv()) {
     const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
     if (masElement.hasAttribute('failed')) {
-      createFragmentErrorEl(uuid, 'Frag').then((el) => masElement.insertAdjacentElement('beforebegin', el));
+      createFragmentErrorEl(uuid, 'Card').then((el) => masElement.insertAdjacentElement('beforebegin', el));
     } else {
       masElement.addEventListener('aem:error', async (e) => {
-        masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Frag', e.detail?.status));
+        masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Card', e.detail?.status));
       }, { once: true });
     }
   }
