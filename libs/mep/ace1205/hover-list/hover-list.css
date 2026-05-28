@@ -60,10 +60,6 @@
   }
 }
 
-/* Reset all popover UA defaults below desktop. The popover attribute brings
-   position: fixed, inset: 0, margin: auto, border, padding, background, and
-   display: none when closed — none of which we want for the inline thumbnail.
-   At desktop the popover API takes over (see the @media 1280 block). */
 @media (width < 1280px) {
   .hover-list .hover-list-media {
     background: transparent;
