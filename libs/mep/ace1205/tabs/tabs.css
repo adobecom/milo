@@ -17,6 +17,7 @@
   --tabs-pill-bg-focus: var(--s2a-color-gray-700); /* keep for testing ace1205 focus feature if needed */
   --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); /* keep for testing ace1205 active feature if needed */
   --tabs-pill-text-focus-color: var(--s2a-color-gray-25); /* keep for testing ace1205 focus feature if needed */
+  --tabs-pill-border-focus-color: var(--s2a-color-blue-800);
   --m-rounded-corners-tabs: 50px;
 }
 
@@ -141,7 +142,6 @@
   transition: background 0s 0.25s, color 0.2s 0s ease-out;
 }
 
-/* add slider - pill that slides behind buttons to show selection */
 .tabs .tab-indicator {
   position: absolute;
   top: var(--s2a-spacing-2xs);
@@ -154,6 +154,7 @@
   z-index: 0;
 }
 
+/* Accessibility states */
 /* .tabs .tabList button.tab-button:active {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color-active);
@@ -164,6 +165,11 @@
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
 } */
+
+.tabs .tabList button.tab-button:focus-visible {
+  outline: 2px solid var(--tabs-pill-border-focus-color);
+  outline-offset: -2px;
+}
 
 /* Section Metadata - keep for testing ace1205 when merch is available */
 .tabs-background-transparent .tabs,
