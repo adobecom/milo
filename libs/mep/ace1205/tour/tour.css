@@ -49,7 +49,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   color: var(--s2a-color-content-default);
   display: flex;
   flex-direction: column;
-  max-width: 596px;
   overflow-x: clip;
   padding-block-start: 13px;
   padding-block-end: 0;
@@ -69,10 +68,10 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
 .tour-title {
   background: var(--s2a-color-background-default);
-  height: 48px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-block: var(--s2a-spacing-sm);
   padding-inline: var(--s2a-spacing-md) calc(var(--s2a-spacing-md) + 48px);
 }
 
@@ -90,7 +89,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   font-size: var(--s2a-typography-font-size-title-6);
   font-weight: var(--s2a-font-weight-heading);
   line-height: var(--s2a-typography-line-height-title-6);
-  letter-spacing: -0.48px;
+  letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
   margin: 0;
 }
 
@@ -130,21 +129,15 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 .tour-content {
   display: flex;
   flex-direction: column;
-}
-
-.tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
-  max-width: 286px;
-}
-.tour-section:nth-of-type(even) .tour-content {
   max-width: 286px;
 }
 
 .tour-section:last-of-type .tour-content {
-  max-width: 286px;
   text-align: center;
 }
 
 .tour-content p {
+  color: var(--s2a-color-background-knockout);
   margin-block: 0;
 }
 
@@ -153,7 +146,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 }
 
 .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content p {
-  color: var(--s2a-color-background-knockout);
   font-size: var(--s2a-typography-font-size-body-sm);
   line-height: var(--s2a-typography-line-height-body-sm);
   letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
@@ -161,7 +153,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
 .tour-section:nth-of-type(even) .tour-content p,
 .tour-section:last-of-type .tour-content p {
-  color: var(--s2a-color-background-knockout);
   font-size: var(--s2a-typography-font-size-body-xs);
   line-height: var(--s2a-typography-line-height-body-xs);
   letter-spacing: var(--s2a-typography-letter-spacing-body-xs);
@@ -230,6 +221,7 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   display: flex;
   justify-content: center;
   padding-block: 16px;
+  padding-block-end: max(16px, env(safe-area-inset-bottom));
   padding-inline: 16px;
   position: sticky;
   width: 100%;
@@ -273,7 +265,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
   }
 
   .tour-section:nth-of-type(even) .tour-content {
-    max-width: 286px;
     padding-block-end: var(--s2a-spacing-lg);
     padding-inline: var(--s2a-spacing-lg);
   }
@@ -286,7 +277,6 @@ html[dir="rtl"] .dialog-modal:has(.tour) button.dialog-close {
 
   .tour-section:nth-of-type(odd):not(:last-of-type) .tour-content {
     margin-inline-end: 100px;
-    max-width: 286px;
   }
 
   .tour-section:nth-of-type(even) .tour-media {

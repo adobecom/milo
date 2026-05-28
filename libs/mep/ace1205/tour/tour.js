@@ -52,7 +52,6 @@ function decorateSection(block) {
   // Figma spec: a single frosted CTA bar sticks at the bottom of the modal.
   // The CTA supports variants via block-level classes (e.g., tour (arrow-down)):
   //   arrow-down, arrow-left, arrow-up — arrow direction
-  //   size-small — smaller 24px icons
   //   full-width — stretches CTA to 100% width
   //   no-icon — text + arrow only (hides product icon)
   let modalCta = null;
@@ -145,13 +144,7 @@ function decorateSection(block) {
         }
         // Default is right arrow (no additional class needed)
 
-        // Apply size variant
-        if (block.classList.contains('size-small')) {
-          link.classList.add('size-small');
-          iconButton.classList.add('small');
-        }
-
-        // Apply other variants
+        // Apply variants
         if (block.classList.contains('full-width')) {
           link.classList.add('full-width');
         }
