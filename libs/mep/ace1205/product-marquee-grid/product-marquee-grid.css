@@ -1,10 +1,12 @@
 .product-marquee-grid {
   background: var(--s2a-color-background-default);
+  display: flex;
+  min-block-size: 494px;
 
   .pm-content {
     display: flex;
+    flex: 1;
     flex-direction: column;
-    min-block-size: 494px;
     padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
   }
 
@@ -52,10 +54,11 @@
     }
 
     .pm-promo-chevron {
-      align-items: center;
+      border-radius: var(--s2a-border-radius-4);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
       background: var(--s2a-color-transparent-white-16);
+      align-items: center;
       block-size: 32px;
-      border-radius: var(--s2a-border-radius-sm);
       color: var(--s2a-color-content-knockout);
       display: flex;
       flex-shrink: 0;
@@ -67,10 +70,11 @@
 
 @media (width >= 768px) {
   .product-marquee-grid {
+    min-block-size: 500px;
+
     .pm-content {
       --grid-margin-width: var(--s2a-spacing-3xl);
       flex-direction: row;
-      min-block-size: 500px;
       padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
     }
 
@@ -81,7 +85,7 @@
 
     .pm-foreground {
       .heading-4 {
-        max-width: min(476px, 80%);
+        max-width: min(467px, 80%);
       }
     }
 
