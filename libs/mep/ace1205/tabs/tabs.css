@@ -67,7 +67,6 @@
     scrollbar-width: none; /* Use alongside -webkit-scrollbar */
     background: var(--tabs-container-background-color);
     border-radius: var(--m-rounded-corners-tabs);
-    margin: 0 var(--s2a-spacing-20);
 
     &::-webkit-scrollbar {
       display: none; /* Safari and Chrome */
@@ -150,6 +149,7 @@
 
     [role='tablist'] {
       overflow: visible;
+      margin: 0 var(--s2a-spacing-20);
     }
   }
 
@@ -190,43 +190,43 @@
   }
 }
 
-/* Animation for tab content entrance */
-@keyframes tab-content-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.tab-content-container [role='tabpanel']:not([hidden]) .section > * {
-  animation: tab-content-in 0.5s ease both;
-}
-
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(2) { animation-delay: 0.1s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(3) { animation-delay: 0.2s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(4) { animation-delay: 0.3s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(5) { animation-delay: 0.4s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(6) { animation-delay: 0.5s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(7) { animation-delay: 0.6s; }
-.tab-content-container [role='tabpanel']:not([hidden]) .section > *:nth-child(8) { animation-delay: 0.7s; }
-
-@media (prefers-reduced-motion: reduce) {
-  .tab-content-container [role='tabpanel']:not([hidden]) .section > * {
-    animation: none;
-  }
-}
-
 /* Section Metadata - keep for testing ace1205 when merch is available */
 .tabs-background-transparent {
   .tabs,
   .tabs [role='tablist'],
   .tabs [role='tablist'] button.tab-button[aria-selected="true"] {
     background: transparent;
+  }
+}
+
+@media screen and (min-width: 600px) {
+  /* Animation for tab content entrance */
+  @keyframes tab-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .tabs.staggered-intro .tab-content-container [role='tabpanel']:not([hidden]) .section > * {
+    animation: tab-content-in 0.5s ease both;
+
+    &:nth-child(2) { animation-delay: 0.1s; }
+    &:nth-child(3) { animation-delay: 0.2s; }
+    &:nth-child(4) { animation-delay: 0.3s; }
+    &:nth-child(5) { animation-delay: 0.4s; }
+    &:nth-child(6) { animation-delay: 0.5s; }
+    &:nth-child(7) { animation-delay: 0.6s; }
+    &:nth-child(8) { animation-delay: 0.7s; }
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
   }
 }
 
