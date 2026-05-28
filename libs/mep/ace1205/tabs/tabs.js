@@ -366,6 +366,7 @@ const init = async (block) => {
     if (activeTab) {
       indicator.style.transition = 'none';
       moveIndicator(indicator, activeTab, tabListContainer);
+      scrollTabIntoView(activeTab);
       requestAnimationFrame(() => { indicator.style.transition = ''; });
     }
   });
