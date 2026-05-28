@@ -21,11 +21,6 @@ const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgCl
   </defs>
 </svg>`;
 
-const aiIconDark = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M9.91819 13.2491C9.69944 13.2491 9.47874 13.1925 9.27952 13.0772C8.79807 12.7989 8.55491 12.2471 8.67307 11.7042L9.40061 8.33015L7.08225 5.77253C6.7092 5.36042 6.64475 4.76081 6.92307 4.27937C7.20139 3.79695 7.75803 3.55378 8.29612 3.67292L11.6701 4.40046L14.2278 2.0821C14.6409 1.7071 15.2405 1.64558 15.7209 1.92292C16.2024 2.20124 16.4455 2.753 16.3274 3.29597L15.5998 6.66999L17.9182 9.22761C18.2912 9.63874 18.3547 10.2384 18.0774 10.7198C17.7991 11.2003 17.2493 11.4454 16.7053 11.3282L13.3313 10.5987L10.7727 12.9181C10.5315 13.1368 10.2258 13.2491 9.91819 13.2491ZM10.8918 8.53328L10.2873 11.3331L12.4094 9.40925C12.7121 9.13484 13.1301 9.02155 13.5315 9.10749L16.3332 9.71296L14.4094 7.59089C14.134 7.2862 14.0217 6.8653 14.1096 6.46491L14.7131 3.66706L12.5911 5.59089C12.2864 5.86628 11.8664 5.97761 11.4651 5.89069L8.66722 5.28717L10.5911 7.40924C10.8664 7.71295 10.9787 8.13289 10.8918 8.53328Z" fill="#FF6756"/>
-<path d="M3.34569 18.252C3.21678 18.252 3.08788 18.2188 2.97069 18.1514C2.68846 17.9883 2.54393 17.6621 2.61229 17.3437L2.91893 15.9258L1.94432 14.8516C1.72557 14.6103 1.68748 14.2549 1.85057 13.9726C2.01366 13.6904 2.34178 13.5498 2.65819 13.6142L4.07616 13.9209L5.15038 12.9463C5.39257 12.7265 5.74608 12.6894 6.02929 12.8525C6.31152 13.0156 6.45605 13.3418 6.38769 13.6601L6.08105 15.0781L7.05566 16.1523C7.27441 16.3935 7.3125 16.749 7.14941 17.0312C6.98632 17.3135 6.65722 17.4521 6.34179 17.3896L4.92382 17.083L3.8496 18.0576C3.708 18.1855 3.52733 18.252 3.34569 18.252Z" fill="#FF6756"/>
-</svg>`;
-
 const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const animationMs = 500;
@@ -527,9 +522,7 @@ function decorateCards(el, cards) {
   const cardRows = cards.querySelectorAll(':scope > div');
   cardRows.forEach((card, index) => {
     const cardImage = card.querySelector('picture');
-    const cardText = createTag('div', { class: 'prompt-card-text' }, `${variants.isDark || variants.isC2Dark
-      ? aiIconDark(`card-icon-${index + 1}`, 'card-icon', null, 80)
-      : aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
+    const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
       'daa-ll': getAnalyticsLabel('1'),
@@ -561,7 +554,7 @@ function decorateInput(el, input) {
     class: 'bc-input-field-label',
     'aria-describedby': 'bc-label-tooltip',
     tabindex: 0,
-  }, `${variants.isDark || variants.isC2Dark ? aiIconDark('ai-icon-input', 'input-icon', chatLabelText, 20) : aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
+  }, `${aiIcon('ai-icon-input', 'input-icon', chatLabelText, 20)}`);
   const fieldLabelToolTip = createTag('div', { id: 'bc-label-tooltip', class: 'bc-input-tooltip', role: 'tooltip' }, chatLabelText);
 
   fieldLabel.append(fieldLabelToolTip);
