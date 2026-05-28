@@ -671,9 +671,6 @@ export default async function init(el) {
     variants.isFloatingAnchorHide = true;
   }
 
-  if (el.classList.contains('dark')) variants.isDark = true;
-  if (el.classList.contains('c2-dark')) variants.isC2Dark = true;
-
   el.classList.forEach((classItem) => {
     if (classItem.includes('floating-delay')) {
       variants.floatingDelay = true;
