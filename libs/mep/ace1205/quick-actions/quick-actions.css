@@ -73,21 +73,21 @@
     padding-block-end: var(--s2a-spacing-16);
     padding-inline: var(--s2a-spacing-16);
 
-    &::after {
-      content: "";
-      display: block;
+  }
+
+  .quick-actions-chevron {
+    flex-shrink: 0;
+    color: var(--s2a-color-content-default);
+    transition: transform 0.5s var(--parallax-easing);
+
+    svg {
       inline-size: 3px;
       block-size: 6px;
-      flex-shrink: 0;
-      background-image: url('../../../c2/assets/img/chevron-right.svg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      filter: brightness(0);
-      transition: transform 0.5s var(--parallax-easing);
+      display: block;
     }
   }
 
-  .quick-actions-tile:hover .quick-actions-tile-footer::after {
+  .quick-actions-tile:hover .quick-actions-chevron {
     transform: translate3d(var(--s2a-spacing-4), 0, 0);
   }
 
@@ -105,11 +105,11 @@
   }
 }
 
-[dir="rtl"] .quick-actions .quick-actions-tile-footer::after {
+[dir="rtl"] .quick-actions .quick-actions-chevron {
   transform: scaleX(-1);
 }
 
-[dir="rtl"] .quick-actions .quick-actions-tile:hover .quick-actions-tile-footer::after {
+[dir="rtl"] .quick-actions .quick-actions-tile:hover .quick-actions-chevron {
   transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
 }
 
@@ -153,7 +153,7 @@
     padding-inline: var(--s2a-spacing-32);
   }
 
-  .quick-actions .quick-actions-tile-footer::after {
+  .quick-actions .quick-actions-chevron svg {
     inline-size: var(--s2a-spacing-2xs);
     block-size: var(--s2a-spacing-xs);
   }
@@ -184,10 +184,6 @@
     padding-inline: var(--s2a-spacing-24);
   }
 
-  .quick-actions .quick-actions-tile-footer::after {
-    inline-size: 3px;
-    block-size: 6px;
-  }
 }
 
 @media (width >= 1441px) {
@@ -209,11 +205,6 @@
     font-size: var(--s2a-font-size-20);
     line-height: var(--s2a-font-line-height-20);
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
-  }
-
-  .quick-actions .quick-actions-tile-footer::after {
-    inline-size: 3.4px;
-    block-size: 6.7px;
   }
 }
 
@@ -238,7 +229,7 @@
     letter-spacing: var(--s2a-font-letter-spacing-neg-0_96);
   }
 
-  .quick-actions .quick-actions-tile-footer::after {
+  .quick-actions .quick-actions-chevron svg {
     inline-size: 5px;
     block-size: 10px;
   }

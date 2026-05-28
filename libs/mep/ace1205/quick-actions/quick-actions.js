@@ -1,6 +1,8 @@
 import { decorateViewportContent, decorateBlockText } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
+const CHEVRON_SVG = '<svg viewBox="0 0 4.5 7.5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
 function decorateSectionHeader(block) {
   const firstRow = block.children[0];
   if (!firstRow) return null;
@@ -31,7 +33,9 @@ function buildTile(tileRow) {
 
   if (labelLink) {
     const footer = createTag('div', { class: 'quick-actions-tile-footer' });
-    footer.append(createTag('span', { class: 'quick-actions-tile-label' }, labelLink.textContent.trim()));
+    const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' });
+    chevron.innerHTML = CHEVRON_SVG;
+    footer.append(createTag('span', { class: 'quick-actions-tile-label' }, labelLink.textContent.trim()), chevron);
     tile.append(footer);
   }
 
