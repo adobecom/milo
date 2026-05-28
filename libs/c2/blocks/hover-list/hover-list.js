@@ -21,9 +21,10 @@ function layerConfig(i, n) {
   };
 }
 
-// Scale curve: 0.18 → peak 1.15 (at intro=0.52) → 1.0 (at intro=1).
+// Scale curve: 0.18 → 1.0, monotonic ease-out, no overshoot.
 function introScale(intro) {
-  return intro < 0.52 ? 0.18 + intro * 1.865 : 1.15 - (intro - 0.52) * 0.3125;
+  const eased = 1 - (1 - intro) ** 2.2;
+  return 0.18 + eased * 0.82;
 }
 
 function stepLayer(layer, mx, my, vx) {
