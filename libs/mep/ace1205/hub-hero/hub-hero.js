@@ -10,7 +10,7 @@ const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
-const isMobile = () => window.innerWidth <= 768;
+const isMobile = () => window.matchMedia('(min-width: 768px)');
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -49,12 +49,10 @@ const handleMobileAutoplay = (carousel) => {
     // Play when this slide enters view — but not if the next slide is already covering it
     const slideObserver = new IntersectionObserver(
       ([entry]) => {
-        if (!isMobile()) return;
-        if (entry.isIntersecting) {
-          const nextRect = nextSlide?.getBoundingClientRect();
-          const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
-          if (!isCovered) video.play().catch(() => { });
-        }
+        if (!isMobile() || !entry.isIntersecting) return;
+        const nextRect = nextSlide?.getBoundingClientRect();
+        const isCovered = nextRect && nextRect.top < window.innerHeight * 0.7;
+        if (!isCovered) video.play().catch(() => { });
       },
       { threshold: 0.6 },
     );
@@ -145,22 +143,18 @@ const onHover = (event) => {
   removeHovered(slideEl.closest('.hub-hero-carousel'));
   slideEl.classList.add('hovered');
 
-  if (isRtl()) {
-    container.classList.toggle('stick-right', slideIndex === 1);
-    container.classList.toggle('stick-left', slideIndex === 5);
-  } else {
-    container.classList.toggle('stick-left', slideIndex === 1);
-    container.classList.toggle('stick-right', slideIndex === 5);
-  }
+  const rtl = isRtl();
+  container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
+  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === 5);
 
-  if (!hoverTracked) {
-    hoverTracked = true;
-    const block = slideEl.closest('[daa-lh]');
-    const blockName = block?.getAttribute('daa-lh');
-    const section = block?.parentElement?.closest('[daa-lh]');
-    const sectionName = section?.getAttribute('daa-lh');
-    sendAnalytics(`user-hover|${sectionName}|${blockName}`);
-  }
+  if (hoverTracked) return;
+
+  hoverTracked = true;
+  const block = slideEl.closest('[daa-lh]');
+  const blockName = block?.getAttribute('daa-lh');
+  const section = block?.parentElement?.closest('[daa-lh]');
+  const sectionName = section?.getAttribute('daa-lh');
+  sendAnalytics(`user-hover|${sectionName}|${blockName}`);
 };
 
 const buildSlide = ({ slide, index, slidesTotal }) => {
@@ -304,7 +298,4 @@ export default async function init(el) {
   el.replaceChildren();
 
   el.append(hero, grid, elasticCarousel);
-
-
-  document.head.querySelector('style[id="ims-body-style"]').remove();
 }

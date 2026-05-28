@@ -1,5 +1,21 @@
 /** main classes */
-:root {
+html[dir="rtl"] {
+  .hub-hero-carousel-item-footer::after {
+    transform: rotate(180deg);
+    left: 0;
+    right: unset;
+  }
+  
+  .hub-hero-carousel-item-header {
+    &:after {
+      transform: rotate(180deg);
+      left: 0;
+      right: unset;
+    }
+  }
+}
+
+.hub-hero {
   --hub-hero-height: 4200px;
   --hub-hero-header-height: 375px;
   --max-image-size: 388px;
@@ -28,38 +44,7 @@
   --grid-col-three-offset: 146px;
   --grid-col-four-offset: 36px;
   --grid-col-five-offset: -132px;
-}
 
-html[dir="rtl"] {
-  .hub-hero-carousel {
-    & .hub-hero-carousel-container {
-      & .hub-hero-carousel-item {
-        & .hub-hero-carousel-item-footer {
-          &:after {
-            transform: rotate(180deg);
-            left: 0;
-            right: unset;
-          }
-        }
-
-        & .hub-hero-carousel-item-header {
-          &:after {
-            transform: rotate(180deg);
-            left: 0;
-            right: unset;
-          }
-
-          .eyebrow {
-            font-size: var(--s2a-font-size-md);
-            font-weight: var(--s2a-font-weight-adobe-clean-bold);
-          }
-        }
-      }
-    }
-  }
-}
-
-.hub-hero {
   max-width: 1920px;
   height: var(--hub-hero-height);
   margin-inline: auto;
@@ -78,7 +63,7 @@ html[dir="rtl"] {
   animation-range: contain 0% contain 15%;
   height: var(--hub-hero-header-height);
 
-  div {
+  div[class^="body"] {
     position: absolute;
     inset: 0;
     top: var(--hub-hero-top-spacing);
@@ -355,7 +340,6 @@ html[dir="rtl"] {
   }
 }
 
-
 /** custom media rule 1 */
 @media (768px <=width < 1495px) {
   .hub-hero-carousel {
@@ -385,14 +369,14 @@ html[dir="rtl"] {
 
 /** custom media rule - 3 */
 @media (width >=1940px) {
-  :root {
+  .hub-hero {
     --grid-img-width: var(--max-image-size);
   }
 }
 
 /** desktop only */
 @media (1280px <=width) {
-  :root {
+  .hub-hero {
     --hub-hero-carousel-item-max-width: 20vw;
   }
 
@@ -407,8 +391,8 @@ html[dir="rtl"] {
 
 /** tablet only */
 @media (768px <=width < 1280px) {
-  :root {
-    --hub-hero-header-height: 320px;
+  .hub-hero {
+    --hub-hero-header-height: 332px;
     --start-gap: 2.75rem;
     --grid-col-one-offset: 74px;
     --grid-col-two-offset: 166px;
@@ -556,8 +540,9 @@ html[dir="rtl"] {
 
 /* mobile only */
 @media (width < 768px) {
-  :root {
-    --hub-hero-header-height: 280px;
+  .hub-hero {
+    --hub-hero-height: 4260px;
+    --hub-hero-header-height: 332px;
     --start-gap: 2.5rem;
     --carousel-item-media-height: 300px;
     --grid-gap-animation-range: 15% 100%;
@@ -588,8 +573,7 @@ html[dir="rtl"] {
     z-index: 1;
     justify-content: center;
     gap: 2.5rem;
-    animation-timeline: --hub-hero;
-    animation-range: var(--grid-gap-animation-range);
+    animation: none;
 
     .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
       visibility: hidden;
@@ -693,7 +677,7 @@ html[dir="rtl"] {
 
       animation: carouselMobileContainerExpand var(--paralax-easing) forwards;
       animation-timeline: --hub-hero;
-      animation-range: 15% 65%;
+      animation-range: 17% 65%;
 
       .hub-hero-carousel-item {
         position: sticky;
