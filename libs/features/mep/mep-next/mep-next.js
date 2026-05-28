@@ -1252,6 +1252,85 @@ export default async function decoratePreviewMode() {
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
+export function getManifestList() {
+  const mepConfig = parseMepConfig();
+  const { activities, page } = mepConfig;
+  const { pageId = 0 } = page;
+  const manifestParameter = [];
+
+  const manifests = activities.map((manifest, mIdx) => {
+    const {
+      url,
+      variantNames,
+      selectedVariantName = 'default',
+      targetActivityName,
+      source,
+      analyticsTitle,
+      eventStart,
+      eventEnd,
+      disabled,
+      geoRestriction,
+      mktgAction,
+    } = manifest;
+
+    const editPath = normalizePath(url);
+    const variants = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
+    const isDefaultSelected = !variantNames.includes(selectedVariantName) && pageId === 0;
+
+    if (isDefaultSelected) manifestParameter.push(`${url}--default`);
+
+    const options = [
+      { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
+      {
+        name: `${editPath}${pageId}`,
+        value: 'default',
+        id: `${editPath}${pageId}--default`,
+        dataManifest: editPath,
+        title: 'Default (control)',
+        label: 'Default (control)',
+        selected: isDefaultSelected,
+      },
+    ];
+
+    variants.forEach((variant) => {
+      const isSelected = variant === selectedVariantName;
+      if (isSelected) manifestParameter.push(`${url}--${variant}`);
+      options.push({
+        name: `${editPath}${pageId}`,
+        value: variant,
+        id: `${editPath}${pageId}--${variant}`,
+        dataManifest: editPath,
+        title: variant,
+        label: variant,
+        selected: isSelected,
+      });
+    });
+
+    return {
+      index: mIdx + 1,
+      editUrl: url,
+      fileName: getFileName(url),
+      analyticsTitle,
+      targetActivityName: targetActivityName ?? null,
+      isDefaultSelected,
+      selectedVariantName,
+      source: Array.isArray(source) ? source.join(', ') : source,
+      mktgAction,
+      geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
+      showActive: !!(eventStart && eventEnd) || !!disabled,
+      isActive: disabled ? 'inactive' : 'active',
+      eventStart: eventStart ? formatDate(eventStart) : null,
+      eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
+      eventEnd: eventEnd ? formatDate(eventEnd) : null,
+      lastSeen: manifest.lastSeen ? formatDate(new Date(manifest.lastSeen)) : null,
+      pageId,
+      options,
+    };
+  });
+
+  return { manifests, manifestParameter };
+}
+
 export function getManifestsFound() {
   const mepconfig = parseMepConfig();
   return mepconfig?.activities?.length ?? 0;
@@ -1332,13 +1411,3 @@ export async function getGeoUser() {
   if (!Object.keys(locale?.regions || {}).length || !lingoActive()) return 'Not Applicable';
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
 }
-
-// const lingoData = {
-//     langFirst: lingoActive() ? 'on' : 'off',
-//     geoFolder: page.geo || 'Us (None)',
-//     countryCookie: escapeHtml(countryCookie) ?? '',
-//     userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
-//     geoUser: await getGeoUserSupport(),
-//     updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
-//     total: regionalFragments.length + fallbackFragments.length,
-//   };
