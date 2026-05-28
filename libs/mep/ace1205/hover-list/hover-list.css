@@ -100,9 +100,7 @@
       }
 
       .hover-list-number {
-        .hover-list-number {
-          min-inline-size: var(--s2a-spacing-24);
-        }
+        min-inline-size: var(--s2a-spacing-24);
       }
     }
 
@@ -127,9 +125,6 @@
       }
     }
 
-    /* Override UA popover defaults to make this a transparent full-viewport
-       stage. Display is left to the popover API: closed → display: none,
-       open → top layer + display: block. */
     .hover-list-media {
       background: transparent;
       block-size: 100vh;

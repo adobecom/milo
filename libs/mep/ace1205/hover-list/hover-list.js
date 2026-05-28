@@ -9,7 +9,6 @@ const EXIT_STEP = 0.08;
 const TARGET_OFFSET = { x: 14, y: -4 };
 const SCROLL_SETTLE_MS = 150;
 
-// Interpolates layer config from back (slow, far spawn, least tilt) to front.
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
   const s = 120 - t * 24;
@@ -21,9 +20,9 @@ function layerConfig(i, n) {
   };
 }
 
-// Scale curve: 0.18 → peak 1.324 (at intro=0.52) → 1.0 (at intro=1).
 function introScale(intro) {
-  return intro < 0.52 ? 0.18 + intro * 2.2 : 1.34 - (intro - 0.52) * 0.708;
+  const eased = 1 - (1 - intro) ** 2.2;
+  return 0.6 + eased * 0.4;
 }
 
 function stepLayer(layer, mx, my, vx) {
@@ -92,9 +91,10 @@ function addCursorFollower(list) {
   const activate = (item) => {
     if (item === activeItem) return;
     if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+    activeItem = null;
+    activeLayers = [];
     const media = item.querySelector('.hover-list-media');
     if (!media) return;
-    // Drop pending exit for this item so it can't hide us mid-animation.
     exitingGroups = exitingGroups.filter((g) => g.media !== media);
     const pics = [...media.querySelectorAll('picture')];
     activeItem = item;
@@ -176,7 +176,7 @@ function decorate(block) {
   rows.slice(1).forEach((row, i) => {
     const [textCol, mediaCol] = row.children;
     const item = createTag('li', { class: 'hover-list-item' });
-    const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1).padStart(2, '0'));
+    const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1));
     const text = createTag('div', { class: 'hover-list-text heading-4' });
     if (textCol) text.append(...textCol.childNodes);
     item.append(number, text);
@@ -196,5 +196,6 @@ function decorate(block) {
 }
 
 export default function init(el) {
+  el.classList.add('container');
   decorateViewportContent(el, decorate);
 }
