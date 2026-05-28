@@ -21,7 +21,6 @@ function layerConfig(i, n) {
   };
 }
 
-// Scale curve: 0.18 → peak 1.324 (at intro=0.52) → 1.0 (at intro=1).
 function introScale(intro) {
   return intro < 0.52 ? 0.18 + intro * 2.2 : 1.34 - (intro - 0.52) * 0.708;
 }
@@ -92,6 +91,8 @@ function addCursorFollower(list) {
   const activate = (item) => {
     if (item === activeItem) return;
     if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+    activeItem = null;
+    activeLayers = [];
     const media = item.querySelector('.hover-list-media');
     if (!media) return;
     // Drop pending exit for this item so it can't hide us mid-animation.

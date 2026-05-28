@@ -100,9 +100,7 @@
       }
 
       .hover-list-number {
-        .hover-list-number {
-          min-inline-size: var(--s2a-spacing-24);
-        }
+        min-inline-size: var(--s2a-spacing-24);
       }
     }
 
