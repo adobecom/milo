@@ -298,6 +298,9 @@ export const CONFIG = {
               },
               managePeopleConfig: {
                 enableWorkflow: true,
+                params: {
+                  enableinlineoverlay: 's2-compat',
+                },
                 ...getConfig().unav?.profile?.managePeopleConfig,
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
