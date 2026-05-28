@@ -861,7 +861,7 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   gap: 24px;
   left: 50%;
   max-width: 1412px;
-  padding: 20px 24px;
+  padding: 20px;
   position: fixed;
   transform: translateX(-50%);
   width: calc(100% - 48px);

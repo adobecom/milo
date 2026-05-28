@@ -748,6 +748,23 @@ export default async function init(el) {
       if (mainEl) mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`;
       updatePillVisibility(el);
     };
+
+    // Need to move handleScroll outside of floating element, and add this functionality
+    const mainEl2 = document.querySelector('main');
+    let scrollPending2 = false;
+    window.addEventListener('scroll', () => {
+      if (scrollPending2) return;
+      scrollPending2 = true;
+      requestAnimationFrame(() => {
+        if (mainEl2) {
+          const threshold = window.scrollY + window.innerHeight - mainEl2.offsetTop;
+          el.style.bottom = threshold > mainEl2.scrollHeight
+            ? `${threshold - mainEl2.scrollHeight + ((parseFloat(mainEl.style.paddingBottom) - el.offsetHeight) / 2)}px`
+            : '';
+        }
+        scrollPending2 = false;
+      });
+    }, { passive: true });
     window.addEventListener('resize', updateLayout);
     requestAnimationFrame(updateLayout);
   }
