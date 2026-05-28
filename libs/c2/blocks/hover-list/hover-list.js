@@ -7,7 +7,6 @@ const ROTATE_LERP = 0.12;
 const INTRO_STEP = 0.009;
 const EXIT_STEP = 0.08;
 const TARGET_OFFSET = { x: 14, y: -4 };
-const SCROLL_SETTLE_MS = 150;
 
 function layerConfig(i, n) {
   const t = n > 1 ? i / (n - 1) : 0;
@@ -56,7 +55,7 @@ function addCursorFollower(list) {
   let exitingGroups = [];
   let rafId = null;
   let isScrolling = false;
-  let scrollEndTimer = null;
+  let lenisOff = null;
 
   const updateCursor = (e) => {
     cursor.vx = cursor.hasPrev ? e.clientX - cursor.x : 0;
@@ -133,14 +132,20 @@ function addCursorFollower(list) {
     if (item && list.contains(item)) activate(item);
   };
 
-  const onScroll = () => {
+  // Defer to Lenis (the project's smooth-scroll library) for scroll state.
+  // Lenis emits a `scroll` event on every update and dispatches a native
+  // `scrollend` CustomEvent on window when scrolling settles, so we don't
+  // need our own debounced scroll-end detection.
+  const onScrollStart = () => {
+    if (isScrolling) return;
     isScrolling = true;
     deactivate();
-    clearTimeout(scrollEndTimer);
-    scrollEndTimer = setTimeout(() => {
-      isScrolling = false;
-      activateAtPoint(cursor.x, cursor.y);
-    }, SCROLL_SETTLE_MS);
+  };
+
+  const onScrollEnd = () => {
+    if (!isScrolling) return;
+    isScrolling = false;
+    activateAtPoint(cursor.x, cursor.y);
   };
 
   document.addEventListener('mousemove', updateCursor, { passive: true });
@@ -151,13 +156,15 @@ function addCursorFollower(list) {
   });
   list.addEventListener('mouseenter', () => {
     if (!DESKTOP_MQ.matches) return;
-    document.addEventListener('scroll', onScroll, { passive: true });
+    lenisOff = window.lenis?.on('scroll', onScrollStart);
+    window.addEventListener('scrollend', onScrollEnd);
   });
   list.addEventListener('mouseleave', () => {
     isScrolling = false;
     deactivate();
-    clearTimeout(scrollEndTimer);
-    document.removeEventListener('scroll', onScroll);
+    lenisOff?.();
+    lenisOff = null;
+    window.removeEventListener('scrollend', onScrollEnd);
   });
 }
 
