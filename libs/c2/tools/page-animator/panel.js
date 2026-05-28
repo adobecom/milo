@@ -41,11 +41,22 @@ export function buildPanel(
   panel.id = 'page-animator-panel';
   panel.innerHTML = `
     <div class="pa-header">
-      <span>Page Animator</span>
+      <div class="pa-header-title">
+        <span class="pa-drag-handle" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="6" r="1.5"></circle><circle cx="15" cy="6" r="1.5"></circle>
+            <circle cx="9" cy="12" r="1.5"></circle><circle cx="15" cy="12" r="1.5"></circle>
+            <circle cx="9" cy="18" r="1.5"></circle><circle cx="15" cy="18" r="1.5"></circle>
+          </svg>
+        </span>
+        <strong>Page Animator</strong>
+      </div>
       <div class="pa-header-actions">
-        <button class="pa-btn" id="pa-import-btn">Import</button>
-        <button class="pa-btn" id="pa-download-btn">&#8595; JSON</button>
-        <button class="pa-btn" id="pa-help-btn">Instructions</button>
+        <button class="pa-btn" id="pa-import-btn" title="Import animations">Import</button>
+        <button class="pa-btn" id="pa-download-btn" title="Share animations">&#8595; Share</button>
+        <button class="pa-btn" id="pa-follow-btn" aria-label="Auto-scroll page on hover" title="Sync block highlight to panel">&#9678;</button>
+        <button class="pa-btn" id="pa-theme-btn" aria-label="Toggle theme" title="Toggle theme">&#9790;</button>
+        <button class="pa-btn" id="pa-help-btn" title="Show help">?</button>
       </div>
     </div>
     <div class="pa-instructions" id="pa-instructions" hidden>
@@ -288,6 +299,10 @@ export function buildPanel(
             if (item.id !== selectedId) {
               item.el.classList.add('pa-highlight');
               item.el.setAttribute('data-pa-label', item.label);
+              // Auto-scroll page to keep hovered element in view — toggled via #pa-follow-btn.
+              if (localStorage.getItem('pa-follow-hover') !== 'off') {
+                item.el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
             }
           });
           row.addEventListener('mouseleave', () => {

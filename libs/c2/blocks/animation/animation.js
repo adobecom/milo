@@ -1,6 +1,6 @@
 import { generateAnimId, buildCssRule } from '../../tools/page-animator/controls.js';
 
-const SKIP_CLASSES = new Set(['section-metadata', 'visually-hidden', 'animation']);
+const SKIP_CLASSES = new Set(['section-metadata', 'visually-hidden', 'animation', 'section-background']);
 
 export function parseVariant(classList) {
   const tokens = [...classList].filter((c) => c !== 'block' && c !== 'animation');

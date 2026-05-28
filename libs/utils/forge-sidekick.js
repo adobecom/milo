@@ -87,10 +87,10 @@ async function loadAndTrack(id, loadScript, src, type) {
   observer.disconnect();
 }
 
-// Dismiss others when the animator tab is clicked to expand the panel.
-// Delegated from document so it works regardless of when the tab is added.
+// Dismiss others when the animator toolbar button is clicked to expand the panel.
+// Delegated from document so it works regardless of when the button is added.
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('#page-animator-tab')) return;
+  if (!e.target.closest('#pa-toolbar-btn')) return;
   const panel = document.getElementById('page-animator-panel');
   if (panel && !panel.classList.contains('pa-open')) dismissOthers('forge-animator');
 }, { capture: true });
@@ -98,16 +98,13 @@ document.addEventListener('click', (e) => {
 export default async function handleForge(type, { loadScript }) {
   if (type === 'custom:forge-adjustments') {
     dismissOthers('forge-adjustments');
-    await loadAndTrack('forge-adjustments', loadScript,
-      window.forgeSources?.adjustments || 'http://localhost:3001/overlay.js');
+    await loadAndTrack('forge-adjustments', loadScript, window.forgeSources?.adjustments || 'http://localhost:3001/overlay.js');
   } else if (type === 'custom:forge-annotations') {
     dismissOthers('forge-annotations');
-    await loadAndTrack('forge-annotations', loadScript,
-      window.forgeSources?.annotations || 'https://page-commenter.jingleh12345.workers.dev/page-commenter.js');
+    await loadAndTrack('forge-annotations', loadScript, window.forgeSources?.annotations || 'https://page-commenter.jingleh12345.workers.dev/page-commenter.js');
   } else if (type === 'custom:forge-animator') {
     dismissOthers('forge-animator');
-    await loadAndTrack('forge-animator', loadScript,
-      window.forgeSources?.animator || miloSrc('/libs/c2/tools/page-animator/page-animator.js'), 'module');
+    await loadAndTrack('forge-animator', loadScript, window.forgeSources?.animator || miloSrc('/libs/c2/tools/page-animator/page-animator.js'), 'module');
   } else if (type === 'custom:forge-publish') {
     loadScript(window.forgeSources?.publish || 'http://localhost:3001/forge-publish.js');
   }
