@@ -580,7 +580,7 @@ html[dir="rtl"] {
 
       animation: hubHeroGridCarouselSlideHover var(--paralax-easing) both;
       animation-timeline: --hub-hero;
-      animation-range: entry 100% exit -260%;
+      animation-range: entry 100% exit 100%;
 
       img {
         width: 100%;
@@ -698,9 +698,9 @@ html[dir="rtl"] {
           --stack-contrast: 0;
           --stack-shrink: 4rem;
           z-index: 1;
-          animation: elasticMobileStackSlidesIgnoreOpactity var(--paralax-easing) both;
-          animation-timeline: view();
-          animation-range: entry 0% exit 100%;
+          animation: elasticMobileFirstSlide var(--paralax-easing) both;
+          animation-timeline: --hub-hero;
+          animation-range: entry 100% exit 100%;
 
           .hub-hero-carousel-item-container {
             .hub-hero-carousel-item-header {
@@ -885,7 +885,7 @@ html[dir="rtl"] {
   }
 }
 
-@keyframes elasticMobileStackSlidesIgnoreOpactity {
+@keyframes elasticMobileFirstSlide {
   0% {
     transform: translateY(-160px);
     filter: contrast(1);
