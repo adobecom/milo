@@ -541,7 +541,7 @@
 }
 
 .c2-dark .bc-input-field::before {
-  background: linear-gradient(135deg, #D73220, #F98F06, #7155FA) border-box;
+  background: linear-gradient(98deg, #9A3CF9 0%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 100%) border-box;
   border: 1px solid var(--bc-input-border-color);
 }
 
