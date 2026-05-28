@@ -541,7 +541,7 @@ html[dir="rtl"] {
 /* mobile only */
 @media (width < 768px) {
   .hub-hero {
-    --hub-hero-height: 4260px;
+    --hub-hero-height: 4460px;
     --hub-hero-header-height: 332px;
     --start-gap: 2.5rem;
     --carousel-item-media-height: 300px;
@@ -677,7 +677,7 @@ html[dir="rtl"] {
 
       animation: carouselMobileContainerExpand var(--paralax-easing) forwards;
       animation-timeline: --hub-hero;
-      animation-range: 17% 65%;
+      animation-range: entry 100% exit 100%;
 
       .hub-hero-carousel-item {
         position: sticky;
