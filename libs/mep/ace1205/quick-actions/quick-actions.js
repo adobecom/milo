@@ -26,16 +26,14 @@ function buildTile(tileRow) {
   const mediaPic = mediaCell?.querySelector('picture');
   const mediaImg = mediaPic?.querySelector('img') ?? mediaCell?.querySelector('img');
   if (mediaImg) {
-    mediaImg.alt = '';
     (mediaPic ?? mediaImg).classList.add('quick-actions-media');
     tile.append(mediaPic ?? mediaImg);
   }
 
   if (labelLink) {
     const footer = createTag('div', { class: 'quick-actions-tile-footer' });
-    const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' });
-    chevron.innerHTML = CHEVRON_SVG;
-    footer.append(createTag('span', { class: 'quick-actions-tile-label label-lg' }, labelLink.textContent.trim()), chevron);
+    const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG);
+    footer.append(createTag('span', { class: 'quick-actions-tile-label' }, labelLink.textContent.trim()), chevron);
     tile.append(footer);
   }
 
