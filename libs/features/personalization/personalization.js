@@ -352,7 +352,6 @@ const COMMANDS = {
 
     if (value) {
       if (attribute === 'href' && /^(javascript|data):/i.test(value.trim())) {
-        window.lana?.log(`MEP Security: Blocked dangerous href protocol: ${value}`, { tags: 'mep,security', severity: 'warning' });
         return;
       }
       el.setAttribute(attribute, value);
@@ -1280,7 +1279,6 @@ async function getManifestConfig(info, variantOverride) {
 const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => {
   const normalizedVal = normalizePath(val);
   if (val && !isTrustedUrl(normalizedVal)) {
-    window.lana?.log(`MEP Security: Blocked untrusted fragment URL: ${val}`, { tags: 'mep,security', severity: 'warning' });
     return null;
   }
   return {
@@ -1304,8 +1302,6 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.insertscript?.forEach((script) => {
     if (isTrustedUrl(script.val)) {
       loadScript(script.val);
-    } else {
-      window.lana?.log(`MEP Security: Blocked untrusted insertscript URL: ${script.val}`, { tags: 'mep,security', severity: 'warning' });
     }
   });
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
@@ -1404,7 +1400,6 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
   if (!isTrustedUrl(fragment)) {
-    window.lana?.log(`MEP Security: Blocked untrusted fragment command URL: ${fragment}`, { tags: 'mep,security', severity: 'warning' });
     return false;
   }
   const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
@@ -1464,8 +1459,6 @@ export async function applyPers({ manifests }) {
       await replaceInner(config.mep.replacepage.val, main);
       const { manifestId, targetManifestId } = config.mep.replacepage;
       addIds(main, manifestId, targetManifestId);
-    } else {
-      window.lana?.log(`MEP Security: Blocked untrusted replacepage URL: ${config.mep.replacepage.val}`, { tags: 'mep,security', severity: 'warning' });
     }
   }
 
@@ -1497,7 +1490,6 @@ function parseManifestUrlAndAddSource(manifestString, source) {
     .filter((path) => {
       if (!path) return false;
       if (isTrustedUrl(path)) return true;
-      window.lana?.log(`MEP Security: Blocked untrusted ${source} manifest URL: ${path}`, { tags: 'mep,security', severity: 'warning' });
       return false;
     })
     .map((manifestPath) => ({ manifestPath, source: [source] }));
@@ -1542,7 +1534,6 @@ export const combineMepSources = async (
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!isSameOriginManifestPath(manifestPath)) {
-        window.lana?.log(`MEP Security: Blocked external mep manifest URL: ${manifestPath}`, { tags: 'mep,security', severity: 'warning' });
         return;
       }
       if (!persManifestPaths.includes(manifestPath)) {
@@ -1605,7 +1596,6 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
     const content = item?.data?.content;
     if (!content || !(content.manifestLocation || content.manifestContent)) return null;
     if (content.manifestLocation && !isTrustedUrl(content.manifestLocation)) {
-      window.lana?.log(`MEP Security: Blocked untrusted AJO/Target manifestLocation: ${content.manifestLocation}`, { tags: 'mep,security', severity: 'warning' });
       return null;
     }
     return {
