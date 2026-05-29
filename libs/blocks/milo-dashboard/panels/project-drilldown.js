@@ -32,7 +32,7 @@ export default async function renderProjectDrilldown(
   try {
     [trends, logs] = await Promise.all([
       client.get('/trends/preflight', { since: '30d', interval: 'week', project: site }),
-      client.get('/preflight-logs', { projectKey: site, maxScore: 70, sortBy: 'perf_score', sortOrder: 'asc', limit: 20 }),
+      client.get('/preflight-logs', { projectKey: site, maxScore: 70, sortBy: 'performance_score', sortOrder: 'asc', limit: 20 }),
     ]);
   } catch (e) {
     container.replaceChildren(
