@@ -1,0 +1,26 @@
+.feds-promo-aside-wrapper .promo-close {
+  position: absolute;
+  right: var(--spacing-xxs);
+  top: 50%;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.feds-promo-aside-wrapper .promo-close svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.feds-promo-aside-wrapper .promo-close circle {
+  fill: var(--color-black);
+}
+
+.feds-promo-aside-wrapper .promo-close line {
+  stroke: var(--color-white);
+}
