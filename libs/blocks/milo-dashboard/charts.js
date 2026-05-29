@@ -1,6 +1,7 @@
 import { loadScript, getConfig } from '../../utils/utils.js';
 
 let loading;
+const instances = [];
 
 export function loadCharts() {
   if (window.echarts) return Promise.resolve(window.echarts);
@@ -15,6 +16,16 @@ export function loadCharts() {
 export function makeChart(el, option) {
   const chart = window.echarts.init(el, null, { renderer: 'svg' });
   chart.setOption(option);
-  window.addEventListener('resize', () => chart.resize());
+  const onResize = () => chart.resize();
+  window.addEventListener('resize', onResize);
+  instances.push({ chart, onResize });
   return chart;
+}
+
+export function clearCharts() {
+  instances.forEach(({ chart, onResize }) => {
+    window.removeEventListener('resize', onResize);
+    chart.dispose?.();
+  });
+  instances.length = 0;
 }

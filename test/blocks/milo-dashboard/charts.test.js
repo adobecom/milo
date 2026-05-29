@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
-const { loadCharts, makeChart } = await import('../../../libs/blocks/milo-dashboard/charts.js');
+const { loadCharts, makeChart, clearCharts } = await import('../../../libs/blocks/milo-dashboard/charts.js');
 
 describe('milo-dashboard charts', () => {
   afterEach(() => {
@@ -40,6 +40,20 @@ describe('milo-dashboard charts', () => {
       window.dispatchEvent(new Event('resize'));
 
       expect(chart.resize.called).to.be.true;
+    });
+  });
+
+  describe('clearCharts', () => {
+    it('disposes charts and removes resize listeners', () => {
+      const chart = { setOption: sinon.spy(), resize: sinon.spy(), dispose: sinon.spy() };
+      window.echarts = { init: sinon.stub().returns(chart) };
+
+      makeChart(document.createElement('div'), {});
+      clearCharts();
+
+      expect(chart.dispose.calledOnce).to.be.true;
+      window.dispatchEvent(new Event('resize'));
+      expect(chart.resize.called).to.be.false;
     });
   });
 });
