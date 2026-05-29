@@ -1,6 +1,6 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
-import { ARROW_RIGHT_WHITE } from '../../../c2/assets/icons.js';
+import icons from '../../../c2/assets/icons.js';
 
 export default function init(el) {
   const contentDiv = el.querySelector('div > div');
@@ -23,7 +23,7 @@ export default function init(el) {
   const ctaHref = linkEl?.getAttribute('href') || '#';
 
   const arrow = createTag('span', { class: 'icon-button arrow', 'aria-hidden': 'true' });
-  arrow.innerHTML = ARROW_RIGHT_WHITE;
+  arrow.innerHTML = icons.arrowRightWhite;
   const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
   el.replaceChildren(cta);
 
