@@ -14,6 +14,7 @@ import {
   getUserCountry,
   getGeoUser,
   getManifestList,
+  setPreviewButton,
 } from './mep-next.js';
 
 const SUMMARY_DATA_GETTERS = {
@@ -108,7 +109,7 @@ function buildManifestList(svgData) {
 }
 
 function buildLoadManifest(card, pageId) {
-  return createTag('input', { class: 'mep-load-manifest', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
+  return createTag('input', { class: 'mep-load-manifest', type: 'text', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
 }
 
 function buildToggle(card, pageId) {
@@ -241,6 +242,22 @@ function addCardListeners() {
   });
 }
 
+function addInputListeners() {
+  const inputs = document.querySelectorAll('input');
+
+  inputs.forEach((input) => {
+    input.addEventListener('change', setPreviewButton);
+  });
+}
+
+function addSelectListeners() {
+  const selects = document.querySelectorAll('select');
+
+  selects.forEach((select) => {
+    select.addEventListener('change', setPreviewButton);
+  });
+}
+
 async function buildOverlay() {
   const [svgData, cardData, gnavOffset] = await Promise.all([
     fetch(new URL('./mep-svg.json', import.meta.url)).then((r) => r.json()),
@@ -260,6 +277,8 @@ async function init() {
   await buildOverlay();
   addTabListeners();
   addCardListeners();
+  addInputListeners();
+  addSelectListeners();
 }
 
 init();

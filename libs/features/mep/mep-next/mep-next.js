@@ -1250,6 +1250,7 @@ export default async function decoratePreviewMode() {
   }, 100);
 }
 
+// Mep-Next Refactor
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
 export function getManifestList() {
@@ -1410,4 +1411,26 @@ export async function getGeoUser() {
   const { locale } = getConfig();
   if (!Object.keys(locale?.regions || {}).length || !lingoActive()) return 'Not Applicable';
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
+}
+
+export async function setPreviewButton() {
+  const popup = document.querySelector('#mep-drawer');
+  const options = popup.querySelectorAll('option:checked, input[type="text"]');
+
+  const manifestParameter = [...options].reduce((params, option) => {
+    if (option.closest('select')?.disabled || !option.value) return params;
+
+    let { value } = option;
+    if (option.classList.contains('mep-load-manifest')) {
+      try { value = new URL(value).pathname || value; } catch { /* invalid URL */ }
+    } else {
+      value = `${option.dataset.manifest}--${value}`;
+    }
+    params.push(value);
+    return params;
+  }, []);
+
+  const simulateHref = new URL(window.location.href);
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
 }
