@@ -167,7 +167,7 @@ video {
 button.play-pause-button {
   width: 32px;
   height: 32px;
-  border-radius: var(--s2a-border-radius-4);
+  border-radius: var(--s2a-border-radius-xs);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
   background: var(--s2a-color-transparent-black-04);
   cursor: pointer;
@@ -180,8 +180,8 @@ button.play-pause-button {
   bottom: var(--s2a-spacing-md);
 
   svg path {
-    fill: var(--s2a-color-gray-1000);
-    stroke: var(--s2a-color-gray-1000);
+    fill: var(--s2a-color-content-default);
+    stroke: var(--s2a-color-content-default);
   }
 
   &:hover {
@@ -199,8 +199,8 @@ button.play-pause-button {
     background: var(--s2a-color-background-knockout);
 
     svg path {
-      fill: var(--s2a-color-gray-25);
-      stroke: var(--s2a-color-gray-25);
+      fill: var(--s2a-color-content-knockout);
+      stroke: var(--s2a-color-content-knockout);
     }
   }
 
@@ -221,11 +221,6 @@ button.play-pause-button {
 .dark button.play-pause-button {
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   background: var(--s2a-color-transparent-white-16);
-
-  svg path {
-    fill: var(--s2a-color-gray-25);
-    stroke: var(--s2a-color-gray-25);
-  }
 
   &:hover {
     background: var(--s2a-color-transparent-white-12);

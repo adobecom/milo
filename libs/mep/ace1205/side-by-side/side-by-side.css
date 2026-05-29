@@ -3,10 +3,6 @@
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-xs);
 
-  &.dark {
-    background: unset;
-  }
-
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
@@ -36,7 +32,11 @@
     overflow: hidden;
     min-height: 305px;
     aspect-ratio: 33/37;
-    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-12);
+    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
+
+    &.dark {
+      background-color: unset;
+    }
 
     .media {
       position: absolute;
@@ -80,10 +80,9 @@
       flex-direction: column;
       gap: var(--s2a-spacing-xs);
       max-width: 400px;
-      color: var(--s2a-color-gray-1000);
 
       [class^='body-'] {
-        color: var(--s2a-color-transparent-black-64);
+        color: var(--s2a-color-content-subtle);
       }
     }
   }

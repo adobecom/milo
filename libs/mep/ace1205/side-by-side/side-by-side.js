@@ -33,6 +33,9 @@ function decorate(block) {
   }
 
   block.replaceChildren(...cards);
+  if (!block.classList.contains('dark')) {
+    block.querySelector('.card-overlay')?.classList.add('dark');
+  }
 }
 
 export default function init(el) {
