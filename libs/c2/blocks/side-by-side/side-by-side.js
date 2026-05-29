@@ -12,7 +12,6 @@ function decorateCardText(foreground) {
 }
 
 function decorate(block) {
-  block.classList.add('dark');
   const [mediaRow, textRow] = block.children;
   if (!mediaRow || !textRow) return;
 
