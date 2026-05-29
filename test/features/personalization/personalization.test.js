@@ -6,7 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl,
+  isTrustedUrl, fetchData, DATA_TYPE,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -790,6 +790,29 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
       expect(isTrustedUrl([])).to.be.false;
+    });
+  });
+  describe('fetchData', () => {
+    it('forwards redirect option to underlying fetch', async () => {
+      const originalFetch = window.fetch;
+      const fetchStub = stub().returns(getFetchPromise({}));
+      window.fetch = fetchStub;
+      try {
+        await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(fetchStub.firstCall.args[1]?.redirect).to.equal('error');
+      } finally {
+        window.fetch = originalFetch;
+      }
+    });
+    it('returns null when fetch throws (simulating blocked redirect)', async () => {
+      const originalFetch = window.fetch;
+      window.fetch = stub().throws(new TypeError('Failed to fetch'));
+      try {
+        const result = await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(result).to.be.null;
+      } finally {
+        window.fetch = originalFetch;
+      }
     });
   });
   describe('cleanAndSortManifestList', async () => {

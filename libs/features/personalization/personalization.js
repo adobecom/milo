@@ -435,7 +435,7 @@ export async function replaceInner(path, element) {
   if (!path || !element) return false;
   let plainPath = path.endsWith('/') ? `${path}index` : path;
   plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
-  const html = await fetchData(plainPath, DATA_TYPE.TEXT);
+  const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
   element.innerHTML = html;
@@ -1014,7 +1014,7 @@ export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
   const entitlementUrl = getXLGListURL(config);
-  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
@@ -1197,7 +1197,7 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
+    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
     if (fetchData) data = fetchedData;
   }
 
