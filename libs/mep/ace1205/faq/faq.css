@@ -16,7 +16,7 @@
   transition: opacity var(--faq-transition);
 
   .faq:hover &:not(:hover, [open]),
-  .faq:focus-within &:not(:focus-within, [open]) {
+  .faq:focus-within &:not(:focus-within, :hover, [open]) {
     opacity: 0.6;
   }
 
