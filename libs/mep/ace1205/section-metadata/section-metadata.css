@@ -69,15 +69,6 @@
     color: inherit;
   }
 
-  &.bento .explore-card {
-    border-radius: var(--s2a-border-radius-md);
-    z-index: inherit;
-
-    .explore-card-container:hover [class*='body-'] {
-      opacity: initial;
-    }
-  }
-
   &.bento .explore-card-content {
     padding-inline: 0;
     padding-bottom: var(--s2a-spacing-xl);
@@ -137,6 +128,7 @@
       }
     }
   }
+  
 
   &.bento .scrim {
     .explore-card-content {
@@ -170,6 +162,24 @@
 
       .content-aux {
         aspect-ratio: 1.02 / 1;
+      }
+    }
+  }
+
+  &.bento .explore-card {
+    border-radius: var(--s2a-border-radius-md);
+    z-index: inherit;
+
+    .explore-card-container:hover [class*='body-'] {
+      opacity: initial;
+    }
+
+    &.center {
+      .explore-card-content {
+        [class*='body-'],
+        [class*='heading-'] {
+          max-width: 370px;
+        }
       }
     }
   }

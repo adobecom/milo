@@ -59,11 +59,10 @@ function decorate(block, root, el) {
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
-  if (!el.classList.contains('show-link')) link.remove();
   if (el.classList.contains('show-link')) {
     link.classList.add('standalone-link', 'label');
     link.setAttribute('tabindex', '-1');
-  }
+  } else link.remove();
   linkContainer.append(contentDiv);
   firstRow.prepend(linkContainer);
 }
