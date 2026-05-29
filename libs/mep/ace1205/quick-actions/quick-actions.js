@@ -21,7 +21,7 @@ function buildTile(tileRow) {
   const mediaCell = tileRow.children[1];
   const labelLink = labelCell?.querySelector('a');
 
-  const tile = createTag('a', { class: 'quick-actions-tile', href: labelLink?.href || '#' });
+  const tile = createTag('a', { class: 'quick-actions-tile', ...(labelLink && { href: labelLink.href }) });
 
   const mediaPic = mediaCell?.querySelector('picture');
   const mediaImg = mediaPic?.querySelector('img') ?? mediaCell?.querySelector('img');
@@ -35,7 +35,7 @@ function buildTile(tileRow) {
     const footer = createTag('div', { class: 'quick-actions-tile-footer' });
     const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' });
     chevron.innerHTML = CHEVRON_SVG;
-    footer.append(createTag('span', { class: 'quick-actions-tile-label' }, labelLink.textContent.trim()), chevron);
+    footer.append(createTag('span', { class: 'quick-actions-tile-label label-lg' }, labelLink.textContent.trim()), chevron);
     tile.append(footer);
   }
 
@@ -52,9 +52,7 @@ function decorate(block) {
 
   tileRows.forEach((row) => grid.append(buildTile(row)));
 
-  block.innerHTML = '';
-  if (header) block.append(header);
-  block.append(grid);
+  block.replaceChildren(...[header, grid].filter(Boolean));
 }
 
 export default function init(el) {

@@ -390,6 +390,7 @@
   --s2a-typography-font-size-body-lg: var(--s2a-font-size-md);
   --s2a-typography-font-size-eyebrow: var(--s2a-font-size-md);
   --s2a-typography-font-size-label: var(--s2a-font-size-sm);
+  --s2a-typography-font-size-label-lg: var(--s2a-font-size-lg);
   --s2a-typography-font-size-caption: var(--s2a-font-size-xs);
   --s2a-typography-letter-spacing-super: var(--s2a-font-letter-spacing-lg);
   --s2a-typography-letter-spacing-heading-1: var(--s2a-font-letter-spacing-lg);
@@ -404,6 +405,7 @@
   --s2a-typography-letter-spacing-body-lg: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-letter-spacing-eyebrow: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-letter-spacing-label: var(--s2a-font-letter-spacing-6xl);
+  --s2a-typography-letter-spacing-label-lg: var(--s2a-font-letter-spacing-5xl);
   --s2a-typography-letter-spacing-caption: var(--s2a-font-letter-spacing-6xl);
   --s2a-typography-line-height-super: var(--s2a-font-line-height-3xl);
   --s2a-typography-line-height-heading-1: var(--s2a-font-line-height-xl);
@@ -418,6 +420,7 @@
   --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-eyebrow: var(--s2a-font-line-height-sm);
   --s2a-typography-line-height-label: var(--s2a-font-line-height-xs);
+  --s2a-typography-line-height-label-lg: var(--s2a-font-line-height-xs);
   --s2a-typography-line-height-caption: var(--s2a-font-line-height-2xs);
 
   /* Milo-specific declarations */
@@ -718,6 +721,12 @@ p {
   font-size: var(--s2a-typography-font-size-label);
   line-height: var(--s2a-typography-line-height-label);
   letter-spacing: var(--s2a-typography-letter-spacing-label);
+}
+
+.label-lg {
+  font-size: var(--s2a-typography-font-size-label-lg);
+  line-height: var(--s2a-typography-line-height-label-lg);
+  letter-spacing: var(--s2a-typography-letter-spacing-label-lg);
 }
 
 .caption, [class*="caption-"] {
@@ -1444,5 +1453,16 @@ span.hang-opening-quote {
   :root {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
+    --s2a-typography-font-size-label-lg: var(--s2a-font-size-20);
+    --s2a-typography-line-height-label-lg: var(--s2a-font-line-height-20);
+    --s2a-typography-letter-spacing-label-lg: var(--s2a-font-letter-spacing-neg-0_48);
+  }
+}
+
+@media (width >= 2560px) {
+  :root {
+    --s2a-typography-font-size-label-lg: var(--s2a-font-size-32);
+    --s2a-typography-line-height-label-lg: var(--s2a-font-line-height-32);
+    --s2a-typography-letter-spacing-label-lg: var(--s2a-font-letter-spacing-neg-0_96);
   }
 }
