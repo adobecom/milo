@@ -56,8 +56,14 @@ function addCursorFollower(list) {
   let rafId = null;
   let isScrolling = false;
   let lenisOff = null;
+  // Whether the picture is being driven by the cursor. False when activated
+  // via keyboard focus or touch tap — the picture should stay at the item's
+  // position and not follow mouse movement until the user explicitly hovers
+  // back into the list.
+  let pointerDriven = true;
 
   const updateCursor = (e) => {
+    if (!pointerDriven) return;
     cursor.vx = cursor.hasPrev ? e.clientX - cursor.x : 0;
     cursor.x = e.clientX;
     cursor.y = e.clientY;
@@ -134,8 +140,12 @@ function addCursorFollower(list) {
 
   // Keyboard / non-pointer activation: derive the cursor target from the
   // item's own bounding rect so the picture springs in to the item's center.
-  // vx is zeroed so the layers don't tilt from leftover mouse velocity.
+  // vx is zeroed so the layers don't tilt from leftover mouse velocity, and
+  // pointerDriven flips off so subsequent mouse moves don't drag the picture
+  // away from the focused item.
   const activateAtItem = (item) => {
+    pointerDriven = false;
+    cursor.hasPrev = false;
     const rect = item.getBoundingClientRect();
     cursor.x = rect.left + rect.width / 2;
     cursor.y = rect.top + rect.height / 2;
@@ -162,6 +172,16 @@ function addCursorFollower(list) {
   document.addEventListener('mousemove', updateCursor, { passive: true });
   list.addEventListener('mousemove', (e) => {
     if (!DESKTOP_MQ.matches || isScrolling) return;
+    // If we were in keyboard mode, the user has now engaged the mouse —
+    // switch to pointer mode and seed the cursor from this event so the
+    // first velocity reading doesn't spike from the stale item-center.
+    if (!pointerDriven) {
+      pointerDriven = true;
+      cursor.x = e.clientX;
+      cursor.y = e.clientY;
+      cursor.vx = 0;
+      cursor.hasPrev = true;
+    }
     activateAtPoint(e.clientX, e.clientY);
   });
   list.addEventListener('mouseenter', () => {
@@ -170,6 +190,9 @@ function addCursorFollower(list) {
     window.addEventListener('scrollend', onScrollEnd);
   });
   list.addEventListener('mouseleave', () => {
+    // In keyboard mode the focused item is still holding the picture open;
+    // don't tear down when only the mouse leaves.
+    if (!pointerDriven) return;
     isScrolling = false;
     deactivate();
     lenisOff?.();
