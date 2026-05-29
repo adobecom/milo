@@ -14,6 +14,7 @@ import {
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -441,7 +442,7 @@ export async function replaceInner(path, element) {
   const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
-  element.innerHTML = html;
+  element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
   return true;
