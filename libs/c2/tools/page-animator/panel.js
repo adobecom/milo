@@ -58,20 +58,22 @@ export function buildPanel(
       </div>
       <div class="pa-header-actions">
         <button class="pa-btn" id="pa-import-btn" title="Import animations">Import</button>
-        <button class="pa-btn" id="pa-download-btn" title="Share animations">&#8595; Share</button>
+        <button class="pa-btn" id="pa-download-btn" title="Share animations"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1.5v6.5m0 0L3.5 5.5M6 8L8.5 5.5M2 10h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg> Share</button>
+        <button class="pa-btn" id="pa-collapse-btn" aria-label="Collapse all sections" title="Collapse all sections"></button>
         <button class="pa-btn" id="pa-follow-btn" aria-label="Auto-scroll page on hover" title="Sync block highlight to panel">&#9678;</button>
         <button class="pa-btn" id="pa-theme-btn" aria-label="Toggle theme" title="Toggle theme">&#9790;</button>
-        <button class="pa-btn" id="pa-help-btn" title="Show help">?</button>
+        <button class="pa-btn" id="pa-help-btn" aria-label="Show help" title="Show help"><svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M9,1a8,8,0,1,0,8,8A8,8,0,0,0,9,1Zm.0235,13.438a1.345,1.345,0,0,1-.11595-2.6875q.05795-.00251.11595,0a1.31,1.31,0,0,1,1.39719,1.21658q.00408.05912.00281.11842a1.29052,1.29052,0,0,1-1.4,1.3525Zm1.783-6.409-.1.105c-.3945.4145-.842.884-.842,1.1755a1.38555,1.38555,0,0,0,.1795.674l.0725.1385-.0565.2145a.30851.30851,0,0,1-.2835.189H8.4355a.43352.43352,0,0,1-.325-.1175A2.05554,2.05554,0,0,1,7.688,9.1455a3.0589,3.0589,0,0,1,1.1125-2.075c.1-.1095.195-.21.2875-.3045.3145-.3255.5065-.5355.5065-.7575,0-.154,0-.6225-.893-.6225a2.959,2.959,0,0,0-1.5795.4595.296.296,0,0,1-.3265-.01L6.677,5.751l-.0275-.2215v-1.45A.4395.4395,0,0,1,6.846,3.67a4.13751,4.13751,0,0,1,2.15-.55,2.55036,2.55036,0,0,1,2.75,2.636A3.0655,3.0655,0,0,1,10.8065,8.029Z"></path></svg></button>
       </div>
     </div>
     <div class="pa-instructions" id="pa-instructions" hidden>
       <ul>
-        <li>Click a section label to collapse or expand it.</li>
-        <li>Click any item in the tree to open its controls. Click again to close. This will also scroll the page to the item and highlight it on the page.</li>
+        <li>Click a section label to collapse or expand it. Or, click the <strong>collapse all sections</strong> button to toggle all sections open or closed.</li>
+        <li>Click any item in the tree to toggle display or hide its controls. This will also scroll the page to the block and highlight it on the page.</li>
+        <li>Toggle the <strong>sync block highlight to panel</strong> button. When enabled, hovering over a block name in the panel automatically scrolls the page to that block.</li>
         <li>Adjust sliders and dropdowns to configure the animation. Scroll the page near the item you are editing to see the animation work in real time as you scroll.</li>
-        <li>Click the <strong>json</strong> button to save a copy of the current animation panel to you local machine. This can be shared with others to share progress.</li>
-        <li>Click the <strong>import</strong> button to load a saved copy of the animation panel from your local machine. Navigate to where you saved "page-animations.json". You can use this to collaborate with others or to start from a saved state. This will overwrite the current animation panel.</li>
-        <li>Click <strong>Reset animation</strong> to remove an animation from an element.</li>
+        <li>Click the <strong>share</strong> button to save and share a copy of the current animation settings. Use this to collaborate with others or to start from a saved state.</li>
+        <li>Click the <strong>import</strong> button to load a saved copy of the animation panel settings. Use this to collaborate with others or to start from a saved state. <em>This will override the current animation panel settings.</em></li>
+        <li>Click <strong>Reset animation</strong> reset the animation to the default values.</li>
       </ul>
       <div class="pa-instructions-dots">
         <span class="pa-dot"></span> No animation &nbsp;
@@ -91,6 +93,27 @@ export function buildPanel(
   let selectedId = null;
   let selectedEl = null;
   const collapsedSections = new Set();
+
+  const TOOLTIP_ICON = '<svg width="12" height="12" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M9,1a8,8,0,1,0,8,8A8,8,0,0,0,9,1ZM8.85,3.15a1.359,1.359,0,0,1,1.43109,1.28286q.00352.06452.00091.12914A1.332,1.332,0,0,1,8.85,5.9935a1.3525,1.3525,0,0,1-1.432-1.432A1.3585,1.3585,0,0,1,8.72033,3.14907Q8.78516,3.14643,8.85,3.15ZM11,13.5a.5.5,0,0,1-.5.5h-3a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5H8V9H7.5A.5.5,0,0,1,7,8.5v-1A.5.5,0,0,1,7.5,7h2a.5.5,0,0,1,.5.5V12h.5a.5.5,0,0,1,.5.5Z"></path></svg>';
+  const COLLAPSE_ICON = '<svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M4.5,4H13V1.5a.5.5,0,0,0-.5-.5H1.5a.5.5,0,0,0-.5.5v11a.5.5,0,0,0,.5.5H4V4.5A.5.5,0,0,1,4.5,4Z"></path><path d="M5,5.5v11a.5.5,0,0,0,.5.5h11a.5.5,0,0,0,.5-.5V5.5a.5.5,0,0,0-.5-.5H5.5A.5.5,0,0,0,5,5.5ZM7.25,12A.25.25,0,0,1,7,11.75v-1.5A.25.25,0,0,1,7.25,10h7.5a.25.25,0,0,1,.25.25v1.5a.25.25,0,0,1-.25.25Z"></path></svg>';
+  const EXPAND_ICON = '<svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M4.5,4H13V1.5a.5.5,0,0,0-.5-.5H1.5a.5.5,0,0,0-.5.5v11a.5.5,0,0,0,.5.5H4V4.5A.5.5,0,0,1,4.5,4Z"></path><path d="M5,5.5v11a.5.5,0,0,0,.5.5h11a.5.5,0,0,0,.5-.5V5.5a.5.5,0,0,0-.5-.5H5.5A.5.5,0,0,0,5,5.5ZM14.75,12H12v2.75a.25.25,0,0,1-.25.25h-1.5a.25.25,0,0,1-.25-.25V12H7.25A.25.25,0,0,1,7,11.75v-1.5A.25.25,0,0,1,7.25,10H10V7.25A.25.25,0,0,1,10.25,7h1.5a.25.25,0,0,1,.25.25V10h2.75a.25.25,0,0,1,.25.25v1.5A.25.25,0,0,1,14.75,12Z"></path></svg>';
+  const collapseBtn = panel.querySelector('#pa-collapse-btn');
+
+  function syncCollapseBtn() {
+    const allCollapsed = tree.length > 0 && tree.every((s) => collapsedSections.has(s.id));
+    const label = allCollapsed ? 'Expand all sections' : 'Collapse all sections';
+    collapseBtn.innerHTML = allCollapsed ? EXPAND_ICON : COLLAPSE_ICON;
+    collapseBtn.setAttribute('aria-label', label);
+    collapseBtn.setAttribute('title', label);
+  }
+
+  collapseBtn.addEventListener('click', () => {
+    const allCollapsed = tree.every((s) => collapsedSections.has(s.id));
+    if (allCollapsed) collapsedSections.clear();
+    else tree.forEach((s) => collapsedSections.add(s.id));
+    // eslint-disable-next-line no-use-before-define
+    renderTree();
+  });
 
   function buildCopyHtml(item) {
     const sectionNode = tree.find(
@@ -122,7 +145,7 @@ export function buildPanel(
 
       if (ctrl.type === 'range') {
         const val = state[ctrl.cssVar] ?? ctrl.default;
-        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">ℹ︎<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
+        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">${TOOLTIP_ICON}<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
         div.innerHTML = `
           <div class="pa-control-label">${ctrl.label}${tip} <span class="pa-val">${val}${ctrl.unit}</span></div>
           <input type="range" min="${ctrl.min}" max="${ctrl.max}" step="${ctrl.step}" value="${val}" data-var="${ctrl.cssVar}" data-unit="${ctrl.unit}">
@@ -150,7 +173,7 @@ export function buildPanel(
       } else {
         const val = state[ctrl.cssVar] ?? ctrl.default;
         const opts = ctrl.options.map((o) => `<option${o === val ? ' selected' : ''}>${o}</option>`).join('');
-        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">ℹ︎<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
+        const tip = ctrl.tooltip ? `<span class="pa-tooltip" aria-label="${ctrl.tooltip}">${TOOLTIP_ICON}<span class="pa-tooltip-text">${ctrl.tooltip}</span></span>` : '';
         div.innerHTML = `<div class="pa-control-label">${ctrl.label}${tip}</div><select>${opts}</select>`;
         const select = div.querySelector('select');
         select.addEventListener('change', () => {
@@ -279,7 +302,18 @@ export function buildPanel(
 
       const sLabel = document.createElement('div');
       sLabel.className = `pa-section-label${isCollapsed ? ' pa-collapsed' : ''}`;
+      const counts = new Map();
+      section.blocks.forEach((b) => counts.set(b.label, (counts.get(b.label) || 0) + 1));
+      const summary = [...counts.entries()]
+        .map(([name, n]) => (n > 1 ? `${name} ×${n}` : name))
+        .join(', ');
       sLabel.textContent = section.label;
+      if (summary) {
+        const span = document.createElement('span');
+        span.className = 'pa-section-summary';
+        span.textContent = summary;
+        sLabel.appendChild(span);
+      }
       sLabel.addEventListener('click', () => {
         if (collapsedSections.has(section.id)) collapsedSections.delete(section.id);
         else collapsedSections.add(section.id);
@@ -329,6 +363,7 @@ export function buildPanel(
 
       treeEl.appendChild(group);
     });
+    syncCollapseBtn();
   }
 
   function selectItem(item) {
