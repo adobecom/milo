@@ -1,0 +1,9 @@
+.milo-dashboard {
+  display: block;
+  font-family: var(--body-font-family, adobe-clean, sans-serif);
+}
+
+.milo-dashboard .dashboard-grid {
+  display: grid;
+  gap: var(--spacing-m, 16px);
+}
