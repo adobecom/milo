@@ -640,7 +640,9 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
     color: currentColor;
   }
 }
-
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+  z-index: 1;
+}
 .heading-super {
   font-size: var(--s2a-typography-font-size-super);
   line-height: var(--s2a-typography-line-height-super);
