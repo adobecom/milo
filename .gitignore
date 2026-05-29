@@ -13,7 +13,6 @@ test-a11y-results/
 tmp
 nala/utils/auth.json
 libs/navigation/dist/
-.scout/
 *.mdc
 /.cursor*/
 /.claude/*
