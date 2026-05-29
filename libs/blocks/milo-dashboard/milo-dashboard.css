@@ -166,3 +166,25 @@
     grid-template-columns: 1fr;
   }
 }
+
+.milo-dashboard .project-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  & th {
+    cursor: pointer;
+    text-align: start;
+    user-select: none;
+  }
+
+  & th.sorted-asc::after { content: " \25B2"; }
+  & th.sorted-desc::after { content: " \25BC"; }
+
+  & .project-row {
+    cursor: pointer;
+  }
+
+  & .project-row:hover {
+    background: var(--color-gray-100, #f5f5f5);
+  }
+}
