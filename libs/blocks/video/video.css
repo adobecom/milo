@@ -157,7 +157,7 @@ video {
 }
 
 @media (min-width: 600px) and (max-width: 1199px) {
-  .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper, 
+  .hero-marquee.asset-left .video-container.video-holder .pause-play-wrapper,
   .aside:is(.media-top-tablet, .media-bottom-tablet) .video-container.video-holder .pause-play-wrapper {
     left: auto;
     right: 2%;
@@ -244,5 +244,17 @@ button.play-pause-button {
   button.play-pause-button {
     right: var(--s2a-spacing-xl);
     bottom: var(--s2a-spacing-xl);
+  }
+}
+/* C2 foundation overrides */
+:root:has(meta[name="foundation"][content="c2"]) {
+  .video-container .pause-play-wrapper {
+    .offset-filler {
+      background: var(--s2a-color-gray-800);
+    }
+
+    &:focus-visible {
+      outline-color: var(--s2a-color-blue-700);
+    }
   }
 }

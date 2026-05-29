@@ -128,6 +128,7 @@ const C2_BLOCKS = [
   'side-by-side',
   'social-proof',
   'visually-hidden',
+  'product-marquee-grid',
 ];
 
 const AUTO_BLOCKS = [

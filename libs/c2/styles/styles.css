@@ -1005,8 +1005,10 @@ span.hang-opening-quote {
 }
 
 /* Needed for garage door JS animation in browsers without animation-timeline support */
-.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
-  z-index: 1;
+@supports not (animation-timeline: view()) {
+  .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+    z-index: 1;
+  }
 }
 
 /* TODO: Parallax styles should be loaded separately and conditionally */
@@ -1322,6 +1324,29 @@ span.hang-opening-quote {
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
     to { opacity: 0.75; }
+  }
+
+  .section:has(+ .section.parallax-double-garage-door),
+  .section:has(+ .section:has(.parallax-double-garage-door)) {
+    z-index: 2;
+  }
+
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
+    overflow: clip;
+    animation: dg-top-door ease-out both, dg-exit ease-out both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% entry 70%, exit 0% exit 90%;
+    animation-composition: replace, add;
+  }
+
+  @keyframes dg-top-door {
+    from { transform: translateY(-20vh); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes dg-exit {
+    from { transform: translateY(0); }
+    to { transform: translateY(20vh); }
   }
 
   /* Line height parallax declarations */

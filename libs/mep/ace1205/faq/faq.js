@@ -28,7 +28,8 @@ function buildItem(row, num, isFirst) {
     'daa-ll': `${isFirst ? 'close' : 'open'}-${num}--${processTrackingLabels(questionText)}`,
   }, [headingTag, icon]);
 
-  const panel = createTag('div', { class: 'faq-panel body-lg' }, answerNodes);
+  const panelInner = createTag('div', { class: 'faq-panel-inner' }, answerNodes);
+  const panel = createTag('div', { class: 'faq-panel body-lg' }, panelInner);
   const itemAttrs = { class: 'faq-item' };
   if (isFirst) itemAttrs.open = '';
   const details = createTag('details', itemAttrs, [summary, panel]);
