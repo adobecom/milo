@@ -8,7 +8,7 @@
   &.rounded-corners {
     & + .section {
       &:has(.floating-cta) {
-        margin-block: var(--s2a-border-radius-lg) calc(-1 * var(--s2a-border-radius-lg));
+        margin-block: var(--s2a-spacing-xl) calc(-1 * var(--s2a-spacing-xl));
       }
     }
   }
@@ -25,7 +25,7 @@
     clip-path: inset(50% round var(--s2a-border-radius-12));
     opacity: 0;
     position: absolute;
-    transform: translateY(var(--s2a-spacing-24));
+    transform: translateY(var(--s2a-spacing-lg));
     transition:
       opacity 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),
       clip-path 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53),

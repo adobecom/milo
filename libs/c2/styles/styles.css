@@ -946,20 +946,20 @@ p {
 .icon-button {
   align-items: center;
   background-color: var(--s2a-color-transparent-white-16);
-  block-size: var(--s2a-spacing-32);
+  block-size: var(--s2a-spacing-xl);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
-  border-radius: 6px;
+  border-radius: 6px; /* No token */
   box-sizing: border-box;
   display: inline-flex;
   flex-shrink: 0;
-  inline-size: var(--s2a-spacing-32);
+  inline-size: var(--s2a-spacing-xl);
   justify-content: center;
   transition: background-color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
   &.arrow {
     background-image: url('../assets/img/promo-arrow-right.svg');
     background-position: center;
     background-repeat: no-repeat;
-    background-size: var(--s2a-spacing-12) var(--s2a-spacing-12);
+    background-size: var(--s2a-spacing-sm) var(--s2a-spacing-sm);
   }
 }
 
@@ -972,16 +972,16 @@ p {
   display: inline-flex;
   font-size: var(--s2a-typography-font-size-eyebrow);
   font-weight: var(--s2a-font-weight-eyebrow);
-  gap: var(--s2a-spacing-12);
+  gap: var(--s2a-spacing-sm);
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   line-height: var(--s2a-typography-line-height-eyebrow);
-  padding: var(--s2a-spacing-12);
+  padding: var(--s2a-spacing-sm);
   text-decoration: none;
   white-space: nowrap;
   img {
-    block-size: var(--s2a-spacing-32);
+    block-size: var(--s2a-spacing-xl);
     flex-shrink: 0;
-    inline-size: var(--s2a-spacing-32);
+    inline-size: var(--s2a-spacing-xl);
     object-fit: cover;
     overflow: hidden;
   }
