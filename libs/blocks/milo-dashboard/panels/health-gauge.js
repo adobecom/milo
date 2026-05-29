@@ -64,7 +64,7 @@ export default function renderHealthGauge(container, scores, charts) {
   const bars = createTag('div', { class: 'category-bars' });
   CATEGORIES.forEach(({ key, label }) => {
     const score = toScore(scores[key]);
-    const fill = createTag('div', { class: 'category-fill', style: `width: ${clamp(score)}%;` });
+    const fill = createTag('div', { class: 'category-fill', style: `width: ${clamp(score)}%; background: ${bandColor(score)};` });
     const row = createTag('div', { class: 'category-bar' }, [
       createTag('div', { class: 'category-label' }, label),
       createTag('div', { class: 'category-track' }, fill),

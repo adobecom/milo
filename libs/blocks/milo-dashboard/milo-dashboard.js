@@ -73,16 +73,33 @@ export default async function init(block) {
     toggle.append(...buttons);
     header.append(toggle);
 
+    // Titled card: returns the outer panel plus the inner body the panel
+    // renderer draws into (renderers call replaceChildren on the body, so the
+    // title survives re-renders).
+    const makePanel = (cls, title) => {
+      const panel = createTag('div', { class: `panel ${cls}` });
+      if (title) panel.append(createTag('h3', { class: 'panel-title' }, title));
+      const body = createTag('div', { class: 'panel-body' });
+      panel.append(body);
+      return { panel, body };
+    };
+
     const grid = createTag('div', { class: 'dashboard-grid' });
     const kpiMount = createTag('div', { class: 'panel kpi' });
-    const gaugeMount = createTag('div', { class: 'panel gauge-panel' });
-    const volumeMount = createTag('div', { class: 'panel volume' });
-    const healthMount = createTag('div', { class: 'panel health' });
-    const projectsMount = createTag('div', { class: 'panel projects' });
-    const trafficMount = createTag('div', { class: 'panel traffic' });
-    grid.append(kpiMount, gaugeMount, volumeMount, healthMount, projectsMount, trafficMount);
+    const gauge = makePanel('gauge-panel', 'Overall health');
+    const volume = makePanel('volume', 'Publish vs preview activity');
+    const health = makePanel('health', 'Preflight health trend');
+    const projects = makePanel('projects', 'Projects');
+    const traffic = makePanel('traffic');
+    grid.append(kpiMount, gauge.panel, volume.panel, health.panel, projects.panel, traffic.panel);
 
     block.append(header, grid);
+
+    const gaugeMount = gauge.body;
+    const volumeMount = volume.body;
+    const healthMount = health.body;
+    const projectsMount = projects.body;
+    const trafficMount = traffic.body;
 
     // Traffic is adapter-driven (stubbed null adapter for now) and needs no
     // backend data, so render it outside loadData — but keep error isolation.

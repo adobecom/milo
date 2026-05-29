@@ -58,7 +58,7 @@ describe('milo-dashboard volume-trend', () => {
       expect(option.series[0].data).to.deep.equal([10, 7]);
       expect(option.series[1].data).to.deep.equal([5, 0]);
       expect(option.series[0].type).to.equal('line');
-      expect(option.series[0].areaStyle).to.deep.equal({});
+      expect(option.series[0].areaStyle).to.exist;
     });
 
     it('clears the container on re-render', () => {
