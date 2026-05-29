@@ -173,14 +173,15 @@ function savePos(pos) {
     const btn = panelEl.querySelector('#pa-theme-btn');
     if (!btn) return;
     const isDark = document.documentElement.classList.contains('pc-theme-dark');
-    btn.innerHTML = isDark ? '&#9728;' : '&#9790;';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true"><path d="M11.5 8.4A4.6 4.6 0 015.6 2.5a.4.4 0 00-.55-.46A5.6 5.6 0 1011.96 9a.4.4 0 00-.46-.6z"></path></svg>';
+    btn.classList.toggle('pa-btn-active', isDark);
   }
 
   function syncFollowBtn(panelEl) {
     const btn = panelEl.querySelector('#pa-follow-btn');
     if (!btn) return;
     const on = localStorage.getItem(FOLLOW_KEY) !== 'off';
-    btn.innerHTML = on ? '&#9678;' : '&#9675;';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M10.5,8a.5.5,0,0,0,.5-.5v-3a.5.5,0,0,0-.5-.5H5V1.8675A.3665.3665,0,0,0,4.63451,1.5h-.004a.359.359,0,0,0-.2565.108L.0945,5.508a.36751.36751,0,0,0,0,.492L4.374,10.392a.359.359,0,0,0,.2565.108A.3665.3665,0,0,0,5,10.13651V8Z"></path><path d="M17.9055,12,13.626,7.608a.359.359,0,0,0-.2565-.108A.3665.3665,0,0,0,13,7.86349V10H7.5a.5.5,0,0,0-.5.5v3a.5.5,0,0,0,.5.5H13v2.1325a.3665.3665,0,0,0,.36549.36751h.004a.359.359,0,0,0,.2565-.108l4.2795-3.9A.36751.36751,0,0,0,17.9055,12Z"></path></svg>';
     btn.classList.toggle('pa-btn-active', on);
   }
 

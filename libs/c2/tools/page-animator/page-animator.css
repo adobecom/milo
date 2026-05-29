@@ -243,12 +243,21 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   cursor: pointer;
   border: 1px solid var(--pc-border);
   background: var(--pc-bg);
-  color: var(--pc-fg);
+  color: var(--pc-fg-muted);
   white-space: nowrap;
 }
 
 .pa-btn:hover {
   background: var(--pc-bg-hover-strong);
+  color: var(--pc-fg);
+}
+
+.pa-btn svg {
+  vertical-align: -2px;
+}
+
+.pa-btn svg:not(:only-child) {
+  margin-right: 2px;
 }
 
 .pa-btn-active {
@@ -259,6 +268,7 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
 
 .pa-btn-active:hover {
   background: var(--pc-accent-hover);
+  color: #fff;
 }
 
 .pa-icon-btn {
@@ -338,6 +348,15 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
 
 .pa-section-label.pa-collapsed::before {
   content: '▸ ';
+}
+
+.pa-section-summary {
+  margin-left: 8px;
+  color: var(--pc-fg-muted);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .pa-item {
@@ -441,18 +460,6 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   cursor: default;
   margin-left: 10px;
   vertical-align: middle;
-}
-
-.pa-tooltip::before {
-  content: '';
-  inset: -6px 0 0 -14px;
-  position: absolute;
-  border: 1px solid var(--pc-border);
-  margin: 10px;
-  z-index: 1;
-  border-radius: 10px;
-  width: 12px;
-  height: 12px;
 }
 
 .pa-tooltip:hover {
