@@ -12,6 +12,9 @@ import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
+// CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
+export const mepCaasConfigUrls = new WeakMap();
+
 export const LANGS = {
   en: 'en',
   de: 'de',
@@ -177,7 +180,6 @@ export const LOCALES = {
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
-export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -831,10 +833,9 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
   requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeaderName, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, state.floodgateColor]);
   }
   return requestHeaders;
 };
@@ -1227,11 +1228,16 @@ export const initCaas = async (state, caasStrs, el) => {
   if (!caasEl) return;
 
   const appEl = caasEl.parentElement;
+  const preservedConfigUrl = mepCaasConfigUrls.get(caasEl);
   caasEl.remove();
 
   const newEl = document.createElement('div');
   newEl.id = 'caas';
   newEl.className = 'caas-preview';
+  if (preservedConfigUrl) {
+    newEl.dataset.caasBlock = '';
+    mepCaasConfigUrls.set(newEl, preservedConfigUrl);
+  }
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);
@@ -1248,6 +1254,7 @@ export const defaultState = {
   andLogicTags: [],
   autoCountryLang: false,
   fetchCardsFromFloodgateTree: false,
+  floodgateColor: '',
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',

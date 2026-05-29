@@ -14,13 +14,7 @@
 @property --grid-max-width {
   syntax: '<length>';
   inherits: true;
-  initial-value: 1440px;
-}
-
-@property --parallax-stagger-progress {
-  syntax: '<number>';
-  inherits: true;
-  initial-value: 0;
+  initial-value: 1920px;
 }
 
 :root {
@@ -413,11 +407,11 @@
 
   /* Grid sizes */
   --grid-columns: 6;
-  --grid-margin-width-base: 24px;
+  --grid-margin-width-base: var(--s2a-spacing-24);
+  --grid-margin-width-fixed: var(--s2a-spacing-24);
   --grid-margin-width: var(--grid-margin-width-base);
   --grid-margin-width-target: var(--grid-margin-width-base);
-  --grid-max-width-default: 1440px;
-  --grid-max-width-wide: 1920px;
+  --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
 
   /* Regional font variations */
@@ -732,14 +726,14 @@ p {
   max-width: none;
   padding-inline: var(--grid-padding);
 
-  &.wide {
-    --grid-max-width: var(--grid-max-width-wide);
-    --grid-max-width-target: var(--grid-max-width-wide);
-  }
-
   &.fluid {
     --grid-max-width: var(--grid-max-width-fluid);
     --grid-margin-width: 0px; /* Keep unit for calc */
+  }
+
+  &.fixed {
+    --grid-margin-width: var(--grid-margin-width-fixed);
+    --grid-margin-width-target: var(--grid-margin-width-fixed);
   }
 
   .container {
@@ -986,12 +980,18 @@ p {
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
     @media (width >= 768px) {
-      animation-name: enable-parallax-stagger;
+      view-timeline: --parallax-stagger-timeline block;
+      view-timeline-inset: 40% 10%;
+      animation-name: none;
 
       > :not([class*="section-"]) {
         --parallax-stagger-row-index: 0;
 
-        transform: translate3d(0, calc(var(--parallax-stagger-from, 0px) * var(--parallax-stagger-progress)), 0);
+        animation-name: enable-parallax-stagger;
+        animation-timing-function: var(--parallax-easing);
+        animation-fill-mode: both;
+        animation-timeline: --parallax-stagger-timeline;
+        animation-range: var(--parallax-range-start) var(--parallax-range-end);
         will-change: transform;
       }
 
@@ -1075,8 +1075,8 @@ p {
   }
 
   @keyframes enable-parallax-stagger {
-    from { --parallax-stagger-progress: 1; }
-    to { --parallax-stagger-progress: 0; }
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    to { transform: translate3d(0, 0, 0); }
   }
 
   /* Garage door parallax (rich content over section w/ bkg) declarations */
@@ -1144,6 +1144,7 @@ p {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    will-change: transform;
     position: sticky;
     top: 0;
     z-index: 0;
