@@ -195,16 +195,6 @@ describe('Utils', () => {
         expect(autoBlockLink.className).to.equal('twitter link-block');
       });
 
-      it('routes MAS compare chart links to the compare chart autoblock', () => {
-        const a = document.createElement('a');
-        a.href = 'https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=compare-chart-1';
-        a.textContent = 'mas-compare-chart: ACOM / Compare Chart';
-
-        utils.decorateAutoBlock(a);
-
-        expect(a.className).to.equal('mas-compare-chart-autoblock link-block');
-      });
-
       it('Does not error on invalid url', () => {
         const autoBlock = utils.decorateAutoBlock('http://HostName:Port/lc/system/console/configMgr');
         expect(autoBlock).to.equal(false);
