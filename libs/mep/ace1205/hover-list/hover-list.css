@@ -68,7 +68,7 @@
   .hover-list {
     display: flex;
     gap: var(--s2a-spacing-xs);
-    padding-block: var(--s2a-layout-lg);
+    padding-block: var(--s2a-layout-sm);
   }
 
   .hover-list-headline {
@@ -117,6 +117,10 @@
 }
 
 @media (width >= 1280px) {
+  .hover-list {
+    padding-block: var(--s2a-layout-lg);
+  }
+
   .hover-list-item {
     block-size: 100px;
     cursor: pointer;
