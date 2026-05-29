@@ -232,7 +232,8 @@ function getMarketOptions(markets, currentLang) {
       marketCode: market.marketCode,
       prefix: market.prefix,
       url: '#',
-    }));
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label, langKey));
 }
 
 function createDropdown(

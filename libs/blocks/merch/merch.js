@@ -3,6 +3,7 @@ import {
   shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { mepMasStudioUrls } from './mas-mep-utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -93,7 +94,7 @@ const LanguageMap = {
   vi: 'VN',
 };
 
-const GeoMap = {
+export const GeoMap = {
   ar: 'AR_es',
   be_en: 'BE_en',
   be_fr: 'BE_fr',
@@ -176,6 +177,12 @@ const GeoMap = {
 };
 
 /**
+ * MAS WCS `locale` when it differs from `${language}_${country}` derived from {@link GeoMap}.
+ * @type {Record<string, string>}
+ */
+const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
+
+/**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
@@ -221,7 +228,7 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: `${language}_${country}`,
+    locale: EXTRA_MAS_LOCALES[geo] ?? `${language}_${country}`,
   };
 }
 
@@ -1033,7 +1040,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   if (isInternalModal(url) || prodModalUrl) {
-    const localized = await localizeLinkAsync(url);
+    const localized = await localizeLinkAsync(url, window.location.hostname, false, el);
     url = prodModalUrl && !localized.startsWith('http')
       ? `${new URL(url).origin}${localized}`
       : localized;
@@ -1548,6 +1555,12 @@ export default async function init(el) {
   log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    // Rebuilt merch href keeps only the OSI; stash the original for
+    // the "Edit OSI" badge.
+    if (getConfig()?.mep?.preview) {
+      mepMasStudioUrls.set(merch, el.href);
+      merch.dataset.masBlock = 'ost';
+    }
     el.replaceWith(merch);
     return merch;
   }

@@ -2,9 +2,25 @@
   width: 258px;
 }
 
+.language-list {
+  max-height: 250px;
+  overflow-y: auto;
+  padding: var(--spacing-xxs) 0;
+}
+
+.language-list .language-item:last-child {
+  margin-bottom: 4px;
+}
+
 @media (max-width: 600px) {
   .language-dropdown {
     width: 100vw;
     max-width: 100vw;
+  }
+
+  .language-list {
+    padding: 0 0 16px;
+    max-height: 60vh;
+    overflow-y: auto;
   }
 }

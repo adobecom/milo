@@ -191,7 +191,7 @@
 }
 
 /* Language Selector */
-.language-dropdown, .market-selector-popover {
+.global-footer .language-dropdown, .global-footer .market-selector-popover {
   position: absolute;
   bottom: calc(100% + 5px);
   left: 0;
@@ -202,12 +202,12 @@
   z-index: 1000;
 }
 
-[dir="rtl"] .market-selector-popover {
+[dir="rtl"] .global-footer .market-selector-popover {
   left: auto;
   right: 0;
 }
 
-.search-container {
+.global-footer .search-container {
   padding: 8px 8px 6px;
 }
 
@@ -259,13 +259,7 @@
   vertical-align: middle;
 }
 
-.language-list {
-  max-height: 250px;
-  overflow-y: auto;
-  padding: var(--spacing-xxs) 0;
-}
-
-.language-item, .market-selector-item {
+.global-footer .language-item, .global-footer .market-selector-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -275,7 +269,7 @@
   font-family: var(--body-font-family);
 }
 
-.language-link, .market-selector-link {
+.global-footer .language-link, .global-footer .market-selector-link {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -288,19 +282,19 @@
   font-family: var(--body-font-family);
 }
 
-.language-link:hover, .market-selector-link:hover {
+.global-footer .language-link:hover, .global-footer .market-selector-link:hover {
   color: var(--text-color);
   background: #E9E9E9;
   text-decoration: none;
 }
 
-.language-item.selected .language-link,
-.market-selector-item.selected .market-selector-link {
+.global-footer .language-item.selected .language-link,
+.global-footer .market-selector-item.selected .market-selector-link {
   background: #E9E9E9;
 }
 
-.market-selector-item.selected .market-selector-link,
-.market-selector-link:hover {
+.global-footer .market-selector-item.selected .market-selector-link,
+.global-footer .market-selector-link:hover {
   border-radius: 8px;
 }
 
@@ -311,7 +305,7 @@
   flex-shrink: 0;
 }
 
-.language-item.no-search-result {
+.global-footer .language-item.no-search-result {
   padding: 8px 16px;
   cursor: default;
   pointer-events: none;
@@ -325,7 +319,7 @@
   display: block;
 }
 
-.language-dropdown.fixed-height, .market-selector-popover.fixed-height {
+.global-footer .language-dropdown.fixed-height, .global-footer .market-selector-popover.fixed-height {
   min-height: var(--dropdown-initial-height, 0);
 }
 
@@ -346,29 +340,25 @@
   box-shadow: none;
 }
 
-.language-list::-webkit-scrollbar,
-.market-selector-list::-webkit-scrollbar {
+.global-footer .language-list::-webkit-scrollbar,
+.global-footer .market-selector-list::-webkit-scrollbar {
   width: 6px;
 }
 
-.language-list::-webkit-scrollbar-track,
-.market-selector-list::-webkit-scrollbar-track {
+.global-footer .language-list::-webkit-scrollbar-track,
+.global-footer .market-selector-list::-webkit-scrollbar-track {
   background: var(--color-gray-100);
 }
 
-.language-list::-webkit-scrollbar-thumb,
-.market-selector-list::-webkit-scrollbar-thumb {
+.global-footer .language-list::-webkit-scrollbar-thumb,
+.global-footer .market-selector-list::-webkit-scrollbar-thumb {
   background: var(--color-gray-300);
   border-radius: 3px;
 }
 
-.language-list::-webkit-scrollbar-thumb:hover,
-.market-selector-list::-webkit-scrollbar-thumb:hover {
+.global-footer .language-list::-webkit-scrollbar-thumb:hover,
+.global-footer .market-selector-list::-webkit-scrollbar-thumb:hover {
   background: var(--color-gray-500);
-}
-
-.language-list .language-item:last-child {
-  margin-bottom: 4px;
 }
 
 /* Social */
@@ -578,7 +568,7 @@ span.feds-footer-privacyLink-divider {
 
 /* Language Selector */
 @media (max-width: 600px) {
-  .language-dropdown {
+  .global-footer .language-dropdown {
     position: fixed;
     left: 0;
     right: 0;
@@ -599,7 +589,7 @@ span.feds-footer-privacyLink-divider {
     will-change: transform;
   }
 
-  .language-dropdown .drag-handle {
+  .global-footer .language-dropdown .drag-handle {
     width: 56px;
     height: 6px;
     background: var(--color-gray-200);
@@ -610,22 +600,16 @@ span.feds-footer-privacyLink-divider {
     touch-action: none;
   }
 
-  .search-container {
+  .global-footer .search-container {
     padding: 0 8px 8px;
   }
 
-  .language-list {
-    padding: 0 0 16px;
-    max-height: 60vh;
-    overflow-y: auto;
-  }
-
-  .language-item {
+  .global-footer .language-item {
     font-size: 18px;
     padding: 0;
   }
 
-  .language-link {
+  .global-footer .language-link {
     padding: 8px 16px;
   }
 }

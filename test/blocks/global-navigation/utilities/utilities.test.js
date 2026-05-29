@@ -15,6 +15,7 @@ import {
   dropWhile,
   getGnavHeight,
   getBranchBannerInfo,
+  animateInSequence,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { getAnalyticsValue, decorateCta } from '../../../../libs/blocks/global-navigation/global-navigation.js';
 import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
@@ -349,6 +350,16 @@ describe('global navigation utilities', () => {
     // Calling 'trigger' again should close the element
     expect(trigger({ element })).to.equal(false);
     expect(element.getAttribute('aria-expanded')).to.equal('false');
+  });
+
+  it('animateInSequence can restart animations without clobbering inline styles', () => {
+    const link = toFragment`<a class="feds-navLink" style="color: red">One</a>`;
+
+    animateInSequence([link], 0.02, { restart: true });
+
+    expect(link.style.animationDelay).to.equal('0.02s');
+    expect(link.style.animation).to.equal('');
+    expect(link.style.color).to.equal('red');
   });
 
   it('getExperienceName defaults to imsClientId', () => {

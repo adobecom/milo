@@ -82,10 +82,10 @@ const STAGGER_MS = 1000;
 const STAGGER_BASE = 60;
 const STAGGER_STEP = 20;
 const EASE = 'cubic-bezier(0.42, 0, 0, 1)';
-const RESUME_DELAY = 2000;
 const SWIPE_THRESHOLD = 100;
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isRtl = () => document.documentElement.dir === 'rtl';
 const reflow = (el) => el?.getBoundingClientRect();
 const getCssPx = (el, prop) => parseFloat(getComputedStyle(el).getPropertyValue(prop)) || 0;
 
@@ -214,7 +214,7 @@ const loadViewportVideos = (el) => {
       const isActiveSlide = v.closest('.rm-slide')?.classList.contains('is-active');
       if (isActiveSlide) {
         loadVideo(v);
-        v.play().catch(() => {});
+        if (!prefersReducedMotion()) v.play().catch(() => {});
       }
     });
   });
@@ -250,7 +250,13 @@ const buildCard = (slide) => {
   icon.remove();
   label?.remove();
 
-  const card = createTag('a', { class: 'rm-card', href, 'aria-label': ariaLabel });
+  const card = createTag('a', {
+    class: 'rm-card',
+    href,
+    'aria-label': ariaLabel,
+    role: 'tab',
+    'aria-selected': 'false',
+  });
   card.replaceChildren(
     createTag('img', { class: 'rm-card-icon', src: iconSrc, alt: labelText, loading: 'lazy' }),
     createTag('div', { class: 'rm-card-content' }, [
@@ -271,7 +277,7 @@ const buildReset = () => createTag('button', {
 }, RESET_SVG);
 
 const buildCards = (slides) => {
-  const cards = createTag('div', { class: 'rm-cards' });
+  const cards = createTag('div', { class: 'rm-cards', role: 'tablist' });
   slides.forEach((slide) => cards.append(buildCard(slide)));
   cards.append(buildReset());
   return cards;
@@ -279,10 +285,9 @@ const buildCards = (slides) => {
 
 const buildPlayPause = () => {
   const root = getFederatedContentRoot();
-  return createTag('a', {
+  return createTag('button', {
     class: 'rm-pause-play',
-    role: 'button',
-    tabindex: '0',
+    type: 'button',
     'aria-label': 'Pause',
   }, createTag('div', { class: 'offset-filler is-playing' }, [
     createTag('img', {
@@ -319,7 +324,6 @@ const setAriaHiddenAndTabIndex = (slides) => {
     const isActive = slide.classList.contains('is-active');
     slide.setAttribute('aria-hidden', String(!isActive));
     slide.toggleAttribute('inert', !isActive);
-    slide.setAttribute('tabindex', isActive ? '0' : '-1');
   });
 };
 
@@ -382,13 +386,12 @@ const startAutoplay = (slides, cards, container, block) => {
   const bars = cardEls.map((c) => c.querySelector('.rm-card-progress-bar'));
   const playPauseBtn = container.querySelector('.rm-pause-play');
   const filler = playPauseBtn?.querySelector('.offset-filler');
+  const srHint = container.querySelector('.rm-sr-hint');
   let active = 0; // index of the current active slide
   let timer = null; // timer for the autoplay
   let paused = false; // whether the autoplay is paused
-  let userPaused = false; // whether the user explicitly paused via the play/pause button
   let cleanupTimer = null; // cleanup timer that resets temp inline styles
   let pendingSlide = null; // the slide that is currently transitioning in
-  let leaveTimer = null; // timer for restarting autoplay on block mouse leave
 
   const isMobile = () => !window.matchMedia('(min-width: 1280px)').matches;
   const isDesktopSmallVp = isMobile()
@@ -413,18 +416,21 @@ const startAutoplay = (slides, cards, container, block) => {
   const setPlayingState = (isPlaying) => {
     filler?.classList.toggle('is-playing', isPlaying);
     playPauseBtn?.setAttribute('aria-label', isPlaying ? 'Pause' : 'Play');
+    if (srHint) srHint.hidden = !isPlaying;
   };
+
+  const fillOrigin = () => `translateX(${isRtl() ? '101%' : '-101%'})`;
 
   const clearFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = 'translateX(-101%)';
+    bar.style.transform = fillOrigin();
   };
 
   const startFill = (i) => {
     const bar = bars[i];
     bar.style.transition = 'none';
-    bar.style.transform = 'translateX(-101%)';
+    bar.style.transform = fillOrigin();
     reflow(bar);
     bar.style.transition = `transform ${AUTOPLAY_MS}ms linear`;
     bar.style.transform = 'translateX(0%)';
@@ -485,8 +491,10 @@ const startAutoplay = (slides, cards, container, block) => {
     }
 
     cardEls[active]?.classList.remove('is-active');
+    cardEls[active]?.setAttribute('aria-selected', 'false');
     active = index;
     cardEls[active]?.classList.add('is-active');
+    cardEls[active]?.setAttribute('aria-selected', 'true');
     if (isMobile() && !skipTrack) {
       setTrackX(trackXForCard(active), !reducedMotion);
     }
@@ -500,6 +508,7 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const advance = () => {
+    if (paused) return;
     clearTimeout(timer);
     clearFill(active);
     activate((active + 1) % cardEls.length, 1);
@@ -509,7 +518,9 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const pause = () => {
+    if (paused) return;
     clearTimeout(timer);
+    finishSlideTransition();
     clearFill(active);
     paused = true;
     setPlayingState(false);
@@ -517,31 +528,17 @@ const startAutoplay = (slides, cards, container, block) => {
   };
 
   const resume = () => {
+    if (!paused) return;
     paused = false;
-    userPaused = false;
     setPlayingState(true);
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     slides[active]?.querySelector('video')?.play().catch(() => {});
   };
 
-  const cancelLeaveTimer = () => {
-    clearTimeout(leaveTimer);
-    leaveTimer = null;
-  };
-
-  const startLeaveTimer = () => {
-    if (leaveTimer || userPaused) return;
-    leaveTimer = setTimeout(() => {
-      leaveTimer = null;
-      resume();
-    }, RESUME_DELAY);
-  };
-
   const pauseOnInteraction = (e) => {
     const target = e.target.closest('a, button');
     if (target && !target.closest('.rm-pause-play')) {
-      cancelLeaveTimer();
       if (!paused) pause();
     }
   };
@@ -551,7 +548,6 @@ const startAutoplay = (slides, cards, container, block) => {
   cardEls.forEach((card, i) => {
     card.addEventListener('mouseenter', () => {
       if (noHover()) return;
-      cancelLeaveTimer();
       if (i === active) { pause(); return; }
       clearTimeout(timer);
       clearFill(active);
@@ -599,20 +595,15 @@ const startAutoplay = (slides, cards, container, block) => {
   handleDesktopSmallVp();
 
   container.addEventListener('mouseover', pauseOnInteraction);
-  container.addEventListener('focusin', pauseOnInteraction);
-  block.addEventListener('mouseenter', () => { if (!noHover()) cancelLeaveTimer(); });
-
-  block.addEventListener('mouseleave', () => {
-    if (!noHover() && paused) startLeaveTimer();
+  container.addEventListener('focusin', (e) => {
+    if (!e.target.closest('.rm-pause-play') && !paused) pause();
   });
 
   playPauseBtn?.addEventListener('click', (e) => {
     e.preventDefault();
-    cancelLeaveTimer();
     if (paused) {
       resume();
     } else {
-      userPaused = true;
       pause();
     }
   });
@@ -642,25 +633,37 @@ const startAutoplay = (slides, cards, container, block) => {
   }, { passive: true });
 
   requestAnimationFrame(() => {
+    if (prefersReducedMotion()) {
+      paused = true;
+      setPlayingState(false);
+      return;
+    }
     startFill(active);
     timer = setTimeout(advance, AUTOPLAY_MS);
     preloadNextVideo();
   });
+
+  return { pause, resume };
 };
 
 const buildViewport = (viewport, slides) => {
   const container = createTag('div', { class: 'rm-viewport', 'data-viewport': viewport });
   slides.forEach((slide, i) => {
     decorateSlide(slide);
+    slide.setAttribute('role', 'tabpanel');
+    slide.setAttribute('aria-roledescription', 'slide');
     if (i > 0) slide.querySelector('video')?.removeAttribute('poster');
   });
   slides[0]?.classList.add('is-active');
   setAriaHiddenAndTabIndex(slides);
   const cards = buildCards(slides);
-  cards.children[0]?.classList.add('is-active');
+  const firstCard = cards.children[0];
+  firstCard?.classList.add('is-active');
+  firstCard?.setAttribute('aria-selected', 'true');
   const controls = createTag('div', { class: 'rm-controls' });
-  controls.append(cards, buildPlayPause());
-  container.append(...slides, controls);
+  const srHint = createTag('p', { class: 'rm-sr-hint' }, 'Autoplay is on. Use the Pause button for a better experience with a screen reader.');
+  controls.append(srHint, buildPlayPause(), cards);
+  container.append(controls, ...slides);
   return container;
 };
 
@@ -684,6 +687,7 @@ export default function init(el) {
   const containers = Object.entries(viewports).map(([vp, slides]) => buildViewport(vp, slides));
   el.replaceChildren(...containers);
   const initializedVps = new Set();
+  const autoplayControllers = [];
   const initViewportAutoplay = () => {
     const activeVp = getActiveViewport();
     if (initializedVps.has(activeVp)) return;
@@ -694,7 +698,7 @@ export default function init(el) {
     const cards = container.querySelector('.rm-cards');
     setSlideObserver(slides);
     setAnalytics(slides, cards, container, el);
-    startAutoplay(slides, cards, container, el);
+    autoplayControllers.push(startAutoplay(slides, cards, container, el));
   };
 
   loadViewportVideos(el);
@@ -705,4 +709,14 @@ export default function init(el) {
     loadViewportVideos(el);
     initViewportAutoplay();
   });
+
+  const nextSection = el.closest('.section')?.nextElementSibling;
+  if (nextSection) {
+    new IntersectionObserver(([entry]) => {
+      const action = entry.isIntersecting ? 'pause' : 'resume';
+      if (entry.isIntersecting || entry.boundingClientRect.top > 0) {
+        autoplayControllers.forEach((ctrl) => ctrl[action]());
+      }
+    }, { rootMargin: '0px 0px -30% 0px' }).observe(nextSection);
+  }
 }

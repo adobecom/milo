@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 
 // TODO: Remove once mas-field is published to @adobecom/mas-platform.
 // All other MAS components (merch-card, merch-quantity-select, etc.) resolve via the import map
@@ -16,6 +17,11 @@ if (!customElements.get('mas-field')) {
         const field = this.getAttribute('field');
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
+        } else if (field === 'ctas') {
+          content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong>';
+        } else if (field === 'ctas-checkout') {
+          // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
+          content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
         } else {
           content.textContent = 'Resolved inline value';
         }
@@ -173,7 +179,7 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField).to.not.exist;
     });
 
-    it('unwraps parent <p> for inline fragment when link is only child', async () => {
+    it('unwraps parent <p> when inline fragment resolves to block content', async () => {
       const p = document.createElement('p');
       const a = document.createElement('a');
       a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=unwrap-789&field=description';
@@ -185,6 +191,21 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField).to.exist;
       expect(masField.parentElement).to.equal(document.body);
       expect(document.querySelector('p')).to.not.exist;
+    });
+
+    it('preserves parent <p> and its Milo classes when inline fragment renders inline content', async () => {
+      const p = document.createElement('p');
+      p.classList.add('body-m');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=inline-body-1&field=prices';
+      a.textContent = '[[inline-body-test:prices]]';
+      p.append(a);
+      document.body.append(p);
+      await init(a);
+      const masField = document.querySelector('mas-field');
+      expect(masField).to.exist;
+      expect(masField.parentElement).to.equal(p);
+      expect(p.classList.contains('body-m')).to.be.true;
     });
 
     it('preserves parent <p> for inline fragment when link has siblings', async () => {
@@ -243,6 +264,111 @@ describe('merch-card-autoblock autoblock', () => {
       const masField = document.querySelector('mas-field');
       expect(masField).to.exist;
       expect(masField.closest('#inline-price-heading')).to.exist;
+    });
+
+    it('decorates ctas using sibling button context (size + utility classes)', async () => {
+      const section = document.createElement('div');
+
+      // Simulate already-decorated sibling button (block ran decorateButtons before our checkReady)
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-l', 'button-justified-mobile');
+      section.append(siblingBtn);
+
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=ctas-inherit-1&field=ctas';
+      a.textContent = '[[cta-test:ctas]]';
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button');
+      expect(link).to.exist;
+      expect(link.classList.contains('blue')).to.be.true;
+      expect(link.classList.contains('button-l')).to.be.true;
+      expect(link.classList.contains('button-justified-mobile')).to.be.true;
+    });
+
+    it('upgrades plain commerce links and decorates using block context', async () => {
+      const section = document.createElement('div');
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-xl');
+      section.append(siblingBtn);
+
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=checkout-1&field=ctas-checkout';
+      a.textContent = '[[checkout-test:ctas-checkout]]';
+      strong.append(a);
+      p.append(strong);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button.blue.button-xl');
+      expect(link).to.exist;
+    });
+
+    it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
+      const section = document.createElement('div');
+      const siblingBtn = document.createElement('a');
+      siblingBtn.classList.add('con-button', 'blue', 'button-l');
+      section.append(siblingBtn);
+
+      // Two CTA mas-field links in the same <p> — mirrors the marquee pattern
+      const p = document.createElement('p');
+      // Use ctas-checkout which renders a plain <a> — same as real MAS checkout links
+      const em = document.createElement('em');
+      const a1 = document.createElement('a');
+      a1.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=two-ctas-1&field=ctas-checkout';
+      a1.textContent = '[[cta1]]';
+      em.append(a1);
+
+      const strong = document.createElement('strong');
+      const a2 = document.createElement('a');
+      a2.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=two-ctas-1&field=ctas-checkout';
+      a2.textContent = '[[cta2]]';
+      strong.append(a2);
+
+      p.append(em, strong);
+      section.append(p);
+      document.body.append(section);
+
+      await Promise.all([init(a1), init(a2)]);
+
+      expect(document.querySelectorAll('mas-field').length).to.equal(0);
+      // Both CTAs should be decorated — outline for em, blue for strong
+      const outline = p.querySelector('a.con-button.outline');
+      const blue = p.querySelector('a.con-button.blue');
+      expect(outline).to.exist;
+      expect(blue).to.exist;
+      expect(outline.classList.contains('button-l')).to.be.true;
+      expect(blue.classList.contains('button-l')).to.be.true;
+    });
+
+    it('preserves Milo typography classes on parent heading when inline fragment stays inline', async () => {
+      const heading = document.createElement('h1');
+      heading.id = 'heading-milo-class-test';
+      heading.classList.add('heading-xxxl');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=milo-class-inline-1&field=prices';
+      a.textContent = '[[milo-class-inline-test:prices]]';
+      heading.append(a);
+      document.body.append(heading);
+
+      await init(a);
+
+      const heading1 = document.querySelector('#heading-milo-class-test');
+      expect(heading1).to.exist;
+      expect(heading1.classList.contains('heading-xxxl')).to.be.true;
     });
   });
 
@@ -444,6 +570,82 @@ describe('merch-card-autoblock autoblock', () => {
       expect(badgeText).to.equal('EXCLUSIVE');
       expect(badge.getAttribute('background-color')).to.equal('#1976D2');
       // Badge color is disabled for simplified-pricing-express variant
+    });
+  });
+
+  describe('MEP Highlight M@S Content markers', () => {
+    // Defensive clear — prior describes can leak async-hydrated <merch-card> nodes.
+    beforeEach(() => { document.body.innerHTML = ''; });
+    afterEach(() => { document.body.innerHTML = ''; });
+
+    it('createCard stamps data-mas-block=card and captures original href in mepMasStudioUrls when mep.preview is on', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}], mep: { preview: true } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=a657fd3d9f67';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card: ACOM / Catalog / Test Card';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-card-test-wrap';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const card = wrap.querySelector('merch-card');
+      expect(card, 'merch-card should be created inside the test container').to.exist;
+      expect(card.dataset.masBlock).to.equal('card');
+      expect(mepMasStudioUrls.get(card)).to.equal(studioHref);
+    });
+
+    it('createCard does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}] });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=a657fd3d9f67';
+      const a = document.createElement('a');
+      a.setAttribute('href', studioHref);
+      a.textContent = 'merch-card: ACOM / Catalog / Test Card';
+      const wrap = document.createElement('div');
+      wrap.classList.add('content');
+      wrap.id = 'mep-card-test-wrap-off';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const card = wrap.querySelector('merch-card');
+      expect(card, 'merch-card should be created inside the test container').to.exist;
+      expect(card.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(card)).to.equal(undefined);
+    });
+
+    it('createInline stamps data-mas-block=inline and captures original href on the mas-field wrapper when mep.preview is on', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}], mep: { preview: true } });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=description';
+      const a = document.createElement('a');
+      a.href = studioHref;
+      a.textContent = '[[my-card:description]]';
+      const wrap = document.createElement('div');
+      wrap.id = 'mep-inline-test-wrap';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const masField = wrap.querySelector('mas-field');
+      expect(masField, 'mas-field should be created inside the test container').to.exist;
+      expect(masField.dataset.masBlock).to.equal('inline');
+      expect(mepMasStudioUrls.get(masField)).to.equal(studioHref);
+    });
+
+    it('createInline does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      setConfig({ codeRoot: '/libs', autoBlocks: [{}] });
+      const studioHref = 'https://mas.adobe.com/studio.html#content-type=merch-card&path=acom&query=9de46774-dafe-4f3e-badd-0cbeed37ea08&field=description';
+      const a = document.createElement('a');
+      a.href = studioHref;
+      a.textContent = '[[my-card:description]]';
+      const wrap = document.createElement('div');
+      wrap.id = 'mep-inline-test-wrap-off';
+      wrap.append(a);
+      document.body.append(wrap);
+      await init(a);
+      const masField = wrap.querySelector('mas-field');
+      expect(masField, 'mas-field should be created inside the test container').to.exist;
+      expect(masField.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(masField)).to.equal(undefined);
     });
   });
 });
