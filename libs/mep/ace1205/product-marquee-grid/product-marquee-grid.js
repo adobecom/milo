@@ -17,7 +17,7 @@ function decorate(block) {
   heading?.classList.add('heading-super');
 
   const bodyEls = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  bodyEls.forEach((el) => el.classList.add('heading-4'));
+  bodyEls.forEach((el) => el.classList.add('heading-5'));
 
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
   if (iconEl) {
