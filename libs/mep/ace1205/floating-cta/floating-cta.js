@@ -1,5 +1,6 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
+import { ARROW_RIGHT_WHITE } from '../../../c2/assets/icons.js';
 
 export default function init(el) {
   const contentDiv = el.querySelector('div > div');
@@ -21,10 +22,9 @@ export default function init(el) {
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
   const ctaHref = linkEl?.getAttribute('href') || '#';
 
-  const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel });
-  cta.appendChild(img);
-  cta.append(ctaText);
-  cta.appendChild(createTag('span', { class: 'icon-button arrow', 'aria-hidden': 'true' }));
+  const arrow = createTag('span', { class: 'icon-button arrow', 'aria-hidden': 'true' });
+  arrow.innerHTML = ARROW_RIGHT_WHITE;
+  const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
   el.replaceChildren(cta);
 
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');

@@ -946,21 +946,15 @@ p {
 .icon-button {
   align-items: center;
   background-color: var(--s2a-color-transparent-white-16);
-  block-size: var(--s2a-spacing-xl);
+  block-size: 32px;
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   border-radius: 6px; /* No token */
   box-sizing: border-box;
   display: inline-flex;
   flex-shrink: 0;
-  inline-size: var(--s2a-spacing-xl);
+  inline-size: 32px;
   justify-content: center;
-  transition: background-color 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-  &.arrow {
-    background-image: url('../assets/img/promo-arrow-right.svg');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: var(--s2a-spacing-sm) var(--s2a-spacing-sm);
-  }
+  will-change: background-color, border-color;
 }
 
 /* Promo CTA Styles */
@@ -979,9 +973,9 @@ p {
   text-decoration: none;
   white-space: nowrap;
   img {
-    block-size: var(--s2a-spacing-xl);
+    block-size: 32px ;
     flex-shrink: 0;
-    inline-size: var(--s2a-spacing-xl);
+    inline-size: 32px;
     object-fit: cover;
     overflow: hidden;
   }
@@ -996,8 +990,8 @@ p {
     .icon-button {
       background-color: var(--s2a-color-content-knockout);
       border-color: var(--s2a-color-content-knockout);
-      &.arrow {
-        background-image: url('../assets/img/promo-arrow-right-black.svg');
+      path {
+        fill: var(--s2a-color-background-knockout);
       }
     }
   }

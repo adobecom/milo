@@ -17,9 +17,6 @@
 .floating-cta {
   display: flex;
   justify-content: center;
-}
-
-.floating-cta {
   .promo-cta {
     bottom: var(--s2a-spacing-20);
     clip-path: inset(50% round var(--s2a-border-radius-12));
