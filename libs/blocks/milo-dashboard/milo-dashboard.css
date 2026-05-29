@@ -230,3 +230,14 @@
   padding: var(--spacing-m, 24px);
   text-align: center;
 }
+
+.milo-dashboard .traffic-panel {
+  & .traffic-empty {
+    padding: var(--spacing-m, 24px);
+    text-align: center;
+  }
+
+  & .traffic-muted {
+    color: var(--color-gray-500, #8e8e8e);
+  }
+}

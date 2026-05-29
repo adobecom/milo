@@ -88,6 +88,15 @@ describe('milo-dashboard', () => {
     expect(block.querySelector('.health-trend')).to.exist;
   });
 
+  it('mounts the traffic panel empty state after init', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    expect(block.querySelector('.traffic-panel')).to.exist;
+    expect(block.querySelector('.traffic-empty')).to.exist;
+  });
+
   it('fetches all three endpoints with interval=week', async () => {
     fetchStub = stubFetch(routeFetch);
     const block = document.querySelector('.milo-dashboard');

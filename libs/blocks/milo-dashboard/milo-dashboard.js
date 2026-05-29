@@ -7,6 +7,7 @@ import renderVolumeTrend from './panels/volume-trend.js';
 import renderHealthTrend from './panels/health-trend.js';
 import renderProjectTable from './panels/project-table.js';
 import renderProjectDrilldown from './panels/project-drilldown.js';
+import renderTraffic, { nullTrafficAdapter } from './panels/traffic.js';
 
 const TIMEFRAMES = [
   { label: 'Day', interval: 'day' },
@@ -78,9 +79,14 @@ export default async function init(block) {
     const volumeMount = createTag('div', { class: 'panel volume' });
     const healthMount = createTag('div', { class: 'panel health' });
     const projectsMount = createTag('div', { class: 'panel projects' });
-    grid.append(kpiMount, gaugeMount, volumeMount, healthMount, projectsMount);
+    const trafficMount = createTag('div', { class: 'panel traffic' });
+    grid.append(kpiMount, gaugeMount, volumeMount, healthMount, projectsMount, trafficMount);
 
     block.append(header, grid);
+
+    // Traffic is adapter-driven (stubbed null adapter for now) and needs no
+    // backend data, so render it outside loadData — but keep error isolation.
+    renderPanel(trafficMount, 'traffic', () => renderTraffic(trafficMount, nullTrafficAdapter, charts));
 
     async function loadData(interval) {
       currentInterval = interval;
