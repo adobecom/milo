@@ -31,6 +31,12 @@
   &:hover {
     background: var(--s2a-color-transparent-white-08);
   }
+
+  &:focus-visible {
+    background: var(--s2a-color-transparent-white-08);
+    outline: 2px solid var(--s2a-color-content-knockout);
+    outline-offset: -2px;
+  }
 }
 
 .hover-list-number {

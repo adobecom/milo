@@ -132,6 +132,17 @@ function addCursorFollower(list) {
     if (item && list.contains(item)) activate(item);
   };
 
+  // Keyboard / non-pointer activation: derive the cursor target from the
+  // item's own bounding rect so the picture springs in to the item's center.
+  // vx is zeroed so the layers don't tilt from leftover mouse velocity.
+  const activateAtItem = (item) => {
+    const rect = item.getBoundingClientRect();
+    cursor.x = rect.left + rect.width / 2;
+    cursor.y = rect.top + rect.height / 2;
+    cursor.vx = 0;
+    activate(item);
+  };
+
   // Defer to Lenis (the project's smooth-scroll library) for scroll state.
   // Lenis emits a `scroll` event on every update and dispatches a native
   // `scrollend` CustomEvent on window when scrolling settles, so we don't
@@ -165,6 +176,30 @@ function addCursorFollower(list) {
     lenisOff = null;
     window.removeEventListener('scrollend', onScrollEnd);
   });
+
+  // Keyboard path: focus shows the picture at the item's position.
+  list.addEventListener('focusin', (e) => {
+    if (!DESKTOP_MQ.matches) return;
+    const item = e.target.closest('.hover-list-item');
+    if (item) activateAtItem(item);
+  });
+  list.addEventListener('focusout', (e) => {
+    if (!DESKTOP_MQ.matches) return;
+    // Don't deactivate when focus moves between items — focusin on the
+    // new item handles the transition. Only deactivate when focus leaves
+    // the list entirely.
+    if (!list.contains(e.relatedTarget)) deactivate();
+  });
+
+  // Touch path: tap toggles the picture for the item. Click also fires for
+  // mouse users but is harmless there (item is already active from hover).
+  list.addEventListener('click', (e) => {
+    if (!DESKTOP_MQ.matches) return;
+    const item = e.target.closest('.hover-list-item');
+    if (!item) return;
+    if (item === activeItem) deactivate();
+    else activateAtItem(item);
+  });
 }
 
 function decorate(block) {
@@ -181,7 +216,7 @@ function decorate(block) {
   const list = createTag('ol', { class: 'hover-list-items' });
   rows.slice(1).forEach((row, i) => {
     const [textCol, mediaCol] = row.children;
-    const item = createTag('li', { class: 'hover-list-item' });
+    const item = createTag('li', { class: 'hover-list-item', tabindex: '0' });
     const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1));
     const text = createTag('div', { class: 'hover-list-text heading-5' });
     if (textCol) text.append(...textCol.childNodes);
