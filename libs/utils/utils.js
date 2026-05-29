@@ -2576,12 +2576,6 @@ async function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
-  if (jsonLdFlag === 'true') {
-    const { default: initJsonLd } = await import('../features/jsonld-graph-manager/jsonld-graph-manager.js');
-    await initJsonLd();
-  }
-
   const injectBlock = getMetadata('injectblock');
   if (injectBlock) {
     import('./injectblock.js').then((module) => module.default(injectBlock));
@@ -2712,22 +2706,23 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    // Snapshot JSON-LD scripts present in <head> before any block decoration
-    // can emit its own. Producer-runtime scripts that arrive during section
-    // processing are distinguishable later via `isHtmlJsonLd()` in
-    // libs/utils/jsonld-ns.js. Idempotent — repeated loadArea calls don't
-    // reset the snapshot.
-    window.miloJsonLd = window.miloJsonLd ?? {};
-    if (!window.miloJsonLd.htmlJsonLd) {
-      window.miloJsonLd.htmlJsonLd = new WeakSet();
-      document.head.querySelectorAll('script[type="application/ld+json"]')
-        .forEach((el) => window.miloJsonLd.htmlJsonLd.add(el));
-    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
+    // Initialize the JSON-LD graph manager before block decoration runs.
+    // The manager's boot scan captures the JSON-LD already in the DOM (the
+    // HTML-authored scripts) as `bootDom`, and its MutationObserver captures
+    // everything blocks/features emit afterward as `runtime` — so it is its
+    // own HTML-vs-runtime signal and needs no separate snapshot. Runs after
+    // appendHtmlToCanonicalUrl so page-scoped @ids derive from the final
+    // canonical URL.
+    const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+    if (jsonLdFlag === 'true') {
+      const { default: initJsonLd } = await import('../features/jsonld-graph-manager/jsonld-graph-manager.js');
+      await initJsonLd();
+    }
   }
   const config = getConfig();
   const isLingoActive = lingoActive();
