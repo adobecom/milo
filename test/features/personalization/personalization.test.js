@@ -786,6 +786,18 @@ describe('MEP Utils', () => {
       // eslint-disable-next-line no-script-url
       expect(isTrustedUrl('javascript:alert(1)')).to.be.false;
     });
+    it('rejects additional scheme-prefix edge cases', () => {
+      expect(isTrustedUrl('https:foo')).to.be.false;
+      expect(isTrustedUrl('https:\t/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\n/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('﻿https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl(' https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:///evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:////evil.com/script.js')).to.be.false;
+    });
+    it('safe-by-accident: IDN homograph hostnames blocked because parser punycodes them', () => {
+      expect(isTrustedUrl('https://www.аdobe.com/script.js')).to.be.false;
+    });
     it('rejects non-string inputs', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
