@@ -302,7 +302,7 @@
   align-items: center;
   gap: var(--s2a-spacing-3xl);
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
-  padding-bottom: var(--s2a-layout-sm);
+  padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
 
   .media {
