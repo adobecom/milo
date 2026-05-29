@@ -19,14 +19,17 @@ describe('milo-dashboard health-gauge', () => {
     charts = { makeChart: sinon.spy() };
   });
 
-  it('calls makeChart once with the gauge element and a gauge option', () => {
+  it('calls makeChart once with the gauge element and a ring option', () => {
     renderHealthGauge(container, scores, charts);
     expect(charts.makeChart.calledOnce).to.equal(true);
     const [el, option] = charts.makeChart.firstCall.args;
     expect(el.classList.contains('gauge')).to.equal(true);
     expect(container.contains(el)).to.equal(true);
-    expect(option.series[0].type).to.equal('gauge');
+    // bundled echarts.common has no gauge chart, so the score is a pie/doughnut ring
+    expect(option.series[0].type).to.equal('pie');
     expect(option.series[0].data[0].value).to.be.closeTo(82.5, 0.01);
+    expect(option.series[0].data[1].value).to.be.closeTo(17.5, 0.01);
+    expect(option.title.text).to.equal('82.5');
   });
 
   it('renders 4 category bars in order', () => {

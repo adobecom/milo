@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milo World Dashboard — demo</title>
+  <!-- Milo design tokens (spacing/color/type vars) + the block's own CSS -->
+  <link rel="stylesheet" href="/libs/styles/styles.css" />
+  <link rel="stylesheet" href="/libs/blocks/milo-dashboard/milo-dashboard.css" />
+  <style>
+    body { margin: 0; padding: 24px; background: #fafafa; font-family: adobe-clean, system-ui, sans-serif; }
+    .demo-banner {
+      max-width: 1200px; margin: 0 auto 16px; padding: 8px 14px; border-radius: 8px;
+      background: #fff3cd; border: 1px solid #ffe69c; color: #664d03; font-size: 13px;
+    }
+    .milo-dashboard { max-width: 1200px; margin: 0 auto; background: #fff; border: 1px solid #e6e6e6; border-radius: 10px; padding: 20px; }
+  </style>
+</head>
+<body>
+  <div class="demo-banner">
+    <strong>Demo mode</strong> — all data below is mocked in-browser (no backend, no auth). Charts render with the real echarts bundle. Click the Day/Week/Month toggle, the health-trend category buttons, and any project row to drill in.
+  </div>
+
+  <div class="milo-dashboard">
+    <!-- config rows the block reads; api is irrelevant here since fetch is mocked -->
+    <div><div>api</div><div>http://mock.local</div></div>
+    <div><div>since</div><div>30d</div></div>
+  </div>
+
+  <script type="module">
+    import { setConfig } from '/libs/utils/utils.js';
+
+    // ---- Mock data --------------------------------------------------------
+    const WEEKS = 12;
+    const isoWeeks = (n) => {
+      const out = [];
+      const start = new Date('2026-03-09T00:00:00Z');
+      for (let i = 0; i < n; i += 1) {
+        const d = new Date(start.getTime() + i * 7 * 86400000);
+        out.push(d.toISOString());
+      }
+      return out;
+    };
+    const buckets = isoWeeks(WEEKS);
+    const rnd = (base, spread, i) => Math.round(base + Math.sin(i / 2) * spread + i * (spread / 6));
+
+    const edsRows = buckets.flatMap((bucket, i) => ([
+      { bucket, route: 'live', amount: String(rnd(120, 40, i)) },
+      { bucket, route: 'preview', amount: String(rnd(260, 70, i)) },
+    ]));
+
+    const preflightRows = buckets.map((bucket, i) => ({
+      bucket,
+      avg_overall: (72 + i * 1.4).toFixed(2),
+      avg_performance: (68 + i * 1.6).toFixed(2),
+      avg_seo: (80 + i * 0.8).toFixed(2),
+      avg_accessibility: (65 + i * 1.9).toFixed(2),
+      avg_assets: (88 - i * 0.3).toFixed(2),
+      checks: rnd(40, 10, i),
+    }));
+
+    const overview = {
+      since: '30d',
+      current: { publishes: 1840, previews: 3920, avg_health: '84.20', active_projects: 7, pages_below_70: 38 },
+      prior: { publishes: 1620, previews: 3710, avg_health: '80.10', active_projects: 6, pages_below_70: 52 },
+      delta: { publishes: 220, previews: 210, avg_health: 4.1, active_projects: 1, pages_below_70: -14 },
+    };
+
+    const projects = [
+      { site: 'milo', publishes: 540, previews: 1120, avg_health: '86.40', checks: 220 },
+      { site: 'cc-shared', publishes: 410, previews: 980, avg_health: '78.90', checks: 180 },
+      { site: 'da-blog', publishes: 320, previews: 610, avg_health: '91.20', checks: 95 },
+      { site: 'da-express-milo', publishes: 260, previews: 540, avg_health: '72.10', checks: 140 },
+      { site: 'dc', publishes: 190, previews: 410, avg_health: '69.50', checks: 88 },
+      { site: 'blog', publishes: 120, previews: 260, avg_health: null, checks: 0 },
+    ];
+
+    const worstPages = (project) => ({
+      data: [
+        { url: `https://main--${project}--adobecom.aem.live/products/featured.html`, performance_score: '38.00', project_key: project, created_at: '2026-05-20' },
+        { url: `https://main--${project}--adobecom.aem.live/plans/individual.html`, performance_score: '44.50', project_key: project, created_at: '2026-05-21' },
+        { url: `https://main--${project}--adobecom.aem.live/learn/tutorial.html`, performance_score: '52.10', project_key: project, created_at: '2026-05-22' },
+        { url: `https://main--${project}--adobecom.aem.live/campaign/spring.html`, performance_score: '61.80', project_key: project, created_at: '2026-05-23' },
+      ],
+      pagination: { total: 4, page: 1, limit: 20 },
+    });
+
+    // ---- Mock fetch (intercept by pathname) -------------------------------
+    const realFetch = window.fetch.bind(window);
+    window.fetch = async (input, opts) => {
+      const raw = typeof input === 'string' ? input : (input.href || input.url || String(input));
+      const url = new URL(raw, 'http://mock.local');
+      const p = url.pathname;
+      const json = (body) => new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } });
+      if (p === '/overview') return json(overview);
+      if (p === '/trends/eds') return json(edsRows);
+      if (p === '/trends/preflight') {
+        const project = url.searchParams.get('project');
+        // drill-in passes ?project=<site>; return a slightly lower-scored variant
+        return json(project ? preflightRows.map((r) => ({ ...r, avg_overall: (Number(r.avg_overall) - 6).toFixed(2) })) : preflightRows);
+      }
+      if (p === '/projects') return json(projects);
+      if (p === '/preflight-logs') return json(worstPages(url.searchParams.get('projectKey') || 'milo'));
+      // anything else (e.g. the echarts bundle) goes to the real network/static server
+      return realFetch(input, opts);
+    };
+
+    // ---- Boot the block ---------------------------------------------------
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs', env: { name: 'local' }, locale: { ietf: 'en-US', prefix: '' } });
+    const { default: init } = await import('/libs/blocks/milo-dashboard/milo-dashboard.js');
+    await init(document.querySelector('.milo-dashboard'));
+  </script>
+</body>
+</html>

@@ -17,19 +17,38 @@ function clamp(value) {
   return Math.min(100, Math.max(0, value));
 }
 
+function bandColor(score) {
+  if (score < 50) return '#d7373f';
+  if (score < 80) return '#e68619';
+  return '#268e6c';
+}
+
+// Rendered as a doughnut "progress ring" via the pie series: the bundled
+// echarts.common build does NOT include the gauge chart, but pie is supported.
+// The first slice is the score (band-coloured), the second the remainder.
 function buildGaugeOption(value) {
+  const v = clamp(value);
   return {
+    title: {
+      text: v.toFixed(1),
+      subtext: 'Overall',
+      left: 'center',
+      top: '42%',
+      textStyle: { fontSize: 30, fontWeight: 700, color: '#2c2c2c' },
+      subtextStyle: { fontSize: 12, color: '#6e6e6e' },
+    },
     series: [{
-      type: 'gauge',
-      min: 0,
-      max: 100,
-      axisLine: {
-        lineStyle: {
-          width: 12,
-          color: [[0.5, '#d7373f'], [0.8, '#e68619'], [1, '#268e6c']],
-        },
-      },
-      data: [{ value }],
+      type: 'pie',
+      radius: ['64%', '88%'],
+      center: ['50%', '54%'],
+      startAngle: 90,
+      silent: true,
+      label: { show: false },
+      labelLine: { show: false },
+      data: [
+        { value: v, itemStyle: { color: bandColor(v) } },
+        { value: 100 - v, itemStyle: { color: '#ebebeb' } },
+      ],
     }],
   };
 }
