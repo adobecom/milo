@@ -164,97 +164,101 @@ video {
   }
 }
 
-button.play-pause-button {
-  width: var(--s2a-spacing-xl);
-  height: var(--s2a-spacing-xl);
-  /* 6px and #f2f2f2 have no semantic token match — Figma-specified raw values */
-  border-radius: 6px;
-  background: #f2f2f2;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  z-index: 1;
-  right: var(--s2a-spacing-md);
-  bottom: var(--s2a-spacing-md);
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.25);
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--s2a-color-blue-800);
-    outline-offset: 2px;
-  }
-
-  &:active {
-    background: var(--s2a-color-gray-1000);
-
-    img {
-      filter: none;
-    }
-  }
-
-  img {
-    width: var(--s2a-spacing-20);
-    height: var(--s2a-spacing-20);
-    filter: brightness(0);
-  }
-
-  .offset-filler {
+:root:has(meta[name="foundation"][content="c2"]) {
+  button.play-pause-button {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
+    background: var(--s2a-color-transparent-black-04);
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    z-index: 1;
+    right: var(--s2a-spacing-md);
+    bottom: var(--s2a-spacing-md);
 
-    &.is-playing .play-icon,
-    &:not(.is-playing) .pause-icon {
-      display: none;
+    svg path {
+      fill: var(--s2a-color-gray-1000);
+      stroke: var(--s2a-color-gray-1000);
     }
-  }
-}
 
-.dark button.play-pause-button {
-  /* #2e2e2e has no semantic token match — Figma-specified raw value */
-  background: #2e2e2e;
-  border-color: rgba(255, 255, 255, 0.10);
-
-  img {
-    filter: none;
-  }
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.25);
-  }
-
-  &:active {
-    background: var(--s2a-color-gray-25);
-
-    img {
-      filter: brightness(0);
-    }
-  }
-}
-
-@media (width >= 1280px) {
-  button.play-pause-button {
-    right: var(--s2a-spacing-xl);
-    bottom: var(--s2a-spacing-xl);
-  }
-}
-/* C2 foundation overrides */
-:root:has(meta[name="foundation"][content="c2"]) {
-  .video-container .pause-play-wrapper {
-    .offset-filler {
-      background: var(--s2a-color-gray-800);
+    &:hover {
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-16);
+      background: var(--s2a-color-transparent-black-08);
     }
 
     &:focus-visible {
-      outline-color: var(--s2a-color-blue-700);
+      outline: 1px solid var(--s2a-color-focus-ring-default);
+      outline-offset: 1px;
+    }
+
+    &:active {
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+      background: var(--s2a-color-background-knockout);
+
+      svg path {
+        fill: var(--s2a-color-gray-25);
+        stroke: var(--s2a-color-gray-25);
+      }
+    }
+
+    .offset-filler {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+
+      &.is-playing .play-icon,
+      &:not(.is-playing) .pause-icon {
+        display: none;
+      }
+    }
+  }
+
+  .dark button.play-pause-button {
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+    background: var(--s2a-color-transparent-white-16);
+
+    svg path {
+      fill: var(--s2a-color-gray-25);
+      stroke: var(--s2a-color-gray-25);
+    }
+
+    &:hover {
+      background: var(--s2a-color-transparent-white-12);
+    }
+
+    &:active {
+      background: var(--s2a-color-content-knockout);
+
+      svg path {
+        fill: var(--s2a-color-gray-1000);
+        stroke: var(--s2a-color-gray-1000);
+      }
+    }
+  }
+
+  @media (width >= 1280px) {
+    button.play-pause-button {
+      right: var(--s2a-spacing-xl);
+      bottom: var(--s2a-spacing-xl);
     }
   }
 }
+
+/* C2 foundation overrides */
+/* :root:has(meta[name="foundation"][content="c2"]) { */
+/*   .video-container .pause-play-wrapper { */
+/*     .offset-filler { */
+/*       background: var(--s2a-color-gray-800); */
+/*     } */
+
+/*     &:focus-visible { */
+/*       outline-color: var(--s2a-color-blue-700); */
+/*     } */
+/*   } */
+/* } */

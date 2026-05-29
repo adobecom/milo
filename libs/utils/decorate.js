@@ -20,6 +20,24 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+
+const C2_PLAY_PAUSE_ICONS = `
+<div class='offset-filler accessibility-control'>
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" class="play-icon" aria-hidden="true">
+    <g clip-path="url(#clip0_16178_1778)">
+      <path d="M10.4279 5.39378C10.8946 5.66321 10.8946 6.33679 10.4279 6.60622L3.52791 10.5899C3.06124 10.8594 2.47791 10.5226 2.47791 9.98372V2.01628C2.47791 1.47742 3.06124 1.14064 3.52791 1.41007L10.4279 5.39378Z" fill="#292929"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_16178_1778">
+        <rect width="12" height="12" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="12" viewBox="0 0 10 12" fill="none" class="pause-icon" aria-hidden="true">
+    <path d="M2.48822 9.42876V1.74622M7.28981 9.42876V1.74622" stroke="#292929" stroke-width="1.86008" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+`;
 const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
@@ -328,8 +346,9 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
       <img class='accessibility-control play-icon' alt='${videoLabels.playIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
     </div>
   `;
+
   const control = isC2
-    ? `<button class='play-pause-button' ${labels}>${icons}</button>`
+    ? `<button class='play-pause-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
     : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
 
   return `<div class='video-container video-holder'>${videoString}${control}</div>`;
