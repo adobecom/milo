@@ -1064,13 +1064,13 @@ class Gnav {
       }),
       fetchAUPSDKInstance: async () => {
         // Initialize AUP SDK — required by UNav 1.6 for fetchAUPSDKInstance
-        const { base, imsClientId } = getConfig();
+        const { imsClientId } = getConfig();
         await loadScript(
           `https://shared-components.${environment}.adobe.com/component-loader_PR/1.0.739-1361-20-1778701107907.pr/main.js`,
           null,
-          { mode: 'async' }
+          { mode: 'async' },
         );
-        return await AUPSDK.preloadSDK('adobe-com-stable', {
+        window.aupsdk = await window.AUPSDK.preloadSDK('adobe-com-stable', {
           appId: 'adobe_com',
           apiKey: imsClientId,
           getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
@@ -1081,6 +1081,8 @@ class Gnav {
           appVersion: '1.0',
           colorScheme: isDarkMode() ? 'dark' : 'light',
         });
+
+        return window.aupsdk;
       },
     });
 
