@@ -287,7 +287,6 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
-                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -295,10 +294,6 @@ export const CONFIG = {
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', severity: 'warning' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
-              },
-              managePeopleConfig: {
-                enableWorkflow: true,
-                ...getConfig().unav?.profile?.managePeopleConfig,
               },
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
@@ -1070,7 +1065,7 @@ class Gnav {
           null,
           { mode: 'async' },
         );
-        window.aupsdk = await window.AUPSDK.preloadSDK('adobe-com-stable', {
+        window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
           appId: 'adobe_com',
           apiKey: imsClientId,
           getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
