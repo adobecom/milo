@@ -323,7 +323,7 @@
       border-radius: var(--s2a-border-radius-24);
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
-      backdrop-filter: blur(var(--s2a-blur-16));
+      backdrop-filter: blur(var(--s2a-blur-md));
       overflow: hidden;
       transform-origin: center bottom;
 
@@ -390,7 +390,7 @@
       overflow: hidden;
 
       img {
-        filter: blur(var(--s2a-blur-30));
+        filter: blur(var(--s2a-blur-md));
         transform: scale(1.08);
       }
 
