@@ -188,3 +188,45 @@
     background: var(--color-gray-100, #f5f5f5);
   }
 }
+
+.milo-dashboard .drilldown-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s, 16px);
+  margin-block-end: var(--spacing-m, 24px);
+}
+
+.milo-dashboard .drilldown-back {
+  cursor: pointer;
+}
+
+.milo-dashboard .drilldown-title {
+  margin: 0;
+}
+
+.milo-dashboard .drilldown-health,
+.milo-dashboard .drilldown-worst {
+  margin-block-end: var(--spacing-m, 24px);
+}
+
+.milo-dashboard .worst-pages {
+  width: 100%;
+  border-collapse: collapse;
+
+  & th {
+    text-align: start;
+  }
+
+  & td a {
+    overflow-wrap: anywhere;
+  }
+
+  & .fix-in-da {
+    white-space: nowrap;
+  }
+}
+
+.milo-dashboard .worst-pages-empty {
+  padding: var(--spacing-m, 24px);
+  text-align: center;
+}

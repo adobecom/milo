@@ -19,6 +19,18 @@ const PREFLIGHT = [
     bucket: '2026-05-01', avg_overall: '80.00', avg_performance: 90, avg_seo: 70, avg_accessibility: 50, avg_assets: 60, checks: 30,
   },
 ];
+const PROJECTS = [
+  { site: 'milo', publishes: 50, previews: 20, avg_health: '80.00', checks: 30 },
+  { site: 'bacom', publishes: 30, previews: 10, avg_health: '70.00', checks: 15 },
+];
+const PREFLIGHT_LOGS = {
+  data: [{
+    url: 'https://main--milo--adobecom.aem.live/products/x.html',
+    performance_score: '42.00',
+    project_key: 'milo',
+    created_at: '2026-05-01',
+  }],
+};
 
 function stubFetch(fake) {
   return sinon.stub(window, 'fetch').callsFake(fake);
@@ -30,6 +42,8 @@ function routeFetch(url) {
   if (pathname.endsWith('/overview')) body = OVERVIEW;
   else if (pathname.endsWith('/trends/eds')) body = EDS;
   else if (pathname.endsWith('/trends/preflight')) body = PREFLIGHT;
+  else if (pathname.endsWith('/projects')) body = PROJECTS;
+  else if (pathname.endsWith('/preflight-logs')) body = PREFLIGHT_LOGS;
   else body = {};
   return Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
 }
@@ -98,6 +112,33 @@ describe('milo-dashboard', () => {
     const urls = fetchStub.getCalls().map((c) => `${c.args[0]}`);
     expect(urls.some((u) => u.includes('/trends/eds') && u.includes('interval=day'))).to.be.true;
     expect(day.getAttribute('aria-pressed')).to.equal('true');
+  });
+
+  it('renders the project table after init', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    expect(block.querySelector('.project-table')).to.exist;
+    expect(block.querySelectorAll('.project-row').length).to.equal(2);
+  });
+
+  it('switches to drill-in on project row click and back restores overview', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    block.querySelector('.project-row').click();
+    await new Promise((r) => { setTimeout(r, 0); });
+
+    expect(block.querySelector('.drilldown-back')).to.exist;
+    expect(block.querySelector('.dashboard-grid')).to.equal(null);
+
+    block.querySelector('.drilldown-back').click();
+    await new Promise((r) => { setTimeout(r, 0); });
+
+    expect(block.querySelector('.dashboard-grid')).to.exist;
+    expect(block.querySelector('.drilldown-back')).to.equal(null);
   });
 
   it('shows a top-level error when fetch fails', async () => {
