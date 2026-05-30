@@ -1157,6 +1157,10 @@ export const getConfig = async (originalState, strs = {}) => {
       enabled: state.sortEnablePopup,
       defaultSort: state.sortDefault,
       options: getSortOptions(state, strs),
+      ...((state.sortDefault === 'localFirst' || state.sortLocalFirst)
+        && state.sortLocalFirstRecencyThreshold !== null
+        ? { localFirstRecencyThreshold: state.sortLocalFirstRecencyThreshold }
+        : {}),
     },
     pagination: {
       animationStyle: navigationStyle,
@@ -1333,6 +1337,9 @@ export const defaultState = {
   sortEnableRandomSampling: false,
   sortEventSort: false,
   sortFeatured: false,
+  sortLocalFirst: false,
+  sortLocalFirstRecencyThreshold: null,
+  sortLocalLast: false,
   sortModifiedAsc: false,
   sortModifiedDesc: false,
   sortRandom: false,

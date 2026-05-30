@@ -608,10 +608,14 @@ const SortPanel = () => {
     ${state.sortEnableRandomSampling && RandomSampling}
   `;
 
+  const showRecencyThreshold = state.sortDefault === 'localFirst'
+    || (state.sortEnablePopup && state.sortLocalFirst);
+
   return html`
     <${Select} label="Default Sort Order" prop="sortDefault" options=${defaultOptions.sort} />
     <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
     ${state.sortEnablePopup && SortOptions}
+    ${showRecencyThreshold && html`<${Input} label="Local Region Recency Threshold (months)" prop="sortLocalFirstRecencyThreshold" type="number" />`}
   `;
 };
 

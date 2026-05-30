@@ -723,6 +723,50 @@ describe('getConfig', () => {
       stageDomainsMap: { localhost: { 'www.adobe.com': 'stage.adobe.com', 'business.adobe.com': 'origin' } },
     })).to.eql({});
   });
+
+  describe('localFirstRecencyThreshold', () => {
+    it('is included in sort config when sortDefault is localFirst and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(6);
+    });
+
+    it('is included in sort config when sortLocalFirst popup option is checked and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortEnablePopup: true,
+        sortLocalFirst: true,
+        sortLocalFirstRecencyThreshold: 3,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(3);
+    });
+
+    it('is omitted from sort config when threshold is null', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: null,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
+
+    it('is omitted from sort config when localFirst is not active', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'dateDesc',
+        sortLocalFirst: false,
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
+  });
 });
 
 describe('getCountryAndLang', () => {
