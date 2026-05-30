@@ -1392,15 +1392,15 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     const { consentState } = config.mep;
 
     const consentData = {
-      functional: consentState?.functional ? 'on' : 'off',
+      performance: consentState?.performance ? 'on' : 'off',
       advertising: consentState?.advertising ? 'on' : 'off',
     };
 
     const consentHTML = `
     <h6 class="mep-section-header">Consent</h6>
     <div class="mep-section-data">
-        <span>Functional</span>
-        <span>${consentData.functional}</span>
+        <span>Performance</span>
+        <span>${consentData.performance}</span>
         <span>Advertising</span>
         <span>${consentData.advertising}</span>
     </div>
