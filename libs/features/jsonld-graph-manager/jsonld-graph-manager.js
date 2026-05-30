@@ -27,7 +27,7 @@ const RULES = {
   },
   SoftwareApplication: {
     idFragment: '#softwareapplication',
-    linksBack: { provider: 'Organization' },
+    linksBack: { isPartOf: 'WebPage', mainEntityOfPage: 'WebPage', provider: 'Organization' },
   },
   HowTo: { idFragment: '#howto', linksBack: { isPartOf: 'WebPage' } },
   FAQPage: { idFragment: '#faq', linksBack: { isPartOf: 'WebPage' } },

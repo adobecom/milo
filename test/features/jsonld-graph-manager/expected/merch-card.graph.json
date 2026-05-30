@@ -1,0 +1,58 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://www.adobe.com/products/photoshop.html#webpage",
+      "url": "https://www.adobe.com/products/photoshop.html",
+      "publisher": { "@id": "https://www.adobe.com/#organization" },
+      "mainEntity": { "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication" }
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.adobe.com/#organization",
+      "name": "Adobe",
+      "url": "https://www.adobe.com/",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg",
+        "contentUrl": "https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication",
+      "name": "Photoshop",
+      "brand": { "@type": "Brand", "name": "Adobe" },
+      "offers": [
+        { "@id": "https://www.adobe.com/products/photoshop.html#offer" }
+      ],
+      "image": [
+        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
+        "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg?format=png&width=800&height=800"
+      ],
+      "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
+      "mainEntityOfPage": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
+      "provider": { "@id": "https://www.adobe.com/#organization" }
+    },
+    {
+      "@type": "Offer",
+      "@id": "https://www.adobe.com/products/photoshop.html#offer",
+      "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
+      "priceCurrency": "USD",
+      "price": "662.9",
+      "availability": "https://schema.org/InStock",
+      "category": "Subscription",
+      "seller": { "@id": "https://www.adobe.com/#organization" },
+      "itemOffered": { "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product" },
+      "priceSpecification": {
+        "@type": "UnitPriceSpecification",
+        "price": "662.9",
+        "priceCurrency": "USD",
+        "billingDuration": "P1Y",
+        "billingIncrement": 1,
+        "priceWithoutDiscount": "779.88"
+      }
+    }
+  ]
+}
