@@ -1087,8 +1087,11 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      ...(state.useRoundedCorners
+          && { useRoundedCorners: !!state.useRoundedCorners }),
       // Only include bladeCard when explicitly configured
-      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
+      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent)
+      && {
         bladeCard: {
           reverse: !!state.bladeCardReverse,
           lightText: !!state.bladeCardLightText,
@@ -1271,6 +1274,7 @@ export const defaultState = {
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
+  editorialCardOpenVariant: false,
   endpoint: 'www.adobe.com/chimera-api/collection',
   environment: '',
   excludedCards: [],
@@ -1341,9 +1345,10 @@ export const defaultState = {
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
+  useCenterVideoPlay: false,
   useLightText: false,
   useOverlayLinks: false,
-  useCenterVideoPlay: false,
+  useRoundedCorners: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };
