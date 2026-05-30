@@ -2703,6 +2703,7 @@ function loadLingoIndexes(area = document) {
 export async function loadArea(area = document) {
   const searchParams = new URLSearchParams(location.search);
   if ((searchParams.get('daRenderingApp') === 'stream') || searchParams.get('darenderingapp') === 'stream') {
+    if (window.streamConfig) return;
     const streamOrigin = searchParams.get('mapperOrigin') || searchParams.get('mapperorigin') || 'https://prod--stream-mapper--adobecom.aem.live';
     const { selfRender } = await import(`${streamOrigin}/streamlibs/previewer.js`);
     await selfRender();
