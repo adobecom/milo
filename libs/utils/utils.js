@@ -2701,6 +2701,13 @@ function loadLingoIndexes(area = document) {
 }
 
 export async function loadArea(area = document) {
+  const searchParams = new URLSearchParams(location.search);
+  if ((searchParams.get('daRenderingApp') === 'stream') || searchParams.get('darenderingapp') === 'stream') {
+    const streamOrigin = searchParams.get('mapperOrigin') || searchParams.get('mapperorigin') || 'https://prod--stream-mapper--adobecom.aem.live';
+    const { selfRender } = await import(`${streamOrigin}/streamlibs/previewer.js`);
+    await selfRender();
+  }
+    
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
@@ -2803,14 +2810,3 @@ export function loadLana(options = {}) {
 
 export const reloadPage = () => window.location.reload();
 
-(function () {
-  var searchParams = new URLSearchParams(location.search);
-  if ((searchParams.get('daRenderingApp') === 'stream') || searchParams.get('darenderingapp') === 'stream') {
-    var streamOrigin = searchParams.get('mapperOrigin') || searchParams.get('mapperorigin') || 'https://prod--stream-mapper--adobecom.aem.live';
-    var s = document.createElement('script');
-    s.type = 'module';
-    s.src = `${streamOrigin}/streamlibs/previewer.js`
-    s.async = true;
-    document.head.appendChild(s);
-  }
-})();
