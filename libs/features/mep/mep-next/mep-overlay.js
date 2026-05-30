@@ -109,14 +109,17 @@ function buildManifestList(svgData) {
 }
 
 function buildLoadManifest(card, pageId) {
-  return createTag('input', { class: 'mep-load-manifest', type: 'text', name: `new-manifest-${pageId}`, placeholder: card.placeholder });
+  return createTag('input', { class: 'mep-load-manifest', type: 'text', name: `new-manifest${pageId}`, placeholder: card.placeholder });
 }
 
 function buildToggle(card, pageId) {
   return card.label.map((item) => {
-    const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}-${pageId}`;
-    const switchEl = createTag('label', { class: 'mep-switch', for: id }, [
-      createTag('input', { type: 'checkbox', id }),
+    const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}${pageId}`;
+    const inputAttrs = { type: 'checkbox', id };
+    if (item.isChecked) inputAttrs.checked = '';
+    const input = createTag('input', inputAttrs);
+    const switchEl = createTag('label', { class: 'mep-switch' }, [
+      input,
       createTag('span', { class: 'mep-switch-track' }),
     ]);
     const textEl = createTag('div', { class: 'mep-toggle-text' }, [
@@ -130,13 +133,13 @@ function buildToggle(card, pageId) {
 function buildSpoofGeo(card, pageId, svgData) {
   const options = card.label.map((val, index) => {
     const id = `spoof-geo-${val}`;
-    const radioInput = createTag('input', { type: 'radio', id, name: `spoof-geo-${pageId}`, value: val });
+    const radioInput = createTag('input', { type: 'radio', id, name: `spoof-geo${pageId}`, value: val });
     radioInput.checked = index === 0;
     const label = createTag('label', { for: id }, val);
     ['icon-radio-unchecked', 'icon-radio-checked'].forEach((icon) => label.prepend(parseSvg(svgData.svg[icon])));
     return createTag('div', { class: 'mep-radio-row' }, [radioInput, label]);
   });
-  const select = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo-${pageId}` });
+  const select = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo${pageId}` });
   return [...options, select];
 }
 
@@ -222,39 +225,28 @@ function buildDrawer(gnavOffset, svgData, cardData, pageId) {
   }, [headerEl, bodyEl, footerEl]);
 }
 
-function changeTab(tabIndex) {
-  document.querySelectorAll('[data-tab]').forEach((tab) => {
-    tab.classList.toggle('active', tab.getAttribute('data-tab') === tabIndex);
+function addEventListeners() {
+  const drawerEl = document.querySelector('#mep-drawer');
+
+  drawerEl.addEventListener('click', (e) => {
+    const tab = e.target.closest('.mep-tab');
+    if (tab) {
+      const tabIndex = tab.getAttribute('data-tab');
+      drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-tab') === tabIndex);
+      });
+      return;
+    }
+    if (e.target.closest('.mep-card svg')) e.target.closest('.mep-card').classList.toggle('expanded');
   });
-}
 
-function addTabListeners() {
-  document.querySelectorAll('.mep-tab').forEach((tab) => {
-    tab.addEventListener('click', () => changeTab(tab.getAttribute('data-tab')));
+  drawerEl.addEventListener('change', (e) => {
+    if (e.target.type === 'checkbox') e.target.toggleAttribute('checked', e.target.checked);
+    setPreviewButton(e);
   });
-}
 
-function addCardListeners() {
-  document.querySelectorAll('.mep-card').forEach((card) => {
-    card.querySelector('svg')?.addEventListener('click', (e) => {
-      e.target.closest('.mep-card').classList.toggle('expanded');
-    });
-  });
-}
-
-function addInputListeners() {
-  const inputs = document.querySelectorAll('input');
-
-  inputs.forEach((input) => {
-    input.addEventListener('change', setPreviewButton);
-  });
-}
-
-function addSelectListeners() {
-  const selects = document.querySelectorAll('select');
-
-  selects.forEach((select) => {
-    select.addEventListener('change', setPreviewButton);
+  drawerEl.addEventListener('input', (e) => {
+    if (e.target.type === 'text') setPreviewButton(e);
   });
 }
 
@@ -275,10 +267,7 @@ async function buildOverlay() {
 async function init() {
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   await buildOverlay();
-  addTabListeners();
-  addCardListeners();
-  addInputListeners();
-  addSelectListeners();
+  addEventListeners();
 }
 
 init();
