@@ -1,20 +1,96 @@
 # Milo JSON-LD Graph Manager
 
-> **Status:** DRAFT  
-
 ## Summary 
 
-The JSON-LD Graph Manager is a Milo feature that collects all the JSON-LD on a page and rewrites it as **one canonical, linked `@graph`**. This centralization enables the manager to automatically apply JSON-LD graph features that may improve search engine and LLM visibility, such as cross-entity `@id` linking and singleton enforcement for certain types.
+The Milo JSON-LD Graph Manager (graph manager) aims to improve Adobe.com page ranking performance in search engines and AI assistants by automatically consolidating all the JSON-LD on a page into a single, directed @graph format proven to trigger Google Search Rich Results while still maximizing context for AI assistants. The graph manager system design helps maintain engineering productivity: stakeholders only need to enable the feature via metadata and the manager handles normalizing, relating and deduplicating the JSON-LD data from 33+ integrations across 7+ AEM Site repositories.
 
-The feature is **disabled by default**. To enable, set the `jsonld-graph-manager` page metadata or URL query parameter to the string `true` (case-insensitive). The string `false` explicitly disables it. Presence without a value does not enable the feature. To enable debug logging of queue lifecycle events, add `jsonld-graph-manager-debug=true` as a URL query parameter.
+## Usage
 
-## 1. Introduction
+Use AEM [Page Metadata](https://www.aem.live/docs/metadata) or [Bulk Metadata](https://www.aem.live/docs/bulk-metadata) to enable the graph manager in production.
 
-One strategy which may improve Adobe.com visibility across search engines and LLMs is to improve the consistency of JSON-LD across pages. We can define default nodes and relate individual nodes to one another to eliminate duplicated and contradictory nested nodes. This relationship may also improve understanding. Methods include using `@id` references, `mainEntity`, `sameAs`, `isPartOf`, etc.
+**Enable flag:** `jsonld-graph-manager`. Boolean, default: `false`. Set to `true` to enable the graph manager. Also available as URL query parameter.
 
-Many Milo blocks and features produce JSON-LD. The problem is these producers write their JSON-LD to the page independently without any coordination or knowledge of each other. As of April 17, 2026 there were **33 integrations spread across 7 active sites**. Only 17 of those integrations are in `milo` itself. This makes these techniques difficult to coordinate manually.
+**Debug flag:** `jsonld-graph-manager-debug`. Boolean, default: `false`. Set to `true` to enable lifecycle logging via `console.debug`. URL query parameter only.
 
-The `JsonLdGraphManager` exists to convert these entities into a single graph. Consider a product page that today emits JSON-LD from `richresults` (Article, Organization), `gnav` (BreadcrumbList), `seotech` (VideoObject). The `<head>` ends up with four independent scripts, with overlapping entity definitions and inconsistent identifiers:
+**Ignore-types flag:** `jsonld-graph-manager-ignore`. Comma-separated string, default empty. Ignore existing JSON-LD by case-insenstive `@type`. Producer scripts whose top-level content matches any entry on the list are bypassed entirely — the manager does not parse, normalize, merge, or remove them from the DOM. The pseudo-type `graph` matches any script whose top-level content is a `{ "@graph": [...] }` container, regardless of the types nested inside.
+
+## Testing & verification
+
+The manager is spec-driven, and the spec is executable. [`rules.yaml`](./rules.yaml) is the single source of truth for what a correct managed graph looks like — every rule carries a severity (`error` / `warn` / `info`), the code symbol that implements it, and the test that covers it. The fastest way to understand the system is to read `rules.yaml` next to the golden fixtures; the tests exist to prove the implementation conforms to that spec.
+
+Tests run under the standard Milo unit harness (`npm run test`) and never touch the network. They are layered from "what correct means" out to "does it hold on a live page":
+
+- **Golden fixtures** — `graph-golden.test.js`. One representative producer input per page archetype (`mocks/<archetype>.html`) is run through the manager and compared against a committed canonical output (`expected/<archetype>.graph.json`). A diff on an expected file is the human-reviewable record of any behavioural change — read these first to watch messy producer input become one clean `@graph`.
+- **Rule conformance** — `conformance.test.js` + `validate.js` (both under `test/features/jsonld-graph-manager/`). `validate.js` is the executable form of the `error`-severity rules in `rules.yaml`: pure predicates keyed by rule name. The test runs them against the live managed graph for every fixture and asserts zero violations. Where a golden pins *what* the output is, conformance asserts *why* it is correct.
+- **Registry sanity** — `rules-registry.test.js`. Guards `rules.yaml` against drift: required fields and valid severities, unique names, resolvable `interacts_with` references, and that every `implements` symbol and `validate.js` predicate maps to something real.
+- **Unit + lifecycle** — `normalize` / `merge` / `extract` `.test.js` cover identity rewrite, merge-priority resolution, and inline-entity extraction; `manager.test.js` covers the boot scan and `MutationObserver` rebuild against DOM fixtures.
+
+**End-to-end (verification, deliberately not in the browser).** Conformance over real rendered pages targets search bots, so it lives outside the runtime rather than adding weight to the page: cohort pages in the `tests` dataset are loaded via a deployed branch with `?milolibs=<branch>&jsonld-graph-manager=true` and checked against the `rules.yaml` requirements. The feature is "done" when every error-severity rule passes for every cohort row.
+
+Evaluating whether this feature actually improves how search engines and LLMs surface content is not in the scope of this document.
+
+## Development
+
+The manager is developed spec-first: a behavioural change starts in `rules.yaml` (the contract) and ends with a green conformance run and a reviewable golden diff. The test layers above double as the development checklist — if the registry, golden, and conformance tests are green, the spec, the code, and the docs are in sync. The rule `name` is the join key: it links the row in `rules.yaml`, the `implements` symbol in the manager, the predicate in `validate.js`, and the `tested_by` entry — and `rules-registry.test.js` enforces that join.
+
+### The loop — changing behaviour
+
+1. **Spec it.** Edit the rule(s) in [`rules.yaml`](./rules.yaml): adjust the `requirement` / `severity` / `status`, or add a new row. Rule `name`s are stable identifiers referenced by code, tests, and this doc — don't rename casually.
+1. **Implement it** in `jsonld-graph-manager.js`.
+1. **Make it checkable.** If the rule is a structural `error` that holds on the output graph, add a predicate to `validate.js` keyed by the rule `name`, and add `conformance.test.js` to that rule's `tested_by`. (Behavioural transforms and producer-eligibility rules have no graph predicate — they're covered by golden cases or deferred to the crawler.)
+1. **Refresh the golden(s).** Run `graph-golden.test.js`; a failing assertion prints the new `actual` graph. Update the matching `expected/<archetype>.graph.json` and review the diff — that diff *is* your behavioural change. (The test deep-equals parsed objects, so formatting is cosmetic; keep `{ "@id": … }` refs on one line for readable diffs.)
+1. **Verify.** `npm run test` and `npm run lint`. `rules-registry.test.js` fails loudly if `rules.yaml` drifts from the code or from `validate.js`.
+
+### Adding an entity type
+
+- Add the type to the `RULES` map in `jsonld-graph-manager.js` (`idFragment`, and any `singleton` / `repeatable` / `linksBack` policy).
+- Add the rule row(s) to `rules.yaml` under the right `section`.
+- Add a golden fixture: a realistic producer payload at `mocks/<type>.html` and its canonical `expected/<type>.graph.json`, then register the case in `graph-golden.test.js`.
+- Record the Google / Schema.org requirements in the §4 table and the `types` sheet of the structured-data catalog.
+
+### Running tests
+
+- `npm run test` — full Milo unit suite.
+- `npx wtr "test/features/jsonld-graph-manager/<file>.test.js" --node-resolve` — a single file (the YAML- and graph-driven tests need `--node-resolve`; the browser binary installs once via `npx playwright install chromium`).
+- `npm run lint` — JS and CSS.
+
+## Observability
+
+The manager should expose both local debugging output and production-safe warning and error reporting.
+
+### Debug logging
+
+Add `jsonld-graph-manager-debug=true` to the URL query string to enable lifecycle logging via `console.debug`. Events logged in queue order:
+
+- **enqueue** — source (`bootDom` or `runtime`), DOM location, original captured payload
+- **ignored** — source, DOM location, payload (truncated); the script matched `jsonld-graph-manager-ignore` and was bypassed
+- **rebuild** — batch size, current graph size
+- **parsed** — source, node count, `@type` values found
+- **removed from DOM** — parent element of the ingested script
+- **rewrite** — node count, full expandable `@graph` object
+
+Debug mode is the appropriate place to surface per-source origin when needed; the production manager does not persist a provenance record on the canonical graph.
+
+#### Warning and error reporting
+
+Warnings and errors should be reported through `window.lana?.log(...)` using the existing repo conventions for tags and severity.
+
+Representative cases:
+
+- invalid JSON-LD that fails to parse
+- unsupported payload shapes
+- rewrite failures
+- transform failures
+- producer payloads that violate required assumptions
+
+Recommended logging behavior:
+
+- warnings use Lana warning severity
+- errors use Lana error severity
+- tags should identify the manager and, when useful, the producer (e.g., `jsonld-graph-manager` or `jsonld-graph-manager,seotech`)
+- high-volume success-path events should not be sent to Lana by default
+
+## Example
 
 **Before** — `jsonld-graph-manager: false` — four isolated scripts, no links between them:
 
@@ -104,8 +180,6 @@ The `JsonLdGraphManager` exists to convert these entities into a single graph. C
 ```
 
 `Organization` appears once and is referenced by `@id` from both `WebPage.publisher` and `Article.publisher`. `WebPage` is the graph root — it declares its `breadcrumb` and `mainEntity` by reference. `Article` links back via `isPartOf` and `mainEntityOfPage`. `BreadcrumbList` also declares `isPartOf` the `WebPage`. Every relationship is bidirectional and traversable.
-
-§3 Requirements specifies the normative rules for the managed graph. §4 Per-Type Strategy maps each supported schema.org type to its Google rich-result requirements, manager handling, and known producers in the Milo repository.
 
 ## 2. Design
 
@@ -269,14 +343,6 @@ graph TD
 
 For product-oriented pages, `WebPage.mainEntity` points to `SoftwareApplication` rather than `Article`. Producer payloads of `@type: Product` are transformed to `SoftwareApplication` per §2.4. Offers (paid subscription, free trial, etc.) are hoisted to the top-level `@graph` and referenced by `@id`. The page-family-to-primary-entity mapping is owned by the public `tests` dataset.
 
-### 2.6 Alternatives Considered
-
-There are two additional approaches that have been tabled but should be reexamined in future.
-
-**Coordinated producer migration.** Require every producer to adopt a shared interface — a direct-push API, a publish-subscribe bus, a declarative schema — before shipping anything. Rejected: the producer landscape currently spans 33 integrations across 7 repos, including legacy, external, and non-Milo sources, plus inline author-authored JSON-LD. Any such approach requires every producer to opt in on day one, cannot be feature-flagged per page, and strands producers that cannot be refactored at all. The observation-first design lets the ecosystem converge incrementally without blocking on any single producer. In the future we can offer a direct-push function as the preferred method and refactor existing components.
-
-**Build-time aggregation.** Collect and normalize JSON-LD at publish time instead of at runtime. Rejected: much of today's JSON-LD is produced by runtime code (feature fetches, DOM derivations, experimentation) and by author-hand-coded inline scripts. A build-time aggregator would miss both categories, and the managed graph would not reflect what the browser actually renders. There are still valid use-cases for this approach to perform major portions of node generation.
-
 ## 3. Requirements
 
 The normative rules for the managed graph. Every rule has a stable `Name`, a `Severity`, the `Requirement` itself, and optional `Notes`. Severity meanings:
@@ -335,66 +401,6 @@ Coverage strategy: Google rich-result eligibility is consumer #1. Other consumer
 | `Event` | `name`, `startDate`, `location` (`description`, `endDate`, `image`, `offers`) | Passed through; not a primary page type. |
 | `WebSite` | `potentialAction` `SearchAction` with `target` + `query-input` | Sitelinks search box; emitted only when explicitly authored. |
 
-## 5. Conformance
-
-Testing for the `JsonLdGraphManager` is organized at three levels:
-
-1. **Unit tests** cover the manager's internal behavior: parsing the accepted input shapes, identity-rewrite for known types, merge-priority resolution, and dedupe for singletons. These run under the existing Milo unit-test harness and should not depend on the network. Part of Milo.
-
-2. **Integration tests** cover the boot and mutation lifecycle against representative DOM fixtures. Each fixture represents one page family (editorial, product, breadcrumb-only, multi-producer conflict, etc.) and asserts on the managed `@graph` output plus the removal of unmanaged scripts. Part of Milo.
-
-3. **End-to-end tests** cover cohort pages listed in the public `tests` dataset. For each row, the test asserts the JSON-LD on the page meets all `requirements` and matches the row's defined Expected Primary Entity. End-to-end testing depends on a dev or stage deployment: once the branch is pushed, we can load AEM `.live` or `.page` URLs with `milolib=${BRANCH_NAME}` and `jsonld-graph-manager=true` to exercise the feature before merge. This feature could be considered complete once all `requirements` pass for every row in `tests`. Due to its complexity this test may exist outside of Milo.
-
-Evaluating whether this feature actually improves how search engines and LLMs surface content is not in the scope of this document. 
-
-## 6. Operations
-
-### 6.1 Feature Flagging
-
-**Flag:** `jsonld-graph-manager` (page metadata or URL query parameter, `true`/`false`, default `false`)
-
-The manager is feature-gated by AEM page metadata so it can be enabled or disabled on selected pages and page families without affecting the entire site at once. You can also use the query parameter for quick testing.
-
-**Debug flag:** `jsonld-graph-manager-debug` (URL query parameter only, `true` to enable)
-
-**Ignore-types flag:** `jsonld-graph-manager-ignore` (URL query parameter only, comma-separated list of schema.org type names, case-insensitive). Default empty. Producer scripts whose top-level content matches any entry on the list are bypassed entirely — the manager does not parse, normalize, merge, or remove them from the DOM. The pseudo-type `graph` matches any script whose top-level content is a `{ "@graph": [...] }` container, regardless of the types nested inside. Example: `jsonld-graph-manager-ignore=breadcrumblist,faqpage,howto,videoobject,graph`. Governed by `ignore-types-bypass` (§3.7); see the rule-interaction note in §3.4 for caveats when ignoring primary or singleton types.
-
-### 6.2 Observability And Diagnostics
-
-The manager should expose both local debugging output and production-safe warning and error reporting.
-
-#### Debug logging
-
-Add `jsonld-graph-manager-debug=true` to the URL query string to enable lifecycle logging via `console.log`. Events logged in queue order:
-
-- **enqueue** — source (`bootDom` or `runtime`), DOM location, original captured payload
-- **ignored** — source, DOM location, payload (truncated); the script matched `jsonld-graph-manager-ignore` and was bypassed
-- **rebuild** — batch size, current graph size
-- **parsed** — source, node count, `@type` values found
-- **removed from DOM** — parent element of the ingested script
-- **rewrite** — node count, full expandable `@graph` object
-
-Debug mode is the appropriate place to surface per-source origin when needed; the production manager does not persist a provenance record on the canonical graph.
-
-#### Warning and error reporting
-
-Warnings and errors should be reported through `window.lana?.log(...)` using the existing repo conventions for tags and severity.
-
-Representative cases:
-
-- invalid JSON-LD that fails to parse
-- unsupported payload shapes
-- rewrite failures
-- transform failures
-- producer payloads that violate required assumptions
-
-Recommended logging behavior:
-
-- warnings use Lana warning severity
-- errors use Lana error severity
-- tags should identify the manager and, when useful, the producer (e.g., `jsonld-graph-manager` or `jsonld-graph-manager,seotech`)
-- high-volume success-path events should not be sent to Lana by default
-
 ## References
 
 [General structured data guidelines](https://developers.google.com/search/docs/appearance/structured-data/sd-policies). developers.google.com.
@@ -423,3 +429,5 @@ Worked input → output examples are maintained as executable **golden fixtures*
 - **Runner:** `graph-golden.test.js` loads each fixture, runs the manager, and asserts the full `@graph` equals the committed expected file. A diff on an `expected/*.graph.json` file is the reviewable record of any behavioural change.
 
 For example, the merch card `Product → SoftwareApplication` transformation (previously Example 3 in this appendix) is `mocks/merch-card.html` → `expected/merch-card.graph.json`.
+
+Rule-level conformance over these fixtures (`validate.js` + `conformance.test.js`) is described under [Testing & verification](#testing--verification).

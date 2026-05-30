@@ -15,11 +15,21 @@
 #   status           active | partial | unimplemented | proposed | retired
 #   last_updated     ISO date the row was edited
 #
-# CI invariants (planned):
-#   - every rule referenced in *.js must have a row here
-#   - every error-severity rule must have a non-empty tested_by
-#   - every implements symbol must resolve to an export in
+# CI invariants — enforced by test/features/jsonld-graph-manager/rules-registry.test.js:
+#   - every row has the required fields with valid severity/status values
+#   - rule names are unique
+#   - every interacts_with entry references an existing rule name
+#   - every implements symbol resolves to a declaration in
 #     jsonld-graph-manager.js
+#   - every rule with a predicate in validate.js exists here, and each such
+#     rule records "conformance.test.js" in tested_by
+# test/features/jsonld-graph-manager/validate.js implements the structural
+# error-severity rules as executable predicates; conformance.test.js runs them
+# against the live managed graph for every golden fixture.
+# Still aspirational (not yet enforced):
+#   - the remaining error rules (behavioural transforms, producer-eligibility
+#     fields) have no graph-level predicate and are covered by golden cases or
+#     deferred to the crawler; their tested_by is still being populated
 
 - name: single-script-tag
   section: Output shape
@@ -73,7 +83,7 @@
     https://schema.org and a @graph array.
   applies_to: [managed-graph]
   implements: [JsonLdGraphManager.rewrite]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [no-per-node-context]
   notes: ""
   status: active
@@ -85,7 +95,7 @@
   requirement: "@context MUST NOT appear on individual nodes."
   applies_to: [all]
   implements: [normalizeNode, flattenPayload]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [graph-container-shape]
   notes: ""
   status: active
@@ -97,7 +107,7 @@
   requirement: Every node in @graph MUST have an @id.
   applies_to: [all]
   implements: [normalizeNode]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [page-scoped-id-format, organization-site-wide-id, unique-node-ids]
   notes: >
     v1: nodes whose @type is not in the RULES table fall through normalizeNode
@@ -129,7 +139,7 @@
   applies_to: [all]
   implements:
     - "JsonLdGraphManager.rebuild (Map by @id)"
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [all-nodes-have-id]
   notes: >
     Enforced via the in-memory Map keyed on @id; same-id contributions are
@@ -147,7 +157,7 @@
   applies_to: [WebPage, Article, NewsArticle, SoftwareApplication, BreadcrumbList,
                HowTo, FAQPage, VideoObject, Event, Offer, AggregateRating]
   implements: [pageScopedId, canonicalUrl, RULES]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [organization-site-wide-id, repeatable-types]
   notes: ""
   status: active
@@ -190,7 +200,7 @@
     MUST be referenced by @id.
   applies_to: [all]
   implements: [extractInlineEntities, injectLinks]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [organization-nested-extraction, aggregaterating-extraction]
   notes: >
     v1 extracts inline entities only from a fixed property allowlist
@@ -210,7 +220,7 @@
     even on pages where no producers contribute JSON-LD.
   applies_to: [WebPage, Organization]
   implements: [JsonLdGraphManager.rewrite, defaultOrg]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [webpage-canonical-singleton, organization-singleton, ignore-types-bypass]
   notes: >
     Enabling the manager via jsonld-graph-manager=true is the explicit
@@ -229,7 +239,7 @@
     body is discarded.
   applies_to: [WebPage]
   implements: [rewriteCrossPageRefs, maybeRewriteWebPageRef, normalizeNode]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [manager-baseline-graph, ignore-types-bypass, primary-type-ispartof]
   notes: >
     Schema.org permits cross-page isPartOf and Google's spec is silent, but
@@ -247,7 +257,7 @@
   requirement: The graph MUST contain exactly one Organization node.
   applies_to: [Organization]
   implements: [JsonLdGraphManager.rewrite, defaultOrg]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [organization-site-wide-id, organization-nested-extraction, manager-baseline-graph]
   notes: ""
   status: active
@@ -262,7 +272,7 @@
     breadcrumbs are present, exactly one BreadcrumbList is required.
   applies_to: [BreadcrumbList]
   implements: [RULES.BreadcrumbList, normalizeNode]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [breadcrumblist-ispartof, webpage-breadcrumb-link]
   notes: ""
   status: active
@@ -312,7 +322,7 @@
     conflicts.
   applies_to: [AggregateRating]
   implements: [RULES.AggregateRating, normalizeNode, mergeNodes]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [aggregaterating-extraction, aggregaterating-min-rating-value,
                    aggregaterating-min-rating-count, source-priority]
   notes: ""
@@ -349,7 +359,7 @@
     Organization node by @id.
   applies_to: [WebPage]
   implements: [injectLinks, RULES.WebPage.links]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [organization-singleton]
   notes: ""
   status: active
@@ -364,7 +374,7 @@
     Article, NewsArticle, or SoftwareApplication).
   applies_to: [WebPage]
   implements: [injectLinks]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [required-primary-type]
   notes: >
     Spec table marks this error but the requirement text reads SHOULD.
@@ -399,7 +409,7 @@
   implements:
     - injectLinks
     - "RULES.{Article,SoftwareApplication}.linksBack"
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [webpage-canonical-singleton, softwareapplication-subtype-allowed]
   notes: >
     RULES.SoftwareApplication.linksBack now includes isPartOf: 'WebPage' and
@@ -417,7 +427,7 @@
     WebPage node by @id.
   applies_to: [BreadcrumbList]
   implements: [injectLinks, RULES.BreadcrumbList.linksBack]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [webpage-breadcrumb-link]
   notes: ""
   status: active
@@ -712,7 +722,7 @@
     one or more Offer nodes by @id. Multiple offers (e.g., paid
     subscription and free trial) are encoded as separate Offer nodes.
   applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [extractInlineEntities, softwareapplication-default-offer]
+  implements: [extractInlineEntities, JsonLdGraphManager.rewrite]
   tested_by: []
   interacts_with: [offer-price, softwareapplication-default-offer]
   notes: >
@@ -813,7 +823,7 @@
   applies_to: [AggregateRating]
   implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_VALUE,
                JsonLdGraphManager.rewrite]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [aggregaterating-min-rating-count, softwareapplication-rating-or-review,
                    aggregaterating-singleton]
   notes: >
@@ -833,7 +843,7 @@
   applies_to: [AggregateRating]
   implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_COUNT,
                JsonLdGraphManager.rewrite]
-  tested_by: []
+  tested_by: [conformance.test.js]
   interacts_with: [aggregaterating-min-rating-value, softwareapplication-rating-or-review,
                    aggregaterating-singleton]
   notes: >

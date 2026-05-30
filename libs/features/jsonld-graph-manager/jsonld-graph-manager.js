@@ -203,6 +203,28 @@ function maybeRewriteWebPageRef(val) {
   return val;
 }
 
+// Rewrite every nested { @id } reference whose value matches a remapped id.
+// Producer payloads frequently cross-reference a node by its original @id
+// (e.g. an inline Offer's itemOffered points at the parent Product id). Once
+// normalization rewrites that node's @id — most notably the Product →
+// SoftwareApplication transform — those back-references would otherwise dangle.
+// The node's own top-level @id is intentionally skipped: we remap references,
+// not identities.
+export function remapReferences(value, remap) {
+  if (Array.isArray(value)) {
+    value.forEach((item) => remapReferences(item, remap));
+    return;
+  }
+  if (!value || typeof value !== 'object') return;
+  if (typeof value['@id'] === 'string' && remap.has(value['@id'])) {
+    value['@id'] = remap.get(value['@id']);
+  }
+  for (const [key, val] of Object.entries(value)) {
+    if (key === '@id') continue;
+    remapReferences(val, remap);
+  }
+}
+
 export function rewriteCrossPageRefs(node) {
   for (const prop of PARENT_PAGE_PROPS) {
     const val = node[prop];
@@ -402,6 +424,7 @@ export class JsonLdGraphManager {
   constructor(options = {}) {
     this.graph = new Map();
     this.sources = new Map();
+    this.idRemap = new Map();
     this.queue = [];
     this.observer = null;
     this.isProcessing = false;
@@ -469,6 +492,10 @@ export class JsonLdGraphManager {
         debugLog('removed from DOM', () => parentTagName);
         for (const raw of nodes) {
           const node = normalizeNode(raw);
+          const rawId = raw['@id'];
+          if (typeof rawId === 'string' && typeof node['@id'] === 'string' && rawId !== node['@id']) {
+            this.idRemap.set(rawId, node['@id']);
+          }
           const inlined = extractInlineEntities(node);
           const toMerge = [node, ...inlined];
           for (const n of toMerge) {
@@ -542,6 +569,14 @@ export class JsonLdGraphManager {
       }
     }
     const nodes = sortNodes([...this.graph.values()]);
+    if (this.idRemap.size) {
+      for (const node of nodes) {
+        for (const [key, val] of Object.entries(node)) {
+          if (key === '@id') continue;
+          remapReferences(val, this.idRemap);
+        }
+      }
+    }
     injectLinks(nodes);
     const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': nodes }, null, 2);
     let managed = document.head.querySelector(MANAGED_SEL);

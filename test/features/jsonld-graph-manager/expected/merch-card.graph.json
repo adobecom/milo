@@ -44,7 +44,7 @@
       "availability": "https://schema.org/InStock",
       "category": "Subscription",
       "seller": { "@id": "https://www.adobe.com/#organization" },
-      "itemOffered": { "@id": "https://main--cc--adobecom.aem.page/drafts/axel/document5#product" },
+      "itemOffered": { "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication" },
       "priceSpecification": {
         "@type": "UnitPriceSpecification",
         "price": "662.9",
