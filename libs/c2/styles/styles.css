@@ -946,15 +946,20 @@ p {
 .icon-button {
   align-items: center;
   background-color: var(--s2a-color-transparent-white-16);
-  block-size: 32px;
+  block-size: var(--s2a-spacing-32);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   border-radius: 6px; /* No token */
   box-sizing: border-box;
   display: inline-flex;
   flex-shrink: 0;
-  inline-size: 32px;
+  inline-size: var(--s2a-spacing-32);
   justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
   will-change: background-color, border-color;
+  path {
+    transition: fill 0.2s ease;
+    will-change: fill;
+  }
 }
 
 /* Promo CTA Styles */
@@ -973,9 +978,9 @@ p {
   text-decoration: none;
   white-space: nowrap;
   img {
-    block-size: 32px ;
+    block-size: var(--s2a-spacing-32) ;
     flex-shrink: 0;
-    inline-size: 32px;
+    inline-size: var(--s2a-spacing-32);
     object-fit: cover;
     overflow: hidden;
   }
