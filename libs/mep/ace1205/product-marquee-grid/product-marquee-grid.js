@@ -1,7 +1,7 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
-const CHEVRON_SVG = '<svg width="16" height="16" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="#fff"/></svg>';
+const CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M6.58349 11.208L10.2837 7.50781C10.606 7.18554 10.606 6.66406 10.2837 6.34179C9.96142 6.01953 9.43994 6.01953 9.11767 6.34179L6.82568 8.63281V1.375C6.82568 0.918955 6.45654 0.549805 6.00048 0.549805C5.54442 0.549805 5.17528 0.918945 5.17528 1.375V8.63281L2.88329 6.34179C2.56102 6.01953 2.03954 6.01953 1.71727 6.34179C1.55614 6.50292 1.47508 6.71386 1.47508 6.9248C1.47508 7.13574 1.55613 7.34668 1.71727 7.50781L5.41747 11.208C5.73974 11.5303 6.26122 11.5303 6.58349 11.208Z" fill="#fff"/></svg>';
 
 function decorate(block) {
   const col = block.children[0]?.children[0];
@@ -17,7 +17,7 @@ function decorate(block) {
   heading?.classList.add('heading-super');
 
   const bodyEls = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  bodyEls.forEach((el) => el.classList.add('heading-4'));
+  bodyEls.forEach((el) => el.classList.add('heading-5'));
 
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
   if (iconEl) {
