@@ -1042,6 +1042,7 @@ class Gnav {
           tokenCallback: (token) => {
             window.adobeArp = window.adobeArp || {};
             window.adobeArp.sessionToken = token;
+            window.dispatchEvent(new CustomEvent('arp:tokenReady', { detail: { token } }));
             console.log('[ARP] tokenCallback:', token);
           },
           successCallback: () => console.log('[ARP] successCallback: vendors initialized'),
