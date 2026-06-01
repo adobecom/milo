@@ -574,3 +574,27 @@
     color: var(--md-ink-soft);
   }
 }
+
+/* worst-pages score badges */
+.milo-dashboard .worst-pages .score-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 99px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.milo-dashboard .worst-pages .score-badge.good {
+  color: var(--md-good);
+  background: #e7f4ee;
+}
+
+.milo-dashboard .worst-pages .score-badge.warn {
+  color: var(--md-warn);
+  background: #fdf1dd;
+}
+
+.milo-dashboard .worst-pages .score-badge.bad {
+  color: var(--md-bad);
+  background: #fdeceb;
+}

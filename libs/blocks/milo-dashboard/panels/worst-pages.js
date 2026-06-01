@@ -1,8 +1,14 @@
 import { createTag } from '../../../utils/utils.js';
 
-function toScore(value) {
+function scoreBadge(value) {
   const num = Number(value);
-  return Number.isNaN(num) ? '—' : num.toFixed(1);
+  if (!Number.isFinite(num)) {
+    return createTag('span', { class: 'score-badge' }, '—');
+  }
+  let band = 'good';
+  if (num < 50) band = 'bad';
+  else if (num < 80) band = 'warn';
+  return createTag('span', { class: `score-badge ${band}` }, num.toFixed(1));
 }
 
 function pageLabel(url) {
@@ -51,7 +57,7 @@ export default function renderWorstPages(container, pages, { daContext } = {}) {
 
     return createTag('tr', null, [
       createTag('td', null, pageLink),
-      createTag('td', null, toScore(page.performance_score)),
+      createTag('td', null, scoreBadge(page.performance_score)),
       actions,
     ]);
   });
