@@ -56,7 +56,7 @@
   background: var(--brand-concierge-bg) 50% / cover no-repeat;
 }
 
-.brand-concierge.floating-button-only {
+.brand-concierge.floating-button-only:not(.floating-anchor-hide, [class*="floating-delay"]) {
   padding: 0;
 
   /* TODO: likely not all pages will be dark, this needs more granular control */
