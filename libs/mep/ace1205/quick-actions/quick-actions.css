@@ -37,6 +37,20 @@
   text-decoration: none;
 }
 
+.quick-actions-tile::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--s2a-color-transparent-black-08);
+  opacity: 0;
+  transition: opacity 0.5s var(--parallax-easing);
+}
+
+.quick-actions-tile:hover::before {
+  opacity: 1;
+}
+
 .quick-actions-tile:focus-visible {
   outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
   outline-offset: var(--s2a-border-width-2);
@@ -65,6 +79,7 @@ img.quick-actions-media {
   position: absolute;
   inset-block-end: 0;
   inset-inline: 0;
+  z-index: 2;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
