@@ -8,14 +8,14 @@ function buildAlerts({ testPages, projects }) {
   const alerts = [];
 
   (testPages || []).forEach(({ site, path }) => {
-    alerts.push({ severity: 'warn', message: `Possible test/draft page on live: ${site}${path}` });
+    alerts.push({ severity: 'warn', message: `Possible test/draft page on live: ${site}${path}`, site, path });
   });
 
   (projects || []).forEach(({ site, avg_health: avgHealth }) => {
     if (avgHealth == null) return;
     const health = Number(avgHealth);
     if (health < 50) {
-      alerts.push({ severity: 'high', message: `Preflight health critical for ${site} (${health.toFixed(1)})` });
+      alerts.push({ severity: 'high', message: `Preflight health critical for ${site} (${health.toFixed(1)})`, site });
     }
   });
 
@@ -23,9 +23,22 @@ function buildAlerts({ testPages, projects }) {
   return alerts;
 }
 
-export default function renderAlerts(container, data = {}) {
+function buildMsg(alert) {
+  if (alert.severity === 'warn' && alert.site && alert.path) {
+    const href = `https://main--${alert.site}--adobecom.aem.live${alert.path}`;
+    const link = createTag(
+      'a',
+      { class: 'alert-link', href, target: '_blank', rel: 'noopener' },
+      alert.message,
+    );
+    return createTag('span', { class: 'alert-msg' }, link);
+  }
+  return createTag('span', { class: 'alert-msg' }, alert.message);
+}
+
+export default function renderAlerts(container, data, onConsumer) {
   container.replaceChildren();
-  const alerts = buildAlerts(data);
+  const alerts = buildAlerts(data || {});
 
   if (!alerts.length) {
     container.append(createTag('div', { class: 'alerts-empty' }, 'All clear — nothing flagged'));
@@ -35,7 +48,13 @@ export default function renderAlerts(container, data = {}) {
   const list = createTag('div', { class: 'alerts-list' });
   alerts.slice(0, MAX_SHOWN).forEach((alert) => {
     const sev = createTag('span', { class: `alert-sev ${alert.severity}` }, SEV_LABEL[alert.severity]);
-    const msg = createTag('span', { class: 'alert-msg' }, alert.message);
+    const msg = buildMsg(alert);
+    if (alert.severity === 'high' && onConsumer) {
+      const item = createTag('button', { type: 'button', class: 'alert-item' }, [sev, msg]);
+      item.addEventListener('click', () => onConsumer(alert.site));
+      list.append(item);
+      return;
+    }
     list.append(createTag('div', { class: 'alert-item' }, [sev, msg]));
   });
 

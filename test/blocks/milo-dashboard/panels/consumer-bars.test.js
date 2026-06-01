@@ -15,7 +15,7 @@ describe('milo-dashboard consumer-bars', () => {
 
   beforeEach(() => {
     container = document.createElement('div');
-    charts = { makeChart: sinon.spy() };
+    charts = { makeChart: sinon.stub().callsFake(() => ({ on: sinon.spy() })) };
   });
 
   it('renders 3 metric buttons + a T1 toggle with correct defaults', () => {
@@ -75,5 +75,32 @@ describe('milo-dashboard consumer-bars', () => {
     renderConsumerBars(container, rows, charts);
     expect(container.querySelectorAll('.consumer-bars').length).to.equal(1);
     expect(charts.makeChart.calledTwice).to.equal(true);
+  });
+
+  it('registers a click handler that calls onSelect with the site name', () => {
+    const onSelect = sinon.spy();
+    renderConsumerBars(container, rows, charts, onSelect);
+    const chart = charts.makeChart.lastCall.returnValue;
+    expect(chart.on.calledWith('click')).to.equal(true);
+    const [evt, handler] = chart.on.lastCall.args;
+    expect(evt).to.equal('click');
+    expect(handler).to.be.a('function');
+    handler({ name: 'cc-shared' });
+    expect(onSelect.calledOnceWith('cc-shared')).to.equal(true);
+  });
+
+  it('does not register a click handler when onSelect is omitted', () => {
+    renderConsumerBars(container, rows, charts);
+    const chart = charts.makeChart.lastCall.returnValue;
+    expect(chart.on.called).to.equal(false);
+  });
+
+  it('re-binds the click handler on every render', () => {
+    const onSelect = sinon.spy();
+    renderConsumerBars(container, rows, charts, onSelect);
+    const t1 = container.querySelector('.t1-toggle');
+    t1.click();
+    const chart = charts.makeChart.lastCall.returnValue;
+    expect(chart.on.calledWith('click')).to.equal(true);
   });
 });

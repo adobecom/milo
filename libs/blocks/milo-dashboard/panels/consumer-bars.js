@@ -67,7 +67,7 @@ function buildOption(rows, metric) {
   };
 }
 
-export default function renderConsumerBars(container, projectRows, charts) {
+export default function renderConsumerBars(container, projectRows, charts, onSelect) {
   container.replaceChildren();
   const rows = projectRows || [];
   const controls = createTag('div', { class: 'consumer-bars-controls' });
@@ -77,7 +77,10 @@ export default function renderConsumerBars(container, projectRows, charts) {
   let t1Only = true;
 
   const render = () => {
-    charts.makeChart(chartEl, buildOption(filterRows(rows, t1Only), selected));
+    const chart = charts.makeChart(chartEl, buildOption(filterRows(rows, t1Only), selected));
+    if (onSelect && chart) {
+      chart.on('click', (params) => { if (params && params.name) onSelect(params.name); });
+    }
   };
 
   const select = (metric, button) => {

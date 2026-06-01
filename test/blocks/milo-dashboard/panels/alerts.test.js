@@ -1,4 +1,5 @@
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 
 const { default: renderAlerts } = await import('../../../../libs/blocks/milo-dashboard/panels/alerts.js');
 
@@ -59,5 +60,40 @@ describe('milo-dashboard alerts', () => {
     renderAlerts(container, data);
     renderAlerts(container, data);
     expect(container.querySelectorAll('.alert-item').length).to.equal(1);
+  });
+
+  it('renders a high alert as a clickable button calling onConsumer', () => {
+    const onConsumer = sinon.spy();
+    renderAlerts(container, {
+      testPages: [],
+      projects: [{ site: 'dc', avg_health: '42.00', publishes: 10 }],
+    }, onConsumer);
+    const item = container.querySelector('.alert-item');
+    expect(item.tagName).to.equal('BUTTON');
+    expect(item.getAttribute('type')).to.equal('button');
+    item.click();
+    expect(onConsumer.calledOnceWith('dc')).to.equal(true);
+  });
+
+  it('renders a high alert as a plain div when onConsumer is omitted', () => {
+    renderAlerts(container, {
+      testPages: [],
+      projects: [{ site: 'dc', avg_health: '42.00', publishes: 10 }],
+    });
+    const item = container.querySelector('.alert-item');
+    expect(item.tagName).to.equal('DIV');
+    expect(() => item.click()).to.not.throw();
+  });
+
+  it('renders the test-page alert message as a live-page link', () => {
+    renderAlerts(container, {
+      testPages: [{ path: '/drafts/x.html', site: 'milo', signal: 'path' }],
+      projects: [],
+    });
+    const link = container.querySelector('.alert-item .alert-msg a.alert-link');
+    expect(link).to.exist;
+    expect(link.getAttribute('href')).to.equal('https://main--milo--adobecom.aem.live/drafts/x.html');
+    expect(link.getAttribute('target')).to.equal('_blank');
+    expect(link.getAttribute('rel')).to.equal('noopener');
   });
 });
