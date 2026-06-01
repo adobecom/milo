@@ -27,24 +27,33 @@ export async function resolveContext(
 }
 
 export function createClient({ base, token }) {
+  async function request(path, params = {}) {
+    const url = new URL(`${base}${path}`);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v != null && v !== '') url.searchParams.set(k, v);
+    });
+    const headers = {};
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+      url.searchParams.set('clientId', 'milo-dashboard');
+    }
+    const res = await fetch(url, { headers });
+    if (!res.ok) {
+      const e = new Error(`api ${res.status}`);
+      e.status = res.status;
+      throw e;
+    }
+    return res;
+  }
+
   return {
     async get(path, params = {}) {
-      const url = new URL(`${base}${path}`);
-      Object.entries(params).forEach(([k, v]) => {
-        if (v != null && v !== '') url.searchParams.set(k, v);
-      });
-      const headers = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-        url.searchParams.set('clientId', 'milo-dashboard');
-      }
-      const res = await fetch(url, { headers });
-      if (!res.ok) {
-        const e = new Error(`api ${res.status}`);
-        e.status = res.status;
-        throw e;
-      }
+      const res = await request(path, params);
       return res.json();
+    },
+    async getText(path, params = {}) {
+      const res = await request(path, params);
+      return res.text();
     },
   };
 }

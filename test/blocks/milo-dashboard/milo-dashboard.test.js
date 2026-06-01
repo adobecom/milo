@@ -31,6 +31,11 @@ const PREFLIGHT_LOGS = {
     created_at: '2026-05-01',
   }],
 };
+const TOTALS = { total: 12840, perSite: [{ site: 'milo', pages: 5400 }] };
+const TEST_PAGES_CSV = [
+  'path,site,state,signal,last_indexed_at',
+  '/drafts/x.html,milo,live,path,2026-05-20',
+].join('\n');
 
 function stubFetch(fake) {
   return sinon.stub(window, 'fetch').callsFake(fake);
@@ -38,11 +43,15 @@ function stubFetch(fake) {
 
 function routeFetch(url) {
   const { pathname } = new URL(url);
+  if (pathname.endsWith('/test-pages')) {
+    return Promise.resolve({ ok: true, text: () => Promise.resolve(TEST_PAGES_CSV) });
+  }
   let body;
   if (pathname.endsWith('/overview')) body = OVERVIEW;
   else if (pathname.endsWith('/trends/eds')) body = EDS;
   else if (pathname.endsWith('/trends/preflight')) body = PREFLIGHT;
   else if (pathname.endsWith('/projects')) body = PROJECTS;
+  else if (pathname.endsWith('/totals')) body = TOTALS;
   else if (pathname.endsWith('/preflight-logs')) body = PREFLIGHT_LOGS;
   else body = {};
   return Promise.resolve({ ok: true, json: () => Promise.resolve(body) });
@@ -86,6 +95,16 @@ describe('milo-dashboard', () => {
     expect(block.querySelector('.gauge')).to.exist;
     expect(block.querySelector('.volume-trend')).to.exist;
     expect(block.querySelector('.health-trend')).to.exist;
+  });
+
+  it('renders the v2 panels (totals, consumer bars, alerts) after init', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    expect(block.querySelector('.totals-total')).to.exist;
+    expect(block.querySelector('.consumer-bars')).to.exist;
+    expect(block.querySelector('.alerts-list') || block.querySelector('.alerts-empty')).to.exist;
   });
 
   it('mounts the traffic panel empty state after init', async () => {

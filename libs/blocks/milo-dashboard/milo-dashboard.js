@@ -8,6 +8,19 @@ import renderHealthTrend from './panels/health-trend.js';
 import renderProjectTable from './panels/project-table.js';
 import renderProjectDrilldown from './panels/project-drilldown.js';
 import renderTraffic, { nullTrafficAdapter } from './panels/traffic.js';
+import renderConsumerBars from './panels/consumer-bars.js';
+import renderTotals from './panels/totals-strip.js';
+import renderAlerts from './panels/alerts.js';
+
+function parseCsv(text) {
+  const lines = (text || '').trim().split('\n').filter(Boolean);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map((h) => h.trim());
+  return lines.slice(1).map((line) => {
+    const cells = line.split(',');
+    return headers.reduce((row, h, i) => { row[h] = (cells[i] || '').trim(); return row; }, {});
+  });
+}
 
 const TIMEFRAMES = [
   { label: 'Day', interval: 'day' },
@@ -86,18 +99,34 @@ export default async function init(block) {
 
     const grid = createTag('div', { class: 'dashboard-grid' });
     const kpiMount = createTag('div', { class: 'panel kpi' });
-    const gauge = makePanel('gauge-panel', 'Overall health');
-    const volume = makePanel('volume', 'Publish vs preview activity');
+    const totals = makePanel('totals', 'Pages stored');
+    const gauge = makePanel('gauge-panel', 'Platform preflight health');
+    const consumers = makePanel('consumers', 'By consumer');
+    const alerts = makePanel('alerts', 'Needs attention');
     const health = makePanel('health', 'Preflight health trend');
+    const volume = makePanel('volume', 'Publish vs preview activity');
     const projects = makePanel('projects', 'Projects');
     const traffic = makePanel('traffic');
-    grid.append(kpiMount, gauge.panel, volume.panel, health.panel, projects.panel, traffic.panel);
+    grid.append(
+      kpiMount,
+      totals.panel,
+      gauge.panel,
+      consumers.panel,
+      alerts.panel,
+      health.panel,
+      volume.panel,
+      projects.panel,
+      traffic.panel,
+    );
 
     block.append(header, grid);
 
+    const totalsMount = totals.body;
     const gaugeMount = gauge.body;
-    const volumeMount = volume.body;
+    const consumersMount = consumers.body;
+    const alertsMount = alerts.body;
     const healthMount = health.body;
+    const volumeMount = volume.body;
     const projectsMount = projects.body;
     const trafficMount = traffic.body;
 
@@ -113,12 +142,18 @@ export default async function init(block) {
       let edsRows;
       let preflightRows;
       let projectRows;
+      let totalsData;
+      let testPagesCsv;
       try {
-        [overview, edsRows, preflightRows, projectRows] = await Promise.all([
+        [
+          overview, edsRows, preflightRows, projectRows, totalsData, testPagesCsv,
+        ] = await Promise.all([
           client.get('/overview', { since }),
           client.get('/trends/eds', { since, interval }),
           client.get('/trends/preflight', { since, interval }),
           client.get('/projects', { since }),
+          client.get('/totals'),
+          client.getText('/test-pages', { since, state: 'live', limit: 50 }),
         ]);
       } catch (e) {
         grid.replaceChildren(
@@ -142,10 +177,15 @@ export default async function init(block) {
         avg_assets: latest.avg_assets,
       };
 
+      const testPages = parseCsv(testPagesCsv);
+
       renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview, interval));
+      renderPanel(totalsMount, 'totals', () => renderTotals(totalsMount, totalsData));
       renderPanel(gaugeMount, 'health score', () => renderHealthGauge(gaugeMount, gaugeScores, charts));
-      renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
+      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts));
+      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }));
       renderPanel(healthMount, 'health trend', () => renderHealthTrend(healthMount, preflightRows, charts));
+      renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
       renderPanel(projectsMount, 'projects', () => renderProjectTable(projectsMount, projectRows || [], showDrilldown));
     }
 

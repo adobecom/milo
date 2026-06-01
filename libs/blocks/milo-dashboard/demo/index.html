@@ -71,9 +71,25 @@
       { site: 'cc-shared', publishes: 410, previews: 980, avg_health: '78.90', checks: 180 },
       { site: 'da-blog', publishes: 320, previews: 610, avg_health: '91.20', checks: 95 },
       { site: 'da-express-milo', publishes: 260, previews: 540, avg_health: '72.10', checks: 140 },
-      { site: 'dc', publishes: 190, previews: 410, avg_health: '69.50', checks: 88 },
+      { site: 'dc', publishes: 190, previews: 410, avg_health: '41.00', checks: 88 },
       { site: 'blog', publishes: 120, previews: 260, avg_health: null, checks: 0 },
     ];
+
+    const totals = {
+      total: 12840,
+      perSite: [
+        { site: 'milo', pages: 5400 },
+        { site: 'cc-shared', pages: 4100 },
+        { site: 'da-blog', pages: 3340 },
+      ],
+    };
+
+    const testPagesCsv = [
+      'path,site,state,signal,last_indexed_at',
+      '/drafts/spring-test.html,milo,live,path,2026-05-20',
+      '/test/landing-qa.html,cc-shared,live,path,2026-05-21',
+      '/drafts/preview-only.html,da-blog,live,path,2026-05-22',
+    ].join('\n');
 
     const worstPages = (project) => ({
       data: [
@@ -100,6 +116,8 @@
         return json(project ? preflightRows.map((r) => ({ ...r, avg_overall: (Number(r.avg_overall) - 6).toFixed(2) })) : preflightRows);
       }
       if (p === '/projects') return json(projects);
+      if (p === '/totals') return json(totals);
+      if (p === '/test-pages') return new Response(testPagesCsv, { status: 200, headers: { 'content-type': 'text/csv' } });
       if (p === '/preflight-logs') return json(worstPages(url.searchParams.get('projectKey') || 'milo'));
       // anything else (e.g. the echarts bundle) goes to the real network/static server
       return realFetch(input, opts);

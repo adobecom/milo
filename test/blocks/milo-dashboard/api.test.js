@@ -91,6 +91,17 @@ describe('milo-dashboard api', () => {
       expect(opts.headers.Authorization).to.equal('Bearer abc');
     });
 
+    it('getText returns text body', async () => {
+      const csv = 'path,site\n/a.html,milo';
+      const fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, text: () => Promise.resolve(csv) });
+      const client = createClient({ base: 'https://example.com', token: 'abc' });
+      const data = await client.getText('/test-pages', { since: '30d' });
+      const [url, opts] = fetchStub.firstCall.args;
+      expect(url.toString()).to.equal('https://example.com/test-pages?since=30d&clientId=milo-dashboard');
+      expect(opts.headers.Authorization).to.equal('Bearer abc');
+      expect(data).to.equal(csv);
+    });
+
     it('throws an error with status on non-ok response', async () => {
       sinon.stub(window, 'fetch').resolves({ ok: false, status: 503 });
       const client = createClient({ base: 'https://example.com' });
