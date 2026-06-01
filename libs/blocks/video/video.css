@@ -181,8 +181,8 @@ video {
     bottom: var(--s2a-spacing-md);
 
     svg path {
-      fill: var(--s2a-color-content-default);
-      stroke: var(--s2a-color-content-default);
+      fill: var(--s2a-color-gray-25);
+      stroke: var(--s2a-color-gray-25);
     }
 
     &:hover {
@@ -199,14 +199,7 @@ video {
     &:active {
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
       background: var(--s2a-color-background-knockout);
-      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
-      background: var(--s2a-color-background-knockout);
       backdrop-filter: unset;
-
-      svg path {
-        fill: var(--s2a-color-content-knockout);
-        stroke: var(--s2a-color-content-knockout);
-      }
     }
 
     .offset-filler {
