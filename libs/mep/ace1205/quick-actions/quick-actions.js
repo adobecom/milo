@@ -33,7 +33,7 @@ function buildTile(tileRow) {
   if (labelLink) {
     const footer = createTag('div', { class: 'quick-actions-tile-footer' });
     const chevron = createTag('span', { class: 'quick-actions-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG);
-    footer.append(createTag('span', { class: 'quick-actions-tile-label' }, labelLink.textContent.trim()), chevron);
+    footer.append(createTag('span', { class: 'quick-actions-tile-label heading-6' }, labelLink.textContent.trim()), chevron);
     tile.append(footer);
   }
 

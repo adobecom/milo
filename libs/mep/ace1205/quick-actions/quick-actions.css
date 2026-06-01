@@ -96,10 +96,6 @@ img.quick-actions-media {
   -webkit-line-clamp: 2;
   overflow: hidden;
   min-inline-size: 0;
-  font-family: var(--heading-font-family);
-  font-size: var(--s2a-font-size-lg);
-  line-height: var(--s2a-font-line-height-xs);
-  letter-spacing: var(--s2a-font-letter-spacing-5xl);
   color: var(--s2a-color-content-default);
 }
 
@@ -126,18 +122,8 @@ img.quick-actions-media {
     padding-block-end: var(--s2a-spacing-xl);
   }
 
-  .quick-actions-header :is(h1, h2, h3, h4, h5, h6) {
-    font-size: var(--s2a-font-size-4xl);
-    line-height: var(--s2a-font-line-height-lg);
-    letter-spacing: var(--s2a-font-letter-spacing-2xl);
-  }
-
   .quick-actions-grid {
     gap: var(--s2a-spacing-xs);
-  }
-
-  .quick-actions-tile-label {
-    letter-spacing: var(--s2a-font-letter-spacing-4xl);
   }
 
   .quick-actions-media {
@@ -202,12 +188,6 @@ img.quick-actions-media {
     padding-inline: var(--s2a-spacing-lg);
   }
 
-  .quick-actions-tile-label {
-    font-size: var(--s2a-font-size-20);
-    line-height: var(--s2a-font-line-height-20);
-    letter-spacing: var(--s2a-font-letter-spacing-4xl);
-  }
-
 }
 
 @media (width >= 2560px) {
@@ -230,9 +210,4 @@ img.quick-actions-media {
     block-size: 10px;
   }
 
-  .quick-actions-tile-label {
-    font-size: var(--s2a-font-size-32);
-    line-height: var(--s2a-font-line-height-32);
-    letter-spacing: var(--s2a-font-letter-spacing-3xl);
-  }
 }
