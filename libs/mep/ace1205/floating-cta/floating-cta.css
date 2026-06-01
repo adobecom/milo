@@ -39,3 +39,16 @@
     }
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-cta {
+    .promo-cta {
+      clip-path: none;
+      transform: none;
+      transition: none;
+      &.active {
+        transition: none;
+      }
+    }
+  }
+}

@@ -22,9 +22,8 @@ export default function init(el) {
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
   const ctaHref = linkEl?.getAttribute('href') || '#';
 
-  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' });
-  arrow.innerHTML = icons.arrowRightWhite;
-  const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
+  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
+  const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel, tabindex: '-1' }, [img, ctaText, arrow]);
   el.replaceChildren(cta);
 
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');
@@ -38,8 +37,14 @@ export default function init(el) {
   if (!customHideSection) return;
   const observer = new IntersectionObserver(
     ([entry]) => {
-      cta.classList.toggle('active', !entry.isIntersecting);
-      cta.setAttribute('aria-hidden', String(entry.isIntersecting));
+      const isHidden = entry.isIntersecting;
+      cta.classList.toggle('active', !isHidden);
+      cta.setAttribute('aria-hidden', String(isHidden));
+      if (isHidden) {
+        cta.setAttribute('tabindex', '-1');
+      } else {
+        cta.removeAttribute('tabindex');
+      }
     },
     {
       rootMargin: '-90% 0px 0px 0px',
