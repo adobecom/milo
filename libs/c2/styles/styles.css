@@ -1004,13 +1004,9 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
-/* Needed for garage door JS animation in browsers without animation-timeline support */
-@supports not (animation-timeline: view()) {
-  .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
-    z-index: 1;
-  }
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+  z-index: 1;
 }
-
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
