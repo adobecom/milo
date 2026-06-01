@@ -1,6 +1,9 @@
 .pdf-space {
   height: 650vh;
 
+  --card-label-bg: #e1e1f1;
+  --card-placeholder-bg: #ececec;
+
   /*
    * Stacking order within .pdf-space-stage (isolated stacking context):
    *   10  .adbe-logo-svg              — drawn-on background mark
@@ -162,7 +165,7 @@
     width: 192px;
     height: 230px;
     overflow: hidden;
-    background: #ececec;
+    background: var(--card-placeholder-bg);
     border-radius: 10px;
     will-change: transform, opacity;
     contain: layout style;
@@ -183,11 +186,9 @@
     }
   }
 
-  .card-label-outer {
+  .card-label-outer,
+  .no-motion-card-label {
     box-sizing: border-box;
-    position: absolute;
-    top: 0;
-    left: 0;
     display: inline-flex;
     align-items: center;
     padding: 5px 6px;
@@ -197,8 +198,14 @@
     font-size: 0.625rem;
     font-weight: var(--s2a-font-weight-label);
     color: var(--s2a-color-gray-1000);
-    background: #e1e1f1;
+    background: var(--card-label-bg);
     border-radius: var(--s2a-border-radius-2);
+  }
+
+  .card-label-outer {
+    position: absolute;
+    top: 0;
+    left: 0;
     transform-origin: top left;
     will-change: transform, opacity;
   }
@@ -303,6 +310,161 @@
     .acrobat-title {
       left: calc((100vw - min(68.6vw, 971px)) / 2);
       width: min(68.6vw, 971px);
+    }
+  }
+
+  /*
+   * No-motion fallback: a static, normal-flow document built by buildNoMotion()
+   * (for prefers-reduced-motion) instead of the sticky scroll-driven stage. No
+   * transforms, no pinning. The resting card grid + marketing copy sit above
+   * the Acrobat mockup, which has the cards slotted in via percentage-positioned
+   * clones (.no-motion-slotted-card). These rules override the absolute/sticky
+   * positioning above by higher specificity (.pdf-space.no-motion ...).
+   */
+  &.no-motion {
+    height: auto;
+
+    .pdf-space-stage {
+      position: static;
+      height: auto;
+      overflow: visible;
+      isolation: auto;
+    }
+
+    .no-motion-grid-section,
+    .no-motion-mockup-section {
+      box-sizing: border-box;
+      position: relative;
+      margin: 0 auto;
+      max-width: 1200px;
+      padding: var(--s2a-spacing-2xl, 48px) var(--s2a-spacing-lg, 24px);
+    }
+
+    .no-motion-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--s2a-spacing-sm, 16px);
+      margin-bottom: var(--s2a-spacing-xl, 32px);
+    }
+
+    .no-motion-card-desktop-only {
+      display: none;
+    }
+
+    .no-motion-card {
+      margin: 0;
+
+      /* The cloned <picture> is the rounded, clipped image box (per-card
+         aspect-ratio is set inline); the label flows below it, as in the
+         settled motion state. */
+      picture {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        background: var(--card-placeholder-bg);
+        border-radius: 10px;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+    }
+
+    .no-motion-card-label {
+      margin-top: var(--s2a-spacing-2xs, 8px);
+    }
+
+    .text-block,
+    .acrobat-title,
+    .acrobat-cta {
+      position: static;
+      transform: none;
+      opacity: 1;
+    }
+
+    .text-block {
+      width: 100%;
+      max-width: 367px;
+    }
+
+    .acrobat-title {
+      width: 100%;
+      text-align: center;
+    }
+
+    .acrobat-cta {
+      width: fit-content;
+      margin: var(--s2a-spacing-lg, 24px) auto 0;
+    }
+
+    .acrobat-mobile-mockup,
+    .acrobat-desktop-mockup {
+      position: relative;
+      left: auto;
+      margin: var(--s2a-spacing-lg, 24px) auto 0;
+      transform: none;
+    }
+
+    .acrobat-mobile-mockup {
+      display: block;
+      width: var(--acrobat-mobile-mockup-width);
+      height: var(--acrobat-mobile-mockup-height);
+    }
+
+    .acrobat-desktop-mockup {
+      display: none;
+      width: 100%;
+      max-width: 971px;
+    }
+
+    .acrobat-desktop-panel picture {
+      transform: none;
+    }
+
+    .no-motion-slotted-card {
+      position: absolute;
+      overflow: hidden;
+      border-radius: 6px;
+
+      picture,
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    @media (width >= 768px) {
+      .no-motion-card-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .no-motion-card-desktop-only {
+        display: block;
+      }
+
+      .acrobat-mobile-mockup {
+        display: none;
+      }
+
+      .acrobat-desktop-mockup {
+        display: block;
+        margin-top: 40px;
+      }
+    }
+
+    /* Match settled motion: the text-block sits below the grid (block flow, not
+       beside it) and right-aligns to the grid edge on desktop. Below 1280px it
+       stays left-aligned, as the animated layout does. */
+    @media (width >= 1280px) {
+      .text-block {
+        margin-left: auto;
+      }
     }
   }
 }

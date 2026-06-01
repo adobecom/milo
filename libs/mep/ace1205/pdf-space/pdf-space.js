@@ -346,7 +346,7 @@ function createCanvasGrid(canvas, {
 }
 
 function parseAuthoredContent(el) {
-  const [titleRow, imageRow1, imageRow2, textRow, ctaRow, mockupRow] = [...el.children];
+  const [imageRow1, imageRow2, textRow, titleRow, mockupRow, ctaRow] = [...el.children];
   const cards = [];
   [imageRow1, imageRow2].forEach((rowEl, rowIdx) => {
     [...rowEl.children].forEach((cellEl, colIdx) => {
@@ -387,6 +387,9 @@ function parseAuthoredContent(el) {
 }
 
 function buildCardStack(cardScene, cardDefs) {
+  // No AT roles here: the whole .card-scene is aria-hidden (see buildStage), so
+  // the animated cards are exposed to assistive tech only via the no-motion
+  // static grid.
   const stackRoot = createTag('div', { class: 'card-stack' });
   cardScene.append(stackRoot);
   return cardDefs.map((def) => {
@@ -438,7 +441,7 @@ function arcCardShadow(opacity) {
 }
 
 const ADBE_LOGO = `
-<svg class="adbe-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible">
+<svg class="adbe-logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 793 714" fill="none" overflow="visible" aria-hidden="true" focusable="false">
   <path class="adbe-logo-path" d="M772.755 713.494H611.337C604.324 713.622 597.432 711.662 591.536 707.862C585.641 704.063 581.01 698.596 578.231 692.158L402.994 282.541C402.537 280.946 401.577 279.541 400.258 278.534C398.94 277.527 397.331 276.972 395.672 276.95C394.013 276.929 392.391 277.442 391.046 278.414C389.701 279.386 388.706 280.766 388.207 282.348L279 542.424C278.407 543.83 278.172 545.362 278.315 546.882C278.457 548.402 278.974 549.863 279.819 551.134C280.663 552.406 281.809 553.449 283.155 554.171C284.501 554.893 286.004 555.27 287.531 555.27H407.571C411.208 555.27 414.763 556.341 417.795 558.348C420.827 560.356 423.2 563.211 424.618 566.559L477.174 683.481C478.567 686.762 479.125 690.337 478.799 693.886C478.473 697.435 477.273 700.848 475.306 703.821C473.338 706.793 470.665 709.232 467.526 710.92C464.386 712.608 460.876 713.492 457.311 713.494H20.3044C17.0176 713.475 13.7866 712.642 10.8994 711.072C8.01233 709.501 5.5588 707.241 3.75759 704.492C1.95639 701.743 0.863449 698.592 0.576217 695.318C0.288985 692.045 0.816374 688.751 2.11138 685.731L280.081 23.9607C282.922 16.9565 287.809 10.9715 294.105 6.78681C300.401 2.60216 307.812 0.412351 315.372 0.50329H475.697C483.259 0.403187 490.675 2.58926 496.973 6.77504C503.271 10.9608 508.157 16.951 510.991 23.9607L790.885 685.731C792.18 688.746 792.709 692.035 792.426 695.304C792.142 698.573 791.055 701.721 789.261 704.469C787.466 707.216 785.021 709.478 782.141 711.053C779.261 712.627 776.037 713.466 772.755 713.494V713.494Z"/>
 </svg>`;
 
@@ -447,19 +450,21 @@ function buildStage(el) {
     titleEl, cards: cardDefs, textBlockEl, ctaEl,
     mobileMockupImgEl, desktopMockupImgEl, desktopPanelImgEl,
   } = parseAuthoredContent(el);
-  const desktopMockupWrapper = createTag('div', { class: 'acrobat-desktop-mockup' });
+  // The mockup chrome, dot canvas, and Adobe logo are decorative framing for
+  // the animation — hide them from AT so VO+arrow only walks the real content.
+  const desktopMockupWrapper = createTag('div', { class: 'acrobat-desktop-mockup', 'aria-hidden': 'true' });
   if (desktopMockupImgEl) desktopMockupWrapper.appendChild(desktopMockupImgEl);
   const desktopPanelWrapper = createTag('div', { class: 'acrobat-desktop-panel' });
   if (desktopPanelImgEl) desktopPanelWrapper.appendChild(desktopPanelImgEl);
   desktopMockupWrapper.appendChild(desktopPanelWrapper);
-  const mobileMockupWrapper = createTag('div', { class: 'acrobat-mobile-mockup' });
+  const mobileMockupWrapper = createTag('div', { class: 'acrobat-mobile-mockup', 'aria-hidden': 'true' });
   if (mobileMockupImgEl) mobileMockupWrapper.appendChild(mobileMockupImgEl);
   const stage = createTag(
     'div',
     { class: 'pdf-space-stage' },
-    `<canvas></canvas>${ADBE_LOGO}<div class="card-scene"></div>`,
+    `<canvas aria-hidden="true"></canvas>${ADBE_LOGO}`,
   );
-  const cardScene = stage.querySelector('.card-scene');
+  const cardScene = createTag('div', { class: 'card-scene', 'aria-hidden': 'true' });
   const sceneCards = buildCardStack(cardScene, cardDefs);
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
@@ -471,7 +476,7 @@ function buildStage(el) {
   textBlockEl.querySelector('a')?.classList.add('label');
   ctaEl.querySelector('a')?.classList.add('label');
 
-  stage.append(titleEl, textBlockEl, ctaEl);
+  stage.append(cardScene, textBlockEl, titleEl, ctaEl);
   el.replaceChildren(stage);
   return {
     stage,
@@ -487,7 +492,148 @@ function buildStage(el) {
   };
 }
 
-export default function init(el) {
+// ──────────────────── No-motion static layout ────────────────────
+// Slot geometry below mirrors getDesktopMockupCardSlot / getMobileMockupCardSlot,
+// but expressed as percentages of the mockup's design box so the slotted card
+// clones scale with the responsive mockup without per-frame JS.
+function getNoMotionDesktopSlotPct(def) {
+  const slotHDesign = ACROBAT_DESKTOP_SLOT_WIDTH * (def.cardHeight / CARD_WIDTH);
+  const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[def.colIdx];
+  const cy = ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[def.rowIdx];
+  return {
+    left: ((cx - ACROBAT_DESKTOP_SLOT_WIDTH / 2) / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH) * 100,
+    top: ((cy - slotHDesign / 2) / ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT) * 100,
+    width: (ACROBAT_DESKTOP_SLOT_WIDTH / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH) * 100,
+    height: (slotHDesign / ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT) * 100,
+  };
+}
+
+function getNoMotionMobileSlotPct(def) {
+  const canvasHeight = ACROBAT_MOBILE_MOCKUP_HEIGHT
+    - ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT
+    - ACROBAT_MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT;
+  const labelStrip = ACROBAT_MOBILE_CARD_LABEL_GAP + ACROBAT_MOBILE_CARD_LABEL_HEIGHT;
+  const availableSlotHeight = canvasHeight
+    - ACROBAT_MOBILE_MOCKUP_TOP_PADDING
+    - ACROBAT_MOBILE_MOCKUP_BOTTOM_PADDING
+    - (ACROBAT_MOBILE_SLOT_ROW_COUNT - 1) * ACROBAT_MOBILE_SLOT_ROW_GAP
+    - ACROBAT_MOBILE_SLOT_ROW_COUNT * labelStrip;
+  const tallSlotH = Math.floor(availableSlotHeight / ACROBAT_MOBILE_SLOT_ROW_COUNT);
+  const cardSlotScale = tallSlotH / ROW_METRIC_HEIGHT;
+  const slotWidth = Math.round(CARD_WIDTH * cardSlotScale);
+  const slotGridLeft = (ACROBAT_MOBILE_MOCKUP_WIDTH
+    - 2 * slotWidth - ACROBAT_MOBILE_SLOT_COLUMN_GAP) / 2;
+  const rowPitch = tallSlotH + labelStrip + ACROBAT_MOBILE_SLOT_ROW_GAP;
+  const firstRowCenterY = ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT
+    + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2 + 30;
+  const height = Math.round(def.cardHeight * cardSlotScale);
+  const centerY = firstRowCenterY + def.mobileRowIdx * rowPitch;
+  const x = slotGridLeft + def.mobileColIdx * (slotWidth + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
+  return {
+    left: (x / ACROBAT_MOBILE_MOCKUP_WIDTH) * 100,
+    top: ((centerY - height / 2) / ACROBAT_MOBILE_MOCKUP_HEIGHT) * 100,
+    width: (slotWidth / ACROBAT_MOBILE_MOCKUP_WIDTH) * 100,
+    height: (height / ACROBAT_MOBILE_MOCKUP_HEIGHT) * 100,
+  };
+}
+
+// Slotted clones are decorative duplicates of the grid figures (same images,
+// shown inside the mockup), so they carry no alt and are hidden from AT.
+function buildSlottedCard(def, isMobile) {
+  const pic = def.el.querySelector('picture') || def.el.querySelector('img');
+  if (!pic) return null;
+  const slot = isMobile
+    ? getNoMotionMobileSlotPct(def)
+    : getNoMotionDesktopSlotPct(def);
+  const cardEl = createTag('div', { class: 'no-motion-slotted-card', 'aria-hidden': 'true' });
+  cardEl.style.left = `${slot.left}%`;
+  cardEl.style.top = `${slot.top}%`;
+  cardEl.style.width = `${slot.width}%`;
+  cardEl.style.height = `${slot.height}%`;
+  const picClone = pic.cloneNode(true);
+  picClone.querySelector('img')?.setAttribute('alt', '');
+  cardEl.appendChild(picClone);
+  return cardEl;
+}
+
+// Static, non-animated composition for users who prefer reduced motion. Shows
+// the resting card grid + marketing copy (settle end-state) above the Acrobat
+// mockup with cards slotted in (slotting end-state). Cards are duplicated: the
+// grid figures and the slotted clones are separate DOM, since the animated
+// version reuses one set of cards across both moments and a static layout needs
+// both visible at once.
+function buildNoMotion(el) {
+  const {
+    titleEl, cards: cardDefs, textBlockEl, ctaEl,
+    mobileMockupImgEl, desktopMockupImgEl, desktopPanelImgEl,
+  } = parseAuthoredContent(el);
+
+  titleEl.classList.add('acrobat-title');
+  textBlockEl.classList.add('text-block');
+  ctaEl.classList.add('acrobat-cta');
+  titleEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading', 'heading-2');
+  textBlockEl.querySelector('h1, h2, h3, h4, h5, h6')?.classList.add('heading', 'heading-6');
+  titleEl.querySelector('p')?.classList.add('subcopy', 'body-md');
+  textBlockEl.querySelector('p')?.classList.add('subcopy', 'body-md');
+  textBlockEl.querySelector('a')?.classList.add('label');
+  ctaEl.querySelector('a')?.classList.add('label');
+
+  // Cards are decorative here too — the text-block is the only real content in
+  // this section — so hide the whole grid from AT. With it gone, AT reading
+  // order follows the top-down layout: text-block first, then the acrobat
+  // heading and CTA in the section below.
+  const cardGrid = createTag('div', { class: 'no-motion-card-grid', 'aria-hidden': 'true' });
+  cardDefs.forEach((def) => {
+    const figure = createTag('figure', { class: `no-motion-card${def.mobileHidden ? ' no-motion-card-desktop-only' : ''}` });
+    const pic = def.el.querySelector('picture') || def.el.querySelector('img');
+    if (pic) {
+      const picClone = pic.cloneNode(true);
+      // Aspect-ratio lives on the image box (not the figure) so the label can
+      // flow below it, matching the settled motion layout.
+      picClone.style.aspectRatio = `${CARD_WIDTH} / ${def.cardHeight}`;
+      figure.appendChild(picClone);
+    }
+    if (def.label) {
+      figure.appendChild(createTag('figcaption', { class: 'no-motion-card-label' }, def.label));
+    }
+    cardGrid.appendChild(figure);
+  });
+  const gridSection = createTag('div', { class: 'no-motion-grid-section' });
+  gridSection.append(cardGrid, textBlockEl);
+
+  const desktopMockup = createTag('div', { class: 'acrobat-desktop-mockup', 'aria-hidden': 'true' });
+  if (desktopMockupImgEl) desktopMockup.appendChild(desktopMockupImgEl);
+  const desktopPanel = createTag('div', { class: 'acrobat-desktop-panel' });
+  if (desktopPanelImgEl) desktopPanel.appendChild(desktopPanelImgEl);
+  desktopMockup.appendChild(desktopPanel);
+  cardDefs.forEach((def) => {
+    const slotted = buildSlottedCard(def, false);
+    if (slotted) desktopMockup.appendChild(slotted);
+  });
+
+  const mobileMockup = createTag('div', { class: 'acrobat-mobile-mockup', 'aria-hidden': 'true' });
+  if (mobileMockupImgEl) mobileMockup.appendChild(mobileMockupImgEl);
+  cardDefs.forEach((def) => {
+    if (def.mobileHidden) return;
+    const slotted = buildSlottedCard(def, true);
+    if (slotted) mobileMockup.appendChild(slotted);
+  });
+
+  const mockupSection = createTag('div', { class: 'no-motion-mockup-section' });
+  mockupSection.append(titleEl, desktopMockup, mobileMockup, ctaEl);
+
+  const stage = createTag('div', { class: 'pdf-space-stage' });
+  stage.style.setProperty('--acrobat-mobile-mockup-width', `${ACROBAT_MOBILE_MOCKUP_WIDTH}px`);
+  stage.style.setProperty('--acrobat-mobile-mockup-height', `${ACROBAT_MOBILE_MOCKUP_HEIGHT}px`);
+  stage.append(gridSection, mockupSection);
+  el.replaceChildren(stage);
+}
+
+// Builds the animated, scroll-driven stage and starts its render loop,
+// observers, and listeners. Returns a teardown() that stops the loop and
+// detaches all wiring, so init() can swap to the static no-motion build at
+// runtime. (The no-motion build is static and needs no teardown.)
+function mountMotion(el) {
   const {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
     desktopMockupWrapper, desktopPanelWrapper, mobileMockupWrapper,
@@ -506,6 +652,12 @@ export default function init(el) {
   let viewportWidth = 0;
   let viewportHeight = 0;
   let scrollCurrent = 0;
+  let revealActive = false;
+  let revealScrollCurrent = 0;
+  // Set while the tab is hidden and for one frame after it returns. Guards
+  // against the focus event the browser re-fires on the previously focused
+  // element when the tab regains visibility — see snapToFocusTarget.
+  let suppressFocusSnap = false;
 
   const phase = {
     arcPan: 0,
@@ -814,7 +966,7 @@ export default function init(el) {
     const active = frame.isMobile ? mobileMockupWrapper : desktopMockupWrapper;
     const inactive = frame.isMobile ? desktopMockupWrapper : mobileMockupWrapper;
     if (inactive.parentNode) inactive.remove();
-    if (!active.parentNode) stage.insertBefore(active, titleEl);
+    if (!active.parentNode) stage.insertBefore(active, ctaEl);
   }
 
   function resize() {
@@ -1032,10 +1184,16 @@ export default function init(el) {
   function updateAnimationProgress() {
     const animScrollTotal = timing.slottingStart + timing.slottingDuration
       + timing.postRevealScrollDistance;
-    const { scrollY } = window;
-    const blockTop = cachedBlockDocTop - scrollY;
-    const panRange = Math.max(1, cachedBlockHeight - viewportHeight);
-    scrollCurrent = clamp01(-blockTop / panRange) * animScrollTotal;
+    let blockTop;
+    if (revealActive) {
+      scrollCurrent = revealScrollCurrent;
+      blockTop = 0;
+    } else {
+      const { scrollY } = window;
+      blockTop = cachedBlockDocTop - scrollY;
+      const panRange = Math.max(1, cachedBlockHeight - viewportHeight);
+      scrollCurrent = clamp01(-blockTop / panRange) * animScrollTotal;
+    }
     prePinOffset = Math.max(0, blockTop);
 
     const slideEarly = viewportHeight;
@@ -1287,6 +1445,29 @@ export default function init(el) {
   const onResize = debounce(resize, 150);
   window.addEventListener('resize', onResize);
 
+  // Arm the guard whenever the page loses focus/visibility and disarm one frame
+  // after it returns. This brackets the focus event the browser re-fires on the
+  // previously focused element on return, so it doesn't snap-scroll the user
+  // away from where they left off. Covers both tab switches (visibilitychange)
+  // and switching to another app/window (window blur/focus, which don't fire
+  // visibilitychange). Arming on the way out keeps it correct regardless of
+  // whether the refocus lands before or after these events (browser-dependent).
+  // Disarm via rAF, not on first consume: the refocus only fires if our link
+  // was still focused, so a consume-once clear could stick armed and swallow a
+  // later genuine Tab-to-link snap. The ~1-frame window is too short for a real
+  // keystroke to be caught.
+  const armFocusGuard = () => { suppressFocusSnap = true; };
+  const disarmFocusGuard = () => {
+    requestAnimationFrame(() => { suppressFocusSnap = false; });
+  };
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') armFocusGuard();
+    else disarmFocusGuard();
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('blur', armFocusGuard);
+  window.addEventListener('focus', disarmFocusGuard);
+
   resize();
 
   // Prewarm card + mockup image decode so the first animated frame doesn't stall on img decode.
@@ -1295,6 +1476,67 @@ export default function init(el) {
   });
   stage.querySelectorAll('.acrobat-desktop-mockup img, .acrobat-mobile-mockup img').forEach((img) => {
     img.decode?.().catch(() => {});
+  });
+
+  function getTargetScrollTop(targetScrollCurrent) {
+    const animScrollTotal = timing.slottingStart + timing.slottingDuration
+      + timing.postRevealScrollDistance;
+    const blockDocTop = el.getBoundingClientRect().top + window.scrollY;
+    const panRange = Math.max(1, el.offsetHeight - window.innerHeight);
+    return blockDocTop + clamp01(targetScrollCurrent / animScrollTotal) * panRange;
+  }
+
+  function snapToFocusTarget(targetScrollCurrent) {
+    // On tab return the browser re-fires focus on the element that was focused
+    // before the user switched away. Snapping then would wipe whatever scroll
+    // position the user left off at, so skip the focus restore's snap.
+    if (suppressFocusSnap) return;
+    const top = getTargetScrollTop(targetScrollCurrent);
+    // Lock the animation to the target frame so transforms update correctly
+    // even before scrollY reflects the jump.
+    revealActive = true;
+    revealScrollCurrent = targetScrollCurrent;
+
+    // Defer scrollTo to rAF so it fires after the browser's own post-focus
+    // scroll adjustment. When tabbing, the browser fires a second scroll after
+    // the focus handler returns because the element's transform is stale and
+    // appears out-of-view. Deferring lets that adjustment complete first, then
+    // we override it with the correct position. revealActive above keeps the
+    // animation correct during this gap.
+    requestAnimationFrame(() => {
+      if (window.lenis?.scrollTo) {
+        window.lenis.scrollTo(top, { force: true, immediate: true });
+      } else {
+        window.scrollTo(0, top);
+      }
+      requestAnimationFrame(() => {
+        revealActive = false;
+      });
+    });
+  }
+
+  // The stage is overflow:hidden, but browsers still scroll overflow:hidden
+  // containers to bring a focused descendant into view. Tabbing down into the
+  // text-block link from a preceding block makes the browser scroll the stage
+  // to reveal the link's layout box (top:0), which sits far from its
+  // transform-moved visual box — leaving a residual scrollTop that shifts the
+  // whole pinned scene while window.scrollY is unchanged. Nothing inside the
+  // stage is meant to scroll, so snap it back. snapToFocusTarget only corrects
+  // the window scroll, not this internal offset.
+  stage.addEventListener('scroll', () => {
+    if (stage.scrollTop !== 0) stage.scrollTop = 0;
+    if (stage.scrollLeft !== 0) stage.scrollLeft = 0;
+  });
+
+  const textBlockLink = textBlockEl.querySelector('a');
+  textBlockLink?.addEventListener('focus', () => {
+    snapToFocusTarget(timing.slottingStart);
+  });
+  const ctaLink = ctaEl.querySelector('a');
+  ctaLink?.addEventListener('focus', () => {
+    snapToFocusTarget(
+      timing.slottingStart + timing.slottingDuration + timing.postRevealScrollDistance,
+    );
   });
 
   const startLoop = () => {
@@ -1318,13 +1560,59 @@ export default function init(el) {
   }, { rootMargin: '200px 0px' });
   io.observe(el);
 
-  const removalObserver = new MutationObserver((_, observer) => {
-    if (document.contains(el)) return;
+  // The stage and its inner listeners are discarded when init() restores the
+  // authored content, so teardown only needs to stop the loop and detach the
+  // el/window/document-level wiring.
+  return function teardown() {
     stopLoop();
     io.disconnect();
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('blur', armFocusGuard);
+    window.removeEventListener('focus', disarmFocusGuard);
     canvasGrid.destroy();
     debug?.destroy();
+  };
+}
+
+export default function init(el) {
+  // Both builds consume el's children, so keep a clone to rebuild from on toggle.
+  const authoredContent = [...el.children].map((node) => node.cloneNode(true));
+  const restoreAuthoredContent = () => {
+    el.replaceChildren(...authoredContent.map((node) => node.cloneNode(true)));
+  };
+
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = () => reducedMotionQuery.matches;
+
+  let teardownMotion = null;
+  let mountedReduced = null;
+
+  function mountMode(reduced) {
+    teardownMotion?.();
+    restoreAuthoredContent();
+    el.classList.toggle('no-motion', reduced);
+    if (reduced) {
+      buildNoMotion(el);
+      teardownMotion = null;
+    } else {
+      teardownMotion = mountMotion(el);
+    }
+    mountedReduced = reduced;
+  }
+
+  function syncMotionPreference() {
+    const reduced = prefersReducedMotion();
+    if (reduced !== mountedReduced) mountMode(reduced);
+  }
+
+  syncMotionPreference();
+  reducedMotionQuery.addEventListener('change', syncMotionPreference);
+
+  const removalObserver = new MutationObserver((_, observer) => {
+    if (document.contains(el)) return;
+    teardownMotion?.();
+    reducedMotionQuery.removeEventListener('change', syncMotionPreference);
     observer.disconnect();
   });
   if (el.parentElement) {
