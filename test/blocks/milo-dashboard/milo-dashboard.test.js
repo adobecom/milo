@@ -202,6 +202,16 @@ describe('milo-dashboard', () => {
     expect(range.textContent).to.match(/Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/);
   });
 
+  it('renders a data-source env badge after init', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    const badge = block.querySelector('.env-badge');
+    expect(badge).to.exist;
+    expect(['Local', 'Live', 'DA']).to.include(badge.textContent);
+  });
+
   it('renders an updated timestamp', async () => {
     fetchStub = stubFetch(routeFetch);
     const block = document.querySelector('.milo-dashboard');

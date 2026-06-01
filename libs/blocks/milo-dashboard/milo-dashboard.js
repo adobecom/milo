@@ -86,11 +86,13 @@ export default async function init(block) {
   function showDrilldown(site) {
     clearCharts();
     block.innerHTML = '';
+    const tf = TIMEFRAMES.find((t) => t.interval === currentInterval) || TIMEFRAMES[1];
     renderProjectDrilldown(block, {
       site,
       client,
       charts,
       daContext: ctx.daContext,
+      timeframe: { trendSince: tf.trendSince, interval: tf.interval },
       onBack: navigateHome,
     });
   }
@@ -124,7 +126,13 @@ export default async function init(block) {
       { type: 'button', class: 'refresh-btn', 'aria-label': 'Refresh' },
       'Refresh',
     );
-    const meta = createTag('div', { class: 'dashboard-meta' }, [rangeEl, updatedEl, refreshBtn]);
+    const ENV_LABELS = { da: 'DA', local: 'Local', standalone: 'Live' };
+    const envBadge = createTag(
+      'span',
+      { class: `env-badge mode-${ctx.mode}`, title: ctx.base },
+      ENV_LABELS[ctx.mode] || ctx.mode,
+    );
+    const meta = createTag('div', { class: 'dashboard-meta' }, [envBadge, rangeEl, updatedEl, refreshBtn]);
     header.append(meta);
 
     // Titled card: returns the outer panel plus the inner body the panel

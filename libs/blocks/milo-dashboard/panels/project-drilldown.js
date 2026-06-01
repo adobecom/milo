@@ -12,7 +12,10 @@ function renderPanel(mount, fn) {
 
 export default async function renderProjectDrilldown(
   container,
-  { site, client, charts, daContext, onBack },
+  {
+    site, client, charts, daContext, onBack,
+    timeframe = { trendSince: '84d', interval: 'week' },
+  },
 ) {
   container.replaceChildren();
 
@@ -31,7 +34,7 @@ export default async function renderProjectDrilldown(
   let logs;
   try {
     [trends, logs] = await Promise.all([
-      client.get('/trends/preflight', { since: '30d', interval: 'week', project: site }),
+      client.get('/trends/preflight', { since: timeframe.trendSince, interval: timeframe.interval, project: site }),
       client.get('/preflight-logs', { projectKey: site, maxScore: 70, sortBy: 'performance_score', sortOrder: 'asc', limit: 20 }),
     ]);
   } catch (e) {

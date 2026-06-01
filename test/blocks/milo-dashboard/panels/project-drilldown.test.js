@@ -54,6 +54,25 @@ describe('milo-dashboard project-drilldown', () => {
     expect(logsCall.args[1].projectKey).to.equal('milo');
   });
 
+  it('uses the passed timeframe for the trends fetch', async () => {
+    const client = makeClient();
+    const timeframe = { trendSince: '365d', interval: 'month' };
+    const onBack = () => {};
+    await renderProjectDrilldown(container, { site: 'milo', client, charts, onBack, timeframe });
+    const trendsCall = client.get.getCalls().find((c) => c.args[0] === '/trends/preflight');
+    expect(trendsCall.args[1].interval).to.equal('month');
+    expect(trendsCall.args[1].since).to.equal('365d');
+    expect(trendsCall.args[1].project).to.equal('milo');
+  });
+
+  it('defaults the trends timeframe to week/84d when omitted', async () => {
+    const client = makeClient();
+    await renderProjectDrilldown(container, { site: 'milo', client, charts, onBack: () => {} });
+    const trendsCall = client.get.getCalls().find((c) => c.args[0] === '/trends/preflight');
+    expect(trendsCall.args[1].interval).to.equal('week');
+    expect(trendsCall.args[1].since).to.equal('84d');
+  });
+
   it('populates health and worst mounts', async () => {
     await renderProjectDrilldown(container, { site: 'milo', client: makeClient(), charts, onBack: () => {} });
     expect(container.querySelector('.drilldown-health .health-trend-toggle')).to.exist;
