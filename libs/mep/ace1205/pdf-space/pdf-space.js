@@ -181,10 +181,6 @@ function easeInOutSine(t) {
   return -(Math.cos(Math.PI * t) - 1) / 2;
 }
 
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
 function hexToRgb(hex) {
   const hexValue = parseInt(hex.replace('#', ''), 16);
   return [Math.floor(hexValue / 65536) % 256, Math.floor(hexValue / 256) % 256, hexValue % 256];
@@ -480,9 +476,7 @@ function buildStage(el) {
   textBlockEl.querySelector('a')?.classList.add('label');
   ctaEl.querySelector('a')?.classList.add('label');
 
-  // DOM order = AT reading order (layout is transform/absolute-positioned, so
-  // this doesn't affect the visual): heading → card list → marketing copy → CTA.
-  stage.append(titleEl, cardScene, textBlockEl, ctaEl);
+  stage.append(cardScene, textBlockEl, titleEl, ctaEl);
   el.replaceChildren(stage);
   return {
     stage,
@@ -574,7 +568,6 @@ function buildNoMotion(el) {
     mobileMockupImgEl, desktopMockupImgEl, desktopPanelImgEl,
   } = parseAuthoredContent(el);
 
-  el.classList.add('no-motion');
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
   ctaEl.classList.add('acrobat-cta');
@@ -592,9 +585,14 @@ function buildNoMotion(el) {
   const cardGrid = createTag('div', { class: 'no-motion-card-grid', 'aria-hidden': 'true' });
   cardDefs.forEach((def) => {
     const figure = createTag('figure', { class: `no-motion-card${def.mobileHidden ? ' no-motion-card-desktop-only' : ''}` });
-    figure.style.aspectRatio = `${CARD_WIDTH} / ${def.cardHeight}`;
     const pic = def.el.querySelector('picture') || def.el.querySelector('img');
-    if (pic) figure.appendChild(pic.cloneNode(true));
+    if (pic) {
+      const picClone = pic.cloneNode(true);
+      // Aspect-ratio lives on the image box (not the figure) so the label can
+      // flow below it, matching the settled motion layout.
+      picClone.style.aspectRatio = `${CARD_WIDTH} / ${def.cardHeight}`;
+      figure.appendChild(picClone);
+    }
     if (def.label) {
       figure.appendChild(createTag('figcaption', { class: 'no-motion-card-label' }, def.label));
     }
@@ -631,11 +629,11 @@ function buildNoMotion(el) {
   el.replaceChildren(stage);
 }
 
-export default function init(el) {
-  if (prefersReducedMotion()) {
-    buildNoMotion(el);
-    return el;
-  }
+// Builds the animated, scroll-driven stage and starts its render loop,
+// observers, and listeners. Returns a teardown() that stops the loop and
+// detaches all wiring, so init() can swap to the static no-motion build at
+// runtime. (The no-motion build is static and needs no teardown.)
+function mountMotion(el) {
   const {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
     desktopMockupWrapper, desktopPanelWrapper, mobileMockupWrapper,
@@ -968,7 +966,7 @@ export default function init(el) {
     const active = frame.isMobile ? mobileMockupWrapper : desktopMockupWrapper;
     const inactive = frame.isMobile ? desktopMockupWrapper : mobileMockupWrapper;
     if (inactive.parentNode) inactive.remove();
-    if (!active.parentNode) stage.insertBefore(active, titleEl);
+    if (!active.parentNode) stage.insertBefore(active, ctaEl);
   }
 
   function resize() {
@@ -1562,8 +1560,10 @@ export default function init(el) {
   }, { rootMargin: '200px 0px' });
   io.observe(el);
 
-  const removalObserver = new MutationObserver((_, observer) => {
-    if (document.contains(el)) return;
+  // The stage and its inner listeners are discarded when init() restores the
+  // authored content, so teardown only needs to stop the loop and detach the
+  // el/window/document-level wiring.
+  return function teardown() {
     stopLoop();
     io.disconnect();
     window.removeEventListener('resize', onResize);
@@ -1572,6 +1572,47 @@ export default function init(el) {
     window.removeEventListener('focus', disarmFocusGuard);
     canvasGrid.destroy();
     debug?.destroy();
+  };
+}
+
+export default function init(el) {
+  // Both builds consume el's children, so keep a clone to rebuild from on toggle.
+  const authoredContent = [...el.children].map((node) => node.cloneNode(true));
+  const restoreAuthoredContent = () => {
+    el.replaceChildren(...authoredContent.map((node) => node.cloneNode(true)));
+  };
+
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const prefersReducedMotion = () => reducedMotionQuery.matches;
+
+  let teardownMotion = null;
+  let mountedReduced = null;
+
+  function mountMode(reduced) {
+    teardownMotion?.();
+    restoreAuthoredContent();
+    el.classList.toggle('no-motion', reduced);
+    if (reduced) {
+      buildNoMotion(el);
+      teardownMotion = null;
+    } else {
+      teardownMotion = mountMotion(el);
+    }
+    mountedReduced = reduced;
+  }
+
+  function syncMotionPreference() {
+    const reduced = prefersReducedMotion();
+    if (reduced !== mountedReduced) mountMode(reduced);
+  }
+
+  syncMotionPreference();
+  reducedMotionQuery.addEventListener('change', syncMotionPreference);
+
+  const removalObserver = new MutationObserver((_, observer) => {
+    if (document.contains(el)) return;
+    teardownMotion?.();
+    reducedMotionQuery.removeEventListener('change', syncMotionPreference);
     observer.disconnect();
   });
   if (el.parentElement) {

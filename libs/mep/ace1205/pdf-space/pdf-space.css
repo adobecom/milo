@@ -1,6 +1,9 @@
 .pdf-space {
   height: 650vh;
 
+  --card-label-bg: #e1e1f1;
+  --card-placeholder-bg: #ececec;
+
   /*
    * Stacking order within .pdf-space-stage (isolated stacking context):
    *   10  .adbe-logo-svg              — drawn-on background mark
@@ -162,7 +165,7 @@
     width: 192px;
     height: 230px;
     overflow: hidden;
-    background: #ececec;
+    background: var(--card-placeholder-bg);
     border-radius: 10px;
     will-change: transform, opacity;
     contain: layout style;
@@ -183,11 +186,9 @@
     }
   }
 
-  .card-label-outer {
+  .card-label-outer,
+  .no-motion-card-label {
     box-sizing: border-box;
-    position: absolute;
-    top: 0;
-    left: 0;
     display: inline-flex;
     align-items: center;
     padding: 5px 6px;
@@ -197,8 +198,14 @@
     font-size: 0.625rem;
     font-weight: var(--s2a-font-weight-label);
     color: var(--s2a-color-gray-1000);
-    background: #e1e1f1;
+    background: var(--card-label-bg);
     border-radius: var(--s2a-border-radius-2);
+  }
+
+  .card-label-outer {
+    position: absolute;
+    top: 0;
+    left: 0;
     transform-origin: top left;
     will-change: transform, opacity;
   }
@@ -345,35 +352,30 @@
     }
 
     .no-motion-card {
-      position: relative;
       margin: 0;
-      overflow: hidden;
-      background: #ececec;
-      border-radius: 10px;
 
-      picture,
+      /* The cloned <picture> is the rounded, clipped image box (per-card
+         aspect-ratio is set inline); the label flows below it, as in the
+         settled motion state. */
+      picture {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        background: var(--card-placeholder-bg);
+        border-radius: 10px;
+      }
+
       img {
         display: block;
         width: 100%;
         height: 100%;
+        border-radius: 10px;
         object-fit: cover;
       }
     }
 
     .no-motion-card-label {
-      box-sizing: border-box;
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: inline-flex;
-      align-items: center;
-      padding: 5px 6px;
-      white-space: nowrap;
-      font-size: 0.625rem;
-      font-weight: var(--s2a-font-weight-label);
-      color: var(--s2a-color-gray-1000);
-      background: #e1e1f1;
-      border-radius: var(--s2a-border-radius-2);
+      margin-top: var(--s2a-spacing-2xs, 8px);
     }
 
     .text-block,
@@ -403,7 +405,7 @@
     .acrobat-desktop-mockup {
       position: relative;
       left: auto;
-      margin: 0 auto;
+      margin: var(--s2a-spacing-lg, 24px) auto 0;
       transform: none;
     }
 
@@ -438,24 +440,12 @@
     }
 
     @media (width >= 768px) {
-      .no-motion-grid-section {
-        display: flex;
-        gap: var(--s2a-spacing-xl, 32px);
-        align-items: center;
-      }
-
       .no-motion-card-grid {
-        flex: 1;
         grid-template-columns: repeat(4, 1fr);
-        margin-bottom: 0;
       }
 
       .no-motion-card-desktop-only {
         display: block;
-      }
-
-      .text-block {
-        flex: 0 0 367px;
       }
 
       .acrobat-mobile-mockup {
@@ -464,6 +454,16 @@
 
       .acrobat-desktop-mockup {
         display: block;
+        margin-top: 40px;
+      }
+    }
+
+    /* Match settled motion: the text-block sits below the grid (block flow, not
+       beside it) and right-aligns to the grid edge on desktop. Below 1280px it
+       stays left-aligned, as the animated layout does. */
+    @media (width >= 1280px) {
+      .text-block {
+        margin-left: auto;
       }
     }
   }
