@@ -300,10 +300,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--s2a-spacing-3xl);
+  gap: var(--s2a-spacing-lg);
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
+
+  .action-area {
+    margin-top: 0;
+  }
 
   .media {
     position: relative;
@@ -361,6 +365,8 @@
 
 @media (width >= 768px) {
   .rich-content.video {
+    gap: var(--s2a-spacing-xl);
+
     .media {
       padding-inline: unset;
       max-width: var(--grid-width-10);
