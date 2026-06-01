@@ -42,6 +42,7 @@ const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_matc
 function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const heroRow = rows[0];
   const heroCell = heroRow.children[0];
@@ -49,6 +50,13 @@ function decorate(block) {
 
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
   heroCell.classList.add('hero-content');
+  const mainHeading = heroCell.querySelector(':is(h2, h3, h4, h5, h6)');
+  if (mainHeading) {
+    const h1 = document.createElement('h1');
+    h1.className = mainHeading.className;
+    h1.innerHTML = mainHeading.innerHTML;
+    mainHeading.replaceWith(h1);
+  }
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
@@ -96,22 +104,25 @@ function decorate(block) {
     const posterImg = media.querySelector('img');
     const videoSrc = posterImg?.getAttribute('alt') || '';
     if (isVideoSrc(videoSrc)) {
-      const videoEl = createTag('video', {
-        src: videoSrc,
-        poster: posterImg.getAttribute('src') || '',
-        playsinline: '',
-        muted: '',
-        preload: 'metadata',
-        tabindex: '-1',
-        'aria-hidden': 'true',
-      });
-      videoEl.muted = true;
-      videoEl.addEventListener('loadedmetadata', () => {
-        try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
-      }, { once: true });
-      (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
-      const fade = createTag('div', { class: 'hero-card-media-fade' });
-      media.append(fade);
+      posterImg.alt = '';
+      if (!reducedMotion) {
+        const videoEl = createTag('video', {
+          src: videoSrc,
+          poster: posterImg.getAttribute('src') || '',
+          playsinline: '',
+          muted: '',
+          preload: 'metadata',
+          tabindex: '-1',
+          'aria-hidden': 'true',
+        });
+        videoEl.muted = true;
+        videoEl.addEventListener('loadedmetadata', () => {
+          try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
+        }, { once: true });
+        (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
+        const fade = createTag('div', { class: 'hero-card-media-fade' });
+        media.append(fade);
+      }
     }
 
     const learnMore = textCell.querySelector('a');
@@ -147,6 +158,16 @@ function decorate(block) {
 }
 
 function initAnimation(block) {
+  const gnav = document.querySelector('header');
+  const heroEl = block.querySelector('.hero');
+
+  function positionContent() {
+    if (!heroEl || !gnav) return;
+    heroEl.style.paddingTop = `${gnav.getBoundingClientRect().bottom + 124}px`;
+  }
+
+  positionContent();
+
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   let heroContent;
@@ -181,12 +202,6 @@ function initAnimation(block) {
   let rafId = 0;
   let running = false;
   let needsReset = false;
-  const gnav = document.querySelector('header');
-
-  function positionContent() {
-    if (!heroContent || !gnav) return;
-    heroContent.parentElement.style.paddingTop = `${gnav.getBoundingClientRect().bottom + 124}px`;
-  }
 
   function setSettled(next) {
     if (isSettled === next) return;
@@ -241,14 +256,14 @@ function initAnimation(block) {
     tiles.forEach((tile, i) => {
       const natural = naturalBoxes[i];
       const stack = stackBoxes[i];
-      const s = lerp(Math.min(stack.w / natural.w, stack.h / natural.h), 1, progress);
+      const scale = lerp(Math.min(stack.w / natural.w, stack.h / natural.h), 1, progress);
       const txTarget = rtl
         ? (stack.x + stack.w) - (natural.x + natural.w)
         : stack.x - natural.x;
       const tx = lerp(txTarget, 0, progress);
       const ty = lerp(stack.y - natural.y, 0, progress);
       const rot = lerp(stack.rot, 0, progress);
-      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${s})`;
+      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})`;
       if (!CARD_SHADOWS[i]) return;
       tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
     });

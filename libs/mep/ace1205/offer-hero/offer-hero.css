@@ -211,6 +211,13 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .offer-hero .hero {
+    min-height: unset;
+    padding-bottom: 74px;
+  }
+}
+
 @media (width > 768px) {
   .offer-hero {
     .hero-content {
