@@ -38,7 +38,7 @@ function resolvePendingPromise(promise, resolve) {
 function awaitWindowProperty(property, timeout = 5000, interval = 100) {
   const alloyObj = window[property];
   if (window.location.href.includes('lobdebug')) {
-    console.log(`FROM AWAIT WINDOW PROPERTY`);
+    console.log('FROM AWAIT WINDOW PROPERTY');
     console.log(`alloyObj: ${alloyObj}`);
     console.log(`alloyObj.then (promise?): ${alloyObj?.then}`);
     console.log(`alloyObj.get: ${alloyObj?.get}`);
@@ -50,7 +50,7 @@ function awaitWindowProperty(property, timeout = 5000, interval = 100) {
     const intervalRef = setInterval(() => {
       const val = window[property];
       if (window.location.href.includes('lobdebug')) {
-        console.log(`FROM INTERVAL`);
+        console.log('FROM INTERVAL');
         console.log(`alloyObj: ${val}`);
         console.log(`alloyObj.then (promise?): ${val}.${val?.then}`);
         console.log(`alloyObj.get: ${val}.${val?.get}`);
@@ -77,7 +77,7 @@ function addAlloyTracking(lobObject) {
     if (window.location.href.includes('lobdebug')) {
       console.log(`alloyAll: ${alloyAll} FOUND`);
       const alloyObj = window['alloy_all']; // part of debug, remove when done
-      console.log(`FROM addAlloyTracking FUNCTION`);
+      console.log('FROM addAlloyTracking FUNCTION');
       console.log(`alloyObj: ${alloyObj}`);
       console.log(`alloyObj.then (promise?): ${alloyObj?.then}`);
       console.log(`alloyObj.get: ${alloyObj?.get}`);
