@@ -1,5 +1,5 @@
 import { loadBlock, decorateAutoBlock, loadStyle, getConfig, createTag } from '../../../../utils/utils.js';
-import { toFragment, lanaLog } from '../../utilities/utilities.js';
+import { toFragment, lanaLog, getBranchBannerInfo } from '../../utilities/utilities.js';
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 
 const DISMISSED_KEY = (promoPath) => `gnav-promo-dismissed:${promoPath}`;
@@ -27,10 +27,16 @@ function addCloseButton(aside, fedsPromoWrapper, promoPath, headerElem) {
     fedsPromoWrapper.remove();
     headerElem.classList.remove('has-promo');
 
+    const {
+      isPresent: hasBranchBanner,
+      isSticky: isBranchBannerSticky,
+      height: branchBannerHeight,
+    } = getBranchBannerInfo();
+    const resetTop = (hasBranchBanner && isBranchBannerSticky) ? `${branchBannerHeight}px` : '0';
     const header = document.querySelector('header');
     const localNav = document.querySelector('.feds-localnav');
-    if (header) header.style.top = '0';
-    if (localNav) localNav.style.top = '0';
+    if (header) header.style.top = resetTop;
+    if (localNav) localNav.style.top = resetTop;
 
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
   });
