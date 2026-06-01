@@ -443,6 +443,7 @@ function getVideoIntersectionObserver() {
         const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
+        console.log(intersectionRatio);
 
         if (intersectionRatio <= 0.8) {
           if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
