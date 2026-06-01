@@ -82,6 +82,19 @@ const defaultOptions = {
     'blade-card': 'Blade Card',
     'editorial-card': 'Editorial Card',
     'blog-card': 'Blog Card',
+    'flex-card': 'Flex Card...',
+  },
+  flexCardImageOptions: {
+    default: 'Default',
+    hidden: 'Hidden',
+    'image-small-center': 'Small Center',
+    'image-small-left': 'Small Left',
+  },
+  flexCardTextAlign: {
+    'text-left': 'Default',
+    'text-center': 'Center',
+    'text-justify': 'Justify',
+    'text-right': 'Right',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -220,11 +233,12 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
-  detailsTextOption: {
+  detailTextOption: {
     default: 'Default',
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
     staticDate: 'Static Date',
+    productName: 'Product Name',
   },
   cardHoverEffect: {
     default: 'Default',
@@ -379,7 +393,7 @@ const BasicsPanel = ({ tagsData }) => {
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   const bladeCardOptions = html`
-    <div class="blade-card-options">
+    <div class="nested">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
       <${Input} label="Light text" prop="bladeCardLightText" class="blade-card-option" type="checkbox" />
       <${Input} label="Transparent background" prop="bladeCardTransparent" class="blade-card-option" type="checkbox" />
@@ -387,7 +401,7 @@ const UiPanel = () => {
   `;
 
   const carouselOptions = html`
-    <div class="carousel-options">
+    <div class="nested">
       <${Select}
         label="Carousel Controls Options"
         prop="paginationAnimationStyle"
@@ -400,6 +414,17 @@ const UiPanel = () => {
   const editorialCardOptions = html`
     <div class="nested">
       <${Input} label="Editorial Open variant" prop="editorialCardOpenVariant" type="checkbox" />
+    </div>
+  `;
+
+  const flexCardOptions = html`
+    <div class="nested">
+      <${Select} label="Image Options" prop="flexCardImageOptions" options=${defaultOptions.flexCardImageOptions} />
+      <${Select} label="Text Align" prop="flexCardTextAlign" options=${defaultOptions.flexCardTextAlign} />
+      <${Input} label="Hide Details Text" prop="flexCardHideDetails" type="checkbox" />
+      <${Input} label="Hide Title" prop="flexCardHideTitle" type="checkbox" />
+      <${Input} label="Hide Description" prop="flexCardHideDescription" type="checkbox" />
+      <${Input} label="Hide Footer (CTA)" prop="flexCardHideFooter" type="checkbox" />
     </div>
   `;
 
@@ -417,13 +442,14 @@ const UiPanel = () => {
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
+      ${state.cardStyle === 'flex-card' && flexCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
       ${state.container === 'carousel' && carouselOptions}
     <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
     <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
     <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
-    <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+    <${Select} label="Details Text" prop="detailTextOption" options=${defaultOptions.detailTextOption} />
     <${Select}
       label="Card Hover Effect"
       prop="cardHoverEffect"

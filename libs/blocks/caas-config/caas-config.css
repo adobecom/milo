@@ -85,9 +85,9 @@ dd.content .sort-options > .field {
   cursor: pointer;
 }
 
-.blade-card-options > div {
+/* .blade-card-options > div {
     margin: 0 10px !important;
-}
+} */
 
 /* sticky panel */
 .config-panel {
@@ -164,3 +164,29 @@ dd.content .carousel-options .field {
 .caas-config .nested {
   padding-left: 20px;
 }
+
+/* Indented fields for flex card options */
+dd.content .blade-card-options,
+dd.content .flex-card-options,
+dd.content .nested {
+  background: #333;
+  width: calc(100% - 36px);
+  margin-top: -6px;
+  padding: 1px 0 2px 0;
+  border: solid #666 1px;
+  border-top: 0;
+
+  .field {
+    padding-left: 16px;
+    max-width: calc(var(--field-max-size) - 16px);
+    color: #bababa;
+
+    label {
+      margin: 0;
+    }
+
+    select {
+      width: calc(100% - 20px);
+    }
+  }
+} 
