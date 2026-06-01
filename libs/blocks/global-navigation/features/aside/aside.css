@@ -24,3 +24,7 @@
 .feds-promo-aside-wrapper .promo-close line {
   stroke: var(--color-white);
 }
+
+.aside.promobar .promo-text .action-area {
+  margin-right: 40px;
+}

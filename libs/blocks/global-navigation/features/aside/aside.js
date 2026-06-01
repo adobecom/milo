@@ -1,4 +1,4 @@
-import { loadBlock, decorateAutoBlock, loadStyle, getConfig } from '../../../../utils/utils.js';
+import { loadBlock, decorateAutoBlock, loadStyle, getConfig, createTag } from '../../../../utils/utils.js';
 import { toFragment, lanaLog } from '../../utilities/utilities.js';
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 
@@ -17,9 +17,7 @@ function addCloseButton(aside, fedsPromoWrapper, promoPath, headerElem) {
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/blocks/global-navigation/features/aside/aside.css`);
 
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'promo-close';
-  closeBtn.setAttribute('aria-label', 'Close');
+  const closeBtn = createTag('button', { class: 'promo-close', 'aria-label': 'Close gnav promo bar' });
   closeBtn.innerHTML = closeSvg;
 
   aside.querySelector('.foreground').appendChild(closeBtn);
