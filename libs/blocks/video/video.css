@@ -168,8 +168,9 @@ video {
     width: 32px;
     height: 32px;
     border-radius: var(--s2a-border-radius-xs);
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
-    background: var(--s2a-color-transparent-black-04);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    backdrop-filter: blur(4px);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -185,8 +186,9 @@ video {
     }
 
     &:hover {
-      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-16);
-      background: var(--s2a-color-transparent-black-08);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+      background: var(--s2a-color-transparent-black-64);
+      backdrop-filter: unset;
     }
 
     &:focus-visible {
@@ -197,6 +199,9 @@ video {
     &:active {
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
       background: var(--s2a-color-background-knockout);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+      background: var(--s2a-color-background-knockout);
+      backdrop-filter: unset;
 
       svg path {
         fill: var(--s2a-color-content-knockout);
@@ -214,24 +219,6 @@ video {
       &.is-playing .play-icon,
       &:not(.is-playing) .pause-icon {
         display: none;
-      }
-    }
-  }
-
-  .dark button.play-pause-button {
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
-    background: var(--s2a-color-transparent-white-16);
-
-    &:hover {
-      background: var(--s2a-color-transparent-white-12);
-    }
-
-    &:active {
-      background: var(--s2a-color-content-knockout);
-
-      svg path {
-        fill: var(--s2a-color-gray-1000);
-        stroke: var(--s2a-color-gray-1000);
       }
     }
   }
