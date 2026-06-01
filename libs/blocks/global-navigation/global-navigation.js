@@ -1061,7 +1061,7 @@ class Gnav {
         // Initialize AUP SDK — required by UNav 1.6 for fetchAUPSDKInstance
         const { imsClientId } = getConfig();
         await loadScript(
-          `https://shared-components.${environment}.adobe.com/component-loader_PR/1.0.739-1361-20-1778701107907.pr/main.js`,
+          `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
           null,
           { mode: 'async' },
         );
