@@ -29,7 +29,7 @@
   text-decoration: none;
   white-space: nowrap;
   img {
-    block-size: 32px ;
+    block-size: 32px;
     flex-shrink: 0;
     inline-size: 32px;
     object-fit: cover;
@@ -57,9 +57,11 @@
 .tour {
   max-width: 596px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 
   .tour-header {
-    padding-block-start: var(--s2a-spacing-md);
+    padding-block-start: 21px;
     padding-inline: var(--s2a-spacing-lg) calc(var(--s2a-spacing-64) + var(--s2a-spacing-lg));
     > p {
       font-weight: var(--s2a-font-weight-body);
@@ -107,16 +109,19 @@
       img {
         width: 100%;
         border-radius: var(--s2a-border-radius-sm);
+        object-fit: cover;
       }
     }
     &.row-1 {
-      padding-inline: 34% var(--s2a-spacing-xs);
+      max-width: 66%;
+      padding-inline-end: var(--s2a-spacing-xs);
+      align-self: end;
       .tour-row-body {
         max-width: 292px;
       }
     }
     &.row-2 {
-      padding-inline-end: 17%;
+      max-width: 83%;
       .tour-row-index,
       .tour-row-body {
         padding-inline-start: var(--s2a-spacing-lg);
@@ -139,6 +144,11 @@
         max-width: 394px;
         margin: 0 auto;
       }
+      .tour-row-image {
+        picture {
+          display: block;
+        }
+      }
     }
   }
 
@@ -150,11 +160,23 @@
     padding-block: var(--s2a-spacing-lg);
     text-align: center;
   }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 13px;
+    left: calc(50% - 26px);
+    width: 52px;
+    height: 3px;
+    border-radius: 3px;
+    opacity: 0.2;
+    background-color: #000;
+  }
 }
 
 /* Tour Modal Styles */
 #tour {
-  /* &.dialog-modal {
+  &.dialog-modal {
     max-width: 596px;
     width: 100dvw;
     margin-top: 20px;
@@ -165,7 +187,7 @@
     & > .fragment {
       max-height: 100%;
     }
-  } */
+  }
   .dialog-close {
     width: 48px;
     height: 48px;
@@ -190,10 +212,10 @@
   }
 }
 
-/* @media (max-width: 596px) {
+@media (max-width: 596px) {
   #tour {
     &.dialog-modal {
       max-width: 100dvw;
     }
   }
-} */
+}
