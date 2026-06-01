@@ -484,6 +484,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     color: var(--s2a-color-gray-25);
     background: transparent;
     pointer-events: all;
+    contain: none;
     animation: elasticMobileStackSlides var(--paralax-easing) both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
@@ -551,7 +552,6 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     animation: elasticItemsShrink var(--paralax-easing) both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
-    overflow-x: clip;
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer::after {
