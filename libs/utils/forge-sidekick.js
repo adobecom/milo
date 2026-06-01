@@ -29,9 +29,17 @@ const TOOLS = {
   'forge-animator': { ownedEls: null },
 };
 
+// Animator owns elements that aren't tracked by the MutationObserver path below
+// (its loader special-cases ownedEls = []). Toggle forge-hidden on its known IDs
+// directly so its toolbar disappears when another tool is active — keeps the
+// bottom-right corner uncluttered when only one tool should be visible.
+const ANIMATOR_ELEMENT_IDS = ['page-animator-panel', 'page-animator-toolbar'];
+
 function hideForge(id) {
   if (id === 'forge-animator') {
-    document.getElementById('page-animator-panel')?.classList.remove('pa-open');
+    const panel = document.getElementById('page-animator-panel');
+    panel?.classList.remove('pa-open');
+    ANIMATOR_ELEMENT_IDS.forEach((elId) => document.getElementById(elId)?.classList.add('forge-hidden'));
     return;
   }
   TOOLS[id].ownedEls?.forEach((el) => el.classList.add('forge-hidden'));
@@ -39,6 +47,7 @@ function hideForge(id) {
 
 function showForge(id) {
   if (id === 'forge-animator') {
+    ANIMATOR_ELEMENT_IDS.forEach((elId) => document.getElementById(elId)?.classList.remove('forge-hidden'));
     document.getElementById('page-animator-panel')?.classList.add('pa-open');
     return;
   }
