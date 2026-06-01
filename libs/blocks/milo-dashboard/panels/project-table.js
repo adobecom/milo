@@ -42,9 +42,12 @@ export default function renderProjectTable(container, projectRows, onSelect) {
     const sorted = [...projectRows].sort((a, b) => compareRows(a, b, column, sortDir));
 
     const headerCells = COLUMNS.map((col) => {
-      const th = createTag('th', null, col.label);
-      if (col.key === sortKey) th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-      th.addEventListener('click', () => {
+      const th = createTag('th', { role: 'button', tabindex: '0' }, col.label);
+      if (col.key === sortKey) {
+        th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        th.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+      }
+      const sort = () => {
         if (sortKey === col.key) {
           sortDir = sortDir === 'asc' ? 'desc' : 'asc';
         } else {
@@ -52,6 +55,13 @@ export default function renderProjectTable(container, projectRows, onSelect) {
           sortDir = col.type === 'text' ? 'asc' : 'desc';
         }
         render();
+      };
+      th.addEventListener('click', sort);
+      th.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          sort();
+        }
       });
       return th;
     });
@@ -63,8 +73,21 @@ export default function renderProjectTable(container, projectRows, onSelect) {
         if (col.type === 'number') return createTag('td', null, String(toNumber(row[col.key]) ?? ''));
         return createTag('td', null, row[col.key]);
       });
-      const tr = createTag('tr', { class: 'project-row', 'data-site': row.site }, cells);
-      tr.addEventListener('click', () => { if (onSelect) onSelect(row.site); });
+      const tr = createTag('tr', {
+        class: 'project-row',
+        'data-site': row.site,
+        role: 'button',
+        tabindex: '0',
+        'aria-label': `View ${row.site}`,
+      }, cells);
+      const select = () => { if (onSelect) onSelect(row.site); };
+      tr.addEventListener('click', select);
+      tr.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          select();
+        }
+      });
       return tr;
     });
     const tbody = createTag('tbody', null, bodyRows);

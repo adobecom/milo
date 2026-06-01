@@ -67,4 +67,50 @@ describe('milo-dashboard project-table', () => {
     renderProjectTable(container, rows);
     expect(container.querySelectorAll('.project-row').length).to.equal(3);
   });
+
+  it('makes headers keyboard-operable with role/tabindex', () => {
+    renderProjectTable(container, rows);
+    const th = header(0);
+    expect(th.getAttribute('role')).to.equal('button');
+    expect(th.getAttribute('tabindex')).to.equal('0');
+  });
+
+  it('sets aria-sort on the active header only', () => {
+    renderProjectTable(container, rows);
+    // default sort is publishes desc -> header index 1
+    expect(header(1).getAttribute('aria-sort')).to.equal('descending');
+    expect(header(0).getAttribute('aria-sort')).to.equal(null);
+    header(0).click();
+    expect(header(0).getAttribute('aria-sort')).to.equal('ascending');
+    expect(header(1).getAttribute('aria-sort')).to.equal(null);
+  });
+
+  it('sorts on Enter keydown on a header', () => {
+    renderProjectTable(container, rows);
+    header(0).dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(sites()[0]).to.equal('da-blog');
+    expect(header(0).classList.contains('sorted-asc')).to.equal(true);
+  });
+
+  it('sorts on Space keydown on a header', () => {
+    renderProjectTable(container, rows);
+    header(0).dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    expect(sites()[0]).to.equal('da-blog');
+  });
+
+  it('makes rows keyboard-operable with role/tabindex/aria-label', () => {
+    renderProjectTable(container, rows);
+    const milo = [...container.querySelectorAll('.project-row')].find((r) => r.dataset.site === 'milo');
+    expect(milo.getAttribute('role')).to.equal('button');
+    expect(milo.getAttribute('tabindex')).to.equal('0');
+    expect(milo.getAttribute('aria-label')).to.equal('View milo');
+  });
+
+  it('calls onSelect on Enter keydown on a row', () => {
+    const spy = sinon.spy();
+    renderProjectTable(container, rows, spy);
+    const milo = [...container.querySelectorAll('.project-row')].find((r) => r.dataset.site === 'milo');
+    milo.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(spy.calledOnceWith('milo')).to.equal(true);
+  });
 });

@@ -70,6 +70,17 @@ describe('milo-dashboard consumer-bars', () => {
     expect(option.xAxis.data.length).to.equal(4);
   });
 
+  it('sets aria-pressed on metric buttons, updated on click', () => {
+    renderConsumerBars(container, rows, charts);
+    const buttons = [...container.querySelectorAll('.consumer-bars-controls button:not(.t1-toggle)')];
+    expect(buttons[0].getAttribute('aria-pressed')).to.equal('true');
+    expect(buttons.slice(1).every((b) => b.getAttribute('aria-pressed') === 'false')).to.equal(true);
+    const health = buttons.find((b) => b.textContent === 'Health');
+    health.click();
+    expect(health.getAttribute('aria-pressed')).to.equal('true');
+    expect(buttons[0].getAttribute('aria-pressed')).to.equal('false');
+  });
+
   it('is re-render safe', () => {
     renderConsumerBars(container, rows, charts);
     renderConsumerBars(container, rows, charts);

@@ -85,12 +85,16 @@ export default function renderConsumerBars(container, projectRows, charts, onSel
 
   const select = (metric, button) => {
     selected = metric;
-    buttons.forEach((btn) => btn.classList.toggle('active', btn === button));
+    buttons.forEach((btn) => {
+      const isActive = btn === button;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
     render();
   };
 
   METRICS.forEach((metric) => {
-    const button = createTag('button', { type: 'button' }, metric.label);
+    const button = createTag('button', { type: 'button', 'aria-pressed': 'false' }, metric.label);
     button.addEventListener('click', () => select(metric, button));
     controls.append(button);
     buttons.push(button);
@@ -110,5 +114,6 @@ export default function renderConsumerBars(container, projectRows, charts, onSel
 
   container.append(controls, chartEl);
   buttons[0].classList.add('active');
+  buttons[0].setAttribute('aria-pressed', 'true');
   render();
 }

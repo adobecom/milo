@@ -65,6 +65,17 @@ describe('milo-dashboard health-trend', () => {
     expect(option.series[0].data).to.deep.equal([null, 50]);
   });
 
+  it('sets aria-pressed on toggle buttons, updated on select', () => {
+    renderHealthTrend(container, rows, charts);
+    const buttons = [...container.querySelectorAll('.health-trend-toggle button')];
+    expect(buttons[0].getAttribute('aria-pressed')).to.equal('true');
+    expect(buttons.slice(1).every((b) => b.getAttribute('aria-pressed') === 'false')).to.equal(true);
+    const perf = buttons.find((b) => b.textContent === 'Performance');
+    perf.click();
+    expect(perf.getAttribute('aria-pressed')).to.equal('true');
+    expect(buttons[0].getAttribute('aria-pressed')).to.equal('false');
+  });
+
   it('clears container on re-render', () => {
     renderHealthTrend(container, rows, charts);
     renderHealthTrend(container, rows, charts);

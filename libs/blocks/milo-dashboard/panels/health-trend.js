@@ -70,12 +70,16 @@ export default function renderHealthTrend(container, preflightRows, charts) {
   const buttons = [];
 
   const select = (category, button) => {
-    buttons.forEach((btn) => btn.classList.toggle('active', btn === button));
+    buttons.forEach((btn) => {
+      const isActive = btn === button;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
     charts.makeChart(chartEl, buildOption(rows, category));
   };
 
   CATEGORIES.forEach((category) => {
-    const button = createTag('button', { type: 'button' }, category.label);
+    const button = createTag('button', { type: 'button', 'aria-pressed': 'false' }, category.label);
     button.addEventListener('click', () => select(category, button));
     toggle.append(button);
     buttons.push(button);
