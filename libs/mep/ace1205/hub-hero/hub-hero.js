@@ -10,7 +10,7 @@ const slideLeaveTimeouts = new WeakMap();
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
-const isMobile = () => window.matchMedia('(min-width: 768px)');
+const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
 
 const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
 
@@ -28,10 +28,10 @@ const rewindVideo = (video) => {
     if (video.currentTime === 0) {
       stopRewind(video);
       video.load();
-    } else {
-      const elapsed = Date.now() - startSystemTime;
-      video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
+      return;
     }
+    const elapsed = Date.now() - startSystemTime;
+    video.currentTime = Math.max(startVideoTime - elapsed / 1000, 0);
   }, 30);
   rewindIntervals.set(video, intervalRewind);
 };
@@ -46,6 +46,7 @@ const handleMobileAutoplay = (carousel) => {
 
     const nextSlide = slides[index + 1];
 
+    if (!nextSlide) return;
     // Play when this slide enters view — but not if the next slide is already covering it
     const slideObserver = new IntersectionObserver(
       ([entry]) => {
@@ -59,8 +60,6 @@ const handleMobileAutoplay = (carousel) => {
     slideObserver.observe(slide);
     observers.push(slideObserver);
 
-    if (!nextSlide) return;
-
     // Rewind when the next slide starts covering this one;
     // play again when it uncovers (user scrolls back up)
     const nextSlideObserver = new IntersectionObserver(
@@ -68,11 +67,11 @@ const handleMobileAutoplay = (carousel) => {
         if (!isMobile()) return;
         if (entry.isIntersecting) {
           rewindVideo(video);
-        } else {
-          const rect = slide.getBoundingClientRect();
-          if (rect.top >= 0 && rect.top <= window.innerHeight) {
-            video.play().catch(() => { });
-          }
+          return;
+        }
+        const rect = slide.getBoundingClientRect();
+        if (rect.top >= 0 && rect.top <= window.innerHeight) {
+          video.play().catch(() => { });
         }
       },
       { threshold: 0.6 },
