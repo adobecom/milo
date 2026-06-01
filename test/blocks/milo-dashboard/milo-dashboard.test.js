@@ -71,6 +71,7 @@ describe('milo-dashboard', () => {
   afterEach(() => {
     sinon.restore();
     delete window.echarts;
+    window.location.hash = '';
   });
 
   it('renders header with timeframe toggle, Week active by default', async () => {
@@ -156,17 +157,38 @@ describe('milo-dashboard', () => {
     const block = document.querySelector('.milo-dashboard');
     await init(block);
 
-    block.querySelector('.project-row').click();
+    const row = block.querySelector('.project-row');
+    await new Promise((resolve) => {
+      window.addEventListener('hashchange', resolve, { once: true });
+      row.click();
+    });
     await new Promise((r) => { setTimeout(r, 0); });
 
     expect(block.querySelector('.drilldown-back')).to.exist;
     expect(block.querySelector('.dashboard-grid')).to.equal(null);
+    expect(window.location.hash).to.include('project/');
 
-    block.querySelector('.drilldown-back').click();
+    await new Promise((resolve) => {
+      window.addEventListener('hashchange', resolve, { once: true });
+      block.querySelector('.drilldown-back').click();
+    });
     await new Promise((r) => { setTimeout(r, 0); });
 
     expect(block.querySelector('.dashboard-grid')).to.exist;
     expect(block.querySelector('.drilldown-back')).to.equal(null);
+  });
+
+  it('deep-links to a project drill-in when the hash is set before init', async () => {
+    fetchStub = stubFetch(routeFetch);
+    window.location.hash = '#/project/milo';
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+    await new Promise((r) => { setTimeout(r, 0); });
+
+    const title = block.querySelector('.drilldown-title');
+    expect(title).to.exist;
+    expect(title.textContent).to.include('milo');
+    expect(block.querySelector('.dashboard-grid')).to.equal(null);
   });
 
   it('renders a date range with an en dash and month abbreviation', async () => {

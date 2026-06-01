@@ -75,6 +75,14 @@ export default async function init(block) {
 
   let currentInterval = DEFAULT_INTERVAL;
 
+  function navigateTo(site) {
+    window.location.hash = `#/project/${encodeURIComponent(site)}`;
+  }
+
+  function navigateHome() {
+    window.location.hash = '#/';
+  }
+
   function showDrilldown(site) {
     clearCharts();
     block.innerHTML = '';
@@ -83,8 +91,7 @@ export default async function init(block) {
       client,
       charts,
       daContext: ctx.daContext,
-      // eslint-disable-next-line no-use-before-define
-      onBack: () => showOverview(),
+      onBack: navigateHome,
     });
   }
 
@@ -224,11 +231,11 @@ export default async function init(block) {
       renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview, interval));
       renderPanel(totalsMount, 'totals', () => renderTotals(totalsMount, totalsData));
       renderPanel(gaugeMount, 'health score', () => renderHealthGauge(gaugeMount, gaugeScores, charts));
-      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts, showDrilldown));
-      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }, showDrilldown));
+      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts, navigateTo));
+      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }, navigateTo));
       renderPanel(healthMount, 'health trend', () => renderHealthTrend(healthMount, preflightRows, charts));
       renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
-      renderPanel(projectsMount, 'projects', () => renderProjectTable(projectsMount, projectRows || [], showDrilldown));
+      renderPanel(projectsMount, 'projects', () => renderProjectTable(projectsMount, projectRows || [], navigateTo));
 
       [
         kpiMount, totalsMount, gaugeMount, consumersMount,
@@ -255,5 +262,12 @@ export default async function init(block) {
     return loadData(currentInterval);
   }
 
-  await showOverview();
+  function route() {
+    const match = window.location.hash.match(/^#\/project\/(.+)$/);
+    if (match) return showDrilldown(decodeURIComponent(match[1]));
+    return showOverview();
+  }
+
+  window.addEventListener('hashchange', route);
+  await route();
 }
