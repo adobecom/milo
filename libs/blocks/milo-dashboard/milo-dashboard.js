@@ -1,5 +1,5 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
-import { readConfig, resolveContext, createClient, loadDaSdk } from './api.js';
+import { resolveContext, createClient, loadDaSdk } from './api.js';
 import { loadCharts, makeChart, clearCharts } from './charts.js';
 import renderKpiCards from './panels/kpi-cards.js';
 import renderHealthGauge from './panels/health-gauge.js';
@@ -22,10 +22,14 @@ function parseCsv(text) {
   });
 }
 
+// Each timeframe drives BOTH the KPI comparison window (kpiSince → current vs
+// prior period in /overview) and the trend chart window/bucketing (trendSince
+// split by `interval`). So toggling actually changes every number, and the KPI
+// "vs last {interval}" label matches the math.
 const TIMEFRAMES = [
-  { label: 'Day', interval: 'day' },
-  { label: 'Week', interval: 'week' },
-  { label: 'Month', interval: 'month' },
+  { label: 'Day', interval: 'day', kpiSince: '1d', trendSince: '30d' },
+  { label: 'Week', interval: 'week', kpiSince: '7d', trendSince: '84d' },
+  { label: 'Month', interval: 'month', kpiSince: '30d', trendSince: '365d' },
 ];
 const DEFAULT_INTERVAL = 'week';
 
@@ -42,8 +46,6 @@ function renderPanel(mount, label, fn) {
 export default async function init(block) {
   loadStyle(import.meta.url);
 
-  const cfg = readConfig(block);
-  const since = cfg.since || '30d';
   const ctx = await resolveContext(block, { loadDaSdk });
   const client = createClient(ctx);
   await loadCharts();
@@ -136,6 +138,10 @@ export default async function init(block) {
 
     async function loadData(interval) {
       currentInterval = interval;
+      const tf = TIMEFRAMES.find((t) => t.interval === interval) || TIMEFRAMES[1];
+      // KPI/overview/consumers compare a single period vs its prior (kpiSince);
+      // trend charts span a longer window (trendSince) bucketed by `interval`.
+      const { kpiSince, trendSince } = tf;
       // Dispose prior chart instances before re-rendering (avoids resize-listener leak).
       clearCharts();
       let overview;
@@ -148,12 +154,12 @@ export default async function init(block) {
         [
           overview, edsRows, preflightRows, projectRows, totalsData, testPagesCsv,
         ] = await Promise.all([
-          client.get('/overview', { since }),
-          client.get('/trends/eds', { since, interval }),
-          client.get('/trends/preflight', { since, interval }),
-          client.get('/projects', { since }),
+          client.get('/overview', { since: kpiSince }),
+          client.get('/trends/eds', { since: trendSince, interval }),
+          client.get('/trends/preflight', { since: trendSince, interval }),
+          client.get('/projects', { since: kpiSince }),
           client.get('/totals'),
-          client.getText('/test-pages', { since, state: 'live', limit: 50 }),
+          client.getText('/test-pages', { since: trendSince, state: 'live', limit: 50 }),
         ]);
       } catch (e) {
         grid.replaceChildren(
