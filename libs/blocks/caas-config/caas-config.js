@@ -69,20 +69,21 @@ const defaultOptions = {
   },
   cardStyle: {
     '1:2': '1/2 Card',
-    '3:4': '3/4 Card',
     'half-height': '1/2 Height Card',
-    'full-card': 'Full Card',
+    '3:4': '3/4 Card',
+    'blade-card': 'Blade Card...',
+    'blog-card': 'Blog Card',
+    'button-card': 'Button Card',
+    'custom-card': 'Custom Card',
     'double-wide': 'Double Width Card',
-    product: 'Product Card',
-    'text-card': 'Text Card',
+    'editorial-card': 'Editorial Card...',
+    'flex-card': 'Flex Card...',
+    'full-card': 'Full Card',
+    'horizontal-card': 'Horizontal Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
     'horizontal-card': 'Horizontal Card',
     'custom-card': 'Custom Card',
-    'blade-card': 'Blade Card',
-    'editorial-card': 'Editorial Card',
-    'blog-card': 'Blog Card',
-    'flex-card': 'Flex Card...',
   },
   flexCardImageOptions: {
     default: 'Default',
@@ -95,6 +96,8 @@ const defaultOptions = {
     'text-center': 'Center',
     'text-justify': 'Justify',
     'text-right': 'Right',
+    product: 'Product Card',
+    'text-card': 'Text Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -209,7 +212,7 @@ const defaultOptions = {
     edu: 'Edu',
     events: 'Events',
     experienceleague: 'Experience League',
-    hawks: 'Hawks',
+    hawks: 'Creative Cloud (Hawks)',
     magento: 'Magento',
     marketo: 'Marketo',
     milo: 'Milo',
@@ -392,6 +395,7 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
+
   const bladeCardOptions = html`
     <div class="nested">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
@@ -437,8 +441,9 @@ const UiPanel = () => {
     <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
     <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
     <${Input} label="Use Center Video Play Button" prop="useCenterVideoPlay" type="checkbox" />
-    <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
     <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
+    <${Input} label="Use Rounded Corners [new]" prop="useRoundedCorners" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
@@ -631,10 +636,14 @@ const SortPanel = () => {
     ${state.sortEnableRandomSampling && RandomSampling}
   `;
 
+  const showRecencyThreshold = state.sortDefault === 'localFirst'
+    || (state.sortEnablePopup && state.sortLocalFirst);
+
   return html`
     <${Select} label="Default Sort Order" prop="sortDefault" options=${defaultOptions.sort} />
     <${Input} label="Enable Sort Popup" prop="sortEnablePopup" type="checkbox" />
     ${state.sortEnablePopup && SortOptions}
+    ${showRecencyThreshold && html`<${Input} label="Local Region Recency Threshold (months)" prop="sortLocalFirstRecencyThreshold" type="number" />`}
   `;
 };
 
