@@ -63,7 +63,7 @@ describe('milo-dashboard', () => {
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     window.echarts = {
-      init: () => ({ setOption() {}, resize() {}, dispose() {} }),
+      init: () => ({ setOption() {}, resize() {}, dispose() {}, on() {} }),
       getInstanceByDom: () => undefined,
     };
   });
@@ -167,6 +167,45 @@ describe('milo-dashboard', () => {
 
     expect(block.querySelector('.dashboard-grid')).to.exist;
     expect(block.querySelector('.drilldown-back')).to.equal(null);
+  });
+
+  it('renders a date range with an en dash and month abbreviation', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    const range = block.querySelector('.dashboard-range');
+    expect(range).to.exist;
+    expect(range.textContent).to.include('–');
+    expect(range.textContent).to.match(/Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/);
+  });
+
+  it('renders an updated timestamp', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    const updated = block.querySelector('.dashboard-updated');
+    expect(updated).to.exist;
+    expect(updated.textContent.startsWith('Updated')).to.be.true;
+  });
+
+  it('refetches /overview when the refresh button is clicked', async () => {
+    fetchStub = stubFetch(routeFetch);
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    const countOverview = () => fetchStub.getCalls()
+      .filter((c) => `${c.args[0]}`.includes('/overview')).length;
+    const before = countOverview();
+
+    const refresh = block.querySelector('.refresh-btn');
+    expect(refresh).to.exist;
+    refresh.click();
+    await Promise.resolve();
+    await new Promise((r) => { setTimeout(r, 0); });
+
+    expect(countOverview()).to.equal(before + 1);
   });
 
   it('shows a top-level error when fetch fails', async () => {

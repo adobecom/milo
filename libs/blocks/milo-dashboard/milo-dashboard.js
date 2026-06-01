@@ -33,6 +33,28 @@ const TIMEFRAMES = [
 ];
 const DEFAULT_INTERVAL = 'week';
 
+function showLoading(mount) {
+  mount.setAttribute('aria-busy', 'true');
+  mount.replaceChildren(createTag('div', { class: 'panel-skeleton' }));
+}
+
+function clearLoading(mount) {
+  mount.removeAttribute('aria-busy');
+}
+
+const DAYS_BY_INTERVAL = { day: 1, week: 7, month: 30 };
+const PERIOD_LABEL = { day: 'Today', week: 'Last 7 days', month: 'Last 30 days' };
+
+function formatRange(interval) {
+  const days = DAYS_BY_INTERVAL[interval] || 7;
+  const end = new Date();
+  const start = new Date(end - days * 86400000);
+  const opts = { month: 'short', day: 'numeric' };
+  const startStr = start.toLocaleDateString('en-US', opts);
+  const endStr = end.toLocaleDateString('en-US', opts);
+  return `${PERIOD_LABEL[interval] || 'Last 7 days'} · ${startStr} – ${endStr}`;
+}
+
 function renderPanel(mount, label, fn) {
   try {
     fn();
@@ -87,6 +109,16 @@ export default async function init(block) {
     });
     toggle.append(...buttons);
     header.append(toggle);
+
+    const rangeEl = createTag('span', { class: 'dashboard-range' });
+    const updatedEl = createTag('span', { class: 'dashboard-updated' });
+    const refreshBtn = createTag(
+      'button',
+      { type: 'button', class: 'refresh-btn', 'aria-label': 'Refresh' },
+      'Refresh',
+    );
+    const meta = createTag('div', { class: 'dashboard-meta' }, [rangeEl, updatedEl, refreshBtn]);
+    header.append(meta);
 
     // Titled card: returns the outer panel plus the inner body the panel
     // renderer draws into (renderers call replaceChildren on the body, so the
@@ -144,6 +176,10 @@ export default async function init(block) {
       const { kpiSince, trendSince } = tf;
       // Dispose prior chart instances before re-rendering (avoids resize-listener leak).
       clearCharts();
+      [
+        kpiMount, totalsMount, gaugeMount, consumersMount,
+        alertsMount, healthMount, volumeMount, projectsMount,
+      ].forEach(showLoading);
       let overview;
       let edsRows;
       let preflightRows;
@@ -188,12 +224,22 @@ export default async function init(block) {
       renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview, interval));
       renderPanel(totalsMount, 'totals', () => renderTotals(totalsMount, totalsData));
       renderPanel(gaugeMount, 'health score', () => renderHealthGauge(gaugeMount, gaugeScores, charts));
-      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts));
-      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }));
+      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts, showDrilldown));
+      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }, showDrilldown));
       renderPanel(healthMount, 'health trend', () => renderHealthTrend(healthMount, preflightRows, charts));
       renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
       renderPanel(projectsMount, 'projects', () => renderProjectTable(projectsMount, projectRows || [], showDrilldown));
+
+      [
+        kpiMount, totalsMount, gaugeMount, consumersMount,
+        alertsMount, healthMount, volumeMount, projectsMount,
+      ].forEach(clearLoading);
+
+      rangeEl.textContent = formatRange(interval);
+      updatedEl.textContent = `Updated ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
     }
+
+    refreshBtn.addEventListener('click', () => { loadData(currentInterval); });
 
     buttons.forEach((btn) => {
       btn.addEventListener('click', () => {

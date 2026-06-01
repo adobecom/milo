@@ -30,6 +30,44 @@
     letter-spacing: -0.01em;
   }
 
+  & .dashboard-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-block-start: 8px;
+    font-size: 13px;
+    color: var(--md-ink-soft);
+  }
+
+  & .dashboard-range {
+    font-weight: 600;
+  }
+
+  & .refresh-btn {
+    min-height: 32px;
+    padding-inline: 14px;
+    border: 1px solid var(--md-line);
+    border-radius: 99px;
+    background: var(--md-surface);
+    color: var(--md-ink-soft);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  }
+
+  & .refresh-btn:hover {
+    border-color: var(--md-accent);
+    color: var(--md-accent);
+  }
+
+  & .panel-skeleton {
+    min-height: 220px;
+    border-radius: 8px;
+    background: linear-gradient(100deg, var(--md-bg) 30%, #efefef 50%, var(--md-bg) 70%);
+    background-size: 200% 100%;
+  }
+
   /* segmented timeframe toggle */
   & .timeframe-toggle {
     display: inline-flex;
@@ -262,6 +300,7 @@
   /* consumer comparison bars */
   & .consumer-bars {
     min-height: 300px;
+    cursor: pointer;
   }
 
   & .consumer-bars-controls {
@@ -380,6 +419,27 @@
     font-size: 14px;
   }
 
+  & .alerts-list button.alert-item {
+    width: 100%;
+    border: 0;
+    text-align: start;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  & .alerts-list button.alert-item:hover {
+    background: var(--md-accent-soft);
+  }
+
+  & .alert-link {
+    color: var(--md-accent);
+    text-decoration: none;
+  }
+
+  & .alert-link:hover {
+    text-decoration: underline;
+  }
+
   & .alerts-empty {
     padding: var(--spacing-m, 16px);
     border-radius: 10px;
@@ -400,7 +460,28 @@
   }
 }
 
+@keyframes md-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .milo-dashboard .panel-skeleton {
+    animation: md-shimmer 1.4s ease-in-out infinite;
+  }
+}
+
 @media (width < 900px) {
+  .milo-dashboard .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .milo-dashboard .dashboard-grid {
     grid-template-columns: 1fr;
   }
