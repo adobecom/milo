@@ -13,28 +13,35 @@ function formatValue(value, decimals) {
   return value.toLocaleString();
 }
 
-function formatDelta(value, decimals) {
-  const sign = value >= 0 ? '+' : '-';
-  return `${sign}${formatValue(Math.abs(value), decimals)}`;
+function percentChange(current, prior) {
+  if (prior === 0) return null;
+  return ((current - prior) / Math.abs(prior)) * 100;
 }
 
-export default function renderKpiCards(container, overview) {
+function formatPercent(pct) {
+  const rounded = Math.round(pct);
+  const sign = rounded > 0 ? '+' : '';
+  return `${sign}${rounded}%`;
+}
+
+export default function renderKpiCards(container, overview, period = 'week') {
   container.replaceChildren();
-  const { current, delta } = overview;
+  const { current, prior } = overview;
   METRICS.forEach(({ key, label, decimals, higherIsBetter }) => {
     const value = Number(current[key]);
-    const change = Number(delta[key]);
-    const deltaEl = createTag('div', { class: 'kpi-delta' }, formatDelta(change, decimals));
-    if (change === 0) {
+    const pct = percentChange(Number(current[key]), Number(prior[key]));
+    const deltaEl = createTag('div', { class: 'kpi-delta' }, pct === null ? '—' : formatPercent(pct));
+    if (pct === null || Math.round(pct) === 0) {
       deltaEl.classList.add('flat');
     } else {
-      const good = higherIsBetter ? change > 0 : change < 0;
+      const good = higherIsBetter ? pct > 0 : pct < 0;
       deltaEl.classList.add(good ? 'up' : 'down');
     }
     const card = createTag('div', { class: 'kpi-card' }, [
       createTag('div', { class: 'kpi-label' }, label),
       createTag('div', { class: 'kpi-value' }, formatValue(value, decimals)),
       deltaEl,
+      createTag('div', { class: 'kpi-period' }, `vs last ${period}`),
     ]);
     container.append(card);
   });

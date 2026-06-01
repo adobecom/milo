@@ -3,8 +3,9 @@ import { expect } from '@esm-bundle/chai';
 const { default: renderKpiCards } = await import('../../../../libs/blocks/milo-dashboard/panels/kpi-cards.js');
 
 const fixture = {
-  current: { publishes: 100, previews: 200, avg_health: '80.00', active_projects: 5, pages_below_70: 12 },
-  delta: { publishes: 20, previews: 50, avg_health: -3, active_projects: 0, pages_below_70: -4 },
+  current: { publishes: 120, previews: 200, avg_health: '80.00', active_projects: 5, pages_below_70: 12 },
+  prior: { publishes: 100, previews: 200, avg_health: 75, active_projects: 4, pages_below_70: 20 },
+  delta: { publishes: 20, previews: 0, avg_health: 5, active_projects: 1, pages_below_70: -8 },
 };
 
 describe('milo-dashboard kpi-cards', () => {
@@ -12,67 +13,90 @@ describe('milo-dashboard kpi-cards', () => {
   beforeEach(() => { container = document.createElement('div'); });
 
   it('renders 5 cards with labels in order', () => {
-    renderKpiCards(container, fixture);
+    renderKpiCards(container, fixture, 'month');
     const labels = [...container.querySelectorAll('.kpi-card .kpi-label')].map((el) => el.textContent);
     expect(container.querySelectorAll('.kpi-card').length).to.equal(5);
     expect(labels).to.deep.equal(['Publishes', 'Previews', 'Avg Health Score', 'Active Projects', 'Pages Below 70']);
   });
 
   it('formats integer values', () => {
-    renderKpiCards(container, fixture);
+    renderKpiCards(container, fixture, 'month');
     const value = container.querySelector('.kpi-card .kpi-value');
-    expect(value.textContent).to.equal('100');
+    expect(value.textContent).to.equal('120');
   });
 
   it('formats large integers with thousands separators', () => {
-    const big = { current: { ...fixture.current, publishes: 1234 }, delta: fixture.delta };
-    renderKpiCards(container, big);
+    const big = { ...fixture, current: { ...fixture.current, publishes: 1234 } };
+    renderKpiCards(container, big, 'month');
     const value = container.querySelector('.kpi-card .kpi-value');
     expect(value.textContent).to.equal('1,234');
   });
 
   it('formats avg_health to one decimal from string input', () => {
-    renderKpiCards(container, fixture);
+    renderKpiCards(container, fixture, 'month');
     const value = container.querySelectorAll('.kpi-card .kpi-value')[2];
     expect(value.textContent).to.equal('80.0');
   });
 
-  it('marks a positive delta on a higher-is-better metric as up', () => {
-    renderKpiCards(container, fixture);
+  it('shows a positive percent delta on a higher-is-better metric as up', () => {
+    renderKpiCards(container, fixture, 'month');
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[0];
-    expect(delta.textContent).to.equal('+20');
+    expect(delta.textContent).to.equal('+20%');
     expect(delta.classList.contains('up')).to.equal(true);
     expect(delta.classList.contains('down')).to.equal(false);
   });
 
-  it('marks a negative avg_health delta as down with one decimal', () => {
-    renderKpiCards(container, fixture);
-    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[2];
-    expect(delta.textContent).to.equal('-3.0');
-    expect(delta.classList.contains('down')).to.equal(true);
+  it('shows a zero percent change as flat', () => {
+    renderKpiCards(container, fixture, 'month');
+    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[1];
+    expect(delta.textContent).to.equal('0%');
+    expect(delta.classList.contains('flat')).to.equal(true);
     expect(delta.classList.contains('up')).to.equal(false);
+    expect(delta.classList.contains('down')).to.equal(false);
+  });
+
+  it('rounds avg_health percent change and marks up', () => {
+    renderKpiCards(container, fixture, 'month');
+    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[2];
+    expect(delta.textContent).to.equal('+7%');
+    expect(delta.classList.contains('up')).to.equal(true);
+    expect(delta.classList.contains('down')).to.equal(false);
   });
 
   it('inverts semantic for pages_below_70 (lower is better)', () => {
-    renderKpiCards(container, fixture);
+    renderKpiCards(container, fixture, 'month');
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[4];
-    expect(delta.textContent).to.equal('-4');
+    expect(delta.textContent).to.equal('-40%');
     expect(delta.classList.contains('up')).to.equal(true);
     expect(delta.classList.contains('down')).to.equal(false);
   });
 
-  it('treats a zero delta as neutral', () => {
-    renderKpiCards(container, fixture);
+  it('shows an em dash and flat when prior is zero', () => {
+    const zeroPrior = { ...fixture, prior: { ...fixture.prior, active_projects: 0 } };
+    renderKpiCards(container, zeroPrior, 'month');
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[3];
-    expect(delta.textContent).to.equal('+0');
+    expect(delta.textContent).to.equal('—');
+    expect(delta.classList.contains('flat')).to.equal(true);
     expect(delta.classList.contains('up')).to.equal(false);
     expect(delta.classList.contains('down')).to.equal(false);
-    expect(delta.classList.contains('flat')).to.equal(true);
+  });
+
+  it('adds a period label to every card', () => {
+    renderKpiCards(container, fixture, 'month');
+    const periods = [...container.querySelectorAll('.kpi-card .kpi-period')];
+    expect(periods.length).to.equal(5);
+    periods.forEach((el) => expect(el.textContent).to.equal('vs last month'));
+  });
+
+  it('defaults the period to week when omitted', () => {
+    renderKpiCards(container, fixture);
+    const period = container.querySelector('.kpi-card .kpi-period');
+    expect(period.textContent).to.equal('vs last week');
   });
 
   it('clears the container on re-render', () => {
-    renderKpiCards(container, fixture);
-    renderKpiCards(container, fixture);
+    renderKpiCards(container, fixture, 'month');
+    renderKpiCards(container, fixture, 'month');
     expect(container.querySelectorAll('.kpi-card').length).to.equal(5);
   });
 });

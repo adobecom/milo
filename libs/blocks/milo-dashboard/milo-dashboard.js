@@ -142,7 +142,7 @@ export default async function init(block) {
         avg_assets: latest.avg_assets,
       };
 
-      renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview));
+      renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview, interval));
       renderPanel(gaugeMount, 'health score', () => renderHealthGauge(gaugeMount, gaugeScores, charts));
       renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
       renderPanel(healthMount, 'health trend', () => renderHealthTrend(healthMount, preflightRows, charts));
