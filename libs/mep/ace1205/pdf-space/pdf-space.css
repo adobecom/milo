@@ -305,4 +305,166 @@
       width: min(68.6vw, 971px);
     }
   }
+
+  /*
+   * No-motion fallback: a static, normal-flow document built by buildNoMotion()
+   * (for prefers-reduced-motion) instead of the sticky scroll-driven stage. No
+   * transforms, no pinning. The resting card grid + marketing copy sit above
+   * the Acrobat mockup, which has the cards slotted in via percentage-positioned
+   * clones (.no-motion-slotted-card). These rules override the absolute/sticky
+   * positioning above by higher specificity (.pdf-space.no-motion ...).
+   */
+  &.no-motion {
+    height: auto;
+
+    .pdf-space-stage {
+      position: static;
+      height: auto;
+      overflow: visible;
+      isolation: auto;
+    }
+
+    .no-motion-grid-section,
+    .no-motion-mockup-section {
+      box-sizing: border-box;
+      position: relative;
+      margin: 0 auto;
+      max-width: 1200px;
+      padding: var(--s2a-spacing-2xl, 48px) var(--s2a-spacing-lg, 24px);
+    }
+
+    .no-motion-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--s2a-spacing-sm, 16px);
+      margin-bottom: var(--s2a-spacing-xl, 32px);
+    }
+
+    .no-motion-card-desktop-only {
+      display: none;
+    }
+
+    .no-motion-card {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      background: #ececec;
+      border-radius: 10px;
+
+      picture,
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    .no-motion-card-label {
+      box-sizing: border-box;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 6px;
+      white-space: nowrap;
+      font-size: 0.625rem;
+      font-weight: var(--s2a-font-weight-label);
+      color: var(--s2a-color-gray-1000);
+      background: #e1e1f1;
+      border-radius: var(--s2a-border-radius-2);
+    }
+
+    .text-block,
+    .acrobat-title,
+    .acrobat-cta {
+      position: static;
+      transform: none;
+      opacity: 1;
+    }
+
+    .text-block {
+      width: 100%;
+      max-width: 367px;
+    }
+
+    .acrobat-title {
+      width: 100%;
+      text-align: center;
+    }
+
+    .acrobat-cta {
+      width: fit-content;
+      margin: var(--s2a-spacing-lg, 24px) auto 0;
+    }
+
+    .acrobat-mobile-mockup,
+    .acrobat-desktop-mockup {
+      position: relative;
+      left: auto;
+      margin: 0 auto;
+      transform: none;
+    }
+
+    .acrobat-mobile-mockup {
+      display: block;
+      width: var(--acrobat-mobile-mockup-width);
+      height: var(--acrobat-mobile-mockup-height);
+    }
+
+    .acrobat-desktop-mockup {
+      display: none;
+      width: 100%;
+      max-width: 971px;
+    }
+
+    .acrobat-desktop-panel picture {
+      transform: none;
+    }
+
+    .no-motion-slotted-card {
+      position: absolute;
+      overflow: hidden;
+      border-radius: 6px;
+
+      picture,
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    @media (width >= 768px) {
+      .no-motion-grid-section {
+        display: flex;
+        gap: var(--s2a-spacing-xl, 32px);
+        align-items: center;
+      }
+
+      .no-motion-card-grid {
+        flex: 1;
+        grid-template-columns: repeat(4, 1fr);
+        margin-bottom: 0;
+      }
+
+      .no-motion-card-desktop-only {
+        display: block;
+      }
+
+      .text-block {
+        flex: 0 0 367px;
+      }
+
+      .acrobat-mobile-mockup {
+        display: none;
+      }
+
+      .acrobat-desktop-mockup {
+        display: block;
+      }
+    }
+  }
 }

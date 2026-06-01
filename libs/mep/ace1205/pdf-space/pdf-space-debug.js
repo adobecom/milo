@@ -32,7 +32,7 @@ export default function createDebugOverlay(getState) {
     const text = [
       `stage:    ${s.stage}`,
       `breakpt:  ${s.breakpoint}  (${s.viewportWidth}×${s.viewportHeight})`,
-      `scroll:   ${scrollPct.toFixed(1)}%  (${s.scrollCurrent.toFixed(0)} / ${s.animTotal})`,
+      `scroll:   ${scrollPct.toFixed(1)}%  (${s.scrollCurrent.toFixed(0)} / ${s.animTotal})  scrollY:${window.scrollY.toFixed(0)}`,
       '─────────────────────────────',
       `slideT:   ${s.phase.slideT.toFixed(3)}`,
       `arcPan:   ${s.phase.arcPan.toFixed(3)}`,
@@ -41,7 +41,7 @@ export default function createDebugOverlay(getState) {
       `slotting: ${s.phase.slotting.toFixed(3)}`,
       '─────────────────────────────',
       `peelStart:${s.peelStartScroll.toFixed(0)}  gridEnd:${s.gridEnd}`,
-      `acbStart: ${s.slottingStart}  acbDur:${s.slottingDuration}`,
+      `slotting: ${s.slottingStart}  slottingDur:${s.slottingDuration}`,
       '─────────────────────────────',
       `colSprd:  ${s.columnSpread.toFixed(3)}`,
       `rowGap:   ${s.rowGap.toFixed(3)}`,
