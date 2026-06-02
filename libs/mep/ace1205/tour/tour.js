@@ -105,6 +105,7 @@ export default function init(el) {
       headerRow.replaceChildren(...headerInner.children);
       headerRow.querySelector('p')?.classList.add('eyebrow');
       headerRow.querySelector('h3')?.classList.add('heading-6');
+      headerRow.querySelector('h3')?.setAttribute('tabindex', '0');
     }
   }
 

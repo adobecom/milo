@@ -15,6 +15,9 @@
   }
   h3 {
     padding-block-end: 5px;
+    &:focus-visible {
+      outline: none;
+    }
   }
 }
 
