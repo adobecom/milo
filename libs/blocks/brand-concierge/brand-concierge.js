@@ -630,12 +630,16 @@ function decorateFloatingButton(el) {
 function updatePillVisibility(el) {
   const cards = el.querySelector('.bc-prompt-cards');
   if (!cards) return;
+
   const buttons = [...cards.querySelectorAll('.prompt-card-button')];
   buttons.forEach((btn) => { btn.style.display = ''; });
+
   requestAnimationFrame(() => {
     const { left: containerLeft, right: containerRight } = cards.getBoundingClientRect();
+
     buttons.forEach((btn) => {
       const { left, right } = btn.getBoundingClientRect();
+
       if (right > containerRight || left < containerLeft) {
         btn.style.display = 'none';
       }
@@ -743,6 +747,7 @@ export default async function init(el) {
     el.removeChild(legal);
     decorateInput(el, input);
     decorateCards(el, cards);
+
     const mainEl = document.querySelector('main');
     const updateLayout = () => {
       if (mainEl) mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`;
@@ -750,21 +755,25 @@ export default async function init(el) {
     };
 
     // Need to move handleScroll outside of floating element, and add this functionality
-    const mainEl2 = document.querySelector('main');
-    let scrollPending2 = false;
+    const main = document.querySelector('main');
+    let scrollPendingFloatingInput = false;
+
     window.addEventListener('scroll', () => {
-      if (scrollPending2) return;
-      scrollPending2 = true;
+      if (scrollPendingFloatingInput) return;
+      scrollPendingFloatingInput = true;
       requestAnimationFrame(() => {
-        if (mainEl2) {
-          const threshold = window.scrollY + window.innerHeight - mainEl2.offsetTop;
-          el.style.bottom = threshold > mainEl2.scrollHeight
-            ? `${threshold - mainEl2.scrollHeight + ((parseFloat(mainEl.style.paddingBottom) - el.offsetHeight) / 2)}px`
+        if (main) {
+          const threshold = window.scrollY + window.innerHeight - main.offsetTop;
+          const paddingMiddle = (parseFloat(mainEl.style.paddingBottom) - el.offsetHeight) / 2;
+
+          el.style.bottom = threshold > main.scrollHeight
+            ? `${threshold - main.scrollHeight + paddingMiddle}px`
             : '';
         }
-        scrollPending2 = false;
+        scrollPendingFloatingInput = false;
       });
     }, { passive: true });
+
     window.addEventListener('resize', updateLayout);
     requestAnimationFrame(updateLayout);
   }
