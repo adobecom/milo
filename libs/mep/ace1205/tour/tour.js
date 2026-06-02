@@ -124,7 +124,7 @@ export default function init(el) {
     row.lastElementChild.classList.add('tour-row-image');
     const rowIndexEl = createTag('div', { class: 'tour-row-index' });
     rowIndexEl.textContent = `( ${rowIndex}/${multiColumns.length} )`;
-    row.insertBefore(rowIndexEl, row.firstElementChild);
+    row.prepend(rowIndexEl);
   });
 
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));
