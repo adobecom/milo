@@ -1,10 +1,10 @@
-html[dir="rtl"] .hub-hero-carousel-item-footer::after {
+[dir="rtl"] .hub-hero-carousel-item-footer::after {
   transform: rotate(180deg);
   left: 0;
   right: unset;
 }
 
-html[dir="rtl"] .hub-hero-carousel-item-header::after {
+[dir="rtl"] .hub-hero-carousel-item-header::after {
   transform: rotate(180deg);
   left: 0;
   right: unset;
@@ -16,8 +16,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   --max-image-size: 388px;
   --min-image-size: 164px;
   --grid-img-width: 20vw;
-  --paralax-cubic: cubic-bezier(0.42, 0, 0, 1);
-  --paralax-easing: linear;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --hub-hero-carousel-container-height-desktop: 716px;
   --hub-hero-carousel-container-height-tablet: 555px;
   --hub-hero-carousel-item-max-width: 392px;
@@ -40,7 +39,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   --grid-col-four-offset: 36px;
   --grid-col-five-offset: -132px;
 
-  max-width: 1920px;
+  max-width: var(--grid-max-width-default);
   height: var(--hub-hero-height);
   margin-inline: auto;
   view-timeline-name: --hub-hero;
@@ -54,7 +53,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   position: sticky;
   top: 0;
   z-index: 0;
-  animation: hubHeroHeaderFade var(--paralax-easing) both;
+  animation: hubHeroHeaderFade linear both;
   animation-timeline: --hub-hero;
   animation-range: contain 0% contain 15%;
   height: var(--hub-hero-header-height);
@@ -82,11 +81,12 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-header .action-area .con-button {
-  background-color: black;
+  background-color: var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-25);
   padding: var(--s2a-spacing-lg) 64px var(--s2a-spacing-lg) 54px;
   border-radius: var(--s2a-border-radius-sm);
   font-size: var(--s2a-typography-font-size-eyebrow);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   line-height: var(--s2a-typography-line-height-eyebrow);
   position: relative;
   cursor: pointer;
@@ -126,7 +126,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   flex-direction: row;
   z-index: 1;
   justify-content: center;
-  animation: hubHeroGridGapShrink var(--paralax-easing) both;
+  gap: var(--start-gap);
+  overflow-x: clip;
+  animation: hubHeroGridGapShrink linear both;
   animation-timeline: --hub-hero;
   animation-range: var(--grid-gap-animation-range);
 }
@@ -137,7 +139,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-image-grid-container-col:nth-child(1) {
-  animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol1 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+  gap: var(--start-gap);
+  transform: translate(0, var(--grid-col-one-offset));
+  animation: hubHeroGridGapShrink linear both, hubHeroGridCol1 linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
   animation-range: var(--grid-gap-animation-range),
     var(--grid-col-rise-animation-range),
@@ -145,7 +149,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-image-grid-container-col:nth-child(2) {
-  animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol2 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+  transform: translate(0, var(--grid-col-two-offset));
+  gap: var(--start-gap);
+  animation: hubHeroGridGapShrink linear both, hubHeroGridCol2 linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
   animation-range: var(--grid-gap-animation-range),
     var(--grid-col-rise-animation-range),
@@ -153,7 +159,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-image-grid-container-col:nth-child(3) {
-  animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol3 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+  transform: translate(0, var(--grid-col-three-offset));
+  gap: var(--start-gap);
+  animation: hubHeroGridGapShrink linear both, hubHeroGridCol3 linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
   animation-range: var(--grid-gap-animation-range),
     var(--grid-col-rise-animation-range),
@@ -161,7 +169,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-image-grid-container-col:nth-child(4) {
-  animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol4 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+  transform: translate(0, var(--grid-col-four-offset));
+  gap: var(--start-gap);
+  animation: hubHeroGridGapShrink linear both, hubHeroGridCol4 linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
   animation-range: var(--grid-gap-animation-range),
     var(--grid-col-rise-animation-range),
@@ -169,7 +179,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-image-grid-container-col:nth-child(5) {
-  animation: hubHeroGridGapShrink var(--paralax-easing) both, hubHeroGridCol5 var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+  transform: translate(0, var(--grid-col-five-offset));
+  gap: var(--start-gap);
+  animation: hubHeroGridGapShrink linear both, hubHeroGridCol5 linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
   animation-range: var(--grid-gap-animation-range),
     var(--grid-col-rise-animation-range),
@@ -193,8 +205,8 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   top: -18%;
   width: 100%;
   text-align: center;
-  font-size: var(--s2a-typography-font-size-title-2);
-  animation: hubHeroCarouselHeaderFade var(--paralax-easing) both, hubHeroCarouselHeaderFloat var(--paralax-easing) both;
+  font-size: var(--s2a-typography-font-size-heading-2);
+  animation: hubHeroCarouselHeaderFade linear both, hubHeroCarouselHeaderFloat linear both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
 }
@@ -202,7 +214,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 .hub-hero-carousel-header>div {
   display: flex;
   flex-direction: column;
-  animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
+  animation: hubHeroCarouselHeaderShrink linear both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
 }
@@ -212,11 +224,11 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   height: var(--hub-hero-carousel-container-height-desktop);
   position: sticky;
   top: var(--carousel-items-top);
-  overflow: visible;
   margin: auto;
   left: 0;
   right: 0;
   z-index: 1;
+  overflow-x: clip;
 }
 
 .hub-hero-carousel-container {
@@ -241,7 +253,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   background-color: var(--s2a-color-gray-75);
   border-radius: var(--s2a-border-radius-md);
   cursor: pointer;
-  transition: background-color .2s var(--paralax-cubic);
+  transition: background-color .2s var(--paralax-easing);
   contain: layout;
 }
 
@@ -250,7 +262,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   color: var(--s2a-color-gray-1000);
   margin: 0;
-  transition: color .1s var(--paralax-cubic);
+  transition: color .1s var(--paralax-easing);
 }
 
 .hub-hero-carousel-item-media {
@@ -264,7 +276,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-carousel-item-media img {
-  transition: transform 0.3s var(--paralax-cubic);
+  transition: transform 0.3s var(--paralax-easing);
   object-fit: cover;
   display: block;
 }
@@ -286,7 +298,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   width: var(--icon-size);
   right: var(--s2a-spacing-lg);
   bottom: calc(var(--s2a-spacing-xl) - var(--icon-size)/2);
-  color: white;
+  color: var(--s2a-color-gray-1000);
   border-radius: 6px;
   background-repeat: no-repeat;
   border: 1px solid var(--s2a-color-transparent-white-12);
@@ -299,7 +311,6 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 }
 
 .hub-hero-carousel-item-footer :is(h1, h2, h3, h4, h5, h6) {
-  /* TODO: remove eyebrow styles if eyebrow class is applied directly to footer headline */
   font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-eyebrow);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
@@ -307,7 +318,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   margin: 0;
   padding: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
-  transition: color .1s var(--paralax-cubic);
+  transition: color .1s var(--paralax-easing);
   display: block;
   line-clamp: 1;
   box-orient: vertical;
@@ -323,7 +334,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 .hub-hero-carousel-item-footer p {
   opacity: .6;
   margin: 0;
-  transition: color .1s var(--paralax-cubic);
+  transition: color .1s var(--paralax-easing);
   display: -webkit-box;
   line-clamp: 2;
   box-orient: vertical;
@@ -355,13 +366,13 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     top: 18%;
     height: 0;
     overflow: visible;
-    animation: hubHeroCarouselHeaderFade var(--paralax-easing) both, hubHeroCarouselHeaderFloat var(--paralax-easing) both;
+    animation: hubHeroCarouselHeaderFade linear both, hubHeroCarouselHeaderFloat linear both;
     animation-timeline: --hub-hero, --hub-hero;
     animation-range: var(--header-animation-range), var(--header-animation-range);
   }
 
   .hub-hero-carousel-header>div[class^="body"] {
-    animation: hubHeroCarouselHeaderMobileLeave var(--paralax-easing) forwards;
+    animation: hubHeroCarouselHeaderMobileLeave linear forwards;
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 107%;
   }
@@ -381,7 +392,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
-    animation: hubHeroGridCarouselSlideHover var(--paralax-easing) both;
+    animation: hubHeroGridCarouselSlideHover linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -392,7 +403,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-image-grid-container-col:nth-child(1) {
-    animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol1Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+    transform: translate(0, var(--grid-col-one-offset));
+    gap: var(--start-gap);
+    animation: hubHeroGridGapExpand linear both, hubHeroGridCol1Mobile linear both, hubHeroGridMobileFadeOut linear both;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--grid-gap-animation-range),
       var(--grid-col-rise-animation-range),
@@ -400,7 +413,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-image-grid-container-col:nth-child(2) {
-    animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol2Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+    transform: translate(0, var(--grid-col-two-offset));
+    gap: var(--start-gap);
+    animation: hubHeroGridGapExpand linear both, hubHeroGridCol2Mobile linear both, hubHeroGridMobileFadeOut linear both;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--grid-gap-animation-range),
       var(--grid-col-rise-animation-range),
@@ -408,7 +423,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) {
-    animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol3Mobile var(--paralax-easing) both;
+    gap: var(--start-gap);
+    transform: translate(0, var(--grid-col-three-offset));
+    animation: hubHeroGridGapExpand linear both, hubHeroGridCol3Mobile linear both;
     animation-timeline: --hub-hero, --hub-hero;
     animation-range: var(--grid-gap-animation-range),
       var(--grid-col-rise-animation-range),
@@ -416,13 +433,15 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
-    animation: hubHeroGridMobileFadeOut var(--paralax-easing) both;
+    animation: hubHeroGridMobileFadeOut linear both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
   }
 
   .hub-hero-image-grid-container-col:nth-child(4) {
-    animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol4Mobile var(--paralax-easing) both, hubHeroGridMobileFadeOut var(--paralax-easing) both;
+    gap: var(--start-gap);
+    transform: translate(0, var(--grid-col-four-offset));
+    animation: hubHeroGridGapExpand linear both, hubHeroGridCol4Mobile linear both, hubHeroGridMobileFadeOut linear both;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--grid-gap-animation-range),
       var(--grid-col-rise-animation-range),
@@ -430,7 +449,9 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-image-grid-container-col:nth-child(5) {
-    animation: hubHeroGridGapExpand var(--paralax-easing) both, hubHeroGridCol5Mobile var(--paralax-easing) both, hubHeroGridColFadeOut var(--paralax-easing) both;
+    gap: var(--start-gap);
+    transform: translate(0, var(--grid-col-five-offset));
+    animation: hubHeroGridGapExpand linear both, hubHeroGridCol5Mobile linear both, hubHeroGridColFadeOut linear both;
     animation-timeline: --hub-hero, --hub-hero, view();
     animation-range: var(--grid-gap-animation-range),
       var(--grid-col-rise-animation-range),
@@ -470,7 +491,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     max-width: var(--grid-img-width);
     min-width: unset;
     width: var(--grid-img-width);
-    animation: carouselMobileContainerExpand var(--paralax-easing) forwards;
+    animation: carouselMobileContainerExpand linear forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -485,7 +506,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     background: transparent;
     pointer-events: all;
     contain: none;
-    animation: elasticMobileStackSlides var(--paralax-easing) both;
+    animation: elasticMobileStackSlides linear both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
   }
@@ -495,21 +516,21 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     --stack-contrast: 0;
     --stack-shrink: 4rem;
     z-index: 1;
-    animation: elasticMobileFirstSlide var(--paralax-easing) both;
+    animation: elasticMobileFirstSlide linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
     top: 0;
-    animation: slideOneHeaderReveal var(--paralax-easing) forwards;
+    animation: slideOneHeaderReveal linear forwards;
     animation-timeline: --hub-hero;
     animation-range: var(--slide-one-header-footer-reveal);
   }
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
     bottom: 0;
-    animation: slideOneFooterReveal var(--paralax-easing) forwards;
+    animation: slideOneFooterReveal linear forwards;
     animation-timeline: --hub-hero;
     animation-range: var(--slide-one-header-footer-reveal);
   }
@@ -549,7 +570,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     position: relative;
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
-    animation: elasticItemsShrink var(--paralax-easing) both;
+    animation: elasticItemsShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
   }
@@ -566,7 +587,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
     top: calc(var(--slide-header-h)*-1);
     height: var(--slide-header-h);
-    background-color: black;
+    background-color: var(--s2a-color-gray-1000);
     z-index: -1;
     padding-bottom: var(--s2a-spacing-md);
     border-top-right-radius: var(--s2a-border-radius-md);
@@ -587,7 +608,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
     height: var(--slide-footer-h);
     overflow: hidden;
-    background-color: black;
+    background-color: var(--s2a-color-gray-1000);
     padding-top: var(--s2a-spacing-md);
     z-index: -1;
     bottom: calc(var(--slide-footer-h) * -1);
@@ -623,7 +644,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-carousel-container {
-    animation: carouselGapShrink var(--paralax-easing) both;
+    animation: carouselGapShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
   }
@@ -633,7 +654,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-carousel-item {
-    transition: max-width .3s var(--paralax-cubic), width .3s var(--paralax-cubic), background-color .3s var(--paralax-cubic);
+    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .3s var(--paralax-easing);
   }
 
   .hub-hero-carousel-item.hovered,
@@ -672,14 +693,14 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 
   .hub-hero-carousel-item:nth-child(1) {
-    animation: carouselSlideOffset1 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+    animation: carouselSlideOffset1 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(2) {
-    animation: carouselSlideOffset2 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+    animation: carouselSlideOffset2 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
@@ -689,20 +710,20 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
     z-index: -1;
     visibility: hidden;
     min-width: 0;
-    animation: carouselSlide3Transition var(--paralax-easing) forwards;
+    animation: carouselSlide3Transition linear forwards;
     animation-timeline: --hub-hero;
     animation-range: contain 0% contain 40%;
   }
 
   .hub-hero-carousel-item:nth-child(4) {
-    animation: carouselSlideOffset4 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+    animation: carouselSlideOffset4 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(5) {
-    animation: carouselSlideOffset5 var(--paralax-easing), carouselSlideExpandSize var(--paralax-easing), carouselSlideExpandLayout var(--paralax-easing);
+    animation: carouselSlideOffset5 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 50%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
@@ -756,7 +777,7 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
 /** custom media rule 1 */
 @media (768px <=width < 1495px) {
   .hub-hero-carousel-container {
-    transition: transform .3s var(--paralax-cubic);
+    transition: transform .3s var(--paralax-easing);
   }
 
   .hub-hero-carousel-container.stick-left {
@@ -800,9 +821,77 @@ html[dir="rtl"] .hub-hero-carousel-item-header::after {
   }
 }
 
+/** prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .hub-hero,
+  .hub-hero * {
+    animation: none !important;
+    transition: none !important;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
+  .hub-hero-carousel-container {
+    gap: var(--end-gap);
+  }
+
+  .hub-hero-carousel-container.stick-left,
+  .hub-hero-carousel-container.stick-right {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hub-hero-carousel-item:nth-child(3) {
+    display: none;
+  }
+
+  .hub-hero-carousel {
+    margin-top: calc(var(--grid-col-three-offset) + var(--s2a-layout-lg));
+  }
+  /* restore elements that start invisible via fill-mode: both backwards fill */
+  .hub-hero-carousel-header {
+    opacity: 1;
+    transform: none;
+    top: 0;
+    margin-bottom: var(--s2a-spacing-2xl);
+  }
+
+  .hub-hero-image-grid-container-col {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (width >= 768px) {
+  /* show carousel items in their post-expansion state */
+  .hub-hero-carousel-item {
+    pointer-events: all;
+    max-width: var(--max-image-size);
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+  }
+
+  /* keep 3rd slide collapsed (it's never shown) */
+  .hub-hero-carousel-item:nth-child(3) {
+    max-width: 0;
+    min-width: 0;
+    visibility: hidden;
+  }
+
+  /* STILL WAITING ON DESIGN FOR HOW TO TREAT MOBILE STACKED CAROUSEL  */
+}
+
+@media (prefers-reduced-motion: reduce) and (width < 768px) {
+  /* show first slide header and footer in revealed positions */
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
+    transform: translateY(-55px);
+  }
+
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+    transform: translateY(84px);
+  }
+}
 
 /** animations */
-
 @keyframes hubHeroGridGapExpand {
   0% {
     gap: var(--start-gap);
