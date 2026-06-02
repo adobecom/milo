@@ -1,6 +1,7 @@
 .hover-list {
   position: relative;
   color: var(--s2a-color-content-knockout);
+  padding-block-end: var(--s2a-layout-md);
 }
 
 .hover-list-headline {
