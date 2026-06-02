@@ -26,6 +26,7 @@ function addGrabHandle(el) {
   });
 
   const triggerClose = () => modal.querySelector('.dialog-close')?.click();
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let isSnapping = false;
   const snapBack = () => {
@@ -34,10 +35,15 @@ function addGrabHandle(el) {
     modal.classList.remove('is-dragging');
     modal.classList.add('is-snapping');
     modal.style.removeProperty('--tour-drag-y');
-    modal.addEventListener('transitionend', () => {
+    if (reducedMotion) {
       modal.classList.remove('is-snapping');
       isSnapping = false;
-    }, { once: true });
+    } else {
+      modal.addEventListener('transitionend', () => {
+        modal.classList.remove('is-snapping');
+        isSnapping = false;
+      }, { once: true });
+    }
   };
 
   grabHandle.addEventListener('click', triggerClose);
@@ -74,6 +80,7 @@ function addGrabHandle(el) {
     modal.classList.remove('is-dragging');
     modal.style.removeProperty('--tour-drag-y');
     modal.classList.add('is-dismissing');
+    if (reducedMotion) { triggerClose(); return; }
     modal.addEventListener('transitionend', triggerClose, { once: true });
   }, { passive: true });
 

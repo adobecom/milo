@@ -7,14 +7,21 @@
 }
 
 .tour-header {
-  padding-block-start: 21px;
-  padding-inline: var(--s2a-spacing-lg) calc(var(--s2a-spacing-64) + var(--s2a-spacing-lg));
+  padding-block: var(--s2a-spacing-md) var(--s2a-layout-lg);
+  padding-inline: var(--s2a-spacing-md) calc(var(--s2a-spacing-64) + var(--s2a-spacing-md));
+  /* 5px aligns eyebrow and heading with the close button */
+  p {
+    padding-block-start: 5px;
+  }
+  h3 {
+    padding-block-end: 5px;
+  }
 }
 
 .tour-row-body {
   padding-block-start: var(--s2a-spacing-xs);
   > p {
-    padding-block-start: 18px;
+    padding-block-start: var(--s2a-spacing-md);
     &:first-child {
       padding-block-start: 0;
     }
@@ -22,9 +29,9 @@
 }
 
 .tour-row-image {
-  padding-block-start: var(--s2a-spacing-xl);
+  padding-block-start: var(--s2a-spacing-lg);
   > p {
-    padding-block-start: 78px;
+    padding-block-start: var(--s2a-layout-sm);
     &:first-child {
       padding-block-start: 0;
     }
@@ -40,9 +47,11 @@
 }
 
 .tour-row {
-  padding-block-start: 154px;
+  padding-block-start: var(--s2a-layout-sm);
   &.row-1 {
     max-width: 66%;
+    min-width: 287px;
+    padding-block-start: 0;
     padding-inline-end: var(--s2a-spacing-xs);
     align-self: end;
     .tour-row-body {
@@ -51,6 +60,7 @@
   }
   &.row-2 {
     max-width: 83%;
+    min-width: 296px;
     .tour-row-index,
     .tour-row-body {
       padding-inline-start: var(--s2a-spacing-lg);
@@ -143,17 +153,8 @@
       transition: none;
     }
 
-    &.is-snapping,
-    &.is-dismissing {
-      transition: transform 0.3s ease;
-    }
-
     &.is-dismissing {
       --tour-drag-y: 100%;
-    }
-
-    &.is-closing {
-      animation: tour-slide-out 0.3s ease forwards;
     }
   }
   .dialog-close {
@@ -192,6 +193,15 @@
 @media (prefers-reduced-motion: no-preference) {
   #tour.dialog-modal {
     animation: tour-slide-in 0.35s ease;
+
+    &.is-snapping,
+    &.is-dismissing {
+      transition: transform 0.3s ease;
+    }
+
+    &.is-closing {
+      animation: tour-slide-out 0.3s ease forwards;
+    }
   }
 
   @keyframes tour-slide-in {
