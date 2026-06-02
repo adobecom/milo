@@ -134,7 +134,7 @@
         height: 3px;
         border-radius: 3px;
         opacity: 0.2;
-        background-color: #000;
+        background-color: var(--s2a-color-gray-1000);
         pointer-events: none;
       }
     }
@@ -151,6 +151,7 @@
     border-bottom-right-radius: 0;
     max-height: 100dvh;
     height: calc(100dvh - 20px);
+    will-change: transform;
     & > .fragment {
       max-height: 100%;
     }

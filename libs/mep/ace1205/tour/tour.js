@@ -30,11 +30,15 @@ function addGrabHandle(el) {
 
   const triggerClose = () => modal.querySelector('.dialog-close')?.click();
 
+  let isSnapping = false;
   const snapBack = () => {
+    if (isSnapping) return;
+    isSnapping = true;
     modal.style.transition = 'transform 0.3s ease';
     modal.style.transform = '';
     modal.addEventListener('transitionend', () => {
       modal.style.transition = '';
+      isSnapping = false;
     }, { once: true });
   };
 
@@ -75,7 +79,7 @@ function addGrabHandle(el) {
     } else {
       snapBack();
     }
-  });
+  }, { passive: true });
 
   el.prepend(grabHandle);
 }
