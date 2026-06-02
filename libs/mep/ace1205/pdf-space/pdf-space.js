@@ -20,7 +20,7 @@ const ROW_METRIC_HEIGHT = 264;
 const LABEL_CLEARANCE = 28;
 const OFFSCREEN_SENTINEL = -9999;
 // Animation tunables. See README.md
-const ANIM = {
+const ANIM_CONFIG = {
   // Phase scroll boundaries (desktop)
   peelStartScroll: 535,
   desktopPeelEnd: 1532,
@@ -67,7 +67,7 @@ const ANIM = {
   desktopPeekAmount: 0.30,
   mobileHeadlineY: 0.12,
 
-  // Mockup slot-in scale curve (driven by phase.slotting 0 → 1)
+  // Mockup slot-in scale curve (driven by ANIM_STATE.phase.slotting 0 → 1)
   desktopMockupStartScale: 2.5,
   desktopMockupEndScale: 1.0,
   mobileMockupStartScale: 2.0,
@@ -93,16 +93,16 @@ const CANVAS = {
 
 // Derived scroll boundaries — computed from ANIM; do not edit directly.
 /** Full arc→grid scroll span reference; mobile settle timing anchors here. */
-const DESKTOP_ARC_REFERENCE_END = ANIM.arcPanEnd + 1000;
-const DESKTOP_SLOTTING_START = ANIM.desktopPeelEnd + ANIM.arcSettleDuration;
+const DESKTOP_ARC_REFERENCE_END = ANIM_CONFIG.arcPanEnd + 1000;
+const DESKTOP_SLOTTING_START = ANIM_CONFIG.desktopPeelEnd + ANIM_CONFIG.arcSettleDuration;
 const MOBILE_GRID_END = Math.round(
-  ANIM.peelStartScroll + (DESKTOP_ARC_REFERENCE_END - ANIM.peelStartScroll) * 0.39,
+  ANIM_CONFIG.peelStartScroll + (DESKTOP_ARC_REFERENCE_END - ANIM_CONFIG.peelStartScroll) * 0.39,
 );
-const MOBILE_PAN_START = Math.round((ANIM.peelStartScroll + MOBILE_GRID_END) / 2);
+const MOBILE_PAN_START = Math.round((ANIM_CONFIG.peelStartScroll + MOBILE_GRID_END) / 2);
 /** Mobile text-block pan-up scroll budget (from MOBILE_PAN_START, ending mid-slotting). */
 const MOBILE_TEXT_PAN_DURATION = 900;
 /** Column spread used to pin marketing text X during arc (settled spread minus post-peel trim). */
-const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM.columnCompressionTarget - 0.15;
+const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM_CONFIG.columnCompressionTarget - 0.15;
 
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
@@ -659,33 +659,24 @@ function mountMotion(el) {
   // element when the tab regains visibility — see snapToFocusTarget.
   let suppressFocusSnap = false;
 
-  const phase = {
-    arcPan: 0,
-    arcToGrid: 0,
-    slotting: 0,
-    slideT: 0,
-  };
-
-  const cardGridLayout = {
-    columnSpread: ANIM.baseColumnSpread,
-    rowGap: ANIM.baseRowGap,
-  };
-
-  // Scroll offsets (abstract units) where arc/grid/slotting phases begin or how long they run.
-  const timing = {
-    gridEnd: MOBILE_GRID_END,
-    slottingStart: MOBILE_GRID_END + ANIM.mobileSettleDuration,
-    slottingDuration: ANIM.mobileSlottingDuration,
-    postRevealScrollDistance: 0,
-    /** Scroll position where post-peel settle compression / text pan begins. */
-    settleScrollStart: DESKTOP_ARC_REFERENCE_END,
-  };
-
-  // Vertical pan offsets (px) for cards, text, and mockup during peel→grid and post-reveal.
-  const verticalPan = {
-    arcGridY: 0,
-    mobilePostRevealY: 0,
-    deskPostRevealY: 0,
+  const ANIM_STATE = {
+    phase: { arcPan: 0, arcToGrid: 0, slotting: 0, slideT: 0 },
+    // Scroll offsets (abstract units) where arc/grid/slotting phases begin or how long they run.
+    timing: {
+      gridEnd: MOBILE_GRID_END,
+      slottingStart: MOBILE_GRID_END + ANIM_CONFIG.mobileSettleDuration,
+      slottingDuration: ANIM_CONFIG.mobileSlottingDuration,
+      postRevealScrollDistance: 0,
+      /** Scroll position where post-peel settle compression / text pan begins. */
+      settleScrollStart: DESKTOP_ARC_REFERENCE_END,
+    },
+    cardGridLayout: {
+      columnSpread: ANIM_CONFIG.baseColumnSpread,
+      rowGap: ANIM_CONFIG.baseRowGap,
+    },
+    // Vertical pan offsets (px) for cards, text, and mockup during peel→grid and post-reveal.
+    verticalPan: { arcGridY: 0, mobilePostRevealY: 0, deskPostRevealY: 0 },
+    frame: { isMobile: false, isTablet: false, mobileLayout: null },
   };
 
   /**
@@ -703,12 +694,6 @@ function mountMotion(el) {
   let arcAngle = Math.atan2(1, 1);
   let arcGeometry = null;
 
-  const frame = {
-    isMobile: false,
-    isTablet: false,
-    mobileLayout: null,
-  };
-
   let cachedTextBlockWidth = 0;
   let cachedBlockDocTop = 0;
   let cachedBlockHeight = 0;
@@ -716,24 +701,24 @@ function mountMotion(el) {
 
   // ──────────────────── Arc geometry helpers ────────────────────
   function getCardArcToGridProgress(card) {
-    const delay = (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcStagger;
-    const win = 1 - ANIM.arcStagger;
-    return clamp01((phase.arcToGrid - delay) / win);
+    const delay = (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcStagger;
+    const win = 1 - ANIM_CONFIG.arcStagger;
+    return clamp01((ANIM_STATE.phase.arcToGrid - delay) / win);
   }
 
   // Precompute per-frame arc constants once so getFanCenter doesn't recompute for each card.
   function buildArcCtx() {
-    const arcZoom = 1.4 - 0.4 * easeOutCubic(phase.arcToGrid);
+    const arcZoom = 1.4 - 0.4 * easeOutCubic(ANIM_STATE.phase.arcToGrid);
     const arcRadius = Math.max(viewportWidth, viewportHeight) * 1.2 * arcZoom;
     const fanCenterX = viewportWidth * 0.5 - arcRadius * Math.sin(arcAngle);
-    const fanCenterY = viewportHeight * (0.5 - ANIM.arcApexLift)
+    const fanCenterY = viewportHeight * (0.5 - ANIM_CONFIG.arcApexLift)
       + arcRadius * Math.cos(arcAngle);
     const middleAngle = arcAngle - Math.PI / 2;
-    const cwBoost = ANIM.arcCwStart * clamp01(prePinOffset / viewportHeight);
-    const rotationOffset = ANIM.arcSpan * 0.5 + cwBoost
-      - ANIM.arcSpan * ANIM.arcSweepMultiplier * phase.arcPan;
-    const effectiveArcSpan = ANIM.arcSpan * (1 + 0.4 * phase.arcPan);
-    const flattenRaw = clamp01((phase.arcToGrid - 0.5) / 0.5);
+    const cwBoost = ANIM_CONFIG.arcCwStart * clamp01(prePinOffset / viewportHeight);
+    const rotationOffset = ANIM_CONFIG.arcSpan * 0.5 + cwBoost
+      - ANIM_CONFIG.arcSpan * ANIM_CONFIG.arcSweepMultiplier * ANIM_STATE.phase.arcPan;
+    const effectiveArcSpan = ANIM_CONFIG.arcSpan * (1 + 0.4 * ANIM_STATE.phase.arcPan);
+    const flattenRaw = clamp01((ANIM_STATE.phase.arcToGrid - 0.5) / 0.5);
     const flattenProgress = 0.20 * easeInOutCubic(flattenRaw);
     let tangentDirectionX = 0;
     let tangentDirectionY = 0;
@@ -819,31 +804,32 @@ function mountMotion(el) {
   }
 
   function refreshFrameProfile() {
-    frame.isMobile = BREAKPOINTS.mobile.matches;
-    frame.isTablet = !frame.isMobile && BREAKPOINTS.tablet.matches;
-    frame.mobileLayout = frame.isMobile ? getMobileLayout() : null;
-    if (frame.isMobile) {
-      timing.gridEnd = MOBILE_GRID_END;
-      timing.slottingStart = MOBILE_GRID_END + ANIM.mobileSettleDuration;
-      timing.slottingDuration = ANIM.mobileSlottingDuration;
-      timing.postRevealScrollDistance = cachedMobilePostRevealDistance;
-      timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
+    ANIM_STATE.frame.isMobile = BREAKPOINTS.mobile.matches;
+    ANIM_STATE.frame.isTablet = !ANIM_STATE.frame.isMobile && BREAKPOINTS.tablet.matches;
+    ANIM_STATE.frame.mobileLayout = ANIM_STATE.frame.isMobile ? getMobileLayout() : null;
+    if (ANIM_STATE.frame.isMobile) {
+      ANIM_STATE.timing.gridEnd = MOBILE_GRID_END;
+      ANIM_STATE.timing.slottingStart = MOBILE_GRID_END + ANIM_CONFIG.mobileSettleDuration;
+      ANIM_STATE.timing.slottingDuration = ANIM_CONFIG.mobileSlottingDuration;
+      ANIM_STATE.timing.postRevealScrollDistance = cachedMobilePostRevealDistance;
+      ANIM_STATE.timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
     } else {
-      timing.gridEnd = ANIM.desktopPeelEnd;
-      timing.slottingStart = DESKTOP_SLOTTING_START;
-      timing.slottingDuration = ANIM.desktopSlottingDuration;
-      timing.postRevealScrollDistance = cachedDeskPostRevealNeeded;
-      timing.settleScrollStart = ANIM.desktopPeelEnd;
+      ANIM_STATE.timing.gridEnd = ANIM_CONFIG.desktopPeelEnd;
+      ANIM_STATE.timing.slottingStart = DESKTOP_SLOTTING_START;
+      ANIM_STATE.timing.slottingDuration = ANIM_CONFIG.desktopSlottingDuration;
+      ANIM_STATE.timing.postRevealScrollDistance = cachedDeskPostRevealNeeded;
+      ANIM_STATE.timing.settleScrollStart = ANIM_CONFIG.desktopPeelEnd;
     }
   }
 
   function getDeskGridScale() {
-    if (frame.isMobile) return 1.0;
-    if (frame.isTablet) {
-      const colFit = (viewportWidth * CARD_COLUMN_GAP_RATIO * cardGridLayout.columnSpread - 24)
-        / (CARD_WIDTH * ANIM.cardScaleDesktop);
-      const rowFit = (viewportHeight * cardGridLayout.rowGap - 24)
-        / (ROW_METRIC_HEIGHT * ANIM.cardScaleDesktop);
+    if (ANIM_STATE.frame.isMobile) return 1.0;
+    if (ANIM_STATE.frame.isTablet) {
+      const { columnSpread, rowGap } = ANIM_STATE.cardGridLayout;
+      const colFit = (viewportWidth * CARD_COLUMN_GAP_RATIO * columnSpread - 24)
+        / (CARD_WIDTH * ANIM_CONFIG.cardScaleDesktop);
+      const rowFit = (viewportHeight * rowGap - 24)
+        / (ROW_METRIC_HEIGHT * ANIM_CONFIG.cardScaleDesktop);
       return Math.max(0.45, Math.min(1.0, Math.min(colFit, rowFit)));
     }
     return Math.max(
@@ -852,7 +838,7 @@ function mountMotion(el) {
     );
   }
 
-  // Per-frame mockup geometry — shared across all 8 cards in the slotting phase.
+  // Per-frame mockup geometry — shared across all 8 cards in the slotting ANIM_STATE.phase.
   // Per-card slot derivation happens in get*MockupCardSlot using these frame values.
   function getMobileMockupFrame() {
     const chromeLeft = (viewportWidth - ACROBAT_MOBILE_MOCKUP_WIDTH) / 2;
@@ -879,7 +865,7 @@ function mountMotion(el) {
   }
 
   function getDesktopMockupFrame() {
-    const mockupWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
+    const mockupWidth = getAcrobatDesktopMockupWidth(viewportWidth, ANIM_STATE.frame.isTablet);
     const mockupLeft = (viewportWidth - mockupWidth) / 2;
     const mockupTop = cachedAcrobatWinTop;
     const scale = mockupWidth / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH;
@@ -912,8 +898,8 @@ function mountMotion(el) {
   }
 
   function positionCards() {
-    if (frame.isMobile) {
-      const { mobileLayout } = frame;
+    if (ANIM_STATE.frame.isMobile) {
+      const { mobileLayout } = ANIM_STATE.frame;
       const gridW = mobileLayout.cardW * 2 + MOBILE_COL_GAP;
       const gridLeft = Math.max(MOBILE_OUTER_MARGIN, Math.round((viewportWidth - gridW) / 2));
       const firstRowCenterY = viewportHeight * 0.50 + mobileLayout.tallH / 2;
@@ -933,14 +919,15 @@ function mountMotion(el) {
       });
       return;
     }
-    const rowAnchor = -0.2 + 0.7 * phase.arcToGrid;
+    const rowAnchor = -0.2 + 0.7 * ANIM_STATE.phase.arcToGrid;
     sceneCards.forEach((card) => {
       const centerX = getDeskCardCenterX(
         viewportWidth,
         card.colIdx,
-        cardGridLayout.columnSpread,
+        ANIM_STATE.cardGridLayout.columnSpread,
       );
-      const centerY = viewportHeight * (0.5 + (card.rowIdx - rowAnchor) * cardGridLayout.rowGap);
+      const centerY = viewportHeight
+        * (0.5 + (card.rowIdx - rowAnchor) * ANIM_STATE.cardGridLayout.rowGap);
       card.baseX = centerX - card.width / 2;
       card.baseY = centerY - card.height / 2;
     });
@@ -958,13 +945,13 @@ function mountMotion(el) {
     getViewport: () => ({ width: viewportWidth, height: viewportHeight }),
     getCards: () => sceneCards,
     getCardCenter: getCanvasCardCenter,
-    getState: () => ({ arcToGridProgress: phase.arcToGrid }),
+    getState: () => ({ arcToGridProgress: ANIM_STATE.phase.arcToGrid }),
     pointerTarget: el,
   });
 
   function syncMockupWrappers() {
-    const active = frame.isMobile ? mobileMockupWrapper : desktopMockupWrapper;
-    const inactive = frame.isMobile ? desktopMockupWrapper : mobileMockupWrapper;
+    const active = ANIM_STATE.frame.isMobile ? mobileMockupWrapper : desktopMockupWrapper;
+    const inactive = ANIM_STATE.frame.isMobile ? desktopMockupWrapper : mobileMockupWrapper;
     if (inactive.parentNode) inactive.remove();
     if (!active.parentNode) stage.insertBefore(active, ctaEl);
   }
@@ -976,8 +963,8 @@ function mountMotion(el) {
     syncMockupWrappers();
     canvasGrid.resize();
     // Mobile uses the responsive layout; desktop/tablet use authored card dimensions.
-    if (frame.isMobile) {
-      const { mobileLayout } = frame;
+    if (ANIM_STATE.frame.isMobile) {
+      const { mobileLayout } = ANIM_STATE.frame;
       sceneCards.forEach((card) => {
         card.width = mobileLayout.cardW;
         card.height = Math.round(card.baseHeight * mobileLayout.scale);
@@ -992,10 +979,12 @@ function mountMotion(el) {
         card.el.style.height = `${card.height}px`;
       });
     }
-    arcAngle = frame.isMobile ? ANIM.mobileArcAngle : Math.atan2(viewportHeight, viewportWidth);
+    arcAngle = ANIM_STATE.frame.isMobile
+      ? ANIM_CONFIG.mobileArcAngle
+      : Math.atan2(viewportHeight, viewportWidth);
     cachedHeadlineH = titleEl?.offsetHeight || 80;
-    if (frame.isMobile) {
-      const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
+    if (ANIM_STATE.frame.isMobile) {
+      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
       const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       titleEl.style.top = `${headlineRestY}px`;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
@@ -1007,16 +996,16 @@ function mountMotion(el) {
     positionCards();
     cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
     cachedBlockHeight = el.offsetHeight;
-    if (!frame.isMobile && desktopMockupEl) {
-      const aW = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
+    if (!ANIM_STATE.frame.isMobile && desktopMockupEl) {
+      const aW = getAcrobatDesktopMockupWidth(viewportWidth, ANIM_STATE.frame.isTablet);
       const aH = aW * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
       const ctaH = ctaEl.offsetHeight || ACROBAT_CTA_HEIGHT;
       const stackH = cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE
         + aH + ACROBAT_DESKTOP_GAP_BELOW + ctaH;
       const centeredTop = Math.max(48, (viewportHeight - stackH) / 2);
-      const peekWinTop = viewportHeight - ANIM.desktopPeekAmount * aH;
+      const peekWinTop = viewportHeight - ANIM_CONFIG.desktopPeekAmount * aH;
       const peekStackTop = peekWinTop - cachedHeadlineH - ACROBAT_DESKTOP_GAP_ABOVE;
-      const peekRange = ANIM.desktopPeekStartH - viewportHeight;
+      const peekRange = ANIM_CONFIG.desktopPeekStartH - viewportHeight;
       const peekBlend = clamp01(peekRange / 320);
       const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
       cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
@@ -1025,7 +1014,7 @@ function mountMotion(el) {
       titleEl.style.top = `${stackTop}px`;
       desktopMockupEl.style.top = `${cachedAcrobatWinTop}px`;
       ctaEl.style.top = `${cachedAcrobatCtaTop}px`;
-      verticalPan.deskPostRevealY = 0;
+      ANIM_STATE.verticalPan.deskPostRevealY = 0;
     }
   }
 
@@ -1050,19 +1039,19 @@ function mountMotion(el) {
     const cardPeelProgress = getCardArcToGridProgress(card);
     const fanPos = getFanCenter(card);
     const { arcZoom } = arcGeometry;
-    const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcFanDepthDelta;
-    const fanScale = cardScale * (1 + ANIM.arcLiftZoom) * fanDepth * arcZoom;
+    const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcFanDepthDelta;
+    const fanScale = cardScale * (1 + ANIM_CONFIG.arcLiftZoom) * fanDepth * arcZoom;
 
     const gridCenterX = card.baseX + card.width / 2;
-    const gridCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
+    const gridCenterY = card.baseY + card.height / 2 - ANIM_STATE.verticalPan.arcGridY;
 
-    const arcLocalDelay = (card.fanIdx / FAN_LAST_INDEX) * ANIM.arcStagger;
-    const arcLocalWin = Math.max(0.01, 1 - ANIM.arcStagger);
-    const cardArcPushProgress = clamp01((phase.arcPan - arcLocalDelay) / arcLocalWin);
+    const arcLocalDelay = (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcStagger;
+    const arcLocalWin = Math.max(0.01, 1 - ANIM_CONFIG.arcStagger);
+    const cardArcPushProgress = clamp01((ANIM_STATE.phase.arcPan - arcLocalDelay) / arcLocalWin);
     const cardArcPushEase = easeInOutCubic(cardArcPushProgress);
 
-    const pushedX = fanPos.x + fanPos.rx * ANIM.arcPushDistance * cardArcPushEase;
-    const pushedY = fanPos.y + fanPos.ry * ANIM.arcPushDistance * cardArcPushEase;
+    const pushedX = fanPos.x + fanPos.rx * ANIM_CONFIG.arcPushDistance * cardArcPushEase;
+    const pushedY = fanPos.y + fanPos.ry * ANIM_CONFIG.arcPushDistance * cardArcPushEase;
 
     const totalPeelEase = easeOutCubic(cardPeelProgress);
     const currentX = pushedX + (gridCenterX - pushedX) * totalPeelEase;
@@ -1070,19 +1059,21 @@ function mountMotion(el) {
     const scale = fanScale + (cardScale * deskGridScale - fanScale) * totalPeelEase;
     const rotation = fanPos.rot * (1 - totalPeelEase);
 
-    const slideStaggerFrac = (1 - card.fanIdx / FAN_LAST_INDEX) * ANIM.slideStagger;
-    const cardSlideT = clamp01((phase.slideT - slideStaggerFrac) / (1 - slideStaggerFrac));
+    const slideStaggerFrac = (1 - card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.slideStagger;
+    const cardSlideT = clamp01(
+      (ANIM_STATE.phase.slideT - slideStaggerFrac) / (1 - slideStaggerFrac),
+    );
     const slideE = easeOutSine(cardSlideT);
-    const slideScaleMul = ANIM.slideScaleStart + (1 - ANIM.slideScaleStart) * slideE;
+    const slideScaleMul = ANIM_CONFIG.slideScaleStart + (1 - ANIM_CONFIG.slideScaleStart) * slideE;
 
     const compensatedY = currentY - prePinOffset;
 
     // Uniform pre-pin slide-down (no stagger, no X). Pushes all cards below
     // their orbital position while pre-pin scroll is in flight, decaying to 0
-    // by the time phase.slideT reaches 1 (a bit past pin). Relative motion
+    // by the time ANIM_STATE.phase.slideT reaches 1 (a bit past pin). Relative motion
     // between cards stays purely orbital.
-    const prePinSlideOffset = viewportHeight * ANIM.prePinSlideY
-      * (1 - easeOutSine(phase.slideT));
+    const prePinSlideOffset = viewportHeight * ANIM_CONFIG.prePinSlideY
+      * (1 - easeOutSine(ANIM_STATE.phase.slideT));
     const renderedY = compensatedY + prePinSlideOffset;
 
     card.visualCx = currentX;
@@ -1103,10 +1094,10 @@ function mountMotion(el) {
       card.el.style.zIndex = '';
     }
 
-    const tiltFactor = Math.max(0, 1 - phase.arcToGrid / 0.12);
+    const tiltFactor = Math.max(0, 1 - ANIM_STATE.phase.arcToGrid / 0.12);
     const screenYNorm = (fanPos.y - viewportHeight / 2) / (viewportHeight / 2);
-    const cardYTilt = screenYNorm * ANIM.arcYTilt * tiltFactor;
-    const cardXTilt = -screenYNorm * ANIM.arcXTilt * tiltFactor;
+    const cardYTilt = screenYNorm * ANIM_CONFIG.arcYTilt * tiltFactor;
+    const cardXTilt = -screenYNorm * ANIM_CONFIG.arcXTilt * tiltFactor;
 
     setCardTransform(card.el, {
       translateX: currentX - card.width / 2,
@@ -1116,8 +1107,8 @@ function mountMotion(el) {
       tiltX: cardXTilt,
       tiltY: cardYTilt,
     });
-    card.el.style.opacity = Math.min(1, cardSlideT / ANIM.slideOpacityRampTo).toFixed(3);
-    const shadowAlpha = ANIM.arcShadowAlpha * (1 - cardPeelProgress);
+    card.el.style.opacity = Math.min(1, cardSlideT / ANIM_CONFIG.slideOpacityRampTo).toFixed(3);
+    const shadowAlpha = ANIM_CONFIG.arcShadowAlpha * (1 - cardPeelProgress);
     const shadowAlphaKey = shadowAlpha.toFixed(3);
     if (shadowAlphaKey !== card.lastArcShadowAlphaKey) {
       card.lastArcShadowAlphaKey = shadowAlphaKey;
@@ -1129,18 +1120,20 @@ function mountMotion(el) {
 
   // Final glide from on-grid position into its slot in the Acrobat mockup.
   function renderGridToSlot(card, cardScale, deskGridScale, mockupFrame) {
-    const cardSlot = frame.isMobile
+    const cardSlot = ANIM_STATE.frame.isMobile
       ? getMobileMockupCardSlot(card, mockupFrame)
       : getDesktopMockupCardSlot(card, mockupFrame);
     const endCenterX = cardSlot.x + cardSlot.width / 2;
-    const endCenterY = cardSlot.y + cardSlot.height / 2
-      - (frame.isMobile ? verticalPan.mobilePostRevealY : verticalPan.deskPostRevealY);
+    const postRevealY = ANIM_STATE.frame.isMobile
+      ? ANIM_STATE.verticalPan.mobilePostRevealY
+      : ANIM_STATE.verticalPan.deskPostRevealY;
+    const endCenterY = cardSlot.y + cardSlot.height / 2 - postRevealY;
     const endScale = cardSlot.width / card.width;
 
     const startCenterX = card.baseX + card.width / 2;
-    const startCenterY = card.baseY + card.height / 2 - verticalPan.arcGridY;
+    const startCenterY = card.baseY + card.height / 2 - ANIM_STATE.verticalPan.arcGridY;
 
-    const slottingEaseProgress = easeInOutSine(phase.slotting);
+    const slottingEaseProgress = easeInOutSine(ANIM_STATE.phase.slotting);
     const centerX = startCenterX + (endCenterX - startCenterX) * slottingEaseProgress;
     const centerY = startCenterY + (endCenterY - startCenterY) * slottingEaseProgress;
     const startScale = cardScale * deskGridScale;
@@ -1156,21 +1149,21 @@ function mountMotion(el) {
     card.el.style.opacity = 1;
     card.el.style.boxShadow = '';
     card.el.style.zIndex = '';
-    setLabelPos(card, centerX, centerY, scale, Math.max(0, 1 - phase.slotting * 2));
+    setLabelPos(card, centerX, centerY, scale, Math.max(0, 1 - ANIM_STATE.phase.slotting * 2));
   }
 
-  // Card rendering: 3-branch state machine — exactly one branch runs per card per frame.
+  // Card rendering: 3-branch state machine — exactly one branch runs per card per ANIM_STATE.frame.
   function updateCardPositions() {
-    const cardScale = frame.isMobile ? 1.0 : ANIM.cardScaleDesktop;
-    const inArcPeel = phase.arcToGrid < 1 && phase.slotting <= 0;
+    const cardScale = ANIM_STATE.frame.isMobile ? 1.0 : ANIM_CONFIG.cardScaleDesktop;
+    const inArcPeel = ANIM_STATE.phase.arcToGrid < 1 && ANIM_STATE.phase.slotting <= 0;
     // Frame-level values shared across cards — compute once per frame, not per card.
     const deskGridScale = getDeskGridScale();
     let mockupFrame = null;
     if (!inArcPeel) {
-      mockupFrame = frame.isMobile ? getMobileMockupFrame() : getDesktopMockupFrame();
+      mockupFrame = ANIM_STATE.frame.isMobile ? getMobileMockupFrame() : getDesktopMockupFrame();
     }
     sceneCards.forEach((card) => {
-      if (frame.isMobile && card.mobileHidden) {
+      if (ANIM_STATE.frame.isMobile && card.mobileHidden) {
         hideMobileCard(card);
         return;
       }
@@ -1182,8 +1175,8 @@ function mountMotion(el) {
   // ──────────────────── Per-frame loop phases ────────────────────
 
   function updateAnimationProgress() {
-    const animScrollTotal = timing.slottingStart + timing.slottingDuration
-      + timing.postRevealScrollDistance;
+    const animScrollTotal = ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration
+      + ANIM_STATE.timing.postRevealScrollDistance;
     let blockTop;
     if (revealActive) {
       scrollCurrent = revealScrollCurrent;
@@ -1198,48 +1191,54 @@ function mountMotion(el) {
 
     const slideEarly = viewportHeight;
     const prePinContrib = Math.max(0, slideEarly - Math.max(0, blockTop));
-    phase.slideT = clamp01((scrollCurrent + prePinContrib) / (slideEarly + ANIM.slideOverlap));
-    phase.arcPan = clamp01(scrollCurrent / ANIM.arcPanEnd);
-    phase.arcToGrid = clamp01(
-      (scrollCurrent - ANIM.peelStartScroll) / (timing.gridEnd - ANIM.peelStartScroll),
+    ANIM_STATE.phase.slideT = clamp01(
+      (scrollCurrent + prePinContrib) / (slideEarly + ANIM_CONFIG.slideOverlap),
     );
-    phase.slotting = clamp01((scrollCurrent - timing.slottingStart) / timing.slottingDuration);
+    ANIM_STATE.phase.arcPan = clamp01(scrollCurrent / ANIM_CONFIG.arcPanEnd);
+    const arcToGridDelta = ANIM_STATE.timing.gridEnd - ANIM_CONFIG.peelStartScroll;
+    ANIM_STATE.phase.arcToGrid = clamp01(
+      (scrollCurrent - ANIM_CONFIG.peelStartScroll) / arcToGridDelta,
+    );
+    ANIM_STATE.phase.slotting = clamp01(
+      (scrollCurrent - ANIM_STATE.timing.slottingStart) / ANIM_STATE.timing.slottingDuration,
+    );
   }
 
   let arcTextPanProgressCached = 0;
 
   // Writes per-frame transform/opacity scalars to CSS custom properties on the stage.
   function updateMockupAndTitleTransform() {
-    const slottingEase = easeInOutSine(phase.slotting);
+    const slottingEase = easeInOutSine(ANIM_STATE.phase.slotting);
 
-    const rawTitleMotionProgress = (scrollCurrent - timing.slottingStart)
-      / (timing.slottingDuration + 350);
+    const rawTitleMotionProgress = (scrollCurrent - ANIM_STATE.timing.slottingStart)
+      / (ANIM_STATE.timing.slottingDuration + 350);
     const titleMotionProgress = clamp01(rawTitleMotionProgress);
     const titleSlide = easeOutCubic(titleMotionProgress);
     const titleOpacity = titleSlide;
 
     // Post-mockup reveal pan — mobile only, pans the Acrobat UI up to reveal the CTA.
-    const postRevealProgress = timing.postRevealScrollDistance
+    const postRevealProgress = ANIM_STATE.timing.postRevealScrollDistance
       ? clamp01(
-        (scrollCurrent - (timing.slottingStart + timing.slottingDuration))
-          / timing.postRevealScrollDistance,
+        (scrollCurrent - (ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration))
+          / ANIM_STATE.timing.postRevealScrollDistance,
       )
       : 0;
 
-    if (frame.isMobile) {
-      const mobileScaleDelta = ANIM.mobileMockupStartScale - ANIM.mobileMockupEndScale;
-      const mobileScale = ANIM.mobileMockupStartScale - mobileScaleDelta * slottingEase;
+    if (ANIM_STATE.frame.isMobile) {
+      const mobileScaleDelta = ANIM_CONFIG.mobileMockupStartScale
+        - ANIM_CONFIG.mobileMockupEndScale;
+      const mobileScale = ANIM_CONFIG.mobileMockupStartScale - mobileScaleDelta * slottingEase;
       const mobileTopOverhang = (mobileScaleDelta / 2) * ACROBAT_MOBILE_MOCKUP_HEIGHT;
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
-      const headlineRestY = viewportHeight * ANIM.mobileHeadlineY;
+      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
       const chromeRestY = headlineRestY + cachedHeadlineH + 24;
       mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       const postRevealNeeded = Math.max(0, ctaRestY + 120 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
-      verticalPan.mobilePostRevealY = postRevealPanY;
+      ANIM_STATE.verticalPan.mobilePostRevealY = postRevealPanY;
       stage.style.setProperty('--mockup-y', `${chromeRestY + slideOffset - postRevealPanY}px`);
       stage.style.setProperty('--mockup-scale', mobileScale);
       stage.style.setProperty('--title-y', `${slideOffset - postRevealPanY}px`);
@@ -1247,21 +1246,21 @@ function mountMotion(el) {
       stage.style.setProperty('--title-opacity', titleOpacity);
       stage.style.setProperty('--cta-y', `${slideOffset - postRevealPanY}px`);
     } else {
-      verticalPan.mobilePostRevealY = 0;
-      const acrobatWidth = getAcrobatDesktopMockupWidth(viewportWidth, frame.isTablet);
+      ANIM_STATE.verticalPan.mobilePostRevealY = 0;
+      const acrobatWidth = getAcrobatDesktopMockupWidth(viewportWidth, ANIM_STATE.frame.isTablet);
       const mockupHeight = acrobatWidth
         * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
-      const desktopScaleDelta = ANIM.desktopMockupStartScale
-        - ANIM.desktopMockupEndScale;
+      const desktopScaleDelta = ANIM_CONFIG.desktopMockupStartScale
+        - ANIM_CONFIG.desktopMockupEndScale;
       const topOverhang = (desktopScaleDelta / 2) * mockupHeight;
       const offscreenY = viewportHeight + topOverhang + 30;
       const mockupTranslateY = (1 - slottingEase) * offscreenY;
-      const mockupScale = ANIM.desktopMockupStartScale - desktopScaleDelta * slottingEase;
+      const mockupScale = ANIM_CONFIG.desktopMockupStartScale - desktopScaleDelta * slottingEase;
       const titleScale = 0.92 + 0.08 * titleSlide;
       const deskRevealTarget = cachedDeskPostRevealNeeded
         ? easeOutSine(postRevealProgress) * cachedDeskPostRevealNeeded
         : 0;
-      verticalPan.deskPostRevealY = deskRevealTarget;
+      ANIM_STATE.verticalPan.deskPostRevealY = deskRevealTarget;
       const panY = deskRevealTarget;
       stage.style.setProperty('--mockup-y', `${mockupTranslateY - panY}px`);
       stage.style.setProperty('--mockup-scale', mockupScale);
@@ -1273,7 +1272,7 @@ function mountMotion(el) {
       ctaEl.style.opacity = clamp01(ctaVisiblePx / 60).toFixed(3);
       if (desktopPanelEl) {
         const media = desktopPanelEl.querySelector('picture');
-        const panelRevealT = clamp01((phase.slotting - 0.6) / 0.4);
+        const panelRevealT = clamp01((ANIM_STATE.phase.slotting - 0.6) / 0.4);
         const panelEase = easeOutCubic(panelRevealT);
         media.style.transform = `translateX(${((1 - panelEase) * 100).toFixed(2)}%)`;
       }
@@ -1283,42 +1282,43 @@ function mountMotion(el) {
   // ADBE logo flourish — draws from start → fully complete just as mockup transition begins.
   // Mobile: delayed to 85% through peel so it doesn't draw during arc/peel.
   function updateAdbeLogo() {
-    const adbeLogoPeelStart = frame.isMobile
-      ? ANIM.peelStartScroll + (MOBILE_GRID_END - ANIM.peelStartScroll) * 0.85
-      : ANIM.peelStartScroll;
-    const adbeLogoSpan = timing.slottingStart - adbeLogoPeelStart;
+    const adbeLogoPeelStart = ANIM_STATE.frame.isMobile
+      ? ANIM_CONFIG.peelStartScroll + (MOBILE_GRID_END - ANIM_CONFIG.peelStartScroll) * 0.85
+      : ANIM_CONFIG.peelStartScroll;
+    const adbeLogoSpan = ANIM_STATE.timing.slottingStart - adbeLogoPeelStart;
     const rawAdbeLogoProgress = (scrollCurrent - adbeLogoPeelStart) / adbeLogoSpan;
     const adbeLogoProgress = clamp01(rawAdbeLogoProgress);
     const adbeLogoDrawProgress = easeInOutSine(adbeLogoProgress);
     const adbeLogoFadeIn = clamp01(adbeLogoProgress * 6);
-    const adbeLogoFadeOut = 1 - clamp01((phase.slotting - 0.4) / 0.3);
+    const adbeLogoFadeOut = 1 - clamp01((ANIM_STATE.phase.slotting - 0.4) / 0.3);
     stage.style.setProperty('--adbe-draw', adbeLogoDrawProgress);
     stage.style.setProperty('--adbe-opacity', adbeLogoFadeIn * adbeLogoFadeOut);
   }
 
   function updateCompressionAndPan() {
     arcTextPanProgressCached = clamp01(
-      (scrollCurrent - timing.settleScrollStart) / ANIM.arcSettleDuration,
+      (scrollCurrent - ANIM_STATE.timing.settleScrollStart) / ANIM_CONFIG.arcSettleDuration,
     );
-    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO * ANIM.columnCompressionTarget
-      - CARD_WIDTH;
+    const compressedColGapPx = viewportWidth * CARD_COLUMN_GAP_RATIO
+      * ANIM_CONFIG.columnCompressionTarget - CARD_WIDTH;
     const compressedRowGap = (compressedColGapPx + ROW_METRIC_HEIGHT + LABEL_CLEARANCE)
       / viewportHeight;
     const postPeelEase = easeOutSine(arcTextPanProgressCached);
-    const slottingCompression = easeInOutSine(phase.slotting);
-    cardGridLayout.columnSpread = ANIM.baseColumnSpread
-      + (ANIM.columnCompressionTarget - ANIM.baseColumnSpread) * phase.arcToGrid
+    const slottingCompression = easeInOutSine(ANIM_STATE.phase.slotting);
+    ANIM_STATE.cardGridLayout.columnSpread = ANIM_CONFIG.baseColumnSpread
+      + (ANIM_CONFIG.columnCompressionTarget - ANIM_CONFIG.baseColumnSpread)
+        * ANIM_STATE.phase.arcToGrid
       - 0.15 * postPeelEase - 0.15 * slottingCompression;
-    cardGridLayout.rowGap = ANIM.baseRowGap
-      + (compressedRowGap - ANIM.baseRowGap) * phase.arcToGrid
+    ANIM_STATE.cardGridLayout.rowGap = ANIM_CONFIG.baseRowGap
+      + (compressedRowGap - ANIM_CONFIG.baseRowGap) * ANIM_STATE.phase.arcToGrid
       - 0.04 * postPeelEase - 0.04 * slottingCompression;
     const textAtRestY = viewportHeight * (0.5 + 0.5 * compressedRowGap)
       + ROW_METRIC_HEIGHT / 2
       + 90;
     const arcPanTarget = Math.max(0, textAtRestY - viewportHeight * 0.70);
-    verticalPan.arcGridY = arcPanTarget * easeOutSine(arcTextPanProgressCached);
-    if (frame.isMobile) {
-      const { mobileLayout } = frame;
+    ANIM_STATE.verticalPan.arcGridY = arcPanTarget * easeOutSine(arcTextPanProgressCached);
+    if (ANIM_STATE.frame.isMobile) {
+      const { mobileLayout } = ANIM_STATE.frame;
       const mobileRow1CenterY = viewportHeight * 0.50
         + mobileLayout.tallH / 2 + mobileLayout.rowPitch;
       const mobileTextBaseY = mobileRow1CenterY + mobileLayout.tallH / 2
@@ -1327,32 +1327,32 @@ function mountMotion(el) {
       const mobilePanProgress = clamp01(
         (scrollCurrent - MOBILE_PAN_START) / MOBILE_TEXT_PAN_DURATION,
       );
-      verticalPan.arcGridY = mobileTextTarget * easeOutSine(mobilePanProgress);
+      ANIM_STATE.verticalPan.arcGridY = mobileTextTarget * easeOutSine(mobilePanProgress);
     }
   }
 
   function updateTextBlock() {
-    const textEase = easeInOutSine(phase.slotting);
+    const textEase = easeInOutSine(ANIM_STATE.phase.slotting);
     const textScaleDuringSlotting = 1 - 0.28 * textEase;
     const deskGridScaleForText = getDeskGridScale();
-    const halfCardOnGrid = (CARD_WIDTH / 2) * ANIM.cardScaleDesktop * deskGridScaleForText;
+    const halfCardOnGrid = (CARD_WIDTH / 2) * ANIM_CONFIG.cardScaleDesktop * deskGridScaleForText;
     const col3Right = getDeskCardCenterX(viewportWidth, 3, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
       + halfCardOnGrid;
     const col0VisualLeft = getDeskCardCenterX(viewportWidth, 0, ARC_TEXT_ANCHOR_COLUMN_SPREAD)
       - halfCardOnGrid;
-    const arcTextFadeProgress = frame.isMobile
-      ? clamp01((phase.slotting - 0.4) / 0.3)
-      : clamp01((phase.slotting - 0.55) / 0.15);
-    const arcFinalScale = frame.isMobile
+    const arcTextFadeProgress = ANIM_STATE.frame.isMobile
+      ? clamp01((ANIM_STATE.phase.slotting - 0.4) / 0.3)
+      : clamp01((ANIM_STATE.phase.slotting - 0.55) / 0.15);
+    const arcFinalScale = ANIM_STATE.frame.isMobile
       ? textScaleDuringSlotting
       : textScaleDuringSlotting * (1 - 0.15 * easeInOutSine(arcTextFadeProgress));
     let pinnedTextY;
     let textLeft;
-    if (frame.isMobile) {
-      const { mobileLayout } = frame;
+    if (ANIM_STATE.frame.isMobile) {
+      const { mobileLayout } = ANIM_STATE.frame;
       const row1CenterY = viewportHeight * 0.50
         + mobileLayout.tallH / 2 + mobileLayout.rowPitch;
-      pinnedTextY = row1CenterY - verticalPan.arcGridY
+      pinnedTextY = row1CenterY - ANIM_STATE.verticalPan.arcGridY
         + mobileLayout.tallH / 2 + TEXT_BLOCK_BELOW_CARD_OFFSET;
       const gridW = mobileLayout.cardW * 2 + MOBILE_COL_GAP;
       textLeft = Math.max(
@@ -1360,17 +1360,17 @@ function mountMotion(el) {
         Math.round((viewportWidth - gridW) / 2),
       );
     } else {
-      textLeft = frame.isTablet
+      textLeft = ANIM_STATE.frame.isTablet
         ? col0VisualLeft
         : col3Right - cachedTextBlockWidth;
-      pinnedTextY = viewportHeight * (0.5 + 0.5 * cardGridLayout.rowGap)
+      pinnedTextY = viewportHeight * (0.5 + 0.5 * ANIM_STATE.cardGridLayout.rowGap)
         + ROW_METRIC_HEIGHT / 2
         + 37
         + viewportHeight * 0.036
-        - verticalPan.arcGridY;
+        - ANIM_STATE.verticalPan.arcGridY;
     }
-    const arcReveal = frame.isMobile
-      ? clamp01((phase.arcToGrid - 0.1) / 0.3)
+    const arcReveal = ANIM_STATE.frame.isMobile
+      ? clamp01((ANIM_STATE.phase.arcToGrid - 0.1) / 0.3)
       : clamp01(arcTextPanProgressCached * 2);
     const textOpacity = Math.max(0, 1 - arcTextFadeProgress) * arcReveal;
     textBlockEl.style.transform = `translate(${textLeft}px,${pinnedTextY}px) scale(${arcFinalScale})`;
@@ -1385,34 +1385,34 @@ function mountMotion(el) {
       debug = createDebugOverlay(() => {
         const c = scrollCurrent;
         let stageLabel = 'done';
-        if (c < ANIM.peelStartScroll) stageLabel = 'arc-pan';
-        else if (c < timing.gridEnd) stageLabel = 'peel';
-        else if (c < timing.slottingStart) stageLabel = 'settle';
-        else if (c < timing.slottingStart + timing.slottingDuration) stageLabel = 'slotting';
-        else if (timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
+        if (c < ANIM_CONFIG.peelStartScroll) stageLabel = 'arc-pan';
+        else if (c < ANIM_STATE.timing.gridEnd) stageLabel = 'peel';
+        else if (c < ANIM_STATE.timing.slottingStart) stageLabel = 'settle';
+        else if (c < ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration) stageLabel = 'slotting';
+        else if (ANIM_STATE.timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
         let breakpoint = 'desktop';
-        if (frame.isMobile) breakpoint = 'mobile';
-        else if (frame.isTablet) breakpoint = 'tablet';
+        if (ANIM_STATE.frame.isMobile) breakpoint = 'mobile';
+        else if (ANIM_STATE.frame.isTablet) breakpoint = 'tablet';
         return {
           stage: stageLabel,
           breakpoint,
           viewportWidth,
           viewportHeight,
           scrollCurrent: c,
-          animTotal: timing.slottingStart + timing.slottingDuration
-            + timing.postRevealScrollDistance,
-          phase,
+          animTotal: ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration
+            + ANIM_STATE.timing.postRevealScrollDistance,
+          phase: ANIM_STATE.phase,
           settle: arcTextPanProgressCached,
-          peelStartScroll: ANIM.peelStartScroll,
-          gridEnd: timing.gridEnd,
-          slottingStart: timing.slottingStart,
-          slottingDuration: timing.slottingDuration,
-          columnSpread: cardGridLayout.columnSpread,
-          rowGap: cardGridLayout.rowGap,
-          arcGridY: verticalPan.arcGridY,
-          postRevealY: frame.isMobile
-            ? verticalPan.mobilePostRevealY
-            : verticalPan.deskPostRevealY,
+          peelStartScroll: ANIM_CONFIG.peelStartScroll,
+          gridEnd: ANIM_STATE.timing.gridEnd,
+          slottingStart: ANIM_STATE.timing.slottingStart,
+          slottingDuration: ANIM_STATE.timing.slottingDuration,
+          columnSpread: ANIM_STATE.cardGridLayout.columnSpread,
+          rowGap: ANIM_STATE.cardGridLayout.rowGap,
+          arcGridY: ANIM_STATE.verticalPan.arcGridY,
+          postRevealY: ANIM_STATE.frame.isMobile
+            ? ANIM_STATE.verticalPan.mobilePostRevealY
+            : ANIM_STATE.verticalPan.deskPostRevealY,
           blockHeight: el.offsetHeight,
         };
       });
@@ -1479,8 +1479,8 @@ function mountMotion(el) {
   });
 
   function getTargetScrollTop(targetScrollCurrent) {
-    const animScrollTotal = timing.slottingStart + timing.slottingDuration
-      + timing.postRevealScrollDistance;
+    const animScrollTotal = ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration
+      + ANIM_STATE.timing.postRevealScrollDistance;
     const blockDocTop = el.getBoundingClientRect().top + window.scrollY;
     const panRange = Math.max(1, el.offsetHeight - window.innerHeight);
     return blockDocTop + clamp01(targetScrollCurrent / animScrollTotal) * panRange;
@@ -1530,10 +1530,11 @@ function mountMotion(el) {
 
   const textBlockLink = textBlockEl.querySelector('a');
   textBlockLink?.addEventListener('focus', () => {
-    snapToFocusTarget(timing.slottingStart);
+    snapToFocusTarget(ANIM_STATE.timing.slottingStart);
   });
   const ctaLink = ctaEl.querySelector('a');
   ctaLink?.addEventListener('focus', () => {
+    const { timing } = ANIM_STATE;
     snapToFocusTarget(
       timing.slottingStart + timing.slottingDuration + timing.postRevealScrollDistance,
     );
