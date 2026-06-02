@@ -21,3 +21,8 @@ import '@spectrum-web-components/icons-workflow/icons/sp-icon-graphic.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-video-filled.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-brush.js';
 import '@spectrum-web-components/icons-workflow/icons/sp-icon-social-network.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-document.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-pen-brush.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-magic-wand.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-lock.js';
+import '@spectrum-web-components/icons-workflow/icons/sp-icon-briefcase.js';

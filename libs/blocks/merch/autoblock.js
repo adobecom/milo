@@ -1,15 +1,17 @@
 import { decorateLinksAsync, getConfig, loadBlock, localizeLinkAsync } from '../../utils/utils.js';
 import { addAriaLabelToCta } from './merch.js';
 
+// Spectrum workflow icons can appear on a merch-badge (icon attribute) or
+// inline in a card's "What's included" section (<sp-icon-* class="sp-icon">).
+// Either requires the workflow icon definitions to be registered.
+export const cardUsesSpectrumIcon = (card) => !!card.querySelector('merch-badge[icon^="sp-icon-"], .sp-icon');
+
 let iconsLoaded;
-function loadBadgeIcons(cards) {
-  if (iconsLoaded) return;
-  const hasBadgeIcon = cards.some((card) => card.querySelector('merch-badge[icon^="sp-icon-"]'));
-  if (hasBadgeIcon) {
-    iconsLoaded = true;
-    const { base } = getConfig();
-    import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
-  }
+function loadSpectrumIcons(cards) {
+  if (iconsLoaded || !cards.some(cardUsesSpectrumIcon)) return;
+  iconsLoaded = true;
+  const { base } = getConfig();
+  import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
 }
 
 export async function localizePreviewLinks(el) {
@@ -138,7 +140,7 @@ async function postProcessCard(card) {
 export async function postProcessAutoblock(autoblockEl, isCard = false) {
   cleanupTabsAnalytics(autoblockEl);
   const cards = isCard ? [autoblockEl] : Array.from(autoblockEl.querySelectorAll('merch-card'));
-  loadBadgeIcons(cards);
+  loadSpectrumIcons(cards);
   const processPromises = cards.map(async (card) => {
     try {
       const cardReady = await card.checkReady();

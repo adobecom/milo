@@ -2,7 +2,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock } from '../../../libs/blocks/merch/autoblock.js';
+import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, cardUsesSpectrumIcon } from '../../../libs/blocks/merch/autoblock.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 setConfig({ locales, miloLibs: '/libs' });
@@ -119,7 +119,7 @@ describe('autoblock', () => {
       expect(card2.checkReady.called).to.be.true;
     });
 
-    it('should load badge icons when card has merch-badge with sp-icon', async () => {
+    it('should load spectrum icons when card has merch-badge with sp-icon', async () => {
       const container = document.createElement('div');
       const card = document.createElement('merch-card');
       const badge = document.createElement('merch-badge');
@@ -133,7 +133,7 @@ describe('autoblock', () => {
       expect(card.checkReady.called).to.be.true;
     });
 
-    it('should not reload badge icons on subsequent calls', async () => {
+    it('should not reload spectrum icons on subsequent calls', async () => {
       const container = document.createElement('div');
       const card = document.createElement('merch-card');
       const badge = document.createElement('merch-badge');
@@ -146,18 +146,32 @@ describe('autoblock', () => {
       await postProcessAutoblock(container, false);
       expect(card.checkReady.called).to.be.true;
     });
+  });
 
-    it('should not load badge icons when no sp-icon badges exist', async () => {
-      const container = document.createElement('div');
+  describe('cardUsesSpectrumIcon', () => {
+    it('detects a merch-badge sp-icon', () => {
+      const card = document.createElement('merch-card');
+      const badge = document.createElement('merch-badge');
+      badge.setAttribute('icon', 'sp-icon-star');
+      card.appendChild(badge);
+      expect(cardUsesSpectrumIcon(card)).to.be.true;
+    });
+
+    it('detects an sp-icon in the What\'s included section', () => {
+      const card = document.createElement('merch-card');
+      const section = document.createElement('div');
+      section.setAttribute('slot', 'whats-included');
+      section.innerHTML = '<div class="section"><h4><sp-icon-briefcase class="sp-icon"></sp-icon-briefcase>Title</h4></div>';
+      card.appendChild(section);
+      expect(cardUsesSpectrumIcon(card)).to.be.true;
+    });
+
+    it('is false when the card uses no spectrum icons', () => {
       const card = document.createElement('merch-card');
       const badge = document.createElement('merch-badge');
       badge.setAttribute('icon', 'https://example.com/icon.png');
       card.appendChild(badge);
-      card.checkReady = sinon.stub().resolves();
-      container.appendChild(card);
-
-      await postProcessAutoblock(container, false);
-      expect(card.checkReady.called).to.be.true;
+      expect(cardUsesSpectrumIcon(card)).to.be.false;
     });
   });
 });
