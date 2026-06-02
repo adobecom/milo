@@ -43,6 +43,7 @@ function awaitWindowProperty(property, timeout = 5000, interval = 100) {
     console.log(`alloyObj.then (promise?): ${alloyObj?.then}`);
     console.log(`alloyObj.get: ${alloyObj?.get}`);
     console.log(`alloyObj.set: ${alloyObj?.set}`);
+    console.log('tester claude');
   }
   if (alloyObj && !alloyObj.then && typeof alloyObj.get === 'function' && typeof alloyObj.set === 'function') return Promise.resolve(window[property]);
   return new Promise((resolve) => {
