@@ -72,7 +72,7 @@ function addGrabHandle(el) {
     if (!isDragging) return;
     isDragging = false;
     const delta = currentY - startY;
-    if (delta < SWIPE_CLOSE_THRESHOLD) return snapBack();
+    if (delta < SWIPE_CLOSE_THRESHOLD) { snapBack(); return; }
     modal.style.transition = 'transform 0.3s ease';
     modal.style.transform = 'translateY(100%)';
     modal.addEventListener('transitionend', triggerClose, { once: true });
