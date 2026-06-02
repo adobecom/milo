@@ -247,4 +247,21 @@ describe('milo-dashboard', () => {
 
     expect(block.querySelector('.dashboard-error')).to.exist;
   });
+
+  it('renders panels progressively — one failed endpoint does not blank the rest', async () => {
+    // Fail only /totals; every other panel should still render and there should
+    // be no top-level dashboard-error, just a per-panel error for totals.
+    fetchStub = stubFetch((url, opts) => {
+      if (`${url}`.includes('/totals')) return Promise.reject(new Error('boom'));
+      return routeFetch(url, opts);
+    });
+    const block = document.querySelector('.milo-dashboard');
+    await init(block);
+
+    expect(block.querySelector('.dashboard-error')).to.be.null;
+    expect(block.querySelector('.panel-error')).to.exist;
+    expect(block.querySelectorAll('.kpi-card').length).to.equal(5);
+    expect(block.querySelector('.volume-trend')).to.exist;
+    expect(block.querySelector('.totals-total')).to.be.null;
+  });
 });

@@ -65,6 +65,23 @@ function renderPanel(mount, label, fn) {
   }
 }
 
+// Await one panel's data and render it as soon as it arrives, so a slow or
+// failing endpoint never blocks or blanks the other panels. Returns whether
+// the data loaded (a sync render error still counts as loaded — that's a
+// rendering bug, not a missing-data state).
+async function fill(mount, label, dataPromise, renderFn) {
+  try {
+    const data = await dataPromise;
+    clearLoading(mount);
+    renderPanel(mount, label, () => renderFn(data));
+    return true;
+  } catch (e) {
+    clearLoading(mount);
+    mount.replaceChildren(createTag('div', { class: 'panel-error' }, `Couldn't load ${label}`));
+    return false;
+  }
+}
+
 export default async function init(block) {
   loadStyle(import.meta.url);
 
@@ -195,24 +212,46 @@ export default async function init(block) {
         kpiMount, totalsMount, gaugeMount, consumersMount,
         alertsMount, healthMount, volumeMount, projectsMount,
       ].forEach(showLoading);
-      let overview;
-      let edsRows;
-      let preflightRows;
-      let projectRows;
-      let totalsData;
-      let testPagesCsv;
-      try {
-        [
-          overview, edsRows, preflightRows, projectRows, totalsData, testPagesCsv,
-        ] = await Promise.all([
-          client.get('/overview', { since: kpiSince }),
-          client.get('/trends/eds', { since: trendSince, interval }),
-          client.get('/trends/preflight', { since: trendSince, interval }),
-          client.get('/projects', { since: kpiSince }),
-          client.get('/totals'),
-          client.getText('/test-pages', { since: trendSince, state: 'live', limit: 50 }),
-        ]);
-      } catch (e) {
+
+      // Fire every request up front, then let each panel render independently as
+      // its own data arrives. Slow endpoints don't hold up fast ones, and a
+      // single failure shows a per-panel error instead of blanking everything.
+      const pOverview = client.get('/overview', { since: kpiSince });
+      const pEds = client.get('/trends/eds', { since: trendSince, interval });
+      const pPreflight = client.get('/trends/preflight', { since: trendSince, interval });
+      const pProjects = client.get('/projects', { since: kpiSince });
+      const pTotals = client.get('/totals');
+      const pTestPages = client.getText('/test-pages', { since: trendSince, state: 'live', limit: 50 });
+
+      rangeEl.textContent = formatRange(interval);
+
+      // The gauge needs the category breakdown from the latest /trends/preflight
+      // row, falling back to /overview's avg_health.
+      const buildGaugeScores = (preflightRows, overview) => {
+        const latest = (preflightRows && preflightRows[preflightRows.length - 1]) || {};
+        return {
+          avg_overall: latest.avg_overall ?? overview.current.avg_health,
+          avg_performance: latest.avg_performance,
+          avg_seo: latest.avg_seo,
+          avg_accessibility: latest.avg_accessibility,
+          avg_assets: latest.avg_assets,
+        };
+      };
+
+      const results = await Promise.all([
+        fill(kpiMount, 'metrics', pOverview, (overview) => renderKpiCards(kpiMount, overview, interval)),
+        fill(totalsMount, 'totals', pTotals, (totalsData) => renderTotals(totalsMount, totalsData)),
+        fill(gaugeMount, 'health score', Promise.all([pPreflight, pOverview]), ([preflightRows, overview]) => renderHealthGauge(gaugeMount, buildGaugeScores(preflightRows, overview), charts)),
+        fill(consumersMount, 'consumers', pProjects, (projectRows) => renderConsumerBars(consumersMount, projectRows || [], charts, navigateTo)),
+        fill(alertsMount, 'alerts', Promise.all([pTestPages, pProjects]), ([testPagesCsv, projectRows]) => renderAlerts(alertsMount, { testPages: parseCsv(testPagesCsv), projects: projectRows || [] }, navigateTo)),
+        fill(healthMount, 'health trend', pPreflight, (preflightRows) => renderHealthTrend(healthMount, preflightRows, charts)),
+        fill(volumeMount, 'volume trend', pEds, (edsRows) => renderVolumeTrend(volumeMount, edsRows, charts)),
+        fill(projectsMount, 'projects', pProjects, (projectRows) => renderProjectTable(projectsMount, projectRows || [], navigateTo)),
+      ]);
+
+      // Only fall back to a single top-level error if every panel failed
+      // (e.g. an auth/sign-in problem affecting all requests).
+      if (results.every((ok) => !ok)) {
         grid.replaceChildren(
           createTag(
             'div',
@@ -223,34 +262,6 @@ export default async function init(block) {
         return;
       }
 
-      // /overview current has avg_health but NOT the category breakdown the gauge needs.
-      // Source gauge scores from the latest /trends/preflight row; fall back to avg_health.
-      const latest = (preflightRows && preflightRows[preflightRows.length - 1]) || {};
-      const gaugeScores = {
-        avg_overall: latest.avg_overall ?? overview.current.avg_health,
-        avg_performance: latest.avg_performance,
-        avg_seo: latest.avg_seo,
-        avg_accessibility: latest.avg_accessibility,
-        avg_assets: latest.avg_assets,
-      };
-
-      const testPages = parseCsv(testPagesCsv);
-
-      renderPanel(kpiMount, 'metrics', () => renderKpiCards(kpiMount, overview, interval));
-      renderPanel(totalsMount, 'totals', () => renderTotals(totalsMount, totalsData));
-      renderPanel(gaugeMount, 'health score', () => renderHealthGauge(gaugeMount, gaugeScores, charts));
-      renderPanel(consumersMount, 'consumers', () => renderConsumerBars(consumersMount, projectRows || [], charts, navigateTo));
-      renderPanel(alertsMount, 'alerts', () => renderAlerts(alertsMount, { testPages, projects: projectRows || [] }, navigateTo));
-      renderPanel(healthMount, 'health trend', () => renderHealthTrend(healthMount, preflightRows, charts));
-      renderPanel(volumeMount, 'volume trend', () => renderVolumeTrend(volumeMount, edsRows, charts));
-      renderPanel(projectsMount, 'projects', () => renderProjectTable(projectsMount, projectRows || [], navigateTo));
-
-      [
-        kpiMount, totalsMount, gaugeMount, consumersMount,
-        alertsMount, healthMount, volumeMount, projectsMount,
-      ].forEach(clearLoading);
-
-      rangeEl.textContent = formatRange(interval);
       updatedEl.textContent = `Updated ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
     }
 
