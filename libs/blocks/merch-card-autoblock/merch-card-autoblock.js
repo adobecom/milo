@@ -161,6 +161,12 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
+function copyMasFieldIdToParent(masField, name) {
+  if (masField.getAttribute(name)) {
+    masField.parentElement.setAttribute(`data-mas-field-${name}`, masField.getAttribute(name));
+  }
+}
+
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
   const attrs = { fragment: options.fragment };
@@ -227,6 +233,8 @@ async function createInline(el, options) {
         size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
       }
     }
+    copyMasFieldIdToParent(masField, 'fragment-id');
+    copyMasFieldIdToParent(masField, 'variation-id');
     masField.replaceWith(...[...content.childNodes]);
 
     // Defer decorateButtons until the last CTA mas-field in this container has been

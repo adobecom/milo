@@ -656,6 +656,47 @@ describe('MEP Utils', () => {
       );
       expect(manifests.length).to.equal(0);
     });
+    it('blocks manifest URLs that normalize to a cross-origin host', async () => {
+      const manifests = await combineMepSources(
+        undefined,
+        undefined,
+        undefined,
+        [
+          '/\\evil.com/manifest.json--all',
+          '\\/evil.com/manifest.json--all',
+          '/\t/evil.com/manifest.json--all',
+          '/\n/evil.com/manifest.json--all',
+          '/\r/evil.com/manifest.json--all',
+        ].join('---'),
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('blocks untrusted manifest URLs from personalization sources', async () => {
+      const persValue = [
+        '/\\evil.com/manifest.json',
+        '\\/evil.com/manifest.json',
+        'https://attacker.com/manifest.json',
+      ].join(',');
+      const manifests = await combineMepSources(
+        persValue,
+        persValue,
+        undefined,
+        undefined,
+        persValue,
+      );
+      expect(manifests.length).to.equal(0);
+    });
+    it('allows trusted AEM-hosted manifest URLs from personalization sources', async () => {
+      const aemUrl = 'https://main--milo--adobecom.aem.page/path/manifest.json';
+      const manifests = await combineMepSources(aemUrl, undefined, undefined, undefined);
+      expect(manifests.length).to.equal(1);
+      expect(manifests[0].manifestPath).to.equal(aemUrl);
+    });
+    it('allows relative manifest URLs from personalization sources', async () => {
+      const manifests = await combineMepSources('/promos/manifest.json', undefined, undefined, undefined);
+      expect(manifests.length).to.equal(1);
+      expect(manifests[0].manifestPath).to.equal('/promos/manifest.json');
+    });
     it('allows relative path manifest URLs from mep param', async () => {
       const manifests = await combineMepSources(
         undefined,
@@ -710,6 +751,18 @@ describe('MEP Utils', () => {
     });
     it('blocks protocol-relative URLs', () => {
       expect(isTrustedUrl('//evil.com/script.js')).to.be.false;
+    });
+    it('rejects URLs that normalize to a cross-origin host', () => {
+      expect(isTrustedUrl('/\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('\\/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\t/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\n/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('/\r/evil.com/script.js')).to.be.false;
+    });
+    it('rejects non-string inputs', () => {
+      expect(isTrustedUrl(123)).to.be.false;
+      expect(isTrustedUrl({})).to.be.false;
+      expect(isTrustedUrl([])).to.be.false;
     });
   });
   describe('cleanAndSortManifestList', async () => {
