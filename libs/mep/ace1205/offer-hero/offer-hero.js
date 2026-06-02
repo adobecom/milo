@@ -1,16 +1,12 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-// Pile composition from Figma spec.
 // STACK_W is the design canvas width in px — the reference frame all
 // STACK_REF offsets and sizes are measured against.
 // Each STACK_REF entry positions one card within that canvas:
 //   dx, dy = top-left offset in px
 //   w, h   = card size in px
 //   rot    = rotation in degrees (negative = counter-clockwise)
-// At runtime, values are scaled by `stackScale` to fit the viewport,
-// centered horizontally, and mirrored for RTL (see computeLayouts).
-// Card order here matches DOM order (i.e., authored row order).
 const STACK_W = 836;
 const STACK_REF = [
   { dx: 90.94, dy: 116.93, w: 418.531, h: 489.484, rot: -6 },
