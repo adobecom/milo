@@ -365,8 +365,6 @@
 
 @media (width >= 768px) {
   .rich-content.video {
-    gap: var(--s2a-spacing-xl);
-
     .media {
       padding-inline: unset;
       max-width: var(--grid-width-10);
@@ -445,6 +443,10 @@
 }
 
 @media (width >= 1024px) {
+  .rich-content.video {
+    gap: var(--s2a-spacing-xl);
+  }
+
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
