@@ -50,6 +50,14 @@ describe('milo-dashboard api', () => {
       expect(ctx.token).to.be.undefined;
     });
 
+    it('defaults to the local backend on localhost when no api row', async () => {
+      // web-test-runner serves from localhost, so defaultBase() resolves to local.
+      const block = buildBlock([]);
+      const ctx = await resolveContext(block, { inIframe: false });
+      expect(ctx.base).to.equal('http://localhost:8080');
+      expect(ctx.mode).to.equal('local');
+    });
+
     it('returns standalone mode and honors api row as base', async () => {
       const block = buildBlock([['api', 'https://example.com'], ['token', 'tk']]);
       const ctx = await resolveContext(block, { inIframe: false });

@@ -1,6 +1,18 @@
 import { getConfig } from '../../utils/utils.js';
 
 const DEFAULT_LOCAL = 'http://localhost:8080';
+const BACKENDS = {
+  prod: 'https://milo-core-prod.adobe.io',
+  stage: 'https://milo-core-stage.adobe.io',
+};
+
+// Pick the backend from the host: localhost in dev, otherwise the milo-core
+// service matching Milo's env (a real .aem.page/.aem.live host resolves to stage).
+function defaultBase() {
+  if (window.location.hostname.includes('localhost')) return DEFAULT_LOCAL;
+  const { env } = getConfig();
+  return BACKENDS[env?.name] || BACKENDS.stage;
+}
 
 export function readConfig(block) {
   const cfg = {};
@@ -18,17 +30,18 @@ export async function resolveContext(
   const cfg = readConfig(block);
   const { imsClientId } = getConfig();
   const clientId = cfg.clientid || imsClientId;
+  const base = cfg.api || defaultBase();
   if (inIframe && loadDaSdk) {
     try {
       const sdk = await Promise.race([
         loadDaSdk(),
         new Promise((_, reject) => { setTimeout(() => reject(new Error('da-timeout')), 1500); }),
       ]);
-      return { mode: 'da', base: cfg.api || DEFAULT_LOCAL, token: sdk.token, clientId, daContext: sdk.context };
+      return { mode: 'da', base, token: sdk.token, clientId, daContext: sdk.context };
     } catch (e) { /* fall through to non-DA */ }
   }
   const token = cfg.token || window.adobeIMS?.getAccessToken()?.token;
-  return { mode: cfg.api ? 'standalone' : 'local', base: cfg.api || DEFAULT_LOCAL, token, clientId };
+  return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token, clientId };
 }
 
 export function createClient({ base, token, clientId }) {
