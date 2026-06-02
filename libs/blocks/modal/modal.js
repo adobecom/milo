@@ -392,8 +392,6 @@ export function delayedModal(el) {
 export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
-  // Strip button style modifiers (e.g. #_button-fill) — decorateButtons() removes these from
-  // data-modal-hash later, but init() runs before that decoration, causing a hash mismatch.
   const normalizedHash = modalHash?.replace(/#_button-[a-zA-Z-]+/g, '');
   if (delayedModal(el) || window.location.hash !== normalizedHash || document.querySelector(`div.dialog-modal${normalizedHash}`)) return null;
   if (dialogLoadingSet.has(normalizedHash?.replace('#', ''))) return null; // prevent duplicate modal loading
