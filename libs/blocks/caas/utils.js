@@ -946,11 +946,6 @@ export const getGrayboxExperienceId = (
   return null;
 };
 
-export const getProducts = async () => {
-  const tags = await getTags().then(tags => tags.tags.mnemonics.tags);
-  return tags;
-}
-
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1065,7 +1060,7 @@ export const getConfig = async (originalState, strs = {}) => {
         nextCards: strs.nextCards || 'Next Cards',
         prevCards: strs.prevCards || 'Previous Cards',
       },
-      detailTextOption: state.detailTextOption,
+      detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
       dynamicCTAForLiveEvents: state.dynamicCTAForLiveEvents,
       setCardBorders: state.setCardBorders,
@@ -1112,20 +1107,21 @@ export const getConfig = async (originalState, strs = {}) => {
 
       // Include flexCardOptions when configured
       ...((state.cardStyle === 'flex-card'
-        && (state.flexCardHideImage
-          || state.flexCardHideTitle 
+        && (state.flexCardImageOptions !== 'default'
+          || state.flexCardTextAlign !== 'text-left'
+          || state.flexCardTextSize !== 'medium'
+          || state.flexCardHideDetails
+          || state.flexCardHideTitle
           || state.flexCardHideDescription
-          || state.flexCardHideFooter
-          || state.flexCardImageOptions
-          || state.flexCardTextAlign))
+          || state.flexCardHideFooter))
         && { flexCard: {
-          hideImage: !!state.flexCardHideImage,
+          imageOption: state.flexCardImageOptions,
+          textAlign: state.flexCardTextAlign,
+          textSize: state.flexCardTextSize,
           hideDetails: !!state.flexCardHideDetails,
           hideTitle: !!state.flexCardHideTitle,
           hideDescription: !!state.flexCardHideDescription,
           hideFooter: !!state.flexCardHideFooter,
-          imageOption: state.flexCardImageOptions,
-          textAlign: state.flexCardTextAlign,
         } }),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
@@ -1250,9 +1246,8 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
-    products: await getProducts() || [],
   };
-  console.log('>>>>> config <<<<< \n', config);
+  console.log('[DEBUG]', config);
   return config;
 };
 
@@ -1377,9 +1372,9 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
-  detailTextOption: 'default',
+  detailsTextOption: 'default',
   flexCardTextAlign: 'text-left',
-  flexCardHideImage: false,
+  flexCardTextSize: 'medium',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,

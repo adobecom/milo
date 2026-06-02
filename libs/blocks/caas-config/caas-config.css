@@ -151,23 +151,17 @@ dd.content .sort-options > .field {
 }
 
 /* Indent carousel options */
-dd.content .carousel-options .field {
+/* dd.content .carousel-options .field {
   padding-left: 20px;
   max-width: calc(var(--field-max-size) - 20px);
-} 
+}  */
 
 .caas-config .consonant-Wrapper--carousel {
   width: 100%;
   margin: 0;
 }
 
-.caas-config .nested {
-  padding-left: 20px;
-}
-
 /* Indented fields for flex card options */
-dd.content .blade-card-options,
-dd.content .flex-card-options,
 dd.content .nested {
   background: #333;
   width: calc(100% - 36px);
@@ -189,4 +183,8 @@ dd.content .nested {
       width: calc(100% - 20px);
     }
   }
-} 
+
+  .note {
+      padding-left: 16px;
+  }
+}
