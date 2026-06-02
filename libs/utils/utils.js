@@ -129,6 +129,7 @@ const C2_BLOCKS = [
   'split-aside-grid',
   'visually-hidden',
   'product-marquee-grid',
+  'hover-list',
 ];
 
 const AUTO_BLOCKS = [

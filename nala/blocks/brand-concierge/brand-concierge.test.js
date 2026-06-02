@@ -535,4 +535,61 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
     },
   );
+
+  // Test 13: floating-anchor-delay<N> variant (PR #5940 / MWPW-194524).
+  // Combined with floating-delay<M>, the floating button:
+  //   - is hidden near the top of the page (scrollY < topDelayPx)
+  //   - is visible in the middle of the page
+  //   - is hidden again when within anchorDelayPx of the page footer
+  // Tagged @bc-pending until the test fragment is authored.
+  test(
+    `[Test Id - ${features[13].tcid}] ${features[13].name},${features[13].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[13].path}${miloLibs}`);
+      const { data } = features[13];
+
+      await test.step('step-1: Go to Brand Concierge floating-anchor-delay page', async () => {
+        await page.goto(`${baseURL}${features[13].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page).toHaveURL(`${baseURL}${features[13].path}${miloLibs}`);
+      });
+
+      await test.step('step-2: Verify block carries both delay classes', async () => {
+        await expect(bc.block).toBeVisible();
+        await expect(bc.block).toHaveClass(new RegExp(data.topDelayClass));
+        await expect(bc.block).toHaveClass(new RegExp(data.anchorDelayClass));
+      });
+
+      await test.step('step-3: Floating button is hidden near top of page', async () => {
+        await expect(bc.floatingButton).toBeAttached({ timeout: 10000 });
+        // Top delay (e.g. 100px) means the button stays hidden until scroll
+        // passes that threshold.
+        await expect(bc.floatingButton).toHaveClass(/floating-hidden/);
+      });
+
+      await test.step('step-4: Floating button is visible in the middle of the page', async () => {
+        await page.evaluate(() => {
+          // Scroll well past topDelay but well before the footer.
+          window.scrollTo(0, Math.floor(document.body.scrollHeight / 2));
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForTimeout(1000);
+        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+      });
+
+      await test.step('step-5: Floating button is hidden again near the footer', async () => {
+        await page.evaluate(() => {
+          // Scroll to within anchor-delay distance of the footer.
+          window.scrollTo(0, document.body.scrollHeight);
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForTimeout(1000);
+        await expect(bc.floatingButton).toHaveClass(/floating-hidden/, { timeout: 10000 });
+      });
+
+      await test.step('step-6: Floating button has correct text content', async () => {
+        expect(await bc.floatingButtonInput.textContent()).toBeTruthy();
+      });
+    },
+  );
 });

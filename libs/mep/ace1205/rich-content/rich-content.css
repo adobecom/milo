@@ -27,6 +27,18 @@
     [class*="body-"]:not(.action-area) {
       max-width: 680px;
     }
+
+    p:has(picture) {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2a-spacing-xs);
+
+      picture, img {
+        width: 24px;
+        height: 24px;
+      }
+    }
   }
 
   &.center .foreground .content {
@@ -44,6 +56,8 @@
   &.jump-link {
     color: var(--s2a-color-content-knockout);
     z-index: 1;
+    padding-block-start: var(--s2a-layout-sm);
+    padding-block-end: var(--s2a-spacing-4xl);
 
     &.hero {
       height: 584px;
@@ -59,7 +73,6 @@
     }
 
     .foreground .content {
-      padding-block-start: var(--s2a-layout-sm);
       padding-inline: var(--s2a-spacing-lg);
 
       .heading-2,
@@ -90,7 +103,6 @@
       gap: var(--s2a-spacing-md);
       align-items: flex-start;
       margin-top: auto;
-      padding-block-end: var(--s2a-spacing-4xl);
       padding-inline: var(--s2a-spacing-lg);
     }
 
@@ -204,14 +216,15 @@
   }
 
   .rich-content.jump-link {
+    padding-block-start: var(--s2a-layout-md);
+    padding-block-end: var(--s2a-spacing-4xl);
+
     &.hero { height: 580px; }
 
     .foreground .content,
     .jump-links { padding-inline: var(--s2a-spacing-xl); }
 
     .foreground .content {
-      padding-block-start: var(--s2a-layout-md);
-
       .heading-2,
       .eyebrow { max-width: 530px; }
     }
@@ -248,6 +261,9 @@
     }
 
     &.jump-link {
+      padding-block-start: var(--s2a-layout-lg);
+      padding-block-end: var(--s2a-layout-sm);
+
       &.hero {
         height: 814px;
         padding-block-start: var(--s2a-layout-lg);
@@ -262,8 +278,6 @@
         .heading-2,
         .eyebrow { max-width: 656px; }
       }
-
-      .jump-links { padding-block-end: var(--s2a-layout-sm); }
     }
   }
 }
@@ -292,5 +306,259 @@
 
     .foreground .content,
     .jump-links { padding-inline: 0; }
+  }
+}
+
+.rich-content.video {
+  background: var(--s2a-color-background-inverse);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-lg);
+  padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
+  padding-bottom: var(--s2a-layout-lg);
+  overflow: clip;
+
+  .action-area {
+    margin-top: 0;
+  }
+
+  .media {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+
+    p {
+      margin: 0;
+    }
+
+    .video-container {
+      position: relative;
+      box-sizing: border-box;
+      max-width: 214px;
+      margin-inline: auto;
+      aspect-ratio: 9 / 16;
+      border-radius: var(--s2a-border-radius-24);
+      border: 9px solid var(--s2a-color-transparent-white-04);
+      background: var(--s2a-color-transparent-white-04);
+      backdrop-filter: blur(var(--s2a-blur-md));
+      overflow: hidden;
+      transform-origin: center bottom;
+
+      video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        outline: none;
+      }
+    }
+
+    .action-area {
+      display: flex;
+      justify-content: center;
+      margin-top: var(--s2a-spacing-lg);
+
+      &.dark {
+        background-color: unset;
+      }
+    }
+  }
+
+  .cta-area {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  .action-area.dark {
+    background-color: unset;
+  }
+}
+
+@media (width >= 768px) {
+  .rich-content.video {
+    .media {
+      padding-inline: unset;
+      max-width: var(--grid-width-10);
+
+      .video-container {
+        max-width: unset;
+        margin-inline: unset;
+        aspect-ratio: 16 / 9;
+
+        video {
+          height: auto;
+        }
+      }
+
+      .action-area {
+        margin-top: var(--s2a-spacing-xl);
+      }
+    }
+  }
+}
+
+.section:has(.rich-content.video) {
+  background: var(--s2a-color-background-inverse);
+
+  &.has-background {
+    .section-background {
+      overflow: hidden;
+
+      img {
+        filter: blur(var(--s2a-blur-md));
+        transform: scale(1.08);
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--s2a-color-transparent-black-48);
+      }
+    }
+
+    .rich-content.video {
+      background: transparent;
+    }
+  }
+}
+
+@keyframes rc-cta-counteract {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50vh); }
+}
+
+@keyframes rc-video-enter {
+  from { transform: scale(0.94) translateY(30px); }
+  to { transform: scale(1) translateY(0); }
+}
+
+@property --rc-pull-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 80px;
+}
+
+@property --rc-sweep-offset {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 200px;
+}
+
+/* mobile */
+.section:has(+ .section.parallax-video-garage-door .rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video),
+.section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+  --rc-pull-offset: 180px;
+  --rc-sweep-offset: 200px;
+}
+
+@media (width >= 1024px) {
+  .rich-content.video {
+    gap: var(--s2a-spacing-xl);
+  }
+
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+    --rc-pull-offset: 200px;
+    --rc-sweep-offset: 230px;
+  }
+}
+
+@media (width >= 1920px) {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+    --rc-pull-offset: 100px;
+    --rc-sweep-offset: 300px;
+  }
+}
+
+@keyframes rc-section-pull-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
+}
+
+@keyframes rc-section-sweep-in {
+  from { transform: translateY(var(--rc-sweep-offset)); }
+  to { transform: translateY(0); }
+}
+
+@keyframes rc-video-section-slow {
+  from { transform: translateY(0); }
+  to { transform: translateY(50vh); }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    body:has(.section.parallax-video-garage-door) {
+      timeline-scope: --rc-video-garage;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) {
+      view-timeline-name: --rc-video-garage;
+      animation: rc-video-section-slow linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+
+    .section.parallax-video-garage-door .rich-content.video .video-container {
+      animation: rc-video-enter linear both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: entry 0% exit 0%;
+    }
+
+    .section:has(+ .section.parallax-video-garage-door .rich-content.video) {
+      position: relative;
+      z-index: 2;
+      margin-bottom: calc(var(--rc-pull-offset) * -1);
+      animation: rc-section-pull-up cubic-bezier(0.4, 0, 0.2, 1) both;
+      animation-duration: auto;
+      animation-timeline: view();
+      animation-range: exit 0% exit 120%;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+      position: relative;
+      z-index: 2;
+      animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
+      animation-duration: auto;
+      animation-timeline: --rc-video-garage;
+      animation-range: entry 60% exit 100%;
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) + .section {
+      margin-top: calc(var(--rc-sweep-offset) * -1);
+    }
+
+    .section.parallax-video-garage-door .rich-content.video .cta-area {
+      animation: rc-cta-counteract linear both;
+      animation-duration: auto;
+      animation-timeline: --rc-video-garage;
+      animation-range: exit 50% exit 100%;
+    }
+
+    .section.parallax-video-garage-door .rich-content.video :is(a, button) {
+      scroll-margin-top: calc(100vh - 200px);
+    }
+
+    @media (width >= 1440px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: exit 0% exit 100%;
+      }
+    }
+
+    @media (width >= 1920px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: entry 90% exit 100%;
+      }
+    }
+
   }
 }
