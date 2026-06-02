@@ -77,9 +77,12 @@
   color: var(--s2a-color-gray-1000);
 }
 
-
 .dialog-modal .region-nav a:hover {
   text-decoration: underline;
+}
+
+.dialog-modal:has(.region-nav) > .fragment {
+  max-height: calc((100dvh - 6px) - 2em);
 }
 
 @media (min-width: 600px) {
