@@ -72,13 +72,10 @@ function addGrabHandle(el) {
     if (!isDragging) return;
     isDragging = false;
     const delta = currentY - startY;
-    if (delta >= SWIPE_CLOSE_THRESHOLD) {
-      modal.style.transition = 'transform 0.3s ease';
-      modal.style.transform = 'translateY(100%)';
-      modal.addEventListener('transitionend', triggerClose, { once: true });
-    } else {
-      snapBack();
-    }
+    if (delta < SWIPE_CLOSE_THRESHOLD) return snapBack();
+    modal.style.transition = 'transform 0.3s ease';
+    modal.style.transform = 'translateY(100%)';
+    modal.addEventListener('transitionend', triggerClose, { once: true });
   }, { passive: true });
 
   el.prepend(grabHandle);

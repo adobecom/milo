@@ -41,7 +41,7 @@
       }
     }
     .tour-row-image {
-      padding-block-start: 29px;
+      padding-block-start: var(--s2a-spacing-xl);
       > p {
         padding-block-start: 78px;
         &:first-child {
