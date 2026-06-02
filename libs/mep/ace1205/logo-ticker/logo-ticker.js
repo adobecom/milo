@@ -10,24 +10,11 @@ function buildTrack(el, logos) {
     return logoSet;
   });
 
-  const track = createTag('div', { class: 'logo-ticker-track', role: 'image' }, logoSets);
+  const track = createTag('div', { class: 'logo-ticker-track', role: 'img' }, logoSets);
   if (el.children.length >= 2) {
     track.setAttribute('aria-label', el.children[1].textContent);
   }
   return track;
-}
-
-// TODO: temporarily overriding svg colors. Should upload to feds
-function recolorIcons(root) {
-  const ICON_FILL = 'var(--s2a-color-content-default)';
-  function recolorSvg(svg) {
-    svg.setAttribute('fill', ICON_FILL);
-    svg.querySelectorAll('[fill]:not([fill="none"])').forEach((node) => {
-      node.setAttribute('fill', ICON_FILL);
-    });
-  }
-  root.querySelectorAll('svg').forEach(recolorSvg);
-  return root;
 }
 
 function syncTrackMetrics(track) {
@@ -44,7 +31,6 @@ export default function init(el) {
   if (!logos.length) return;
 
   const track = buildTrack(el, logos);
-  recolorIcons(track);
   el.replaceChildren(track);
 
   syncTrackMetrics(track);
