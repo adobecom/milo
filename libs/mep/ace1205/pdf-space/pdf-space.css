@@ -259,6 +259,8 @@
   }
 
   @media (width >= 768px) {
+    --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
+
     .text-block {
       width: 19vw;
       max-width: 367px;
@@ -271,8 +273,8 @@
 
     .acrobat-desktop-mockup {
       display: block;
-      width: clamp(680px, 70vw, 971px);
-      left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
+      width: var(--desktop-mockup-width);
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
     }
 
     .acrobat-desktop-panel {
@@ -280,8 +282,8 @@
     }
 
     .acrobat-title {
-      left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
-      width: clamp(680px, 70vw, 971px);
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
+      width: var(--desktop-mockup-width);
       transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
 
       .heading {
@@ -298,29 +300,17 @@
   /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
 
   @media (width >= 1280px) {
+    --desktop-mockup-width: min(68.6vw, 971px);
+
     .text-block {
       min-width: 0;
     }
-
-    .acrobat-desktop-mockup {
-      width: min(68.6vw, 971px);
-      left: calc((100vw - min(68.6vw, 971px)) / 2);
-    }
-
-    .acrobat-title {
-      left: calc((100vw - min(68.6vw, 971px)) / 2);
-      width: min(68.6vw, 971px);
-    }
   }
 
-  /*
-   * No-motion fallback: a static, normal-flow document built by buildNoMotion()
-   * (for prefers-reduced-motion) instead of the sticky scroll-driven stage. No
-   * transforms, no pinning. The resting card grid + marketing copy sit above
-   * the Acrobat mockup, which has the cards slotted in via percentage-positioned
-   * clones (.no-motion-slotted-card). These rules override the absolute/sticky
-   * positioning above by higher specificity (.pdf-space.no-motion ...).
-   */
+  @media (width >= 1440px) {
+    --desktop-mockup-width: min(68.6vw, 1600px);
+  }
+
   &.no-motion {
     height: auto;
 
@@ -418,7 +408,7 @@
     .acrobat-desktop-mockup {
       display: none;
       width: 100%;
-      max-width: 971px;
+      max-width: 1600px;
     }
 
     .acrobat-desktop-panel picture {
