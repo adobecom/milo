@@ -9,9 +9,26 @@ export const cardUsesSpectrumIcon = (card) => !!card.querySelector('merch-badge[
 let iconsLoaded;
 function loadSpectrumIcons(cards) {
   if (iconsLoaded || !cards.some(cardUsesSpectrumIcon)) return;
-  iconsLoaded = true;
   const { base } = getConfig();
-  import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
+  iconsLoaded = import(`${base}/features/spectrum-web-components/dist/icons-workflow.js`);
+}
+
+// The "What's included" icons used by plans-bizpro cards are designed as Spectrum 2.
+// Studio renders them inside an sp-theme system="spectrum-two"; consumer pages have
+// no such theme, so they default to Spectrum 1 (and the S2-only pen-brush glyph falls
+// back to a placeholder). Opt this curated, S2-capable set into Spectrum 2 once the
+// definitions load. Scoped to the icons these cards actually use, so workflow icons
+// that have no Spectrum 2 glyph are never forced to v2 (which would break them).
+// Keep in sync with the MAS plans-bizpro cards: a new whats-included icon authored
+// in MAS renders at Spectrum 1 (its default) until added here — a safe gap (the
+// icon still shows, just not the S2 glyph), not a broken/placeholder render.
+const WHATS_INCLUDED_S2_ICONS = ['sp-icon-pen-brush', 'sp-icon-document', 'sp-icon-briefcase', 'sp-icon-magic-wand'];
+export async function applyWhatsIncludedSpectrumVersion(card) {
+  const icons = [...card.querySelectorAll('[slot="whats-included"] .sp-icon')]
+    .filter((icon) => WHATS_INCLUDED_S2_ICONS.includes(icon.localName));
+  if (!icons.length) return;
+  if (iconsLoaded) await iconsLoaded.catch(() => {});
+  icons.forEach((icon) => { icon.spectrumVersion = 2; });
 }
 
 export async function localizePreviewLinks(el) {
@@ -132,6 +149,7 @@ async function postProcessCard(card) {
   await decorateLinksAsync(card);
   await localizePreviewLinks(card);
   await localizeMerchIcons(card);
+  await applyWhatsIncludedSpectrumVersion(card);
   card.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
   decorateCardCtasWithA11y(card);
   enableAnalytics(card);

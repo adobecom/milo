@@ -2,7 +2,14 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock, cardUsesSpectrumIcon } from '../../../libs/blocks/merch/autoblock.js';
+import {
+  handleCustomAnalyticsEvent,
+  cleanupTabsAnalytics,
+  enableAnalytics,
+  postProcessAutoblock,
+  cardUsesSpectrumIcon,
+  applyWhatsIncludedSpectrumVersion,
+} from '../../../libs/blocks/merch/autoblock.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 setConfig({ locales, miloLibs: '/libs' });
@@ -172,6 +179,39 @@ describe('autoblock', () => {
       badge.setAttribute('icon', 'https://example.com/icon.png');
       card.appendChild(badge);
       expect(cardUsesSpectrumIcon(card)).to.be.false;
+    });
+  });
+
+  describe('applyWhatsIncludedSpectrumVersion', () => {
+    const cardWithIcon = (tag) => {
+      const card = document.createElement('merch-card');
+      const section = document.createElement('div');
+      section.setAttribute('slot', 'whats-included');
+      const icon = document.createElement(tag);
+      icon.className = 'sp-icon';
+      section.appendChild(icon);
+      card.appendChild(section);
+      return { card, icon };
+    };
+
+    it('opts the curated S2-capable icons into Spectrum 2', async () => {
+      const { card, icon } = cardWithIcon('sp-icon-pen-brush');
+      await applyWhatsIncludedSpectrumVersion(card);
+      expect(icon.spectrumVersion).to.equal(2);
+    });
+
+    it('leaves icons outside the curated set untouched (no v1-only break)', async () => {
+      // page-rule has no Spectrum 2 glyph; forcing v2 would render a placeholder
+      const { card, icon } = cardWithIcon('sp-icon-page-rule');
+      await applyWhatsIncludedSpectrumVersion(card);
+      expect(icon.spectrumVersion).to.not.equal(2);
+    });
+
+    it('is a no-op when the card has no whats-included icons', async () => {
+      const card = document.createElement('merch-card');
+      // should resolve without touching anything
+      await applyWhatsIncludedSpectrumVersion(card);
+      expect(card.querySelectorAll('.sp-icon').length).to.equal(0);
     });
   });
 });
