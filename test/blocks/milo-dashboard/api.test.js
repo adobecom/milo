@@ -81,6 +81,22 @@ describe('milo-dashboard api', () => {
       expect(ctx.token).to.equal('cfg-tok');
     });
 
+    it('derives clientId from the token client_id when no config row', async () => {
+      const payload = btoa(JSON.stringify({ client_id: 'darkalley' }));
+      window.adobeIMS = { getAccessToken: () => ({ token: `h.${payload}.s` }) };
+      const block = buildBlock([]);
+      const ctx = await resolveContext(block, { inIframe: false });
+      expect(ctx.clientId).to.equal('darkalley');
+    });
+
+    it('prefers an explicit clientid row over the token client_id', async () => {
+      const payload = btoa(JSON.stringify({ client_id: 'darkalley' }));
+      window.adobeIMS = { getAccessToken: () => ({ token: `h.${payload}.s` }) };
+      const block = buildBlock([['clientid', 'override-cid']]);
+      const ctx = await resolveContext(block, { inIframe: false });
+      expect(ctx.clientId).to.equal('override-cid');
+    });
+
     it('resolves DA mode when in iframe and sdk resolves', async () => {
       const block = buildBlock([]);
       const loadDaSdk = () => Promise.resolve({ token: 't', context: { org: 'x' } });

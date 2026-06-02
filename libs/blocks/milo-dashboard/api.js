@@ -14,6 +14,18 @@ function defaultBase() {
   return BACKENDS[env?.name] || BACKENDS.stage;
 }
 
+// milo-core's requireAuth validates the token against the clientId query param,
+// so the clientId MUST match the token's own client_id (e.g. 'darkalley' for a
+// DA SDK token) or IMS rejects it as invalid. Read it straight from the JWT.
+function tokenClientId(token) {
+  try {
+    const seg = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    return JSON.parse(atob(seg)).client_id;
+  } catch (e) {
+    return undefined;
+  }
+}
+
 export function readConfig(block) {
   const cfg = {};
   block.querySelectorAll(':scope > div').forEach((row) => {
@@ -29,19 +41,21 @@ export async function resolveContext(
 ) {
   const cfg = readConfig(block);
   const { imsClientId } = getConfig();
-  const clientId = cfg.clientid || imsClientId;
   const base = cfg.api || defaultBase();
+  // clientId must match the token; an explicit config row wins, otherwise we
+  // derive it from the token and fall back to Milo's imsClientId.
+  const pickClientId = (token) => cfg.clientid || tokenClientId(token) || imsClientId;
   if (inIframe && loadDaSdk) {
     try {
       const sdk = await Promise.race([
         loadDaSdk(),
         new Promise((_, reject) => { setTimeout(() => reject(new Error('da-timeout')), 1500); }),
       ]);
-      return { mode: 'da', base, token: sdk.token, clientId, daContext: sdk.context };
+      return { mode: 'da', base, token: sdk.token, clientId: pickClientId(sdk.token), daContext: sdk.context };
     } catch (e) { /* fall through to non-DA */ }
   }
   const token = cfg.token || window.adobeIMS?.getAccessToken()?.token;
-  return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token, clientId };
+  return { mode: base === DEFAULT_LOCAL ? 'local' : 'standalone', base, token, clientId: pickClientId(token) };
 }
 
 export function createClient({ base, token, clientId }) {
