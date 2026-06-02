@@ -115,6 +115,14 @@ Interpretation:
 2. **A host page that contains the `milo-dashboard` block** — this DOES NOT EXIST YET. It must be authored content (a DA doc) with the block table + an `api` config row, on some DA-backed site. This page (run with `?milolibs=milo-world-dashboard` until the PR merges) is what DA iframes.
 3. **Register the app** in that DA site's config (Okan offered to help; or do it via DA admin API if we have access).
 
+### CRITICAL: code vs content — why a branch URL alone 404s
+EDS serves a page as **code (from the git branch) + content (from the site's DA/SharePoint source)**. The repo branch only provides the block **code**; it does **not** create pages. So visiting e.g. `https://milo-world-dashboard--milo--adobecom.aem.page/tools/milo-core/vitals` **404s today** because no document exists at that path. To make any URL render the block you MUST:
+1. **Author a document** at the desired path (e.g. `/tools/milo-core/vitals`) in Milo's content source (DA) containing the `milo-dashboard` block table + `api` row.
+2. **Preview it** (lands it on the content bus / `aem.page`).
+3. Then `https://<branch>--milo--adobecom.aem.page/<path>` = that branch's **code** + that **content** → the block renders. (Even then: real data needs the §4 auth fix; otherwise panels show empty/error states. No mock on a real aem.page.)
+
+Candidate path discussed with user: `/tools/milo-core/vitals`. Need to confirm the DA **org/repo** for Milo's content (likely `adobecom/milo`) before authoring. Can push the doc via the `da-auth` skill + DA admin API (`admin.da.live`).
+
 ### Block authoring (how the block reads config)
 The block reads `:scope > div` rows as key/value. Relevant rows:
 - `api` → backend base URL (e.g. `https://milo-core-prod.adobe.io`). Default if absent: `http://localhost:8080`.
