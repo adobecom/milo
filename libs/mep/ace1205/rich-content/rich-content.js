@@ -90,14 +90,14 @@ function decorate(block, root = block) {
   decorateText(content);
   const isJumpLink = root.classList.contains('jump-link');
   promoteParagraphHeading(content, '2', isJumpLink);
+  const firstP = content?.querySelector('p:has(picture, img)');
+  const iconImg = firstP?.querySelector('img[src]');
 
+  if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
   if (!isJumpLink) return;
 
-  const firstP = content?.querySelector('p:has(picture, img)');
   const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
   if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
-  const iconImg = firstP?.querySelector('img[src]');
-  if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
   decorateJumpLinks(content, foreground);
 }
 
