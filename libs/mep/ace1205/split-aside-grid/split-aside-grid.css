@@ -143,8 +143,8 @@
               width: 5px;
               height: 8px;
               background-color: currentColor;
-              mask: url('../../assets/img/arrow-right.svg') no-repeat center;
-              -webkit-mask: url('../../assets/img/arrow-right.svg') no-repeat center;
+              mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
+              -webkit-mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
               mask-size: contain;
               -webkit-mask-size: contain;
             }
