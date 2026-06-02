@@ -985,7 +985,8 @@ p {
     overflow: hidden;
   }
 
-  &:hover {
+  &:hover,
+  &:focus {
     .icon-button {
       background-color: var(--s2a-color-transparent-white-24);
     }
@@ -1063,7 +1064,7 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
-.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast):not(:has(.floating-cta)) {
   z-index: 1;
 }
 /* TODO: Parallax styles should be loaded separately and conditionally */
