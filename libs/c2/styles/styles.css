@@ -1245,6 +1245,7 @@ span.hang-opening-quote {
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
       --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 36%;
     }
 
     .section-background img {
