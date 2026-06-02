@@ -1,5 +1,5 @@
-.section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast) {
-  z-index: 3;
+.section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
+  z-index: 4;
 }
 
 .offer-hero {
@@ -91,6 +91,27 @@
   .hero-card {
     position: relative;
     display: flex;
+  }
+
+  a.hero-card-tile {
+    text-decoration: none;
+
+    &:focus-visible {
+      outline: 2px solid var(--s2a-color-blue-800);
+      outline-offset: -2px;
+    }
+
+    &:hover .learn-more svg {
+      transform: translate3d(var(--s2a-spacing-4), 0, 0);
+    }
+
+    &:dir(rtl):hover .learn-more svg {
+      transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
+    }
+  }
+
+  &.cards-animating a.hero-card-tile {
+    pointer-events: none;
   }
 
   .hero-card-tile {
@@ -197,16 +218,8 @@
       transition: transform 0.5s var(--parallax-easing);
     }
 
-    &:hover svg {
-      transform: translate3d(var(--s2a-spacing-4), 0, 0);
-    }
-
     &:dir(rtl) svg {
       transform: scaleX(-1);
-    }
-
-    &:dir(rtl):hover svg {
-      transform: scaleX(-1) translate3d(var(--s2a-spacing-4), 0, 0);
     }
   }
 }

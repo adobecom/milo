@@ -141,7 +141,10 @@ function decorate(block) {
     cardText.append(textWrapper);
     if (learnMore) cardText.append(learnMore);
 
-    const tile = createTag('div', { class: 'hero-card-tile' });
+    const tile = learnMore
+      ? createTag('a', { class: 'hero-card-tile', href: learnMore.href, 'data-tracking-label': heading?.textContent })
+      : createTag('div', { class: 'hero-card-tile' });
+    if (learnMore) learnMore.setAttribute('tabindex', '-1');
     tile.append(media, cardText);
 
     const card = createTag('div', { class: 'hero-card' });
@@ -166,6 +169,8 @@ function initAnimation(block) {
   positionContent();
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  block.classList.add('cards-animating');
 
   let heroContent;
   let eyebrow;
@@ -218,6 +223,7 @@ function initAnimation(block) {
   function setSettled(animationDone) {
     if (isSettled === animationDone) return;
     isSettled = animationDone;
+    block.classList.toggle('cards-animating', !animationDone);
 
     if (!animationDone) {
       videoObserver?.disconnect();
