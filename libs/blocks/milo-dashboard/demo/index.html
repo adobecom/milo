@@ -155,7 +155,7 @@
     };
 
     // ---- Boot the block ---------------------------------------------------
-    setConfig({ codeRoot: '/libs', miloLibs: '/libs', env: { name: 'local' }, locale: { ietf: 'en-US', prefix: '' } });
+    setConfig({ codeRoot: '/libs', miloLibs: '/libs', imsClientId: 'demo', env: { name: 'local' }, locale: { ietf: 'en-US', prefix: '' } });
     const { default: init } = await import('/libs/blocks/milo-dashboard/milo-dashboard.js');
     await init(document.querySelector('.milo-dashboard'));
   </script>

@@ -1,5 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const { readConfig, resolveContext, createClient } = await import('../../../libs/blocks/milo-dashboard/api.js');
 
@@ -19,8 +20,13 @@ function buildBlock(rows) {
 }
 
 describe('milo-dashboard api', () => {
+  beforeEach(() => {
+    setConfig({ imsClientId: 'test-client-id' });
+  });
+
   afterEach(() => {
     sinon.restore();
+    delete window.adobeIMS;
   });
 
   describe('readConfig', () => {
@@ -52,6 +58,21 @@ describe('milo-dashboard api', () => {
       expect(ctx.token).to.equal('tk');
     });
 
+    it('uses adobeIMS token and imsClientId when no config token (non-DA)', async () => {
+      window.adobeIMS = { getAccessToken: () => ({ token: 'ims-tok' }) };
+      const block = buildBlock([]);
+      const ctx = await resolveContext(block, { inIframe: false });
+      expect(ctx.token).to.equal('ims-tok');
+      expect(ctx.clientId).to.equal('test-client-id');
+    });
+
+    it('prefers an explicit config token over adobeIMS', async () => {
+      window.adobeIMS = { getAccessToken: () => ({ token: 'ims-tok' }) };
+      const block = buildBlock([['token', 'cfg-tok']]);
+      const ctx = await resolveContext(block, { inIframe: false });
+      expect(ctx.token).to.equal('cfg-tok');
+    });
+
     it('resolves DA mode when in iframe and sdk resolves', async () => {
       const block = buildBlock([]);
       const loadDaSdk = () => Promise.resolve({ token: 't', context: { org: 'x' } });
@@ -59,6 +80,7 @@ describe('milo-dashboard api', () => {
       expect(ctx.mode).to.equal('da');
       expect(ctx.base).to.equal('http://localhost:8080');
       expect(ctx.token).to.equal('t');
+      expect(ctx.clientId).to.equal('test-client-id');
       expect(ctx.daContext).to.deep.equal({ org: 'x' });
     });
 
@@ -82,22 +104,22 @@ describe('milo-dashboard api', () => {
       expect(data).to.deep.equal({ ok: 1 });
     });
 
-    it('adds bearer header and clientId when token present', async () => {
+    it('adds bearer header and passed clientId when token present', async () => {
       const fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, json: () => Promise.resolve({}) });
-      const client = createClient({ base: 'https://example.com', token: 'abc' });
+      const client = createClient({ base: 'https://example.com', token: 't', clientId: 'cid' });
       await client.get('/items');
       const [url, opts] = fetchStub.firstCall.args;
-      expect(url.searchParams.get('clientId')).to.equal('milo-dashboard');
-      expect(opts.headers.Authorization).to.equal('Bearer abc');
+      expect(url.searchParams.get('clientId')).to.equal('cid');
+      expect(opts.headers.Authorization).to.equal('Bearer t');
     });
 
     it('getText returns text body', async () => {
       const csv = 'path,site\n/a.html,milo';
       const fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, text: () => Promise.resolve(csv) });
-      const client = createClient({ base: 'https://example.com', token: 'abc' });
+      const client = createClient({ base: 'https://example.com', token: 'abc', clientId: 'cid' });
       const data = await client.getText('/test-pages', { since: '30d' });
       const [url, opts] = fetchStub.firstCall.args;
-      expect(url.toString()).to.equal('https://example.com/test-pages?since=30d&clientId=milo-dashboard');
+      expect(url.toString()).to.equal('https://example.com/test-pages?since=30d&clientId=cid');
       expect(opts.headers.Authorization).to.equal('Bearer abc');
       expect(data).to.equal(csv);
     });
