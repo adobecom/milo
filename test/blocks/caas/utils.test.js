@@ -723,6 +723,50 @@ describe('getConfig', () => {
       stageDomainsMap: { localhost: { 'www.adobe.com': 'stage.adobe.com', 'business.adobe.com': 'origin' } },
     })).to.eql({});
   });
+
+  describe('localFirstRecencyThreshold', () => {
+    it('is included in sort config when sortDefault is localFirst and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(6);
+    });
+
+    it('is included in sort config when sortLocalFirst popup option is checked and threshold is set', async () => {
+      const localState = {
+        ...defaultState,
+        sortEnablePopup: true,
+        sortLocalFirst: true,
+        sortLocalFirstRecencyThreshold: 3,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort.localFirstRecencyThreshold).to.equal(3);
+    });
+
+    it('is omitted from sort config when threshold is null', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'localFirst',
+        sortLocalFirstRecencyThreshold: null,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
+
+    it('is omitted from sort config when localFirst is not active', async () => {
+      const localState = {
+        ...defaultState,
+        sortDefault: 'dateDesc',
+        sortLocalFirst: false,
+        sortLocalFirstRecencyThreshold: 6,
+      };
+      const config = await getConfig(localState, strings);
+      expect(config.sort).to.not.have.property('localFirstRecencyThreshold');
+    });
+  });
 });
 
 describe('getCountryAndLang', () => {
@@ -907,6 +951,93 @@ describe('getCountryAndLang', () => {
       enabled: true,
       partialLoadCount: 75,
     });
+  });
+
+  it('should include useRoundedCorners in the config when enabled', async () => {
+    const state = { ...defaultState, useRoundedCorners: true };
+    const config = await getConfig(state, strings);
+    expect(config.collection.useRoundedCorners).to.be.true;
+  });
+
+  it('should NOT include useRoundedCorners in the config when disabled', async () => {
+    const state = { ...defaultState, useRoundedCorners: false };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('useRoundedCorners');
+  });
+
+  it('should include editorialOpenVariant when cardStyle is editorial-card and variant is enabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'editorial-card',
+      editorialCardOpenVariant: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.editorialOpenVariant).to.be.true;
+  });
+
+  it('should NOT include editorialOpenVariant when cardStyle is editorial-card but variant is disabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'editorial-card',
+      editorialCardOpenVariant: false,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('editorialOpenVariant');
+  });
+
+  it('should NOT include editorialOpenVariant when cardStyle is not editorial-card', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'half-height',
+      editorialCardOpenVariant: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection).to.not.have.property('editorialOpenVariant');
+  });
+
+  it('should include localFirst sort option when sortLocalFirst is enabled', async () => {
+    const state = { ...defaultState, sortLocalFirst: true };
+    const config = await getConfig(state, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localFirst')).to.be.true;
+  });
+
+  it('should include localLast sort option when sortLocalLast is enabled', async () => {
+    const state = { ...defaultState, sortLocalLast: true };
+    const config = await getConfig(state, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localLast')).to.be.true;
+  });
+
+  it('should NOT include localFirst or localLast sort options by default', async () => {
+    const config = await getConfig(defaultState, strings);
+    const sortOptions = config.sort.options;
+    expect(sortOptions.some((o) => o.sort === 'localFirst')).to.be.false;
+    expect(sortOptions.some((o) => o.sort === 'localLast')).to.be.false;
+  });
+
+  it('should append current page UUID to excludeIds in the endpoint', async () => {
+    const config = await getConfig(defaultState, strings);
+    const { endpoint } = config.collection;
+    const excludeIds = new URLSearchParams(endpoint.replace(/.*\?/, '?')).get('excludeIds');
+    // The current page UUID must be present in excludeIds
+    expect(excludeIds).to.be.a('string');
+    expect(excludeIds.length).to.be.greaterThan(0);
+  });
+
+  it('should combine existing excludedCards with current page UUID in excludeIds', async () => {
+    const existingId = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+    const state = {
+      ...defaultState,
+      excludedCards: [{ contentId: existingId }],
+    };
+    const config = await getConfig(state, strings);
+    const { endpoint } = config.collection;
+    const excludeIdsEncoded = endpoint.match(/excludeIds=([^&]*)/)?.[1] ?? '';
+    const excludeIds = decodeURIComponent(excludeIdsEncoded);
+    expect(excludeIds).to.include(existingId);
+    // Should also have the page UUID (a second UUID separated by comma)
+    expect(excludeIds.split(',').length).to.be.greaterThan(1);
   });
 });
 

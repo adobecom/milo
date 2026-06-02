@@ -110,7 +110,8 @@ const groupByViewport = (el) => {
   let current = null;
   [...el.children].forEach((row) => {
     const firstCol = row.querySelector(':scope > div');
-    const breakpoint = BREAKPOINTS.find((b) => firstCol?.textContent.trim().toLowerCase() === b);
+    const text = firstCol?.textContent.trim().toLowerCase();
+    const breakpoint = BREAKPOINTS.find((b) => text === b || text === `${b}-viewport`);
     if (breakpoint) {
       current = breakpoint;
       viewports[current] = [];
