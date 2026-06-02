@@ -141,5 +141,21 @@ module.exports = {
       tags: '@brand-concierge @brand-concierge-consent @regression @milo',
       data: {},
     },
+    {
+      // MWPW-194524 (PR #5940) - floating-anchor-delay<N> variant.
+      // Hides the floating button when the page scroll is within N pixels of
+      // the footer. Combined with floating-delay<M> to also hide near the top.
+      tcid: '13',
+      name: '@brand-concierge floating anchor delay',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-anchor-delay',
+      tags: '@brand-concierge @brand-concierge-anchor-delay @regression @milo',
+      data: {
+        floatingButtonText: 'Ask a question',
+        topDelayClass: 'floating-delay-100',
+        anchorDelayClass: 'floating-anchor-delay-450',
+        topDelayPx: 100,
+        anchorDelayPx: 450,
+      },
+    },
   ],
 };
