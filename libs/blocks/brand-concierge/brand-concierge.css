@@ -636,15 +636,11 @@
   height: calc(100% - var(--modal-header-height));
 }
 
-/* Modal width matches the floating-input bar */
 body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   max-width: calc(100% - 48px);
   width: calc(100% - 48px);
 }
 
-/* =============================================================================
-   floating-input variant
-   ============================================================================= */
 .brand-concierge.floating-input {
   --bc-fi-bar-bg: rgba(248 248 248 / 65%);
   --bc-fi-bar-border: rgba(0 0 0 / 12%);
@@ -672,7 +668,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   z-index: 100;
 }
 
-/* Remove block-level spacing that conflicts with the fixed bar layout */
 .brand-concierge.floating-input .bc-input-field,
 .brand-concierge.floating-input .bc-prompt-cards {
   margin: 0;
@@ -694,12 +689,10 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   background: var(--bc-fi-input-bg);
 }
 
-/* Tooltip matches pill styling */
 .brand-concierge.floating-input .bc-input-tooltip {
   color: #000;
 }
 
-/* Gradient border on the input pill */
 .brand-concierge.floating-input .bc-input-field::before {
   backdrop-filter: none;
   background:
@@ -708,7 +701,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   border: 2px solid transparent;
 }
 
-/* Gradient glow — blurred layer behind the input, fades in on hover */
 .brand-concierge.floating-input .bc-input-field::after {
   content: '';
   position: absolute;
@@ -726,7 +718,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   opacity: 0.4;
 }
 
-/* Constrain textarea to a single line — text overflows left as user types */
 .brand-concierge.floating-input .bc-input-field-container textarea,
 .brand-concierge.floating-input .bc-textarea-grow-wrap::after {
   max-height: 48px;
@@ -737,7 +728,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   white-space: nowrap;
 }
 
-/* Center label icon and submit button in the fixed-height input */
 .brand-concierge.floating-input .bc-input-field-label {
   align-self: center;
   margin-top: 0;
@@ -763,7 +753,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   color: #fff;
 }
 
-/* Prompt pills */
 .brand-concierge.floating-input .bc-prompt-cards {
   display: none;
   flex: 0 1 auto;
@@ -809,7 +798,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   white-space: nowrap;
 }
 
-/* Dark theme */
 .brand-concierge.floating-input.dark {
   --bc-fi-bar-bg: rgba(0 0 0 / 65%);
   --bc-fi-bar-border: rgba(255 255 255 / 21%);
@@ -817,8 +805,11 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   --bc-fi-pill-bg: rgba(0 0 0 / 93%);
   --bc-fi-pill-border: #8F8F8F;
   --bc-fi-text: #DBDBDB;
-  --bc-fi-pill-text: #DBDBDB;
-  --bc-button-color: #DBDBDB;
+  --bc-fi-pill-text: var(--bc-fi-text);
+  --bc-button-color: var(--bc-fi-text);
+  --bc-fi-icon-color: #C6C6C6;
+  --bc-fi-input-hover-bg: #292929;
+  --bc-fi-pill-hover-bg: #222;
 }
 
 .brand-concierge.floating-input.dark .bc-input-field::before {
@@ -836,26 +827,26 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 }
 
 .brand-concierge.floating-input.dark .input-field-button {
-  color: #C6C6C6;
+  color: var(--bc-fi-icon-color);
 }
 
 .brand-concierge.floating-input.dark .input-field-button:disabled {
-  color: #C6C6C6;
+  color: var(--bc-fi-icon-color);
   pointer-events: none;
 }
 
 .brand-concierge.floating-input.dark .input-field-button:not(:disabled) {
-  color: #131313;
+  color: var(--bc-fi-input-bg);
 }
 
 .brand-concierge.floating-input.dark .bc-input-field-container:hover,
 .brand-concierge.floating-input.dark .bc-input-field-container:has(textarea:focus-visible) {
-  background: #292929;
+  background: var(--bc-fi-input-hover-bg);
 }
 
 .brand-concierge.floating-input.dark .prompt-card-button:hover {
-  border: 1px solid #C6C6C6;
-  background-color: #222;
+  border: 1px solid var(--bc-fi-icon-color);
+  background-color: var(--bc-fi-pill-hover-bg);
 }
 
   /* large mobile up */
@@ -1079,26 +1070,3 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
   }
 }
-
-
-/* Tablet: mobile-hide-drawer removes the bar entirely, leaving only the input */
-@media screen and (min-width: 600px) and (max-width: 959px) {
-  .brand-concierge.floating-input.mobile-hide-drawer {
-    backdrop-filter: none;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    padding: 0;
-  }
-
-  .brand-concierge.floating-input.mobile-hide-drawer .bc-prompt-cards {
-    display: none;
-  }
-
-  .brand-concierge.floating-input.mobile-hide-drawer .bc-input-field {
-    flex: 1;
-    max-width: none;
-    min-width: 0;
-  }
-}
-
