@@ -15,7 +15,7 @@ function getForegroundContent(foregroundRow, contentDiv, blockName) {
   }
 }
 
-function decorate(block, root) {
+function decorate(block, root, el) {
   const blockName = root.classList[0].toLowerCase();
   const rows = block.querySelectorAll(':scope > div');
   const firstRow = rows[0];
@@ -59,11 +59,14 @@ function decorate(block, root) {
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
-  link.remove();
+  if (el.classList.contains('show-link')) {
+    link.classList.add('standalone-link', 'label');
+    link.setAttribute('tabindex', '-1');
+  } else link.remove();
   linkContainer.append(contentDiv);
   firstRow.prepend(linkContainer);
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
+  decorateViewportContent(el, (block, root) => decorate(block, root, el));
 }
