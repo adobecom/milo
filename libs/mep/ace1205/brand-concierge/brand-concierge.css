@@ -602,6 +602,7 @@
 .c2-dark .bc-legal,
 .c2-dark .bc-legal a {
   color: var(--bc-dark-text-color-secondary);
+  font-size: 12px;
 }
 
 /* Modal */
