@@ -34,6 +34,7 @@ const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
+const isMobile = () => window.innerWidth < 768;
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -197,50 +198,55 @@ function initAnimation(block) {
   let stackBoxes = [];
   let rtl = false;
   let isSettled = false;
-  let willChangeOn = false;
+  let gpuPromoted = false;
   let videoObserver = null;
   let rafId = 0;
   let running = false;
   let needsReset = false;
 
-  function setSettled(next) {
-    if (isSettled === next) return;
-    isSettled = next;
-    if (next) {
-      fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
-      if (needsReset) {
-        needsReset = false;
-        videos.forEach((video) => { video.currentTime = 0.001; });
-      }
-      videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          const mediaIdx = medias.indexOf(entry.target);
-          const video = videos[mediaIdx];
-          if (!entry.isIntersecting) return;
-          if (video && !video.ended) video.play()?.catch(() => {});
-          const card = entry.target.closest('.hero-card');
-          if (!card || card.dataset.textFaded) return;
-          card.dataset.textFaded = '1';
-          const texts = [...card.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
-          texts.forEach((el, j) => {
-            el.style.transition = `opacity 0.5s ease-in ${200 + j * 150}ms`;
-            el.style.opacity = '1';
-          });
-        });
-      }, { threshold: 0.7 });
-      medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
+  function onMediaVisible(entry) {
+    const mediaIdx = medias.indexOf(entry.target);
+    const video = videos[mediaIdx];
+    if (!entry.isIntersecting) return;
+    if (video && !video.ended) video.play()?.catch(() => {});
+    const card = entry.target.closest('.hero-card');
+    if (!card || card.dataset.textFaded) return;
+    card.dataset.textFaded = '1';
+    const texts = [...card.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
+    texts.forEach((el, j) => {
+      el.style.transition = `opacity 0.5s ease-in ${200 + j * 150}ms`;
+      el.style.opacity = '1';
+    });
+  }
+
+  function setSettled(animationDone) {
+    if (isSettled === animationDone) return;
+    isSettled = animationDone;
+
+    if (!animationDone) {
+      videoObserver?.disconnect();
+      videoObserver = null;
+      needsReset = true;
       return;
     }
-    videoObserver?.disconnect();
-    videoObserver = null;
-    needsReset = true;
+
+    fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
+    if (needsReset) {
+      needsReset = false;
+      videos.forEach((video) => { video.currentTime = 0.001; });
+    }
+    videoObserver = new IntersectionObserver(
+      (entries) => entries.forEach(onMediaVisible),
+      { threshold: 0.7 },
+    );
+    medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
   }
 
   function getProgress() {
     if (!cards[0]) return 0;
     const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
     const slotTargetTop = Math.round(navBottom + 124) + 60;
-    const startY = window.innerWidth < 768 ? window.innerHeight * 1.2 : window.innerHeight;
+    const startY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
     const range = startY - slotTargetTop;
     if (range <= 0) return 0;
     return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
@@ -269,8 +275,8 @@ function initAnimation(block) {
     });
 
     const animating = progress > 0.001 && progress < 0.999;
-    if (animating === willChangeOn) return;
-    willChangeOn = animating;
+    if (animating === gpuPromoted) return;
+    gpuPromoted = animating;
     tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
   }
 
@@ -281,7 +287,7 @@ function initAnimation(block) {
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    const eyebrowThreshold = window.innerWidth < 768 ? 0.2 : 0.7;
+    const eyebrowThreshold = isMobile() ? 0.2 : 0.7;
     eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
   }
 
@@ -296,9 +302,8 @@ function initAnimation(block) {
     });
 
     const vw = window.innerWidth;
-    const contentBottom = heroContent ? heroContent.getBoundingClientRect().bottom : 540;
-    const stackTop = contentBottom + 74;
-    const stackScale = vw < 768 ? 0.75 : 1;
+    const stackTop = heroContent.getBoundingClientRect().bottom + 74;
+    const stackScale = isMobile() ? 0.75 : 1;
     const stackLeft = (vw - STACK_W * stackScale) / 2;
     rtl = isRtl(block);
     stackBoxes = STACK_REF.map((ref) => ({
