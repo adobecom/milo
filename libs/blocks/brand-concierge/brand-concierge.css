@@ -876,7 +876,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
     padding: 80px 32px 24px;
   }
 
-  /* floating-input */
   .brand-concierge.floating-input {
     bottom: 24px;
     max-width: 1412px;
@@ -1002,7 +1001,6 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
     }
   }
 
-  /* floating-input */
   .brand-concierge.floating-input .bc-prompt-cards {
     display: flex;
   }
