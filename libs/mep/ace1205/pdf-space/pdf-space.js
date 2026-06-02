@@ -386,10 +386,8 @@ function parseAuthoredContent(el) {
   };
 }
 
+// SceneCard shape and buildCardStack params: see README.md § "Card data model".
 function buildCardStack(cardScene, cardDefs) {
-  // No AT roles here: the whole .card-scene is aria-hidden (see buildStage), so
-  // the animated cards are exposed to assistive tech only via the no-motion
-  // static grid.
   const stackRoot = createTag('div', { class: 'card-stack' });
   cardScene.append(stackRoot);
   return cardDefs.map((def) => {
@@ -629,10 +627,66 @@ function buildNoMotion(el) {
   el.replaceChildren(stage);
 }
 
-// Builds the animated, scroll-driven stage and starts its render loop,
-// observers, and listeners. Returns a teardown() that stops the loop and
-// detaches all wiring, so init() can swap to the static no-motion build at
-// runtime. (The no-motion build is static and needs no teardown.)
+// derivePhases params and return shape: see README.md § "derivePhases".
+export function derivePhases(scroll, prePinY, vph, timing) {
+  const prePinContrib = Math.max(0, vph - prePinY);
+  return {
+    slideT: clamp01((scroll + prePinContrib) / (vph + ANIM_CONFIG.slideOverlap)),
+    arcPan: clamp01(scroll / ANIM_CONFIG.arcPanEnd),
+    arcToGrid: clamp01(
+      (scroll - ANIM_CONFIG.peelStartScroll) / (timing.gridEnd - ANIM_CONFIG.peelStartScroll),
+    ),
+    slotting: clamp01(
+      (scroll - timing.slottingStart) / timing.slottingDuration,
+    ),
+  };
+}
+
+function getCardArcToGridProgress(card, arcToGrid) {
+  const delay = (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcStagger;
+  const win = 1 - ANIM_CONFIG.arcStagger;
+  return clamp01((arcToGrid - delay) / win);
+}
+
+function getMobileLayout(vw) {
+  const t = clamp01((vw - 375) / 392);
+  const cardW = Math.round((vw * (0.875 - t * 0.175) - MOBILE_COL_GAP) / 2);
+  const scale = cardW / CARD_WIDTH;
+  const tallH = Math.round(ROW_METRIC_HEIGHT * scale);
+  return { cardW, scale, tallH, rowPitch: tallH + 61 };
+}
+
+function getMobileMockupCardSlot(card, mockupFrame) {
+  const width = mockupFrame.slotWidth;
+  const height = Math.round(card.baseHeight * mockupFrame.cardSlotScale);
+  const centerY = mockupFrame.firstRowCenterY + card.mobileRowIdx * mockupFrame.rowPitch;
+  const x = mockupFrame.slotGridLeft
+    + card.mobileColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
+  return { x, y: centerY - height / 2, width, height };
+}
+
+function getDesktopMockupCardSlot(card, mockupFrame) {
+  const width = mockupFrame.slotWidth;
+  const height = card.height * (width / CARD_WIDTH);
+  return {
+    x: mockupFrame.mockupLeft
+      + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[card.colIdx] * mockupFrame.scale
+      - width / 2,
+    y: mockupFrame.mockupTop
+      + ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[card.rowIdx] * mockupFrame.scale
+      - height / 2,
+    width,
+    height,
+  };
+}
+
+function getCanvasCardCenter(card) {
+  return {
+    x: Number.isFinite(card.visualCx) ? card.visualCx : card.baseX + card.width / 2,
+    y: Number.isFinite(card.visualCy) ? card.visualCy : card.baseY + card.height / 2,
+  };
+}
+
 function mountMotion(el) {
   const {
     stage, titleEl, textBlockEl, ctaEl, sceneCards,
@@ -654,9 +708,6 @@ function mountMotion(el) {
   let scrollCurrent = 0;
   let revealActive = false;
   let revealScrollCurrent = 0;
-  // Set while the tab is hidden and for one frame after it returns. Guards
-  // against the focus event the browser re-fires on the previously focused
-  // element when the tab regains visibility — see snapToFocusTarget.
   let suppressFocusSnap = false;
 
   const ANIM_STATE = {
@@ -679,32 +730,21 @@ function mountMotion(el) {
     frame: { isMobile: false, isTablet: false, mobileLayout: null },
   };
 
-  /**
-   * Viewport Y of the mobile Acrobat mockup top at rest.
-   * Set in updateMockupAndTitleTransform; read by getMobileMockupCardSlot.
-   */
-  let mobileAcrobatMockupRestTop = 0;
-  let cachedHeadlineH = 60;
-  // Desktop/tablet: computed in resize(), used by getDesktopMockupFrame() and post-reveal pan.
-  let cachedAcrobatWinTop = 0;
-  let cachedAcrobatCtaTop = 0;
-  let cachedDeskPostRevealNeeded = 0;
-  let cachedMobilePostRevealDistance = 0;
+  const LAYOUT_CACHE = {
+    headlineH: 60,
+    acrobatWinTop: 0,
+    acrobatCtaTop: 0,
+    deskPostRevealNeeded: 0,
+    mobilePostRevealDistance: 0,
+    mobileAcrobatMockupRestTop: 0,
+    textBlockWidth: 0,
+    blockDocTop: 0,
+    blockHeight: 0,
+  };
 
   let arcAngle = Math.atan2(1, 1);
   let arcGeometry = null;
-
-  let cachedTextBlockWidth = 0;
-  let cachedBlockDocTop = 0;
-  let cachedBlockHeight = 0;
   let prePinOffset = 0;
-
-  // ──────────────────── Arc geometry helpers ────────────────────
-  function getCardArcToGridProgress(card) {
-    const delay = (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcStagger;
-    const win = 1 - ANIM_CONFIG.arcStagger;
-    return clamp01((ANIM_STATE.phase.arcToGrid - delay) / win);
-  }
 
   // Precompute per-frame arc constants once so getFanCenter doesn't recompute for each card.
   function buildArcCtx() {
@@ -794,30 +834,23 @@ function mountMotion(el) {
   }
 
   // ──────────────────── Layout helpers ────────────────────
-  // Responsive mobile grid dims. At 375px matches base sizing; scales to ~70% grid at 767px.
-  function getMobileLayout() {
-    const t = clamp01((viewportWidth - 375) / 392);
-    const cardW = Math.round((viewportWidth * (0.875 - t * 0.175) - MOBILE_COL_GAP) / 2);
-    const scale = cardW / CARD_WIDTH;
-    const tallH = Math.round(ROW_METRIC_HEIGHT * scale);
-    return { cardW, scale, tallH, rowPitch: tallH + 61 };
-  }
 
   function refreshFrameProfile() {
     ANIM_STATE.frame.isMobile = BREAKPOINTS.mobile.matches;
     ANIM_STATE.frame.isTablet = !ANIM_STATE.frame.isMobile && BREAKPOINTS.tablet.matches;
-    ANIM_STATE.frame.mobileLayout = ANIM_STATE.frame.isMobile ? getMobileLayout() : null;
+    ANIM_STATE.frame.mobileLayout = ANIM_STATE.frame.isMobile
+      ? getMobileLayout(viewportWidth) : null;
     if (ANIM_STATE.frame.isMobile) {
       ANIM_STATE.timing.gridEnd = MOBILE_GRID_END;
       ANIM_STATE.timing.slottingStart = MOBILE_GRID_END + ANIM_CONFIG.mobileSettleDuration;
       ANIM_STATE.timing.slottingDuration = ANIM_CONFIG.mobileSlottingDuration;
-      ANIM_STATE.timing.postRevealScrollDistance = cachedMobilePostRevealDistance;
+      ANIM_STATE.timing.postRevealScrollDistance = LAYOUT_CACHE.mobilePostRevealDistance;
       ANIM_STATE.timing.settleScrollStart = DESKTOP_ARC_REFERENCE_END;
     } else {
       ANIM_STATE.timing.gridEnd = ANIM_CONFIG.desktopPeelEnd;
       ANIM_STATE.timing.slottingStart = DESKTOP_SLOTTING_START;
       ANIM_STATE.timing.slottingDuration = ANIM_CONFIG.desktopSlottingDuration;
-      ANIM_STATE.timing.postRevealScrollDistance = cachedDeskPostRevealNeeded;
+      ANIM_STATE.timing.postRevealScrollDistance = LAYOUT_CACHE.deskPostRevealNeeded;
       ANIM_STATE.timing.settleScrollStart = ANIM_CONFIG.desktopPeelEnd;
     }
   }
@@ -842,7 +875,7 @@ function mountMotion(el) {
   // Per-card slot derivation happens in get*MockupCardSlot using these frame values.
   function getMobileMockupFrame() {
     const chromeLeft = (viewportWidth - ACROBAT_MOBILE_MOCKUP_WIDTH) / 2;
-    const chromeTop = mobileAcrobatMockupRestTop
+    const chromeTop = LAYOUT_CACHE.mobileAcrobatMockupRestTop
       || (viewportHeight - ACROBAT_MOBILE_MOCKUP_HEIGHT) / 2;
     const canvasTop = chromeTop + ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT;
     const canvasHeight = ACROBAT_MOBILE_MOCKUP_HEIGHT
@@ -867,34 +900,10 @@ function mountMotion(el) {
   function getDesktopMockupFrame() {
     const mockupWidth = getAcrobatDesktopMockupWidth(viewportWidth, ANIM_STATE.frame.isTablet);
     const mockupLeft = (viewportWidth - mockupWidth) / 2;
-    const mockupTop = cachedAcrobatWinTop;
+    const mockupTop = LAYOUT_CACHE.acrobatWinTop;
     const scale = mockupWidth / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH;
     const slotWidth = ACROBAT_DESKTOP_SLOT_WIDTH * scale;
     return { mockupLeft, mockupTop, scale, slotWidth };
-  }
-
-  function getMobileMockupCardSlot(card, mockupFrame) {
-    const width = mockupFrame.slotWidth;
-    const height = Math.round(card.baseHeight * mockupFrame.cardSlotScale);
-    const centerY = mockupFrame.firstRowCenterY + card.mobileRowIdx * mockupFrame.rowPitch;
-    const x = mockupFrame.slotGridLeft
-      + card.mobileColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
-    return { x, y: centerY - height / 2, width, height };
-  }
-
-  function getDesktopMockupCardSlot(card, mockupFrame) {
-    const width = mockupFrame.slotWidth;
-    const height = card.height * (width / CARD_WIDTH);
-    return {
-      x: mockupFrame.mockupLeft
-        + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[card.colIdx] * mockupFrame.scale
-        - width / 2,
-      y: mockupFrame.mockupTop
-        + ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[card.rowIdx] * mockupFrame.scale
-        - height / 2,
-      width,
-      height,
-    };
   }
 
   function positionCards() {
@@ -931,13 +940,6 @@ function mountMotion(el) {
       card.baseX = centerX - card.width / 2;
       card.baseY = centerY - card.height / 2;
     });
-  }
-
-  function getCanvasCardCenter(card) {
-    return {
-      x: Number.isFinite(card.visualCx) ? card.visualCx : card.baseX + card.width / 2,
-      y: Number.isFinite(card.visualCy) ? card.visualCy : card.baseY + card.height / 2,
-    };
   }
 
   const canvasGrid = createCanvasGrid(canvas, {
@@ -982,38 +984,39 @@ function mountMotion(el) {
     arcAngle = ANIM_STATE.frame.isMobile
       ? ANIM_CONFIG.mobileArcAngle
       : Math.atan2(viewportHeight, viewportWidth);
-    cachedHeadlineH = titleEl?.offsetHeight || 80;
+    LAYOUT_CACHE.headlineH = titleEl?.offsetHeight || 80;
     if (ANIM_STATE.frame.isMobile) {
       const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
-      const chromeRestY = headlineRestY + cachedHeadlineH + 24;
+      const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
       titleEl.style.top = `${headlineRestY}px`;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       ctaEl.style.top = `${ctaRestY}px`;
       const ctaH = ctaEl.offsetHeight || ACROBAT_CTA_HEIGHT;
-      cachedMobilePostRevealDistance = Math.max(0, ctaRestY + ctaH + 80 - viewportHeight);
+      LAYOUT_CACHE.mobilePostRevealDistance = Math.max(0, ctaRestY + ctaH + 80 - viewportHeight);
     }
-    cachedTextBlockWidth = textBlockEl.offsetWidth;
+    LAYOUT_CACHE.textBlockWidth = textBlockEl.offsetWidth;
     positionCards();
-    cachedBlockDocTop = el.getBoundingClientRect().top + window.scrollY;
-    cachedBlockHeight = el.offsetHeight;
+    LAYOUT_CACHE.blockDocTop = el.getBoundingClientRect().top + window.scrollY;
+    LAYOUT_CACHE.blockHeight = el.offsetHeight;
     if (!ANIM_STATE.frame.isMobile && desktopMockupEl) {
       const aW = getAcrobatDesktopMockupWidth(viewportWidth, ANIM_STATE.frame.isTablet);
       const aH = aW * (ACROBAT_DESKTOP_MOCKUP_DESIGN_HEIGHT / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH);
       const ctaH = ctaEl.offsetHeight || ACROBAT_CTA_HEIGHT;
-      const stackH = cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE
+      const stackH = LAYOUT_CACHE.headlineH + ACROBAT_DESKTOP_GAP_ABOVE
         + aH + ACROBAT_DESKTOP_GAP_BELOW + ctaH;
       const centeredTop = Math.max(48, (viewportHeight - stackH) / 2);
       const peekWinTop = viewportHeight - ANIM_CONFIG.desktopPeekAmount * aH;
-      const peekStackTop = peekWinTop - cachedHeadlineH - ACROBAT_DESKTOP_GAP_ABOVE;
+      const peekStackTop = peekWinTop - LAYOUT_CACHE.headlineH - ACROBAT_DESKTOP_GAP_ABOVE;
       const peekRange = ANIM_CONFIG.desktopPeekStartH - viewportHeight;
       const peekBlend = clamp01(peekRange / 320);
       const stackTop = centeredTop + peekBlend * (peekStackTop - centeredTop);
-      cachedAcrobatWinTop = stackTop + cachedHeadlineH + ACROBAT_DESKTOP_GAP_ABOVE;
-      cachedAcrobatCtaTop = cachedAcrobatWinTop + aH + ACROBAT_DESKTOP_GAP_BELOW;
-      cachedDeskPostRevealNeeded = Math.max(0, cachedAcrobatCtaTop + ctaH + 80 - viewportHeight);
+      LAYOUT_CACHE.acrobatWinTop = stackTop + LAYOUT_CACHE.headlineH + ACROBAT_DESKTOP_GAP_ABOVE;
+      LAYOUT_CACHE.acrobatCtaTop = LAYOUT_CACHE.acrobatWinTop + aH + ACROBAT_DESKTOP_GAP_BELOW;
+      const ctaBottom = LAYOUT_CACHE.acrobatCtaTop + ctaH + 80;
+      LAYOUT_CACHE.deskPostRevealNeeded = Math.max(0, ctaBottom - viewportHeight);
       titleEl.style.top = `${stackTop}px`;
-      desktopMockupEl.style.top = `${cachedAcrobatWinTop}px`;
-      ctaEl.style.top = `${cachedAcrobatCtaTop}px`;
+      desktopMockupEl.style.top = `${LAYOUT_CACHE.acrobatWinTop}px`;
+      ctaEl.style.top = `${LAYOUT_CACHE.acrobatCtaTop}px`;
       ANIM_STATE.verticalPan.deskPostRevealY = 0;
     }
   }
@@ -1036,7 +1039,7 @@ function mountMotion(el) {
   }
 
   function renderArcPeelToGrid(card, cardScale, deskGridScale) {
-    const cardPeelProgress = getCardArcToGridProgress(card);
+    const cardPeelProgress = getCardArcToGridProgress(card, ANIM_STATE.phase.arcToGrid);
     const fanPos = getFanCenter(card);
     const { arcZoom } = arcGeometry;
     const fanDepth = 1 - (card.fanIdx / FAN_LAST_INDEX) * ANIM_CONFIG.arcFanDepthDelta;
@@ -1068,10 +1071,6 @@ function mountMotion(el) {
 
     const compensatedY = currentY - prePinOffset;
 
-    // Uniform pre-pin slide-down (no stagger, no X). Pushes all cards below
-    // their orbital position while pre-pin scroll is in flight, decaying to 0
-    // by the time ANIM_STATE.phase.slideT reaches 1 (a bit past pin). Relative motion
-    // between cards stays purely orbital.
     const prePinSlideOffset = viewportHeight * ANIM_CONFIG.prePinSlideY
       * (1 - easeOutSine(ANIM_STATE.phase.slideT));
     const renderedY = compensatedY + prePinSlideOffset;
@@ -1183,25 +1182,12 @@ function mountMotion(el) {
       blockTop = 0;
     } else {
       const { scrollY } = window;
-      blockTop = cachedBlockDocTop - scrollY;
-      const panRange = Math.max(1, cachedBlockHeight - viewportHeight);
+      blockTop = LAYOUT_CACHE.blockDocTop - scrollY;
+      const panRange = Math.max(1, LAYOUT_CACHE.blockHeight - viewportHeight);
       scrollCurrent = clamp01(-blockTop / panRange) * animScrollTotal;
     }
     prePinOffset = Math.max(0, blockTop);
-
-    const slideEarly = viewportHeight;
-    const prePinContrib = Math.max(0, slideEarly - Math.max(0, blockTop));
-    ANIM_STATE.phase.slideT = clamp01(
-      (scrollCurrent + prePinContrib) / (slideEarly + ANIM_CONFIG.slideOverlap),
-    );
-    ANIM_STATE.phase.arcPan = clamp01(scrollCurrent / ANIM_CONFIG.arcPanEnd);
-    const arcToGridDelta = ANIM_STATE.timing.gridEnd - ANIM_CONFIG.peelStartScroll;
-    ANIM_STATE.phase.arcToGrid = clamp01(
-      (scrollCurrent - ANIM_CONFIG.peelStartScroll) / arcToGridDelta,
-    );
-    ANIM_STATE.phase.slotting = clamp01(
-      (scrollCurrent - ANIM_STATE.timing.slottingStart) / ANIM_STATE.timing.slottingDuration,
-    );
+    ANIM_STATE.phase = derivePhases(scrollCurrent, prePinOffset, viewportHeight, ANIM_STATE.timing);
   }
 
   let arcTextPanProgressCached = 0;
@@ -1232,8 +1218,8 @@ function mountMotion(el) {
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
       const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
-      const chromeRestY = headlineRestY + cachedHeadlineH + 24;
-      mobileAcrobatMockupRestTop = chromeRestY;
+      const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
+      LAYOUT_CACHE.mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
       const postRevealNeeded = Math.max(0, ctaRestY + 120 - viewportHeight);
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
@@ -1257,8 +1243,8 @@ function mountMotion(el) {
       const mockupTranslateY = (1 - slottingEase) * offscreenY;
       const mockupScale = ANIM_CONFIG.desktopMockupStartScale - desktopScaleDelta * slottingEase;
       const titleScale = 0.92 + 0.08 * titleSlide;
-      const deskRevealTarget = cachedDeskPostRevealNeeded
-        ? easeOutSine(postRevealProgress) * cachedDeskPostRevealNeeded
+      const deskRevealTarget = LAYOUT_CACHE.deskPostRevealNeeded
+        ? easeOutSine(postRevealProgress) * LAYOUT_CACHE.deskPostRevealNeeded
         : 0;
       ANIM_STATE.verticalPan.deskPostRevealY = deskRevealTarget;
       const panY = deskRevealTarget;
@@ -1268,7 +1254,7 @@ function mountMotion(el) {
       stage.style.setProperty('--title-scale', titleScale);
       stage.style.setProperty('--title-opacity', titleOpacity);
       stage.style.setProperty('--cta-y', `${mockupTranslateY - panY}px`);
-      const ctaVisiblePx = viewportHeight - cachedAcrobatCtaTop + panY;
+      const ctaVisiblePx = viewportHeight - LAYOUT_CACHE.acrobatCtaTop + panY;
       ctaEl.style.opacity = clamp01(ctaVisiblePx / 60).toFixed(3);
       if (desktopPanelEl) {
         const media = desktopPanelEl.querySelector('picture');
@@ -1362,7 +1348,7 @@ function mountMotion(el) {
     } else {
       textLeft = ANIM_STATE.frame.isTablet
         ? col0VisualLeft
-        : col3Right - cachedTextBlockWidth;
+        : col3Right - LAYOUT_CACHE.textBlockWidth;
       pinnedTextY = viewportHeight * (0.5 + 0.5 * ANIM_STATE.cardGridLayout.rowGap)
         + ROW_METRIC_HEIGHT / 2
         + 37
@@ -1445,17 +1431,6 @@ function mountMotion(el) {
   const onResize = debounce(resize, 150);
   window.addEventListener('resize', onResize);
 
-  // Arm the guard whenever the page loses focus/visibility and disarm one frame
-  // after it returns. This brackets the focus event the browser re-fires on the
-  // previously focused element on return, so it doesn't snap-scroll the user
-  // away from where they left off. Covers both tab switches (visibilitychange)
-  // and switching to another app/window (window blur/focus, which don't fire
-  // visibilitychange). Arming on the way out keeps it correct regardless of
-  // whether the refocus lands before or after these events (browser-dependent).
-  // Disarm via rAF, not on first consume: the refocus only fires if our link
-  // was still focused, so a consume-once clear could stick armed and swallow a
-  // later genuine Tab-to-link snap. The ~1-frame window is too short for a real
-  // keystroke to be caught.
   const armFocusGuard = () => { suppressFocusSnap = true; };
   const disarmFocusGuard = () => {
     requestAnimationFrame(() => { suppressFocusSnap = false; });
@@ -1487,22 +1462,11 @@ function mountMotion(el) {
   }
 
   function snapToFocusTarget(targetScrollCurrent) {
-    // On tab return the browser re-fires focus on the element that was focused
-    // before the user switched away. Snapping then would wipe whatever scroll
-    // position the user left off at, so skip the focus restore's snap.
     if (suppressFocusSnap) return;
     const top = getTargetScrollTop(targetScrollCurrent);
-    // Lock the animation to the target frame so transforms update correctly
-    // even before scrollY reflects the jump.
     revealActive = true;
     revealScrollCurrent = targetScrollCurrent;
 
-    // Defer scrollTo to rAF so it fires after the browser's own post-focus
-    // scroll adjustment. When tabbing, the browser fires a second scroll after
-    // the focus handler returns because the element's transform is stale and
-    // appears out-of-view. Deferring lets that adjustment complete first, then
-    // we override it with the correct position. revealActive above keeps the
-    // animation correct during this gap.
     requestAnimationFrame(() => {
       if (window.lenis?.scrollTo) {
         window.lenis.scrollTo(top, { force: true, immediate: true });
@@ -1515,14 +1479,6 @@ function mountMotion(el) {
     });
   }
 
-  // The stage is overflow:hidden, but browsers still scroll overflow:hidden
-  // containers to bring a focused descendant into view. Tabbing down into the
-  // text-block link from a preceding block makes the browser scroll the stage
-  // to reveal the link's layout box (top:0), which sits far from its
-  // transform-moved visual box — leaving a residual scrollTop that shifts the
-  // whole pinned scene while window.scrollY is unchanged. Nothing inside the
-  // stage is meant to scroll, so snap it back. snapToFocusTarget only corrects
-  // the window scroll, not this internal offset.
   stage.addEventListener('scroll', () => {
     if (stage.scrollTop !== 0) stage.scrollTop = 0;
     if (stage.scrollLeft !== 0) stage.scrollLeft = 0;
@@ -1561,9 +1517,6 @@ function mountMotion(el) {
   }, { rootMargin: '200px 0px' });
   io.observe(el);
 
-  // The stage and its inner listeners are discarded when init() restores the
-  // authored content, so teardown only needs to stop the loop and detach the
-  // el/window/document-level wiring.
   return function teardown() {
     stopLoop();
     io.disconnect();

@@ -44,10 +44,10 @@ abstract scroll units (desktop):
 │        │                       │                       │ mockup +      │
 │        │                       │                       │ title + CTA   │
 │        │                       │                       │ slide up.     │
-ANIM.peelStart-  ANIM.arcPanEnd      gridEnd                slottingStart    +slottingDuration
-Scroll (535)     (1350 duration)     (ANIM.desktopPeelEnd  (DESKTOP_         (4552 = total
-                                      = 1532)              SLOTTING_START    if post-reveal=0)
-                                                           = 3132)
+ANIM_CONFIG.peelStart-  ANIM_CONFIG.arcPanEnd  gridEnd          slottingStart    +slottingDuration
+Scroll (535)            (1350 duration)         (ANIM_CONFIG.    (DESKTOP_         (4552 = total
+                                                desktopPeelEnd   SLOTTING_START    if post-reveal=0)
+                                                = 1532)          = 3132)
 ```
 
 ## Why the phases overlap and gap
@@ -69,7 +69,7 @@ for the mobile timing constants.
 
 ## Tuning the animation
 
-All visual parameters live in the `ANIM` object at the top of `pdf-space.js`,
+All visual parameters live in the `ANIM_CONFIG` object at the top of `pdf-space.js`,
 grouped by phase. This section is the reference — pair it with the phase
 timeline above. Numbers in the tables below are the current defaults.
 
@@ -97,7 +97,7 @@ they sum to `animScrollTotal` (excluding any post-reveal pan).
 **Recipe — slow rotation feel without changing phase boundaries:**
 
 Lower `arcSweepMultiplier` (e.g. 1.0 → 0.7) and scale `arcCwStart` by the
-same factor (e.g. 0.55 → 0.39). Both halves of the rotation slow together,
+same factor (e.g. 0.6 → 0.42). Both halves of the rotation slow together,
 so the pre-pin and post-pin rates stay matched.
 
 ### Arc rotation feel
@@ -125,9 +125,9 @@ speed; lowering it makes cards start closer to their orbital rest position.
 
 | Key | Default | What it does |
 | --- | ---: | --- |
-| `arcCwStart` | 0.55 | Extra CW rotation (rad) at pre-pin start, decaying to 0 at pin. Sets both the off-screen starting angle (rotates the arc into the lower-right corner before scrolling unwinds it) and the pre-pin rotation rate. |
+| `arcCwStart` | 0.6 | Extra CW rotation (rad) at pre-pin start, decaying to 0 at pin. Sets both the off-screen starting angle (rotates the arc into the lower-right corner before scrolling unwinds it) and the pre-pin rotation rate. |
 | `arcApexLift` | 0.10 | Vertical bias of the arc apex (card 7's rest y) as a fraction of vh. Card 7 lands at `vh * (0.5 - arcApexLift)`. |
-| `prePinSlideY` | 0.40 | Uniform downward Y offset (fraction of vh) applied during pre-pin, decaying via `1 - easeOutSine(phase.slideT)` to 0 by `phase.slideT = 1`. Pushes the whole arc below its orbital position so short viewports don't clip the lifted apex; no X component and no per-card stagger, so the relative motion between cards stays purely orbital. Set to 0 to disable. |
+| `prePinSlideY` | 0.3 | Uniform downward Y offset (fraction of vh) applied during pre-pin, decaying via `1 - easeOutSine(phase.slideT)` to 0 by `phase.slideT = 1`. Pushes the whole arc below its orbital position so short viewports don't clip the lifted apex; no X component and no per-card stagger, so the relative motion between cards stays purely orbital. Set to 0 to disable. |
 | `arcPanEnd` | 1350 | Scroll units for `arcPan` to go 0 → 1. |
 | `arcSweepMultiplier` | 1 | Multiplier on `arcSpan` for total post-pin sweep. |
 | `arcSpan` | 0.80 | Angular span (radians) of the arc fan. Wider = cards spread further along the arc. |
@@ -232,16 +232,17 @@ through the post-reveal pan stays roughly 1:1 with the pan motion.
 
 ## Authoring contract
 
-`parseAuthoredContent` expects exactly **6 rows** (direct children of the block element):
+`parseAuthoredContent` expects exactly **6 rows** (direct children of the block element),
+in this order:
 
 | Row | Columns | Content |
 | --- | --- | --- |
-| 0 — title | 1 | Headline `<h2>`/`<h3>` + optional subcopy `<p>`. Gets class `acrobat-title`. |
-| 1 — image row 0 | 4 | One cell per card in grid row 0. Each cell: `<img>` + label text. |
-| 2 — image row 1 | 4 | One cell per card in grid row 1. Same format as row 1. |
-| 3 — text block | 1 | Marketing copy shown during settle + slotting. Gets class `text-block`. |
-| 4 — CTA | 1 | Call-to-action link. Gets class `acrobat-cta`. |
-| 5 — mockup | 3 | Col 0: mobile mockup `<picture>`. Col 1: desktop mockup `<picture>`. Col 2: desktop panel/sidebar `<picture>`. |
+| 0 — image row 0 | 4 | One cell per card in desktop grid row 0. Each cell: `<picture><img>` + label text. |
+| 1 — image row 1 | 4 | One cell per card in desktop grid row 1. Same format as row 0. |
+| 2 — text block | 1 | Marketing copy shown during settle + slotting. Gets class `text-block`. |
+| 3 — title | 1 | Headline `<h2>`/`<h3>` + optional subcopy `<p>`. Gets class `acrobat-title`. |
+| 4 — mockup | 3 | Col 0: mobile mockup `<picture>`. Col 1: desktop mockup `<picture>`. Col 2: desktop panel/sidebar `<picture>`. |
+| 5 — CTA | 1 | Call-to-action link. Gets class `acrobat-cta`. |
 
 Card image dimensions matter: `parseAuthoredContent` reads the `width` and `height` attributes of the card `<img>` to derive the card's aspect ratio and set `card.baseHeight`. Missing attributes fall back to `192×230`.
 
@@ -283,7 +284,7 @@ row 1  →    6       4       2       0
 `fanIdx = 0` (col 3 / row 1, lower-right) peels off the arc **first**.
 `fanIdx = 7` (col 0 / row 0, upper-left) peels off the arc **last**.
 
-On the arc the fan is evenly distributed from upper-left to lower-right; the stagger coefficient `ANIM.arcStagger` gates how much of the `arcToGrid` range each card uses before it starts peeling (`delay = fanIdx / FAN_LAST_INDEX * arcStagger`).
+On the arc the fan is evenly distributed from upper-left to lower-right; the stagger coefficient `ANIM_CONFIG.arcStagger` gates how much of the `arcToGrid` range each card uses before it starts peeling (`delay = fanIdx / FAN_LAST_INDEX * arcStagger`).
 
 ## Render loop pipeline
 
@@ -293,7 +294,8 @@ call order within each frame is fixed:
 1. **`refreshFrameProfile()`** — update `frame.isMobile/isTablet`; write
    breakpoint-appropriate values into `timing.*`.
 2. **`updateAnimationProgress()`** — convert `window.scrollY + block geometry`
-   → `scrollCurrent` (abstract units) → `phase.{arcPan, arcToGrid, slotting, slideT}`.
+   → `scrollCurrent` (abstract units) → `phase.{arcPan, arcToGrid, slotting, slideT}`
+   via `derivePhases()`.
 3. **`buildArcCtx()`** — precompute arc geometry (radius, center, angles, flatten
    blend). Expensive trig done once per frame here so `getFanCenter` (called once
    per card) only does cheap arithmetic.
@@ -313,8 +315,28 @@ call order within each frame is fixed:
 11. **`updateCardPositions()`** — apply `transform`, `opacity`, `boxShadow`, and
     `zIndex` to each card element; also positions card labels.
 
-`buildArcCtx` (step 3) writes to the module-level `arcGeometry` object; all
+`buildArcCtx` (step 3) writes to the closure-level `arcGeometry` object; all
 subsequent per-card calls to `getFanCenter` read from it without re-running trig.
+
+## `derivePhases(scroll, prePinY, vph, timing)`
+
+Pure function (exported) that converts raw scroll inputs to the four phase
+progress floats. Called by `updateAnimationProgress` each frame; also
+importable for unit tests.
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `scroll` | number | Abstract scroll position (`0…animScrollTotal`). |
+| `prePinY` | number | `Math.max(0, blockTop)` — positive while the block's top edge is still below the viewport fold. Zero once the block is pinned or scrolled past. |
+| `vph` | number | Viewport height in px. |
+| `timing` | object | `ANIM_STATE.timing` snapshot (`gridEnd`, `slottingStart`, `slottingDuration`). |
+
+Returns `{ slideT, arcPan, arcToGrid, slotting }` — all clamped to `[0, 1]`.
+
+The four phases intentionally overlap: `arcPan` and `arcToGrid` are both
+non-zero between `peelStartScroll` and `arcPanEnd` (the arc rotates *while*
+unfolding). Enforcing non-overlap would require fake intermediate states and
+would change the visual.
 
 ## CSS custom-property bridge
 

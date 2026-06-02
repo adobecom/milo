@@ -39,7 +39,7 @@ function freshEl() {
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 fixtureSource = document.querySelector('.pdf-space');
 
-const { default: init } = await import(
+const { default: init, derivePhases } = await import(
   '../../../libs/mep/ace1205/pdf-space/pdf-space.js'
 );
 
@@ -56,6 +56,88 @@ before(() => {
 
 after(() => {
   sinon.restore();
+});
+
+// ── derivePhases() ────────────────────────────────────────────────────────────
+// Pure function — no DOM, no stubs needed.
+// timing shape mirrors ANIM_STATE.timing for the desktop path.
+
+const DESKTOP_TIMING = {
+  gridEnd: 1532, // ANIM_CONFIG.desktopPeelEnd
+  slottingStart: 3132, // desktopPeelEnd + arcSettleDuration (1532 + 1600)
+  slottingDuration: 1420,
+  postRevealScrollDistance: 0,
+  settleScrollStart: 2350,
+};
+
+describe('derivePhases', () => {
+  const VPH = 800;
+
+  it('returns all zeros before any scroll movement', () => {
+    // scroll=0, prePinY=vph (block fully above fold), prePinContrib = vph - vph = 0
+    const phase = derivePhases(0, VPH, VPH, DESKTOP_TIMING);
+    expect(phase.slideT).to.equal(0);
+    expect(phase.arcPan).to.equal(0);
+    expect(phase.arcToGrid).to.equal(0);
+    expect(phase.slotting).to.equal(0);
+  });
+
+  it('clamps all values to [0, 1]', () => {
+    // Far past the end of all animations
+    const phase = derivePhases(99999, 0, VPH, DESKTOP_TIMING);
+    expect(phase.slideT).to.equal(1);
+    expect(phase.arcPan).to.equal(1);
+    expect(phase.arcToGrid).to.equal(1);
+    expect(phase.slotting).to.equal(1);
+  });
+
+  it('slideT is higher when block is at the viewport fold (prePinY=0) than when still entering (prePinY=vph)', () => {
+    // prePinY=0 → block top at fold → prePinContrib = vph → maximum slideT boost.
+    // prePinY=vph → block just appearing at viewport bottom → prePinContrib = 0.
+    const phaseAtFold = derivePhases(0, 0, VPH, DESKTOP_TIMING);
+    const phaseJustEntering = derivePhases(0, VPH, VPH, DESKTOP_TIMING);
+    expect(phaseAtFold.slideT).to.be.greaterThan(phaseJustEntering.slideT);
+  });
+
+  it('arcPan reaches 1 at arcPanEnd (1350)', () => {
+    // ANIM_CONFIG.arcPanEnd = 1350, mirrored as module-level constant
+    const phase = derivePhases(1350, 0, VPH, DESKTOP_TIMING);
+    expect(phase.arcPan).to.equal(1);
+  });
+
+  it('arcToGrid is 0 before peelStartScroll (535)', () => {
+    const phase = derivePhases(534, 0, VPH, DESKTOP_TIMING);
+    expect(phase.arcToGrid).to.equal(0);
+  });
+
+  it('arcToGrid reaches 1 at gridEnd', () => {
+    const phase = derivePhases(DESKTOP_TIMING.gridEnd, 0, VPH, DESKTOP_TIMING);
+    expect(phase.arcToGrid).to.equal(1);
+  });
+
+  it('slotting is 0 before slottingStart', () => {
+    const phase = derivePhases(DESKTOP_TIMING.slottingStart - 1, 0, VPH, DESKTOP_TIMING);
+    expect(phase.slotting).to.equal(0);
+  });
+
+  it('slotting reaches 1 at slottingStart + slottingDuration', () => {
+    const endScroll = DESKTOP_TIMING.slottingStart + DESKTOP_TIMING.slottingDuration;
+    const phase = derivePhases(endScroll, 0, VPH, DESKTOP_TIMING);
+    expect(phase.slotting).to.equal(1);
+  });
+
+  it('arcPan and arcToGrid can both be non-zero simultaneously (overlap is intentional)', () => {
+    // At scroll=900: arcPan = 900/1350 ≈ 0.67, arcToGrid = (900-535)/(1532-535) ≈ 0.37
+    const phase = derivePhases(900, 0, VPH, DESKTOP_TIMING);
+    expect(phase.arcPan).to.be.greaterThan(0).and.lessThan(1);
+    expect(phase.arcToGrid).to.be.greaterThan(0).and.lessThan(1);
+  });
+
+  it('does not mutate the timing object passed in', () => {
+    const timing = { ...DESKTOP_TIMING };
+    derivePhases(1000, 0, VPH, timing);
+    expect(timing).to.deep.equal(DESKTOP_TIMING);
+  });
 });
 
 // ── init() contract ───────────────────────────────────────────────────────────
