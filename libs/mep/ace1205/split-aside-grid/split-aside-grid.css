@@ -251,8 +251,8 @@
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          background-color: rgb(255 255 255 / 16%);
-          border: 1px solid rgb(255 255 255 / 12%);
+          background-color: var(--s2a-color-transparent-white-16);
+          border: 1px solid var(--s2a-color-transparent-white-12);
           border-radius: 6px;
           transition:
             background-color 0.2s ease,
@@ -267,9 +267,9 @@
         }
 
         &.split-aside-grid-active .split-aside-grid-item-toggle {
-          background-color: rgb(255 255 255);
+          background-color: var(--s2a-color-gray-25);
           border-color: transparent;
-          color: rgb(0 0 0);
+          color: var(--s2a-color-gray-1000);
 
           svg {
             transform: rotate(90deg);
