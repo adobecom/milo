@@ -5,6 +5,7 @@ const SEO_SCHEMA = { '@context': 'https://schema.org', '@type': 'FAQPage', mainE
 
 function handleToggle(details) {
   const summary = details.querySelector('summary');
+  summary?.setAttribute('aria-expanded', details.open);
   const daaLl = summary?.getAttribute('daa-ll');
   if (!daaLl) return;
   summary.setAttribute(
@@ -25,6 +26,7 @@ function buildItem(row, num, isFirst) {
   const icon = createTag('span', { class: 'faq-icon', 'aria-hidden': 'true' });
   const summary = createTag('summary', {
     class: 'faq-trigger',
+    'aria-expanded': isFirst,
     'daa-ll': `${isFirst ? 'close' : 'open'}-${num}--${processTrackingLabels(questionText)}`,
   }, [headingTag, icon]);
 
