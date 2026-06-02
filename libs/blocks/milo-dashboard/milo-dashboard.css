@@ -1,19 +1,35 @@
 /* stylelint-disable no-descending-specificity */
 .milo-dashboard {
-  --md-accent: #3b63fb;
+  /* Values mirror DA's Spectrum 2 tokens (da.live/nx/styles/nexter.css),
+     resolved to light mode. Hardcoded rather than referenced via var(--s2-*)
+     because the dashboard renders in a cross-origin iframe where DA's :root
+     tokens are out of scope. */
+  --md-accent: #3b63fb;       /* --s2-blue-900 */
   --md-accent-soft: #eaeeff;
-  --md-good: #12805c;
+  --md-good: #079355;         /* --s2-green-800 */
+  --md-good-soft: #edfcf1;    /* --s2-green-100 */
   --md-warn: #bb6f00;
-  --md-bad: #d31510;
-  --md-ink: #1d1d1d;
-  --md-ink-soft: #525252;
-  --md-line: #e6e6e6;
-  --md-surface: #fff;
-  --md-bg: #f8f8f8;
+  --md-warn-soft: #fbf2e2;
+  --md-bad: #d32011;          /* --s2-red-900 (text contrast) */
+  --md-bad-soft: #fff6f5;     /* --s2-red-100 */
+  --md-ink: #292929;          /* --s2-gray-800 */
+  --md-ink-strong: #131313;   /* --s2-gray-900 */
+  --md-ink-soft: #505050;     /* --s2-gray-700 */
+  --md-line: #e1e1e1;         /* --s2-gray-200 */
+  --md-surface: #fff;         /* --s2-gray-25 */
+  --md-bg: #f5f5f5;           /* --nx-background */
+  --md-gutter: 24px;          /* --s2-spacing-400 */
+  --md-radius: 12px;
+  --md-radius-btn: 16px;      /* --s2-border-radius */
 
   display: block;
-  font-family: var(--body-font-family, adobe-clean, system-ui, sans-serif);
+  box-sizing: border-box;
+  min-height: 100vh;
+  padding: var(--md-gutter);
+  font-family: var(--body-font-family, "Adobe Clean", adobe-clean, sans-serif);
+  line-height: 1.5;
   color: var(--md-ink);
+  background: var(--md-bg);
 
   & .dashboard-header {
     display: flex;
@@ -28,6 +44,7 @@
     font-size: 26px;
     font-weight: 700;
     letter-spacing: -0.01em;
+    color: var(--md-ink-strong);
   }
 
   & .dashboard-meta {
@@ -56,12 +73,12 @@
 
   & .env-badge.mode-local {
     color: var(--md-warn);
-    background: #fbf2e2;
+    background: var(--md-warn-soft);
   }
 
   & .env-badge.mode-standalone {
     color: var(--md-good);
-    background: #e7f4ee;
+    background: var(--md-good-soft);
   }
 
   & .env-badge.mode-da {
@@ -73,7 +90,7 @@
     min-height: 32px;
     padding-inline: 14px;
     border: 1px solid var(--md-line);
-    border-radius: 99px;
+    border-radius: var(--md-radius-btn);
     background: var(--md-surface);
     color: var(--md-ink-soft);
     font: inherit;
@@ -108,7 +125,7 @@
     min-height: 34px;
     padding-inline: 16px;
     border: 0;
-    border-radius: 7px;
+    border-radius: 8px;
     background: transparent;
     color: var(--md-ink-soft);
     font: inherit;
@@ -124,7 +141,7 @@
   & .timeframe-toggle button.active {
     background: var(--md-surface);
     color: var(--md-accent);
-    box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+    font-weight: 700;
   }
 
   /* grid + panels */
@@ -178,14 +195,13 @@
   & .kpi-card {
     padding: 18px;
     border: 1px solid var(--md-line);
-    border-radius: 12px;
+    border-radius: var(--md-radius);
     background: var(--md-surface);
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
+    transition: border-color 0.15s ease;
   }
 
   & .kpi-card:hover {
-    box-shadow: 0 4px 14px rgb(0 0 0 / 8%);
-    transform: translateY(-1px);
+    border-color: var(--md-ink-soft);
   }
 
   & .kpi-label {
@@ -216,7 +232,7 @@
 
   & .kpi-delta.up {
     color: var(--md-good);
-    background: #e7f4ee;
+    background: var(--md-good-soft);
   }
 
   & .kpi-delta.up::before {
@@ -225,7 +241,7 @@
 
   & .kpi-delta.down {
     color: var(--md-bad);
-    background: #fdeceb;
+    background: var(--md-bad-soft);
   }
 
   & .kpi-delta.down::before {
@@ -302,7 +318,7 @@
     min-height: 32px;
     padding-inline: 14px;
     border: 1px solid var(--md-line);
-    border-radius: 99px;
+    border-radius: var(--md-radius-btn);
     background: var(--md-surface);
     color: var(--md-ink-soft);
     font: inherit;
@@ -340,7 +356,7 @@
     min-height: 32px;
     padding-inline: 14px;
     border: 1px solid var(--md-line);
-    border-radius: 99px;
+    border-radius: var(--md-radius-btn);
     background: var(--md-surface);
     color: var(--md-ink-soft);
     font: inherit;
@@ -433,12 +449,12 @@
 
   & .alert-sev.high {
     color: var(--md-bad);
-    background: #fdeceb;
+    background: var(--md-bad-soft);
   }
 
   & .alert-sev.warn {
     color: var(--md-warn);
-    background: #fbf2e2;
+    background: var(--md-warn-soft);
   }
 
   & .alert-msg {
@@ -470,7 +486,7 @@
     padding: var(--spacing-m, 16px);
     border-radius: 10px;
     color: var(--md-good);
-    background: #e7f4ee;
+    background: var(--md-good-soft);
   }
 
   & .alerts-more {
@@ -588,7 +604,7 @@
   min-height: 36px;
   padding-inline: 14px;
   border: 1px solid var(--md-line);
-  border-radius: 99px;
+  border-radius: var(--md-radius-btn);
   background: var(--md-surface);
   color: var(--md-ink-soft);
   font: inherit;
@@ -693,15 +709,15 @@
 
 .milo-dashboard .worst-pages .score-badge.good {
   color: var(--md-good);
-  background: #e7f4ee;
+  background: var(--md-good-soft);
 }
 
 .milo-dashboard .worst-pages .score-badge.warn {
   color: var(--md-warn);
-  background: #fdf1dd;
+  background: var(--md-warn-soft);
 }
 
 .milo-dashboard .worst-pages .score-badge.bad {
   color: var(--md-bad);
-  background: #fdeceb;
+  background: var(--md-bad-soft);
 }
