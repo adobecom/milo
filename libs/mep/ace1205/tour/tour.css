@@ -4,139 +4,120 @@
   position: relative;
   display: flex;
   flex-direction: column;
+}
 
-  .tour-header {
-    padding-block-start: 21px;
-    padding-inline: var(--s2a-spacing-lg) calc(var(--s2a-spacing-64) + var(--s2a-spacing-lg));
-    > p {
-      font-weight: var(--s2a-font-weight-body);
-      font-size: var(--s2a-typography-font-size-eyebrow);
-      line-height: var(--s2a-typography-line-height-eyebrow);
-      letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-      color: var(--s2a-color-content-eyebrow);
-    }
+.tour-header {
+  padding-block-start: 21px;
+  padding-inline: var(--s2a-spacing-lg) calc(var(--s2a-spacing-64) + var(--s2a-spacing-lg));
+}
 
-    > h3 {
-      font-size: var(--s2a-typography-font-size-heading-6);
-      line-height: var(--s2a-typography-line-height-heading-6);
-      letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+.tour-row-body {
+  padding-block-start: var(--s2a-spacing-xs);
+  > p {
+    padding-block-start: 18px;
+    &:first-child {
+      padding-block-start: 0;
     }
-  }
-
-  .tour-row {
-    padding-block-start: 154px;
-    .tour-row-index {
-      font-weight: var(--s2a-font-weight-label);
-      font-size: var(--s2a-typography-font-size-label);
-      line-height: var(--s2a-typography-line-height-label);
-      letter-spacing: var(--s2a-typography-letter-spacing-label);
-    }
-    .tour-row-body {
-      padding-block-start: var(--s2a-spacing-xs);
-      > p {
-        padding-block-start: 18px;
-        &:first-child {
-          padding-block-start: 0;
-        }
-      }
-    }
-    .tour-row-image {
-      padding-block-start: var(--s2a-spacing-xl);
-      > p {
-        padding-block-start: 78px;
-        &:first-child {
-          padding-block-start: 0;
-        }
-      }
-      picture {
-        display: inline-block;
-      }
-      img {
-        width: 100%;
-        border-radius: var(--s2a-border-radius-sm);
-        object-fit: cover;
-      }
-    }
-    &.row-1 {
-      max-width: 66%;
-      padding-inline-end: var(--s2a-spacing-xs);
-      align-self: end;
-      .tour-row-body {
-        max-width: 292px;
-      }
-    }
-    &.row-2 {
-      max-width: 83%;
-      .tour-row-index,
-      .tour-row-body {
-        padding-inline-start: var(--s2a-spacing-lg);
-      }
-      .tour-row-body {
-        max-width: 318px;
-      }
-      img {
-        border-start-start-radius: 0;
-        border-start-end-radius: var(--s2a-border-radius-sm);
-        border-end-start-radius: 0;
-        border-end-end-radius: var(--s2a-border-radius-sm);
-      }
-    }
-    &.row-3 {
-      padding-inline: var(--s2a-spacing-xs);
-      .tour-row-index,
-      .tour-row-body {
-        text-align: center;
-        max-width: 394px;
-        margin: 0 auto;
-      }
-      .tour-row-image {
-        picture {
-          display: block;
-        }
-      }
-    }
-  }
-
-  .tour-footer {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.8) 100%);
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    padding-block: var(--s2a-spacing-lg);
-    text-align: center;
-  }
-
-  .tour-grab-handle {
-    display: none;
   }
 }
 
-@media (pointer: coarse) {
-  .tour {
-    .tour-grab-handle {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 29px;
-      background: transparent;
-      cursor: pointer;
-      touch-action: none;
-      z-index: 1;
+.tour-row-image {
+  padding-block-start: var(--s2a-spacing-xl);
+  > p {
+    padding-block-start: 78px;
+    &:first-child {
+      padding-block-start: 0;
+    }
+  }
+  picture {
+    display: inline-block;
+  }
+  img {
+    width: 100%;
+    border-radius: var(--s2a-border-radius-sm);
+    object-fit: cover;
+  }
+}
 
-      &::before {
-        content: '';
-        position: absolute;
-        top: 13px;
-        left: calc(50% - 26px);
-        width: 52px;
-        height: 3px;
-        border-radius: 3px;
-        opacity: 0.2;
-        background-color: var(--s2a-color-gray-1000);
-        pointer-events: none;
+.tour-row {
+  padding-block-start: 154px;
+  &.row-1 {
+    max-width: 66%;
+    padding-inline-end: var(--s2a-spacing-xs);
+    align-self: end;
+    .tour-row-body {
+      max-width: 292px;
+    }
+  }
+  &.row-2 {
+    max-width: 83%;
+    .tour-row-index,
+    .tour-row-body {
+      padding-inline-start: var(--s2a-spacing-lg);
+    }
+    .tour-row-body {
+      max-width: 318px;
+    }
+    img {
+      border-start-start-radius: 0;
+      border-start-end-radius: var(--s2a-border-radius-sm);
+      border-end-start-radius: 0;
+      border-end-end-radius: var(--s2a-border-radius-sm);
+    }
+  }
+  &.row-3 {
+    padding-inline: var(--s2a-spacing-xs);
+    .tour-row-index,
+    .tour-row-body {
+      text-align: center;
+      max-width: 394px;
+      margin: 0 auto;
+    }
+    .tour-row-image {
+      picture {
+        display: block;
       }
+    }
+  }
+}
+
+.tour-footer {
+  background: linear-gradient(180deg, var(--s2a-color-transparent-white-00) 0%, var(--s2a-color-transparent-white-80) 100%);
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  padding-block: var(--s2a-spacing-lg);
+  text-align: center;
+}
+
+.tour-grab-handle {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .tour-grab-handle {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 29px;
+    background: transparent;
+    cursor: pointer;
+    touch-action: none;
+    z-index: 1;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 13px;
+      left: calc(50% - 26px);
+      width: 52px;
+      height: 3px;
+      border-radius: 3px;
+      opacity: 0.2;
+      background-color: var(--s2a-color-gray-1000);
+      pointer-events: none;
     }
   }
 }
@@ -144,6 +125,7 @@
 /* Tour Modal Styles */
 #tour {
   &.dialog-modal {
+    --tour-drag-y: 0px;
     max-width: 596px;
     width: 100dvw;
     margin-top: 20px;
@@ -151,9 +133,27 @@
     border-bottom-right-radius: 0;
     max-height: 100dvh;
     height: calc(100dvh - 20px);
+    transform: translateY(var(--tour-drag-y));
     will-change: transform;
     & > .fragment {
       max-height: 100%;
+    }
+
+    &.is-dragging {
+      transition: none;
+    }
+
+    &.is-snapping,
+    &.is-dismissing {
+      transition: transform 0.3s ease;
+    }
+
+    &.is-dismissing {
+      --tour-drag-y: 100%;
+    }
+
+    &.is-closing {
+      animation: tour-slide-out 0.3s ease forwards;
     }
   }
   .dialog-close {
@@ -161,7 +161,7 @@
     height: 48px;
     border-radius: 6px;
     background-color: rgba(242, 242, 242, 1);
-    border: var(--s2a-border-width-sm) solid rgba(0, 0, 0, 0.1);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
     top: var(--s2a-spacing-md);
     right: var(--s2a-spacing-md);
     &::before,
@@ -180,6 +180,7 @@
   }
 }
 
+/* Below 596px the modal is full-width; above it the width is fixed at 596px */
 @media (max-width: 596px) {
   #tour {
     &.dialog-modal {

@@ -9,11 +9,8 @@ function addCloseAnimation(el) {
   if (!modal) return;
   const originalRemove = modal.remove.bind(modal);
   modal.remove = () => {
-    if (modal.style.transform) {
-      originalRemove();
-      return;
-    }
-    modal.style.animation = 'tour-slide-out 0.3s ease forwards';
+    if (modal.classList.contains('is-dismissing')) { originalRemove(); return; }
+    modal.classList.add('is-closing');
     modal.addEventListener('animationend', originalRemove, { once: true });
   };
 }
@@ -34,10 +31,11 @@ function addGrabHandle(el) {
   const snapBack = () => {
     if (isSnapping) return;
     isSnapping = true;
-    modal.style.transition = 'transform 0.3s ease';
-    modal.style.transform = '';
+    modal.classList.remove('is-dragging');
+    modal.classList.add('is-snapping');
+    modal.style.removeProperty('--tour-drag-y');
     modal.addEventListener('transitionend', () => {
-      modal.style.transition = '';
+      modal.classList.remove('is-snapping');
       isSnapping = false;
     }, { once: true });
   };
@@ -52,14 +50,14 @@ function addGrabHandle(el) {
     startY = e.touches[0].clientY;
     currentY = startY;
     isDragging = true;
-    modal.style.transition = 'none';
+    modal.classList.add('is-dragging');
   }, { passive: true });
 
   grabHandle.addEventListener('touchmove', (e) => {
     if (!isDragging) return;
     currentY = e.touches[0].clientY;
     const delta = Math.max(0, currentY - startY);
-    modal.style.transform = `translateY(${delta}px)`;
+    modal.style.setProperty('--tour-drag-y', `${delta}px`);
   }, { passive: true });
 
   grabHandle.addEventListener('touchcancel', () => {
@@ -73,8 +71,9 @@ function addGrabHandle(el) {
     isDragging = false;
     const delta = currentY - startY;
     if (delta < SWIPE_CLOSE_THRESHOLD) { snapBack(); return; }
-    modal.style.transition = 'transform 0.3s ease';
-    modal.style.transform = 'translateY(100%)';
+    modal.classList.remove('is-dragging');
+    modal.style.removeProperty('--tour-drag-y');
+    modal.classList.add('is-dismissing');
     modal.addEventListener('transitionend', triggerClose, { once: true });
   }, { passive: true });
 
@@ -95,7 +94,11 @@ export default function init(el) {
   if (headerRow) {
     headerRow.classList.add('tour-header');
     const headerInner = headerRow.querySelector(':scope > div');
-    if (headerInner) headerRow.replaceChildren(...headerInner.children);
+    if (headerInner) {
+      headerRow.replaceChildren(...headerInner.children);
+      headerRow.querySelector('p')?.classList.add('eyebrow');
+      headerRow.querySelector('h3')?.classList.add('heading-6');
+    }
   }
 
   if (footerRow) {
@@ -123,7 +126,7 @@ export default function init(el) {
     row.classList.add('tour-row', `row-${rowIndex}`);
     row.firstElementChild.classList.add('tour-row-body', 'body-sm');
     row.lastElementChild.classList.add('tour-row-image');
-    const rowIndexEl = createTag('div', { class: 'tour-row-index' });
+    const rowIndexEl = createTag('div', { class: 'label tour-row-index' });
     rowIndexEl.textContent = `( ${rowIndex}/${multiColumns.length} )`;
     row.prepend(rowIndexEl);
   });
