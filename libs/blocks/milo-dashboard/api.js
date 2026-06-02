@@ -1,17 +1,14 @@
 import { getConfig } from '../../utils/utils.js';
 
 const DEFAULT_LOCAL = 'http://localhost:8080';
-const BACKENDS = {
-  prod: 'https://milo-core-prod.adobe.io',
-  stage: 'https://milo-core-stage.adobe.io',
-};
+const PROD_BACKEND = 'https://milo-core-prod.adobe.io';
 
-// Pick the backend from the host: localhost in dev, otherwise the milo-core
-// service matching Milo's env (a real .aem.page/.aem.live host resolves to stage).
+// Pick the backend from the host: localhost in dev, otherwise milo-core prod.
+// (Milo's page env maps .aem.page/.aem.live to "stage", but the dashboard wants
+// real prod data everywhere it's hosted — an authored `api` row can override.)
 function defaultBase() {
   if (window.location.hostname.includes('localhost')) return DEFAULT_LOCAL;
-  const { env } = getConfig();
-  return BACKENDS[env?.name] || BACKENDS.stage;
+  return PROD_BACKEND;
 }
 
 // milo-core's requireAuth validates the token against the clientId query param,
