@@ -260,6 +260,27 @@
       }
     }
 
+    &.left-split .foreground .content {
+      display: table;
+      width: 100%;
+
+      > :not(.action-area):not(:first-child) {
+        margin-block-start: var(--content-gap);
+      }
+
+      .action-area {
+        display: table-cell;
+        vertical-align: middle;
+        width: 1%;
+        white-space: nowrap;
+        padding-inline-start: var(--s2a-layout-sm);
+
+        > :not(:first-child) {
+          margin-inline-start: var(--content-gap);
+        }
+      }
+    }
+
     &.jump-link {
       padding-block-start: var(--s2a-layout-lg);
       padding-block-end: var(--s2a-layout-sm);
