@@ -17,7 +17,8 @@ export function resolveEdsMaxRps() {
   if (process.env.NALA_EDS_THROTTLE_DISABLED === '1') return 0;
   if (process.env.NALA_EDS_MAX_RPS !== undefined && process.env.NALA_EDS_MAX_RPS !== '') {
     const v = Number.parseInt(process.env.NALA_EDS_MAX_RPS, 10);
-    return Number.isFinite(v) && v > 0 ? v : 0;
+    if (Number.isFinite(v) && v > 0) return v;
+    console.warn(`[NALA] NALA_EDS_MAX_RPS="${process.env.NALA_EDS_MAX_RPS}" is not a positive integer — ignoring, falling back to worker-derived default.\n`);
   }
   const workers = Number.parseInt(process.env.NALA_WORKER_COUNT ?? '1', 10);
   const n = Number.isFinite(workers) && workers > 0 ? workers : 1;
@@ -75,15 +76,16 @@ export function logEdsThrottleOnce(edsMaxRps) {
 }
 
 /**
- * Register a route handler that paces EDS-bound requests on a Playwright page.
+ * Register a route handler that paces EDS-bound requests on a Playwright browser context.
+ * Covers all pages in the context, including those created with context.newPage().
  * Called automatically from the nala-test.js base fixture for every test.
- * @param {import('@playwright/test').Page} page
+ * @param {import('@playwright/test').BrowserContext} context
  */
-export async function installEdsThrottleOnPage(page) {
+export async function installEdsThrottleOnContext(context) {
   const edsMaxRps = resolveEdsMaxRps();
   if (edsMaxRps <= 0) return;
   logEdsThrottleOnce(edsMaxRps);
-  await page.route('**/*', async (route) => {
+  await context.route('**/*', async (route) => {
     if (isEdsEdgeHost(route.request().url())) {
       await throttleEdsGap(edsMaxRps);
     }
