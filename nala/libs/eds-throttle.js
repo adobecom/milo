@@ -14,28 +14,28 @@
 const EDS_SAFE_TOTAL_RPS = 180;
 
 export function resolveEdsMaxRps() {
-    if (process.env.NALA_EDS_THROTTLE_DISABLED === '1') return 0;
-    if (process.env.NALA_EDS_MAX_RPS !== undefined && process.env.NALA_EDS_MAX_RPS !== '') {
-        const v = Number.parseInt(process.env.NALA_EDS_MAX_RPS, 10);
-        return Number.isFinite(v) && v > 0 ? v : 0;
-    }
-    const workers = Number.parseInt(process.env.NALA_WORKER_COUNT ?? '1', 10);
-    const n = Number.isFinite(workers) && workers > 0 ? workers : 1;
-    return Math.floor(EDS_SAFE_TOTAL_RPS / n);
+  if (process.env.NALA_EDS_THROTTLE_DISABLED === '1') return 0;
+  if (process.env.NALA_EDS_MAX_RPS !== undefined && process.env.NALA_EDS_MAX_RPS !== '') {
+    const v = Number.parseInt(process.env.NALA_EDS_MAX_RPS, 10);
+    return Number.isFinite(v) && v > 0 ? v : 0;
+  }
+  const workers = Number.parseInt(process.env.NALA_WORKER_COUNT ?? '1', 10);
+  const n = Number.isFinite(workers) && workers > 0 ? workers : 1;
+  return Math.floor(EDS_SAFE_TOTAL_RPS / n);
 }
 
 export function isEdsEdgeHost(url) {
-    try {
-        const { hostname } = new URL(url);
-        return (
-            hostname.endsWith('.aem.live') ||
-            hostname.endsWith('.hlx.page') ||
-            hostname.endsWith('.hlx.live') ||
-            hostname === 'aem.live'
-        );
-    } catch {
-        return false;
-    }
+  try {
+    const { hostname } = new URL(url);
+    return (
+      hostname.endsWith('.aem.live')
+      || hostname.endsWith('.hlx.page')
+      || hostname.endsWith('.hlx.live')
+      || hostname === 'aem.live'
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -43,34 +43,35 @@ export function isEdsEdgeHost(url) {
  * @param {number} maxRps
  */
 export function throttleEdsGap(maxRps) {
-    const minGapMs = 1000 / maxRps;
-    if (!globalThis._edsThrottleChain) {
-        globalThis._edsThrottleChain = Promise.resolve();
+  const minGapMs = 1000 / maxRps;
+  if (!globalThis.edsThrottleChain) {
+    globalThis.edsThrottleChain = Promise.resolve();
+  }
+
+  const next = globalThis.edsThrottleChain.then(async () => {
+    const last = globalThis.edsThrottleLastContinueAt ?? 0;
+    const now = Date.now();
+    const wait = Math.max(0, minGapMs - (now - last));
+    if (wait > 0) {
+      // eslint-disable-next-line no-promise-executor-return
+      await new Promise((r) => { setTimeout(r, wait); });
     }
+    globalThis.edsThrottleLastContinueAt = Date.now();
+  });
 
-    const next = globalThis._edsThrottleChain.then(async () => {
-        const last = globalThis._edsThrottleLastContinueAt ?? 0;
-        const now = Date.now();
-        const wait = Math.max(0, minGapMs - (now - last));
-        if (wait > 0) {
-            await new Promise((r) => setTimeout(r, wait));
-        }
-        globalThis._edsThrottleLastContinueAt = Date.now();
-    });
-
-    globalThis._edsThrottleChain = next.catch(() => {});
-    return next;
+  globalThis.edsThrottleChain = next.catch(() => {});
+  return next;
 }
 
 export function logEdsThrottleOnce(edsMaxRps) {
-    if (edsMaxRps <= 0 || globalThis._edsThrottleLogged) return;
-    globalThis._edsThrottleLogged = true;
-    const workers = process.env.NALA_WORKER_COUNT ?? '?';
-    console.info(
-        `[NALA] EDS throttle active: ~${edsMaxRps} rps/worker × ${workers} workers = ` +
-            `~${edsMaxRps * Number(workers || 1)} rps combined (budget ${EDS_SAFE_TOTAL_RPS}). ` +
-            `Set NALA_EDS_THROTTLE_DISABLED=1 to disable or NALA_EDS_MAX_RPS to override.\n`,
-    );
+  if (edsMaxRps <= 0 || globalThis.edsThrottleLogged) return;
+  globalThis.edsThrottleLogged = true;
+  const workers = process.env.NALA_WORKER_COUNT ?? '?';
+  console.info(
+    `[NALA] EDS throttle active: ~${edsMaxRps} rps/worker × ${workers} workers = `
+    + `~${edsMaxRps * Number(workers || 1)} rps combined (budget ${EDS_SAFE_TOTAL_RPS}). `
+    + 'Set NALA_EDS_THROTTLE_DISABLED=1 to disable or NALA_EDS_MAX_RPS to override.\n',
+  );
 }
 
 /**
@@ -79,13 +80,13 @@ export function logEdsThrottleOnce(edsMaxRps) {
  * @param {import('@playwright/test').Page} page
  */
 export async function installEdsThrottleOnPage(page) {
-    const edsMaxRps = resolveEdsMaxRps();
-    if (edsMaxRps <= 0) return;
-    logEdsThrottleOnce(edsMaxRps);
-    await page.route('**/*', async (route) => {
-        if (isEdsEdgeHost(route.request().url())) {
-            await throttleEdsGap(edsMaxRps);
-        }
-        await route.continue();
-    });
+  const edsMaxRps = resolveEdsMaxRps();
+  if (edsMaxRps <= 0) return;
+  logEdsThrottleOnce(edsMaxRps);
+  await page.route('**/*', async (route) => {
+    if (isEdsEdgeHost(route.request().url())) {
+      await throttleEdsGap(edsMaxRps);
+    }
+    await route.continue();
+  });
 }

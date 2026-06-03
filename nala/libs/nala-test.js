@@ -13,10 +13,10 @@ import { test as base, expect } from '@playwright/test';
 import { installEdsThrottleOnPage } from './eds-throttle.js';
 
 export const test = base.extend({
-    page: async ({ page }, use) => {
-        await installEdsThrottleOnPage(page);
-        await use(page);
-    },
+  page: async ({ page }, use) => {
+    await installEdsThrottleOnPage(page);
+    await use(page);
+  },
 });
 
 export { expect };
