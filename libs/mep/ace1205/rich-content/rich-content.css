@@ -53,6 +53,10 @@
     gap: var(--content-gap);
   }
 
+  &.left-split .action-area {
+    align-items: center;
+  }
+
   &.jump-link {
     color: var(--s2a-color-content-knockout);
     z-index: 1;
@@ -257,6 +261,27 @@
 
       &.max-width-10 .foreground {
         --grid-content-width: var(--grid-width-10);
+      }
+    }
+
+    &.left-split .foreground .content {
+      display: table;
+      width: 100%;
+
+      > :not(.action-area):not(:first-child) {
+        margin-block-start: var(--content-gap);
+      }
+
+      .action-area {
+        display: table-cell;
+        vertical-align: middle;
+        width: 1%;
+        white-space: nowrap;
+        padding-inline-start: var(--s2a-layout-sm);
+
+        > :not(:first-child) {
+          margin-inline-start: var(--content-gap);
+        }
       }
     }
 
