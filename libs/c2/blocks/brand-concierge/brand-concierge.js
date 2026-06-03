@@ -24,6 +24,7 @@ const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgCl
 const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const animationMs = 500;
+const SIDEBAR_BREAKPOINT = 767;
 
 const authoredContent = {};
 const variants = {};
@@ -185,6 +186,30 @@ function resetFloatingButton(el) {
   }
 }
 
+function resetChatInput(el) {
+  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
+  const textarea = el.querySelector('.bc-input-field textarea');
+  const submitButton = el.querySelector('.input-field-button');
+
+  if (textareaWrapper && textarea && submitButton) {
+    textarea.value = '';
+    submitButton.disabled = true;
+    updateReplicatedValue(textareaWrapper, textarea);
+  }
+}
+
+function buildChatFragment(initialMessage) {
+  const fragment = new DocumentFragment();
+  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
+  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
+  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
+  const mountEl = createTag('div', { id: mountId });
+
+  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
+  fragment.append(header, mountEl);
+  return fragment;
+}
+
 /**
  * Creates the SUSI Light component for the sign-in modal.
  * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
@@ -302,42 +327,7 @@ async function openSusiLightModal() {
   });
 }
 
-async function openChatModal(initialMessage, el) {
-  const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
-  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
-  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
-  const mountEl = createTag('div', { id: mountId });
-
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
-  innerModal.append(header, mountEl);
-  const modal = await getModal(null, {
-    id: 'brand-concierge-modal',
-    content: innerModal,
-    closeCallback: async () => {
-      const floatingButton = el.querySelector('.bc-floating-button');
-      if (floatingButton && floatingButtonClicked) {
-        resetFloatingButton(el);
-      }
-      modal.classList.add('closing');
-      await new Promise((resolve) => {
-        setTimeout(() => resolve(), animationMs);
-      });
-    },
-  });
-  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-
-  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
-  const textarea = el.querySelector('.bc-input-field textarea');
-  const submitButton = el.querySelector('.input-field-button');
-
-  if (textareaWrapper && textarea && submitButton) {
-    textarea.value = '';
-    submitButton.disabled = true;
-    updateReplicatedValue(textareaWrapper, textarea);
-  }
-
+async function bootstrapChat(mountEl) {
   const logWebClient = (text, src) => {
     // eslint-disable-next-line no-console
     console.log(text, src);
@@ -453,6 +443,54 @@ async function openChatModal(initialMessage, el) {
   });
 }
 
+async function openChatModal(initialMessage, el) {
+  const modal = await getModal(null, {
+    id: 'brand-concierge-modal',
+    content: buildChatFragment(initialMessage),
+    closeCallback: async () => {
+      const floatingButton = el.querySelector('.bc-floating-button');
+      if (floatingButton && floatingButtonClicked) {
+        resetFloatingButton(el);
+      }
+      modal.classList.add('closing');
+      await new Promise((resolve) => {
+        setTimeout(() => resolve(), animationMs);
+      });
+    },
+  });
+  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
+  document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
+
+  resetChatInput(el);
+
+  const mountEl = modal.querySelector(`#${mountId}`);
+  await bootstrapChat(mountEl);
+}
+
+function isSidebarView() {
+  return window.innerWidth > SIDEBAR_BREAKPOINT;
+}
+
+async function openChatSidebar(initialMessage, el) {
+  const sidebar = document.querySelector('.brand-concierge-sidebar');
+  if (!sidebar) return;
+
+  sidebar.append(buildChatFragment(initialMessage));
+  document.documentElement.classList.add('bc-sidebar-open');
+  resetChatInput(el);
+
+  const mountEl = sidebar.querySelector(`#${mountId}`);
+  await bootstrapChat(mountEl);
+}
+
+async function openChat(initialMessage, el) {
+  if (isSidebarView()) {
+    await openChatSidebar(initialMessage, el);
+  } else {
+    await openChatModal(initialMessage, el);
+  }
+}
+
 // sets values that will be used to overwrite json config values before invoking chat
 function setAuthoredContent(rows) {
   const [, header, cards, input] = rows;
@@ -539,7 +577,7 @@ function decorateCards(el, cards) {
       const input = el.querySelector('.bc-input-field textarea');
 
       input.value = cardText.textContent.trim();
-      openChatModal(input.value, el);
+      openChat(input.value, el);
     });
   });
 
@@ -621,7 +659,7 @@ function decorateFloatingButton(el) {
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
-    openChatModal(null, el);
+    openChat(null, el);
   });
 
   floatingElement(floatingButton, el, floatingContainer);

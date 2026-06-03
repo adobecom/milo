@@ -1156,8 +1156,31 @@ export function loadLink(href, {
   return link;
 }
 
+const MEDIA_WIDTH_RE = /@media\s+(?:screen\s+and\s+)?\(([^)]*\b(?:max-width|min-width|width)\b[^)]*)\)/g;
+
 export function loadStyle(href, callback) {
-  return loadLink(href, { rel: 'stylesheet', callback });
+  if (getMetadata('foundation') !== 'c2') {
+    return loadLink(href, { rel: 'stylesheet', callback });
+  }
+
+  const existing = document.head.querySelector(`link[href="${href}"], style[data-href="${href}"]`);
+  if (existing) {
+    if (callback) callback('noop');
+    return existing;
+  }
+
+  fetch(href).then((res) => res.text()).then((css) => {
+    const transformed = css.replace(MEDIA_WIDTH_RE, '@container experiment ($1)');
+    const style = document.createElement('style');
+    style.setAttribute('data-href', href);
+    style.textContent = transformed;
+    document.head.appendChild(style);
+    if (callback) callback('load');
+  }).catch(() => {
+    if (callback) callback('error');
+  });
+
+  return null;
 }
 
 export function appendHtmlToCanonicalUrl() {
@@ -2704,16 +2727,61 @@ function loadLingoIndexes(area = document) {
 
 function initBrandConciergeSidebar() {
   const isC2Page = getMetadata('foundation') === 'c2';
-  if (!isC2Page) return;
-  const brandConciergeSidebar = document.createElement('div');
-  brandConciergeSidebar.classList.add('brand-concierge-sidebar');
-  document.body.insertAdjacentElement('afterend', brandConciergeSidebar);
+  if (!isC2Page) return null;
+
+  const DESKTOP_BP = 768;
+  const MIN_PCT = 20;
+  const MAX_PCT = 80;
+  const html = document.documentElement;
+
+  const resizer = createTag('div', { class: 'bc-sidebar-resizer', role: 'separator', 'aria-label': 'Resize panels' });
+  const brandConciergeSidebar = createTag('div', { class: 'brand-concierge-sidebar' });
+  const closeBtn = createTag('button', { class: 'bc-sidebar-close', type: 'button', 'aria-label': 'Close sidebar' }, '×');
+  brandConciergeSidebar.append(closeBtn);
+
+  document.body.insertAdjacentElement('afterend', resizer);
+  resizer.insertAdjacentElement('afterend', brandConciergeSidebar);
+  html.classList.add('bc-sidebar-ready');
+
   const openBrandConciergeSidebar = () => {
-    document.documentElement.classList.add('brand-concierge-sidebar-open');
+    if (window.innerWidth < DESKTOP_BP) return;
+    html.classList.add('bc-sidebar-open');
   };
+
   const closeBrandConciergeSidebar = () => {
-    document.documentElement.classList.remove('brand-concierge-sidebar-open');
+    document.body.style.width = '';
+    brandConciergeSidebar.style.width = '';
+    html.classList.remove('bc-sidebar-open');
   };
+
+  closeBtn.addEventListener('click', closeBrandConciergeSidebar);
+
+  let dragging = false;
+  resizer.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    dragging = true;
+    html.classList.add('bc-sidebar-dragging');
+  });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const totalW = window.innerWidth;
+    let pct = (e.clientX / totalW) * 100;
+    if (pct < MIN_PCT) pct = MIN_PCT;
+    if (pct > MAX_PCT) pct = MAX_PCT;
+    document.body.style.width = `${pct}%`;
+    brandConciergeSidebar.style.width = `${100 - pct}%`;
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    html.classList.remove('bc-sidebar-dragging');
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth < DESKTOP_BP && html.classList.contains('bc-sidebar-open')) {
+      closeBrandConciergeSidebar();
+    }
+  });
 
   return {
     brandConciergeSidebar,
@@ -2725,24 +2793,7 @@ function initBrandConciergeSidebar() {
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
-    const {
-      brandConciergeSidebar,
-      openBrandConciergeSidebar,
-      closeBrandConciergeSidebar,
-    } = initBrandConciergeSidebar();
-
-    const openButton = document.createElement('button');
-    const closeButton = document.createElement('button');
-    openButton.style.position = 'absolute';
-    closeButton.style.position = 'absolute';
-    openButton.style.zIndex = 20;
-    closeButton.style.zIndex = 20;
-    openButton.textContent = 'OPEN BRAND CONCIERGE SIDEBAR';
-    closeButton.textContent = 'CLOSE BRAND CONCIERGE SIDEBAR';
-    document.body.insertAdjacentElement('afterbegin', openButton);
-    brandConciergeSidebar.append(closeButton);
-    openButton.addEventListener('click', openBrandConciergeSidebar);
-    closeButton.addEventListener('click', closeBrandConciergeSidebar);
+    initBrandConciergeSidebar();
 
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
