@@ -2,6 +2,9 @@
   height: 650vh;
 
   --card-label-bg: #e1e1f1;
+  --text-block-width-mobile: 273px;
+  --text-block-width-tablet: 292px;
+  --text-block-width-desktop: 367px;
 
   /*
    * Stacking order within .pdf-space-stage (isolated stacking context):
@@ -30,7 +33,7 @@
     top: 0;
     left: 0;
     z-index: 20;
-    width: 273px;
+    width: var(--text-block-width-mobile);
     text-align: left;
     will-change: transform, opacity;
 
@@ -260,9 +263,7 @@
     --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
 
     .text-block {
-      width: 19vw;
-      max-width: 367px;
-      min-width: 292px;
+      width: var(--text-block-width-tablet);
     }
 
     .acrobat-mobile-mockup {
@@ -301,7 +302,7 @@
     --desktop-mockup-width: min(68.6vw, 971px);
 
     .text-block {
-      min-width: 0;
+      width: var(--text-block-width-desktop);
     }
   }
 
@@ -373,7 +374,7 @@
 
     .text-block {
       width: 100%;
-      max-width: 367px;
+      max-width: var(--text-block-width-desktop);
     }
 
     .acrobat-title {
