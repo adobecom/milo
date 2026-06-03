@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../../libs/nala-test.js';
 import { createWorkerPageSetup, addUrlQueryParams, PLANS_NALA_PATH } from '../../../../libs/commerce.js';
 import { features } from './plans.spec.js';
 import MasPlans from './plans.page.js';

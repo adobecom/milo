@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './card.spec.js';
 import ConsonantCard from './card.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';

@@ -1,0 +1,91 @@
+/**
+ * Pace requests to EDS / Helix preview hosts (~200 rps tenant limit).
+ *
+ * Throttle state is per Playwright *worker process*. Multiple workers each run their own chain,
+ * so effective RPS to the same hostname is multiplied.
+ * playwright.config.js sets NALA_WORKER_COUNT so per-worker RPS is derived automatically:
+ *   perWorkerRps = floor(180 / workers)  e.g. 7 workers → 25 rps each → 175 rps combined
+ * Active on all runs (CI and local). Override env vars:
+ *   NALA_EDS_THROTTLE_DISABLED=1   disable entirely
+ *   NALA_EDS_MAX_RPS=<n>           force a specific per-worker cap
+ */
+
+/** Combined RPS budget with headroom under the 200 rps/hostname tenant limit. */
+const EDS_SAFE_TOTAL_RPS = 180;
+
+export function resolveEdsMaxRps() {
+    if (process.env.NALA_EDS_THROTTLE_DISABLED === '1') return 0;
+    if (process.env.NALA_EDS_MAX_RPS !== undefined && process.env.NALA_EDS_MAX_RPS !== '') {
+        const v = Number.parseInt(process.env.NALA_EDS_MAX_RPS, 10);
+        return Number.isFinite(v) && v > 0 ? v : 0;
+    }
+    const workers = Number.parseInt(process.env.NALA_WORKER_COUNT ?? '1', 10);
+    const n = Number.isFinite(workers) && workers > 0 ? workers : 1;
+    return Math.floor(EDS_SAFE_TOTAL_RPS / n);
+}
+
+export function isEdsEdgeHost(url) {
+    try {
+        const { hostname } = new URL(url);
+        return (
+            hostname.endsWith('.aem.live') ||
+            hostname.endsWith('.hlx.page') ||
+            hostname.endsWith('.hlx.live') ||
+            hostname === 'aem.live'
+        );
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * Serialize route.continue() for EDS hosts with a minimum gap (per worker).
+ * @param {number} maxRps
+ */
+export function throttleEdsGap(maxRps) {
+    const minGapMs = 1000 / maxRps;
+    if (!globalThis._edsThrottleChain) {
+        globalThis._edsThrottleChain = Promise.resolve();
+    }
+
+    const next = globalThis._edsThrottleChain.then(async () => {
+        const last = globalThis._edsThrottleLastContinueAt ?? 0;
+        const now = Date.now();
+        const wait = Math.max(0, minGapMs - (now - last));
+        if (wait > 0) {
+            await new Promise((r) => setTimeout(r, wait));
+        }
+        globalThis._edsThrottleLastContinueAt = Date.now();
+    });
+
+    globalThis._edsThrottleChain = next.catch(() => {});
+    return next;
+}
+
+export function logEdsThrottleOnce(edsMaxRps) {
+    if (edsMaxRps <= 0 || globalThis._edsThrottleLogged) return;
+    globalThis._edsThrottleLogged = true;
+    const workers = process.env.NALA_WORKER_COUNT ?? '?';
+    console.info(
+        `[NALA] EDS throttle active: ~${edsMaxRps} rps/worker × ${workers} workers = ` +
+            `~${edsMaxRps * Number(workers || 1)} rps combined (budget ${EDS_SAFE_TOTAL_RPS}). ` +
+            `Set NALA_EDS_THROTTLE_DISABLED=1 to disable or NALA_EDS_MAX_RPS to override.\n`,
+    );
+}
+
+/**
+ * Register a route handler that paces EDS-bound requests on a Playwright page.
+ * Called automatically from the nala-test.js base fixture for every test.
+ * @param {import('@playwright/test').Page} page
+ */
+export async function installEdsThrottleOnPage(page) {
+    const edsMaxRps = resolveEdsMaxRps();
+    if (edsMaxRps <= 0) return;
+    logEdsThrottleOnce(edsMaxRps);
+    await page.route('**/*', async (route) => {
+        if (isEdsEdgeHost(route.request().url())) {
+            await throttleEdsGap(edsMaxRps);
+        }
+        await route.continue();
+    });
+}

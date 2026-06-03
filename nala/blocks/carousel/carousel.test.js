@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './carousel.spec.js';
 import CarouselBlock from './carousel.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';

@@ -10,6 +10,11 @@ const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like M
 const isCI = !!process.env.CI;
 const isLocal = !isCI;
 
+// Exposed as NALA_WORKER_COUNT so eds-throttle.js derives per-worker RPS automatically:
+// floor(180 / workers) — total stays under the 200 rps/hostname AEM.live limit regardless of count.
+const workers = isCI ? 7 : 3;
+process.env.NALA_WORKER_COUNT = String(workers);
+
 // MAS tests
 const masFeatures = [
   'features/commerce/**/*.test.js',
@@ -52,8 +57,7 @@ const config = {
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 7 : 3,
+  workers,
   /* Reporter to use. */
   reporter: process.env.CI
     ? [['github'], ['list'], ['blob'], ['./nala/utils/base-reporter.js']]

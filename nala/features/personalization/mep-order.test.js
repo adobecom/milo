@@ -1,7 +1,7 @@
 // to run this test:
 // npm run nala stage tag=meporder mode=headed
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './mep-order.spec.js';
 import AsideBlock from '../../blocks/aside/aside.page.js';
 

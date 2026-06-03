@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './base-card.spec.js';
 import BaseCard, { ATTR } from './base-card.page.js';

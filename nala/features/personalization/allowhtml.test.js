@@ -2,7 +2,7 @@
 // to run this test:
 // npm run nala stage tag=allowhtml mode=headed
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './allowhtml.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';

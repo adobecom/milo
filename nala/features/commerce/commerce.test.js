@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { PRICE_PATTERN, constructTestUrl } from '../../libs/commerce.js';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './commerce.spec.js';

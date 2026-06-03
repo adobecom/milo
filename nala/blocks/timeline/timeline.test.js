@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './timeline.spec.js';
 import TimelineBlock from './timeline.page.js';
 import WebUtil from '../../libs/webutil.js';

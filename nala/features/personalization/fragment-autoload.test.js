@@ -1,7 +1,7 @@
 // to run tests:
 // npm run nala stage fragment-autoload.test.js
 
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../libs/nala-test.js';
 import { features } from './fragment-autoload.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';
