@@ -1355,6 +1355,15 @@ html.bc-sidebar-open body {
   width: 70%;
 }
 
+html.bc-sidebar-open header.global-navigation > nav {
+  width: 68%;
+  margin: 0;
+  left: 8px;
+  .feds-popup {
+    width: 68%;
+  }
+}
+
 html.bc-sidebar-open div.brand-concierge-sidebar {
   z-index: 20;
   width: 30%;
