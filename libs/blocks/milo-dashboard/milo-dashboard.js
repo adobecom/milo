@@ -135,7 +135,6 @@ export default async function init(block) {
       return btn;
     });
     toggle.append(...buttons);
-    header.append(toggle);
 
     const rangeEl = createTag('span', { class: 'dashboard-range' });
     const updatedEl = createTag('span', { class: 'dashboard-updated' });
@@ -151,7 +150,14 @@ export default async function init(block) {
       ENV_LABELS[ctx.mode] || ctx.mode,
     );
     const meta = createTag('div', { class: 'dashboard-meta' }, [envBadge, rangeEl, updatedEl, refreshBtn]);
-    header.append(meta);
+
+    const allTimeBody = createTag('div', { class: 'allstat-body' });
+    const allTimeStat = createTag('div', { class: 'dashboard-allstat' }, [
+      allTimeBody,
+      infoTip('All-time count of live pages across consumers. Not affected by the Day / Week / Month toggle.'),
+    ]);
+
+    header.append(meta, allTimeStat, toggle);
 
     // Titled card: returns the outer panel plus the inner body the panel
     // renderer draws into (renderers call replaceChildren on the body, so the
@@ -170,7 +176,7 @@ export default async function init(block) {
 
     const grid = createTag('div', { class: 'dashboard-grid' });
     const kpiMount = createTag('div', { class: 'panel kpi' });
-    const totals = makePanel('totals', 'Pages stored');
+    const totals = makePanel('totals', 'Live pages by consumer');
     const gauge = makePanel('gauge-panel', 'Platform preflight health', 'Average preflight score (0–100) from the latest checks: performance, SEO, accessibility, assets.');
     const consumers = makePanel('consumers', 'By consumer');
     const alerts = makePanel('alerts', 'Needs attention');
@@ -245,7 +251,7 @@ export default async function init(block) {
 
       const results = await Promise.all([
         fill(kpiMount, 'metrics', pOverview, (overview) => renderKpiCards(kpiMount, overview, interval)),
-        fill(totalsMount, 'totals', pTotals, (totalsData) => renderTotals(totalsMount, totalsData)),
+        fill(totalsMount, 'totals', pTotals, (totalsData) => renderTotals(totalsMount, totalsData, allTimeBody)),
         fill(gaugeMount, 'health score', Promise.all([pPreflight, pOverview]), ([preflightRows, overview]) => renderHealthGauge(gaugeMount, buildGaugeScores(preflightRows, overview), charts)),
         fill(consumersMount, 'consumers', pProjects, (projectRows) => renderConsumerBars(consumersMount, projectRows || [], charts, navigateTo)),
         fill(alertsMount, 'alerts', Promise.all([pTestPages, pProjects]), ([testPagesCsv, projectRows]) => renderAlerts(alertsMount, { testPages: parseCsv(testPagesCsv), projects: projectRows || [] }, navigateTo)),

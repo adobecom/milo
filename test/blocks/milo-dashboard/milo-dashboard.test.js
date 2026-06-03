@@ -103,7 +103,7 @@ describe('milo-dashboard', () => {
     const block = document.querySelector('.milo-dashboard');
     await init(block);
 
-    expect(block.querySelector('.totals-total')).to.exist;
+    expect(block.querySelector('.totals-item')).to.exist;
     expect(block.querySelector('.consumer-bars')).to.exist;
     expect(block.querySelector('.alerts-list') || block.querySelector('.alerts-empty')).to.exist;
   });

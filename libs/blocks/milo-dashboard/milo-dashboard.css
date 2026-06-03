@@ -378,25 +378,32 @@
     color: var(--md-accent);
   }
 
-  /* totals strip */
-  & .totals-total {
+  /* all-time stat in header */
+  & .dashboard-allstat {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-block: 10px 14px;
+  }
+
+  & .dashboard-allstat .allstat-body {
     display: flex;
     align-items: baseline;
     gap: 8px;
   }
 
-  & .totals-number {
-    font-size: 28px;
+  & .dashboard-allstat .allstat-number {
+    font-size: 22px;
     font-weight: 700;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
+    color: var(--md-ink-strong);
   }
 
-  & .totals-caption {
+  & .dashboard-allstat .allstat-caption {
     font-size: 13px;
     color: var(--md-ink-soft);
   }
 
+  /* totals strip */
   & .totals-list {
     display: flex;
     flex-wrap: wrap;
