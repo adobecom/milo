@@ -82,8 +82,8 @@ const defaultOptions = {
     'horizontal-card': 'Horizontal Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
-    'horizontal-card': 'Horizontal Card',
-    'custom-card': 'Custom Card',
+    'product': 'Product Card',
+    'text-card': 'Text Card',
   },
   flexCardImageOptions: {
     default: 'Default',
@@ -96,8 +96,10 @@ const defaultOptions = {
     'text-center': 'Center',
     'text-justify': 'Justify',
     'text-right': 'Right',
-    product: 'Product Card',
-    'text-card': 'Text Card',
+  },
+  flexCardTextSize: {
+    default: 'Default',
+    'text-large': 'Large',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -236,7 +238,7 @@ const defaultOptions = {
     dark: 'Dark Theme',
     darkest: 'Darkest Theme',
   },
-  detailTextOption: {
+  detailsTextOption: {
     default: 'Default',
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
@@ -423,6 +425,7 @@ const UiPanel = () => {
 
   const flexCardOptions = html`
     <div class="nested">
+      <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
       <${Select} label="Image Options" prop="flexCardImageOptions" options=${defaultOptions.flexCardImageOptions} />
       <${Select} label="Text Align" prop="flexCardTextAlign" options=${defaultOptions.flexCardTextAlign} />
       <${Input} label="Hide Details Text" prop="flexCardHideDetails" type="checkbox" />
@@ -431,6 +434,12 @@ const UiPanel = () => {
       <${Input} label="Hide Footer (CTA)" prop="flexCardHideFooter" type="checkbox" />
     </div>
   `;
+
+  const flextCardFontSizeOptions = html`
+  <div class="nested">
+    <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
+  </div>
+`;
 
   return html`
     <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
@@ -454,7 +463,7 @@ const UiPanel = () => {
     <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
     <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
     <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
-    <${Select} label="Details Text" prop="detailTextOption" options=${defaultOptions.detailTextOption} />
+    <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
     <${Select}
       label="Card Hover Effect"
       prop="cardHoverEffect"

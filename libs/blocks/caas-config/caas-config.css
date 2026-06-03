@@ -161,9 +161,9 @@ dd.content .carousel-options .field {
   margin: 0;
 }
 
-.caas-config .nested {
+/* .caas-config .nested {
   padding-left: 20px;
-}
+} */
 
 /* Indented fields for flex card options */
 dd.content .blade-card-options,
@@ -172,9 +172,10 @@ dd.content .nested {
   background: #333;
   width: calc(100% - 36px);
   margin-top: -6px;
-  padding: 1px 0 2px 0;
+  padding: 1px 0 10px 0;
   border: solid #666 1px;
   border-top: 0;
+  border-radius: 0 0 20px 20px;
 
   .field {
     padding-left: 16px;
