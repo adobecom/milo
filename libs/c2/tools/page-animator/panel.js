@@ -85,9 +85,11 @@ export function buildPanel(
     <div class="pa-tree" id="pa-tree"></div>
   `;
 
-  panel.querySelector('#pa-help-btn').addEventListener('click', () => {
+  const helpBtn = panel.querySelector('#pa-help-btn');
+  helpBtn.addEventListener('click', () => {
     const instructions = panel.querySelector('#pa-instructions');
     instructions.hidden = !instructions.hidden;
+    helpBtn.classList.toggle('pa-btn-active', !instructions.hidden);
   });
 
   let selectedId = null;
@@ -97,10 +99,15 @@ export function buildPanel(
   const TOOLTIP_ICON = '<svg width="12" height="12" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M9,1a8,8,0,1,0,8,8A8,8,0,0,0,9,1ZM8.85,3.15a1.359,1.359,0,0,1,1.43109,1.28286q.00352.06452.00091.12914A1.332,1.332,0,0,1,8.85,5.9935a1.3525,1.3525,0,0,1-1.432-1.432A1.3585,1.3585,0,0,1,8.72033,3.14907Q8.78516,3.14643,8.85,3.15ZM11,13.5a.5.5,0,0,1-.5.5h-3a.5.5,0,0,1-.5-.5v-1a.5.5,0,0,1,.5-.5H8V9H7.5A.5.5,0,0,1,7,8.5v-1A.5.5,0,0,1,7.5,7h2a.5.5,0,0,1,.5.5V12h.5a.5.5,0,0,1,.5.5Z"></path></svg>';
   const COLLAPSE_ICON = '<svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M4.5,4H13V1.5a.5.5,0,0,0-.5-.5H1.5a.5.5,0,0,0-.5.5v11a.5.5,0,0,0,.5.5H4V4.5A.5.5,0,0,1,4.5,4Z"></path><path d="M5,5.5v11a.5.5,0,0,0,.5.5h11a.5.5,0,0,0,.5-.5V5.5a.5.5,0,0,0-.5-.5H5.5A.5.5,0,0,0,5,5.5ZM7.25,12A.25.25,0,0,1,7,11.75v-1.5A.25.25,0,0,1,7.25,10h7.5a.25.25,0,0,1,.25.25v1.5a.25.25,0,0,1-.25.25Z"></path></svg>';
   const EXPAND_ICON = '<svg width="14" height="14" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M4.5,4H13V1.5a.5.5,0,0,0-.5-.5H1.5a.5.5,0,0,0-.5.5v11a.5.5,0,0,0,.5.5H4V4.5A.5.5,0,0,1,4.5,4Z"></path><path d="M5,5.5v11a.5.5,0,0,0,.5.5h11a.5.5,0,0,0,.5-.5V5.5a.5.5,0,0,0-.5-.5H5.5A.5.5,0,0,0,5,5.5ZM14.75,12H12v2.75a.25.25,0,0,1-.25.25h-1.5a.25.25,0,0,1-.25-.25V12H7.25A.25.25,0,0,1,7,11.75v-1.5A.25.25,0,0,1,7.25,10H10V7.25A.25.25,0,0,1,10.25,7h1.5a.25.25,0,0,1,.25.25V10h2.75a.25.25,0,0,1,.25.25v1.5A.25.25,0,0,1,14.75,12Z"></path></svg>';
+  const LENIS_ID = 'pa-lenis';
   const collapseBtn = panel.querySelector('#pa-collapse-btn');
 
+  // Includes the Lenis pseudo-section so the collapse-all toolbar button toggles it too.
+  const getAllSectionIds = () => [LENIS_ID, ...tree.map((s) => s.id)];
+
   function syncCollapseBtn() {
-    const allCollapsed = tree.length > 0 && tree.every((s) => collapsedSections.has(s.id));
+    const ids = getAllSectionIds();
+    const allCollapsed = ids.length > 0 && ids.every((id) => collapsedSections.has(id));
     const label = allCollapsed ? 'Expand all sections' : 'Collapse all sections';
     collapseBtn.innerHTML = allCollapsed ? EXPAND_ICON : COLLAPSE_ICON;
     collapseBtn.setAttribute('aria-label', label);
@@ -108,9 +115,10 @@ export function buildPanel(
   }
 
   collapseBtn.addEventListener('click', () => {
-    const allCollapsed = tree.every((s) => collapsedSections.has(s.id));
+    const ids = getAllSectionIds();
+    const allCollapsed = ids.every((id) => collapsedSections.has(id));
     if (allCollapsed) collapsedSections.clear();
-    else tree.forEach((s) => collapsedSections.add(s.id));
+    else ids.forEach((id) => collapsedSections.add(id));
     // eslint-disable-next-line no-use-before-define
     renderTree();
   });
@@ -290,9 +298,107 @@ export function buildPanel(
     return wrap;
   }
 
+  // Lenis section — always sits at the top of the tree. Controls live page-scroll
+  // inertia (lerp) and wheel sensitivity (wheelMultiplier). Reads/writes Lenis
+  // options directly via window.lenis; the lerp setter also updates
+  // window.lenisBaseLerp so the fast-scroll throttle in utils.js honors it.
+  // LENIS_ID is declared higher up so the collapse-all toolbar button can include it.
+  const LENIS_DEFAULT_LERP = 0.08;
+  const LENIS_DEFAULT_WHEEL = 1;
+
+  function buildLenisRange(opts) {
+    const div = document.createElement('div');
+    div.className = 'pa-control';
+    const tip = `<span class="pa-tooltip" aria-label="${opts.tooltip}">${TOOLTIP_ICON}<span class="pa-tooltip-text">${opts.tooltip}</span></span>`;
+    div.innerHTML = `
+      <div class="pa-control-label">${opts.label}${tip} <span class="pa-val">${opts.value}</span></div>
+      <input type="range" min="${opts.min}" max="${opts.max}" step="${opts.step}" value="${opts.value}">
+    `;
+    const input = div.querySelector('input');
+    const valSpan = div.querySelector('.pa-val');
+    input.addEventListener('input', () => {
+      const num = parseFloat(input.value);
+      valSpan.textContent = num;
+      opts.onChange(num);
+    });
+    return div;
+  }
+
+  function buildLenisControls() {
+    const wrap = document.createElement('div');
+    wrap.className = 'pa-controls';
+    const { lenis } = window;
+    const currentLerp = lenis?.options?.lerp ?? LENIS_DEFAULT_LERP;
+    const currentWheel = lenis?.options?.wheelMultiplier ?? LENIS_DEFAULT_WHEEL;
+
+    wrap.appendChild(buildLenisRange({
+      label: 'Lerp',
+      value: currentLerp,
+      min: 0.02,
+      max: 0.5,
+      step: 0.01,
+      tooltip: 'Scroll smoothing curve. Lower = smoother but laggy; higher = snappier but less smooth. Default 0.08.',
+      onChange: (v) => {
+        if (!window.lenis) return;
+        window.lenisBaseLerp = v;
+        window.lenis.options.lerp = v;
+      },
+    }));
+
+    wrap.appendChild(buildLenisRange({
+      label: 'Wheel multiplier',
+      value: currentWheel,
+      min: 0.3,
+      max: 3,
+      step: 0.1,
+      tooltip: 'Scales how far each mouse-wheel tick scrolls (wheel only — not trackpad or touch). Lower = finer scrubbing of scroll animations; higher = faster page traversal. Default 1.',
+      onChange: (v) => {
+        if (!window.lenis) return;
+        window.lenis.options.wheelMultiplier = v;
+      },
+    }));
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'pa-reset-btn';
+    resetBtn.textContent = 'Reset Lenis';
+    resetBtn.addEventListener('click', () => {
+      if (!window.lenis) return;
+      window.lenisBaseLerp = LENIS_DEFAULT_LERP;
+      window.lenis.options.lerp = LENIS_DEFAULT_LERP;
+      window.lenis.options.wheelMultiplier = LENIS_DEFAULT_WHEEL;
+      // eslint-disable-next-line no-use-before-define
+      renderTree();
+    });
+    wrap.appendChild(resetBtn);
+
+    return wrap;
+  }
+
+  function buildLenisSection() {
+    const group = document.createElement('div');
+    group.className = 'pa-section-group';
+    const isCollapsed = collapsedSections.has(LENIS_ID);
+
+    const sLabel = document.createElement('div');
+    sLabel.className = `pa-section-label${isCollapsed ? ' pa-collapsed' : ''}`;
+    sLabel.textContent = 'Lenis';
+    sLabel.addEventListener('click', () => {
+      if (collapsedSections.has(LENIS_ID)) collapsedSections.delete(LENIS_ID);
+      else collapsedSections.add(LENIS_ID);
+      // eslint-disable-next-line no-use-before-define
+      renderTree();
+    });
+    group.appendChild(sLabel);
+
+    if (!isCollapsed) group.appendChild(buildLenisControls());
+    return group;
+  }
+
   function renderTree() {
     const treeEl = panel.querySelector('#pa-tree');
     treeEl.innerHTML = '';
+
+    treeEl.appendChild(buildLenisSection());
 
     tree.forEach((section) => {
       const group = document.createElement('div');

@@ -2265,23 +2265,29 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    // Exposed on window so external tools (e.g. the page-animator panel) can
+    // tune the resting inertia value at runtime and have the fast-scroll
+    // throttle below honor it instead of reverting to the original constant.
+    window.lenisBaseLerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
     const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
     window.lenis = new window.Lenis({
       autoRaf: true,
-      lerp,
+      lerp: window.lenisBaseLerp,
       prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
     });
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage.
+    // Restore reads window.lenisBaseLerp (mutable) so panel-tuned values stick.
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {
       if (Math.abs(e.deltaY) > fsThreshold) {
         window.lenis.options.lerp = fsFactor;
         clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        fsScrollTimer = setTimeout(() => {
+          window.lenis.options.lerp = window.lenisBaseLerp;
+        }, fsDelay);
       }
     }, { passive: true });
     if (!CSS.supports('animation-timeline: view()')
