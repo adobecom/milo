@@ -7,7 +7,7 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    padding-block: var(--s2a-layout-md) var(--s2a-spacing-lg);
+    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-lg);
   }
 
   .pm-foreground {
@@ -68,6 +68,64 @@
   }
 }
 
+/* soft-offer-cta variant */
+
+.pm-promo-cta {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-md);
+  width: 100%;
+  white-space: nowrap;
+}
+
+.pm-promo-cta-label {
+  color: var(--s2a-color-content-default);
+  font-size: var(--s2a-typography-font-size-body-md);
+  font-weight: 400;
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  margin: 0;
+}
+
+.pm-promo-cta-label strong {
+  display: block;
+  font-weight: 700;
+}
+
+.pm-promo-cta-button {
+  align-items: center;
+  background: var(--s2a-color-blue-900);
+  border-radius: var(--s2a-border-radius-round);
+  color: var(--s2a-color-content-knockout);
+  display: flex;
+  justify-content: center;
+  padding: var(--s2a-spacing-sm) var(--s2a-spacing-lg);
+  text-decoration: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pm-promo-cta-button:hover {
+  background: var(--s2a-color-blue-1000);
+}
+
+.pm-promo-cta-button:active {
+  background: var(--s2a-color-blue-1100);
+}
+
+.pm-promo-cta-button:focus-visible {
+  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+  outline-offset: var(--s2a-border-width-2);
+}
+
+@media (width < 768px) {
+  .product-marquee-grid.soft-offer-cta .pm-foreground {
+    gap: var(--s2a-spacing-lg);
+    justify-content: flex-start;
+  }
+}
+
 @media (width >= 768px) {
   .product-marquee-grid {
     min-block-size: 500px;
@@ -95,5 +153,32 @@
       margin-block-start: 0;
       min-width: 260px;
     }
+  }
+
+  .product-marquee-grid.soft-offer-cta .pm-content {
+    gap: var(--s2a-spacing-xs);
+  }
+
+  .product-marquee-grid.soft-offer-cta .pm-promo-area {
+    flex: none;
+    min-width: unset;
+  }
+
+  .pm-promo-cta {
+    gap: var(--s2a-spacing-xs);
+  }
+}
+
+@media (width >= 1280px) {
+  .pm-promo-cta {
+    align-items: center;
+    flex-direction: row;
+    gap: var(--s2a-spacing-lg);
+    justify-content: flex-end;
+  }
+
+  .pm-promo-cta-button {
+    white-space: nowrap;
+    width: auto;
   }
 }
