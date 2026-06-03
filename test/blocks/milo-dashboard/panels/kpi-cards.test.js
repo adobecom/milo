@@ -53,6 +53,8 @@ describe('milo-dashboard kpi-cards', () => {
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[1];
     expect(delta.textContent).to.equal('0%');
     expect(delta.classList.contains('flat')).to.equal(true);
+    expect(delta.classList.contains('good')).to.equal(false);
+    expect(delta.classList.contains('bad')).to.equal(false);
   });
 
   it('rounds avg_health percent change and marks good + rose', () => {
