@@ -204,8 +204,7 @@ function setupBlock(el) {
     const rot = -25 * (1 - progress);
     updateStack('right', progress, incoming);
     const front = slideAt(0);
-    incoming.classList.add('show-image');
-    incoming.classList.add('incoming');
+    incoming.classList.add('show-image', 'incoming');
     front.classList.add('show-image');
     incoming.style.transition = 'none';
     incoming.style.setProperty('--split-aside-grid-stack-index', '0');
@@ -255,8 +254,7 @@ function setupBlock(el) {
       if (!m) return;
       m.style.transition = '';
       m.style.transform = '';
-      m.classList.remove('show-image');
-      m.classList.remove('incoming');
+      m.classList.remove('show-image', 'incoming');
     });
     if (direction === 'right') incoming.style.display = 'none';
     applyRotation();
