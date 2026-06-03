@@ -35,20 +35,11 @@
   background: var(--s2a-color-background-subtle);
   border-radius: var(--s2a-border-radius-md);
   text-decoration: none;
+  transition: filter 0.3s ease-in-out;
 }
 
-.quick-actions-tile::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: var(--s2a-color-transparent-black-08);
-  opacity: 0;
-  transition: opacity 0.5s var(--parallax-easing);
-}
-
-.quick-actions-tile:hover::before {
-  opacity: 1;
+.quick-actions-tile:hover {
+  filter: brightness(0.98);
 }
 
 .quick-actions-tile:focus-visible {
@@ -60,11 +51,12 @@
   position: absolute;
   inset: 0;
   display: block;
-  transition: transform 0.3s ease;
+  will-change: transform;
+  transition: transform 0.3s ease-out;
 }
 
 .quick-actions-tile:hover .quick-actions-media {
-  transform: scale(1.05);
+  transform: scale(1.015);
 }
 
 .quick-actions-media img,
@@ -151,5 +143,4 @@ img.quick-actions-media {
   .quick-actions-tile {
     border-radius: var(--s2a-border-radius-24);
   }
-
 }
