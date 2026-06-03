@@ -1,3 +1,5 @@
+> ⚠️ **SUPERSEDED by `2026-06-03-milo-world-dashboard-handoff.md`.** Read that one instead — the auth blocker, DA hosting, and design are all resolved there. Kept for history.
+
 # Milo World Dashboard — DA Hosting & Handoff
 
 _Written: 2026-06-02. Purpose: hand off to a fresh Claude session. Read this top-to-bottom before doing anything._
