@@ -136,30 +136,29 @@
 }
 
 /* Tour Modal Styles */
-#tour {
-  &.dialog-modal {
-    --tour-drag-y: 0px;
-    max-width: 596px;
-    width: 100dvw;
-    margin-top: 20px;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    max-height: 100dvh;
-    height: calc(100dvh - 20px);
-    transform: translateY(var(--tour-drag-y));
-    will-change: transform;
-    & > .fragment {
-      max-height: 100%;
-    }
-
-    &.is-dragging {
-      transition: none;
-    }
-
-    &.is-dismissing {
-      --tour-drag-y: 100%;
-    }
+.dialog-modal:has(.tour) {
+  --tour-drag-y: 0px;
+  max-width: 596px;
+  width: 100dvw;
+  margin-top: 20px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  max-height: 100dvh;
+  height: calc(100dvh - 20px);
+  transform: translateY(var(--tour-drag-y));
+  will-change: transform;
+  & > .fragment {
+    max-height: 100%;
   }
+
+  &.is-dragging {
+    transition: none;
+  }
+
+  &.is-dismissing {
+    --tour-drag-y: 100%;
+  }
+  
   .dialog-close {
     width: 48px;
     height: 48px;
@@ -176,7 +175,7 @@
 }
 
 [dir='rtl'] {
-  #tour {
+  .dialog-modal:has(.tour) {
     .dialog-close {
       right: auto;
       left: var(--s2a-spacing-md);
@@ -186,15 +185,13 @@
 
 /* Below 596px the modal is full-width; above it the width is fixed at 596px */
 @media (max-width: 596px) {
-  #tour {
-    &.dialog-modal {
-      max-width: 100dvw;
-    }
+  .dialog-modal:has(.tour) {
+    max-width: 100dvw;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  #tour.dialog-modal {
+  .dialog-modal:has(.tour) {
     animation: tour-slide-in 0.35s ease;
 
     &.is-snapping,

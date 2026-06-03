@@ -1,5 +1,5 @@
 .section {
-  &:has(.floating-cta) {
+  &:has(.floating-cta .promo-cta .icon-button) {
     bottom: 0;
     position: sticky;
     z-index: 4;

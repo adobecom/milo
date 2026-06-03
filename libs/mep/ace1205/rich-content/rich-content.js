@@ -39,7 +39,7 @@ function decorateJumpLinks(content, foreground) {
 
   anchors.forEach((anchor) => {
     const badge = createTag('span', { class: 'jump-link-badge' });
-    const label = createTag('span', { class: 'jump-link-label' }, anchor.textContent.trim());
+    const label = createTag('span', { class: 'jump-link-label heading-5' }, anchor.textContent.trim());
     anchor.textContent = '';
     anchor.classList.add('jump-link-anchor');
     anchor.append(badge, label);
