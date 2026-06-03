@@ -84,7 +84,7 @@ async function fill(mount, label, dataPromise, renderFn) {
 }
 
 export default async function init(block) {
-  loadStyle(import.meta.url);
+  await new Promise((resolve) => { loadStyle(import.meta.url.replace('.js', '.css'), resolve); });
 
   const ctx = await resolveContext(block, { loadDaSdk });
   const client = createClient(ctx);

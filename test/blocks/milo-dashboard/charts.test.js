@@ -55,5 +55,28 @@ describe('milo-dashboard charts', () => {
       window.dispatchEvent(new Event('resize'));
       expect(chart.resize.called).to.be.false;
     });
+
+    it('observes the container with a ResizeObserver and disconnects on clear', () => {
+      const observed = [];
+      const disconnected = [];
+      window.ResizeObserver = class {
+        constructor(cb) { this.cb = cb; }
+
+        // eslint-disable-next-line class-methods-use-this
+        observe(el) { observed.push(el); }
+
+        disconnect() { disconnected.push(this); }
+      };
+      window.echarts = { init: () => ({ setOption() {}, resize() {}, dispose() {} }) };
+
+      const el = document.createElement('div');
+      makeChart(el, {});
+      expect(observed[0]).to.equal(el);
+
+      clearCharts();
+      expect(disconnected.length).to.equal(1);
+
+      delete window.ResizeObserver;
+    });
   });
 });
