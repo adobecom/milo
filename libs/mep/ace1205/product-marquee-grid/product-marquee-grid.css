@@ -71,7 +71,7 @@
 /* soft-offer-cta variant */
 
 .pm-promo-cta {
-  align-items: flex-start;
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-md);
@@ -93,30 +93,8 @@
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
 }
 
-.pm-promo-cta-button {
-  align-items: center;
-  background: var(--s2a-color-blue-900);
-  border-radius: var(--s2a-border-radius-round);
-  box-sizing: border-box;
-  color: var(--s2a-color-content-knockout);
-  display: flex;
-  justify-content: center;
-  padding: var(--s2a-spacing-sm) var(--s2a-spacing-lg);
-  text-decoration: none;
+.pm-promo-cta .con-button {
   width: 100%;
-}
-
-.pm-promo-cta-button:hover {
-  background: var(--s2a-color-blue-1000);
-}
-
-.pm-promo-cta-button:active {
-  background: var(--s2a-color-blue-1100);
-}
-
-.pm-promo-cta-button:focus-visible {
-  outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
-  outline-offset: var(--s2a-border-width-2);
 }
 
 @media (width < 768px) {
@@ -167,16 +145,17 @@
   }
 }
 
+@media (768px <= width < 1280px) {
+  .product-marquee-grid.soft-offer-cta .pm-promo-area {
+    width: 242px;
+  }
+}
+
 @media (width >= 1280px) {
   .pm-promo-cta {
     align-items: center;
     flex-direction: row;
     gap: var(--s2a-spacing-lg);
     justify-content: flex-end;
-  }
-
-  .pm-promo-cta-button {
-    white-space: nowrap;
-    width: auto;
   }
 }
