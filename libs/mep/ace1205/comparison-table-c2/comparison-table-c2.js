@@ -500,18 +500,20 @@ function setupResponsiveHiding(el) {
   compactLayoutQuery.addEventListener('change', handleResponsive);
 }
 
+function decorateEmptyCell(cellDiv, emptyText) {
+  const content = cellDiv.textContent.trim();
+  if (content && !/^-+$/.test(content)) return;
+  cellDiv.classList.add('empty-cell');
+  cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
+}
+
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
     replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
       [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
       [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
-        const content = cellDiv.textContent.trim();
-        const hasEmptyContent = /^-+$/.test(content);
-        if (content && !hasEmptyContent) return;
-        const srOnly = createTag('span', { class: 'sr-only' }, emptyText);
-        cellDiv.appendChild(srOnly);
-        if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
+        decorateEmptyCell(cellDiv, emptyText);
       });
     });
   });

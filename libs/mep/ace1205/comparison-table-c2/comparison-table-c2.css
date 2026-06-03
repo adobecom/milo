@@ -566,18 +566,11 @@
     height: 20px;
   }
 
-  .icon-dash {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-
-    svg {
-      width: 16px;
-      height: 16px;
-      flex-shrink: 0;
-    }
+  .table-cell > div.empty-cell::before {
+    content: '';
+    display: block;
+    width: 16px;
+    border-top: 1px solid var(--s2a-color-transparent-black-48);
   }
 
   .toggle-icon {
