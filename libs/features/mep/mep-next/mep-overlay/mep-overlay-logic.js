@@ -1,0 +1,289 @@
+import {
+  getMetadata,
+  getConfig,
+  lingoActive,
+  normCountryCode,
+  getCookie,
+  getGeoLocalePrefix,
+  resolveDetectedMarketCountry,
+} from '../../../../utils/utils.js';
+import {
+  US_GEO,
+  getFileName,
+  normalizePath,
+} from '../../../personalization/personalization.js';
+
+const STAGE_ALLOWED_HOSTS = [
+  'business.stage.adobe.com',
+  'www.stage.adobe.com',
+  'milo.stage.adobe.com',
+];
+
+function buildResult(domain, path, prefix) {
+  return { page: path.replace(`/${prefix}/`, '/'), url: `${domain}${path}` };
+}
+
+function parsePageAndUrl(config, windowLocation, prefix) {
+  const { stageDomainsMap, env } = config;
+  const { pathname, origin } = windowLocation;
+  const originHost = origin.replace('https://', '');
+
+  if (env?.name === 'prod' || !stageDomainsMap || STAGE_ALLOWED_HOSTS.includes(originHost)) {
+    return buildResult(origin.replace('stage.adobe.com', 'adobe.com'), pathname, prefix);
+  }
+
+  const mappedDomain = Object.keys(stageDomainsMap).find((key) => {
+    try {
+      return STAGE_ALLOWED_HOSTS.includes(new URL(`https://${key}`).host);
+    } catch (e) {
+      /* c8 ignore next */
+      return false;
+    }
+  });
+
+  const domain = mappedDomain ? `https://${mappedDomain}` : origin;
+  let path = pathname.replace('/homepage/index-loggedout', '/');
+  if (!path.endsWith('/') && !path.endsWith('.html') && !domain.includes('milo')) {
+    path += '.html';
+  }
+
+  return buildResult(domain.replace('stage.adobe.com', 'adobe.com'), path, prefix);
+}
+
+function toActivity({
+  name, event, manifest, variantNames, selectedVariantName,
+  disabled, analyticsTitle, source, geoRestriction, mktgAction,
+}) {
+  let pathname = manifest;
+  try { pathname = new URL(manifest).pathname; } catch (e) { /* do nothing */ }
+  return {
+    targetActivityName: name,
+    variantNames,
+    selectedVariantName,
+    url: manifest,
+    disabled,
+    source,
+    eventStart: event?.start,
+    eventEnd: event?.end,
+    pathname,
+    analyticsTitle,
+    geoRestriction,
+    mktgAction,
+  };
+}
+
+function parseMepConfig() {
+  const config = getConfig();
+  const { mep, locale } = config;
+  if (!mep || !locale) return null;
+
+  const { experiments, prefix, highlight } = mep;
+  const { page, url } = parsePageAndUrl(config, window.location, prefix);
+
+  return {
+    page: {
+      url,
+      page,
+      target: getMetadata('target') || 'off',
+      personalization: getMetadata('personalization') ? 'on' : 'off',
+      geo: prefix === US_GEO ? '' : prefix,
+      locale: locale?.ietf,
+      region: locale?.region,
+      highlight,
+    },
+    activities: experiments.map(toActivity),
+  };
+}
+
+function formatDate(dateTime, format = 'local') {
+  if (!dateTime) return '';
+  const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
+  if (format === 'iso') return dateObj.toISOString();
+  const date = dateObj.toLocaleDateString(false, { year: 'numeric', month: 'short', day: 'numeric' });
+  const time = dateObj.toLocaleTimeString(false, { timeStyle: 'short' });
+  return `${date} ${time}`;
+}
+
+const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
+
+export function getManifestList() {
+  const mepConfig = parseMepConfig();
+  const { activities, page } = mepConfig;
+  const { pageId = 0 } = page;
+  const manifestParameter = [];
+
+  const manifests = activities.map((manifest, mIdx) => {
+    const {
+      url,
+      variantNames,
+      selectedVariantName = 'default',
+      targetActivityName,
+      source,
+      analyticsTitle,
+      eventStart,
+      eventEnd,
+      disabled,
+      geoRestriction,
+      mktgAction,
+    } = manifest;
+
+    const editPath = normalizePath(url);
+    const variants = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
+    const isDefaultSelected = !variantNames.includes(selectedVariantName) && pageId === 0;
+
+    if (isDefaultSelected) manifestParameter.push(`${url}--default`);
+
+    const options = [
+      { name: `${editPath}${pageId}`, value: '', title: 'none', label: "None (Don't add manifest)" },
+      {
+        name: `${editPath}${pageId}`,
+        value: 'default',
+        id: `${editPath}${pageId}--default`,
+        dataManifest: editPath,
+        title: 'Default (control)',
+        label: 'Default (control)',
+        selected: isDefaultSelected,
+      },
+    ];
+
+    variants.forEach((variant) => {
+      const isSelected = variant === selectedVariantName;
+      if (isSelected) manifestParameter.push(`${url}--${variant}`);
+      options.push({
+        name: `${editPath}${pageId}`,
+        value: variant,
+        id: `${editPath}${pageId}--${variant}`,
+        dataManifest: editPath,
+        title: variant,
+        label: variant,
+        selected: isSelected,
+      });
+    });
+
+    return {
+      index: mIdx + 1,
+      editUrl: url,
+      fileName: getFileName(url),
+      analyticsTitle,
+      targetActivityName: targetActivityName ?? null,
+      isDefaultSelected,
+      selectedVariantName,
+      source: Array.isArray(source) ? source.join(', ') : source,
+      mktgAction,
+      geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
+      showActive: !!(eventStart && eventEnd) || !!disabled,
+      isActive: disabled ? 'inactive' : 'active',
+      eventStart: eventStart ? formatDate(eventStart) : null,
+      eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
+      eventEnd: eventEnd ? formatDate(eventEnd) : null,
+      lastSeen: manifest.lastSeen ? formatDate(new Date(manifest.lastSeen)) : null,
+      pageId,
+      options,
+    };
+  });
+
+  return { manifests, manifestParameter };
+}
+
+export function getManifestsFound() {
+  const mepconfig = parseMepConfig();
+  return mepconfig?.activities?.length ?? 0;
+}
+
+export function getPageId() {
+  const mepConfig = parseMepConfig();
+  const { page } = mepConfig ?? {};
+  return page?.pageId ? `-${page.pageId}` : '';
+}
+
+export function getFoundation() {
+  return (getMetadata('foundation') || 'c1').toUpperCase();
+}
+
+export function getTargetIntegration() {
+  const { page } = parseMepConfig();
+  const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
+  if (mepTarget === undefined) return page.target;
+  return { postlcp: 'on post LCP' }[mepTarget] ?? mepTarget;
+}
+
+export function getLocale() {
+  const { page } = parseMepConfig();
+  return page.locale?.toLowerCase();
+}
+
+export function getLastSeen() {
+  const { page } = parseMepConfig();
+  return formatDate(new Date(page.lastSeen));
+}
+
+export function getPersonalization() {
+  const { page } = parseMepConfig();
+  return page.personalization;
+}
+
+export function getPerformanceConsent() {
+  const { consentState } = getConfig().mep;
+  return consentState?.functional ? 'on' : 'off';
+}
+
+export function getAdvertisingConsent() {
+  const { consentState } = getConfig().mep;
+  return consentState?.advertising ? 'on' : 'off';
+}
+
+export function getLingoUpdates() {
+  const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
+  const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
+  return `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`;
+}
+
+export function getLangFirst() {
+  return lingoActive() ? 'on' : 'off';
+}
+
+export function getGeoFolder() {
+  const { page } = parseMepConfig();
+  return page.geo || 'Us (None)';
+}
+
+export function getCountryCookie() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const countryParam = normCountryCode(searchParams.get('country'));
+  const countryCookie = countryParam
+    || normCountryCode(getCookie('country'))
+    || 'None';
+  return countryCookie ?? '';
+}
+
+export async function getUserCountry() {
+  return await resolveDetectedMarketCountry() ?? '';
+}
+
+export async function getGeoUser() {
+  const { locale } = getConfig();
+  if (!Object.keys(locale?.regions || {}).length || !lingoActive()) return 'Not Applicable';
+  return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
+}
+
+export async function setPreviewButton() {
+  const popup = document.querySelector('#mep-drawer');
+  const options = popup.querySelectorAll('option:checked, input[type="text"]');
+
+  const manifestParameter = [...options].reduce((params, option) => {
+    if (option.closest('select')?.disabled || !option.value) return params;
+
+    let { value } = option;
+    if (option.classList.contains('mep-load-manifest')) {
+      try { value = new URL(value).pathname || value; } catch { /* invalid URL */ }
+    } else {
+      value = `${option.dataset.manifest}--${value}`;
+    }
+    params.push(value);
+    return params;
+  }, []);
+
+  const simulateHref = new URL(window.location.href);
+  simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
+}
