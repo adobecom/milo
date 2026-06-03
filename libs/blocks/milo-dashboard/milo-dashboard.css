@@ -525,8 +525,9 @@
     position: absolute;
     z-index: 5;
     inset-block-end: calc(100% + 6px);
-    inset-inline-start: 50%;
-    transform: translateX(-50%);
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    margin-inline: auto;
     width: max-content;
     max-width: 260px;
     padding: 8px 10px;

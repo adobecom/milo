@@ -15,4 +15,10 @@ describe('milo-dashboard info-tip', () => {
     const el = infoTip('Tier-1 consumers only.');
     expect(el.querySelector('.info-tip-bubble').textContent).to.equal('Tier-1 consumers only.');
   });
+
+  it('marks the bubble as a tooltip and hides the glyph from a11y tree', () => {
+    const el = infoTip('x');
+    expect(el.querySelector('.info-tip-bubble').getAttribute('role')).to.equal('tooltip');
+    expect(el.querySelector('.info-tip-glyph').getAttribute('aria-hidden')).to.equal('true');
+  });
 });
