@@ -1,4 +1,4 @@
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import { constructTestUrl } from '../../libs/commerce.js';
 import { features } from './three-in-one.spec.js';
 import ThreeInOne from './three-in-one.page.js';

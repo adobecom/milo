@@ -1,4 +1,4 @@
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import { features } from './block-group.spec.js';
 import BlockGroupBlock from './block-group.page.js';
 

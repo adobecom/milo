@@ -1,7 +1,7 @@
 // to run tests:
 // npm run nala stage tag=mepact1 mode=headed
 
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import { features } from './mep-actions.spec.js';
 import TextBlock from '../../blocks/text/text.page.js';
 import MarqueeBlock from '../../blocks/marquee/marquee.page.js';

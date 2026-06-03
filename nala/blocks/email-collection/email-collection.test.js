@@ -1,4 +1,4 @@
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './email-collection.spec.js';
 import EmailCollectionBlock from './email-collection.page.js';

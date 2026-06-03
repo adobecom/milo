@@ -1,4 +1,4 @@
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import WebUtil from '../../libs/webutil.js';
 import { features } from './media.spec.js';
 import MediaBlock from './media.page.js';
