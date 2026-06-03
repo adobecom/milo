@@ -7,8 +7,9 @@ from a user review of the live dashboard; triaged against the code in
 
 ## Scope
 
-Five focused changes. All in the milo block; **no backend (`milo-logs-deploy`)
-changes**. Two deferred items captured for Okan.
+Eight focused changes: six in the milo block (clarity, two bug fixes, frontend
+perf) and one backend perf change in `milo-logs-deploy` (read-route response
+cache). Two deferred items captured for Okan.
 
 Out of scope (deferred — design/data decisions, raise with Okan):
 - **#1 Trim KPI cards** — which of the 5 KPIs to keep (Active Projects and
@@ -115,7 +116,82 @@ The `/totals` fetch (`pTotals`) is unchanged and still feeds both. Keep error
 isolation: a totals failure shows a per-panel error and leaves the header stat
 blank/`—` rather than blanking the dashboard.
 
-## Change 5 — Capture deferred items
+## Change 6 — Charts blank until refresh (bug)
+
+**Problem:** on first load the doughnut ring (gauge) and the entire "By consumer"
+chart render blank; they only appear after clicking Refresh or a timeframe
+button.
+
+**Root cause:** echarts charts initialize before the block's CSS is applied, so
+their containers have zero height at `echarts.init()` and nothing resizes them.
+- `charts.js:16-23` `makeChart` calls `echarts.init(el)`, which measures
+  `clientHeight` once; the only recovery listener is `window` `resize`.
+- The container heights live only in the block CSS (`.gauge { min-height:230px }`
+  `css:270`, `.consumer-bars { min-height:300px }` `css:344`). With no CSS those
+  divs are 0px tall.
+- `milo-dashboard.js:86` calls `loadStyle(import.meta.url)` — but `import.meta.url`
+  is the **`.js`** file, not the `.css`. `loadStyle` (`utils.js:1160`) tries to
+  load the JS as a stylesheet; the browser rejects it. It loads no CSS and isn't
+  awaited. No other block uses this pattern.
+- On the live DA page the real CSS is loaded asynchronously by milo's `loadBlock`,
+  racing the JS. `init()` builds the charts before the CSS lands → 0-height
+  containers → echarts renders blank ("Can't get DOM width or height"). Refresh
+  re-runs `makeChart` after CSS is applied → renders. The demo never shows the
+  bug because `demo/index.html:9` hard-links the CSS in `<head>`.
+- The HTML category bars render fine because they have no echarts size dependency.
+
+**Fix (defense-in-depth, two layers):**
+1. **Eliminate the race at the source:** load the correct CSS and await it before
+   rendering charts — `loadStyle(import.meta.url.replace('.js', '.css'))` wrapped
+   in a promise and awaited in `init()`.
+2. **Durable backstop:** add a `ResizeObserver` in `makeChart` that calls
+   `chart.resize()` when the container box becomes non-zero / changes; disconnect
+   it in `clearCharts` alongside the existing window-resize cleanup. This replaces
+   the window-only listener and permanently fixes any residual 0-size-at-init
+   race or later container resize.
+
+## Change 7 — Frontend load ordering (perf)
+
+**Problem:** `milo-dashboard.js:90` does `await loadCharts()` (echarts ~1MB)
+*before* any data request fires, and `resolveContext` first awaits the DA SDK
+(up to 1.5s). The largest download and the slow API calls run serially instead
+of overlapping.
+
+**Fix:** reorder `init()` so the data requests start in parallel with the echarts
+download (and SDK load). Kick off the fetches and `loadCharts()` together; await
+echarts only where a chart panel actually needs it. No behavior change — only the
+sequencing of independent awaits (per milo-performance "parallelize independent
+awaits"). Keep progressive per-panel rendering intact.
+
+## Change 8 — Backend response cache (perf, milo-logs-deploy)
+
+**Problem:** the dashboard's read-only aggregate routes (`/overview`,
+`/projects`, `/totals`, `/trends/eds`, `/trends/preflight`, `/test-pages`) run
+expensive aggregate queries against a Postgres pool capped at `max: 1`
+(intentional — serializes queries). Concurrent dashboard requests and multiple
+beta users queue behind one connection; first load after idle also hits Aurora
+cold-start (~30s, out of scope here).
+
+**Fix:** short-TTL in-process response cache + single-flight on those GET routes.
+- A `Map` keyed by `route + normalized query`, entries `{ expires, promise }`,
+  TTL ~60–120s. Mirrors the existing PR #27 `authCache` pattern in
+  `src/middleware/auth.js`, including single-flight: concurrent identical
+  requests share one in-flight DB query instead of queuing behind `pool max: 1`.
+- Implemented as a small wrapper applied to the read handlers in
+  `src/routes/index.js` (or a helper in `getTrends.js`/`searchPages.js`). Sits
+  **inside** the handler, **after** `requireAuth` — no auth bypass. Only
+  successful results cached; errors are not.
+- **Safety / no harm to other products:** it strictly *removes* queries from the
+  shared pool (less contention for everyone), changes no shared infra, and does
+  **not** touch `pool max: 1` (raising that would risk connection pressure — the
+  option we deliberately avoid). Aurora cold-start / keep-warm is explicitly out
+  of scope.
+- Tests: cache hit returns without a second DB call (assert query fn called
+  once across two requests); entry expires after TTL; concurrent calls
+  single-flight to one query; errors not cached. Add a cache-clear export for
+  test isolation (mirrors `clearAuthCache()`).
+
+## Change 9 — Capture deferred items
 
 Add the #1 and #8 notes (above) to the next handoff's "Open / next" list so
 they reach Okan. No code.
@@ -141,5 +217,13 @@ they reach Okan. No code.
 - `libs/blocks/milo-dashboard/panels/consumer-bars.js` (T1 tooltip)
 - `libs/blocks/milo-dashboard/milo-dashboard.js` (header restructure, info-tip wiring)
 - `libs/blocks/milo-dashboard/milo-dashboard.css` (delta classes, info-tip, header stat)
+- `libs/blocks/milo-dashboard/charts.js` (ResizeObserver in makeChart/clearCharts)
 - `test/blocks/milo-dashboard/*.test.js`
 - (optional) a tiny `infoTip` helper, colocated or in `milo-dashboard.js`
+
+**milo-logs-deploy (backend, Change 8):**
+- `src/routes/index.js` and/or `src/routes/getTrends.js` + `src/routes/searchPages.js`
+  (cache wrapper on the read handlers)
+- a small cache helper (mirror `authCache` in `src/middleware/auth.js`) with a
+  test-only clear export
+- backend test file(s) for cache hit / expiry / single-flight / error-not-cached
