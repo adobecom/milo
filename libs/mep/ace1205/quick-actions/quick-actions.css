@@ -31,7 +31,7 @@
 .quick-actions-tile {
   position: relative;
   overflow: clip;
-  block-size: 180px;
+  aspect-ratio: 43 / 50;
   background: var(--s2a-color-background-subtle);
   border-radius: var(--s2a-border-radius-md);
   text-decoration: none;
@@ -125,6 +125,10 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
+  .quick-actions-tile {
+    min-block-size: 180px;
+  }
+
   .quick-actions-grid.two-up,
   .quick-actions-grid.three-up,
   .quick-actions-grid.four-up,
@@ -137,7 +141,6 @@ img.quick-actions-media {
 @media (width >= 768px) {
   .quick-actions-tile {
     block-size: auto;
-    aspect-ratio: 50 / 43;
   }
 }
 
