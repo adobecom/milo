@@ -528,6 +528,13 @@
     align-items: center;
     justify-content: center;
 
+    .empty-cell::before {
+      content: '';
+      display: block;
+      width: 16px;
+      border-top: 2.5px solid var(--s2a-color-transparent-black-64);
+    }
+
     p {
       text-align: center;
       min-height: 18px;
@@ -564,13 +571,6 @@
   .icon-checkmark svg {
     width: 20px;
     height: 20px;
-  }
-
-  .table-cell > div.empty-cell::before {
-    content: '';
-    display: block;
-    width: 16px;
-    border-top: 2.5px solid var(--s2a-color-transparent-black-64);
   }
 
   .toggle-icon {
