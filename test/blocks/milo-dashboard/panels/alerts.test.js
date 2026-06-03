@@ -85,6 +85,20 @@ describe('milo-dashboard alerts', () => {
     expect(() => item.click()).to.not.throw();
   });
 
+  it('expands to the full list when "+N more" is clicked, then collapses', () => {
+    const projects = Array.from({ length: 12 }, (_, i) => ({ site: `s${i}`, avg_health: 10 }));
+    renderAlerts(container, { testPages: [], projects }, () => {});
+    const more = container.querySelector('.alerts-more');
+    expect(more.tagName).to.equal('BUTTON');
+    expect(container.querySelectorAll('.alert-item').length).to.equal(8);
+    more.click();
+    expect(container.querySelectorAll('.alert-item').length).to.equal(12);
+    const less = container.querySelector('.alerts-more');
+    expect(less.textContent).to.equal('Show less');
+    less.click();
+    expect(container.querySelectorAll('.alert-item').length).to.equal(8);
+  });
+
   it('renders the test-page alert message as a live-page link', () => {
     renderAlerts(container, {
       testPages: [{ path: '/drafts/x.html', site: 'milo', signal: 'path' }],

@@ -37,30 +37,37 @@ function buildMsg(alert) {
 }
 
 export default function renderAlerts(container, data, onConsumer) {
-  container.replaceChildren();
   const alerts = buildAlerts(data || {});
+  let expanded = false;
 
-  if (!alerts.length) {
-    container.append(createTag('div', { class: 'alerts-empty' }, 'All clear — nothing flagged'));
-    return;
-  }
-
-  const list = createTag('div', { class: 'alerts-list' });
-  alerts.slice(0, MAX_SHOWN).forEach((alert) => {
-    const sev = createTag('span', { class: `alert-sev ${alert.severity}` }, SEV_LABEL[alert.severity]);
-    const msg = buildMsg(alert);
-    if (alert.severity === 'high' && onConsumer) {
-      const item = createTag('button', { type: 'button', class: 'alert-item' }, [sev, msg]);
-      item.addEventListener('click', () => onConsumer(alert.site));
-      list.append(item);
+  function draw() {
+    container.replaceChildren();
+    if (!alerts.length) {
+      container.append(createTag('div', { class: 'alerts-empty' }, 'All clear — nothing flagged'));
       return;
     }
-    list.append(createTag('div', { class: 'alert-item' }, [sev, msg]));
-  });
+    const list = createTag('div', { class: 'alerts-list' });
+    const shown = expanded ? alerts : alerts.slice(0, MAX_SHOWN);
+    shown.forEach((alert) => {
+      const sev = createTag('span', { class: `alert-sev ${alert.severity}` }, SEV_LABEL[alert.severity]);
+      const msg = buildMsg(alert);
+      if (alert.severity === 'high' && onConsumer) {
+        const item = createTag('button', { type: 'button', class: 'alert-item' }, [sev, msg]);
+        item.addEventListener('click', () => onConsumer(alert.site));
+        list.append(item);
+        return;
+      }
+      list.append(createTag('div', { class: 'alert-item' }, [sev, msg]));
+    });
 
-  if (alerts.length > MAX_SHOWN) {
-    list.append(createTag('div', { class: 'alerts-more' }, `+${alerts.length - MAX_SHOWN} more`));
+    if (alerts.length > MAX_SHOWN) {
+      const label = expanded ? 'Show less' : `+${alerts.length - MAX_SHOWN} more`;
+      const toggle = createTag('button', { type: 'button', class: 'alerts-more' }, label);
+      toggle.addEventListener('click', () => { expanded = !expanded; draw(); });
+      list.append(toggle);
+    }
+    container.append(list);
   }
 
-  container.append(list);
+  draw();
 }

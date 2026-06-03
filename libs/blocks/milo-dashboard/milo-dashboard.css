@@ -490,8 +490,14 @@
   }
 
   & .alerts-more {
+    font: inherit;
     font-size: 13px;
-    color: var(--md-ink-soft);
+    color: var(--md-accent);
+    cursor: pointer;
+    border: 0;
+    background: none;
+    padding-block: 6px;
+    padding-inline: 0;
   }
 
   /* errors / empty */
