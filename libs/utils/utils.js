@@ -2609,6 +2609,11 @@ async function documentPostSectionLoading(config) {
   });
 
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
+
+  if (window.parent !== window
+    && new URL(window.location.href).searchParams.get('bc-split-iframe') === '1') {
+    window.parent.postMessage({ type: 'bc-split-page-ready' }, window.location.origin);
+  }
 }
 
 export function partition(arr, fn) {

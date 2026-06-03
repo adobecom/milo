@@ -2,6 +2,7 @@ import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';
+import { schedulePreloadWhenPageReady, activateSplit, ensureSplitShell, startIframePreload, isInSplitIframeContext } from './split-window.js';
 
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
 const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -24,6 +25,7 @@ const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgCl
 const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const animationMs = 500;
+const SPLIT_TABLET_BREAKPOINT = 767;
 
 const authoredContent = {};
 const variants = {};
@@ -185,6 +187,152 @@ function resetFloatingButton(el) {
   }
 }
 
+function useSplitView() {
+  if (params.get('bc-modal') === '1') return false;
+  if (window !== window.top || isInSplitIframeContext()) return false;
+  return window.innerWidth > SPLIT_TABLET_BREAKPOINT;
+}
+
+function resetChatInput(el) {
+  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
+  const textarea = el.querySelector('.bc-input-field textarea');
+  const submitButton = el.querySelector('.input-field-button');
+
+  if (textareaWrapper && textarea && submitButton) {
+    textarea.value = '';
+    submitButton.disabled = true;
+    updateReplicatedValue(textareaWrapper, textarea);
+  }
+}
+
+function buildChatFragment(initialMessage) {
+  const fragment = new DocumentFragment();
+  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
+  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
+  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
+  const mountEl = createTag('div', { id: mountId });
+
+  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
+  fragment.append(header, mountEl);
+  return fragment;
+}
+
+async function bootstrapChat(mountEl) {
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
+  const { env, locale } = getConfig();
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env?.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    logWebClient('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    logWebClient('stage', stage);
+    src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  loadScript(src);
+
+  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
+  const surfaceURL = window.location.href;
+  const { userAgent, language } = window.navigator;
+
+  const onBeforeEventSend = (content) => {
+    const MEETING_EVENT_TYPES = [
+      'form-fetch',
+      'form-submit',
+      'calendar-fetch',
+      'calendar-submit',
+      'conversation-command',
+    ];
+
+    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
+      return;
+    }
+
+    if (!bcToken) {
+      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+    }
+
+    if (bcToken) {
+      content.data = {
+        type: 'auth',
+        payload: { token: bcToken },
+      };
+    }
+
+    // eslint-disable-next-line no-underscore-dangle
+    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
+    const consentConfObject = consentsConfig
+      && Object.keys(consentsConfig).reduce((rdx, key) => {
+        rdx.push({
+          consentStandard: key,
+          consentStringValue: consentsConfig[key].toString(),
+          consentStandardVersion: '2.0',
+          gdprApplies: true,
+          containsPersonalData: true,
+        });
+        return rdx;
+      }, []);
+
+    content.xdm = {
+      web: { webPageDetails: { URL: surfaceURL } },
+      environment: {
+        browserDetails: { userAgent },
+        _dc: { language },
+      },
+      homeAddress: { region: locale.region },
+    };
+
+    if (consentConfObject?.length) {
+      content.xdm.consentStrings = consentConfObject;
+    }
+  };
+
+  if (bootstrapAPIReady) {
+    window.adobe.concierge.bootstrap({
+      instanceName: 'alloy',
+      stylingConfigurations: getUpdatedChatUIConfig(),
+      selector: `#${mountId}`,
+      onBeforeEventSend,
+      onEvent: (event) => {
+        bcAnalytics(event);
+      },
+    });
+  } else {
+    window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
+  }
+
+  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
+    if (detail?.action === 'sign-in') {
+      openSusiLightModal();
+    }
+  });
+}
+
 /**
  * Creates the SUSI Light component for the sign-in modal.
  * Aligns with Nest (Repos/nest) SentryWrapper: popup=true, response_type=token,
@@ -303,17 +451,9 @@ async function openSusiLightModal() {
 }
 
 async function openChatModal(initialMessage, el) {
-  const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
-  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
-  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
-  const mountEl = createTag('div', { id: mountId });
-
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
-  innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
-    content: innerModal,
+    content: buildChatFragment(initialMessage),
     closeCallback: async () => {
       const floatingButton = el.querySelector('.bc-floating-button');
       if (floatingButton && floatingButtonClicked) {
@@ -328,129 +468,39 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
-  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
-  const textarea = el.querySelector('.bc-input-field textarea');
-  const submitButton = el.querySelector('.input-field-button');
+  resetChatInput(el);
 
-  if (textareaWrapper && textarea && submitButton) {
-    textarea.value = '';
-    submitButton.disabled = true;
-    updateReplicatedValue(textareaWrapper, textarea);
-  }
+  const mountEl = modal.querySelector(`#${mountId}`);
+  await bootstrapChat(mountEl);
+}
 
-  const logWebClient = (text, src) => {
-    // eslint-disable-next-line no-console
-    console.log(text, src);
-  };
+async function openChatSplit(initialMessage, el) {
+  ensureSplitShell({ primaryUrl: window.location.href });
+  startIframePreload(window.location.href);
 
-  const { env, locale } = getConfig();
-  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
-
-  if (env?.name === 'prod') {
-    src = prod;
-  }
-
-  if (webClient === 'prod') {
-    logWebClient('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    logWebClient('stage', stage);
-    src = stage;
-  } else if (webClient === 'baseProd') {
-    logWebClient('baseProd', baseProd);
-    src = baseProd;
-  } else if (webClient === 'baseStage') {
-    logWebClient('baseStage', baseStage);
-    src = baseStage;
-  }
-
-  if (webClientVersion) {
-    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
-    src = pr;
-  }
-
-  loadScript(src);
-
-  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
-  const surfaceURL = window.location.href;
-  const { userAgent, language } = window.navigator;
-
-  const onBeforeEventSend = (content) => {
-    const MEETING_EVENT_TYPES = [
-      'form-fetch',
-      'form-submit',
-      'calendar-fetch',
-      'calendar-submit',
-      'conversation-command',
-    ];
-
-    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
-      return;
-    }
-
-    if (!bcToken) {
-      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
-    }
-
-    if (bcToken) {
-      content.data = {
-        type: 'auth',
-        payload: { token: bcToken },
-      };
-    }
-
-    // eslint-disable-next-line no-underscore-dangle
-    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
-    const consentConfObject = consentsConfig
-      && Object.keys(consentsConfig).reduce((rdx, key) => {
-        rdx.push({
-          consentStandard: key,
-          consentStringValue: consentsConfig[key].toString(),
-          consentStandardVersion: '2.0',
-          gdprApplies: true,
-          containsPersonalData: true,
-        });
-        return rdx;
-      }, []);
-
-    content.xdm = {
-      web: { webPageDetails: { URL: surfaceURL } },
-      environment: {
-        browserDetails: { userAgent },
-        _dc: { language },
-      },
-      homeAddress: { region: locale.region },
-    };
-
-    if (consentConfObject?.length) {
-      content.xdm.consentStrings = consentConfObject;
-    }
-  };
-
-  if (bootstrapAPIReady) {
-    window.adobe.concierge.bootstrap({
-      instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(),
-      selector: `#${mountId}`,
-      onBeforeEventSend,
-      onEvent: (event) => {
-        bcAnalytics(event);
-      },
-    });
-  } else {
-    window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
-  }
-
-  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    if (detail?.action === 'sign-in') {
-      openSusiLightModal();
-    }
+  await activateSplit({
+    loaderEl: el,
+    onClose: () => {
+      if (floatingButtonClicked) {
+        resetFloatingButton(el);
+      }
+    },
+    renderRightPanel: async (container) => {
+      container.append(buildChatFragment(initialMessage));
+      const mountEl = container.querySelector(`#${mountId}`);
+      await bootstrapChat(mountEl);
+    },
   });
+
+  resetChatInput(el);
+}
+
+async function openChat(initialMessage, el) {
+  if (useSplitView()) {
+    await openChatSplit(initialMessage, el);
+  } else {
+    await openChatModal(initialMessage, el);
+  }
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
@@ -539,7 +589,7 @@ function decorateCards(el, cards) {
       const input = el.querySelector('.bc-input-field textarea');
 
       input.value = cardText.textContent.trim();
-      openChatModal(input.value, el);
+      openChat(input.value, el);
     });
   });
 
@@ -596,7 +646,7 @@ function decorateInput(el, input) {
 
   fieldButton.addEventListener('click', () => {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
-    openChatModal(fieldInput.value, el);
+    openChat(fieldInput.value, el);
   });
 }
 
@@ -621,7 +671,7 @@ function decorateFloatingButton(el) {
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
-    openChatModal(null, el);
+    openChat(null, el);
   });
 
   floatingElement(floatingButton, el, floatingContainer);
@@ -721,5 +771,9 @@ export default async function init(el) {
     button.textContent = 'Click me to open SUSI Light (testing only)';
     button.onclick = openSusiLightModal;
     el.appendChild(button);
+  }
+
+  if (useSplitView()) {
+    schedulePreloadWhenPageReady({ primaryUrl: window.location.href });
   }
 }

@@ -6,10 +6,19 @@ import { setConfig } from '../../../libs/utils/utils.js';
 
 setConfig({ codeRoot: '/libs', brandConciergeAA: 'testAA' });
 
-const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/blocks/brand-concierge/brand-concierge.js');
+const MOBILE_WIDTH = 600;
+const DESKTOP_WIDTH = 1200;
+
+const { default: init, updateReplicatedValue, getUpdatedChatUIConfig, createSusiComponentForModal } = await import('../../../libs/c2/blocks/brand-concierge/brand-concierge.js');
 
 describe('Brand Concierge', () => {
+  afterEach(() => {
+    document.getElementById('bc-split-wrapper')?.remove();
+    document.querySelectorAll('link[href*="split-window.css"]').forEach((el) => el.remove());
+  });
+
   it('decorates default variant with header, cards, input and legal, and sets background', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
     await init(block);
@@ -51,6 +60,7 @@ describe('Brand Concierge', () => {
   });
 
   it('renders input before cards when input-first is set', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/input-first.html' });
     const block = document.querySelector('.brand-concierge.input-first');
     await init(block);
@@ -63,6 +73,7 @@ describe('Brand Concierge', () => {
   });
 
   it('enables send button on input and opens modal on Enter', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 
@@ -95,6 +106,7 @@ describe('Brand Concierge', () => {
   });
 
   it('clicking a prompt card fills input and opens modal with card text', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
     await init(block);
@@ -114,6 +126,7 @@ describe('Brand Concierge', () => {
     let originalLana;
 
     beforeEach(async () => {
+      window.innerWidth = MOBILE_WIDTH;
       document.body.innerHTML = await readFile({ path: './mocks/default.html' });
       block = document.querySelector('.brand-concierge');
       originalAdobePrivacy = window.adobePrivacy;
@@ -176,6 +189,7 @@ describe('Brand Concierge', () => {
   });
 
   it('getUpdatedChatUIConfig returns config with authored content', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
     await init(block);
@@ -192,6 +206,7 @@ describe('Brand Concierge', () => {
   });
 
   it('removes query parameters from background image URL', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/background-image.html' });
     const block = document.querySelector('.brand-concierge');
     await init(block);
@@ -204,7 +219,8 @@ describe('Brand Concierge', () => {
     expect(bgValue).to.not.contain('&height=300');
   });
 
-  it('decorates floating button with correct structure and opens modal on click', async () => {
+  it('decorates floating button with correct structure and opens modal on click on mobile', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/floating-button.html' });
     const block = document.querySelector('.brand-concierge.floating-button');
     await init(block);
@@ -225,7 +241,26 @@ describe('Brand Concierge', () => {
     expect(mount.dataset.initialMessage).to.be.undefined;
   });
 
+  it('opens split view on desktop when floating button is clicked', async () => {
+    window.innerWidth = DESKTOP_WIDTH;
+    document.body.innerHTML = await readFile({ path: './mocks/floating-button.html' });
+    const block = document.querySelector('.brand-concierge.floating-button');
+    await init(block);
+
+    const floatingButton = block.querySelector('.bc-floating-button');
+    floatingButton.click();
+
+    const splitWrapper = await waitForElement('#bc-split-wrapper');
+    expect(splitWrapper.classList.contains('bc-split-active')).to.be.true;
+
+    const mount = splitWrapper.querySelector('#brand-concierge-mount');
+    expect(mount).to.exist;
+    expect(mount.dataset.initialMessage).to.be.undefined;
+    expect(document.getElementById('brand-concierge-modal')).to.be.null;
+  });
+
   it('sets up bootstrap API parameters, onBeforeEventSend callback, and event handlers correctly', async () => {
+    window.innerWidth = MOBILE_WIDTH;
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.brand-concierge');
 

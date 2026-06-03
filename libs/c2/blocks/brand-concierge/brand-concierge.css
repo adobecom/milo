@@ -627,6 +627,50 @@
   height: calc(100% - var(--modal-header-height));
 }
 
+.brand-concierge.bc-split-loading {
+  position: relative;
+}
+
+.bc-split-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 72%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.bc-split-loader::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid #dadce0;
+  border-top-color: #7155FA;
+  border-radius: 50%;
+  animation: bc-split-spin 0.7s linear infinite;
+}
+
+@keyframes bc-split-spin {
+  to { transform: rotate(360deg); }
+}
+
+#bc-split-right-content {
+  --modal-header-height: 57px;
+}
+
+#bc-split-right-content #brand-concierge-mount {
+  flex: 1;
+  min-height: 0;
+  height: calc(100% - var(--modal-header-height));
+}
+
+#bc-split-right-content .bc-modal-header {
+  flex-shrink: 0;
+}
+
   /* large mobile up */
 @media screen and (min-width: 600px) {
   .brand-concierge {
