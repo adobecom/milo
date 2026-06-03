@@ -150,7 +150,7 @@
     width: 242px;
   }
 
-  .pm-promo-cta {
+  .pm-promo-cta-label {
     padding-inline-start: var(--s2a-spacing-xs);
   }
 }
