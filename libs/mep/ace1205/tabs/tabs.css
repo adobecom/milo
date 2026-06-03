@@ -1,46 +1,22 @@
 :root {
-  /* Alignment */
-  --tabs-base-alignment: flex-start;
-  --tabs-mobile-alignment: flex-start;
-
-  /* Tab Colors */
-  --tabs-active-text-color: #2c2c2c; /* keep for testing ace1205 */
-  --tabs-active-bg-color: var(--s2a-color-gray-25);
-  --tabs-container-background-color: var(--s2a-color-transparent-black-04);
-
-  /* Pill colors */
-  --tabs-pill-font-size: var(--s2a-typography-font-size-label);
-  --tabs-pill-text-color: var(--s2a-color-transparent-black-64);
-  --tabs-pill-bg-color: transparent;
-  --tabs-pill-bg-color-selected: var(--s2a-color-background-knockout);
-  --tabs-pill-text-color-hover: #2c2c2c;
-  --tabs-pill-text-selected-color: var(--s2a-color-content-knockout);
-  --tabs-pill-bg-focus: var(--s2a-color-gray-700); /* keep for testing ace1205 focus feature if needed */
-  --tabs-pill-bg-color-active: var(--s2a-color-transparent-black-64); /* keep for testing ace1205 active feature if needed */
-  --tabs-pill-text-focus-color: var(--s2a-color-gray-25); /* keep for testing ace1205 focus feature if needed */
-  --tabs-pill-border-focus-color: var(--s2a-color-blue-800);
-  --m-rounded-corners-tabs: 50px;
+  --pill-bg-color-selected: var(--s2a-color-background-knockout);
+  --pill-rounded-corners-setting: 50px;
 }
 
 .tabs {
   position: relative;
   margin: 0;
-  background-color: var(--tabs-active-bg-color);
+  background-color: var(--s2a-color-gray-25);
   z-index: 1;
 
   &.background-transparent {
     background: transparent;
   }
 
-  .tab-headline { /* keep for testing ace1205 when merch is available */
-    margin-top: var(--spacing-xxl);
-    margin-bottom: var(--spacing-xl);
-  }
-
   .tabs-wrapper {
     display: flex;
     width: 100%;
-    justify-content: var(--tabs-base-alignment);
+    justify-content: flex-start;
   }
 
   .tab-indicator {
@@ -48,8 +24,8 @@
     top: var(--s2a-spacing-2xs);
     bottom: var(--s2a-spacing-2xs);
     left: 0;
-    background: var(--tabs-pill-bg-color-selected);
-    border-radius: var(--m-rounded-corners-tabs);
+    background: var(--pill-bg-color-selected);
+    border-radius: var(--pill-rounded-corners-setting);
     transition: transform 0.25s ease, width 0.35s ease;
     pointer-events: none;
     z-index: 0;
@@ -65,8 +41,8 @@
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     scrollbar-width: none; /* Use alongside -webkit-scrollbar */
-    background: var(--tabs-container-background-color);
-    border-radius: var(--m-rounded-corners-tabs);
+    background: var(--s2a-color-transparent-black-04);
+    border-radius: var(--pill-rounded-corners-setting);
 
     &::-webkit-scrollbar {
       display: none; /* Safari and Chrome */
@@ -91,16 +67,16 @@
     }
 
     button.tab-button {
-      color: var(--tabs-pill-text-color);
+      color: var(--s2a-color-transparent-black-64);
       cursor: pointer;
       font-family: var(--body-font-family);
-      font-size: var(--tabs-pill-font-size);
+      font-size: var(--s2a-typography-font-size-label);
       text-align: center;
       font-style: normal;
       font-weight: var(--s2a-font-weight-adobe-clean-bold);
       line-height: var(--s2a-font-line-height-2xs);
       margin: 0;
-      border-radius: var(--m-rounded-corners-tabs);
+      border-radius: var(--pill-rounded-corners-setting);
       border: var(--s2a-border-width-md) solid transparent;
       padding: 0 var(--s2a-spacing-lg);
       text-decoration: none;
@@ -112,33 +88,33 @@
       position: relative;
       z-index: 1;
       flex: 1 0 auto;
-      background: var(--tabs-pill-bg-color);
-      height: var(--s2a-spacing-xl);
+      background: transparent;
+      height: 32px;
 
       &:hover {
-        color: var(--tabs-pill-text-color-hover);
+        color: #2c2c2c;
       }
 
       &[aria-selected="true"] {
-        color: var(--tabs-pill-text-selected-color);
-        background: var(--tabs-pill-bg-color-selected);
+        color: var(--s2a-color-content-knockout);
+        background: var(--pill-bg-color-selected);
         transition: background 0s 0.25s, color 0.2s 0s ease-out;
       }
 
       &:focus-visible {
-        outline: 2px solid var(--tabs-pill-border-focus-color);
+        outline: 2px solid var(--s2a-color-blue-800);
         outline-offset: -2px;
       }
     }
   }
 
-  @media screen and (max-width: 599px) {
+  @media (width < 768px) {
     .tabs-wrapper {
       width: 100vw;
       position: relative;
       left: 50%;
       transform: translateX(-50%);
-      justify-content: var(--tabs-mobile-alignment);
+      justify-content: flex-start;
       overflow-x: auto;
       scrollbar-width: none; /* Use alongside -webkit-scrollbar */
 
@@ -153,7 +129,7 @@
     }
   }
 
-  @media screen and (min-width: 600px) {
+  @media (width >= 768px) {
     &.center .tabs-wrapper {
       justify-content: center;
     }
@@ -162,13 +138,6 @@
       justify-content: flex-end;
     }
   }
-}
-
-/* Contained tabs content */
-[role='tabpanel'] > .section > .content,
-.tabs.contained .tab-content .tab-content-container {
-  width: var(--grid-container-width);
-  margin: 0 auto;
 }
 
 .tab-content [role='tabpanel'] {
@@ -182,6 +151,7 @@
     > .content {
       z-index: 1;
       position: relative;
+      margin: 0 auto;
     }
 
     &[class*='-up'] > .content {
@@ -199,7 +169,7 @@
   }
 }
 
-@media screen and (min-width: 600px) {
+@media (width >= 768px) {
   /* Animation for tab content entrance */
   @keyframes tab-content-in {
     from {
@@ -230,7 +200,7 @@
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media (width >= 1920px) {
   [role='tabpanel'] > .section[class*='-up'] > .content,
   [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
