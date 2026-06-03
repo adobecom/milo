@@ -327,14 +327,15 @@
       position: relative;
       margin: 0 auto;
       max-width: 1200px;
-      padding: var(--s2a-spacing-2xl, 48px) var(--s2a-spacing-lg, 24px);
+      padding: var(--s2a-spacing-80) var(--s2a-spacing-40) 0;
     }
 
     .no-motion-card-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: var(--s2a-spacing-sm, 16px);
-      margin-bottom: var(--s2a-spacing-xl, 32px);
+      align-items: start;
+      gap: var(--s2a-spacing-sm);
+      margin-bottom: var(--s2a-spacing-xl);
     }
 
     .no-motion-card-desktop-only {
@@ -344,9 +345,6 @@
     .no-motion-card {
       margin: 0;
 
-      /* The cloned <picture> is the rounded, clipped image box (per-card
-         aspect-ratio is set inline); the label flows below it, as in the
-         settled motion state. */
       picture {
         display: block;
         width: 100%;
@@ -365,7 +363,7 @@
     }
 
     .no-motion-card-label {
-      margin-top: var(--s2a-spacing-2xs, 8px);
+      margin-top: var(--s2a-spacing-2xs);
     }
 
     .text-block,
@@ -388,14 +386,14 @@
 
     .acrobat-cta {
       width: fit-content;
-      margin: var(--s2a-spacing-lg, 24px) auto 0;
+      margin: var(--s2a-spacing-lg) auto 0;
     }
 
     .acrobat-mobile-mockup,
     .acrobat-desktop-mockup {
       position: relative;
       left: auto;
-      margin: var(--s2a-spacing-lg, 24px) auto 0;
+      margin: var(--s2a-spacing-lg) auto 0;
       transform: none;
     }
 
@@ -448,10 +446,11 @@
       }
     }
 
-    /* Match settled motion: the text-block sits below the grid (block flow, not
-       beside it) and right-aligns to the grid edge on desktop. Below 1280px it
-       stays left-aligned, as the animated layout does. */
     @media (width >= 1280px) {
+      .no-motion-grid-section {
+        padding: var(--s2a-spacing-124) var(--s2a-spacing-64) 0;
+      }
+
       .text-block {
         margin-left: auto;
       }
