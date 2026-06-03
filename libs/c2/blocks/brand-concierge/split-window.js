@@ -3,11 +3,18 @@ import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 const WRAPPER_ID = 'bc-split-wrapper';
 const PAGE_LOAD_OK_ID = 'page-load-ok-milo';
 const SPLIT_MSG_READY = 'bc-split-page-ready';
-const TOTAL_GAPS_WIDTH = 28;
+const ACTIVE_LEFT_PADDING = 12;
+const ACTIVE_RIGHT_PADDING = 0;
+const RESIZER_WIDTH = 12;
+const ACTIVE_TOTAL_GAPS_WIDTH = ACTIVE_LEFT_PADDING + RESIZER_WIDTH + ACTIVE_RIGHT_PADDING;
 const ANIMATION_MS = 450;
 const IFRAME_READY_TIMEOUT_MS = 30000;
 const MIN_PANE_PERCENT = 20;
 const MAX_PANE_PERCENT = 80;
+const LEFT_PANE_RATIO = 2;
+const RIGHT_PANE_RATIO = 1;
+const LEFT_PANE_PERCENT = (LEFT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO)) * 100;
+const RIGHT_PANE_PERCENT = (RIGHT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO)) * 100;
 
 let styleLoaded = false;
 let isDragging = false;
@@ -20,6 +27,42 @@ let messageListenerBound = false;
 let cachedPrimaryUrl = null;
 let iframeLoadPromise = null;
 let iframeReadyResolve = null;
+let savedScrollY = 0;
+
+function getInitialPaneWidths(totalGapsWidth = ACTIVE_TOTAL_GAPS_WIDTH) {
+  const leftGap = totalGapsWidth * (LEFT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO));
+  const rightGap = totalGapsWidth * (RIGHT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO));
+  return {
+    left: `calc(${LEFT_PANE_PERCENT}% - ${leftGap}px)`,
+    right: `calc(${RIGHT_PANE_PERCENT}% - ${rightGap}px)`,
+  };
+}
+
+function setPaneWidthsFromPercentage(
+  leftPane,
+  rightPane,
+  percentage,
+  totalGapsWidth = ACTIVE_TOTAL_GAPS_WIDTH,
+) {
+  const leftGap = totalGapsWidth * (LEFT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO));
+  const rightGap = totalGapsWidth * (RIGHT_PANE_RATIO / (LEFT_PANE_RATIO + RIGHT_PANE_RATIO));
+  leftPane.style.width = `calc(${percentage}% - ${leftGap}px)`;
+  rightPane.style.width = `calc(${100 - percentage}% - ${rightGap}px)`;
+}
+
+function lockBodyScroll() {
+  savedScrollY = window.scrollY;
+  document.documentElement.classList.add('bc-split-scroll-lock');
+  document.body.classList.add('bc-split-scroll-lock');
+  document.body.style.top = `-${savedScrollY}px`;
+}
+
+function unlockBodyScroll() {
+  document.documentElement.classList.remove('bc-split-scroll-lock');
+  document.body.classList.remove('bc-split-scroll-lock');
+  document.body.style.top = '';
+  window.scrollTo(0, savedScrollY);
+}
 
 export function isInSplitIframeContext() {
   if (window !== window.top) return true;
@@ -75,15 +118,14 @@ function bindResizer(wrapper, leftPane, rightPane, resizer) {
   mouseMoveHandler = (e) => {
     if (!isDragging) return;
 
-    const leftWidthPx = e.clientX - 14;
-    const totalWidthPx = window.innerWidth - TOTAL_GAPS_WIDTH;
+    const leftWidthPx = e.clientX - ACTIVE_LEFT_PADDING;
+    const totalWidthPx = window.innerWidth - ACTIVE_TOTAL_GAPS_WIDTH;
     let percentage = (leftWidthPx / totalWidthPx) * 100;
 
     if (percentage < MIN_PANE_PERCENT) percentage = MIN_PANE_PERCENT;
     if (percentage > MAX_PANE_PERCENT) percentage = MAX_PANE_PERCENT;
 
-    leftPane.style.width = `calc(${percentage}% - ${TOTAL_GAPS_WIDTH / 2}px)`;
-    rightPane.style.width = `calc(${100 - percentage}% - ${TOTAL_GAPS_WIDTH / 2}px)`;
+    setPaneWidthsFromPercentage(leftPane, rightPane, percentage);
   };
 
   mouseUpHandler = () => {
@@ -183,6 +225,8 @@ function collapseSplit() {
     onCloseCallback();
     onCloseCallback = null;
   }
+
+  unlockBodyScroll();
 }
 
 function handleClose() {
@@ -275,7 +319,7 @@ export function schedulePreloadWhenPageReady({ primaryUrl = window.location.href
 }
 
 function prepareHiddenLayout(els, instant = false) {
-  const initialPaneWidth = `calc(50% - ${TOTAL_GAPS_WIDTH / 2}px)`;
+  const { left, right } = getInitialPaneWidths();
 
   els.wrapper.classList.add('bc-split-preloading');
   els.wrapper.classList.remove('bc-split-active');
@@ -288,8 +332,8 @@ function prepareHiddenLayout(els, instant = false) {
     els.rightPane.style.transition = `width ${ANIMATION_MS}ms cubic-bezier(0.25, 1, 0.5, 1)`;
   }
 
-  els.leftPane.style.width = initialPaneWidth;
-  els.rightPane.style.width = initialPaneWidth;
+  els.leftPane.style.width = left;
+  els.rightPane.style.width = right;
   els.resizer.style.display = 'block';
 }
 
@@ -298,6 +342,7 @@ function revealSplit(els) {
   els.wrapper.classList.add('bc-split-active');
   els.leftPane.style.transition = 'none';
   els.rightPane.style.transition = 'none';
+  lockBodyScroll();
 }
 
 export async function activateSplit({ renderRightPanel, onClose, loaderEl } = {}) {
