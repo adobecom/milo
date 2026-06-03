@@ -83,6 +83,13 @@ Commits on `milo-world-dashboard` (newest first): `3d7f30368 … 7afce779f` + ea
 
 Sourced from the Okan DM (`D082FNY20M7`). Nothing is urgent.
 
+**Polish pass shipped 2026-06-03** (spec `docs/superpowers/specs/2026-06-03-milo-world-polish-design.md`, plan `docs/superpowers/plans/2026-06-03-milo-world-polish.md`): fixed KPI delta arrow (direction by sign, color by goodness); fixed charts blank on first load (awaited CSS + ResizeObserver in `charts.js`); info tooltips (gauge, T1 toggle, Avg Health, Pages Below 70); all-time "live pages" total lifted into the header above the toggle (per-site panel retitled "Live pages by consumer"); "+N more" alerts now expand in place; frontend load parallelized (echarts download overlaps data fetch); **backend read-route response cache** (`milo-logs-deploy` `src/utils/query-cache.js`) — short-TTL single-flight on `/overview /projects /totals /trends/* /test-pages`, reduces shared-DB load, sits after `requireAuth`, doesn't touch `pool max:1`.
+
+**Deferred from the polish pass (need Okan):**
+- **Trim KPI cards** — "Active Projects" and "Pages Below 70" overlap the Projects table / gauge; decide which of the 5 KPIs to keep.
+- **Projects search / too few projects** — root cause is upstream, not UI: `getProjects` is window-scoped AND the ingestor only ingests ~4 `INGEST_SITES`, so there are genuinely few projects. A frontend search adds little until more consumers are onboarded (ties into the "onboard ~130 more consumers" roadmap item below). Revisit then.
+- **Aurora cold-start (~30s)** — deliberately left alone; the only no-harm fix is a keep-warm heartbeat that gives up idle cost savings. Raise with Okan if the first-load wait matters.
+
 **Dashboard features (deferred, "good-to-haves"):**
 - **Prev/next period navigation** buttons.
 - **Publishes-per-month per-consumer chart** (spot anomalies).
