@@ -1356,6 +1356,7 @@ html.bc-sidebar-open body {
 }
 
 html.bc-sidebar-open div.brand-concierge-sidebar {
+  z-index: 20;
   width: 30%;
 }
 
