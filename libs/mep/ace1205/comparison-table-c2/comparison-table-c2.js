@@ -539,7 +539,6 @@ function setupCollapsingHeader(el) {
   let wasCollapsed = false;
   let isExpanding = false;
   let lastScrollY = window.scrollY;
-  let cachedMobileDelta = null;
 
   const isMobile = () => window.matchMedia('(max-width: 899px)').matches;
 
@@ -566,14 +565,7 @@ function setupCollapsingHeader(el) {
     if (wasCollapsed) return;
     wasCollapsed = true;
     if (!isMobile()) { cardsContainer.classList.add('is-collapsed'); return; }
-    const firstCard = cardsContainer.querySelector('.ct-header-item-card:not(.hidden)');
-    if (cachedMobileDelta === null) {
-      cachedMobileDelta = [...(firstCard?.querySelectorAll('.header-item-collapsible, .btn-section-wrap') ?? [])]
-        .reduce((sum, colEl) => sum + colEl.offsetHeight, 0);
-    }
     cardsContainer.classList.add('is-collapsed');
-    const tableContainer = cardsContainer.nextElementSibling;
-    if (cachedMobileDelta > 0 && tableContainer) tableContainer.style.marginTop = `${cachedMobileDelta}px`;
   };
 
   const removeCollapsed = () => {
@@ -586,7 +578,6 @@ function setupCollapsingHeader(el) {
   };
 
   window.matchMedia('(max-width: 899px)').addEventListener('change', () => {
-    cachedMobileDelta = null;
     syncTop();
     syncHeaderHeight();
   });
