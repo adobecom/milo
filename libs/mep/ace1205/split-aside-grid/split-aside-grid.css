@@ -37,10 +37,10 @@
       width: 245px;
       height: 465px;
       border-radius: 28px; 
-      border: 1.32px solid rgba(255, 255, 255, 0.05);
+      border: 1.32px solid var(--s2a-color-transparent-white-04);
       padding: 8px;
-      background-color: rgba(255, 255, 255, 0.05); 
-      backdrop-filter: blur(15.819000244140625px);
+      background-color: var(--s2a-color-transparent-white-04);
+      backdrop-filter: blur(16px);
       overflow: hidden;
       box-sizing: border-box;
       transform: translateX(calc(var(--split-aside-grid-stack-step) * var(--split-aside-grid-stack-offset))) scaleY(var(--slide-scale));
