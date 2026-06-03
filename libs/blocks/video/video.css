@@ -187,8 +187,7 @@ video {
 
     &:hover {
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
-      background: var(--s2a-color-transparent-black-64);
-      backdrop-filter: unset;
+      background: var(--s2a-color-transparent-black-80);
     }
 
     &:focus-visible {
@@ -199,7 +198,6 @@ video {
     &:active {
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
       background: var(--s2a-color-background-knockout);
-      backdrop-filter: unset;
     }
 
     .offset-filler {

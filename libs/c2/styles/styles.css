@@ -1064,7 +1064,7 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
-.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast):not(:has(.floating-cta)) {
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
 /* TODO: Parallax styles should be loaded separately and conditionally */
