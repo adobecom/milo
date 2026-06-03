@@ -94,12 +94,12 @@ function setupBlock(el) {
             focusable.setAttribute('tabindex', isActive ? '0' : '-1');
           });
         });
-      } else {
-        item.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-        item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
-          focusable.setAttribute('tabindex', isActive ? '0' : '-1');
-        });
+        return;
       }
+      item.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+        focusable.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
     });
   }
 
@@ -232,21 +232,21 @@ function setupBlock(el) {
           flying = false;
         });
       });
-    } else {
-      medias.forEach((slide) => {
-        slide.style.transition = '';
-      });
-      incoming.style.transform = '';
-
-      setTimeout(() => {
-        medias.forEach((slide) => {
-          slide.classList.remove('show-image');
-          slide.classList.remove('incoming');
-          clearInline(slide);
-        });
-        flying = false;
-      }, FLY_MS * (1 - progress) + 20);
+      return;
     }
+    medias.forEach((slide) => {
+      slide.style.transition = '';
+    });
+    incoming.style.transform = '';
+
+    setTimeout(() => {
+      medias.forEach((slide) => {
+        slide.classList.remove('show-image');
+        slide.classList.remove('incoming');
+        clearInline(slide);
+      });
+      flying = false;
+    }, FLY_MS * (1 - progress) + 20);
   }
 
   function snapBack(direction) {

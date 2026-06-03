@@ -38,9 +38,9 @@
       height: 465px;
       border-radius: 28px; 
       border: 1.32px solid var(--s2a-color-transparent-white-04);
-      padding: 8px;
+      padding: var(--s2a-spacing-xs);
       background-color: var(--s2a-color-transparent-white-04);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(var(--s2a-blur-sm));
       overflow: hidden;
       box-sizing: border-box;
       transform: translateX(calc(var(--split-aside-grid-stack-step) * var(--split-aside-grid-stack-offset))) scaleY(var(--slide-scale));
@@ -174,6 +174,7 @@
     align-items: center;
     overflow-x: clip;
     grid-template-columns: repeat(12, 1fr);
+    /* Height scales linearly from 465px at 768vw to 615px at 1280vw, then clamps (150 = 615-465 over 512 = 1280-768). */
     height: clamp(
       465px,
       calc(465px + (100vw - 768px) * 150 / 512),
