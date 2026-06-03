@@ -1,11 +1,12 @@
 import { createTag } from '../../../utils/utils.js';
+import infoTip from '../info-tip.js';
 
 const METRICS = [
   { key: 'publishes', label: 'Publishes', decimals: 0, higherIsBetter: true },
   { key: 'previews', label: 'Previews', decimals: 0, higherIsBetter: true },
-  { key: 'avg_health', label: 'Avg Health Score', decimals: 1, higherIsBetter: true },
+  { key: 'avg_health', label: 'Avg Health Score', decimals: 1, higherIsBetter: true, info: 'Average preflight score (0–100) this period.' },
   { key: 'active_projects', label: 'Active Projects', decimals: 0, higherIsBetter: true },
-  { key: 'pages_below_70', label: 'Pages Below 70', decimals: 0, higherIsBetter: false },
+  { key: 'pages_below_70', label: 'Pages Below 70', decimals: 0, higherIsBetter: false, info: 'Live pages scoring under 70 on preflight health. Lower is better.' },
 ];
 
 function formatValue(value, decimals) {
@@ -27,7 +28,7 @@ function formatPercent(pct) {
 export default function renderKpiCards(container, overview, period = 'week') {
   container.replaceChildren();
   const { current, prior } = overview;
-  METRICS.forEach(({ key, label, decimals, higherIsBetter }) => {
+  METRICS.forEach(({ key, label, decimals, higherIsBetter, info }) => {
     const value = Number(current[key]);
     const pct = percentChange(Number(current[key]), Number(prior[key]));
     const deltaEl = createTag('div', { class: 'kpi-delta' }, pct === null ? '—' : formatPercent(pct));
@@ -38,8 +39,10 @@ export default function renderKpiCards(container, overview, period = 'week') {
       deltaEl.classList.add(good ? 'good' : 'bad'); // color = goodness
       deltaEl.classList.add(pct > 0 ? 'rose' : 'fell'); // arrow = numeric direction
     }
+    const labelEl = createTag('div', { class: 'kpi-label' }, label);
+    if (info) labelEl.append(infoTip(info));
     const card = createTag('div', { class: 'kpi-card' }, [
-      createTag('div', { class: 'kpi-label' }, label),
+      labelEl,
       createTag('div', { class: 'kpi-value' }, formatValue(value, decimals)),
       deltaEl,
       createTag('div', { class: 'kpi-period' }, `vs last ${period}`),

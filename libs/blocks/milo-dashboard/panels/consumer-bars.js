@@ -1,4 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
+import infoTip from '../info-tip.js';
 
 const METRICS = [
   { key: 'publishes', label: 'Publishes' },
@@ -111,6 +112,7 @@ export default function renderConsumerBars(container, projectRows, charts, onSel
     render();
   });
   controls.append(t1Toggle);
+  controls.append(infoTip('Tier-1 consumers (CC, DC, Express, Bacom, Blog). Toggle off to see all consumers.'));
 
   container.append(controls, chartEl);
   buttons[0].classList.add('active');

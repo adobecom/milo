@@ -14,7 +14,11 @@ describe('milo-dashboard kpi-cards', () => {
 
   it('renders 5 cards with labels in order', () => {
     renderKpiCards(container, fixture, 'month');
-    const labels = [...container.querySelectorAll('.kpi-card .kpi-label')].map((el) => el.textContent);
+    const labels = [...container.querySelectorAll('.kpi-card .kpi-label')].map((el) => {
+      const tip = el.querySelector('.info-tip');
+      if (tip) tip.remove();
+      return el.textContent;
+    });
     expect(container.querySelectorAll('.kpi-card').length).to.equal(5);
     expect(labels).to.deep.equal(['Publishes', 'Previews', 'Avg Health Score', 'Active Projects', 'Pages Below 70']);
   });
@@ -97,6 +101,14 @@ describe('milo-dashboard kpi-cards', () => {
     renderKpiCards(container, fixture);
     const period = container.querySelector('.kpi-card .kpi-period');
     expect(period.textContent).to.equal('vs last week');
+  });
+
+  it('adds info tips to Avg Health and Pages Below 70 cards only', () => {
+    renderKpiCards(container, fixture, 'month');
+    const cards = container.querySelectorAll('.kpi-card');
+    expect(cards[2].querySelector('.info-tip')).to.not.equal(null); // Avg Health
+    expect(cards[4].querySelector('.info-tip')).to.not.equal(null); // Pages Below 70
+    expect(cards[0].querySelector('.info-tip')).to.equal(null);     // Publishes
   });
 
   it('clears the container on re-render', () => {

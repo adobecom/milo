@@ -20,7 +20,7 @@ describe('milo-dashboard consumer-bars', () => {
 
   it('renders 3 metric buttons + a T1 toggle with correct defaults', () => {
     renderConsumerBars(container, rows, charts);
-    const buttons = [...container.querySelectorAll('.consumer-bars-controls button:not(.t1-toggle)')];
+    const buttons = [...container.querySelectorAll('.consumer-bars-controls button:not(.t1-toggle):not(.info-tip)')];
     expect(buttons.map((b) => b.textContent)).to.deep.equal(['Publishes', 'Previews', 'Health']);
     expect(buttons[0].classList.contains('active')).to.equal(true);
     expect(buttons.slice(1).some((b) => b.classList.contains('active'))).to.equal(false);
@@ -72,7 +72,7 @@ describe('milo-dashboard consumer-bars', () => {
 
   it('sets aria-pressed on metric buttons, updated on click', () => {
     renderConsumerBars(container, rows, charts);
-    const buttons = [...container.querySelectorAll('.consumer-bars-controls button:not(.t1-toggle)')];
+    const buttons = [...container.querySelectorAll('.consumer-bars-controls button:not(.t1-toggle):not(.info-tip)')];
     expect(buttons[0].getAttribute('aria-pressed')).to.equal('true');
     expect(buttons.slice(1).every((b) => b.getAttribute('aria-pressed') === 'false')).to.equal(true);
     const health = buttons.find((b) => b.textContent === 'Health');
@@ -98,6 +98,14 @@ describe('milo-dashboard consumer-bars', () => {
     expect(handler).to.be.a('function');
     handler({ name: 'cc-shared' });
     expect(onSelect.calledOnceWith('cc-shared')).to.equal(true);
+  });
+
+  it('renders an info tip on the T1 toggle controls', () => {
+    const charts = { makeChart: () => ({ on() {} }) };
+    renderConsumerBars(container, [{ site: 'cc', publishes: 1, previews: 1, avg_health: 90 }], charts, () => {});
+    const tip = container.querySelector('.consumer-bars-controls .info-tip');
+    expect(tip).to.not.equal(null);
+    expect(tip.getAttribute('aria-label')).to.contain('Tier-1');
   });
 
   it('does not register a click handler when onSelect is omitted', () => {

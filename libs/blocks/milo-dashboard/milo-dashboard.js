@@ -1,4 +1,5 @@
 import { createTag, loadStyle } from '../../utils/utils.js';
+import infoTip from './info-tip.js';
 import { resolveContext, createClient, loadDaSdk } from './api.js';
 import { loadCharts, makeChart, clearCharts } from './charts.js';
 import renderKpiCards from './panels/kpi-cards.js';
@@ -155,9 +156,13 @@ export default async function init(block) {
     // Titled card: returns the outer panel plus the inner body the panel
     // renderer draws into (renderers call replaceChildren on the body, so the
     // title survives re-renders).
-    const makePanel = (cls, title) => {
+    const makePanel = (cls, title, info) => {
       const panel = createTag('div', { class: `panel ${cls}` });
-      if (title) panel.append(createTag('h3', { class: 'panel-title' }, title));
+      if (title) {
+        const titleEl = createTag('h3', { class: 'panel-title' }, title);
+        if (info) titleEl.append(infoTip(info));
+        panel.append(titleEl);
+      }
       const body = createTag('div', { class: 'panel-body' });
       panel.append(body);
       return { panel, body };
@@ -166,7 +171,7 @@ export default async function init(block) {
     const grid = createTag('div', { class: 'dashboard-grid' });
     const kpiMount = createTag('div', { class: 'panel kpi' });
     const totals = makePanel('totals', 'Pages stored');
-    const gauge = makePanel('gauge-panel', 'Platform preflight health');
+    const gauge = makePanel('gauge-panel', 'Platform preflight health', 'Average preflight score (0–100) from the latest checks: performance, SEO, accessibility, assets.');
     const consumers = makePanel('consumers', 'By consumer');
     const alerts = makePanel('alerts', 'Needs attention');
     const health = makePanel('health', 'Preflight health trend');
