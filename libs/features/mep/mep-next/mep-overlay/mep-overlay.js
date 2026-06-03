@@ -1,4 +1,4 @@
-import { createTag, loadStyle } from '../../../utils/utils.js';
+import { createTag, loadStyle } from '../../../../utils/utils.js';
 import {
   getPageId,
   getManifestsFound,
@@ -15,7 +15,7 @@ import {
   getGeoUser,
   getManifestList,
   setPreviewButton,
-} from './mep-next.js';
+} from './mep-overlay-logic.js';
 
 const SUMMARY_DATA_GETTERS = {
   'Manifests Found': getManifestsFound,
