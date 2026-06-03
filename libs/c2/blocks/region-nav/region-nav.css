@@ -82,7 +82,7 @@
 }
 
 .dialog-modal:has(.region-nav) > .fragment {
-  max-height: calc((100dvh - 6px) - 2em);
+  max-height: calc((100svh - 6px) - 2em);
 }
 
 @media (min-width: 600px) {
