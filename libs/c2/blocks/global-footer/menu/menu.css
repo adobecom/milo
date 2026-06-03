@@ -44,11 +44,11 @@
 .feds-menu-headline {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 12px 30px 12px 32px;
+  gap: var(--s2a-spacing-xs);
+  padding: var(--s2a-spacing-lg) var(--s2a-spacing-xs);
   border-bottom: 1px solid var(--feds-borderColor-menu);
   color: var(--feds-color-headline);
-  font-weight: 600;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
   cursor: pointer;
 }
 
@@ -69,15 +69,6 @@
   transform: rotateZ(45deg);
   transition: transform 0.1s ease;
   box-sizing: content-box;
-}
-
-[dir = "rtl"] .feds-menu-headline {
-  padding-left: 30px;
-  padding-right: 32px;
-}
-
-[dir = "rtl"] .feds-menu-headline-caret {
-  order: -1;
 }
 
 .feds-menu-items {
