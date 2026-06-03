@@ -1400,9 +1400,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
-  if (!isTrustedUrl(fragment)) {
-    return false;
-  }
+  if (!isTrustedUrl(fragment)) return false;
   const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
