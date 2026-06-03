@@ -2702,9 +2702,48 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function initBrandConciergeSidebar() {
+  const isC2Page = getMetadata('foundation') === 'c2';
+  if (!isC2Page) return;
+  const brandConciergeSidebar = document.createElement('div');
+  brandConciergeSidebar.classList.add('brand-concierge-sidebar');
+  document.body.insertAdjacentElement('afterend', brandConciergeSidebar);
+  const openBrandConciergeSidebar = () => {
+    document.documentElement.classList.add('brand-concierge-sidebar-open');
+  };
+  const closeBrandConciergeSidebar = () => {
+    document.documentElement.classList.remove('brand-concierge-sidebar-open');
+  };
+
+  return {
+    brandConciergeSidebar,
+    openBrandConciergeSidebar,
+    closeBrandConciergeSidebar,
+  };
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
+    const {
+      brandConciergeSidebar,
+      openBrandConciergeSidebar,
+      closeBrandConciergeSidebar,
+    } = initBrandConciergeSidebar();
+
+    const openButton = document.createElement('button');
+    const closeButton = document.createElement('button');
+    openButton.style.position = 'absolute';
+    closeButton.style.position = 'absolute';
+    openButton.style.zIndex = 20;
+    closeButton.style.zIndex = 20;
+    openButton.textContent = 'OPEN BRAND CONCIERGE SIDEBAR';
+    closeButton.textContent = 'CLOSE BRAND CONCIERGE SIDEBAR';
+    document.body.insertAdjacentElement('afterbegin', openButton);
+    brandConciergeSidebar.append(closeButton);
+    openButton.addEventListener('click', openBrandConciergeSidebar);
+    closeButton.addEventListener('click', closeBrandConciergeSidebar);
+
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
     preloadMarketsConfig();

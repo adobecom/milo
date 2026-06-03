@@ -1315,3 +1315,21 @@ p {
     --s2a-typography-letter-spacing-title-3: var(--s2a-font-letter-spacing-2xl);
   }
 }
+
+html.brand-concierge-sidebar-open {
+  display: flex;
+  flex-direction: row;
+  body {
+    width: 70%;
+  }
+  div.brand-concierge-sidebar {
+    width: 30%;
+    background: teal;
+  }
+}
+
+html div.brand-concierge-sidebar {
+  width: 0px;
+  height: 0px;
+}
+
