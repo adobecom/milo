@@ -1,16 +1,25 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-// Each STACK_REF entry positions one card within that canvas:
+// Each STACK_REF_DESKTOP / STACK_REF_MOBILE entry positions one card in the pile:
 //   dx, dy = top-left offset in px
 //   w, h   = card size in px
 //   rot    = rotation in degrees (negative = counter-clockwise)
-const STACK_REF = [
+const STACK_REF_DESKTOP = [
   { dx: 40, dy: 116, w: 418, h: 489, rot: -6 },
   { dx: 172, dy: -25, w: 535.885, h: 666, rot: -2 },
   { dx: -30, dy: 290, w: 304, h: 324, rot: -15 },
   { dx: 400, dy: 240, w: 418, h: 455, rot: 3 },
 ];
+const STACK_REF_MOBILE = [
+  { dx: -15, dy: 75, w: 272, h: 318, rot: -6 },
+  { dx: 52, dy: -16, w: 348, h: 433, rot: -2 },
+  { dx: -30, dy: 150, w: 198, h: 211, rot: -15 },
+  { dx: 160, dy: 120, w: 367, h: 400, rot: 3 },
+];
+const PILE_X_OFFSET_MOBILE = 54;
+const PILE_GAP_DESKTOP = 124;
+const PILE_GAP_MOBILE = 80;
 const CARD_SHADOWS = [
   null,
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
@@ -303,19 +312,20 @@ function initAnimation(block) {
     });
 
     const vw = window.innerWidth;
-    const stackScale = isMobile() ? 0.75 : 1;
-    const pileMin = Math.min(...STACK_REF.map((r) => r.dx));
-    const pileMax = Math.max(...STACK_REF.map((r) => r.dx + r.w));
-    const pileTopDy = Math.min(...STACK_REF.map((r) => r.dy));
-    const gap = isDesktop() ? 124 : 80;
-    const stackTop = heroContent.getBoundingClientRect().bottom + gap - pileTopDy * stackScale;
-    const stackLeft = vw / 2 - ((pileMin + pileMax) / 2) * stackScale;
+    const stackRef = isMobile() ? STACK_REF_MOBILE : STACK_REF_DESKTOP;
+    const pileMin = Math.min(...stackRef.map((r) => r.dx));
+    const pileMax = Math.max(...stackRef.map((r) => r.dx + r.w));
+    const pileTopDy = Math.min(...stackRef.map((r) => r.dy));
+    const gap = isDesktop() ? PILE_GAP_DESKTOP : PILE_GAP_MOBILE;
+    const stackTop = heroContent.getBoundingClientRect().bottom + gap - pileTopDy;
+    const xOffset = isMobile() ? PILE_X_OFFSET_MOBILE : 0;
+    const stackLeft = vw / 2 - ((pileMin + pileMax) / 2) + xOffset;
     rtl = isRtl(block);
-    stackBoxes = STACK_REF.map((ref) => ({
-      x: stackLeft + (rtl ? pileMax - ref.dx - ref.w : ref.dx) * stackScale,
-      y: stackTop + ref.dy * stackScale,
-      w: ref.w * stackScale,
-      h: ref.h * stackScale,
+    stackBoxes = stackRef.map((ref) => ({
+      x: stackLeft + (rtl ? pileMax - ref.dx - ref.w : ref.dx),
+      y: stackTop + ref.dy,
+      w: ref.w,
+      h: ref.h,
       rot: rtl ? -ref.rot : ref.rot,
     }));
 
