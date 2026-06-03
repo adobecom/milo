@@ -75,14 +75,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-md);
-  width: 100%;
   white-space: nowrap;
+  width: 100%;
 }
 
 .pm-promo-cta-label {
   color: var(--s2a-color-content-default);
   font-size: var(--s2a-typography-font-size-body-md);
-  font-weight: 400;
+  font-weight: var(--s2a-font-weight-body);
   letter-spacing: var(--s2a-typography-letter-spacing-body-md);
   line-height: var(--s2a-typography-line-height-body-md);
   margin: 0;
@@ -90,20 +90,20 @@
 
 .pm-promo-cta-label strong {
   display: block;
-  font-weight: 700;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
 }
 
 .pm-promo-cta-button {
   align-items: center;
   background: var(--s2a-color-blue-900);
   border-radius: var(--s2a-border-radius-round);
+  box-sizing: border-box;
   color: var(--s2a-color-content-knockout);
   display: flex;
   justify-content: center;
   padding: var(--s2a-spacing-sm) var(--s2a-spacing-lg);
   text-decoration: none;
   width: 100%;
-  box-sizing: border-box;
 }
 
 .pm-promo-cta-button:hover {
@@ -149,19 +149,17 @@
 
     .pm-promo-area {
       align-self: flex-end;
-      flex: 0 0 25%;
       margin-block-start: 0;
-      min-width: 260px;
     }
+  }
+
+  .product-marquee-grid:not(.soft-offer-cta) .pm-promo-area {
+    flex: 0 0 25%;
+    min-width: 260px;
   }
 
   .product-marquee-grid.soft-offer-cta .pm-content {
     gap: var(--s2a-spacing-xs);
-  }
-
-  .product-marquee-grid.soft-offer-cta .pm-promo-area {
-    flex: none;
-    min-width: unset;
   }
 
   .pm-promo-cta {
