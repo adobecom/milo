@@ -70,11 +70,8 @@
       color: var(--s2a-color-transparent-black-64);
       cursor: pointer;
       font-family: var(--body-font-family);
-      font-size: var(--s2a-typography-font-size-label);
       text-align: center;
       font-style: normal;
-      font-weight: var(--s2a-font-weight-adobe-clean-bold);
-      line-height: var(--s2a-font-line-height-2xs);
       margin: 0;
       border-radius: var(--pill-rounded-corners-setting);
       border: var(--s2a-border-width-md) solid transparent;
@@ -193,10 +190,12 @@
     &:nth-child(6) { animation-delay: 0.5s; }
     &:nth-child(7) { animation-delay: 0.6s; }
     &:nth-child(8) { animation-delay: 0.7s; }
+  }
+}
 
-    @media (prefers-reduced-motion: reduce) {
-      animation: none;
-    }
+@media (prefers-reduced-motion: reduce) {
+  .tabs.staggered-intro .tab-content-container [role='tabpanel']:not([hidden]) .section > * {
+    animation: none;
   }
 }
 

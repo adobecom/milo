@@ -246,7 +246,7 @@ const init = async (block) => {
 
   // Tab List
   const tabList = rows[0];
-  tabList.classList.add('tabList');
+  tabList.classList.add('tab-list');
   tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
@@ -261,7 +261,7 @@ const init = async (block) => {
       const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: 'tab',
-        class: 'tab-button',
+        class: 'tab-button label',
         id: `tab-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
         'aria-selected': (i === 0) ? 'true' : 'false',
