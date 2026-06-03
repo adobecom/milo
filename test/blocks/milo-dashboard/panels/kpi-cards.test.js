@@ -15,9 +15,9 @@ describe('milo-dashboard kpi-cards', () => {
   it('renders 5 cards with labels in order', () => {
     renderKpiCards(container, fixture, 'month');
     const labels = [...container.querySelectorAll('.kpi-card .kpi-label')].map((el) => {
-      const tip = el.querySelector('.info-tip');
-      if (tip) tip.remove();
-      return el.textContent;
+      const clone = el.cloneNode(true);
+      clone.querySelector('.info-tip')?.remove();
+      return clone.textContent;
     });
     expect(container.querySelectorAll('.kpi-card').length).to.equal(5);
     expect(labels).to.deep.equal(['Publishes', 'Previews', 'Avg Health Score', 'Active Projects', 'Pages Below 70']);
