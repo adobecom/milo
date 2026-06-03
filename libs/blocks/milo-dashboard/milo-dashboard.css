@@ -230,21 +230,21 @@
     border-radius: 20px;
   }
 
-  & .kpi-delta.up {
+  & .kpi-delta.good {
     color: var(--md-good);
     background: var(--md-good-soft);
   }
 
-  & .kpi-delta.up::before {
-    content: "\2197";
-  }
-
-  & .kpi-delta.down {
+  & .kpi-delta.bad {
     color: var(--md-bad);
     background: var(--md-bad-soft);
   }
 
-  & .kpi-delta.down::before {
+  & .kpi-delta.rose::before {
+    content: "\2197";
+  }
+
+  & .kpi-delta.fell::before {
     content: "\2198";
   }
 

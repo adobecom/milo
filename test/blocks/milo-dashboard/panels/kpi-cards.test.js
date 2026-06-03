@@ -38,12 +38,14 @@ describe('milo-dashboard kpi-cards', () => {
     expect(value.textContent).to.equal('80.0');
   });
 
-  it('shows a positive percent delta on a higher-is-better metric as up', () => {
+  it('shows a positive change on a higher-is-better metric as good + rose', () => {
     renderKpiCards(container, fixture, 'month');
-    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[0];
+    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[0]; // Publishes +20%
     expect(delta.textContent).to.equal('+20%');
-    expect(delta.classList.contains('up')).to.equal(true);
-    expect(delta.classList.contains('down')).to.equal(false);
+    expect(delta.classList.contains('good')).to.equal(true);
+    expect(delta.classList.contains('rose')).to.equal(true);
+    expect(delta.classList.contains('bad')).to.equal(false);
+    expect(delta.classList.contains('fell')).to.equal(false);
   });
 
   it('shows a zero percent change as flat', () => {
@@ -51,24 +53,25 @@ describe('milo-dashboard kpi-cards', () => {
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[1];
     expect(delta.textContent).to.equal('0%');
     expect(delta.classList.contains('flat')).to.equal(true);
-    expect(delta.classList.contains('up')).to.equal(false);
-    expect(delta.classList.contains('down')).to.equal(false);
   });
 
-  it('rounds avg_health percent change and marks up', () => {
+  it('rounds avg_health percent change and marks good + rose', () => {
     renderKpiCards(container, fixture, 'month');
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[2];
     expect(delta.textContent).to.equal('+7%');
-    expect(delta.classList.contains('up')).to.equal(true);
-    expect(delta.classList.contains('down')).to.equal(false);
+    expect(delta.classList.contains('good')).to.equal(true);
+    expect(delta.classList.contains('rose')).to.equal(true);
   });
 
-  it('inverts semantic for pages_below_70 (lower is better)', () => {
+  it('shows a drop in a lower-is-better metric as good but with a down arrow', () => {
+    // pages_below_70 current 12 vs prior 20 => -40%, higherIsBetter:false => good
     renderKpiCards(container, fixture, 'month');
-    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[4];
+    const delta = container.querySelectorAll('.kpi-card .kpi-delta')[4]; // Pages Below 70
     expect(delta.textContent).to.equal('-40%');
-    expect(delta.classList.contains('up')).to.equal(true);
-    expect(delta.classList.contains('down')).to.equal(false);
+    expect(delta.classList.contains('good')).to.equal(true);
+    expect(delta.classList.contains('fell')).to.equal(true);
+    expect(delta.classList.contains('up')).to.equal(false);
+    expect(delta.classList.contains('rose')).to.equal(false);
   });
 
   it('shows an em dash and flat when prior is zero', () => {
@@ -77,8 +80,8 @@ describe('milo-dashboard kpi-cards', () => {
     const delta = container.querySelectorAll('.kpi-card .kpi-delta')[3];
     expect(delta.textContent).to.equal('—');
     expect(delta.classList.contains('flat')).to.equal(true);
-    expect(delta.classList.contains('up')).to.equal(false);
-    expect(delta.classList.contains('down')).to.equal(false);
+    expect(delta.classList.contains('good')).to.equal(false);
+    expect(delta.classList.contains('bad')).to.equal(false);
   });
 
   it('adds a period label to every card', () => {

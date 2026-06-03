@@ -35,7 +35,8 @@ export default function renderKpiCards(container, overview, period = 'week') {
       deltaEl.classList.add('flat');
     } else {
       const good = higherIsBetter ? pct > 0 : pct < 0;
-      deltaEl.classList.add(good ? 'up' : 'down');
+      deltaEl.classList.add(good ? 'good' : 'bad'); // color = goodness
+      deltaEl.classList.add(pct > 0 ? 'rose' : 'fell'); // arrow = numeric direction
     }
     const card = createTag('div', { class: 'kpi-card' }, [
       createTag('div', { class: 'kpi-label' }, label),
