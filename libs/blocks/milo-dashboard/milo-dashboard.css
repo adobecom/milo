@@ -167,6 +167,7 @@
   }
 
   & .panel {
+    position: relative;
     background: var(--md-surface);
     border: 1px solid var(--md-line);
     border-radius: 12px;
@@ -193,6 +194,7 @@
 
   /* KPI cards */
   & .kpi-card {
+    position: relative;
     padding: 18px;
     border: 1px solid var(--md-line);
     border-radius: var(--md-radius);
@@ -378,31 +380,6 @@
     color: var(--md-accent);
   }
 
-  /* all-time stat in header */
-  & .dashboard-allstat {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-block: 10px 14px;
-  }
-
-  & .dashboard-allstat .allstat-body {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  & .dashboard-allstat .allstat-number {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--md-ink-strong);
-  }
-
-  & .dashboard-allstat .allstat-caption {
-    font-size: 13px;
-    color: var(--md-ink-soft);
-  }
-
   /* totals strip */
   & .totals-list {
     display: flex;
@@ -514,35 +491,41 @@
     color: var(--md-ink-soft);
   }
 
+  /* Low-key "?" anchored to the top-right corner of its card/panel. No border
+     or fill — a muted glyph that brightens on hover/focus. The padding gives a
+     larger transparent hit area than the small glyph. */
   & .info-tip {
-    position: relative;
+    position: absolute;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
-    padding: 13px; /* expands hit area to >= 44px */
-    margin-inline-start: 6px;
-    border: 1px solid var(--md-line);
-    border-radius: 50%;
-    background: var(--md-surface);
+    padding: 8px;
+    border: 0;
+    background: none;
     color: var(--md-ink-soft);
-    font-size: 11px;
-    font-weight: 700;
+    opacity: 0.35;
+    font-size: 12px;
+    font-weight: 600;
     line-height: 1;
     cursor: help;
-    vertical-align: middle;
+    transition: opacity 0.12s ease;
+  }
+
+  & .info-tip:hover,
+  & .info-tip:focus-visible {
+    opacity: 0.85;
   }
 
   & .info-tip-bubble {
     position: absolute;
     z-index: 5;
-    inset-block-end: calc(100% + 6px);
-    inset-inline-start: 0;
+    inset-block-start: calc(100% + 4px);
     inset-inline-end: 0;
-    margin-inline: auto;
     width: max-content;
-    max-width: 260px;
+    max-width: 240px;
     padding: 8px 10px;
     border-radius: 6px;
     background: var(--md-ink-strong);

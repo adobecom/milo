@@ -5,23 +5,25 @@ const { default: renderTotals } = await import('../../../../libs/blocks/milo-das
 const totals = { total: 168294, perSite: [{ site: 'da-dc', pages: 69014 }, { site: 'milo', pages: 123 }] };
 
 describe('milo-dashboard totals-strip', () => {
-  let panel; let headerStat;
-  beforeEach(() => { panel = document.createElement('div'); headerStat = document.createElement('div'); });
+  let panel;
+  beforeEach(() => { panel = document.createElement('div'); });
 
-  it('writes the grand total into the header stat element', () => {
-    renderTotals(panel, totals, headerStat);
-    expect(headerStat.querySelector('.allstat-number').textContent).to.equal('168,294');
-    expect(headerStat.querySelector('.allstat-caption').textContent).to.contain('all-time');
+  it('renders the per-site list with formatted counts', () => {
+    renderTotals(panel, totals);
+    const items = panel.querySelectorAll('.totals-item');
+    expect(items.length).to.equal(2);
+    expect(items[0].querySelector('.totals-site').textContent).to.equal('da-dc');
+    expect(items[0].querySelector('.totals-count').textContent).to.equal('69,014');
   });
 
-  it('renders only the per-site list (no grand total) in the panel', () => {
-    renderTotals(panel, totals, headerStat);
+  it('does not render an all-time grand total', () => {
+    renderTotals(panel, totals);
     expect(panel.querySelector('.totals-total')).to.equal(null);
-    expect(panel.querySelectorAll('.totals-item').length).to.equal(2);
+    expect(panel.querySelector('.allstat-number')).to.equal(null);
   });
 
-  it('shows a dash in the header when totals are missing', () => {
-    renderTotals(panel, null, headerStat);
-    expect(headerStat.querySelector('.allstat-number').textContent).to.equal('—');
+  it('shows an empty state when totals are missing', () => {
+    renderTotals(panel, null);
+    expect(panel.querySelector('.totals-empty')).to.not.equal(null);
   });
 });

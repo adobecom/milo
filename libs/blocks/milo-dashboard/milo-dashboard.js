@@ -151,13 +151,7 @@ export default async function init(block) {
     );
     const meta = createTag('div', { class: 'dashboard-meta' }, [envBadge, rangeEl, updatedEl, refreshBtn]);
 
-    const allTimeBody = createTag('div', { class: 'allstat-body' });
-    const allTimeStat = createTag('div', { class: 'dashboard-allstat' }, [
-      allTimeBody,
-      infoTip('All-time count of live pages across consumers. Not affected by the Day / Week / Month toggle.'),
-    ]);
-
-    header.append(meta, allTimeStat, toggle);
+    header.append(toggle, meta);
 
     // Titled card: returns the outer panel plus the inner body the panel
     // renderer draws into (renderers call replaceChildren on the body, so the
@@ -253,7 +247,7 @@ export default async function init(block) {
 
       const results = await Promise.all([
         fill(kpiMount, 'metrics', pOverview, (overview) => renderKpiCards(kpiMount, overview, interval)),
-        fill(totalsMount, 'totals', pTotals, (totalsData) => renderTotals(totalsMount, totalsData, allTimeBody)),
+        fill(totalsMount, 'totals', pTotals, (totalsData) => renderTotals(totalsMount, totalsData)),
         fill(gaugeMount, 'health score', Promise.all([pPreflight, pOverview]), ([preflightRows, overview]) => renderHealthGauge(gaugeMount, buildGaugeScores(preflightRows, overview), charts)),
         fill(consumersMount, 'consumers', pProjects, (projectRows) => renderConsumerBars(consumersMount, projectRows || [], charts, navigateTo)),
         fill(alertsMount, 'alerts', Promise.all([pTestPages, pProjects]), ([testPagesCsv, projectRows]) => renderAlerts(alertsMount, { testPages: parseCsv(testPagesCsv), projects: projectRows || [] }, navigateTo)),
