@@ -88,7 +88,7 @@ export default async function init(block) {
 
   const ctx = await resolveContext(block, { loadDaSdk });
   const client = createClient(ctx);
-  await loadCharts();
+  const chartsReady = Promise.resolve(loadCharts()); // start ~1MB echarts download now, don't block
   const charts = { makeChart };
 
   let currentInterval = DEFAULT_INTERVAL;
@@ -235,6 +235,8 @@ export default async function init(block) {
       const pTestPages = client.getText('/test-pages', { since: trendSince, state: 'live', limit: 50 });
 
       rangeEl.textContent = formatRange(interval);
+
+      await chartsReady; // requests are already in flight; this only gates chart rendering
 
       // The gauge needs the category breakdown from the latest /trends/preflight
       // row, falling back to /overview's avg_health.
