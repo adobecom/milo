@@ -147,8 +147,11 @@
 
 @media (768px <= width < 1280px) {
   .product-marquee-grid.soft-offer-cta .pm-promo-area {
-    padding-inline-start: var(--s2a-spacing-xs);
     width: 242px;
+  }
+
+  .pm-promo-cta {
+    padding-inline-start: var(--s2a-spacing-xs);
   }
 }
 
