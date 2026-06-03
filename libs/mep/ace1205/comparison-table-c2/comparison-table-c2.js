@@ -367,17 +367,18 @@ function setupCellAttributes(child, childIndex, arePrimaryColumns) {
 }
 
 function processCellWithSeparator(child, separatorIndex) {
-  const cellDiv = createTag('div');
+  const cellDiv = createTag('div', { class: 'cell-content' });
   const columnHeaderP = [...child.children][separatorIndex + 1];
   [...child.children].slice(0, separatorIndex).forEach((element) => cellDiv.appendChild(element));
   child.innerHTML = '';
   child.appendChild(cellDiv);
   if (columnHeaderP) child.appendChild(columnHeaderP);
   [...child.children].slice(separatorIndex + 2).forEach((element) => child.appendChild(element));
+  return cellDiv;
 }
 
 function processCellWithoutSeparator(child) {
-  const cellDiv = createTag('div');
+  const cellDiv = createTag('div', { class: 'cell-content' });
   if (child.children.length > 1 || !child.textContent.trim()) {
     cellDiv.append(...child.childNodes);
   } else {
@@ -385,19 +386,32 @@ function processCellWithoutSeparator(child) {
   }
   child.innerHTML = '';
   child.appendChild(cellDiv);
+  return cellDiv;
 }
 
 function processCellContent(child) {
   const separatorIndex = [...child.children].findIndex((element) => element.textContent.trim() === '-');
-  const processFn = separatorIndex !== -1 ? processCellWithSeparator : processCellWithoutSeparator;
-  processFn(child, separatorIndex);
+  return separatorIndex !== -1
+    ? processCellWithSeparator(child, separatorIndex)
+    : processCellWithoutSeparator(child);
+}
+
+function isEmptyCellContent(cellDiv) {
+  const content = cellDiv.textContent.trim();
+  return !content || /^-+$/.test(content);
+}
+
+function markEmptyCell(cellDiv) {
+  if (!isEmptyCellContent(cellDiv)) return;
+  cellDiv.classList.add('empty-cell');
+  cellDiv?.setAttribute('aria-hidden', 'true');
 }
 
 function decorateTableCells({ tableChild, arePrimaryColumns, el }) {
   [...tableChild.children].forEach((child, childIndex) => {
     setupCellAttributes(child, childIndex, arePrimaryColumns);
     if (childIndex === 0) return;
-    processCellContent(child);
+    markEmptyCell(processCellContent(child));
   });
 
   tableChild.classList.add('table-row');
@@ -500,20 +514,14 @@ function setupResponsiveHiding(el) {
   compactLayoutQuery.addEventListener('change', handleResponsive);
 }
 
-function decorateEmptyCell(cellDiv, emptyText) {
-  const content = cellDiv.textContent.trim();
-  if (content && !/^-+$/.test(content)) return;
-  cellDiv.classList.add('empty-cell');
-  cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
-}
-
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
     replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
       [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
-      [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
-        decorateEmptyCell(cellDiv, emptyText);
+      el.querySelectorAll('.table-cell > .cell-content.empty-cell').forEach((cellDiv) => {
+        if (cellDiv.querySelector('.sr-only')) return;
+        cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
       });
     });
   });
