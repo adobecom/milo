@@ -500,6 +500,52 @@
     padding: var(--spacing-m, 16px);
     color: var(--md-ink-soft);
   }
+
+  & .info-tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 13px; /* expands hit area to >= 44px */
+    margin-inline-start: 6px;
+    border: 1px solid var(--md-line);
+    border-radius: 50%;
+    background: var(--md-surface);
+    color: var(--md-ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: help;
+    vertical-align: middle;
+  }
+
+  & .info-tip-bubble {
+    position: absolute;
+    z-index: 5;
+    inset-block-end: calc(100% + 6px);
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: 260px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: var(--md-ink-strong);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-align: start;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+
+  & .info-tip:hover .info-tip-bubble,
+  & .info-tip:focus-visible .info-tip-bubble {
+    opacity: 1;
+  }
 }
 
 @keyframes md-shimmer {
