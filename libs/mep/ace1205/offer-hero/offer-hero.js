@@ -1,18 +1,15 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-// STACK_W is the design canvas width in px — the reference frame all
-// STACK_REF offsets and sizes are measured against.
 // Each STACK_REF entry positions one card within that canvas:
 //   dx, dy = top-left offset in px
 //   w, h   = card size in px
 //   rot    = rotation in degrees (negative = counter-clockwise)
-const STACK_W = 836;
 const STACK_REF = [
-  { dx: 90.94, dy: 116.93, w: 418.531, h: 489.484, rot: -6 },
-  { dx: 202.94, dy: 0, w: 535.885, h: 666.645, rot: -2 },
-  { dx: 36.78, dy: 275.30, w: 304.543, h: 324.33, rot: -15 },
-  { dx: 417.44, dy: 220, w: 418.531, h: 455.136, rot: 3 },
+  { dx: 40, dy: 116, w: 418, h: 489, rot: -6 },
+  { dx: 172, dy: -25, w: 535.885, h: 666, rot: -2 },
+  { dx: -30, dy: 290, w: 304, h: 324, rot: -15 },
+  { dx: 400, dy: 240, w: 418, h: 455, rot: 3 },
 ];
 const CARD_SHADOWS = [
   null,
@@ -31,6 +28,7 @@ const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
 const isMobile = () => window.innerWidth < 768;
+const isDesktop = () => window.innerWidth > 1280;
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -248,7 +246,8 @@ function initAnimation(block) {
     if (!cards[0]) return 0;
     const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
     const slotTargetTop = Math.round(navBottom + 124) + 60;
-    const startY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
+    const fallbackY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
+    const startY = naturalBoxes[0]?.y || fallbackY;
     const range = startY - slotTargetTop;
     if (range <= 0) return 0;
     return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
@@ -304,12 +303,16 @@ function initAnimation(block) {
     });
 
     const vw = window.innerWidth;
-    const stackTop = heroContent.getBoundingClientRect().bottom + 74;
     const stackScale = isMobile() ? 0.75 : 1;
-    const stackLeft = (vw - STACK_W * stackScale) / 2;
+    const pileMin = Math.min(...STACK_REF.map((r) => r.dx));
+    const pileMax = Math.max(...STACK_REF.map((r) => r.dx + r.w));
+    const pileTopDy = Math.min(...STACK_REF.map((r) => r.dy));
+    const gap = isDesktop() ? 124 : 80;
+    const stackTop = heroContent.getBoundingClientRect().bottom + gap - pileTopDy * stackScale;
+    const stackLeft = vw / 2 - ((pileMin + pileMax) / 2) * stackScale;
     rtl = isRtl(block);
     stackBoxes = STACK_REF.map((ref) => ({
-      x: stackLeft + (rtl ? STACK_W - ref.dx - ref.w : ref.dx) * stackScale,
+      x: stackLeft + (rtl ? pileMax - ref.dx - ref.w : ref.dx) * stackScale,
       y: stackTop + ref.dy * stackScale,
       w: ref.w * stackScale,
       h: ref.h * stackScale,
