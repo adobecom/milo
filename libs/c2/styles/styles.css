@@ -942,6 +942,66 @@ p {
   }
 }
 
+/* Icon Button Styles */
+.icon-button {
+  align-items: center;
+  background-color: var(--s2a-color-transparent-white-16);
+  block-size: 32px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  border-radius: 6px; /* No token */
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: 32px;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  will-change: background-color, border-color;
+  path {
+    transition: fill 0.2s ease;
+    will-change: fill;
+  }
+}
+
+/* Promo CTA Styles */
+.promo-cta {
+  align-items: center;
+  background: var(--s2a-color-background-knockout);
+  border-radius: var(--s2a-border-radius-12);
+  color: var(--s2a-color-content-knockout);
+  display: inline-flex;
+  font-size: var(--s2a-typography-font-size-eyebrow);
+  font-weight: var(--s2a-font-weight-eyebrow);
+  gap: var(--s2a-spacing-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+  line-height: var(--s2a-typography-line-height-eyebrow);
+  padding: var(--s2a-spacing-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  img {
+    block-size: 32px;
+    flex-shrink: 0;
+    inline-size: 32px;
+    object-fit: cover;
+    overflow: hidden;
+  }
+
+  &:hover,
+  &:focus {
+    .icon-button {
+      background-color: var(--s2a-color-transparent-white-24);
+    }
+  }
+
+  &:active {
+    .icon-button {
+      background-color: var(--s2a-color-content-knockout);
+      border-color: var(--s2a-color-content-knockout);
+      path {
+        fill: var(--s2a-color-background-knockout);
+      }
+    }
+  }
+}
 
 .dark {
   .con-button {
@@ -1004,11 +1064,9 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
-/* Needed for garage door JS animation in browsers without animation-timeline support */
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
-
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1247,6 +1305,7 @@ span.hang-opening-quote {
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
       --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 36%;
     }
 
     .section-background img {

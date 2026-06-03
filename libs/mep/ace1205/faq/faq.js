@@ -5,6 +5,7 @@ const SEO_SCHEMA = { '@context': 'https://schema.org', '@type': 'FAQPage', mainE
 
 function handleToggle(details) {
   const summary = details.querySelector('summary');
+  summary?.setAttribute('aria-expanded', details.open);
   const daaLl = summary?.getAttribute('daa-ll');
   if (!daaLl) return;
   summary.setAttribute(
@@ -25,10 +26,12 @@ function buildItem(row, num, isFirst) {
   const icon = createTag('span', { class: 'faq-icon', 'aria-hidden': 'true' });
   const summary = createTag('summary', {
     class: 'faq-trigger',
+    'aria-expanded': isFirst,
     'daa-ll': `${isFirst ? 'close' : 'open'}-${num}--${processTrackingLabels(questionText)}`,
   }, [headingTag, icon]);
 
-  const panel = createTag('div', { class: 'faq-panel body-lg' }, answerNodes);
+  const panelInner = createTag('div', { class: 'faq-panel-inner' }, answerNodes);
+  const panel = createTag('div', { class: 'faq-panel body-lg' }, panelInner);
   const itemAttrs = { class: 'faq-item' };
   if (isFirst) itemAttrs.open = '';
   const details = createTag('details', itemAttrs, [summary, panel]);
