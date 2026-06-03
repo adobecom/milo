@@ -67,15 +67,6 @@ const saveActiveTabInStorage = (targetId, config) => {
   sessionStorage.setItem(storageName, activeTabIndex);
 };
 
-function getContentElement(parent, traversalDepth) {
-  let element = parent;
-  for (let i = 0; i < traversalDepth; i += 1) {
-    element = element.parentNode;
-    if (!element) return null;
-  }
-  return element.lastElementChild;
-}
-
 function moveIndicator(indicator, target, container) {
   const btnRect = target.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
@@ -95,7 +86,7 @@ function changeTabs(e, config) {
   }
   const parent = target.closest('.tab-list-container');
   const tabsBlock = target.closest('.tabs');
-  const content = getContentElement(parent, 3);
+  const content = tabsBlock.lastElementChild;
   const blockId = tabsBlock.id;
 
   const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
@@ -167,45 +158,33 @@ function configTabs(config, rootElem) {
     }
   }
 
-  if (config['active-tab']) {
-    const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
-    const sel = rootElem.querySelector(id);
-    if (sel) {
-      sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
-      sel.click();
-    }
-  }
+  if (!config['active-tab']) return;
+  const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
+  const sel = rootElem.querySelector(id);
+  if (!sel) return;
+  sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
+  sel.click();
 }
 
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"]');
   const tabLists = elm.querySelectorAll('[role="tablist"]');
   let tabFocus = 0;
-
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
-      const isRtl = document.dir === 'rtl';
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        if (e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) {
-          tabFocus += 1;
-          /* c8 ignore next */
-          if (tabFocus >= tabs.length) tabFocus = 0;
-        } else if (e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) {
-          tabFocus -= 1;
-          /* c8 ignore next */
-          if (tabFocus < 0) tabFocus = tabs.length - 1;
-        }
-        tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
-        tabs[tabFocus].setAttribute('tabindex', '0');
-        tabs[tabFocus].focus();
-      }
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const forward = e.key === (document.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight');
+      tabFocus = (tabFocus + (forward ? 1 : -1) + tabs.length) % tabs.length;
+      tabs.forEach((t) => t.setAttribute('tabindex', '-1'));
+      tabs[tabFocus].setAttribute('tabindex', '0');
+      tabs[tabFocus].focus();
     });
   });
   tabs.forEach((tab) => {
     tab.addEventListener('click', (e) => changeTabs(e, config));
     tab.addEventListener('focus', () => scrollTabIntoView(tab));
   });
-  if (config) configTabs(config, rootElem); // config will always exist
+  configTabs(config, rootElem);
 }
 
 const handleDeferredImages = (block) => {
@@ -291,8 +270,7 @@ const init = async (block) => {
         'daa-ll': `tab-${tabId}-${tabName}`,
         'aria-controls': controlId,
       };
-      const tabBtn = createTag('button', tabBtnAttributes);
-      tabBtn.innerText = item.textContent;
+      const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
