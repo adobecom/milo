@@ -340,6 +340,9 @@ function setupBlock(el) {
     if (idx < 0 || idx >= slideNum) return;
     if (slotOf(idx) === 0) {
       item.classList.toggle('split-aside-grid-active');
+      const expanded = item.classList.toggle('split-aside-grid-active');
+      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      toggle?.setAttribute('aria-expanded', String(expanded));
       return;
     }
     rotation = idx;
