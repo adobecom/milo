@@ -96,7 +96,7 @@ function decorate(block, root = block) {
   if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
 
   const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
-  if (iconImg && bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
   if (!isJumpLink) return;
   decorateJumpLinks(content, foreground);
 }
