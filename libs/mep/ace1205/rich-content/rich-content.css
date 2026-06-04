@@ -452,7 +452,7 @@
 }
 
 @keyframes rc-video-cta-follow-mobile {
-  from { transform: translateY(12vh); }
+  from { transform: translateY(14vh); }
   to { transform: translateY(0); }
 }
 
@@ -559,7 +559,7 @@
 
     @media (width >= 768px) {
       .section.parallax-video-garage-door .rich-content.video .video-container {
-        animation-name: rc-video-enter;
+        animation: rc-video-enter linear both;
       }
 
       .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
@@ -583,7 +583,7 @@
       animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: --rc-video-garage;
-      animation-range: entry 70% exit 100%;
+      animation-range: entry 50% exit 200%;
     }
 
     .section.parallax-video-garage-door:has(.rich-content.video) + .section {
@@ -599,6 +599,12 @@
 
     .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
       scroll-margin-top: calc(100vh - 200px);
+    }
+
+    @media (width >= 768px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: entry 70% exit 100%;
+      }
     }
 
     @media (width >= 1440px) {
