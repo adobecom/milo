@@ -243,7 +243,6 @@ const defaultOptions = {
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
     staticDate: 'Static Date',
-    productName: 'Product Name',
   },
   cardHoverEffect: {
     default: 'Default',
