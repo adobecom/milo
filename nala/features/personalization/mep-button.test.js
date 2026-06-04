@@ -1,6 +1,6 @@
 // to run the test: npm run nala stage mep-button.test.js
 
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import { features } from './mep-button.spec.js';
 import MepButtonPage from './mep-button.page.js';
 import MarqueePage from '../../blocks/marquee/marquee.page.js';

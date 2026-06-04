@@ -86,7 +86,8 @@ export async function installEdsThrottleOnContext(context) {
   if (edsMaxRps <= 0) return;
   logEdsThrottleOnce(edsMaxRps);
   await context.route('**/*', async (route) => {
-    if (isEdsEdgeHost(route.request().url())) {
+    const req = route.request();
+    if (isEdsEdgeHost(req.url()) && req.resourceType() !== 'document') {
       await throttleEdsGap(edsMaxRps);
     }
     await route.continue();

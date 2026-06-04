@@ -1,6 +1,6 @@
 // to run the test: npm run nala stage any-marquee-section.test.js
 
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import { features } from './any-marquee-section.spec.js';
 
 const miloLibs = process.env.MILO_LIBS || '';

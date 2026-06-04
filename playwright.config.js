@@ -9,6 +9,7 @@ const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like M
 
 const isCI = !!process.env.CI;
 const isLocal = !isCI;
+process.env.NALA_WORKER_COUNT = String(isCI ? 7 : 3);
 
 // MAS tests
 const masFeatures = [
