@@ -1,5 +1,5 @@
 /* eslint-disable no-loop-func */
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import {
   features, testRef, testOrg, testRepo, fgColor, testDir,
 } from './floodgate.spec.js';

@@ -1,5 +1,5 @@
 /* eslint-disable no-await-in-loop, import/extensions */
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../../libs/nala-test.js';
 import { features } from './footer.spec.js';
 import FedsFooter from './footer.page.js';
 

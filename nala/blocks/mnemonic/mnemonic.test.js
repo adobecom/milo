@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import Mnemonic from './mnemonic.page.js';
 import { features } from './mnemonic.spec.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';

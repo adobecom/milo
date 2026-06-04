@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import { features } from './icon.spec.js';
 import IconBlock from './icon.page.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';

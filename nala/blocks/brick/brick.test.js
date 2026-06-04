@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import WebUtil from '../../libs/webutil.js';
 import Brick from './brick.page.js';
 import { features } from './brick.spec.js';

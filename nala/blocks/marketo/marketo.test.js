@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { test, expect } from '../../libs/nala-test.js';
 import { features } from './marketo.spec.js';
 import MarketoBlock from './marketo.page.js';
 
