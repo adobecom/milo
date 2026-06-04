@@ -107,8 +107,8 @@ const config = {
      * Workers are limited to 2 to reduce request pressure on EDS / AEM.live.
      * To enable request-level throttling via eds-throttle.js instead:
      *   1. Swap the @playwright/test import in MAS test files to nala-test.js.
-     *   2. Uncomment NALA_WORKER_COUNT below that sets the total worker count so eds-throttle.js can
-     *      derive the per-worker RPS cap automatically (floor(180 / workers)).
+     *   2. Uncomment NALA_WORKER_COUNT below — eds-throttle.js uses it to derive
+     *      per-worker RPS automatically (floor(180 / workers)).
      *   3. Optionally remove the per-project `workers` overrides (they are complementary).
      */
     // process.env.NALA_WORKER_COUNT = String(isCI ? 7 : 3);
