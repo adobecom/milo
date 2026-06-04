@@ -45,7 +45,7 @@ function buildSoftOfferCta(ctaLinkPara, labelEl) {
   return ctaWrapper;
 }
 
-// TODO: confirm if the promo-button variant is used on other pages; remove if not needed.
+// TODO: confirm if the featured-offer variant is used on other pages; remove if not needed.
 function buildPromoButton(ctaLink) {
   return createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
     createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
@@ -54,22 +54,22 @@ function buildPromoButton(ctaLink) {
 }
 
 function decorate(block) {
-  const isSoftOffer = block.classList.contains('soft-offer-cta');
+  const isPromoCta = block.classList.contains('featured-offer');
   const col = block.children[0]?.children[0];
   if (!col) return;
 
   const {
     iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
-  } = parseColumn(col, isSoftOffer);
+  } = parseColumn(col, !isPromoCta);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   if (ctaLink) {
-    const promoEl = isSoftOffer
-      ? buildSoftOfferCta(ctaLinkPara, labelEl)
-      : buildPromoButton(ctaLink);
+    const promoEl = isPromoCta
+      ? buildPromoButton(ctaLink)
+      : buildSoftOfferCta(ctaLinkPara, labelEl);
     promoArea.append(promoEl);
   }
 
