@@ -221,7 +221,7 @@
 
     &.hero { 
       height: 580px;
-      padding-block-start: var(--s2a-spacing-80);
+      padding-block-start: var(--s2a-layout-sm);
     }
 
     .foreground .content,
@@ -307,7 +307,7 @@
 
 @media (width >= 1280px) {
   .rich-content.jump-link.hero {
-    padding-block-start: var(--s2a-spacing-160);
+    padding-block-start: var(--s2a-layout-xl);
   }
 }
 
