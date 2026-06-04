@@ -172,7 +172,6 @@
   .hero-card-text {
     position: relative;
     z-index: 1;
-    padding: var(--s2a-spacing-xl);
     display: flex;
     flex-direction: column;
     align-items: flex-start;

@@ -37,7 +37,7 @@ const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
 const isMobile = () => window.innerWidth < 768;
-const isDesktop = () => window.innerWidth > 1280;
+const isDesktop = () => window.innerWidth >= 1280;
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -242,7 +242,7 @@ function initAnimation(block) {
     fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
     if (needsReset) {
       needsReset = false;
-      videos.forEach((video) => { video.currentTime = 0.001; });
+      videos.forEach((video) => { video.pause(); video.currentTime = 0.001; });
     }
     videoObserver = new IntersectionObserver(
       (entries) => entries.forEach(onMediaVisible),
@@ -345,6 +345,7 @@ function initAnimation(block) {
       cards.forEach((card) => { delete card.dataset.textFaded; });
       cardTexts.forEach((textEl) => { textEl.style.transition = 'none'; textEl.style.opacity = '0'; });
       videos.forEach((video, i) => {
+        video.pause();
         video.currentTime = 0.001;
         const fade = fades[i];
         if (!fade) return;
