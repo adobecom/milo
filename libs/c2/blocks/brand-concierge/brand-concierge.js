@@ -479,6 +479,11 @@ async function openChatSidebar(initialMessage, el) {
   document.documentElement.classList.add('bc-sidebar-open');
   resetChatInput(el);
 
+  const closeBtn = sidebar.querySelector('.bc-sidebar-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => resetFloatingButton(el), { once: true });
+  }
+
   const mountEl = sidebar.querySelector(`#${mountId}`);
   await bootstrapChat(mountEl);
 }
