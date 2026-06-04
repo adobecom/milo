@@ -33,43 +33,69 @@
 
 .tour-row-image {
   padding-block-start: var(--s2a-spacing-lg);
-  > p {
-    padding-block-start: var(--s2a-layout-sm);
-    &:first-child {
-      padding-block-start: 0;
-    }
-  }
   picture {
-    display: inline-block;
+    display: block;
   }
   img {
     width: 100%;
+    height: 100%;
     border-radius: var(--s2a-border-radius-sm);
     object-fit: cover;
   }
 }
 
+.tour-row-image-center {
+  padding-block-start: var(--s2a-layout-sm);
+  text-align: center;
+  img {
+    max-height: 127px;
+    width: auto;
+  }
+}
+
 .tour-row {
   padding-block-start: var(--s2a-layout-sm);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   &.row-1 {
-    max-width: 66%;
-    min-width: 287px;
+    width: 100%;
     padding-block-start: 0;
-    padding-inline-end: var(--s2a-spacing-xs);
     align-self: end;
+    .tour-row-content {
+      padding-inline-end: var(--s2a-spacing-xs);
+      width: calc(100% * 4 / 6);
+      min-width: 288px;
+      padding-inline-start: var(--s2a-spacing-lg);
+      align-self: end;
+    }
     .tour-row-body {
       max-width: 292px;
     }
+    .tour-row-image {
+      picture {
+        aspect-ratio: 387 / 500;
+      }
+    }
   }
   &.row-2 {
-    max-width: 83%;
-    min-width: 296px;
+    width: 100%;
+    .tour-row-content {
+      padding-inline-end: var(--s2a-spacing-lg);
+      width: calc(100% * 5 / 6);
+      min-width: 296px;
+    }
     .tour-row-index,
     .tour-row-body {
       padding-inline-start: var(--s2a-spacing-lg);
     }
     .tour-row-body {
       max-width: 318px;
+    }
+    .tour-row-image {
+      picture {
+        aspect-ratio: 99 / 68;
+      }
     }
     img {
       border-start-start-radius: 0;
@@ -79,7 +105,9 @@
     }
   }
   &.row-3 {
-    padding-inline: var(--s2a-spacing-xs);
+    .tour-row-content {
+      padding-inline: var(--s2a-spacing-xs);
+    }
     .tour-row-index,
     .tour-row-body {
       text-align: center;
@@ -88,7 +116,7 @@
     }
     .tour-row-image {
       picture {
-        display: block;
+        aspect-ratio: 1 / 1;
       }
     }
   }
@@ -172,6 +200,12 @@
       width: calc(10px * 1.33);
     }
   }
+
+  & + .modal-curtain.is-open {
+    background: rgb(0 0 0 / 60%);
+    backdrop-filter: blur(40px);
+    will-change: backdrop-filter;
+  }
 }
 
 [dir='rtl'] {
@@ -187,6 +221,12 @@
 @media (max-width: 596px) {
   .dialog-modal:has(.tour) {
     max-width: 100dvw;
+  }
+  .tour-row-image-center {
+    img {
+      max-height: 110px;
+      width: auto;
+    }
   }
 }
 
