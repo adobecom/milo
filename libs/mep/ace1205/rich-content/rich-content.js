@@ -38,9 +38,7 @@ function getSectionHash(anchor) {
 }
 
 function decorateJumpLinks(content, foreground) {
-  const candidates = [...(content?.querySelectorAll(':is(p, div):has(a)') ?? [])];
-  const jumpRow = candidates.findLast(isJumpLinkRow);
-
+  const jumpRow = [...content?.querySelectorAll(':is(p, div):has(a)') ?? []].find(isJumpLinkRow);
   if (!jumpRow) return;
 
   const anchors = [...jumpRow.querySelectorAll('a')];
