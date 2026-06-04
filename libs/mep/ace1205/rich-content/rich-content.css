@@ -28,19 +28,16 @@
       max-width: 680px;
     }
 
-    .eyebrow {
+    .eyebrow :has(picture) {
       color: var(--s2a-color-content-knockout);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--s2a-spacing-xs);
 
-      &:has(picture) {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: var(--s2a-spacing-xs);
-  
-        picture, img {
-          width: 24px;
-          height: 24px;
-        }
+      picture, img {
+        width: 24px;
+        height: 24px;
       }
     }
   }
