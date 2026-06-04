@@ -3,11 +3,7 @@ import { decorateViewportContent, decorateButtons } from '../../../utils/decorat
 
 const CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M6.58349 11.208L10.2837 7.50781C10.606 7.18554 10.606 6.66406 10.2837 6.34179C9.96142 6.01953 9.43994 6.01953 9.11767 6.34179L6.82568 8.63281V1.375C6.82568 0.918955 6.45654 0.549805 6.00048 0.549805C5.54442 0.549805 5.17528 0.918945 5.17528 1.375V8.63281L2.88329 6.34179C2.56102 6.01953 2.03954 6.01953 1.71727 6.34179C1.55614 6.50292 1.47508 6.71386 1.47508 6.9248C1.47508 7.13574 1.55613 7.34668 1.71727 7.50781L5.41747 11.208C5.73974 11.5303 6.26122 11.5303 6.58349 11.208Z" fill="#fff"/></svg>';
 
-function decorate(block) {
-  const isSoftOffer = block.classList.contains('soft-offer-cta');
-  const col = block.children[0]?.children[0];
-  if (!col) return;
-
+function parseColumn(col, isSoftOffer) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
@@ -23,33 +19,58 @@ function decorate(block) {
   const bodyEls = labelEl ? allParas.slice(0, -1) : allParas;
   bodyEls.forEach((el) => el.classList.add('heading-5'));
 
+  return {
+    iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
+  };
+}
+
+function buildChicletRow(iconEl, heading) {
   const chicletRow = createTag('div', { class: 'pm-chiclet-row' });
   if (iconEl) {
     iconEl.classList.add('icon');
     chicletRow.append(iconEl);
   }
   if (heading) chicletRow.append(heading);
+  return chicletRow;
+}
+
+function buildSoftOfferCta(ctaLinkPara, labelEl) {
+  const ctaWrapper = createTag('div', { class: 'pm-promo-cta' });
+  if (labelEl) {
+    labelEl.classList.add('pm-promo-cta-label');
+    ctaWrapper.append(labelEl);
+  }
+  ctaWrapper.append(ctaLinkPara);
+  decorateButtons(ctaWrapper);
+  return ctaWrapper;
+}
+
+// TODO: confirm if the promo-button variant is used on other pages; remove if not needed.
+function buildPromoButton(ctaLink) {
+  return createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
+    createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
+    createTag('span', { class: 'pm-promo-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
+  ]);
+}
+
+function decorate(block) {
+  const isSoftOffer = block.classList.contains('soft-offer-cta');
+  const col = block.children[0]?.children[0];
+  if (!col) return;
+
+  const {
+    iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
+  } = parseColumn(col, isSoftOffer);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
-  foreground.append(chicletRow, ...bodyEls);
+  foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
   if (ctaLink) {
-    if (isSoftOffer) {
-      const ctaWrapper = createTag('div', { class: 'pm-promo-cta' });
-      if (labelEl) {
-        labelEl.classList.add('pm-promo-cta-label');
-        ctaWrapper.append(labelEl);
-      }
-      ctaWrapper.append(ctaLinkPara);
-      decorateButtons(ctaWrapper);
-      promoArea.append(ctaWrapper);
-    } else {
-      promoArea.append(createTag('a', { class: 'pm-promo-button', href: ctaLink.getAttribute('href') }, [
-        createTag('span', { class: 'pm-promo-text eyebrow' }, ctaLink.textContent.trim()),
-        createTag('span', { class: 'pm-promo-chevron', 'aria-hidden': 'true' }, CHEVRON_SVG),
-      ]));
-    }
+    const promoEl = isSoftOffer
+      ? buildSoftOfferCta(ctaLinkPara, labelEl)
+      : buildPromoButton(ctaLink);
+    promoArea.append(promoEl);
   }
 
   const content = createTag('div', { class: 'pm-content container' });
