@@ -2594,7 +2594,8 @@ async function loadPostLCP(config) {
         new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
         loadScript(`${config.base}/deps/lenis.min.js`),
       ]);
-      const lerp = 0.06;
+      // Keep panel-tuned inertia when the fast-scroll throttle resets.
+      window.lenisBaseLerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.06;
       const fsThreshold = 110;
       const fsFactor = 0.11;
       const fsDelay = 700;
@@ -2606,7 +2607,7 @@ async function loadPostLCP(config) {
       // Drive rAF manually so it pauses when idle and saves CPU
       window.lenis = new window.Lenis({
         autoRaf: false,
-        lerp,
+        lerp: window.lenisBaseLerp,
         wheelMultiplier: 0.7,
         prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
       });
@@ -2647,7 +2648,9 @@ async function loadPostLCP(config) {
         if (Math.abs(e.deltaY) > fsThreshold) {
           window.lenis.options.lerp = fsFactor;
           clearTimeout(fsScrollTimer);
-          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+          fsScrollTimer = setTimeout(() => {
+            window.lenis.options.lerp = window.lenisBaseLerp;
+          }, fsDelay);
         }
       }, { passive: true });
     }

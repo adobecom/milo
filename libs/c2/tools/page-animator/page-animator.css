@@ -488,6 +488,11 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   display: block;
 }
 
+#pa-tree .pa-section-group:first-child .pa-control:first-child .pa-tooltip-text {
+  bottom: auto;
+  top: calc(100% + 6px);
+}
+
 .pa-control input[type='range'] {
   width: 100%;
   accent-color: var(--pc-accent);

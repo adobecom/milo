@@ -335,7 +335,8 @@ export function buildCssRule(animId, state) {
 }
 
 // tree node shape: { id, el, domIndex, label, blocks: [{ id, el, domIndex?, label }] }
-export function serializeState(tree, stateMap, staggerMap = {}) {
+// lenisState shape (optional): { lerp, wheelMultiplier }
+export function serializeState(tree, stateMap, staggerMap = {}, lenisState = null) {
   const animations = [];
   tree.forEach((section) => {
     if (stateMap[section.id]) {
@@ -350,11 +351,18 @@ export function serializeState(tree, stateMap, staggerMap = {}) {
     });
   });
   const stagger = Object.keys(staggerMap).length ? { ...staggerMap } : undefined;
-  return { version: 1, animations, ...(stagger ? { stagger } : {}) };
+  const lenis = lenisState && Object.keys(lenisState).length ? { ...lenisState } : undefined;
+  return {
+    version: 1,
+    animations,
+    ...(stagger ? { stagger } : {}),
+    ...(lenis ? { lenis } : {}),
+  };
 }
 
 export function deserializeState(json) {
   const stateMap = Object.fromEntries(json.animations.map((a) => [a.id, a.properties]));
   const staggerMap = json.stagger ? { ...json.stagger } : {};
-  return { stateMap, staggerMap };
+  const lenisState = json.lenis ? { ...json.lenis } : null;
+  return { stateMap, staggerMap, lenisState };
 }
