@@ -9,12 +9,15 @@
 .tour-header {
   padding-block: var(--s2a-spacing-md) var(--s2a-layout-lg);
   padding-inline: var(--s2a-spacing-md) calc(var(--s2a-spacing-64) + var(--s2a-spacing-md));
+
   /* 5px aligns eyebrow and heading with the close button */
   p {
     padding-block-start: 5px;
   }
+
   h3 {
     padding-block-end: 5px;
+
     &:focus-visible {
       outline: none;
     }
@@ -23,8 +26,10 @@
 
 .tour-row-body {
   padding-block-start: var(--s2a-spacing-md);
+
   > p {
     padding-block-start: var(--s2a-spacing-md);
+
     &:first-child {
       padding-block-start: 0;
     }
@@ -33,15 +38,20 @@
 
 .tour-row-image {
   padding-block-start: var(--s2a-spacing-lg);
+
+  /* stylelint-disable-next-line no-descending-specificity -- different context from .tour-row-body */
   > p {
     padding-block-start: var(--s2a-layout-sm);
+
     &:first-child {
       padding-block-start: 0;
     }
   }
+
   picture {
     display: inline-block;
   }
+
   img {
     width: 100%;
     border-radius: var(--s2a-border-radius-sm);
@@ -51,26 +61,32 @@
 
 .tour-row {
   padding-block-start: var(--s2a-layout-sm);
+
   &.row-1 {
     max-width: 66%;
     min-width: 287px;
     padding-block-start: 0;
     padding-inline-end: var(--s2a-spacing-xs);
     align-self: end;
+
     .tour-row-body {
       max-width: 292px;
     }
   }
+
   &.row-2 {
     max-width: 83%;
     min-width: 296px;
+
     .tour-row-index,
     .tour-row-body {
       padding-inline-start: var(--s2a-spacing-lg);
     }
+
     .tour-row-body {
       max-width: 318px;
     }
+
     img {
       border-start-start-radius: 0;
       border-start-end-radius: var(--s2a-border-radius-sm);
@@ -78,14 +94,17 @@
       border-end-end-radius: var(--s2a-border-radius-sm);
     }
   }
+
   &.row-3 {
     padding-inline: var(--s2a-spacing-xs);
+
     .tour-row-index,
     .tour-row-body {
       text-align: center;
       max-width: 394px;
       margin: 0 auto;
     }
+
     .tour-row-image {
       picture {
         display: block;
@@ -135,20 +154,42 @@
   }
 }
 
+/* Tour Modal Curtain */
+.dialog-modal:has(.tour) ~ .modal-curtain {
+  background: rgb(0 0 0 / 60%);
+  backdrop-filter: blur(40px);
+}
+
 /* Tour Modal Styles */
 .dialog-modal:has(.tour) {
-  --tour-drag-y: 0px;
+  --tour-drag-y: 0;
+
   max-width: 596px;
-  width: 100dvw;
-  margin-top: 20px;
+  width: 100vw;
+  margin-top: var(--s2a-spacing-20);
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   max-height: 100dvh;
-  height: calc(100dvh - 20px);
+  height: calc(100dvh - var(--s2a-spacing-20));
   transform: translateY(var(--tour-drag-y));
   will-change: transform;
+
+  /* Scrolled-to-bottom state: rounded corners + spacing gap from bottom */
+  &.is-scrolled {
+    border-bottom-left-radius: var(--s2a-border-radius-md);
+    border-bottom-right-radius: var(--s2a-border-radius-md);
+    bottom: var(--s2a-spacing-lg);
+    height: calc(100dvh - var(--s2a-spacing-20) - var(--s2a-spacing-lg));
+  }
+
   & > .fragment {
     max-height: 100%;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  & > .fragment::-webkit-scrollbar {
+    display: none;
   }
 
   &.is-dragging {
@@ -158,18 +199,19 @@
   &.is-dismissing {
     --tour-drag-y: 100%;
   }
-  
+
   .dialog-close {
-    width: 48px;
-    height: 48px;
-    border-radius: 6px;
-    background-color: rgba(242, 242, 242, 1);
+    width: var(--s2a-spacing-48);
+    height: var(--s2a-spacing-48);
+    border-radius: var(--s2a-border-radius-sm);
+    background-color: var(--s2a-color-gray-50);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
     top: var(--s2a-spacing-md);
     right: var(--s2a-spacing-md);
+
     &::before,
     &::after {
-      width: calc(10px * 1.33);
+      width: calc(var(--dialog-modal-close-size) * 1.33);
     }
   }
 }
@@ -186,7 +228,7 @@
 /* Below 596px the modal is full-width; above it the width is fixed at 596px */
 @media (max-width: 596px) {
   .dialog-modal:has(.tour) {
-    max-width: 100dvw;
+    max-width: 100vw;
   }
 }
 
@@ -199,6 +241,10 @@
       transition: transform 0.3s ease;
     }
 
+    &.is-scrolled {
+      transition: border-radius 0.3s ease, bottom 0.3s ease, height 0.3s ease;
+    }
+
     &.is-closing {
       animation: tour-slide-out 0.3s ease forwards;
     }
@@ -208,6 +254,7 @@
     from {
       transform: translateY(100%);
     }
+
     to {
       transform: translateY(0);
     }
@@ -217,6 +264,7 @@
     from {
       transform: translateY(0);
     }
+
     to {
       transform: translateY(100%);
     }

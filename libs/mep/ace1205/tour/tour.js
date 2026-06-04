@@ -87,6 +87,16 @@ function addGrabHandle(el) {
   el.prepend(grabHandle);
 }
 
+function addScrollBehavior(modal) {
+  const fragment = modal.querySelector('.fragment');
+  if (!fragment) return;
+  const onScroll = () => {
+    const atBottom = fragment.scrollTop + fragment.clientHeight >= fragment.scrollHeight - 2;
+    modal.classList.toggle('is-scrolled', atBottom);
+  };
+  fragment.addEventListener('scroll', onScroll, { passive: true });
+}
+
 export default function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   const singleColumns = [];
@@ -142,4 +152,8 @@ export default function init(el) {
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));
   addGrabHandle(el);
   addCloseAnimation(el);
+
+  // Drive is-scrolled state from fragment scroll position
+  const modal = el.closest('.dialog-modal');
+  if (modal) addScrollBehavior(modal);
 }
