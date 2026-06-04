@@ -1,4 +1,4 @@
-import { getModal, closeModal } from '../modal/modal.js';
+import { getModal, closeModal } from '../../../c2/blocks/modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';

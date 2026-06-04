@@ -213,6 +213,9 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
+  if (link?.dataset?.modalHash) slideEl.dataset.modalHash = link.dataset.modalHash;
+  if (link?.dataset?.modalPath) slideEl.dataset.modalPath = link.dataset.modalPath;
+
   slideEl.addEventListener('mouseleave', onSlideLeave);
   slideEl.addEventListener('mouseenter', onHover);
   slideEl.addEventListener('focus', onHover);
