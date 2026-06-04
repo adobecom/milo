@@ -436,10 +436,16 @@ const UiPanel = () => {
   `;
 
   const flextCardFontSizeOptions = html`
-  <div class="nested">
-    <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
-  </div>
-`;
+    <div class="nested">
+      <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
+    </div>
+  `;
+
+  const customCardOptions = html`
+    <div class="nested">
+      <${Input} label="Custom Card HTML" prop="customCard" type="text" />
+    </div>
+  `;
 
   return html`
     <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
@@ -457,6 +463,7 @@ const UiPanel = () => {
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
       ${state.cardStyle === 'flex-card' && flexCardOptions}
+      ${state.cardStyle === 'custom-card' && customCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
       ${state.container === 'carousel' && carouselOptions}
