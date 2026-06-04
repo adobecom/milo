@@ -10,11 +10,6 @@ const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like M
 const isCI = !!process.env.CI;
 const isLocal = !isCI;
 
-// Exposed as NALA_WORKER_COUNT so eds-throttle.js derives per-worker RPS automatically:
-// floor(180 / workers) — total stays under the 200 rps/hostname AEM.live limit regardless of count.
-const workers = isCI ? 7 : 3;
-process.env.NALA_WORKER_COUNT = String(workers);
-
 // MAS tests
 const masFeatures = [
   'features/commerce/**/*.test.js',
@@ -57,7 +52,8 @@ const config = {
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
-  workers,
+  /* Opt out of parallel tests on CI. */
+  workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
     ? [['github'], ['list'], ['blob'], ['./nala/utils/base-reporter.js']]
@@ -107,9 +103,18 @@ const config = {
         workers: 5,
       },
     },
-    /* MAS test */
+    /* MAS test
+     * Workers are limited to 2 to reduce request pressure on EDS / AEM.live.
+     * To re-enable request-level throttling via eds-throttle.js instead:
+     *   1. Swap the @playwright/test import in MAS test files to nala-test.js.
+     *   2. NALA_WORKER_COUNT below tells eds-throttle.js the total worker count so it can
+     *      derive the per-worker RPS cap automatically (floor(180 / workers)).
+     *   3. Optionally remove the per-project `workers` overrides (they are complementary).
+     */
+    // process.env.NALA_WORKER_COUNT = String(isCI ? 7 : 3);
     {
       name: 'mas-chromium',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: {
         ...devices['Desktop Chrome'],
@@ -119,11 +124,13 @@ const config = {
     },
     {
       name: 'mas-firefox',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Firefox'], userAgent: USER_AGENT_DESKTOP },
     },
     {
       name: 'mas-webkit',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
     },

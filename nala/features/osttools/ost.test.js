@@ -1,4 +1,4 @@
-import { expect, test } from '../../libs/nala-test.js';
+import { expect, test } from '@playwright/test';
 import { features } from './ost.spec.js';
 import OSTPage from './ost.page.js';
 import ims from '../../libs/imslogin.js';
