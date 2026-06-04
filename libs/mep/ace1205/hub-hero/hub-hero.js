@@ -83,6 +83,19 @@ const handleMobileAutoplay = (carousel) => {
   return observers;
 };
 
+const scrollHubHeroTo = (el, progress) => {
+  // defer so native focus-scroll completes before we override it
+  setTimeout(() => {
+    const hubHero = el.closest('.hub-hero');
+    if (!hubHero) return;
+    const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+    if (totalScrollRange <= 0) return;
+    const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
+    const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
+    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+  }, 0);
+};
+
 const disableHoverOnScroll = (carousel) => {
   let timer;
   const controller = new AbortController();
@@ -121,7 +134,9 @@ const onCarouselLeave = (event) => {
 };
 
 const onHover = (event) => {
+  const isFocus = event.type === 'focus';
   const slideEl = event.target;
+  if (isFocus) scrollHubHeroTo(slideEl, 0.5);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -176,8 +191,6 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
 
-  // TODO: update to ensure classes are mapped to C2 variables
-  // TODO: see if eyebrow class can be applied directly to footer headline
   decorateBlockText(left);
 
   const content = `
@@ -190,7 +203,6 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
-       
       </div>
     </div>
   `;
@@ -267,6 +279,26 @@ const handleCarousel = (slds) => {
   return decoratedCarousel;
 };
 
+const setCarouselSlideOffsets = (grid, carousel) => {
+  const hubHero = carousel.closest('.hub-hero');
+  if (!hubHero) return;
+  const cols = [...grid.querySelectorAll('.hub-hero-image-grid-container-col')];
+  const gridHeight = grid.offsetHeight;
+  // slide nth-child (1-based) → 0-based column index
+  const colMap = { 1: 0, 2: 1, 4: 3, 5: 4 };
+  Object.entries(colMap).forEach(([nthChild, colIdx]) => {
+    const col = cols[colIdx];
+    if (!col) return;
+    // measure actual content height (offsetHeight is stretched by flex, use children sum)
+    const colGap = parseFloat(getComputedStyle(col).rowGap) || 0;
+    const children = [...col.children].slice(0, 2);
+    const contentHeight = children.reduce((h, c) => h + c.offsetHeight, 0)
+      + colGap * (children.length);
+    const correction = contentHeight - gridHeight;
+    hubHero.style.setProperty(`--carousel-slide-${nthChild}-correction`, `${correction}px`);
+  });
+};
+
 const handleGridImages = (imageContainers, slides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
   [...imageContainers[0].children]?.forEach((img) => {
@@ -288,11 +320,13 @@ const handleGridImages = (imageContainers, slides) => {
 export default async function init(el) {
   const hero = el.querySelector('div:first-child');
   hero.classList.add('hub-hero-header');
-  decorateBlockText(hero);
+  decorateBlockText(hero, { heading: '1' });
 
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
+
+  hero.querySelector('.action-area a')?.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
+
   carouselHeader.classList.add('hub-hero-carousel-header');
-  decorateBlockText(carouselHeader);
 
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
   const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
@@ -303,4 +337,13 @@ export default async function init(el) {
   el.replaceChildren();
 
   el.append(hero, grid, elasticCarousel);
+  requestAnimationFrame(() => {
+    if (!isMobile()) {
+      const heroHeaderH = hero.offsetHeight;
+      const gridH = grid.offsetHeight;
+      const carouselH = elasticCarousel.offsetHeight;
+      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + 1000}px`);
+    }
+    setCarouselSlideOffsets(grid, elasticCarousel);
+  });
 }
