@@ -307,7 +307,7 @@
   }
 
   @media (width >= 1440px) {
-    --desktop-mockup-width: min(68.6vw, 1600px);
+    --desktop-mockup-width: min(68.6vw, 1200px);
   }
 
   &.no-motion {
@@ -404,7 +404,7 @@
     .acrobat-desktop-mockup {
       display: none;
       width: 100%;
-      max-width: 1600px;
+      max-width: 1200px;
     }
 
     .acrobat-desktop-panel picture {
