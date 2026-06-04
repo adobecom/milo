@@ -1,4 +1,4 @@
-import { createTag, loadStyle } from '../../../../utils/utils.js';
+import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import {
   getPageId,
   getManifestsFound,
@@ -15,6 +15,7 @@ import {
   getGeoUser,
   getManifestList,
   setPreviewButton,
+  getAdditionalManifests,
 } from './mep-overlay-logic.js';
 
 const SUMMARY_DATA_GETTERS = {
@@ -25,7 +26,7 @@ const SUMMARY_DATA_GETTERS = {
   Performance: getPerformanceConsent,
   Advertising: getAdvertisingConsent,
   'Mep Lingo Updates': getLingoUpdates,
-  'Lang First': getLangFirst,
+  'Lang First | Lingo': getLangFirst,
   'Geo Folder': getGeoFolder,
   'Country Cookie': getCountryCookie,
   'User Country': getUserCountry,
@@ -60,6 +61,14 @@ function buildRow(label, value) {
     ? createTag('div', { class: 'mep-row-value' }, value ?? '')
     : value;
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), val]);
+}
+
+const CARD_STORAGE_KEY = 'mep-expanded-cards';
+
+function getExpandedCards() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
+  } catch { return new Set(); }
 }
 
 function buildManifestCard(manifest, svgData) {
@@ -98,7 +107,9 @@ function buildManifestCard(manifest, svgData) {
     select.append(optEl);
   });
 
-  const card = createTag('div', { class: 'mep-card mep-manifest-card expanded' });
+  const card = createTag('div', { class: 'mep-card mep-manifest-card' });
+  card.dataset.cardKey = manifest.editUrl;
+  if (getExpandedCards().has(manifest.editUrl)) card.classList.add('expanded');
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
   return card;
 }
@@ -112,22 +123,28 @@ function buildLoadManifest(card, pageId) {
   return createTag('input', { class: 'mep-load-manifest', type: 'text', name: `new-manifest${pageId}`, placeholder: card.placeholder });
 }
 
+function buildToggleRow(item, pageId) {
+  const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}${pageId}`;
+  const inputAttrs = { type: 'checkbox', id };
+  if (item.isChecked) inputAttrs.checked = '';
+
+  const input = createTag('input', inputAttrs);
+  const switchEl = createTag('label', { class: 'mep-switch' }, [
+    input,
+    createTag('span', { class: 'mep-switch-track' }),
+  ]);
+  const textEl = createTag('div', { class: 'mep-toggle-text' }, [
+    createTag('h2', {}, item.title),
+    createTag('p', { class: 'mep-row-value' }, item.description),
+  ]);
+  return createTag('div', { class: 'mep-toggle-row' }, [textEl, switchEl]);
+}
+
 function buildToggle(card, pageId) {
-  return card.label.map((item) => {
-    const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}${pageId}`;
-    const inputAttrs = { type: 'checkbox', id };
-    if (item.isChecked) inputAttrs.checked = '';
-    const input = createTag('input', inputAttrs);
-    const switchEl = createTag('label', { class: 'mep-switch' }, [
-      input,
-      createTag('span', { class: 'mep-switch-track' }),
-    ]);
-    const textEl = createTag('div', { class: 'mep-toggle-text' }, [
-      createTag('h2', {}, item.title),
-      createTag('p', { class: 'mep-row-value' }, item.description),
-    ]);
-    return createTag('div', { class: 'mep-toggle-row' }, [textEl, switchEl]);
-  });
+  const { env } = getConfig();
+  const isProd = env?.name === 'prod';
+  const items = card.label.filter((item) => item.title !== 'Manifest Manager' || isProd);
+  return items.map((item) => buildToggleRow(item, pageId));
 }
 
 function buildSpoofGeo(card, pageId, svgData) {
@@ -166,8 +183,17 @@ function buildCardContent(card, svgData, pageId) {
   return builders[card.header]?.() ?? createTag('div', {}, 'No content available');
 }
 
+function toggleExpandedCard(cardEl) {
+  const key = cardEl.dataset.cardKey;
+  const isExpanded = cardEl.classList.toggle('expanded');
+
+  const expanded = getExpandedCards();
+  expanded[isExpanded ? 'add' : 'delete'](key);
+  localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
+}
+
 function buildCard(card, svgData, pageId) {
-  const cardEl = createTag('div', { class: 'mep-card expanded' });
+  const cardEl = createTag('div', { class: 'mep-card' });
   if (!card?.header) return cardEl;
 
   const headerEl = createTag('h1', {}, card.header);
@@ -177,6 +203,9 @@ function buildCard(card, svgData, pageId) {
   Promise.resolve(buildCardContent(card, svgData, pageId)).then((content) => {
     bodyEl.append(...[content].flat());
   });
+
+  cardEl.dataset.cardKey = card.header;
+  if (getExpandedCards().has(card.header)) cardEl.classList.add('expanded');
 
   cardEl.append(headerEl, bodyEl);
   return cardEl;
@@ -225,11 +254,26 @@ function buildDrawer(gnavOffset, svgData, cardData, pageId) {
   }, [headerEl, bodyEl, footerEl]);
 }
 
+function buildAdditionalManifests() {
+  const manifests = getAdditionalManifests();
+  const drawerEl = document.querySelector('#mep-drawer');
+  const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
+  const lastManifestEl = manifestEls[manifestEls.length - 1];
+
+  if (lastManifestEl.classList.contains('mmm-manifest-card')) return;
+
+  manifests.forEach((manifest) => {
+    const manifestEl = buildManifestCard(manifest, { svg: { 'icon-expand-circle-down': lastManifestEl.querySelector('.icon-expand-circle-down').outerHTML } });
+    manifestEl.classList.add('mmm-manifest-card');
+    lastManifestEl.after(manifestEl);
+  });
+}
+
 function addEventListeners() {
   const drawerEl = document.querySelector('#mep-drawer');
 
-  drawerEl.addEventListener('click', (e) => {
-    const tab = e.target.closest('.mep-tab');
+  drawerEl.addEventListener('click', (event) => {
+    const tab = event.target.closest('.mep-tab');
     if (tab) {
       const tabIndex = tab.getAttribute('data-tab');
       drawerEl.querySelectorAll('[data-tab]').forEach((el) => {
@@ -237,16 +281,19 @@ function addEventListeners() {
       });
       return;
     }
-    if (e.target.closest('.mep-card svg')) e.target.closest('.mep-card').classList.toggle('expanded');
+    const cardEl = event.target.closest('.mep-card svg') && event.target.closest('.mep-card');
+    if (cardEl) {
+      toggleExpandedCard(cardEl);
+    }
   });
 
-  drawerEl.addEventListener('change', (e) => {
-    if (e.target.type === 'checkbox') e.target.toggleAttribute('checked', e.target.checked);
-    setPreviewButton(e);
+  drawerEl.addEventListener('change', (event) => {
+    if (event.target.type === 'checkbox') event.target.toggleAttribute('checked', event.target.checked);
+    setPreviewButton(event);
   });
 
-  drawerEl.addEventListener('input', (e) => {
-    if (e.target.type === 'text') setPreviewButton(e);
+  drawerEl.addEventListener('input', (event) => {
+    if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
   });
 }
 

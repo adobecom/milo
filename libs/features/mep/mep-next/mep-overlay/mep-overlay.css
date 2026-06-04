@@ -364,6 +364,14 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-color: var(--mep-white-100);
 }
 
+.mep-drawer .mep-body input:-internal-autofill-selected,
+.mep-drawer .mep-body input:-webkit-autofill:hover,
+.mep-drawer .mep-body input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--mep-dark-22, #222) inset !important;
+  box-shadow: 0 0 0 1000px var(--mep-dark-22, #222) inset !important;
+  -webkit-text-fill-color: var(--mep-white-100);
+}
+
 .mep-drawer .mep-footer {
   flex-shrink: 0;
   display: flex;
