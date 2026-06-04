@@ -583,7 +583,7 @@
       animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: --rc-video-garage;
-      animation-range: entry 90% exit 100%;
+      animation-range: entry 70% exit 100%;
     }
 
     .section.parallax-video-garage-door:has(.rich-content.video) + .section {
