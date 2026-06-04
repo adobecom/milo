@@ -1,4 +1,5 @@
 import { createTag } from '../../../utils/utils.js';
+import { decorateTextOverrides } from '../../../utils/decorate.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const SEO_SCHEMA = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [] };
@@ -31,7 +32,7 @@ function buildItem(row, num, isFirst) {
   }, [headingTag, icon]);
 
   const panelInner = createTag('div', { class: 'faq-panel-inner' }, answerNodes);
-  const panel = createTag('div', { class: 'faq-panel body-lg' }, panelInner);
+  const panel = createTag('div', { class: 'faq-panel body-md' }, panelInner);
   const itemAttrs = { class: 'faq-item' };
   if (isFirst) itemAttrs.open = '';
   const details = createTag('details', itemAttrs, [summary, panel]);
@@ -59,6 +60,7 @@ export default function init(el) {
 
   const list = createTag('div', { class: 'faq-list foreground' }, items.map((i) => i.item));
   el.replaceChildren(list);
+  decorateTextOverrides(el);
 
   if (el.matches('.seo')) setSEO(items);
 }
