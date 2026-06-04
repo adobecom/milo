@@ -262,6 +262,8 @@ const getSignInCtaStyle = () => {
   return isPrimary ? 'primary' : 'secondary';
 };
 
+const enableBE = new URLSearchParams(window.location.search).has('enableBE');
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -287,6 +289,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                ...(enableBE && { enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true }),
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -295,6 +298,15 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
+              ...(enableBE && {
+                managePeopleConfig: {
+                  enableWorkflow: true,
+                  params: {
+                    enableinlineoverlay: 's2-compat',
+                  },
+                  ...getConfig().unav?.profile?.managePeopleConfig,
+                },
+              }),
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
@@ -1076,6 +1088,35 @@ class Gnav {
           appName: 'adobecom',
           appVersion: '1.0',
           colorScheme: isDarkMode() ? 'dark' : 'light',
+          ...(enableBE && {
+            showDialog: async (element, attributes, closeCallback) => {
+              // Create a native browser dialog
+              const dialog = document.createElement('dialog');
+
+              // Optional basic styling
+              dialog.style.padding = '0';
+              dialog.style.border = 'none';
+              dialog.style.borderRadius = '12px';
+
+              // The SDK-provided element already contains the mini app UI
+              dialog.appendChild(element);
+              document.body.appendChild(dialog);
+
+              // If user closes dialog manually
+              dialog.addEventListener('close', () => {
+                closeCallback({ type: 'close' });
+                dialog.remove();
+              });
+
+              // If user presses ESC
+              dialog.addEventListener('cancel', () => {
+                closeCallback({ type: 'cancel' });
+                dialog.remove();
+              });
+
+              dialog.showModal();
+            },
+          }),
         });
 
         return window.aupsdk;
