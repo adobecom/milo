@@ -28,8 +28,7 @@ function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) 
 }
 
 function isJumpLinkRow(el) {
-  return el?.querySelector('a')
-    && [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'));
+  return [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'));
 }
 
 function getSectionHash(anchor) {
