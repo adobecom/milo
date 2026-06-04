@@ -27,14 +27,23 @@ function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) 
   if (bodyClass) target.classList.replace(bodyClass, `heading-${headingSize}`);
 }
 
-function decorateJumpLinks(content, foreground) {
-  const paras = [...(content?.querySelectorAll('p') ?? [])];
-  const jumpPara = paras.findLast((p) => p.querySelector('a') && [...p.childNodes].some(
-    (n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'),
-  ));
-  if (!jumpPara) return;
+function isJumpLinkRow(el) {
+  return el?.querySelector('a')
+    && [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'));
+}
 
-  const anchors = [...jumpPara.querySelectorAll('a')];
+function getSectionHash(anchor) {
+  const id = anchor.hash?.slice(1)?.split('#')[0];
+  return id ? `#${id}` : '';
+}
+
+function decorateJumpLinks(content, foreground) {
+  const candidates = [...(content?.querySelectorAll(':is(p, div):has(a)') ?? [])];
+  const jumpRow = candidates.findLast(isJumpLinkRow);
+
+  if (!jumpRow) return;
+
+  const anchors = [...jumpRow.querySelectorAll('a')];
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
 
   anchors.forEach((anchor) => {
@@ -45,12 +54,12 @@ function decorateJumpLinks(content, foreground) {
     anchor.append(badge, label);
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
-      scrollToHashedElement(anchor.hash);
+      scrollToHashedElement(getSectionHash(anchor));
     });
     nav.append(anchor);
   });
 
-  jumpPara.remove();
+  jumpRow.remove();
   foreground.append(nav);
 }
 
