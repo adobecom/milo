@@ -74,7 +74,7 @@ const defaultOptions = {
     'blade-card': 'Blade Card...',
     'blog-card': 'Blog Card',
     'button-card': 'Button Card',
-    'custom-card': 'Custom Card',
+    'custom-card': 'Custom Card...',
     'double-wide': 'Double Width Card',
     'editorial-card': 'Editorial Card...',
     'flex-card': 'Flex Card...',

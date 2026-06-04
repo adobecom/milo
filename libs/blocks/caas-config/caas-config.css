@@ -169,6 +169,7 @@ dd.content .nested {
   padding: 1px 0 2px 0;
   border: solid #666 1px;
   border-top: 0;
+  border-radius: 0 0 20px 20px;
 
   .field {
     padding-left: 16px;
