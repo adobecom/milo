@@ -405,7 +405,7 @@ function isEmptyCellContent(cellDiv) {
 
 function markEmptyCell(cellDiv) {
   if (!isEmptyCellContent(cellDiv)) return;
-  cellDiv.classList.add('empty-cell');
+  cellDiv?.classList.add('empty-cell');
   cellDiv?.setAttribute('aria-hidden', 'true');
 }
 
