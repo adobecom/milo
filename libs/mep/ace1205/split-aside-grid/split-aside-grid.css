@@ -38,7 +38,7 @@
     width: 245px;
     height: 465px;
     border-radius: 28px; 
-    border: 1.32px solid var(--s2a-color-transparent-white-04);
+    border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--s2a-spacing-xs);
     background-color: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(var(--s2a-blur-sm));
