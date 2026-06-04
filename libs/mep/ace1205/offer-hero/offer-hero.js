@@ -165,16 +165,6 @@ function decorate(block) {
 }
 
 function initAnimation(block) {
-  const gnav = document.querySelector('header');
-  const heroEl = block.querySelector('.hero');
-
-  function positionContent() {
-    if (!heroEl || !gnav) return;
-    heroEl.style.paddingTop = `${gnav.getBoundingClientRect().bottom + 124}px`;
-  }
-
-  positionContent();
-
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   block.classList.add('cards-animating');
@@ -253,8 +243,7 @@ function initAnimation(block) {
 
   function getProgress() {
     if (!cards[0]) return 0;
-    const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
-    const slotTargetTop = Math.round(navBottom + 124) + 60;
+    const slotTargetTop = (isMobile() ? PILE_GAP_MOBILE : PILE_GAP_DESKTOP);
     const fallbackY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
     const startY = naturalBoxes[0]?.y || fallbackY;
     const range = startY - slotTargetTop;
@@ -297,7 +286,7 @@ function initAnimation(block) {
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    const eyebrowThreshold = isMobile() ? 0.2 : 0.7;
+    const eyebrowThreshold = isMobile() ? 0.2 : 0.6;
     eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
   }
 
@@ -367,7 +356,6 @@ function initAnimation(block) {
       isSettled = false;
     }
     if (tiles.length !== 4) return;
-    positionContent();
     computeLayouts();
     updateEyebrow(getProgress());
   }
