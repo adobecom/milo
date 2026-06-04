@@ -1,6 +1,6 @@
 /* Tour Content Styles */
 .tour {
-  max-width: 596px;
+  max-width: 696px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -166,7 +166,7 @@
 /* Tour Modal Styles */
 .dialog-modal:has(.tour) {
   --tour-drag-y: 0px;
-  max-width: 596px;
+  max-width: 696px;
   width: 100dvw;
   margin-top: 20px;
   border-bottom-left-radius: 0;
@@ -217,8 +217,8 @@
   }
 }
 
-/* Below 596px the modal is full-width; above it the width is fixed at 596px */
-@media (max-width: 596px) {
+/* Below 696px the modal is full-width; above it the width is fixed at 696px */
+@media (max-width: 696px) {
   .dialog-modal:has(.tour) {
     max-width: 100dvw;
   }
