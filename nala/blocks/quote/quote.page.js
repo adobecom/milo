@@ -2,7 +2,7 @@ export default class Quote {
   constructor(page, nth = 0) {
     this.page = page;
     // quote  locators
-    this.quote = this.page.locator('.quote1').nth(nth);
+    this.quote = this.page.locator('.quote').nth(nth);
     this.quoteImage = this.quote.locator('.quote-image');
     this.quoteCopy = this.quote.locator('p.quote-copy');
     this.quoteFigCaption = this.quote.locator('p.figcaption');
