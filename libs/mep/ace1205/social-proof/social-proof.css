@@ -16,6 +16,7 @@
     animation-timeline: var(--animation-timeline);
     animation-range: var(--animation-range);
     animation-fill-mode: var(--animation-fill);
+    transform-origin: center top;
     will-change: transform;
     display: flex;
     flex-direction: column-reverse;
@@ -114,8 +115,8 @@
 
 @supports (animation-timeline: view()) {
   @keyframes social-proof-stretch {
-    from { transform: scaleX(var(--stretch-from)); }
-    to   { transform: scaleX(1); }
+    from { transform: scale(var(--stretch-from)); }
+    to   { transform: scale(1); }
   }
 
   @keyframes social-proof-image-zoom {
