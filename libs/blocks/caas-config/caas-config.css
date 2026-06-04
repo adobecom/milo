@@ -182,6 +182,12 @@ dd.content .nested {
     select {
       width: calc(100% - 20px);
     }
+
+    input[type="text"] {
+      width: calc(100% - 40px);
+      font-family: monospace;
+      font-size: 12px !important;
+    }
   }
 
   .note {
