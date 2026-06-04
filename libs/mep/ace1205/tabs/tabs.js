@@ -67,6 +67,25 @@ const saveActiveTabInStorage = (targetId, config) => {
   sessionStorage.setItem(storageName, activeTabIndex);
 };
 
+function triggerTabEnterAnimation(panel) {
+  if (!window.matchMedia('(width >= 768px)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cards = [...panel.querySelectorAll('.section merch-card')];
+  if (!cards.length) return;
+
+  panel.classList.add('tab-entering');
+  let remaining = cards.length;
+
+  panel.addEventListener('animationend', function onAnimEnd(e) {
+    if (!cards.includes(e.target)) return;
+    remaining -= 1;
+    if (remaining <= 0) {
+      panel.classList.remove('tab-entering');
+      panel.removeEventListener('animationend', onAnimEnd);
+    }
+  });
+}
+
 function moveIndicator(indicator, target, container) {
   const btnRect = target.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
@@ -111,8 +130,14 @@ function changeTabs(e, config) {
   scrollTabIntoView(target);
   content
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
-    .forEach((p) => p.setAttribute('hidden', true));
+    .forEach((p) => {
+      p.setAttribute('hidden', true);
+      p.classList.remove('tab-entering');
+    });
   targetContent?.removeAttribute('hidden');
+  if (tabsBlock.classList.contains('staggered-intro-merch-cards') && targetContent) {
+    triggerTabEnterAnimation(targetContent);
+  }
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
 }
@@ -346,6 +371,10 @@ const init = async (block) => {
       moveIndicator(indicator, activeTab, tabListContainer);
       scrollTabIntoView(activeTab);
       requestAnimationFrame(() => { indicator.style.transition = ''; });
+    }
+    if (block.classList.contains('staggered-intro-merch-cards')) {
+      const activePanel = tabContentContainer.querySelector('[role="tabpanel"]:not([hidden])');
+      if (activePanel) triggerTabEnterAnimation(activePanel);
     }
   });
 };
