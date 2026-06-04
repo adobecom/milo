@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-cycle */
+// nala-infra-test
 import { createTag, getMetadata, localizeLinkAsync, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
 
