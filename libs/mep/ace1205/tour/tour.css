@@ -55,7 +55,6 @@
 
 .tour-row {
   padding-block-start: var(--s2a-layout-sm);
-  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   &.row-1 {
