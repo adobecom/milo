@@ -28,15 +28,19 @@
       max-width: 680px;
     }
 
-    p:has(picture) {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--s2a-spacing-xs);
+    .eyebrow {
+      color: var(--s2a-color-content-knockout);
 
-      picture, img {
-        width: 24px;
-        height: 24px;
+      &:has(picture) {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--s2a-spacing-xs);
+  
+        picture, img {
+          width: 24px;
+          height: 24px;
+        }
       }
     }
   }
