@@ -296,7 +296,12 @@ function savePos(pos) {
     wireDrag(panelEl);
 
     panelEl.querySelector('#pa-download-btn').addEventListener('click', () => {
-      const json = serializeState(tree, stateMap, staggerMap);
+      // Include current Lenis settings so collaborators get the same scroll feel.
+      const lenisState = window.lenis ? {
+        lerp: window.lenis.options.lerp,
+        wheelMultiplier: window.lenis.options.wheelMultiplier,
+      } : null;
+      const json = serializeState(tree, stateMap, staggerMap, lenisState);
       const blob = new Blob([JSON.stringify(json, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -313,7 +318,11 @@ function savePos(pos) {
         try {
           const text = await input.files[0].text();
           const json = JSON.parse(text);
-          const { stateMap: importedState, staggerMap: importedStagger } = deserializeState(json);
+          const {
+            stateMap: importedState,
+            staggerMap: importedStagger,
+            lenisState: importedLenis,
+          } = deserializeState(json);
           Object.assign(stateMap, importedState);
           Object.entries(importedState).forEach(([id, st]) => styleManager.updateRule(id, st));
           Object.assign(staggerMap, importedStagger);
@@ -324,6 +333,17 @@ function savePos(pos) {
             const css = buildStaggerCssRules(sectionId, blockIds, staggerState);
             styleManager.updateStaggerRule(sectionId, css);
           });
+          // Apply imported Lenis settings, if any — must run before buildPanel so
+          // the rebuilt Lenis section's sliders read the updated values.
+          if (importedLenis && window.lenis) {
+            if (typeof importedLenis.lerp === 'number') {
+              window.lenisBaseLerp = importedLenis.lerp;
+              window.lenis.options.lerp = importedLenis.lerp;
+            }
+            if (typeof importedLenis.wheelMultiplier === 'number') {
+              window.lenis.options.wheelMultiplier = importedLenis.wheelMultiplier;
+            }
+          }
           saveState(stateMap);
           saveStaggerState(staggerMap);
           // eslint-disable-next-line max-len
