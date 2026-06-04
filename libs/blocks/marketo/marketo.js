@@ -74,7 +74,8 @@ export const decorateURL = async (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/') && !exclude) {
+    const hasFileExtension = /\.[^/.]+$/.test(pathname);
+    if (baseURL.pathname.endsWith('.html') && !hasFileExtension && !pathname.endsWith('/') && !exclude) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
