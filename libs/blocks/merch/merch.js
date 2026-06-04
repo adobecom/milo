@@ -1510,10 +1510,29 @@ export async function buildCta(el, params) {
   return cta;
 }
 
+export function shouldHideStPriceLabels(element) {
+  const nextElSibling = element.nextElementSibling?.nodeName === 'BR'
+    ? element.nextElementSibling.nextElementSibling
+    : element.nextElementSibling;
+
+  const href = nextElSibling?.getAttribute('href');
+  return !!(
+    (element.nextSibling?.nodeName !== '#text'
+      || element.nextSibling.textContent.trim().length < 2)
+    && href?.match('/tools/ost[?]osi=.*type=price')
+  );
+}
+
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
   const service = await initService();
+
+  if (context.template === 'strikethrough' && shouldHideStPriceLabels(el)) {
+    context.displayPerUnit = 'false';
+    context.displayTax = 'false';
+  }
+
   const price = service.createInlinePrice(context);
   return price;
 }
