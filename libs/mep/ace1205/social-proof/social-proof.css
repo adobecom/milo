@@ -66,6 +66,24 @@
         }
       }
     }
+
+    figure {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--s2a-spacing-md);
+
+      figcaption {
+        display: flex;
+        flex-direction: column;
+
+        :not(:first-child) {
+          color: var(--s2a-color-content-subtle);
+        }
+      }
+    }
   }
 }
 
