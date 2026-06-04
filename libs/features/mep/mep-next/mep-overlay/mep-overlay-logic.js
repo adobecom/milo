@@ -13,6 +13,16 @@ import {
   normalizePath,
 } from '../../../personalization/personalization.js';
 
+const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
+
+export const API_URLS = {
+  pageList: `${API_DOMAIN}/get-pages`,
+  pageDetails: `${API_DOMAIN}/get-page`,
+  pageDataByURL: `${API_DOMAIN}/get-page?url=`,
+  save: `${API_DOMAIN}/save-mep-call`,
+  report: `${API_DOMAIN}/get-report`,
+};
+
 const STAGE_ALLOWED_HOSTS = [
   'business.stage.adobe.com',
   'www.stage.adobe.com',
@@ -266,24 +276,62 @@ export async function getGeoUser() {
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
 }
 
+function getManifestInputParams(popup) {
+  return [...popup.querySelectorAll('input[type="text"].mep-load-manifest')]
+    .filter((input) => input.value)
+    .map((input) => {
+      try { return new URL(input.value).pathname || input.value; } catch { return input.value; }
+    });
+}
+
+function getCheckedOptionParams(popup) {
+  return [...popup.querySelectorAll('option:checked')]
+    .filter((option) => !option.closest('select')?.disabled && option.value)
+    .map((option) => `${option.dataset.manifest}--${option.value}`);
+}
+
+function getMepButtonOffParams(popup) {
+  return popup.querySelector('input#toggle-preview-link')?.checked ? 'off' : null;
+}
+
 export async function setPreviewButton() {
   const popup = document.querySelector('#mep-drawer');
-  const options = popup.querySelectorAll('option:checked, input[type="text"]');
-
-  const manifestParameter = [...options].reduce((params, option) => {
-    if (option.closest('select')?.disabled || !option.value) return params;
-
-    let { value } = option;
-    if (option.classList.contains('mep-load-manifest')) {
-      try { value = new URL(value).pathname || value; } catch { /* invalid URL */ }
-    } else {
-      value = `${option.dataset.manifest}--${value}`;
-    }
-    params.push(value);
-    return params;
-  }, []);
+  const manifestParameter = [
+    ...getManifestInputParams(popup),
+    ...getCheckedOptionParams(popup),
+  ];
 
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
+  const mepButtonParam = getMepButtonOffParams(popup);
+  if (mepButtonParam) {
+    simulateHref.searchParams.set('mepButton', mepButtonParam);
+  } else {
+    simulateHref.searchParams.delete('mepButton');
+  }
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
+}
+
+let additionalManifests;
+export async function getAdditionalManifests() {
+  const mepConfig = parseMepConfig();
+  if (!mepConfig || additionalManifests) return additionalManifests;
+
+  try {
+    const url = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Network error');
+
+    const data = await response.json();
+    const existingPaths = new Set(mepConfig.activities.map((a) => normalizePath(a.url)));
+    data.activities = data.activities
+      .filter((a) => !existingPaths.has(normalizePath(a.url)))
+      .map((a) => ({ ...a, source: 'MMM' }));
+
+    additionalManifests = data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Error fetching 7-day page data:', error);
+  }
+  return additionalManifests;
 }
