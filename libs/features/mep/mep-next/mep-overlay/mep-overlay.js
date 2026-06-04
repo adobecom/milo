@@ -252,8 +252,8 @@ function addEventListeners() {
 
 async function buildOverlay() {
   const [svgData, cardData, gnavOffset] = await Promise.all([
-    fetch(new URL('./mep-svg.json', import.meta.url)).then((r) => r.json()),
-    fetch(new URL('./mep-card.json', import.meta.url)).then((r) => r.json()),
+    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
+    fetch(new URL('./mep-overlay-text.json', import.meta.url)).then((r) => r.json()),
     getGnavOffset(),
   ]);
 
