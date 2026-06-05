@@ -505,8 +505,7 @@
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
     --rc-pull-offset: 100px;
-    --rc-sweep-offset: 300px;
-    --rc-cta-counteract-max: 30vh;
+    --rc-sweep-offset: 230px;
   }
 }
 
@@ -604,22 +603,15 @@
     }
 
     @media (width >= 768px) {
+      .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+      .section.parallax-video-garage-door:has(.rich-content.video),
       .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-        animation-range: entry 70% exit 100%;
+        --rc-sweep-offset: 230px;
       }
-    }
 
-    @media (width >= 1440px) {
       .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
         animation-range: exit 0% exit 100%;
       }
     }
-
-    @media (width >= 1920px) {
-      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-        animation-range: entry 90% exit 100%;
-      }
-    }
-
   }
 }
