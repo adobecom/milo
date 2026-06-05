@@ -94,10 +94,10 @@ function decorate(block, root = block) {
   const iconImg = firstP?.querySelector('img[src]');
 
   if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
-  if (!isJumpLink) return;
 
   const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
   if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  if (!isJumpLink) return;
   decorateJumpLinks(content, foreground);
 }
 

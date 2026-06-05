@@ -28,7 +28,8 @@
       max-width: 680px;
     }
 
-    p:has(picture) {
+    .eyebrow:has(picture) {
+      color: var(--s2a-color-content-knockout);
       display: flex;
       align-items: center;
       justify-content: center;
