@@ -449,35 +449,31 @@ export async function getAdditionalManifests() {
 export function getParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   return {
-    highlight: urlParams.get('mepHighlight'),
-    fragments: urlParams.get('mepFragments'),
-    caasHighlight: urlParams.get('mepCaasHighlight'),
-    masHighlight: urlParams.get('mepMasHighlight'),
+    highlightDefault: urlParams.get('mepHighlight'),
+    highlightFragments: urlParams.get('mepFragments'),
+    highlightCaas: urlParams.get('mepCaasHighlight'),
+    highlightMas: urlParams.get('mepMasHighlight'),
     masMarket: urlParams.get('mepMasMarket'),
   };
 }
 
-// mepCaasHighlightCheckbox
-export function toggleCaasHighlight(event) {
-  const { checked } = event.target;
-  document.body.dataset.mepCaasHighlight = checked;
-  if (checked) {
-    watchForCaasBlocks();
-    injectCaasBadges();
-  } else {
-    unwatchForCaasBlocks();
-    removeCaasBadges();
-  }
-}
+export function toggleHighlight(event) {
+  const HIGHLIGHT_HANDLERS = {
+    'toggle-mas': {
+      dataKey: 'mepMasHighlight',
+      on: [watchForMasContent, injectMasBadges],
+      off: [unwatchForMasContent, removeMasBadges],
+    },
+    'toggle-caas': {
+      dataKey: 'mepCaasHighlight',
+      on: [watchForCaasBlocks, injectCaasBadges],
+      off: [unwatchForCaasBlocks, removeCaasBadges],
+    },
+  };
 
-export function toggleMasHighlight(event) {
-  const { checked } = event.target;
-  document.body.dataset.mepMasHighlight = checked;
-  if (checked) {
-    watchForMasContent();
-    injectMasBadges();
-  } else {
-    unwatchForMasContent();
-    removeMasBadges();
-  }
+  const { checked, id } = event.target;
+  const handler = HIGHLIGHT_HANDLERS[id];
+  if (!handler) return;
+  document.body.dataset[handler.dataKey] = checked;
+  (checked ? handler.on : handler.off).forEach((fn) => fn());
 }

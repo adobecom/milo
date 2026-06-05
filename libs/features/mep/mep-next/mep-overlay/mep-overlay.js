@@ -7,9 +7,9 @@ import {
   getConsentSummary,
   getMasSummary,
   getLingoSummary,
+  getParameters,
   setPreviewButton,
-  toggleCaasHighlight,
-  toggleMasHighlight,
+  toggleHighlight,
 } from './mep-overlay-logic.js';
 
 const SUMMARY_DATA_GETTERS = {
@@ -110,7 +110,8 @@ function buildLoadManifest(card, pageId) {
 }
 
 function buildToggleRow(item, pageId) {
-  const id = `toggle-${item.title.replace(/\s+/g, '-').toLowerCase()}${pageId}`;
+  const reg = item.title.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
+  const id = `toggle-${reg}${pageId}`;
   const inputAttrs = { type: 'checkbox', id };
   if (item.isChecked) inputAttrs.checked = '';
 
@@ -287,9 +288,23 @@ function addEventListeners() {
 
   drawerEl.addEventListener('input', (event) => {
     if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
-    if (event.target.id === 'toggle-caas') toggleCaasHighlight(event);
-    if (event.target.id === 'toggle-m@s') toggleMasHighlight(event);
+    toggleHighlight(event);
     setPreviewButton(event);
+  });
+}
+
+function setDefaults() {
+  const { highlightCaas, highlightMas } = getParameters();
+  [
+    ['#toggle-caas', highlightCaas],
+    ['#toggle-mas', highlightMas],
+  ].forEach(([id, param]) => {
+    if (!param) return;
+    const checkbox = document.querySelector(id);
+    if (!checkbox) return;
+    checkbox.checked = true;
+    checkbox.setAttribute('checked', '');
+    toggleHighlight({ target: checkbox });
   });
 }
 
@@ -311,6 +326,7 @@ async function init() {
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   await buildOverlay();
   addEventListeners();
+  setDefaults();
   setPreviewButton();
 }
 
