@@ -1,4 +1,16 @@
-import { MAS_OSI_SELECTOR } from '../mep-mas.js';
+import {
+  MAS_OSI_SELECTOR,
+  watchForMasContent,
+  unwatchForMasContent,
+  injectMasBadges,
+  removeMasBadges,
+} from '../mep-mas.js';
+import {
+  injectCaasBadges,
+  removeCaasBadges,
+  watchForCaasBlocks,
+  unwatchForCaasBlocks,
+} from '../mep-caas.js';
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import {
   getMetadata,
@@ -282,20 +294,6 @@ async function getGeoUser() {
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
 }
 
-function getManifestInputParams(popup) {
-  return [...popup.querySelectorAll('input[type="text"].mep-load-manifest')]
-    .filter((input) => input.value)
-    .map((input) => {
-      try { return new URL(input.value).pathname || input.value; } catch { return input.value; }
-    });
-}
-
-function getCheckedOptionParams(popup) {
-  return [...popup.querySelectorAll('option:checked')]
-    .filter((option) => !option.closest('select')?.disabled && option.value)
-    .map((option) => `${option.dataset.manifest}--${option.value}`);
-}
-
 function getMepButtonOffParams(popup) {
   return popup.querySelector('input#toggle-preview-link')?.checked ? 'off' : null;
 }
@@ -380,6 +378,30 @@ export function getMasSummary() {
 }
 
 export async function setPreviewButton() {
+  function getManifestInputParams(popup) {
+    return [...popup.querySelectorAll('input[type="text"].mep-load-manifest')]
+      .filter((input) => input.value)
+      .map((input) => {
+        try { return new URL(input.value).pathname || input.value; } catch { return input.value; }
+      });
+  }
+
+  function getCheckedOptionParams(popup) {
+    return [...popup.querySelectorAll('option:checked')]
+      .filter((option) => !option.closest('select')?.disabled && option.value)
+      .map((option) => `${option.dataset.manifest}--${option.value}`);
+  }
+
+  function getCaasHighlightParam(popup) {
+    const checkbox = popup.querySelector('input[type="checkbox"]#toggle-caas');
+    return checkbox?.checked ? true : null;
+  }
+
+  function getMasHighlightParam(popup) {
+    const checkbox = popup.querySelector('input[type="checkbox"]#toggle-mas');
+    return checkbox?.checked ? true : null;
+  }
+
   const popup = document.querySelector('#mep-drawer');
   const manifestParameter = [
     ...getManifestInputParams(popup),
@@ -388,12 +410,15 @@ export async function setPreviewButton() {
 
   const simulateHref = new URL(window.location.href);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
-  const mepButtonParam = getMepButtonOffParams(popup);
-  if (mepButtonParam) {
-    simulateHref.searchParams.set('mepButton', mepButtonParam);
-  } else {
-    simulateHref.searchParams.delete('mepButton');
-  }
+
+  const setOrDelete = (key, value) => (value
+    ? simulateHref.searchParams.set(key, value)
+    : simulateHref.searchParams.delete(key));
+
+  setOrDelete('mepButton', getMepButtonOffParams(popup));
+  setOrDelete('mepCaasHighlight', getCaasHighlightParam(popup));
+  setOrDelete('mepMasHighlight', getMasHighlightParam(popup));
+
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
 }
 
@@ -419,4 +444,40 @@ export async function getAdditionalManifests() {
     console.error('Error fetching 7-day page data:', error);
   }
   return additionalManifests;
+}
+
+export function getParameters() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return {
+    highlight: urlParams.get('mepHighlight'),
+    fragments: urlParams.get('mepFragments'),
+    caasHighlight: urlParams.get('mepCaasHighlight'),
+    masHighlight: urlParams.get('mepMasHighlight'),
+    masMarket: urlParams.get('mepMasMarket'),
+  };
+}
+
+// mepCaasHighlightCheckbox
+export function toggleCaasHighlight(event) {
+  const { checked } = event.target;
+  document.body.dataset.mepCaasHighlight = checked;
+  if (checked) {
+    watchForCaasBlocks();
+    injectCaasBadges();
+  } else {
+    unwatchForCaasBlocks();
+    removeCaasBadges();
+  }
+}
+
+export function toggleMasHighlight(event) {
+  const { checked } = event.target;
+  document.body.dataset.mepMasHighlight = checked;
+  if (checked) {
+    watchForMasContent();
+    injectMasBadges();
+  } else {
+    unwatchForMasContent();
+    removeMasBadges();
+  }
 }

@@ -8,6 +8,8 @@ import {
   getMasSummary,
   getLingoSummary,
   setPreviewButton,
+  toggleCaasHighlight,
+  toggleMasHighlight,
 } from './mep-overlay-logic.js';
 
 const SUMMARY_DATA_GETTERS = {
@@ -285,6 +287,9 @@ function addEventListeners() {
 
   drawerEl.addEventListener('input', (event) => {
     if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
+    if (event.target.id === 'toggle-caas') toggleCaasHighlight(event);
+    if (event.target.id === 'toggle-m@s') toggleMasHighlight(event);
+    setPreviewButton(event);
   });
 }
 
@@ -306,6 +311,7 @@ async function init() {
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   await buildOverlay();
   addEventListeners();
+  setPreviewButton();
 }
 
 init();
