@@ -69,6 +69,7 @@
       display: flex;
       flex-direction: column;
       padding-inline: 0;
+      padding-block-start: var(--s2a-spacing-4xl);
     }
 
     .foreground {
@@ -219,7 +220,10 @@
     padding-block-start: var(--s2a-layout-md);
     padding-block-end: var(--s2a-spacing-4xl);
 
-    &.hero { height: 580px; }
+    &.hero { 
+      height: 580px;
+      padding-block-start: var(--s2a-layout-sm);
+    }
 
     .foreground .content,
     .jump-links { padding-inline: var(--s2a-spacing-xl); }
@@ -287,7 +291,6 @@
 
       &.hero {
         height: 814px;
-        padding-block-start: var(--s2a-layout-lg);
       }
 
       .foreground .content,
@@ -300,6 +303,12 @@
         .eyebrow { max-width: 656px; }
       }
     }
+  }
+}
+
+@media (width >= 1280px) {
+  .rich-content.jump-link.hero {
+    padding-block-start: var(--s2a-layout-xl);
   }
 }
 
