@@ -987,7 +987,7 @@ p {
 
   .icon-button {
     margin-inline-start: var(--s2a-spacing-sm);
-  } 
+  }
 
   &:hover,
   &:focus {
