@@ -1442,6 +1442,9 @@ export function decorateImageLinks(el) {
 export function decoratePictures(area) {
   area.querySelectorAll('picture').forEach((picture) => {
     if (picture.classList.contains('large-image-decorated')) return;
+    const sources = [...picture.querySelectorAll('source')];
+    if (!sources.length) return;
+
     const image = picture.querySelector('img');
     if (!image) return;
     const path = image.src.split('?')[0];
