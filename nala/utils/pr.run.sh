@@ -96,6 +96,9 @@ if [[ -n "${PROJECT:-}" ]]; then
   if [[ "$PROJECT" == "mas" ]]; then
     # run ALL 3 MAS projects together
     PROJECT_ARG=(--project=mas-chromium --project=mas-firefox --project=mas-webkit)
+  elif [[ "$PROJECT" == "mep" ]]; then
+    # run ALL 3 MEP projects together
+    PROJECT_ARG=(--project=mep-chromium --project=mep-firefox --project=mep-webkit)
   else
     PROJECT_ARG=(--project="$PROJECT")
   fi
