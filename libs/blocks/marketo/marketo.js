@@ -185,7 +185,7 @@ export const formSuccess = (formEl, formData) => {
     const redirect = formData?.[SUCCESS_CONTENT];
 
     if (!redirect.includes('https://')) {
-      window?.lana.log('Marketo IMS failure, fqdn needed for redirect', { tags: 'marketo', severity: 'i' });
+      window?.lana.log('Marketo IMS failure, full url needed for redirect', { tags: 'marketo', severity: 'i' });
     }
 
     const emailInput = formEl.querySelector('input[name="Email"]');
