@@ -2,7 +2,7 @@ import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
+import init, { setPreferences, decorateURL, formSuccess, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
 
 const ogFetch = window.fetch;
 const blockHTML = await readFile({ path: './mocks/block.html' });
@@ -280,5 +280,78 @@ describe('Marketo Iframe Timeout Handler', () => {
     await tick(500);
     expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
     expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
+  });
+});
+
+describe('Marketo formSuccess IMS', () => {
+  let formEl;
+  let marketoEl;
+
+  const addImsMeta = (content = 'ims_na1') => {
+    const meta = document.createElement('meta');
+    meta.name = 'marketo-ims';
+    meta.content = content;
+    document.head.appendChild(meta);
+  };
+
+  const addEmailInput = (value = 'test@adobe.com') => {
+    const input = document.createElement('input');
+    input.name = 'Email';
+    input.value = value;
+    formEl.appendChild(input);
+  };
+
+  beforeEach(() => {
+    window.lana = { log: sinon.spy() };
+    document.body.innerHTML = blockHTML;
+    marketoEl = document.querySelector('.marketo');
+    formEl = document.createElement('form');
+    marketoEl.appendChild(formEl);
+  });
+
+  afterEach(() => {
+    // Clean up any hash set by redirect tests so it doesn't leak into other tests
+    if (window.location.hash) window.location.hash = '';
+    sinon.restore();
+    document.head.querySelector('meta[name="marketo-ims"]')?.remove();
+  });
+
+  it('constructs redirect URL from param and email', () => {
+    addImsMeta('ims_na1');
+    addEmailInput('test@adobe.com');
+    // Hash redirect avoids full-page navigation so Playwright won't interrupt the test
+    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': '#ims' });
+    expect(window.location.href).to.include('#ims?ims_na1=test@adobe.com');
+    expect(result).to.be.false;
+  });
+
+  it('logs warning when redirect URL is not fully qualified', () => {
+    addImsMeta();
+    // No email — the navigation branch is skipped, warning still fires
+    formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'adobe.com/welcome' });
+    expect(window.lana.log.calledWith(
+      'Marketo IMS failure, fqdn needed for redirect',
+      { tags: 'marketo', severity: 'i' },
+    )).to.be.true;
+  });
+
+  it('logs error and returns false when marketo-ims param is missing', () => {
+    addEmailInput();
+    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'https://adobe.com/welcome' });
+    expect(window.lana.log.calledWith(
+      'Marketo IMS failure, missing data',
+      { tags: 'marketo', severity: 'e' },
+    )).to.be.true;
+    expect(result).to.be.false;
+  });
+
+  it('logs error and returns false when email input is missing', () => {
+    addImsMeta();
+    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'https://adobe.com/welcome' });
+    expect(window.lana.log.calledWith(
+      'Marketo IMS failure, missing data',
+      { tags: 'marketo', severity: 'e' },
+    )).to.be.true;
+    expect(result).to.be.false;
   });
 });
