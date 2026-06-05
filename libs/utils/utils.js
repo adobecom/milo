@@ -1445,6 +1445,8 @@ export function decoratePictures(area) {
     const sources = picture.querySelectorAll('source');
     const image = picture.querySelector('img');
     if (!sources.length || !image) return;
+    const imageWidth = image.width || image.naturalWidth;
+    if (imageWidth < 2000) return;
 
     const path = image.src.split('?')[0];
     const largeImageSource = createTag('source', {
