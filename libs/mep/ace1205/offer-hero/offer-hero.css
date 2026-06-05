@@ -11,7 +11,7 @@
 
   .hero-content {
     padding-inline: var(--s2a-spacing-lg);
-    margin-top: var(--s2a-layout-lg);
+    margin-top: 190px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -235,6 +235,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 0;
+      margin-top: 184px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: calc(100% - 482px);
@@ -267,6 +268,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
+      margin-top: 237px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;
