@@ -117,10 +117,6 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
-  .quick-actions {
-    padding-block-end: var(--s2a-spacing-2xl);
-  }
-
   .quick-actions-grid.two-up,
   .quick-actions-grid.three-up,
   .quick-actions-grid.four-up,
@@ -130,10 +126,6 @@ img.quick-actions-media {
 }
 
 @media (768px <= width < 1280px) {
-  .quick-actions {
-    padding-block-end: var(--s2a-layout-lg);
-  }
-
   .quick-actions-grid.six-up {
     grid-template-columns: repeat(3, 1fr);
   }
