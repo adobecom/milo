@@ -219,6 +219,51 @@
       object-position: top;
     }
   }
+
+  &.pdf-spaces-gradient {
+    position: relative;
+    overflow: clip;
+    background: #2B2D35;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -50%;
+      filter: blur(120px);
+      z-index: -1;
+    }
+    
+    &::before {
+      background:
+      radial-gradient(ellipse 96% 96% at 20% 20%, #2b2d35cc, transparent 70%), 
+      radial-gradient(ellipse 96% 96% at 80% 25%, #473c40cc, transparent 70%),
+      radial-gradient(ellipse 96% 96% at 15% 75%, #754b3bcc, transparent 70%),
+      radial-gradient(ellipse 96% 96% at 75% 70%, #81685ecc, transparent 70%);
+      animation: mesh-a 22.2s ease-in-out infinite;
+    }
+    
+    &::after {
+      background:
+      radial-gradient(ellipse 96% 96% at 75% 70%, #2b2d35cc, transparent 70%),
+      radial-gradient(ellipse 96% 96% at 15% 75%, #473c40cc, transparent 70%),
+      radial-gradient(ellipse 96% 96% at 80% 25%, #754b3bcc, transparent 70%),
+      radial-gradient(ellipse 96% 96% at 20% 20%, #81685ecc, transparent 70%);
+      animation: mesh-b 28.9s ease-in-out infinite reverse;
+      opacity: 0.7;
+    }
+  }
+}
+
+@keyframes mesh-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(13%, 10%) scale(1.1); }
+  66%       { transform: translate(-10%, 16%) scale(0.95); }
+}
+
+@keyframes mesh-b {
+  0%, 100% { transform: translate(0, 0) scale(1.05); }
+  50%      { transform: translate(-13%, -10%) scale(0.9); }
 }
 
 .section[class*='grid-width-'] {
