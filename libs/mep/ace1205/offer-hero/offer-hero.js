@@ -12,9 +12,9 @@ const STACK_REF_DESKTOP = [
   { dx: 400, dy: 240, w: 418, h: 455, rot: 3 },
 ];
 const STACK_REF_MOBILE = [
-  { dx: -15, dy: 75, w: 272, h: 318, rot: -6 },
-  { dx: 52, dy: -16, w: 348, h: 433, rot: -2 },
-  { dx: -30, dy: 150, w: 198, h: 211, rot: -15 },
+  { dx: -65, dy: 60, w: 272, h: 318, rot: -6 },
+  { dx: 22, dy: -16, w: 318, h: 433, rot: -2 },
+  { dx: -120, dy: 165, w: 280, h: 300, rot: -15 },
   { dx: 160, dy: 120, w: 367, h: 400, rot: 3 },
 ];
 const PILE_X_OFFSET_MOBILE = 54;
