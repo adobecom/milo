@@ -17,7 +17,7 @@
   --hub-hero-header-height: 375px;
   --max-image-size: 292px;
   --media-mobile-max-height: 280px;
-  --media-mobile-max-width: 350px;
+  --media-mobile-max-width: 100%;
   --min-image-size: 164px;
   --grid-img-width: 20vw;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -48,6 +48,8 @@
   width: 100%;
   overflow-x: clip;
   text-align: center;
+  position: relative;
+  z-index: 5;
   height: var(--hub-hero-height);
   margin-inline: auto;
   view-timeline-name: --hub-hero;

@@ -342,7 +342,7 @@ export default async function init(el) {
       const heroHeaderH = hero.offsetHeight;
       const gridH = grid.offsetHeight;
       const carouselH = elasticCarousel.offsetHeight;
-      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + 1000}px`);
+      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + 1000 + carouselImages.length}px`);
     }
     setCarouselSlideOffsets(grid, elasticCarousel);
   });
