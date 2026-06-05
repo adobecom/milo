@@ -1454,33 +1454,6 @@ export function decoratePictures(area) {
     picture.prepend(newSource);
     picture.classList.add('large-image-decorated');
   });
-
-  const LARGE_MEDIA = '(min-width: 1920px)';
-  area.querySelectorAll('picture').forEach((picture) => {
-    const sources = [...picture.querySelectorAll('source')];
-    const nonWebpSources = sources.filter((s) => s.type !== 'image/webp');
-    const uniqueTypes = [...new Set(nonWebpSources.map((s) => s.type))];
-
-    uniqueTypes.forEach((type) => {
-      const has1920ofType = sources.some((s) => s.type === type && s.media === LARGE_MEDIA);
-      const has1920webp = sources.some((s) => s.type === 'image/webp' && s.media === LARGE_MEDIA);
-      if (has1920ofType && has1920webp) return;
-
-      const ref = nonWebpSources.find((s) => s.type === type);
-      const url = new URL(ref.srcset, window.location.href);
-      url.searchParams.set('width', '3000');
-      url.searchParams.delete('optimize');
-      const newSrcset = `${url.pathname}${url.search}`;
-
-      if (!has1920ofType) {
-        picture.prepend(createTag('source', { media: LARGE_MEDIA, type, srcset: newSrcset }));
-      }
-      if (!has1920webp) {
-        // webp source is prepended last so it ends up first (browsers prefer it)
-        picture.prepend(createTag('source', { media: LARGE_MEDIA, type: 'image/webp', srcset: newSrcset }));
-      }
-    });
-  });
 }
 
 export function isTrustedAutoBlock(autoBlock, url) {
