@@ -55,6 +55,7 @@
         height: 100%;
 
         img {
+          display: block;
           object-fit: cover;
           width: 100%;
           height: 100%;
@@ -83,7 +84,7 @@
         max-width: none;
         box-sizing: border-box;
         justify-content: space-between;
-        padding: var(--s2a-spacing-lg);
+        padding: var(--s2a-spacing-2xl);
       }
 
       .media {
@@ -107,7 +108,7 @@
   }
 }
 
-@media (width >= 1440px) {
+@media (width >= 1920px) {
   .social-proof > div .foreground {
     padding: var(--s2a-layout-md);
   }
