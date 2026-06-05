@@ -484,9 +484,68 @@ z-index — they share the card layer and rely on document order.
 
 ## Debug overlay
 
-Append `?pdfspacedebug` to the URL to lazy-load `pdf-space-debug.js` and
-overlay live phase values, scroll position, and computed layout numbers.
-Production builds never download the debug module.
+`pdf-space-debug.js` overlays live phase values, scroll position, and computed
+layout numbers. The hooking code has been removed from `pdf-space.js` to keep
+the production path clean. To restore it, add the three snippets below back into
+`mountMotion`:
+
+**1. Just before the render loop comment — declare the variable and lazy-load:**
+
+```js
+// ──────────────────── Debug overlay (?pdfspacedebug) ───────────────────
+// Lazily loaded from pdf-space-debug.js only when ?pdfspacedebug is set.
+let debug = null;
+if (new URLSearchParams(window.location.search).has('pdfspacedebug')) {
+  import('./pdf-space-debug.js').then(({ default: createDebugOverlay }) => {
+    debug = createDebugOverlay(() => {
+      const c = scrollCurrent;
+      let stageLabel = 'done';
+      if (c < ANIM_CONFIG.peelStartScroll) stageLabel = 'arc-pan';
+      else if (c < ANIM_STATE.timing.gridEnd) stageLabel = 'peel';
+      else if (c < ANIM_STATE.timing.slottingStart) stageLabel = 'settle';
+      else if (c < ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration) stageLabel = 'slotting';
+      else if (ANIM_STATE.timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
+      let breakpoint = 'desktop';
+      if (ANIM_STATE.frame.isMobile) breakpoint = 'mobile';
+      else if (ANIM_STATE.frame.isTablet) breakpoint = 'tablet';
+      return {
+        stage: stageLabel,
+        breakpoint,
+        viewportWidth,
+        viewportHeight,
+        scrollCurrent: c,
+        animTotal: ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration
+          + ANIM_STATE.timing.postRevealScrollDistance,
+        phase: ANIM_STATE.phase,
+        settle: arcTextPanProgressCached,
+        peelStartScroll: ANIM_CONFIG.peelStartScroll,
+        gridEnd: ANIM_STATE.timing.gridEnd,
+        slottingStart: ANIM_STATE.timing.slottingStart,
+        slottingDuration: ANIM_STATE.timing.slottingDuration,
+        columnSpread: ANIM_STATE.cardGridLayout.columnSpread,
+        rowGap: ANIM_STATE.cardGridLayout.rowGap,
+        arcGridY: ANIM_STATE.verticalPan.arcGridY,
+        postRevealY: ANIM_STATE.frame.isMobile
+          ? ANIM_STATE.verticalPan.mobilePostRevealY
+          : ANIM_STATE.verticalPan.deskPostRevealY,
+        blockHeight: el.offsetHeight,
+      };
+    });
+  });
+}
+```
+
+**2. At the end of `loop()`, after `updateCardPositions()`:**
+
+```js
+debug?.update();
+```
+
+**3. At the end of the `teardown` function, after `canvasGrid.destroy()`:**
+
+```js
+debug?.destroy();
+```
 
 ## Files
 
