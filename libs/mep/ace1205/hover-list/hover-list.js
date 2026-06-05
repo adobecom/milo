@@ -48,6 +48,21 @@ function hideMedia(media) {
   });
 }
 
+function setupStickyBoundary(headline, list) {
+  const tabletMQ = window.matchMedia('(width >= 768px) and (width < 1280px)');
+  const wrapper = headline.parentElement;
+
+  const update = () => {
+    if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
+    const items = [...list.querySelectorAll('.hover-list-item')];
+    const first4Height = items.slice(0, 5).reduce((sum, el) => sum + el.offsetHeight, 0);
+    wrapper.style.height = `${first4Height + headline.offsetHeight}px`;
+  };
+
+  new ResizeObserver(update).observe(list);
+  tabletMQ.addEventListener('change', update);
+}
+
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
@@ -191,10 +206,13 @@ function decorate(block) {
     list.append(item);
   });
 
+  const headlineWrapper = createTag('div', { class: 'hover-list-headline-wrapper' });
+  headlineWrapper.append(headline);
   addCursorFollower(list);
   const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
-  block.replaceChildren(headline, listCol);
+  block.replaceChildren(headlineWrapper, listCol);
+  setupStickyBoundary(headline, list);
 }
 
 export default function init(el) {
