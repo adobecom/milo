@@ -55,9 +55,7 @@ function decorate(block) {
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
   heroCell.classList.add('hero-content');
   const mainHeading = heroCell.querySelector(':is(h2, h3, h4, h5, h6)');
-  if (mainHeading) {
-    mainHeading.replaceWith(createTag('h1', { class: mainHeading.className }, mainHeading.innerHTML));
-  }
+  if (mainHeading) mainHeading.replaceWith(createTag('h1', { class: mainHeading.className }, mainHeading.innerHTML));
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
