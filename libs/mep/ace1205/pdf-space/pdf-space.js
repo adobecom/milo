@@ -986,7 +986,7 @@ function mountMotion(el) {
       ? ANIM_CONFIG.mobileArcAngle
       : Math.atan2(viewportHeight, viewportWidth);
     LAYOUT_CACHE.headlineH = titleEl?.offsetHeight || 80;
-    LAYOUT_CACHE.navOffset = Math.max(document.querySelector('header')?.querySelector('.feds-breadcrumbs')?.offsetHeight, 60);
+    LAYOUT_CACHE.navOffset = 120; // TODO: hardcode vs nav-measurement
     if (ANIM_STATE.frame.isMobile) {
       const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY + LAYOUT_CACHE.navOffset;
       const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
