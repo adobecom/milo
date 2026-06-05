@@ -56,7 +56,7 @@ function setupStickyBoundary(headline, list) {
     if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
     const items = [...list.querySelectorAll('.hover-list-item')];
     const first4Height = items.slice(0, 5).reduce((sum, el) => sum + el.offsetHeight, 0);
-    wrapper.style.height = `${first4Height + headline.offsetHeight}px`;
+    wrapper.style.height = `${first4Height + headline.offsetHeight - 1}px`;
   };
 
   new ResizeObserver(update).observe(list);
