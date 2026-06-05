@@ -307,10 +307,6 @@
 }
 
 @media (width >= 1440px) {
-  .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.80) -0.02%, rgba(0, 0, 0, 0.00) 39.45%, rgba(0, 0, 0, 0.00) 74.49%, rgba(0, 0, 0, 0.80) 100%);
-  }
-
   .section.bento {
     .rich-content.grid-full-width {
       margin-inline-start: var(--s2a-spacing-md);
