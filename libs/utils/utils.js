@@ -1442,19 +1442,20 @@ export function decorateImageLinks(el) {
 export function decoratePictures(area) {
   area.querySelectorAll('picture').forEach((picture) => {
     if (picture.classList.contains('large-image-decorated')) return;
-    const sources = [...picture.querySelectorAll('source')];
-    if (!sources.length) return;
-
+    const sources = picture.querySelectorAll('source');
     const image = picture.querySelector('img');
-    if (!image) return;
+    if (!sources.length || !image) return;
+
     const path = image.src.split('?')[0];
-    const newSource = createTag('source', {
-      type: 'image/webp',
-      srcset: `${path}?width=3000&format=webply`,
-      media: '(min-width: 1920px)',
+    const imgType = path.split('.').pop().toLowerCase();
+    ['webp', imgType].forEach((type) => {
+      picture.prepend(createTag('source', {
+        type: `image/${type}`,
+        srcset: `${path}?width=3000&format=${type === 'jpg' ? 'jpeg' : type}`,
+        media: '(min-width: 1920px)',
+      }));
     });
 
-    picture.prepend(newSource);
     picture.classList.add('large-image-decorated');
   });
 }
