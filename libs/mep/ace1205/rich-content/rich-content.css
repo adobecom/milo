@@ -448,7 +448,7 @@
 
 @keyframes rc-cta-counteract {
   from { transform: translateY(0); }
-  to { transform: translateY(-50vh); }
+  to { transform: translateY(calc(var(--rc-cta-counteract-max) * -1)); }
 }
 
 @keyframes rc-video-cta-follow-mobile {
@@ -484,6 +484,7 @@
 .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
   --rc-pull-offset: 180px;
   --rc-sweep-offset: 200px;
+  --rc-cta-counteract-max: 10vh;
 }
 
 @media (width >= 1024px) {
@@ -505,6 +506,7 @@
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
     --rc-pull-offset: 100px;
     --rc-sweep-offset: 300px;
+    --rc-cta-counteract-max: 30vh;
   }
 }
 
@@ -520,7 +522,7 @@
 
 @keyframes rc-video-section-slow {
   from { transform: translateY(0); }
-  to { transform: translateY(50vh); }
+  to { transform: translateY(var(--rc-cta-counteract-max)); }
 }
 
 @supports (animation-timeline: view()) {
