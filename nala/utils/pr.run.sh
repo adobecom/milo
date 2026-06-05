@@ -10,6 +10,7 @@ echo "GITHUB_REF: ${GITHUB_REF:-}"
 echo "GITHUB_HEAD_REF: ${GITHUB_HEAD_REF:-}"
 echo "PROJECT: ${PROJECT:-<all>}"
 echo "SHARD:   ${SHARD:-<none>}"
+echo "NALA_BROWSER_SKIP=${NALA_BROWSER_SKIP:-<empty>}"
 
 if [[ "${GITHUB_REF:-}" == refs/pull/* ]]; then
   # extract PR number and branch name

@@ -5,6 +5,15 @@ import { runAccessibilityTest } from '../../libs/accessibility.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+const BLOCK_NAME = 'aside';
+
+test.skip(
+  ({ browserName }) => (process.env.NALA_BROWSER_SKIP || '')
+    .split(';')
+    .includes(`${BLOCK_NAME}:${browserName}`),
+  `Disabled via NALA_BROWSER_SKIP for ${BLOCK_NAME}`,
+);
+
 test.describe('Aside Block test suite', () => {
   // Aside Small Checks:
   test(`[Test Id - 0] ${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
