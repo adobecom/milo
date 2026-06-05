@@ -56,10 +56,7 @@ function decorate(block) {
   heroCell.classList.add('hero-content');
   const mainHeading = heroCell.querySelector(':is(h2, h3, h4, h5, h6)');
   if (mainHeading) {
-    const h1 = document.createElement('h1');
-    h1.className = mainHeading.className;
-    h1.innerHTML = mainHeading.innerHTML;
-    mainHeading.replaceWith(h1);
+    mainHeading.replaceWith(createTag('h1', { class: mainHeading.className }, mainHeading.innerHTML));
   }
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
