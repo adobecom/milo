@@ -59,7 +59,7 @@ const config = {
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 7 : 5,
+  workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
     ? [['github'], ['list'], ['blob'], ['./nala/utils/base-reporter.js']]
@@ -96,7 +96,7 @@ const config = {
     {
       name: 'milo-live-firefox',
       testIgnore: miloIgnore,
-      workers: 6,
+      workers: 5,
       use: {
         ...devices['Desktop Firefox'],
         userAgent: USER_AGENT_DESKTOP,
