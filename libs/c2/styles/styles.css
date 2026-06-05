@@ -1178,7 +1178,8 @@ span.hang-opening-quote {
       view-timeline-inset: 40% 10%;
       animation-name: none;
 
-      > :not([class*="section-"]) {
+      > :not([class*="section-"]),
+      .quick-actions-grid.six-up > :not([class*="section-"]) {
         --parallax-stagger-row-index: 0;
 
         animation-name: enable-parallax-stagger;
@@ -1189,11 +1190,17 @@ span.hang-opening-quote {
         will-change: transform;
       }
 
+      .quick-actions-grid.six-up {
+        --parallax-stagger-cols: 6;
+        --parallax-range-end: var(--parallax-range-end-name) var(--parallax-range-end-length);
+      }
+
       /* Prolong animation for 2 rows */
       &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
       &.four-up:has(> :nth-child(5 of :not([class*="section-"]))),
-      &.six-up:has(> :nth-child(7 of :not([class*="section-"]))) {
+      &.six-up:has(> :nth-child(7 of :not([class*="section-"]))),
+      .quick-actions-grid.six-up {
         --parallax-range-end-name: cover;
         --parallax-range-end-length: 70%;
       }
@@ -1202,7 +1209,8 @@ span.hang-opening-quote {
       &.two-up:has(> :nth-child(5 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(7 of :not([class*="section-"]))),
       &.four-up:has(> :nth-child(9 of :not([class*="section-"]))),
-      &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
+      &.six-up:has(> :nth-child(13 of :not([class*="section-"]))),
+      .quick-actions-grid.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
         --parallax-range-end-length: 80%;
       }
 
@@ -1266,17 +1274,31 @@ span.hang-opening-quote {
       &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
         --parallax-stagger-row-index: 4;
       }
+
+      .quick-actions-grid.six-up {
+        > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+        > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+        > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+        > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+        > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+        > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+
+        /* Row 1 */
+        > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) { --parallax-stagger-row-index: 1; }
+      }
     }
   }
 
-  .parallax-stagger-ltr > :not([class*="section-"]) {
+  .parallax-stagger-ltr > :not([class*="section-"]),
+  .parallax-stagger-ltr .quick-actions-grid.six-up > :not([class*="section-"]) {
     --parallax-stagger-from: calc(
       (var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
       * var(--parallax-stagger-drift)
     );
   }
 
-  .parallax-stagger-rtl > :not([class*="section-"]) {
+  .parallax-stagger-rtl > :not([class*="section-"]),
+  .parallax-stagger-rtl .quick-actions-grid.six-up > :not([class*="section-"]) {
     --parallax-stagger-from: calc(
       (var(--parallax-stagger-cols) - 1 - var(--parallax-stagger-index) + var(--parallax-stagger-row-index))
       * var(--parallax-stagger-drift)
