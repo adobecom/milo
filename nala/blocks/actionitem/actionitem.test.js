@@ -12,8 +12,10 @@ const BLOCK_NAME = 'actionitem';
 test.skip(
   ({ browserName }) => (process.env.NALA_BROWSER_SKIP || '')
     .split(';')
-    .includes(`${BLOCK_NAME}:${browserName}`),
-  `Disabled via NALA_BROWSER_SKIP for ${BLOCK_NAME}`,
+    .includes(`${BLOCK_NAME}:${browserName}`)
+    || (process.env.labels || '')
+      .includes(`skip-${BLOCK_NAME}-${browserName}`),
+  `Disabled via NALA_BROWSER_SKIP or PR label for ${BLOCK_NAME}`,
 );
 
 test.describe('Milo Action-Item block test suite', () => {
