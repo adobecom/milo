@@ -1450,10 +1450,9 @@ export function decoratePictures(area) {
         ?.replace(/\bwidth=\d+/, 'width=3000')
         .replace(/&optimize=[^&]*/g, '');
       if (!srcset) return;
-      const newSource = document.createElement('source');
-      if (source.type) newSource.setAttribute('type', source.type);
-      newSource.setAttribute('media', '(min-width: 1920px)');
-      newSource.setAttribute('srcset', srcset);
+      const attrs = { media: '(min-width: 1920px)', srcset };
+      if (source.type) attrs.type = source.type;
+      const newSource = createTag('source', attrs);
       picture.insertBefore(newSource, anchor);
     });
   });
@@ -1904,7 +1903,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  decoratePictures(section);
+  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
