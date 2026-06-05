@@ -1,36 +1,20 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import {
   getPageId,
-  getManifestsFound,
-  getFoundation,
-  getTargetIntegration,
-  getPersonalization,
-  getPerformanceConsent,
-  getAdvertisingConsent,
-  getLingoUpdates,
-  getLangFirst,
-  getGeoFolder,
-  getCountryCookie,
-  getUserCountry,
-  getGeoUser,
   getManifestList,
-  setPreviewButton,
   getAdditionalManifests,
+  getPageSummary,
+  getConsentSummary,
+  getMasSummary,
+  getLingoSummary,
+  setPreviewButton,
 } from './mep-overlay-logic.js';
 
 const SUMMARY_DATA_GETTERS = {
-  'Manifests Found': getManifestsFound,
-  Foundation: getFoundation,
-  'Target Integration': getTargetIntegration,
-  Personalization: getPersonalization,
-  Performance: getPerformanceConsent,
-  Advertising: getAdvertisingConsent,
-  'Mep Lingo Updates': getLingoUpdates,
-  'Lang First | Lingo': getLangFirst,
-  'Geo Folder': getGeoFolder,
-  'Country Cookie': getCountryCookie,
-  'User Country': getUserCountry,
-  'Geo + User': async () => getGeoUser(),
+  Page: getPageSummary,
+  Consent: getConsentSummary,
+  Lingo: getLingoSummary,
+  'M@S': getMasSummary,
 };
 
 function parseSvg(svgString) {
@@ -160,14 +144,20 @@ function buildSpoofGeo(card, pageId, svgData) {
   return [...options, select];
 }
 
+function buildNestedSection(label, subPairs) {
+  const rows = subPairs.map(([subLabel, subValue]) => createTag('div', { class: 'mep-surfaces-row' }, [
+    createTag('div', { class: 'mep-row-value' }, subLabel),
+    createTag('div', {}, String(subValue ?? '')),
+  ]));
+  return createTag('div', { class: 'mep-row-section' }, [createTag('h2', {}, label), ...rows]);
+}
+
 async function buildSummaryData(card) {
-  return Promise.all(card.label?.map(async (item) => {
-    const value = await SUMMARY_DATA_GETTERS[item]?.();
-    return createTag('div', { class: 'mep-row' }, [
-      createTag('h2', {}, item),
-      createTag('div', { class: 'mep-row-value' }, value),
-    ]);
-  }));
+  const pairs = await SUMMARY_DATA_GETTERS[card.header]?.();
+  if (!pairs) return [];
+  return pairs.flatMap(([label, value]) => (
+    Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
+  ));
 }
 
 function buildCardContent(card, svgData, pageId) {
@@ -179,6 +169,7 @@ function buildCardContent(card, svgData, pageId) {
     Page: () => buildSummaryData(card),
     Consent: () => buildSummaryData(card),
     Lingo: () => buildSummaryData(card),
+    'M@S': () => buildSummaryData(card),
   };
   return builders[card.header]?.() ?? createTag('div', {}, 'No content available');
 }

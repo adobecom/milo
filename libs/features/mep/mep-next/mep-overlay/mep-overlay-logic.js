@@ -1,3 +1,5 @@
+import { MAS_OSI_SELECTOR } from '../mep-mas.js';
+import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import {
   getMetadata,
   getConfig,
@@ -12,6 +14,10 @@ import {
   getFileName,
   normalizePath,
 } from '../../../personalization/personalization.js';
+import {
+  getMiloLocaleSettings,
+  isMasGeoDetectionEnabled,
+} from '../../../../blocks/merch/merch.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -195,7 +201,7 @@ export function getManifestList() {
   return { manifests, manifestParameter };
 }
 
-export function getManifestsFound() {
+function getManifestsFound() {
   const mepconfig = parseMepConfig();
   return mepconfig?.activities?.length ?? 0;
 }
@@ -206,11 +212,11 @@ export function getPageId() {
   return page?.pageId ? `-${page.pageId}` : '';
 }
 
-export function getFoundation() {
+function getFoundation() {
   return (getMetadata('foundation') || 'c1').toUpperCase();
 }
 
-export function getTargetIntegration() {
+function getTargetIntegration() {
   const { page } = parseMepConfig();
   const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
   if (mepTarget === undefined) return page.target;
@@ -227,37 +233,37 @@ export function getLastSeen() {
   return formatDate(new Date(page.lastSeen));
 }
 
-export function getPersonalization() {
+function getPersonalization() {
   const { page } = parseMepConfig();
   return page.personalization;
 }
 
-export function getPerformanceConsent() {
+function getPerformanceConsent() {
   const { consentState } = getConfig().mep;
   return consentState?.functional ? 'on' : 'off';
 }
 
-export function getAdvertisingConsent() {
+function getAdvertisingConsent() {
   const { consentState } = getConfig().mep;
   return consentState?.advertising ? 'on' : 'off';
 }
 
-export function getLingoUpdates() {
+function getLingoUpdates() {
   const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
   const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
   return `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`;
 }
 
-export function getLangFirst() {
+function getLangFirst() {
   return lingoActive() ? 'on' : 'off';
 }
 
-export function getGeoFolder() {
+function getGeoFolder() {
   const { page } = parseMepConfig();
   return page.geo || 'Us (None)';
 }
 
-export function getCountryCookie() {
+function getCountryCookie() {
   const searchParams = new URLSearchParams(window.location.search);
   const countryParam = normCountryCode(searchParams.get('country'));
   const countryCookie = countryParam
@@ -266,11 +272,11 @@ export function getCountryCookie() {
   return countryCookie ?? '';
 }
 
-export async function getUserCountry() {
+async function getUserCountry() {
   return await resolveDetectedMarketCountry() ?? '';
 }
 
-export async function getGeoUser() {
+async function getGeoUser() {
   const { locale } = getConfig();
   if (!Object.keys(locale?.regions || {}).length || !lingoActive()) return 'Not Applicable';
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
@@ -292,6 +298,85 @@ function getCheckedOptionParams(popup) {
 
 function getMepButtonOffParams(popup) {
   return popup.querySelector('input#toggle-preview-link')?.checked ? 'off' : null;
+}
+
+const resolvePairs = (pairs) => Promise.all(
+  pairs.map(async ([label, value]) => [label, await value]),
+);
+
+export function getPageSummary() {
+  return resolvePairs([
+    ['Manifests Found', getManifestsFound()],
+    ['Foundation', getFoundation()],
+    ['Target Integration', getTargetIntegration()],
+    ['Personalization', getPersonalization()],
+  ]);
+}
+
+export function getConsentSummary() {
+  return resolvePairs([
+    ['Performance Consent', getPerformanceConsent()],
+    ['Advertising Consent', getAdvertisingConsent()],
+  ]);
+}
+
+export function getLingoSummary() {
+  return resolvePairs([
+    ['Mep Lingo Updates', getLingoUpdates()],
+    ['Lang First | Lingo', getLangFirst()],
+    ['Geo Folder', getGeoFolder()],
+    ['Country Cookie', getCountryCookie()],
+    ['User Country', getUserCountry()],
+    ['Geo + User', getGeoUser()],
+  ]);
+}
+
+export function getMasSummary() {
+  const config = getConfig();
+
+  const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
+  const subCollectionCount = [...collectionContainers]
+    .reduce((sum, c) => sum + (mepMasSubCollections.get(c)?.length || 0), 0);
+  const standaloneOfferCount = [...document.querySelectorAll(MAS_OSI_SELECTOR)]
+    .filter((el) => !el.closest('merch-card')).length;
+
+  const counts = {
+    collection: collectionContainers.length,
+    subCollection: subCollectionCount,
+    card: document.querySelectorAll('merch-card').length,
+    inlineField: document.querySelectorAll('mas-field').length,
+    standaloneOffer: standaloneOfferCount,
+  };
+  const surfaces = counts.collection + counts.card + counts.inlineField + counts.standaloneOffer;
+
+  const geoOn = isMasGeoDetectionEnabled();
+  const geoParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
+  const geoMeta = getMetadata('mas-geo-detection');
+  let geoSource = 'none';
+  if (geoOn) {
+    geoSource = geoParam ? 'URL param' : 'Metadata';
+  } else if (geoParam || geoMeta) {
+    geoSource = geoParam ? 'URL param (off)' : 'Metadata (off)';
+  }
+
+  const liveCountry = document.head.querySelector('mas-commerce-service')?.getAttribute('country');
+  const localeCountry = getMiloLocaleSettings(config.locale)?.country;
+  const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
+
+  return [
+    ['Mas Geo Detection', geoOn ? 'on' : 'off'],
+    ['Geo Source', geoSource],
+    ['Page Market', pageMarket],
+    ['Market Source', liveCountry ? 'mas-commerce-service' : 'page locale'],
+    ['Surfaces', [
+      ['Detected', surfaces],
+      ['Collections', counts.collection, true],
+      ['Sub-collections', counts.subCollection, true],
+      ['Cards', counts.card, true],
+      ['Inline Fields', counts.inlineField, true],
+      ['Standalone Offers', counts.standaloneOffer, true],
+    ]],
+  ];
 }
 
 export async function setPreviewButton() {

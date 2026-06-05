@@ -474,3 +474,23 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   display: inline-flex;
   gap: 4px;
 }
+
+.mep-drawer .mep-row-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mep-drawer .mep-surfaces-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+}
+
+.mep-drawer .mep-surfaces-row div {
+  flex-shrink: 0;
+  color: var(--mep-white-100);
+  white-space: nowrap;
+}
