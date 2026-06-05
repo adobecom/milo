@@ -262,6 +262,10 @@
   @media (width >= 768px) {
     --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
 
+    & {
+      padding-bottom: 44px;
+    }
+
     .text-block {
       width: var(--text-block-width-tablet);
     }
