@@ -1447,13 +1447,13 @@ export function decoratePictures(area) {
     if (!sources.length || !image) return;
 
     const path = image.src.split('?')[0];
-    const newSource = createTag('source', {
+    const largeImageSource = createTag('source', {
       type: 'image/webp',
       srcset: `${path}?width=3000&format=webply`,
       media: '(min-width: 1920px)',
     });
 
-    picture.prepend(newSource);
+    picture.prepend(largeImageSource);
     picture.classList.add('large-image-decorated');
   });
 }
