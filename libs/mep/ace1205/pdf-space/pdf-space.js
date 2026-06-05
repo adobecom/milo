@@ -736,7 +736,7 @@ function mountMotion(el) {
     acrobatCtaTop: 0,
     deskPostRevealNeeded: 0,
     mobilePostRevealDistance: 0,
-    navOffset: 0,
+    navOffset: 120, // hardcoded now until LNAV is finalized. Then we could do DOM measurement
     mobileAcrobatMockupRestTop: 0,
     textBlockWidth: 0,
     blockDocTop: 0,
@@ -986,7 +986,6 @@ function mountMotion(el) {
       ? ANIM_CONFIG.mobileArcAngle
       : Math.atan2(viewportHeight, viewportWidth);
     LAYOUT_CACHE.headlineH = titleEl?.offsetHeight || 80;
-    LAYOUT_CACHE.navOffset = Math.max(document.querySelector('header')?.querySelector('.feds-breadcrumbs')?.offsetHeight, 60);
     if (ANIM_STATE.frame.isMobile) {
       const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY + LAYOUT_CACHE.navOffset;
       const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
@@ -1213,6 +1212,7 @@ function mountMotion(el) {
       : 0;
 
     if (ANIM_STATE.frame.isMobile) {
+      ctaEl.style.opacity = '';
       const mobileScaleDelta = ANIM_CONFIG.mobileMockupStartScale
         - ANIM_CONFIG.mobileMockupEndScale;
       const mobileScale = ANIM_CONFIG.mobileMockupStartScale - mobileScaleDelta * slottingEase;
@@ -1222,8 +1222,7 @@ function mountMotion(el) {
       const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY + LAYOUT_CACHE.navOffset;
       const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
       LAYOUT_CACHE.mobileAcrobatMockupRestTop = chromeRestY;
-      const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
-      const postRevealNeeded = Math.max(0, ctaRestY + 120 - viewportHeight);
+      const postRevealNeeded = LAYOUT_CACHE.mobilePostRevealDistance;
       const postRevealPanY = ((easeOutSine(postRevealProgress) + postRevealProgress) / 2)
         * postRevealNeeded;
       ANIM_STATE.verticalPan.mobilePostRevealY = postRevealPanY;
@@ -1365,48 +1364,6 @@ function mountMotion(el) {
     textBlockEl.style.opacity = textOpacity;
   }
 
-  // ──────────────────── Debug overlay (?pdfspacedebug) ───────────────────
-  // Lazily loaded from pdf-space-debug.js only when ?pdfspacedebug is set.
-  let debug = null;
-  if (new URLSearchParams(window.location.search).has('pdfspacedebug')) {
-    import('./pdf-space-debug.js').then(({ default: createDebugOverlay }) => {
-      debug = createDebugOverlay(() => {
-        const c = scrollCurrent;
-        let stageLabel = 'done';
-        if (c < ANIM_CONFIG.peelStartScroll) stageLabel = 'arc-pan';
-        else if (c < ANIM_STATE.timing.gridEnd) stageLabel = 'peel';
-        else if (c < ANIM_STATE.timing.slottingStart) stageLabel = 'settle';
-        else if (c < ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration) stageLabel = 'slotting';
-        else if (ANIM_STATE.timing.postRevealScrollDistance > 0) stageLabel = 'post-reveal';
-        let breakpoint = 'desktop';
-        if (ANIM_STATE.frame.isMobile) breakpoint = 'mobile';
-        else if (ANIM_STATE.frame.isTablet) breakpoint = 'tablet';
-        return {
-          stage: stageLabel,
-          breakpoint,
-          viewportWidth,
-          viewportHeight,
-          scrollCurrent: c,
-          animTotal: ANIM_STATE.timing.slottingStart + ANIM_STATE.timing.slottingDuration
-            + ANIM_STATE.timing.postRevealScrollDistance,
-          phase: ANIM_STATE.phase,
-          settle: arcTextPanProgressCached,
-          peelStartScroll: ANIM_CONFIG.peelStartScroll,
-          gridEnd: ANIM_STATE.timing.gridEnd,
-          slottingStart: ANIM_STATE.timing.slottingStart,
-          slottingDuration: ANIM_STATE.timing.slottingDuration,
-          columnSpread: ANIM_STATE.cardGridLayout.columnSpread,
-          rowGap: ANIM_STATE.cardGridLayout.rowGap,
-          arcGridY: ANIM_STATE.verticalPan.arcGridY,
-          postRevealY: ANIM_STATE.frame.isMobile
-            ? ANIM_STATE.verticalPan.mobilePostRevealY
-            : ANIM_STATE.verticalPan.deskPostRevealY,
-          blockHeight: el.offsetHeight,
-        };
-      });
-    });
-  }
-
   // ──────────────────── Render loop ────────────────────
   let rafId = 0;
   let running = false;
@@ -1425,12 +1382,11 @@ function mountMotion(el) {
     canvasGrid.update();
     canvasGrid.draw();
     updateCardPositions();
-    debug?.update();
     rafId = requestAnimationFrame(loop);
   }
 
   // ──────────────────── Bootstrap ────────────────────
-  const onResize = debounce(resize, 150);
+  const onResize = debounce(resize, 100);
   window.addEventListener('resize', onResize);
 
   const armFocusGuard = () => { suppressFocusSnap = true; };
@@ -1527,7 +1483,6 @@ function mountMotion(el) {
     window.removeEventListener('blur', armFocusGuard);
     window.removeEventListener('focus', disarmFocusGuard);
     canvasGrid.destroy();
-    debug?.destroy();
   };
 }
 
