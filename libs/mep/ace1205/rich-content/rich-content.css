@@ -610,7 +610,7 @@
 
     @media (width >= 1920px) {
       .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-        animation-range: exit 25% exit 100%;
+        animation-range: exit 45% exit 100%;
       }
     }
 
