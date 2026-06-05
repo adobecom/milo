@@ -32,7 +32,7 @@ function isJumpLinkRow(el) {
 }
 
 function getSectionHash(anchor) {
-  const id = anchor.hash?.slice(1)?.split('#')[0];
+  const id = anchor.hash?.split('#')[0];
   return id ? `#${id}` : '';
 }
 
