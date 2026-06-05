@@ -43,7 +43,7 @@ const config = {
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 5000,
+    timeout: 12000,
   },
   testMatch: '**/*.test.js',
   /* Run tests in files in parallel */
@@ -103,9 +103,18 @@ const config = {
         workers: 5,
       },
     },
-    /* MAS test */
+    /* MAS test
+     * Workers are limited to 2 to reduce request pressure on EDS / AEM.live.
+     * To enable request-level throttling via eds-throttle.js instead:
+     *   1. Swap the @playwright/test import in MAS test files to nala-test.js.
+     *   2. Uncomment NALA_WORKER_COUNT below — eds-throttle.js uses it to derive
+     *      per-worker RPS automatically (floor(180 / workers)).
+     *   3. Optionally remove the per-project `workers` overrides (they are complementary).
+     */
+    // process.env.NALA_WORKER_COUNT = String(isCI ? 7 : 3);
     {
       name: 'mas-chromium',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: {
         ...devices['Desktop Chrome'],
@@ -115,11 +124,13 @@ const config = {
     },
     {
       name: 'mas-firefox',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Firefox'], userAgent: USER_AGENT_DESKTOP },
     },
     {
       name: 'mas-webkit',
+      workers: 2,
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
     },

@@ -34,6 +34,7 @@ import merch, {
   getMasComponentUrl,
   getMasLibsBaseUrl,
   getMasLibs,
+  shouldHideStPriceLabels,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -403,6 +404,78 @@ describe('Merch Block', () => {
       expect(renderedEl.dataset.masBlock).to.equal(undefined);
       expect(mepMasStudioUrls.get(renderedEl)).to.equal(undefined);
       wrap.remove();
+    });
+
+    it('should hide ST price labels with promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price');
+      div.append(elementST);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price'));
+      expect(hide).to.be.true;
+    });
+
+    it('should hide ST price labels with promo price right after and character between', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price2');
+      div.append(elementST);
+      const text = document.createTextNode('* ');
+      div.append(text);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price2'));
+      expect(hide).to.be.true;
+    });
+
+    it('should not hide ST price labels without promo price', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price3');
+      div.append(elementST);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price3'));
+      expect(hide).to.be.false;
+    });
+
+    it('should not hide ST price labels without promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
+    });
+    it('should not hide ST price labels with some link right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://www.adobe.com/plans');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
     });
   });
 
