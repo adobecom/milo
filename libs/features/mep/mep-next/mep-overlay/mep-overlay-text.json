@@ -44,31 +44,13 @@
   },
   "summary": {
     "page": {
-      "header": "Page",
-      "label": [
-        "Manifests Found",
-        "Foundation",
-        "Target Integration",
-        "Personalization"
-      ]
+      "header": "Page"
     },
     "consent": {
-      "header": "Consent",
-      "label": [
-        "Performance",
-        "Advertising"
-      ]
+      "header": "Consent"
     },
     "lingo": {
-      "header": "Lingo",
-      "label": [
-        "Mep Lingo Updates",
-        "Lang First | Lingo",
-        "Geo Folder",
-        "Country Cookie",
-        "User Country",
-        "Geo + User"
-      ]
+      "header": "Lingo"
     },
     "mas": {
       "header": "M@S"
