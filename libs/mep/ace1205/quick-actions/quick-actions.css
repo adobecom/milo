@@ -26,12 +26,13 @@
 .quick-actions-grid {
   grid-column: 1 / -1;
   gap: var(--s2a-spacing-xs);
+  container-type: inline-size;
 }
 
 .quick-actions-tile {
   position: relative;
   overflow: clip;
-  aspect-ratio: 43 / 50;
+  aspect-ratio: 48 / 50;
   background: var(--s2a-color-background-subtle);
   border-radius: var(--s2a-border-radius-md);
   text-decoration: none;
@@ -125,8 +126,15 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
+  .quick-actions {
+    padding-block-end: var(--s2a-spacing-2xl);
+  }
+
   .quick-actions-tile {
-    min-block-size: 180px;
+    aspect-ratio: auto;
+    /* aspect-ratio disabled on mobile to prevent min-block-size transferring a min-inline-size (CSS Sizing 4 spec);
+       calc replicates 48:50 ratio — (grid width - 1 col gap) / 2 cols × 50/48 — floored at 180px */
+    block-size: max(180px, calc((100cqw - var(--s2a-spacing-xs)) / 2 * 50 / 48));
   }
 
   .quick-actions-grid.two-up,
@@ -137,7 +145,6 @@ img.quick-actions-media {
   }
 }
 
-
 @media (width >= 768px) {
   .quick-actions-tile {
     block-size: auto;
@@ -145,6 +152,10 @@ img.quick-actions-media {
 }
 
 @media (768px <= width < 1280px) {
+  .quick-actions {
+    padding-block-end: var(--s2a-layout-lg);
+  }
+
   .quick-actions-grid.six-up {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -154,5 +165,4 @@ img.quick-actions-media {
   .quick-actions-tile {
     border-radius: var(--s2a-border-radius-24);
   }
-
 }
