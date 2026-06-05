@@ -201,8 +201,8 @@
   }
 
   & + .modal-curtain.is-open {
-    background: rgb(0 0 0 / 60%);
-    backdrop-filter: blur(40px);
+    background: var(--s2a-color-transparent-black-64);
+    backdrop-filter: blur(var(--s2a-blur-32));
     will-change: backdrop-filter;
   }
 }
