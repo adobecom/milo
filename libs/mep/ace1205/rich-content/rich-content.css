@@ -364,6 +364,7 @@
       backdrop-filter: blur(var(--s2a-blur-md));
       overflow: hidden;
       transform-origin: center bottom;
+      width: 100%;
 
       video {
         display: block;
