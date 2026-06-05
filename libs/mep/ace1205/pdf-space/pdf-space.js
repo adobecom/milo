@@ -736,6 +736,7 @@ function mountMotion(el) {
     acrobatCtaTop: 0,
     deskPostRevealNeeded: 0,
     mobilePostRevealDistance: 0,
+    navOffset: 0,
     mobileAcrobatMockupRestTop: 0,
     textBlockWidth: 0,
     blockDocTop: 0,
@@ -985,8 +986,9 @@ function mountMotion(el) {
       ? ANIM_CONFIG.mobileArcAngle
       : Math.atan2(viewportHeight, viewportWidth);
     LAYOUT_CACHE.headlineH = titleEl?.offsetHeight || 80;
+    LAYOUT_CACHE.navOffset = Math.max(document.querySelector('header')?.querySelector('.feds-breadcrumbs')?.offsetHeight, 60);
     if (ANIM_STATE.frame.isMobile) {
-      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
+      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY + LAYOUT_CACHE.navOffset;
       const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
       titleEl.style.top = `${headlineRestY}px`;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
@@ -1004,7 +1006,7 @@ function mountMotion(el) {
       const ctaH = ctaEl.offsetHeight || ACROBAT_CTA_HEIGHT;
       const stackH = LAYOUT_CACHE.headlineH + ACROBAT_DESKTOP_GAP_ABOVE
         + aH + ACROBAT_DESKTOP_GAP_BELOW + ctaH;
-      const centeredTop = Math.max(48, (viewportHeight - stackH) / 2);
+      const centeredTop = Math.max(48, (viewportHeight - stackH) / 2) + LAYOUT_CACHE.navOffset;
       const peekWinTop = viewportHeight - ANIM_CONFIG.desktopPeekAmount * aH;
       const peekStackTop = peekWinTop - LAYOUT_CACHE.headlineH - ACROBAT_DESKTOP_GAP_ABOVE;
       const peekRange = ANIM_CONFIG.desktopPeekStartH - viewportHeight;
@@ -1217,7 +1219,7 @@ function mountMotion(el) {
       const mobileTopOverhang = (mobileScaleDelta / 2) * ACROBAT_MOBILE_MOCKUP_HEIGHT;
       const mobileOffscreen = viewportHeight + mobileTopOverhang + 30;
       const slideOffset = (1 - slottingEase) * mobileOffscreen;
-      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY;
+      const headlineRestY = viewportHeight * ANIM_CONFIG.mobileHeadlineY + LAYOUT_CACHE.navOffset;
       const chromeRestY = headlineRestY + LAYOUT_CACHE.headlineH + 24;
       LAYOUT_CACHE.mobileAcrobatMockupRestTop = chromeRestY;
       const ctaRestY = chromeRestY + ACROBAT_MOBILE_MOCKUP_HEIGHT + 24;
