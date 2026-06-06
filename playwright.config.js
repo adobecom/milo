@@ -23,7 +23,7 @@ const mepFeatures = [
   'features/personalization/**/*.test.js',
 ];
 
-// Milo tests (non-MAS)
+// Milo tests (non MAS & MEP)
 const miloIgnore = isCI
   ? [
     'features/mas/**',
