@@ -2,6 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 const { devices } = require('@playwright/test');
+const { getSkipTestFiles } = require('./nala/libs/skip-tests.js');
 
 const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Mobile Safari/537.36 NALA-Acom';
@@ -84,7 +85,10 @@ const config = {
   projects: [
     {
       name: 'milo-live-chromium',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('chromium'),
+      ],
       workers: 4,
       use: {
         ...devices['Desktop Chrome'],
@@ -95,7 +99,10 @@ const config = {
 
     {
       name: 'milo-live-firefox',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('firefox'),
+      ],
       workers: 5,
       use: {
         ...devices['Desktop Firefox'],
@@ -104,7 +111,10 @@ const config = {
     },
     {
       name: 'milo-live-webkit',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('webkit'),
+      ],
       workers: 5,
       use: {
         ...devices['Desktop Safari'],

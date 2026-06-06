@@ -7,17 +7,6 @@ let actionItem;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-const BLOCK_NAME = 'actionitem';
-
-test.skip(
-  ({ browserName }) => (process.env.NALA_BROWSER_SKIP || '')
-    .split(';')
-    .includes(`${BLOCK_NAME}:${browserName}`)
-    || (process.env.labels || '')
-      .includes(`skip-${BLOCK_NAME}-${browserName}`),
-  `Disabled via NALA_BROWSER_SKIP or PR label for ${BLOCK_NAME}`,
-);
-
 test.describe('Milo Action-Item block test suite', () => {
   test.beforeEach(async ({ page }) => {
     actionItem = new ActionItem(page);
