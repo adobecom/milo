@@ -483,7 +483,7 @@
 .section:has(+ .section.parallax-video-garage-door .rich-content.video),
 .section.parallax-video-garage-door:has(.rich-content.video),
 .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-  --rc-pull-offset: 180px;
+  --rc-pull-offset: 80px;
   --rc-sweep-offset: 200px;
   --rc-sweep-peek: var(--s2a-border-radius-lg);
   --rc-cta-counteract-max: 10vh;
@@ -497,7 +497,7 @@
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-    --rc-pull-offset: 200px;
+    --rc-pull-offset: 120px;
     --rc-sweep-offset: 200px;
   }
 }
@@ -506,7 +506,7 @@
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-    --rc-pull-offset: 100px;
+    --rc-pull-offset: 70px;
     --rc-sweep-offset: 280px;
   }
 }
