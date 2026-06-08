@@ -17,14 +17,14 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || format('Running on • {0} browser', matrix.browser) }}
+    name: ${{ matrix.project == 'mas' && 'Running MAS (all browsers)' || matrix.project == 'mep' && 'Running MEP (all browsers)' || format('Running MILO ({0} browser)', matrix.browser) }}
     runs-on: ubuntu-latest
     timeout-minutes: 18
     strategy:
       fail-fast: false
       matrix:
         node-version: [20.x]
-        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit, mas]
+        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit, mas, mep]
         include:
           - project: milo-live-chromium
             browser: chromium
@@ -33,7 +33,9 @@ jobs:
           - project: milo-live-webkit
             browser: webkit
           - project: mas
-            browser: MAS (All Browsers)
+            browser: MAS (All Browsers) 
+          - project: mep
+            browser: MEP (All Browsers)
             # shard: 1
 
     steps:
@@ -72,8 +74,8 @@ jobs:
       # Install only the browser needed for this matrix job (fast; uses the cache above)
       - name: Install Playwright (${{ matrix.browser }})
         run: |
-          if [[ "${{ matrix.project }}" == "mas" ]]; then
-            echo "Installing all browsers for MAS test run..."
+          if [[ "${{ matrix.project }}" == "mas"  || "${{ matrix.project }}" == "mep" ]]; then
+            echo "Installing all Playwright browsers for ${{ matrix.project }} test run..."
             npx playwright install --with-deps chromium firefox webkit
           else
             case "${{ matrix.browser }}" in
@@ -99,6 +101,7 @@ jobs:
           prBaseBranch: ${{ github.event.pull_request.base.ref }}
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           isFork: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+          NALA_BROWSER_SKIP: ${{ vars.NALA_BROWSER_SKIP }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
           EMAIL_COLLECTION_IMS_MAIL: ${{ secrets.EMAIL_COLLECTION_IMS_MAIL }}
