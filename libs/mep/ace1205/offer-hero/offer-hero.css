@@ -70,12 +70,12 @@
     text-align: center;
     color: var(--s2a-color-content-default);
     opacity: 0;
-    transition: opacity 250ms ease-out;
     pointer-events: none;
     z-index: 2;
 
     &.is-visible {
       opacity: 1;
+      transition: opacity 250ms ease-out;
     }
   }
 
