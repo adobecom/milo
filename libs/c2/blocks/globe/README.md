@@ -27,6 +27,12 @@ deliberate **verbatim-wrap**: the 3000-line prototype runtime was copied as-is
 and wrapped in a Milo block entry point, so behavior is 1:1 with the original.
 Visual verification in-browser is still **pending** (was not run this session).
 
+On top of the wrap, an **authoring layer** has been added (see *Authoring
+contract* below): `parseAuthoredContent(el)` turns authored card rows into the
+card model the runtime consumes; with no authored content it falls back to 45
+placeholder cards, so the prototype look is unchanged until real content lands.
+The old vestigial arc/globe image split has been flattened into one pool.
+
 | File | What it is |
 | --- | --- |
 | `globe.js` | The block. `export default init(el)` → loads THREE, builds DOM, runs the ported runtime (`createGlobeRuntime()`). **Has `/* eslint-disable */`** (see Gotchas). |
@@ -82,12 +88,58 @@ Priority order for the refactor phase (the user said: get it ported first, then
    `import * as THREE` / Milo `/deps/`.
 6. **Static reduced-motion fallback** (currently the section just collapses via
    `.globe--reduced`).
-7. **Authoring contract** — today copy (arc-copy text, pull-quote, card metadata)
-   is hardcoded in `globe.js`. Decide what authors control and parse it from the
-   block rows, mirroring pdf-space's `parseAuthoredContent`.
+7. **Authoring contract** — *done for real content*. Three-row structure (arc-copy,
+   fragment cards, pull-quote) parses and injects correctly. Fragment is fetched via
+   `.plain.html` to avoid Milo async race. Remaining: align `N_TOTAL`/grid to the
+   authored card count (today wraps to fill 45/24).
 
 See **Open questions** at the bottom of `PROGRESS.md` for the decisions blocking
 some of these.
+
+## Authoring contract
+
+The block expects **three direct child rows** in the authored document:
+
+| Row | Purpose | Content |
+| --- | --- | --- |
+| Row 0 | **Arc-copy** | heading → `.offer-arc-copy__title`; `<p>` → `.offer-arc-copy__body` |
+| Row 1 | **Cards** | a Milo fragment link (see below) |
+| Row 2 | **Pull-quote** | heading → quote text; first `<p>` → name; second `<p>` → role |
+
+### Fragment (cards row)
+
+Row 1 is a link to a DA fragment, **with `#_dnb` appended to the URL**
+(e.g. `/homepage/fragments/…/globe-cards#_dnb`). The `#_dnb` hash tells Milo to
+skip auto-resolution so the raw `<a href>` stays in the DOM — globe fetches the
+fragment itself via `.plain.html` and strips the hash before fetching. Without
+`#_dnb`, Milo would partially inject the first section into the DOM before `init()`
+runs, wasting a redundant fetch and creating a race condition.
+
+The fragment contains one section per card (sections separated by `---` in the
+document). Each section is a flat sequence of elements:
+
+| Element | Becomes | Notes |
+| --- | --- | --- |
+| `<p><em>…</em></p>` | **role** label | defaults to "Photographer" |
+| `<p><strong>…</strong></p>` | card **name** | |
+| plain `<p>` | **description** | shown in the modal |
+| `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = app name, inner li = role |
+| `<p><picture>…</picture></p>` | card **image** | required — sections without one are skipped |
+
+Badge app names resolve against `APP_CATALOG` (by name/abbr/id) for brand icon
+colors; unknown apps still render with a derived abbreviation.
+
+**No authored fragment → 45 placeholder cards** (bundled images + mock people in
+`buildPlaceholderCards`), preserving the prototype look.
+
+### Why the fragment is fetched directly
+
+Milo resolves fragment links asynchronously. By the time `init()` fires, only the
+first section has been injected into the DOM. `init()` therefore fetches the
+fragment's `.plain.html` directly (AEM Edge Delivery returns all sections as plain
+`<div>` elements, one per card) and parses from that. The fetch runs in parallel
+with `loadScript(THREE_SRC)` via `Promise.all`, so it adds no wall-clock cost.
+Fallback chain: fetched cards → partial DOM cards → `[]` → placeholder cards.
 
 ## Gotchas for future-you
 
@@ -98,8 +150,13 @@ some of these.
   `function createGlobeRuntime()` and its `return { init, destroy }` are ported
   prototype code. Cross-reference `hub-creative/scripts/offer-globe.js` (and its
   line-ref map in `PROGRESS.md`) before changing render/phase logic.
-- **DOM is built by JS, not authored.** `init(el)` injects `GLOBE_MARKUP`. The
-  runtime finds nodes by **global id** (`#offer-globe-canvas`, `#offer-pullquote`,
+- **Card content is authored; the chrome/DOM is JS-built.** `init(el)` first
+  calls `parseAuthoredContent(el)` (reads arc-copy, pull-quote, and the fragment
+  href), THEN `buildGlobeDom(el)` wipes the block and injects `GLOBE_MARKUP`
+  (canvas + overlays + modal). Arc-copy and pull-quote text are injected into the
+  built DOM immediately after. Cards come from a parallel `fetchFragmentCards`
+  fetch — see *Why the fragment is fetched directly* above. The runtime finds
+  built nodes by **global id** (`#offer-globe-canvas`, `#offer-pullquote`,
   `#card-modal*`, …) → **one globe per page** until step 3 above.
 - **`el` becomes the `850vh` scroll spacer** (`.globe.offer-pin-spacer`). The
   canvas is `position:fixed`; the block just supplies scroll distance.

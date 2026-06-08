@@ -17,13 +17,210 @@ import { loadScript } from '../../../utils/utils.js';
 const THREE_SRC = new URL('./three.min.js', import.meta.url).href;
 const ASSET_BASE = new URL('./assets/', import.meta.url).href;
 
+// ── Authoring ────────────────────────────────────────────────────────────────
+// Adobe app catalog used to render the modal badge chips (the id drives the
+// brand-colored icon class in globe.css, e.g. .card-modal__badge-icon--photoshop).
+// At module scope so both placeholder generation and authored-badge parsing share it.
+const APP_CATALOG = [
+  { id: 'photoshop', name: 'Photoshop', abbr: 'Ps' },
+  { id: 'lightroom', name: 'Lightroom', abbr: 'Lr' },
+  { id: 'illustrator', name: 'Illustrator', abbr: 'Ai' },
+  { id: 'premiere', name: 'Premiere Pro', abbr: 'Pr' },
+  { id: 'aftereffects', name: 'After Effects', abbr: 'Ae' },
+  { id: 'firefly', name: 'Firefly', abbr: 'Ff' },
+  { id: 'express', name: 'Express', abbr: 'Ex' },
+  { id: 'fresco', name: 'Fresco', abbr: 'Fr' },
+];
+
+// Resolve a badge's app from an authored token (matches id / name / abbr,
+// case-insensitive). Unknown apps still render, with a derived 2-letter abbr.
+function findApp(token) {
+  const t = (token || '').trim();
+  const key = t.toLowerCase();
+  const match = APP_CATALOG.find(
+    (a) => a.id === key || a.name.toLowerCase() === key || a.abbr.toLowerCase() === key,
+  );
+  if (match) return match;
+  return { id: 'photoshop', name: t || 'App', abbr: t.slice(0, 2) || 'Ap' };
+}
+
+// AUTHORING CONTRACT:
+// The block has three authored rows (direct child <div>s):
+//   Row 0 — arc-copy:   heading → .offer-arc-copy__title; <p> → .offer-arc-copy__body
+//   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
+//                       Each card in the fragment is a flat sequence of elements
+//                       (separated by <hr> for multiple cards):
+//                         <p><em>Role</em></p>
+//                         <p><strong>Name</strong></p>
+//                         <p>Description text</p>
+//                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
+//                         <p><picture>…</picture></p>
+//   Row 2 — pull-quote: heading → .offer-pullquote__quote;
+//                       first <p> → .offer-pullquote__name;
+//                       second <p> → .offer-pullquote__role
+// Returns { cards, arcCopy, pullQuote }. cards falls back to [] (factory uses placeholders).
+
+function parseArcCopy(row) {
+  const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
+  const paras = [...row.querySelectorAll('p')]
+    .filter((p) => !p.querySelector('picture,img'))
+    .map((p) => p.textContent.trim())
+    .filter(Boolean);
+  return {
+    title: heading ? heading.textContent.trim() : paras.shift() || '',
+    body: paras.join(' '),
+  };
+}
+
+function parsePullQuote(row) {
+  const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
+  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  return {
+    quote: quoteEl ? quoteEl.textContent.trim() : paras.shift() || '',
+    name: paras[0] || '',
+    role: paras[1] || '',
+  };
+}
+
+function parseFragmentCardSegment(nodes) {
+  let picture = null; let img = null;
+  let role = 'Photographer'; let name = ''; let description = '';
+  const badges = [];
+
+  for (const node of nodes) {
+    const tag = node.nodeName && node.nodeName.toUpperCase();
+    if (!tag) continue;
+
+    if (tag === 'P') {
+      const pic = node.querySelector('picture');
+      if (pic) { picture = pic; img = pic.querySelector('img'); continue; }
+      const i = node.querySelector('img');
+      if (i) { img = i; continue; }
+      const em = node.querySelector('em');
+      if (em) { role = em.textContent.trim(); continue; }
+      const strong = node.querySelector('strong');
+      if (strong) { name = strong.textContent.trim(); continue; }
+      const text = node.textContent.trim();
+      if (text && !description) description = text;
+    } else if (tag === 'UL') {
+      node.querySelectorAll(':scope > li').forEach((li) => {
+        const nestedLi = li.querySelector('ul > li');
+        if (nestedLi) {
+          const appText = [...li.childNodes]
+            .filter((n) => n.nodeType === Node.TEXT_NODE)
+            .map((n) => n.textContent.trim())
+            .join('').trim();
+          const roleText = nestedLi.textContent.trim();
+          if (appText) badges.push({ app: findApp(appText), role: roleText });
+        } else {
+          // Legacy pipe-separated format: "Photoshop | Compositing"
+          const parts = li.textContent.split('|').map((s) => s.trim()).filter(Boolean);
+          if (parts[0]) badges.push({ app: findApp(parts[0]), role: parts.slice(1).join(' ') });
+        }
+      });
+    }
+  }
+
+  if (!img) return null;
+  return {
+    img: img.currentSrc || img.getAttribute('src') || img.src,
+    picture,
+    name: name || 'Untitled',
+    role,
+    description,
+    badges,
+  };
+}
+
+function parseFragmentCards(row) {
+  const hasDirectContent = [...row.children].some((n) => n.nodeName === 'P' || n.nodeName === 'UL');
+
+  if (!hasDirectContent) {
+    // Children are section divs (each fragment section = one card). Recurse into each.
+    const divs = [...row.querySelectorAll(':scope > div')];
+    return divs.flatMap((div) => parseFragmentCards(div));
+  }
+
+  // Flat content — split by <hr> to handle multiple cards within a single section.
+  const segments = [];
+  let current = [];
+  [...row.childNodes].forEach((node) => {
+    if (node.nodeName === 'HR') {
+      if (current.length) { segments.push(current); current = []; }
+    } else if (node.nodeType !== Node.TEXT_NODE || node.textContent.trim()) {
+      current.push(node);
+    }
+  });
+  if (current.length) segments.push(current);
+  return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
+}
+
+// Fetch the fragment's full .plain.html and parse all card sections from it.
+// Called in parallel with loadScript(THREE_SRC) so there's no extra wall-clock cost.
+async function fetchFragmentCards(href) {
+  try {
+    const resp = await fetch(`${href}.plain.html`);
+    if (!resp.ok) return null;
+    const html = await resp.text();
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const cards = [...tmp.querySelectorAll(':scope > div')]
+      .flatMap((section) => parseFragmentCards(section))
+      .filter(Boolean);
+    return cards.length ? cards : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function parseAuthoredContent(el) {
+  const rows = [...el.querySelectorAll(':scope > div')];
+  if (!rows.length) return { cards: [], arcCopy: null, pullQuote: null, fragmentHref: null };
+
+  let cardRows = rows;
+  let arcCopy = null;
+  let pullQuote = null;
+
+  if (rows.length > 1 && !rows[0].querySelector('picture, img')) {
+    arcCopy = parseArcCopy(rows[0]);
+    cardRows = cardRows.slice(1);
+  }
+
+  if (cardRows.length > 1 && !cardRows[cardRows.length - 1].querySelector('picture, img')) {
+    pullQuote = parsePullQuote(cardRows[cardRows.length - 1]);
+    cardRows = cardRows.slice(0, -1);
+  }
+
+  // Extract the fragment href before buildGlobeDom() wipes the DOM.
+  // Canonical path: the link is authored with #_dnb (e.g. /fragments/…#_dnb) so
+  // Milo skips auto-resolution and the raw <a href> is still in the DOM here.
+  // Strip the hash before fetching. Fall back to data-path + image origin if
+  // Milo already replaced the link (e.g. on a page that predates the #_dnb convention).
+  const fragmentHref = (() => {
+    for (const row of cardRows) {
+      const a = row.querySelector('a[href]');
+      if (a) return a.href.replace(/#.*$/, '');
+      const pathEl = row.querySelector('[data-path]');
+      if (pathEl) {
+        const imgSrc = row.querySelector('img')?.src;
+        const origin = imgSrc ? new URL(imgSrc).origin : window.location.origin;
+        return `${origin}${pathEl.dataset.path}`;
+      }
+    }
+    return null;
+  })();
+
+  const cards = cardRows.flatMap((row) => parseFragmentCards(row)).filter(Boolean);
+  return { cards, arcCopy, pullQuote, fragmentHref };
+}
+
 // The globe runtime, ported verbatim from the hub-creative offer-globe.js
 // prototype. Originally an IIFE exposing window.offerGlobe; now a factory that
 // returns { init, destroy }. See PROGRESS.md for the porting notes:
 //   - gsap.ticker → requestAnimationFrame (startTicker/stopTicker below)
 //   - Lenis reads → window.scrollY
 //   - texture paths → ASSET_BASE
-function createGlobeRuntime() {
+function createGlobeRuntime(authoredCards) {
   if (typeof THREE === 'undefined') { return null; }
 
   // rAF driver replacing gsap.ticker.
@@ -33,39 +230,28 @@ function createGlobeRuntime() {
   function stopTicker() { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0; } }
 
   // ── Image lists ────────────────────────────────────────────────────────────
-  const ARC_IMGS = [
-    'arc-01', 'arc-02', 'arc-03', 'arc-04', 'arc-05', 'arc-06',
-    'arc-07', 'arc-08', 'arc-09', 'arc-10', 'arc-11', 'arc-12',
-    'arc-13', 'arc-14', 'arc-15', 'arc-16', 'arc-17', 'arc-18',
-    'arc-19', 'arc-20', 'arc-21', 'arc-22', 'arc-23',
-  ].map((n) => `${ASSET_BASE}offer/${n}.png`);
+  // Placeholder card images — used ONLY when the block has no authored content.
+  // 45 images: 23 from assets/offer/ + 22 from assets/globe/. The old arc/globe
+  // grouping was vestigial (the arc set was shared with the prototype's dropped
+  // tile variant); the runtime indexes one flat, uniform pool. Real authored
+  // content replaces this list entirely. See parseAuthoredContent / README.
+  const PLACEHOLDER_IMGS = [
+    'offer/arc-01', 'offer/arc-02', 'offer/arc-03', 'offer/arc-04', 'offer/arc-05',
+    'offer/arc-06', 'offer/arc-07', 'offer/arc-08', 'offer/arc-09', 'offer/arc-10',
+    'offer/arc-11', 'offer/arc-12', 'offer/arc-13', 'offer/arc-14', 'offer/arc-15',
+    'offer/arc-16', 'offer/arc-17', 'offer/arc-18', 'offer/arc-19', 'offer/arc-20',
+    'offer/arc-21', 'offer/arc-22', 'offer/arc-23',
+    'globe/01', 'globe/02', 'globe/03', 'globe/06', 'globe/12', 'globe/13',
+    'globe/14', 'globe/15', 'globe/16', 'globe/17', 'globe/28', 'globe/29',
+    'globe/48', 'globe/49', 'globe/58', 'globe/59', 'globe/60', 'globe/61',
+    'globe/62', 'globe/63', 'globe/64', 'globe/65',
+  ].map((p) => `${ASSET_BASE}${p}.png`);
 
-  // 22 supplemental images for the sphere (globe-only cards)
-  const GLOBE_IMGS = [
-    '01', '02', '03', '06', '12', '13', '14', '15', '16', '17',
-    '28', '29', '48', '49', '58', '59', '60', '61', '62', '63', '64', '65',
-  ].map((n) => `${ASSET_BASE}globe/${n}.png`);
-
-  // 45 total: 23 arc images + 22 globe images. Previously this list contained
-  // an intentional duplicate of arc-01 at index 23 (to pad to 24 arc cards),
-  // which showed up as a visible duplicate "Machine" card in the grid.
-  // Replaced by including the full GLOBE_IMGS array (22 instead of 21).
-  const ALL_IMGS = ARC_IMGS // indices 0–22  (23 arc images)
-    .concat(GLOBE_IMGS.slice(0, 22)); // indices 23–44 (22 globe images, no duplicates)
-
-  // ── Mock card metadata ───────────────────────────────────────────────────
-  // Used by the card detail modal. Deterministic per index so card 5 always
-  // shows the same photographer regardless of session.
-  const MODAL_APPS = [
-    { id: 'photoshop', name: 'Photoshop', abbr: 'Ps' },
-    { id: 'lightroom', name: 'Lightroom', abbr: 'Lr' },
-    { id: 'illustrator', name: 'Illustrator', abbr: 'Ai' },
-    { id: 'premiere', name: 'Premiere Pro', abbr: 'Pr' },
-    { id: 'aftereffects', name: 'After Effects', abbr: 'Ae' },
-    { id: 'firefly', name: 'Firefly', abbr: 'Ff' },
-    { id: 'express', name: 'Express', abbr: 'Ex' },
-    { id: 'fresco', name: 'Fresco', abbr: 'Fr' },
-  ];
+  // ── Placeholder card metadata ──────────────────────────────────────────────
+  // Feeds buildPlaceholderCards() when the block has no authored content.
+  // Deterministic per index so card 5 always shows the same person. The app
+  // catalog itself lives at module scope (APP_CATALOG) so authored-content
+  // parsing can resolve badge apps by name/abbr/id too.
   const MODAL_ROLES = {
     photoshop: ['Compositing', 'Retouching', 'Color grading'],
     lightroom: ['Color correction', 'Organization', 'Presets'],
@@ -90,26 +276,49 @@ function createGlobeRuntime() {
     'Thomas Struth', 'Edward Burtynsky', 'Gordon Parks', 'Gregory Crewdson',
     'Catherine Opie',
   ];
+  // Synthesize `count` placeholder cards from the bundled images + mock people.
+  // Card shape matches parseAuthoredContent (see module scope): the runtime and
+  // modal consume the same { img, picture, name, role, description, badges }.
+  function buildPlaceholderCards(count) {
+    const out = [];
+    for (let i = 0; i < count; i++) {
+      const name = MODAL_PHOTOGRAPHERS[i] || `Photographer ${i}`;
+      const app1 = APP_CATALOG[i % APP_CATALOG.length];
+      let app2 = APP_CATALOG[(i + 3) % APP_CATALOG.length];
+      if (app2.id === app1.id) app2 = APP_CATALOG[(i + 5) % APP_CATALOG.length];
+      const roles1 = MODAL_ROLES[app1.id];
+      const roles2 = MODAL_ROLES[app2.id];
+      const firstName = name.split(' ')[0];
+      out.push({
+        img: PLACEHOLDER_IMGS[i % PLACEHOLDER_IMGS.length],
+        picture: null,
+        name,
+        role: 'Photographer',
+        description: `${firstName} uses ${app1.name} and ${app2.name} to organize`
+          + ` and apply consistent edits across a shoot, then turn to ${app1.name}`
+          + ' for precise retouching and final refinements.',
+        badges: [
+          { app: app1, role: roles1[i % roles1.length] },
+          { app: app2, role: roles2[(i + 1) % roles2.length] },
+        ],
+      });
+    }
+    return out;
+  }
+
+  // The card content the runtime renders: authored cards if the block had any,
+  // otherwise PLACEHOLDER_COUNT generated cards (preserves the prototype look).
+  const PLACEHOLDER_COUNT = 45;
+  const CARD_CONTENT = (authoredCards && authoredCards.length)
+    ? authoredCards
+    : buildPlaceholderCards(PLACEHOLDER_COUNT);
+
+  // Per-card accessor. Wraps so any authored count fills the per-breakpoint
+  // N_TOTAL (45 desktop/tablet, 24 mobile) without breaking the grid math.
+  // (Aligning N_TOTAL/grid to the authored count is a later refinement.)
   function getCardMetadata(i) {
-    const name = MODAL_PHOTOGRAPHERS[i] || (`Photographer ${i}`);
-    const app1 = MODAL_APPS[i % MODAL_APPS.length];
-    let app2 = MODAL_APPS[(i + 3) % MODAL_APPS.length];
-    if (app2.id === app1.id) app2 = MODAL_APPS[(i + 5) % MODAL_APPS.length];
-    const roles1 = MODAL_ROLES[app1.id];
-    const roles2 = MODAL_ROLES[app2.id];
-    const role1 = roles1[i % roles1.length];
-    const role2 = roles2[(i + 1) % roles2.length];
-    const firstName = name.split(' ')[0];
-    return {
-      photographer: name,
-      description: `${firstName} uses ${app1.name} and ${app2.name
-      } to organize and apply consistent edits across a shoot, then turn to ${
-        app1.name} for precise retouching and final refinements.`,
-      badges: [
-        { app: app1, role: role1 },
-        { app: app2, role: role2 },
-      ],
-    };
+    const len = CARD_CONTENT.length;
+    return CARD_CONTENT[((i % len) + len) % len];
   }
 
   // ── Constants ──────────────────────────────────────────────────────────────
@@ -797,7 +1006,7 @@ function createGlobeRuntime() {
       img.onerror = function () {
         done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));
       };
-      img.src = ALL_IMGS[i]; // no crossOrigin — needed so img.onload fires
+      img.src = getCardMetadata(i).img; // no crossOrigin — needed so img.onload fires
     }
 
     for (let i = 0; i < N_TOTAL; i++) {
@@ -1878,8 +2087,10 @@ function createGlobeRuntime() {
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     const imgEl = targetEl.querySelector('.card-modal__image');
-    if (imgEl) { imgEl.src = ALL_IMGS[i]; imgEl.alt = `${meta.photographer} — photograph`; }
-    targetEl.querySelector('.card-modal__name').textContent = meta.photographer;
+    if (imgEl) { imgEl.src = meta.img; imgEl.alt = `${meta.name} — photograph`; }
+    const roleLabelEl = targetEl.querySelector('.card-modal__role-label');
+    if (roleLabelEl) roleLabelEl.textContent = meta.role || 'Photographer';
+    targetEl.querySelector('.card-modal__name').textContent = meta.name;
     targetEl.querySelector('.card-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.card-modal__counter');
     if (counterEl) counterEl.textContent = `${i + 1}/${N_TOTAL}`;
@@ -1928,10 +2139,10 @@ function createGlobeRuntime() {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'globe-gallery-a11y__btn';
-      btn.setAttribute('aria-label', `View photo by ${meta.photographer}, ${i + 1} of ${N_TOTAL}`);
+      btn.setAttribute('aria-label', `View photo by ${meta.name}, ${i + 1} of ${N_TOTAL}`);
       btn.dataset.cardIdx = String(i);
       btn.tabIndex = -1; // off until the sphere is interactive
-      btn.textContent = `${meta.photographer}, ${i + 1} of ${N_TOTAL}`;
+      btn.textContent = `${meta.name}, ${i + 1} of ${N_TOTAL}`;
 
       (function (idx, btnEl) {
         btnEl.addEventListener('focus', () => {
@@ -2930,6 +3141,7 @@ function createGlobeRuntime() {
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   let _resizeHandler = null;
+  let _layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
   let _bpMediaQueries = []; // matchMedia listeners for BP boundaries (DevTools toggle backup)
 
   // ── Dev badge ──────────────────────────────────────────────────────────────
@@ -3037,6 +3249,16 @@ function createGlobeRuntime() {
     _resizeHandler = doLayout;
     window.addEventListener('resize', _resizeHandler, { passive: true });
 
+    // Recompute spacer metrics whenever page height changes (images/blocks loading
+    // above the spacer shift its offsetTop; spacerHeight=0 at first paint makes
+    // progress=Infinity and skips straight to the zoom/pull-quote phase).
+    if (_layoutObs) _layoutObs.disconnect();
+    _layoutObs = new ResizeObserver(function () {
+      spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
+      spacerHeight = spacer ? (spacer.offsetHeight || window.innerHeight * 7) : window.innerHeight * 7;
+    });
+    _layoutObs.observe(document.body);
+
     // matchMedia listeners for the BP boundaries are a backup for the 'resize' event,
     // which Chrome doesn't always fire when DevTools device-emulation is toggled.
     // Each listener fires once when the viewport crosses its boundary in either direction.
@@ -3088,6 +3310,10 @@ function createGlobeRuntime() {
     if (_resizeHandler) {
       window.removeEventListener('resize', _resizeHandler);
       _resizeHandler = null;
+    }
+    if (_layoutObs) {
+      _layoutObs.disconnect();
+      _layoutObs = null;
     }
     if (_bpMediaQueries.length) {
       _bpMediaQueries.forEach((entry) => {
@@ -3217,17 +3443,43 @@ export default async function init(el) {
     return el;
   }
 
+  // Extract authored content BEFORE buildGlobeDom() wipes the block's children.
+  // fragmentHref is captured here so it survives the DOM wipe.
+  const { cards: domCards, arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
+
   buildGlobeDom(el);
 
-  try {
-    await loadScript(THREE_SRC);
-  } catch (e) {
-    // THREE failed to load — leave the section collapsed rather than broken.
+  // Inject authored text into the built DOM slots (fallback to GLOBE_MARKUP defaults if absent).
+  if (arcCopy) {
+    const titleEl = el.querySelector('.offer-arc-copy__title');
+    const bodyEl = el.querySelector('.offer-arc-copy__body');
+    if (titleEl && arcCopy.title) titleEl.textContent = arcCopy.title;
+    if (bodyEl && arcCopy.body) bodyEl.textContent = arcCopy.body;
+  }
+  if (pullQuote) {
+    const quoteEl = el.querySelector('.offer-pullquote__quote');
+    const nameEl = el.querySelector('.offer-pullquote__name');
+    const roleEl = el.querySelector('.offer-pullquote__role');
+    if (quoteEl && pullQuote.quote) quoteEl.textContent = pullQuote.quote;
+    if (nameEl && pullQuote.name) nameEl.textContent = pullQuote.name;
+    if (roleEl && pullQuote.role) roleEl.textContent = pullQuote.role;
+  }
+
+  // Fetch the full fragment and load THREE in parallel — no extra wall-clock cost.
+  const [threeOk, fetchedCards] = await Promise.all([
+    loadScript(THREE_SRC).then(() => true).catch(() => false),
+    fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null),
+  ]);
+
+  if (!threeOk) {
     el.classList.add('globe--reduced');
     return el;
   }
 
-  const runtime = createGlobeRuntime();
+  // Prefer fully-fetched cards; fall back to what was in the DOM at init() time;
+  // fall back again to [] so the runtime uses its built-in placeholder cards.
+  const cards = fetchedCards || domCards;
+  const runtime = createGlobeRuntime(cards);
   if (!runtime) { el.classList.add('globe--reduced'); return el; }
   runtime.init();
   el._globeRuntime = runtime;
