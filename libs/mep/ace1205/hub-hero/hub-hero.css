@@ -17,7 +17,7 @@
   --hub-hero-header-height: 375px;
   --max-image-size: 292px;
   --media-mobile-max-height: 280px;
-  --media-mobile-max-width: 100%;
+  --media-mobile-max-width: 500px;
   --min-image-size: 164px;
   --grid-img-width: 20vw;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -31,12 +31,13 @@
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
   --carousel-items-top: 35%;
+  --carousel-header-top: 20%;
   --carousel-item-media-height: 394px;
   --slides: 4;
   --start-gap: 6rem;
   --end-gap: .5rem;
 
-  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-min-width)) + ((var(--end-gap) * (var(--slides) - 1))));
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))));
   /* --hub-hero-carousel-container-width-initial: calc((var(--slides) * var(--grid-img-width)) + ((var(--start-gap) * (var(--slides) - 1)))); */
 
   --grid-col-one-offset: 0px;
@@ -67,6 +68,10 @@
   animation: hubHeroHeaderFade linear both;
   animation-timeline: --hub-hero;
   animation-range: contain 0% contain 15%;
+}
+
+.hub-hero-header .icon-button {
+  rotate: 90deg;
 }
 
 .hub-hero-header div[class^="body"] {
@@ -337,7 +342,6 @@
     --hub-hero-height: 4220px;
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
-    --carousel-item-media-height: 300px;
     --grid-gap-animation-range: 15% 100%;
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
@@ -346,7 +350,7 @@
 
   .hub-hero-carousel-header {
     position: sticky;
-    top: 22%;
+    top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
     will-change: auto;
@@ -451,7 +455,7 @@
     --offset-scale: .85;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
-    --carousel-items-top: 40%;
+    --carousel-items-top: 38%;
     --slide-one-header-footer-reveal: 36% 40%;
     --slide-header-h: 64px;
     --slide-footer-h: 96px;
@@ -822,7 +826,7 @@
 /** desktop only */
 @media (1280px <=width) {
   .hub-hero {
-    --hub-hero-carousel-item-max-width: 20vw;
+    --hub-hero-carousel-item-max-width: var(var(--grid-img-width));
     --hub-hero-top-spacing: 237px;
     --grid-col-two-offset: 158px;
     --grid-col-three-offset: 252px;
@@ -1422,7 +1426,7 @@
   }
 
   100% {
-    max-width: var(--max-image-size);
+    max-width: var(--hub-hero-carousel-item-max-width);
   }
 }
 

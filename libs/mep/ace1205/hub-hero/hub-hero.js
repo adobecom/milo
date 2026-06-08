@@ -327,9 +327,9 @@ const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, carouse
       const heroHeaderH = heroHeader.offsetHeight;
       const gridH = grid.offsetHeight;
       const carouselH = elasticCarousel.offsetHeight;
-      const bottomOffset = 80;
-      const index = 1140;
-      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + index + carouselImages.length}px`);
+      const bottomOffset = 30;
+      const mediaH = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-item-media-height')) || 394;
+      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + mediaH * carouselImages.length}px`);
     }
     setCarouselSlideOffsets(grid, elasticCarousel);
   });
