@@ -1024,6 +1024,11 @@
   #brand-concierge-modal.dialog-modal {
     max-width: 960px;
   }
+
+  body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
+    max-width: calc(100% - 48px);
+    width: calc(100% - 48px);
+  }
 }
 
 /* desktop up */
@@ -1065,10 +1070,5 @@
 
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
-  }
-
-  body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
-    max-width: calc(100% - 48px);
-    width: calc(100% - 48px);
   }
 }
