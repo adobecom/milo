@@ -23,9 +23,23 @@ const STATUS_EL = BODY.querySelector('.status');
 const SIGNEDIN_EL = BODY.querySelector('.status-signed-in');
 const SIGNEDOUT_EL = BODY.querySelector('.status-signed-out');
 
+// Stores caasProps payloads from the most recent dry run, keyed by entity ID
+const dryRunPayloads = new Map();
+
+STATUS_EL.addEventListener('click', (e) => {
+  const link = e.target.closest('.dry-run-payload');
+  if (!link) return;
+  e.preventDefault();
+  const entityId = link.dataset.entityid;
+  const payload = dryRunPayloads.get(entityId);
+  if (!payload) return;
+  const json = JSON.stringify(payload, null, 2);
+  showAlert(`<h3>Dry Run Payload</h3><pre style="white-space:pre-wrap;font-size:13px;max-height:60vh;overflow-y:auto">${json}</pre>`);
+});
+
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview', 'languageFirst'];
+const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -39,6 +53,7 @@ const DEFAULT_VALUES = {
 };
 const DEFAULT_VALUES_CB = {
   draftOnly: false,
+  dryRun: false,
   usePreview: false,
   useHtml: false,
   languageFirst: false,
@@ -118,7 +133,7 @@ const resetResultsTables = () => {
   errorTable.style.display = 'none';
 };
 
-const showSuccessTable = (successArr) => {
+const showSuccessTable = (successArr, dryRun = false) => {
   showResultsOptions();
   const env = getConfig().caasEnv === 'prod' ? '' : `-${getConfig().caasEnv}`;
   const chimeraEndpoint = `https://14257-chimera${env}.adobeioruntime.net/api/v1/web/chimera-0.0.1/collection?debug=1&featuredCards=`;
@@ -127,12 +142,21 @@ const showSuccessTable = (successArr) => {
   successTable.style.display = 'block';
   let index = 0;
   /* eslint-disable no-plusplus */
-  successArr.forEach(([pageUrl, response]) => {
+  successArr.forEach(([pageUrl, response, langFirst, langValue]) => {
+    const statusLabel = dryRun ? '<td class="dry-run">Dry Run</td>' : '<td class="ok">OK</td>';
+    const langClass = dryRun ? 'dry-run' : '';
+    const langFirstCell = `<td class="${langClass}">${langFirst ? 'true' : 'false'}</td>`;
+    const langValueCell = `<td class="${langClass}">${langValue || ''}</td>`;
+    const entityCell = dryRun
+      ? `<td class="entityid"><a href="#" class="dry-run-payload" data-entityid="${response}" title="View payload that would be sent to CaaS">${response}</a></td>`
+      : `<td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>`;
     tableBody.innerHTML += `<tr>
       <td>${++index}</td>
-      <td class="ok">OK</td>
+      ${statusLabel}
       <td><a href="${pageUrl}" target="_blank" title="View page">${pageUrl}</a></td>
-      <td class="entityid"><a target="_blank" href="${chimeraEndpoint}${response}" title="View Card JSON">${response}</a></td>
+      ${langFirstCell}
+      ${langValueCell}
+      ${entityCell}
     </tr>`;
   });
   /* eslint-enable no-plusplus */
@@ -164,11 +188,13 @@ const processData = async (data, accessToken) => {
   let index = 0;
   let keepGoing = true;
   const now = new Date();
+  dryRunPayloads.clear();
 
   const statusModal = showAlert('', { btnText: 'Cancel', onClose: () => { keepGoing = false; } });
   const {
     caasEnv,
     draftOnly,
+    dryRun,
     host,
     owner,
     repo,
@@ -252,6 +278,14 @@ const processData = async (data, accessToken) => {
         caasProps.gbExperienceID = grayboxExperienceId;
       }
 
+      const langValue = `${caasMetadata.lang}_${caasMetadata.country}`;
+
+      if (dryRun) {
+        dryRunPayloads.set(caasMetadata.entityid, caasProps);
+        successArr.push([pageUrl, caasMetadata.entityid, languageFirst, langValue]);
+        continue;
+      }
+
       const response = await postDataToCaaS({
         accessToken,
         caasEnv: caasEnv?.toLowerCase(),
@@ -260,7 +294,7 @@ const processData = async (data, accessToken) => {
       });
 
       if (response.success) {
-        successArr.push([pageUrl, caasMetadata.entityid]);
+        successArr.push([pageUrl, caasMetadata.entityid, languageFirst, langValue]);
       } else {
         errorArr.push([pageUrl, response]);
       }
@@ -276,13 +310,17 @@ const processData = async (data, accessToken) => {
 
   resetResultsTables();
   if (successArr.length) {
-    showSuccessTable(successArr);
+    showSuccessTable(successArr, dryRun);
   }
   if (errorArr.length) {
     showErrorTable(errorArr);
   }
 
-  showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
+  if (dryRun) {
+    showAlert(`Dry run complete. ${successArr.length} pages validated. ${errorArr.length} pages failed validation.`);
+  } else {
+    showAlert(`Successfully published ${successArr.length} pages. \n\n Failed to publish ${errorArr.length} pages.`);
+  }
 };
 
 const bulkPublish = async () => {
@@ -328,7 +366,7 @@ const checkCaasEnv = () => {
   // eslint-disable-next-line no-undef
   if (!caasEnv.value) caasEnv.value = 'prod';
   // eslint-disable-next-line no-undef
-  if (caasEnv.value === 'prod' && !draftOnly.checked) {
+  if (caasEnv.value === 'prod' && !draftOnly.checked && !dryRun.checked) {
     publishWarning.style.height = '30px';
   } else {
     publishWarning.style.height = '0';
@@ -357,6 +395,7 @@ const resetAdvancedOptions = () => {
   caasEnv.value = 'prod';
   contentType.value = '';
   draftOnly.checked = false;
+  dryRun.checked = false;
   useHtml.checked = false;
   usePreview.checked = false;
   languageFirst.checked = false;
@@ -428,7 +467,7 @@ clearResultsButton.addEventListener('click', () => {
 
 const exportResultsToCSV = () => {
   const table = document.querySelector('.success-table tbody');
-  let csvContent = 'STATUS,URL,RESPONSE\n';
+  let csvContent = 'STATUS,URL,LANG_FIRST,LANG_VALUE,ENTITY_ID\n';
 
   for (const row of table.rows) {
     const rowData = [];
@@ -483,6 +522,11 @@ caasEnv.addEventListener('change', () => {
 
 // eslint-disable-next-line no-undef
 draftOnly.addEventListener('change', () => {
+  checkCaasEnv();
+});
+
+// eslint-disable-next-line no-undef
+dryRun.addEventListener('change', () => {
   checkCaasEnv();
 });
 
@@ -547,6 +591,12 @@ helpButtons.forEach((btn) => {
       case 'floodgate':
         showAlert(`<p><b>FloodGate</b></p>
           <p>Use this option to select the <b>FloodGate</b> color for the content.</p>`);
+        break;
+
+      case 'dry-run':
+        showAlert(`<p><b>Dry Run</b></p>
+          <p>When this option is checked, the tool will validate all URLs through the full metadata extraction pipeline but will <b>not</b> publish anything to CaaS.</p>
+          <p>Use this to check which pages are ready to publish before committing to a real publish run.</p>`);
         break;
 
       case 'publish-to-draft':
@@ -634,6 +684,7 @@ const init = async () => {
       urls: document.getElementById('urls').value,
       publishToFloodgate: document.getElementById('publishToFloodgate').value,
       draftOnly: document.getElementById('draftOnly').checked,
+      dryRun: document.getElementById('dryRun').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
       languageFirst: document.getElementById('languageFirst').checked,

@@ -753,6 +753,15 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-
   content: none;
 }
 
+/* temporarily suppress the outline and pill so they don't render as a broken badge in stage/prod */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url]) {
+  outline: none;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url])::before {
+  content: none;
+}
+
 /* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
 body[data-mep-caas-highlight='true'] [data-caas-block] {
   outline: 2px dashed #007bff;

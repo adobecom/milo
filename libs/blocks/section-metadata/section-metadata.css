@@ -198,7 +198,6 @@
   padding-right: var(--grid-margins-width);
   display: grid;
   gap: var(--spacing-m);
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .section[class*='grid-width-'] > .content,

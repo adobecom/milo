@@ -7,13 +7,10 @@ let USER_ACTION = false;
 const SLIDE_ANALYTICS = [];
 
 const getViewport = (el) => el.closest('.rm-viewport')?.dataset.viewport;
-const getIndex = (el) => [...el.parentNode.children].indexOf(el);
-
-const fireAnalytic = (card) => {
+const fireAnalytic = (card, index) => {
   const section = card.parentNode.closest('.section');
 
   const fireSendAnalytics = () => {
-    const index = getIndex(card);
     const viewport = getViewport(card);
     const { label, seen, visible } = SLIDE_ANALYTICS[viewport][index] || {};
 
@@ -39,16 +36,15 @@ const fireAnalytic = (card) => {
 };
 
 const setSlideObserver = (slides) => {
-  slides.forEach((slide) => {
+  slides.forEach((slide, index) => {
     const titleEl = slide.querySelector('.rm-title');
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const viewport = getViewport(entry.target);
-        const index = getIndex(slide);
         SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
         if (entry.isIntersecting && slide.classList.contains('is-active')) {
           const card = slide.closest('.rm-viewport').querySelector('.rm-card.is-active');
-          fireAnalytic(card);
+          fireAnalytic(card, index);
         }
       });
     }, { threshold: 1.0 });
@@ -110,7 +106,8 @@ const groupByViewport = (el) => {
   let current = null;
   [...el.children].forEach((row) => {
     const firstCol = row.querySelector(':scope > div');
-    const breakpoint = BREAKPOINTS.find((b) => firstCol?.textContent.trim().toLowerCase() === b);
+    const text = firstCol?.textContent.trim().toLowerCase();
+    const breakpoint = BREAKPOINTS.find((b) => text === b || text === `${b}-viewport`);
     if (breakpoint) {
       current = breakpoint;
       viewports[current] = [];
