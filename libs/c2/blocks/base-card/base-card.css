@@ -48,7 +48,7 @@
   }
 
   .foreground {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
+    padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
 
     :is(h1, h2, h3, h4, h5, h6) {
       margin-bottom: var(--s2a-spacing-2xs);
