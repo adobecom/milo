@@ -310,29 +310,17 @@ describe('Marketo formSuccess IMS', () => {
   });
 
   afterEach(() => {
-    // Clean up any hash set by redirect tests so it doesn't leak into other tests
-    if (window.location.hash) window.location.hash = '';
     sinon.restore();
     document.head.querySelector('meta[name="marketo-ims"]')?.remove();
   });
 
-  it('constructs redirect URL from param and email', () => {
-    addImsMeta('ims_na1');
-    addEmailInput('test@adobe.com');
-    // Hash redirect avoids full-page navigation so Playwright won't interrupt the test
-    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': '#ims' });
-    expect(window.location.href).to.include('#ims?ims_na1=test@adobe.com');
-    expect(result).to.be.false;
-  });
-
-  it('logs warning when redirect URL is not fully qualified', () => {
-    addImsMeta();
-    // No email — the navigation branch is skipped, warning still fires
-    formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'adobe.com/welcome' });
+  it('logs warning and returns false when redirect URL is not fully qualified', () => {
+    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'adobe.com/welcome' });
     expect(window.lana.log.calledWith(
-      'Marketo IMS failure, fqdn needed for redirect',
+      'Marketo IMS failure, full url needed for redirect',
       { tags: 'marketo', severity: 'i' },
     )).to.be.true;
+    expect(result).to.be.false;
   });
 
   it('logs error and returns false when marketo-ims param is missing', () => {

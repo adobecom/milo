@@ -184,16 +184,17 @@ export const formSuccess = (formEl, formData) => {
   if (formData?.[SUCCESS_TYPE] === 'ims') {
     const redirect = formData?.[SUCCESS_CONTENT];
 
-    if (!redirect.includes('https://')) {
+    if (!redirect?.startsWith('https://')) {
       window?.lana.log('Marketo IMS failure, full url needed for redirect', { tags: 'marketo', severity: 'i' });
+      return false;
     }
 
     const emailInput = formEl.querySelector('input[name="Email"]');
     const email = emailInput?.value;
     const param = getMetadata('marketo-ims');
 
-    if (param && email && redirect) {
-      window.location.href = `${redirect}?${param}=${email}`;
+    if (param && email) {
+      window.location.href = `${redirect}?${param}=${email.replace(/[^\w.%+@-]/g, '')}`;
     } else {
       window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
     }
