@@ -428,6 +428,8 @@ header.global-navigation {
 .feds-breadcrumbs a {
   display: block;
   color: var(--feds-color-link-breadcrumbs);
+  padding: 0 4px;
+  outline-offset: -2px;
 }
 
 .feds-breadcrumbs [aria-current] {
@@ -435,7 +437,11 @@ header.global-navigation {
 }
 
 .feds-breadcrumbs li span[aria-hidden="true"] {
-  padding: 0 12px;
+  padding: 0 8px;
+}
+
+.feds-breadcrumbs li:last-child > span {
+  padding-right: 12px;
 }
 
 .feds-utilities {
