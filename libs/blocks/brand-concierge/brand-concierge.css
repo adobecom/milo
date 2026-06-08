@@ -693,6 +693,10 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
   color: #000;
 }
 
+.brand-concierge.floating-input.light .bc-input-tooltip {
+  color: #fff;
+}
+
 .brand-concierge.floating-input .bc-input-field::before {
   backdrop-filter: none;
   background:
