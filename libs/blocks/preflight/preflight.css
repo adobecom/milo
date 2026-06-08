@@ -13,11 +13,32 @@
   display: grid;
   grid-template-rows: auto 1fr;
   position: relative;
+  z-index: 0;
+}
+
+.preflight > .bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.preflight > .bg-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.preflight > .preflight-heading,
+.preflight > .preflight-content {
+  z-index: 1;
 }
 
 .dialog-modal#preflight {
   width: 1200px;
+  max-width: calc(84vw - 40px);
   height: 680px;
+  max-height: calc(100vh - 40px);
+  background: none;
   color: #FFF;
   overflow: hidden;
 }
@@ -787,11 +808,20 @@ picture:has(.asset-meta),
   display: block;
 }
 
-.asset-meta.no-picture-tag {
+*:has(> .asset-meta.no-picture-tag) {
   position: relative;
-  top: unset;
-  left: unset;
-  right: unset;
+}
+
+.asset-meta.no-picture-tag {
+  position: absolute;
+  top: 30px;
+  left: 0px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+}
+
+.asset-meta.no-picture-tag .asset-meta-entry {
+  white-space: nowrap;
 }
 
 picture:hover .asset-meta,
@@ -852,6 +882,11 @@ img:hover ~ .asset-meta,
 
 .dialog-modal#preflight table td {
   padding: 2px 10px;
+}
+
+.preflight h3 {
+  margin: 16px 0;
+  font-family: var(--body-font-family);
 }
 
 .dialog-modal#preflight table td h3 {
@@ -1314,4 +1349,15 @@ img:hover ~ .asset-meta,
   line-height: 2.5;
 }
 
+.dialog-modal#preflight button.dialog-close svg {
+  display: block;
+}
 
+.dialog-modal#preflight button.dialog-close::before,
+.dialog-modal#preflight button.dialog-close::after {
+  display: none;
+}
+
+.dialog-modal#preflight .dialog-close line {
+  stroke: var(--color-white, #fff);
+}
