@@ -670,7 +670,7 @@ class Footer {
   };
 
   decorateFooter = () => {
-    this.elements.footer = toFragment`<div class="feds-footer-wrapper container wide">
+    this.elements.footer = toFragment`<div class="feds-footer-wrapper container">
     ${this.elements.footerMenu}
     ${this.elements.featuredProducts}
     <div class="feds-footer-options caption">
@@ -679,7 +679,7 @@ class Footer {
         ${this.elements.legal}
         ${this.decorateLogo()}
       </div>
-      ${this.elements.social}   
+      ${this.elements.social}
       </div>
     </div>`;
     const footerLogo = toFragment`<div class="feds-footer-logo">

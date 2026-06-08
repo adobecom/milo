@@ -14,7 +14,7 @@
 @property --grid-max-width {
   syntax: '<length>';
   inherits: true;
-  initial-value: 1440px;
+  initial-value: 1920px;
 }
 
 :root {
@@ -407,11 +407,11 @@
 
   /* Grid sizes */
   --grid-columns: 6;
-  --grid-margin-width-base: 24px;
+  --grid-margin-width-base: var(--s2a-spacing-24);
+  --grid-margin-width-fixed: var(--s2a-spacing-24);
   --grid-margin-width: var(--grid-margin-width-base);
   --grid-margin-width-target: var(--grid-margin-width-base);
-  --grid-max-width-default: 1440px;
-  --grid-max-width-wide: 1920px;
+  --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
 
   /* Regional font variations */
@@ -605,7 +605,7 @@ h1, h2, h3, h4, h5, h6, [class*="title-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {
@@ -726,14 +726,14 @@ p {
   max-width: none;
   padding-inline: var(--grid-padding);
 
-  &.wide {
-    --grid-max-width: var(--grid-max-width-wide);
-    --grid-max-width-target: var(--grid-max-width-wide);
-  }
-
   &.fluid {
     --grid-max-width: var(--grid-max-width-fluid);
     --grid-margin-width: 0px; /* Keep unit for calc */
+  }
+
+  &.fixed {
+    --grid-margin-width: var(--grid-margin-width-fixed);
+    --grid-margin-width-target: var(--grid-margin-width-fixed);
   }
 
   .container {
@@ -1138,7 +1138,7 @@ p {
   }
 
   @keyframes garage-door-line-height {
-    from { line-height: 0.6; }
+    from { line-height: 60%; }
   }
 
   /* Section 1 to section 2 parallax declarations */
@@ -1187,7 +1187,7 @@ p {
   }
 
   @keyframes text-reveal-up {
-    from { line-height: 3; }
+    from { line-height: 300%; }
   }
 }
 

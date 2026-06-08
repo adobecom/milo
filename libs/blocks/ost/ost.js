@@ -160,10 +160,12 @@ export async function loadOstEnv() {
     }
     window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
   }
+  const countryParam = searchParameters.get('country');
   const attributes = { 'allow-override': 'true' };
   if (masDefaultsEnabled) {
     attributes['data-mas-ff-defaults'] = 'on';
   }
+  if (countryParam) attributes.country = countryParam.toUpperCase();
   await initService(true, attributes);
   // Load commerce.js based on masLibs parameter
   masCommerceService = await loadMasComponent(COMMERCE_LIBRARY);
@@ -239,6 +241,7 @@ export async function loadOstEnv() {
   const repo = searchParameters.get('repo');
 
   let { country, language } = getMiloLocaleSettings();
+  if (countryParam) country = countryParam;
   const { locales } = getConfig();
   const log = Log.module('ost');
   const metadata = {};

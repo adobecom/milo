@@ -64,7 +64,8 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
-      ${elem.textContent.trim()}
+      <span class="feds-menu-headline-text">${elem.textContent.trim()}</span>
+      <span class="feds-menu-headline-caret" aria-hidden="true"></span>
     </div>`;
 
   const headlineClickHandler = (e) => {

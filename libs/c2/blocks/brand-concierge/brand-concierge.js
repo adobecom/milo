@@ -1,6 +1,7 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
+import bcAnalytics from './bc-analytics.js';
 
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
 const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,6 +33,100 @@ const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
+
+function floatingElement(targetEl, el, focusableEl = null) {
+  const getTargetHeight = (target) => {
+    const { marginBottom } = window.getComputedStyle(target);
+    return target.scrollHeight + (parseFloat(marginBottom) * 2);
+  };
+
+  const hideFloating = () => {
+    if (focusableEl) {
+      focusableEl.setAttribute('aria-hidden', 'true');
+      focusableEl.setAttribute('tabindex', '-1');
+      focusableEl.blur();
+    }
+    targetEl.classList.add('floating-hidden');
+    targetEl.classList.remove('floating-show');
+  };
+
+  const showFloating = () => {
+    if (focusableEl) {
+      focusableEl.removeAttribute('aria-hidden');
+      focusableEl.removeAttribute('tabindex');
+    }
+    targetEl.classList.remove('floating-hidden');
+    targetEl.classList.add('floating-show');
+  };
+
+  const mainElement = document.querySelector('main');
+  const mainTop = mainElement.offsetTop;
+  const hasDelay = variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay;
+  const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
+  let mainHeight = mainElement.scrollHeight;
+  let targetHeight = getTargetHeight(targetEl);
+  let elHeight = el.scrollHeight;
+
+  const floatingSpacer = createTag('div', { class: 'bc-spacer' });
+  floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
+  mainElement.append(floatingSpacer);
+
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = Math.floor(entry.borderBoxSize?.[0]?.blockSize);
+      switch (entry.target) {
+        case el: elHeight = size ?? el.scrollHeight; break;
+        case mainElement: mainHeight = size ?? mainElement.scrollHeight; break;
+        case targetEl: targetHeight = getTargetHeight(targetEl); break;
+        default: break;
+      }
+    }
+  });
+  ro.observe(el);
+  ro.observe(mainElement);
+  ro.observe(targetEl);
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloating();
+  }
+
+  const handleScroll = (target) => {
+    // only values that need to be calculated on scroll are here, to optimize performance
+    const threshold = window.scrollY + window.innerHeight - mainTop;
+    const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+
+    if (threshold > mainHeight) {
+      target.style.bottom = `${threshold - mainHeight}px`;
+      if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
+        hideFloating();
+      } else {
+        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+      }
+    } else {
+      showFloating();
+      target.style.bottom = '0';
+    }
+    if (hasDelay) {
+      if (window.scrollY > topDelay && threshold <= mainHeight) {
+        showFloating();
+      }
+      if (window.scrollY < topDelay
+        || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
+        hideFloating();
+      }
+    }
+  };
+
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(targetEl);
+      scrollPending = false;
+    });
+  }, { passive: true });
+}
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -343,6 +438,9 @@ async function openChatModal(initialMessage, el) {
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
       onBeforeEventSend,
+      onEvent: (event) => {
+        bcAnalytics(event);
+      },
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
@@ -520,62 +618,13 @@ function decorateFloatingButton(el) {
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  const mainElement = document.querySelector('main');
-
-  const hideFloatingButton = () => {
-    floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tabindex', '-1');
-    floatingContainer.blur();
-    floatingButton.classList.add('floating-hidden');
-    floatingButton.classList.remove('floating-show');
-  };
-
-  const showFloatingButton = () => {
-    floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tabindex');
-    floatingButton.classList.remove('floating-hidden');
-    floatingButton.classList.add('floating-show');
-  };
-
-  if (variants.isHero || variants.floatingDelay) {
-    hideFloatingButton();
-  }
-
-  const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const threshold = window.scrollY + window.innerHeight - mainElement.offsetTop;
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
-
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      if (variants.isFloatingAnchorHide) {
-        hideFloatingButton();
-      } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
-      }
-    } else {
-      showFloatingButton();
-      target.style.bottom = '0';
-    }
-    if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        showFloatingButton();
-      }
-      if (window.scrollY < scrollDelay) {
-        hideFloatingButton();
-      }
-    }
-  };
-
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  floatingElement(floatingButton, el, floatingContainer);
 }
 
 function handleConsent(el) {
@@ -626,6 +675,10 @@ export default async function init(el) {
     if (classItem.includes('floating-delay')) {
       variants.floatingDelay = true;
       variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+    if (classItem.includes('floating-anchor-delay')) {
+      variants.floatingAnchorDelay = true;
+      variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
     }
   });
 

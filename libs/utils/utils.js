@@ -1291,7 +1291,11 @@ function getBlockData(block) {
   const isC2Block = C2_BLOCKS.includes(name);
   const isAutoBlock = AUTO_BLOCKS.some((autoBlock) => autoBlock[name]);
 
-  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock) return { name, isInvalid: true };
+  const PAGE_AGNOSTIC_BLOCKS = ['preflight'];
+  const isPageAgnostic = PAGE_AGNOSTIC_BLOCKS.includes(name);
+  if (isC2Page && isC1Block && !isC2Block && !isAutoBlock && !isPageAgnostic) {
+    return { name, isInvalid: true };
+  }
 
   let base = codeRoot;
   if (externalLibs) {
@@ -1313,7 +1317,7 @@ function getBlockData(block) {
     }
   }
 
-  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock)) base = miloLibs;
+  if (miloLibs && isC1Block && (!isC2Page || isAutoBlock || isPageAgnostic)) base = miloLibs;
   if (isC2Page && isC2Block) base = `${miloLibs ?? base}/c2`;
 
   let path = `${base}/blocks/${name}`;
@@ -1432,6 +1436,25 @@ export function decorateImageLinks(el) {
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
+  });
+}
+
+export function decoratePictures(area) {
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+    if (Number(image.getAttribute('width')) < 2000) return;
+    const path = image.src.split('?')[0];
+    const largeImageSource = createTag('source', {
+      type: 'image/webp',
+      srcset: `${path}?width=3000&format=webply`,
+      media: '(min-width: 1920px)',
+    });
+
+    picture.prepend(largeImageSource);
+    picture.classList.add('large-image-decorated');
   });
 }
 
@@ -1880,6 +1903,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');

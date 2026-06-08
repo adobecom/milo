@@ -13,7 +13,11 @@ const DELETE_BATCH = 10;
 
 export async function findFragments(cmp, org, repo, operation) {
   const signal = cmp._abortController?.signal;
-  const includeChronoBoxFragments = !!cmp._floodgateConfig?.chronoBoxFragmentsEnabled;
+  const config = {
+    accessMode: cmp._accessMode,
+    chronoBoxFragmentsEnabled: cmp._floodgateConfig?.chronoBoxFragmentsEnabled,
+  };
+
   if (operation === 'copy') {
     const htmlPaths = cmp._filesToProcess
       .filter((p) => !p.endsWith('/') && !p.includes('.'));
@@ -23,7 +27,7 @@ export async function findFragments(cmp, org, repo, operation) {
       org,
       repo,
       signal,
-      includeChronoBoxFragments,
+      config,
     });
     cmp._fragmentsAssets = new Set(result);
   } else {
@@ -35,7 +39,7 @@ export async function findFragments(cmp, org, repo, operation) {
       org,
       repo: fgRepo,
       signal,
-      includeChronoBoxFragments,
+      config,
     });
     cmp._fragmentsAssets = new Set(
       [...fgFragments].map((p) => p.replace(`-fg-${cmp._selectedColor}`, '')),

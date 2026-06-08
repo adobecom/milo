@@ -1,6 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
+import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
   getOptions,
@@ -145,6 +146,11 @@ export async function createCard(el, options) {
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
+  // For the "Edit Card" mep preview badge.
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(merchCard, el.href);
+    merchCard.dataset.masBlock = 'card';
+  }
   const parent = el.parentElement;
   if (parent && parent.tagName === 'P' && parent.children.length === 1) {
     parent.replaceWith(merchCard);
@@ -155,6 +161,12 @@ export async function createCard(el, options) {
   await postProcessAutoblock(merchCard, true);
 }
 
+function copyMasFieldIdToParent(masField, name) {
+  if (masField.getAttribute(name)) {
+    masField.parentElement.setAttribute(`data-mas-field-${name}`, masField.getAttribute(name));
+  }
+}
+
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
   const attrs = { fragment: options.fragment };
@@ -162,6 +174,10 @@ async function createInline(el, options) {
   seenFragments.add(options.fragment);
   const aemFragment = createTag('aem-fragment', attrs);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(masField, el.href);
+    masField.dataset.masBlock = 'inline';
+  }
   el.replaceWith(masField);
   await checkReady(masField);
   normalizeBlockFieldWrappers(masField);
@@ -217,6 +233,8 @@ async function createInline(el, options) {
         size = (blockSize === 'large' || blockSize === 'xlarge') ? 'button-xl' : 'button-l';
       }
     }
+    copyMasFieldIdToParent(masField, 'fragment-id');
+    copyMasFieldIdToParent(masField, 'variation-id');
     masField.replaceWith(...[...content.childNodes]);
 
     // Defer decorateButtons until the last CTA mas-field in this container has been
