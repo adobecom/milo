@@ -54,9 +54,11 @@ function setupStickyBoundary(headline, list) {
 
   const update = () => {
     if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
-    const items = [...list.querySelectorAll('.hover-list-item')];
-    const secondLastBoundary = items.slice(0, items.length - 2).reduce((sum, el) => sum + el.getBoundingClientRect().height, 0);
-    wrapper.style.height = `${secondLastBoundary + headline.getBoundingClientRect().height}px`;
+    let { height } = headline.getBoundingClientRect();
+    for (let i = 0, stop = list.children.length - 2; i < stop; i += 1) {
+      height += list.children[i].getBoundingClientRect().height;
+    }
+    wrapper.style.height = `${height}px`;
   };
 
   new ResizeObserver(update).observe(list);
