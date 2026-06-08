@@ -182,7 +182,7 @@ export const formSuccess = (formEl, formData) => {
   window.mktoSubmitted = true;
 
   if (formData?.[SUCCESS_TYPE] === 'ims') {
-    const redirect = formData?.[SUCCESS_CONTENT];
+    const redirect = getMetadata('marketo-ims-redirect');
 
     if (!redirect?.startsWith('https://')) {
       window?.lana.log('Marketo IMS failure, full url needed for redirect', { tags: 'marketo', severity: 'i' });

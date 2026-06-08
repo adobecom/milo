@@ -287,9 +287,9 @@ describe('Marketo formSuccess IMS', () => {
   let formEl;
   let marketoEl;
 
-  const addImsMeta = (content = 'ims_na1') => {
+  const addMeta = (name, content) => {
     const meta = document.createElement('meta');
-    meta.name = 'marketo-ims';
+    meta.name = name;
     meta.content = content;
     document.head.appendChild(meta);
   };
@@ -312,10 +312,14 @@ describe('Marketo formSuccess IMS', () => {
   afterEach(() => {
     sinon.restore();
     document.head.querySelector('meta[name="marketo-ims"]')?.remove();
+    document.head.querySelector('meta[name="marketo-ims-redirect"]')?.remove();
   });
 
+  const imsFormData = { 'form.success.type': 'ims' };
+
   it('logs warning and returns false when redirect URL is not fully qualified', () => {
-    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'adobe.com/welcome' });
+    addMeta('marketo-ims-redirect', 'adobe.com/welcome');
+    const result = formSuccess(formEl, imsFormData);
     expect(window.lana.log.calledWith(
       'Marketo IMS failure, full url needed for redirect',
       { tags: 'marketo', severity: 'i' },
@@ -324,8 +328,9 @@ describe('Marketo formSuccess IMS', () => {
   });
 
   it('logs error and returns false when marketo-ims param is missing', () => {
+    addMeta('marketo-ims-redirect', 'https://adobe.com/welcome');
     addEmailInput();
-    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'https://adobe.com/welcome' });
+    const result = formSuccess(formEl, imsFormData);
     expect(window.lana.log.calledWith(
       'Marketo IMS failure, missing data',
       { tags: 'marketo', severity: 'e' },
@@ -334,8 +339,9 @@ describe('Marketo formSuccess IMS', () => {
   });
 
   it('logs error and returns false when email input is missing', () => {
-    addImsMeta();
-    const result = formSuccess(formEl, { 'form.success.type': 'ims', 'form.success.content': 'https://adobe.com/welcome' });
+    addMeta('marketo-ims-redirect', 'https://adobe.com/welcome');
+    addMeta('marketo-ims', 'ims_na1');
+    const result = formSuccess(formEl, imsFormData);
     expect(window.lana.log.calledWith(
       'Marketo IMS failure, missing data',
       { tags: 'marketo', severity: 'e' },
