@@ -462,7 +462,7 @@
     --offset-adjuster: 50px;
     --offset-scale: .85;
     --last-offset: 1.75rem;
-    --offset-variance-index: -2px;
+    --offset-variance-index: -4px;
     --carousel-items-top: 40%;
     --slide-one-header-footer-reveal: 36% 40%;
     --slide-header-h: 64px;
@@ -516,7 +516,7 @@
   .hub-hero-carousel-item:nth-child(1) {
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
     --stack-contrast: 0;
-    --stack-shrink: 4rem;
+    --stack-shrink: 2.5rem;
     z-index: 1;
     animation: elasticMobileFirstSlide linear both;
     animation-timeline: --hub-hero;
@@ -541,7 +541,7 @@
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
     z-index: 2;
     --stack-contrast: .25;
-    --stack-shrink: 3rem;
+    --stack-shrink: 2rem;
     margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 500px);
   }
 
@@ -549,7 +549,7 @@
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
     z-index: 3;
     --stack-contrast: .5;
-    --stack-shrink: 2rem;
+    --stack-shrink: 1.5rem;
     margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
   }
 
@@ -1189,7 +1189,7 @@
     margin: 0
   }
 
-  20% {
+  30% {
     margin: 0
   }
 
