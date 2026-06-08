@@ -56,6 +56,10 @@
 
   &.left-split .action-area {
     align-items: center;
+
+    .con-button.transparent {
+      text-decoration: underline;
+    }
   }
 
   &.jump-link {
@@ -226,7 +230,7 @@
     padding-block-start: var(--s2a-layout-md);
     padding-block-end: var(--s2a-spacing-4xl);
 
-    &.hero { 
+    &.hero {
       height: 580px;
       padding-block-start: var(--s2a-layout-sm);
     }
