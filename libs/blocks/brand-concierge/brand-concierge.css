@@ -636,11 +636,6 @@
   height: calc(100% - var(--modal-header-height));
 }
 
-body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
-  max-width: calc(100% - 48px);
-  width: calc(100% - 48px);
-}
-
 .brand-concierge.floating-input {
   --bc-fi-bar-bg: rgba(248 248 248 / 65%);
   --bc-fi-bar-border: rgba(0 0 0 / 12%);
@@ -1070,5 +1065,10 @@ body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
 
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
+  }
+
+  body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
+    max-width: calc(100% - 48px);
+    width: calc(100% - 48px);
   }
 }
