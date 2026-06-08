@@ -14,6 +14,7 @@ import {
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -93,6 +94,7 @@ const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
 
 export function isTrustedUrl(url) {
   if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
   let parsed;
   try {
     parsed = new URL(url, window.location.origin);
@@ -350,6 +352,9 @@ const COMMANDS = {
     }
 
     if (value) {
+      if (attribute === 'href' && /^(javascript|data):/i.test(value.trim())) {
+        return;
+      }
       el.setAttribute(attribute, value);
       addIds(el, manifestId, targetManifestId);
     }
@@ -434,10 +439,10 @@ export async function replaceInner(path, element) {
   if (!path || !element) return false;
   let plainPath = path.endsWith('/') ? `${path}index` : path;
   plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
-  const html = await fetchData(plainPath, DATA_TYPE.TEXT);
+  const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
-  element.innerHTML = html;
+  element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
   return true;
@@ -1013,7 +1018,7 @@ export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
   const entitlementUrl = getXLGListURL(config);
-  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
@@ -1196,7 +1201,7 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
+    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
     if (fetchData) data = fetchedData;
   }
 
@@ -1272,13 +1277,19 @@ async function getManifestConfig(info, variantOverride) {
   return manifestConfig;
 }
 
-const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
-  selector: normalizePath(selector),
-  val: normalizePath(val),
-  action,
-  manifestId,
-  targetManifestId,
-});
+const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => {
+  const normalizedVal = normalizePath(val);
+  if (val && !isTrustedUrl(normalizedVal)) {
+    return null;
+  }
+  return {
+    selector: normalizePath(selector),
+    val: normalizedVal,
+    action,
+    manifestId,
+    targetManifestId,
+  };
+};
 export async function categorizeActions(experiment, config) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
@@ -1292,8 +1303,6 @@ export async function categorizeActions(experiment, config) {
   selectedVariant.insertscript?.forEach((script) => {
     if (isTrustedUrl(script.val)) {
       loadScript(script.val);
-    } else {
-      log(`Blocked untrusted insertscript URL: ${script.val}`);
     }
   });
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
@@ -1302,7 +1311,7 @@ export async function categorizeActions(experiment, config) {
     [config.mep.updateframework] = selectedVariant.updateframework;
   }
 
-  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
+  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths).filter(Boolean);
 
   return {
     manifestPath,
@@ -1391,6 +1400,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
+  if (!isTrustedUrl(fragment)) return false;
   const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
@@ -1444,9 +1454,11 @@ export async function applyPers({ manifests }) {
 
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {
-    await replaceInner(config.mep.replacepage.val, main);
-    const { manifestId, targetManifestId } = config.mep.replacepage;
-    addIds(main, manifestId, targetManifestId);
+    if (isTrustedUrl(config.mep.replacepage.val)) {
+      await replaceInner(config.mep.replacepage.val, main);
+      const { manifestId, targetManifestId } = config.mep.replacepage;
+      addIds(main, manifestId, targetManifestId);
+    }
   }
 
   config.mep.commands = await handleCommands(config.mep.commands);
@@ -1477,7 +1489,6 @@ function parseManifestUrlAndAddSource(manifestString, source) {
     .filter((path) => {
       if (!path) return false;
       if (isTrustedUrl(path)) return true;
-      log(`Blocked untrusted ${source} manifest URL: ${path}`);
       return false;
     })
     .map((manifestPath) => ({ manifestPath, source: [source] }));
@@ -1522,7 +1533,6 @@ export const combineMepSources = async (
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
       if (!isSameOriginManifestPath(manifestPath)) {
-        log(`Blocked external mep manifest URL: ${manifestPath}`);
         return;
       }
       if (!persManifestPaths.includes(manifestPath)) {
@@ -1584,6 +1594,9 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
   ?.map((item) => {
     const content = item?.data?.content;
     if (!content || !(content.manifestLocation || content.manifestContent)) return null;
+    if (content.manifestLocation && !isTrustedUrl(content.manifestLocation)) {
+      return null;
+    }
     return {
       manifestPath: content.manifestLocation || content.manifestPath,
       manifestUrl: content.manifestLocation,

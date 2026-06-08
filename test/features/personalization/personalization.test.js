@@ -6,7 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl,
+  isTrustedUrl, fetchData, DATA_TYPE,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -686,6 +686,22 @@ describe('MEP Utils', () => {
       );
       expect(manifests.length).to.equal(0);
     });
+    it('blocks malformed scheme prefixes across all personalization sources', async () => {
+      const bypassValue = [
+        'https:/evil.com/manifest.json',
+        'https:\\evil.com/manifest.json',
+        'HTTPS:/evil.com/manifest.json',
+        'http:/evil.com/manifest.json',
+      ].join(',');
+      const manifests = await combineMepSources(
+        bypassValue,
+        bypassValue,
+        undefined,
+        undefined,
+        bypassValue,
+      );
+      expect(manifests.length).to.equal(0);
+    });
     it('allows trusted AEM-hosted manifest URLs from personalization sources', async () => {
       const aemUrl = 'https://main--milo--adobecom.aem.page/path/manifest.json';
       const manifests = await combineMepSources(aemUrl, undefined, undefined, undefined);
@@ -759,10 +775,56 @@ describe('MEP Utils', () => {
       expect(isTrustedUrl('/\n/evil.com/script.js')).to.be.false;
       expect(isTrustedUrl('/\r/evil.com/script.js')).to.be.false;
     });
+    it('rejects malformed scheme prefixes (CDN slash-collapse bypass)', () => {
+      expect(isTrustedUrl('https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\\\\evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HTTPS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('HtTpS:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('http:/evil.com/script.js')).to.be.false;
+      // eslint-disable-next-line no-script-url
+      expect(isTrustedUrl('javascript:alert(1)')).to.be.false;
+    });
+    it('rejects additional scheme-prefix edge cases', () => {
+      expect(isTrustedUrl('https:foo')).to.be.false;
+      expect(isTrustedUrl('https:\t/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:\n/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('﻿https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl(' https:/evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:///evil.com/script.js')).to.be.false;
+      expect(isTrustedUrl('https:////evil.com/script.js')).to.be.false;
+    });
+    it('safe-by-accident: IDN homograph hostnames blocked because parser punycodes them', () => {
+      expect(isTrustedUrl('https://www.аdobe.com/script.js')).to.be.false;
+    });
     it('rejects non-string inputs', () => {
       expect(isTrustedUrl(123)).to.be.false;
       expect(isTrustedUrl({})).to.be.false;
       expect(isTrustedUrl([])).to.be.false;
+    });
+  });
+  describe('fetchData', () => {
+    it('forwards redirect option to underlying fetch', async () => {
+      const originalFetch = window.fetch;
+      const fetchStub = stub().returns(getFetchPromise({}));
+      window.fetch = fetchStub;
+      try {
+        await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(fetchStub.firstCall.args[1]?.redirect).to.equal('error');
+      } finally {
+        window.fetch = originalFetch;
+      }
+    });
+    it('returns null when fetch throws (simulating blocked redirect)', async () => {
+      const originalFetch = window.fetch;
+      window.fetch = stub().throws(new TypeError('Failed to fetch'));
+      try {
+        const result = await fetchData('/manifest.json', DATA_TYPE.JSON, { redirect: 'error' });
+        expect(result).to.be.null;
+      } finally {
+        window.fetch = originalFetch;
+      }
     });
   });
   describe('cleanAndSortManifestList', async () => {
