@@ -1439,6 +1439,25 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function decoratePictures(area) {
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+    if (Number(image.getAttribute('width')) < 2000) return;
+    const path = image.src.split('?')[0];
+    const largeImageSource = createTag('source', {
+      type: 'image/webp',
+      srcset: `${path}?width=3000&format=webply`,
+      media: '(min-width: 1920px)',
+    });
+
+    picture.prepend(largeImageSource);
+    picture.classList.add('large-image-decorated');
+  });
+}
+
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
@@ -1884,6 +1903,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
