@@ -1,28 +1,30 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 
-// Pile composition from Figma spec.
-// STACK_W is the design canvas width in px — the reference frame all
-// STACK_REF offsets and sizes are measured against.
-// Each STACK_REF entry positions one card within that canvas:
+// Each STACK_REF_DESKTOP / STACK_REF_MOBILE entry positions one card in the pile:
 //   dx, dy = top-left offset in px
 //   w, h   = card size in px
 //   rot    = rotation in degrees (negative = counter-clockwise)
-// At runtime, values are scaled by `stackScale` to fit the viewport,
-// centered horizontally, and mirrored for RTL (see computeLayouts).
-// Card order here matches DOM order (i.e., authored row order).
-const STACK_W = 836;
-const STACK_REF = [
-  { dx: 90.94, dy: 116.93, w: 418.531, h: 489.484, rot: -6 },
-  { dx: 202.94, dy: 0, w: 535.885, h: 666.645, rot: -2 },
-  { dx: 36.78, dy: 275.30, w: 304.543, h: 324.33, rot: -15 },
-  { dx: 417.44, dy: 272.79, w: 418.531, h: 455.136, rot: 3 },
+const STACK_REF_DESKTOP = [
+  { dx: 40, dy: 116, w: 418, h: 489, rot: -6 },
+  { dx: 172, dy: -25, w: 535.885, h: 666, rot: -2 },
+  { dx: -30, dy: 290, w: 304, h: 324, rot: -15 },
+  { dx: 400, dy: 240, w: 418, h: 455, rot: 3 },
 ];
+const STACK_REF_MOBILE = [
+  { dx: -65, dy: 60, w: 272, h: 318, rot: -6 },
+  { dx: 22, dy: -16, w: 318, h: 433, rot: -2 },
+  { dx: -120, dy: 165, w: 280, h: 300, rot: -15 },
+  { dx: 160, dy: 120, w: 367, h: 400, rot: 3 },
+];
+const PILE_X_OFFSET_MOBILE = 54;
+const PILE_GAP_DESKTOP = 124;
+const PILE_GAP_MOBILE = 80;
 const CARD_SHADOWS = [
   null,
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
-  '15px 15px 15px 0px rgba(0,0,0,0.25)',
-  '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
+  '25px 25px 54px 0px rgba(0,0,0,0.20)',
+  '25px 25px 54px 0px rgba(0,0,0,0.20)',
 ];
 const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
 const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true" focusable="false">
@@ -34,6 +36,8 @@ const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
+const isMobile = () => window.innerWidth < 768;
+const isDesktop = () => window.innerWidth >= 1280;
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
@@ -42,6 +46,7 @@ const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_matc
 function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const heroRow = rows[0];
   const heroCell = heroRow.children[0];
@@ -49,6 +54,8 @@ function decorate(block) {
 
   decorateBlockText(heroCell, { heading: '1', body: 'lg', button: 'lg' });
   heroCell.classList.add('hero-content');
+  const mainHeading = heroCell.querySelector(':is(h2, h3, h4, h5, h6)');
+  if (mainHeading) mainHeading.replaceWith(createTag('h1', { class: mainHeading.className }, mainHeading.innerHTML));
 
   const svgImg = [...heroCell.querySelectorAll('img')].find((img) => isSvgSrc(img.getAttribute('src')));
   const heroEyebrow = heroCell.querySelector('.eyebrow');
@@ -96,22 +103,25 @@ function decorate(block) {
     const posterImg = media.querySelector('img');
     const videoSrc = posterImg?.getAttribute('alt') || '';
     if (isVideoSrc(videoSrc)) {
-      const videoEl = createTag('video', {
-        src: videoSrc,
-        poster: posterImg.getAttribute('src') || '',
-        playsinline: '',
-        muted: '',
-        preload: 'metadata',
-        tabindex: '-1',
-        'aria-hidden': 'true',
-      });
-      videoEl.muted = true;
-      videoEl.addEventListener('loadedmetadata', () => {
-        try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
-      }, { once: true });
-      (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
-      const fade = createTag('div', { class: 'hero-card-media-fade' });
-      media.append(fade);
+      posterImg.alt = '';
+      if (!reducedMotion) {
+        const videoEl = createTag('video', {
+          src: videoSrc,
+          poster: posterImg.getAttribute('src') || '',
+          playsinline: '',
+          muted: '',
+          preload: 'metadata',
+          tabindex: '-1',
+          'aria-hidden': 'true',
+        });
+        videoEl.muted = true;
+        videoEl.addEventListener('loadedmetadata', () => {
+          try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
+        }, { once: true });
+        (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
+        const fade = createTag('div', { class: 'hero-card-media-fade' });
+        media.append(fade);
+      }
     }
 
     const learnMore = textCell.querySelector('a');
@@ -133,7 +143,10 @@ function decorate(block) {
     cardText.append(textWrapper);
     if (learnMore) cardText.append(learnMore);
 
-    const tile = createTag('div', { class: 'hero-card-tile' });
+    const tile = learnMore
+      ? createTag('a', { class: 'hero-card-tile', href: learnMore.href, 'data-tracking-label': heading?.textContent })
+      : createTag('div', { class: 'hero-card-tile' });
+    if (learnMore) learnMore.setAttribute('tabindex', '-1');
     tile.append(media, cardText);
 
     const card = createTag('div', { class: 'hero-card' });
@@ -148,6 +161,8 @@ function decorate(block) {
 
 function initAnimation(block) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  block.classList.add('cards-animating');
 
   let heroContent;
   let eyebrow;
@@ -176,56 +191,56 @@ function initAnimation(block) {
   let stackBoxes = [];
   let rtl = false;
   let isSettled = false;
-  let willChangeOn = false;
+  let gpuPromoted = false;
   let videoObserver = null;
   let rafId = 0;
   let running = false;
   let needsReset = false;
-  const gnav = document.querySelector('header');
 
-  function positionContent() {
-    if (!heroContent || !gnav) return;
-    heroContent.parentElement.style.paddingTop = `${gnav.getBoundingClientRect().bottom + 124}px`;
+  function onMediaVisible(entry) {
+    const mediaIdx = medias.indexOf(entry.target);
+    const video = videos[mediaIdx];
+    if (!entry.isIntersecting) return;
+    if (video && !video.ended) video.play()?.catch(() => {});
+    const card = entry.target.closest('.hero-card');
+    if (!card || card.dataset.textFaded) return;
+    card.dataset.textFaded = '1';
+    const texts = [...card.querySelectorAll('.hero-card-title, .hero-card-body-text, .learn-more')];
+    texts.forEach((el, j) => {
+      el.style.transition = `opacity 0.5s ease-in ${200 + j * 150}ms`;
+      el.style.opacity = '1';
+    });
   }
 
-  function setSettled(next) {
-    if (isSettled === next) return;
-    isSettled = next;
-    if (next) {
-      fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
-      if (needsReset) {
-        needsReset = false;
-        videos.forEach((video) => { video.currentTime = 0.001; });
-      }
-      videoObserver = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          const video = videos[medias.indexOf(entry.target)];
-          if (!video || !entry.isIntersecting || video.ended) return;
-          video.play()?.catch(() => {});
-        });
-      }, { threshold: 0.7 });
-      medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
-      cardTexts.forEach((textEl, i) => {
-        textEl.style.transition = `opacity 0.5s ease-in ${i * 50}ms`;
-        textEl.style.opacity = '1';
-      });
+  function setSettled(animationDone) {
+    if (isSettled === animationDone) return;
+    isSettled = animationDone;
+    block.classList.toggle('cards-animating', !animationDone);
+
+    if (!animationDone) {
+      videoObserver?.disconnect();
+      videoObserver = null;
+      needsReset = true;
       return;
     }
-    videoObserver?.disconnect();
-    videoObserver = null;
-    needsReset = true;
-    cardTexts.forEach((textEl) => {
-      textEl.style.transitionDelay = '';
-      textEl.style.transition = 'opacity 0.5s ease-out';
-      textEl.style.opacity = '0';
-    });
+
+    fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
+    if (needsReset) {
+      needsReset = false;
+      videos.forEach((video) => { video.pause(); video.currentTime = 0.001; });
+    }
+    videoObserver = new IntersectionObserver(
+      (entries) => entries.forEach(onMediaVisible),
+      { threshold: 0.7 },
+    );
+    medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
   }
 
   function getProgress() {
     if (!cards[0]) return 0;
-    const navBottom = gnav ? gnav.getBoundingClientRect().bottom : 72;
-    const slotTargetTop = Math.round(navBottom + 124) + 60;
-    const startY = window.innerHeight;
+    const slotTargetTop = (isMobile() ? PILE_GAP_MOBILE : PILE_GAP_DESKTOP);
+    const fallbackY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
+    const startY = naturalBoxes[0]?.y || fallbackY;
     const range = startY - slotTargetTop;
     if (range <= 0) return 0;
     return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
@@ -241,22 +256,21 @@ function initAnimation(block) {
     tiles.forEach((tile, i) => {
       const natural = naturalBoxes[i];
       const stack = stackBoxes[i];
-      const sx = lerp(stack.w / natural.w, 1, progress);
-      const sy = lerp(stack.h / natural.h, 1, progress);
+      const scale = lerp(Math.min(stack.w / natural.w, stack.h / natural.h), 1, progress);
       const txTarget = rtl
         ? (stack.x + stack.w) - (natural.x + natural.w)
         : stack.x - natural.x;
       const tx = lerp(txTarget, 0, progress);
       const ty = lerp(stack.y - natural.y, 0, progress);
       const rot = lerp(stack.rot, 0, progress);
-      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${sx}, ${sy})`;
+      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})`;
       if (!CARD_SHADOWS[i]) return;
       tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
     });
 
     const animating = progress > 0.001 && progress < 0.999;
-    if (animating === willChangeOn) return;
-    willChangeOn = animating;
+    if (animating === gpuPromoted) return;
+    gpuPromoted = animating;
     tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
   }
 
@@ -267,7 +281,8 @@ function initAnimation(block) {
       const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
       eyebrow.style.transform = `translateY(${offset}px)`;
     }
-    eyebrow.classList.toggle('is-visible', progress >= 0.7);
+    const eyebrowThreshold = isMobile() ? 0.2 : 0.6;
+    eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
   }
 
   function computeLayouts() {
@@ -281,16 +296,20 @@ function initAnimation(block) {
     });
 
     const vw = window.innerWidth;
-    const contentBottom = heroContent ? heroContent.getBoundingClientRect().bottom : 540;
-    const stackTop = contentBottom + 74;
-    const stackScale = vw < 768 ? Math.max((vw - 48) / STACK_W, 0.3) : 1;
-    const stackLeft = (vw - STACK_W * stackScale) / 2;
+    const stackRef = isMobile() ? STACK_REF_MOBILE : STACK_REF_DESKTOP;
+    const pileMin = Math.min(...stackRef.map((r) => r.dx));
+    const pileMax = Math.max(...stackRef.map((r) => r.dx + r.w));
+    const pileTopDy = Math.min(...stackRef.map((r) => r.dy));
+    const gap = isDesktop() ? PILE_GAP_DESKTOP : PILE_GAP_MOBILE;
+    const stackTop = heroContent.getBoundingClientRect().bottom + gap - pileTopDy;
+    const xOffset = isMobile() ? PILE_X_OFFSET_MOBILE : 0;
+    const stackLeft = vw / 2 - ((pileMin + pileMax) / 2) + xOffset;
     rtl = isRtl(block);
-    stackBoxes = STACK_REF.map((ref) => ({
-      x: stackLeft + (rtl ? STACK_W - ref.dx - ref.w : ref.dx) * stackScale,
-      y: stackTop + ref.dy * stackScale,
-      w: ref.w * stackScale,
-      h: ref.h * stackScale,
+    stackBoxes = stackRef.map((ref) => ({
+      x: stackLeft + (rtl ? pileMax - ref.dx - ref.w : ref.dx),
+      y: stackTop + ref.dy,
+      w: ref.w,
+      h: ref.h,
       rot: rtl ? -ref.rot : ref.rot,
     }));
 
@@ -307,7 +326,10 @@ function initAnimation(block) {
 
     if (needsReset && progress <= 0.1) {
       needsReset = false;
+      cards.forEach((card) => { delete card.dataset.textFaded; });
+      cardTexts.forEach((textEl) => { textEl.style.transition = 'none'; textEl.style.opacity = '0'; });
       videos.forEach((video, i) => {
+        video.pause();
         video.currentTime = 0.001;
         const fade = fades[i];
         if (!fade) return;
@@ -329,7 +351,6 @@ function initAnimation(block) {
       isSettled = false;
     }
     if (tiles.length !== 4) return;
-    positionContent();
     computeLayouts();
     updateEyebrow(getProgress());
   }

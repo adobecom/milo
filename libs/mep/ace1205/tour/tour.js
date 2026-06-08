@@ -134,9 +134,19 @@ export default function init(el) {
     row.classList.add('tour-row', `row-${rowIndex}`);
     row.firstElementChild.classList.add('tour-row-body', 'body-sm');
     row.lastElementChild.classList.add('tour-row-image');
-    const rowIndexEl = createTag('div', { class: 'label tour-row-index' });
-    rowIndexEl.textContent = `( ${rowIndex}/${multiColumns.length} )`;
-    row.prepend(rowIndexEl);
+    const rowIndexEl = createTag('div', { class: 'label tour-row-index' }, `( ${rowIndex}/${multiColumns.length} )`);
+
+    const wrapper = createTag('div', { class: 'tour-row-content' });
+    wrapper.append(rowIndexEl, ...row.children);
+    row.append(wrapper);
+
+    const tourRowImage = wrapper.querySelector('.tour-row-image');
+    const imageParagraphs = [...(tourRowImage?.querySelectorAll('p:has(img)') ?? [])];
+    if (imageParagraphs.length > 1) {
+      const imageCenter = createTag('div', { class: 'tour-row-image-center' });
+      imageParagraphs.slice(1).forEach((p) => imageCenter.append(p));
+      row.append(imageCenter);
+    }
   });
 
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));

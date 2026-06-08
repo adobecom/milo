@@ -16,6 +16,7 @@
     animation-timeline: var(--animation-timeline);
     animation-range: var(--animation-range);
     animation-fill-mode: var(--animation-fill);
+    transform-origin: center top;
     will-change: transform;
     display: flex;
     flex-direction: column-reverse;
@@ -54,6 +55,7 @@
         height: 100%;
 
         img {
+          display: block;
           object-fit: cover;
           width: 100%;
           height: 100%;
@@ -62,6 +64,24 @@
           animation-range: var(--animation-range);
           animation-fill-mode: var(--animation-fill);
           will-change: transform;
+        }
+      }
+    }
+
+    figure {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--s2a-spacing-md);
+
+      figcaption {
+        display: flex;
+        flex-direction: column;
+
+        :not(:first-child) {
+          color: var(--s2a-color-content-subtle);
         }
       }
     }
@@ -82,7 +102,7 @@
         max-width: none;
         box-sizing: border-box;
         justify-content: space-between;
-        padding: var(--s2a-spacing-lg);
+        padding: var(--s2a-spacing-2xl);
       }
 
       .media {
@@ -106,7 +126,7 @@
   }
 }
 
-@media (width >= 1440px) {
+@media (width >= 1920px) {
   .social-proof > div .foreground {
     padding: var(--s2a-layout-md);
   }
@@ -114,8 +134,8 @@
 
 @supports (animation-timeline: view()) {
   @keyframes social-proof-stretch {
-    from { transform: scaleX(var(--stretch-from)); }
-    to   { transform: scaleX(1); }
+    from { transform: scale(var(--stretch-from)); }
+    to   { transform: scale(1); }
   }
 
   @keyframes social-proof-image-zoom {
