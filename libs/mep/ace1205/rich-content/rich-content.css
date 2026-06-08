@@ -205,6 +205,12 @@
 }
 
 @media (width >= 768px) {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+    --rc-sweep-offset: 230px;
+  }
+
   .rich-content .content [class*="body-"]:not(.action-area) {
     min-width: 560px;
     width: calc((100% / var(--grid-columns)) * 8);
@@ -446,26 +452,6 @@
   }
 }
 
-@keyframes rc-cta-counteract {
-  from { transform: translateY(0); }
-  to { transform: translateY(calc(var(--rc-cta-counteract-max) * -1)); }
-}
-
-@keyframes rc-video-cta-follow-mobile {
-  from { transform: translateY(14vh); }
-  to { transform: translateY(0); }
-}
-
-@keyframes rc-video-enter-mobile {
-  from { transform: scale(1.4) translateY(12vh); }
-  to { transform: scale(1) translateY(0); }
-}
-
-@keyframes rc-video-enter {
-  from { transform: scale(0.94) translateY(30px); }
-  to { transform: scale(1) translateY(0); }
-}
-
 @property --rc-pull-offset {
   syntax: '<length>';
   inherits: true;
@@ -486,14 +472,6 @@
   --rc-sweep-offset: 200px;
   --rc-sweep-peek: var(--s2a-border-radius-lg);
   --rc-cta-counteract-max: 10vh;
-}
-
-@media (width >= 768px) {
-  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-    --rc-sweep-offset: 230px;
-  }
 }
 
 @media (width >= 1024px) {
@@ -518,23 +496,43 @@
   }
 }
 
-@keyframes rc-section-pull-up {
-  from { transform: translateY(0); }
-  to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
-}
-
-@keyframes rc-section-sweep-in {
-  from { transform: translateY(calc(var(--rc-sweep-offset) - var(--rc-sweep-peek))); }
-  to { transform: translateY(0); }
-}
-
-@keyframes rc-video-section-slow {
-  from { transform: translateY(0); }
-  to { transform: translateY(var(--rc-cta-counteract-max)); }
-}
-
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    @keyframes rc-cta-counteract {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(var(--rc-cta-counteract-max) * -1)); }
+    }
+
+    @keyframes rc-video-cta-follow-mobile {
+      from { transform: translateY(14vh); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes rc-video-enter-mobile {
+      from { transform: scale(1.4) translateY(12vh); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    @keyframes rc-video-enter {
+      from { transform: scale(0.94) translateY(30px); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    @keyframes rc-section-pull-up {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
+    }
+
+    @keyframes rc-section-sweep-in {
+      from { transform: translateY(calc(var(--rc-sweep-offset) - var(--rc-sweep-peek))); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes rc-video-section-slow {
+      from { transform: translateY(0); }
+      to { transform: translateY(var(--rc-cta-counteract-max)); }
+    }
+
     body:has(.section.parallax-video-garage-door) {
       timeline-scope: --rc-video-garage;
     }
