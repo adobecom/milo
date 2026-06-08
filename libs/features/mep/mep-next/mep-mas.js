@@ -122,8 +122,7 @@ export function toFragmentEditorUrl(url) {
   if (!url) return url;
   try {
     const u = new URL(url, window.location.origin);
-    const hash = (u.hash || '').replace(/^#/, '');
-    const hp = new URLSearchParams(hash);
+    const hp = new URLSearchParams(u.hash.replace(/^#/, ''));
     if (hp.get('content-type') !== 'merch-card') return url;
     const id = hp.get('fragmentId') || hp.get('query') || hp.get('fragment');
     if (!id) return url;
@@ -133,7 +132,9 @@ export function toFragmentEditorUrl(url) {
     hp.set('page', 'fragment-editor');
     u.hash = `#${hp.toString()}`;
     return u.toString();
-  } catch (e) { return url; }
+  } catch {
+    return url;
+  }
 }
 
 function stampMarket(host, pageMarket) {
