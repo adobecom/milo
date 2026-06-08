@@ -97,7 +97,7 @@
 
     .card-overlay {
       .foreground {
-        max-width: 250px;
+        max-width: 480px;
       }
     }
 
@@ -115,12 +115,20 @@
   }
 }
 
+@media (width >=1024px) {
+  :root:has(meta[name="foundation"][content="c2"]) {
+    .side-by-side button.play-pause-button {
+      width: 48px;
+      height: 48px;
+    }
+  }
+}
+
 @media (width >= 1280px) {
   .side-by-side {
     .card-overlay {
       .foreground {
         padding: var(--s2a-spacing-2xl);
-        max-width: 480px;
       }
     }
 
