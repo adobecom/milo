@@ -31,6 +31,13 @@ import {
   isMasGeoDetectionEnabled,
 } from '../../../../blocks/merch/merch.js';
 
+const HIGHLIGHT_KEYS = {
+  mep: 'mepMepHighlight',
+  caas: 'mepCaasHighlight',
+  mas: 'mepMasHighlight',
+  other: 'mepOtherHighlight',
+};
+
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
 export const API_URLS = {
@@ -294,10 +301,6 @@ async function getGeoUser() {
   return (await getGeoLocalePrefix()) ? 'Supported' : 'Not Supported';
 }
 
-function getMepButtonOffParams(popup) {
-  return popup.querySelector('input#toggle-preview-link')?.checked ? 'off' : null;
-}
-
 const resolvePairs = (pairs) => Promise.all(
   pairs.map(async ([label, value]) => [label, await value]),
 );
@@ -327,6 +330,10 @@ export function getLingoSummary() {
     ['User Country', getUserCountry()],
     ['Geo + User', getGeoUser()],
   ]);
+}
+
+export function getCaasSummary() {
+  return null;
 }
 
 export function getMasSummary() {
@@ -392,15 +399,7 @@ export async function setPreviewButton() {
       .map((option) => `${option.dataset.manifest}--${option.value}`);
   }
 
-  function getCaasHighlightParam(popup) {
-    const checkbox = popup.querySelector('input[type="checkbox"]#toggle-caas');
-    return checkbox?.checked ? true : null;
-  }
-
-  function getMasHighlightParam(popup) {
-    const checkbox = popup.querySelector('input[type="checkbox"]#toggle-mas');
-    return checkbox?.checked ? true : null;
-  }
+  const getCheckboxParam = (popup, id) => (popup.querySelector(`input[type="checkbox"]#${id}`)?.checked ? true : null);
 
   const popup = document.querySelector('#mep-drawer');
   const manifestParameter = [
@@ -415,10 +414,10 @@ export async function setPreviewButton() {
     ? simulateHref.searchParams.set(key, value)
     : simulateHref.searchParams.delete(key));
 
-  setOrDelete('mepButton', getMepButtonOffParams(popup));
-  setOrDelete('mepCaasHighlight', getCaasHighlightParam(popup));
-  setOrDelete('mepMasHighlight', getMasHighlightParam(popup));
-
+  setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
+  setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
+  setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
+  setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
 }
 
@@ -449,25 +448,34 @@ export async function getAdditionalManifests() {
 export function getParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   return {
-    highlightDefault: urlParams.get('mepHighlight'),
-    highlightFragments: urlParams.get('mepFragments'),
-    highlightCaas: urlParams.get('mepCaasHighlight'),
-    highlightMas: urlParams.get('mepMasHighlight'),
-    masMarket: urlParams.get('mepMasMarket'),
+    mepMepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
+    mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
+    mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
+    mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other),
   };
 }
 
 export function toggleHighlight(event) {
   const HIGHLIGHT_HANDLERS = {
+    'toggle-mep': {
+      dataKey: HIGHLIGHT_KEYS.mep,
+      on: [],
+      off: [],
+    },
+    'toggle-caas': {
+      dataKey: HIGHLIGHT_KEYS.caas,
+      on: [watchForCaasBlocks, injectCaasBadges],
+      off: [unwatchForCaasBlocks, removeCaasBadges],
+    },
     'toggle-mas': {
-      dataKey: 'mepMasHighlight',
+      dataKey: HIGHLIGHT_KEYS.mas,
       on: [watchForMasContent, injectMasBadges],
       off: [unwatchForMasContent, removeMasBadges],
     },
-    'toggle-caas': {
-      dataKey: 'mepCaasHighlight',
-      on: [watchForCaasBlocks, injectCaasBadges],
-      off: [unwatchForCaasBlocks, removeCaasBadges],
+    'toggle-other-fragments': {
+      dataKey: HIGHLIGHT_KEYS.other,
+      on: [],
+      off: [],
     },
   };
 
@@ -476,4 +484,9 @@ export function toggleHighlight(event) {
   if (!handler) return;
   document.body.dataset[handler.dataKey] = checked;
   (checked ? handler.on : handler.off).forEach((fn) => fn());
+}
+
+export function getPageUpdates() {
+  const count = 0;
+  return `${count} Page Updates`;
 }
