@@ -23,8 +23,8 @@ const PILE_GAP_MOBILE = 80;
 const CARD_SHADOWS = [
   null,
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
-  '15px 15px 15px 0px rgba(0,0,0,0.25)',
-  '0px 2.75px 2.89px rgba(0,0,0,0.053),0px 6.60px 6.95px rgba(0,0,0,0.077),0px 12.43px 13.09px rgba(0,0,0,0.095),0px 22.18px 23.35px rgba(0,0,0,0.113),0px 41.49px 43.67px rgba(0,0,0,0.137),0px 99.30px 104.53px rgba(0,0,0,0.190)',
+  '25px 25px 54px 0px rgba(0,0,0,0.20)',
+  '25px 25px 54px 0px rgba(0,0,0,0.20)',
 ];
 const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
 const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true" focusable="false">
