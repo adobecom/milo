@@ -1,11 +1,10 @@
 .plans-hero {
-  --plans-hero-height: 400px;
   --plans-hero-cols: 4;
 
   position: relative;
   display: flex;
   align-items: center;
-  min-height: var(--plans-hero-height);
+  min-height: 400px;
   color: var(--s2a-color-content-knockout);
 }
 
@@ -23,8 +22,8 @@
   }
 
   &::after {
-    --scrim-stop-start: -84.26%;
-    --scrim-stop-end: 25.77%;
+    --scrim-stop-start: -94.26%;
+    --scrim-stop-end: 35.77%;
 
     content: '';
     position: absolute;
@@ -57,33 +56,27 @@
 
 @media (width >= 768px) {
   .plans-hero {
-    --plans-hero-height: 284px;
     --plans-hero-cols: 6;
+
+    min-height: min-content;
+    height: 35vw;
+    max-height: 600px;
   }
 
   .plans-hero-media::after {
-    --scrim-stop-start: 0.88%;
-    --scrim-stop-end: 69.65%;
+    --scrim-stop-start: 50.27%;
+    --scrim-stop-end: 99.12%;
   }
 }
 
 @media (width >= 1024px) {
   .plans-hero {
-    --plans-hero-height: 436px;
     --plans-hero-cols: 5;
-  }
-}
-
-@media (width >= 1280px) {
-  .plans-hero {
-    --plans-hero-height: 452px;
   }
 }
 
 @media (width >= 1440px) {
   .plans-hero {
-    --plans-hero-height: 800px;
-
     align-items: flex-start;
   }
 
