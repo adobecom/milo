@@ -196,7 +196,9 @@ function decorate(block) {
     const number = createTag('span', { class: 'hover-list-number eyebrow' }, `${i + 1}.`);
     const text = createTag('div', { class: 'hover-list-text heading-5' });
     if (textCol) text.append(...textCol.childNodes);
-    item.append(number, text);
+    const copy = createTag('div', { class: 'hover-list-copy' });
+    copy.append(number, text);
+    item.append(copy);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
       const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });

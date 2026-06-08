@@ -17,7 +17,6 @@
 }
 
 .hover-list-item {
-  align-items: center;
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
   color: var(--s2a-color-content-knockout);
   display: flex;
@@ -35,6 +34,13 @@
 
 }
 
+.hover-list-copy {
+  align-items: flex-start;
+  display: flex;
+  flex: 1;
+  gap: var(--s2a-spacing-md);
+}
+
 .hover-list-number {
   color: var(--s2a-color-content-knockout);
   flex-shrink: 0;
@@ -47,6 +53,7 @@
 }
 
 .hover-list-media {
+  align-self: flex-start;
   block-size: 81px;
   border-radius: var(--s2a-border-radius-sm);
   flex-shrink: 0;
@@ -82,6 +89,10 @@
     flex: 1;
   }
 
+  .hover-list-copy {
+    gap: var(--s2a-spacing-xs);
+  }
+
   .hover-list-item {
     gap: var(--s2a-spacing-lg);
     padding-block: var(--s2a-spacing-lg);
@@ -96,7 +107,6 @@
   }
 
   .hover-list-number {
-    align-self: center;
     min-inline-size: var(--s2a-spacing-24);
     text-align: center;
   }
@@ -145,6 +155,10 @@
         background: var(--s2a-color-transparent-white-08);
       }
     }
+  }
+
+  .hover-list-copy {
+    gap: var(--s2a-spacing-md);
   }
 
   .hover-list-number {
