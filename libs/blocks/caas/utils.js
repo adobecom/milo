@@ -1059,6 +1059,7 @@ export const getConfig = async (originalState, strs = {}) => {
         playVideo: strs.playVideo || 'Play, {cardTitle}',
         nextCards: strs.nextCards || 'Next Cards',
         prevCards: strs.prevCards || 'Previous Cards',
+        sortBy: strs.sortBy || 'Sort by',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
