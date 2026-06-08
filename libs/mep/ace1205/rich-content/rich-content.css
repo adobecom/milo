@@ -185,13 +185,13 @@
 .section.has-background:has(.rich-content.hero) .section-background picture::after {
   content: '';
   position: absolute;
-  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%);
+  background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%);
   inset: 0;
   z-index: 1;
 }
 
 .section:not(.has-background):has(.rich-content.hero) {
-  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%), var(--s2a-color-background-default);
+  background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%), var(--s2a-color-background-default);
 }
 
 .section:has(.rich-content.jump-link.hero) {
@@ -203,19 +203,18 @@
 }
 
 .section:not(.has-background):has(.rich-content.jump-link.hero) {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 39%, rgba(0, 0, 0, 0) 74%, rgba(0, 0, 0, 0.8) 100%), var(--s2a-color-background-default);
+  background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) 0%, var(--s2a-color-transparent-black-00) 39%, var(--s2a-color-transparent-black-00) 74%, var(--s2a-color-transparent-black-80) 100%), var(--s2a-color-background-default);
 }
 
 @media (width >= 768px) {
-<<<<<<< HEAD
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
     background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
-=======
+  }
+
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
     --rc-sweep-offset: 230px;
->>>>>>> 96e566e72ed377119e988182bca3d9dddec6ea61
   }
 
   .rich-content .content [class*="body-"]:not(.action-area) {
