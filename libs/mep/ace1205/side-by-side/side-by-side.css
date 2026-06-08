@@ -88,8 +88,6 @@
   }
 }
 
-
-
 @media (width >= 768px) {
   .side-by-side {
     grid-template-columns: 1.81fr 1fr;

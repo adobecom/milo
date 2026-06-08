@@ -180,9 +180,15 @@ video {
     right: var(--s2a-spacing-md);
     bottom: var(--s2a-spacing-md);
 
-    svg path {
-      fill: var(--s2a-color-gray-25);
-      stroke: var(--s2a-color-gray-25);
+    svg {
+      height: 16px;
+      width: 16px;
+      path {
+        fill: var(--s2a-color-gray-25);
+        stroke: var(--s2a-color-gray-25);
+        height: 16px;
+        width: 16px;
+      }
     }
 
     &:hover {
