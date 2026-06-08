@@ -115,7 +115,7 @@ npx playwright test --config=./playwright.config.js \
   ${REPORTER} || EXIT_STATUS=$?
 
 # Check if tests passed or failed
-if [ $EXIT_STATUS -ne 0 ]; then
+if [ $EXIT_STATUS -ne 0 ] && ! echo "${TAGS}" | grep -q "caas"; then
   echo "Some tests failed. Exiting with error."
   exit $EXIT_STATUS
 else

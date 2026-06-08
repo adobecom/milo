@@ -173,6 +173,10 @@
             </p>
             <div class="button-container">
               <button id="bulkpublish" href="#">Publish</button>
+              <label class="dry-run-label">
+                <input type="checkbox" id="dryRun" name="dryRun" />
+                Dry Run
+              </label>
               <span class="config-msg" > &nbsp; * Please Select a Preset or Custom Settings</span>
             </div>
 
@@ -196,8 +200,10 @@
               <thead>
                 <tr>
                   <th width="90px" colspan="2">Success</th>
-                  <th width="65%">URL</th>
-                  <th width="30%">Entity_ID</th>
+                  <th width="40%">URL</th>
+                  <th width="10%">Lang First</th>
+                  <th width="15%">Lang Value</th>
+                  <th width="25%">Entity_ID</th>
                 </tr>
               <tbody></tbody>
             </table>
