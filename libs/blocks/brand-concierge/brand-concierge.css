@@ -717,6 +717,10 @@
   opacity: 0.4;
 }
 
+.brand-concierge.floating-input .bc-textarea-grow-wrap {
+  overflow: hidden;
+}
+
 .brand-concierge.floating-input .bc-input-field-container textarea,
 .brand-concierge.floating-input .bc-textarea-grow-wrap::after {
   max-height: 48px;
@@ -774,6 +778,10 @@
 .brand-concierge.floating-input .prompt-card-button:hover {
   background: #F8F8F8;
   border-color: rgba(0 0 0 / 22%);
+}
+
+.brand-concierge.floating-input .prompt-card-button:focus-visible {
+  outline-offset: -2px;
 }
 
 .brand-concierge.floating-input .prompt-card-text {
@@ -1005,7 +1013,6 @@
   }
 
   .brand-concierge.floating-input .bc-input-field {
-    flex: 1 1 auto;
     min-width: 340px;
   }
 }
