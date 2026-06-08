@@ -2,6 +2,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 const { devices } = require('@playwright/test');
+const { getSkipTestFiles } = require('./nala/libs/skip-tests.js');
 
 const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.6900.0 Mobile Safari/537.36 NALA-Acom';
@@ -17,13 +18,19 @@ const masFeatures = [
   'features/osttools/**/*.test.js',
 ];
 
-// Milo tests (non-MAS)
+// MEP tests
+const mepFeatures = [
+  'features/personalization/**/*.test.js',
+];
+
+// Milo tests (non MAS & MEP)
 const miloIgnore = isCI
   ? [
     'features/mas/**',
     'features/commerce/**',
     'features/promotions/**',
     'features/osttools/**',
+    'features/personalization/**',
     'features/dafloodgate/**',
   ]
   : []; // In local runs → allow @mas annotations to work
@@ -78,7 +85,11 @@ const config = {
   projects: [
     {
       name: 'milo-live-chromium',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('chromium'),
+      ],
+      workers: 4,
       use: {
         ...devices['Desktop Chrome'],
         userAgent: USER_AGENT_DESKTOP,
@@ -88,7 +99,11 @@ const config = {
 
     {
       name: 'milo-live-firefox',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('firefox'),
+      ],
+      workers: 5,
       use: {
         ...devices['Desktop Firefox'],
         userAgent: USER_AGENT_DESKTOP,
@@ -96,11 +111,14 @@ const config = {
     },
     {
       name: 'milo-live-webkit',
-      testIgnore: miloIgnore,
+      testIgnore: [
+        ...miloIgnore,
+        ...getSkipTestFiles('webkit'),
+      ],
+      workers: 5,
       use: {
         ...devices['Desktop Safari'],
         userAgent: USER_AGENT_DESKTOP,
-        workers: 5,
       },
     },
     /* MAS test
@@ -134,6 +152,40 @@ const config = {
       testMatch: isCI ? masFeatures : undefined, // only filter MAS tests in CI
       use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
     },
+
+    /* MEP test
+     * Workers are limited to 2 to reduce request pressure on EDS / AEM.live.
+     * To enable request-level throttling via eds-throttle.js instead:
+     *   1. Swap the @playwright/test import in MEP test files to nala-test.js.
+     *   2. Uncomment NALA_WORKER_COUNT below — eds-throttle.js uses it to derive
+     *      per-worker RPS automatically (floor(180 / workers)).
+     *   3. Optionally remove the per-project `workers` overrides (they are complementary).
+     */
+    // process.env.NALA_WORKER_COUNT = String(isCI ? 7 : 3);
+
+    {
+      name: 'mep-chromium',
+      workers: 2,
+      testMatch: isCI ? mepFeatures : undefined, // only filter MEP tests in CI
+      use: {
+        ...devices['Desktop Chrome'],
+        userAgent: USER_AGENT_DESKTOP,
+        channel: 'chrome',
+      },
+    },
+    {
+      name: 'mep-firefox',
+      workers: 2,
+      testMatch: isCI ? mepFeatures : undefined, // only filter MEP tests in CI
+      use: { ...devices['Desktop Firefox'], userAgent: USER_AGENT_DESKTOP },
+    },
+    {
+      name: 'mep-webkit',
+      workers: 2,
+      testMatch: isCI ? mepFeatures : undefined, // only filter MEP tests in CI
+      use: { ...devices['Desktop Safari'], userAgent: USER_AGENT_DESKTOP },
+    },
+
     /* Test Against Mobile View ports */
     {
       name: 'mobile-chrome-pixel5',
