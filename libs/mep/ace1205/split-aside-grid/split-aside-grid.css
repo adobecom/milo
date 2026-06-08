@@ -168,6 +168,9 @@
 
 @media (width >= 768px) {
   .split-aside-grid {
+    --dropdown-transition-duration: 400ms;
+    --dropdown-transition: var(--dropdown-transition-duration) var(--parallax-easing);
+
     padding-inline-end: 0;
     gap: unset;
     display: grid;
@@ -202,8 +205,16 @@
       width: 100%;
       height: 100%;
 
+      img {
+        opacity: 0;
+        transition: opacity var(--dropdown-transition);
+      }
+
       &[data-slot="0"] {
         opacity: 1;
+        img {
+          opacity: 1;
+        }
       }
 
       picture {
@@ -228,22 +239,13 @@
     grid-column: auto;
     grid-row: auto;
     flex-direction: row;
+    gap: var(--s2a-spacing-md);
     align-items: flex-start;
-    gap: var(--s2a-spacing-16);
     padding-inline: 0;
     cursor: pointer;
 
     &:not(:last-child) {
       margin-block-end: var(--s2a-spacing-xs);
-    }
-
-    &:not(.split-aside-grid-active) {
-      visibility: visible;
-      cursor: pointer;
-    }
-
-    &.split-aside-grid-active {
-      margin-block-end: var(--s2a-spacing-3xl);
     }
 
     .foreground {
@@ -253,7 +255,23 @@
       max-width: none;
       flex: 1;
       min-width: 0;
-      padding-block-start: var(--s2a-spacing-4);
+      padding-block-start: var(--s2a-spacing-2xs);
+
+      .content-container {
+        display: grid;
+        grid-template-rows: 0fr;
+        visibility: hidden;
+        transition: grid-template-rows var(--dropdown-transition),
+            visibility 0s linear var(--dropdown-transition-duration);
+        > div {
+          min-height: 0;
+          overflow: hidden;
+
+          :last-child {
+            margin-block-end: var(--s2a-spacing-3xl);
+          }
+        }
+      }
     }
 
     .link-container {
@@ -261,7 +279,8 @@
     }
 
     &:not(.split-aside-grid-active) {
-      align-items: center;
+      visibility: visible;
+      cursor: pointer;
 
       .foreground :is(h1, h2, h3, h4, h5, h6) {
         opacity: 0.48;
@@ -274,8 +293,10 @@
       }
     }
 
-    &:not(.split-aside-grid-active) .foreground > :not(:first-child) {
-      display: none;
+    &.split-aside-grid-active .content-container {
+      grid-template-rows: 1fr;
+      visibility: visible;
+      transition: grid-template-rows var(--dropdown-transition), visibility 0s linear 0s;
     }
   }
 
@@ -290,14 +311,14 @@
     border: 1px solid var(--s2a-color-transparent-white-12);
     border-radius: 6px;
     transition:
-      background-color 0.2s ease,
-      color 0.2s ease,
-      border-color 0.2s ease;
+      background-color var(--dropdown-transition),
+      color var(--dropdown-transition),
+      border-color var(--dropdown-transition);
 
     svg {
       width: 12px;
       height: 12px;
-      transition: transform 0.2s ease;
+      transition: transform var(--dropdown-transition);
     }
   }
 

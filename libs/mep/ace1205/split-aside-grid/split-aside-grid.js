@@ -42,6 +42,13 @@ function decorateItem(item, index) {
     content.classList.add('foreground');
     decorateBlockText(content, { heading: '5', body: 'md', button: 'md' });
     markStandaloneLinks(content);
+    const text = content.querySelectorAll('p');
+    const container = createTag(
+      'div',
+      { class: 'content-container' },
+      createTag('div', {}, [...text]),
+    );
+    content.appendChild(container);
   }
   if (media) {
     media.classList.add('media');
@@ -57,6 +64,7 @@ function decorateItem(item, index) {
   });
   toggle.innerHTML = CHEVRON_SVG;
   item.prepend(toggle);
+
   return { content, media, toggle };
 }
 
@@ -114,7 +122,7 @@ function setupBlock(el) {
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
       item.classList.toggle('split-aside-grid-active', isActive);
-      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope .split-aside-grid-item-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     });
     dotEls.forEach((dot, idx) => {
@@ -336,8 +344,8 @@ function setupBlock(el) {
 
   function selectByIndex(idx, item) {
     if (idx < 0 || idx >= slideNum) return;
+
     if (slotOf(idx) === 0) {
-      item.classList.toggle('split-aside-grid-active');
       const expanded = item.classList.toggle('split-aside-grid-active');
       const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
       toggle?.setAttribute('aria-expanded', String(expanded));
