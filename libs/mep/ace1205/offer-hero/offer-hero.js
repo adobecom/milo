@@ -36,8 +36,8 @@ const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
-const isMobile = () => window.innerWidth < 768;
-const isDesktop = () => window.innerWidth >= 1280;
+const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+const isDesktop = () => window.matchMedia('(min-width: 1280px)').matches;
 const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
   const [r, g, b, a] = args.split(',').map((part) => part.trim());
   return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
