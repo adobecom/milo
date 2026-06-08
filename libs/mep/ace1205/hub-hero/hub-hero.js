@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
+import icons from '../../../c2/assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
 let hoverTracked = false;
@@ -96,19 +97,6 @@ const scrollHubHeroTo = (el, progress) => {
   }, 0);
 };
 
-const disableHoverOnScroll = (carousel) => {
-  let timer;
-  const controller = new AbortController();
-  window.addEventListener('wheel', () => {
-    clearTimeout(timer);
-    carousel.classList.add('disable-hover');
-    timer = setTimeout(() => {
-      carousel.classList.remove('disable-hover');
-    }, 100);
-  }, { signal: controller.signal });
-  return controller;
-};
-
 const onSlideLeave = (event) => {
   const video = event?.target?.querySelector('video');
   if (!video) return;
@@ -136,7 +124,7 @@ const onCarouselLeave = (event) => {
 const onHover = (event) => {
   const isFocus = event.type === 'focus';
   const slideEl = event.target;
-  if (isFocus) scrollHubHeroTo(slideEl, 0.5);
+  if (isFocus) scrollHubHeroTo(slideEl, 0.6);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -155,7 +143,7 @@ const onHover = (event) => {
   if (!container) return;
 
   removeHovered(slideEl.closest('.hub-hero-carousel'));
-  slideEl.classList.add('hovered');
+  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
   container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
@@ -265,9 +253,10 @@ const handleCarousel = (slds) => {
   const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
-  const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
+  const scrollController = new AbortController();
+  window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
@@ -317,33 +306,57 @@ const handleGridImages = (imageContainers, slides) => {
   return container;
 };
 
+const decorateHubHeroCTA = (heroHeader) => {
+  const img = heroHeader?.querySelector('img');
+  const relativeSrc = img?.getAttribute('src');
+  if (relativeSrc?.startsWith('/')) {
+    img.src = getFederatedUrl(relativeSrc);
+  }
+  const linkEl = heroHeader.querySelector('a');
+  const href = linkEl?.href;
+  const sourceText = (linkEl ? linkEl.textContent : '').trim();
+  const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
+  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons?.arrowRightWhite);
+  const cta = createTag('a', { href, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
+  linkEl.parentElement.replaceChildren(cta);
+};
+
+const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, carouselImages, el }) => {
+  requestAnimationFrame(() => {
+    if (!isMobile()) {
+      const heroHeaderH = heroHeader.offsetHeight;
+      const gridH = grid.offsetHeight;
+      const carouselH = elasticCarousel.offsetHeight;
+      const bottomOffset = 80;
+      const index = 1140;
+      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + index + carouselImages.length}px`);
+    }
+    setCarouselSlideOffsets(grid, elasticCarousel);
+  });
+};
+
+const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
+
 export default async function init(el) {
-  const hero = el.querySelector('div:first-child');
-  hero.classList.add('hub-hero-header');
-  decorateBlockText(hero, { heading: '1' });
+  const heroHeader = el.querySelector('div:first-child');
+  const classes = [...el.classList];
 
+  decorateBlockText(heroHeader, {
+    heading: findSize(classes, 'heading-') ?? '1',
+    body: findSize(classes, 'body-') ?? 'l',
+    button: findSize(classes, 'button-') ?? 'l',
+  });
+  heroHeader.classList.add('hub-hero-header');
+  decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
-
-  hero.querySelector('.action-area a')?.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
-
+  heroHeader.querySelector('.promo-cta')?.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
   carouselHeader.classList.add('hub-hero-carousel-header');
-
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
   const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
-
   const grid = handleGridImages(gridImages, carouselImages);
   const elasticCarousel = handleCarousel(carouselImages);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
-
-  el.append(hero, grid, elasticCarousel);
-  requestAnimationFrame(() => {
-    if (!isMobile()) {
-      const heroHeaderH = hero.offsetHeight;
-      const gridH = grid.offsetHeight;
-      const carouselH = elasticCarousel.offsetHeight;
-      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + 1000 + carouselImages.length}px`);
-    }
-    setCarouselSlideOffsets(grid, elasticCarousel);
-  });
+  el.append(heroHeader, grid, elasticCarousel);
+  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, carouselImages, el });
 }

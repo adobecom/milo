@@ -7,7 +7,7 @@
 [dir="rtl"] .hub-hero-carousel-item-footer :is(h1, h2, h3, h4, h5, h6) {
   text-align: right;
 }
-[dir="rtl"] .hub-hero-carousel-item-container .hub-hero-carousel-item-header p {
+[dir="rtl"] .hub-hero-carousel-item-container .hub-hero-carousel-item-header * {
   text-align: right;
 }
 
@@ -26,24 +26,24 @@
   --hub-hero-carousel-item-max-width: 392px;
   --hub-hero-carousel-item-min-width: 292px;
   --hub-hero-carousel-item-hover-grow-index: 1.75;
-  --header-animation-range: contain 12% contain 38%;
-  --slide-animation-range: contain 0% contain 75%;
+  --header-animation-range: contain 30% contain 50%;
+  --slide-animation-range: contain 0% contain 100%;
   --grid-col-rise-animation-range: contain 0% contain 100%;
-  --grid-gap-animation-range: contain 0% contain 40%;
-  --carousel-items-top: 30%;
+  --grid-gap-animation-range: contain 0% contain 50%;
+  --carousel-items-top: 35%;
   --carousel-item-media-height: 394px;
   --slides: 4;
   --start-gap: 6rem;
   --end-gap: .5rem;
-  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + (var(--slides) * (var(--end-gap) * 2)));
 
-  --flat-header-offset: -53px;
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-min-width)) + ((var(--end-gap) * (var(--slides) - 1))));
+  /* --hub-hero-carousel-container-width-initial: calc((var(--slides) * var(--grid-img-width)) + ((var(--start-gap) * (var(--slides) - 1)))); */
 
-  --grid-col-one-offset: calc(-100px - var(--flat-header-offset));
-  --grid-col-two-offset: calc(36px - var(--flat-header-offset));
-  --grid-col-three-offset: calc(146px - var(--flat-header-offset));
-  --grid-col-four-offset: calc(36px - var(--flat-header-offset));
-  --grid-col-five-offset: calc(-100px - var(--flat-header-offset));
+  --grid-col-one-offset: 0px;
+  --grid-col-two-offset: 94px;
+  --grid-col-three-offset: 150px;
+  --grid-col-four-offset: 94px;
+  --grid-col-five-offset: 0px;
 
   width: 100%;
   overflow-x: clip;
@@ -67,27 +67,24 @@
   animation: hubHeroHeaderFade linear both;
   animation-timeline: --hub-hero;
   animation-range: contain 0% contain 15%;
-  /* height: var(--hub-hero-header-height); */
 }
 
 .hub-hero-header div[class^="body"] {
-  /* position: absolute; */
   inset: 0;
   top: var(--hub-hero-top-spacing);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  /* gap: var(--s2a-spacing-lg); */
 }
 
 .hub-hero-header div[class^="body"] p {
   margin-bottom: 0;
-  max-width: 574px;
+  max-width: 700px;
   &.eyebrow {
     margin-bottom: var(--s2a-spacing-md);
   }
-  &[class^="body"]:not(.action-area) {
+  &[class^="body"] {
     margin: var(--s2a-spacing-xs) 0 var(--s2a-spacing-lg) 0;
     font-weight: var(--s2a-font-weight-adobe-clean-regular);
   }
@@ -96,46 +93,6 @@
 .hub-hero-header div[class^="body"] h1 {
   color: var(--s2a-color-gray-1000);
   word-wrap: break-word;
-}
-
-.hub-hero-header .action-area .con-button {
-  background-color: var(--s2a-color-gray-1000);
-  color: var(--s2a-color-gray-25);
-  padding: var(--s2a-spacing-lg) 64px var(--s2a-spacing-lg) 54px;
-  border-radius: var(--s2a-border-radius-sm);
-  font-size: var(--s2a-typography-font-size-eyebrow);
-  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
-  line-height: var(--s2a-typography-line-height-eyebrow);
-  position: relative;
-  cursor: pointer;
-  border: 0;
-}
-
-.hub-hero-header .action-area .con-button::before {
-  content: "";
-  background-image: url('https://www.adobe.com/cc-shared/assets/img/product-icons/svg/acrobat-pro-64.svg');
-  position: absolute;
-  left: 12px;
-  height: 32px;
-  width: 32px;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-.hub-hero-header .action-area .con-button::after {
-  content: "";
-  background-image: url('https://www.adobe.com/dc-shared/fragments/tests/2026/q2/ace1205/fragments/assets/arrow-bottom.svg');
-  position: absolute;
-  padding: var(--s2a-spacing-xs);
-  height: 14px;
-  width: 14px;
-  right: 12px;
-  border-radius: 6px;
-  background-size: 42%;
-  background-repeat: no-repeat;
-  border: 1px solid var(--s2a-color-transparent-white-12);
-  background-color: var(--s2a-color-transparent-white-16);
-  background-position: center;
 }
 
 /** image grid */
@@ -161,41 +118,47 @@
 
 .hub-hero-image-grid-container-col:nth-child(1) {
   transform: translate(0, var(--grid-col-one-offset));
-  animation: hubHeroGridCol1 linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range),
+  animation: hubHeroGridCol1 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
+  animation-timeline: --hub-hero, --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
     entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(2) {
   transform: translate(0, var(--grid-col-two-offset));
-  animation: hubHeroGridCol2 linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range),
+  animation: hubHeroGridCol2 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
+  animation-timeline: --hub-hero, --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
     entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(3) {
   transform: translate(0, var(--grid-col-three-offset));
-  animation: hubHeroGridCol3 linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range),
+  animation: hubHeroGridCol3 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
+  animation-timeline: --hub-hero,
+    --hub-hero,
+    view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
     entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(4) {
   transform: translate(0, var(--grid-col-four-offset));
-  animation: hubHeroGridCol4 linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range),
+  animation: hubHeroGridCol4 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
+  animation-timeline: --hub-hero,
+    --hub-hero,
+    view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
     entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(5) {
   transform: translate(0, var(--grid-col-five-offset));
-  animation: hubHeroGridCol5 linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range),
+  animation: hubHeroGridCol5 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
+  animation-timeline: --hub-hero,
+    --hub-hero,
+    view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
     entry 0% exit 100%;
 }
 
@@ -213,22 +176,26 @@
   display: block;
 }
 
-/** carousel header */
 .hub-hero-carousel-header {
-  position: absolute;
+  position: relative;
+  height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
   will-change: auto;
-  animation: hubHeroCarouselHeaderFade linear both, hubHeroCarouselHeaderFloat linear both;
+  animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
 }
 
 .hub-hero-carousel-header>div {
   display: flex;
+  position: absolute;
+  left: 0;
+  right: 0;
+  transform: translateY(calc(-100% - var(--s2a-spacing-2xl)));
   flex-direction: column;
   will-change: auto;
-  animation: hubHeroCarouselHeaderShrink linear both;
+  animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
 }
@@ -243,6 +210,10 @@
   right: 0;
   z-index: 1;
   overflow-x: clip;
+  will-change: auto;
+  /* animation: hubHeroCarouselExit linear forwards; */
+  animation-timeline: --hub-hero;
+  animation-range: contain calc(100% - 180px) contain 100%;
 }
 
 .hub-hero-carousel-container {
@@ -250,6 +221,7 @@
   position: absolute;
   justify-content: center;
   left: 50%;
+  max-width: var(--hub-hero-carousel-container-width);
   transform: translateX(-50%);
 }
 
@@ -271,8 +243,10 @@
   contain: layout;
 }
 
-.hub-hero-carousel-item-header p {
+.hub-hero-carousel-item-header * {
+  letter-spacing: var(--s2a-font-letter-spacing-4xl);
   font-size: var(--s2a-font-size-lg);
+  line-height: var(--s2a-typography-line-height-eyebrow);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
   color: var(--s2a-color-gray-1000);
   margin: 0;
@@ -298,6 +272,7 @@
 .hub-hero-carousel-item-media picture {
   height: 100%;
 }
+
 .hub-hero-carousel-item-media img {
   transition: transform 0.3s var(--paralax-easing);
   object-fit: cover;
@@ -317,7 +292,7 @@
 .hub-hero-carousel-item-footer::after {
   content: "+";
   position: absolute;
-  padding: var(--s2a-spacing-md);
+  padding: var(--s2a-spacing-sm);
   height: var(--icon-size);
   width: var(--icon-size);
   right: var(--s2a-spacing-lg);
@@ -373,14 +348,9 @@
   .hub-hero {
     --hub-hero-height: 4220px;
     --hub-hero-top-spacing: 190px;
-    --start-gap: 2.5rem;
+    --start-gap: 4rem;
     --carousel-item-media-height: 300px;
     --grid-gap-animation-range: 15% 100%;
-    --grid-col-one-offset: -60px;
-    --grid-col-two-offset: 18px;
-    --grid-col-three-offset: 74px;
-    --grid-col-four-offset: 18px;
-    --grid-col-five-offset: -60px;
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
     --hub-hero-grip-col-float-mobile: 320%;
@@ -388,7 +358,7 @@
 
   .hub-hero-carousel-header {
     position: sticky;
-    top: 24%;
+    top: 22%;
     height: 0;
     overflow: visible;
     will-change: auto;
@@ -397,7 +367,11 @@
   .hub-hero-carousel-header>div {
     animation: hubHeroCarouselHeaderMobileLeave linear forwards;
     animation-timeline: --hub-hero;
-    animation-range: contain 50% contain 105%;
+    animation-range: contain 50% contain 102%;
+    position: relative;
+    left: unset;
+    right: unset;
+    transform: none;
   }
 
   .hub-hero-image-grid-container {
@@ -405,7 +379,7 @@
     flex-direction: row;
     z-index: 1;
     justify-content: center;
-    gap: 2.5rem;
+    gap: var(--start-gap);
     animation: none;
   }
 
@@ -603,6 +577,7 @@
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer::after {
     opacity: 1;
+    padding: var(--s2a-spacing-md);
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -621,7 +596,7 @@
     width: 100%;
   }
 
-  .hub-hero-carousel-item-container .hub-hero-carousel-item-header p {
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-header * {
     color: var(--s2a-color-gray-25);
     padding: var(--s2a-spacing-lg);
     text-align: left;
@@ -660,6 +635,17 @@
   .hub-hero {
     --hub-hero-top-spacing: 184px;
   }
+
+  /* Both h2s get translateY(4rem→0).
+     Top h2: the 4rem translateY exactly cancels the 4rem container descent
+             caused by gap shrinking (float uses own height via 100%) → top h2 is stationary.
+     Bottom h2: also starts 4rem below its final layout position and rises to meet the top h2. */
+  .hub-hero-carousel-header>div>* {
+    animation: hubHeroCarouselHeaderLineRise linear both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--header-animation-range);
+  }
+
   .hub-hero-image-grid-container-col:nth-child(2) div:nth-child(3) {
     display: none;
   }
@@ -670,6 +656,7 @@
 
   .hub-hero-carousel {
     padding: 0;
+    margin-bottom: 124px;
   }
 
   .hub-hero-carousel.disable-hover {
@@ -688,16 +675,19 @@
   }
 
   .hub-hero-carousel-item {
-    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .3s var(--paralax-easing);
+    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
-
+  
+  .hub-hero-carousel-item.hovered {
+    max-width: 555px;
+    width: calc((100vw/calc(var(--slides))) * var(--hub-hero-carousel-item-hover-grow-index));
+  }
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
     will-change: max-width, width;
     background-color: var(--s2a-color-gray-1000);
-    max-width: 555px;
-    width: calc((100vw/calc(var(--slides))) * var(--hub-hero-carousel-item-hover-grow-index));
-    transition: max-width .5s var(--paralax-easing), width .5s var(--paralax-easing), background-color .3s var(--paralax-easing);
+
+    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
@@ -705,20 +695,15 @@
     transform: scale(1.2);
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer p,
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header p,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer p,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header p {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-header *,
+  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *,
+  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-header * {
     color: var(--s2a-color-gray-25);
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer :is(h1, h2, h3, h4, h5, h6),
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer :is(h1, h2, h3, h4, h5, h6) {
-    color: var(--s2a-color-gray-25);
-  }
-
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer h2,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer h2 {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
+  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer * {
     max-width: 80%;
   }
 
@@ -728,14 +713,14 @@
   }
 
   .hub-hero-carousel-item:nth-child(1) {
-    animation: carouselSlideOffset1 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
+    animation: carouselSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(2) {
-    animation: carouselSlideOffset2 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
+    animation: carouselSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
@@ -746,20 +731,20 @@
     visibility: hidden;
     min-width: 0;
     flex-basis: 0;
-    animation: carouselSlide3Transition linear forwards;
+    animation: carouselSlide3Transition ease-out forwards;
     animation-timeline: --hub-hero;
-    animation-range: contain 0% contain 30%;
+    animation-range: contain 0% contain 50%;
   }
 
   .hub-hero-carousel-item:nth-child(4) {
-    animation: carouselSlideOffset4 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
+    animation: carouselSlideOffset4 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(5) {
-    animation: carouselSlideOffset5 linear, carouselSlideExpandSize linear, carouselSlideExpandLayout linear;
+    animation: carouselSlideOffset5 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
     animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
@@ -782,7 +767,7 @@
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
-    bottom: calc(var(--s2a-spacing-lg) - var(--icon-size) / 2);
+    bottom: calc(var(--s2a-spacing-lg) - 2px);
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-header {
@@ -802,11 +787,9 @@
   .hub-hero {
     --hub-hero-header-height: 332px;
     --start-gap: 2.75rem;
-    --grid-col-one-offset: -94px;
-    --grid-col-two-offset: 32px;
-    --grid-col-three-offset: 106px;
-    --grid-col-four-offset: 32px;
-    --grid-col-five-offset: -94px;
+    --grid-col-two-offset: 94px;
+    --grid-col-three-offset: 150px;
+    --grid-col-four-offset: 94px;
     --max-image-size: 292px;
   }
 
@@ -840,11 +823,22 @@
   }
 }
 
+/* custom media rule */
+@media (820px > width) {
+  .hub-hero {
+    --grid-img-width: var(--min-image-size);
+  }
+}
+
+
 /** desktop only */
 @media (1280px <=width) {
   .hub-hero {
     --hub-hero-carousel-item-max-width: 20vw;
     --hub-hero-top-spacing: 237px;
+    --grid-col-two-offset: 158px;
+    --grid-col-three-offset: 252px;
+    --grid-col-four-offset: 158px;
   }
 
   .hub-hero-carousel-container {
@@ -856,8 +850,17 @@
   }
 }
 
+/* XL desktop */
+@media (1400px < width) {
+  .hero {
+    --grid-col-two-offset: 184px;
+    --grid-col-three-offset: 292px;
+    --grid-col-four-offset: 184px;
+  }
+}
+
 /** custom media rule - 3 */
-@media (width >=1940px) {
+@media (width >=1480px) {
   .hub-hero {
     --grid-img-width: var(--max-image-size);
   }
@@ -887,7 +890,7 @@
 
   .hub-hero-carousel-container.stick-left,
   .hub-hero-carousel-container.stick-right {
-    /* remove stick behavior */
+    /* removes stick behavior */
   }
   
   .hub-hero-carousel-item:nth-child(3) {
@@ -962,6 +965,16 @@
 }
 
 /** animations */
+@keyframes hubHeroCarouselExit {
+  0% {
+    transform: translateY(0);
+  }
+
+  100% {
+    transform: translateY(-100vh);
+  }
+}
+
 @keyframes hubHeroGridGapShrink {
   0% {
     gap: var(--start-gap);
@@ -975,10 +988,16 @@
 @keyframes carouselGapShrink {
   0% {
     gap: var(--start-gap);
+    max-width: 300vw;
   }
+
+  /* 30% {
+    max-width: var(--hub-hero-carousel-container-width-initial);
+  } */
 
   100% {
     gap: var(--end-gap);
+    max-width: var(--hub-hero-carousel-container-width);
   }
 }
 
@@ -1071,7 +1090,7 @@
 
 @keyframes elasticMobileFirstSlide {
   0% {
-    transform: translateY(-320px);
+    transform: translateY(-290px);
     filter: contrast(1);
     opacity: 1;
   }
@@ -1125,7 +1144,7 @@
     transform: translate(0px, 20%);
   }
 
-  40% {
+  60% {
     transform: translate(0px, 0%);
   }
 }
@@ -1135,7 +1154,7 @@
     transform: translate(0px, calc(var(--grid-col-two-offset) + var(--carousel-slide-2-correction, 0px)));
   }
 
-  30% {
+  50% {
     transform: translate(0px, 0%);
   }
 
@@ -1146,7 +1165,7 @@
     transform: translate(0px, calc(var(--grid-col-four-offset) + var(--carousel-slide-4-correction, 0px)));
   }
 
-  45% {
+  50% {
     transform: translate(0px, 0%);
   }
 }
@@ -1160,7 +1179,7 @@
     transform: translate(0px, 20%);
   }
 
-  40% {
+  60% {
     transform: translate(0px, 0%);
   }
 }
@@ -1184,24 +1203,24 @@
     transform: translate(0, 0%);
   }
 
-  95% {
+  94% {
     transform: translate(0, -30%);
     opacity: 1;
   }
 
   100% {
-    transform: translate(0, -200%);
+    transform: translate(0, -100%);
     opacity: 0;
   }
 }
 
 @keyframes hubHeroCarouselHeaderFloat {
   0% {
-    transform: translate(0, 0);
+    transform: translate(0, calc((100% + var(--s2a-spacing-lg)) * -1));
   }
 
   10% {
-    transform: translate(0, 0);
+    transform: translate(0, calc((100% + var(--s2a-spacing-lg)) * -1));
   }
 
   100% {
@@ -1216,6 +1235,16 @@
 
   100% {
     gap: 0rem;
+  }
+}
+
+@keyframes hubHeroCarouselHeaderLineRise {
+  0% {
+    transform: translateY(4rem);
+  }
+
+  100% {
+    transform: translateY(0);
   }
 }
 
@@ -1370,7 +1399,7 @@
   }
 
   100% {
-    transform: translate(0, -40%);
+    transform: translate(0, -52%);
   }
 }
 
@@ -1388,9 +1417,9 @@
   0% {
     min-height: 250px;
   }
-  25% {
+  /* 25% {
     min-height: 300px;
-  }
+  } */
   100% {
     min-height: var(--carousel-item-media-height);
   }
@@ -1400,7 +1429,7 @@
     max-width: var(--grid-img-width);
   }
 
-  20% {
+  40% {
     max-width: var(--grid-img-width);
   }
 
@@ -1420,12 +1449,15 @@
     pointer-events: none;
   }
 
-  50% {
+  35% {
     padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
     pointer-events: none;
   }
 
-  51% {
+  55% {
+    pointer-events: none;
+  }
+  65% {
     pointer-events: all;
   }
 
