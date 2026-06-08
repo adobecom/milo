@@ -1026,7 +1026,7 @@
   }
 
   body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
-    max-width: calc(100% - 48px);
+    max-width: 1412px;
     width: calc(100% - 48px);
   }
 }
