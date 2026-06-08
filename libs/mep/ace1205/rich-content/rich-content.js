@@ -27,14 +27,20 @@ function promoteParagraphHeading(content, headingSize = '2', skipFirst = false) 
   if (bodyClass) target.classList.replace(bodyClass, `heading-${headingSize}`);
 }
 
-function decorateJumpLinks(content, foreground) {
-  const paras = [...(content?.querySelectorAll('p') ?? [])];
-  const jumpPara = paras.findLast((p) => p.querySelector('a') && [...p.childNodes].some(
-    (n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'),
-  ));
-  if (!jumpPara) return;
+function isJumpLinkRow(el) {
+  return [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent.includes('|'));
+}
 
-  const anchors = [...jumpPara.querySelectorAll('a')];
+function getSectionHash(anchor) {
+  const id = anchor.hash?.split('#')[1];
+  return id ? `#${id}` : '';
+}
+
+function decorateJumpLinks(content, foreground) {
+  const jumpRow = [...content?.querySelectorAll(':is(p, div):has(a)') ?? []].find(isJumpLinkRow);
+  if (!jumpRow) return;
+
+  const anchors = [...jumpRow.querySelectorAll('a')];
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
 
   anchors.forEach((anchor) => {
@@ -45,12 +51,12 @@ function decorateJumpLinks(content, foreground) {
     anchor.append(badge, label);
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
-      scrollToHashedElement(anchor.hash);
+      scrollToHashedElement(getSectionHash(anchor));
     });
     nav.append(anchor);
   });
 
-  jumpPara.remove();
+  jumpRow.remove();
   foreground.append(nav);
 }
 
@@ -94,10 +100,10 @@ function decorate(block, root = block) {
   const iconImg = firstP?.querySelector('img[src]');
 
   if (iconImg) iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
-  if (!isJumpLink) return;
 
   const bodyClass = firstP && [...firstP.classList].find((c) => c.startsWith('body-'));
   if (bodyClass) firstP.classList.replace(bodyClass, 'eyebrow');
+  if (!isJumpLink) return;
   decorateJumpLinks(content, foreground);
 }
 

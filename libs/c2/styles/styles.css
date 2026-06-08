@@ -985,6 +985,10 @@ p {
     overflow: hidden;
   }
 
+  .icon-button {
+    margin-inline-start: var(--s2a-spacing-sm);
+  } 
+
   &:hover,
   &:focus {
     .icon-button {
