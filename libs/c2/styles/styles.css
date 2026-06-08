@@ -605,7 +605,7 @@ h1, h2, h3, h4, h5, h6, [class*="title-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {
@@ -1138,7 +1138,7 @@ p {
   }
 
   @keyframes garage-door-line-height {
-    from { line-height: 0.6; }
+    from { line-height: 60%; }
   }
 
   /* Section 1 to section 2 parallax declarations */
@@ -1187,7 +1187,7 @@ p {
   }
 
   @keyframes text-reveal-up {
-    from { line-height: 3; }
+    from { line-height: 300%; }
   }
 }
 
