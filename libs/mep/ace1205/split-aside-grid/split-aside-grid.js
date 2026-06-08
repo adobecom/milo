@@ -64,7 +64,6 @@ function decorateItem(item, index) {
   });
   toggle.innerHTML = CHEVRON_SVG;
   item.prepend(toggle);
-
   return { content, media, toggle };
 }
 
@@ -122,7 +121,7 @@ function setupBlock(el) {
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
       item.classList.toggle('split-aside-grid-active', isActive);
-      const toggle = item.querySelector(':scope .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     });
     dotEls.forEach((dot, idx) => {
@@ -344,7 +343,6 @@ function setupBlock(el) {
 
   function selectByIndex(idx, item) {
     if (idx < 0 || idx >= slideNum) return;
-
     if (slotOf(idx) === 0) {
       const expanded = item.classList.toggle('split-aside-grid-active');
       const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');

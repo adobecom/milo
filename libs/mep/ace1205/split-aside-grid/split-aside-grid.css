@@ -348,7 +348,7 @@
     min-width: 340px;
   }
 
-  .split-aside-grid-item.split-aside-grid-active {
+  .split-aside-grid-item .foreground .content-container > div :last-child {
     margin-block-end: var(--s2a-spacing-4xl);
   }
 }
