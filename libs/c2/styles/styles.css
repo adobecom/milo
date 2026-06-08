@@ -1189,6 +1189,12 @@ span.hang-opening-quote {
         will-change: transform;
       }
 
+      &.masonry-layout > :not([class*="section-"]) {
+        --parallax-stagger-drift: 150px;
+
+        animation-timeline: view(block);
+      }
+
       /* Prolong animation for 2 rows */
       &.two-up:has(> :nth-child(3 of :not([class*="section-"]))),
       &.three-up:has(> :nth-child(4 of :not([class*="section-"]))),
@@ -1283,8 +1289,16 @@ span.hang-opening-quote {
     );
   }
 
+  .parallax-stagger-ltr.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc(var(--parallax-stagger-index) * var(--parallax-stagger-drift));
+  }
+
+  .parallax-stagger-rtl.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc((1 - var(--parallax-stagger-index)) * var(--parallax-stagger-drift));
+  }
+
   @keyframes enable-parallax-stagger {
-    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0), 0); }
     to { transform: translate3d(0, 0, 0); }
   }
 
