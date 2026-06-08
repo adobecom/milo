@@ -68,7 +68,6 @@ const saveActiveTabInStorage = (targetId, config) => {
 };
 
 function triggerTabEnterAnimation(panel) {
-  if (!window.matchMedia('(width >= 768px)').matches) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const cards = [...panel.querySelectorAll('.section merch-card')];
   if (!cards.length) return;
