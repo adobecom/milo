@@ -30,6 +30,14 @@ async function checkReady(compareChart) {
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success && success !== 'timeout') return;
 
+  const service = await initService();
+  const log = service.Log.module('mas-compare-chart-autoblock');
+  if (success === 'timeout') {
+    log.error(`${compareChart.tagName} did not initialize within given timeout`);
+  } else {
+    log.error(`${compareChart.tagName} failed to initialize`);
+  }
+
   const { env } = getConfig();
   if (env.name !== 'prod') {
     compareChart.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));

@@ -1,21 +1,34 @@
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import * as merch from '../../../libs/blocks/merch/merch.js';
+
+const compareChartState = {
+  checkReady() {
+    this.readyChecked = true;
+    return Promise.resolve(true);
+  },
+};
 
 if (!customElements.get('mas-compare-chart')) {
   customElements.define('mas-compare-chart', class extends HTMLElement {
     checkReady() {
-      this.readyChecked = true;
-      return Promise.resolve(true);
+      return compareChartState.checkReady.call(this);
     }
   });
 }
 
-const { default: init } = await import('../../../libs/blocks/mas-compare-chart-autoblock/mas-compare-chart-autoblock.js');
+const {
+  default: init,
+  createCompareChart,
+} = await import('../../../libs/blocks/mas-compare-chart-autoblock/mas-compare-chart-autoblock.js');
 
 const BASE_CONFIG = {
   codeRoot: '/libs',
   env: { name: 'stage' },
 };
+
+const VPN_ERROR = 'Failed to load. Please check your VPN connection.';
 
 function createLink(href) {
   const a = document.createElement('a');
@@ -24,13 +37,36 @@ function createLink(href) {
   return a;
 }
 
+async function setupServiceLogStub() {
+  await merch.initService(true);
+  const service = await merch.initService();
+  const logError = sinon.stub();
+  service.Log = { module: () => ({ error: logError }) };
+  return logError;
+}
+
+function appendLink(fragment) {
+  const p = document.createElement('p');
+  const a = createLink(`https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=${fragment}`);
+  p.append(a);
+  document.body.append(p);
+  return a;
+}
+
 describe('mas-compare-chart-autoblock', () => {
   beforeEach(() => {
+    compareChartState.checkReady = function checkReadySuccess() {
+      this.readyChecked = true;
+      return Promise.resolve(true);
+    };
     setConfig(BASE_CONFIG);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     document.body.innerHTML = '';
+    document.head.querySelectorAll('mas-commerce-service').forEach((el) => el.remove());
+    sinon.restore();
+    await merch.initService(true);
   });
 
   it('creates mas-compare-chart wrapping aem-fragment with correct attributes', async () => {
@@ -134,5 +170,49 @@ describe('mas-compare-chart-autoblock', () => {
     expect(fragments.length).to.equal(2);
     expect(fragments[0].getAttribute('loading')).to.not.exist;
     expect(fragments[1].getAttribute('loading')).to.equal('cache');
+  });
+
+  it('shows VPN error when checkReady fails in non-prod', async () => {
+    const logError = await setupServiceLogStub();
+    compareChartState.checkReady = () => Promise.resolve(false);
+
+    const a = appendLink('compare-chart-fail');
+    await createCompareChart(a, { fragment: 'compare-chart-fail' });
+
+    const compareChart = document.querySelector('mas-compare-chart');
+    expect(compareChart.textContent).to.contain(VPN_ERROR);
+    expect(logError.calledOnce).to.be.true;
+    expect(logError.firstCall.args[0]).to.equal('MAS-COMPARE-CHART failed to initialize');
+  });
+
+  it('shows VPN error on timeout in non-prod', async () => {
+    const logError = await setupServiceLogStub();
+    compareChartState.checkReady = () => new Promise(() => {});
+    const clock = sinon.useFakeTimers({ shouldAdvanceTime: true });
+
+    const a = appendLink('compare-chart-timeout');
+    const createPromise = createCompareChart(a, { fragment: 'compare-chart-timeout' });
+    await clock.tickAsync(5001);
+    await createPromise;
+    clock.restore();
+
+    const compareChart = document.querySelector('mas-compare-chart');
+    expect(compareChart.textContent).to.contain(VPN_ERROR);
+    expect(logError.calledOnce).to.be.true;
+    expect(logError.firstCall.args[0]).to.equal('MAS-COMPARE-CHART did not initialize within given timeout');
+  });
+
+  it('does not show VPN error in prod', async () => {
+    const logError = await setupServiceLogStub();
+    compareChartState.checkReady = () => Promise.resolve(false);
+    setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+
+    const a = appendLink('compare-chart-prod-fail');
+    await createCompareChart(a, { fragment: 'compare-chart-prod-fail' });
+
+    const compareChart = document.querySelector('mas-compare-chart');
+    expect(compareChart.textContent).to.not.contain(VPN_ERROR);
+    expect(logError.calledOnce).to.be.true;
+    expect(logError.firstCall.args[0]).to.equal('MAS-COMPARE-CHART failed to initialize');
   });
 });
