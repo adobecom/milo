@@ -33,11 +33,6 @@
     border-block-end: 1px solid var(--s2a-color-transparent-white-32);
   }
 
-  @media (hover: hover) {
-    &:hover {
-      background: var(--s2a-color-transparent-white-08);
-    }
-  }
 }
 
 .hover-list-number {
@@ -101,7 +96,9 @@
   }
 
   .hover-list-number {
+    align-self: center;
     min-inline-size: var(--s2a-spacing-24);
+    text-align: center;
   }
 
   .hover-list-media {
@@ -136,10 +133,18 @@
   }
 
   .hover-list-item {
+    align-items: center;
     block-size: 100px;
     cursor: pointer;
     gap: var(--s2a-spacing-md);
+    padding-block: 0;
     padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--s2a-color-transparent-white-08);
+      }
+    }
   }
 
   .hover-list-number {
@@ -174,8 +179,3 @@
   }
 }
 
-@media (width >= 1440px) {
-  .hover-list-number {
-    text-align: center;
-  }
-}

@@ -55,8 +55,8 @@ function setupStickyBoundary(headline, list) {
   const update = () => {
     if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
     const items = [...list.querySelectorAll('.hover-list-item')];
-    const first4Height = items.slice(0, 5).reduce((sum, el) => sum + el.offsetHeight, 0);
-    wrapper.style.height = `${first4Height + headline.offsetHeight - 1}px`;
+    const secondLastBoundary = items.slice(0, items.length - 2).reduce((sum, el) => sum + el.getBoundingClientRect().height, 0);
+    wrapper.style.height = `${secondLastBoundary + headline.getBoundingClientRect().height}px`;
   };
 
   new ResizeObserver(update).observe(list);
@@ -193,7 +193,7 @@ function decorate(block) {
   rows.slice(1).forEach((row, i) => {
     const [textCol, mediaCol] = row.children;
     const item = createTag('li', { class: 'hover-list-item' });
-    const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1));
+    const number = createTag('span', { class: 'hover-list-number eyebrow' }, `${i + 1}.`);
     const text = createTag('div', { class: 'hover-list-text heading-5' });
     if (textCol) text.append(...textCol.childNodes);
     item.append(number, text);
