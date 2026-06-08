@@ -197,7 +197,7 @@
 }
 
 .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.80) -0.02%, rgba(0, 0, 0, 0.50) 39.99%, rgba(0, 0, 0, 0.20) 59.99%, rgba(0, 0, 0, 0.80) 100%);
+  background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-50) 39.99%, var(--s2a-color-transparent-black-20) 59.99%, var(--s2a-color-transparent-black-80) 100%);
 }
 
 .section:not(.has-background):has(.rich-content.jump-link.hero) {
@@ -206,7 +206,7 @@
 
 @media (width >= 768px) {
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.80) -0.02%, rgba(0, 0, 0, 0.00) 39.45%, rgba(0, 0, 0, 0.00) 74.49%, rgba(0, 0, 0, 0.80) 100%);
+    background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
   }
 
   .rich-content .content [class*="body-"]:not(.action-area) {
