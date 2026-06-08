@@ -628,7 +628,7 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-heading);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {

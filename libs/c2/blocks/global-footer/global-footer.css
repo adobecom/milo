@@ -54,7 +54,7 @@
   border-color: var(--s2a-color-transparent-white-12);
 }
 
-.feds-footer-wrapper .feds-menu-headline::after {
+.feds-footer-wrapper .feds-menu-headline-caret {
   border-color: var(--s2a-color-gray-25);
 }
 

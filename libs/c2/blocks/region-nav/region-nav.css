@@ -82,6 +82,10 @@
   text-decoration: underline;
 }
 
+.dialog-modal:has(.region-nav) > .fragment {
+  max-height: calc((100svh - 6px) - 2em);
+}
+
 @media (min-width: 600px) {
   .region-nav > div:nth-of-type(2) {
     column-count: 3;
