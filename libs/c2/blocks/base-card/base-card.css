@@ -51,7 +51,7 @@
     padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
 
     :is(h1, h2, h3, h4, h5, h6) {
-      margin-bottom: var(--s2a-spacing-8);
+      margin-bottom: var(--s2a-spacing-2xs);
       color: var(--s2a-color-gray-1000);
     }
 
@@ -59,9 +59,9 @@
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
       display: inline-block;
-      margin-top: var(--s2a-spacing-24);
+      margin-top: var(--s2a-spacing-md);
       margin-inline-end: var(--s2a-spacing-12);
-      margin-bottom: var(--s2a-spacing-4);
+      margin-bottom: var(--s2a-spacing-2xs);
 
       &::before {
         content: '';
@@ -78,7 +78,7 @@
 
   &.featured {
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-2xl) var(--s2a-spacing-md);
     }
 
     .parallax-featured-card-media {
@@ -153,11 +153,11 @@
 @media (width >= 1280px) {
   .base-card {
     &.featured .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-64) var(--s2a-spacing-md);
     }
 
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
     }
   }
 }
