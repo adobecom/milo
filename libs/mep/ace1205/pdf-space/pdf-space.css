@@ -2,7 +2,9 @@
   height: 650vh;
 
   --card-label-bg: #e1e1f1;
-  --card-placeholder-bg: #ececec;
+  --text-block-width-mobile: 273px;
+  --text-block-width-tablet: 292px;
+  --text-block-width-desktop: 367px;
 
   /*
    * Stacking order within .pdf-space-stage (isolated stacking context):
@@ -31,7 +33,7 @@
     top: 0;
     left: 0;
     z-index: 20;
-    width: 273px;
+    width: var(--text-block-width-mobile);
     text-align: left;
     will-change: transform, opacity;
 
@@ -165,7 +167,6 @@
     width: 192px;
     height: 230px;
     overflow: hidden;
-    background: var(--card-placeholder-bg);
     border-radius: 10px;
     will-change: transform, opacity;
     contain: layout style;
@@ -259,10 +260,14 @@
   }
 
   @media (width >= 768px) {
+    --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
+
+    & {
+      padding-bottom: 44px;
+    }
+
     .text-block {
-      width: 19vw;
-      max-width: 367px;
-      min-width: 292px;
+      width: var(--text-block-width-tablet);
     }
 
     .acrobat-mobile-mockup {
@@ -271,8 +276,8 @@
 
     .acrobat-desktop-mockup {
       display: block;
-      width: clamp(680px, 70vw, 971px);
-      left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
+      width: var(--desktop-mockup-width);
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
     }
 
     .acrobat-desktop-panel {
@@ -280,8 +285,8 @@
     }
 
     .acrobat-title {
-      left: calc((100vw - clamp(680px, 70vw, 971px)) / 2);
-      width: clamp(680px, 70vw, 971px);
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
+      width: var(--desktop-mockup-width);
       transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
 
       .heading {
@@ -298,29 +303,17 @@
   /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
 
   @media (width >= 1280px) {
+    --desktop-mockup-width: min(68.6vw, 971px);
+
     .text-block {
-      min-width: 0;
-    }
-
-    .acrobat-desktop-mockup {
-      width: min(68.6vw, 971px);
-      left: calc((100vw - min(68.6vw, 971px)) / 2);
-    }
-
-    .acrobat-title {
-      left: calc((100vw - min(68.6vw, 971px)) / 2);
-      width: min(68.6vw, 971px);
+      width: var(--text-block-width-desktop);
     }
   }
 
-  /*
-   * No-motion fallback: a static, normal-flow document built by buildNoMotion()
-   * (for prefers-reduced-motion) instead of the sticky scroll-driven stage. No
-   * transforms, no pinning. The resting card grid + marketing copy sit above
-   * the Acrobat mockup, which has the cards slotted in via percentage-positioned
-   * clones (.no-motion-slotted-card). These rules override the absolute/sticky
-   * positioning above by higher specificity (.pdf-space.no-motion ...).
-   */
+  @media (width >= 1440px) {
+    --desktop-mockup-width: min(68.6vw, 1200px);
+  }
+
   &.no-motion {
     height: auto;
 
@@ -337,14 +330,15 @@
       position: relative;
       margin: 0 auto;
       max-width: 1200px;
-      padding: var(--s2a-spacing-2xl, 48px) var(--s2a-spacing-lg, 24px);
+      padding: var(--s2a-spacing-80) var(--s2a-spacing-40) 0;
     }
 
     .no-motion-card-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: var(--s2a-spacing-sm, 16px);
-      margin-bottom: var(--s2a-spacing-xl, 32px);
+      align-items: start;
+      gap: var(--s2a-spacing-sm);
+      margin-bottom: var(--s2a-spacing-xl);
     }
 
     .no-motion-card-desktop-only {
@@ -354,14 +348,10 @@
     .no-motion-card {
       margin: 0;
 
-      /* The cloned <picture> is the rounded, clipped image box (per-card
-         aspect-ratio is set inline); the label flows below it, as in the
-         settled motion state. */
       picture {
         display: block;
         width: 100%;
         overflow: hidden;
-        background: var(--card-placeholder-bg);
         border-radius: 10px;
       }
 
@@ -375,7 +365,7 @@
     }
 
     .no-motion-card-label {
-      margin-top: var(--s2a-spacing-2xs, 8px);
+      margin-top: var(--s2a-spacing-2xs);
     }
 
     .text-block,
@@ -388,7 +378,7 @@
 
     .text-block {
       width: 100%;
-      max-width: 367px;
+      max-width: var(--text-block-width-desktop);
     }
 
     .acrobat-title {
@@ -398,14 +388,14 @@
 
     .acrobat-cta {
       width: fit-content;
-      margin: var(--s2a-spacing-lg, 24px) auto 0;
+      margin: var(--s2a-spacing-lg) auto 0;
     }
 
     .acrobat-mobile-mockup,
     .acrobat-desktop-mockup {
       position: relative;
       left: auto;
-      margin: var(--s2a-spacing-lg, 24px) auto 0;
+      margin: var(--s2a-spacing-lg) auto 0;
       transform: none;
     }
 
@@ -418,7 +408,7 @@
     .acrobat-desktop-mockup {
       display: none;
       width: 100%;
-      max-width: 971px;
+      max-width: 1200px;
     }
 
     .acrobat-desktop-panel picture {
@@ -458,10 +448,11 @@
       }
     }
 
-    /* Match settled motion: the text-block sits below the grid (block flow, not
-       beside it) and right-aligns to the grid edge on desktop. Below 1280px it
-       stays left-aligned, as the animated layout does. */
     @media (width >= 1280px) {
+      .no-motion-grid-section {
+        padding: var(--s2a-spacing-124) var(--s2a-spacing-64) 0;
+      }
+
       .text-block {
         margin-left: auto;
       }

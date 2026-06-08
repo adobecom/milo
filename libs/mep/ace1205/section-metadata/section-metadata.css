@@ -65,21 +65,17 @@
     grid-auto-rows: initial;
   }
 
-  &.bento .dark .explore-card-content [class*='body-'] {
-    color: inherit;
-  }
-
   &.bento .explore-card-content {
     padding-inline: 0;
     padding-bottom: var(--s2a-spacing-xl);
     padding-top: 0;
 
-    & [class*='heading-'] {
+    [class*='heading-'] {
       z-index: 1;
       margin-bottom: var(--s2a-spacing-2xs);
     }
 
-    & [class*='body-'] {
+    [class*='body-'] {
       margin-top: initial;
       margin-bottom: 0;
       opacity: 1;
@@ -90,6 +86,7 @@
     [class*='heading-'],
     [class*='body-'] {
       padding-inline: var(--s2a-spacing-xl);
+      max-width: 450px;
     }
 
     .explore-card-foreground {
@@ -128,7 +125,10 @@
       }
     }
   }
-  
+
+  &.bento .dark .explore-card-content [class*='body-'] {
+    color: inherit;
+  }
 
   &.bento .scrim {
     .explore-card-content {
@@ -227,9 +227,7 @@
 }
 
 .section-background {
-  & {
-    z-index: 0;
-  }
+  z-index: 0;
 
   &,
   & > * {
@@ -257,23 +255,20 @@
 
 .section.scrim .section-background {
   &::after {
-    --scrim-stop: 80%;
-    --scrim-dir: right;
+    --scrim-stop-start: -84.26%;
+    --scrim-stop-end: 25.77%;
 
     content: '';
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(
-      to var(--scrim-dir),
-      rgb(0 0 0 / 60%) var(--scrim-stop),
-      rgb(0 0 0 / 40%) calc((var(--scrim-stop) + 100%) / 2),
-      transparent
-    );
+    background-image: linear-gradient(271deg,
+      var(--s2a-color-transparent-black-00) var(--scrim-stop-start),
+      var(--s2a-color-transparent-black-64) var(--scrim-stop-end));
     pointer-events: none;
   }
 
   [dir='rtl'] &::after {
-    --scrim-dir: left;
+    scale: -1 1;
   }
 }
 
@@ -318,17 +313,13 @@
         .content-aux {
           aspect-ratio: 4 / 1.65;
         }
-
-        [class*='heading-'],
-        [class*='body-'] {
-          max-width: 450px;
-        }
       }
     }
   }
 
   .section.scrim .section-background::after {
-    --scrim-stop: 60%;
+    --scrim-stop-start: 0.88%;
+    --scrim-stop-end: 69.65%;
   }
 }
 

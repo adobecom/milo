@@ -128,6 +128,8 @@ const C2_BLOCKS = [
   'social-proof',
   'visually-hidden',
   'product-marquee-grid',
+  'hover-list',
+  'tabs',
 ];
 
 const AUTO_BLOCKS = [

@@ -985,6 +985,10 @@ p {
     overflow: hidden;
   }
 
+  .icon-button {
+    margin-inline-start: var(--s2a-spacing-sm);
+  } 
+
   &:hover,
   &:focus {
     .icon-button {
@@ -1064,7 +1068,7 @@ span.hang-opening-quote {
   transform: translateX(100%);
 }
 
-.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast):not(:has(.floating-cta)) {
+.section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
 /* TODO: Parallax styles should be loaded separately and conditionally */
@@ -1392,7 +1396,7 @@ span.hang-opening-quote {
     overflow: clip;
     animation: dg-top-door ease-out both, dg-exit ease-out both;
     animation-timeline: view(), view();
-    animation-range: entry 0% entry 70%, exit 0% exit 90%;
+    animation-range: entry 0% entry 70%, exit 40% exit 90%;
     animation-composition: replace, add;
   }
 
@@ -1526,5 +1530,9 @@ span.hang-opening-quote {
   :root {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
+  }
+
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
+    animation-range: entry 0% entry 70%, exit 50% exit 90%;
   }
 }
