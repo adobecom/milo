@@ -338,6 +338,34 @@ function setDefaultValues() {
   });
 }
 
+function watchMasContent() {
+  const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
+
+  const isMasNode = (node) => node.nodeType === Node.ELEMENT_NODE
+    && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR));
+
+  const hasMasChanges = (mutations) => mutations.some(
+    (m) => [...m.addedNodes].some(isMasNode),
+  );
+
+  const refreshMasSummary = () => {
+    const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
+    if (!bodyEl) return;
+    bodyEl.replaceChildren(...getMasSummary().flatMap(([label, value]) => (
+      Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
+    )));
+  };
+
+  let debounceTimer;
+  const observer = new MutationObserver((mutations) => {
+    if (!hasMasChanges(mutations)) return;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(refreshMasSummary, 200);
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 async function buildOverlay() {
   const [svgData, gnavOffset] = await Promise.all([
     fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
@@ -358,6 +386,7 @@ async function init() {
   setEventListeners();
   setDefaultValues();
   setPreviewButton();
+  watchMasContent();
 }
 
 init();
