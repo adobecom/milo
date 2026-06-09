@@ -59,8 +59,8 @@ function getGnavOffset() {
     const height = calculate();
     if (height) { resolve(height); return; }
     const observer = new MutationObserver(() => {
-      const h = calculate();
-      if (h) { observer.disconnect(); resolve(h); }
+      const calculation = calculate();
+      if (calculation) { observer.disconnect(); resolve(calculation); }
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   });
@@ -323,9 +323,9 @@ function setEventListeners() {
 }
 
 function setDefaultValues() {
-  const { mepCaasHighlight, mepMasHighlight, mepOtherHighlight, mepMepHighlight } = getParameters();
+  const { mepCaasHighlight, mepMasHighlight, mepOtherHighlight, mepHighlight } = getParameters();
   [
-    ['#toggle-mep', mepMepHighlight],
+    ['#toggle-mep', mepHighlight],
     ['#toggle-caas', mepCaasHighlight],
     ['#toggle-mas', mepMasHighlight],
     ['#toggle-other-fragments', mepOtherHighlight],
