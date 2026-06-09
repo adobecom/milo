@@ -1,8 +1,6 @@
 /* eslint-disable */
-/* Extracted from globe.js — part of the verbatim hub-creative offer-globe.js port.
-   GLOBE_MARKUP + buildGlobeDom: the DOM the runtime expects, built into the block.
-   Style cleanup (no-var, naming, max-len) is one tracked refactor task; the
-   eslint-disable is intentional until then. See globe.js / PROGRESS.md. */
+/* GLOBE_MARKUP + buildGlobeDom: the DOM the runtime expects, built into the block.
+   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
 
 // ── DOM the runtime expects ──────────────────────────────────────────────────
 // The original prototype hand-authored these nodes in index.html. We build them
@@ -13,7 +11,7 @@
 // relative/sticky ancestors here (no transform/filter on the chain).
 const GLOBE_MARKUP = `
   <div class="offer-world" id="offer-world">
-    <canvas id="offer-globe-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:95;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+    <canvas id="offer-globe-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
   </div>
 
   <svg id="ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">

@@ -1,8 +1,6 @@
 /* eslint-disable */
-/* Extracted from globe.js — part of the verbatim hub-creative offer-globe.js port.
-   GLSL source strings for the card + modal ShaderMaterials.
-   Style cleanup (no-var, naming, max-len) is one tracked refactor task; the
-   eslint-disable is intentional until then. See globe.js / PROGRESS.md. */
+/* GLSL source strings for the card + modal ShaderMaterials.
+   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
 
 // ── Modal SDF shader material ─────────────────────────────────────────────
 // Used only for the modal-active card. A rasterized alphaMap will always pixelate

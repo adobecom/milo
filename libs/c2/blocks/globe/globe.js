@@ -1,9 +1,8 @@
 /* eslint-disable */
-/* PROTOTYPE PORT — lint disabled for the verbatim ES5 runtime ported from the
-   hub-creative offer-globe.js prototype. To be cleaned up (no-var, naming,
-   max-len, etc.) during the refactor pass. See PROGRESS.md. */
+/* lint disabled — ES5 style from the ported prototype, to be cleaned up
+   (no-var, naming, max-len, etc.) during the refactor pass. See PROGRESS.md. */
 /* ─────────────────────────────────────────────────────────────────────────
-   Offer Globe — Three.js WebGL globe variant.
+   Offer Globe — Three.js WebGL scrolled hero.
 
    Phases (progress 0→1 across 850vh .offer-pin-spacer):
      0.00 – 0.55  Arc: 45 cards rotate across viewport
@@ -188,11 +187,10 @@ function fibSpherePos(i, total, radius) {
 }
 
 
-// The globe runtime, ported verbatim from the hub-creative offer-globe.js
-// prototype. Originally an IIFE exposing window.offerGlobe; now a factory that
-// returns { init, destroy }. See PROGRESS.md for the porting notes:
-//   - gsap.ticker → requestAnimationFrame (startTicker/stopTicker below)
-//   - Lenis reads → window.scrollY
+// The globe runtime. Originally an IIFE exposing window.offerGlobe in the
+// hub-creative prototype; now a factory returning { init, destroy }.
+// Key changes from the prototype: gsap.ticker → requestAnimationFrame,
+// Lenis reads → window.scrollY.
 function createGlobeRuntime(authoredCards) {
   // rAF driver replacing gsap.ticker.
   let _rafId = 0;
@@ -341,7 +339,7 @@ function createGlobeRuntime(authoredCards) {
   let _ctx = null;
 
 
-  // ── Arc math ── direct port of CSS tile variant ────────────────────────────
+  // ── Arc math ─────────────────────────────────────────────────────────────────
   function arcRotationEase(t) {
     const k = 0.08; const
       a = 1 / (k * (2 - k));

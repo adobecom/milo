@@ -22,10 +22,8 @@ that fades in near the end, and an off-screen a11y button gallery.
 
 ## Current state — what's done
 
-The **prototype is ported and lands** (lint passes, parses clean). It was a
-deliberate **verbatim-wrap**: the 3000-line prototype runtime was copied as-is
-and wrapped in a Milo block entry point, so behavior is 1:1 with the original.
-Visual verification in-browser is still **pending**.
+The **prototype is ported and lands** (lint passes, parses clean). Visual
+verification in-browser is still **pending**.
 
 An **authoring layer** is complete: `parseAuthoredContent(el)` turns authored
 card rows into the card model the runtime consumes. Content comes from a DA
@@ -34,20 +32,17 @@ fragment fetched via `.plain.html`. See *Authoring contract* below.
 A few behaviors now **intentionally diverge** from the prototype (e.g. the
 desktop modal overlays the card info on the image instead of placing it in a
 right-hand column, and `globe.css` carries its own type-scale tokens). These are
-tracked under **Deliberate divergences from the prototype** in `PROGRESS.md` —
-check it before "restoring parity" with `hub-creative/`.
+tracked under **Deliberate divergences from the prototype** in `PROGRESS.md`.
 
-`globe.js` has since been **partially split into modules** for readability — the
-*self-contained* pieces were extracted verbatim (no logic change): authoring
-(`authoring.js`), DOM markup (`markup.js`), and shader strings (`shaders.js`).
-The tuning constants and pure helpers (easing/lerp/`fibSpherePos`) live **at module
-scope inside `globe.js`**, grouped under `// ── Section ──` headers (pdf-space
-style; bare const names kept so the verbatim render loop is untouched). The
-**stateful render core stays in `globe.js`** too (its ~80 shared closure variables
-can't be modularised without threading a state object — a rewrite of the verbatim
-port, deliberately deferred). Each extracted module keeps the same
-`/* eslint-disable */` banner, so the delint pass remains the single tracked task
-(#2 below).
+`globe.js` has been **partially split into modules** for readability — the
+self-contained pieces were extracted: authoring (`authoring.js`), DOM markup
+(`markup.js`), and shader strings (`shaders.js`). The tuning constants and pure
+helpers (easing/lerp/`fibSpherePos`) live **at module scope inside `globe.js`**,
+grouped under `// ── Section ──` headers (pdf-space style). The **stateful render
+core stays in `globe.js`** too (its ~80 shared closure variables can't be
+modularised without threading a state object — a refactor tracked as task #3
+below). Each extracted module keeps the same `/* eslint-disable */` banner, so
+the delint pass remains one tracked task (#2 below).
 
 | File | What it is |
 | --- | --- |
@@ -68,16 +63,14 @@ Block is registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`).
 
 ## The port, in one paragraph
 
-`globe.js` = the prototype's `offer-globe.js` copied verbatim, with 4 surgical
-changes: (1) the IIFE became a `createGlobeRuntime()` factory returning
+`globe.js` = the prototype's `offer-globe.js` adapted into a Milo block with 4
+structural changes: (1) the IIFE became a `createGlobeRuntime()` factory returning
 `{ init, destroy }`; (2) `gsap.ticker` → a `requestAnimationFrame` driver
 (`startTicker`/`stopTicker`); (3) Lenis scroll reads → `window.scrollY`, and the
 modal's `Lenis.stop()` → a `.modal-open { overflow:hidden }` CSS lock; (4) a new
 `export default async init(el)` that injects the required DOM (`GLOBE_MARKUP`)
 into the block, instantiates the runtime, and tears down via a `MutationObserver`.
 THREE is a static ES module import (`import * as THREE from './three.module.min.js'`).
-**Everything between the factory open and its `return { init, destroy }` is
-unchanged prototype code** — treat it as such.
 
 ## How to run / verify
 
@@ -150,13 +143,9 @@ cards → partial DOM cards (if Milo already resolved the link, e.g. legacy page
 
 ## Gotchas for future-you
 
-- **`globe.js` lint is disabled on purpose.** It's verbatim ES5. Don't "fix lint"
-  piecemeal — it's tracked as a single refactor task (#2 above). Parse errors
-  still surface; style errors don't.
-- **Don't edit inside the factory casually.** The 3000 lines between
-  `function createGlobeRuntime()` and its `return { init, destroy }` are ported
-  prototype code. Cross-reference `hub-creative/scripts/offer-globe.js` (and its
-  line-ref map in `PROGRESS.md`) before changing render/phase logic.
+- **`globe.js` lint is disabled on purpose.** ES5 style from the ported prototype.
+  Don't "fix lint" piecemeal — it's tracked as a single refactor task (#2 above).
+  Parse errors still surface; style errors don't.
 - **Card content is authored; the chrome/DOM is JS-built.** `init(el)` first
   calls `parseAuthoredContent(el)` (reads arc-copy, pull-quote, and the fragment
   href), THEN `buildGlobeDom(el)` wipes the block and injects `GLOBE_MARKUP`

@@ -1,8 +1,6 @@
 /* eslint-disable */
-/* Extracted from globe.js — part of the verbatim hub-creative offer-globe.js port.
-   Authoring layer: parses the block rows + fetches the card fragment.
-   Style cleanup (no-var, naming, max-len) is one tracked refactor task; the
-   eslint-disable is intentional until then. See globe.js / PROGRESS.md. */
+/* Authoring layer: parses the block rows + fetches the card fragment.
+   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
 
 // ── Authoring ────────────────────────────────────────────────────────────────
 // Adobe app catalog used to render the modal badge chips (the id drives the

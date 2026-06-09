@@ -1,21 +1,17 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   Globe — C2 block. Ported from hub-creative offer-section.css (globe slice).
-   Tile-variant selectors (.offer-card*, .offer-headline, .offer-copy) are
-   intentionally omitted. See PROGRESS.md.
+   Globe — C2 block styles. Ported from hub-creative offer-section.css.
 
    Two stylelint rules are disabled file-wide, both deliberate:
    • selector-class-pattern — class names are BEM (.offer-pullquote__quote,
-     .card-modal__badge-icon--ps). This is the Milo-wide convention; the names
-     are also queried verbatim by globe.js (GLOBE_MARKUP / querySelector) and
-     match the prototype reference, so renaming would break JS + parity.
+     .card-modal__badge-icon--ps). The names are queried verbatim by globe.js
+     (GLOBE_MARKUP / querySelector), so renaming would break JS.
    • *-no-vendor-prefix — the -webkit-backdrop-filter and display:-webkit-box /
      -webkit-line-clamp prefixes are required for Safari (backdrop blur and the
      modal description's 3-line clamp). Standard equivalents aren't yet usable.
    ───────────────────────────────────────────────────────────────────────── */
 /* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
 
-/* Block element is the tall scroll spacer. 850vh = globe variant scroll budget
-   (the prototype's offer-toggle set this; tile used 380vh). */
+/* Block element is the tall scroll spacer (850vh scroll budget). */
 .globe.offer-pin-spacer { height: 850vh; }
 
 /* Reduced-motion / THREE-unavailable fallback: collapse the section. */
@@ -35,7 +31,7 @@
    descendants — position:fixed doesn't break custom-property inheritance).
    Keep values in sync with hub-creative/styles/global/typography.css. */
 .globe {
-  --font-display: 'Adobe Clean Display', system-ui, sans-serif;
+  --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
 
   /* Title 1 — 80/76.8/-3.2px */
@@ -76,7 +72,6 @@
 }
 
 .offer-pin-spacer {
-  height: 380vh;
   position: relative;
   background: #131313;
   margin-top: 0;
@@ -90,19 +85,20 @@
   height: 100vh;
   overflow: visible;
   pointer-events: none;
-  z-index: 10;
+  z-index: 2;
 }
 
 /* ── Arc copy (slides up before arc, fades+scales out as headline arrives) ── */
 .offer-arc-copy {
   position: fixed;
   bottom: calc(72px + 20vh);
+  box-sizing: border-box;
   width: 382px;
   pointer-events: none;
   opacity: 0;
   will-change: opacity, transform;
   transform-origin: left bottom;
-  z-index: 96;
+  z-index: 4;
 }
 
 .offer-arc-copy__title {
@@ -126,7 +122,7 @@
   margin: 0;
 }
 
-/* ── Pull-quote (globe variant — sticky inside .offer-pullquote-pin) ── */
+/* ── Pull-quote (sticky inside .offer-pullquote-pin) ── */
 /* The pin container is absolute at the bottom of the 850vh spacer. The pull-quote
    is sticky inside it, so it scrolls in naturally from below, sticks centered through
    the zoom phase, and scrolls off the top as the spacer ends — no JS required. */
@@ -146,11 +142,12 @@
 .offer-pullquote {
   position: sticky;
   top: calc(50vh - 291px);
+  box-sizing: border-box;
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
   height: 583px;
-  z-index: 97;
+  z-index: 5;
   background: transparent;
   display: flex;
   flex-direction: column;
@@ -545,7 +542,7 @@ body.modal-open { overflow: hidden; }
   /* No background — only the outline is visible. */
   background: transparent;
   display: none;
-  z-index: 96;  /* above offer-globe-canvas (z:95), below modal (z:110) */
+  z-index: 4;  /* above offer-globe-canvas (z:3), below nav (z:10) */
 }
 .globe-gallery-a11y__focus-ring.is-visible { display: block; }
 
@@ -629,7 +626,6 @@ body.modal-open { overflow: hidden; }
   /* Hide dev/prototype UI on mobile so it doesn't compete with content or
      overlap with modal nav arrows / close button. */
   .layout-panel,
-  .offer-toggle,
   .rt-panel,
   #bp-badge { display: none !important; }
 
