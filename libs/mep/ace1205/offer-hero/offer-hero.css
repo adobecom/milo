@@ -268,7 +268,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
-      margin-top: 237px;
+      margin-top: 177px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;
