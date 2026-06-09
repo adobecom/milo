@@ -33,6 +33,12 @@ card model the runtime consumes; with no authored content it falls back to 45
 placeholder cards, so the prototype look is unchanged until real content lands.
 The old vestigial arc/globe image split has been flattened into one pool.
 
+A few behaviors now **intentionally diverge** from the prototype (e.g. the
+desktop modal overlays the card info on the image instead of placing it in a
+right-hand column, and `globe.css` carries its own type-scale tokens). These are
+tracked under **Deliberate divergences from the prototype** in `PROGRESS.md` —
+check it before "restoring parity" with `hub-creative/`.
+
 | File | What it is |
 | --- | --- |
 | `globe.js` | The block. `export default init(el)` → loads THREE, builds DOM, runs the ported runtime (`createGlobeRuntime()`). **Has `/* eslint-disable */`** (see Gotchas). |

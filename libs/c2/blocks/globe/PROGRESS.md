@@ -89,6 +89,45 @@ authored count fills `N_TOTAL` (45/24) without breaking grid math.
 
 **Open:** align `N_TOTAL`/grid to the authored card count instead of wrapping.
 
+## Deliberate divergences from the prototype
+
+These are the only places `globe.js`/`globe.css` intentionally differ from
+`hub-creative/scripts/offer-globe.js` in *behavior* (beyond the verbatim-wrap
+mechanics). Keep this list current so the line-map cross-reference stays honest.
+
+- **Desktop/tablet modal layout — white info card overlaid on the image.** The
+  `hub-creative` source anchored a fixed-width (`DT_INFO_WIDTH`) info panel to
+  the viewport's bottom-right (`positionModalChrome` desktop branch); because the
+  authored card images are portrait, that panel landed in empty space *beside*
+  the centered image. The actual design target (user screenshots) is a **solid
+  white info card** overlapping the image's lower portion with **dark text**,
+  plus **white nav buttons in the margin outside the image**, and a dark frosted
+  close button at the image's top-right. So the desktop branch now anchors all
+  chrome to the image's projected bounds:
+  - info card → overlays the image's lower area, left-aligned, inset by `INSET`
+    (24px + SDF corner radius) on left/right/bottom so it nests inside the
+    image's rounded corners. Styled white + dark text via `@media (min-width:
+    768px)` in `globe.css` (`.card-modal__info` background `#fff`, name `#1d1d1d`
+    40px, role/desc/badge-role grey, badge-app dark). The 96px desktop
+    `__badges` gap was cut to 20px.
+  - nav arrows → white buttons (`@media min-width:768px`) positioned OUTSIDE the
+    image's left/right edges (`visLeft − NAV_GAP − DT_NAV_W` / `visRight +
+    NAV_GAP`), clamped to a 16px viewport inset, vertically centered on the image.
+  - close → dark frosted, image top-right. counter → just below the image.
+
+  Mobile (<768px) is unchanged: dark frosted panel + light text, panel beneath
+  the asset. The diverging JS block carries a `DELIBERATE DIVERGENCE` comment.
+  The old `DT_INFO_WIDTH`/`DT_INFO_MARGIN`/`DT_CLOSE_INSET`/`DT_NAV_INSET`/
+  `DT_IMG_INFO_GAP` constants are now unused on desktop but left in place (they
+  document the old design).
+
+- **`.globe` type-scale tokens in `globe.css`.** The prototype relied on
+  `:root` tokens from its `styles/global/typography.css` (not shipped); Milo
+  defines none of them, so the pull-quote/arc-copy fell back to default 16px
+  text. `globe.css` now defines the needed `--font-display`/`--type-title-1-*`/
+  `--type-body-*` tokens scoped to `.globe`, with the prototype's tablet/mobile
+  breakpoints. Keep in sync with `hub-creative/styles/global/typography.css`.
+
 ## How to test (no Playwright per user)
 
 1. Open `_reference/globe-reference.html` (verbatim prototype, globe-only) to see

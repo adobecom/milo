@@ -1415,70 +1415,76 @@ function createGlobeRuntime(authoredCards) {
         infoEl.style.minHeight = ''; // clear desktop value if responsive resize happened
       }
     } else {
-      // ── Desktop / tablet: split-view layout (image + info group, viewport-centered) ──
-      //   Info panel: starts DT_IMG_INFO_GAP px right of the image's projected
-      //               right edge; fixed width DT_INFO_WIDTH; top aligns with
-      //               card's visible top.
-      //   Close button: top-right of viewport.
-      //   Nav arrows: at viewport LEFT and RIGHT edges. Right chevron's right
-      //               inset matches the close button's right inset so they share
-      //               the same vertical line.
-      //   Counter: centered horizontally on the viewport.
-      const imageAvailH = H - DT_IMG_PAD_T - DT_IMG_PAD_B;
-      const imageMidY = DT_IMG_PAD_T + imageAvailH / 2;
+      // ── Desktop / tablet: info OVERLAID on the image's lower area ──
+      // DELIBERATE DIVERGENCE FROM THE PROTOTYPE (hub-creative/offer-globe.js
+      // anchored a fixed-width info panel to the viewport's bottom-right). The
+      // authored card images are portrait, so a viewport-anchored panel landed
+      // in the empty space beside the centered image. Per design, the role /
+      // name / description / badges now overlay the lower portion of the image
+      // itself, with a CSS gradient scrim on .card-modal__info for legibility.
+      // All chrome is anchored to the image's projected bounds, not the
+      // viewport. See README.md / PROGRESS.md (modal layout note).
+      //
+      // visTop/visBot/visLeft/visRight (clamped image bounds) and INSET (24px +
+      // SDF rounded-corner radius) were computed above. Inset keeps overlaid
+      // chrome on the photo, not over the transparent rounded corner.
+      const imgLeft = visLeft + INSET;
+      const imgRight = visRight - INSET;
+      const imgTop = visTop + INSET;
+      const imgBot = visBot - INSET;
+      const imgInnerW = Math.max(1, imgRight - imgLeft);
+      const imageMidY = (visTop + visBot) / 2;
 
-      // Info panel: anchored to bottom-right of viewport, 24px margins.
-      // Fixed width; auto height (sizes to content + 96px badges gap). The
-      // panel sits independently of the image — it does NOT follow the image's
-      // right edge anymore. At narrow viewports, the image (especially 1x1)
-      // may extend visually over the panel's left edge; the panel has no
-      // background so text reads over the image.
+      // Info panel: overlaid on the image, left-aligned, spanning the image's
+      // inner width, bottom edge at the image's lower inset. Auto height.
       if (infoEl) {
         infoEl.style.position = 'absolute';
         infoEl.style.top = 'auto';
-        infoEl.style.bottom = `${DT_INFO_MARGIN}px`;
-        infoEl.style.left = 'auto';
-        infoEl.style.right = `${DT_INFO_MARGIN}px`;
-        infoEl.style.width = `${DT_INFO_WIDTH}px`;
+        infoEl.style.bottom = `${H - imgBot}px`;
+        infoEl.style.left = `${imgLeft}px`;
+        infoEl.style.right = 'auto';
+        infoEl.style.width = `${imgInnerW}px`;
         infoEl.style.minHeight = '';
       }
 
-      // Close button: top-right of viewport.
+      // Close button: top-right corner of the image.
       if (closeEl) {
         closeEl.style.position = 'absolute';
-        closeEl.style.top = `${DT_CLOSE_INSET}px`;
-        closeEl.style.right = `${DT_CLOSE_INSET}px`;
+        closeEl.style.top = `${imgTop}px`;
+        closeEl.style.right = `${W - imgRight}px`;
         closeEl.style.bottom = 'auto';
         closeEl.style.left = 'auto';
       }
 
-      // Nav arrows: viewport edges, vertically centered on the image.
-      // Right chevron right inset = close-button right inset (DT_NAV_INSET ===
-      // DT_CLOSE_INSET) so they share a vertical line on the viewport.
+      // Nav arrows: in the margin OUTSIDE the image's left/right edges (in the
+      // dark backdrop area, not over the photo), vertically centered on the
+      // image. Clamped to a 16px viewport inset so they never run off-screen
+      // when the image is wide.
+      const NAV_GAP = 24;
       const navTop = imageMidY - DT_NAV_W / 2;
       if (prevEl) {
         prevEl.style.position = 'absolute';
         prevEl.style.top = `${navTop}px`;
-        prevEl.style.left = `${DT_NAV_INSET}px`;
+        prevEl.style.left = `${Math.max(16, visLeft - NAV_GAP - DT_NAV_W)}px`;
         prevEl.style.right = 'auto';
         prevEl.style.bottom = 'auto';
       }
       if (nextEl) {
         nextEl.style.position = 'absolute';
         nextEl.style.top = `${navTop}px`;
-        nextEl.style.right = `${DT_NAV_INSET}px`;
-        nextEl.style.left = 'auto';
+        nextEl.style.left = `${Math.min(visRight + NAV_GAP, W - 16 - DT_NAV_W)}px`;
+        nextEl.style.right = 'auto';
         nextEl.style.bottom = 'auto';
       }
 
-      // Counter: bottom-left, left edge aligned with the left chevron's left edge.
+      // Counter: just below the image, left-aligned with it (clamped on screen).
       const counterEl = chromeEl.querySelector('.card-modal__counter');
       if (counterEl) {
         counterEl.style.position = 'absolute';
-        counterEl.style.bottom = '24px';
-        counterEl.style.left = `${DT_NAV_INSET}px`;
+        counterEl.style.top = `${Math.min(visBot + 8, H - 28)}px`;
+        counterEl.style.left = `${imgLeft}px`;
         counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto';
+        counterEl.style.bottom = 'auto';
         counterEl.style.transform = '';
       }
     }
