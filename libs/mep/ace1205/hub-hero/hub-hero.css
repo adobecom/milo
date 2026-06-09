@@ -14,15 +14,14 @@
 .hub-hero {
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4200px;
-  --hub-hero-header-height: 375px;
   --max-image-size: 292px;
   --media-mobile-max-height: 280px;
   --media-mobile-max-width: 500px;
   --min-image-size: 164px;
   --grid-img-width: 20vw;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
-  --hub-hero-carousel-container-height-desktop: 550px;
-  --hub-hero-carousel-container-height-tablet: 545px;
+  --hub-hero-carousel-container-height-desktop: 562px;
+  --hub-hero-carousel-container-height-tablet: 562px;
   --hub-hero-carousel-item-max-width: 392px;
   --hub-hero-carousel-item-min-width: 292px;
   --hub-hero-carousel-item-hover-grow-index: 1.75;
@@ -36,9 +35,10 @@
   --slides: 4;
   --start-gap: 6rem;
   --end-gap: .5rem;
+  --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
+  --carousel-item-width: calc(100vw / var(--slides));
 
   --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))));
-  /* --hub-hero-carousel-container-width-initial: calc((var(--slides) * var(--grid-img-width)) + ((var(--start-gap) * (var(--slides) - 1)))); */
 
   --grid-col-one-offset: 0px;
   --grid-col-two-offset: 94px;
@@ -109,7 +109,7 @@
   gap: var(--start-gap);
   overflow-x: clip;
   contain: layout;
-  animation: hubHeroGridGapShrink linear both;
+  animation: hubHeroGridGapShrink ease-in-out both;
   animation-timeline: --hub-hero;
   animation-range: var(--grid-gap-animation-range);
 }
@@ -216,7 +216,6 @@
   z-index: 1;
   overflow-x: clip;
   will-change: auto;
-  /* animation: hubHeroCarouselExit linear forwards; */
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -238,9 +237,9 @@
   position: relative;
   text-decoration: none;
   color: inherit;
-  width: var(--max-image-size);
-  max-width: var(--max-image-size);
-  min-width: var(--min-image-size);
+
+  width: var(--carousel-item-width);
+
   background-color: var(--s2a-color-gray-75);
   border-radius: var(--s2a-border-radius-md);
   cursor: pointer;
@@ -261,17 +260,12 @@
 .hub-hero-carousel-item-media {
   text-align: center;
   overflow: hidden;
-  height: 100%;
+  height: var(--carousel-item-media-height);
   max-height: var(--carousel-item-media-height);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--s2a-border-radius-md);
-  will-change: auto;
-  animation: slideMediaHeightExpand;
-  animation-timeline: --hub-hero;
-  animation-range: contain 0% contain 50%;
-  animation-fill-mode: forwards;
 }
 
 .hub-hero-carousel-item-media picture {
@@ -288,6 +282,7 @@
 .hub-hero-carousel-item-footer {
   display: flex;
   flex-direction: column;
+  position: relative;
   font-size: var(--s2a-font-size-md);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-typography-line-height-eyebrow);
@@ -300,8 +295,8 @@
   padding: var(--s2a-spacing-sm);
   height: var(--icon-size);
   width: var(--icon-size);
-  right: var(--s2a-spacing-lg);
-  bottom: calc(var(--s2a-spacing-xl) - var(--icon-size)/2);
+  right: var(--s2a-spacing-24);
+  bottom: var(--s2a-spacing-24);
   color: var(--s2a-color-gray-25);
   border-radius: 6px;
   background-repeat: no-repeat;
@@ -309,6 +304,7 @@
   background-color: var(--s2a-color-transparent-white-16);
   opacity: 0;
   font-size: var(--s2a-font-size-md);
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -452,7 +448,6 @@
 
   .hub-hero-carousel {
     --offset-adjuster: 50px;
-    --offset-scale: .85;
     --last-offset: 1.75rem;
     --offset-variance-index: -4px;
     --carousel-items-top: 38%;
@@ -461,11 +456,9 @@
     --slide-footer-h: 96px;
 
     position: relative;
-    /* override sticky from base styles — let translateY animation control visual position */
     top: unset;
     height: auto;
     overflow: visible;
-    /* padding-bottom: calc(var(--last-offset) * var(--offset-scale)); */
     width: 100%;
     margin: 0;
   }
@@ -484,7 +477,7 @@
     min-width: unset;
     width: var(--grid-img-width);
     will-change: auto;
-    animation: carouselMobileContainerExpand linear forwards;
+    animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -603,7 +596,7 @@
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-    height: var(--slide-footer-h);
+    height: calc(var(--slide-footer-h) - var(--s2a-spacing-md));
     overflow: hidden;
     background-color: var(--s2a-color-gray-1000);
     padding-top: var(--s2a-spacing-md);
@@ -657,7 +650,7 @@
 
   .hub-hero-carousel-container {
     contain: layout;
-    animation: carouselGapShrink linear both;
+    animation: carouselGapShrink ease-in-out both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
   }
@@ -667,19 +660,18 @@
   }
 
   .hub-hero-carousel-item {
+    max-width: var(--hub-hero-carousel-item-max-width);
+    min-width: var(--hub-hero-carousel-item-min-width);
+
+    will-change: max-width, width;
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
-  
-  .hub-hero-carousel-item.hovered {
-    max-width: 555px;
-    width: calc((100vw/calc(var(--slides))) * var(--hub-hero-carousel-item-hover-grow-index));
-  }
+
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
-    will-change: max-width, width;
+    max-width: calc(var(--hub-hero-carousel-item-max-width) * 1.15);
+    width: calc(var(--carousel-item-width) * var(--hub-hero-carousel-item-hover-grow-index));
     background-color: var(--s2a-color-gray-1000);
-
-    transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-media img,
@@ -723,9 +715,9 @@
     visibility: hidden;
     min-width: 0;
     flex-basis: 0;
-    animation: carouselSlide3Transition ease-out forwards;
+    animation: carouselSlide3Transition ease-in-out forwards;
     animation-timeline: --hub-hero;
-    animation-range: contain 0% contain 50%;
+    animation-range: contain 0% contain 30%;
   }
 
   .hub-hero-carousel-item:nth-child(4) {
@@ -755,11 +747,12 @@
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer * {
-    padding: var(--s2a-spacing-xl) var(--s2a-spacing-lg);
+    padding: 38px var(--s2a-spacing-lg);
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
-    bottom: calc(var(--s2a-spacing-lg) - 2px);
+    bottom: var(--s2a-spacing-24);
+    right: var(--s2a-spacing-24);
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-header {
@@ -777,7 +770,6 @@
 /** tablet only */
 @media (768px <=width < 1280px) {
   .hub-hero {
-    --hub-hero-header-height: 332px;
     --start-gap: 2.75rem;
     --grid-col-two-offset: 94px;
     --grid-col-three-offset: 150px;
@@ -810,9 +802,6 @@
     transform: translateX(calc(50vw - 100%));
   }
 
-  .hub-hero-carousel-item {
-    width: calc(100vw / calc(var(--slides) - 1.5));
-  }
 }
 
 /* custom media rule */
@@ -826,7 +815,6 @@
 /** desktop only */
 @media (1280px <=width) {
   .hub-hero {
-    --hub-hero-carousel-item-max-width: var(var(--grid-img-width));
     --hub-hero-top-spacing: 237px;
     --grid-col-two-offset: 158px;
     --grid-col-three-offset: 252px;
@@ -836,23 +824,19 @@
   .hub-hero-carousel-container {
     max-height: var(--hub-hero-carousel-container-height-desktop);
   }
-
-  .hub-hero-carousel-item {
-    width: calc(100vw/calc(var(--slides) - 1));
-  }
 }
 
 /* XL desktop */
 @media (1400px < width) {
-  .hero {
+  .hub-hero {
     --grid-col-two-offset: 184px;
     --grid-col-three-offset: 292px;
     --grid-col-four-offset: 184px;
   }
 }
 
-/** custom media rule - 3 */
-@media (width >=1480px) {
+/** custom media rule */
+@media (width >= 1592px) {
   .hub-hero {
     --grid-img-width: var(--max-image-size);
   }
@@ -880,11 +864,6 @@
     gap: var(--end-gap);
   }
 
-  .hub-hero-carousel-container.stick-left,
-  .hub-hero-carousel-container.stick-right {
-    /* removes stick behavior */
-  }
-  
   .hub-hero-carousel-item:nth-child(3) {
     display: none;
   }
@@ -908,7 +887,10 @@
 
   .hub-hero-carousel-item {
     pointer-events: all;
+    
+    width: var(--carousel-slide-width);
     max-width: var(--max-image-size);
+    min-width: var(--min-image-size);
     padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
   }
 
@@ -957,15 +939,6 @@
 }
 
 /** animations */
-@keyframes hubHeroCarouselExit {
-  0% {
-    transform: translateY(0);
-  }
-
-  100% {
-    transform: translateY(-100vh);
-  }
-}
 
 @keyframes hubHeroGridGapShrink {
   0% {
@@ -980,12 +953,7 @@
 @keyframes carouselGapShrink {
   0% {
     gap: var(--start-gap);
-    max-width: 300vw;
   }
-
-  /* 30% {
-    max-width: var(--hub-hero-carousel-container-width-initial);
-  } */
 
   100% {
     gap: var(--end-gap);
@@ -1000,7 +968,7 @@
   }
 
   40% {
-    max-width: var(--grid-img-width);
+    max-width: var(--carousel-slide-width);
     min-width: var(--grid-img-width);
   }
 
@@ -1132,11 +1100,12 @@
     transform: translate(0px, calc(var(--grid-col-one-offset) + var(--carousel-slide-1-correction, 0px)));
   }
 
-  30% {
+  20% {
     transform: translate(0px, 20%);
+    animation-timing-function: var(--slide-offset-timing);
   }
 
-  60% {
+  50% {
     transform: translate(0px, 0%);
   }
 }
@@ -1144,6 +1113,7 @@
 @keyframes carouselSlideOffset2 {
   0% {
     transform: translate(0px, calc(var(--grid-col-two-offset) + var(--carousel-slide-2-correction, 0px)));
+    animation-timing-function: var(--slide-offset-timing);
   }
 
   50% {
@@ -1155,9 +1125,10 @@
 @keyframes carouselSlideOffset4 {
   0% {
     transform: translate(0px, calc(var(--grid-col-four-offset) + var(--carousel-slide-4-correction, 0px)));
+    animation-timing-function: var(--slide-offset-timing);
   }
 
-  50% {
+  44% {
     transform: translate(0px, 0%);
   }
 }
@@ -1167,11 +1138,12 @@
     transform: translate(0px, calc(var(--grid-col-five-offset) + var(--carousel-slide-5-correction, 0px)));
   }
 
-  30% {
+  20% {
     transform: translate(0px, 20%);
+    animation-timing-function: var(--slide-offset-timing);
   }
 
-  60% {
+  50% {
     transform: translate(0px, 0%);
   }
 }
@@ -1203,20 +1175,6 @@
   100% {
     transform: translate(0, -100%);
     opacity: 0;
-  }
-}
-
-@keyframes hubHeroCarouselHeaderFloat {
-  0% {
-    transform: translate(0, calc((100% + var(--s2a-spacing-lg)) * -1));
-  }
-
-  10% {
-    transform: translate(0, calc((100% + var(--s2a-spacing-lg)) * -1));
-  }
-
-  100% {
-    transform: translate(0, calc((100% + var(--s2a-spacing-lg)) * -1));
   }
 }
 
@@ -1405,17 +1363,6 @@
   }
 }
 
-@keyframes slideMediaHeightExpand {
-  0% {
-    min-height: 250px;
-  }
-  /* 25% {
-    min-height: 300px;
-  } */
-  100% {
-    min-height: var(--carousel-item-media-height);
-  }
-}
 @keyframes carouselSlideExpandSize {
   0% {
     max-width: var(--grid-img-width);
@@ -1442,7 +1389,7 @@
   }
 
   35% {
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-spacing-sm)) 0;
     pointer-events: none;
   }
 
@@ -1454,7 +1401,7 @@
   }
 
   100% {
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
     pointer-events: all;
   }
 }
