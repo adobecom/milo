@@ -303,6 +303,7 @@ export const CONFIG = {
                   enableWorkflow: true,
                   params: {
                     enableinlineoverlay: 's2-compat',
+                    locale: (getConfig().locale?.ietf || 'en-US').replace('-', '_'),
                   },
                   ...getConfig().unav?.profile?.managePeopleConfig,
                 },
