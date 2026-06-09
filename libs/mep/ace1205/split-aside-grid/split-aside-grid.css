@@ -146,6 +146,7 @@
         width: 5px;
         height: 8px;
         background-color: currentColor;
+        /* Path needs to be updated when block is moved to /c2 folder */
         mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
         -webkit-mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
         mask-size: contain;
@@ -284,11 +285,15 @@
 
       .foreground :is(h1, h2, h3, h4, h5, h6) {
         opacity: 0.48;
+        transition: opacity var(--dropdown-transition);
       }
 
       &:hover {
         .foreground :is(h1, h2, h3, h4, h5, h6) {
           opacity: 1;
+        }
+        .split-aside-grid-item-toggle {
+          background: var(--s2a-color-transparent-white-12);
         }
       }
     }
