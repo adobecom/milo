@@ -117,17 +117,18 @@ img.quick-actions-media {
 }
 
 @media (width < 768px) {
-  .quick-actions-grid.two-up,
-  .quick-actions-grid.three-up,
-  .quick-actions-grid.four-up,
-  .quick-actions-grid.six-up {
+  .quick-actions-grid[class*="up"] {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@media (768px <= width < 1280px) {
-  .quick-actions-grid.six-up {
-    grid-template-columns: repeat(3, 1fr);
+  @supports (animation-timeline: view()) {
+    .quick-actions-grid.parallax-stagger-ltr {
+      animation-name: none;
+
+      > :not([class*="section-"]) {
+        animation-name: enable-parallax-stagger;
+      }
+    }
   }
 }
 

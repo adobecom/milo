@@ -296,9 +296,12 @@ export const loadCaasFiles = async () => {
 export const loadCaasTags = async (tagsUrl) => {
   let errorMsg = '';
   if (tagsUrl) {
-    const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
+    const urlObj = new URL(tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`);
+    if (urlObj.hostname !== window.location.hostname && !urlObj.searchParams.has('s')) {
+      urlObj.searchParams.set('s', window.location.host);
+    }
     try {
-      const resp = await fetchWithTimeout(url);
+      const resp = await fetchWithTimeout(urlObj.toString());
       if (resp.ok) {
         const json = await resp.json();
         return {
@@ -1056,6 +1059,7 @@ export const getConfig = async (originalState, strs = {}) => {
         playVideo: strs.playVideo || 'Play, {cardTitle}',
         nextCards: strs.nextCards || 'Next Cards',
         prevCards: strs.prevCards || 'Previous Cards',
+        sortBy: strs.sortBy || 'Sort by',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
@@ -1087,8 +1091,11 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      ...(state.useRoundedCorners
+          && { useRoundedCorners: !!state.useRoundedCorners }),
       // Only include bladeCard when explicitly configured
-      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
+      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent)
+      && {
         bladeCard: {
           reverse: !!state.bladeCardReverse,
           lightText: !!state.bladeCardLightText,
@@ -1151,6 +1158,10 @@ export const getConfig = async (originalState, strs = {}) => {
       enabled: state.sortEnablePopup,
       defaultSort: state.sortDefault,
       options: getSortOptions(state, strs),
+      ...((state.sortDefault === 'localFirst' || state.sortLocalFirst)
+        && state.sortLocalFirstRecencyThreshold !== null
+        ? { localFirstRecencyThreshold: state.sortLocalFirstRecencyThreshold }
+        : {}),
     },
     pagination: {
       animationStyle: navigationStyle,
@@ -1271,6 +1282,7 @@ export const defaultState = {
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
+  editorialCardOpenVariant: false,
   endpoint: 'www.adobe.com/chimera-api/collection',
   environment: '',
   excludedCards: [],
@@ -1326,6 +1338,9 @@ export const defaultState = {
   sortEnableRandomSampling: false,
   sortEventSort: false,
   sortFeatured: false,
+  sortLocalFirst: false,
+  sortLocalFirstRecencyThreshold: null,
+  sortLocalLast: false,
   sortModifiedAsc: false,
   sortModifiedDesc: false,
   sortRandom: false,
@@ -1341,9 +1356,10 @@ export const defaultState = {
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
+  useCenterVideoPlay: false,
   useLightText: false,
   useOverlayLinks: false,
-  useCenterVideoPlay: false,
+  useRoundedCorners: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };
