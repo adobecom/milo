@@ -321,7 +321,7 @@ const decorateHubHeroCTA = (heroHeader) => {
   linkEl.parentElement.replaceChildren(cta);
 };
 
-const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, carouselImages, el }) => {
+const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, el }) => {
   requestAnimationFrame(() => {
     if (!isMobile()) {
       const heroHeaderH = heroHeader.offsetHeight;
@@ -359,5 +359,5 @@ export default async function init(el) {
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
   el.append(heroHeader, grid, elasticCarousel);
-  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, carouselImages, el });
+  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
 }

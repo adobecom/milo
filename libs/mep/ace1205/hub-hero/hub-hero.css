@@ -635,6 +635,13 @@ font-size: var(--s2a-typography-font-size-heading-1);
     animation-range: var(--header-animation-range);
   }
 
+  .hub-hero-carousel-header {
+    --pyramid-float-y: -40px;
+    animation: hubHeroCarouselHeaderFade var(--paralax-easing) both, carouselSlidePyramidFloat ease-in forwards;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: var(--header-animation-range), contain 75% contain 100%;
+  }
+
   .hub-hero-image-grid-container-col:nth-child(2) div:nth-child(3) {
     display: none;
   }
@@ -701,17 +708,19 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   .hub-hero-carousel-item:nth-child(1) {
-    animation: carouselSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
-    animation-fill-mode: forwards, none, forwards;
+    --pyramid-float-y: -60px;
+    animation: carouselSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease, carouselSlidePyramidFloat ease-in;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range), contain 75% contain 100%;
+    animation-fill-mode: forwards, none, forwards, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(2) {
-    animation: carouselSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
-    animation-fill-mode: forwards, none, forwards;
+    --pyramid-float-y: -30px;
+    animation: carouselSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease, carouselSlidePyramidFloat ease-in;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range), contain 75% contain 100%;
+    animation-fill-mode: forwards, none, forwards, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(3) {
@@ -725,17 +734,19 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   .hub-hero-carousel-item:nth-child(4) {
-    animation: carouselSlideOffset4 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
-    animation-fill-mode: forwards, none, forwards;
+    --pyramid-float-y: -30px;
+    animation: carouselSlideOffset4 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease, carouselSlidePyramidFloat ease-in;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range), contain 75% contain 100%;
+    animation-fill-mode: forwards, none, forwards, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(5) {
-    animation: carouselSlideOffset5 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
-    animation-fill-mode: forwards, none, forwards;
+    --pyramid-float-y: -60px;
+    animation: carouselSlideOffset5 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease, carouselSlidePyramidFloat ease-in;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range), contain 75% contain 100%;
+    animation-fill-mode: forwards, none, forwards, forwards;
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer,
@@ -980,6 +991,16 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   100% {
     gap: var(--end-gap);
+  }
+}
+
+@keyframes carouselSlidePyramidFloat {
+  0% {
+    translate: 0 0;
+  }
+
+  100% {
+    translate: 0 var(--pyramid-float-y, 0);
   }
 }
 
