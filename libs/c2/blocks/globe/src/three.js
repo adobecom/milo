@@ -1,0 +1,25 @@
+// Re-exports only the Three.js symbols used by globe.js.
+// esbuild tree-shakes the rest of the three package from the output.
+export {
+  CanvasTexture,
+  DoubleSide,
+  Euler,
+  Group,
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  OrthographicCamera,
+  PerspectiveCamera,
+  PlaneGeometry,
+  Quaternion,
+  Raycaster,
+  Scene,
+  ShaderMaterial,
+  SRGBColorSpace,
+  Texture,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+} from 'three';

@@ -11,11 +11,7 @@
      0.37 – 0.78  Sphere fold: each card folds to sphere immediately after arriving in grid
      0.78 – 1.00  Zoom: camera flies through sphere
    ───────────────────────────────────────────────────────────────────────── */
-import { loadScript } from '../../../utils/utils.js';
-
-// Vendored THREE (UMD global) + card textures live next to this module.
-const THREE_SRC = new URL('./three.min.js', import.meta.url).href;
-const ASSET_BASE = new URL('./assets/', import.meta.url).href;
+import * as THREE from './three.module.min.js';
 
 // ── Authoring ────────────────────────────────────────────────────────────────
 // Adobe app catalog used to render the modal badge chips (the id drives the
@@ -156,7 +152,6 @@ function parseFragmentCards(row) {
 }
 
 // Fetch the fragment's full .plain.html and parse all card sections from it.
-// Called in parallel with loadScript(THREE_SRC) so there's no extra wall-clock cost.
 async function fetchFragmentCards(href) {
   try {
     const resp = await fetch(`${href}.plain.html`);
@@ -219,99 +214,15 @@ function parseAuthoredContent(el) {
 // returns { init, destroy }. See PROGRESS.md for the porting notes:
 //   - gsap.ticker → requestAnimationFrame (startTicker/stopTicker below)
 //   - Lenis reads → window.scrollY
-//   - texture paths → ASSET_BASE
 function createGlobeRuntime(authoredCards) {
-  if (typeof THREE === 'undefined') { return null; }
-
   // rAF driver replacing gsap.ticker.
   let _rafId = 0;
   function _rafLoop() { tick(); _rafId = requestAnimationFrame(_rafLoop); }
   function startTicker() { if (!_rafId) _rafId = requestAnimationFrame(_rafLoop); }
   function stopTicker() { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0; } }
 
-  // ── Image lists ────────────────────────────────────────────────────────────
-  // Placeholder card images — used ONLY when the block has no authored content.
-  // 45 images: 23 from assets/offer/ + 22 from assets/globe/. The old arc/globe
-  // grouping was vestigial (the arc set was shared with the prototype's dropped
-  // tile variant); the runtime indexes one flat, uniform pool. Real authored
-  // content replaces this list entirely. See parseAuthoredContent / README.
-  const PLACEHOLDER_IMGS = [
-    'offer/arc-01', 'offer/arc-02', 'offer/arc-03', 'offer/arc-04', 'offer/arc-05',
-    'offer/arc-06', 'offer/arc-07', 'offer/arc-08', 'offer/arc-09', 'offer/arc-10',
-    'offer/arc-11', 'offer/arc-12', 'offer/arc-13', 'offer/arc-14', 'offer/arc-15',
-    'offer/arc-16', 'offer/arc-17', 'offer/arc-18', 'offer/arc-19', 'offer/arc-20',
-    'offer/arc-21', 'offer/arc-22', 'offer/arc-23',
-    'globe/01', 'globe/02', 'globe/03', 'globe/06', 'globe/12', 'globe/13',
-    'globe/14', 'globe/15', 'globe/16', 'globe/17', 'globe/28', 'globe/29',
-    'globe/48', 'globe/49', 'globe/58', 'globe/59', 'globe/60', 'globe/61',
-    'globe/62', 'globe/63', 'globe/64', 'globe/65',
-  ].map((p) => `${ASSET_BASE}${p}.png`);
-
-  // ── Placeholder card metadata ──────────────────────────────────────────────
-  // Feeds buildPlaceholderCards() when the block has no authored content.
-  // Deterministic per index so card 5 always shows the same person. The app
-  // catalog itself lives at module scope (APP_CATALOG) so authored-content
-  // parsing can resolve badge apps by name/abbr/id too.
-  const MODAL_ROLES = {
-    photoshop: ['Compositing', 'Retouching', 'Color grading'],
-    lightroom: ['Color correction', 'Organization', 'Presets'],
-    illustrator: ['Vector art', 'Logos', 'Illustrations'],
-    premiere: ['Editing', 'Cuts', 'Sequencing'],
-    aftereffects: ['Animation', 'Effects', 'Motion graphics'],
-    firefly: ['AI generation', 'Concept art', 'References'],
-    express: ['Quick edits', 'Templates', 'Social posts'],
-    fresco: ['Sketching', 'Painting', 'Drafts'],
-  };
-  const MODAL_PHOTOGRAPHERS = [
-    'Vincent van Gogh', 'Frida Kahlo', 'Andy Warhol', 'Cindy Sherman',
-    'Annie Leibovitz', 'Steve McCurry', 'Henri Cartier-Bresson', 'Dorothea Lange',
-    'Ansel Adams', 'Diane Arbus', 'Richard Avedon', 'Helmut Newton',
-    'Mary Ellen Mark', 'Garry Winogrand', 'Sebastião Salgado', 'Vivian Maier',
-    'Robert Frank', 'Walker Evans', 'Imogen Cunningham', 'Berenice Abbott',
-    'Yousuf Karsh', 'Edward Weston', 'Sally Mann', 'Nan Goldin',
-    'Wolfgang Tillmans', 'Lynsey Addario', 'Tyler Mitchell', 'Joel Meyerowitz',
-    'Saul Leiter', 'Stephen Shore', 'William Eggleston', 'Lee Friedlander',
-    'Eugene Smith', 'Robert Capa', 'Margaret Bourke-White', 'Eve Arnold',
-    'Inge Morath', 'Daido Moriyama', 'Hiroshi Sugimoto', 'Andreas Gursky',
-    'Thomas Struth', 'Edward Burtynsky', 'Gordon Parks', 'Gregory Crewdson',
-    'Catherine Opie',
-  ];
-  // Synthesize `count` placeholder cards from the bundled images + mock people.
-  // Card shape matches parseAuthoredContent (see module scope): the runtime and
-  // modal consume the same { img, picture, name, role, description, badges }.
-  function buildPlaceholderCards(count) {
-    const out = [];
-    for (let i = 0; i < count; i++) {
-      const name = MODAL_PHOTOGRAPHERS[i] || `Photographer ${i}`;
-      const app1 = APP_CATALOG[i % APP_CATALOG.length];
-      let app2 = APP_CATALOG[(i + 3) % APP_CATALOG.length];
-      if (app2.id === app1.id) app2 = APP_CATALOG[(i + 5) % APP_CATALOG.length];
-      const roles1 = MODAL_ROLES[app1.id];
-      const roles2 = MODAL_ROLES[app2.id];
-      const firstName = name.split(' ')[0];
-      out.push({
-        img: PLACEHOLDER_IMGS[i % PLACEHOLDER_IMGS.length],
-        picture: null,
-        name,
-        role: 'Photographer',
-        description: `${firstName} uses ${app1.name} and ${app2.name} to organize`
-          + ` and apply consistent edits across a shoot, then turn to ${app1.name}`
-          + ' for precise retouching and final refinements.',
-        badges: [
-          { app: app1, role: roles1[i % roles1.length] },
-          { app: app2, role: roles2[(i + 1) % roles2.length] },
-        ],
-      });
-    }
-    return out;
-  }
-
-  // The card content the runtime renders: authored cards if the block had any,
-  // otherwise PLACEHOLDER_COUNT generated cards (preserves the prototype look).
-  const PLACEHOLDER_COUNT = 45;
-  const CARD_CONTENT = (authoredCards && authoredCards.length)
-    ? authoredCards
-    : buildPlaceholderCards(PLACEHOLDER_COUNT);
+  // The card content the runtime renders. authoredCards is always present (from the fragment).
+  const CARD_CONTENT = authoredCards || [];
 
   // Per-card accessor. Wraps so any authored count fills the per-breakpoint
   // N_TOTAL (45 desktop/tablet, 24 mobile) without breaking the grid math.
@@ -3149,24 +3060,6 @@ function createGlobeRuntime(authoredCards) {
   let _layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
   let _bpMediaQueries = []; // matchMedia listeners for BP boundaries (DevTools toggle backup)
 
-  // ── Dev badge ──────────────────────────────────────────────────────────────
-  // Tiny fixed-corner label showing current BP + viewport width. Removable: just
-  // delete this function and the call in init(). Kept intentionally lightweight —
-  // pure DOM, no styling dependency outside its inline styles.
-  function updateBPBadge(name, w, h) {
-    let el = document.getElementById('bp-badge');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'bp-badge';
-      el.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;'
-        + 'padding:6px 10px;border-radius:999px;background:rgba(20,20,20,0.92);'
-        + 'color:#fff;font:600 11px/1 system-ui,sans-serif;letter-spacing:0.02em;'
-        + 'pointer-events:none;user-select:none;box-shadow:0 4px 18px rgba(0,0,0,0.18);';
-      document.body.appendChild(el);
-    }
-    el.textContent = `${name} • ${w}×${h}`;
-  }
-
   // ── Init ───────────────────────────────────────────────────────────────────
   function init() {
     const canvas = document.getElementById('offer-globe-canvas');
@@ -3177,11 +3070,10 @@ function createGlobeRuntime(authoredCards) {
 
     // Resolve breakpoint and apply its constants BEFORE anything reads N_TOTAL,
     // SPHERE_R, etc. CSS is intentionally NOT BP-aware here — author per-BP CSS
-    // with traditional @media queries. The dev badge shows the active BP.
+    // with traditional @media queries.
     const bp = resolveBP(W);
     currentBPName = bp.name;
     applyBP(bp.cfg);
-    updateBPBadge(bp.name, W, H);
 
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -3227,8 +3119,6 @@ function createGlobeRuntime(authoredCards) {
         init();
         return;
       }
-      updateBPBadge(currentBPName, W, H);
-
       spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
       spacerHeight = spacer ? spacer.offsetHeight : window.innerHeight * 7;
       // Re-apply DPR — Chrome's DevTools device-emulation toggle changes DPR but
@@ -3470,19 +3360,9 @@ export default async function init(el) {
     if (roleEl && pullQuote.role) roleEl.textContent = pullQuote.role;
   }
 
-  // Fetch the full fragment and load THREE in parallel — no extra wall-clock cost.
-  const [threeOk, fetchedCards] = await Promise.all([
-    loadScript(THREE_SRC).then(() => true).catch(() => false),
-    fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null),
-  ]);
+  const fetchedCards = await (fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null));
 
-  if (!threeOk) {
-    el.classList.add('globe--reduced');
-    return el;
-  }
-
-  // Prefer fully-fetched cards; fall back to what was in the DOM at init() time;
-  // fall back again to [] so the runtime uses its built-in placeholder cards.
+  // Prefer fully-fetched cards; fall back to what was in the DOM at init() time.
   const cards = fetchedCards || domCards;
   const runtime = createGlobeRuntime(cards);
   if (!runtime) { el.classList.add('globe--reduced'); return el; }

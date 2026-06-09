@@ -11,32 +11,36 @@ Status legend: ✅ done · 🚧 in progress · ⬜ todo
 | 2. Study pdf-space pattern + plan | ✅ |
 | 3. Port `offer-globe.js` → `globe.js` | ✅ |
 | 4. Port CSS slice → `globe.css` + register block | ✅ |
-| 5. Visual verification + iterate | ⬜ (next) |
+| 5. Authoring layer (3-row contract + fragment fetch) | ✅ |
+| 6. THREE → ESM import; local `package.json` build | ✅ |
+| 7. Visual verification + iterate | ⬜ (next) |
 
 ## Decisions made in the first port (verbatim-wrap strategy)
 
 To get the prototype landed with minimal transcription risk, the 3059-line
 runtime was copied as-is and wrapped, not rewritten:
 
-- **THREE**: vendored as `./three.min.js` next to `globe.js`, loaded via
-  `loadScript(new URL('./three.min.js', import.meta.url).href)` so the global
-  `THREE` exists before the runtime instantiates.
+- **THREE**: `import * as THREE from './three.module.min.js'` — static ES module
+  import. `three.module.min.js` is a tree-shaken build (~453KB vs 655KB full)
+  produced by esbuild from `src/three.js`, which re-exports only the 21 symbols
+  globe.js uses. Built via `npm run build` in the globe directory (local
+  `package.json`, `devDependencies: { three: "0.160.1", esbuild }`). Not part of
+  milo's root `package.json`.
 - **gsap** dropped → `startTicker`/`stopTicker` (requestAnimationFrame) at the
   top of `createGlobeRuntime()`.
 - **Lenis** dropped → `window.scrollY`; modal scroll-lock now via the
   `modal-open` class (`overflow:hidden`) in `globe.css` instead of `Lenis.stop()`.
-- **Assets**: 23 arc + 22 globe PNGs copied to `./assets/{offer,globe}/`;
-  `ASSET_BASE = new URL('./assets/', import.meta.url)`. (~51MB, unoptimized — webp
-  later.)
+- **Assets**: card images come entirely from authored content (DA fragment).
+  The old 45 bundled placeholder PNGs and `ASSET_BASE` have been removed.
 - **DOM**: `init(el)` builds the canvas/world/ca-svg/arc-copy/pull-quote/modal
   markup (`GLOBE_MARKUP`) inside the block and sets `el.id='offer-pin-spacer'`.
   Runtime still looks nodes up by global id → **one globe per page for now.**
 - **Lint**: `globe.js` carries a file-level `/* eslint-disable */` (ES5 `var`,
   naming, max-len would throw hundreds of errors). `.eslintrc.js` ignores
-  `three.min.js`, `hub-creative/*`, `_reference/*`. Remove the disable during
-  the refactor pass. Parse-correctness still verified (eslint reports 0 errors).
-- **Reduced motion / THREE load failure**: skip WebGL, add `.globe--reduced`
-  (collapses the tall spacer). Proper static poster fallback is a TODO.
+  `three.module.min.js`, `hub-creative/*`, `_reference/*`. Remove the disable
+  during the refactor pass. Parse-correctness still verified (eslint reports 0 errors).
+- **Reduced motion**: skip WebGL, add `.globe--reduced` (collapses the tall
+  spacer). Proper static poster fallback is a TODO.
 - **Block class**: loader adds `.globe`; CSS targets `.globe.offer-pin-spacer`.
 
 ## Authoring layer (added after the port, refined against real content)
@@ -65,16 +69,12 @@ Globe owns its fragment loading entirely rather than relying on Milo's auto-reso
    `href + '.plain.html'`. AEM Edge Delivery's `.plain.html` returns all sections
    as bare `<div>` elements (one per `---` separator, no scripts or styles).
    `parseFragmentCards` parses each section div as one card.
-3. **Parallel with THREE** — the fetch runs in `Promise.all` alongside
-   `loadScript(THREE_SRC)`, so it adds zero wall-clock cost (the 670KB THREE
-   download takes longer anyway).
-
 Without `#_dnb`, Milo would start injecting sections one-by-one before `init()`
 fires, creating a race condition where only the first section was in the DOM.
 
 Fragment href survives the `buildGlobeDom` DOM wipe because it's extracted first.
 Fallback chain: fetched cards → partial DOM cards (if Milo already resolved the
-link, e.g. legacy pages) → `[]` → `buildPlaceholderCards(45)`.
+link, e.g. legacy pages) → `[]`.
 
 ### Card object shape
 `{ img, picture, name, role, description, badges:[{app:{id,name,abbr}, role}] }`
@@ -183,21 +183,18 @@ a11y gallery of off-screen buttons mirroring the sphere cards.
 | `scripts/offer-arc.js` | Tile/arc *variant B* (CSS/GSAP, no WebGL). | ❌ not the globe |
 | `scripts/offer-toggle.js` | Dev toggle between globe/tile; sets spacer to `850vh` and calls `offerGlobe.init()`. | ❌ logic folds into the block |
 | `styles/offer-section.css` (650 lines) | Both variants' CSS. Globe slice listed below. | ⚠️ slice only |
-| `vendor/three.min.js` (670KB, UMD r150-ish) | THREE global. | ⚠️ vendor strategy TBD |
+| `vendor/three.min.js` (670KB, UMD r160) | THREE global. | ✅ replaced by `three.module.min.js` (ESM, local `package.json`) |
 | `vendor/gsap.min.js` | Only `gsap.ticker` is used by the globe. | ❌ replace with rAF |
 | `vendor/ScrollTrigger.min.js` | NOT used by the globe (tile variant only). | ❌ drop |
-| `assets/images/offer/arc-01..23.png` (23) + `assets/images/globe/{01,02,03,06,12,13,14,15,16,17,28,29,48,49,58,59,60,61,62,63,64,65}.png` (22) | 45 card textures. | ⚠️ asset strategy TBD |
+| `assets/images/offer/arc-01..23.png` (23) + `assets/images/globe/…` (22) | 45 card textures. | ✅ removed — images are authored via DA fragment |
 
 ## External dependencies — verdict
 
-- **THREE** — HARD. Code calls global `THREE.*` everywhere. Only real dep.
-- **gsap** — SOFT. Used only for `gsap.ticker.add(tick)` / `.remove(tick)` (the
-  rAF loop) at `init()`/`destroy()`. Replace with a plain `requestAnimationFrame`
-  loop. No other gsap usage in the globe.
-- **Lenis** — OPTIONAL. `tick()` reads `window.__lenis ? __lenis.scroll : window.scrollY`
-  and the modal calls `__lenis.stop()/start()`. All have `window.scrollY` /
-  native fallbacks. Milo doesn't use Lenis → just use `window.scrollY`.
-- **ScrollTrigger** — UNUSED by globe.
+- **THREE** — ✅ resolved. `import * as THREE from './three.module.min.js'` (ESM r160).
+  Built locally via `package.json` in this directory; not in milo's root deps.
+- **gsap** — ✅ dropped. Replaced by `startTicker`/`stopTicker` (requestAnimationFrame).
+- **Lenis** — ✅ dropped. `window.scrollY` throughout; modal scroll-lock via CSS.
+- **ScrollTrigger** — ✅ unused, never ported.
 
 ## DOM contract (what offer-globe.js reads/writes)
 
@@ -214,7 +211,6 @@ a11y gallery of off-screen buttons mirroring the sphere cards.
 | `#card-modal` + `.card-modal__backdrop` | modal dim/blur backdrop |
 | `#card-modal-chrome` + `.card-modal__{nav--prev,nav--next,close,counter,image,name,description,badges,info}` | modal chrome (JS-positioned to the card's projected bounds) |
 | `#globe-gallery-a11y` | **created** by `setupGlobeGalleryA11y()` (off-screen button list) |
-| `#bp-badge` | optional dev breakpoint badge (may be absent) |
 
 **Porting gotcha:** some refs are resolved at *module load* (e.g.
 `var pqEl = document.getElementById('offer-pullquote')` at line 242), before any
@@ -278,46 +274,32 @@ The contract to mirror:
 - See pdf-space `README.md` — exemplary phase-timeline + JS↔CSS contract docs to
   emulate for the globe later.
 
-## Porting plan (step 3 + 4)
+## Completed porting steps (historical)
 
-1. **`globe.js` skeleton**: `export default function init(el)`. Wrap the existing
-   IIFE body as an inner factory `createGlobe(root)` that takes the block element
-   and returns `{ start, destroy }`. Convert module-load DOM lookups to lazy
-   lookups inside `init`.
-2. **Build DOM inside the block**: instead of expecting page-level ids, `init`
-   creates the canvas / spacer / ca-svg / pullquote / arc-copy / modal chrome
-   inside `el` (via `createTag`). Decide id vs class scoping (prefer scoping
-   queries to `el`, keep ids the JS already uses by creating them on the built nodes).
-3. **Replace gsap.ticker** with a `requestAnimationFrame` loop (`raf`/`cancelAnimationFrame`),
-   gated by an `IntersectionObserver` like pdf-space.
-4. **Replace Lenis** reads with `window.scrollY`; drop `__lenis.stop/start/scrollTo`
-   (use native, or no-op during modal).
-5. **THREE strategy** (decide): (a) vendor `three.min.js` into the block and load
-   via Milo's `loadScript` so global `THREE` exists before `init` runs; or
-   (b) switch to an ESM three build and `import * as THREE`. (a) is the
-   lowest-risk first port; (b) is cleaner long-term. **Open question — confirm
-   with user / Milo perf budget.**
-6. **Assets**: 45 PNGs (~51MB total, unoptimized). For first port, host under a
-   known base path (block asset dir or DA/CDN) and keep the `ALL_IMGS` list with
-   a configurable base. Later: author via block rows like pdf-space, and optimize
-   to webp. **Open question — asset hosting + authoring model.**
-7. **Reduced-motion fallback** + **teardown observers** mirroring pdf-space.
-8. **`globe.css`**: paste the globe slice, scope under `.globe` block class.
-9. **Register** `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js:111`).
-10. **Verify** against `_reference/globe-reference.html` per breakpoint.
+1. ✅ `globe.js` skeleton: `export default async init(el)`, runtime as `createGlobeRuntime()` factory.
+2. ✅ DOM built inside the block via `GLOBE_MARKUP` / `buildGlobeDom(el)`.
+3. ✅ gsap.ticker replaced with `startTicker`/`stopTicker` (requestAnimationFrame).
+4. ✅ Lenis replaced with `window.scrollY`; modal scroll-lock via `.modal-open` CSS.
+5. ✅ THREE: ESM import (`./three.module.min.js`), built via local `package.json`.
+6. ✅ Authoring: 3-row block contract + fragment fetch via `.plain.html`.
+7. ✅ Reduced-motion: `.globe--reduced` collapses the spacer (static poster TBD).
+8. ✅ `globe.css`: globe slice from `offer-section.css`, scoped under `.globe`.
+9. ✅ Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`).
 
-## Open questions to resolve before/with step 3
+## Open questions
 
-- THREE delivery: vendored UMD global vs ESM import (perf budget, bundling).
-- Asset hosting + authoring: hardcoded base path vs authored block rows; PNG→webp.
 - Does the globe ship with the modal + a11y gallery + CA in v1, or is v1 the
   core arc→sphere→zoom only (modal/CA as fast-follow)?
-- Smooth-scroll: ship without Lenis (native scroll) — confirm the feel is
-  acceptable, or whether a Milo-approved smooth-scroll exists.
+- Smooth-scroll: confirm native `window.scrollY` feel is acceptable, or whether a
+  Milo-approved smooth-scroll exists.
+- Align `N_TOTAL`/grid to the authored card count instead of wrapping to fill 45/24.
 
-## Files created by this port
+## Files in this directory
 
-- `_reference/globe-reference.html` — trimmed, runnable globe-only host
-  (uses `<base href="../hub-creative/">`; single main.js = `scripts/offer-globe.js`).
+- `globe.js` / `globe.css` — the block.
+- `src/three.js` — build entry; re-exports the 21 Three.js symbols globe.js uses.
+- `three.module.min.js` — tree-shaken Three.js r160 ESM build (~453KB, build artifact, do not edit).
+- `package.json` / `package-lock.json` — local build; `npm install && npm run build` regenerates `three.module.min.js`.
+- `_reference/globe-reference.html` — trimmed, runnable globe-only host (uses `<base href="../hub-creative/">`).
+- `hub-creative/` — original prototype source (read-only reference).
 - `PROGRESS.md` — this file.
-- `globe.js` / `globe.css` — the block (todo).

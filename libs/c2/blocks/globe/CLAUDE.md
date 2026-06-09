@@ -16,7 +16,7 @@ Don't reconstruct context from the code alone — these docs exist so you don't.
   "fix lint" piecemeal — the style cleanup is one tracked refactor task.
 - **DOM is JS-built and uses global ids** (`#offer-globe-canvas`, `#offer-pullquote`,
   `#card-modal*`, …) → **one globe per page** for now. Don't assume authored markup.
-- **`hub-creative/`, `globe.zip`, `_reference/` are read-only reference**, not
+- **`hub-creative/`, `_reference/` are read-only reference**, not
   shipped code. The block is `globe.js` + `globe.css` (registered in `C2_BLOCKS`,
   `libs/utils/utils.js`).
 - **Verify visually against `_reference/globe-reference.html`** (served over http,
