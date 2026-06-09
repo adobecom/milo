@@ -996,10 +996,21 @@ class Gnav {
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
       unavVersion = '1.6';
     }
-    await Promise.all([
+
+    const scriptsToLoad = [
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
-    ]);
+    ];
+
+    if(window.adobeIMS?.isSignedInUser()) {
+      scriptsToLoad.push(loadScript(
+        `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
+        null,
+        { mode: 'async' },
+      ));
+    }
+    
+    await Promise.all(scriptsToLoad);
 
     const getChildren = () => {
       const children = [CONFIG.universalNav.components.profile];
@@ -1073,11 +1084,6 @@ class Gnav {
       fetchAUPSDKInstance: async () => {
         // Initialize AUP SDK — required by UNav 1.6 for fetchAUPSDKInstance
         const { imsClientId } = getConfig();
-        await loadScript(
-          `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
-          null,
-          { mode: 'async' },
-        );
         window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
           appId: 'adobe_com',
           apiKey: imsClientId,
@@ -1085,40 +1091,36 @@ class Gnav {
           getProfile: () => window.adobeIMS?.getProfile(),
           environment,
           cdnEnvironment: environment,
+          locale: locale.split('_')[0],
           appName: 'adobecom',
           appVersion: '1.0',
           colorScheme: isDarkMode() ? 'dark' : 'light',
           ...(enableBE && {
-            showDialog: async (element, attributes, closeCallback) => {
-              // Create a native browser dialog
+            showDialog: async (element, _, closeCallback) => {
               const dialog = document.createElement('dialog');
-
-              // Optional basic styling
-              dialog.style.padding = '0';
-              dialog.style.border = 'none';
-              dialog.style.borderRadius = '12px';
-
-              // The SDK-provided element already contains the mini app UI
+              dialog.id = 'feds-manage-people-dialog';
               dialog.appendChild(element);
               document.body.appendChild(dialog);
-
-              // If user closes dialog manually
-              dialog.addEventListener('close', () => {
+              dialog.addEventListener('cancel', () => {
                 closeCallback({ type: 'close' });
                 dialog.remove();
+                document.documentElement.classList.remove('disable-scroll');
               });
-
-              // If user presses ESC
-              dialog.addEventListener('cancel', () => {
-                closeCallback({ type: 'cancel' });
-                dialog.remove();
+              dialog.addEventListener('click', (e) => {
+                if (e.target === dialog) {
+                  closeCallback({ type: 'close' });
+                  dialog.close();
+                  document.documentElement.classList.remove('disable-scroll');
+                }
               });
-
+              document.documentElement.classList.add('disable-scroll');
               dialog.showModal();
             },
           }),
         });
-
+        if (enableBE) {
+          await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+        }
         return window.aupsdk;
       },
     });
