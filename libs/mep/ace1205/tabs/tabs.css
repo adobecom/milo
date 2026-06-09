@@ -106,6 +106,8 @@
   }
 
   @media (width < 768px) {
+    overflow-x: clip;
+    
     .tabs-wrapper {
       width: 100vw;
       position: relative;
