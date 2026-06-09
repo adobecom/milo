@@ -27,8 +27,7 @@ function decorateCard(block, root) {
 
   media.classList.add('media');
   if (root.classList.contains('featured')) media.classList.add('parallax-featured-card-media');
-  const pic = media.querySelector('picture');
-  if (pic) pic.classList.add('parallax-scale-down');
+  media.querySelector('picture')?.classList.add('parallax-scale-down');
 
   // Move icon from foreground to media overlay
   const firstCell = foreground.children[0];
