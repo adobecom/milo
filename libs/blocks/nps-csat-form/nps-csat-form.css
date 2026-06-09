@@ -571,6 +571,7 @@ body:has(.nps-csat-form.dark.match-background) {
 
 .nps-csat-form.eleven-point-nps .nps-scale-label--high {
   text-align: end;
+  overflow-wrap: anywhere;
 }
 
 .nps-csat-form.eleven-point-nps .nps-picker {
