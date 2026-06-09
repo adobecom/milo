@@ -106,6 +106,12 @@ describe('marketo decorateURL', () => {
     expect(result).to.equal('https://business.adobe.com/');
   });
 
+  it('Does not add .html to non-html file extension (e.g. PDF)', async () => {
+    const baseURL = new URL('https://business.adobe.com/marketo-block.html');
+    const result = await decorateURL('https://business.adobe.com/assets/document.pdf', baseURL);
+    expect(result).to.equal('https://business.adobe.com/assets/document.pdf');
+  });
+
   it('Does not add .html to ending slash when htmlExclude is set', async () => {
     const { htmlExclude: savedHtmlExclude } = getConfig();
     try {

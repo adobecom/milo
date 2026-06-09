@@ -22,8 +22,8 @@
   }
 
   &::after {
-    --scrim-stop-start: -94.26%;
-    --scrim-stop-end: 35.77%;
+    --scrim-stop-start: 0.88%;
+    --scrim-stop-end: 99.12%;
 
     content: '';
     position: absolute;

@@ -628,7 +628,7 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-heading);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {
@@ -1173,20 +1173,91 @@ span.hang-opening-quote {
 
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
+    view-timeline: --parallax-stagger-timeline block;
+    view-timeline-inset: 40% 10%;
+
+    > :not([class*="section-"]) {
+      --parallax-stagger-row-index: 0;
+
+      animation-timing-function: var(--parallax-easing);
+      animation-fill-mode: both;
+      animation-timeline: --parallax-stagger-timeline;
+      animation-range: var(--parallax-range-start) var(--parallax-range-end);
+      will-change: transform;
+    }
+
+    /* Column count per -up class */
+    &.two-up { --parallax-stagger-cols: 2; }
+    &.three-up { --parallax-stagger-cols: 3; }
+    &.four-up { --parallax-stagger-cols: 4; }
+    &.six-up { --parallax-stagger-cols: 6; }
+
+    /* Column stagger indices per -up class */
+    &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+
+    &.two-up   > :nth-child(2n of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+
+    &.three-up > :nth-child(3n of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+
+    &.four-up  > :nth-child(4n of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+
+    /* Row stagger indices per -up class */
+    /* Row 1 */
+    &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 1;
+    }
+
+    /* Row 2 */
+    &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 2;
+    }
+
+    /* Row 3 */
+    &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 3;
+    }
+
+    /* Row 4 */
+    &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
+    &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 4;
+    }
+
     @media (width >= 768px) {
-      view-timeline: --parallax-stagger-timeline block;
-      view-timeline-inset: 40% 10%;
       animation-name: none;
 
       > :not([class*="section-"]) {
-        --parallax-stagger-row-index: 0;
-
         animation-name: enable-parallax-stagger;
-        animation-timing-function: var(--parallax-easing);
-        animation-fill-mode: both;
-        animation-timeline: --parallax-stagger-timeline;
-        animation-range: var(--parallax-range-start) var(--parallax-range-end);
-        will-change: transform;
+      }
+
+      &.masonry-layout > :not([class*="section-"]) {
+        --parallax-stagger-drift: 150px;
+
+        animation-timeline: view(block);
       }
 
       /* Prolong animation for 2 rows */
@@ -1205,67 +1276,6 @@ span.hang-opening-quote {
       &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
         --parallax-range-end-length: 80%;
       }
-
-      /* Column count per -up class */
-      &.two-up { --parallax-stagger-cols: 2; }
-      &.three-up { --parallax-stagger-cols: 3; }
-      &.four-up { --parallax-stagger-cols: 4; }
-      &.six-up { --parallax-stagger-cols: 6; }
-
-      /* Column stagger indices per -up class */
-      &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
-      &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
-
-      &.two-up   > :nth-child(2n of :not([class*="section-"])),
-      &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
-
-      &.three-up > :nth-child(3n of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
-
-      &.four-up  > :nth-child(4n of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
-
-      &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
-
-      &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
-
-      /* Row stagger indices per -up class */
-      /* Row 1 */
-      &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 1;
-      }
-
-      /* Row 2 */
-      &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 2;
-      }
-
-      /* Row 3 */
-      &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 3;
-      }
-
-      /* Row 4 */
-      &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
-      &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 4;
-      }
     }
   }
 
@@ -1283,8 +1293,16 @@ span.hang-opening-quote {
     );
   }
 
+  .parallax-stagger-ltr.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc(var(--parallax-stagger-index) * var(--parallax-stagger-drift));
+  }
+
+  .parallax-stagger-rtl.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc((1 - var(--parallax-stagger-index)) * var(--parallax-stagger-drift));
+  }
+
   @keyframes enable-parallax-stagger {
-    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0), 0); }
     to { transform: translate3d(0, 0, 0); }
   }
 

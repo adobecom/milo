@@ -386,12 +386,12 @@
 }
 
 .bc-floating-button:hover .bc-floating-button-container {
-  transition: all 0.3s ease;
+  transition: background 0.3s ease;
   background: #fff;
 }
 
 .bc-floating-button:hover::before {
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease;
   border-color: var(--bc-floating-button-border-color-hover);
 }
 

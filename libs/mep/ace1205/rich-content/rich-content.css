@@ -610,6 +610,10 @@
       animation-duration: auto;
       animation-timeline: --rc-video-garage;
       animation-range: entry 50% exit 200%;
+
+      &.has-background + .section.has-background {
+        margin-top: -1px;
+      }
     }
 
     @media (width >= 768px) {
