@@ -2,8 +2,8 @@ import { handleFocalpoint } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const mediaQueries = {
-  mobile: window.matchMedia('(max-width: 767px)'),
-  tablet: window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
+  mobile: window.matchMedia('(width < 768px)'),
+  tablet: window.matchMedia('(768px <= width < 1280px)'),
 };
 
 export function handleBackground(div, section) {
