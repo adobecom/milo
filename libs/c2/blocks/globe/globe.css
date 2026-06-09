@@ -14,6 +14,54 @@
 /* Scroll lock while the card modal is open (replaces Lenis.stop()). */
 html.modal-open, body.modal-open { overflow: hidden; }
 
+/* ── Type-scale tokens ───────────────────────────────────────────────────────
+   Ported from the prototype's styles/global/typography.css. The prototype
+   relied on these :root tokens; Milo does NOT define them, so without this the
+   pull-quote and arc-copy fall back to default 16px text. Scoped to .globe so
+   they cascade to the JS-built overlays (pull-quote / arc-copy / modal are DOM
+   descendants — position:fixed doesn't break custom-property inheritance).
+   Keep values in sync with hub-creative/styles/global/typography.css. */
+.globe {
+  --font-display: 'Adobe Clean Display', system-ui, sans-serif;
+  --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
+
+  /* Title 1 — 80/76.8/-3.2px */
+  --type-title-1-size: 80px;
+  --type-title-1-weight: 900;
+  --type-title-1-lh: 0.96;
+  --type-title-1-ls: -0.04em;
+
+  /* Body Large — 20/24/0 */
+  --type-body-l-size: 20px;
+  --type-body-l-weight: 400;
+  --type-body-l-lh: 1.2;
+  --type-body-l-ls: 0;
+
+  /* Body Medium — 16/20.8/+0.16px */
+  --type-body-m-size: 16px;
+  --type-body-m-weight: 400;
+  --type-body-m-lh: 1.3;
+  --type-body-m-ls: 0.01em;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .globe {
+    --type-title-1-size: 56px;
+    --type-title-1-ls: -0.03em;
+    --type-body-l-size: 18px;
+    --type-body-l-lh: 1.3;
+  }
+}
+
+@media (max-width: 767px) {
+  .globe {
+    --type-title-1-size: 40px;
+    --type-title-1-ls: -0.03em;
+    --type-body-l-size: 16px;
+    --type-body-l-lh: 1.3;
+  }
+}
+
 .offer-pin-spacer {
   height: 380vh;
   position: relative;

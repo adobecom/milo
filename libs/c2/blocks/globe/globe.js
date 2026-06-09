@@ -1929,8 +1929,7 @@ function createGlobeRuntime(authoredCards) {
     if (canvas) canvas.classList.add('is-modal-active');
     document.documentElement.classList.add('modal-open');
     document.body.classList.add('modal-open');
-    // Original prototype paused Lenis here; native scroll is locked via the
-    // `modal-open` class (overflow:hidden) in globe.css instead.
+    if (window.lenis) window.lenis.stop();
 
     // Pre-attach prev/next cards to modalScene at offset positions so horizontal
     // swipes reveal the neighbor mid-gesture (iOS Photos style). Mobile only.
@@ -2000,7 +1999,7 @@ function createGlobeRuntime(authoredCards) {
       if (chromeEl) { chromeEl.classList.remove('is-visible'); chromeEl.setAttribute('aria-hidden', 'true'); }
       document.documentElement.classList.remove('modal-open');
       document.body.classList.remove('modal-open');
-      // (Lenis resume removed — see openCardModal.)
+      if (window.lenis) window.lenis.start();
       // Restore focus to whatever the user had focused before opening the modal
       // (typically the gallery button that opened it for keyboard users).
       if (_modalFocusRestoreEl && document.body.contains(_modalFocusRestoreEl)) {
@@ -2259,24 +2258,6 @@ function createGlobeRuntime(authoredCards) {
         }
       }
     });
-
-    // Hard scroll lock during modal — belt-and-suspenders on top of the CSS
-    // overflow:hidden + Lenis.stop(). When the modal is open we preventDefault
-    // on wheel and touchmove at the document level so:
-    //   - Wheel/trackpad scroll can't bypass Lenis (which is stopped but still
-    //     tracks native scroll if it happens).
-    //   - iOS Safari momentum touch scroll, which sometimes leaks past
-    //     overflow:hidden, gets killed at the event level.
-    // The modal's OWN touch handlers (swipe nav, pull-down close) also call
-    // preventDefault when they handle a gesture, so this doesn't break them —
-    // it just adds prevention for the cases where they don't (e.g. a touch
-    // that starts outside any handled gesture).
-    document.addEventListener('wheel', (e) => {
-      if (modalIdx >= 0) e.preventDefault();
-    }, { passive: false });
-    document.addEventListener('touchmove', (e) => {
-      if (modalIdx >= 0) e.preventDefault();
-    }, { passive: false });
 
     // ── Mobile modal touch gestures: live 1:1 drag with rubber-band release ──
     // Horizontal: asset translates with finger; commit on release if past 25%
@@ -3397,13 +3378,13 @@ const GLOBE_MARKUP = `
     </div>
   </div>
 
-  <div id="card-modal" class="card-modal" aria-hidden="true" data-lenis-prevent>
+  <div id="card-modal" class="card-modal" aria-hidden="true">
     <div class="card-modal__backdrop"></div>
   </div>
 
   <canvas id="modal-card-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
 
-  <div id="card-modal-chrome" class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name" aria-hidden="true" data-lenis-prevent>
+  <div id="card-modal-chrome" class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name" aria-hidden="true">
     <button class="card-modal__nav card-modal__nav--prev" type="button" aria-label="Previous card">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
