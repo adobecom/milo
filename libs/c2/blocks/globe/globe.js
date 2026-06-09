@@ -1,9 +1,8 @@
 /* eslint-disable */
-/* PROTOTYPE PORT — lint disabled for the verbatim ES5 runtime ported from the
-   hub-creative offer-globe.js prototype. To be cleaned up (no-var, naming,
-   max-len, etc.) during the refactor pass. See PROGRESS.md. */
+/* lint disabled — ES5 style from the ported prototype, to be cleaned up
+   (no-var, naming, max-len, etc.) during the refactor pass. See PROGRESS.md. */
 /* ─────────────────────────────────────────────────────────────────────────
-   Offer Globe — Three.js WebGL globe variant.
+   Offer Globe — Three.js WebGL scrolled hero.
 
    Phases (progress 0→1 across 850vh .offer-pin-spacer):
      0.00 – 0.55  Arc: 45 cards rotate across viewport
@@ -12,208 +11,186 @@
      0.78 – 1.00  Zoom: camera flies through sphere
    ───────────────────────────────────────────────────────────────────────── */
 import * as THREE from './three.module.min.js';
+import { parseAuthoredContent, fetchFragmentCards } from './authoring.js';
+import { buildGlobeDom } from './markup.js';
+import { CARD_VERT, CARD_FRAG, _MODAL_VERT, _MODAL_FRAG } from './shaders.js';
+// ════════════════════════════════════════════════════════════════════════════
+// Tuning constants + pure helpers (module scope — pure, no per-instance state).
+// Grouped by concern; the render loop in createGlobeRuntime() reads them directly.
+// (authoring.js, markup.js, shaders.js remain separate modules.)
+// ════════════════════════════════════════════════════════════════════════════
 
-// ── Authoring ────────────────────────────────────────────────────────────────
-// Adobe app catalog used to render the modal badge chips (the id drives the
-// brand-colored icon class in globe.css, e.g. .card-modal__badge-icon--photoshop).
-// At module scope so both placeholder generation and authored-badge parsing share it.
-const APP_CATALOG = [
-  { id: 'photoshop', name: 'Photoshop', abbr: 'Ps' },
-  { id: 'lightroom', name: 'Lightroom', abbr: 'Lr' },
-  { id: 'illustrator', name: 'Illustrator', abbr: 'Ai' },
-  { id: 'premiere', name: 'Premiere Pro', abbr: 'Pr' },
-  { id: 'aftereffects', name: 'After Effects', abbr: 'Ae' },
-  { id: 'firefly', name: 'Firefly', abbr: 'Ff' },
-  { id: 'express', name: 'Express', abbr: 'Ex' },
-  { id: 'fresco', name: 'Fresco', abbr: 'Fr' },
-];
+// ── Layout / breakpoints ─────────────────────────────────────────────────────
+// Image-derived (texture aspect, never changes)
+const CARD_ASPECT = 456 / 631; // portrait
 
-// Resolve a badge's app from an authored token (matches id / name / abbr,
-// case-insensitive). Unknown apps still render, with a derived 2-letter abbr.
-function findApp(token) {
-  const t = (token || '').trim();
-  const key = t.toLowerCase();
-  const match = APP_CATALOG.find(
-    (a) => a.id === key || a.name.toLowerCase() === key || a.abbr.toLowerCase() === key,
+// Visual-layout knobs that change between viewport sizes. Tablet & mobile start as
+// EXACT mirrors of desktop — tuning a non-desktop BP cannot affect desktop because
+// each BP holds its own values. Resolved once at init() via resolveBP(W); crossing
+// a BP boundary on resize triggers full destroy() + init() (see doLayout).
+//
+// To add a new breakpoint: copy one of the entries below, give it a new key (e.g.
+// 'largeDesktop'), set minWidth, and update resolveBP() to test for it.
+// Thresholds match the ACOM design system (Consonant 2.0):
+//   desktop ≥1024, tablet 768–1023, mobile <768.
+// Type/layout @media queries in CSS use the same boundaries.
+const BREAKPOINTS = {
+  desktop: {
+    minWidth: 1024,
+    N_TOTAL: 45,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 6.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 65,
+    CAM_Z_END: -60,
+    GRID_COLS: 9,
+    GRID_ROWS: 5,
+    ARC_DENSE_COUNT: 27,
+  },
+  tablet: {
+    minWidth: 768,
+    N_TOTAL: 45,
+    ARC_SPAN: 4.50,
+    SPHERE_R: 35,
+    CARD_H_SPHERE: 6.5,
+    CARD_W_ARC: 456,
+    CAM_Z_SPHERE: 65,
+    CAM_Z_END: -60,
+    GRID_COLS: 9,
+    GRID_ROWS: 5,
+    ARC_DENSE_COUNT: 27,
+  },
+  mobile: {
+    // Tuned for 375x667 portrait. Sphere fits ~88% viewport width / 49% height
+    // at SPHERE_R=20, CAM_Z_SPHERE=70. Card count + grid layout adjusted to
+    // portrait orientation. Arc cards sized to fit within viewport with margin.
+    // ARC_DENSE_COUNT=0 → cards spread uniformly across arc (no off-screen
+    // dense cluster), since N_TOTAL=24 isn't crowded enough to need clustering.
+    minWidth: 0,
+    N_TOTAL: 24,
+    ARC_SPAN: 3.6,
+    SPHERE_R: 20,
+    CARD_H_SPHERE: 6.0,
+    CARD_W_ARC: 220,
+    CAM_Z_SPHERE: 70,
+    CAM_Z_END: -60,
+    GRID_COLS: 3,
+    GRID_ROWS: 8,
+    ARC_DENSE_COUNT: 0,
+  },
+};
+
+function resolveBP(w) {
+  if (w >= BREAKPOINTS.desktop.minWidth) return { name: 'desktop', cfg: BREAKPOINTS.desktop };
+  if (w >= BREAKPOINTS.tablet.minWidth) return { name: 'tablet', cfg: BREAKPOINTS.tablet };
+  return { name: 'mobile', cfg: BREAKPOINTS.mobile };
+}
+
+// ── Phase timeline (progress 0→1 across the 850vh spacer) ────────────────────
+const ARC_STAGGER = 0.594;
+const P_PAN_END = 0.55;
+const P_ARC_PREROLL = 0.30;
+// Grid peel expressed as arc-rotation fraction (0=arc start, 1=arc end).
+const P_GRID_ARC_START = 0.30;
+const P_GRID_ARC_END = 0.60;
+const P_FOLD_DUR = 0.25;
+const P_ZOOM_END = 1.00;
+
+// ── Entry timing ─────────────────────────────────────────────────────────────
+// Two independent knobs (the WebGL canvas is transparent, so an early reveal only
+// draws the card meshes, not an opaque sheet over the content above):
+//   ENTRY_LEAD_VH — how far, in viewport heights, BEFORE the spacer's top the
+//     globe starts entering (arc-copy fade-in, arc pre-roll, canvas reveal).
+//     The prototype used 0.85 (hero, nothing above it) — that pre-rolls the arc
+//     across most of the viewport while preceding blocks are still on screen,
+//     so the arc overlaps them. 0 = only starts once the block's top reaches
+//     the viewport top (no overlap, but feels late). A moderate value starts as
+//     the section is arriving without sweeping the arc over the content above.
+//   ENTRY_RAMP_VH — the ramp length (viewport heights) over which arcCopyEntryT
+//     goes 0→1. This sets how FAST the arc-copy fades and the arc pre-rolls,
+//     and the gap between the text appearing and the arc arriving. MUST stay
+//     independent of the lead (prototype value 1.05) — coupling them is what
+//     made the arc rotate/peel too fast and shrank the text→arc gap.
+const ENTRY_LEAD_VH = 0.4;
+const ENTRY_RAMP_VH = 1.05;
+
+// ── Grid peel / fold ─────────────────────────────────────────────────────────
+const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width (computed per layout)
+const GRID_PEEL_STAGGER = 0.20; // arc→grid: stagger peels across 20% of formation phase (more simultaneous)
+const ARC_PEEL_JITTER = 0.40; // per-card random offset added to gpDelay — breaks the linear cascade for an organic feel
+// Non-uniform fanT distribution along the arc:
+//   Cards [0, ARC_DENSE_COUNT-1] cluster tight into fanT [0, ARC_DENSE_SPLIT] (off-screen flank).
+//   Cards [ARC_DENSE_COUNT, N-1] spread across fanT [ARC_DENSE_SPLIT, 1] (the visible upper arc).
+// The clustered cards peel first (low i = early gpDelay), so they vanish before rotation
+// would otherwise bring their compressed fanT region into view.
+// ARC_DENSE_COUNT is per-BP (in BREAKPOINTS) since it must scale with N_TOTAL.
+const ARC_DENSE_SPLIT = 0.50;
+
+// ── Drag / auto-rotation ─────────────────────────────────────────────────────
+const DRAG_FRICTION = 0.94;
+const DRAG_SENSITIVITY = 0.005;
+const MAX_VEL = 0.06;
+const AUTO_ROT_SPEED = 0.000045;
+
+// ── Sphere interaction ───────────────────────────────────────────────────────
+// Sphere becomes interactive (drag-rotate, hover, click → modal) at this
+// sphereFormT threshold rather than waiting for full formation. Lower = sphere
+// can be grabbed mid-fold. Above ≥0.5 the lerped card positions are close
+// enough to sphere that rotating the group still reads as spinning the sphere.
+const SPHERE_INTERACTIVE_T = 0.8;
+
+// ── Chromatic aberration (Options B + C) ─────────────────────────────────────
+const CA_ENABLED = true; // master kill switch — set false to disable all CA without removing code
+const CA_STRENGTH = 0.012; // radial UV shift per channel (bell-curve at transition peaks; Option B)
+const CA_MOTION_STRENGTH = 1.0; // directional UV shift max — peel / fold / sphere / modal
+const CA_MOTION_STRENGTH_ARC = 0.04; // softer clamp while cards sit on the arc
+const SCROLL_VEL_MAX = 15; // px/frame scroll speed that saturates motion trail at full strength
+const CA_PX_MAX = 3; // max vertical pixel shift for global canvas SVG filter (Option C)
+
+// ── Hover (sphere phase only) ────────────────────────────────────────────────
+// Polished/premium feel — settles in/out, no continuous animation while hovered.
+const HOVER_CA = 0.025; // CA bump composed additively onto transition CA
+const HOVER_WARP = 0.4; // barrel-distortion amount sent to shader
+const HOVER_SCALE = 0.25; // scale multiplier added: 1.0 → 1.25
+const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
+
+// ── Sphere-drag warp (all breakpoints) ───────────────────────────────────────
+// Hybrid intensity: a baseline while actively dragging, plus a velocity-driven
+// burst that decays naturally with dragVel via DRAG_FRICTION after release.
+// Applied to ALL sphere cards (front + back) using each card's own center (0.5, 0.5).
+const SPHERE_DRAG_WARP_BASELINE = 0.05; // constant while isDragging
+const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed (px/frame in world units)
+const SPHERE_DRAG_WARP_MAX = 0.25; // cap on combined value
+
+// ── Easing ───────────────────────────────────────────────────────────────────
+function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
+function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
+function easeOutSine(t) { return Math.sin(t * Math.PI / 2); }
+
+function lerpN(a, b, t) { return a + (b - a) * t; }
+function lerpV3(out, a, b, t) {
+  out.x = lerpN(a.x, b.x, t);
+  out.y = lerpN(a.y, b.y, t);
+  out.z = lerpN(a.z, b.z, t);
+}
+
+// ── Fibonacci sphere distribution ────────────────────────────────────────────
+function fibSpherePos(i, total, radius) {
+  const phi = Math.acos(1 - 2 * (i + 0.5) / total);
+  const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+  return new THREE.Vector3(
+    radius * Math.sin(phi) * Math.cos(theta),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta),
   );
-  if (match) return match;
-  return { id: 'photoshop', name: t || 'App', abbr: t.slice(0, 2) || 'Ap' };
 }
 
-// AUTHORING CONTRACT:
-// The block has three authored rows (direct child <div>s):
-//   Row 0 — arc-copy:   heading → .offer-arc-copy__title; <p> → .offer-arc-copy__body
-//   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
-//                       Each card in the fragment is a flat sequence of elements
-//                       (separated by <hr> for multiple cards):
-//                         <p><em>Role</em></p>
-//                         <p><strong>Name</strong></p>
-//                         <p>Description text</p>
-//                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
-//                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote: heading → .offer-pullquote__quote;
-//                       first <p> → .offer-pullquote__name;
-//                       second <p> → .offer-pullquote__role
-// Returns { cards, arcCopy, pullQuote }. cards falls back to [] (factory uses placeholders).
 
-function parseArcCopy(row) {
-  const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')]
-    .filter((p) => !p.querySelector('picture,img'))
-    .map((p) => p.textContent.trim())
-    .filter(Boolean);
-  return {
-    title: heading ? heading.textContent.trim() : paras.shift() || '',
-    body: paras.join(' '),
-  };
-}
-
-function parsePullQuote(row) {
-  const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
-  return {
-    quote: quoteEl ? quoteEl.textContent.trim() : paras.shift() || '',
-    name: paras[0] || '',
-    role: paras[1] || '',
-  };
-}
-
-function parseFragmentCardSegment(nodes) {
-  let picture = null; let img = null;
-  let role = 'Photographer'; let name = ''; let description = '';
-  const badges = [];
-
-  for (const node of nodes) {
-    const tag = node.nodeName && node.nodeName.toUpperCase();
-    if (!tag) continue;
-
-    if (tag === 'P') {
-      const pic = node.querySelector('picture');
-      if (pic) { picture = pic; img = pic.querySelector('img'); continue; }
-      const i = node.querySelector('img');
-      if (i) { img = i; continue; }
-      const em = node.querySelector('em');
-      if (em) { role = em.textContent.trim(); continue; }
-      const strong = node.querySelector('strong');
-      if (strong) { name = strong.textContent.trim(); continue; }
-      const text = node.textContent.trim();
-      if (text && !description) description = text;
-    } else if (tag === 'UL') {
-      node.querySelectorAll(':scope > li').forEach((li) => {
-        const nestedLi = li.querySelector('ul > li');
-        if (nestedLi) {
-          const appText = [...li.childNodes]
-            .filter((n) => n.nodeType === Node.TEXT_NODE)
-            .map((n) => n.textContent.trim())
-            .join('').trim();
-          const roleText = nestedLi.textContent.trim();
-          if (appText) badges.push({ app: findApp(appText), role: roleText });
-        } else {
-          // Legacy pipe-separated format: "Photoshop | Compositing"
-          const parts = li.textContent.split('|').map((s) => s.trim()).filter(Boolean);
-          if (parts[0]) badges.push({ app: findApp(parts[0]), role: parts.slice(1).join(' ') });
-        }
-      });
-    }
-  }
-
-  if (!img) return null;
-  return {
-    img: img.currentSrc || img.getAttribute('src') || img.src,
-    picture,
-    name: name || 'Untitled',
-    role,
-    description,
-    badges,
-  };
-}
-
-function parseFragmentCards(row) {
-  const hasDirectContent = [...row.children].some((n) => n.nodeName === 'P' || n.nodeName === 'UL');
-
-  if (!hasDirectContent) {
-    // Children are section divs (each fragment section = one card). Recurse into each.
-    const divs = [...row.querySelectorAll(':scope > div')];
-    return divs.flatMap((div) => parseFragmentCards(div));
-  }
-
-  // Flat content — split by <hr> to handle multiple cards within a single section.
-  const segments = [];
-  let current = [];
-  [...row.childNodes].forEach((node) => {
-    if (node.nodeName === 'HR') {
-      if (current.length) { segments.push(current); current = []; }
-    } else if (node.nodeType !== Node.TEXT_NODE || node.textContent.trim()) {
-      current.push(node);
-    }
-  });
-  if (current.length) segments.push(current);
-  return segments.map((nodes) => parseFragmentCardSegment(nodes)).filter(Boolean);
-}
-
-// Fetch the fragment's full .plain.html and parse all card sections from it.
-async function fetchFragmentCards(href) {
-  try {
-    const resp = await fetch(`${href}.plain.html`);
-    if (!resp.ok) return null;
-    const html = await resp.text();
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    const cards = [...tmp.querySelectorAll(':scope > div')]
-      .flatMap((section) => parseFragmentCards(section))
-      .filter(Boolean);
-    return cards.length ? cards : null;
-  } catch (e) {
-    return null;
-  }
-}
-
-function parseAuthoredContent(el) {
-  const rows = [...el.querySelectorAll(':scope > div')];
-  if (!rows.length) return { cards: [], arcCopy: null, pullQuote: null, fragmentHref: null };
-
-  let cardRows = rows;
-  let arcCopy = null;
-  let pullQuote = null;
-
-  if (rows.length > 1 && !rows[0].querySelector('picture, img')) {
-    arcCopy = parseArcCopy(rows[0]);
-    cardRows = cardRows.slice(1);
-  }
-
-  if (cardRows.length > 1 && !cardRows[cardRows.length - 1].querySelector('picture, img')) {
-    pullQuote = parsePullQuote(cardRows[cardRows.length - 1]);
-    cardRows = cardRows.slice(0, -1);
-  }
-
-  // Extract the fragment href before buildGlobeDom() wipes the DOM.
-  // Canonical path: the link is authored with #_dnb (e.g. /fragments/…#_dnb) so
-  // Milo skips auto-resolution and the raw <a href> is still in the DOM here.
-  // Strip the hash before fetching. Fall back to data-path + image origin if
-  // Milo already replaced the link (e.g. on a page that predates the #_dnb convention).
-  const fragmentHref = (() => {
-    for (const row of cardRows) {
-      const a = row.querySelector('a[href]');
-      if (a) return a.href.replace(/#.*$/, '');
-      const pathEl = row.querySelector('[data-path]');
-      if (pathEl) {
-        const imgSrc = row.querySelector('img')?.src;
-        const origin = imgSrc ? new URL(imgSrc).origin : window.location.origin;
-        return `${origin}${pathEl.dataset.path}`;
-      }
-    }
-    return null;
-  })();
-
-  const cards = cardRows.flatMap((row) => parseFragmentCards(row)).filter(Boolean);
-  return { cards, arcCopy, pullQuote, fragmentHref };
-}
-
-// The globe runtime, ported verbatim from the hub-creative offer-globe.js
-// prototype. Originally an IIFE exposing window.offerGlobe; now a factory that
-// returns { init, destroy }. See PROGRESS.md for the porting notes:
-//   - gsap.ticker → requestAnimationFrame (startTicker/stopTicker below)
-//   - Lenis reads → window.scrollY
+// The globe runtime. Originally an IIFE exposing window.offerGlobe in the
+// hub-creative prototype; now a factory returning { init, destroy }.
+// Key changes from the prototype: gsap.ticker → requestAnimationFrame,
+// Lenis reads → window.scrollY.
 function createGlobeRuntime(authoredCards) {
   // rAF driver replacing gsap.ticker.
   let _rafId = 0;
@@ -230,75 +207,6 @@ function createGlobeRuntime(authoredCards) {
   function getCardMetadata(i) {
     const len = CARD_CONTENT.length;
     return CARD_CONTENT[((i % len) + len) % len];
-  }
-
-  // ── Constants ──────────────────────────────────────────────────────────────
-
-  // Image-derived (texture aspect, never changes)
-  const CARD_ASPECT = 456 / 631; // portrait
-
-  // ── Breakpoints ─────────────────────────────────────────────────────────
-  // Visual-layout knobs that change between viewport sizes. Tablet & mobile start as
-  // EXACT mirrors of desktop — tuning a non-desktop BP cannot affect desktop because
-  // each BP holds its own values. Resolved once at init() via resolveBP(W); crossing
-  // a BP boundary on resize triggers full destroy() + init() (see doLayout).
-  //
-  // To add a new breakpoint: copy one of the entries below, give it a new key (e.g.
-  // 'largeDesktop'), set minWidth, and update resolveBP() to test for it.
-  // Thresholds match the ACOM design system (Consonant 2.0):
-  //   desktop ≥1024, tablet 768–1023, mobile <768.
-  // Type/layout @media queries in CSS use the same boundaries.
-  const BREAKPOINTS = {
-    desktop: {
-      minWidth: 1024,
-      N_TOTAL: 45,
-      ARC_SPAN: 4.50,
-      SPHERE_R: 35,
-      CARD_H_SPHERE: 6.5,
-      CARD_W_ARC: 456,
-      CAM_Z_SPHERE: 65,
-      CAM_Z_END: -60,
-      GRID_COLS: 9,
-      GRID_ROWS: 5,
-      ARC_DENSE_COUNT: 27,
-    },
-    tablet: {
-      minWidth: 768,
-      N_TOTAL: 45,
-      ARC_SPAN: 4.50,
-      SPHERE_R: 35,
-      CARD_H_SPHERE: 6.5,
-      CARD_W_ARC: 456,
-      CAM_Z_SPHERE: 65,
-      CAM_Z_END: -60,
-      GRID_COLS: 9,
-      GRID_ROWS: 5,
-      ARC_DENSE_COUNT: 27,
-    },
-    mobile: {
-      // Tuned for 375x667 portrait. Sphere fits ~88% viewport width / 49% height
-      // at SPHERE_R=20, CAM_Z_SPHERE=70. Card count + grid layout adjusted to
-      // portrait orientation. Arc cards sized to fit within viewport with margin.
-      // ARC_DENSE_COUNT=0 → cards spread uniformly across arc (no off-screen
-      // dense cluster), since N_TOTAL=24 isn't crowded enough to need clustering.
-      minWidth: 0,
-      N_TOTAL: 24,
-      ARC_SPAN: 3.6,
-      SPHERE_R: 20,
-      CARD_H_SPHERE: 6.0,
-      CARD_W_ARC: 220,
-      CAM_Z_SPHERE: 70,
-      CAM_Z_END: -60,
-      GRID_COLS: 3,
-      GRID_ROWS: 8,
-      ARC_DENSE_COUNT: 0,
-    },
-  };
-
-  function resolveBP(w) {
-    if (w >= BREAKPOINTS.desktop.minWidth) return { name: 'desktop', cfg: BREAKPOINTS.desktop };
-    if (w >= BREAKPOINTS.tablet.minWidth) return { name: 'tablet', cfg: BREAKPOINTS.tablet };
-    return { name: 'mobile', cfg: BREAKPOINTS.mobile };
   }
 
   // ── Per-BP values — declared here, assigned by applyBP() before buildCards() runs ──
@@ -325,84 +233,6 @@ function createGlobeRuntime(authoredCards) {
     ARC_DENSE_COUNT = cfg.ARC_DENSE_COUNT;
   }
 
-  // ── Non-BP timing/physics constants (identical across breakpoints) ──
-  const ARC_STAGGER = 0.594;
-  const P_PAN_END = 0.55;
-  const P_ARC_PREROLL = 0.30;
-
-  // Entry timing — two independent knobs (the WebGL canvas is transparent, so an
-  // early reveal only draws the card meshes, not an opaque sheet over the content
-  // above):
-  //   ENTRY_LEAD_VH — how far, in viewport heights, BEFORE the spacer's top the
-  //     globe starts entering (arc-copy fade-in, arc pre-roll, canvas reveal).
-  //     The prototype used 0.85 (hero, nothing above it) — that pre-rolls the arc
-  //     across most of the viewport while preceding blocks are still on screen,
-  //     so the arc overlaps them. 0 = only starts once the block's top reaches
-  //     the viewport top (no overlap, but feels late). A moderate value starts as
-  //     the section is arriving without sweeping the arc over the content above.
-  //   ENTRY_RAMP_VH — the ramp length (viewport heights) over which arcCopyEntryT
-  //     goes 0→1. This sets how FAST the arc-copy fades and the arc pre-rolls,
-  //     and the gap between the text appearing and the arc arriving. MUST stay
-  //     independent of the lead (prototype value 1.05) — coupling them is what
-  //     made the arc rotate/peel too fast and shrank the text→arc gap.
-  const ENTRY_LEAD_VH = 0.4;
-  const ENTRY_RAMP_VH = 1.05;
-
-  // Grid peel expressed as arc-rotation fraction (0=arc start, 1=arc end).
-  const P_GRID_ARC_START = 0.30;
-  const P_GRID_ARC_END = 0.60;
-
-  const P_FOLD_DUR = 0.25;
-  const P_ZOOM_END = 1.00;
-
-  // Drag / auto-rotation
-  const DRAG_FRICTION = 0.94;
-  const DRAG_SENSITIVITY = 0.005;
-  const MAX_VEL = 0.06;
-  const AUTO_ROT_SPEED = 0.000045;
-
-  // Sphere becomes interactive (drag-rotate, hover, click → modal) at this
-  // sphereFormT threshold rather than waiting for full formation. Lower = sphere
-  // can be grabbed mid-fold. Above ≥0.5 the lerped card positions are close
-  // enough to sphere that rotating the group still reads as spinning the sphere.
-  const SPHERE_INTERACTIVE_T = 0.8;
-
-  const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width (computed per layout)
-
-  const GRID_PEEL_STAGGER = 0.20; // arc→grid: stagger peels across 20% of formation phase (more simultaneous)
-  const ARC_PEEL_JITTER = 0.40; // per-card random offset added to gpDelay — breaks the linear cascade for an organic feel
-
-  // Non-uniform fanT distribution along the arc:
-  //   Cards [0, ARC_DENSE_COUNT-1] cluster tight into fanT [0, ARC_DENSE_SPLIT] (off-screen flank).
-  //   Cards [ARC_DENSE_COUNT, N-1] spread across fanT [ARC_DENSE_SPLIT, 1] (the visible upper arc).
-  // The clustered cards peel first (low i = early gpDelay), so they vanish before rotation
-  // would otherwise bring their compressed fanT region into view.
-  // ARC_DENSE_COUNT is per-BP (in BREAKPOINTS) since it must scale with N_TOTAL.
-  const ARC_DENSE_SPLIT = 0.50;
-
-  // Chromatic aberration (Options B + C)
-  const CA_ENABLED = true; // master kill switch — set false to disable all CA without removing code
-  const CA_STRENGTH = 0.012; // radial UV shift per channel (bell-curve at transition peaks; Option B)
-  const CA_MOTION_STRENGTH = 1.0; // directional UV shift max — peel / fold / sphere / modal
-  const CA_MOTION_STRENGTH_ARC = 0.04; // softer clamp while cards sit on the arc
-
-  // ── Hover (sphere phase only) ──
-  // Polished/premium feel — settles in/out, no continuous animation while hovered.
-  const HOVER_CA = 0.025; // CA bump composed additively onto transition CA
-  const HOVER_WARP = 0.4; // barrel-distortion amount sent to shader
-  const HOVER_SCALE = 0.25; // scale multiplier added: 1.0 → 1.25
-  const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
-
-  // ── Sphere-drag warp (all breakpoints) ──
-  // Hybrid intensity: a baseline while actively dragging, plus a velocity-driven
-  // burst that decays naturally with dragVel via DRAG_FRICTION after release.
-  // Applied to ALL sphere cards (front + back) using each card's own center (0.5, 0.5).
-  const SPHERE_DRAG_WARP_BASELINE = 0.05; // constant while isDragging
-  const SPHERE_DRAG_WARP_VEL = 3.5; // multiplier on drag-speed (px/frame in world units)
-  const SPHERE_DRAG_WARP_MAX = 0.25; // cap on combined value
-  let _sphereDragWarp = 0; // current value pushed to all sphere cards
-  const SCROLL_VEL_MAX = 15; // px/frame scroll speed that saturates motion trail at full strength
-  const CA_PX_MAX = 3; // max vertical pixel shift for global canvas SVG filter (Option C)
 
   // ── State ──────────────────────────────────────────────────────────────────
   let renderer; let scene; let camera; let cameraOrtho; let
@@ -424,7 +254,6 @@ function createGlobeRuntime(authoredCards) {
 
   const pqEl = document.getElementById('offer-pullquote');
   let pqShown = false;
-  let pqPrevZoom = 0;
 
   let caFilterR = null; // SVG feOffset element for red channel  (Option C)
   let caFilterB = null; // SVG feOffset element for blue channel (Option C)
@@ -438,6 +267,7 @@ function createGlobeRuntime(authoredCards) {
   let isDragging = false; let lastMX = 0; let
     lastMY = 0;
   let tickerAdded = false;
+  let _sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
 
   // Per-card sphere-rotation state (THREE objects). The sphere drag rotation is applied
   // MANUALLY to each card in the sphere/fold blocks of tick() — sphereGroup.rotation is
@@ -508,19 +338,8 @@ function createGlobeRuntime(authoredCards) {
   // Current arc context (computed once per frame)
   let _ctx = null;
 
-  // ── Easing ─────────────────────────────────────────────────────────────────
-  function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
-  function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
-  function easeOutSine(t) { return Math.sin(t * Math.PI / 2); }
 
-  function lerpN(a, b, t) { return a + (b - a) * t; }
-  function lerpV3(out, a, b, t) {
-    out.x = lerpN(a.x, b.x, t);
-    out.y = lerpN(a.y, b.y, t);
-    out.z = lerpN(a.z, b.z, t);
-  }
-
-  // ── Arc math ── direct port of CSS tile variant ────────────────────────────
+  // ── Arc math ─────────────────────────────────────────────────────────────────
   function arcRotationEase(t) {
     const k = 0.08; const
       a = 1 / (k * (2 - k));
@@ -668,57 +487,6 @@ function createGlobeRuntime(authoredCards) {
     return _sphereMaskCache[key];
   }
 
-  // ── Modal SDF shader material ─────────────────────────────────────────────
-  // Used only for the modal-active card. A rasterized alphaMap will always pixelate
-  // at modal scale (card ~75vh, textures at 512–1024px). The SDF computes the rounded
-  // rect boundary in the fragment shader at native screen resolution with 1-pixel AA
-  // via fwidth — perfectly sharp at any zoom level.
-  //
-  // uAspect = world-space width/height of the rendered card (CARD_ASPECT × sphereScaleX).
-  // The SDF coordinate space maps UV (0,1)×(0,1) → pos in [-A/2,A/2]×[-0.5,0.5] so
-  // corner radius uRadius is expressed as a fraction of card height (22/631 ≈ 0.0349).
-
-  const _MODAL_VERT = [
-    'varying vec2 vUv;',
-    'void main() {',
-    '  vUv = uv;',
-    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    '}',
-  ].join('\n');
-
-  const _MODAL_FRAG = [
-    'uniform sampler2D map;',
-    'uniform float uAspect;',
-    'uniform float uRadius;',
-    'uniform float uOpacity;',
-    'uniform vec2 uMotionDir;', // card velocity in UV space — drives motion-trail CA; (0,0) = off
-    'uniform float uWarp;', // fisheye intensity (0 = none, ~0.4 = strong bulge); used in open/close/drag
-    'uniform vec2 uWarpCenter;', // UV anchor for fisheye (0.5, 0.5 default; touch UV during drag)
-    'varying vec2 vUv;',
-    'float rrSDF(vec2 p, vec2 b, float r) {',
-    '  vec2 q = abs(p) - b + r;',
-    '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
-    '}',
-    'void main() {',
-    // SDF rounded-rect clip uses raw vUv so the card's geometry outline doesn't warp.
-    '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
-    '  float d = rrSDF(pos, vec2(uAspect * 0.5 - uRadius, 0.5 - uRadius), uRadius);',
-    '  float px = fwidth(pos.y);',
-    '  float alpha = 1.0 - smoothstep(-px, px, d);',
-    // Fisheye/barrel warp anchored at uWarpCenter — same formula as the globe-card
-    // hover shader. Image content bulges outward around the anchor point.
-    '  vec2 d2 = vUv - uWarpCenter;',
-    '  float r2 = dot(d2, d2);',
-    '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + uWarpCenter;',
-    // Motion-trail CA: R trails behind card motion, B ghosts ahead. Sampled on warpedUv.
-    '  float r = texture2D(map, warpedUv - uMotionDir).r;',
-    '  float g = texture2D(map, warpedUv).g;',
-    '  float b = texture2D(map, warpedUv + uMotionDir * 0.5).b;',
-    // Re-encode linear→sRGB (Three.js uploads SRGBColorSpace textures decoded to linear)
-    '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
-    '  gl_FragColor = vec4(srgb, alpha * uOpacity);',
-    '}',
-  ].join('\n');
 
   function createModalShaderMaterial(texture, sphereScaleX) {
     return new THREE.ShaderMaterial({
@@ -764,64 +532,7 @@ function createGlobeRuntime(authoredCards) {
     // click origin, nav: 0.5/0.5) right after this.
   }
 
-  // ── Card ShaderMaterial — chromatic aberration (Option B) ─────────────────
-  // uCA = 0 → normal render; uCA > 0 → R/B channels split outward from card center.
-  // uRepeat/uOffset replicate the texture cover-crop that MeshBasicMaterial tracked
-  // via texture.repeat/offset (ShaderMaterial doesn't apply the texture matrix).
-  // sRGB re-encode: Three.js uploads SRGBColorSpace textures decoded to linear;
-  // custom ShaderMaterial must re-encode linear→sRGB to match MeshBasicMaterial output.
-  const CARD_VERT = [
-    'varying vec2 vUv;',
-    'void main() {',
-    '  vUv = uv;',
-    '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    '}',
-  ].join('\n');
 
-  const CARD_FRAG = [
-    'uniform sampler2D uMap;',
-    'uniform sampler2D uAlphaMap;',
-    'uniform float uOpacity;',
-    'uniform float uCA;',
-    'uniform float uWarp;', // barrel-distortion amount (0 = none, ~0.07 = subtle bulge); used for hover
-    'uniform vec2 uHoverPos;', // anchor point for the warp in UV space; cursor position on card during hover
-    'uniform vec2 uRepeat;',
-    'uniform vec2 uOffset;',
-    'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
-    'varying vec2 vUv;',
-    'void main() {',
-    // Fisheye magnify anchored at uHoverPos (cursor position in UV space).
-    // Dividing the offset-from-cursor by (1 + uWarp * r² * 4) samples from closer
-    // to the cursor as r grows, so image content visually expands AROUND the cursor —
-    // the classic "lens loupe" look. uHoverPos = (0.5, 0.5) → centered fisheye.
-    '  vec2 d  = vUv - uHoverPos;',
-    '  float r2 = dot(d, d);',
-    '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-    '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
-    '  float a = texture2D(uAlphaMap, vUv).g;',
-    // Radial CA (transition peaks) + directional motion trail (velocity-driven)
-    // R: trails behind — displaced opposite to motion + radial spread outward
-    // G: current position, no displacement
-    // B: ghost slightly ahead — displaced in motion direction + radial spread inward
-    '  vec2 radial = (vUv - 0.5) * uCA;',
-    '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
-    '  float g = texture2D(uMap, baseUv).g;',
-    '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
-    '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
-    '  gl_FragColor = vec4(srgb, a * uOpacity);',
-    '}',
-  ].join('\n');
-
-  // ── Fibonacci sphere distribution ──────────────────────────────────────────
-  function fibSpherePos(i, total, radius) {
-    const phi = Math.acos(1 - 2 * (i + 0.5) / total);
-    const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
-    return new THREE.Vector3(
-      radius * Math.sin(phi) * Math.cos(theta),
-      radius * Math.cos(phi),
-      radius * Math.sin(phi) * Math.sin(theta),
-    );
-  }
 
   // ── Camera Z for arc phase ──────────────────────────────────────────────────
   // Set camera Z so that at z=0 frustum height = H, making 1 world unit = 1 CSS pixel
@@ -2376,6 +2087,7 @@ function createGlobeRuntime(authoredCards) {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
     const lenisY = window.scrollY;
+    const scrollingDown = lenisY >= prevLenisY;
     scrollVel = Math.abs(lenisY - prevLenisY); // px/frame — drives motion trail intensity
     prevLenisY = lenisY;
     const entryStart = spacerOffsetTop - H * ENTRY_LEAD_VH;
@@ -2692,16 +2404,24 @@ function createGlobeRuntime(authoredCards) {
       canvas.style.opacity = '1';
     }
 
-    // Pull-quote — fades in as soon as the zoom phase begins (zoomT > 0).
+    // Pull-quote: invisible while scrolling in from below; JS adds .is-active once
+    // zoomT crosses 0.38 (element is already at its sticky position). The sticky
+    // container handles the natural forward exit.
+    // Scroll-up exit: the sticky element unsticks only ~84px after the fade threshold,
+    // so a full 0.7s transition would still be playing when the element starts drifting
+    // downward. On scroll-up we use a fast 0.15s fade so it disappears before moving.
     if (pqEl) {
       if (zoomT >= 0.38 && !pqShown) {
+        pqEl.style.transition = '';   // restore CSS default (0.7s, set in .css)
         pqShown = true;
         pqEl.classList.add('is-active');
-      } else if (zoomT < 0.50 && pqShown && zoomT < pqPrevZoom) {
+      } else if (zoomT < 0.38 && pqShown) {
+        if (!scrollingDown) {
+          pqEl.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
+        }
         pqShown = false;
         pqEl.classList.remove('is-active');
       }
-      pqPrevZoom = zoomT;
     }
 
     // Switch depth-sort strategy: arc needs manual order; sphere needs camera-distance sort
@@ -3240,10 +2960,10 @@ function createGlobeRuntime(authoredCards) {
     _focusedCardIdx = -1;
     _ringCorners = null;
     _ringTmpVec = null;
-    // Reset arc-copy and pull-quote inline styles
+    // Reset arc-copy and pull-quote
     const arcCopyEl = document.querySelector('.offer-arc-copy');
     if (arcCopyEl) arcCopyEl.style.cssText = '';
-    if (pqEl) { pqEl.classList.remove('is-active'); pqShown = false; pqPrevZoom = 0; }
+    if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
     // NOTE: currentBPName and <html data-bp> are intentionally NOT cleared here.
     // doLayout() relies on currentBPName to detect crossings, and init() will
@@ -3253,77 +2973,6 @@ function createGlobeRuntime(authoredCards) {
   return { init, destroy };
 }
 
-// ── DOM the runtime expects ──────────────────────────────────────────────────
-// The original prototype hand-authored these nodes in index.html. We build them
-// inside the block element instead. Ids are kept because the runtime looks them
-// up via document.getElementById (so only one globe per page for now — see
-// PROGRESS.md "Open questions"). Fixed-position overlays (ca-svg, arc-copy,
-// pull-quote, modal) can live inside the block: position:fixed escapes the
-// relative/sticky ancestors here (no transform/filter on the chain).
-const GLOBE_MARKUP = `
-  <div class="offer-world" id="offer-world">
-    <canvas id="offer-globe-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:95;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
-  </div>
-
-  <svg id="ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
-    <defs>
-      <filter id="ca-filter" color-interpolation-filters="sRGB">
-        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rch"/>
-        <feOffset in="rch" id="ca-r-offset" dx="0" dy="0" result="rOff"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gch"/>
-        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bch"/>
-        <feOffset in="bch" id="ca-b-offset" dx="0" dy="0" result="bOff"/>
-        <feComposite in="rOff" in2="gch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="rg"/>
-        <feComposite in="rg" in2="bOff" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
-      </filter>
-    </defs>
-  </svg>
-
-  <div class="offer-arc-copy">
-    <p class="offer-arc-copy__title">Deliver professional work that stands out.</p>
-    <p class="offer-arc-copy__body">Whether you're designing a logo, or retouching 100 event photos, you can get the results you want with apps that set the industry standard.</p>
-  </div>
-
-  <div class="offer-pullquote" id="offer-pullquote">
-    <blockquote class="offer-pullquote__quote">&ldquo;I wear a lot of different hats. Creative Cloud gives me all the apps under one umbrella, so it&rsquo;s easy to share my ideas with the world.&rdquo;</blockquote>
-    <div class="offer-pullquote__attribution">
-      <p class="offer-pullquote__name">Frankie Gaw</p>
-      <p class="offer-pullquote__role">Professional Foodie and Designer</p>
-    </div>
-  </div>
-
-  <div id="card-modal" class="card-modal" aria-hidden="true">
-    <div class="card-modal__backdrop"></div>
-  </div>
-
-  <canvas id="modal-card-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
-
-  <div id="card-modal-chrome" class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name" aria-hidden="true">
-    <button class="card-modal__nav card-modal__nav--prev" type="button" aria-label="Previous card">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <button class="card-modal__nav card-modal__nav--next" type="button" aria-label="Next card">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="card-modal__counter" id="card-modal-counter" aria-hidden="true"></div>
-    <button class="card-modal__close" type="button" aria-label="Close">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-    </button>
-    <img class="card-modal__image" alt="" />
-    <div class="card-modal__info">
-      <p class="card-modal__role-label">Photographer</p>
-      <h3 class="card-modal__name" id="card-modal-name"></h3>
-      <p class="card-modal__description"></p>
-      <div class="card-modal__badges"></div>
-    </div>
-  </div>
-`;
-
-function buildGlobeDom(el) {
-  el.id = 'offer-pin-spacer';
-  el.classList.add('offer-pin-spacer');
-  el.innerHTML = GLOBE_MARKUP;
-}
 
 // ── Block entry point ────────────────────────────────────────────────────────
 export default async function init(el) {

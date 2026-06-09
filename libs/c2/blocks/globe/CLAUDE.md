@@ -1,17 +1,12 @@
 # Working on the globe block
 
-This is a scroll-driven Three.js WebGL hero, **ported from a prototype** and still
-WIP. Before doing anything here, read **`README.md`** (orientation, current state,
-starter prompts) and **`PROGRESS.md`** (architecture, decisions, open questions).
-Don't reconstruct context from the code alone — these docs exist so you don't.
+This is a scroll-driven Three.js WebGL hero. Before doing anything here, read
+**`README.md`** (orientation, current state, starter prompts) and **`PROGRESS.md`**
+(architecture, decisions, open questions). Don't reconstruct context from the code
+alone — these docs exist so you don't.
 
 ## Hard rules (these override default behavior)
 
-- **`globe.js` is a verbatim ES5 port wrapped in a factory.** The code between
-  `function createGlobeRuntime()` and its `return { init, destroy }` is the
-  prototype's `offer-globe.js` copied as-is. Do NOT casually edit it; cross-
-  reference `hub-creative/scripts/offer-globe.js` (line-map in `PROGRESS.md`)
-  before changing any render/phase logic.
 - **The `/* eslint-disable */` at the top of `globe.js` is intentional.** Don't
   "fix lint" piecemeal — the style cleanup is one tracked refactor task.
 - **DOM is JS-built and uses global ids** (`#offer-globe-canvas`, `#offer-pullquote`,

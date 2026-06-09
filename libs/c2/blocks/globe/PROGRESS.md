@@ -15,10 +15,9 @@ Status legend: ✅ done · 🚧 in progress · ⬜ todo
 | 6. THREE → ESM import; local `package.json` build | ✅ |
 | 7. Visual verification + iterate | ⬜ (next) |
 
-## Decisions made in the first port (verbatim-wrap strategy)
+## Decisions made in the port
 
-To get the prototype landed with minimal transcription risk, the 3059-line
-runtime was copied as-is and wrapped, not rewritten:
+The 3059-line prototype runtime was adapted into a Milo block entry point:
 
 - **THREE**: `import * as THREE from './three.module.min.js'` — static ES module
   import. `three.module.min.js` is a tree-shaken build (~453KB vs 655KB full)
@@ -36,12 +35,33 @@ runtime was copied as-is and wrapped, not rewritten:
   markup (`GLOBE_MARKUP`) inside the block and sets `el.id='offer-pin-spacer'`.
   Runtime still looks nodes up by global id → **one globe per page for now.**
 - **Lint**: `globe.js` carries a file-level `/* eslint-disable */` (ES5 `var`,
-  naming, max-len would throw hundreds of errors). `.eslintrc.js` ignores
-  `three.module.min.js`, `hub-creative/*`, `_reference/*`. Remove the disable
-  during the refactor pass. Parse-correctness still verified (eslint reports 0 errors).
+  naming, max-len). `.eslintrc.js` ignores `three.module.min.js`, `hub-creative/*`,
+  `_reference/*`. Remove the disable during the refactor pass. Parse-correctness
+  still verified (eslint reports 0 errors).
 - **Reduced motion**: skip WebGL, add `.globe--reduced` (collapses the tall
   spacer). Proper static poster fallback is a TODO.
 - **Block class**: loader adds `.globe`; CSS targets `.globe.offer-pin-spacer`.
+
+## Module split (readability pass)
+
+`globe.js` (3381 → ~3024 lines) was partially split. Three **self-contained**
+modules were extracted: `authoring.js`, `markup.js`, `shaders.js` (GLSL strings).
+`globe.js` imports all three.
+
+The tuning constants (`CARD_ASPECT`, `BREAKPOINTS`, `resolveBP`, the phase/physics/CA
+block) and pure helpers (easing, `lerpN`/`lerpV3`, `fibSpherePos`) live **at module
+scope inside `globe.js`**, grouped under `// ── Section ──` headers (pdf-space style).
+They were briefly extracted to `config.js`/`math.js` but folded back in on request —
+bare const names are kept (no `ANIM_CONFIG`-object collapse) so the render loop
+reads them unchanged.
+
+What did **not** move: the stateful render core (`tick`, modal, a11y, pointer/hover,
+`init`/`destroy`) and its ~80 shared closure `let`s. Splitting those needs a shared
+state object threaded through every function — a tracked refactor task, deferred
+(see the "Aggressive" option that was declined). The only mechanical edit in that
+region was relocating `let _sphereDragWarp` from the
+(now module-scope) constants block into the State section. Each extracted module
+keeps the `/* eslint-disable */` banner so delint stays one tracked task.
 
 ## Authoring layer (added after the port, refined against real content)
 
@@ -91,9 +111,8 @@ authored count fills `N_TOTAL` (45/24) without breaking grid math.
 
 ## Deliberate divergences from the prototype
 
-These are the only places `globe.js`/`globe.css` intentionally differ from
-`hub-creative/scripts/offer-globe.js` in *behavior* (beyond the verbatim-wrap
-mechanics). Keep this list current so the line-map cross-reference stays honest.
+These are the places `globe.js`/`globe.css` intentionally differ from
+`hub-creative/scripts/offer-globe.js` in *behavior*. Keep this list current.
 
 - **Desktop/tablet modal layout — white info card overlaid on the image.** The
   `hub-creative` source anchored a fixed-width (`DT_INFO_WIDTH`) info panel to
@@ -128,7 +147,7 @@ mechanics). Keep this list current so the line-map cross-reference stays honest.
   long* the ramp is. With blocks above the globe, starting 0.85H early sweeps the
   arc across the preceding content (the WebGL canvas is transparent, so it's the
   card meshes — not a dark sheet — that overlap). These are now two independent
-  constants in `createGlobeRuntime()`:
+  constants (module scope in `globe.js`, under the "Entry timing" section):
   - `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the spacer top that
     the entry begins. Feeds `entryStart` and the canvas `showTrigger`. `0` = only
     once the block top hits the viewport top (no overlap, feels late); `0.85` =
@@ -148,7 +167,7 @@ mechanics). Keep this list current so the line-map cross-reference stays honest.
 
 ## How to test (no Playwright per user)
 
-1. Open `_reference/globe-reference.html` (verbatim prototype, globe-only) to see
+1. Open `_reference/globe-reference.html` (original prototype, globe-only) to see
    the target behavior.
 2. For the *ported block*: the block is now authored at
    `https://www.adobe.com/homepage/drafts/jingleh/globe-dev` with a 45-card
@@ -180,12 +199,12 @@ a11y gallery of off-screen buttons mirroring the sphere cards.
 | File | Role | Port? |
 | --- | --- | --- |
 | `scripts/offer-globe.js` (3059 lines, 150KB) | **The globe.** Single IIFE, `window.offerGlobe = { init, destroy }`. | ✅ this is the main.js |
-| `scripts/offer-arc.js` | Tile/arc *variant B* (CSS/GSAP, no WebGL). | ❌ not the globe |
-| `scripts/offer-toggle.js` | Dev toggle between globe/tile; sets spacer to `850vh` and calls `offerGlobe.init()`. | ❌ logic folds into the block |
-| `styles/offer-section.css` (650 lines) | Both variants' CSS. Globe slice listed below. | ⚠️ slice only |
+| `scripts/offer-arc.js` | CSS/GSAP arc (not WebGL, not ported). | ❌ |
+| `scripts/offer-toggle.js` | Prototype dev toggle; spacer height + init call. | ❌ logic folds into the block |
+| `styles/offer-section.css` (650 lines) | Prototype CSS. Globe slice ported to `globe.css`. | ⚠️ slice only |
 | `vendor/three.min.js` (670KB, UMD r160) | THREE global. | ✅ replaced by `three.module.min.js` (ESM, local `package.json`) |
 | `vendor/gsap.min.js` | Only `gsap.ticker` is used by the globe. | ❌ replace with rAF |
-| `vendor/ScrollTrigger.min.js` | NOT used by the globe (tile variant only). | ❌ drop |
+| `vendor/ScrollTrigger.min.js` | Not used by the globe. | ❌ drop |
 | `assets/images/offer/arc-01..23.png` (23) + `assets/images/globe/…` (22) | 45 card textures. | ✅ removed — images are authored via DA fragment |
 
 ## External dependencies — verdict
@@ -250,11 +269,11 @@ mobile = 24 cards, 3×8 grid, smaller sphere.
 
 ## CSS slice for globe.css (globe-only selectors in offer-section.css)
 
-Keep: `.offer-pin-spacer`, `.offer-world`, `.offer-arc-copy(+__title/__body)`,
+Ported: `.offer-pin-spacer`, `.offer-world`, `.offer-arc-copy(+__title/__body)`,
 `.offer-pullquote(+.is-active/__quote/__attribution/__name/__role)`,
 `.card-modal*`, `.card-modal-chrome*`, `.card-modal__badge-icon--*`,
-`.globe-gallery-a11y*`, and the `@media (max-width:767px)` block (line 560+).
-Drop (tile variant): `.offer-card*`, `.offer-headline`, `.offer-copy*`.
+`.globe-gallery-a11y*`, and the `@media (max-width:767px)` block.
+Not ported (prototype-only): `.offer-card*`, `.offer-headline`, `.offer-copy*`.
 
 ## Reference pattern: pdf-space (`libs/mep/ace1205/pdf-space/`)
 
@@ -296,7 +315,12 @@ The contract to mirror:
 
 ## Files in this directory
 
-- `globe.js` / `globe.css` — the block.
+- `globe.js` / `globe.css` — the block. `globe.js` holds the tuning constants +
+  pure helpers (module scope, grouped by `// ── Section ──`), the stateful runtime
+  core (`createGlobeRuntime()` + `export default init`), and imports the modules below.
+- `authoring.js` — `parseAuthoredContent`, `fetchFragmentCards` (+ internal parsers).
+- `markup.js` — `GLOBE_MARKUP` + `buildGlobeDom`.
+- `shaders.js` — `CARD_VERT`/`CARD_FRAG`, `_MODAL_VERT`/`_MODAL_FRAG` GLSL strings.
 - `src/three.js` — build entry; re-exports the 21 Three.js symbols globe.js uses.
 - `three.module.min.js` — tree-shaken Three.js r160 ESM build (~453KB, build artifact, do not edit).
 - `package.json` / `package-lock.json` — local build; `npm install && npm run build` regenerates `three.module.min.js`.
