@@ -89,9 +89,12 @@
   }
 }
 
-.hub-hero-header div[class^="body"] h1 {
-  color: var(--s2a-color-gray-1000);
-  word-wrap: break-word;
+.hub-hero-header h1 {
+font-size: var(--s2a-typography-font-size-heading-1);
+  line-height: var(--s2a-typography-line-height-heading-1);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
+  max-inline-size: 20ch;
+  text-wrap: balance;
 }
 
 /** image grid */
