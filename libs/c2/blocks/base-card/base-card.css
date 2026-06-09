@@ -51,7 +51,7 @@
     padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
 
     :is(h1, h2, h3, h4, h5, h6) {
-      margin-bottom: var(--s2a-spacing-2xs);
+      margin-bottom: var(--s2a-spacing-xs);
       color: var(--s2a-color-gray-1000);
     }
 
@@ -114,6 +114,10 @@
   .base-card {
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
+    }
+
+    .foreground {
+      :is(h1, h2, h3, h4, h5, h6) { margin-bottom: var(--s2a-spacing-2xs); }
     }
 
     &.featured {
