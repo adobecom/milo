@@ -24,7 +24,7 @@
   .pm-chiclet-row {
     align-items: center;
     display: flex;
-    gap: var(--s2a-spacing-lg);
+    gap: var(--s2a-spacing-md);
 
     img.icon {
       block-size: 50px;
@@ -114,6 +114,10 @@
       --grid-margin-width: var(--s2a-spacing-3xl);
       flex-direction: row;
       padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+    }
+
+    .pm-chiclet-row {
+      gap: var(--s2a-spacing-lg);
     }
 
     .pm-chiclet-row img.icon {
