@@ -80,6 +80,7 @@
   position: relative;
   background: #131313;
   margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
 }
 
 /* Sticky viewport — cards are absolutely positioned within this */
@@ -125,13 +126,29 @@
   margin: 0;
 }
 
-/* ── Pull-quote (globe variant — one-shot fade+slide after zoom completes) ── */
+/* ── Pull-quote (globe variant — sticky inside .offer-pullquote-pin) ── */
+/* The pin container is absolute at the bottom of the 850vh spacer. The pull-quote
+   is sticky inside it, so it scrolls in naturally from below, sticks centered through
+   the zoom phase, and scrolls off the top as the spacer ends — no JS required. */
+.offer-pullquote-pin {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 300vh;
+  pointer-events: none;
+}
+
+/* The pull-quote is opacity:0/scale:0.9 while scrolling invisibly into its sticky
+   position. JS adds .is-active once zoomT crosses the threshold (element is already
+   at rest at 50vh center), so the transition makes it emerge in place. The sticky
+   container handles the natural exit — no JS needed to trigger it. */
 .offer-pullquote {
-  position: fixed;
-  left: 50%;
-  top: calc(50% - 291px);
+  position: sticky;
+  top: calc(50vh - 291px);
   width: 100%;
   max-width: 1920px;
+  margin: 0 auto;
   height: 583px;
   z-index: 97;
   background: transparent;
@@ -141,14 +158,13 @@
   padding: 24px;
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-50%) translateY(24px) scale(0.9);
+  transform: scale(0.9);
   transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
 .offer-pullquote.is-active {
   opacity: 1;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: scale(1);
 }
 
 .offer-pullquote__quote {
@@ -159,12 +175,9 @@
   letter-spacing: var(--type-title-1-ls);
   color: #fff;
   margin: 0;
-  will-change: transform, opacity;
 }
 
-.offer-pullquote__attribution {
-  will-change: transform, opacity;
-}
+.offer-pullquote__attribution {}
 
 .offer-pullquote__name {
   font-family: var(--font-body);

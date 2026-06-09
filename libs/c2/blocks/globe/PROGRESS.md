@@ -43,6 +43,27 @@ runtime was copied as-is and wrapped, not rewritten:
   spacer). Proper static poster fallback is a TODO.
 - **Block class**: loader adds `.globe`; CSS targets `.globe.offer-pin-spacer`.
 
+## Module split (readability pass)
+
+`globe.js` (3381 → ~3024 lines) was partially split. Three **self-contained**
+modules were extracted verbatim (no logic change): `authoring.js`, `markup.js`,
+`shaders.js` (GLSL strings). `globe.js` imports all three.
+
+The tuning constants (`CARD_ASPECT`, `BREAKPOINTS`, `resolveBP`, the phase/physics/CA
+block) and pure helpers (easing, `lerpN`/`lerpV3`, `fibSpherePos`) live **at module
+scope inside `globe.js`**, grouped under `// ── Section ──` headers (pdf-space style).
+They were briefly extracted to `config.js`/`math.js` but folded back in on request —
+bare const names are kept (no `ANIM_CONFIG`-object collapse) so the verbatim render
+loop reads them unchanged.
+
+What did **not** move: the stateful render core (`tick`, modal, a11y, pointer/hover,
+`init`/`destroy`) and its ~80 shared closure `let`s. Splitting those needs a shared
+state object threaded through every function — a rewrite of the verbatim port, so
+it's deferred (see the "Aggressive" option that was declined). The only mechanical
+edit inside the protected region was relocating `let _sphereDragWarp` from the
+(now module-scope) constants block into the State section. Each extracted module
+keeps the `/* eslint-disable */` banner so delint stays one tracked task.
+
 ## Authoring layer (added after the port, refined against real content)
 
 ### Block row structure
@@ -128,7 +149,7 @@ mechanics). Keep this list current so the line-map cross-reference stays honest.
   long* the ramp is. With blocks above the globe, starting 0.85H early sweeps the
   arc across the preceding content (the WebGL canvas is transparent, so it's the
   card meshes — not a dark sheet — that overlap). These are now two independent
-  constants in `createGlobeRuntime()`:
+  constants (module scope in `globe.js`, under the "Entry timing" section):
   - `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the spacer top that
     the entry begins. Feeds `entryStart` and the canvas `showTrigger`. `0` = only
     once the block top hits the viewport top (no overlap, feels late); `0.85` =
@@ -296,7 +317,12 @@ The contract to mirror:
 
 ## Files in this directory
 
-- `globe.js` / `globe.css` — the block.
+- `globe.js` / `globe.css` — the block. `globe.js` holds the tuning constants +
+  pure helpers (module scope, grouped by `// ── Section ──`), the stateful runtime
+  core (`createGlobeRuntime()` + `export default init`), and imports the modules below.
+- `authoring.js` — `parseAuthoredContent`, `fetchFragmentCards` (+ internal parsers).
+- `markup.js` — `GLOBE_MARKUP` + `buildGlobeDom`.
+- `shaders.js` — `CARD_VERT`/`CARD_FRAG`, `_MODAL_VERT`/`_MODAL_FRAG` GLSL strings.
 - `src/three.js` — build entry; re-exports the 21 Three.js symbols globe.js uses.
 - `three.module.min.js` — tree-shaken Three.js r160 ESM build (~453KB, build artifact, do not edit).
 - `package.json` / `package-lock.json` — local build; `npm install && npm run build` regenerates `three.module.min.js`.
