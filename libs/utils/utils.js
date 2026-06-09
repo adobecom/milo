@@ -2701,7 +2701,7 @@ function loadLingoIndexes(area = document) {
 }
 
 export async function loadArea(area = document) {
-  const searchParams = new URLSearchParams(location.search);
+  const searchParams = new URLSearchParams(window.location.search);
   if ((searchParams.get('daRenderingApp') === 'stream') || searchParams.get('darenderingapp') === 'stream') {
     if (!window.streamConfig) {
       const streamOrigin = searchParams.get('mapperOrigin') || searchParams.get('mapperorigin') || 'https://prod--stream-mapper--adobecom.aem.live';
@@ -2811,4 +2811,3 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
-
