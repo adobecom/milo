@@ -569,7 +569,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
 
   if (link.dataset.wcsOsi) {
     link.classList.add('hidden-osi-trial-link');
-    return false;
+    return true;
   }
 
   const parent = link.parentElement;
