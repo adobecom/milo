@@ -419,6 +419,24 @@ function createGlobeRuntime(authoredCards) {
   const P_PAN_END = 0.55;
   const P_ARC_PREROLL = 0.30;
 
+  // Entry timing — two independent knobs (the WebGL canvas is transparent, so an
+  // early reveal only draws the card meshes, not an opaque sheet over the content
+  // above):
+  //   ENTRY_LEAD_VH — how far, in viewport heights, BEFORE the spacer's top the
+  //     globe starts entering (arc-copy fade-in, arc pre-roll, canvas reveal).
+  //     The prototype used 0.85 (hero, nothing above it) — that pre-rolls the arc
+  //     across most of the viewport while preceding blocks are still on screen,
+  //     so the arc overlaps them. 0 = only starts once the block's top reaches
+  //     the viewport top (no overlap, but feels late). A moderate value starts as
+  //     the section is arriving without sweeping the arc over the content above.
+  //   ENTRY_RAMP_VH — the ramp length (viewport heights) over which arcCopyEntryT
+  //     goes 0→1. This sets how FAST the arc-copy fades and the arc pre-rolls,
+  //     and the gap between the text appearing and the arc arriving. MUST stay
+  //     independent of the lead (prototype value 1.05) — coupling them is what
+  //     made the arc rotate/peel too fast and shrank the text→arc gap.
+  const ENTRY_LEAD_VH = 0.4;
+  const ENTRY_RAMP_VH = 1.05;
+
   // Grid peel expressed as arc-rotation fraction (0=arc start, 1=arc end).
   const P_GRID_ARC_START = 0.30;
   const P_GRID_ARC_END = 0.60;
@@ -2449,8 +2467,8 @@ function createGlobeRuntime(authoredCards) {
     const lenisY = window.scrollY;
     scrollVel = Math.abs(lenisY - prevLenisY); // px/frame — drives motion trail intensity
     prevLenisY = lenisY;
-    const entryStart = spacerOffsetTop - H * 0.85;
-    const entryRange = H * 0.85 + H * 0.20;
+    const entryStart = spacerOffsetTop - H * ENTRY_LEAD_VH;
+    const entryRange = H * ENTRY_RAMP_VH;
     arcCopyEntryT = Math.max(0, Math.min(1, (lenisY - entryStart) / entryRange));
     progress = Math.max(0, Math.min(1, (lenisY - spacerOffsetTop) / spacerHeight));
 
@@ -2755,7 +2773,7 @@ function createGlobeRuntime(authoredCards) {
     // Canvas visibility — instantly visible once the section approaches; no opacity fade.
     // The arc's own rotation/slide-up handles the "appearing" feel.
     const canvas = renderer.domElement;
-    const showTrigger = spacerOffsetTop - H * 0.85; // matches arcCopyEntryT start point
+    const showTrigger = spacerOffsetTop - H * ENTRY_LEAD_VH; // matches arcCopyEntryT start point (entryStart)
     if (lenisY < showTrigger || zoomT >= 0.95) {
       canvas.style.display = 'none';
     } else {

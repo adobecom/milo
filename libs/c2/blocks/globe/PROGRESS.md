@@ -121,6 +121,24 @@ mechanics). Keep this list current so the line-map cross-reference stays honest.
   `DT_IMG_INFO_GAP` constants are now unused on desktop but left in place (they
   document the old design).
 
+- **Entry timing split into `ENTRY_LEAD_VH` + `ENTRY_RAMP_VH`.** The prototype
+  hardcoded the entry as `entryStart = spacerOffsetTop − H*0.85`, `entryRange =
+  H*0.85 + H*0.20` (≈1.05H). The `0.85` did double duty: it was both *when* the
+  entry starts (0.85 viewport-heights before the block top) and part of *how
+  long* the ramp is. With blocks above the globe, starting 0.85H early sweeps the
+  arc across the preceding content (the WebGL canvas is transparent, so it's the
+  card meshes — not a dark sheet — that overlap). These are now two independent
+  constants in `createGlobeRuntime()`:
+  - `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the spacer top that
+    the entry begins. Feeds `entryStart` and the canvas `showTrigger`. `0` = only
+    once the block top hits the viewport top (no overlap, feels late); `0.85` =
+    the prototype's hero pre-roll.
+  - `ENTRY_RAMP_VH` (default `1.05`, = prototype) — ramp length over which
+    `arcCopyEntryT` goes 0→1; sets arc-copy fade speed, arc pre-roll speed, and
+    the text→arc gap. Feeds `entryRange`. Keeping this independent of the lead
+    fixes the regression where dropping the lead to 0 compressed the ramp to
+    0.20H and made the arc rotate/peel ~5× too fast.
+
 - **`.globe` type-scale tokens in `globe.css`.** The prototype relied on
   `:root` tokens from its `styles/global/typography.css` (not shipped); Milo
   defines none of them, so the pull-quote/arc-copy fell back to default 16px
@@ -207,8 +225,9 @@ scoped to the block element.
 
 `progress = clamp((scrollY - spacerOffsetTop) / spacerHeight, 0, 1)`.
 Canvas is `position:fixed` covering the viewport; the spacer just supplies the
-scroll distance (`850vh`). `arcCopyEntryT` ramps in over the ~1vh before the
-spacer top. Phase constants (module-level):
+scroll distance (`850vh`). `arcCopyEntryT` ramps 0→1 over `ENTRY_RAMP_VH`
+viewport-heights (default `1.05`), starting `ENTRY_LEAD_VH` (default `0.4`)
+before the spacer top — see the entry-timing divergence note above. Phase constants (module-level):
 
 ```
 P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
