@@ -498,6 +498,11 @@
     gap: var(--s2a-spacing-xl);
   }
 
+  .rich-content.video .media .video-container { 
+    max-width: 1200px; 
+    margin: 0 auto;
+  }
+
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
