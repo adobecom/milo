@@ -122,8 +122,8 @@
   margin: 0;
 }
 
-/* ── Pull-quote (sticky inside .offer-pullquote-pin) ── */
-/* The pin container is absolute at the bottom of the 850vh spacer. The pull-quote
+/* ── Pull-quote (sticky inside .offer-pullquote-pin) ──
+   The pin container is absolute at the bottom of the 850vh spacer. The pull-quote
    is sticky inside it, so it scrolls in naturally from below, sticks centered through
    the zoom phase, and scrolls off the top as the spacer ends — no JS required. */
 .offer-pullquote-pin {
@@ -173,8 +173,6 @@
   color: #fff;
   margin: 0;
 }
-
-.offer-pullquote__attribution {}
 
 .offer-pullquote__name {
   font-family: var(--font-body);
