@@ -2709,7 +2709,6 @@ export async function loadArea(area = document) {
       await selfRender();
     }
   }
-    
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
