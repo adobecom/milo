@@ -28,6 +28,7 @@
   --slides: 4;
   --start-gap: 6rem;
   --end-gap: .5rem;
+  --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --carousel-item-width: calc(100vw / var(--slides));
 
@@ -332,7 +333,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
 /** mobile only */
 @media (width < 768px) {
   .hub-hero {
-    --hub-hero-height: 4220px;
+    height: auto;
+    margin-bottom: calc(var(--hub-hero-mobile-bottom-margin) + var(--s2a-spacing-3xl)*2);
+    position: relative;
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
     --grid-gap-animation-range: 15% 100%;
@@ -728,7 +731,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     visibility: hidden;
     min-width: 0;
     flex-basis: 0;
-    animation: carouselSlide3Transition ease-in-out forwards;
+    animation: carouselSlide3Transition ease-out forwards;
     animation-timeline: --hub-hero;
     animation-range: contain 0% contain 30%;
   }

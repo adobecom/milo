@@ -321,17 +321,8 @@ const decorateHubHeroCTA = (heroHeader) => {
   linkEl.parentElement.replaceChildren(cta);
 };
 
-const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, el }) => {
+const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
   requestAnimationFrame(() => {
-    if (!isMobile()) {
-      const heroHeaderH = heroHeader.offsetHeight;
-      const gridH = grid.offsetHeight;
-      const carouselH = elasticCarousel.scrollHeight;
-      const stickyTop = parseFloat(getComputedStyle(elasticCarousel).getPropertyValue('--carousel-items-top')) / 100;
-      const exitBuffer = window.innerHeight * (1 - stickyTop) * 0.7;
-      const bottomOffset = 80;
-      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + exitBuffer}px`);
-    }
     setCarouselSlideOffsets(grid, elasticCarousel);
   });
 };
