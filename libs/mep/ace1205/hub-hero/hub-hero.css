@@ -1,14 +1,7 @@
-[dir="rtl"] .hub-hero-carousel-item-footer::after {
+[dir="rtl"] .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
   transform: rotate(180deg);
   left: var(--s2a-spacing-lg);
   right: unset;
-}
-
-[dir="rtl"] .hub-hero-carousel-item-footer * {
-  text-align: right;
-}
-[dir="rtl"] .hub-hero-carousel-item-container .hub-hero-carousel-item-header * {
-  text-align: right;
 }
 
 .hub-hero {
@@ -118,7 +111,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--start-gap);
-  will-change: auto;
+  will-change: transform, opacity;
 }
 
 .hub-hero-image-grid-container-col:nth-child(1) {
@@ -186,7 +179,7 @@
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  will-change: auto;
+  will-change: opacity;
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -199,7 +192,7 @@
   right: 0;
   transform: translateY(calc(-100% - var(--s2a-spacing-2xl)));
   flex-direction: column;
-  will-change: auto;
+  will-change: transform, opacity;
   animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -215,7 +208,6 @@
   right: 0;
   z-index: 1;
   overflow-x: clip;
-  will-change: auto;
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -317,7 +309,7 @@
   line-height: 1;
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   margin: 0;
-  text-align: left;
+  text-align: start;
   padding: var(--s2a-spacing-2xl) var(--s2a-spacing-lg);
   transition: color .1s var(--paralax-easing);
   display: block;
@@ -349,7 +341,6 @@
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
-    will-change: auto;
   }
 
   .hub-hero-carousel-header>div {
@@ -377,7 +368,7 @@
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
-    will-change: auto;
+    will-change: width, transform;
     animation: hubHeroGridCarouselSlideHover linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -476,7 +467,7 @@
     max-width: var(--grid-img-width);
     min-width: unset;
     width: var(--grid-img-width);
-    will-change: auto;
+    will-change: width;
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -492,7 +483,7 @@
     background: transparent;
     pointer-events: all;
     contain: none;
-    will-change: auto;
+    will-change: transform, filter, opacity;
     animation: elasticMobileStackSlides linear both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
@@ -554,7 +545,7 @@
     position: relative;
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
-    will-change: auto;
+    will-change: margin;
     animation: elasticItemsShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
@@ -584,7 +575,7 @@
   .hub-hero-carousel-item-container .hub-hero-carousel-item-header * {
     color: var(--s2a-color-gray-25);
     padding: var(--s2a-spacing-lg);
-    text-align: left;
+    text-align: start;
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media {
@@ -845,9 +836,21 @@
 /** prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .hub-hero,
-  .hub-hero * {
+  .hub-hero * ,
+  .hub-hero-image-grid-container, 
+  .hub-hero-image-grid-container-col:nth-child(1), 
+  .hub-hero-image-grid-container-col:nth-child(2), 
+  .hub-hero-image-grid-container-col:nth-child(3), 
+  .hub-hero-image-grid-container-col:nth-child(4), 
+  .hub-hero-image-grid-container-col:nth-child(5),
+  .hub-hero-image-grid-container-col:nth-child(5),
+  .hub-hero-carousel,
+  .hub-hero-carousel-header,
+  .hub-hero-carousel-header>div,
+  .hub-hero-carousel-header>div>*,
+  .hub-hero-carousel-item {
     animation: none !important;
-    transition: none !important;
+    transition: none;
     position: relative;
     --hub-hero-height: auto;
   }
@@ -873,9 +876,13 @@
     height: auto;
   }
   
+  .hub-hero-carousel-header > div {
+    transform: none;
+  }
   .hub-hero-carousel-header {
     opacity: 1;
     transform: none;
+    height: auto;
     top: 0;
     margin-bottom: var(--s2a-spacing-2xl);
   }
@@ -907,9 +914,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) and (width < 768px) {
+
   .hub-hero {
-    height: 2945px !important;
+    height: 3182px;
   }
+
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
   .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
     position: relative;
@@ -924,18 +933,29 @@
   .hub-hero-carousel {
     margin-top: calc(var(--grid-col-three-offset) );
   }
-  .hub-hero-carousel-item {
+
+  .hub-hero-carousel-item:nth-child(1),
+  .hub-hero-carousel-item:nth-child(2),
+  .hub-hero-carousel-item:nth-child(3),
+  .hub-hero-carousel-item:nth-child(4),
+  .hub-hero-carousel-item:nth-child(5) {
+    margin: 0;
+    padding: 0; 
     position: relative;
-    margin: 0 !important;
-    padding: 0 !important;
   }
+
   .hub-hero-carousel-container {
-    width: 292px;
-    max-width: none;
+    width: var(--carousel-item-width);
+    max-width: var(--hub-hero-carousel-item-max-width);
+    min-width: var(--hub-hero-carousel-item-min-width);
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-8);
   }
+
+    .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
+      height: var(--slide-footer-h);
+    }
 }
 
 /** animations */
