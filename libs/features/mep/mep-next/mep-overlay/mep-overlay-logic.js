@@ -32,10 +32,10 @@ import {
 } from '../../../../blocks/merch/merch.js';
 
 const HIGHLIGHT_KEYS = {
-  mep: 'mepMepHighlight',
+  mep: 'mepHighlight',
   caas: 'mepCaasHighlight',
   mas: 'mepMasHighlight',
-  other: 'mepOtherHighlight',
+  other: 'otherHighlight',
 };
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -448,7 +448,7 @@ export async function getAdditionalManifests() {
 export function getParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   return {
-    mepMepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
+    mepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
     mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
     mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
     mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other),
