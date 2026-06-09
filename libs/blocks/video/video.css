@@ -177,8 +177,8 @@ video {
     justify-content: center;
     position: absolute;
     z-index: 1;
-    right: var(--s2a-spacing-md);
-    bottom: var(--s2a-spacing-md);
+    right: var(--s2a-spacing-lg);
+    bottom: var(--s2a-spacing-lg);
 
     svg path {
       fill: var(--s2a-color-gray-25);
@@ -218,6 +218,13 @@ video {
     button.play-pause-button {
       right: var(--s2a-spacing-xl);
       bottom: var(--s2a-spacing-xl);
+    }
+  }
+
+  @media (width >= 1440px) {
+    button.play-pause-button {
+      width: 48px;
+      height: 48px;
     }
   }
 }
