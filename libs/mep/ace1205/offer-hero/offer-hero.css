@@ -1,5 +1,11 @@
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
+  overflow: visible;
+
+  > .section-background {
+    overflow: clip;
+    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+  }
 }
 
 .offer-hero {
