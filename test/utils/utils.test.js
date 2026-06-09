@@ -2810,6 +2810,7 @@ describe('Utils', () => {
       locales: {
         '': { ietf: 'en-US', tk: 'hah7vzn.css' },
         fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+        ca_fr: { ietf: 'fr-CA', tk: 'hah7vzn.css', base: 'fr' },
         ch_fr: { ietf: 'fr-CH', tk: 'hah7vzn.css', base: 'fr' },
       },
       pathname: '/fr/creativecloud/',
@@ -2891,6 +2892,54 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/cn');
+    });
+
+    it('keeps sea on its locale homepage instead of /home for Adobe Home redirect_uri', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/sea/', locales: { '': { ietf: 'en-US' }, sea: { ietf: 'en-US' } } });
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/sea');
+    });
+
+    // AC#2: signing in from /fr with a Canadian IP lands on Adobe Home as ca_fr.
+    it('builds ca_fr Adobe Home redirect_uri for a Canadian user on the base /fr page', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ca');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+    });
+
+    it('builds a bare /home redirect_uri (no acomLocale) on the root locale', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/' });
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home');
+    });
+
+    // AC#3 guard: pages without adobe-home-redirect must not get a /home redirect_uri.
+    it('leaves redirect_uri undefined when adobe-home-redirect is not on', async () => {
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal(undefined);
     });
   });
 
