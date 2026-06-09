@@ -326,10 +326,11 @@ const handleCarouselItemsOffsets = ({ heroHeader, grid, elasticCarousel, carouse
     if (!isMobile()) {
       const heroHeaderH = heroHeader.offsetHeight;
       const gridH = grid.offsetHeight;
-      const carouselH = elasticCarousel.offsetHeight;
-      const bottomOffset = 30;
-      const mediaH = parseFloat(getComputedStyle(el).getPropertyValue('--carousel-item-media-height')) || 394;
-      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + mediaH * carouselImages.length}px`);
+      const carouselH = elasticCarousel.scrollHeight;
+      const stickyTop = parseFloat(getComputedStyle(elasticCarousel).getPropertyValue('--carousel-items-top')) / 100;
+      const exitBuffer = window.innerHeight * (1 - stickyTop) * 0.7;
+      const bottomOffset = 80;
+      el.style.setProperty('--hub-hero-height', `${heroHeaderH + gridH + carouselH + bottomOffset + exitBuffer}px`);
     }
     setCarouselSlideOffsets(grid, elasticCarousel);
   });

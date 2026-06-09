@@ -8,7 +8,7 @@
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4200px;
   --max-image-size: 292px;
-  --media-mobile-max-height: 280px;
+  --media-mobile-max-height: 394px;
   --media-mobile-max-width: 500px;
   --min-image-size: 164px;
   --grid-img-width: 20vw;
@@ -112,7 +112,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--start-gap);
-  will-change: transform, opacity;
+  will-change: auto;
 }
 
 .hub-hero-image-grid-container-col:nth-child(1) {
@@ -180,7 +180,7 @@
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  will-change: opacity;
+  will-change: auto;
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -193,7 +193,7 @@
   right: 0;
   transform: translateY(calc(-100% - var(--s2a-spacing-2xl)));
   flex-direction: column;
-  will-change: transform, opacity;
+  will-change: auto;
   animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -209,6 +209,7 @@
   right: 0;
   z-index: 1;
   overflow-x: clip;
+  will-change: auto;
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -275,6 +276,7 @@
 .hub-hero-carousel-item-footer {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   position: relative;
   font-size: var(--s2a-font-size-md);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
@@ -288,8 +290,8 @@
   padding: var(--s2a-spacing-sm);
   height: var(--icon-size);
   width: var(--icon-size);
-  right: var(--s2a-spacing-24);
-  bottom: var(--s2a-spacing-24);
+  right: var(--s2a-spacing-lg);
+  bottom: var(--s2a-spacing-lg);
   color: var(--s2a-color-gray-25);
   border-radius: 6px;
   background-repeat: no-repeat;
@@ -311,7 +313,7 @@
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   margin: 0;
   text-align: start;
-  padding: var(--s2a-spacing-2xl) var(--s2a-spacing-lg);
+  padding: 0 var(--s2a-spacing-lg);
   transition: color .1s var(--paralax-easing);
   display: block;
   line-clamp: 1;
@@ -322,7 +324,6 @@
   text-overflow: ellipsis;
   width: 65%;
   white-space: nowrap;
-  height: var(--s2a-typography-line-height-eyebrow);
 }
 
 /** mobile only */
@@ -342,6 +343,7 @@
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
+    will-change: auto;
   }
 
   .hub-hero-carousel-header>div {
@@ -369,7 +371,7 @@
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
-    will-change: width, transform;
+    will-change: auto;
     animation: hubHeroGridCarouselSlideHover linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -468,7 +470,7 @@
     max-width: var(--grid-img-width);
     min-width: unset;
     width: var(--grid-img-width);
-    will-change: width;
+    will-change: auto;
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -484,11 +486,17 @@
     background: transparent;
     pointer-events: all;
     contain: none;
-    will-change: transform, filter, opacity;
+    will-change: auto;
     animation: elasticMobileStackSlides linear both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
   }
+
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
+    height: 100%;
+      min-height: 240px;
+    }
+  
 
   .hub-hero-carousel-item:nth-child(1) {
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
@@ -502,7 +510,7 @@
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
     top: 0;
-    animation: slideOneHeaderReveal linear forwards;
+    animation: slideOneHeaderReveal ease-in-out forwards;
     animation-timeline: --hub-hero;
     animation-range: var(--slide-one-header-footer-reveal);
   }
@@ -546,7 +554,7 @@
     position: relative;
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
-    will-change: margin;
+    will-change: auto;
     animation: elasticItemsShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
@@ -588,7 +596,7 @@
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-    height: calc(var(--slide-footer-h) - var(--s2a-spacing-md));
+    height: calc(var(--slide-footer-h) + var(--s2a-spacing-md));
     overflow: hidden;
     background-color: var(--s2a-color-gray-1000);
     padding-top: var(--s2a-spacing-md);
@@ -604,6 +612,7 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    margin: var(--s2a-spacing-md) 0 0 0;
   }
 }
 
@@ -743,8 +752,8 @@
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
-    bottom: var(--s2a-spacing-24);
-    right: var(--s2a-spacing-24);
+    bottom: var(--s2a-spacing-lg);
+    right: var(--s2a-spacing-lg);
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-header {
@@ -951,7 +960,7 @@
     min-width: var(--hub-hero-carousel-item-min-width);
     display: flex;
     flex-direction: column;
-    gap: var(--s2a-spacing-8);
+    gap: var(--s2a-spacing-sm);
   }
 
     .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
@@ -1065,7 +1074,7 @@
   }
 
   100% {
-    transform: translateY(var(--slide-footer-h));
+    transform: translateY(calc(var(--slide-footer-h) - 10px));
   }
 }
 
