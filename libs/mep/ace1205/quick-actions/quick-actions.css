@@ -30,8 +30,9 @@
 
 .quick-actions-tile {
   position: relative;
+  display: grid;
   overflow: clip;
-  block-size: 180px;
+  min-width: 0;
   background: var(--s2a-color-background-subtle);
   border-radius: var(--s2a-border-radius-md);
   text-decoration: none;
@@ -48,9 +49,10 @@
 }
 
 .quick-actions-media {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   display: block;
+  inline-size: 100%;
+  min-block-size: 180px;
   will-change: transform;
   transition: transform 0.3s ease-out;
 }
@@ -68,10 +70,8 @@ img.quick-actions-media {
 }
 
 .quick-actions-tile-footer {
-  position: absolute;
-  inset-block-end: 0;
-  inset-inline: 0;
-  z-index: 2;
+  grid-area: 1 / 1;
+  align-self: end;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -122,14 +122,6 @@ img.quick-actions-media {
   .quick-actions-grid.four-up,
   .quick-actions-grid.six-up {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-
-@media (width >= 768px) {
-  .quick-actions-tile {
-    block-size: auto;
-    aspect-ratio: 50 / 43;
   }
 }
 

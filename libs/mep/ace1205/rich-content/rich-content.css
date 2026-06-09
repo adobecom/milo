@@ -28,7 +28,8 @@
       max-width: 680px;
     }
 
-    p:has(picture) {
+    .eyebrow:has(picture) {
+      color: var(--s2a-color-content-knockout);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -55,6 +56,10 @@
 
   &.left-split .action-area {
     align-items: center;
+
+    .con-button.transparent {
+      text-decoration: underline;
+    }
   }
 
   &.jump-link {
@@ -68,6 +73,7 @@
       display: flex;
       flex-direction: column;
       padding-inline: 0;
+      padding-block-start: var(--s2a-spacing-4xl);
     }
 
     .foreground {
@@ -183,13 +189,13 @@
 .section.has-background:has(.rich-content.hero) .section-background picture::after {
   content: '';
   position: absolute;
-  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%);
+  background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%);
   inset: 0;
   z-index: 1;
 }
 
 .section:not(.has-background):has(.rich-content.hero) {
-  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%), var(--s2a-color-background-default);
+  background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%), var(--s2a-color-background-default);
 }
 
 .section:has(.rich-content.jump-link.hero) {
@@ -197,14 +203,24 @@
 }
 
 .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 39%, rgba(0, 0, 0, 0) 74%, rgba(0, 0, 0, 0.8) 100%);
+  background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-50) 39.99%, var(--s2a-color-transparent-black-20) 59.99%, var(--s2a-color-transparent-black-80) 100%);
 }
 
 .section:not(.has-background):has(.rich-content.jump-link.hero) {
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 39%, rgba(0, 0, 0, 0) 74%, rgba(0, 0, 0, 0.8) 100%), var(--s2a-color-background-default);
+  background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) 0%, var(--s2a-color-transparent-black-00) 39%, var(--s2a-color-transparent-black-00) 74%, var(--s2a-color-transparent-black-80) 100%), var(--s2a-color-background-default);
 }
 
 @media (width >= 768px) {
+  .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
+    background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
+  }
+
+  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video),
+  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+    --rc-sweep-offset: 230px;
+  }
+
   .rich-content .content [class*="body-"]:not(.action-area) {
     min-width: 560px;
     width: calc((100% / var(--grid-columns)) * 8);
@@ -218,7 +234,10 @@
     padding-block-start: var(--s2a-layout-md);
     padding-block-end: var(--s2a-spacing-4xl);
 
-    &.hero { height: 580px; }
+    &.hero {
+      height: 580px;
+      padding-block-start: var(--s2a-layout-sm);
+    }
 
     .foreground .content,
     .jump-links { padding-inline: var(--s2a-spacing-xl); }
@@ -286,7 +305,6 @@
 
       &.hero {
         height: 814px;
-        padding-block-start: var(--s2a-layout-lg);
       }
 
       .foreground .content,
@@ -299,6 +317,12 @@
         .eyebrow { max-width: 656px; }
       }
     }
+  }
+}
+
+@media (width >= 1280px) {
+  .rich-content.jump-link.hero {
+    padding-block-start: var(--s2a-layout-xl);
   }
 }
 
@@ -364,6 +388,7 @@
       backdrop-filter: blur(var(--s2a-blur-md));
       overflow: hidden;
       transform-origin: center bottom;
+      width: 100%;
 
       video {
         display: block;
@@ -446,16 +471,6 @@
   }
 }
 
-@keyframes rc-cta-counteract {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50vh); }
-}
-
-@keyframes rc-video-enter {
-  from { transform: scale(0.94) translateY(30px); }
-  to { transform: scale(1) translateY(0); }
-}
-
 @property --rc-pull-offset {
   syntax: '<length>';
   inherits: true;
@@ -474,6 +489,8 @@
 .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
   --rc-pull-offset: 180px;
   --rc-sweep-offset: 200px;
+  --rc-sweep-peek: var(--s2a-border-radius-lg);
+  --rc-cta-counteract-max: 10vh;
 }
 
 @media (width >= 1024px) {
@@ -485,7 +502,7 @@
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
     --rc-pull-offset: 200px;
-    --rc-sweep-offset: 230px;
+    --rc-sweep-offset: 200px;
   }
 }
 
@@ -494,27 +511,47 @@
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
     --rc-pull-offset: 100px;
-    --rc-sweep-offset: 300px;
+    --rc-sweep-offset: 280px;
   }
-}
-
-@keyframes rc-section-pull-up {
-  from { transform: translateY(0); }
-  to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
-}
-
-@keyframes rc-section-sweep-in {
-  from { transform: translateY(var(--rc-sweep-offset)); }
-  to { transform: translateY(0); }
-}
-
-@keyframes rc-video-section-slow {
-  from { transform: translateY(0); }
-  to { transform: translateY(50vh); }
 }
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
+    @keyframes rc-cta-counteract {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(var(--rc-cta-counteract-max) * -1)); }
+    }
+
+    @keyframes rc-video-cta-follow-mobile {
+      from { transform: translateY(14vh); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes rc-video-enter-mobile {
+      from { transform: scale(1.4) translateY(12vh); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    @keyframes rc-video-enter {
+      from { transform: scale(0.94) translateY(30px); }
+      to { transform: scale(1) translateY(0); }
+    }
+
+    @keyframes rc-section-pull-up {
+      from { transform: translateY(0); }
+      to { transform: translateY(calc(var(--rc-pull-offset) * -1)); }
+    }
+
+    @keyframes rc-section-sweep-in {
+      from { transform: translateY(calc(var(--rc-sweep-offset) - var(--rc-sweep-peek))); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes rc-video-section-slow {
+      from { transform: translateY(0); }
+      to { transform: translateY(var(--rc-cta-counteract-max)); }
+    }
+
     body:has(.section.parallax-video-garage-door) {
       timeline-scope: --rc-video-garage;
     }
@@ -527,11 +564,34 @@
       animation-range: exit 0% exit 100%;
     }
 
+    .section.parallax-video-garage-door .rich-content.video {
+      timeline-scope: --rc-video-enter;
+    }
+
     .section.parallax-video-garage-door .rich-content.video .video-container {
-      animation: rc-video-enter linear both;
+      view-timeline-name: --rc-video-enter;
+      view-timeline-axis: block;
+      animation: rc-video-enter-mobile linear both;
       animation-duration: auto;
-      animation-timeline: view();
+      animation-timeline: --rc-video-enter;
       animation-range: entry 0% exit 0%;
+    }
+
+    .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
+      animation: rc-video-cta-follow-mobile linear both;
+      animation-duration: auto;
+      animation-timeline: --rc-video-enter;
+      animation-range: entry 0% exit 0%;
+    }
+
+    @media (width >= 768px) {
+      .section.parallax-video-garage-door .rich-content.video .video-container {
+        animation: rc-video-enter linear both;
+      }
+
+      .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
+        animation: none;
+      }
     }
 
     .section:has(+ .section.parallax-video-garage-door .rich-content.video) {
@@ -541,16 +601,41 @@
       animation: rc-section-pull-up cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: view();
-      animation-range: exit 0% exit 120%;
+      animation-range: exit 0% exit 240%;
     }
 
     .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
       position: relative;
-      z-index: 2;
       animation: rc-section-sweep-in cubic-bezier(0.4, 0, 0.2, 1) both;
       animation-duration: auto;
       animation-timeline: --rc-video-garage;
-      animation-range: entry 60% exit 100%;
+      animation-range: entry 50% exit 200%;
+
+      &.has-background + .section.has-background {
+        margin-top: -1px;
+      }
+    }
+
+    @media (width >= 768px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: exit 0% exit 100%;
+      }
+    }
+
+    @media (width >= 1024px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: exit 35% exit 100%;
+      }
+    }
+
+    @media (width >= 1920px) {
+      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+        animation-range: exit 45% exit 100%;
+      }
+    }
+
+    .section.parallax-video-garage-door:has(.rich-content.video) ~ .section:not([class*='rounded-corners-']) {
+      z-index: 2;
     }
 
     .section.parallax-video-garage-door:has(.rich-content.video) + .section {
@@ -564,21 +649,8 @@
       animation-range: exit 50% exit 100%;
     }
 
-    .section.parallax-video-garage-door .rich-content.video :is(a, button) {
+    .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
       scroll-margin-top: calc(100vh - 200px);
     }
-
-    @media (width >= 1440px) {
-      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-        animation-range: exit 0% exit 100%;
-      }
-    }
-
-    @media (width >= 1920px) {
-      .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-        animation-range: entry 90% exit 100%;
-      }
-    }
-
   }
 }
