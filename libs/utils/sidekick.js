@@ -27,12 +27,19 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
   };
 
+  const annotationsListener = async () => {
+    if (document.getElementById('pc-root')) return;
+    // eslint-disable-next-line import/no-unresolved
+    await import('https://milo-core-prod.adobe.io/page-commenter.js');
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
   sk.addEventListener('custom:send-to-caas', debounce(sendToCaasListener, 500));
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
+  sk.addEventListener('custom:annotations', annotationsListener);
 
   // Color code publish button
   stylePublish(sk);
