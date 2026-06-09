@@ -3,6 +3,7 @@ import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-
 import { expect } from '@esm-bundle/chai';
 import { delay } from '../../helpers/waitfor.js';
 
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
@@ -33,6 +34,7 @@ import merch, {
   getMasComponentUrl,
   getMasLibsBaseUrl,
   getMasLibs,
+  shouldHideStPriceLabels,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -360,6 +362,120 @@ describe('Merch Block', () => {
     it('renders merch link to GB price', async () => {
       const el = await validatePriceSpan('.merch.price.gb', {});
       expect(/£/.test(el.textContent)).to.be.true;
+    });
+
+    it('MEP Highlight M@S: stamps data-mas-block=ost and captures original /tools/ost href when mep.preview is on', async () => {
+      setConfig({ ...config, mep: { preview: true } });
+      // Earlier tests consume the canned mock anchors via replaceWith; build
+      // a fresh link in a scoped container.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap', class: 'merch-mep-ost-test' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const originalHref = link.href;
+      expect(originalHref).to.include('/tools/ost?');
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal('ost');
+      const captured = mepMasStudioUrls.get(renderedEl);
+      expect(captured).to.equal(originalHref);
+      expect(captured).to.include('osi=03');
+      expect(captured).to.include('type=price');
+      expect(captured).to.include('term=false');
+      wrap.remove();
+    });
+
+    it('MEP Highlight M@S: does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      // beforeEach calls setConfig(config) with no mep.preview.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap-off', class: 'merch-mep-ost-test-off' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(renderedEl)).to.equal(undefined);
+      wrap.remove();
+    });
+
+    it('should hide ST price labels with promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price');
+      div.append(elementST);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price'));
+      expect(hide).to.be.true;
+    });
+
+    it('should hide ST price labels with promo price right after and character between', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price2');
+      div.append(elementST);
+      const text = document.createTextNode('* ');
+      div.append(text);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price2'));
+      expect(hide).to.be.true;
+    });
+
+    it('should not hide ST price labels without promo price', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price3');
+      div.append(elementST);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price3'));
+      expect(hide).to.be.false;
+    });
+
+    it('should not hide ST price labels without promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
+    });
+    it('should not hide ST price labels with some link right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://www.adobe.com/plans');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
     });
   });
 

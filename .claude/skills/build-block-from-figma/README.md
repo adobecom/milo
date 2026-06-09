@@ -35,7 +35,7 @@ Step 1 — install the CLI:
 API_BASE=https://fluffyjaws.adobe.com; \
 if curl -fsSL "$API_BASE/" -o /dev/null 2>/dev/null; then \
   curl -fsSL "$API_BASE/api/cli/install.sh" | bash; \
-else echo "VPN required. Connect to V retry." 1>&2; false; fi
+else echo "VPN required. Connect to VPN and retry." 1>&2; false; fi
 ```
 
 Step 2 — add to `~/.claude.json` under `mcpServers`:
@@ -44,7 +44,7 @@ Step 2 — add to `~/.claude.json` under `mcpServers`:
 "fluffyjaws": {
   "type": "stdio",
   "command": "/opt/homebrew/bin/fj",
-  "args": ["mcp", "--api", "https://fluffyjaws.adobe.com"]
+  "args": ["mcp"]
 }
 ```
 

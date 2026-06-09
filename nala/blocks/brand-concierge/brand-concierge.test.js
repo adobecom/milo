@@ -406,7 +406,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
     },
   );
 
-  // Test 9: Brand Concierge web client pre-load
+  // Test 9: Brand Concierge web client load (lazy, on first modal open)
   test(
     `[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`,
     async ({ page, baseURL }) => {
@@ -422,8 +422,18 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(bc.block).toBeVisible();
       });
 
-      await test.step('step-3: Verify web client main.js script is pre-loaded into the DOM', async () => {
-        // Script is injected as the final step of init(), before any modal opens.
+      await test.step('step-3: Verify web client script is NOT yet loaded before modal opens', async () => {
+        // BC M2 fast-follows changed the loader: web-client main.js is
+        // injected lazily inside openChatModal, not as a final init step.
+        await expect(bc.webClientScript).toHaveCount(0);
+      });
+
+      await test.step('step-4: Trigger modal by clicking the first prompt card', async () => {
+        await bc.promptButtons.first().click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-5: Verify web client main.js is now attached after modal open', async () => {
         await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
 
         const scriptSrc = await bc.webClientScript.first().getAttribute('src');
@@ -445,7 +455,14 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(bc.block).toBeVisible();
       });
 
-      await test.step('step-2: Verify baseStage web agent script is loaded', async () => {
+      await test.step('step-2: Trigger modal so the web client script is loaded', async () => {
+        // Web client is loaded lazily inside openChatModal; trigger it
+        // through a prompt card click.
+        await bc.promptButtons.first().click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-3: Verify baseStage web agent script is loaded', async () => {
         // baseStage uses experience-platform-brand-concierge-web-agent on experience-stage.adobe.net
         await expect(bc.webClientScript.first()).toBeAttached({ timeout: 10000 });
 
@@ -515,6 +532,63 @@ test.describe('Milo Brand Concierge Block test suite', () => {
 
       await test.step('step-3: Verify block has hide-block class', async () => {
         await expect(bc.block).toHaveClass(/hide-block/, { timeout: 10000 });
+      });
+    },
+  );
+
+  // Test 13: floating-anchor-delay<N> variant (PR #5940 / MWPW-194524).
+  // Combined with floating-delay<M>, the floating button:
+  //   - is hidden near the top of the page (scrollY < topDelayPx)
+  //   - is visible in the middle of the page
+  //   - is hidden again when within anchorDelayPx of the page footer
+  // Tagged @bc-pending until the test fragment is authored.
+  test(
+    `[Test Id - ${features[13].tcid}] ${features[13].name},${features[13].tags}`,
+    async ({ page, baseURL }) => {
+      console.info(`[Test Page]: ${baseURL}${features[13].path}${miloLibs}`);
+      const { data } = features[13];
+
+      await test.step('step-1: Go to Brand Concierge floating-anchor-delay page', async () => {
+        await page.goto(`${baseURL}${features[13].path}${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
+        await expect(page).toHaveURL(`${baseURL}${features[13].path}${miloLibs}`);
+      });
+
+      await test.step('step-2: Verify block carries both delay classes', async () => {
+        await expect(bc.block).toBeVisible();
+        await expect(bc.block).toHaveClass(new RegExp(data.topDelayClass));
+        await expect(bc.block).toHaveClass(new RegExp(data.anchorDelayClass));
+      });
+
+      await test.step('step-3: Floating button is hidden near top of page', async () => {
+        await expect(bc.floatingButton).toBeAttached({ timeout: 10000 });
+        // Top delay (e.g. 100px) means the button stays hidden until scroll
+        // passes that threshold.
+        await expect(bc.floatingButton).toHaveClass(/floating-hidden/);
+      });
+
+      await test.step('step-4: Floating button is visible in the middle of the page', async () => {
+        await page.evaluate(() => {
+          // Scroll well past topDelay but well before the footer.
+          window.scrollTo(0, Math.floor(document.body.scrollHeight / 2));
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForTimeout(1000);
+        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+      });
+
+      await test.step('step-5: Floating button is hidden again near the footer', async () => {
+        await page.evaluate(() => {
+          // Scroll to within anchor-delay distance of the footer.
+          window.scrollTo(0, document.body.scrollHeight);
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForTimeout(1000);
+        await expect(bc.floatingButton).toHaveClass(/floating-hidden/, { timeout: 10000 });
+      });
+
+      await test.step('step-6: Floating button has correct text content', async () => {
+        expect(await bc.floatingButtonInput.textContent()).toBeTruthy();
       });
     },
   );

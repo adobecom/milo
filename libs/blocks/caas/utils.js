@@ -12,6 +12,9 @@ import { getLingoActive } from '../../utils/lingo-active.js';
 import { fetchWithTimeout } from '../utils/utils.js';
 import getUuid from '../../utils/getUuid.js';
 
+// CaaS deep-link URL per wrapper element, keyed off-DOM for MEP preview (URL too large for data-*).
+export const mepCaasConfigUrls = new WeakMap();
+
 export const LANGS = {
   en: 'en',
   de: 'de',
@@ -177,7 +180,6 @@ export const LOCALES = {
 
 const URL_ENCODED_COMMA = '%2C';
 export const fgHeaderName = 'X-Adobe-Floodgate';
-export const fgHeaderValue = 'pink';
 
 const pageConfig = pageConfigHelper();
 const pageLocales = Object.keys(pageConfig.locales || {});
@@ -294,9 +296,12 @@ export const loadCaasFiles = async () => {
 export const loadCaasTags = async (tagsUrl) => {
   let errorMsg = '';
   if (tagsUrl) {
-    const url = tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`;
+    const urlObj = new URL(tagsUrl.startsWith('https://') || tagsUrl.startsWith('http://') ? tagsUrl : `https://${tagsUrl}`);
+    if (urlObj.hostname !== window.location.hostname && !urlObj.searchParams.has('s')) {
+      urlObj.searchParams.set('s', window.location.host);
+    }
     try {
-      const resp = await fetchWithTimeout(url);
+      const resp = await fetchWithTimeout(urlObj.toString());
       if (resp.ok) {
         const json = await resp.json();
         return {
@@ -563,6 +568,15 @@ function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   return lingoSiteMappingPromise;
 }
 
+export function initBulkPublisherLingoMapping() {
+  lingoSiteMappingPromise = fetch(
+    'https://milo.adobe.com/federal/assets/data/lingo-site-mapping.json?bulkpublisher',
+  ).then((response) => {
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    return response.json();
+  });
+}
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
@@ -822,10 +836,9 @@ const findTupleIndex = (fgHeader) => {
  * @returns requestHeaders
  */
 const addFloodgateHeader = (state) => {
-  // Delete FG header if already exists, before adding pink to avoid duplicates in requestHeaders
   requestHeaders.splice(findTupleIndex(fgHeaderName, 1));
   if (state.fetchCardsFromFloodgateTree) {
-    requestHeaders.push([fgHeaderName, fgHeaderValue]);
+    requestHeaders.push([fgHeaderName, state.floodgateColor]);
   }
   return requestHeaders;
 };
@@ -1046,6 +1059,7 @@ export const getConfig = async (originalState, strs = {}) => {
         playVideo: strs.playVideo || 'Play, {cardTitle}',
         nextCards: strs.nextCards || 'Next Cards',
         prevCards: strs.prevCards || 'Previous Cards',
+        sortBy: strs.sortBy || 'Sort by',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
@@ -1077,8 +1091,11 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      ...(state.useRoundedCorners
+          && { useRoundedCorners: !!state.useRoundedCorners }),
       // Only include bladeCard when explicitly configured
-      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent) && {
+      ...((state.bladeCardReverse || state.bladeCardLightText || state.bladeCardTransparent)
+      && {
         bladeCard: {
           reverse: !!state.bladeCardReverse,
           lightText: !!state.bladeCardLightText,
@@ -1141,6 +1158,10 @@ export const getConfig = async (originalState, strs = {}) => {
       enabled: state.sortEnablePopup,
       defaultSort: state.sortDefault,
       options: getSortOptions(state, strs),
+      ...((state.sortDefault === 'localFirst' || state.sortLocalFirst)
+        && state.sortLocalFirstRecencyThreshold !== null
+        ? { localFirstRecencyThreshold: state.sortLocalFirstRecencyThreshold }
+        : {}),
     },
     pagination: {
       animationStyle: navigationStyle,
@@ -1218,11 +1239,16 @@ export const initCaas = async (state, caasStrs, el) => {
   if (!caasEl) return;
 
   const appEl = caasEl.parentElement;
+  const preservedConfigUrl = mepCaasConfigUrls.get(caasEl);
   caasEl.remove();
 
   const newEl = document.createElement('div');
   newEl.id = 'caas';
   newEl.className = 'caas-preview';
+  if (preservedConfigUrl) {
+    newEl.dataset.caasBlock = '';
+    mepCaasConfigUrls.set(newEl, preservedConfigUrl);
+  }
   appEl.append(newEl);
 
   const config = await getConfig(state, caasStrs);
@@ -1239,6 +1265,7 @@ export const defaultState = {
   andLogicTags: [],
   autoCountryLang: false,
   fetchCardsFromFloodgateTree: false,
+  floodgateColor: '',
   bookmarkIconSelect: '',
   bookmarkIconUnselect: '',
   cardStyle: 'half-height',
@@ -1255,6 +1282,7 @@ export const defaultState = {
   doNotLazyLoad: false,
   disableBanners: false,
   draftDb: false,
+  editorialCardOpenVariant: false,
   endpoint: 'www.adobe.com/chimera-api/collection',
   environment: '',
   excludedCards: [],
@@ -1310,6 +1338,9 @@ export const defaultState = {
   sortEnableRandomSampling: false,
   sortEventSort: false,
   sortFeatured: false,
+  sortLocalFirst: false,
+  sortLocalFirstRecencyThreshold: null,
+  sortLocalLast: false,
   sortModifiedAsc: false,
   sortModifiedDesc: false,
   sortRandom: false,
@@ -1325,9 +1356,10 @@ export const defaultState = {
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
+  useCenterVideoPlay: false,
   useLightText: false,
   useOverlayLinks: false,
-  useCenterVideoPlay: false,
+  useRoundedCorners: false,
   collectionButtonStyle: 'primary',
   userInfo: [],
 };

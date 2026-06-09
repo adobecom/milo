@@ -96,7 +96,7 @@
     line-height: 1.5;
   }
 
-  .appPrompt-cta {
+  .global-navigation button.appPrompt-cta {
     display: flex;
     flex-shrink: 0;
     height: 32px;
@@ -119,14 +119,14 @@
     cursor: pointer;
   }
 
-  .appPrompt-cta--close {
+  .global-navigation button.appPrompt-cta--close {
     background-color: rgb(255, 255, 255);
     border-color: rgb(75, 75, 75);
     color: rgb(75, 75, 75);
   }
 
-  .appPrompt-cta--close:hover,
-  .appPrompt-cta--close:focus {
+  .global-navigation button.appPrompt-cta--close:hover,
+  .global-navigation button.appPrompt-cta--close:focus {
     background-color: rgb(75, 75, 75);
     color: rgb(255, 255, 255);
   }
