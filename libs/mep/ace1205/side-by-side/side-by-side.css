@@ -54,11 +54,11 @@
 
     .foreground {
       position: relative;
-      padding: var(--s2a-spacing-md);
+      padding: var(--s2a-spacing-lg);
       z-index: 1;
       display: flex;
       flex-direction: column;
-      gap: var(--s2a-spacing-xs);
+      gap: var(--s2a-spacing-2xs);
       max-width: 320px;
     }
   }
@@ -78,7 +78,7 @@
       padding: var(--s2a-spacing-md);
       display: flex;
       flex-direction: column;
-      gap: var(--s2a-spacing-xs);
+      gap: var(--s2a-spacing-2xs);
       max-width: 400px;
 
       [class^='body-'] {
@@ -87,6 +87,8 @@
     }
   }
 }
+
+
 
 @media (width >= 768px) {
   .side-by-side {
@@ -113,20 +115,11 @@
   }
 }
 
-@media (width >=1024px) {
-  :root:has(meta[name="foundation"][content="c2"]) {
-    .side-by-side button.play-pause-button {
-      width: 48px;
-      height: 48px;
-    }
-  }
-}
-
 @media (width >= 1280px) {
   .side-by-side {
     .card-overlay {
       .foreground {
-        padding: var(--s2a-spacing-2xl);
+        padding: var(--s2a-spacing-xl);
       }
     }
 
