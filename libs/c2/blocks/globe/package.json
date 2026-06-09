@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Build script for the globe block's vendored Three.js ESM dependency.",
   "scripts": {
-    "build": "esbuild src/three.js --bundle --format=esm --minify --outfile=three.module.min.js"
+    "build": "esbuild three-src.js --bundle --format=esm --minify --outfile=three.module.min.js"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

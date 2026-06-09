@@ -1,3 +1,4 @@
+/* eslint-disable import/no-extraneous-dependencies */
 // Re-exports only the Three.js symbols used by globe.js.
 // esbuild tree-shakes the rest of the three package from the output.
 export {
