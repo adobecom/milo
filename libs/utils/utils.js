@@ -118,6 +118,7 @@ const C2_BLOCKS = [
   'faq',
   'global-footer',
   'global-navigation',
+  'globe',
   'martech-metadata',
   'modal',
   'news',

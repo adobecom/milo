@@ -1,0 +1,676 @@
+/* ─────────────────────────────────────────────────────────────────────────
+   Globe — C2 block. Ported from hub-creative offer-section.css (globe slice).
+   Tile-variant selectors (.offer-card*, .offer-headline, .offer-copy) are
+   intentionally omitted. See PROGRESS.md.
+
+   Two stylelint rules are disabled file-wide, both deliberate:
+   • selector-class-pattern — class names are BEM (.offer-pullquote__quote,
+     .card-modal__badge-icon--ps). This is the Milo-wide convention; the names
+     are also queried verbatim by globe.js (GLOBE_MARKUP / querySelector) and
+     match the prototype reference, so renaming would break JS + parity.
+   • *-no-vendor-prefix — the -webkit-backdrop-filter and display:-webkit-box /
+     -webkit-line-clamp prefixes are required for Safari (backdrop blur and the
+     modal description's 3-line clamp). Standard equivalents aren't yet usable.
+   ───────────────────────────────────────────────────────────────────────── */
+/* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
+
+/* Block element is the tall scroll spacer. 850vh = globe variant scroll budget
+   (the prototype's offer-toggle set this; tile used 380vh). */
+.globe.offer-pin-spacer { height: 850vh; }
+
+/* Reduced-motion / THREE-unavailable fallback: collapse the section. */
+.globe--reduced {
+  height: auto;
+  min-height: 0;
+}
+
+/* Scroll lock while the card modal is open (replaces Lenis.stop()) is defined
+   once, near the modal CSS below (see the html.modal-open / body.modal-open rule). */
+
+/* ── Type-scale tokens ───────────────────────────────────────────────────────
+   Ported from the prototype's styles/global/typography.css. The prototype
+   relied on these :root tokens; Milo does NOT define them, so without this the
+   pull-quote and arc-copy fall back to default 16px text. Scoped to .globe so
+   they cascade to the JS-built overlays (pull-quote / arc-copy / modal are DOM
+   descendants — position:fixed doesn't break custom-property inheritance).
+   Keep values in sync with hub-creative/styles/global/typography.css. */
+.globe {
+  --font-display: 'Adobe Clean Display', system-ui, sans-serif;
+  --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
+
+  /* Title 1 — 80/76.8/-3.2px */
+  --type-title-1-size: 80px;
+  --type-title-1-weight: 900;
+  --type-title-1-lh: 0.96;
+  --type-title-1-ls: -0.04em;
+
+  /* Body Large — 20/24/0 */
+  --type-body-l-size: 20px;
+  --type-body-l-weight: 400;
+  --type-body-l-lh: 1.2;
+  --type-body-l-ls: 0;
+
+  /* Body Medium — 16/20.8/+0.16px */
+  --type-body-m-size: 16px;
+  --type-body-m-weight: 400;
+  --type-body-m-lh: 1.3;
+  --type-body-m-ls: 0.01em;
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .globe {
+    --type-title-1-size: 56px;
+    --type-title-1-ls: -0.03em;
+    --type-body-l-size: 18px;
+    --type-body-l-lh: 1.3;
+  }
+}
+
+@media (max-width: 767px) {
+  .globe {
+    --type-title-1-size: 40px;
+    --type-title-1-ls: -0.03em;
+    --type-body-l-size: 16px;
+    --type-body-l-lh: 1.3;
+  }
+}
+
+.offer-pin-spacer {
+  height: 380vh;
+  position: relative;
+  background: #131313;
+  margin-top: 0;
+}
+
+/* Sticky viewport — cards are absolutely positioned within this */
+.offer-world {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ── Arc copy (slides up before arc, fades+scales out as headline arrives) ── */
+.offer-arc-copy {
+  position: fixed;
+  bottom: calc(72px + 20vh);
+  width: 382px;
+  pointer-events: none;
+  opacity: 0;
+  will-change: opacity, transform;
+  transform-origin: left bottom;
+  z-index: 96;
+}
+
+.offer-arc-copy__title {
+  /* 18px custom mini-headline (between Title-4 and body) */
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 18px;
+  line-height: 21px;
+  letter-spacing: -0.48px;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.offer-arc-copy__body {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-m-weight);
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+  letter-spacing: var(--type-body-m-ls);
+  color: #c6c6c6;
+  margin: 0;
+}
+
+/* ── Pull-quote (globe variant — one-shot fade+slide after zoom completes) ── */
+.offer-pullquote {
+  position: fixed;
+  left: 50%;
+  top: calc(50% - 291px);
+  width: 100%;
+  max-width: 1920px;
+  height: 583px;
+  z-index: 97;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(24px) scale(0.9);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.offer-pullquote.is-active {
+  opacity: 1;
+  pointer-events: none;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+.offer-pullquote__quote {
+  font-family: var(--font-display);
+  font-weight: var(--type-title-1-weight);
+  font-size: var(--type-title-1-size);
+  line-height: var(--type-title-1-lh);
+  letter-spacing: var(--type-title-1-ls);
+  color: #fff;
+  margin: 0;
+  will-change: transform, opacity;
+}
+
+.offer-pullquote__attribution {
+  will-change: transform, opacity;
+}
+
+.offer-pullquote__name {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-l-weight);
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+  letter-spacing: var(--type-body-l-ls);
+  color: #fff;
+  margin: 0;
+}
+
+.offer-pullquote__role {
+  font-family: var(--font-body);
+  font-weight: var(--type-body-l-weight);
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+  letter-spacing: var(--type-body-l-ls);
+  color: #c6c6c6;
+  margin: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Card detail modal — opens when user clicks a card on the globe.
+   Globe stays rendering behind (blurred via .is-modal-active on
+   #offer-globe-canvas). Box flies from click position to center.
+───────────────────────────────────────────────────────────────── */
+
+/* ── Backdrop layer (z:110) — blurs the globe canvas; card canvas at z:115 stays sharp.
+   Chrome layer (z:116) sits above the card canvas so the info panel overlays the card. */
+.card-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s linear;
+}
+.card-modal.is-visible { display: block; }
+.card-modal.is-open    { opacity: 1; }
+
+.card-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 60%);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+  cursor: pointer;
+
+  /* No native pan/scroll on touch — JS gesture handlers own the modal area.
+     Without this, the browser starts a pan gesture on touchmove which Lenis then
+     tries to cancel; the browser refuses ("Ignored attempt to cancel touchmove")
+     because the gesture is already in progress. */
+  touch-action: none;
+}
+
+/* Chrome layer — close button, info panel, nav arrows. Above the WebGL card canvas.
+   The layer itself is always pointer-events:none so empty areas fall through to
+   the backdrop close handler below; only the child controls are interactive. */
+.card-modal-chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 116;
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.card-modal-chrome.is-visible { display: block; }
+.card-modal-chrome.is-open    { opacity: 1; }
+
+/* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
+.card-modal__image { display: none; }
+
+/* Nav arrows — position/top/left/right set by JS; CSS handles visual style only. */
+.card-modal__nav {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  background: rgb(0 0 0 / 30%);
+  -webkit-backdrop-filter: blur(64px);
+  backdrop-filter: blur(64px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: none;
+  pointer-events: auto;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.card-modal__nav:hover {
+  background: rgb(0 0 0 / 55%);
+  transform: scale(1.05);
+}
+
+.card-modal__nav:active { transform: scale(0.98); }
+
+/* Close button — position set by JS; CSS handles visual style only.
+   Same dark frosted glass pattern as the nav arrows and info panel. */
+.card-modal__close {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: none;
+  background: rgb(0 0 0 / 30%);
+  -webkit-backdrop-filter: blur(64px);
+  backdrop-filter: blur(64px);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: background 0.2s ease;
+}
+.card-modal__close:hover { background: rgb(0 0 0 / 55%); }
+
+/* Info panel — position (top/left/right) set by JS.
+   Desktop: no background — panel lives in the right column outside the image area,
+   so the dark backdrop already provides contrast for the text.
+   Flex column layout pairs with `margin-top: auto` on .card-modal__badges so the
+   eyebrow/title/description hug the top of the panel and the product list hugs
+   the bottom — JS sets the panel's `top` to the asset's top-corner-radius point
+   and its `min-height` to the corner-to-corner interior span, so the badges land
+   on the asset's bottom-corner-radius point when there's room (and flow naturally
+   when content is too tall). Mobile re-introduces vertical padding (and the dark
+   frosted glass) below. */
+.card-modal__info {
+  position: absolute;
+  margin: 0;
+  border-radius: 18px;
+  padding: 0 24px;
+  box-shadow: none;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+
+  /* JS sets width/left/bottom to the image's inner bounds; padding must count
+     toward that width (no global border-box reset in Milo), else the 40px
+     desktop padding pushes the card ~80px past the image's right/bottom edges. */
+  box-sizing: border-box;
+}
+
+.card-modal__badges {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-modal__info > .card-modal__badges {
+  /* Desktop/tablet: gap below the body copy. The panel now overlays the lower
+     image (rather than living in a tall right-hand column), so the badges sit
+     close under the description instead of the old 96px split-view spacing.
+     Mobile compresses this further in its media query below. */
+  margin-top: 20px;
+}
+
+.card-modal__role-label {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #c6c6c6;
+  margin: 0;
+}
+
+.card-modal__name {
+  font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 28px;
+  letter-spacing: -0.6px;
+  color: #fff;
+  margin: 4px 0 12px;
+}
+
+.card-modal__description {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 20px;
+  color: #c6c6c6;
+  margin: 0;
+  max-width: 375px;
+}
+
+.card-modal__badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-modal__badge-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-modal__badge-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.card-modal__badge-icon--photoshop {
+  background: #001E36;
+  color: #31A8FF;
+}
+
+.card-modal__badge-icon--lightroom {
+  background: #001E36;
+  color: #31A8FF;
+}
+
+.card-modal__badge-icon--illustrator {
+  background: #300;
+  color: #FF9A00;
+}
+
+.card-modal__badge-icon--premiere {
+  background: #00005B;
+  color: #99F;
+}
+
+.card-modal__badge-icon--aftereffects {
+  background: #00005B;
+  color: #99F;
+}
+
+.card-modal__badge-icon--firefly {
+  background: #2E1A47;
+  color: #C593FF;
+}
+
+.card-modal__badge-icon--express {
+  background: #E60012;
+  color: #fff;
+}
+
+.card-modal__badge-icon--fresco {
+  background: #C3007A;
+  color: #fff;
+}
+
+.card-modal__badge-app {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+}
+
+.card-modal__badge-role {
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 14px;
+  color: #c6c6c6;
+}
+
+/* Counter ("1/N") — default style covers desktop/tablet. Position: bottom-center
+   of viewport. The mobile media query below tightens the bottom inset to align
+   with the mobile chrome (where nav arrows live at bottom corners). */
+.card-modal__counter {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Adobe Clean', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Lock scroll completely while the modal is open. body alone wasn't enough:
+   on most browsers `html` is the actual scrolling element, so wheel/trackpad
+   scroll bypassed body's overflow:hidden and Lenis tracked the native scroll
+   → sphereFormT and zoomT kept updating underneath the modal. Locking BOTH
+   covers either-is-the-scrolling-element behavior. The JS wheel/touchmove
+   preventer (added in offer-globe.js) is the second layer for cases where
+   overflow:hidden doesn't fully block momentum scrolling (iOS Safari). */
+html.modal-open,
+body.modal-open { overflow: hidden; }
+
+/* Hidden but keyboard-focusable buttons that mirror each card on the globe.
+   Built by JS (setupGlobeGalleryA11y) once cards are loaded. Tab cycles through
+   them when the sphere is interactive; focusing a button triggers the same
+   hover effect on the corresponding WebGL card, and Enter / Space opens the
+   modal at that card. Visually hidden (1×1 clipped) but reachable by keyboard
+   + screen readers. */
+.globe-gallery-a11y {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.globe-gallery-a11y__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.globe-gallery-a11y__btn {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: none;
+}
+
+/* Visible focus indicator for sighted keyboard users — projects a ring over
+   the focused card's screen-space position. Container has zero size, so the
+   :focus-visible style on the button itself stays clipped; the card's hover
+   state on the WebGL canvas is the primary visual cue (scale + warp). */
+.globe-gallery-a11y__btn:focus { outline: none; }
+
+/* ── Keyboard focus indicators (Spectrum-style: 2px #1473E6 with 2px offset) ──
+   Modal chrome buttons are real DOM elements, so :focus-visible can style them
+   directly. The globe cards are WebGL meshes — their focus ring is a separately
+   tracked DOM element (.globe-gallery-a11y__focus-ring) positioned each frame
+   by JS to match the focused card's projected screen-space bounding box. Both
+   match Adobe.com / Spectrum conventions. */
+.card-modal__close:focus-visible,
+.card-modal__nav:focus-visible {
+  outline: 2px solid #1473E6;
+  outline-offset: 2px;
+}
+
+.globe-gallery-a11y__focus-ring {
+  position: fixed;
+  pointer-events: none;
+  outline: 2px solid #1473E6;
+  outline-offset: 2px;
+
+  /* border-radius set per-frame in JS based on the focused card's projected
+     height (the card's rounded corners scale with screen size). */
+  border-radius: 8px;
+
+  /* No background — only the outline is visible. */
+  background: transparent;
+  display: none;
+  z-index: 96;  /* above offer-globe-canvas (z:95), below modal (z:110) */
+}
+.globe-gallery-a11y__focus-ring.is-visible { display: block; }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Desktop / tablet (≥768px) — modal info card overlaid on the image.
+   positionModalChrome anchors .card-modal__info over the image's lower area, so
+   the panel is a SOLID WHITE card with dark text (matching the prototype),
+   nav arrows are white buttons in the margin outside the image, and the close
+   button keeps the dark frosted treatment over the photo (top-right).
+   Mobile (<768px) below keeps the dark frosted panel + light text instead.
+───────────────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .card-modal__info {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+  }
+
+  .card-modal__role-label { color: #6e6e6e; }
+
+  .card-modal__name {
+    color: #1d1d1d;
+    font-size: 40px;
+    line-height: 44px;
+    letter-spacing: -1px;
+    margin: 4px 0 16px;
+  }
+
+  .card-modal__description {
+    color: #4b4b4b;
+    font-size: 18px;
+    line-height: 26px;
+    max-width: 660px;
+  }
+
+  .card-modal__badge-app { color: #1d1d1d; }
+  .card-modal__badge-role { color: #6e6e6e; }
+
+  /* Nav arrows: white buttons (dark chevron) sitting in the dark margin beside
+     the image, not the frosted-dark treatment used over the photo on mobile. */
+  .card-modal__nav {
+    background: #fff;
+    color: #1d1d1d;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
+  }
+
+  .card-modal__nav:hover { background: #f2f2f2; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Mobile (<768px) — modal info panel + chrome adjustments
+   Positioning is handled by JS (positionModalChrome with mobile branch).
+   These overrides shrink padding/typography to fit the ~230px below the card.
+───────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Arc-copy text block: 382px overflows a 375px viewport; cap to viewport-fit.
+     Final resting position on mobile: 8px above the viewport bottom (matches
+     the nav pill's outer 8px padding at top of viewport).
+     Left position: 8px (set by JS in tick); right margin stays ~24px, so width
+     is `calc(100vw - 32px)` (8 left + 24 right).
+     Dark frosted glass panel mirrors the top nav pill's blur strength + radius,
+     with a dark fill (vs nav's white) for legibility over the WebGL cards.
+     Background at 0.30 alpha so the cards behind read through; text inside
+     stays fully opaque (color: #fff/#c6c6c6 isn't affected by container alpha). */
+  .offer-arc-copy {
+    /* width allows up to (viewport - 16px) so the panel can reach 359px on a 375px
+       viewport (8px gap each side, symmetric). max-width caps at 359 for larger
+       phones. Earlier calc(100vw - 32px) was clamping to 343px on iPhone SE. */
+    width: calc(100vw - 16px);
+    max-width: 359px;
+    bottom: 8px;
+    background: rgb(0 0 0 / 30%);
+    -webkit-backdrop-filter: blur(64px);
+    backdrop-filter: blur(64px);
+    border-radius: 16px;
+    padding: 16px;
+  }
+
+  /* Hide dev/prototype UI on mobile so it doesn't compete with content or
+     overlap with modal nav arrows / close button. */
+  .layout-panel,
+  .offer-toggle,
+  .rt-panel,
+  #bp-badge { display: none !important; }
+
+  /* Info panel on mobile sits over the asset, so it needs the dark frosted glass
+     background for legibility. Desktop has no background (the panel lives in the
+     right column outside the image area). */
+  .card-modal__info {
+    background: rgb(0 0 0 / 30%);
+    -webkit-backdrop-filter: blur(64px);
+    backdrop-filter: blur(64px);
+    padding: 16px 16px 14px;
+    border-radius: 16px;
+  }
+
+  .card-modal__name {
+    font-size: 20px;
+    line-height: 24px;
+    margin: 2px 0 8px;
+  }
+
+  .card-modal__description {
+    font-size: 13px;
+    line-height: 18px;
+    margin: 0 0 12px;
+
+    /* Cap description to 3 lines so badges don't get pushed off-screen */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-modal__badges {
+    gap: 8px;
+
+    /* Reset the desktop 96px top gap — mobile keeps the badges tight against
+       the description (the description already has margin-bottom: 12px below). */
+    margin-top: 0;
+  }
+
+  .card-modal__badge-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+
+  .card-modal__badge-app,
+  .card-modal__badge-role {
+    font-size: 13px;
+  }
+
+  /* Counter on mobile sits closer to the bottom edge to align with the nav
+     arrows that live at bottom corners. Other styles inherit from the default. */
+  .card-modal__counter {
+    bottom: 16px;
+  }
+}
