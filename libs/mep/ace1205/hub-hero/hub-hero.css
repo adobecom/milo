@@ -65,6 +65,7 @@
 
 .hub-hero-header .icon-button {
   rotate: 90deg;
+  margin-left: var(--s2a-spacing-12);
 }
 
 .hub-hero-header div[class^="body"] {
