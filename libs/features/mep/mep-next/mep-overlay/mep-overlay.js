@@ -1,4 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
+import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
   getPageId,
   getManifestList,
@@ -299,7 +300,7 @@ function buildFAB(gnavOffset, svgData) {
   return fab;
 }
 
-function buildDrawer(gnavOffset, svgData, pageId) {
+function buildDrawerContents(svgData, pageId, isAuthed) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank' });
   logoLink.appendChild(svgIcon(svgData, 'logo-mep'));
 
@@ -307,6 +308,16 @@ function buildDrawer(gnavOffset, svgData, pageId) {
   closeBtn.appendChild(svgIcon(svgData, 'icon-close'));
 
   const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+
+  if (!isAuthed) {
+    const headerEl = createTag('div', { class: 'mep-header' }, [navEl]);
+    const messageEl = createTag('div', { class: 'mep-unauthed-message' }, [
+      createTag('h2', {}, 'Sign in with AEM Sidekick'),
+      createTag('p', {}, 'Install and sign in to AEM Sidekick to manage manifests on this page.'),
+    ]);
+    return [headerEl, messageEl];
+  }
+
   const tabsEl = createTag('div', { class: 'mep-tabs' });
   const bodyEl = createTag('div', { class: 'mep-body' });
 
@@ -332,12 +343,17 @@ function buildDrawer(gnavOffset, svgData, pageId) {
     createTag('a', { class: 'con-button button-l fill', title: 'Preview', href: '#' }, 'Preview'),
   ]);
 
+  return [headerEl, bodyEl, footerEl];
+}
+
+function buildDrawer(gnavOffset, svgData, pageId, isAuthed) {
+  const className = isAuthed ? 'mep-drawer' : 'mep-drawer mep-unauthed';
   return createTag('div', {
     id: 'mep-drawer',
-    class: 'mep-drawer',
+    class: className,
     popover: 'manual',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
-  }, [headerEl, bodyEl, footerEl]);
+  }, buildDrawerContents(svgData, pageId, isAuthed));
 }
 
 function buildAdditionalManifests() {
@@ -487,16 +503,10 @@ function setMasObserver() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-async function buildOverlay() {
-  const [svgData, gnavOffset] = await Promise.all([
-    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
-    getGnavOffset(),
-  ]);
-
-  const pageId = getPageId();
-  document.querySelector('main').append(
+function buildOverlay({ svgData, gnavOffset, pageId, isAuthed }) {
+  document.body.append(
     buildFAB(gnavOffset, svgData),
-    buildDrawer(gnavOffset, svgData, pageId),
+    buildDrawer(gnavOffset, svgData, pageId, isAuthed),
   );
 }
 
@@ -504,12 +514,48 @@ async function init() {
   saveToMmm();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
-  await buildOverlay();
-  setEventListeners();
-  setDefaultValues();
-  setPreviewButton();
+  const [svgData, gnavOffset] = await Promise.all([
+    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
+    getGnavOffset(),
+  ]);
+  const pageId = getPageId();
   setMasObserver();
   setBadgeEventListeners();
+
+  function rebuildOverlay(isAuthed) {
+    const existing = document.querySelector('#mep-drawer');
+    if (existing?.matches(':popover-open')) {
+      // In-place content swap. Popover stays open; event handlers persist
+      // because they're delegated on the drawer element, not its children.
+      existing.replaceChildren(...buildDrawerContents(svgData, pageId, isAuthed));
+      existing.className = isAuthed ? 'mep-drawer' : 'mep-drawer mep-unauthed';
+      setDefaultValues();
+      setPreviewButton();
+      return;
+    }
+    existing?.remove();
+    document.querySelector('.mep-fab')?.remove();
+    buildOverlay({ svgData, gnavOffset, pageId, isAuthed });
+    setEventListeners();
+    setDefaultValues();
+    setPreviewButton();
+  }
+
+  // TEMP: `envs` expanded to include stage/local for preview-page testing.
+  // Revert to default envs (`['prod']`) before merge.
+  onSidekickAuth((isAuthed) => {
+    // TEMP: `?mock-auth=true|false` overrides the real sidekick state for testing.
+    // Remove this block before merge.
+    const mockAuth = new URLSearchParams(window.location.search).get('mock-auth');
+    let finalAuth = isAuthed;
+    if (mockAuth === 'true') finalAuth = true;
+    else if (mockAuth === 'false') finalAuth = false;
+    // TEMP: remove before merge. Verifies auth state.
+    // eslint-disable-next-line no-console
+    console.log('[mep-overlay] sidekick auth state:', finalAuth, mockAuth ? '(mocked)' : '');
+
+    rebuildOverlay(finalAuth);
+  }, { envs: ['prod', 'stage'] });
 }
 
 init();
