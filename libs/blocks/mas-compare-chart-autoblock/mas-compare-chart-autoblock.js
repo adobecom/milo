@@ -3,8 +3,11 @@ import {
   getOptions,
   initService,
   loadMasComponent,
+  MAS_MERCH_CARD,
   overrideOptions,
 } from '../merch/merch.js';
+
+loadMasComponent(MAS_MERCH_CARD);
 
 const MAS_COMPARE_CHART = 'mas-compare-chart';
 const COMPARE_CHART_AUTOBLOCK_TIMEOUT = 5000;
