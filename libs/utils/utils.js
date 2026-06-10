@@ -2340,6 +2340,20 @@ export function scrollToHashedElement(hash) {
     });
   }
   if (!targetElement) return;
+
+  if (getMetadata('foundation') === 'c2') {
+    const bufferHeight = document.querySelector('.global-navigation nav').offsetHeight + document.querySelector('.global-navigation nav ul.feds-breadcrumbs').offsetHeight;
+    console.log('nav height', document.querySelector('.global-navigation nav').offsetHeight);
+    console.log('breadcrumbs height', document.querySelector('.global-navigation nav ul.feds-breadcrumbs').offsetHeight);
+
+    const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({
+      top: topOffset - bufferHeight,
+      behavior: 'smooth',
+    });
+    return;
+  }
+
   const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
   window.scrollTo({
