@@ -1006,22 +1006,9 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  // The sign-in flow opts into useGeoLocation so the region follows the user's
-  // explicit region choice, then their physical location — never the market
-  // cookie (which drives pricing only). Precedence: the `international` cookie
-  // (an explicit locale-prefix pick written by setInternational/region-modal) >
-  // geo (akamaiLocale qparam > Akamai geo). This mirrors Akamai WPS-25058, which
-  // skips its geo redirect when `international` is set. So a Canadian signing in
-  // from /fr lands on /ca_fr by geo, but if they explicitly picked France lands
-  // on /fr. The default keeps resolveDetectedMarketCountry() — honoring the
-  // selected-market `country` cookie — so mep-lingo (via getGeoLocalePrefix) and
-  // other content callers are unchanged here; migrating those off the market
-  // cookie is tracked separately. See MWPW-194172.
   if (useGeoLocation) {
     const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
     if (intlPrefix) {
-      // Honor the explicit pick; no geo fallback. A base/root pick (e.g. 'fr',
-      // 'us') has no regional variant in `regions`, so the user stays put.
       return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
     }
   }
