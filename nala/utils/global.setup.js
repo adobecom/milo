@@ -28,10 +28,17 @@ async function getGitHubPRBranchLiveUrl() {
   // Get the org and repo from the environment variables
   const prFromOrg = process.env.prOrg || toRepoOrg;
   const prFromRepoName = process.env.prRepo || toRepoName;
+  const isFork = process.env.isFork === 'true';
 
   let prBranchLiveUrl;
   if (prBranch === 'main') {
     prBranchLiveUrl = MAIN_BRANCH_LIVE_URL;
+  } else if (isFork) {
+    // Fork PRs: use the target org's base branch for authored content,
+    // and point milolibs at the fork branch so the fork's code is exercised.
+    const baseBranch = process.env.prBaseBranch || 'stage';
+    prBranchLiveUrl = `https://${baseBranch}--${toRepoName}--${toRepoOrg}.aem.live`;
+    process.env.MILO_LIBS = `?milolibs=${prBranch}--${prFromRepoName}--${prFromOrg}`;
   } else {
     prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
   }
@@ -50,6 +57,9 @@ async function getGitHubPRBranchLiveUrl() {
     console.info('PR Branch(U)  : ', prBranch);
     console.info('PR Number     : ', prNumber || 'Auto-PR');
     console.info('PR From Branch live url : ', prBranchLiveUrl);
+    if (isFork) {
+      console.info('Fork PR MILO_LIBS       : ', process.env.MILO_LIBS);
+    }
   } catch (err) {
     console.error(`Error => Error in setting PR Branch test URL : ${prBranchLiveUrl}`);
     console.info(`Note: PR branch test url  ${prBranchLiveUrl} is not valid, Exiting test execution.`);
