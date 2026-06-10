@@ -998,7 +998,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1006,7 +1006,29 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
+  // The sign-in flow opts into useGeoLocation so the region follows the user's
+  // explicit region choice, then their physical location — never the market
+  // cookie (which drives pricing only). Precedence: the `international` cookie
+  // (an explicit locale-prefix pick written by setInternational/region-modal) >
+  // geo (akamaiLocale qparam > Akamai geo). This mirrors Akamai WPS-25058, which
+  // skips its geo redirect when `international` is set. So a Canadian signing in
+  // from /fr lands on /ca_fr by geo, but if they explicitly picked France lands
+  // on /fr. The default keeps resolveDetectedMarketCountry() — honoring the
+  // selected-market `country` cookie — so mep-lingo (via getGeoLocalePrefix) and
+  // other content callers are unchanged here; migrating those off the market
+  // cookie is tracked separately. See MWPW-194172.
+  if (useGeoLocation) {
+    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
+    if (intlPrefix) {
+      // Honor the explicit pick; no geo fallback. A base/root pick (e.g. 'fr',
+      // 'us') has no regional variant in `regions`, so the user stays put.
+      return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
+    }
+  }
+
+  const country = useGeoLocation
+    ? normCountryCode(await getCountry())
+    : (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -2001,7 +2023,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
