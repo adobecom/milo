@@ -448,7 +448,7 @@
   padding: 40px 24px 12px;
 }
 
-.brand-concierge.hero.has-bg-image {
+.brand-concierge.hero.has-bg-image:not(.dark):not(.c2-dark) {
   background: linear-gradient(180deg, #fff0 0%, #fff0 38%, #fff 100%), var(--brand-concierge-bg) 50% / cover no-repeat;
 }
 
