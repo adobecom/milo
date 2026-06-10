@@ -123,13 +123,22 @@
       text-decoration: none;
       color: var(--s2a-color-content-knockout);
 
-      &:hover .jump-link-badge,
+      &:hover .jump-link-badge {
+        background: var(--s2a-color-transparent-white-16);
+        backdrop-filter: blur(4px);
+      }
+
       &:focus-visible .jump-link-badge {
-        background: var(--s2a-color-transparent-black-16);
+        backdrop-filter: blur(4px);
+        background: var(--s2a-color-transparent-white-32);
       }
 
       &:active .jump-link-badge {
-        background: var(--s2a-color-background-knockout);
+        background: var(--s2a-color-background-default);
+
+        &::after {
+          background-color: var(--s2a-color-content-default);
+        }
       }
     }
 
@@ -139,9 +148,9 @@
       justify-content: center;
       width: 30px;
       height: 30px;
-      border-radius: var(--s2a-border-radius-sm);
-      background: var(--s2a-color-transparent-black-04);
-      border: 1px solid var(--s2a-color-transparent-white-12);
+      border-radius: var(--s2a-border-radius-xs);
+      background: var(--s2a-color-transparent-white-32);
+      border: 1px solid var(--s2a-color-transparent-white-24);
       transition: background-color 0.2s ease, color 0.2s ease;
       flex-shrink: 0;
       color: var(--s2a-color-content-knockout);
