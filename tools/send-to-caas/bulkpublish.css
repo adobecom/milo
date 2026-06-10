@@ -624,3 +624,15 @@ a.classic {
 .bulk-publisher.dark td.error {
   color: #d00;
 }
+
+#language-first.lingo-auto {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#language-first.lingo-auto label::after {
+  content: ' (auto)';
+  font-style: italic;
+  font-size: 0.85em;
+  color: #666;
+}

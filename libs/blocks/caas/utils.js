@@ -577,6 +577,44 @@ export function initBulkPublisherLingoMapping() {
   });
 }
 
+/**
+ * Returns true if the path's locale is a regional site of the English base for the given origin.
+ * Used by the bulk publisher to auto-detect whether to skip Language First Localization.
+ * English regional sites (e.g. gb, au, in, jp, kr) do NOT use LFL; all other bacom locales do.
+ */
+export async function isLingoEnglishRegionalSite(origin, path, fqdn = 'www.adobe.com') {
+  try {
+    const configJson = await fetchLingoSiteMapping(fqdn);
+    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+    const siteLocalesData = configJson['site-locales']?.data ?? [];
+
+    const matched = siteQueryIndexMap.find(
+      ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
+    );
+    if (!matched) return false;
+
+    const { uniqueSiteId } = matched;
+
+    let pathname = path;
+    if (!path.startsWith('/')) {
+      try {
+        pathname = new URL(path.startsWith('http') ? path : `https://${path}`).pathname;
+      } catch {
+        pathname = `/${path.split('/').slice(1).join('/')}`;
+      }
+    }
+    const localeStr = pathname.split('/')[1] || '';
+
+    return siteLocalesData.some(({ uniqueSiteId: sid, baseSite, regionalSites }) => (
+      sid === uniqueSiteId
+      && baseSite === '/'
+      && isLocaleInRegionalSites(regionalSites, localeStr)
+    ));
+  } catch {
+    return false;
+  }
+}
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
