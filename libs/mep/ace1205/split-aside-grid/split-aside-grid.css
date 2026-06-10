@@ -198,7 +198,6 @@
   }
 
   .split-aside-grid-stack {
-    order: 2;
     inset-inline-end: calc(-1 * var(--grid-padding));
     grid-column: 6 / -1;
     height: 100%;
@@ -245,7 +244,6 @@
 
   .split-aside-grid-items {
     grid-column: span 4;
-    order: 1;
     min-width: 300px;
     display: flex;
     flex-direction: column;
@@ -282,6 +280,9 @@
         > div {
           min-height: 0;
           overflow: hidden;
+          &:focus-within {
+            overflow: visible;
+          }
 
           :last-child {
             margin-block-end: var(--s2a-spacing-3xl);
