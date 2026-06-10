@@ -215,7 +215,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   right: 0;
   z-index: 1;
   overflow-x: clip;
-  will-change: auto;
+  will-change: transform;
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -305,7 +305,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   background-color: var(--s2a-color-transparent-white-12);
   opacity: 0;
   font-size: var(--s2a-font-size-md);
-  line-height: 1;
   display: grid;
   place-items: center;
 }
@@ -493,7 +492,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     pointer-events: all;
     contain: none;
     will-change: auto;
-    animation: elasticMobileStackSlides linear both;
+    animation: elasticMobileStackSlides ease-out both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
   }
@@ -509,7 +508,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --stack-contrast: 0;
     --stack-shrink: 2.5rem;
     z-index: 1;
-    animation: elasticMobileFirstSlide linear both;
+    animation: elasticMobileFirstSlide ease-out both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -671,7 +670,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     max-width: var(--hub-hero-carousel-item-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
 
-    will-change: max-width, width;
+    will-change: transform;
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
