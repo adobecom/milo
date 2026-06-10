@@ -108,8 +108,8 @@ const onSlideLeave = (event) => {
 };
 
 const removeHovered = (carousel) => {
-  const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
-  [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
+  // const slides = carousel?.querySelectorAll('.hub-hero-carousel-item');
+  // [...slides]?.forEach((sld) => sld.classList.remove('hovered'));
 };
 
 const onCarouselLeave = (event) => {

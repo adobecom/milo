@@ -17,7 +17,7 @@
   --hub-hero-carousel-container-height-tablet: 562px;
   --hub-hero-carousel-item-max-width: 392px;
   --hub-hero-carousel-item-min-width: 292px;
-  --hub-hero-carousel-item-hover-grow-index: 1.75;
+  --hub-hero-carousel-item-hover-grow-index: 1.5;
   --header-animation-range: contain 30% contain 50%;
   --slide-animation-range: contain 0% contain 100%;
   --grid-col-rise-animation-range: contain 0% contain 100%;
@@ -31,7 +31,9 @@
   --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --carousel-item-width: calc(100vw / var(--slides));
-
+  --gap-shrink-timline: ease;
+  --slide-header-h: 64px;
+  --slide-footer-h: 96px;
   --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))));
 
   --grid-col-one-offset: 0px;
@@ -107,7 +109,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   gap: var(--start-gap);
   overflow-x: clip;
   contain: layout;
-  animation: hubHeroGridGapShrink ease-in-out both;
+  animation: hubHeroGridGapShrink var(--gap-shrink-timline) both;
   animation-timeline: --hub-hero;
   animation-range: var(--grid-gap-animation-range);
 }
@@ -291,22 +293,21 @@ font-size: var(--s2a-typography-font-size-heading-1);
 .hub-hero-carousel-item-footer::after {
   content: "+";
   position: absolute;
-  padding: var(--s2a-spacing-sm);
-  height: var(--icon-size);
-  width: var(--icon-size);
+  padding: 0;
+  height: calc(var(--icon-size) + var(--s2a-spacing-sm) * 2);
+  width: calc(var(--icon-size) + var(--s2a-spacing-sm) * 2);
   right: var(--s2a-spacing-lg);
   bottom: var(--s2a-spacing-lg);
   color: var(--s2a-color-gray-25);
   border-radius: 6px;
   background-repeat: no-repeat;
   border: 1px solid var(--s2a-color-transparent-white-12);
-  background-color: var(--s2a-color-transparent-white-16);
+  background-color: var(--s2a-color-transparent-white-12);
   opacity: 0;
   font-size: var(--s2a-font-size-md);
   line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
 }
 
 .hub-hero-carousel-item-footer * {
@@ -452,8 +453,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --offset-variance-index: -4px;
     --carousel-items-top: 38%;
     --slide-one-header-footer-reveal: 36% 40%;
-    --slide-header-h: 64px;
-    --slide-footer-h: 96px;
+
 
     position: relative;
     top: unset;
@@ -516,7 +516,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header {
     top: 0;
-    animation: slideOneHeaderReveal ease-in-out forwards;
+    animation: slideOneHeaderReveal ease forwards;
     animation-timeline: --hub-hero;
     animation-range: var(--slide-one-header-footer-reveal);
   }
@@ -568,7 +568,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer::after {
     opacity: 1;
-    padding: var(--s2a-spacing-md);
+    height: calc(var(--icon-size) + var(--s2a-spacing-md) * 2);
+    width: calc(var(--icon-size) + var(--s2a-spacing-md) * 2);
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -657,7 +658,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-container {
     contain: layout;
-    animation: carouselGapShrink ease-in-out both;
+    animation: carouselGapShrink var(--gap-shrink-timline) both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
   }
@@ -706,14 +707,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item:nth-child(1) {
     animation: carouselSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), contain 0% contain 28%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(2) {
     animation: carouselSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), contain 0% contain 28%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
@@ -730,14 +731,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item:nth-child(4) {
     animation: carouselSlideOffset4 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), contain 0% contain 28%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(5) {
     animation: carouselSlideOffset5 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 38%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), contain 0% contain 28%, var(--slide-animation-range);
     animation-fill-mode: forwards, none, forwards;
   }
 
@@ -750,7 +751,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer {
     bottom: 0;
-    transform: translateY(100%);
+    transform: translateY(var(--slide-footer-h));
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer * {
@@ -1425,7 +1426,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   35% {
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-spacing-sm)) 0;
+    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
     pointer-events: none;
   }
 
