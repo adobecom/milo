@@ -260,14 +260,12 @@ function applyTextOverrides(el, override, targetEl) {
 }
 
 const textOverridesConfig = isC2 ? ['heading-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
-const headingSizePattern = /^heading-(1|2|3|4|5|6|font|max|super)$/;
 
 export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
     .filter((elClass) => options.some((ovClass) => (
       isC2 ? elClass.startsWith(ovClass) : elClass.endsWith(ovClass)
-    )))
-    .filter((elClass) => (isC2 && elClass.startsWith('heading-') ? headingSizePattern.test(elClass) : true));
+    )));
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override, target);
