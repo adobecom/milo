@@ -2,6 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
 const STIFFNESS = 0.34;
 const ROTATE_LERP = 0.12;
 const INTRO_STEP = 0.045;
@@ -104,6 +105,21 @@ function addCursorFollower(list) {
 
   const activate = (item) => {
     if (item === activeItem) return;
+    if (REDUCED_MOTION.matches) {
+      if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+      activeItem = item;
+      const media = item.querySelector('.hover-list-media');
+      if (!media) return;
+      const pics = [...media.querySelectorAll('picture')];
+      pics.forEach((pic, i) => {
+        const c = layerConfig(i, pics.length);
+        renderLayer({
+          pic, config: c, x: cursor.x, y: cursor.y, intro: 1, exit: 0, rotate: 0,
+        });
+      });
+      if (!media.matches(':popover-open')) media.showPopover();
+      return;
+    }
     if (activeItem) {
       exitingGroups.push({ media: activeItem.querySelector('.hover-list-media'), layers: activeLayers });
     }
@@ -140,6 +156,12 @@ function addCursorFollower(list) {
 
   const deactivate = () => {
     if (!activeItem) return;
+    if (REDUCED_MOTION.matches) {
+      hideMedia(activeItem.querySelector('.hover-list-media'));
+      activeItem = null;
+      activeLayers = [];
+      return;
+    }
     exitingGroups.push({ media: activeItem.querySelector('.hover-list-media'), layers: activeLayers });
     activeItem = null;
     activeLayers = [];
