@@ -720,6 +720,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 
 export {
   checkUrl,
+  getBulkPublishLangAttr,
   getCardMetadata,
   getCaasProps,
   getConfig,
