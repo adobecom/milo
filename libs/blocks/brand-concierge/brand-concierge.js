@@ -525,7 +525,7 @@ function decorateCards(el, cards) {
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
-      'daa-ll': getAnalyticsLabel('1'),
+      'daa-ll': getAnalyticsLabel(`1|BC-suggested_prompt_clicked|inline|${cardText.textContent.trim()}`),
       'aria-label': cardText.textContent.trim(),
     });
     if (cardImage) {
