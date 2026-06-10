@@ -2,6 +2,7 @@ import { decorateBlockText } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
+import icons from '../../../c2/assets/icons.js';
 
 const leaveTimeouts = new WeakMap();
 let hoverTracked = false;
@@ -83,17 +84,17 @@ const handleMobileAutoplay = (carousel) => {
   return observers;
 };
 
-const disableHoverOnScroll = (carousel) => {
-  let timer;
-  const controller = new AbortController();
-  window.addEventListener('wheel', () => {
-    clearTimeout(timer);
-    carousel.classList.add('disable-hover');
-    timer = setTimeout(() => {
-      carousel.classList.remove('disable-hover');
-    }, 100);
-  }, { signal: controller.signal });
-  return controller;
+const scrollHubHeroTo = (el, progress) => {
+  // defer so native focus-scroll completes before we override it
+  setTimeout(() => {
+    const hubHero = el.closest('.hub-hero');
+    if (!hubHero) return;
+    const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+    if (totalScrollRange <= 0) return;
+    const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
+    const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
+    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
+  }, 0);
 };
 
 const onSlideLeave = (event) => {
@@ -121,7 +122,9 @@ const onCarouselLeave = (event) => {
 };
 
 const onHover = (event) => {
+  const isFocus = event.type === 'focus';
   const slideEl = event.target;
+  if (isFocus) scrollHubHeroTo(slideEl, 0.6);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -140,7 +143,7 @@ const onHover = (event) => {
   if (!container) return;
 
   removeHovered(slideEl.closest('.hub-hero-carousel'));
-  slideEl.classList.add('hovered');
+  slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
   container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
@@ -176,8 +179,6 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
 
   if (isSvgUrl(asset?.src)) asset.src = getFederatedUrl(asset.src);
 
-  // TODO: update to ensure classes are mapped to C2 variables
-  // TODO: see if eyebrow class can be applied directly to footer headline
   decorateBlockText(left);
 
   const content = `
@@ -190,7 +191,6 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
-       
       </div>
     </div>
   `;
@@ -256,9 +256,10 @@ const handleCarousel = (slds) => {
   const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
-  const scrollController = disableHoverOnScroll(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
   const mobileObservers = handleMobileAutoplay(decoratedCarousel);
+  const scrollController = new AbortController();
+  window.addEventListener('wheel', () => removeHovered(decoratedCarousel), { signal: scrollController.signal });
 
   new MutationObserver((_, observer) => {
     if (!document.contains(decoratedCarousel)) {
@@ -268,6 +269,26 @@ const handleCarousel = (slds) => {
     }
   }).observe(document.body, { childList: true, subtree: true });
   return decoratedCarousel;
+};
+
+const setCarouselSlideOffsets = (grid, carousel) => {
+  const hubHero = carousel.closest('.hub-hero');
+  if (!hubHero) return;
+  const cols = [...grid.querySelectorAll('.hub-hero-image-grid-container-col')];
+  const gridHeight = grid.offsetHeight;
+  // slide nth-child (1-based) → 0-based column index
+  const colMap = { 1: 0, 2: 1, 4: 3, 5: 4 };
+  Object.entries(colMap).forEach(([nthChild, colIdx]) => {
+    const col = cols[colIdx];
+    if (!col) return;
+    // measure actual content height (offsetHeight is stretched by flex, use children sum)
+    const colGap = parseFloat(getComputedStyle(col).rowGap) || 0;
+    const children = [...col.children].slice(0, 2);
+    const contentHeight = children.reduce((h, c) => h + c.offsetHeight, 0)
+      + colGap * (children.length);
+    const correction = contentHeight - gridHeight;
+    hubHero.style.setProperty(`--carousel-slide-${nthChild}-correction`, `${correction}px`);
+  });
 };
 
 const handleGridImages = (imageContainers, slides) => {
@@ -288,22 +309,49 @@ const handleGridImages = (imageContainers, slides) => {
   return container;
 };
 
+const decorateHubHeroCTA = (heroHeader) => {
+  const img = heroHeader?.querySelector('img');
+  const relativeSrc = img?.getAttribute('src');
+  if (relativeSrc?.startsWith('/')) {
+    img.src = getFederatedUrl(relativeSrc);
+  }
+  const linkEl = heroHeader.querySelector('a');
+  const href = linkEl?.href;
+  const sourceText = (linkEl ? linkEl.textContent : '').trim();
+  const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
+  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons?.arrowRightWhite);
+  const cta = createTag('a', { href, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
+  linkEl.parentElement.replaceChildren(cta);
+};
+
+const handleCarouselItemsOffsets = ({ grid, elasticCarousel }) => {
+  requestAnimationFrame(() => {
+    setCarouselSlideOffsets(grid, elasticCarousel);
+  });
+};
+
+const findSize = (classes, key) => classes.find((item) => item.match(key))?.split(key)?.[1];
+
 export default async function init(el) {
-  const hero = el.querySelector('div:first-child');
-  hero.classList.add('hub-hero-header');
-  decorateBlockText(hero);
+  const heroHeader = el.querySelector('div:first-child');
+  const classes = [...el.classList];
 
+  decorateBlockText(heroHeader, {
+    heading: findSize(classes, 'heading-') ?? '1',
+    body: findSize(classes, 'body-') ?? 'l',
+    button: findSize(classes, 'button-') ?? 'l',
+  });
+  heroHeader.classList.add('hub-hero-header');
+  decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
+  heroHeader.querySelector('.promo-cta')?.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
   carouselHeader.classList.add('hub-hero-carousel-header');
-  decorateBlockText(carouselHeader);
-
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
   const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
-
   const grid = handleGridImages(gridImages, carouselImages);
   const elasticCarousel = handleCarousel(carouselImages);
   elasticCarousel.prepend(carouselHeader);
   el.replaceChildren();
-
-  el.append(hero, grid, elasticCarousel);
+  el.append(heroHeader, grid, elasticCarousel);
+  handleCarouselItemsOffsets({ heroHeader, grid, elasticCarousel, el });
 }
