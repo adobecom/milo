@@ -578,10 +578,10 @@ export function initBulkPublisherLingoMapping() {
 }
 
 /**
- * Returns true only when the path's locale is actively known to require Language First Localization
- * for the given origin — i.e., it appears in the lingo mapping AND is NOT an English regional site.
- * Returns false for English regional sites (gb, au, in, jp, kr) and for locales absent from the
- * mapping entirely (e.g. a news-URL locale processed under the bacom preset).
+ * Returns true when the path's locale is known to require Language First Localization,
+ * false when it is known NOT to (e.g. English regional sites like gb, au, in, jp, kr),
+ * and null when the origin is not present in the lingo-site-mapping at all — meaning the
+ * data stream has not been onboarded yet and the caller should fall back to its manual setting.
  */
 export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
   try {
@@ -592,7 +592,7 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
     const matched = siteQueryIndexMap.find(
       ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
     );
-    if (!matched) return false;
+    if (!matched) return null;
 
     const { uniqueSiteId } = matched;
 

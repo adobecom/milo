@@ -10,6 +10,7 @@ import {
   getCardMetadata,
   getCaasProps,
   getFloodgateColorFromHost,
+  LANG_FIRST_SOURCE_MAPPINGS,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
@@ -39,7 +40,7 @@ STATUS_EL.addEventListener('click', (e) => {
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst'];
+const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst', 'autoDetectLingo'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -57,6 +58,7 @@ const DEFAULT_VALUES_CB = {
   usePreview: false,
   useHtml: false,
   languageFirst: false,
+  autoDetectLingo: false,
 };
 
 // Hold the selected preset data
@@ -203,6 +205,7 @@ const processData = async (data, accessToken) => {
     previewHost,
     publishToFloodgate,
     languageFirst,
+    autoDetectLingo,
   } = getConfig();
 
   if (!repo) {
@@ -250,6 +253,7 @@ const processData = async (data, accessToken) => {
         repo,
         floodgatecolor: floodgateColor,
         languageFirst,
+        autoDetectLingo,
       });
 
       if (errors.length) {
@@ -280,10 +284,17 @@ const processData = async (data, accessToken) => {
 
       const langValue = `${caasMetadata.lang}_${caasMetadata.country}`;
       const repoLower = repo?.toLowerCase();
+      const originLower = LANG_FIRST_SOURCE_MAPPINGS[repoLower] || repoLower;
       // eslint-disable-next-line no-await-in-loop
-      const actualLangFirst = repoLower === 'bacom'
-        ? await isLingoLangFirstPath(repoLower, prodUrl, 'bulkpublisher')
-        : languageFirst;
+      // news operates separately from the lingo mapping and always uses the manual checkbox.
+      // auto-detect on (non-news): mapping wins; origin not in mapping → non-LFL
+      // auto-detect off or news: use manual languageFirst checkbox
+      const lflDetected = autoDetectLingo && originLower !== 'news'
+        ? await isLingoLangFirstPath(originLower, prodUrl, 'bulkpublisher')
+        : null;
+      const actualLangFirst = !autoDetectLingo || originLower === 'news'
+        ? languageFirst
+        : (lflDetected ?? false);
 
       if (dryRun) {
         dryRunPayloads.set(caasMetadata.entityid, caasProps);
@@ -404,6 +415,7 @@ const resetAdvancedOptions = () => {
   useHtml.checked = false;
   usePreview.checked = false;
   languageFirst.checked = false;
+  autoDetectLingo.checked = false;
   publishToFloodgate.value = 'default';
   /* eslint-enable no-undef */
 };
@@ -463,9 +475,8 @@ presetSelector.addEventListener('change', () => {
   checkCaasEnv();
 
   const langFirstEl = document.getElementById('language-first');
-  const isLingoAutoRepo = config.repo?.toLowerCase() === 'bacom';
-  langFirstEl.classList.toggle('lingo-auto', isLingoAutoRepo);
-  document.getElementById('languageFirst').disabled = isLingoAutoRepo;
+  const autoDetectLingoEl = document.getElementById('autoDetectLingo');
+  langFirstEl.classList.toggle('lingo-auto', autoDetectLingoEl.checked);
 });
 
 const clearResultsButton = document.querySelector('.clear-results');
@@ -538,6 +549,10 @@ draftOnly.addEventListener('change', () => {
 // eslint-disable-next-line no-undef
 dryRun.addEventListener('change', () => {
   checkCaasEnv();
+});
+
+document.getElementById('autoDetectLingo').addEventListener('change', (e) => {
+  document.getElementById('language-first').classList.toggle('lingo-auto', e.target.checked);
 });
 
 const checkUserStatus = async () => {
@@ -632,6 +647,15 @@ helpButtons.forEach((btn) => {
           </p>
           <p>This can be useful for testing before publishing content to production.</p>`);
         break;
+      case 'auto-detect-lingo':
+        showAlert(`<p><b>Auto-detect Lingo</b></p>
+          <p>When checked, the tool queries the <b>lingo-site-mapping</b> to automatically determine
+          whether each URL should use Language First Localization — no manual configuration needed.</p>
+          <p>Origins confirmed in the mapping use the mapping result. Origins <b>not</b> in the
+          mapping are treated as non-LFL.</p>
+          <p><tt>news</tt> is not affected by this setting and always uses the <b>Language First</b> checkbox.</p>
+          <p>When unchecked, the <b>Language First</b> checkbox in Advanced Options is used for all URLs.</p>`);
+        break;
       case 'language-first':
         showAlert(`<p><b>Language First</b></p>
           <p>When this option is checked, the tool will publish the content using language-first localization:</p>
@@ -698,6 +722,7 @@ const init = async () => {
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
       languageFirst: document.getElementById('languageFirst').checked,
+      autoDetectLingo: document.getElementById('autoDetectLingo').checked,
     });
     bulkPublish();
   });
