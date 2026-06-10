@@ -474,6 +474,10 @@
 }
 
 /* dark  / c2-dark */
+.brand-concierge.dark.has-bg-image {
+  background-color:#000;
+}
+
 .dark .bc-header-title,
 .dark .bc-header-subtitle,
 .c2-dark .bc-header-title,
