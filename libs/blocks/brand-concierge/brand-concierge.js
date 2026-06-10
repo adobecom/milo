@@ -627,6 +627,26 @@ function decorateFloatingButton(el) {
   floatingElement(floatingButton, el, floatingContainer);
 }
 
+function updatePillVisibility(el) {
+  const cards = el.querySelector('.bc-prompt-cards');
+  if (!cards) return;
+
+  const buttons = [...cards.querySelectorAll('.prompt-card-button')];
+  buttons.forEach((btn) => { btn.style.display = ''; });
+
+  requestAnimationFrame(() => {
+    const { left: containerLeft, right: containerRight } = cards.getBoundingClientRect();
+
+    buttons.forEach((btn) => {
+      const { left, right } = btn.getBoundingClientRect();
+
+      if (right > containerRight || left < containerLeft) {
+        btn.style.display = 'none';
+      }
+    });
+  });
+}
+
 function handleConsent(el) {
   if (!window.adobePrivacy) return;
   const cookieGrp = window.adobePrivacy.activeCookieGroups();
@@ -651,7 +671,8 @@ export default async function init(el) {
 
   // set variant
   if (!el.classList.contains('hero')
-  && !el.classList.contains('floating-button-only')) {
+  && !el.classList.contains('floating-button-only')
+  && !el.classList.contains('floating-input')) {
     el.classList.add('inline');
     variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
@@ -681,6 +702,10 @@ export default async function init(el) {
       variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
     }
   });
+
+  if (el.classList.contains('floating-input')) {
+    variants.isFloatingInput = true;
+  }
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
@@ -713,6 +738,44 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isFloatingInput) {
+    const [background, header, cards, input, legal] = rows;
+    el.removeChild(background);
+    el.removeChild(header);
+    el.removeChild(legal);
+    decorateInput(el, input);
+    decorateCards(el, cards);
+
+    const mainEl = document.querySelector('main');
+    const updateLayout = () => {
+      if (mainEl) mainEl.style.paddingBottom = `${el.offsetHeight + 16}px`;
+      updatePillVisibility(el);
+    };
+
+    // Need to move handleScroll outside of floating element, and add this functionality
+    const main = document.querySelector('main');
+    let scrollPendingFloatingInput = false;
+
+    window.addEventListener('scroll', () => {
+      if (scrollPendingFloatingInput) return;
+      scrollPendingFloatingInput = true;
+      requestAnimationFrame(() => {
+        if (main) {
+          const threshold = window.scrollY + window.innerHeight - main.offsetTop;
+          const paddingMiddle = (parseFloat(mainEl.style.paddingBottom) - el.offsetHeight) / 2;
+
+          el.style.bottom = threshold > main.scrollHeight
+            ? `${threshold - main.scrollHeight + paddingMiddle}px`
+            : '';
+        }
+        scrollPendingFloatingInput = false;
+      });
+    }, { passive: true });
+
+    window.addEventListener('resize', updateLayout);
+    requestAnimationFrame(updateLayout);
   }
 
   const loginTestButton = params.get('susi-test-btn');

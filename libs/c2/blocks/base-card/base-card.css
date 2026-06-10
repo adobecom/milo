@@ -60,7 +60,7 @@
       text-decoration: none;
       display: inline-block;
       margin-top: var(--s2a-spacing-md);
-      margin-inline-end: var(--s2a-spacing-12);
+      margin-inline-end: var(--s2a-spacing-sm);
       margin-bottom: var(--s2a-spacing-2xs);
 
       &::before {
@@ -96,7 +96,7 @@
 @media (width < 768px) {
   div.section.base-card-section {
     grid-template-columns: 1fr;
-    gap: var(--s2a-spacing-40);
+    gap: var(--s2a-spacing-2xl);
   }
 }
 
@@ -104,7 +104,7 @@
   .base-card {
     &.featured {
       .foreground {
-        padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+        padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-2xl) var(--s2a-spacing-md);
       }
     }
   }
@@ -157,7 +157,7 @@
 @media (width >= 1280px) {
   .base-card {
     &.featured .foreground {
-      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-64) var(--s2a-spacing-md);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-4xl) var(--s2a-spacing-md);
     }
 
     .foreground {
