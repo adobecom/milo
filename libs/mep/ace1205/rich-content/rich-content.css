@@ -515,7 +515,7 @@
   --rc-pull-offset: 80px;
   --rc-sweep-offset: 200px;
   --rc-sweep-peek: var(--s2a-border-radius-lg);
-  --rc-video-enter-scale: 0.94;
+  --rc-video-enter-scale: 1.15;
   --rc-video-enter-y: 30px;
 }
 
@@ -523,7 +523,6 @@
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
-    --rc-video-enter-scale: 1.15;
     --rc-video-enter-y: 15vh;
   }
 }
