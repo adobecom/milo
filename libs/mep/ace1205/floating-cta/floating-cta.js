@@ -94,5 +94,6 @@ export default async function init(el) {
 
   const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel, tabindex: '-1' }, [img, ctaText, arrow]);
   el.replaceChildren(cta);
+  
   setupVisibilityObserver(el, cta);
 }
