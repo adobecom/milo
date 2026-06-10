@@ -1,5 +1,11 @@
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
+  overflow: visible;
+
+  > .section-background {
+    overflow: clip;
+    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+  }
 }
 
 .offer-hero {
@@ -268,7 +274,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
-      margin-top: 237px;
+      margin-top: 177px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;

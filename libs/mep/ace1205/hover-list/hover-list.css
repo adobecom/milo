@@ -17,13 +17,12 @@
 }
 
 .hover-list-item {
-  align-items: center;
   border-block-start: 1px solid var(--s2a-color-transparent-white-32);
   color: var(--s2a-color-content-knockout);
   display: flex;
   gap: var(--s2a-spacing-md);
   padding-block: var(--s2a-spacing-xl);
-  transition: background 0.2s ease;
+  transition: background 0.3s ease;
 
   &:first-child {
     border-block-start: none;
@@ -33,14 +32,20 @@
     border-block-end: 1px solid var(--s2a-color-transparent-white-32);
   }
 
-  &:hover {
-    background: var(--s2a-color-transparent-white-08);
-  }
+}
+
+.hover-list-copy {
+  align-items: flex-start;
+  display: flex;
+  flex: 1;
 }
 
 .hover-list-number {
+  align-items: center;
   color: var(--s2a-color-content-knockout);
+  display: flex;
   flex-shrink: 0;
+  inline-size: var(--s2a-spacing-24);
 }
 
 .hover-list-text {
@@ -50,6 +55,7 @@
 }
 
 .hover-list-media {
+  align-self: flex-start;
   block-size: 81px;
   border-radius: var(--s2a-border-radius-sm);
   flex-shrink: 0;
@@ -72,8 +78,12 @@
     padding-block: var(--s2a-layout-sm);
   }
 
-  .hover-list-headline {
+  .hover-list-headline-wrapper {
+    align-self: start;
     flex: 1;
+  }
+
+  .hover-list-headline {
     padding-block: var(--s2a-spacing-sm);
   }
 
@@ -95,13 +105,21 @@
   }
 
   .hover-list-number {
-    min-inline-size: var(--s2a-spacing-24);
+    block-size: var(--s2a-spacing-20);
+    padding-inline-start: var(--s2a-spacing-xs);
   }
 
   .hover-list-media {
     aspect-ratio: 1;
     block-size: auto;
     flex: 0 0 25%;
+  }
+}
+
+@media (768px <= width < 1280px) {
+  .hover-list-headline {
+    position: sticky;
+    top: 180px;
   }
 }
 
@@ -123,14 +141,24 @@
   }
 
   .hover-list-item {
+    align-items: center;
     block-size: 100px;
     cursor: pointer;
     gap: var(--s2a-spacing-md);
-    padding-inline: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+    padding-block: 0;
+
+    @media (hover: hover) {
+      &:hover {
+        background: var(--s2a-color-transparent-white-08);
+      }
+    }
   }
 
   .hover-list-number {
-    min-inline-size: var(--s2a-spacing-40);
+    block-size: var(--s2a-spacing-24);
+    inline-size: var(--s2a-spacing-64);
+    justify-content: center;
+    padding-inline-start: 0;
   }
 
   .hover-list-media {
@@ -153,10 +181,10 @@
     inset: auto;
     left: 0;
     overflow: hidden;
+    pointer-events: none;
     position: absolute;
     top: 0;
     transform-origin: 50% 100%;
-    transition: transform 0.75s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.42s ease-out;
     will-change: transform, opacity;
   }
 }

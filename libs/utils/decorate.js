@@ -650,7 +650,7 @@ function isEmptyCell(el) {
 }
 
 function cloneChildren(source) {
-  return [...source.children].map((child) => child.cloneNode(true));
+  return [...source.childNodes].map((child) => child.cloneNode(true));
 }
 
 function parseVariants(text) {

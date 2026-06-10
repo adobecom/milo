@@ -18,7 +18,7 @@ const STACK_REF_MOBILE = [
   { dx: 160, dy: 120, w: 367, h: 400, rot: 3 },
 ];
 const PILE_X_OFFSET_MOBILE = 54;
-const PILE_GAP_DESKTOP = 124;
+const PILE_GAP_DESKTOP = 84;
 const PILE_GAP_MOBILE = 80;
 const CARD_SHADOWS = [
   null,
