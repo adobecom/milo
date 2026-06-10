@@ -15,7 +15,7 @@ import {
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId, initBulkPublisherLingoMapping } from '../../libs/blocks/caas/utils.js';
+import { getGrayboxExperienceId, initBulkPublisherLingoMapping, isLingoLangFirstPath } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -279,10 +279,15 @@ const processData = async (data, accessToken) => {
       }
 
       const langValue = `${caasMetadata.lang}_${caasMetadata.country}`;
+      const repoLower = repo?.toLowerCase();
+      // eslint-disable-next-line no-await-in-loop
+      const actualLangFirst = repoLower === 'bacom'
+        ? await isLingoLangFirstPath(repoLower, prodUrl, 'bulkpublisher')
+        : languageFirst;
 
       if (dryRun) {
         dryRunPayloads.set(caasMetadata.entityid, caasProps);
-        successArr.push([pageUrl, caasMetadata.entityid, languageFirst, langValue]);
+        successArr.push([pageUrl, caasMetadata.entityid, actualLangFirst, langValue]);
         continue;
       }
 
@@ -294,7 +299,7 @@ const processData = async (data, accessToken) => {
       });
 
       if (response.success) {
-        successArr.push([pageUrl, caasMetadata.entityid, languageFirst, langValue]);
+        successArr.push([pageUrl, caasMetadata.entityid, actualLangFirst, langValue]);
       } else {
         errorArr.push([pageUrl, response]);
       }
