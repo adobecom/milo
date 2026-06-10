@@ -1,6 +1,4 @@
-/* eslint-disable */
-/* Authoring layer: parses the block rows + fetches the card fragment.
-   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
+/* Authoring layer: parses the block rows + fetches the card fragment. */
 
 // ── Authoring ────────────────────────────────────────────────────────────────
 // Adobe app catalog used to render the modal badge chips (the id drives the
@@ -72,19 +70,19 @@ function parseFragmentCardSegment(nodes) {
   let role = 'Photographer'; let name = ''; let description = '';
   const badges = [];
 
-  for (const node of nodes) {
+  nodes.forEach((node) => {
     const tag = node.nodeName && node.nodeName.toUpperCase();
-    if (!tag) continue;
+    if (!tag) return;
 
     if (tag === 'P') {
       const pic = node.querySelector('picture');
-      if (pic) { picture = pic; img = pic.querySelector('img'); continue; }
-      const i = node.querySelector('img');
-      if (i) { img = i; continue; }
+      if (pic) { picture = pic; img = pic.querySelector('img'); return; }
+      const inlineImg = node.querySelector('img');
+      if (inlineImg) { img = inlineImg; return; }
       const em = node.querySelector('em');
-      if (em) { role = em.textContent.trim(); continue; }
+      if (em) { role = em.textContent.trim(); return; }
       const strong = node.querySelector('strong');
-      if (strong) { name = strong.textContent.trim(); continue; }
+      if (strong) { name = strong.textContent.trim(); return; }
       const text = node.textContent.trim();
       if (text && !description) description = text;
     } else if (tag === 'UL') {
@@ -104,7 +102,7 @@ function parseFragmentCardSegment(nodes) {
         }
       });
     }
-  }
+  });
 
   if (!img) return null;
   return {

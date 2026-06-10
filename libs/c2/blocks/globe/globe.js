@@ -1,6 +1,3 @@
-/* eslint-disable */
-/* lint disabled — ES5 style from the ported prototype, to be cleaned up
-   (no-var, naming, max-len, etc.) during the refactor pass. See PROGRESS.md. */
 /* ─────────────────────────────────────────────────────────────────────────
    Offer Globe — Three.js WebGL scrolled hero.
 
@@ -12,8 +9,8 @@
    ───────────────────────────────────────────────────────────────────────── */
 import * as THREE from './three.module.min.js';
 import { parseAuthoredContent, fetchFragmentCards } from './authoring.js';
-import { buildGlobeDom } from './markup.js';
-import { CARD_VERT, CARD_FRAG, _MODAL_VERT, _MODAL_FRAG } from './shaders.js';
+import buildGlobeDom from './markup.js';
+import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG } from './shaders.js';
 // ════════════════════════════════════════════════════════════════════════════
 // Tuning constants + pure helpers (module scope — pure, no per-instance state).
 // Grouped by concern; the render loop in createGlobeRuntime() reads them directly.
@@ -117,8 +114,10 @@ const ENTRY_RAMP_VH = 1.05;
 
 // ── Grid peel / fold ─────────────────────────────────────────────────────────
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width (computed per layout)
-const GRID_PEEL_STAGGER = 0.20; // arc→grid: stagger peels across 20% of formation phase (more simultaneous)
-const ARC_PEEL_JITTER = 0.40; // per-card random offset added to gpDelay — breaks the linear cascade for an organic feel
+// arc→grid: stagger peels across 20% of formation phase (more simultaneous)
+const GRID_PEEL_STAGGER = 0.20;
+// per-card random offset added to gpDelay — breaks the linear cascade for an organic feel
+const ARC_PEEL_JITTER = 0.40;
 // Non-uniform fanT distribution along the arc:
 //   Cards [0, ARC_DENSE_COUNT-1] cluster tight into fanT [0, ARC_DENSE_SPLIT] (off-screen flank).
 //   Cards [ARC_DENSE_COUNT, N-1] spread across fanT [ARC_DENSE_SPLIT, 1] (the visible upper arc).
@@ -166,18 +165,13 @@ const SPHERE_DRAG_WARP_MAX = 0.25; // cap on combined value
 // ── Easing ───────────────────────────────────────────────────────────────────
 function easeOutCubic(t) { return 1 - (1 - t) ** 3; }
 function easeInOutCubic(t) { return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2; }
-function easeOutSine(t) { return Math.sin(t * Math.PI / 2); }
+function easeOutSine(t) { return Math.sin((t * Math.PI) / 2); }
 
 function lerpN(a, b, t) { return a + (b - a) * t; }
-function lerpV3(out, a, b, t) {
-  out.x = lerpN(a.x, b.x, t);
-  out.y = lerpN(a.y, b.y, t);
-  out.z = lerpN(a.z, b.z, t);
-}
 
 // ── Fibonacci sphere distribution ────────────────────────────────────────────
 function fibSpherePos(i, total, radius) {
-  const phi = Math.acos(1 - 2 * (i + 0.5) / total);
+  const phi = Math.acos(1 - (2 * (i + 0.5)) / total);
   const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
   return new THREE.Vector3(
     radius * Math.sin(phi) * Math.cos(theta),
@@ -186,17 +180,17 @@ function fibSpherePos(i, total, radius) {
   );
 }
 
-
 // The globe runtime. Originally an IIFE exposing window.offerGlobe in the
 // hub-creative prototype; now a factory returning { init, destroy }.
 // Key changes from the prototype: gsap.ticker → requestAnimationFrame,
 // Lenis reads → window.scrollY.
 function createGlobeRuntime(authoredCards) {
   // rAF driver replacing gsap.ticker.
-  let _rafId = 0;
-  function _rafLoop() { tick(); _rafId = requestAnimationFrame(_rafLoop); }
-  function startTicker() { if (!_rafId) _rafId = requestAnimationFrame(_rafLoop); }
-  function stopTicker() { if (_rafId) { cancelAnimationFrame(_rafId); _rafId = 0; } }
+  let rafId = 0;
+  // eslint-disable-next-line no-use-before-define -- tick() runs only via rAF, after init
+  function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
+  function startTicker() { if (!rafId) rafId = requestAnimationFrame(rafLoop); }
+  function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
 
   // The card content the runtime renders. authoredCards is always present (from the fragment).
   const CARD_CONTENT = authoredCards || [];
@@ -212,7 +206,8 @@ function createGlobeRuntime(authoredCards) {
   // ── Per-BP values — declared here, assigned by applyBP() before buildCards() runs ──
   // Do NOT read these at module load time; their values are only valid after init().
   let N_TOTAL; let N_VISIBLE; let ARC_SPAN; let SPHERE_R; let CARD_H_SPHERE; let CARD_W_SPHERE;
-  let CARD_W_ARC; let CAM_Z_SPHERE; let CAM_Z_END; let FOLD_SPHERE_DIST; let GRID_COLS; let GRID_ROWS;
+  let CARD_W_ARC; let CAM_Z_SPHERE; let CAM_Z_END;
+  let FOLD_SPHERE_DIST; let GRID_COLS; let GRID_ROWS;
   let ARC_DENSE_COUNT;
   let currentBPName = null;
 
@@ -233,15 +228,16 @@ function createGlobeRuntime(authoredCards) {
     ARC_DENSE_COUNT = cfg.ARC_DENSE_COUNT;
   }
 
-
   // ── State ──────────────────────────────────────────────────────────────────
   let renderer; let scene; let camera; let cameraOrtho; let
     sphereGroup;
   let modalRenderer; let modalScene; let
     modalCanvasEl; // separate canvas/scene for the flown-out modal card
-  let cards = []; // { mesh, spherePos, sphereQuat, gridPos, gridScale, gridTilt, gridQuat, gridCol, gridRow }
+  // { mesh, spherePos, sphereQuat, gridPos, gridScale, gridTilt, gridQuat, gridCol, gridRow }
+  let cards = [];
   let textures = [];
-  const cardTexData = []; // per-card: sphereScaleX, arc UV crop values — populated in done(), read in buildCards()
+  // per-card: sphereScaleX, arc UV crop values — populated in done(), read in buildCards()
+  const cardTexData = [];
   let gridCardW = 0; let
     gridTilts = [];
 
@@ -267,16 +263,16 @@ function createGlobeRuntime(authoredCards) {
   let isDragging = false; let lastMX = 0; let
     lastMY = 0;
   let tickerAdded = false;
-  let _sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
+  let sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
 
   // Per-card sphere-rotation state (THREE objects). The sphere drag rotation is applied
   // MANUALLY to each card in the sphere/fold blocks of tick() — sphereGroup.rotation is
   // kept at identity so cards in non-sphere phases (arc/grid) aren't transformed by stale
   // drag rotation. Lazy-initialized in setupModal() where THREE is loaded.
-  let _sphereRotEuler = null;
-  let _sphereRotQuat = null;
-  let _foldRotQuat = null;
-  let _tmpVec3 = null;
+  let sphereRotEuler = null;
+  let sphereRotQuat = null;
+  let foldRotQuat = null;
+  let tmpVec3 = null;
 
   // Modal-nav "reactivity nudge": when user navigates prev/next within the modal,
   // drive a spring on sphereRotY/X toward a target derived from the new card's slot
@@ -284,11 +280,11 @@ function createGlobeRuntime(authoredCards) {
   // Magnitude scales with angular distance to the new card's actual position, so a
   // close neighbor gives a small nudge and a back-of-sphere card gives a bigger one
   // (capped). Slight overshoot + decay for a "bouncy" feel.
-  let _navNudgeActive = false;
-  let _navNudgeTargetY = 0;
-  let _navNudgeTargetX = 0;
-  let _navNudgeVelY = 0;
-  let _navNudgeVelX = 0;
+  let navNudgeActive = false;
+  let navNudgeTargetY = 0;
+  let navNudgeTargetX = 0;
+  let navNudgeVelY = 0;
+  let navNudgeVelX = 0;
   const NAV_NUDGE_FACTOR = 0.25; // 25% of full alignment angle — gentler
   const NAV_NUDGE_MAX_Y = 0.45; // ~26° cap so distant cards don't cause big swings
   const NAV_NUDGE_MAX_X = 0.18; // ~10° cap (X is already clamped to ±π/3 elsewhere)
@@ -300,10 +296,10 @@ function createGlobeRuntime(authoredCards) {
   // arrow triggers a cross-warp transition: the old card stays put and warps,
   // while the new card cross-dissolves in on top — also warped. Both cards'
   // uWarp uniforms follow a sin bell curve peaking mid-transition.
-  let _dnNavActive = false;
-  let _dnNavT0 = 0;
-  let _dnNavOldCard = null;
-  let _dnNavNewCard = null;
+  let dnNavActive = false;
+  let dnNavT0 = 0;
+  let dnNavOldCard = null;
+  let dnNavNewCard = null;
   const DN_NAV_DUR = 500; // ms
   const DN_NAV_WARP = 0.40; // peak warp (matches Pronounced option)
 
@@ -328,7 +324,7 @@ function createGlobeRuntime(authoredCards) {
   let modalEl = null;
   let raycaster = null;
   let mouseNDC = null;
-  let _chromeProjV = null; // reusable Vector3 for chrome positioning projection
+  let chromeProjV = null; // reusable Vector3 for chrome positioning projection
 
   // Chrome reveal — elements fade + slide in after card is 90% settled.
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
@@ -336,8 +332,7 @@ function createGlobeRuntime(authoredCards) {
   const CHROME_REVEAL_DUR = 300; // ms for chrome fade-in after trigger
 
   // Current arc context (computed once per frame)
-  let _ctx = null;
-
+  let arcCtx = null;
 
   // ── Arc math ─────────────────────────────────────────────────────────────────
   function arcRotationEase(t) {
@@ -357,7 +352,7 @@ function createGlobeRuntime(authoredCards) {
     const thetaM = Math.atan2(-Math.cos(alpha), Math.sin(alpha));
     const rotOffset = ARC_SPAN * 0.5 - ARC_SPAN * 1.5 * arcRot0;
     const effectiveSpan = ARC_SPAN * (1 + 0.4 * arcRot0);
-    _ctx = {
+    arcCtx = {
       R,
       fanCX,
       fanCY,
@@ -369,11 +364,11 @@ function createGlobeRuntime(authoredCards) {
 
   // t = 0..1 normalized position across the arc span (0 = one end, 1 = other end)
   function getFanData(t) {
-    const angle = _ctx.thetaM + _ctx.effectiveSpan / 2
-              - t * _ctx.effectiveSpan
-              + _ctx.rotOffset;
-    const px = _ctx.fanCX + _ctx.R * Math.cos(angle);
-    const py = _ctx.fanCY + _ctx.R * Math.sin(angle);
+    const angle = arcCtx.thetaM + arcCtx.effectiveSpan / 2
+              - t * arcCtx.effectiveSpan
+              + arcCtx.rotOffset;
+    const px = arcCtx.fanCX + arcCtx.R * Math.cos(angle);
+    const py = arcCtx.fanCY + arcCtx.R * Math.sin(angle);
     // Radial direction (CSS screen space, Y-down)
     const rx = Math.cos(angle);
     const ry = Math.sin(angle);
@@ -391,12 +386,12 @@ function createGlobeRuntime(authoredCards) {
   // Rotate a point (in CSS screen space) around (fanCX, fanCY) by angle A (CW in CSS)
   // then convert to world space.
   function rotateArcPoint(px, py, A) {
-    const dx = px - _ctx.fanCX;
-    const dy = py - _ctx.fanCY;
+    const dx = px - arcCtx.fanCX;
+    const dy = py - arcCtx.fanCY;
     const cosA = Math.cos(A); const
       sinA = Math.sin(A);
-    const rpx = _ctx.fanCX + dx * cosA - dy * sinA;
-    const rpy = _ctx.fanCY + dx * sinA + dy * cosA;
+    const rpx = arcCtx.fanCX + dx * cosA - dy * sinA;
+    const rpy = arcCtx.fanCY + dx * sinA + dy * cosA;
     return cssToWorld(rpx, rpy);
   }
 
@@ -442,28 +437,28 @@ function createGlobeRuntime(authoredCards) {
   }
 
   // Cache keyed by Math.round(aspect * 100) so e.g. 0.72 and 1.78 get distinct entries.
-  const _sphereMaskCache = {};
+  const sphereMaskCache = {};
 
   function createRoundedMaskForAspect(aspect) {
     // Canvas whose W:H matches the card's world-space shape after non-uniform scale.
     // Corner radius r is 22/631 of canvas height — same physical proportion as arc mask.
-    const H_c = 512;
-    const W_c = Math.max(1, Math.round(H_c * aspect));
-    const r = Math.round(H_c * (22 / 631));
+    const canvasH = 512;
+    const canvasW = Math.max(1, Math.round(canvasH * aspect));
+    const r = Math.round(canvasH * (22 / 631));
     const c = document.createElement('canvas');
-    c.width = W_c; c.height = H_c;
+    c.width = canvasW; c.height = canvasH;
     const ctx = c.getContext('2d');
     ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, W_c, H_c);
+    ctx.fillRect(0, 0, canvasW, canvasH);
     ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.moveTo(r, 0);
-    ctx.lineTo(W_c - r, 0);
-    ctx.arcTo(W_c, 0, W_c, r, r);
-    ctx.lineTo(W_c, H_c - r);
-    ctx.arcTo(W_c, H_c, W_c - r, H_c, r);
-    ctx.lineTo(r, H_c);
-    ctx.arcTo(0, H_c, 0, H_c - r, r);
+    ctx.lineTo(canvasW - r, 0);
+    ctx.arcTo(canvasW, 0, canvasW, r, r);
+    ctx.lineTo(canvasW, canvasH - r);
+    ctx.arcTo(canvasW, canvasH, canvasW - r, canvasH, r);
+    ctx.lineTo(r, canvasH);
+    ctx.arcTo(0, canvasH, 0, canvasH - r, r);
     ctx.lineTo(0, r);
     ctx.arcTo(0, 0, r, 0, r);
     ctx.closePath();
@@ -481,12 +476,11 @@ function createGlobeRuntime(authoredCards) {
     // aspect = world-space width/height of the sphere card after scale(sphereScaleX, 1, 1)
     const aspect = sphereScaleX * CARD_ASPECT;
     const key = Math.round(aspect * 100);
-    if (!_sphereMaskCache[key]) {
-      _sphereMaskCache[key] = createRoundedMaskForAspect(aspect);
+    if (!sphereMaskCache[key]) {
+      sphereMaskCache[key] = createRoundedMaskForAspect(aspect);
     }
-    return _sphereMaskCache[key];
+    return sphereMaskCache[key];
   }
-
 
   function createModalShaderMaterial(texture, sphereScaleX) {
     return new THREE.ShaderMaterial({
@@ -499,8 +493,8 @@ function createGlobeRuntime(authoredCards) {
         uWarp: { value: 0 },
         uWarpCenter: { value: new THREE.Vector2(0.5, 0.5) },
       },
-      vertexShader: _MODAL_VERT,
-      fragmentShader: _MODAL_FRAG,
+      vertexShader: MODAL_VERT,
+      fragmentShader: MODAL_FRAG,
       transparent: true,
       depthTest: true,
       depthWrite: false,
@@ -510,19 +504,19 @@ function createGlobeRuntime(authoredCards) {
   }
 
   function getModalMaterial(card) {
-    if (!card._modalMat) {
-      card._modalMat = createModalShaderMaterial(card.mesh.material.map, card.sphereScaleX);
+    if (!card.modalMat) {
+      card.modalMat = createModalShaderMaterial(card.mesh.material.map, card.sphereScaleX);
     }
-    return card._modalMat;
+    return card.modalMat;
   }
 
   // Reset the modal SDF material's animated uniforms to clean defaults.
-  // The SDF material is cached per-card (card._modalMat), so a card that was
+  // The SDF material is cached per-card (card.modalMat), so a card that was
   // mid-fade during an interrupted nav (uOpacity stuck at e.g. 0.4) would
   // inherit that stale value the next time it's shown in the modal — making
   // the image render dark and ghosted. Call this whenever the SDF material
   // is (re)assigned to a card or whenever a card leaves the modal flow.
-  function _resetModalMaterialUniforms(material, opacity) {
+  function resetModalMaterialUniforms(material, opacity) {
     const u = material && material.uniforms;
     if (!u) return;
     if (u.uOpacity) u.uOpacity.value = (typeof opacity === 'number' ? opacity : 1);
@@ -531,8 +525,6 @@ function createGlobeRuntime(authoredCards) {
     // uWarpCenter is intentionally NOT reset here — callers set it (open: from
     // click origin, nav: 0.5/0.5) right after this.
   }
-
-
 
   // ── Camera Z for arc phase ──────────────────────────────────────────────────
   // Set camera Z so that at z=0 frustum height = H, making 1 world unit = 1 CSS pixel
@@ -557,7 +549,7 @@ function createGlobeRuntime(authoredCards) {
     const totalH = GRID_ROWS * gridCardH + (GRID_ROWS - 1) * gridGap;
     // Column-major layout: i=0 → col 8 row 4 (lower-right), then sweeps bottom-to-top
     // within each column, moving right-to-left. Adjacent arc cards land in the same column.
-    for (let i = 0; i < cards.length; i++) {
+    for (let i = 0; i < cards.length; i += 1) {
       const col = GRID_COLS - 1 - Math.floor(i / GRID_ROWS);
       const row = GRID_ROWS - 1 - (i % GRID_ROWS);
       const gx = -totalW / 2 + col * (gridCardW + gridGap) + gridCardW / 2;
@@ -596,7 +588,7 @@ function createGlobeRuntime(authoredCards) {
 
     function done(i, tex) {
       tex.colorSpace = THREE.SRGBColorSpace;
-      // Cover-fit: crop the texture so its native aspect isn't stretched to the portrait card plane.
+      // Cover-fit: crop the texture so its native aspect isn't stretched to the card plane.
       // Source images vary (square-ish to portrait); the plane is fixed at 456:631 ≈ 0.722.
       const imgW = (tex.image && tex.image.width) || 1;
       const imgH = (tex.image && tex.image.height) || 1;
@@ -622,13 +614,13 @@ function createGlobeRuntime(authoredCards) {
         arcOffsetY: tex.offset.y,
       };
       textures[i] = tex;
-      loaded++;
+      loaded += 1;
       if (loaded === N_TOTAL) onDone();
     }
 
     function tryLoad(i) {
       const img = new Image();
-      img.onload = function () {
+      img.onload = () => {
         const cw = img.naturalWidth || 512;
         const ch = img.naturalHeight || 512;
         const cv = makeCanvas(cw, ch, '#555');
@@ -643,13 +635,13 @@ function createGlobeRuntime(authoredCards) {
         }
         done(i, new THREE.CanvasTexture(usedCv));
       };
-      img.onerror = function () {
+      img.onerror = () => {
         done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));
       };
       img.src = getCardMetadata(i).img; // no crossOrigin — needed so img.onload fires
     }
 
-    for (let i = 0; i < N_TOTAL; i++) {
+    for (let i = 0; i < N_TOTAL; i += 1) {
       tryLoad(i);
     }
   }
@@ -662,13 +654,13 @@ function createGlobeRuntime(authoredCards) {
 
     const roundedMask = createRoundedMask();
 
-    for (let i = 0; i < N_TOTAL; i++) {
+    for (let i = 0; i < N_TOTAL; i += 1) {
       // cardTexData is fully populated by the time buildCards() fires (called from onDone)
       const ctd = cardTexData[i] || {};
       const sScaleX = ctd.sphereScaleX !== undefined ? ctd.sphereScaleX : 1;
 
       const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
-      var mat;
+      let mat;
       if (CA_ENABLED) {
         mat = new THREE.ShaderMaterial({
           uniforms: {
@@ -700,15 +692,12 @@ function createGlobeRuntime(authoredCards) {
           depthWrite: false,
         });
         // Proxy material properties → uniforms so tick loop code works without modification.
-        // IIFE captures `mat` by value per iteration (var is function-scoped; closures share
-        // the same binding without it — all proxies would reference the last material created).
+        // `mat` is block-scoped (let), so each iteration's proxies capture their own material.
         // needsUpdate setter is suppressed — uniform texture swaps don't require shader relink.
-        !(function (m) {
-          Object.defineProperty(m, 'opacity', { get() { return m.uniforms.uOpacity.value; }, set(v) { m.uniforms.uOpacity.value = v; } });
-          Object.defineProperty(m, 'alphaMap', { get() { return m.uniforms.uAlphaMap.value; }, set(v) { m.uniforms.uAlphaMap.value = v; } });
-          Object.defineProperty(m, 'map', { get() { return m.uniforms.uMap.value; }, set(v) { m.uniforms.uMap.value = v; } });
-          Object.defineProperty(m, 'needsUpdate', { get() { return false; }, set() {} });
-        }(mat));
+        Object.defineProperty(mat, 'opacity', { get() { return mat.uniforms.uOpacity.value; }, set(v) { mat.uniforms.uOpacity.value = v; } });
+        Object.defineProperty(mat, 'alphaMap', { get() { return mat.uniforms.uAlphaMap.value; }, set(v) { mat.uniforms.uAlphaMap.value = v; } });
+        Object.defineProperty(mat, 'map', { get() { return mat.uniforms.uMap.value; }, set(v) { mat.uniforms.uMap.value = v; } });
+        Object.defineProperty(mat, 'needsUpdate', { get() { return false; }, set() {} });
       } else {
         mat = new THREE.MeshBasicMaterial({
           map: textures[i],
@@ -729,7 +718,8 @@ function createGlobeRuntime(authoredCards) {
       const sp = fibSpherePos(i, N_TOTAL, SPHERE_R);
 
       // Sphere orientation: face center + random z-rotation
-      const m = new THREE.Matrix4().lookAt(sp, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+      const m = new THREE.Matrix4()
+        .lookAt(sp, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
       const sq = new THREE.Quaternion().setFromRotationMatrix(m);
       const rz = (Math.random() - 0.5) * 0.5;
       sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
@@ -761,7 +751,7 @@ function createGlobeRuntime(authoredCards) {
     }
     // Seed per-card random tilts once so they stay stable across resize
     gridTilts = [];
-    for (let ti = 0; ti < N_TOTAL; ti++) {
+    for (let ti = 0; ti < N_TOTAL; ti += 1) {
       gridTilts.push((Math.random() - 0.5) * 0.175); // ±5° in radians
     }
     computeGridLayout();
@@ -772,7 +762,7 @@ function createGlobeRuntime(authoredCards) {
     if (modalIdx >= 0) return; // modal open — don't drag the globe
     isDragging = true;
     lastMX = e.clientX; lastMY = e.clientY;
-    dragVelX = dragVelY = 0;
+    dragVelX = 0; dragVelY = 0;
     pointerDownX = e.clientX;
     pointerDownY = e.clientY;
     pointerDownT = Date.now();
@@ -783,6 +773,10 @@ function createGlobeRuntime(authoredCards) {
     dragVelY = Math.max(-MAX_VEL, Math.min(MAX_VEL, -(e.clientY - lastMY) * DRAG_SENSITIVITY));
     lastMX = e.clientX; lastMY = e.clientY;
   }
+  // sphereFormT is computed inside tick(); cache it so the click handler (which fires
+  // between ticks) knows whether the sphere is in the clickable state.
+  let sphereFormTAtLastTick = 0;
+
   function onPointerUp(e) {
     const wasDragging = isDragging;
     isDragging = false;
@@ -793,16 +787,14 @@ function createGlobeRuntime(authoredCards) {
     const dx = Math.abs(e.clientX - pointerDownX);
     const dy = Math.abs(e.clientY - pointerDownY);
     const dt = Date.now() - pointerDownT;
-    if (dx < 10 && dy < 10 && dt < 500 && sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T && modalIdx < 0) {
+    if (dx < 10 && dy < 10 && dt < 500
+      && sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T && modalIdx < 0) {
+      // eslint-disable-next-line no-use-before-define
       handleCardClick(e);
     }
   }
 
   // ── Card click → modal ────────────────────────────────────────────────────
-  // sphereFormT is computed inside tick(); cache it so the click handler (which fires
-  // between ticks) knows whether the sphere is in the clickable state.
-  var sphereFormTAtLastTick = 0;
-
   function handleCardClick(e) {
     if (!renderer || !camera) return;
     const canvas = renderer.domElement;
@@ -814,8 +806,9 @@ function createGlobeRuntime(authoredCards) {
     const hits = raycaster.intersectObjects(meshes, false);
     if (hits.length > 0) {
       const hitMesh = hits[0].object;
-      for (let i = 0; i < cards.length; i++) {
+      for (let i = 0; i < cards.length; i += 1) {
         if (cards[i].mesh === hitMesh) {
+          // eslint-disable-next-line no-use-before-define
           openCardModal(i, e.clientX, e.clientY);
           break;
         }
@@ -831,7 +824,7 @@ function createGlobeRuntime(authoredCards) {
     // When out of sphere phase, clear ALL hoverTargets so the ease-out kicks in.
     if (sphereFormTAtLastTick < SPHERE_INTERACTIVE_T || modalIdx >= 0) {
       canvas.style.cursor = '';
-      for (let ci = 0; ci < cards.length; ci++) cards[ci].hoverTarget = 0;
+      for (let ci = 0; ci < cards.length; ci += 1) cards[ci].hoverTarget = 0;
       return;
     }
     const rect = canvas.getBoundingClientRect();
@@ -846,12 +839,31 @@ function createGlobeRuntime(authoredCards) {
     // Also capture the UV at the cursor — the shader anchors its fisheye warp at this point.
     const hitMesh = hits.length > 0 ? hits[0].object : null;
     const hitUV = hits.length > 0 ? hits[0].uv : null;
-    for (let i = 0; i < cards.length; i++) {
+    for (let i = 0; i < cards.length; i += 1) {
       const isHit = (cards[i].mesh === hitMesh);
       cards[i].hoverTarget = isHit ? 1 : 0;
       if (isHit && hitUV) cards[i].hoverUV.copy(hitUV);
     }
   }
+
+  // The desktop/tablet layout overlays the info card on the image's lower portion,
+  // with nav arrows in the margins outside the image and a close button at the
+  // image's top-right — a deliberate divergence from the prototype's viewport-
+  // anchored split view (see positionModalChrome + PROGRESS.md "Deliberate
+  // divergences"). These constants size the modal image in computeModalTarget;
+  // chrome offsets are computed in positionModalChrome. Mobile uses its own
+  // stacked layout.
+  //
+  // Vertical padding is symmetric so the image's center stays at viewport H/2
+  // whether the image is height- or width-constrained.
+  const DT_IMG_PAD_T = 80; // image top padding (LANDSCAPE assets, uAspect > 1)
+  const DT_IMG_PAD_B = 80; // image bottom padding (LANDSCAPE assets)
+  const DT_PORTRAIT_VPAD = 24; // tighter top/bottom padding for portrait / 1×1 (uAspect ≤ 1)
+  const DT_NAV_INSET = 24; // nav arrow inset baseline (feeds the image-width cap below)
+  const DT_NAV_W = 44; // matches .card-modal__nav width
+  // Horizontal cap on the modal image so it never extends under the chevron
+  // columns: nav inset + chevron width + breathing room.
+  const DT_GROUP_PAD_H = DT_NAV_INSET + DT_NAV_W + 20; // 88px
 
   // Compute target world position/quaternion/scale for the modal-active card.
   // Card is always 75% of viewport height; width follows the image's native aspect ratio
@@ -893,10 +905,10 @@ function createGlobeRuntime(authoredCards) {
       //   cardWPx = visible_width / (1 − 2·uRadius / uAspect)
       const INSET = 8;
       const SDF_RADIUS = 22.0 / 631.0;
-      var uAspect = CARD_ASPECT * sScaleX;
+      const uAspect = CARD_ASPECT * sScaleX;
 
       const visibleWidthPx = W - 2 * INSET;
-      const cardWPx = visibleWidthPx / (1 - 2 * SDF_RADIUS / uAspect);
+      const cardWPx = visibleWidthPx / (1 - (2 * SDF_RADIUS) / uAspect);
       const cardHPx = cardWPx / uAspect;
 
       scaleX = cardWPx / (CARD_W_SPHERE * pxPerWorld);
@@ -910,7 +922,8 @@ function createGlobeRuntime(authoredCards) {
       const centerScreenX = (INSET - visibleInsetPx) + cardWPx / 2;
       const centerScreenY = (INSET - visibleInsetPx) + cardHPx / 2;
       const worldX = (centerScreenX - W / 2) / pxPerWorld;
-      const worldY = (H / 2 - centerScreenY) / pxPerWorld; // screen Y is top→bottom; world Y is bottom→top
+      // screen Y is top→bottom; world Y is bottom→top
+      const worldY = (H / 2 - centerScreenY) / pxPerWorld;
       outPos.set(worldX, worldY, camZ - dist);
     } else {
       // Desktop / tablet — image is centered in the viewport. The info panel
@@ -928,7 +941,7 @@ function createGlobeRuntime(authoredCards) {
       //
       // Image is centered at viewport center (W/2, H/2) for all aspects so the
       // nav arrows (centered at mid-viewport) align with image middle.
-      var uAspect = CARD_ASPECT * sScaleX;
+      const uAspect = CARD_ASPECT * sScaleX;
       const availW = W - 2 * DT_GROUP_PAD_H;
 
       let imgH; let
@@ -976,8 +989,8 @@ function createGlobeRuntime(authoredCards) {
     const halfH = CARD_H_SPHERE * tgtScale.y * 0.5;
     const halfW = CARD_W_SPHERE * tgtScale.x * 0.5;
 
-    if (!_chromeProjV) _chromeProjV = new THREE.Vector3();
-    const pv = _chromeProjV;
+    if (!chromeProjV) chromeProjV = new THREE.Vector3();
+    const pv = chromeProjV;
 
     // Project card edges to screen pixels
     pv.set(0, tgtPos.y + halfH, tgtPos.z).project(camera);
@@ -1146,103 +1159,78 @@ function createGlobeRuntime(authoredCards) {
   // synthetic 'click' event that browsers dispatch on touch interactions after
   // pointerup — that click lands on the newly-visible backdrop and would
   // immediately close the just-opened modal.
-  let _modalOpenedAt = 0;
+  let modalOpenedAt = 0;
   // setTimeout ID for the close-finalize cleanup (removes is-visible / modal-open
   // / restarts Lenis after MODAL_ANIM_DURATION). Tracked so that opening a NEW
   // modal before the timeout fires can cancel it — otherwise a stale timeout
   // would yank the just-opened modal's classes after ~350ms, and the new modal
   // would mysteriously go invisible. See closeCardModal + openCardModal.
-  let _closeTimeoutId = null;
+  let closeTimeoutId = null;
 
   // ── A11y: keyboard navigation ───────────────────────────────────────────
   // Parallel hidden DOM list of buttons that mirror each card on the globe.
   // Tab/Shift+Tab moves through them; focusing a button drives the same hover
   // state on the corresponding WebGL card; Enter/Space opens the modal.
   // Buttons get tabindex=0 only while the sphere is interactive (≥ INTERACTIVE_T
-  // and no modal open). Cached and gated via _a11yInteractive so we only iterate
+  // and no modal open). Cached and gated via a11yInteractive so we only iterate
   // when the state actually flips.
-  let _galleryBtns = null; // NodeList of buttons (set in setupGlobeGalleryA11y)
-  let _a11yInteractive = false; // current tabbable state of the gallery buttons
+  let galleryBtns = null; // NodeList of buttons (set in setupGlobeGalleryA11y)
+  let a11yInteractive = false; // current tabbable state of the gallery buttons
   // Focus ring (a DOM element positioned each frame to match the focused card's
-  // projected screen bounds). Updated in tick when _focusedCardIdx >= 0.
-  let _focusRingEl = null;
-  let _focusedCardIdx = -1;
+  // projected screen bounds). Updated in tick when focusedCardIdx >= 0.
+  let focusRingEl = null;
+  let focusedCardIdx = -1;
   // Pool of corner Vector3s for projection (avoid per-frame allocation).
-  let _ringCorners = null;
-  let _ringTmpVec = null;
+  let ringCorners = null;
+  let ringTmpVec = null;
   // Element to restore focus to when modal closes (typically the gallery button
   // that opened the modal, or whatever had focus before mouse-click open).
-  let _modalFocusRestoreEl = null;
-  // Measured each time a modal is opened on mobile (after populateModal). Used by
-  // computeModalTarget to size the asset such that there's a consistent 24px gap
-  // between asset bottom and the info panel top, regardless of info content height.
-  let _modalInfoHeight = 220;
+  let modalFocusRestoreEl = null;
 
   // ── Modal warp state (drives fisheye uWarp/uWarpCenter on modal SDF material) ──
   // Updated each tick by either animation phase (opening/closing) or active gesture.
-  let _modalWarp = 0;
-  const _modalWarpCenter = new THREE.Vector2(0.5, 0.5);
+  let modalWarp = 0;
+  const modalWarpCenter = new THREE.Vector2(0.5, 0.5);
   const MODAL_WARP_OPEN = 0.30; // peak during opening animation (bell curve over aT)
   const MODAL_WARP_CLOSE = 0.30; // peak during closing animation
   const MODAL_WARP_PULL = 0.40; // peak at full pull-down
   const MODAL_WARP_SWIPE = 0.25; // peak at full horizontal swipe
 
-  // ── Desktop split-view modal layout ───────────────────────────────────────
-  // Image + info panel are a single group, collectively centered horizontally
-  // in the viewport with DT_IMG_INFO_GAP between them. Chrome elements:
-  //   - Close: top-right of viewport
-  //   - Nav arrows: at viewport LEFT and RIGHT edges (right chevron's right
-  //     inset matches the close button's right inset)
-  //   - Counter: centered horizontally on viewport
-  // (Mobile uses its own stacked layout, unchanged.)
-  var DT_INFO_WIDTH = 400; // fixed info panel width on desktop
-  const DT_IMG_INFO_GAP = 48; // VISIBLE gap (px) between the image's visible
-  //   right edge and the first text character in
-  //   the info panel. The positioning math below
-  //   compensates for the SDF rounded-corner inset
-  //   on the card AND the panel's CSS padding-left
-  //   so this constant matches what you measure on
-  //   screen.
-  const DT_INFO_PADDING_L = 24; // matches .card-modal__info { padding: 0 24px ... }
-  var DT_INFO_MARGIN = 24; // info panel's bottom/right margin from viewport edges
-  // Symmetric vertical padding so the image's center is always at viewport H/2 —
-  // both when the image fills the available height AND when width-constraint
-  // shrinks it (otherwise an asymmetric padding pushes the smaller image
-  // toward the top). 80px clears both the close button (bot edge at y=62) and
-  // the counter (top edge at y=H−68) with ~12px+ breathing room either way.
-  // Used for LANDSCAPE assets (uAspect > 1).
-  var DT_IMG_PAD_T = 80; // image top padding (from viewport top)
-  var DT_IMG_PAD_B = 80; // image bottom padding (from viewport bottom)
-  // Tighter vertical padding for portrait / 1x1 (uAspect ≤ 1) — these scale up
-  // to fill the viewport height minus 24px top/bottom margins. The info panel
-  // is at bottom-right corner, so visual overlap with the image is accepted by
-  // design at narrow viewports.
-  var DT_PORTRAIT_VPAD = 24;
-  var DT_CLOSE_INSET = 24; // close-button inset from viewport top-right
-  var DT_NAV_INSET = 24; // nav arrow inset from viewport edges
-  //   (right chevron's right inset = close-button right inset)
-  var DT_NAV_W = 44; // matches .card-modal__nav width
-  var DT_GROUP_PAD_H = DT_NAV_INSET + DT_NAV_W + 20; // 88px — chevron column + breathing
-  // room between chevron and the
-  // image+info group when group hits
-  // its max width
-
-  function _pushModalWarpUniforms() {
+  // ── Desktop / tablet modal layout constants ────────────────────────────────
+  function pushModalWarpUniforms() {
     if (!modalCard) return;
     const u = modalCard.mesh.material && modalCard.mesh.material.uniforms;
     if (!u || !u.uWarp || !u.uWarpCenter) return;
-    u.uWarp.value = _modalWarp;
-    u.uWarpCenter.value.copy(_modalWarpCenter);
+    u.uWarp.value = modalWarp;
+    u.uWarpCenter.value.copy(modalWarpCenter);
   }
 
   // Map a viewport touch/click position to an approximate UV on the asset.
   // Asset visibly fills nearly the whole viewport on mobile (8px margins),
   // so viewport-fraction ≈ asset UV. Screen Y inverts (top→bottom = UV 1→0).
-  function _touchToWarpUV(clientX, clientY, out) {
-    out = out || new THREE.Vector2();
-    out.x = Math.max(0, Math.min(1, clientX / W));
-    out.y = Math.max(0, Math.min(1, 1 - clientY / H));
-    return out;
+  function touchToWarpUV(clientX, clientY, out) {
+    const v = out || new THREE.Vector2();
+    v.x = Math.max(0, Math.min(1, clientX / W));
+    v.y = Math.max(0, Math.min(1, 1 - clientY / H));
+    return v;
+  }
+
+  // Set a card's local transform to its canonical sphere slot with the current
+  // sphere-drag rotation baked in. Used by reparent sites so there's no one-frame
+  // flash of an unrotated card before tick()'s sphere block re-applies rotation.
+  function snapCardToSphereSlot(card) {
+    if (!card || !card.mesh) return;
+    const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
+    if (hasRot && sphereRotEuler) {
+      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
+      sphereRotQuat.setFromEuler(sphereRotEuler);
+      card.mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
+      card.mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
+    } else {
+      card.mesh.position.copy(card.spherePos);
+      card.mesh.quaternion.copy(card.sphereQuat);
+    }
+    card.mesh.scale.set(card.sphereScaleX, 1, 1);
   }
 
   // ── Swipe-neighbors helpers ───────────────────────────────────────────────
@@ -1250,40 +1238,67 @@ function createGlobeRuntime(authoredCards) {
   // so a horizontal swipe reveals them naturally (single CSS transform on the
   // canvas moves all three together — iOS Photos style).
 
-  function _attachCardToModal(card) {
+  function attachCardToModal(card) {
     if (!card || !modalScene) return;
     if (card.mesh.parent === modalScene) return;
     modalScene.attach(card.mesh);
-    card.mesh._origMaterial = card.mesh.material;
+    card.mesh.origMaterial = card.mesh.material;
     card.mesh.material = getModalMaterial(card);
     card.mesh.renderOrder = 0;
     card.mesh.material.depthTest = true;
     // Reset cached SDF uniforms (uOpacity, uWarp, uMotionDir) so stale values
     // from a previous interrupted modal session don't carry over.
-    _resetModalMaterialUniforms(card.mesh.material, 1);
+    resetModalMaterialUniforms(card.mesh.material, 1);
   }
 
-  function _detachCardToSphere(card) {
+  function detachCardToSphere(card) {
     if (!card || !sphereGroup) return;
     if (card.mesh.parent === sphereGroup) return;
-    if (card.mesh._origMaterial) {
-      card.mesh.material = card.mesh._origMaterial;
-      card.mesh._origMaterial = null;
+    if (card.mesh.origMaterial) {
+      card.mesh.material = card.mesh.origMaterial;
+      card.mesh.origMaterial = null;
     }
     sphereGroup.attach(card.mesh);
-    _snapCardToSphereSlot(card);
+    snapCardToSphereSlot(card);
     card.mesh.material.depthTest = true;
     card.mesh.renderOrder = 0;
   }
 
+  // Write the authored metadata for card index i into the modal chrome DOM.
+  function populateModal(i) {
+    const targetEl = document.getElementById('card-modal-chrome') || modalEl;
+    if (!targetEl) return;
+    const meta = getCardMetadata(i);
+    const imgEl = targetEl.querySelector('.card-modal__image');
+    if (imgEl) { imgEl.src = meta.img; imgEl.alt = `${meta.name} — photograph`; }
+    const roleLabelEl = targetEl.querySelector('.card-modal__role-label');
+    if (roleLabelEl) roleLabelEl.textContent = meta.role || 'Photographer';
+    targetEl.querySelector('.card-modal__name').textContent = meta.name;
+    targetEl.querySelector('.card-modal__description').textContent = meta.description;
+    const counterEl = targetEl.querySelector('.card-modal__counter');
+    if (counterEl) counterEl.textContent = `${i + 1}/${N_TOTAL}`;
+    const badgesEl = targetEl.querySelector('.card-modal__badges');
+    badgesEl.innerHTML = '';
+    meta.badges.forEach((b) => {
+      const row = document.createElement('div');
+      row.className = 'card-modal__badge';
+      row.innerHTML = '<div class="card-modal__badge-left">'
+          + `<div class="card-modal__badge-icon card-modal__badge-icon--${b.app.id}">${b.app.abbr}</div>`
+          + `<span class="card-modal__badge-app">${b.app.name}</span>`
+        + '</div>'
+        + `<span class="card-modal__badge-role">${b.role}</span>`;
+      badgesEl.appendChild(row);
+    });
+  }
+
   // Modal-nav reactivity: compute the spring target that will rotate the sphere
   // partway toward facing the new card's slot, then activate the spring. Called
-  // from navigateModal (arrow click) and _commitSwipeNavigation (mobile swipe).
-  function _triggerModalNavNudge(newIdx) {
-    if (!_sphereRotEuler || !cards[newIdx]) return;
+  // from navigateModal (arrow click) and commitSwipeNavigation (mobile swipe).
+  function triggerModalNavNudge(newIdx) {
+    if (!sphereRotEuler || !cards[newIdx]) return;
     const newCard = cards[newIdx];
     // World position of new card's slot under the CURRENT sphere rotation.
-    const wp = _tmpVec3.copy(newCard.spherePos).applyEuler(_sphereRotEuler);
+    const wp = tmpVec3.copy(newCard.spherePos).applyEuler(sphereRotEuler);
     // alignDeltaY: rotation around Y that would bring the card's projected XZ
     // position to the +Z axis (facing the camera). Sign: positive Y rotation moves
     // a +X-side card toward +Z, so the delta is -atan2(x, z).
@@ -1294,11 +1309,17 @@ function createGlobeRuntime(authoredCards) {
     const horiz = Math.sqrt(wp.x * wp.x + wp.z * wp.z);
     const alignDeltaX = Math.atan2(wp.y, horiz);
     // Scaled, clamped deltas — subtle nudge that grows with distance but capped.
-    const nudgeY = Math.max(-NAV_NUDGE_MAX_Y, Math.min(NAV_NUDGE_MAX_Y, alignDeltaY * NAV_NUDGE_FACTOR));
-    const nudgeX = Math.max(-NAV_NUDGE_MAX_X, Math.min(NAV_NUDGE_MAX_X, alignDeltaX * NAV_NUDGE_FACTOR));
-    _navNudgeTargetY = sphereRotY + nudgeY;
-    _navNudgeTargetX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX + nudgeX));
-    _navNudgeActive = true;
+    const nudgeY = Math.max(
+      -NAV_NUDGE_MAX_Y,
+      Math.min(NAV_NUDGE_MAX_Y, alignDeltaY * NAV_NUDGE_FACTOR),
+    );
+    const nudgeX = Math.max(
+      -NAV_NUDGE_MAX_X,
+      Math.min(NAV_NUDGE_MAX_X, alignDeltaX * NAV_NUDGE_FACTOR),
+    );
+    navNudgeTargetY = sphereRotY + nudgeY;
+    navNudgeTargetX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX + nudgeX));
+    navNudgeActive = true;
   }
 
   // Begin the desktop modal-nav cross-warp transition. Old card stays at the
@@ -1306,22 +1327,23 @@ function createGlobeRuntime(authoredCards) {
   // new card is placed at its own modal target (same screen position, possibly
   // different scale) with uOpacity easing to 1 and the same warp curve. Both
   // render at the same position; renderOrder controls draw order during blend.
-  function _startDesktopNavTransition(newIdx) {
+  function startDesktopNavTransition(newIdx) {
     const oldCard = modalCard;
     const newCard = cards[newIdx];
     if (!oldCard || !newCard || !modalScene) return;
 
     // If a previous transition is mid-flight, finalize it first so we don't
     // leak the old-old card or its material into the wrong state.
-    if (_dnNavActive) _completeDesktopNavTransition();
+    // eslint-disable-next-line no-use-before-define
+    if (dnNavActive) completeDesktopNavTransition();
 
     // Attach new card to modalScene, swap to SDF material, position at modal target.
     modalScene.attach(newCard.mesh);
-    newCard.mesh._origMaterial = newCard.mesh.material;
+    newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
     // Start invisible (uOpacity=0) — animation fades it up to 1 over DN_NAV_DUR.
     // Helper also clears any stale uWarp / uMotionDir from a previous session.
-    _resetModalMaterialUniforms(newCard.mesh.material, 0);
+    resetModalMaterialUniforms(newCard.mesh.material, 0);
     newCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
     newCard.mesh.material.depthTest = true;
     newCard.mesh.renderOrder = 1; // above oldCard during blend
@@ -1335,7 +1357,8 @@ function createGlobeRuntime(authoredCards) {
     newCard.mesh.scale.copy(tgtScale);
 
     // Lock old card warp center to (0.5, 0.5) so the bell curve emanates from center.
-    if (oldCard.mesh.material && oldCard.mesh.material.uniforms && oldCard.mesh.material.uniforms.uWarpCenter) {
+    if (oldCard.mesh.material && oldCard.mesh.material.uniforms
+      && oldCard.mesh.material.uniforms.uWarpCenter) {
       oldCard.mesh.material.uniforms.uWarpCenter.value.set(0.5, 0.5);
     }
     oldCard.mesh.renderOrder = 0;
@@ -1347,66 +1370,48 @@ function createGlobeRuntime(authoredCards) {
     modalCard = newCard;
     modalPhase = 'open';
     populateModal(newIdx);
-    _triggerModalNavNudge(newIdx);
+    triggerModalNavNudge(newIdx);
 
-    _dnNavOldCard = oldCard;
-    _dnNavNewCard = newCard;
-    _dnNavT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    _dnNavActive = true;
+    dnNavOldCard = oldCard;
+    dnNavNewCard = newCard;
+    dnNavT0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    dnNavActive = true;
   }
 
   // Finalize the desktop nav transition: detach old card back to the sphere,
   // restore its material, reset uniforms on the new card to clean defaults.
   // Safe to call whether or not the animation reached aT >= 1.
-  function _completeDesktopNavTransition() {
-    if (!_dnNavActive) return;
-    if (_dnNavOldCard) {
+  function completeDesktopNavTransition() {
+    if (!dnNavActive) return;
+    if (dnNavOldCard) {
       // Reset the cached SDF material's animated uniforms BEFORE swapping back
-      // to the basic material. The SDF material persists in card._modalMat —
+      // to the basic material. The SDF material persists in card.modalMat —
       // if uOpacity was mid-fade (interrupted nav), it would stay stuck at
       // that value, and the next modal session would show this card ghosted.
-      _resetModalMaterialUniforms(_dnNavOldCard._modalMat, 1);
-      if (_dnNavOldCard.mesh._origMaterial) {
-        _dnNavOldCard.mesh.material = _dnNavOldCard.mesh._origMaterial;
-        _dnNavOldCard.mesh._origMaterial = null;
+      resetModalMaterialUniforms(dnNavOldCard.modalMat, 1);
+      if (dnNavOldCard.mesh.origMaterial) {
+        dnNavOldCard.mesh.material = dnNavOldCard.mesh.origMaterial;
+        dnNavOldCard.mesh.origMaterial = null;
       }
-      sphereGroup.attach(_dnNavOldCard.mesh);
-      _snapCardToSphereSlot(_dnNavOldCard);
-      _dnNavOldCard.mesh.material.depthTest = true;
-      _dnNavOldCard.mesh.renderOrder = 0;
+      sphereGroup.attach(dnNavOldCard.mesh);
+      snapCardToSphereSlot(dnNavOldCard);
+      dnNavOldCard.mesh.material.depthTest = true;
+      dnNavOldCard.mesh.renderOrder = 0;
     }
-    if (_dnNavNewCard) {
+    if (dnNavNewCard) {
       // The new card stays as the active modal card with SDF material; just
       // restore uniforms to a clean "fully visible, no warp" state.
-      _resetModalMaterialUniforms(_dnNavNewCard.mesh.material, 1);
-      _dnNavNewCard.mesh.renderOrder = 0;
+      resetModalMaterialUniforms(dnNavNewCard.mesh.material, 1);
+      dnNavNewCard.mesh.renderOrder = 0;
     }
-    _dnNavOldCard = null;
-    _dnNavNewCard = null;
-    _dnNavActive = false;
-  }
-
-  // Set a card's local transform to its canonical sphere slot with the current
-  // sphere-drag rotation baked in. Used by reparent sites so there's no one-frame
-  // flash of an unrotated card before tick()'s sphere block re-applies rotation.
-  function _snapCardToSphereSlot(card) {
-    if (!card || !card.mesh) return;
-    const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
-    if (hasRot && _sphereRotEuler) {
-      _sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
-      _sphereRotQuat.setFromEuler(_sphereRotEuler);
-      card.mesh.position.copy(card.spherePos).applyEuler(_sphereRotEuler);
-      card.mesh.quaternion.copy(_sphereRotQuat).multiply(card.sphereQuat);
-    } else {
-      card.mesh.position.copy(card.spherePos);
-      card.mesh.quaternion.copy(card.sphereQuat);
-    }
-    card.mesh.scale.set(card.sphereScaleX, 1, 1);
+    dnNavOldCard = null;
+    dnNavNewCard = null;
+    dnNavActive = false;
   }
 
   // Position a card in modalScene at slot -1 (left), 0 (center), or +1 (right).
   // Slot 0 = the card's natural top-left-locked target. ±1 = offset by viewport_width.
-  function _positionCardInModal(card, slot) {
+  function positionCardInModal(card, slot) {
     if (!card) return;
     const tgtPos = new THREE.Vector3();
     const tgtQuat = new THREE.Quaternion();
@@ -1420,28 +1425,29 @@ function createGlobeRuntime(authoredCards) {
   }
 
   // Attach prev/next of the current modalCard to modalScene at offset positions.
-  function _prepSwipeNeighbors() {
+  function prepSwipeNeighbors() {
     if (!modalCard || cards.length < 3) return; // skip if too few cards to have distinct neighbors
     const n = cards.length;
     const prevIdx = (modalIdx - 1 + n) % n;
     const nextIdx = (modalIdx + 1) % n;
-    _attachCardToModal(cards[prevIdx]);
-    _positionCardInModal(cards[prevIdx], -1);
-    _attachCardToModal(cards[nextIdx]);
-    _positionCardInModal(cards[nextIdx], 1);
+    attachCardToModal(cards[prevIdx]);
+    positionCardInModal(cards[prevIdx], -1);
+    attachCardToModal(cards[nextIdx]);
+    positionCardInModal(cards[nextIdx], 1);
   }
 
   // Return all non-current cards in modalScene back to sphereGroup.
-  function _clearSwipeNeighbors() {
+  function clearSwipeNeighbors() {
     if (!modalScene || !sphereGroup) return;
     // Iterate a copy of children because detach mutates the list.
     const children = modalScene.children.slice();
-    for (let i = 0; i < children.length; i++) {
+    for (let i = 0; i < children.length; i += 1) {
       const child = children[i];
-      if (modalCard && child === modalCard.mesh) continue; // keep the current
-      // Find the matching card object
-      for (let j = 0; j < cards.length; j++) {
-        if (cards[j].mesh === child) { _detachCardToSphere(cards[j]); break; }
+      // Keep the current card; return every other matching card to the sphere.
+      if (!modalCard || child !== modalCard.mesh) {
+        for (let j = 0; j < cards.length; j += 1) {
+          if (cards[j].mesh === child) { detachCardToSphere(cards[j]); break; }
+        }
       }
     }
   }
@@ -1450,7 +1456,7 @@ function createGlobeRuntime(authoredCards) {
   // Called after the CSS transition has settled the canvas at ±viewport_width.
   // Reorganizes modalScene cards so the visual position is identical before/after
   // the canvas reset → no snap.
-  function _commitSwipeNavigation(direction) {
+  function commitSwipeNavigation(direction) {
     if (!modalCard || !modalScene || cards.length < 3) return;
     if (modalPhase === 'closing') return; // Don't navigate while closing — same reason as navigateModal.
     const n = cards.length;
@@ -1460,21 +1466,21 @@ function createGlobeRuntime(authoredCards) {
     const newFarIdx = (oldIdx + 2 * direction + n) % n; // brand-new neighbor on swipe side
 
     // 1) Return the opposite-side old neighbor to the sphere.
-    _detachCardToSphere(cards[oldOppoIdx]);
+    detachCardToSphere(cards[oldOppoIdx]);
     // 2) Old current → becomes new opposite-side neighbor.
-    _positionCardInModal(cards[oldIdx], -direction);
+    positionCardInModal(cards[oldIdx], -direction);
     // 3) The chosen neighbor is now the new current.
     modalCard = cards[newIdx];
     modalIdx = newIdx;
-    _positionCardInModal(modalCard, 0);
+    positionCardInModal(modalCard, 0);
     // 4) Attach the new far neighbor (two steps in the swipe direction).
-    _attachCardToModal(cards[newFarIdx]);
-    _positionCardInModal(cards[newFarIdx], direction);
+    attachCardToModal(cards[newFarIdx]);
+    positionCardInModal(cards[newFarIdx], direction);
 
     populateModal(newIdx);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
-    _triggerModalNavNudge(newIdx);
+    triggerModalNavNudge(newIdx);
   }
 
   function openCardModal(i, originX, originY) {
@@ -1483,48 +1489,28 @@ function createGlobeRuntime(authoredCards) {
     // hasn't fired yet. Without this, the stale timeout fires mid-open and
     // strips is-visible / modal-open / restarts Lenis on our fresh modal —
     // the user clicks an image and the modal "won't show up."
-    if (_closeTimeoutId) {
-      clearTimeout(_closeTimeoutId);
-      _closeTimeoutId = null;
+    if (closeTimeoutId) {
+      clearTimeout(closeTimeoutId);
+      closeTimeoutId = null;
     }
-    _modalOpenedAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    modalOpenedAt = (typeof performance !== 'undefined' ? performance.now() : Date.now());
     // Remember focus origin so we can restore it on close. Skip the modal
     // chrome itself in case openCardModal is called from inside it (shouldn't
     // happen, but defensive).
     const focusedNow = document.activeElement;
     const chromeRoot = document.getElementById('card-modal-chrome');
-    _modalFocusRestoreEl = (chromeRoot && chromeRoot.contains(focusedNow)) ? null : focusedNow;
+    modalFocusRestoreEl = (chromeRoot && chromeRoot.contains(focusedNow)) ? null : focusedNow;
     modalIdx = i;
     modalCard = cards[i];
     // Pin warp center to click origin so the open-animation bulge emanates
     // from where the user tapped (or defaults to ~center if no origin given).
     if (typeof originX === 'number' && typeof originY === 'number') {
-      _touchToWarpUV(originX, originY, _modalWarpCenter);
+      touchToWarpUV(originX, originY, modalWarpCenter);
     } else {
-      _modalWarpCenter.set(0.5, 0.5);
+      modalWarpCenter.set(0.5, 0.5);
     }
-    _modalWarp = 0; // bell curve in tick ramps it up from 0
+    modalWarp = 0; // bell curve in tick ramps it up from 0
     populateModal(i);
-
-    // Measure the info panel's natural height on mobile so computeModalTarget can
-    // size the asset such that the 24px gap to info stays consistent across
-    // modals with different content lengths. Temporarily position offscreen
-    // (visibility:hidden) so the measurement doesn't flash on screen.
-    if (currentBPName === 'mobile') {
-      const infoMeasureEl = document.querySelector('.card-modal__info');
-      if (infoMeasureEl) {
-        const savedStyle = infoMeasureEl.style.cssText;
-        infoMeasureEl.style.position = 'absolute';
-        infoMeasureEl.style.visibility = 'hidden';
-        infoMeasureEl.style.top = '0';
-        infoMeasureEl.style.bottom = 'auto';
-        infoMeasureEl.style.left = '16px';
-        infoMeasureEl.style.right = '16px';
-        infoMeasureEl.style.width = 'auto';
-        _modalInfoHeight = infoMeasureEl.offsetHeight;
-        infoMeasureEl.style.cssText = savedStyle;
-      }
-    }
 
     // Snapshot the card's current WORLD transform (driven by sphereGroup rotation right now)
     modalCard.mesh.updateWorldMatrix(true, false);
@@ -1538,11 +1524,11 @@ function createGlobeRuntime(authoredCards) {
     else scene.attach(modalCard.mesh);
 
     // Swap to SDF shader material for crisp corners at modal scale (alphaMap pixelates).
-    modalCard.mesh._origMaterial = modalCard.mesh.material;
+    modalCard.mesh.origMaterial = modalCard.mesh.material;
     modalCard.mesh.material = getModalMaterial(modalCard);
     // Reset cached SDF uniforms — protects against stale values left by a
     // previous interrupted nav (e.g., uOpacity stuck mid-fade → ghosted image).
-    _resetModalMaterialUniforms(modalCard.mesh.material, 1);
+    resetModalMaterialUniforms(modalCard.mesh.material, 1);
 
     // Reset depth test/order — modal scene has only this one mesh
     modalCard.mesh.renderOrder = 0;
@@ -1568,7 +1554,7 @@ function createGlobeRuntime(authoredCards) {
       // (always present, no destructive default action). Falls back to chromeEl
       // for screen-reader announcement if close button is somehow missing.
       const closeBtn = chromeEl && chromeEl.querySelector('.card-modal__close');
-      if (closeBtn) { try { closeBtn.focus(); } catch (e) {} }
+      if (closeBtn) { try { closeBtn.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
     const canvas = renderer && renderer.domElement;
@@ -1579,7 +1565,7 @@ function createGlobeRuntime(authoredCards) {
 
     // Pre-attach prev/next cards to modalScene at offset positions so horizontal
     // swipes reveal the neighbor mid-gesture (iOS Photos style). Mobile only.
-    if (currentBPName === 'mobile') _prepSwipeNeighbors();
+    if (currentBPName === 'mobile') prepSwipeNeighbors();
   }
 
   function closeCardModal() {
@@ -1588,7 +1574,7 @@ function createGlobeRuntime(authoredCards) {
     // modal we're in the middle of opening. 200ms is well past the synthetic
     // click delay (~50ms) but short enough to not delay legitimate closes.
     const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-    if (now - _modalOpenedAt < 200) return;
+    if (now - modalOpenedAt < 200) return;
     if (!modalEl || modalIdx < 0 || !modalCard) return;
     // Re-entrancy guard: if a close is already in flight (modalPhase ===
     // 'closing'), additional Escape/backdrop clicks are no-ops. Without this,
@@ -1599,11 +1585,11 @@ function createGlobeRuntime(authoredCards) {
     // If a desktop nav transition is still in flight, finalize it first so the
     // outgoing old card returns to its sphere slot cleanly before the close
     // animation starts on the (new) modalCard.
-    if (_dnNavActive) _completeDesktopNavTransition();
+    if (dnNavActive) completeDesktopNavTransition();
 
     // Detach swipe-neighbor cards before the close animation begins so only the
     // current card flies back to the sphere; neighbors return to their slots silently.
-    _clearSwipeNeighbors();
+    clearSwipeNeighbors();
 
     // Blur any focused element inside the modal chrome BEFORE aria-hidden=true gets
     // applied. Without this, the close button (which user just clicked) retains
@@ -1639,7 +1625,7 @@ function createGlobeRuntime(authoredCards) {
     // The timeout ID is tracked so openCardModal can cancel it if the user
     // opens a new modal in this 350ms window (otherwise a stale firing would
     // remove the new modal's is-visible / modal-open / Lenis-pause state).
-    _closeTimeoutId = setTimeout(() => {
+    closeTimeoutId = setTimeout(() => {
       modalEl.classList.remove('is-visible');
       modalEl.setAttribute('aria-hidden', 'true');
       if (chromeEl) { chromeEl.classList.remove('is-visible'); chromeEl.setAttribute('aria-hidden', 'true'); }
@@ -1648,11 +1634,11 @@ function createGlobeRuntime(authoredCards) {
       if (window.lenis) window.lenis.start();
       // Restore focus to whatever the user had focused before opening the modal
       // (typically the gallery button that opened it for keyboard users).
-      if (_modalFocusRestoreEl && document.body.contains(_modalFocusRestoreEl)) {
-        try { _modalFocusRestoreEl.focus(); } catch (e) {}
+      if (modalFocusRestoreEl && document.body.contains(modalFocusRestoreEl)) {
+        try { modalFocusRestoreEl.focus(); } catch (e) { /* element gone; ignore */ }
       }
-      _modalFocusRestoreEl = null;
-      _closeTimeoutId = null;
+      modalFocusRestoreEl = null;
+      closeTimeoutId = null;
     }, MODAL_ANIM_DURATION);
 
     const canvas = renderer && renderer.domElement;
@@ -1661,7 +1647,7 @@ function createGlobeRuntime(authoredCards) {
 
   function navigateModal(direction) {
     if (modalIdx < 0 || !modalCard) return;
-    // Don't navigate while the modal is closing. Otherwise _startDesktopNavTransition
+    // Don't navigate while the modal is closing. Otherwise startDesktopNavTransition
     // would flip modalPhase from 'closing' back to 'open', orphaning the close
     // animation: the in-flight modalCard never reaches aT >= 1, so it's never
     // reparented to sphereGroup, modalCanvasEl stays display:block, and the stale
@@ -1675,22 +1661,22 @@ function createGlobeRuntime(authoredCards) {
     // its arrow buttons are paired with the live swipe gesture which already
     // provides the warp + slide feel.
     if (currentBPName !== 'mobile') {
-      _startDesktopNavTransition(next);
+      startDesktopNavTransition(next);
       return;
     }
 
     // Detach swipe-neighbor cards before swap; they'll be re-prepped at the end
     // for the new modalCard. Mobile only.
-    _clearSwipeNeighbors();
+    clearSwipeNeighbors();
 
     // Return the current card mesh to its slot in the sphere group (instant snap).
     const oldCard = modalCard;
-    if (oldCard.mesh._origMaterial) {
-      oldCard.mesh.material = oldCard.mesh._origMaterial;
-      oldCard.mesh._origMaterial = null;
+    if (oldCard.mesh.origMaterial) {
+      oldCard.mesh.material = oldCard.mesh.origMaterial;
+      oldCard.mesh.origMaterial = null;
     }
     sphereGroup.attach(oldCard.mesh);
-    _snapCardToSphereSlot(oldCard);
+    snapCardToSphereSlot(oldCard);
     oldCard.mesh.material.depthTest = true;
     oldCard.mesh.renderOrder = 0;
 
@@ -1699,7 +1685,7 @@ function createGlobeRuntime(authoredCards) {
     if (modalScene) modalScene.attach(newCard.mesh);
     else scene.attach(newCard.mesh);
     // Swap to SDF shader material for crisp corners at modal scale.
-    newCard.mesh._origMaterial = newCard.mesh.material;
+    newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
     newCard.mesh.renderOrder = 0;
     newCard.mesh.material.depthTest = true;
@@ -1721,36 +1707,10 @@ function createGlobeRuntime(authoredCards) {
     populateModal(next);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
-    _triggerModalNavNudge(next);
+    triggerModalNavNudge(next);
 
     // Prep prev/next of the new current for the next swipe gesture.
-    if (currentBPName === 'mobile') _prepSwipeNeighbors();
-  }
-
-  function populateModal(i) {
-    const targetEl = document.getElementById('card-modal-chrome') || modalEl;
-    if (!targetEl) return;
-    const meta = getCardMetadata(i);
-    const imgEl = targetEl.querySelector('.card-modal__image');
-    if (imgEl) { imgEl.src = meta.img; imgEl.alt = `${meta.name} — photograph`; }
-    const roleLabelEl = targetEl.querySelector('.card-modal__role-label');
-    if (roleLabelEl) roleLabelEl.textContent = meta.role || 'Photographer';
-    targetEl.querySelector('.card-modal__name').textContent = meta.name;
-    targetEl.querySelector('.card-modal__description').textContent = meta.description;
-    const counterEl = targetEl.querySelector('.card-modal__counter');
-    if (counterEl) counterEl.textContent = `${i + 1}/${N_TOTAL}`;
-    const badgesEl = targetEl.querySelector('.card-modal__badges');
-    badgesEl.innerHTML = '';
-    meta.badges.forEach((b) => {
-      const row = document.createElement('div');
-      row.className = 'card-modal__badge';
-      row.innerHTML = '<div class="card-modal__badge-left">'
-          + `<div class="card-modal__badge-icon card-modal__badge-icon--${b.app.id}">${b.app.abbr}</div>`
-          + `<span class="card-modal__badge-app">${b.app.name}</span>`
-        + '</div>'
-        + `<span class="card-modal__badge-role">${b.role}</span>`;
-      badgesEl.appendChild(row);
-    });
+    if (currentBPName === 'mobile') prepSwipeNeighbors();
   }
 
   // Build the hidden focusable button list that mirrors the cards on the globe.
@@ -1778,7 +1738,38 @@ function createGlobeRuntime(authoredCards) {
     const list = document.createElement('ul');
     list.className = 'globe-gallery-a11y__list';
 
-    for (let i = 0; i < N_TOTAL; i++) {
+    // Wire one gallery button's focus/blur/click handlers. Defined outside the
+    // build loop so the listeners aren't re-created per iteration (no-loop-func)
+    // while still closing over the live runtime state (focusedCardIdx, etc.).
+    function attachGalleryButton(idx, btnEl) {
+      btnEl.addEventListener('focus', () => {
+        // Drive the WebGL hover state on the focused card; clear the rest so
+        // there's only ever one hover at a time (matches mouse behavior).
+        for (let ci = 0; ci < cards.length; ci += 1) {
+          cards[ci].hoverTarget = (ci === idx ? 1 : 0);
+        }
+        // Only show the projected focus ring for keyboard focus (matches
+        // :focus-visible behavior in CSS — mouse clicks shouldn't display it).
+        focusedCardIdx = idx;
+        if (focusRingEl && btnEl.matches(':focus-visible')) {
+          focusRingEl.classList.add('is-visible');
+        }
+      });
+      btnEl.addEventListener('blur', () => {
+        if (cards[idx]) cards[idx].hoverTarget = 0;
+        if (focusedCardIdx === idx) focusedCardIdx = -1;
+        if (focusRingEl) focusRingEl.classList.remove('is-visible');
+      });
+      btnEl.addEventListener('click', () => {
+        if (modalIdx >= 0) return;
+        if (sphereFormTAtLastTick < SPHERE_INTERACTIVE_T) return;
+        // Use viewport center as the click origin so the open-warp emanates
+        // from screen center (we don't have a click position from keyboard).
+        openCardModal(idx, W / 2, H / 2);
+      });
+    }
+
+    for (let i = 0; i < N_TOTAL; i += 1) {
       const meta = getCardMetadata(i);
       const li = document.createElement('li');
       const btn = document.createElement('button');
@@ -1789,33 +1780,7 @@ function createGlobeRuntime(authoredCards) {
       btn.tabIndex = -1; // off until the sphere is interactive
       btn.textContent = `${meta.name}, ${i + 1} of ${N_TOTAL}`;
 
-      (function (idx, btnEl) {
-        btnEl.addEventListener('focus', () => {
-          // Drive the WebGL hover state on the focused card; clear the rest so
-          // there's only ever one hover at a time (matches mouse behavior).
-          for (let ci = 0; ci < cards.length; ci++) {
-            cards[ci].hoverTarget = (ci === idx ? 1 : 0);
-          }
-          // Only show the projected focus ring for keyboard focus (matches
-          // :focus-visible behavior in CSS — mouse clicks shouldn't display it).
-          _focusedCardIdx = idx;
-          if (_focusRingEl && btnEl.matches(':focus-visible')) {
-            _focusRingEl.classList.add('is-visible');
-          }
-        });
-        btnEl.addEventListener('blur', () => {
-          if (cards[idx]) cards[idx].hoverTarget = 0;
-          if (_focusedCardIdx === idx) _focusedCardIdx = -1;
-          if (_focusRingEl) _focusRingEl.classList.remove('is-visible');
-        });
-        btnEl.addEventListener('click', () => {
-          if (modalIdx >= 0) return;
-          if (sphereFormTAtLastTick < SPHERE_INTERACTIVE_T) return;
-          // Use viewport center as the click origin so the open-warp emanates
-          // from screen center (we don't have a click position from keyboard).
-          openCardModal(idx, W / 2, H / 2);
-        });
-      }(i, btn));
+      attachGalleryButton(i, btn);
 
       li.appendChild(btn);
       list.appendChild(li);
@@ -1823,30 +1788,30 @@ function createGlobeRuntime(authoredCards) {
 
     container.appendChild(list);
     canvas.parentNode.appendChild(container);
-    _galleryBtns = container.querySelectorAll('.globe-gallery-a11y__btn');
-    _a11yInteractive = false;
+    galleryBtns = container.querySelectorAll('.globe-gallery-a11y__btn');
+    a11yInteractive = false;
 
     // Single focus-ring element that tracks the projected bounding box of
     // whichever card is currently focused. position:fixed so it's relative to
     // the viewport, sized + rounded per-frame in tick().
-    if (!_focusRingEl) {
-      _focusRingEl = document.createElement('div');
-      _focusRingEl.className = 'globe-gallery-a11y__focus-ring';
-      _focusRingEl.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(_focusRingEl);
+    if (!focusRingEl) {
+      focusRingEl = document.createElement('div');
+      focusRingEl.className = 'globe-gallery-a11y__focus-ring';
+      focusRingEl.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(focusRingEl);
     }
     // Pre-allocate projection scratch (4 corners + 1 tmp) — reused each frame
     // so the focus-ring update doesn't allocate.
-    if (!_ringCorners && typeof THREE !== 'undefined') {
-      _ringCorners = [
+    if (!ringCorners && typeof THREE !== 'undefined') {
+      ringCorners = [
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
         new THREE.Vector3(),
       ];
-      _ringTmpVec = new THREE.Vector3();
+      ringTmpVec = new THREE.Vector3();
     }
-    _focusedCardIdx = -1;
+    focusedCardIdx = -1;
   }
 
   function setupModal() {
@@ -1860,10 +1825,10 @@ function createGlobeRuntime(authoredCards) {
     modalCloseStartPos = new THREE.Vector3();
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
-    _sphereRotEuler = new THREE.Euler(0, 0, 0, 'YXZ');
-    _sphereRotQuat = new THREE.Quaternion();
-    _foldRotQuat = new THREE.Quaternion();
-    _tmpVec3 = new THREE.Vector3();
+    sphereRotEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+    sphereRotQuat = new THREE.Quaternion();
+    foldRotQuat = new THREE.Quaternion();
+    tmpVec3 = new THREE.Vector3();
     // Chrome div hosts the interactive elements (close, nav, info) above the WebGL card canvas.
     const chromeEl = document.getElementById('card-modal-chrome');
     const evtRoot = chromeEl || modalEl;
@@ -1897,10 +1862,10 @@ function createGlobeRuntime(authoredCards) {
         const last = focusables[focusables.length - 1];
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
-          try { last.focus(); } catch (err) {}
+          try { last.focus(); } catch (err) { /* not focusable; ignore */ }
         } else if (!e.shiftKey && document.activeElement === last) {
           e.preventDefault();
-          try { first.focus(); } catch (err) {}
+          try { first.focus(); } catch (err) { /* not focusable; ignore */ }
         }
       }
     });
@@ -1914,14 +1879,14 @@ function createGlobeRuntime(authoredCards) {
     // Implemented via CSS transforms on modal-card-canvas (cheap, GPU-composited)
     // so the chrome (info panel, nav arrows, close, counter) stays put — matches
     // iOS Photos UX where only the asset moves during the gesture.
-    let _swStartX = 0; let
-      _swStartY = 0;
-    let _swLastX = 0; let _swLastY = 0; let
-      _swLastT = 0;
-    let _swAxis = null; // 'x' | 'y' | null (locks after first significant move)
-    let _swActive = false;
-    let _swVelX = 0; let
-      _swVelY = 0;
+    let swStartX = 0; let
+      swStartY = 0;
+    let swLastX = 0; let swLastY = 0; let
+      swLastT = 0;
+    let swAxis = null; // 'x' | 'y' | null (locks after first significant move)
+    let swActive = false;
+    let swVelX = 0; let
+      swVelY = 0;
     const AXIS_LOCK_PX = 10;
     const COMMIT_DIST_X_FRAC = 0.25; // 25% of viewport width
     const COMMIT_DIST_Y_FRAC = 0.18; // 18% of viewport height
@@ -1935,47 +1900,47 @@ function createGlobeRuntime(authoredCards) {
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
-      _swStartX = _swLastX = e.touches[0].clientX;
-      _swStartY = _swLastY = e.touches[0].clientY;
-      _swLastT = Date.now();
-      _swActive = true;
-      _swAxis = null;
-      _swVelX = 0;
-      _swVelY = 0;
+      swStartX = e.touches[0].clientX; swLastX = swStartX;
+      swStartY = e.touches[0].clientY; swLastY = swStartY;
+      swLastT = Date.now();
+      swActive = true;
+      swAxis = null;
+      swVelX = 0;
+      swVelY = 0;
       // Capture touch position as warp center (finger-anchored fisheye).
-      _touchToWarpUV(_swStartX, _swStartY, _modalWarpCenter);
+      touchToWarpUV(swStartX, swStartY, modalWarpCenter);
       // Drag follows finger 1:1 with no animation lag.
       modalCanvasEl.style.transition = 'none';
     }, { passive: true });
 
     modalEl.addEventListener('touchmove', (e) => {
-      if (!_swActive || e.touches.length !== 1) return;
+      if (!swActive || e.touches.length !== 1) return;
       const x = e.touches[0].clientX;
       const y = e.touches[0].clientY;
-      const dx = x - _swStartX;
-      const dy = y - _swStartY;
+      const dx = x - swStartX;
+      const dy = y - swStartY;
 
       // Axis lock — first significant movement determines whether this is a
       // horizontal swipe or a vertical pull-down. Prevents diagonal jitter.
-      if (_swAxis === null) {
+      if (swAxis === null) {
         if (Math.abs(dx) < AXIS_LOCK_PX && Math.abs(dy) < AXIS_LOCK_PX) return;
-        _swAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        swAxis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
       }
 
       // Velocity tracking — used for fling detection on touchend.
       const now = Date.now();
-      const dt = now - _swLastT;
+      const dt = now - swLastT;
       if (dt > 0) {
-        _swVelX = (x - _swLastX) / dt;
-        _swVelY = (y - _swLastY) / dt;
+        swVelX = (x - swLastX) / dt;
+        swVelY = (y - swLastY) / dt;
       }
-      _swLastX = x; _swLastY = y; _swLastT = now;
+      swLastX = x; swLastY = y; swLastT = now;
 
-      if (_swAxis === 'x') {
+      if (swAxis === 'x') {
         modalCanvasEl.style.transform = `translate3d(${dx}px, 0, 0)`;
         // Horizontal swipe warp: scales with drag distance relative to viewport width.
         // 30% of viewport width = full peak. Capped at MODAL_WARP_SWIPE.
-        _modalWarp = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.30)) * MODAL_WARP_SWIPE;
+        modalWarp = Math.min(1, Math.abs(dx) / (window.innerWidth * 0.30)) * MODAL_WARP_SWIPE;
       } else {
         // Pull-down only — upward drag does nothing (clamped to 0).
         const pullY = Math.max(0, dy);
@@ -1983,22 +1948,22 @@ function createGlobeRuntime(authoredCards) {
         modalCanvasEl.style.transform = `translate3d(0, ${pullY}px, 0) scale(${scale.toFixed(3)})`;
         // Pull-down warp: scales with pull distance relative to viewport height.
         // 20% of viewport height = full peak. Capped at MODAL_WARP_PULL.
-        _modalWarp = Math.min(1, pullY / (window.innerHeight * 0.20)) * MODAL_WARP_PULL;
+        modalWarp = Math.min(1, pullY / (window.innerHeight * 0.20)) * MODAL_WARP_PULL;
       }
-      _pushModalWarpUniforms();
+      pushModalWarpUniforms();
     }, { passive: true });
 
     modalEl.addEventListener('touchend', (e) => {
-      if (!_swActive) return;
-      _swActive = false;
-      if (!modalCanvasEl || _swAxis === null) { _swAxis = null; return; }
+      if (!swActive) return;
+      swActive = false;
+      if (!modalCanvasEl || swAxis === null) { swAxis = null; return; }
       if (e.changedTouches.length !== 1) return;
-      const dx = e.changedTouches[0].clientX - _swStartX;
-      const dy = e.changedTouches[0].clientY - _swStartY;
+      const dx = e.changedTouches[0].clientX - swStartX;
+      const dy = e.changedTouches[0].clientY - swStartY;
 
-      if (_swAxis === 'x') {
+      if (swAxis === 'x') {
         const commit = Math.abs(dx) > window.innerWidth * COMMIT_DIST_X_FRAC
-                  || Math.abs(_swVelX) > COMMIT_VEL_X;
+                  || Math.abs(swVelX) > COMMIT_VEL_X;
         if (commit) {
           // Animate canvas to translateX(±viewport_width) — that's exactly the
           // offset where the neighbor card lands at viewport center. Then swap
@@ -2013,7 +1978,7 @@ function createGlobeRuntime(authoredCards) {
           modalCanvasEl.style.transform = `translate3d(${cssDir * window.innerWidth}px, 0, 0)`;
           setTimeout(() => {
             modalCanvasEl.style.transition = 'none';
-            _commitSwipeNavigation(navDir);
+            commitSwipeNavigation(navDir);
             modalCanvasEl.style.transform = '';
           }, 220);
         } else {
@@ -2023,7 +1988,7 @@ function createGlobeRuntime(authoredCards) {
         }
       } else {
         const pullCommit = dy > window.innerHeight * COMMIT_DIST_Y_FRAC
-                      || _swVelY > COMMIT_VEL_Y;
+                      || swVelY > COMMIT_VEL_Y;
         if (pullCommit) {
           // Sync the mesh's WORLD position + scale to match the gesture's visible
           // state (which was driven purely by CSS transform on the canvas), then
@@ -2046,7 +2011,7 @@ function createGlobeRuntime(authoredCards) {
           modalCanvasEl.style.transform = '';
         }
       }
-      _swAxis = null;
+      swAxis = null;
     }, { passive: true });
   }
 
@@ -2077,8 +2042,8 @@ function createGlobeRuntime(authoredCards) {
       mesh.material.uniforms.uRepeat.value.set(rx, ry);
       mesh.material.uniforms.uOffset.value.set(ox, oy);
     } else {
-      const _mt = mesh.material.map;
-      if (_mt) { _mt.repeat.set(rx, ry); _mt.offset.set(ox, oy); }
+      const texMap = mesh.material.map;
+      if (texMap) { texMap.repeat.set(rx, ry); texMap.offset.set(ox, oy); }
     }
   }
 
@@ -2109,7 +2074,8 @@ function createGlobeRuntime(authoredCards) {
     ));
 
     // Convert arc-pan arrival times to progress units for fold/zoom phase calculations.
-    // arcPanT(progress) ≈ progress/P_PAN_END + P_ARC_PREROLL  →  progress ≈ (arcPanT - P_ARC_PREROLL) * P_PAN_END
+    // arcPanT(progress) ≈ progress/P_PAN_END + P_ARC_PREROLL
+    //   →  progress ≈ (arcPanT - P_ARC_PREROLL) * P_PAN_END
     const gpWin = 1.0 - GRID_PEEL_STAGGER;
     const foldFirstArcT = P_GRID_ARC_START + gpWin * (P_GRID_ARC_END - P_GRID_ARC_START);
     const foldFirst = Math.max(0, (foldFirstArcT - P_ARC_PREROLL) * P_PAN_END);
@@ -2121,12 +2087,12 @@ function createGlobeRuntime(authoredCards) {
     // ── A11y: enable / disable gallery button tab-stops based on whether the
     //          sphere is currently interactive. Only iterates when the state
     //          flips (not every frame), so it's effectively free at idle. ──
-    if (_galleryBtns) {
+    if (galleryBtns) {
       const wantInteractive = (sphereFormT >= SPHERE_INTERACTIVE_T) && (modalIdx < 0);
-      if (wantInteractive !== _a11yInteractive) {
-        _a11yInteractive = wantInteractive;
-        for (let ga = 0; ga < _galleryBtns.length; ga++) {
-          _galleryBtns[ga].tabIndex = wantInteractive ? 0 : -1;
+      if (wantInteractive !== a11yInteractive) {
+        a11yInteractive = wantInteractive;
+        for (let ga = 0; ga < galleryBtns.length; ga += 1) {
+          galleryBtns[ga].tabIndex = wantInteractive ? 0 : -1;
         }
       }
     }
@@ -2177,21 +2143,21 @@ function createGlobeRuntime(authoredCards) {
 
     // ── Modal-navigation spring nudge ──
     // Runs even while modal is open (drag accumulation is gated, but the spring is
-    // independent). Drives sphereRotY/X toward the target set by _triggerModalNavNudge.
+    // independent). Drives sphereRotY/X toward the target set by triggerModalNavNudge.
     // Slight underdamping (damp < critical) gives a small overshoot + settle.
-    if (_navNudgeActive) {
-      const nDy = _navNudgeTargetY - sphereRotY;
-      const nDx = _navNudgeTargetX - sphereRotX;
-      _navNudgeVelY = (_navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-      _navNudgeVelX = (_navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-      sphereRotY += _navNudgeVelY;
-      sphereRotX += _navNudgeVelX;
+    if (navNudgeActive) {
+      const nDy = navNudgeTargetY - sphereRotY;
+      const nDx = navNudgeTargetX - sphereRotX;
+      navNudgeVelY = (navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+      navNudgeVelX = (navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+      sphereRotY += navNudgeVelY;
+      sphereRotX += navNudgeVelX;
       // Settle when position is at target AND velocity is essentially zero.
       if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001
-          && Math.abs(_navNudgeVelY) < 0.001 && Math.abs(_navNudgeVelX) < 0.001) {
-        _navNudgeActive = false;
-        _navNudgeVelY = 0;
-        _navNudgeVelX = 0;
+          && Math.abs(navNudgeVelY) < 0.001 && Math.abs(navNudgeVelX) < 0.001) {
+        navNudgeActive = false;
+        navNudgeVelY = 0;
+        navNudgeVelX = 0;
       }
     }
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
@@ -2214,17 +2180,17 @@ function createGlobeRuntime(authoredCards) {
       // modal-open flips modalIdx non-negative) caused the baseline component (0.05)
       // to drop to 0 in one frame — the remaining sphere cards' barrel distortion
       // popped, which read as a pixel-level "jump" right when the modal opened.
-      let _warpTarget;
+      let warpTarget;
       if (modalIdx < 0) {
         const dragSpeed = Math.sqrt(dragVelX * dragVelX + dragVelY * dragVelY);
         const burst = dragSpeed * SPHERE_DRAG_WARP_VEL;
         const baseline = isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
-        _warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + burst);
+        warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + burst);
       } else {
-        _warpTarget = 0;
+        warpTarget = 0;
       }
-      _sphereDragWarp += (_warpTarget - _sphereDragWarp) * 0.20;
-      if (Math.abs(_sphereDragWarp) < 0.001) _sphereDragWarp = 0;
+      sphereDragWarp += (warpTarget - sphereDragWarp) * 0.20;
+      if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
     } else {
       // Below interactive threshold: stop accumulating drag inertia/auto-rot.
       // sphereRotY/sphereRotX are preserved while mid-scroll so a brief dip below
@@ -2233,8 +2199,8 @@ function createGlobeRuntime(authoredCards) {
       // Warp eases (same rate as the interactive-zone branch) rather than snapping.
       dragVelX = 0;
       dragVelY = 0;
-      _sphereDragWarp += (0 - _sphereDragWarp) * 0.20;
-      if (Math.abs(_sphereDragWarp) < 0.001) _sphereDragWarp = 0;
+      sphereDragWarp += (0 - sphereDragWarp) * 0.20;
+      if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
       if (sphereFormT < 0.01) {
         sphereRotY = 0;
         sphereRotX = 0;
@@ -2242,12 +2208,12 @@ function createGlobeRuntime(authoredCards) {
     }
 
     // Update the per-frame rotation Euler/Quaternion used by the sphere block + any
-    // snap-to-sphere helpers. _sphereRotActive is a fast-path flag so the rotation
+    // snap-to-sphere helpers. sphereRotActive is a fast-path flag so the rotation
     // math can be skipped when the sphere is upright.
-    const _sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
-    if (_sphereRotEuler) {
-      _sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
-      _sphereRotQuat.setFromEuler(_sphereRotEuler);
+    const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
+    if (sphereRotEuler) {
+      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
+      sphereRotQuat.setFromEuler(sphereRotEuler);
     }
 
     // ── Modal card animation (the flown-out card) ──
@@ -2295,9 +2261,9 @@ function createGlobeRuntime(authoredCards) {
         // sphereGroup.rotation is identity (per-card rotation arch), so its matrixWorld
         // is just the z translation. Apply the drag rotation manually.
         sphereGroup.updateMatrixWorld(true);
-        if (_sphereRotActive) {
-          tgtPos.copy(modalCard.spherePos).applyEuler(_sphereRotEuler);
-          tgtQuat.copy(_sphereRotQuat).multiply(modalCard.sphereQuat);
+        if (sphereRotActive) {
+          tgtPos.copy(modalCard.spherePos).applyEuler(sphereRotEuler);
+          tgtQuat.copy(sphereRotQuat).multiply(modalCard.sphereQuat);
         } else {
           tgtPos.copy(modalCard.spherePos);
           tgtQuat.copy(modalCard.sphereQuat);
@@ -2312,18 +2278,18 @@ function createGlobeRuntime(authoredCards) {
         if (aT >= 1) {
           // Reset the cached SDF material's animated uniforms before swapping
           // back to the basic material. Without this, leftover uOpacity / uWarp
-          // / uMotionDir values would persist on card._modalMat and ghost the
+          // / uMotionDir values would persist on card.modalMat and ghost the
           // next time this card is shown in modal.
-          _resetModalMaterialUniforms(modalCard._modalMat, 1);
+          resetModalMaterialUniforms(modalCard.modalMat, 1);
           // Restore original MeshBasicMaterial before re-parenting to globe
-          if (modalCard.mesh._origMaterial) {
-            modalCard.mesh.material = modalCard.mesh._origMaterial;
-            modalCard.mesh._origMaterial = null;
+          if (modalCard.mesh.origMaterial) {
+            modalCard.mesh.material = modalCard.mesh.origMaterial;
+            modalCard.mesh.origMaterial = null;
           }
           // Re-parent to sphereGroup and snap to canonical local transform
           // (with the current sphere-drag rotation baked in so there's no flash).
           sphereGroup.attach(modalCard.mesh);
-          _snapCardToSphereSlot(modalCard);
+          snapCardToSphereSlot(modalCard);
           modalCard.mesh.material.depthTest = true;
           modalCard.mesh.renderOrder = 0;
           if (modalCanvasEl) modalCanvasEl.style.display = 'none';
@@ -2337,7 +2303,8 @@ function createGlobeRuntime(authoredCards) {
       // Use amp = 1.0 so the full CA_MOTION_STRENGTH is available; the position delta
       // itself encodes velocity (small delta when settled = small smear). Clear to zero
       // once fully open so the static card shows no aberration.
-      if (CA_ENABLED && modalCard && modalCard.mesh.material.uniforms && modalCard.mesh.material.uniforms.uMotionDir) {
+      if (CA_ENABLED && modalCard && modalCard.mesh.material.uniforms
+        && modalCard.mesh.material.uniforms.uMotionDir) {
         if (modalPhase === 'open') {
           modalCard.mesh.material.uniforms.uMotionDir.value.set(0, 0);
         } else if (modalPhase) {
@@ -2351,17 +2318,17 @@ function createGlobeRuntime(authoredCards) {
       // peaks mid-animation (bell curve via sin(aT·π)) and settles to 0 when 'open'.
       // While 'open', the warp value is set externally by touch handlers (drag).
       if (modalPhase === 'opening') {
-        _modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_OPEN;
+        modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_OPEN;
       } else if (modalPhase === 'closing') {
-        _modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_CLOSE;
+        modalWarp = Math.sin(Math.max(0, Math.min(1, aT)) * Math.PI) * MODAL_WARP_CLOSE;
       } else if (modalPhase === 'open') {
         // Decay any leftover warp once settled; touch handlers will set it again on drag.
-        _modalWarp *= 0.85;
-        if (_modalWarp < 0.001) _modalWarp = 0;
+        modalWarp *= 0.85;
+        if (modalWarp < 0.001) modalWarp = 0;
       }
       // Skip the push during desktop nav cross-warp — that animation drives BOTH the
       // old and new card's uWarp uniforms directly below.
-      if (!_dnNavActive) _pushModalWarpUniforms();
+      if (!dnNavActive) pushModalWarpUniforms();
 
       // Keep chrome elements locked to the card's projected screen position every frame.
       // During 'opening' this positions them at the final target so they fade in correctly.
@@ -2374,21 +2341,21 @@ function createGlobeRuntime(authoredCards) {
     // Both old and new card materials get their uWarp uniform driven by a sin bell
     // curve peaking at DN_NAV_WARP mid-flight. Opacity cross-fades via easeInOutCubic.
     // At aT >= 1, finalize and detach the old card back to its sphere slot.
-    if (_dnNavActive) {
+    if (dnNavActive) {
       const dnNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-      const dnT = Math.max(0, Math.min(1, (dnNow - _dnNavT0) / DN_NAV_DUR));
+      const dnT = Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
       if (dnT >= 1) {
-        _completeDesktopNavTransition();
+        completeDesktopNavTransition();
       } else {
         const dnWarp = Math.sin(dnT * Math.PI) * DN_NAV_WARP;
         const dnE = easeInOutCubic(dnT);
-        if (_dnNavOldCard && _dnNavOldCard.mesh.material && _dnNavOldCard.mesh.material.uniforms) {
-          _dnNavOldCard.mesh.material.uniforms.uWarp.value = dnWarp;
-          _dnNavOldCard.mesh.material.uniforms.uOpacity.value = 1 - dnE;
+        if (dnNavOldCard && dnNavOldCard.mesh.material && dnNavOldCard.mesh.material.uniforms) {
+          dnNavOldCard.mesh.material.uniforms.uWarp.value = dnWarp;
+          dnNavOldCard.mesh.material.uniforms.uOpacity.value = 1 - dnE;
         }
-        if (_dnNavNewCard && _dnNavNewCard.mesh.material && _dnNavNewCard.mesh.material.uniforms) {
-          _dnNavNewCard.mesh.material.uniforms.uWarp.value = dnWarp;
-          _dnNavNewCard.mesh.material.uniforms.uOpacity.value = dnE;
+        if (dnNavNewCard && dnNavNewCard.mesh.material && dnNavNewCard.mesh.material.uniforms) {
+          dnNavNewCard.mesh.material.uniforms.uWarp.value = dnWarp;
+          dnNavNewCard.mesh.material.uniforms.uOpacity.value = dnE;
         }
       }
     }
@@ -2396,7 +2363,8 @@ function createGlobeRuntime(authoredCards) {
     // Canvas visibility — instantly visible once the section approaches; no opacity fade.
     // The arc's own rotation/slide-up handles the "appearing" feel.
     const canvas = renderer.domElement;
-    const showTrigger = spacerOffsetTop - H * ENTRY_LEAD_VH; // matches arcCopyEntryT start point (entryStart)
+    // matches arcCopyEntryT start point (entryStart)
+    const showTrigger = spacerOffsetTop - H * ENTRY_LEAD_VH;
     if (lenisY < showTrigger || zoomT >= 0.95) {
       canvas.style.display = 'none';
     } else {
@@ -2412,7 +2380,7 @@ function createGlobeRuntime(authoredCards) {
     // downward. On scroll-up we use a fast 0.15s fade so it disappears before moving.
     if (pqEl) {
       if (zoomT >= 0.38 && !pqShown) {
-        pqEl.style.transition = '';   // restore CSS default (0.7s, set in .css)
+        pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
         pqShown = true;
         pqEl.classList.add('is-active');
       } else if (zoomT < 0.38 && pqShown) {
@@ -2442,7 +2410,8 @@ function createGlobeRuntime(authoredCards) {
     // FOLD block, its world z = (sphGroupZ + spherePos.z) × fdE jumped from 0 → ~25 in one
     // frame — a visible forward "dart" that read as a scene glitch during scroll.
     // Using camera.position.z directly (always set in both ortho/perspective branches above).
-    const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT * sphereFormT * sphereFormT);
+    const sphereFormT3 = sphereFormT * sphereFormT * sphereFormT;
+    const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT3);
     const sphGroupZ = zoomT === 0 ? (camera.position.z - foldSphDist) : 0;
     sphereGroup.position.z = sphGroupZ;
 
@@ -2473,7 +2442,9 @@ function createGlobeRuntime(authoredCards) {
       }
     }
 
-    for (let i = 0; i < N_TOTAL; i++) {
+    // Per-card transform for one frame. Extracted from the old `for` loop body so the
+    // early-outs read as `return` (no-continue) — called once per card just below.
+    function updateCardTransform(i) {
       const card = cards[i];
       const { mesh } = card;
 
@@ -2481,8 +2452,8 @@ function createGlobeRuntime(authoredCards) {
       // Also skip any card whose mesh is parented into modalScene (i.e., the prev/next
       // swipe-neighbors). Their positions/materials/scales are managed by the swipe
       // helpers; the main tick loop would otherwise overwrite them every frame.
-      if (card === modalCard) continue;
-      if (modalScene && mesh.parent === modalScene) continue;
+      if (card === modalCard) return;
+      if (modalScene && mesh.parent === modalScene) return;
 
       // ── Arc → grid peel stagger: i-based base cascade + per-card jitter for organic timing ──
       const baseDelay = (i / (N_TOTAL - 1)) * GRID_PEEL_STAGGER;
@@ -2493,7 +2464,8 @@ function createGlobeRuntime(authoredCards) {
 
       // ── Grid → sphere fold: starts immediately when this card arrives in grid ──
       // Convert arc-pan arrival back to progress for fold timer
-      const gpArrivalArcT = P_GRID_ARC_START + Math.min(1, gpDelay + gpWin) * (P_GRID_ARC_END - P_GRID_ARC_START);
+      const gpArrivalArcT = P_GRID_ARC_START
+        + Math.min(1, gpDelay + gpWin) * (P_GRID_ARC_END - P_GRID_ARC_START);
       const gpArrivalProg = Math.max(0, (gpArrivalArcT - P_ARC_PREROLL) * P_PAN_END);
       const fdLocalT = Math.max(0, Math.min(1, (progress - gpArrivalProg) / P_FOLD_DUR));
       const fdE = gpE >= 1 ? easeInOutCubic(fdLocalT) : 0;
@@ -2534,8 +2506,8 @@ function createGlobeRuntime(authoredCards) {
         // Apply manual sphere-drag rotation: world position = R × spherePos.
         // sphereGroup.rotation is identity, so the rotated local position becomes the
         // rotated world position (offset only by sphereGroup.position.z).
-        if (_sphereRotActive) {
-          mesh.position.copy(card.spherePos).applyEuler(_sphereRotEuler);
+        if (sphereRotActive) {
+          mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
         } else {
           mesh.position.copy(card.spherePos);
         }
@@ -2545,8 +2517,8 @@ function createGlobeRuntime(authoredCards) {
           mesh.material.alphaMap = card.sphereMask;
           mesh.material.needsUpdate = true;
         }
-        if (_sphereRotActive) {
-          mesh.quaternion.copy(_sphereRotQuat).multiply(card.sphereQuat);
+        if (sphereRotActive) {
+          mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
         } else {
           mesh.quaternion.copy(card.sphereQuat);
         }
@@ -2557,7 +2529,7 @@ function createGlobeRuntime(authoredCards) {
         // when not hovered, the sphere-drag warp uses each card's own center (0.5, 0.5).
         if (CA_ENABLED) {
           mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
-          mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + _sphereDragWarp;
+          mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
           if (card.hoverT > 0.01) {
             mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
           } else {
@@ -2568,7 +2540,7 @@ function createGlobeRuntime(authoredCards) {
         // world-space delta as depth × angular velocity — front-facing cards (large z) show
         // more CA than side-facing cards (z ≈ 0), giving a convincing rotation smear.
         applyMotionCA(mesh, card.spherePos.z * dragVelX, -card.spherePos.z * dragVelY);
-        continue;
+        return;
       }
 
       // ── Grid → sphere fold ──
@@ -2584,11 +2556,10 @@ function createGlobeRuntime(authoredCards) {
         // Cards with fdE = 0 fall through to the grid/arc blocks below where no
         // rotation is applied — so non-sphere-phase cards are never transformed
         // by the drag rotation.
-        var sX; var sY; var
-          sZ;
-        if (_sphereRotActive) {
-          _tmpVec3.copy(card.spherePos).applyEuler(_sphereRotEuler);
-          sX = _tmpVec3.x; sY = _tmpVec3.y; sZ = _tmpVec3.z;
+        let sX; let sY; let sZ;
+        if (sphereRotActive) {
+          tmpVec3.copy(card.spherePos).applyEuler(sphereRotEuler);
+          sX = tmpVec3.x; sY = tmpVec3.y; sZ = tmpVec3.z;
         } else {
           sX = card.spherePos.x; sY = card.spherePos.y; sZ = card.spherePos.z;
         }
@@ -2613,16 +2584,16 @@ function createGlobeRuntime(authoredCards) {
           mesh.material.alphaMap = card.arcMask;
           mesh.material.needsUpdate = true;
         }
-        if (_sphereRotActive) {
-          _foldRotQuat.copy(_sphereRotQuat).multiply(card.sphereQuat);
-          mesh.quaternion.slerpQuaternions(card.gridQuat, _foldRotQuat, fdE);
+        if (sphereRotActive) {
+          foldRotQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
+          mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
         } else {
           mesh.quaternion.slerpQuaternions(card.gridQuat, card.sphereQuat, fdE);
         }
         mesh.renderOrder = 0;
         mesh.material.opacity = 1;
         applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-        continue;
+        return;
       }
 
       // ── Fully in grid (dwell phase) ──
@@ -2639,7 +2610,7 @@ function createGlobeRuntime(authoredCards) {
         mesh.renderOrder = N_TOTAL - i;
         mesh.material.opacity = 1;
         applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-        continue;
+        return;
       }
 
       // ── Arc phase: waiting to peel, or actively peeling arc→grid ──
@@ -2648,7 +2619,7 @@ function createGlobeRuntime(authoredCards) {
       // Non-uniform fanT distribution (see constants block): cluster low-i cards off-screen,
       // spread high-i cards across the visible upper arc for ~17% overlap instead of ~35%.
       const splitR = ARC_DENSE_COUNT / (N_VISIBLE - 1);
-      var fanT;
+      let fanT;
       if (rawT < splitR) {
         fanT = (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT;
       } else {
@@ -2657,11 +2628,16 @@ function createGlobeRuntime(authoredCards) {
       }
       const fan = getFanData(fanT);
       const arcDelay = fanT * ARC_STAGGER;
-      const arcLocalT = Math.max(0, Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - ARC_STAGGER)));
+      const arcLocalT = Math.max(
+        0,
+        Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - ARC_STAGGER)),
+      );
       const arcLocalE = easeInOutCubic(arcLocalT);
       const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
       const pyPushed = fan.py + fan.ry * 60 * arcLocalE;
-      const wp = entryRot > 0.001 ? rotateArcPoint(pxPushed, pyPushed, entryRot) : cssToWorld(pxPushed, pyPushed);
+      const wp = entryRot > 0.001
+        ? rotateArcPoint(pxPushed, pyPushed, entryRot)
+        : cssToWorld(pxPushed, pyPushed);
       const arcY = wp.y - entryYOffset;
       const webglRot = -fan.cssRot - entryRot;
 
@@ -2684,7 +2660,7 @@ function createGlobeRuntime(authoredCards) {
       } else {
         // Peel phase — snapshot the rotation on the first frame, normalized to within ±π of
         // gridTilt for shortest angular path. Direct z-angle lerp avoids the quaternion slerp
-        // hemisphere flip that snaps when webglRot wraps across atan2's discontinuity (angle = π/2).
+        // hemisphere flip that snaps when webglRot wraps across atan2's discontinuity.
         if (card.peelStartRot == null) {
           let startRot = webglRot;
           while (startRot - card.gridTilt > Math.PI) startRot -= 2 * Math.PI;
@@ -2704,6 +2680,8 @@ function createGlobeRuntime(authoredCards) {
         applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
       }
     }
+
+    for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i);
 
     // ── Arc copy element ──
     const arcCopyEl = document.querySelector('.offer-arc-copy');
@@ -2741,23 +2719,23 @@ function createGlobeRuntime(authoredCards) {
     // box, and position the ring DOM element to match. Border-radius scales
     // proportionally with the card's projected height (the sphere card's
     // texture-baked rounded corners do the same).
-    if (_focusRingEl && _focusedCardIdx >= 0 && _focusedCardIdx < cards.length
-        && _focusRingEl.classList.contains('is-visible') && _ringCorners) {
-      const fmesh = cards[_focusedCardIdx].mesh;
+    if (focusRingEl && focusedCardIdx >= 0 && focusedCardIdx < cards.length
+        && focusRingEl.classList.contains('is-visible') && ringCorners) {
+      const fmesh = cards[focusedCardIdx].mesh;
       if (fmesh && fmesh.visible) {
         fmesh.updateMatrixWorld(true);
-        const halfW_ring = CARD_W_SPHERE * 0.5;
-        const halfH_ring = CARD_H_SPHERE * 0.5;
-        _ringCorners[0].set(-halfW_ring, -halfH_ring, 0);
-        _ringCorners[1].set(halfW_ring, -halfH_ring, 0);
-        _ringCorners[2].set(halfW_ring, halfH_ring, 0);
-        _ringCorners[3].set(-halfW_ring, halfH_ring, 0);
+        const halfWRing = CARD_W_SPHERE * 0.5;
+        const halfHRing = CARD_H_SPHERE * 0.5;
+        ringCorners[0].set(-halfWRing, -halfHRing, 0);
+        ringCorners[1].set(halfWRing, -halfHRing, 0);
+        ringCorners[2].set(halfWRing, halfHRing, 0);
+        ringCorners[3].set(-halfWRing, halfHRing, 0);
         let fMinX = Infinity; let fMinY = Infinity; let fMaxX = -Infinity; let
           fMaxY = -Infinity;
-        for (let rc = 0; rc < 4; rc++) {
-          _ringTmpVec.copy(_ringCorners[rc]).applyMatrix4(fmesh.matrixWorld).project(camera);
-          const sx = (_ringTmpVec.x + 1) * 0.5 * W;
-          const sy = (1 - _ringTmpVec.y) * 0.5 * H;
+        for (let rc = 0; rc < 4; rc += 1) {
+          ringTmpVec.copy(ringCorners[rc]).applyMatrix4(fmesh.matrixWorld).project(camera);
+          const sx = (ringTmpVec.x + 1) * 0.5 * W;
+          const sy = (1 - ringTmpVec.y) * 0.5 * H;
           if (sx < fMinX) fMinX = sx;
           if (sy < fMinY) fMinY = sy;
           if (sx > fMaxX) fMaxX = sx;
@@ -2765,23 +2743,23 @@ function createGlobeRuntime(authoredCards) {
         }
         const ringW = Math.max(0, fMaxX - fMinX);
         const ringH = Math.max(0, fMaxY - fMinY);
-        _focusRingEl.style.left = `${Math.round(fMinX)}px`;
-        _focusRingEl.style.top = `${Math.round(fMinY)}px`;
-        _focusRingEl.style.width = `${Math.round(ringW)}px`;
-        _focusRingEl.style.height = `${Math.round(ringH)}px`;
+        focusRingEl.style.left = `${Math.round(fMinX)}px`;
+        focusRingEl.style.top = `${Math.round(fMinY)}px`;
+        focusRingEl.style.width = `${Math.round(ringW)}px`;
+        focusRingEl.style.height = `${Math.round(ringH)}px`;
         // Match the card's texture-baked corner radius (22/631 of card height).
-        _focusRingEl.style.borderRadius = `${Math.round(ringH * 22 / 631)}px`;
+        focusRingEl.style.borderRadius = `${Math.round((ringH * 22) / 631)}px`;
       }
     }
   }
 
   // ── Layout ─────────────────────────────────────────────────────────────────
-  let _resizeHandler = null;
-  let _layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
-  let _bpMediaQueries = []; // matchMedia listeners for BP boundaries (DevTools toggle backup)
+  let resizeHandler = null;
+  let layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
+  let bpMediaQueries = []; // matchMedia listeners for BP boundaries (DevTools toggle backup)
 
   // ── Init ───────────────────────────────────────────────────────────────────
-  function init() {
+  function initRuntime() {
     const canvas = document.getElementById('offer-globe-canvas');
     if (!canvas) return;
 
@@ -2807,7 +2785,8 @@ function createGlobeRuntime(authoredCards) {
     // .card-modal__backdrop, so it stays sharp while the backdrop blurs the main canvas.
     modalCanvasEl = document.getElementById('modal-card-canvas');
     if (modalCanvasEl) {
-      modalRenderer = new THREE.WebGLRenderer({ canvas: modalCanvasEl, antialias: true, alpha: true });
+      const modalGlOpts = { canvas: modalCanvasEl, antialias: true, alpha: true };
+      modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
       modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       modalRenderer.setSize(W, H);
       modalRenderer.setClearColor(0x000000, 0);
@@ -2835,8 +2814,9 @@ function createGlobeRuntime(authoredCards) {
       // through to the same-BP path otherwise (cheap resize handling).
       const nextBP = resolveBP(W);
       if (nextBP.name !== currentBPName) {
+        // eslint-disable-next-line no-use-before-define
         destroy();
-        init();
+        initRuntime();
         return;
       }
       spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
@@ -2860,34 +2840,36 @@ function createGlobeRuntime(authoredCards) {
       computeGridLayout();
     }
     doLayout();
-    if (_resizeHandler) window.removeEventListener('resize', _resizeHandler);
-    _resizeHandler = doLayout;
-    window.addEventListener('resize', _resizeHandler, { passive: true });
+    if (resizeHandler) window.removeEventListener('resize', resizeHandler);
+    resizeHandler = doLayout;
+    window.addEventListener('resize', resizeHandler, { passive: true });
 
     // Recompute spacer metrics whenever page height changes (images/blocks loading
     // above the spacer shift its offsetTop; spacerHeight=0 at first paint makes
     // progress=Infinity and skips straight to the zoom/pull-quote phase).
-    if (_layoutObs) _layoutObs.disconnect();
-    _layoutObs = new ResizeObserver(function () {
+    if (layoutObs) layoutObs.disconnect();
+    layoutObs = new ResizeObserver(() => {
       spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
-      spacerHeight = spacer ? (spacer.offsetHeight || window.innerHeight * 7) : window.innerHeight * 7;
+      spacerHeight = spacer
+        ? (spacer.offsetHeight || window.innerHeight * 7)
+        : window.innerHeight * 7;
     });
-    _layoutObs.observe(document.body);
+    layoutObs.observe(document.body);
 
     // matchMedia listeners for the BP boundaries are a backup for the 'resize' event,
     // which Chrome doesn't always fire when DevTools device-emulation is toggled.
     // Each listener fires once when the viewport crosses its boundary in either direction.
-    if (_bpMediaQueries.length === 0) {
+    if (bpMediaQueries.length === 0) {
       const queries = [
         window.matchMedia('(max-width: 767px)'),
         window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
         window.matchMedia('(min-width: 1024px)'),
       ];
-      const onMQChange = function () { doLayout(); };
+      const onMQChange = () => { doLayout(); };
       queries.forEach((mq) => {
         if (mq.addEventListener) mq.addEventListener('change', onMQChange);
         else mq.addListener(onMQChange); // Safari < 14 fallback
-        _bpMediaQueries.push({ mq, handler: onMQChange });
+        bpMediaQueries.push({ mq, handler: onMQChange });
       });
     }
 
@@ -2922,20 +2904,20 @@ function createGlobeRuntime(authoredCards) {
   function destroy() {
     stopTicker();
     tickerAdded = false;
-    if (_resizeHandler) {
-      window.removeEventListener('resize', _resizeHandler);
-      _resizeHandler = null;
+    if (resizeHandler) {
+      window.removeEventListener('resize', resizeHandler);
+      resizeHandler = null;
     }
-    if (_layoutObs) {
-      _layoutObs.disconnect();
-      _layoutObs = null;
+    if (layoutObs) {
+      layoutObs.disconnect();
+      layoutObs = null;
     }
-    if (_bpMediaQueries.length) {
-      _bpMediaQueries.forEach((entry) => {
+    if (bpMediaQueries.length) {
+      bpMediaQueries.forEach((entry) => {
         if (entry.mq.removeEventListener) entry.mq.removeEventListener('change', entry.handler);
         else entry.mq.removeListener(entry.handler);
       });
-      _bpMediaQueries = [];
+      bpMediaQueries = [];
     }
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
@@ -2953,13 +2935,13 @@ function createGlobeRuntime(authoredCards) {
     // A11y gallery cleanup so a fresh init starts clean.
     const galleryEl = document.getElementById('globe-gallery-a11y');
     if (galleryEl && galleryEl.parentNode) galleryEl.parentNode.removeChild(galleryEl);
-    if (_focusRingEl && _focusRingEl.parentNode) _focusRingEl.parentNode.removeChild(_focusRingEl);
-    _galleryBtns = null;
-    _a11yInteractive = false;
-    _focusRingEl = null;
-    _focusedCardIdx = -1;
-    _ringCorners = null;
-    _ringTmpVec = null;
+    if (focusRingEl && focusRingEl.parentNode) focusRingEl.parentNode.removeChild(focusRingEl);
+    galleryBtns = null;
+    a11yInteractive = false;
+    focusRingEl = null;
+    focusedCardIdx = -1;
+    ringCorners = null;
+    ringTmpVec = null;
     // Reset arc-copy and pull-quote
     const arcCopyEl = document.querySelector('.offer-arc-copy');
     if (arcCopyEl) arcCopyEl.style.cssText = '';
@@ -2970,9 +2952,8 @@ function createGlobeRuntime(authoredCards) {
     // overwrite both. Clearing them would break the re-init flow.
   }
 
-  return { init, destroy };
+  return { init: initRuntime, destroy };
 }
-
 
 // ── Block entry point ────────────────────────────────────────────────────────
 export default async function init(el) {
@@ -3009,14 +2990,16 @@ export default async function init(el) {
     if (roleEl && pullQuote.role) roleEl.textContent = pullQuote.role;
   }
 
-  const fetchedCards = await (fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null));
+  const fetchedCards = await (
+    fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null)
+  );
 
   // Prefer fully-fetched cards; fall back to what was in the DOM at init() time.
   const cards = fetchedCards || domCards;
   const runtime = createGlobeRuntime(cards);
   if (!runtime) { el.classList.add('globe--reduced'); return el; }
   runtime.init();
-  el._globeRuntime = runtime;
+  el.globeRuntime = runtime;
 
   // Teardown when the block is removed from the document (SPA / MEP swaps).
   const removalObserver = new MutationObserver(() => {

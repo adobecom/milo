@@ -1,6 +1,4 @@
-/* eslint-disable */
-/* GLOBE_MARKUP + buildGlobeDom: the DOM the runtime expects, built into the block.
-   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
+/* GLOBE_MARKUP + buildGlobeDom: the DOM the runtime expects, built into the block. */
 
 // ── DOM the runtime expects ──────────────────────────────────────────────────
 // The original prototype hand-authored these nodes in index.html. We build them
@@ -70,7 +68,7 @@ const GLOBE_MARKUP = `
   </div>
 `;
 
-export function buildGlobeDom(el) {
+export default function buildGlobeDom(el) {
   el.id = 'offer-pin-spacer';
   el.classList.add('offer-pin-spacer');
   el.innerHTML = GLOBE_MARKUP;

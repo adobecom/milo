@@ -1,6 +1,4 @@
-/* eslint-disable */
-/* GLSL source strings for the card + modal ShaderMaterials.
-   lint disabled — style cleanup (no-var, naming, max-len) is one tracked refactor task. */
+/* GLSL source strings for the card + modal ShaderMaterials. */
 
 // ── Modal SDF shader material ─────────────────────────────────────────────
 // Used only for the modal-active card. A rasterized alphaMap will always pixelate
@@ -12,7 +10,7 @@
 // The SDF coordinate space maps UV (0,1)×(0,1) → pos in [-A/2,A/2]×[-0.5,0.5] so
 // corner radius uRadius is expressed as a fraction of card height (22/631 ≈ 0.0349).
 
-export const _MODAL_VERT = [
+export const MODAL_VERT = [
   'varying vec2 vUv;',
   'void main() {',
   '  vUv = uv;',
@@ -20,7 +18,7 @@ export const _MODAL_VERT = [
   '}',
 ].join('\n');
 
-export const _MODAL_FRAG = [
+export const MODAL_FRAG = [
   'uniform sampler2D map;',
   'uniform float uAspect;',
   'uniform float uRadius;',
