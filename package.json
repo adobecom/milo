@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@adobecom/mas-platform": "github:adobecom/mas",
+    "@aws-sdk/client-s3": "^3.1047.0",
     "@axe-core/playwright": "^4.10.0",
     "@babel/core": "7.17.7",
     "@babel/eslint-parser": "7.17.0",

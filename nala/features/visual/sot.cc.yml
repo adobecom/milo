@@ -1,0 +1,18 @@
+# Imported from adobecom/nala/data/cc/sot-basic.yml
+# Mode: milolibs (A = stage URL, B = stage URL + ?milolibs=stage)
+# Tests stage page rendering with default milo vs stage milo branch.
+
+CreativeCloud: 'https://www.stage.adobe.com/creativecloud.html'
+CreativeCloudFeatures: 'https://www.stage.adobe.com/creativecloud/features.html'
+CreativeCloudPhotography: 'https://www.stage.adobe.com/creativecloud/photography.html'
+CreativeCloudStudents: 'https://www.stage.adobe.com/creativecloud/buy/students.html'
+CreativeCloudAllApps: 'https://www.stage.adobe.com/creativecloud/all-apps.html'
+CreativeCloudPhotoshop: 'https://www.stage.adobe.com/products/photoshop.html'
+CreativeCloudIllustrator: 'https://www.stage.adobe.com/products/illustrator.html'
+CreativeCloudPhotoshopLightroom: 'https://www.stage.adobe.com/products/photoshop-lightroom.html'
+CreativeCloudPremiere: 'https://www.stage.adobe.com/products/premiere.html'
+CreativeCloudAIOverview: 'https://www.stage.adobe.com/ai/overview.html'
+CreativeCloudFirefly: 'https://www.stage.adobe.com/products/firefly.html'
+CreativeCloudPhotographyApps: 'https://www.stage.adobe.com/creativecloud/photography/apps.html'
+CreativeCloudDesign: 'https://www.stage.adobe.com/creativecloud/design.html'
+CreativeCloudVideo: 'https://www.stage.adobe.com/creativecloud/video.html'

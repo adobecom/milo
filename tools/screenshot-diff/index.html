@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Screenshot Diff</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./screenshot-diff.css" />
+  </head>
+  <body>
+    <header class="page-header">
+      <h1>Screenshot Diff</h1>
+      <p class="subtitle">
+        Visual regression for adobe.com pages — compare stable vs. beta and review pixel diffs.
+      </p>
+    </header>
+
+    <main>
+      <section class="controls">
+        <div class="field">
+          <label for="project">Project</label>
+          <select id="project">
+            <option value="milo">milo</option>
+            <option value="bacom">bacom</option>
+            <option value="feds">feds</option>
+            <option value="caas">caas</option>
+            <option value="uar">uar</option>
+          </select>
+        </div>
+        <button id="load-btn" class="primary">Load latest run</button>
+        <button id="trigger-btn" class="secondary">Trigger new run on GitHub</button>
+      </section>
+
+      <section id="status" class="status" aria-live="polite"></section>
+
+      <section id="run-meta" class="run-meta hidden">
+        <span class="label">Latest run:</span>
+        <span id="run-timestamp" class="value">—</span>
+        <span class="separator">·</span>
+        <span class="label">Comparisons:</span>
+        <span id="run-count" class="value">0</span>
+        <span class="separator">·</span>
+        <span class="label">With diffs:</span>
+        <span id="run-diff-count" class="value">0</span>
+      </section>
+
+      <section id="results" class="results"></section>
+    </main>
+
+    <script type="module" src="./screenshot-diff.js"></script>
+  </body>
+</html>

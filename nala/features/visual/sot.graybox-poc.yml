@@ -1,0 +1,106 @@
+# Graybox PoC visual regression
+# Compares the aem.reviews preview source (a) against the
+# business-graybox.adobe.com publish target (b) — i.e. "did what we
+# previewed actually publish to graybox correctly?"
+#
+# Pattern:
+#   a: https://<subdomain>--main--da-bacom--adobecom.aem.reviews/<path>
+#   b: https://<subdomain>.business-graybox.adobe.com/<path>.html
+#
+# URL list synced with the sitemap.xml on each PoC subdomain.
+
+# Per-site options. These pages have lazy customer-story cards that
+# only fetch when scrolled into view — without the scroll wait
+# strategy, screenshots capture loading spinners.
+__config__:
+  waitStrategy: scroll
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# POC One (dapocone)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. Home page (no .html suffix on root)
+'pocone-home':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/'
+  b: 'https://dapocone.business-graybox.adobe.com/'
+
+# 2. Customer Success Stories — main + variants
+'pocone-customer-success-stories':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/customer-success-stories'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/customer-success-stories.html'
+
+'pocone-doc-with-fragment':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/doc-with-fragment'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/doc-with-fragment.html'
+
+# 3. Drafts under customer-success-stories
+'pocone-drafts-content-page1':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/content/page1'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/drafts/content/page1.html'
+
+'pocone-drafts-content-page2':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/content/page2'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/drafts/content/page2.html'
+
+'pocone-drafts-page1':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/page1'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/drafts/page1.html'
+
+'pocone-drafts-page2':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/page2'
+  b: 'https://dapocone.business-graybox.adobe.com/customer-success-stories/drafts/page2.html'
+
+# 4. Top-level drafts folder (different folder location than above)
+'pocone-snap-test':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/drafts/sukamat/snap-test/my-page'
+  b: 'https://dapocone.business-graybox.adobe.com/drafts/sukamat/snap-test/my-page.html'
+
+# 5. Fragments (reusable content modules — publish separately from regular pages)
+'pocone-fragment-armohamm':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/fragments/drafts/armohamm/fragment-1'
+  b: 'https://dapocone.business-graybox.adobe.com/fragments/drafts/armohamm/fragment-1.html'
+
+# NOTE: /fragments/fragment-1 in the sitemap renders fine on aem.reviews
+# but returns 404 on business-graybox publish. Including it as a
+# regression catch — the diff will obviously surface the 404 vs real
+# page mismatch.
+'pocone-fragment-1':
+  a: 'https://dapocone--main--da-bacom--adobecom.aem.reviews/fragments/fragment-1'
+  b: 'https://dapocone.business-graybox.adobe.com/fragments/fragment-1.html'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# POC Two (dapoctwo)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# 1. Home page (no .html suffix on root)
+'poctwo-home':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/'
+  b: 'https://dapoctwo.business-graybox.adobe.com/'
+
+# 2. Customer Success Stories — main + variants
+'poctwo-customer-success-stories':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/customer-success-stories/customer-success-stories'
+  b: 'https://dapoctwo.business-graybox.adobe.com/customer-success-stories/customer-success-stories.html'
+
+'poctwo-doc-with-fragment':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/customer-success-stories/doc-with-fragment'
+  b: 'https://dapoctwo.business-graybox.adobe.com/customer-success-stories/doc-with-fragment.html'
+
+# 3. Drafts under customer-success-stories
+'poctwo-drafts-content-page1':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/content/page1'
+  b: 'https://dapoctwo.business-graybox.adobe.com/customer-success-stories/drafts/content/page1.html'
+
+'poctwo-drafts-content-page2':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/customer-success-stories/drafts/content/page2'
+  b: 'https://dapoctwo.business-graybox.adobe.com/customer-success-stories/drafts/content/page2.html'
+
+# 4. Top-level drafts folder
+'poctwo-snap-test':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/drafts/sukamat/snap-test/my-page'
+  b: 'https://dapoctwo.business-graybox.adobe.com/drafts/sukamat/snap-test/my-page.html'
+
+# 5. Fragments
+'poctwo-fragment-armohamm':
+  a: 'https://dapoctwo--main--da-bacom--adobecom.aem.reviews/fragments/drafts/armohamm/fragment-1'
+  b: 'https://dapoctwo.business-graybox.adobe.com/fragments/drafts/armohamm/fragment-1.html'
