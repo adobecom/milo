@@ -70,9 +70,11 @@ function decorateVideoVariant(container) {
   const [ctaCell, mediaCell] = [...row.children];
   if (!ctaCell && !mediaCell) return;
 
-  if (mediaCell) {
+  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
     mediaCell.classList.add('media');
     container.append(mediaCell);
+  } else {
+    mediaCell?.remove();
   }
 
   if (ctaCell) {
