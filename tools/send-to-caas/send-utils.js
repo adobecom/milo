@@ -16,7 +16,7 @@ const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
 
-const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
+export const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
@@ -350,16 +350,20 @@ export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {
   return lastResult;
 }
 
-const LINGO_AUTO_REPOS = new Set(['bacom']);
-
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
   const repo = (options.repo || '').toLowerCase();
   const origin = LANG_FIRST_SOURCE_MAPPINGS[repo] || repo;
 
-  const useLanguageFirst = LINGO_AUTO_REPOS.has(origin)
+  // news operates separately from the lingo mapping and always uses the manual checkbox.
+  // auto-detect on (non-news): mapping wins; origin not in mapping → non-LFL
+  // auto-detect off or news: use manual languageFirst checkbox
+  const lflDetected = options.autoDetectLingo && origin !== 'news'
     ? await isLingoLangFirstPath(origin, options.prodUrl, 'bulkpublisher')
-    : options.languageFirst;
+    : null;
+  const useLanguageFirst = !options.autoDetectLingo || origin === 'news'
+    ? options.languageFirst
+    : (lflDetected ?? false);
 
   if (useLanguageFirst) {
     const mappedGetLangFirst = (path, r, fqdn) => getLanguageFirstCountryAndLang(
