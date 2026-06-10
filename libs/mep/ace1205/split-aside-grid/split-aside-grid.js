@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const SWIPE_THRESHOLD = 20;
@@ -11,6 +11,8 @@ const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)'
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+let videoObserver = null;
+let resizeObserver = null;
 
 function markStandaloneLinks(foreground) {
   foreground.querySelectorAll('a').forEach((a) => {
@@ -20,6 +22,41 @@ function markStandaloneLinks(foreground) {
     const linkText = a.textContent?.trim() ?? '';
     parent?.classList.replace('body-md', 'link-container');
     if (parentText === linkText) a.classList.add('standalone-link', 'label');
+  });
+}
+
+function replaceVideoIntersectionObserver(medias) {
+  medias.forEach((media) => {
+    const videoEl = media.querySelector('video');
+    if (!videoEl) return;
+    const oldObserver = window?.videoIntersectionObs;
+    if (oldObserver) oldObserver.unobserve(videoEl);
+
+    if (videoObserver) {
+      videoObserver.observe(videoEl);
+      return;
+    }
+
+    videoObserver = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { isIntersecting, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
+        const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
+          && video.readyState > video.HAVE_CURRENT_DATA;
+        const isActive = video.closest('.media')?.getAttribute('data-slot') === '0';
+
+        if (!isIntersecting) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
+          video.pause();
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying && isActive) {
+          video.play();
+          syncPausePlayIcon(video, { type: 'playing' });
+        }
+      });
+    }, { threshold: 0.4 });
+    videoObserver.observe(videoEl);
   });
 }
 
@@ -116,6 +153,18 @@ function setupBlock(el) {
       m.style.setProperty('--split-aside-grid-stack-index', slot);
       m.style.setProperty('--split-aside-grid-stack-slot', slot);
       m.dataset.slot = String(slot);
+      const isActive = slot === 0;
+      const video = m.querySelector('video');
+      if (!video) return;
+      const { playedOnce = false } = video.dataset;
+      if (playedOnce) return;
+      if (isActive) {
+        video.play();
+        syncPausePlayIcon(video, { type: 'playing' });
+        return;
+      }
+      video.pause();
+      syncPausePlayIcon(video);
     });
 
     items.forEach((item, idx) => {
@@ -385,16 +434,35 @@ function setupBlock(el) {
     el.removeEventListener('keydown', onKeyDown);
   }
 
+  function addResizeObserver() {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { scrollWidth } = el;
+      const width = document.documentElement.clientWidth;
+      stack.style.setProperty('--button-right', `${scrollWidth - width}px`);
+    });
+    resizeObserver.observe(el);
+  }
+
+  function removeResizeObserver() {
+    if (!resizeObserver) return;
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+
   function bindDesktop() {
     if (desktopBound) return;
     desktopBound = true;
     items.forEach((item) => item.addEventListener('click', onItemClick));
+    addResizeObserver();
   }
 
   function unbindDesktop() {
     if (!desktopBound) return;
     desktopBound = false;
     items.forEach((item) => item.removeEventListener('click', onItemClick));
+    removeResizeObserver();
   }
 
   function syncBindings() {
@@ -457,6 +525,7 @@ function decorate(block) {
     'aria-atomic': 'true',
   });
   block.append(itemsWrap, ariaLive);
+  replaceVideoIntersectionObserver(medias);
 }
 
 export default function init(el) {
