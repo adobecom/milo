@@ -8,11 +8,15 @@ import {
   getMasSummary,
   getLingoSummary,
   getCaasSummary,
+  setPreviewButton,
+} from './mep-overlay-logic.js';
+import {
+  toggleHighlight,
   getParameters,
   getPageUpdates,
-  setPreviewButton,
-  toggleHighlight,
-} from './mep-overlay-logic.js';
+  setBadgeEventListeners,
+} from './mep-overlay-highlight.js';
+import { saveToMmm } from '../mep-next.js';
 
 const CARD_DATA = {
   actions: [
@@ -338,22 +342,26 @@ function setDefaultValues() {
   });
 }
 
-function watchMasContent() {
+function setMasObserver() {
   const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
 
-  const isMasNode = (node) => node.nodeType === Node.ELEMENT_NODE
-    && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR));
+  const isMasNode = (node) => (
+    node.nodeType === Node.ELEMENT_NODE
+    && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR))
+  );
 
   const hasMasChanges = (mutations) => mutations.some(
-    (m) => [...m.addedNodes].some(isMasNode),
+    ({ addedNodes }) => [...addedNodes].some(isMasNode),
   );
 
   const refreshMasSummary = () => {
     const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
     if (!bodyEl) return;
-    bodyEl.replaceChildren(...getMasSummary().flatMap(([label, value]) => (
+
+    const rows = getMasSummary().flatMap(([label, value]) => (
       Array.isArray(value) ? buildNestedSection(label, value) : buildRow(label, value)
-    )));
+    ));
+    bodyEl.replaceChildren(...rows);
   };
 
   let debounceTimer;
@@ -380,13 +388,15 @@ async function buildOverlay() {
 }
 
 async function init() {
+  saveToMmm();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
   setEventListeners();
   setDefaultValues();
   setPreviewButton();
-  watchMasContent();
+  setMasObserver();
+  setBadgeEventListeners();
 }
 
 init();

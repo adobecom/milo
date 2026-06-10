@@ -1,3 +1,7 @@
+:root {   
+  --other-fragment-outline: #6c757d;
+  --other-fragment-background: #6c757d;
+}
 
 /* mepHighlight */
 body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *) {
@@ -137,6 +141,7 @@ body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
 }
 
 body[data-other-highlight='true'] [data-fragment-default]::before {
+  z-index: 3;
   content: '🔗 fragment: ' attr(data-fragment-display);
   cursor: pointer !important;
   background-color: #e9ecef !important;

@@ -1,17 +1,6 @@
-import {
-  MAS_OSI_SELECTOR,
-  watchForMasContent,
-  unwatchForMasContent,
-  injectMasBadges,
-  removeMasBadges,
-} from '../mep-mas.js';
-import {
-  injectCaasBadges,
-  removeCaasBadges,
-  watchForCaasBlocks,
-  unwatchForCaasBlocks,
-} from '../mep-caas.js';
+import { MAS_OSI_SELECTOR } from '../mep-mas.js';
 import { mepMasSubCollections } from '../mep-mas-subcollection.js';
+import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
 import {
   getMetadata,
   getConfig,
@@ -30,13 +19,6 @@ import {
   getMiloLocaleSettings,
   isMasGeoDetectionEnabled,
 } from '../../../../blocks/merch/merch.js';
-
-const HIGHLIGHT_KEYS = {
-  mep: 'mepHighlight',
-  caas: 'mepCaasHighlight',
-  mas: 'mepMasHighlight',
-  other: 'otherHighlight',
-};
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -71,7 +53,6 @@ function parsePageAndUrl(config, windowLocation, prefix) {
     try {
       return STAGE_ALLOWED_HOSTS.includes(new URL(`https://${key}`).host);
     } catch (e) {
-      /* c8 ignore next */
       return false;
     }
   });
@@ -384,6 +365,30 @@ export function getMasSummary() {
   ];
 }
 
+let additionalManifests;
+export async function getAdditionalManifests() {
+  const mepConfig = parseMepConfig();
+  if (!mepConfig || additionalManifests) return additionalManifests;
+
+  try {
+    const url = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Network error');
+
+    const data = await response.json();
+    const existingPaths = new Set(mepConfig.activities.map((a) => normalizePath(a.url)));
+    data.activities = data.activities
+      .filter((a) => !existingPaths.has(normalizePath(a.url)))
+      .map((a) => ({ ...a, source: 'MMM' }));
+
+    additionalManifests = data;
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Error fetching 7-day page data:', error);
+  }
+  return additionalManifests;
+}
+
 export async function setPreviewButton() {
   function getManifestInputParams(popup) {
     return [...popup.querySelectorAll('input[type="text"].mep-load-manifest')]
@@ -419,74 +424,4 @@ export async function setPreviewButton() {
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));
   setOrDelete(HIGHLIGHT_KEYS.other, getCheckboxParam(popup, 'toggle-other-fragments'));
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
-}
-
-let additionalManifests;
-export async function getAdditionalManifests() {
-  const mepConfig = parseMepConfig();
-  if (!mepConfig || additionalManifests) return additionalManifests;
-
-  try {
-    const url = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('Network error');
-
-    const data = await response.json();
-    const existingPaths = new Set(mepConfig.activities.map((a) => normalizePath(a.url)));
-    data.activities = data.activities
-      .filter((a) => !existingPaths.has(normalizePath(a.url)))
-      .map((a) => ({ ...a, source: 'MMM' }));
-
-    additionalManifests = data;
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Error fetching 7-day page data:', error);
-  }
-  return additionalManifests;
-}
-
-export function getParameters() {
-  const urlParams = new URLSearchParams(window.location.search);
-  return {
-    mepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
-    mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
-    mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
-    mepOtherHighlight: urlParams.get(HIGHLIGHT_KEYS.other),
-  };
-}
-
-export function toggleHighlight(event) {
-  const HIGHLIGHT_HANDLERS = {
-    'toggle-mep': {
-      dataKey: HIGHLIGHT_KEYS.mep,
-      on: [],
-      off: [],
-    },
-    'toggle-caas': {
-      dataKey: HIGHLIGHT_KEYS.caas,
-      on: [watchForCaasBlocks, injectCaasBadges],
-      off: [unwatchForCaasBlocks, removeCaasBadges],
-    },
-    'toggle-mas': {
-      dataKey: HIGHLIGHT_KEYS.mas,
-      on: [watchForMasContent, injectMasBadges],
-      off: [unwatchForMasContent, removeMasBadges],
-    },
-    'toggle-other-fragments': {
-      dataKey: HIGHLIGHT_KEYS.other,
-      on: [],
-      off: [],
-    },
-  };
-
-  const { checked, id } = event.target;
-  const handler = HIGHLIGHT_HANDLERS[id];
-  if (!handler) return;
-  document.body.dataset[handler.dataKey] = checked;
-  (checked ? handler.on : handler.off).forEach((fn) => fn());
-}
-
-export function getPageUpdates() {
-  const count = 0;
-  return `${count} Page Updates`;
 }
