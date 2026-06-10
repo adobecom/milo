@@ -441,40 +441,45 @@ export function handleObjectFit(bgRow) {
   });
 }
 
+function shouldUseViewportObserver(video) {
+  if (!video || video.hasAttribute('data-hoverplay') || video.controls) return false;
+  return video.hasAttribute('data-play-viewport') || video.hasAttribute('autoplay');
+}
+
 function getVideoIntersectionObserver() {
   if (!window?.videoIntersectionObs) {
     window.videoIntersectionObs = new window.IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        const { intersectionRatio, target: video } = entry;
+        const { isIntersecting, intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
         const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
+        const playInViewport = video.hasAttribute('data-play-viewport');
+        const canPlay = !isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying;
 
-        if (intersectionRatio <= 0.8) {
+        if (!isIntersecting) {
           if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
-        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (canPlay && (!playInViewport || intersectionRatio > 0.8)) {
           video.play();
           syncPausePlayIcon(video, { type: 'playing' });
         }
       });
-    }, { threshold: [0.8] });
+    }, { threshold: [0, 0.8] });
   }
   return window.videoIntersectionObs;
 }
 
 function applyInViewPortPlay(video) {
-  if (!video) return;
-  if (video.hasAttribute('data-play-viewport')) {
-    const observer = getVideoIntersectionObserver();
-    video.addEventListener('ended', () => {
-      video.dataset.playedOnce = true;
-      syncPausePlayIcon(video);
-    });
-    observer.observe(video);
-  }
+  if (!shouldUseViewportObserver(video)) return;
+  const observer = getVideoIntersectionObserver();
+  video.addEventListener('ended', () => {
+    video.dataset.playedOnce = true;
+    syncPausePlayIcon(video);
+  });
+  observer.observe(video);
 }
 
 export function decorateMultiViewport(el) {
@@ -650,7 +655,7 @@ function isEmptyCell(el) {
 }
 
 function cloneChildren(source) {
-  return [...source.childNodes].map((child) => child.cloneNode(true));
+  return [...source.children].map((child) => child.cloneNode(true));
 }
 
 function parseVariants(text) {
