@@ -578,11 +578,12 @@ export function initBulkPublisherLingoMapping() {
 }
 
 /**
- * Returns true if the path's locale is a regional site of the English base for the given origin.
- * Used by the bulk publisher to auto-detect whether to skip Language First Localization.
- * English regional sites (e.g. gb, au, in, jp, kr) do NOT use LFL; all other bacom locales do.
+ * Returns true only when the path's locale is actively known to require Language First Localization
+ * for the given origin — i.e., it appears in the lingo mapping AND is NOT an English regional site.
+ * Returns false for English regional sites (gb, au, in, jp, kr) and for locales absent from the
+ * mapping entirely (e.g. a news-URL locale processed under the bacom preset).
  */
-export async function isLingoEnglishRegionalSite(origin, path, fqdn = 'www.adobe.com') {
+export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
   try {
     const configJson = await fetchLingoSiteMapping(fqdn);
     const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
@@ -605,11 +606,25 @@ export async function isLingoEnglishRegionalSite(origin, path, fqdn = 'www.adobe
     }
     const localeStr = pathname.split('/')[1] || '';
 
-    return siteLocalesData.some(({ uniqueSiteId: sid, baseSite, regionalSites }) => (
-      sid === uniqueSiteId
-      && baseSite === '/'
-      && isLocaleInRegionalSites(regionalSites, localeStr)
-    ));
+    let foundInMapping = false;
+    let isEnglishRegional = false;
+
+    for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
+      if (sid === uniqueSiteId) {
+        const baseLocale = baseSite.split('/')[1] || '';
+        if (localeStr === baseLocale) {
+          foundInMapping = true;
+          break;
+        }
+        if (isLocaleInRegionalSites(regionalSites, localeStr)) {
+          foundInMapping = true;
+          if (baseSite === '/') isEnglishRegional = true;
+          break;
+        }
+      }
+    }
+
+    return foundInMapping && !isEnglishRegional;
   } catch {
     return false;
   }
