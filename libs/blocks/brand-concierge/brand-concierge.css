@@ -454,8 +454,8 @@
 }
 
 .hero .bc-header-title {
-  font-size: 36px;
-  line-height: 45px;
+  font-size: 28px;
+  line-height: 35px;
 }
 
 .hero .bc-input-field {
@@ -1105,6 +1105,11 @@
   .hero .bc-header {
     padding: 0 50px;
   }
+
+  .hero .bc-header-title {
+  font-size: 36px;
+  line-height: 45px;
+}
 
   .hero .bc-input-field {
     margin-bottom: 32px;
