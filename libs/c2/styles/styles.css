@@ -1554,3 +1554,42 @@ span.hang-opening-quote {
     animation-range: entry 0% entry 70%, exit 50% exit 90%;
   }
 }
+
+/* Dirty dark overrides */
+:root:has(meta[name="color-theme"][content="dark"]) {
+  body,
+  .tabs,
+  .hub-hero {
+    background-color: #000;
+  }
+
+  .hub-hero-header,
+  .hub-hero-header *,
+  .hub-hero-carousel-header,
+  .hub-hero-carousel-header *,
+  .hub-hero-carousel-item-header p {
+    color: #fff;
+  }
+
+  .hub-hero-carousel-item {
+    background-color: rgb(19, 19, 19);
+  }
+
+  .hub-hero-header .heading-2 {
+    font-size: var(--s2a-typography-font-size-heading-1);
+    line-height: var(--s2a-typography-line-height-heading-1);
+    letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
+  }
+
+  .hub-hero-header h1.heading-2:nth-of-type(2) {
+    margin-top: -24px;
+  }
+
+  .logo-ticker * {
+    fill: white;
+  }
+
+  .tab-list {
+    filter: invert(1);
+  }
+}
