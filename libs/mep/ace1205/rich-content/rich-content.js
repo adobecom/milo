@@ -42,6 +42,7 @@ function decorateJumpLinks(content, foreground) {
 
   const anchors = [...jumpRow.querySelectorAll('a')];
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
+  const list = createTag('ul');
 
   anchors.forEach((anchor) => {
     const badge = createTag('span', { class: 'jump-link-badge' });
@@ -53,8 +54,10 @@ function decorateJumpLinks(content, foreground) {
       e.preventDefault();
       scrollToHashedElement(getSectionHash(anchor));
     });
-    nav.append(anchor);
+    list.append(createTag('li', {}, anchor));
   });
+
+  nav.append(list);
 
   jumpRow.remove();
   foreground.append(nav);

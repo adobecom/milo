@@ -1419,7 +1419,7 @@ span.hang-opening-quote {
   }
 
   @keyframes dg-top-door {
-    from { transform: translateY(-20vh); }
+    from { transform: translateY(-30vh); }
     to { transform: translateY(0); }
   }
 
