@@ -202,6 +202,24 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   background: var(--mep-white-12);
 }
 
+.mep-drawer select::-webkit-scrollbar {
+  width: 12px;
+}
+
+.mep-drawer select::-webkit-scrollbar-track {
+  border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer select::-webkit-scrollbar-thumb {
+  background: var(--mep-dark-44);
+  border-radius: 12px;
+  border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer select::-webkit-scrollbar-thumb:hover {
+  background: var(--mep-white-12);
+}
+
 .mep-drawer .mep-tab-content {
   display: none;
   flex-direction: column;
