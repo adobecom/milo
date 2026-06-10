@@ -48,6 +48,23 @@ function hideMedia(media) {
   });
 }
 
+function setupStickyBoundary(headline, list) {
+  const tabletMQ = window.matchMedia('(width >= 768px) and (width < 1280px)');
+  const wrapper = headline.parentElement;
+
+  const update = () => {
+    if (!tabletMQ.matches) { wrapper.style.height = ''; return; }
+    let { height } = headline.getBoundingClientRect();
+    for (let i = 0, stop = list.children.length - 2; i < stop; i += 1) {
+      height += list.children[i].getBoundingClientRect().height;
+    }
+    wrapper.style.height = `${height}px`;
+  };
+
+  new ResizeObserver(update).observe(list);
+  tabletMQ.addEventListener('change', update);
+}
+
 function addCursorFollower(list) {
   const cursor = { x: 0, y: 0, vx: 0, hasPrev: false };
   let activeItem = null;
@@ -178,10 +195,12 @@ function decorate(block) {
   rows.slice(1).forEach((row, i) => {
     const [textCol, mediaCol] = row.children;
     const item = createTag('li', { class: 'hover-list-item' });
-    const number = createTag('span', { class: 'hover-list-number eyebrow' }, String(i + 1));
+    const number = createTag('span', { class: 'hover-list-number eyebrow' }, `${i + 1}.`);
     const text = createTag('div', { class: 'hover-list-text heading-5' });
     if (textCol) text.append(...textCol.childNodes);
-    item.append(number, text);
+    const copy = createTag('div', { class: 'hover-list-copy' });
+    copy.append(number, text);
+    item.append(copy);
     const pics = mediaCol ? [...mediaCol.querySelectorAll('picture')] : [];
     if (pics.length) {
       const media = createTag('div', { class: 'hover-list-media', popover: 'manual' });
@@ -191,10 +210,13 @@ function decorate(block) {
     list.append(item);
   });
 
+  const headlineWrapper = createTag('div', { class: 'hover-list-headline-wrapper' });
+  headlineWrapper.append(headline);
   addCursorFollower(list);
   const listCol = createTag('div', { class: 'hover-list-col' });
   listCol.append(list);
-  block.replaceChildren(headline, listCol);
+  block.replaceChildren(headlineWrapper, listCol);
+  setupStickyBoundary(headline, list);
 }
 
 export default function init(el) {
