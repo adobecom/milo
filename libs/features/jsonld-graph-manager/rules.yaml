@@ -1,0 +1,872 @@
+# JSON-LD Graph Manager — normative rules.
+#
+# Schema:
+#   name             slug used in code, tests, and the spec markdown
+#   section          §3 grouping — Output shape | Identity | References |
+#                    Graph composition | Linking | Type transforms |
+#                    Defaults and precedence | Type-specific: <Type>
+#   severity         error | warn | info
+#   requirement      the MUST/SHOULD/MAY statement
+#   applies_to       list of types, or [all], or [managed-graph]
+#   implements       list of symbols in jsonld-graph-manager.js
+#   tested_by        list of describe() block names in test/
+#   interacts_with   list of other rule names this rule cross-references
+#   notes            rationale, edge cases, policy commentary
+#   status           active | partial | unimplemented | proposed | retired
+#   last_updated     ISO date the row was edited
+#
+# CI invariants — enforced by test/features/jsonld-graph-manager/rules-registry.test.js:
+#   - every row has the required fields with valid severity/status values
+#   - rule names are unique
+#   - every interacts_with entry references an existing rule name
+#   - every implements symbol resolves to a declaration in
+#     jsonld-graph-manager.js
+#   - every rule with a predicate in validate.js exists here, and each such
+#     rule records "conformance.test.js" in tested_by
+# test/features/jsonld-graph-manager/validate.js implements the structural
+# error-severity rules as executable predicates; conformance.test.js runs them
+# against the live managed graph for every golden fixture.
+# Still aspirational (not yet enforced):
+#   - the remaining error rules (behavioural transforms, producer-eligibility
+#     fields) have no graph-level predicate and are covered by golden cases or
+#     deferred to the crawler; their tested_by is still being populated
+
+- name: single-script-tag
+  section: Output shape
+  severity: error
+  requirement: >
+    The HTML page MUST contain exactly one managed
+    <script type="application/ld+json"> tag (carrying
+    data-milo-jsonld="graph"), located in <head>. Bypassed producer scripts
+    under ignore-types-bypass do not count toward this constraint.
+  applies_to: [managed-graph]
+  implements: [JsonLdGraphManager.rewrite]
+  tested_by: []
+  interacts_with: [managed-script-marker, ignore-types-bypass]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: managed-script-marker
+  section: Output shape
+  severity: error
+  requirement: >
+    The managed script MUST carry the attribute data-milo-jsonld="graph" so
+    the graph manager can identify it for ingestion and rewrite.
+  applies_to: [managed-graph]
+  implements: [MANAGED_ATTR, MANAGED_VAL, JsonLdGraphManager.rewrite]
+  tested_by: []
+  interacts_with: [single-script-tag]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: managed-script-metadata
+  section: Output shape
+  severity: info
+  requirement: >
+    The managed script MAY carry the optional attributes
+    data-milo-jsonld-version and data-milo-jsonld-updated.
+  applies_to: [managed-graph]
+  implements: []
+  tested_by: []
+  interacts_with: []
+  notes: Optional; not surfaced today.
+  status: unimplemented
+  last_updated: "2026-05-29"
+
+- name: graph-container-shape
+  section: Output shape
+  severity: error
+  requirement: >
+    The script content MUST be a single graph object with @context set to
+    https://schema.org and a @graph array.
+  applies_to: [managed-graph]
+  implements: [JsonLdGraphManager.rewrite]
+  tested_by: [conformance.test.js]
+  interacts_with: [no-per-node-context]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: no-per-node-context
+  section: Output shape
+  severity: error
+  requirement: "@context MUST NOT appear on individual nodes."
+  applies_to: [all]
+  implements: [normalizeNode, flattenPayload]
+  tested_by: [conformance.test.js]
+  interacts_with: [graph-container-shape]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: all-nodes-have-id
+  section: Identity
+  severity: error
+  requirement: Every node in @graph MUST have an @id.
+  applies_to: [all]
+  implements: [normalizeNode]
+  tested_by: [conformance.test.js]
+  interacts_with: [page-scoped-id-format, organization-site-wide-id, unique-node-ids]
+  notes: >
+    v1: nodes whose @type is not in the RULES table fall through normalizeNode
+    without @id assignment, and the rebuild map keys on @type or
+    JSON.stringify(node). Two unrelated anonymous same-type nodes therefore
+    collapse to one entry. Track follow-up: synthesize sequential @id for
+    unknown types.
+  status: partial
+  last_updated: "2026-05-29"
+
+- name: all-nodes-have-type
+  section: Identity
+  severity: error
+  requirement: Every node in @graph MUST have an @type.
+  applies_to: [all]
+  implements: []
+  tested_by: []
+  interacts_with: [all-nodes-have-id]
+  notes: >
+    Not validated; producer payload missing @type passes through unchanged.
+  status: unimplemented
+  last_updated: "2026-05-29"
+
+- name: unique-node-ids
+  section: Identity
+  severity: error
+  requirement: >
+    Every @id in @graph MUST be unique; no two nodes may share the same @id.
+  applies_to: [all]
+  implements:
+    - "JsonLdGraphManager.rebuild (Map by @id)"
+  tested_by: [conformance.test.js]
+  interacts_with: [all-nodes-have-id]
+  notes: >
+    Enforced via the in-memory Map keyed on @id; same-id contributions are
+    merged via mergeNodes.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: page-scoped-id-format
+  section: Identity
+  severity: error
+  requirement: >
+    Page-scoped node @id values MUST follow the format
+    {canonicalPageURL}#{role} where {role} is the lowercase entity role on
+    the page (e.g. #webpage, #article, #breadcrumb, #howto, #faq).
+  applies_to: [WebPage, Article, NewsArticle, SoftwareApplication, BreadcrumbList,
+               HowTo, FAQPage, VideoObject, Event, Offer, AggregateRating]
+  implements: [pageScopedId, canonicalUrl, RULES]
+  tested_by: [conformance.test.js]
+  interacts_with: [organization-site-wide-id, repeatable-types]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-site-wide-id
+  section: Identity
+  severity: error
+  requirement: >
+    The Adobe publisher Organization is a site-wide singleton; its @id MUST
+    be {siteRoot}/#organization rather than the page-scoped format.
+  applies_to: [Organization]
+  implements: [pageScopedId, defaultOrg, RULES.Organization]
+  tested_by: []
+  interacts_with: [organization-site-root, organization-singleton]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-site-root
+  section: Identity
+  severity: info
+  requirement: >
+    Site root is https://www.adobe.com unless window.location.hostname
+    contains "business" or "bacom", in which case https://business.adobe.com.
+  applies_to: [Organization]
+  implements: [siteRoot]
+  tested_by: []
+  interacts_with: [organization-site-wide-id, organization-default-name,
+                   organization-default-url, organization-default-logo]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: nodes-referenced-by-id
+  section: References
+  severity: error
+  requirement: >
+    Nodes that appear in @graph MUST NOT be inlined as nested objects; they
+    MUST be referenced by @id.
+  applies_to: [all]
+  implements: [extractInlineEntities, injectLinks]
+  tested_by: [conformance.test.js]
+  interacts_with: [organization-nested-extraction, aggregaterating-extraction]
+  notes: >
+    v1 extracts inline entities only from a fixed property allowlist
+    (publisher, author, creator, provider, brand, seller, offers,
+    itemOffered, aggregateRating). Inline typed entities under other
+    properties (breadcrumb, mainEntity, hasPart, isPartOf, mainEntityOfPage)
+    are not yet hoisted.
+  status: partial
+  last_updated: "2026-05-29"
+
+- name: manager-baseline-graph
+  section: Graph composition
+  severity: error
+  requirement: >
+    When the manager is enabled, the managed <script> MUST be emitted
+    containing at minimum the canonical WebPage and Organization nodes,
+    even on pages where no producers contribute JSON-LD.
+  applies_to: [WebPage, Organization]
+  implements: [JsonLdGraphManager.rewrite, defaultOrg]
+  tested_by: [conformance.test.js]
+  interacts_with: [webpage-canonical-singleton, organization-singleton, ignore-types-bypass]
+  notes: >
+    Enabling the manager via jsonld-graph-manager=true is the explicit
+    opt-in to a managed graph.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: webpage-canonical-singleton
+  section: Graph composition
+  severity: error
+  requirement: >
+    The graph MUST contain exactly one WebPage node whose @id is the
+    canonical page id ({canonicalPageURL}#webpage). Producer-supplied
+    cross-page WebPage references in isPartOf and mainEntityOfPage are
+    rewritten to the canonical page id and any inline cross-page WebPage
+    body is discarded.
+  applies_to: [WebPage]
+  implements: [rewriteCrossPageRefs, maybeRewriteWebPageRef, normalizeNode]
+  tested_by: [conformance.test.js]
+  interacts_with: [manager-baseline-graph, ignore-types-bypass, primary-type-ispartof]
+  notes: >
+    Schema.org permits cross-page isPartOf and Google's spec is silent, but
+    a managed graph that contains two WebPage nodes is internally
+    inconsistent for our consumers. Policy choice C from the design review —
+    to be revisited if a consumer needs cross-page parent linkage. v1 only
+    rewrites inline WebPage bodies under isPartOf and mainEntityOfPage;
+    other properties are not scanned.
+  status: partial
+  last_updated: "2026-05-29"
+
+- name: organization-singleton
+  section: Graph composition
+  severity: error
+  requirement: The graph MUST contain exactly one Organization node.
+  applies_to: [Organization]
+  implements: [JsonLdGraphManager.rewrite, defaultOrg]
+  tested_by: [conformance.test.js]
+  interacts_with: [organization-site-wide-id, organization-nested-extraction, manager-baseline-graph]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: breadcrumblist-singleton
+  section: Graph composition
+  severity: error
+  requirement: >
+    The graph MUST contain exactly one BreadcrumbList node when applicable.
+    BreadcrumbList is optional; some pages have no breadcrumbs. When
+    breadcrumbs are present, exactly one BreadcrumbList is required.
+  applies_to: [BreadcrumbList]
+  implements: [RULES.BreadcrumbList, normalizeNode]
+  tested_by: [conformance.test.js]
+  interacts_with: [breadcrumblist-ispartof, webpage-breadcrumb-link]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: required-primary-type
+  section: Graph composition
+  severity: warn
+  requirement: >
+    The graph SHOULD contain exactly one node of a recognised primary page
+    type: Article, NewsArticle, SoftwareApplication, or any
+    SoftwareApplication subtype permitted by softwareapplication-subtype-allowed.
+  applies_to: [Article, NewsArticle, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements:
+    - "injectLinks (primary lookup)"
+  tested_by: []
+  interacts_with: [softwareapplication-subtype-allowed, webpage-mainentity-link, ignore-types-bypass]
+  notes: >
+    At risk under ignore-types-bypass when the primary type is included in
+    the ignore list — the managed graph loses its primary entity and the
+    WebPage.mainEntity link cannot resolve. Callers opt into this risk
+    explicitly.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: supplemental-singletons
+  section: Graph composition
+  severity: warn
+  requirement: >
+    The graph MAY contain at most one HowTo node and at most one FAQPage
+    node. Presence is optional; count > 1 is a hard violation.
+  applies_to: [HowTo, FAQPage]
+  implements: [RULES.HowTo, RULES.FAQPage, normalizeNode]
+  tested_by: []
+  interacts_with: []
+  notes: Multiple instances collapse to one canonical id via normalizeNode.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: aggregaterating-singleton
+  section: Graph composition
+  severity: error
+  requirement: >
+    The graph MUST contain at most one AggregateRating node. Multiple
+    producer contributions merge at the canonical @id
+    ({canonicalPageURL}#aggregaterating); source priority resolves scalar
+    conflicts.
+  applies_to: [AggregateRating]
+  implements: [RULES.AggregateRating, normalizeNode, mergeNodes]
+  tested_by: [conformance.test.js]
+  interacts_with: [aggregaterating-extraction, aggregaterating-min-rating-value,
+                   aggregaterating-min-rating-count, source-priority]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: repeatable-types
+  section: Graph composition
+  severity: info
+  requirement: >
+    The graph MAY contain multiple instances of VideoObject and Offer.
+    These types are NOT deduplicated as singletons.
+  applies_to: [VideoObject, Offer]
+  implements:
+    - "RULES.VideoObject"
+    - "RULES.Offer (rule.repeatable)"
+    - normalizeNode
+  tested_by: []
+  interacts_with: [page-scoped-id-format]
+  notes: >
+    v1 limitation: when multiple repeatable nodes are emitted without
+    distinct producer-supplied @id values, they collapse to a single node
+    at the canonical id (e.g. #videoobject, #offer). Distinct @id values
+    from producers are required to materialize multiple instances.
+    Sequential @id assignment by the manager is planned.
+  status: partial
+  last_updated: "2026-05-29"
+
+- name: webpage-publisher-link
+  section: Linking
+  severity: error
+  requirement: >
+    The WebPage node MUST have a publisher property referencing the
+    Organization node by @id.
+  applies_to: [WebPage]
+  implements: [injectLinks, RULES.WebPage.links]
+  tested_by: [conformance.test.js]
+  interacts_with: [organization-singleton]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: webpage-mainentity-link
+  section: Linking
+  severity: error
+  requirement: >
+    The WebPage node SHOULD have a mainEntity property referencing the
+    primary page type node by @id (assuming a primary entity exists:
+    Article, NewsArticle, or SoftwareApplication).
+  applies_to: [WebPage]
+  implements: [injectLinks]
+  tested_by: [conformance.test.js]
+  interacts_with: [required-primary-type]
+  notes: >
+    Spec table marks this error but the requirement text reads SHOULD.
+    Likely intended as a conditional error (MUST when a primary entity
+    exists). Auto-fulfilled when injectLinks finds a primary; silent when
+    none.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: webpage-breadcrumb-link
+  section: Linking
+  severity: warn
+  requirement: >
+    The WebPage node SHOULD have a breadcrumb property referencing the
+    BreadcrumbList node by @id. Only evaluated when a BreadcrumbList is
+    present.
+  applies_to: [WebPage]
+  implements: [injectLinks, RULES.WebPage.links]
+  tested_by: []
+  interacts_with: [breadcrumblist-singleton, ignore-types-bypass]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: primary-type-ispartof
+  section: Linking
+  severity: error
+  requirement: >
+    The primary page type node MUST have an isPartOf property referencing
+    the WebPage node by @id.
+  applies_to: [Article, NewsArticle, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements:
+    - injectLinks
+    - "RULES.{Article,SoftwareApplication}.linksBack"
+  tested_by: [conformance.test.js]
+  interacts_with: [webpage-canonical-singleton, softwareapplication-subtype-allowed]
+  notes: >
+    RULES.SoftwareApplication.linksBack now includes isPartOf: 'WebPage' and
+    mainEntityOfPage: 'WebPage', so injectLinks injects isPartOf for Article,
+    SoftwareApplication, and its subtypes. Covered by the product and
+    merch-card golden cases (graph-golden.test.js).
+  status: active
+  last_updated: "2026-05-29"
+
+- name: breadcrumblist-ispartof
+  section: Linking
+  severity: error
+  requirement: >
+    The BreadcrumbList node MUST have an isPartOf property referencing the
+    WebPage node by @id.
+  applies_to: [BreadcrumbList]
+  implements: [injectLinks, RULES.BreadcrumbList.linksBack]
+  tested_by: [conformance.test.js]
+  interacts_with: [webpage-breadcrumb-link]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: primary-type-publisher
+  section: Linking
+  severity: warn
+  requirement: >
+    The primary page type node SHOULD have a publisher property referencing
+    the Organization node by @id.
+  applies_to: [Article, NewsArticle]
+  implements: [injectLinks, RULES.Article.linksBack]
+  tested_by: []
+  interacts_with: [softwareapplication-provider]
+  notes: >
+    SoftwareApplication uses provider rather than publisher; see
+    softwareapplication-provider.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: primary-type-mainentityofpage
+  section: Linking
+  severity: info
+  requirement: >
+    The primary page type node MAY have a mainEntityOfPage property
+    referencing the WebPage node by @id.
+  applies_to: [Article, NewsArticle, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [injectLinks, "RULES.{Article,SoftwareApplication}.linksBack"]
+  tested_by: []
+  interacts_with: [webpage-canonical-singleton]
+  notes: >
+    RULES.SoftwareApplication.linksBack now includes mainEntityOfPage: 'WebPage'
+    alongside Article, so injectLinks injects it for the primary page type.
+    Covered by the editorial, product, and merch-card golden cases.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: product-to-softwareapplication
+  section: Type transforms
+  severity: error
+  requirement: >
+    A Product node MUST be transformed into a SoftwareApplication node.
+    The transform rewrites @type from Product to SoftwareApplication,
+    re-derives @id to {canonicalPageURL}#softwareapplication, and preserves
+    shared properties (name, brand, image, offers, etc.). Nested Brand and
+    Offer entities are hoisted to the top-level @graph by @id.
+  applies_to: [Product]
+  implements: [TYPE_TRANSFORMS, normalizeNode, extractInlineEntities]
+  tested_by: []
+  interacts_with: [softwareapplication-subtype-allowed, nodes-referenced-by-id]
+  notes: >
+    Adobe.com pages do not market physical products. The merch card system
+    emits Product but the canonical primary type for product-oriented pages
+    is SoftwareApplication.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-subtype-allowed
+  section: Type transforms
+  severity: info
+  requirement: >
+    The manager preserves a more specific @type when supplied by a producer.
+    Recognized SoftwareApplication subtypes are WebApplication,
+    MobileApplication, and VideoGame. When a subtype is present, the node
+    retains its specific @type, lands at the canonical #softwareapplication
+    @id, and merges with any other SoftwareApplication-family contributions.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [SOFTWARE_APP_SUBTYPES, normalizeNode, mergeNodes]
+  tested_by: []
+  interacts_with: [product-to-softwareapplication]
+  notes: >
+    Per Google Software App rich result and schema.org. The Product →
+    SoftwareApplication baseline transform does NOT rewrite a
+    producer-supplied subtype down to plain SoftwareApplication.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-default-name
+  section: Defaults and precedence
+  severity: error
+  requirement: >
+    Organization.name MUST be present; manager default is "Adobe" (or
+    "Adobe for Business" when site root is https://business.adobe.com).
+  applies_to: [Organization]
+  implements: [defaultOrg]
+  tested_by: []
+  interacts_with: [organization-site-root, organization-default-precedence]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-default-url
+  section: Defaults and precedence
+  severity: error
+  requirement: >
+    Organization.url MUST be the site root homepage URL (e.g.,
+    https://www.adobe.com/ or https://business.adobe.com/), not a
+    page-scoped URL.
+  applies_to: [Organization]
+  implements: [defaultOrg]
+  tested_by: []
+  interacts_with: [organization-site-root, organization-default-precedence]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-default-logo
+  section: Defaults and precedence
+  severity: warn
+  requirement: >
+    Organization.logo SHOULD be present as a schema.org ImageObject whose
+    url and contentUrl point at the canonical Adobe corporate horizontal
+    red logo. The manager applies this default when no producer-supplied
+    logo is present.
+  applies_to: [Organization]
+  implements: [defaultOrg, ADOBE_CORPORATE_LOGO]
+  tested_by: []
+  interacts_with: [organization-default-precedence]
+  notes: >
+    Per Google Logo guidelines the image must be at least 112x112 pixels
+    (SVG satisfies this); the ImageObject form is preferred over a bare
+    URL string for richer metadata. v1 hardcodes the www.adobe.com logo
+    path; revisit for business.adobe.com brand if a distinct logo is needed.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-default-precedence
+  section: Defaults and precedence
+  severity: info
+  requirement: >
+    Manager-synthesized Organization fields (name, url, logo) take
+    graph-manager-generated priority — they win over any producer-supplied
+    values for those three fields. Producer-supplied fields not in the
+    default set (sameAs, address, description, etc.) are preserved.
+  applies_to: [Organization]
+  implements: [JsonLdGraphManager.rewrite, mergeNodes, priorityWeight]
+  tested_by: []
+  interacts_with: [source-priority, organization-default-name,
+                   organization-default-url, organization-default-logo]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-nested-extraction
+  section: Defaults and precedence
+  severity: info
+  requirement: |
+    Organization objects embedded as inline property values (e.g. publisher,
+    author, provider) are hoisted to the top-level @graph and merged into
+    the canonical Organization node. The inline value is replaced with
+    { "@id": "<canonical-org-id>" }.
+  applies_to: [Organization]
+  implements: [extractInlineEntities, ENTITY_PROPS]
+  tested_by: []
+  interacts_with: [organization-singleton, nodes-referenced-by-id]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: organization-id-aliases
+  section: Defaults and precedence
+  severity: info
+  requirement: >
+    Producer-supplied non-canonical Organization @id values whose fragment
+    matches #org, #publisher, or #adobe are rewritten to the canonical
+    #organization fragment in reference stubs (objects with @id but no
+    @type). Full Organization nodes already get the canonical @id via the
+    identity rewrite.
+  applies_to: [Organization]
+  implements: [ORG_ID_ALIASES, canonicalizeOrgId, canonicalizeReferences]
+  tested_by: []
+  interacts_with: [organization-site-wide-id, nodes-referenced-by-id]
+  notes: >
+    Defensive measure for known producer drift; producer-side fix-up is
+    preferred long-term.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: aggregaterating-extraction
+  section: Defaults and precedence
+  severity: info
+  requirement: |
+    AggregateRating objects embedded as inline property values (typically
+    on SoftwareApplication, Article, Product, etc.) are hoisted to the
+    top-level @graph and merged into the canonical AggregateRating node at
+    {canonicalPageURL}#aggregaterating. The inline value is replaced with
+    { "@id": "<canonical-aggregaterating-id>" }.
+  applies_to: [AggregateRating]
+  implements: [extractInlineEntities, ENTITY_PROPS]
+  tested_by: []
+  interacts_with: [aggregaterating-singleton, aggregaterating-min-rating-value,
+                   aggregaterating-min-rating-count, nodes-referenced-by-id]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: breadcrumblist-items-canonical-origin
+  section: Defaults and precedence
+  severity: info
+  requirement: >
+    The manager rewrites every BreadcrumbList.itemListElement[*].item URL
+    so that it describes the canonical production resource. Item URLs
+    whose hostname matches the current rendering origin are rewritten to
+    the origin of <link rel="canonical">. External-host URLs preserve
+    their origin. Query strings and #hash are stripped from every item
+    URL. Skipped when no canonical link is present.
+  applies_to: [BreadcrumbList]
+  implements: [canonicalizeBreadcrumbItems, canonicalOrigin]
+  tested_by: []
+  interacts_with: [breadcrumblist-items]
+  notes: >
+    Defensive normalization for producer drift: most breadcrumb integrations
+    emit link.href, which resolves to the current rendering hostname
+    (aem.live, aem.page, branch URLs). Producer-side fix-up is preferred
+    long-term.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: ignore-types-bypass
+  section: Defaults and precedence
+  severity: info
+  requirement: >
+    When the URL query parameter jsonld-graph-manager-ignore is set to a
+    non-empty comma-separated list, the manager bypasses every producer
+    script whose content matches an entry. The pseudo-type "graph" matches
+    when the script contains any @graph wrapper at the top level. A
+    schema.org type name (compared lowercased) matches when that @type
+    appears anywhere in the script's recursively-flattened nodes. Bypassed
+    scripts are NOT parsed for ingestion, NOT removed from the DOM, and
+    do NOT contribute to the managed graph.
+  applies_to: [all]
+  implements: [shouldIgnoreScript, parseIgnoreParam, IGNORE_TYPES]
+  tested_by: []
+  interacts_with: [single-script-tag, manager-baseline-graph,
+                   webpage-canonical-singleton, required-primary-type]
+  notes: >
+    When a script's recursive type set contains both matched and unmatched
+    ids, the entire script is bypassed and a Lana warning is logged;
+    producers should split into separate scripts or callers should add
+    "graph" to the ignore list to bypass the wrapping container
+    intentionally. The list is empty by default.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: source-priority
+  section: Defaults and precedence
+  severity: error
+  requirement: >
+    When the same node is contributed by multiple sources, scalar conflicts
+    are resolved by source priority: graph-manager-generated > runtime >
+    initial page DOM (bootDom). Object fields merge by key with the same
+    precedence; relationship arrays are unioned by @id. The recorded source
+    for a node is ratcheted to the maximum-priority source that has
+    contributed to it.
+  applies_to: [all]
+  implements:
+    - priorityWeight
+    - mergeNodes
+    - "JsonLdGraphManager.rebuild (sources Map)"
+  tested_by: []
+  interacts_with: [organization-default-precedence]
+  notes: >
+    v1 collapses Milo runtime and third-party runtime into a single
+    "runtime" tier; the spec lists them as distinct tiers but producers
+    cannot be reliably distinguished at the DOM-mutation level without
+    producer cooperation (e.g. data-milo-jsonld-source attribute). Track
+    follow-up.
+  status: partial
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-name
+  section: "Type-specific: SoftwareApplication"
+  severity: error
+  requirement: A SoftwareApplication node MUST have a name property.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: []
+  tested_by: []
+  interacts_with: [required-primary-type]
+  notes: >
+    Required for the Google Software App rich result. Only evaluated when
+    primary type is SoftwareApplication or a subtype. Not validated at
+    runtime in v1.
+  status: unimplemented
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-offers
+  section: "Type-specific: SoftwareApplication"
+  severity: warn
+  requirement: >
+    A SoftwareApplication node SHOULD have an offers property referencing
+    one or more Offer nodes by @id. Multiple offers (e.g., paid
+    subscription and free trial) are encoded as separate Offer nodes.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [extractInlineEntities, JsonLdGraphManager.rewrite]
+  tested_by: []
+  interacts_with: [offer-price, softwareapplication-default-offer]
+  notes: >
+    Each Offer MAY include a potentialAction property to express usage
+    actions, e.g. BuyAction, TryAction. softwareapplication-default-offer
+    synthesizes a default Offer when this property is absent.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-rating-or-review
+  section: "Type-specific: SoftwareApplication"
+  severity: warn
+  requirement: >
+    A SoftwareApplication node SHOULD have either an aggregateRating or a
+    review property.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: []
+  tested_by: []
+  interacts_with: [aggregaterating-min-rating-value, aggregaterating-min-rating-count,
+                   aggregaterating-extraction]
+  notes: >
+    Required for the Google Software App rich result. The manager produces
+    incomplete nodes when this data is not available from producers. Note:
+    when an AggregateRating is stripped under aggregaterating-min-rating-value
+    or -count, this rule will start firing for pages that previously
+    satisfied it.
+  status: unimplemented
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-provider
+  section: "Type-specific: SoftwareApplication"
+  severity: info
+  requirement: >
+    A SoftwareApplication node MAY have a provider property referencing
+    the Organization node by @id.
+  applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [injectLinks, RULES.SoftwareApplication.linksBack]
+  tested_by: []
+  interacts_with: [primary-type-publisher]
+  notes: ""
+  status: active
+  last_updated: "2026-05-29"
+
+- name: offer-price
+  section: "Type-specific: Offer"
+  severity: error
+  requirement: An Offer node MUST have price and priceCurrency properties.
+  applies_to: [Offer]
+  implements: []
+  tested_by: []
+  interacts_with: [softwareapplication-offers, softwareapplication-default-offer]
+  notes: >
+    Required for the Google Software App rich result. Evaluated for any
+    Offer node referenced by SoftwareApplication.offers. Not validated at
+    runtime in v1; producer-supplied Offers without these fields ship
+    through unchecked.
+  status: unimplemented
+  last_updated: "2026-05-29"
+
+- name: softwareapplication-default-offer
+  section: "Type-specific: Offer"
+  severity: error
+  requirement: |
+    When a SoftwareApplication (or subtype) is the primary entity of the
+    page and has no offers property (or an empty array), the manager
+    synthesizes a default free Offer:
+
+      { "@type": "Offer",
+        "@id": "{canonicalPageURL}#offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock",
+        "category": "Free Trial" }
+
+    and sets SoftwareApplication.offers to [{ "@id": "<canonical-offer-id>" }].
+  applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
+  implements: [JsonLdGraphManager.rewrite]
+  tested_by: []
+  interacts_with: [softwareapplication-offers, offer-price]
+  notes: >
+    Source for the synthesized Offer is generated. The category: "Free
+    Trial" label reflects the Adobe.com norm — primary entry to a product
+    is a free trial of the paid tier — and disambiguates the synthesized
+    Offer from any future producer-supplied paid Offers. Producers that
+    need a non-free Offer supply their own; the default is only synthesized
+    when offers is entirely absent.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: aggregaterating-min-rating-value
+  section: "Type-specific: AggregateRating"
+  severity: error
+  requirement: >
+    An AggregateRating node MUST have ratingValue >= 3.2 (on the default
+    1-5 scale). When the threshold is not met, the manager omits the
+    AggregateRating node from the graph AND removes any aggregateRating
+    reference from host entities so consumers do not see a dangling @id.
+  applies_to: [AggregateRating]
+  implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_VALUE,
+               JsonLdGraphManager.rewrite]
+  tested_by: [conformance.test.js]
+  interacts_with: [aggregaterating-min-rating-count, softwareapplication-rating-or-review,
+                   aggregaterating-singleton]
+  notes: >
+    Milo policy, not a Google rule: poor ratings under the Adobe brand are
+    worse than no rating signal. Threshold is configurable per future
+    policy revision.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: aggregaterating-min-rating-count
+  section: "Type-specific: AggregateRating"
+  severity: error
+  requirement: >
+    An AggregateRating node MUST have ratingCount >= 100. When the
+    threshold is not met, the manager omits the AggregateRating node from
+    the graph AND removes any aggregateRating reference from host entities.
+  applies_to: [AggregateRating]
+  implements: [aggregateRatingMeetsThresholds, AGGREGATE_RATING_MIN_COUNT,
+               JsonLdGraphManager.rewrite]
+  tested_by: [conformance.test.js]
+  interacts_with: [aggregaterating-min-rating-value, softwareapplication-rating-or-review,
+                   aggregaterating-singleton]
+  notes: >
+    Milo policy, not a Google rule: small-sample ratings are noisy and
+    brittle; below-threshold counts are suppressed to avoid surfacing
+    statistical accidents to consumers. Threshold is configurable per
+    future policy revision.
+  status: active
+  last_updated: "2026-05-29"
+
+- name: breadcrumblist-items
+  section: "Type-specific: BreadcrumbList"
+  severity: error
+  requirement: >
+    The BreadcrumbList itemListElement MUST be a non-empty array of
+    ListItem nodes, each with position, name, and item properties.
+  applies_to: [BreadcrumbList]
+  implements: []
+  tested_by: []
+  interacts_with: [breadcrumblist-items-canonical-origin, breadcrumblist-singleton]
+  notes: >
+    Not validated at runtime in v1; canonicalizeBreadcrumbItems silently
+    short-circuits on non-array itemListElement, leaving malformed input
+    in place.
+  status: unimplemented
+  last_updated: "2026-05-29"
