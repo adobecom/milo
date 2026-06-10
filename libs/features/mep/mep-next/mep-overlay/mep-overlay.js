@@ -5,18 +5,23 @@ import {
   getAdditionalManifests,
   getPageSummary,
   getConsentSummary,
-  getMasSummary,
   getLingoSummary,
+  getMasSummary,
   getCaasSummary,
+  getLingoAvailability,
+  getMasAvailability,
+  getSpoofGeoOptions,
   setPreviewButton,
 } from './mep-overlay-logic.js';
 import {
   toggleHighlight,
   getParameters,
-  getPageUpdates,
   setBadgeEventListeners,
+  getPageUpdates,
 } from './mep-overlay-highlight.js';
 import { saveToMmm } from '../mep-next.js';
+
+const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
 const CARD_DATA = {
   actions: [
@@ -30,7 +35,7 @@ const CARD_DATA = {
       ['Preview Link', 'Add mepButton=off'],
       ['Manifest Manager', 'Data for last 7 days'],
     ]],
-    ['Spoof Geo', ['MEP Lingo', 'Lingo M@S', 'Top Markets']],
+    ['Spoof Geo', ['Top Markets', 'MEP Lingo', 'Lingo M@S']],
     ['Load Manifest', 'Enter manifest path'],
   ],
   summary: [
@@ -41,8 +46,6 @@ const CARD_DATA = {
     ['CaaS', getCaasSummary],
   ],
 };
-
-const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
 function parseSvg(svgString) {
   return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
@@ -155,9 +158,10 @@ function buildLoadManifest(card, pageId) {
   });
 }
 
+const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
+
 function buildToggleRow([title, description], pageId) {
-  const slug = title.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
-  const id = `toggle-${slug}${pageId}`;
+  const id = `toggle-${toSlug(title)}${pageId}`;
   const input = createTag('input', { type: 'checkbox', id });
   const switchEl = createTag('label', { class: 'mep-switch' }, [
     input,
@@ -178,16 +182,39 @@ function buildToggle(card, pageId) {
     .map((item) => buildToggleRow(item, pageId));
 }
 
-function buildSpoofGeo(card, pageId, svgData) {
-  const options = card.label.map((val, index) => {
-    const id = `spoof-geo-${val}`;
+async function populateGeoSelect(selectEl, id) {
+  const geoOptions = await getSpoofGeoOptions(id) ?? [];
+  selectEl.replaceChildren(...geoOptions.map(({ value, label, selected }) => {
+    const opt = createTag('option', { value }, label);
+    if (selected) opt.selected = true;
+    return opt;
+  }));
+}
+
+async function buildSpoofGeo(card, pageId, svgData) {
+  const availabilityChecks = {
+    'spoof-geo-mep-lingo': getLingoAvailability,
+    'spoof-geo-lingo-mas': getMasAvailability,
+  };
+  const selectEl = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo${pageId}` });
+  let firstAvailableChecked = false;
+  const options = await Promise.all(card.label.map(async (val) => {
+    const id = `spoof-geo-${toSlug(val)}`;
     const radioInput = createTag('input', { type: 'radio', id, name: `spoof-geo${pageId}`, value: val });
-    radioInput.checked = index === 0;
+    const available = availabilityChecks[id];
+    if (available && !await available()) {
+      radioInput.disabled = true;
+    } else if (!firstAvailableChecked) {
+      radioInput.checked = true;
+      firstAvailableChecked = true;
+      await populateGeoSelect(selectEl, id);
+    }
+    radioInput.addEventListener('change', () => populateGeoSelect(selectEl, id));
     const label = createTag('label', { for: id }, val);
     ['icon-radio-unchecked', 'icon-radio-checked'].forEach((icon) => label.prepend(svgIcon(svgData, icon)));
     return createTag('div', { class: 'mep-radio-row' }, [radioInput, label]);
-  });
-  return [...options, createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo${pageId}` })];
+  }));
+  return [...options, selectEl];
 }
 
 function buildNestedSection(label, subPairs) {
@@ -364,11 +391,20 @@ function setMasObserver() {
     bodyEl.replaceChildren(...rows);
   };
 
+  const refreshSpoofGeoMas = async () => {
+    const input = document.querySelector('#spoof-geo-lingo-mas');
+    if (!input?.disabled) return;
+    if (await getMasAvailability()) input.disabled = false;
+  };
+
   let debounceTimer;
   const observer = new MutationObserver((mutations) => {
     if (!hasMasChanges(mutations)) return;
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(refreshMasSummary, 200);
+    debounceTimer = setTimeout(() => {
+      refreshMasSummary();
+      refreshSpoofGeoMas();
+    }, 200);
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
