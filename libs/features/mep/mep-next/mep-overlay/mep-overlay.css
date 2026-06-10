@@ -505,3 +505,22 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   color: var(--mep-white-100);
   white-space: nowrap;
 }
+
+.mep-drawer.mep-unauthed .mep-unauthed-message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 20px;
+}
+
+.mep-drawer.mep-unauthed .mep-unauthed-message h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.mep-drawer.mep-unauthed .mep-unauthed-message p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--mep-white-60);
+}
