@@ -1,11 +1,12 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata, lingoActive } from '../../libs/utils/utils.js';
 import {
+  LANGS,
   LOCALES,
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
-  isLingoEnglishRegionalSite,
+  isLingoLangFirstPath,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -357,7 +358,7 @@ const getBulkPublishLangAttr = async (options) => {
   const origin = LANG_FIRST_SOURCE_MAPPINGS[repo] || repo;
 
   const useLanguageFirst = LINGO_AUTO_REPOS.has(origin)
-    ? !(await isLingoEnglishRegionalSite(origin, options.prodUrl, 'bulkpublisher'))
+    ? await isLingoLangFirstPath(origin, options.prodUrl, 'bulkpublisher')
     : options.languageFirst;
 
   if (useLanguageFirst) {
@@ -375,31 +376,41 @@ const getBulkPublishLangAttr = async (options) => {
     getLocale = utilsGetLocale;
     setConfig({ getLocale });
   }
-  return getLocale(LOCALES, options.prodUrl).ietf;
+  const { ietf } = getLocale(LOCALES, options.prodUrl);
+  // LOCALES uses country codes (jp, kr) but some sites (e.g. news) use language codes (/ja/, /ko/)
+  // as URL locale prefixes. When getLocale falls back to the default en-US, try a reverse lookup.
+  if (ietf === 'en-US') {
+    const [, localeStr = ''] = options.prodUrl.split('/');
+    const lang = LANGS[localeStr];
+    if (lang && lang !== 'en') {
+      const entry = Object.entries(LOCALES).find(
+        ([key, val]) => !key.includes('_') && key !== '' && typeof val === 'object'
+          && val.ietf?.toLowerCase().startsWith(`${lang}-`),
+      );
+      if (entry) return `${lang}-${entry[0]}`;
+    }
+  }
+  return ietf;
 };
 
 const getCountryAndLang = async (options, origin) => {
+  /* c8 ignore next */
+  if (window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')) {
+    const langStr = await getBulkPublishLangAttr(options);
+    const [lang = 'en', country = 'us'] = langStr?.toLowerCase().split('-') || [];
+    return { country, lang };
+  }
+
   const langFirst = lingoActive();
   if (langFirst) {
-    const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
-    const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
       LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin,
-      fqdn,
+      window.location.hostname,
     );
   }
-  /* c8 ignore next */
-  const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
-    ? await getBulkPublishLangAttr(options)
-    : (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf;
-  const langAttr = langStr?.toLowerCase().split('-') || [];
-
-  const [lang = 'en', country = 'us'] = langAttr;
-  return {
-    country,
-    lang,
-  };
+  const [lang = 'en', country = 'us'] = (LOCALES[window.location.pathname.split('/')[1]] || LOCALES['']).ietf?.toLowerCase().split('-') || [];
+  return { country, lang };
 };
 
 const parseCardMetadata = () => {
