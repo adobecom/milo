@@ -5,6 +5,7 @@ import {
   getPageLocale,
   getGrayboxExperienceId,
   getLanguageFirstCountryAndLang,
+  isLingoEnglishRegionalSite,
 } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
@@ -348,12 +349,21 @@ export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {
   return lastResult;
 }
 
+const LINGO_AUTO_REPOS = new Set(['bacom']);
+
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
-  if (options.languageFirst) {
-    const mappedGetLangFirst = (path, repo, fqdn) => getLanguageFirstCountryAndLang(
+  const repo = (options.repo || '').toLowerCase();
+  const origin = LANG_FIRST_SOURCE_MAPPINGS[repo] || repo;
+
+  const useLanguageFirst = LINGO_AUTO_REPOS.has(origin)
+    ? !(await isLingoEnglishRegionalSite(origin, options.prodUrl, 'bulkpublisher'))
+    : options.languageFirst;
+
+  if (useLanguageFirst) {
+    const mappedGetLangFirst = (path, r, fqdn) => getLanguageFirstCountryAndLang(
       path,
-      LANG_FIRST_SOURCE_MAPPINGS[repo.toLowerCase()] || repo,
+      LANG_FIRST_SOURCE_MAPPINGS[r.toLowerCase()] || r,
       fqdn,
     );
     return runLanguageFirstRetry(options, mappedGetLangFirst);

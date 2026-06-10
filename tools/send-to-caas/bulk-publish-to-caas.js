@@ -456,6 +456,11 @@ presetSelector.addEventListener('change', () => {
 
   loadFromLS();
   checkCaasEnv();
+
+  const langFirstEl = document.getElementById('language-first');
+  const isLingoAutoRepo = config.repo?.toLowerCase() === 'bacom';
+  langFirstEl.classList.toggle('lingo-auto', isLingoAutoRepo);
+  document.getElementById('languageFirst').disabled = isLingoAutoRepo;
 });
 
 const clearResultsButton = document.querySelector('.clear-results');
