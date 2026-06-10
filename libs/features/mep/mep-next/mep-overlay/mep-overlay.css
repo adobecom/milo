@@ -246,6 +246,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-body .mep-card.expanded h1 svg {
+  flex-shrink: 0;
   transform: rotate(-180deg);
 }
 
