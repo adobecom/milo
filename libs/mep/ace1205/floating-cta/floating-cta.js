@@ -46,12 +46,10 @@ export default async function init(el) {
   }
 
   const linkEl = linkPara.querySelector('a');
+  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
   if (linkEl?.isCheckoutLink) {
     await linkEl.onceSettled();
-    const [ctaText] = linkEl.textContent.trim().split('|').map((s) => s.trim());
-    linkEl.textContent = ctaText;
-    linkEl.prepend(img);
-    linkEl.append(createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite));
+    linkEl.replaceChildren(img, linkEl.textContent.trim(), arrow);
     linkEl.classList.add('promo-cta');
     linkEl.classList.remove('con-button');
     el.replaceChildren(linkEl);
@@ -62,7 +60,6 @@ export default async function init(el) {
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
   const ctaHref = linkEl?.getAttribute('href') || '#';
 
-  const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
   const cta = createTag('a', { href: ctaHref, class: 'promo-cta', 'aria-label': ariaLabel, tabindex: '-1' }, [img, ctaText, arrow]);
   el.replaceChildren(cta);
   applyCustomHide(el, cta);
