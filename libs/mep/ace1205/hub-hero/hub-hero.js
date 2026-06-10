@@ -191,6 +191,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
+        <span aria-hidden='true'>${icons?.add}</span>
       </div>
     </div>
   `;
