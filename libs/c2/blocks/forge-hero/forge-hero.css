@@ -1,0 +1,62 @@
+.forge-hero img {display:block;max-width:100%;border:0;}
+
+.forge-hero main {max-width:1440px;margin:0 auto;position:relative;background:#000;overflow:hidden;}
+
+.forge-hero .t-title1 {font-family:var(--ff-display);font-weight:900;font-size:var(--s2a-typography-font-size-title-1);line-height:var(--s2a-typography-line-height-title-1);letter-spacing:var(--s2a-typography-letter-spacing-title-1);}
+
+.forge-hero .t-body-lg {font-family:var(--ff-clean);font-weight:400;font-size:var(--s2a-typography-font-size-body-lg);line-height:var(--s2a-typography-line-height-body-lg);}
+
+.forge-hero .t-body-sm {font-family:var(--ff-clean);font-weight:400;font-size:var(--s2a-typography-font-size-body-sm);line-height:var(--s2a-typography-line-height-body-sm);}
+
+.forge-hero .t-eyebrow {font-family:var(--ff-clean);font-weight:700;font-size:var(--s2a-typography-font-size-eyebrow);line-height:var(--s2a-typography-line-height-eyebrow);}
+
+.forge-hero .t-label {font-family:var(--ff-clean);font-weight:700;font-size:var(--s2a-typography-font-size-label);line-height:var(--s2a-typography-line-height-label);}
+
+.forge-hero .cc-badge {position:relative;display:inline-block;width:24px;height:23.14px;flex:none;}
+
+.forge-hero .cc-badge .tile {position:absolute;inset:0;width:100%;height:100%;}
+
+.forge-hero .cc-badge .mn {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:69%;height:auto;}
+
+.forge-hero .cc-badge.s32 {width:32px;height:32px;}
+
+.forge-hero {background:#000;border-radius:4px 4px 32px 32px;display:flex;flex-direction:column;align-items:center;gap:124px;padding:0 24px 24px;margin-top:124px;min-height:1182px;overflow:hidden;box-shadow:16px 24px 65px #000000;}
+
+.forge-hero .hero-copy {display:flex;flex-direction:column;align-items:center;gap:24px;width:100%;max-width:1152px;text-align:center;}
+
+.forge-hero .hero-eyebrow {display:inline-flex;align-items:center;gap:8px;font-weight:700;}
+
+.forge-hero .hero-eyebrow .t-eyebrow {color:#fff;font-size:56px;font-weight:900;line-height:1;letter-spacing:-1.68px;}
+
+.forge-hero .hero-headline {color:#fff;max-width:800px;}
+
+.forge-hero .hero-body {color:#fff;max-width:658px;}
+
+.forge-hero .hero-btns {display:flex;gap:8px;justify-content:center;align-items:center;}
+
+.forge-hero .hero-price {color:#fff;}
+
+.forge-hero .hero-cta {background:#fff;color:#2c2c2c;border-radius:75px;height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 24px;font-size:17px;}
+
+.forge-hero .hero-cta-buy {background:var(--hero-cta-blue);color:#fff;backdrop-filter:blur(16.5px);-webkit-backdrop-filter:blur(16.5px);}
+
+.forge-hero .hero-asset {width:100%;max-width:963px;margin:0 auto;}
+
+.forge-hero .hero-asset img {width:100%;height:auto;}
+
+.forge-hero .ae-badge .tile {position:absolute;inset:0;width:100%;height:100%;}
+
+.forge-hero .ae-badge .mn {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:82%;height:auto;}
+
+.forge-hero .fp-icon .tile {position:absolute;inset:0;width:100%;height:100%;}
+
+.forge-hero .fp-icon .mn {position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:62%;height:auto;}
+
+@media (max-width:1023px) {
+.forge-hero .t-title1 {font-size:56px;line-height:54px;}
+}
+
+@media (max-width:767px) {
+.forge-hero .t-title1 {font-size:38px;line-height:40px;}
+.forge-hero {gap:64px;}
+}

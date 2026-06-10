@@ -1,0 +1,48 @@
+.forge-faq img {display:block;max-width:100%;border:0;}
+
+.forge-faq main {max-width:1440px;margin:0 auto;position:relative;background:#000;overflow:hidden;}
+
+.forge-faq .t-title2 {font-family:var(--ff-display);font-weight:900;font-size:var(--s2a-typography-font-size-title-2);line-height:var(--s2a-typography-line-height-title-2);letter-spacing:var(--s2a-typography-letter-spacing-title-2);}
+
+.forge-faq .t-body-md {font-family:var(--ff-clean);font-weight:400;font-size:var(--s2a-typography-font-size-body-md);line-height:var(--s2a-typography-line-height-body-md);}
+
+.forge-faq .t-faq-q {font-family:var(--ff-display);font-weight:700;font-size:16px;line-height:1;letter-spacing:-0.16px;}
+
+.forge-faq {padding:0 124px;min-height:458px;display:flex;flex-direction:column;margin-top:124px;}
+
+.forge-faq .faq-head {border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:10px;}
+
+.forge-faq .faq-headline {color:#fff;}
+
+.forge-faq .faq-list {display:flex;flex-direction:column;}
+
+.forge-faq .faq-item {border-bottom:1px solid rgba(255,255,255,0.1);}
+
+.forge-faq .faq-q {width:100%;display:flex;align-items:center;gap:40px;justify-content:space-between;padding:32px 0;text-align:left;color:#fff;}
+
+.forge-faq .faq-q .t-faq-q {flex:1;color:#fff;}
+
+.forge-faq .faq-icon {width:12px;height:12px;flex:none;position:relative;}
+
+.forge-faq .faq-icon i {position:absolute;background:#fff;border-radius:1px;transition:transform .25s ease,opacity .25s ease;}
+
+.forge-faq .faq-icon .h {left:0;right:0;top:5.25px;height:1.5px;}
+
+.forge-faq .faq-icon .v {top:0;bottom:0;left:5.25px;width:1.5px;}
+
+.forge-faq .faq-item.open .faq-icon .v {transform:scaleY(0);opacity:0;}
+
+.forge-faq .faq-a {overflow:hidden;max-height:0;transition:max-height .3s ease;}
+
+.forge-faq .faq-item.open .faq-a {max-height:360px;}
+
+.forge-faq .faq-a p {color:#fff;opacity:.7;width:587px;max-width:100%;padding-bottom:32px;}
+
+@media (max-width:1023px) {
+.forge-faq .t-title2 {font-size:40px;line-height:42px;}
+.forge-faq {padding-left:48px;padding-right:48px;}
+}
+
+@media (max-width:767px) {
+.forge-faq .t-title2 {font-size:30px;line-height:32px;}
+}
