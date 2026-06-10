@@ -2,9 +2,10 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 
 const DESKTOP_MQ = window.matchMedia('(width >= 1280px)');
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)');
 const STIFFNESS = 0.34;
 const ROTATE_LERP = 0.12;
-const INTRO_STEP = 0.009;
+const INTRO_STEP = 0.045;
 const EXIT_STEP = 0.08;
 const TARGET_OFFSET = { x: 14, y: -4 };
 
@@ -33,8 +34,8 @@ function stepLayer(layer, mx, my, vx) {
 
 function renderLayer(layer) {
   const { config: c, pic } = layer;
-  const fade = 1 - layer.exit;
-  const scale = introScale(layer.intro) * fade;
+  const fade = (1 - layer.exit) ** 1.9;
+  const scale = introScale(layer.intro);
   pic.style.transform = `translate3d(${layer.x + c.stagger.x}px, ${layer.y + c.stagger.y}px, 0) translate(-50%, -100%) scale(${scale}) rotate(${layer.rotate}deg)`;
   pic.style.opacity = String(fade);
 }
@@ -71,8 +72,6 @@ function addCursorFollower(list) {
   let activeLayers = [];
   let exitingGroups = [];
   let rafId = null;
-  let isScrolling = false;
-  let lenisOff = null;
 
   const updateCursor = (e) => {
     cursor.vx = cursor.hasPrev ? e.clientX - cursor.x : 0;
@@ -85,7 +84,7 @@ function addCursorFollower(list) {
     activeLayers.forEach((l) => {
       stepLayer(l, cursor.x, cursor.y, cursor.vx);
       const n = Math.min(l.intro + INTRO_STEP, 1);
-      l.intro = 1 - (1 - n) ** 2.2;
+      l.intro = n;
       renderLayer(l);
     });
     exitingGroups = exitingGroups.filter(({ media, layers }) => {
@@ -106,38 +105,63 @@ function addCursorFollower(list) {
 
   const activate = (item) => {
     if (item === activeItem) return;
-    if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+    if (REDUCED_MOTION.matches) {
+      if (activeItem) hideMedia(activeItem.querySelector('.hover-list-media'));
+      activeItem = item;
+      const media = item.querySelector('.hover-list-media');
+      if (!media) return;
+      const pics = [...media.querySelectorAll('picture')];
+      pics.forEach((pic, i) => {
+        const c = layerConfig(i, pics.length);
+        renderLayer({
+          pic, config: c, x: cursor.x, y: cursor.y, intro: 1, exit: 0, rotate: 0,
+        });
+      });
+      if (!media.matches(':popover-open')) media.showPopover();
+      return;
+    }
+    if (activeItem) {
+      exitingGroups.push({ media: activeItem.querySelector('.hover-list-media'), layers: activeLayers });
+    }
     activeItem = null;
     activeLayers = [];
     const media = item.querySelector('.hover-list-media');
     if (!media) return;
+    const resumeExit = exitingGroups.find((g) => g.media === media);
     exitingGroups = exitingGroups.filter((g) => g.media !== media);
-    const pics = [...media.querySelectorAll('picture')];
     activeItem = item;
-    activeLayers = pics.map((pic, i) => {
-      const c = layerConfig(i, pics.length);
-      return {
-        pic,
-        config: c,
-        x: cursor.x + c.spawn.x,
-        y: cursor.y + c.spawn.y,
-        intro: 0,
-        exit: 0,
-        rotate: 0,
-      };
-    });
-
-    activeLayers.forEach((l) => { l.pic.style.transition = 'none'; });
-    activeLayers.forEach(renderLayer);
-    if (!media.matches(':popover-open')) media.showPopover();
-    requestAnimationFrame(() => {
-      activeLayers.forEach((l) => { l.pic.style.transition = ''; });
-    });
+    if (resumeExit) {
+      activeLayers = resumeExit.layers;
+      activeLayers.forEach((l) => { l.exit = 0; });
+      activeLayers.forEach(renderLayer);
+    } else {
+      const pics = [...media.querySelectorAll('picture')];
+      activeLayers = pics.map((pic, i) => {
+        const c = layerConfig(i, pics.length);
+        return {
+          pic,
+          config: c,
+          x: cursor.x + c.spawn.x,
+          y: cursor.y + c.spawn.y,
+          intro: 0,
+          exit: 0,
+          rotate: 0,
+        };
+      });
+      activeLayers.forEach(renderLayer);
+      if (!media.matches(':popover-open')) media.showPopover();
+    }
     startLoop();
   };
 
   const deactivate = () => {
     if (!activeItem) return;
+    if (REDUCED_MOTION.matches) {
+      hideMedia(activeItem.querySelector('.hover-list-media'));
+      activeItem = null;
+      activeLayers = [];
+      return;
+    }
     exitingGroups.push({ media: activeItem.querySelector('.hover-list-media'), layers: activeLayers });
     activeItem = null;
     activeLayers = [];
@@ -149,35 +173,21 @@ function addCursorFollower(list) {
     if (item && list.contains(item)) activate(item);
   };
 
-  const onScrollStart = () => {
-    if (isScrolling) return;
-    isScrolling = true;
-    deactivate();
-  };
-
-  const onScrollEnd = () => {
-    if (!isScrolling) return;
-    isScrolling = false;
-    activateAtPoint(cursor.x, cursor.y);
-  };
-
   document.addEventListener('mousemove', updateCursor, { passive: true });
   list.addEventListener('mousemove', (e) => {
-    if (!DESKTOP_MQ.matches || isScrolling) return;
+    if (!DESKTOP_MQ.matches) return;
     activateAtPoint(e.clientX, e.clientY);
   });
-  list.addEventListener('mouseenter', () => {
-    if (!DESKTOP_MQ.matches) return;
-    lenisOff = window.lenis?.on('scroll', onScrollStart);
-    window.addEventListener('scrollend', onScrollEnd);
-  });
   list.addEventListener('mouseleave', () => {
-    isScrolling = false;
     deactivate();
-    lenisOff?.();
-    lenisOff = null;
-    window.removeEventListener('scrollend', onScrollEnd);
   });
+  window.addEventListener('scroll', () => {
+    if (!DESKTOP_MQ.matches || !cursor.hasPrev || !activeItem) return;
+    const item = document.elementFromPoint(cursor.x, cursor.y)?.closest('.hover-list-item');
+    if (item === activeItem) return;
+    if (item && list.contains(item)) activate(item);
+    else deactivate();
+  }, { passive: true });
 }
 
 function decorate(block) {
