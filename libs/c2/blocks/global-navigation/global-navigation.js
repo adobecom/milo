@@ -65,7 +65,6 @@ export default async function init(el) {
       handleCommands: personalizationHandler,
     },
   }).catch((error) => {
-    console.log(error);
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
       tags: 'global-navigation',
