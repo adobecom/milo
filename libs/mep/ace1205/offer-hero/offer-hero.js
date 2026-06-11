@@ -20,6 +20,7 @@ const STACK_REF_MOBILE = [
 const PILE_X_OFFSET_MOBILE = 54;
 const PILE_GAP_DESKTOP = 84;
 const PILE_GAP_MOBILE = 80;
+const FOCUS_REMOVE_THRESHOLD = 10;
 const CARD_SHADOWS = [
   null,
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
@@ -36,6 +37,7 @@ const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
 const isMobile = () => window.matchMedia('(width < 768px)').matches;
 const isDesktop = () => window.matchMedia('(width >= 1280px)').matches;
+const isZoomedIn = () => window.matchMedia('(height < 500px)').matches;
 
 function decorate(block) {
   const rows = [...block.children];
@@ -234,7 +236,7 @@ function initAnimation(block) {
     }
     videoObserver = new IntersectionObserver(
       (entries) => entries.forEach(onMediaVisible),
-      { threshold: 0.7 },
+      { threshold: isZoomedIn() ? 0.3 : 0.7 },
     );
     medias.filter(Boolean).forEach((media) => videoObserver.observe(media));
   }
@@ -363,6 +365,16 @@ function initAnimation(block) {
     tick();
   }, { rootMargin: '200px 0px' });
   io.observe(block);
+
+  let scrollOrigin;
+  window.addEventListener('scroll', () => {
+    if (!document.activeElement?.matches('a.hero-card-tile')) return;
+    scrollOrigin ??= window.scrollY;
+    if (scrollOrigin - window.scrollY > FOCUS_REMOVE_THRESHOLD) {
+      document.activeElement.blur();
+      scrollOrigin = null;
+    }
+  }, { passive: true });
 
   let resizeTimer;
   const reSetup = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(setup, 120); };
