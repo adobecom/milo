@@ -12,8 +12,8 @@ export default class BrandConciergeBlock {
     this.floatingButton = this.page.locator('.bc-floating-button').first();
     this.floatingButtonContainer = this.page.locator('.bc-floating-button-container').first();
     this.floatingButtonInput = this.page.locator('.bc-floating-input').first();
-    this.floatingButtonHidden = this.page.locator('.bc-floating-button.bc-floating-hidden');
-    this.floatingButtonVisible = this.page.locator('.bc-floating-button.bc-floating-show');
+    this.floatingButtonHidden = this.page.locator('.bc-floating-button.floating-hidden');
+    this.floatingButtonVisible = this.page.locator('.bc-floating-button.floating-show');
 
     // Modal elements
     this.modal = this.page.locator('#brand-concierge-modal');
