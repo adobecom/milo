@@ -83,7 +83,8 @@ describe('Bulk Publish to CaaS - Graybox Experience ID Integration', () => {
   });
 });
 
-// Shared mock mapping: bacom in index; /de/ is LFL baseSite; /at/ is regional of /de/; /gb/ /au/ are English regionals
+// Shared mock mapping: bacom in index; /de/ is LFL baseSite; /at/ is regional of /de/
+// /gb/ and /au/ are English regionals
 const LINGO_MOCK_MAPPING = {
   'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
   'site-locales': {
@@ -128,7 +129,8 @@ describe('getBulkPublishLangAttr — auto-detect Lingo matrix', () => {
   });
 
   it('auto-detect on, origin in mapping with LFL locale: mapping overrides languageFirst=false', async () => {
-    // bacom + /de/ is in the mapping as a LFL locale → must produce LFL output even with languageFirst=false
+    // bacom + /de/ is in the mapping as a LFL locale → must produce LFL output
+    // even with languageFirst=false
     const result = await getBulkPublishLangAttr({ ...BASE, repo: 'bacom', autoDetectLingo: true, languageFirst: false });
     expect(result).to.equal('de-xx');
   });
