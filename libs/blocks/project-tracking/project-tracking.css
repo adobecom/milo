@@ -1,0 +1,251 @@
+/* Project Tracking — styling matched to the milo-dashboard block (DA Spectrum 2
+   light mode). Values hardcoded: in DA the block runs cross-origin, so DA :root
+   tokens are out of scope. */
+.project-tracking {
+  --pt-accent: #3b63fb;
+  --pt-good: #079355;
+  --pt-ink: #292929;
+  --pt-ink-soft: #505050;
+  --pt-line: #e1e1e1;
+  --pt-radius: 12px;
+
+  padding: 24px;
+  font-family: var(--body-font-family, "Adobe Clean", adobe-clean, sans-serif);
+  color: var(--pt-ink);
+
+  & .pt-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: 16px;
+  }
+
+  & .pt-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  & .pt-check-btn {
+    background: var(--pt-accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    min-height: 44px;
+    padding: 8px 16px;
+  }
+
+  & .pt-check-btn:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  & .pt-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    margin-block-end: 4px;
+  }
+
+  & .pt-hint {
+    color: var(--pt-ink-soft);
+    font-size: 13px;
+    margin: 0 0 10px;
+  }
+
+  & .pt-textarea {
+    background: #fff;
+    border: 1px solid var(--pt-line);
+    border-radius: var(--pt-radius);
+    box-sizing: border-box;
+    color: var(--pt-ink);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 280px;
+    padding: 14px 16px;
+    resize: vertical;
+    width: 100%;
+  }
+
+  & .pt-textarea:focus {
+    border-color: var(--pt-accent);
+    box-shadow: 0 0 0 2px #eaeeff;
+    outline: none;
+  }
+
+  & .pt-count {
+    color: var(--pt-ink-soft);
+    font-size: 13px;
+    font-weight: 600;
+    margin-block-start: 10px;
+  }
+
+  & .pt-since-label {
+    align-items: center;
+    color: var(--pt-ink-soft);
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 600;
+    gap: 8px;
+    margin-block: 12px;
+  }
+
+  & .pt-since {
+    border: 1px solid var(--pt-line);
+    border-radius: 8px;
+    font: inherit;
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  & .pt-muted {
+    color: var(--pt-ink-soft);
+    font-size: 14px;
+  }
+
+  & .pt-error {
+    color: #d32011;
+    font-size: 14px;
+  }
+
+  & .pt-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-block: 8px 24px;
+  }
+
+  & .pt-stat {
+    border: 1px solid var(--pt-line);
+    border-radius: var(--pt-radius);
+    flex: 1;
+    min-width: 200px;
+    padding: 16px 20px;
+  }
+
+  & .pt-stat--previewed { /* stylelint-disable-line selector-class-pattern */
+    background: #eaeeff;
+  }
+
+  & .pt-stat--published { /* stylelint-disable-line selector-class-pattern */
+    background: #edfcf1;
+  }
+
+  & .pt-stat-head {
+    align-items: baseline;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  & .pt-stat-label {
+    color: var(--pt-ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  & .pt-stat-frac {
+    color: var(--pt-ink-soft);
+    font-size: 12px;
+  }
+
+  & .pt-stat-pct {
+    font-size: 34px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-block-start: 2px;
+  }
+
+  & .pt-stat--previewed .pt-stat-pct { /* stylelint-disable-line selector-class-pattern */
+    color: var(--pt-accent);
+  }
+
+  & .pt-stat--published .pt-stat-pct { /* stylelint-disable-line selector-class-pattern */
+    color: var(--pt-good);
+  }
+
+  & .pt-bar {
+    background: #fff;
+    border: 1px solid var(--pt-line);
+    border-radius: 99px;
+    height: 8px;
+    margin-block-start: 10px;
+    overflow: hidden;
+  }
+
+  & .pt-bar-fill {
+    border-radius: 99px;
+    height: 100%;
+  }
+
+  & .pt-stat--previewed .pt-bar-fill { /* stylelint-disable-line selector-class-pattern */
+    background: var(--pt-accent);
+  }
+
+  & .pt-stat--published .pt-bar-fill { /* stylelint-disable-line selector-class-pattern */
+    background: var(--pt-good);
+  }
+
+  & .pt-table-wrap {
+    border: 1px solid var(--pt-line);
+    border-radius: var(--pt-radius);
+    overflow: hidden;
+  }
+
+  & .pt-table {
+    border-collapse: collapse;
+    font-size: 14px;
+    text-align: start;
+    width: 100%;
+  }
+
+  & .pt-table th {
+    background: #f5f5f5;
+    color: var(--pt-ink-soft);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 12px 16px;
+    text-align: start;
+    text-transform: uppercase;
+  }
+
+  & .pt-cell {
+    padding: 12px 16px;
+  }
+
+  & .pt-table tbody tr {
+    border-block-start: 1px solid #efefef;
+  }
+
+  & .pt-url {
+    word-break: break-all;
+  }
+
+  & .pt-link {
+    color: var(--pt-accent);
+    text-decoration: none;
+  }
+
+  & .pt-link:hover {
+    text-decoration: underline;
+  }
+
+  & .pt-ok {
+    color: var(--pt-good);
+    white-space: nowrap;
+  }
+
+  & .pt-check {
+    font-weight: 700;
+  }
+
+  & .pt-empty {
+    color: #b0b0b0;
+  }
+}
