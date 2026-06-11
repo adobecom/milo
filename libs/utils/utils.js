@@ -2359,7 +2359,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2372,8 +2372,14 @@ export function scrollToHashedElement(hash) {
     });
   }
   if (!targetElement) return;
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+
+  let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  if (getMetadata('foundation') === 'c2') {
+    const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+    bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
+  }
+
+  const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
     behavior: 'smooth',

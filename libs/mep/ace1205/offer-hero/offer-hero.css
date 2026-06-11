@@ -100,11 +100,6 @@
   a.hero-card-tile {
     text-decoration: none;
 
-    &:focus-visible {
-      outline: 2px solid var(--s2a-color-blue-800);
-      outline-offset: -2px;
-    }
-
     &:hover .learn-more svg {
       transform: translate3d(var(--s2a-spacing-4), 0, 0);
     }
@@ -131,7 +126,6 @@
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
     will-change: transform;
-    clip-path: inset(0 round var(--s2a-border-radius-24));
   }
 
   &:dir(rtl) .hero-card-tile {
@@ -266,6 +260,10 @@
   to { opacity: 0; transform: translateY(-80px); }
 }
 
+@keyframes offer-hero-content-slide {
+  to { transform: translateY(-80px); }
+}
+
 @supports (animation-timeline: scroll()) {
   .offer-hero.scroll-driven-ready {
     .hero-card-tile {
@@ -285,14 +283,28 @@
     }
 
     .hero-content {
-      animation: offer-hero-content-fade linear forwards;
+      animation: offer-hero-content-slide linear forwards;
       animation-timeline: scroll(root);
+    }
+
+    @media (height >= 500px) {
+      .hero-content {
+        animation-name: offer-hero-content-fade;
+      }
     }
 
     .hero-eyebrow {
       animation: offer-hero-eyebrow-fade linear forwards;
       animation-timeline: scroll(root);
     }
+  }
+}
+
+
+.offer-hero:has(.hero-card-tile:focus-visible) {
+  .hero-card-tile {
+    animation: none;
+    transform: none;
   }
 }
 
