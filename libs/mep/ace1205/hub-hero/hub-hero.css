@@ -1,21 +1,16 @@
-[dir="rtl"] .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
-  transform: rotate(180deg);
-  left: var(--s2a-spacing-lg);
-  right: unset;
-}
-
 .hub-hero {
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4000px;
-  --max-image-size: 292px;
-  --media-mobile-max-height: 394px;
+  --slide-header-h: 64px;
+  --slide-footer-h: 96px;
+  --media-mobile-max-height: min(394px, 33vh);
   --media-mobile-max-width: 500px;
-  --min-image-size: 164px;
-  --grid-img-width: 20vw;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --hub-hero-carousel-container-height-desktop: 562px;
   --hub-hero-carousel-container-height-tablet: 562px;
-  --hub-hero-carousel-item-max-width: 392px;
+  --grid-img-width: min(20vw, 302px);
+  --grid-img-width-min: 164px;
+  --hub-hero-carousel-item-max-width: min(329px, calc(25vw - var(--s2a-spacing-md)));
   --hub-hero-carousel-item-min-width: 292px;
   --hub-hero-carousel-item-hover-grow-index: 1.5;
   --header-animation-range: contain 30% contain 50%;
@@ -23,18 +18,19 @@
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
   --carousel-items-top: 35%;
-  --carousel-header-top: 20%;
+  --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: 394px;
+  --slide-from-card-slide-range: contain 0% contain 30%;
   --slides: 4;
   --start-gap: 6rem;
   --end-gap: .5rem;
   --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
-  --carousel-item-width: calc(100vw / var(--slides));
-  --gap-shrink-timline: ease;
-  --slide-header-h: 64px;
-  --slide-footer-h: 96px;
-  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + (var(--hub-hero-carousel-item-max-width) / 2) + ((var(--end-gap) * (var(--slides) - 1))));
+  --carousel-item-width: calc(100vw / 5);
+  --gap-shrink-timline: linear;
+
+  --hubHeroCarouselContainerWidthAdj: 0px;
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))) + var(--hubHeroCarouselContainerWidthAdj));
 
   --grid-col-one-offset: 0px;
   --grid-col-two-offset: 94px;
@@ -125,46 +121,35 @@ font-size: var(--s2a-typography-font-size-heading-1);
   transform: translate(0, var(--grid-col-one-offset));
   animation: hubHeroGridCol1 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
-    entry 0% exit 100%;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(2) {
   transform: translate(0, var(--grid-col-two-offset));
   animation: hubHeroGridCol2 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
   animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
-    entry 0% exit 100%;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(3) {
   transform: translate(0, var(--grid-col-three-offset));
   animation: hubHeroGridCol3 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero,
-    --hub-hero,
-    view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
-    entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(4) {
   transform: translate(0, var(--grid-col-four-offset));
   animation: hubHeroGridCol4 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero,
-    --hub-hero,
-    view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
-    entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(5) {
   transform: translate(0, var(--grid-col-five-offset));
   animation: hubHeroGridCol5 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero,
-    --hub-hero,
-    view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range),
-    entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col div {
@@ -175,8 +160,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
 }
 
 .hub-hero-image-grid-container-col img {
-  max-width: var(--max-image-size);
-  min-width: var(--min-image-size);
+  max-width: var(--grid-img-width);
+  min-width: var(--grid-img-width-min);
   width: var(--grid-img-width);
   display: block;
 }
@@ -238,7 +223,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   text-decoration: none;
   color: inherit;
 
-  width: var(--carousel-item-width);
+  width: 100%;
 
   background-color: var(--s2a-color-gray-75);
   border-radius: var(--s2a-border-radius-md);
@@ -281,44 +266,35 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 .hub-hero-carousel-item-footer {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  font-size: var(--s2a-font-size-md);
-  font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  line-height: var(--s2a-typography-line-height-eyebrow);
-  --icon-size: var(--s2a-font-size-md);
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--s2a-spacing-lg);
 }
 
-.hub-hero-carousel-item-footer::after {
-  content: "+";
-  position: absolute;
-  padding: 0;
-  height: calc(var(--icon-size) + var(--s2a-spacing-sm) * 2);
-  width: calc(var(--icon-size) + var(--s2a-spacing-sm) * 2);
-  right: var(--s2a-spacing-lg);
-  bottom: var(--s2a-spacing-lg);
-  color: var(--s2a-color-gray-25);
-  border-radius: 6px;
-  background-repeat: no-repeat;
-  border: 1px solid var(--s2a-color-transparent-white-12);
-  background-color: var(--s2a-color-transparent-white-12);
+.hub-hero-carousel-item-footer span {
   opacity: 0;
-  font-size: var(--s2a-font-size-md);
-  line-height: 1;
-  display: grid;
-  place-items: center;
+  transition: opacity .3s;
+  height: var(--s2a-font-size-sm);
+  width: var(--s2a-font-size-sm);
+  border-radius: var(--s2a-border-radius-4);
+  padding: var(--s2a-spacing-md);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  background: var(--s2a-color-transparent-white-12);
+}
+
+.hub-hero-carousel-item-footer span svg {
+  width: 100%;
+  height: 100%;
 }
 
 .hub-hero-carousel-item-footer * {
   font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-eyebrow);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  line-height: 1;
   letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
   margin: 0;
   text-align: start;
-  padding: 0 var(--s2a-spacing-lg);
   transition: color .1s var(--paralax-easing);
   display: block;
   line-clamp: 1;
@@ -473,10 +449,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
     display: grid;
     gap: 20vh;
     margin: auto;
-    max-width: var(--grid-img-width);
     min-width: unset;
-    width: var(--grid-img-width);
-    will-change: auto;
+    will-change: max-width;
+    width: 100%;
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -493,7 +468,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     pointer-events: all;
     contain: none;
     will-change: auto;
-    animation: elasticMobileStackSlides linear both;
+    animation: elasticMobileStackSlides ease-out both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
   }
@@ -509,7 +484,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --stack-contrast: 0;
     --stack-shrink: 2.5rem;
     z-index: 1;
-    animation: elasticMobileFirstSlide linear both;
+    animation: elasticMobileFirstSlide ease-out both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -560,16 +535,11 @@ font-size: var(--s2a-typography-font-size-heading-1);
     position: relative;
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
-    will-change: auto;
+    justify-content: unset;
+    will-change: margin;
     animation: elasticItemsShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
-  }
-
-  .hub-hero-carousel-item-container .hub-hero-carousel-item-footer::after {
-    opacity: 1;
-    height: calc(var(--icon-size) + var(--s2a-spacing-md) * 2);
-    width: calc(var(--icon-size) + var(--s2a-spacing-md) * 2);
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
@@ -603,10 +573,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-    height: calc(var(--slide-footer-h) + var(--s2a-spacing-md));
+    box-sizing: border-box;
     overflow: hidden;
     background-color: var(--s2a-color-gray-1000);
-    padding-top: var(--s2a-spacing-md);
     z-index: -1;
     bottom: calc(var(--slide-footer-h) * -1);
     border-bottom-left-radius: var(--s2a-border-radius-md);
@@ -614,7 +583,10 @@ font-size: var(--s2a-typography-font-size-heading-1);
     width: 100%;
   }
 
-  .hub-hero-carousel-item-footer * {
+  .hub-hero-carousel-item-footer span {
+    opacity: 1;
+  }
+  .hub-hero-carousel-item-footer *:not(svg) {
     display: block;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -658,9 +630,10 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-container {
     contain: layout;
-    animation: carouselGapShrink var(--gap-shrink-timline) both;
+    animation: carouselGapShrinkWidthGrowth var(--gap-shrink-timline) both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
+    width: 125%;
   }
 
   .hub-hero-carousel-item-container {
@@ -678,7 +651,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
     max-width: calc(var(--hub-hero-carousel-item-max-width) * var(--hub-hero-carousel-item-hover-grow-index));
-    width: calc(var(--carousel-item-width) * var(--hub-hero-carousel-item-hover-grow-index));
+    width: 150%;
     background-color: var(--s2a-color-gray-1000);
   }
 
@@ -694,27 +667,26 @@ font-size: var(--s2a-typography-font-size-heading-1);
     color: var(--s2a-color-gray-25);
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer * {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span,svg),
+  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span,svg) {
     max-width: 80%;
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer::after,
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer::after {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span {
     opacity: 1;
   }
 
   .hub-hero-carousel-item:nth-child(1) {
     animation: carouselSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 30%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
     animation-fill-mode: forwards, backwards, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(2) {
     animation: carouselSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 30%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
     animation-fill-mode: forwards, backwards, forwards;
   }
 
@@ -723,7 +695,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     visibility: hidden;
     min-width: 0;
     flex-basis: 0;
-    animation: carouselSlide3Transition ease forwards;
+    animation: carouselSlide3Transition ease both;
     animation-timeline: --hub-hero;
     animation-range: contain 0% contain 40%;
   }
@@ -731,14 +703,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item:nth-child(4) {
     animation: carouselSlideOffset4 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 30%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
     animation-fill-mode: forwards, backwards, forwards;
   }
 
   .hub-hero-carousel-item:nth-child(5) {
     animation: carouselSlideOffset5 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
     animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--slide-animation-range), contain 0% contain 30%, var(--slide-animation-range);
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
     animation-fill-mode: forwards, backwards, forwards;
   }
 
@@ -751,16 +723,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item .hub-hero-carousel-item-footer {
     bottom: 0;
-    transform: translateY(var(--slide-footer-h));
-  }
-
-  .hub-hero-carousel-item .hub-hero-carousel-item-footer * {
-    padding: 38px var(--s2a-spacing-lg);
-  }
-
-  .hub-hero-carousel-item .hub-hero-carousel-item-footer::after {
-    bottom: var(--s2a-spacing-lg);
-    right: var(--s2a-spacing-lg);
+    transform: translateY(calc(var(--slide-footer-h)));
   }
 
   .hub-hero-carousel-item .hub-hero-carousel-item-header {
@@ -782,7 +745,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --grid-col-two-offset: 94px;
     --grid-col-three-offset: 150px;
     --grid-col-four-offset: 94px;
-    --max-image-size: 292px;
   }
 
   .hub-hero-carousel {
@@ -796,7 +758,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 }
 
 /** custom media rule 1 */
-@media (768px <=width <= 1800px) {
+@media (768px <=width <= 1200px) {
   .hub-hero-carousel-container {
     transition: all .3s var(--paralax-easing);
     gap: var(--end-gap);
@@ -812,14 +774,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 }
 
-/* custom media rule */
-@media (820px > width) {
-  .hub-hero {
-    --grid-img-width: var(--min-image-size);
-  }
-}
-
-
 /** desktop only */
 @media (1280px <=width) {
   .hub-hero {
@@ -834,26 +788,20 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 }
 
+/* below large */
+@media (1380px > width) {
+  .hub-hero {
+    --hub-hero-carousel-item-max-width: max(292px, calc(25vw - 16px));
+    --hub-hero-carousel-item-min-width: 146px;
+  }
+}
+
 /* XL desktop */
 @media (1400px < width) {
   .hub-hero {
     --grid-col-two-offset: 184px;
     --grid-col-three-offset: 292px;
     --grid-col-four-offset: 184px;
-  }
-}
-
-/** custom media rule */
-@media (width >= 1592px) {
-  .hub-hero {
-    --grid-img-width: var(--max-image-size);
-  }
-}
-
-/** custom media rule */
-@media (width < 1610px) {
-  .hub-hero {
-    --hub-hero-carousel-item-max-width: max(var(--hub-hero-carousel-item-min-width), calc(25vw - var(--s2a-spacing-md)));
   }
 }
 
@@ -920,8 +868,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
     pointer-events: all;
     
     width: var(--carousel-slide-width);
-    max-width: var(--max-image-size);
-    min-width: var(--min-image-size);
+    max-width: var(--grid-img-width);
+    min-width: var(--grid-img-width-min);
     padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
   }
 
@@ -932,7 +880,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
-    width: var(--max-image-size);
+    width: var(--grid-img-width);
   }
   
 }
@@ -969,7 +917,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   .hub-hero-carousel-container {
-    width: var(--carousel-item-width);
     max-width: var(--hub-hero-carousel-item-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
     display: flex;
@@ -994,9 +941,10 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 }
 
-@keyframes carouselGapShrink {
+@keyframes carouselGapShrinkWidthGrowth {
   0% {
     gap: var(--start-gap);
+    max-width: 200vw;
   }
 
   100% {
@@ -1044,7 +992,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 @keyframes hubHeroGridCarouselSlideHover {
   0% {
-    width: var(--min-image-size);
+    width: var(--grid-img-width-min);
     transform: translateY(0%);
   }
 
@@ -1056,17 +1004,17 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 @keyframes carouselMobileContainerExpand {
   0% {
-    width: var(--grid-img-width);
+    /* width: var(--grid-img-width); */
     max-width: var(--grid-img-width);
   }
 
-  30% {
-    width: 100%;
+  75% {
+    /* width: 100%; */
     max-width: 100%;
   }
 
   100% {
-    width: 100%;
+    /* width: 100%; */
     max-width: 100%;
   }
 }
@@ -1088,7 +1036,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   100% {
-    transform: translateY(calc(var(--slide-footer-h) - 10px));
+    transform: translateY(calc(var(--slide-footer-h)));
   }
 }
 
@@ -1097,6 +1045,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     transform: translateY(-290px);
     filter: contrast(1);
     opacity: 1;
+    min-width: var(--grid-img-width-min);
   }
 
   15% {
@@ -1410,14 +1359,18 @@ font-size: var(--s2a-typography-font-size-heading-1);
 @keyframes carouselSlideExpandSize {
   0% {
     max-width: var(--grid-img-width);
-    min-width: var(--min-image-size);
-    max-height: 250px;
+    min-width: var(--grid-img-width-min);
+    max-height: calc(min(329px, 25vw) * 1.25);
   }
 
   30% {
     max-width: var(--grid-img-width);
-      min-width: var(--min-image-size);
-      max-height: 250px;
+    min-width: var(--grid-img-width-min);
+    max-height: calc(min(329px, 25vw) * 1.25);
+  }
+
+  45% {
+    max-height: calc(min(329px, 25vw) * 1.25);
   }
 
   100% {
@@ -1439,7 +1392,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
   
   50% {
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
     pointer-events: none;
   }
   51% {
@@ -1447,7 +1400,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 
   100% {
-    padding: calc(var(--s2a-spacing-lg)*2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-2xl)*2 + var(--s2a-typography-line-height-eyebrow)) 0;
+    padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
     pointer-events: all;
   }
 }
+
