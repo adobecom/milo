@@ -10,6 +10,8 @@ const RIGHT_DRAG_DENOM = 160;
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+  <path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="currentColor"/></svg>`;
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 let videoObserver = null;
 let resizeObserver = null;
@@ -113,7 +115,9 @@ function setupBlock(el) {
   let slideNum;
   let isCarousel;
   let itemsWrap;
-  let dotsWrap;
+  let controlsWrap;
+  let nextBtn;
+  let prevBtn;
 
   let rotation = 0;
   let flying = false;
@@ -389,10 +393,21 @@ function setupBlock(el) {
     else commitRight(progress);
   }
 
-  function onKeyDown(e) {
-    const { key } = e;
-    if (key === 'ArrowLeft') commitLeft(0.25);
-    else if (key === 'ArrowRight') commitRight(0.25, true);
+  function handleNavigation(e) {
+    const { key, type, target: clickTarget } = e;
+    if (type === 'click') {
+      if (clickTarget.classList.contains('prev')) commitRight(0.25, true);
+      else if (clickTarget.classList.contains('next')) commitLeft(0.25);
+      return;
+    }
+
+    if (key === 'ArrowLeft') {
+      commitRight(0.25, true);
+      prevBtn?.focus();
+    } else if (key === 'ArrowRight') {
+      commitLeft(0.25);
+      nextBtn?.focus();
+    }
   }
 
   function selectByIndex(idx, item) {
@@ -417,17 +432,29 @@ function setupBlock(el) {
 
   function swapStackItems(mobile = true) {
     if (mobile) {
-      dotsWrap.before(stack);
-      dotsWrap.after(itemsWrap);
+      controlsWrap.before(stack);
+      controlsWrap.after(itemsWrap);
       return;
     }
-    dotsWrap.before(itemsWrap);
-    dotsWrap.after(stack);
+    controlsWrap.before(itemsWrap);
+    controlsWrap.after(stack);
   }
 
   const desktopMQ = window.matchMedia(DESKTOP_MQ);
   let mobileBound = false;
   let desktopBound = false;
+
+  function enableMobileNavigation() {
+    prevBtn.addEventListener('click', handleNavigation);
+    nextBtn.addEventListener('click', handleNavigation);
+    el.addEventListener('keydown', handleNavigation);
+  }
+
+  function disableMobileNavigation() {
+    prevBtn.removeEventListener('click', handleNavigation);
+    nextBtn.removeEventListener('click', handleNavigation);
+    el.removeEventListener('keydown', handleNavigation);
+  }
 
   function bindMobile() {
     if (mobileBound) return;
@@ -436,7 +463,7 @@ function setupBlock(el) {
     stack.addEventListener('pointermove', onPointerMove);
     stack.addEventListener('pointerup', onPointerUp);
     stack.addEventListener('pointercancel', onPointerUp);
-    el.addEventListener('keydown', onKeyDown);
+    enableMobileNavigation();
     swapStackItems();
   }
 
@@ -447,7 +474,7 @@ function setupBlock(el) {
     stack.removeEventListener('pointermove', onPointerMove);
     stack.removeEventListener('pointerup', onPointerUp);
     stack.removeEventListener('pointercancel', onPointerUp);
-    el.removeEventListener('keydown', onKeyDown);
+    disableMobileNavigation();
   }
 
   function addResizeObserver() {
@@ -487,10 +514,12 @@ function setupBlock(el) {
     medias = [...el.querySelectorAll('.media')];
     itemsWrap = el.querySelector('.split-aside-grid-items');
     items = [...itemsWrap.children];
-    dotsWrap = el.querySelector('.split-aside-grid-dots');
-    dotEls = [...dotsWrap.children];
+    dotEls = [...el.querySelector('.split-aside-grid-dots').children];
     ariaLive = el.querySelector('.aria-live-container');
     slideNum = medias.length;
+    controlsWrap = el.querySelector('.split-aside-grid-controls');
+    nextBtn = controlsWrap.querySelector('button.next');
+    prevBtn = controlsWrap.querySelector('button.prev');
 
     if (desktopMQ.matches) {
       isCarousel = false;
@@ -530,6 +559,16 @@ function decorate(block) {
     ));
   });
 
+  const controlsWrapper = createTag(
+    'div',
+    { class: 'split-aside-grid-controls' },
+    [
+      createTag('button', { class: 'prev', 'aria-label': 'Previous slide' }, ARROW_SVG),
+      dots,
+      createTag('button', { class: 'next', 'aria-label': 'Next slide' }, ARROW_SVG),
+    ],
+  );
+
   /* Wrap items in a grid container so every item occupies the same cell.
      The cell sizes to the tallest item, so the container's height stays stable
      regardless of which slide is active. */
@@ -541,7 +580,7 @@ function decorate(block) {
     'aria-live': 'polite',
     'aria-atomic': 'true',
   });
-  block.append(itemsWrap, dots, stack, ariaLive);
+  block.append(itemsWrap, controlsWrapper, stack, ariaLive);
   replaceVideoIntersectionObserver(medias);
 }
 
