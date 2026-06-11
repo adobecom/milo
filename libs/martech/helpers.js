@@ -940,4 +940,33 @@ export async function sendAnalytics(val) {
   }
 }
 
+window.addEventListener('arp:tokenReady', (e) => {
+  const token = e.detail?.token;
+  if (!token) return;
+
+  if (window._satellite?.track) {
+    window._satellite.track('event', {
+      documentUnloading: true,
+      xdm: {
+        eventType: 'web.webinteraction.linkClicks',
+        web: {
+          webInteraction: {
+            linkClicks: { value: 1 },
+            type: 'other',
+            name: 'arp_token_ready',
+          },
+        },
+      },
+      data: {
+        _adobe_corpnew: {
+          digitalData: {
+            primaryEvent: { eventInfo: { eventName: 'arp_token_ready' } },
+            security: { arpToken: token },
+          },
+        },
+      },
+    });
+  }
+});
+
 export default { loadAnalyticsAndInteractionData };
