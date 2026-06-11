@@ -1,6 +1,8 @@
 .hub-hero {
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4000px;
+  --slide-header-h: 64px;
+  --slide-footer-h: 96px;
   --media-mobile-max-height: min(394px, 33vh);
   --media-mobile-max-width: 500px;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -16,7 +18,7 @@
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
   --carousel-items-top: 35%;
-  --carousel-header-top: 20%;
+  --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-lg));
   --carousel-item-media-height: 394px;
   --slide-from-card-slide-range: contain 0% contain 30%;
   --slides: 4;
@@ -26,10 +28,9 @@
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
   --carousel-item-width: calc(100vw / 5);
   --gap-shrink-timline: linear;
-  --slide-header-h: 64px;
-  --slide-footer-h: 96px;
+
   --hubHeroCarouselContainerWidthAdj: 0px;
-  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width))  + ((var(--end-gap) * (var(--slides) - 1))) + var(--hubHeroCarouselContainerWidthAdj));
+  --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))) + var(--hubHeroCarouselContainerWidthAdj));
 
   --grid-col-one-offset: 0px;
   --grid-col-two-offset: 94px;
