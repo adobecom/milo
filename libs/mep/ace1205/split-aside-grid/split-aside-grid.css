@@ -67,13 +67,24 @@
         border-radius: 20px;
       }
     }
+    .video-holder {
+      pointer-events: none;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      -webkit-user-drag: none;
+      border-radius: 20px;
+    }
 
     &:not([data-slot="0"], .incoming) {
       background-color: #E3E2E2;
       box-shadow: 0 68.507px 54.806px 0 rgba(0, 0, 0, 0.14), 0 28.621px 22.897px 0 rgba(0, 0, 0, 0.10), 0 15.302px 12.242px 0 rgba(0, 0, 0, 0.08), 0 8.578px 6.863px 0 rgba(0, 0, 0, 0.07), 0 4.556px 3.645px 0 rgba(0, 0, 0, 0.06), 0 1.896px 1.517px 0 rgba(0, 0, 0, 0.04);
     }
 
-    &:not([data-slot="0"], .show-image) img {
+    &:not([data-slot="0"], .show-image) :is(video, img) {
       opacity: 0;
       transition: opacity 0.3s ease-out;
     }
@@ -146,6 +157,7 @@
         width: 5px;
         height: 8px;
         background-color: currentColor;
+        /* Path needs to be updated when block is moved to /c2 folder */
         mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
         -webkit-mask: url('../../../c2/assets/img/arrow-right.svg') no-repeat center;
         mask-size: contain;
@@ -205,14 +217,18 @@
       width: 100%;
       height: 100%;
 
-      img {
+      .video-holder {
+        pointer-events: unset;
+      }
+
+      :is(video, img) {
         opacity: 0;
         transition: opacity var(--dropdown-transition);
       }
 
       &[data-slot="0"] {
         opacity: 1;
-        img {
+        :is(video, img) {
           opacity: 1;
         }
       }
@@ -284,11 +300,15 @@
 
       .foreground :is(h1, h2, h3, h4, h5, h6) {
         opacity: 0.48;
+        transition: opacity var(--dropdown-transition);
       }
 
       &:hover {
         .foreground :is(h1, h2, h3, h4, h5, h6) {
           opacity: 1;
+        }
+        .split-aside-grid-item-toggle {
+          background: var(--s2a-color-transparent-white-12);
         }
       }
     }
@@ -353,14 +373,27 @@
   }
 }
 
-@media (width >= 1920px) {
+@media (width >= 1600px) {
   .split-aside-grid-stack {
+    padding-inline-end: var(--grid-padding);
     inset-inline-end: unset;
   }
 }
 
-@media (width >= 2560px) {
-  .split-aside-grid {
-    padding-inline-end: var(--grid-padding);
+:root:has(meta[name="foundation"][content="c2"]) {
+  @media (width >= 768px) and (width <= 1600px) {
+    .split-aside-grid {
+      --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
+      --btn-size: 32px;
+      --right-spacing: var(--s2a-spacing-lg);
+      button.play-pause-button {
+        right: calc(var(--button-right) - var(--border-padding) + var(--right-spacing));
+      }
+    }
+  }
+  @media (width >= 1280px) {
+    .split-aside-grid {
+      --right-spacing: var(--s2a-spacing-xl);
+    }
   }
 }

@@ -359,7 +359,7 @@
   position: fixed;
   transition: opacity 0.25s ease;
   width: calc(100% - var(--bc-floating-button-spacing) * 2 - var(--bc-input-border-size) * 2);
-  z-index: 4;
+  z-index: 5;
 }
 
 .bc-floating-button::before {
@@ -512,8 +512,8 @@
   border-radius: 18px;
   border: 1.5px solid transparent;
   background: linear-gradient(to right, rgba(225 29 26 / 16%), rgba(144 13 235 / 16%)) border-box;
-  mask: 
-    linear-gradient(#fff 0 0) padding-box, 
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
 }
@@ -884,7 +884,7 @@
     flex-wrap: wrap;
     max-width: 600px;
   }
-  
+
   .hero .prompt-card-button,
   .pill-cards .prompt-card-button {
     flex-direction: row;

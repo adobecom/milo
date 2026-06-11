@@ -42,6 +42,7 @@ function decorateJumpLinks(content, foreground) {
 
   const anchors = [...jumpRow.querySelectorAll('a')];
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
+  const list = createTag('ul');
 
   anchors.forEach((anchor) => {
     const badge = createTag('span', { class: 'jump-link-badge' });
@@ -53,8 +54,10 @@ function decorateJumpLinks(content, foreground) {
       e.preventDefault();
       scrollToHashedElement(getSectionHash(anchor));
     });
-    nav.append(anchor);
+    list.append(createTag('li', {}, anchor));
   });
+
+  nav.append(list);
 
   jumpRow.remove();
   foreground.append(nav);
@@ -67,9 +70,11 @@ function decorateVideoVariant(container) {
   const [ctaCell, mediaCell] = [...row.children];
   if (!ctaCell && !mediaCell) return;
 
-  if (mediaCell) {
+  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
     mediaCell.classList.add('media');
     container.append(mediaCell);
+  } else {
+    mediaCell?.remove();
   }
 
   if (ctaCell) {

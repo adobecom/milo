@@ -392,8 +392,9 @@ export function delayedModal(el) {
 export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
-  if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
-  if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
+  const normalizedHash = modalHash?.replace(/#_button-[a-zA-Z-]+/g, '');
+  if (delayedModal(el) || window.location.hash !== normalizedHash || document.querySelector(`div.dialog-modal${normalizedHash}`)) return null;
+  if (dialogLoadingSet.has(normalizedHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = await findDetails(window.location.hash, el);
   details.deepLink = true;
   return details ? getModal(details) : null;

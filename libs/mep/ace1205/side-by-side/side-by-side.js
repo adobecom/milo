@@ -41,7 +41,7 @@ function replaceVideoIntersectionObserver(medias) {
           syncPausePlayIcon(video, { type: 'playing' });
         }
       });
-    }, { threshold: 0 });
+    }, { threshold: 0.4 });
     videoObserver.observe(videoEl);
   });
 }
