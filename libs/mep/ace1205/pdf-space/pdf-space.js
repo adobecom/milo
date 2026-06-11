@@ -1443,8 +1443,8 @@ function mountMotion(el) {
   });
 
   let pointerDown = false;
-  stage.addEventListener('pointerdown', () => { pointerDown = true; }, { capture: true });
-  stage.addEventListener('pointerup', () => { pointerDown = false; }, { capture: true });
+  stage.addEventListener('pointerdown', () => { pointerDown = true; });
+  stage.addEventListener('pointerup', () => { pointerDown = false; });
 
   const textBlockLink = textBlockEl.querySelector('a');
   textBlockLink?.addEventListener('focus', () => {
