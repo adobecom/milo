@@ -1143,6 +1143,13 @@
     margin-top: 4px;
   }
 
+  .dark .prompt-card-text,
+  .c2-dark .prompt-card-text,
+  .dark.hero .prompt-card-text,
+  .c2-dark.hero .prompt-card-text {
+    grid-template-columns: auto;
+  }
+
   #brand-concierge-modal.dialog-modal {
     height: calc(100dvh - 32px);
     margin-top: 32px;
