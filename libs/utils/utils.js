@@ -1446,21 +1446,56 @@ export function decorateImageLinks(el) {
   });
 }
 
-export function decoratePictures(area) {
+export function decoratePictures(area, config = { size: 1, type: 'webp' }) {
   area.querySelectorAll('picture').forEach((picture) => {
     if (picture.classList.contains('large-image-decorated')) return;
     const sources = picture.querySelectorAll('source');
     const image = picture.querySelector('img');
     if (!sources.length || !image) return;
-    if (Number(image.getAttribute('width')) < 2000) return;
+
+    if (Number(image.getAttribute('width')) < 1500) return;
     const path = image.src.split('?')[0];
-    const largeImageSource = createTag('source', {
-      type: 'image/webp',
-      srcset: `${path}?width=3000&format=webply`,
-      media: '(min-width: 1920px)',
+
+    const renditions = [
+      {
+        // mobile
+        breakpoint: undefined,
+        width: 500,
+      },
+      {
+        // tablet
+        breakpoint: '(min-width: 768px)',
+        width: 768,
+      },
+      {
+        // desktop
+        breakpoint: '(min-width: 1024px)',
+        width: 1024,
+      },
+      {
+        // large desktop
+        breakpoint: '(min-width: 1440px)',
+        width: 1440,
+      },
+      {
+        // larger desktop
+        breakpoint: '(min-width: 1920px)',
+        width: 1920,
+      },
+    ];
+
+    const imageNaturalSize = Number(image.getAttribute('width'));
+    renditions.forEach(({ breakpoint, width }) => {
+      const targetWidth = width * config.size;
+      if (imageNaturalSize < targetWidth) return;
+      const source = createTag('source', {
+        type: `image/${config.type}`,
+        srcset: `${path}?width=${targetWidth}&format=${config.type}`,
+      });
+      if (breakpoint) source.setAttribute('media', breakpoint);
+      picture.prepend(source);
     });
 
-    picture.prepend(largeImageSource);
     picture.classList.add('large-image-decorated');
   });
 }
