@@ -97,18 +97,8 @@
     display: flex;
   }
 
-  .hero-card:focus-within {
-    outline: 2px solid var(--s2a-color-blue-800);
-    border-radius: var(--s2a-border-radius-24);
-    outline-offset: 2px;
-  }
-
   a.hero-card-tile {
     text-decoration: none;
-
-    &:focus-visible {
-      outline: none;
-    }
 
     &:hover .learn-more svg {
       transform: translate3d(var(--s2a-spacing-4), 0, 0);
@@ -136,7 +126,6 @@
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
     will-change: transform;
-    clip-path: inset(0 round var(--s2a-border-radius-24));
   }
 
   &:dir(rtl) .hero-card-tile {
