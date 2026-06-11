@@ -1,7 +1,7 @@
 .hub-hero {
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4000px;
-  --media-mobile-max-height: 394px;
+  --media-mobile-max-height: min(394px, 33vh);
   --media-mobile-max-width: 500px;
   --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
   --hub-hero-carousel-container-height-desktop: 562px;
