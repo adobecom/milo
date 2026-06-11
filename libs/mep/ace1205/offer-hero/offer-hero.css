@@ -125,7 +125,6 @@
     flex-direction: column;
     justify-content: flex-end;
     background: var(--s2a-color-gray-75);
-    border-radius: var(--s2a-border-radius-24);
     box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
