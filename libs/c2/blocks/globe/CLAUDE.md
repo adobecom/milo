@@ -13,8 +13,10 @@ from the code alone.
   `// eslint-disable-next-line no-use-before-define` comments in `globe.js` for genuine
   forward refs (the rAF driver → `tick`, the click→modal chain, `init`↔`destroy`);
   don't add blanket disables to silence new issues.
-- **DOM is JS-built and uses global ids** (`#offer-globe-canvas`, `#offer-pullquote`,
-  `#card-modal*`, …) → **one globe per page** for now. Don't assume authored markup.
+- **DOM is JS-built and scoped to the block root** — the runtime queries nodes by
+  class within `el` (`root.querySelector`), so **multiple globes per page are
+  supported**. The only per-instance ids use a `gid` suffix (CA filter url +
+  modal `aria-labelledby`). Don't reintroduce global ids or assume authored markup.
 - **`hub-creative/`, `_reference/` are read-only reference**, not
   shipped code. The block is `globe.js` + `globe.css` (registered in `C2_BLOCKS`,
   `libs/utils/utils.js`).

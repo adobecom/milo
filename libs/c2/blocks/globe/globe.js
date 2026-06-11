@@ -180,11 +180,17 @@ function fibSpherePos(i, total, radius) {
   );
 }
 
+// Per-page instance counter → unique ids for the few nodes that still need one
+// (the CA SVG filter referenced via url(#…), and the modal's aria-labelledby).
+let globeInstanceSeq = 0;
+
 // The globe runtime. Originally an IIFE exposing window.offerGlobe in the
 // hub-creative prototype; now a factory returning { init, destroy }.
 // Key changes from the prototype: gsap.ticker → requestAnimationFrame,
-// Lenis reads → window.scrollY.
-function createGlobeRuntime(authoredCards) {
+// Lenis reads → window.scrollY. `root` is the block element; all DOM lookups
+// are scoped to it (root.querySelector) so >1 globe can coexist on a page.
+// `gid` is this instance's unique-id suffix (see globeInstanceSeq).
+function createGlobeRuntime(authoredCards, root, gid) {
   // rAF driver replacing gsap.ticker.
   let rafId = 0;
   // eslint-disable-next-line no-use-before-define -- tick() runs only via rAF, after init
@@ -192,15 +198,18 @@ function createGlobeRuntime(authoredCards) {
   function startTicker() { if (!rafId) rafId = requestAnimationFrame(rafLoop); }
   function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
 
+  // Root-scoped query helper — every DOM lookup goes through this so the runtime
+  // only ever touches its own block's nodes (multi-instance safe).
+  const q = (sel) => root.querySelector(sel);
+
   // The card content the runtime renders. authoredCards is always present (from the fragment).
   const CARD_CONTENT = authoredCards || [];
 
-  // Per-card accessor. Wraps so any authored count fills the per-breakpoint
-  // N_TOTAL (45 desktop/tablet, 24 mobile) without breaking the grid math.
-  // (Aligning N_TOTAL/grid to the authored count is a later refinement.)
+  // Per-card accessor. N_TOTAL is clamped to the authored count (see applyBP),
+  // so i is always in range — no modulo wrap. Fewer authored cards than the grid
+  // can hold simply leaves the last grid column partially filled.
   function getCardMetadata(i) {
-    const len = CARD_CONTENT.length;
-    return CARD_CONTENT[((i % len) + len) % len];
+    return CARD_CONTENT[i];
   }
 
   // ── Per-BP values — declared here, assigned by applyBP() before buildCards() runs ──
@@ -212,7 +221,10 @@ function createGlobeRuntime(authoredCards) {
   let currentBPName = null;
 
   function applyBP(cfg) {
-    N_TOTAL = cfg.N_TOTAL;
+    // N_TOTAL follows the authored card count, capped at the per-BP maximum
+    // (cfg.N_TOTAL == GRID_COLS*GRID_ROWS — the grid can't hold more). Fewer
+    // cards → ragged last grid column (accepted). More cards → extras dropped.
+    N_TOTAL = Math.min(CARD_CONTENT.length, cfg.N_TOTAL);
     N_VISIBLE = N_TOTAL; // all cards on arc simultaneously (no conveyor)
     ARC_SPAN = cfg.ARC_SPAN;
     SPHERE_R = cfg.SPHERE_R;
@@ -225,7 +237,9 @@ function createGlobeRuntime(authoredCards) {
     FOLD_SPHERE_DIST = Math.round(SPHERE_R / (0.35 * Math.tan(Math.PI / 6)));
     GRID_COLS = cfg.GRID_COLS;
     GRID_ROWS = cfg.GRID_ROWS;
-    ARC_DENSE_COUNT = cfg.ARC_DENSE_COUNT;
+    // Clamp the dense-arc cluster to the actual card count so a small authored
+    // set still leaves cards for the visible spread region (fanT > ARC_DENSE_SPLIT).
+    ARC_DENSE_COUNT = Math.min(cfg.ARC_DENSE_COUNT, N_TOTAL);
   }
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -248,7 +262,7 @@ function createGlobeRuntime(authoredCards) {
   let W = 0; let
     H = 0;
 
-  const pqEl = document.getElementById('offer-pullquote');
+  const pqEl = q('.offer-pullquote');
   let pqShown = false;
 
   let caFilterR = null; // SVG feOffset element for red channel  (Option C)
@@ -974,7 +988,7 @@ function createGlobeRuntime(authoredCards) {
   // (close button, info panel, nav buttons) to align with the card's visible area.
   // Called every frame when modal is open so elements stay locked to the card.
   function positionModalChrome() {
-    const chromeEl = document.getElementById('card-modal-chrome');
+    const chromeEl = q('.card-modal-chrome');
     if (!chromeEl || !camera) return;
     const infoEl = chromeEl.querySelector('.card-modal__info');
     const closeEl = chromeEl.querySelector('.card-modal__close');
@@ -1266,7 +1280,7 @@ function createGlobeRuntime(authoredCards) {
 
   // Write the authored metadata for card index i into the modal chrome DOM.
   function populateModal(i) {
-    const targetEl = document.getElementById('card-modal-chrome') || modalEl;
+    const targetEl = q('.card-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     const imgEl = targetEl.querySelector('.card-modal__image');
@@ -1498,7 +1512,7 @@ function createGlobeRuntime(authoredCards) {
     // chrome itself in case openCardModal is called from inside it (shouldn't
     // happen, but defensive).
     const focusedNow = document.activeElement;
-    const chromeRoot = document.getElementById('card-modal-chrome');
+    const chromeRoot = q('.card-modal-chrome');
     modalFocusRestoreEl = (chromeRoot && chromeRoot.contains(focusedNow)) ? null : focusedNow;
     modalIdx = i;
     modalCard = cards[i];
@@ -1544,7 +1558,7 @@ function createGlobeRuntime(authoredCards) {
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'false');
-    const chromeEl = document.getElementById('card-modal-chrome');
+    const chromeEl = q('.card-modal-chrome');
     if (chromeEl) { chromeEl.classList.add('is-visible'); chromeEl.setAttribute('aria-hidden', 'false'); }
     positionModalChrome();
     requestAnimationFrame(() => {
@@ -1595,7 +1609,7 @@ function createGlobeRuntime(authoredCards) {
     // applied. Without this, the close button (which user just clicked) retains
     // focus → browser blocks aria-hidden + warns in console + can interfere with
     // subsequent pointer event delivery on touch in DevTools device emulation.
-    const chromeEl = document.getElementById('card-modal-chrome');
+    const chromeEl = q('.card-modal-chrome');
     if (chromeEl && document.activeElement && chromeEl.contains(document.activeElement)) {
       document.activeElement.blur();
     }
@@ -1722,11 +1736,11 @@ function createGlobeRuntime(authoredCards) {
   //     announce "View photo by William Eggleston, 1 of 45".
   // tabindex stays -1 until the sphere is interactive — see the toggle in tick().
   function setupGlobeGalleryA11y() {
-    const canvas = document.getElementById('offer-globe-canvas');
+    const canvas = q('.offer-globe-canvas');
     if (!canvas || !canvas.parentNode) return;
 
     // Remove existing on re-init so we don't double up.
-    const existing = document.getElementById('globe-gallery-a11y');
+    const existing = q('.globe-gallery-a11y');
     if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
 
     const container = document.createElement('div');
@@ -1815,7 +1829,7 @@ function createGlobeRuntime(authoredCards) {
   }
 
   function setupModal() {
-    modalEl = document.getElementById('card-modal');
+    modalEl = q('.card-modal');
     if (!modalEl) return;
     raycaster = new THREE.Raycaster();
     mouseNDC = new THREE.Vector2();
@@ -1830,7 +1844,7 @@ function createGlobeRuntime(authoredCards) {
     foldRotQuat = new THREE.Quaternion();
     tmpVec3 = new THREE.Vector3();
     // Chrome div hosts the interactive elements (close, nav, info) above the WebGL card canvas.
-    const chromeEl = document.getElementById('card-modal-chrome');
+    const chromeEl = q('.card-modal-chrome');
     const evtRoot = chromeEl || modalEl;
     evtRoot.querySelector('.card-modal__close').addEventListener('click', closeCardModal);
     evtRoot.querySelector('.card-modal__nav--prev').addEventListener('click', () => { navigateModal(-1); });
@@ -1845,7 +1859,7 @@ function createGlobeRuntime(authoredCards) {
       // while modal is open so the globe doesn't scroll/zoom behind the modal.
       // Space is exempted when focus is inside the modal chrome — Space should
       // activate a focused button (e.g., close), not be blocked.
-      const chromeRoot = document.getElementById('card-modal-chrome');
+      const chromeRoot = q('.card-modal-chrome');
       const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
       if (e.key === 'PageUp' || e.key === 'PageDown'
           || e.key === 'Home' || e.key === 'End'
@@ -2436,7 +2450,7 @@ function createGlobeRuntime(authoredCards) {
         caFilterR.setAttribute('dy', (-globalCA).toFixed(2));
         caFilterB.setAttribute('dx', '0');
         caFilterB.setAttribute('dy', (globalCA * 0.5).toFixed(2));
-        canvas.style.filter = 'url(#ca-filter)';
+        canvas.style.filter = `url(#ca-filter-${gid})`;
       } else {
         canvas.style.filter = '';
       }
@@ -2684,7 +2698,7 @@ function createGlobeRuntime(authoredCards) {
     for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i);
 
     // ── Arc copy element ──
-    const arcCopyEl = document.querySelector('.offer-arc-copy');
+    const arcCopyEl = q('.offer-arc-copy');
     if (arcCopyEl) {
       const P_HEADLINE_IN = 0.25;
       const P_ARC_COPY_OUT = 0.50;
@@ -2760,7 +2774,7 @@ function createGlobeRuntime(authoredCards) {
 
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
-    const canvas = document.getElementById('offer-globe-canvas');
+    const canvas = q('.offer-globe-canvas');
     if (!canvas) return;
 
     W = window.innerWidth;
@@ -2783,7 +2797,7 @@ function createGlobeRuntime(authoredCards) {
 
     // Modal renderer / scene — renders only the flown-out card on a separate canvas above the
     // .card-modal__backdrop, so it stays sharp while the backdrop blurs the main canvas.
-    modalCanvasEl = document.getElementById('modal-card-canvas');
+    modalCanvasEl = q('.modal-card-canvas');
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: true, alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
@@ -2804,7 +2818,7 @@ function createGlobeRuntime(authoredCards) {
     cameraOrtho.position.set(0, 0, 100);
     cameraOrtho.lookAt(0, 0, 0);
 
-    const spacer = document.getElementById('offer-pin-spacer');
+    const spacer = root; // the block element is the scroll spacer (.offer-pin-spacer)
     function doLayout() {
       W = window.innerWidth;
       H = window.innerHeight;
@@ -2886,8 +2900,8 @@ function createGlobeRuntime(authoredCards) {
     canvas.style.display = 'block';
 
     // Cache SVG filter elements for Option C global CA
-    caFilterR = document.getElementById('ca-r-offset');
-    caFilterB = document.getElementById('ca-b-offset');
+    caFilterR = q('.ca-r-offset');
+    caFilterB = q('.ca-b-offset');
 
     setupModal();
 
@@ -2933,7 +2947,7 @@ function createGlobeRuntime(authoredCards) {
     if (scene) { while (scene.children.length) scene.remove(scene.children[0]); }
     renderer = null; scene = null; camera = null; cameraOrtho = null; sphereGroup = null;
     // A11y gallery cleanup so a fresh init starts clean.
-    const galleryEl = document.getElementById('globe-gallery-a11y');
+    const galleryEl = q('.globe-gallery-a11y');
     if (galleryEl && galleryEl.parentNode) galleryEl.parentNode.removeChild(galleryEl);
     if (focusRingEl && focusRingEl.parentNode) focusRingEl.parentNode.removeChild(focusRingEl);
     galleryBtns = null;
@@ -2943,7 +2957,7 @@ function createGlobeRuntime(authoredCards) {
     ringCorners = null;
     ringTmpVec = null;
     // Reset arc-copy and pull-quote
-    const arcCopyEl = document.querySelector('.offer-arc-copy');
+    const arcCopyEl = q('.offer-arc-copy');
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
@@ -2972,7 +2986,10 @@ export default async function init(el) {
   // fragmentHref is captured here so it survives the DOM wipe.
   const { cards: domCards, arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
 
-  buildGlobeDom(el);
+  // Unique suffix for this instance's id-bearing nodes (CA filter, aria target).
+  globeInstanceSeq += 1;
+  const gid = globeInstanceSeq;
+  buildGlobeDom(el, gid);
 
   // Inject authored text into the built DOM slots (fallback to GLOBE_MARKUP defaults if absent).
   if (arcCopy) {
@@ -2996,7 +3013,12 @@ export default async function init(el) {
 
   // Prefer fully-fetched cards; fall back to what was in the DOM at init() time.
   const cards = fetchedCards || domCards;
-  const runtime = createGlobeRuntime(cards);
+  // No cards → nothing to render. Collapse the spacer rather than init an empty scene.
+  if (!cards || cards.length === 0) {
+    el.classList.add('globe--reduced');
+    return el;
+  }
+  const runtime = createGlobeRuntime(cards, el, gid);
   if (!runtime) { el.classList.add('globe--reduced'); return el; }
   runtime.init();
   el.globeRuntime = runtime;

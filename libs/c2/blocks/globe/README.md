@@ -1,7 +1,8 @@
 # globe — C2 block
 
 A scroll-driven **Three.js WebGL** hero. Status: **work in progress** — ported
-and lands; visual verification in a real Milo page is the gating open item.
+and visually verified in a real Milo page. Core arc→grid→sphere→zoom is the v1
+target; modal, a11y gallery, and chromatic aberration (CA) are fast-follow.
 
 ## What it is
 
@@ -100,18 +101,25 @@ Each fragment section is flat P/UL elements:
 | `<p><picture>…</picture></p>` | **image** | required — sections without one are skipped |
 
 Badge app names resolve against `APP_CATALOG` (by name/abbr/id) for brand icon
-colors; unknown apps render with a derived abbreviation. `getCardMetadata(i)`
-wraps the authored cards by modulo to fill `N_TOTAL` (45 desktop/tablet, 24 mobile).
+colors; unknown apps render with a derived abbreviation. `N_TOTAL` follows the
+authored card count, capped at the per-BP grid capacity (45 desktop/tablet = 9×5,
+24 mobile = 3×8). Fewer cards → the last grid column is partially filled; more →
+extras are dropped. No modulo wrapping (`getCardMetadata(i)` indexes directly).
 
 ## Architecture notes
 
-**DOM is JS-built and uses global ids.** `init(el)` calls `parseAuthoredContent(el)`
-first (arc-copy, pull-quote, fragment href), then `buildGlobeDom(el)` wipes the
-block and injects `GLOBE_MARKUP`. The runtime finds nodes by global id
-(`#offer-globe-canvas`, `#modal-card-canvas`, `#offer-pullquote`, `#card-modal*`,
-`#ca-r-offset`/`#ca-b-offset`, …) → **one globe per page** for now. `el` itself
-becomes the `850vh` scroll spacer (`.globe.offer-pin-spacer`); the canvas is
-`position:fixed`.
+**DOM is JS-built and scoped to the block root.** `init(el)` calls
+`parseAuthoredContent(el)` first (arc-copy, pull-quote, fragment href), then
+`buildGlobeDom(el, gid)` wipes the block and injects the markup. The runtime
+finds nodes by **class, queried within `el`** (`root.querySelector('.offer-globe-canvas')`,
+`.modal-card-canvas`, `.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`,
+…) → **multiple globes can coexist on a page**. The only id-bearing nodes are
+made unique per instance via a `gid` suffix: the CA SVG filter (referenced as
+`filter: url(#ca-filter-<gid>)`) and the modal heading (the dialog's
+`aria-labelledby` target). `el` itself becomes the `850vh` scroll spacer
+(`.globe.offer-pin-spacer`); the canvas is `position:fixed`. Body-level globals
+that remain shared (acceptable, one modal at a time): the `.modal-open` scroll
+lock and the keyboard focus-ring overlay.
 
 **Scroll model.** `progress = clamp((scrollY - spacerOffsetTop) / spacerHeight, 0, 1)`.
 Milo's page-level Lenis keeps `window.scrollY` in sync (gsap was dropped for a
@@ -159,15 +167,20 @@ A static poster fallback is a TODO.
 
 ## Open items / backlog
 
-1. **Visual verification** in a real Milo page (gating — the delint pass changed
-   source structure without a browser re-check).
-2. **Scope DOM to `el`** instead of global ids → allow >1 globe per page.
-3. **Static reduced-motion poster** (currently the section just collapses).
-4. **Align `N_TOTAL`/grid to the authored card count** instead of wrapping to fill 45/24.
-5. Confirm native `window.scrollY` feel is acceptable, or whether a Milo-approved
-   smooth-scroll exists.
-6. Decide v1 scope: full (modal + a11y + CA) or core arc→sphere→zoom with
-   modal/CA as fast-follow.
+Done: ~~visual verification~~ (confirmed in a real Milo page); ~~scope DOM to `el`~~
+(now class-scoped to the block root, multiple globes per page supported);
+~~align `N_TOTAL`/grid to authored count~~ (fixed grid, partial fill — see
+authoring contract); ~~scroll feel~~ (on a c2 page Milo loads Lenis with
+`autoRaf:true` in `utils.js`, so `window.scrollY` *is* the Milo-approved
+smooth-scroll position — no separate setup needed); ~~v1 scope decided~~ (core
+arc→grid→sphere→zoom; modal + a11y + CA are fast-follow).
+
+Remaining:
+
+1. **Static reduced-motion poster** (currently the section just collapses).
+2. **Fast-follow hardening** of the deferred features (modal, a11y gallery,
+   chromatic aberration) now that they're multi-instance-scoped — verify two
+   globes on one page don't fight over the body `.modal-open` lock / focus ring.
 
 ## Model to copy
 
