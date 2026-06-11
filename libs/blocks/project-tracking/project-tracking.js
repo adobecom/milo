@@ -16,7 +16,10 @@ export function parseUrls(text) {
     .filter(Boolean);
 }
 
-function statusCell(when) {
+// Only render http(s) URLs as real links; anything else (javascript:, data:) → '#'.
+const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '#');
+
+function createStatusCell(when) {
   if (!when) return createTag('td', { class: 'pt-cell pt-empty' }, '—');
   const date = new Date(when).toLocaleDateString();
   const cell = createTag('td', { class: 'pt-cell pt-ok', title: when });
@@ -24,12 +27,12 @@ function statusCell(when) {
   return cell;
 }
 
-function statCard(label, pctValue, count, total, variant) {
+function createStatCard(label, pctValue, n, total, variant) {
   const card = createTag('div', { class: `pt-stat pt-stat--${variant}` });
   const head = createTag('div', { class: 'pt-stat-head' });
   head.append(
     createTag('span', { class: 'pt-stat-label' }, label),
-    createTag('span', { class: 'pt-stat-frac' }, `${count} / ${total}`),
+    createTag('span', { class: 'pt-stat-frac' }, `${n} / ${total}`),
   );
   const big = createTag('div', { class: 'pt-stat-pct' }, `${pctValue}%`);
   const bar = createTag('div', { class: 'pt-bar' });
@@ -48,24 +51,25 @@ function renderResults(mount, rows, since) {
 
   const stats = createTag('div', { class: 'pt-stats' });
   stats.append(
-    statCard('Previewed', rollup.previewedPct, rollup.previewed, rollup.total, 'previewed'),
-    statCard('Published', rollup.publishedPct, rollup.published, rollup.total, 'published'),
+    createStatCard('Previewed', rollup.previewedPct, rollup.previewed, rollup.total, 'previewed'),
+    createStatCard('Published', rollup.publishedPct, rollup.published, rollup.total, 'published'),
   );
 
   const table = createTag('table', { class: 'pt-table' });
   const headRow = createTag('tr');
   headRow.append(
-    createTag('th', {}, 'Page'),
-    createTag('th', {}, 'Previewed'),
-    createTag('th', {}, 'Published'),
+    createTag('th', { scope: 'col' }, 'Page'),
+    createTag('th', { scope: 'col' }, 'Previewed'),
+    createTag('th', { scope: 'col' }, 'Published'),
   );
   table.append(createTag('thead', {}, headRow));
   const tbody = createTag('tbody');
   rows.forEach((r) => {
     const tr = createTag('tr');
+    const href = safeUrl(r.url);
     const linkCell = createTag('td', { class: 'pt-cell pt-url' });
-    linkCell.append(createTag('a', { class: 'pt-link', href: r.url, target: '_blank', rel: 'noopener noreferrer' }, r.url));
-    tr.append(linkCell, statusCell(r.lastPreview), statusCell(r.lastPublish));
+    linkCell.append(createTag('a', { class: 'pt-link', href, target: '_blank', rel: 'noopener noreferrer' }, r.url));
+    tr.append(linkCell, createStatusCell(r.lastPreview), createStatusCell(r.lastPublish));
     tbody.append(tr);
   });
   table.append(tbody);
@@ -95,7 +99,7 @@ export default async function init(block) {
   sinceLabel.append(since);
 
   const resultsInit = createTag('p', { class: 'pt-muted' }, 'Results will appear here after you check status.');
-  const results = createTag('div', { class: 'pt-results' }, resultsInit);
+  const results = createTag('div', { class: 'pt-results', 'aria-live': 'polite' }, resultsInit);
 
   block.append(header, label, hint, textarea, count, sinceLabel, results);
 
