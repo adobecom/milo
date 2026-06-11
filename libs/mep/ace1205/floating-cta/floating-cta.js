@@ -78,6 +78,8 @@ export default async function init(el) {
       checkoutLink.replaceChildren(img, checkoutLink.textContent.trim(), arrow);
       checkoutLink.classList.add('promo-cta');
       checkoutLink.classList.remove('con-button');
+      checkoutLink.setAttribute('tabindex', '-1');
+      checkoutLink.setAttribute('aria-hidden', 'true');
       el.replaceChildren(checkoutLink);
       applyCustomHide(el, checkoutLink);
     } catch (e) {
