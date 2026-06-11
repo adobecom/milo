@@ -9,13 +9,12 @@
 }
 
 .offer-hero {
-  isolation: isolate;
+  overflow-x: clip;
 
   .hero {
     position: relative;
     min-height: 100vh;
     z-index: 1;
-    overflow-x: clip;
   }
 
   .hero-content {
@@ -64,7 +63,6 @@
     position: relative;
     padding-block: 0 var(--s2a-spacing-lg);
     z-index: 2;
-    overflow-x: clip;
     border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
   }
 
