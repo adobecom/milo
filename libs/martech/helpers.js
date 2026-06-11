@@ -474,7 +474,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
           ...(window.adobeArp?.sessionToken && {
-            security: { arpToken: window.adobeArp.sessionToken } }),
+            custom: { arp_token: window.adobeArp.sessionToken } }),
         },
         otherConsents: getConsentConfiguration({ optOnConsentCookie, consentState }),
         user: { firstVisit: isFirstVisit() },
@@ -920,7 +920,7 @@ function fireAnalyticsEvent(val) {
         digitalData: {
           primaryEvent: { eventInfo: { eventName: val } },
           ...(window.adobeArp?.sessionToken && {
-            security: { arpToken: window.adobeArp.sessionToken }
+            custom: { arp_token: window.adobeArp.sessionToken }
           }),
         }
       }
@@ -939,34 +939,5 @@ export async function sendAnalytics(val) {
     }, { once: true });
   }
 }
-
-window.addEventListener('arp:tokenReady', (e) => {
-  const token = e.detail?.token;
-  if (!token) return;
-
-  if (window._satellite?.track) {
-    window._satellite.track('event', {
-      documentUnloading: true,
-      xdm: {
-        eventType: 'web.webinteraction.linkClicks',
-        web: {
-          webInteraction: {
-            linkClicks: { value: 1 },
-            type: 'other',
-            name: 'arp_token_ready',
-          },
-        },
-      },
-      data: {
-        _adobe_corpnew: {
-          digitalData: {
-            primaryEvent: { eventInfo: { eventName: 'arp_token_ready' } },
-            security: { arpToken: token },
-          },
-        },
-      },
-    });
-  }
-});
 
 export default { loadAnalyticsAndInteractionData };
