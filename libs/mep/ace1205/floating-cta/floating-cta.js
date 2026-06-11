@@ -2,6 +2,28 @@ import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import icons from '../../../c2/assets/icons.js';
 
+function waitForCheckoutLink(linkPara, timeoutMs = 10000) {
+  const existing = linkPara.querySelector('a');
+  if (existing?.isCheckoutLink) return Promise.resolve(existing);
+
+  return new Promise((resolve, reject) => {
+    let timeoutId;
+    const observer = new MutationObserver(() => {
+      const link = linkPara.querySelector('a');
+      if (link?.isCheckoutLink) {
+        clearTimeout(timeoutId);
+        observer.disconnect();
+        resolve(link);
+      }
+    });
+    observer.observe(linkPara, { childList: true, subtree: true });
+    timeoutId = setTimeout(() => {
+      observer.disconnect();
+      reject(new Error('Timed out waiting for checkout link to upgrade'));
+    }, timeoutMs);
+  });
+}
+
 function applyCustomHide(el, ctaEl) {
   const sectionMeta = el.parentElement?.querySelector('.section-metadata');
   if (!sectionMeta) return;
@@ -15,11 +37,12 @@ function applyCustomHide(el, ctaEl) {
     ([entry]) => {
       const isHidden = entry.isIntersecting;
       ctaEl.classList.toggle('active', !isHidden);
-      ctaEl.setAttribute('aria-hidden', String(isHidden));
       if (isHidden) {
         ctaEl.setAttribute('tabindex', '-1');
+        ctaEl.setAttribute('aria-hidden', String(isHidden));
       } else {
         ctaEl.removeAttribute('tabindex');
+        ctaEl.removeAttribute('aria-hidden');
       }
     },
     {
@@ -47,13 +70,23 @@ export default async function init(el) {
 
   const linkEl = linkPara.querySelector('a');
   const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons.arrowRightWhite);
-  if (linkEl?.isCheckoutLink) {
-    await linkEl.onceSettled();
-    linkEl.replaceChildren(img, linkEl.textContent.trim(), arrow);
-    linkEl.classList.add('promo-cta');
-    linkEl.classList.remove('con-button');
-    el.replaceChildren(linkEl);
-    applyCustomHide(el, linkEl);
+  const isMerchLink = linkEl?.classList.contains('merch') || linkEl?.isCheckoutLink;
+  if (isMerchLink) {
+    try {
+      const checkoutLink = await waitForCheckoutLink(linkPara);
+      await checkoutLink.onceSettled();
+      checkoutLink.replaceChildren(img, checkoutLink.textContent.trim(), arrow);
+      checkoutLink.classList.add('promo-cta');
+      checkoutLink.classList.remove('con-button');
+      el.replaceChildren(checkoutLink);
+      applyCustomHide(el, checkoutLink);
+    } catch (e) {
+      window.lana?.log?.(
+        `floating-cta: merch link failed: ${e?.message || e}`,
+        { tags: 'floating-cta', severity: 'error' },
+      );
+      el.remove();
+    }
     return;
   }
   const sourceText = (linkEl ? linkEl.textContent : linkPara.textContent).trim();
