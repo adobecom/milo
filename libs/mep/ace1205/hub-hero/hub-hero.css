@@ -18,7 +18,7 @@
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
   --carousel-items-top: 35%;
-  --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-lg));
+  --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: 394px;
   --slide-from-card-slide-range: contain 0% contain 30%;
   --slides: 4;
