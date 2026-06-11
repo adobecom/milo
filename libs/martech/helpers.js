@@ -473,6 +473,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
+          ...(window.adobeArp?.sessionToken && {
+            security: { arpToken: window.adobeArp.sessionToken } }),
         },
         otherConsents: getConsentConfiguration({ optOnConsentCookie, consentState }),
         user: { firstVisit: isFirstVisit() },
@@ -913,8 +915,16 @@ function fireAnalyticsEvent(val) {
         },
       },
     },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
+    data: {
+      _adobe_corpnew: {
+        digitalData: {
+          primaryEvent: { eventInfo: { eventName: val } },
+          ...(window.adobeArp?.sessionToken && {
+            security: { arpToken: window.adobeArp.sessionToken }
+          }),
+        }
+      }
+    },
   });
 }
 
