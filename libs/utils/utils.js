@@ -2327,7 +2327,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2342,7 +2342,10 @@ export function scrollToHashedElement(hash) {
   if (!targetElement) return;
 
   if (getMetadata('foundation') === 'c2') {
-    const bufferHeight = document.querySelector('.global-navigation nav').offsetHeight + document.querySelectorAll('.global-navigation nav ul.feds-breadcrumbs')[1].offsetHeight;
+    const config = getConfig();
+    const globalNavigation = await config.federal?.fedsGlobalNavigation;
+    const bufferHeight = globalNavigation.getGnavHeight?.();
+    console.log('bufferHeight', bufferHeight);
 
     const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
     window.scrollTo({
