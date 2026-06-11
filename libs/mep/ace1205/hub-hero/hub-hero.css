@@ -1357,14 +1357,13 @@ font-size: var(--s2a-typography-font-size-heading-1);
   0% {
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
-    max-height: 250px;
+    max-height: calc(min(329px, 25vw) * 1.25);
   }
 
   30% {
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
-    max-height: 250px;
-
+    max-height: calc(min(329px, 25vw) * 1.25);
   }
 
   100% {
