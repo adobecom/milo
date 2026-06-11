@@ -13,6 +13,7 @@
     position: relative;
     min-height: 100vh;
     z-index: 1;
+    overflow-x: clip;
   }
 
   .hero-content {
@@ -61,6 +62,7 @@
     position: relative;
     padding-block: 0 var(--s2a-spacing-lg);
     z-index: 2;
+    overflow-x: clip;
     border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
   }
 
@@ -133,9 +135,23 @@
     overflow: hidden;
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
+    will-change: transform;
   }
 
   &:dir(rtl) .hero-card-tile {
+    transform-origin: top right;
+  }
+
+  .hero-card-pile-shadow {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--s2a-border-radius-24);
+    box-shadow: 25px 25px 54px 0 rgb(0 0 0 / 20%);
+    pointer-events: none;
+    transform-origin: top left;
+  }
+
+  &:dir(rtl) .hero-card-pile-shadow {
     transform-origin: top right;
   }
 
@@ -234,6 +250,43 @@
   .offer-hero .hero {
     min-height: unset;
     padding-bottom: 74px;
+  }
+}
+
+@keyframes offer-hero-tile-to-grid {
+  to { transform: none; }
+}
+
+@keyframes offer-hero-shadow-to-grid {
+  to { opacity: 0; transform: none; }
+}
+
+@keyframes offer-hero-content-fade {
+  to { opacity: 0; transform: translateY(-80px); }
+}
+
+@supports (animation-timeline: scroll()) {
+  .offer-hero.scroll-driven-ready {
+    .hero-card-tile {
+      transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
+        rotate(var(--pile-rot, 0deg))
+        scale(var(--pile-scale, 1));
+      animation: offer-hero-tile-to-grid linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    .hero-card-pile-shadow {
+      transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
+        rotate(var(--pile-rot, 0deg))
+        scale(var(--pile-scale, 1));
+      animation: offer-hero-shadow-to-grid linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    .hero-content {
+      animation: offer-hero-content-fade linear forwards;
+      animation-timeline: scroll(root);
+    }
   }
 }
 
