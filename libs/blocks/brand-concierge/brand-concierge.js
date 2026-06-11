@@ -46,8 +46,8 @@ function floatingElement(targetEl, el, focusableEl = null) {
       focusableEl.setAttribute('tabindex', '-1');
       focusableEl.blur();
     }
-    targetEl.classList.add('floating-hidden');
-    targetEl.classList.remove('floating-show');
+    targetEl.classList.add('bc-floating-hidden');
+    targetEl.classList.remove('bc-floating-show');
   };
 
   const showFloating = () => {
@@ -55,8 +55,8 @@ function floatingElement(targetEl, el, focusableEl = null) {
       focusableEl.removeAttribute('aria-hidden');
       focusableEl.removeAttribute('tabindex');
     }
-    targetEl.classList.remove('floating-hidden');
-    targetEl.classList.add('floating-show');
+    targetEl.classList.remove('bc-floating-hidden');
+    targetEl.classList.add('bc-floating-show');
   };
 
   const mainElement = document.querySelector('main');
@@ -71,7 +71,7 @@ function floatingElement(targetEl, el, focusableEl = null) {
   floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
   mainElement.append(floatingSpacer);
 
-  targetEl.classList.add('floating-element');
+  targetEl.classList.add('bc-floating-element');
 
   const ro = new ResizeObserver((entries) => {
     for (const entry of entries) {

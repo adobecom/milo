@@ -348,17 +348,17 @@
   color: #4B4B4B;
 }
 
-.floating-element {
+.bc-floating-element {
   position: fixed;
   transition: opacity 0.2s ease;
 }
 
-.floating-hidden {
+.bc-floating-hidden {
   opacity: 0;
   pointer-events: none;
 }
 
-.floating-show {
+.bc-floating-show {
   opacity: 1;
 }
 
