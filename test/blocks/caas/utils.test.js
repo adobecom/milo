@@ -1449,7 +1449,8 @@ describe('isLocaleInRegionalSites helper function tests', () => {
 });
 
 describe('isLingoLangFirstPath', () => {
-  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/; /gb/ and /au/ are English regionals
+  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/
+  // /gb/ and /au/ are English regionals
   const MOCK_MAPPING = {
     'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
     'site-locales': {
