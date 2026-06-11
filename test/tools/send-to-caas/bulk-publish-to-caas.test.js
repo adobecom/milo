@@ -89,8 +89,8 @@ const LINGO_MOCK_MAPPING = {
   'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
   'site-locales': {
     data: [
-      { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: 'at' },
-      { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: 'gb,au' },
+      { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: '/at' },
+      { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
     ],
   },
 };
