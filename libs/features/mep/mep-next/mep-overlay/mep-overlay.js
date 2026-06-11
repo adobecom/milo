@@ -12,6 +12,9 @@ import {
   getMasAvailability,
   getSpoofGeoOptions,
   setPreviewButton,
+  getLingoRegions,
+  getMasRegions,
+  TOP_MARKETS,
 } from './mep-overlay-logic.js';
 import {
   toggleHighlight,
@@ -58,9 +61,10 @@ function svgIcon(svgData, key) {
 function getGnavOffset() {
   const calculate = () => {
     const header = document.querySelector('header');
-    const localNav = document.querySelector('.feds-localnav');
     if (!header?.offsetHeight) return 0;
-    return header.offsetHeight + (localNav?.offsetHeight || 0);
+    const localNav = document.querySelector('.feds-localnav');
+    const promoAside = document.querySelector('.feds-promo-aside-wrapper');
+    return header.offsetHeight + (localNav?.offsetHeight || 0) + (promoAside?.offsetHeight || 0);
   };
   return new Promise((resolve) => {
     const height = calculate();
@@ -353,8 +357,14 @@ function setEventListeners() {
   });
 }
 
-function setDefaultValues() {
-  const { mepCaasHighlight, mepMasHighlight, mepOtherHighlight, mepHighlight } = getParameters();
+async function setDefaultValues() {
+  const {
+    mepCaasHighlight,
+    mepMasHighlight,
+    mepOtherHighlight,
+    mepHighlight,
+    mepAkamaiLocale,
+  } = getParameters();
   [
     ['#toggle-mep', mepHighlight],
     ['#toggle-caas', mepCaasHighlight],
@@ -367,6 +377,29 @@ function setDefaultValues() {
     checkbox.toggleAttribute('checked', true);
     toggleHighlight({ target: checkbox });
   });
+
+  if (!mepAkamaiLocale) return;
+
+  const masRegions = await getMasRegions();
+  const geoGroups = [
+    ['spoof-geo-top-markets', TOP_MARKETS],
+    ['spoof-geo-mep-lingo', getLingoRegions()],
+    ['spoof-geo-lingo-mas', masRegions],
+  ];
+
+  const match = geoGroups.find(([, regions]) => regions.includes(mepAkamaiLocale));
+  if (!match) return;
+
+  const [id] = match;
+  const radioEl = document.querySelector(`#${id}`);
+  if (!radioEl || radioEl.disabled) return;
+
+  radioEl.checked = true;
+  const selectEl = document.querySelector('select.mep-spoof-geo');
+  if (!selectEl) return;
+
+  await populateGeoSelect(selectEl, id);
+  selectEl.value = mepAkamaiLocale;
 }
 
 function setMasObserver() {
@@ -394,7 +427,22 @@ function setMasObserver() {
   const refreshSpoofGeoMas = async () => {
     const input = document.querySelector('#spoof-geo-lingo-mas');
     if (!input?.disabled) return;
-    if (await getMasAvailability()) input.disabled = false;
+    if (await getMasAvailability()) {
+      input.disabled = false;
+
+      const { mepAkamaiLocale } = getParameters();
+      if (!mepAkamaiLocale) return;
+
+      const masRegions = await getMasRegions();
+      if (!masRegions.includes(mepAkamaiLocale)) return;
+
+      input.checked = true;
+      const selectEl = document.querySelector('select.mep-spoof-geo');
+      if (!selectEl) return;
+
+      await populateGeoSelect(selectEl, 'spoof-geo-lingo-mas');
+      selectEl.value = mepAkamaiLocale;
+    }
   };
 
   let debounceTimer;
@@ -417,7 +465,7 @@ async function buildOverlay() {
   ]);
 
   const pageId = getPageId();
-  document.body.append(
+  document.querySelector('main').append(
     buildFAB(gnavOffset, svgData),
     buildDrawer(gnavOffset, svgData, pageId),
   );
