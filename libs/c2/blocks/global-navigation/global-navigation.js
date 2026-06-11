@@ -51,7 +51,7 @@ export default async function init(el) {
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  main({
+  const gnavPromise = main({
     localizeLink,
     gnavSource: gnavUrl,
     asideSource: null,
@@ -65,10 +65,14 @@ export default async function init(el) {
       handleCommands: personalizationHandler,
     },
   }).catch((error) => {
+    console.log(error);
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
       tags: 'global-navigation',
       errorType: 'e',
     });
+    return {};
   });
+  config.federal = { fedsGlobalNavigaton: gnavPromise };
+  console.log(config);
 }
