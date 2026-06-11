@@ -21,6 +21,7 @@
 
 .split-aside-grid-stack {
   position: relative;
+  z-index: 1;
   width: 100%;
   height: 465px;
   box-sizing: border-box;
@@ -28,7 +29,6 @@
   user-select: none;
   display: flex;
   justify-content: center;
-  margin-block-end: var(--s2a-spacing-md);
 
   .media {
     --split-aside-grid-stack-step: var(--split-aside-grid-stack-index, 0);
@@ -91,12 +91,42 @@
   }
 }
 
+.split-aside-grid-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--s2a-spacing-sm);
+  gap: var(--s2a-spacing-20);
+  z-index: 1;
+
+
+  button {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+
+    svg {
+      pointer-events: none;
+      color: var(--s2a-color-content-knockout);
+    }
+    &.prev {
+      transform: rotate(180deg);
+    }
+  }
+}
+
 .split-aside-grid-dots {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: var(--s2a-spacing-4);
-  margin-top: 0;
-  margin-bottom: var(--s2a-spacing-lg);
+  margin: 0;
   padding: 0;
 }
 
@@ -115,6 +145,7 @@
 
 .split-aside-grid-items {
   display: grid;
+  z-index: 1;
 }
 
 .split-aside-grid-item {
@@ -198,7 +229,6 @@
   }
 
   .split-aside-grid-stack {
-    order: 2;
     inset-inline-end: calc(-1 * var(--grid-padding));
     grid-column: 6 / -1;
     height: 100%;
@@ -239,13 +269,12 @@
     }
   }
 
-  .split-aside-grid-dots {
+  .split-aside-grid-controls {
     display: none;
   }
 
   .split-aside-grid-items {
     grid-column: span 4;
-    order: 1;
     min-width: 300px;
     display: flex;
     flex-direction: column;
@@ -282,6 +311,9 @@
         > div {
           min-height: 0;
           overflow: hidden;
+          &:focus-within {
+            overflow: visible;
+          }
 
           :last-child {
             margin-block-end: var(--s2a-spacing-3xl);
