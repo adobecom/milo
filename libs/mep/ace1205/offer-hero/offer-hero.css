@@ -127,7 +127,6 @@
     background: var(--s2a-color-gray-75);
     border-radius: var(--s2a-border-radius-24);
     box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
-    overflow: hidden;
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
     will-change: transform;
