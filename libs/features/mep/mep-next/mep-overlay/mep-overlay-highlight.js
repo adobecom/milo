@@ -20,24 +20,31 @@ export const HIGHLIGHT_KEYS = {
   other: 'otherHighlight',
 };
 
+export const TOGGLE_KEYS = {
+  mep: 'toggle-mep',
+  caas: 'toggle-caas',
+  mas: 'toggle-mas',
+  other: 'toggle-other-fragments',
+};
+
 export function toggleHighlight(event) {
   const HIGHLIGHT_HANDLERS = {
-    'toggle-mep': {
+    [TOGGLE_KEYS.mep]: {
       dataKey: HIGHLIGHT_KEYS.mep,
       on: [],
       off: [],
     },
-    'toggle-caas': {
+    [TOGGLE_KEYS.cas]: {
       dataKey: HIGHLIGHT_KEYS.caas,
       on: [watchForCaasBlocks, injectCaasBadges],
       off: [unwatchForCaasBlocks, removeCaasBadges],
     },
-    'toggle-mas': {
+    [TOGGLE_KEYS.mas]: {
       dataKey: HIGHLIGHT_KEYS.mas,
       on: [watchForMasContent, injectMasBadges],
       off: [unwatchForMasContent, removeMasBadges],
     },
-    'toggle-other-fragments': {
+    [TOGGLE_KEYS.other]: {
       dataKey: HIGHLIGHT_KEYS.other,
       on: [],
       off: [],
