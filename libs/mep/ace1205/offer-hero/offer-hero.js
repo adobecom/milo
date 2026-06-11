@@ -197,7 +197,7 @@ function initAnimation(block) {
     return el;
   });
   const layout = {
-    eyebrowGap: 24, eyebrowH: 0, cardDocTop: 0, mediaDocTop: 0, animStart: 0, animEnd: 0,
+    cardDocTop: 0, mediaDocTop: 0, animStart: 0, animEnd: 0, eyebrowDocY: 0, pileTy0: 0,
   };
 
   function onMediaVisible(entry) {
@@ -245,13 +245,6 @@ function initAnimation(block) {
     return clamp01((window.scrollY - layout.animStart) / range);
   }
 
-  function updateEyebrow(progress, mediaTop) {
-    if (!eyebrow) return;
-    eyebrow.style.transform = `translateY(${mediaTop - layout.eyebrowH - layout.eyebrowGap}px)`;
-    const eyebrowThreshold = isMobile() ? 0.2 : 0.6;
-    eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
-  }
-
   function setupScrollDrivenProps() {
     const pileGap = isMobile() ? PILE_GAP_MOBILE : PILE_GAP_DESKTOP;
     layout.animEnd = layout.cardDocTop - pileGap;
@@ -276,6 +269,17 @@ function initAnimation(block) {
 
     heroContent?.style.setProperty('animation-range', `${layout.animStart}px ${contentEnd}px`);
 
+    layout.pileTy0 = stackBoxes[0].y - naturalBoxes[0].y;
+
+    if (eyebrow) {
+      const eyebrowH = eyebrow.offsetHeight;
+      const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
+      layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
+      const threshold = isMobile() ? 0.15 : 0.6;
+      const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
+      eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
+    }
+
     block.classList.add('scroll-driven-ready');
   }
 
@@ -287,10 +291,6 @@ function initAnimation(block) {
     });
     layout.cardDocTop = window.scrollY + naturalBoxes[0].y;
     layout.mediaDocTop = window.scrollY + medias[0].getBoundingClientRect().top;
-    if (eyebrow) {
-      layout.eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
-      layout.eyebrowH = eyebrow.offsetHeight;
-    }
 
     const vw = window.innerWidth;
     const stackRef = isMobile() ? STACK_REF_MOBILE : STACK_REF_DESKTOP;
@@ -317,9 +317,8 @@ function initAnimation(block) {
     if (!running) return;
 
     const progress = getProgress();
-    const mediaTop = medias[0].getBoundingClientRect().top;
 
-    updateEyebrow(progress, mediaTop);
+    if (eyebrow) eyebrow.style.transform = `translateY(${layout.eyebrowDocY - window.scrollY + layout.pileTy0 * (1 - progress)}px)`;
     setSettled(progress >= 0.85);
 
     if (needsReset && progress <= 0.1) {
@@ -350,7 +349,6 @@ function initAnimation(block) {
     }
     if (tiles.length !== 4) return;
     computeLayouts();
-    updateEyebrow(getProgress(), medias[0]?.getBoundingClientRect().top);
   }
 
   requestAnimationFrame(() => requestAnimationFrame(setup));

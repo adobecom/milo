@@ -80,11 +80,6 @@
     opacity: 0;
     pointer-events: none;
     z-index: 2;
-
-    &.is-visible {
-      opacity: 1;
-      transition: opacity 250ms ease-out;
-    }
   }
 
   .hero-cards {
@@ -136,6 +131,7 @@
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
     will-change: transform;
+    mask-image: radial-gradient(white, black);
   }
 
   &:dir(rtl) .hero-card-tile {
@@ -253,6 +249,11 @@
   }
 }
 
+@keyframes offer-hero-eyebrow-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 @keyframes offer-hero-tile-to-grid {
   to { transform: none; }
 }
@@ -287,6 +288,11 @@
       animation: offer-hero-content-fade linear forwards;
       animation-timeline: scroll(root);
     }
+
+    .hero-eyebrow {
+      animation: offer-hero-eyebrow-fade linear forwards;
+      animation-timeline: scroll(root);
+    }
   }
 }
 
@@ -306,7 +312,7 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-2xl);
+      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
     }
 
     .hero-cards {
