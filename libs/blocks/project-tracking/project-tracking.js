@@ -77,6 +77,28 @@ function renderResults(mount, rows, since) {
   mount.append(stats, createTag('div', { class: 'pt-table-wrap' }, table));
 }
 
+// 401 → not signed in (offer Adobe sign-in); 403 → signed in but lacks access;
+// anything else → the raw reach/network message.
+function renderError(mount, status, message) {
+  mount.replaceChildren();
+  if (status === 403) {
+    const m = 'Not authorized: your account needs the statistics role on milo-core.';
+    mount.append(createTag('p', { class: 'pt-error' }, m));
+    return;
+  }
+  if (status === 401) {
+    const m = 'Not signed in to Adobe. Sign in, then check again.';
+    mount.append(createTag('p', { class: 'pt-error' }, m));
+    if (window.adobeIMS?.signIn) {
+      const btn = createTag('button', { type: 'button', class: 'pt-check-btn pt-signin' }, 'Sign in to Adobe');
+      btn.addEventListener('click', () => window.adobeIMS.signIn());
+      mount.append(btn);
+    }
+    return;
+  }
+  mount.append(createTag('p', { class: 'pt-error' }, message));
+}
+
 export default async function init(block) {
   await new Promise((resolve) => { loadStyle(import.meta.url.replace('.js', '.css'), resolve); });
 
@@ -125,10 +147,7 @@ export default async function init(block) {
       renderResults(results, rows, since.value);
     } catch (e) {
       rows = null;
-      const msg = e.status === 401 || e.status === 403
-        ? 'Not authorized — sign in to Adobe and make sure you have access.'
-        : `Could not reach page-status (${e.message}).`;
-      results.replaceChildren(createTag('p', { class: 'pt-error' }, msg));
+      renderError(results, e.status, `Could not reach page-status (${e.message}).`);
     } finally {
       checkBtn.disabled = false;
       checkBtn.textContent = 'Check status';

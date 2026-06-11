@@ -112,6 +112,10 @@
     font-size: 14px;
   }
 
+  & .pt-signin {
+    margin-block-start: 12px;
+  }
+
   & .pt-stats {
     display: flex;
     flex-wrap: wrap;
