@@ -113,8 +113,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
 .hub-hero-image-grid-container-col {
   display: flex;
   flex-direction: column;
+  will-change: transform, opacity;
   gap: var(--start-gap);
-  will-change: auto;
 }
 
 .hub-hero-image-grid-container-col:nth-child(1) {
@@ -171,7 +171,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  will-change: auto;
+  will-change: opacity;
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -184,7 +184,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   right: 0;
   transform: translateY(calc(-100% - var(--s2a-spacing-2xl)));
   flex-direction: column;
-  will-change: auto;
+  will-change: gap;
   animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -200,7 +200,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   right: 0;
   z-index: 1;
   overflow-x: clip;
-  will-change: auto;
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -326,7 +325,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
-    will-change: auto;
   }
 
   .hub-hero-carousel-header>div {
@@ -334,6 +332,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 102%;
     position: relative;
+    will-change: transform, opacity;
     left: unset;
     right: unset;
     transform: none;
@@ -354,7 +353,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
-    will-change: auto;
+    will-change: width, transform;
     animation: hubHeroGridCarouselSlideHover linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -368,37 +367,34 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-image-grid-container-col:nth-child(1) {
     transform: translate(0, var(--grid-col-one-offset));
     gap: var(--start-gap);
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol1Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol1Mobile linear both, hubHeroGridMobileFadeOut linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% exit 100%, entry 0% exit 100%;
   }
 
   .hub-hero-image-grid-container-col:nth-child(2) {
     transform: translate(0, var(--grid-col-two-offset));
     gap: var(--start-gap);
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol2Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol2Mobile linear both, hubHeroGridMobileFadeOut linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% exit 100%, entry 0% exit 100%;
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-three-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol3Mobile linear both;
-    animation-timeline: --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform;
+    animation: hubHeroGridCol3Mobile linear both;
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
     animation: hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero;
-    animation-range: var(--grid-gap-animation-range);
+    animation-timeline: view();
+    animation-range: entry 0% exit 100%;
     display: flex;
     justify-content: center;
   }
@@ -406,21 +402,19 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-image-grid-container-col:nth-child(4) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-four-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol4Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol4Mobile linear both, hubHeroGridMobileFadeOut linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% exit 100%, entry 0% exit 100%;
   }
 
   .hub-hero-image-grid-container-col:nth-child(5) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-five-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol5Mobile linear both, hubHeroGridColFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, view();
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol5Mobile linear both, hubHeroGridColFadeOut linear both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% exit 100%, entry 0% exit 100%;
   }
 
   .hub-hero-carousel {
@@ -467,7 +461,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     background: transparent;
     pointer-events: all;
     contain: none;
-    will-change: auto;
+    will-change: transform, filter, opacity;
     animation: elasticMobileStackSlides ease-out both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
@@ -484,6 +478,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --stack-contrast: 0;
     --stack-shrink: 2.5rem;
     z-index: 1;
+    will-change: transform, opacity;
     animation: elasticMobileFirstSlide ease-out both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
