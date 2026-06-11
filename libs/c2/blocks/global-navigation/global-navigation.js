@@ -73,6 +73,6 @@ export default async function init(el) {
     });
     return {};
   });
-  config.federal = { fedsGlobalNavigaton: gnavPromise };
+  config.federal = { fedsGlobalNavigation: gnavPromise };
   console.log(config);
 }
