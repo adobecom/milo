@@ -336,6 +336,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   font: var(--mep-radio-label-font);
 }
 
+.mep-drawer .mep-radio-row label:hover {
+  cursor: pointer;
+}
+
 .mep-drawer .mep-radio-row label svg:nth-child(1) {
   display: none;
   fill: var(--mep-primary-100);

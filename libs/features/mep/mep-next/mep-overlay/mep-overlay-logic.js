@@ -402,8 +402,8 @@ export async function setPreviewButton() {
       });
   }
 
-  function getCheckedOptionParams(popup) {
-    return [...popup.querySelectorAll('option:checked')]
+  function getManifestOptionParams(popup) {
+    return [...popup.querySelectorAll('.mep-manifest-variants option:checked')]
       .filter((option) => !option.closest('select')?.disabled && option.value)
       .map((option) => `${option.dataset.manifest}--${option.value}`);
   }
@@ -417,7 +417,7 @@ export async function setPreviewButton() {
   const popup = document.querySelector('#mep-drawer');
   const manifestParameter = [
     ...getManifestInputParams(popup),
-    ...getCheckedOptionParams(popup),
+    ...getManifestOptionParams(popup),
   ];
 
   const simulateHref = new URL(window.location.href);
@@ -435,16 +435,22 @@ export async function setPreviewButton() {
   popup.querySelector('.mep-footer a.con-button')?.setAttribute('href', simulateHref.href);
 }
 
-function getLingoRegions() {
+export function getLingoRegions() {
   const { locale } = getConfig();
   return Object.keys(locale?.regions || {});
 }
 
-async function getMasRegions() {
+export async function getMasRegions() {
   const { locale } = getConfig();
   const marketsConfig = await getMarketConfig();
   const lang = marketsConfig ? marketsLangForLocale(marketsConfig, locale) : null;
   return lang?.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()).filter(Boolean) ?? [];
+}
+
+export const TOP_MARKETS = ['', 'jp', 'us', 'ca', 'au', 'kr', 'in', 'mx', 'br', 'de', 'uk', 'fr'];
+
+export function getTopMarketsAvailability() {
+  return true;
 }
 
 export function getLingoAvailability() {
@@ -468,35 +474,11 @@ export async function getSpoofGeoOptions(id) {
 
   const toOption = (key) => {
     const opt = toGeoOption(key, currentAkamaiLocale);
-    return { ...opt, label: key.toUpperCase() };
+    return { ...opt, label: key ? key.toUpperCase() : 'All' };
   };
 
-  if (id === 'spoof-geo-top-markets') {
-    const TOP_MARKETS = [
-      { value: '', label: 'All' },
-      { value: 'de,uk,fr,at,be_en,be_fr,be_nl,bg,ch_de,ch_fr,ch_it,cy_en,cz,dk,ee,es,fi,gt_el,gr_en,hu,ie,it,lv,lt,lu_en,lu_de,lu_fr,mt,nl,no,pl,pt,ro,se,si,sk', label: 'All EMEA' },
-      { value: 'au,nz,sg,kr,in,in_hi,hk_en,hk_zh,ph_en,ph_fil,tw,th_en,th_th,vn_en,vn_vi,id_en,id_id,my_en,my_ms', label: 'All APAC' },
-      { value: 'br,mx,cl,co,ar,pe,ec,gt,cr,pr,la', label: 'All LATAM' },
-      { value: 'jp', label: 'JP' },
-      { value: 'us', label: 'US' },
-      { value: 'ca', label: 'CA' },
-      { value: 'au', label: 'AU' },
-      { value: 'kr', label: 'KR' },
-      { value: 'in', label: 'IN' },
-      { value: 'mx', label: 'MX' },
-      { value: 'br', label: 'BR' },
-      { value: 'de', label: 'DE' },
-      { value: 'uk', label: 'UK' },
-      { value: 'fr', label: 'FR' },
-      { value: 'us,ca,ca_fr', label: 'Top NA Geos (US, CA, CA_FR)' },
-      { value: 'de,uk,fr', label: 'Top EMEA (DE, UK, FR)' },
-      { value: 'au,nz,kr,in', label: 'Top APAC (AU, NZ, KR, IN)' },
-      { value: 'mx,br', label: 'Top LATAM (MX, BR)' },
-    ];
-    return TOP_MARKETS.map(({ value, label }) => {
-      const opt = toGeoOption(value, currentAkamaiLocale);
-      return { ...opt, label };
-    });
+  if (id === 'spoof-geo-top-markets' && getTopMarketsAvailability()) {
+    return TOP_MARKETS.map(toOption);
   }
 
   if (id === 'spoof-geo-mep-lingo' && getLingoAvailability()) {

@@ -54,6 +54,7 @@ export function toggleHighlight(event) {
 export function getParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   return {
+    mepAkamaiLocale: urlParams.get('akamaiLocale'),
     mepHighlight: urlParams.get(HIGHLIGHT_KEYS.mep),
     mepCaasHighlight: urlParams.get(HIGHLIGHT_KEYS.caas),
     mepMasHighlight: urlParams.get(HIGHLIGHT_KEYS.mas),
