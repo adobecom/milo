@@ -26,22 +26,16 @@ const CARD_SHADOWS = [
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
   '25px 25px 54px 0px rgba(0,0,0,0.20)',
 ];
-const INSET_SHADOW = 'inset 0 0 0 2px rgba(255,255,255,0.10)';
 const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" viewBox="0 0 5 8" fill="none" aria-hidden="true" focusable="false">
   <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
 const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
 
-const lerp = (from, to, amount) => from + (to - from) * amount;
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
 const isMobile = () => window.matchMedia('(width < 768px)').matches;
 const isDesktop = () => window.matchMedia('(width >= 1280px)').matches;
-const fadeShadow = (shadow, factor) => shadow.replace(/rgba\(([^)]+)\)/g, (_match, args) => {
-  const [r, g, b, a] = args.split(',').map((part) => part.trim());
-  return `rgba(${r},${g},${b},${parseFloat(a) * factor})`;
-});
 
 function decorate(block) {
   const rows = [...block.children];
@@ -191,11 +185,20 @@ function initAnimation(block) {
   let stackBoxes = [];
   let rtl = false;
   let isSettled = false;
-  let gpuPromoted = false;
   let videoObserver = null;
   let rafId = 0;
   let running = false;
   let needsReset = false;
+
+  const shadowEls = tiles.map((tile, i) => {
+    if (!CARD_SHADOWS[i]) return null;
+    const el = createTag('div', { class: 'hero-card-pile-shadow' });
+    tile.parentElement.insertBefore(el, tile);
+    return el;
+  });
+  const layout = {
+    cardDocTop: 0, mediaDocTop: 0, animStart: 0, animEnd: 0, eyebrowDocY: 0, pileTy0: 0,
+  };
 
   function onMediaVisible(entry) {
     const mediaIdx = medias.indexOf(entry.target);
@@ -237,63 +240,56 @@ function initAnimation(block) {
   }
 
   function getProgress() {
-    if (!cards[0]) return 0;
-    const slotTargetTop = (isMobile() ? PILE_GAP_MOBILE : PILE_GAP_DESKTOP);
-    const fallbackY = isMobile() ? window.innerHeight * 1.2 : window.innerHeight;
-    const startY = naturalBoxes[0]?.y || fallbackY;
-    const range = startY - slotTargetTop;
+    const range = layout.animEnd - layout.animStart;
     if (range <= 0) return 0;
-    return clamp01((startY - cards[0].getBoundingClientRect().top) / range);
+    return clamp01((window.scrollY - layout.animStart) / range);
   }
 
-  function applyAnimation(progress) {
-    if (heroContent) {
-      const contentFade = clamp01(progress / 0.6);
-      heroContent.style.opacity = String(1 - contentFade);
-      heroContent.style.transform = `translateY(${-80 * contentFade}px)`;
-    }
+  function setupScrollDrivenProps() {
+    const pileGap = isMobile() ? PILE_GAP_MOBILE : PILE_GAP_DESKTOP;
+    layout.animEnd = layout.cardDocTop - pileGap;
+    const animRange = `${layout.animStart}px ${layout.animEnd}px`;
+    const contentEnd = layout.animStart + (layout.animEnd - layout.animStart) * 0.6;
 
     tiles.forEach((tile, i) => {
       const natural = naturalBoxes[i];
       const stack = stackBoxes[i];
-      const scale = lerp(Math.min(stack.w / natural.w, stack.h / natural.h), 1, progress);
+      const scaleVal = Math.min(stack.w / natural.w, stack.h / natural.h);
       const txTarget = rtl
         ? (stack.x + stack.w) - (natural.x + natural.w)
         : stack.x - natural.x;
-      const tx = lerp(txTarget, 0, progress);
-      const ty = lerp(stack.y - natural.y, 0, progress);
-      const rot = lerp(stack.rot, 0, progress);
-      tile.style.transform = `translate(${tx}px, ${ty}px) rotate(${rot}deg) scale(${scale})`;
-      if (!CARD_SHADOWS[i]) return;
-      tile.style.boxShadow = `${fadeShadow(CARD_SHADOWS[i], 1 - progress)}, ${INSET_SHADOW}`;
+      [tile, shadowEls[i]].filter(Boolean).forEach((el) => {
+        el.style.setProperty('--pile-tx', `${txTarget}px`);
+        el.style.setProperty('--pile-ty', `${stack.y - natural.y}px`);
+        el.style.setProperty('--pile-rot', `${stack.rot}deg`);
+        el.style.setProperty('--pile-scale', `${scaleVal}`);
+        el.style.setProperty('animation-range', animRange);
+      });
     });
 
-    const animating = progress > 0.001 && progress < 0.999;
-    if (animating === gpuPromoted) return;
-    gpuPromoted = animating;
-    tiles.forEach((tile) => { tile.style.willChange = animating ? 'transform' : ''; });
-  }
+    heroContent?.style.setProperty('animation-range', `${layout.animStart}px ${contentEnd}px`);
 
-  function updateEyebrow(progress) {
+    layout.pileTy0 = stackBoxes[0].y - naturalBoxes[0].y;
+
+    block.classList.add('scroll-driven-ready');
     if (!eyebrow) return;
-    if (medias[0]) {
-      const gap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap')) || 24;
-      const offset = medias[0].getBoundingClientRect().top - eyebrow.offsetHeight - gap;
-      eyebrow.style.transform = `translateY(${offset}px)`;
-    }
-    const eyebrowThreshold = isMobile() ? 0.2 : 0.6;
-    eyebrow.classList.toggle('is-visible', progress >= eyebrowThreshold);
+
+    const eyebrowH = eyebrow.offsetHeight;
+    const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
+    layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
+    const threshold = isMobile() ? 0.15 : 0.6;
+    const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
+    eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
   }
 
   function computeLayouts() {
-    tiles.forEach((tile) => { tile.style.transform = ''; });
-    if (heroContent) { heroContent.style.opacity = ''; heroContent.style.transform = ''; }
-    cardTexts.forEach((textEl) => { textEl.style.opacity = ''; });
-
+    block.classList.remove('scroll-driven-ready');
     naturalBoxes = cards.map((card) => {
       const rect = card.getBoundingClientRect();
       return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
     });
+    layout.cardDocTop = window.scrollY + naturalBoxes[0].y;
+    layout.mediaDocTop = window.scrollY + medias[0].getBoundingClientRect().top;
 
     const vw = window.innerWidth;
     const stackRef = isMobile() ? STACK_REF_MOBILE : STACK_REF_DESKTOP;
@@ -313,15 +309,15 @@ function initAnimation(block) {
       rot: rtl ? -ref.rot : ref.rot,
     }));
 
-    applyAnimation(getProgress());
+    setupScrollDrivenProps();
   }
 
   function tick() {
     if (!running) return;
-    const progress = getProgress();
-    applyAnimation(progress);
-    updateEyebrow(progress);
 
+    const progress = getProgress();
+
+    if (eyebrow) eyebrow.style.transform = `translateY(${layout.eyebrowDocY - window.scrollY + layout.pileTy0 * (1 - progress)}px)`;
     setSettled(progress >= 0.85);
 
     if (needsReset && progress <= 0.1) {
@@ -352,10 +348,9 @@ function initAnimation(block) {
     }
     if (tiles.length !== 4) return;
     computeLayouts();
-    updateEyebrow(getProgress());
   }
 
-  setup();
+  requestAnimationFrame(() => requestAnimationFrame(setup));
 
   const io = new IntersectionObserver(([entry]) => {
     if (!entry.isIntersecting) {
