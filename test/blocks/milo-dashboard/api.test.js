@@ -161,4 +161,32 @@ describe('milo-dashboard api', () => {
       expect(err.status).to.equal(503);
     });
   });
+
+  describe('createClient.post', () => {
+    it('POSTs a JSON body and returns parsed JSON, with auth + clientId', async () => {
+      const fetchStub = sinon.stub(window, 'fetch').resolves(
+        new Response(JSON.stringify([{ url: 'u', previewed: true }]), { status: 200 }),
+      );
+      const client = createClient({ base: 'https://api.example', token: 'tok', clientId: 'darkalley' });
+      const out = await client.post('/page-status', { urls: ['u'] });
+
+      expect(out).to.deep.equal([{ url: 'u', previewed: true }]);
+      const [calledUrl, opts] = fetchStub.firstCall.args;
+      expect(calledUrl.toString()).to.contain('https://api.example/page-status');
+      expect(calledUrl.toString()).to.contain('clientId=darkalley');
+      expect(opts.method).to.equal('POST');
+      expect(opts.headers.Authorization).to.equal('Bearer tok');
+      expect(opts.headers['Content-Type']).to.equal('application/json');
+      expect(JSON.parse(opts.body)).to.deep.equal({ urls: ['u'] });
+    });
+
+    it('throws an error carrying .status on a non-2xx response', async () => {
+      sinon.stub(window, 'fetch').resolves(new Response('nope', { status: 403 }));
+      const client = createClient({ base: 'https://api.example', token: 't', clientId: 'c' });
+      let err;
+      try { await client.post('/page-status', { urls: [] }); } catch (e) { err = e; }
+      expect(err).to.exist;
+      expect(err.status).to.equal(403);
+    });
+  });
 });

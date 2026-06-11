@@ -56,17 +56,17 @@ export async function resolveContext(
 }
 
 export function createClient({ base, token, clientId }) {
-  async function request(path, params = {}) {
+  async function request(path, params = {}, { method = 'GET', body, extraHeaders } = {}) {
     const url = new URL(`${base}${path}`);
     Object.entries(params).forEach(([k, v]) => {
       if (v != null && v !== '') url.searchParams.set(k, v);
     });
-    const headers = {};
+    const headers = { ...extraHeaders };
     if (token) {
       headers.Authorization = `Bearer ${token}`;
       if (clientId) url.searchParams.set('clientId', clientId);
     }
-    const res = await fetch(url, { headers });
+    const res = await fetch(url, { method, headers, body });
     if (!res.ok) {
       const e = new Error(`api ${res.status}`);
       e.status = res.status;
@@ -83,6 +83,14 @@ export function createClient({ base, token, clientId }) {
     async getText(path, params = {}) {
       const res = await request(path, params);
       return res.text();
+    },
+    async post(path, body, params = {}) {
+      const res = await request(path, params, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        extraHeaders: { 'Content-Type': 'application/json' },
+      });
+      return res.json();
     },
   };
 }
