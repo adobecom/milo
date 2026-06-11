@@ -10,7 +10,7 @@ const RIGHT_DRAG_DENOM = 160;
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 let videoObserver = null;
 let resizeObserver = null;
 
@@ -112,6 +112,8 @@ function setupBlock(el) {
   let ariaLive;
   let slideNum;
   let isCarousel;
+  let itemsWrap;
+  let dotsWrap;
 
   let rotation = 0;
   let flying = false;
@@ -126,6 +128,9 @@ function setupBlock(el) {
     medias.forEach((media, idx) => {
       const isActive = slotOf(idx) === 0;
       media.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      media.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+        focusable.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
     });
 
     items.forEach((item, idx) => {
@@ -410,6 +415,16 @@ function setupBlock(el) {
     selectByIndex(idx, item);
   }
 
+  function swapStackItems(mobile = true) {
+    if (mobile) {
+      dotsWrap.before(stack);
+      dotsWrap.after(itemsWrap);
+      return;
+    }
+    dotsWrap.before(itemsWrap);
+    dotsWrap.after(stack);
+  }
+
   const desktopMQ = window.matchMedia(DESKTOP_MQ);
   let mobileBound = false;
   let desktopBound = false;
@@ -422,6 +437,7 @@ function setupBlock(el) {
     stack.addEventListener('pointerup', onPointerUp);
     stack.addEventListener('pointercancel', onPointerUp);
     el.addEventListener('keydown', onKeyDown);
+    swapStackItems();
   }
 
   function unbindMobile() {
@@ -456,6 +472,7 @@ function setupBlock(el) {
     desktopBound = true;
     items.forEach((item) => item.addEventListener('click', onItemClick));
     addResizeObserver();
+    swapStackItems(false);
   }
 
   function unbindDesktop() {
@@ -468,8 +485,10 @@ function setupBlock(el) {
   function syncBindings() {
     stack = el.querySelector('.split-aside-grid-stack');
     medias = [...el.querySelectorAll('.media')];
-    items = [...el.querySelectorAll('.split-aside-grid-item')];
-    dotEls = [...el.querySelector('.split-aside-grid-dots').children];
+    itemsWrap = el.querySelector('.split-aside-grid-items');
+    items = [...itemsWrap.children];
+    dotsWrap = el.querySelector('.split-aside-grid-dots');
+    dotEls = [...dotsWrap.children];
     ariaLive = el.querySelector('.aria-live-container');
     slideNum = medias.length;
 
@@ -498,7 +517,6 @@ function decorate(block) {
 
   const stack = createTag('div', { class: 'split-aside-grid-stack' });
   medias.forEach((m) => stack.appendChild(m));
-  block.prepend(stack);
 
   const dots = createTag('ul', { class: 'split-aside-grid-dots', role: 'tablist', 'aria-label': 'Slide indicators' });
   medias.forEach((_, i) => {
@@ -511,7 +529,6 @@ function decorate(block) {
       },
     ));
   });
-  stack.insertAdjacentElement('afterend', dots);
 
   /* Wrap items in a grid container so every item occupies the same cell.
      The cell sizes to the tallest item, so the container's height stays stable
@@ -524,7 +541,7 @@ function decorate(block) {
     'aria-live': 'polite',
     'aria-atomic': 'true',
   });
-  block.append(itemsWrap, ariaLive);
+  block.append(itemsWrap, dots, stack, ariaLive);
   replaceVideoIntersectionObserver(medias);
 }
 
