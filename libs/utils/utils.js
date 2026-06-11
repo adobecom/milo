@@ -2341,20 +2341,12 @@ export async function scrollToHashedElement(hash) {
   }
   if (!targetElement) return;
 
+  let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   if (getMetadata('foundation') === 'c2') {
-    const config = getConfig();
-    const globalNavigation = await config.federal?.fedsGlobalNavigation;
-    const bufferHeight = globalNavigation.getGnavHeight?.();
-
-    const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
-    window.scrollTo({
-      top: topOffset - bufferHeight,
-      behavior: 'smooth',
-    });
-    return;
+    const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+    bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
   }
 
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
   const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
