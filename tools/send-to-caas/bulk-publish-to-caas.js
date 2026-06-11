@@ -10,13 +10,12 @@ import {
   getCardMetadata,
   getCaasProps,
   getFloodgateColorFromHost,
-  LANG_FIRST_SOURCE_MAPPINGS,
   loadCaasTags,
   postDataToCaaS,
   getConfig,
   setConfig,
 } from './send-utils.js';
-import { getGrayboxExperienceId, initBulkPublisherLingoMapping, isLingoLangFirstPath } from '../../libs/blocks/caas/utils.js';
+import { getGrayboxExperienceId, initBulkPublisherLingoMapping } from '../../libs/blocks/caas/utils.js';
 import comEnterpriseToCaasTagMap from './comEnterpriseToCaasTagMap.js';
 
 const BODY = document.body;
@@ -283,18 +282,7 @@ const processData = async (data, accessToken) => {
       }
 
       const langValue = `${caasMetadata.lang}_${caasMetadata.country}`;
-      const repoLower = repo?.toLowerCase();
-      const originLower = LANG_FIRST_SOURCE_MAPPINGS[repoLower] || repoLower;
-      // eslint-disable-next-line no-await-in-loop
-      // news operates separately from the lingo mapping and always uses the manual checkbox.
-      // auto-detect on (non-news): mapping wins; origin not in mapping → non-LFL
-      // auto-detect off or news: use manual languageFirst checkbox
-      const lflDetected = autoDetectLingo && originLower !== 'news'
-        ? await isLingoLangFirstPath(originLower, prodUrl, 'bulkpublisher')
-        : null;
-      const actualLangFirst = !autoDetectLingo || originLower === 'news'
-        ? languageFirst
-        : (lflDetected ?? false);
+      const actualLangFirst = caasMetadata.country === 'xx';
 
       if (dryRun) {
         dryRunPayloads.set(caasMetadata.entityid, caasProps);

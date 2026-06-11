@@ -612,7 +612,7 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
     for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
       if (sid === uniqueSiteId) {
         const baseLocale = baseSite.split('/')[1] || '';
-        if (localeStr === baseLocale) {
+        if (localeStr !== '' && localeStr === baseLocale) {
           foundInMapping = true;
           break;
         }
