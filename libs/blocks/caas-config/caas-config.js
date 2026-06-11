@@ -74,7 +74,7 @@ const defaultOptions = {
     'blade-card': 'Blade Card...',
     'blog-card': 'Blog Card',
     'button-card': 'Button Card',
-    'custom-card': 'Custom Card',
+    'custom-card': 'Custom Card...',
     'double-wide': 'Double Width Card',
     'editorial-card': 'Editorial Card...',
     'flex-card': 'Flex Card...',
@@ -435,12 +435,6 @@ const UiPanel = () => {
     </div>
   `;
 
-  const flextCardFontSizeOptions = html`
-    <div class="nested">
-      <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
-    </div>
-  `;
-
   const customCardOptions = html`
     <div class="nested">
       <${Input} label="Custom Card HTML" prop="customCard" type="text" />
@@ -486,7 +480,6 @@ const UiPanel = () => {
       prop="loadMoreBtnStyle"
       options=${defaultOptions.loadMoreBtnStyle}
     />
-    <${Input} label="Custom Card HTML" prop="customCard" type="text" />
     <${Select}
       label="CTA Link Behavior"
       prop="ctaAction"

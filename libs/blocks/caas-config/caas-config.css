@@ -85,10 +85,6 @@ dd.content .sort-options > .field {
   cursor: pointer;
 }
 
-/* .blade-card-options > div {
-    margin: 0 10px !important;
-} */
-
 /* sticky panel */
 .config-panel {
   border-top: 8px solid black;
@@ -161,10 +157,6 @@ dd.content .carousel-options .field {
   margin: 0;
 }
 
-/* .caas-config .nested {
-  padding-left: 20px;
-} */
-
 /* Indented fields for flex card options */
 dd.content .blade-card-options,
 dd.content .flex-card-options,
@@ -189,5 +181,11 @@ dd.content .nested {
     select {
       width: calc(100% - 20px);
     }
+
+    input[type="text"] {
+      width: calc(100% - 40px);
+      font-family: monospace;
+      font-size: 12px !important;
+    }
   }
-} 
+}

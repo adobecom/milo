@@ -947,9 +947,14 @@ export const getGrayboxExperienceId = (
 };
 
 export const getProducts = async () => {
-  const tags = await getTags().then(tags => tags.tags.mnemonics.tags);
-  return tags;
-}
+  try {
+    const { tags } = await getTags();
+    return tags.mnemonics.tags;
+  } catch (e) {
+    window.lana?.log(`Failed to fetch CaaS products: ${e.message}`, { tags: 'caas' });
+    return [];
+  }
+};
 
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
@@ -1013,6 +1018,8 @@ export const getConfig = async (originalState, strs = {}) => {
   } else {
     excludedCardsWithCurrent = excludedCards;
   }
+
+  const products = state.detailsTextOption === 'productName' ? await getProducts() : [];
 
   const config = {
     collection: {
@@ -1251,7 +1258,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
-    products: await getProducts() || [],
+    products,
   };
   console.log('[DEBUG]', config);
   return config;
