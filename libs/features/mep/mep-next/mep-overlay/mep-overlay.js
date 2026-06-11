@@ -17,6 +17,7 @@ import {
   TOP_MARKETS,
 } from './mep-overlay-logic.js';
 import {
+  TOGGLE_KEYS,
   toggleHighlight,
   getParameters,
   setBadgeEventListeners,
@@ -200,25 +201,49 @@ async function buildSpoofGeo(card, pageId, svgData) {
     'spoof-geo-mep-lingo': getLingoAvailability,
     'spoof-geo-lingo-mas': getMasAvailability,
   };
-  const selectEl = createTag('select', { class: 'mep-spoof-geo', name: `spoof-geo${pageId}` });
+
+  const radioGroupName = `spoof-geo${pageId}`;
+  const selectEl = createTag('select', { class: 'mep-spoof-geo', name: radioGroupName });
+  const labelMap = new Map();
   let firstAvailableChecked = false;
-  const options = await Promise.all(card.label.map(async (val) => {
+
+  async function buildRadioRow(val) {
     const id = `spoof-geo-${toSlug(val)}`;
-    const radioInput = createTag('input', { type: 'radio', id, name: `spoof-geo${pageId}`, value: val });
-    const available = availabilityChecks[id];
-    if (available && !await available()) {
+    const radioInput = createTag('input', { type: 'radio', id, name: radioGroupName, value: val });
+
+    const checkAvailability = availabilityChecks[id];
+    const isUnavailable = checkAvailability && !await checkAvailability();
+
+    if (isUnavailable) {
       radioInput.disabled = true;
     } else if (!firstAvailableChecked) {
       radioInput.checked = true;
       firstAvailableChecked = true;
       await populateGeoSelect(selectEl, id);
     }
-    radioInput.addEventListener('change', () => populateGeoSelect(selectEl, id));
-    const label = createTag('label', { for: id }, val);
+
+    const label = createTag('label', { for: id, 'data-value': val }, val);
+    labelMap.set(id, label);
+
     ['icon-radio-unchecked', 'icon-radio-checked'].forEach((icon) => label.prepend(svgIcon(svgData, icon)));
+
+    radioInput.addEventListener('change', async () => {
+      await populateGeoSelect(selectEl, id);
+      const saved = label.dataset.selected;
+      if (saved) selectEl.value = saved;
+    });
+
     return createTag('div', { class: 'mep-radio-row' }, [radioInput, label]);
-  }));
-  return [...options, selectEl];
+  }
+
+  const rows = await Promise.all(card.label.map(buildRadioRow));
+
+  selectEl.addEventListener('change', () => {
+    const checkedRadio = document.querySelector(`input[name="${radioGroupName}"]:checked`);
+    if (checkedRadio) labelMap.get(checkedRadio.id)?.setAttribute('data-selected', selectEl.value);
+  });
+
+  return [...rows, selectEl];
 }
 
 function buildNestedSection(label, subPairs) {
@@ -256,9 +281,8 @@ function buildCard(card, svgData, pageId) {
   headerEl.appendChild(svgIcon(svgData, 'icon-expand-circle-down'));
 
   const bodyEl = createTag('div', { class: 'mep-card-body' });
-  Promise.resolve(buildCardContent(card, svgData, pageId)).then((content) => {
-    bodyEl.append(...[content].flat());
-  });
+  Promise.resolve(buildCardContent(card, svgData, pageId))
+    .then((nodes) => bodyEl.append(...[nodes].flat()));
 
   markExpanded(cardEl, card.header);
   cardEl.append(headerEl, bodyEl);
@@ -266,7 +290,11 @@ function buildCard(card, svgData, pageId) {
 }
 
 function buildFAB(gnavOffset, svgData) {
-  const fab = createTag('button', { class: 'mep-fab', style: `top: ${gnavOffset + 16}px`, popovertarget: 'mep-drawer' });
+  const fab = createTag('button', {
+    class: 'mep-fab',
+    style: `top: ${gnavOffset + 16}px`,
+    popovertarget: 'mep-drawer',
+  });
   fab.appendChild(svgIcon(svgData, 'icon-mep'));
   return fab;
 }
@@ -318,15 +346,16 @@ function buildAdditionalManifests() {
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
 
-  if (lastManifestEl.classList.contains('mmm-manifest-card')) return;
+  if (!lastManifestEl || lastManifestEl.classList.contains('mmm-manifest-card')) return;
 
   const expandSvg = lastManifestEl.querySelector('.icon-expand-circle-down').outerHTML;
   const svgData = { svg: { 'icon-expand-circle-down': expandSvg } };
-  manifests.forEach((manifest) => {
+
+  for (const manifest of manifests) {
     const manifestEl = buildManifestCard(manifest, svgData);
     manifestEl.classList.add('mmm-manifest-card');
     lastManifestEl.after(manifestEl);
-  });
+  }
 }
 
 function setEventListeners() {
@@ -366,10 +395,10 @@ async function setDefaultValues() {
     mepAkamaiLocale,
   } = getParameters();
   [
-    ['#toggle-mep', mepHighlight],
-    ['#toggle-caas', mepCaasHighlight],
-    ['#toggle-mas', mepMasHighlight],
-    ['#toggle-other-fragments', mepOtherHighlight],
+    [`#${TOGGLE_KEYS.mep}`, mepHighlight],
+    [`#${TOGGLE_KEYS.cas}`, mepCaasHighlight],
+    [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
+    [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
   ].forEach(([id, param]) => {
     if (!param) return;
     const checkbox = document.querySelector(id);
