@@ -51,7 +51,7 @@ export default async function init(el) {
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  const gnavPromise = main({
+  main({
     localizeLink,
     gnavSource: gnavUrl,
     asideSource: null,
@@ -70,7 +70,5 @@ export default async function init(el) {
       tags: 'global-navigation',
       errorType: 'e',
     });
-    return {};
   });
-  config.federal = { fedsGlobalNavigation: gnavPromise };
 }

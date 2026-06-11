@@ -2345,7 +2345,6 @@ export async function scrollToHashedElement(hash) {
     const config = getConfig();
     const globalNavigation = await config.federal?.fedsGlobalNavigation;
     const bufferHeight = globalNavigation.getGnavHeight?.();
-    console.log('bufferHeight', bufferHeight);
 
     const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
     window.scrollTo({
