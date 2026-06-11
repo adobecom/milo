@@ -450,7 +450,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
     gap: 20vh;
     margin: auto;
     min-width: unset;
-    will-change: auto;
+    will-change: max-width;
+    width: 100%;
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -534,7 +535,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
     position: relative;
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
-    will-change: auto;
+    justify-content: unset;
+    will-change: margin;
     animation: elasticItemsShrink linear both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
@@ -1002,17 +1004,17 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 @keyframes carouselMobileContainerExpand {
   0% {
-    width: var(--grid-img-width);
+    /* width: var(--grid-img-width); */
     max-width: var(--grid-img-width);
   }
 
-  30% {
-    width: 100%;
+  75% {
+    /* width: 100%; */
     max-width: 100%;
   }
 
   100% {
-    width: 100%;
+    /* width: 100%; */
     max-width: 100%;
   }
 }
@@ -1364,6 +1366,10 @@ font-size: var(--s2a-typography-font-size-heading-1);
   30% {
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
+    max-height: calc(min(329px, 25vw) * 1.25);
+  }
+
+  45% {
     max-height: calc(min(329px, 25vw) * 1.25);
   }
 
