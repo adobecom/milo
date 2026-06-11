@@ -271,16 +271,15 @@ function initAnimation(block) {
 
     layout.pileTy0 = stackBoxes[0].y - naturalBoxes[0].y;
 
-    if (eyebrow) {
-      const eyebrowH = eyebrow.offsetHeight;
-      const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
-      layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
-      const threshold = isMobile() ? 0.15 : 0.6;
-      const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
-      eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
-    }
-
     block.classList.add('scroll-driven-ready');
+    if (!eyebrow) return;
+
+    const eyebrowH = eyebrow.offsetHeight;
+    const eyebrowGap = parseFloat(getComputedStyle(eyebrow).getPropertyValue('--hero-eyebrow-gap'));
+    layout.eyebrowDocY = layout.cardDocTop - eyebrowH - eyebrowGap;
+    const threshold = isMobile() ? 0.15 : 0.6;
+    const fadeStart = layout.animStart + (layout.animEnd - layout.animStart) * threshold;
+    eyebrow.style.setProperty('animation-range', `${fadeStart}px ${fadeStart + 50}px`);
   }
 
   function computeLayouts() {
