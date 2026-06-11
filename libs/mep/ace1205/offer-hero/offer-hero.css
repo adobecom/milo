@@ -97,12 +97,17 @@
     display: flex;
   }
 
+  .hero-card:focus-within {
+    outline: 2px solid var(--s2a-color-blue-800);
+    border-radius: var(--s2a-border-radius-24);
+    outline-offset: 2px;
+  }
+
   a.hero-card-tile {
     text-decoration: none;
 
     &:focus-visible {
-      outline: 2px solid var(--s2a-color-blue-800);
-      outline-offset: -2px;
+      outline: none;
     }
 
     &:hover .learn-more svg {
@@ -266,6 +271,10 @@
   to { opacity: 0; transform: translateY(-80px); }
 }
 
+@keyframes offer-hero-content-slide {
+  to { transform: translateY(-80px); }
+}
+
 @supports (animation-timeline: scroll()) {
   .offer-hero.scroll-driven-ready {
     .hero-card-tile {
@@ -285,14 +294,28 @@
     }
 
     .hero-content {
-      animation: offer-hero-content-fade linear forwards;
+      animation: offer-hero-content-slide linear forwards;
       animation-timeline: scroll(root);
+    }
+
+    @media (height >= 500px) {
+      .hero-content {
+        animation-name: offer-hero-content-fade;
+      }
     }
 
     .hero-eyebrow {
       animation: offer-hero-eyebrow-fade linear forwards;
       animation-timeline: scroll(root);
     }
+  }
+}
+
+
+.offer-hero:has(.hero-card-tile:focus-visible) {
+  .hero-card-tile {
+    animation: none;
+    transform: none;
   }
 }
 
