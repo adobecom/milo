@@ -258,13 +258,13 @@ function initAnimation(block) {
       const txTarget = rtl
         ? (stack.x + stack.w) - (natural.x + natural.w)
         : stack.x - natural.x;
-      [tile, shadowEls[i]].filter(Boolean).forEach((el) => {
-        el.style.setProperty('--pile-tx', `${txTarget}px`);
-        el.style.setProperty('--pile-ty', `${stack.y - natural.y}px`);
-        el.style.setProperty('--pile-rot', `${stack.rot}deg`);
-        el.style.setProperty('--pile-scale', `${scaleVal}`);
-        el.style.setProperty('animation-range', animRange);
-      });
+      const card = cards[i];
+      card.style.setProperty('--pile-tx', `${txTarget}px`);
+      card.style.setProperty('--pile-ty', `${stack.y - natural.y}px`);
+      card.style.setProperty('--pile-rot', `${stack.rot}deg`);
+      card.style.setProperty('--pile-scale', `${scaleVal}`);
+      card.style.setProperty('animation-range', animRange);
+      shadowEls[i]?.style.setProperty('animation-range', animRange);
     });
 
     heroContent?.style.setProperty('animation-range', `${layout.animStart}px ${contentEnd}px`);

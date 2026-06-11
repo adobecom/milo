@@ -95,6 +95,8 @@
   .hero-card {
     position: relative;
     display: flex;
+    transform-origin: top left;
+    will-change: transform;
   }
 
   a.hero-card-tile {
@@ -125,14 +127,13 @@
     flex-direction: column;
     justify-content: flex-end;
     background: var(--s2a-color-gray-75);
+    border-radius: var(--s2a-border-radius-24);
     box-shadow: inset 0 0 0 2px rgb(255 255 255 / 10%);
-    transform-origin: top left;
+    overflow: hidden;
     padding-top: calc(100% * 100 / 109);
-    will-change: transform;
-    clip-path: inset(0 round var(--s2a-border-radius-24));
   }
 
-  &:dir(rtl) .hero-card-tile {
+  &:dir(rtl) .hero-card {
     transform-origin: top right;
   }
 
@@ -142,11 +143,6 @@
     border-radius: var(--s2a-border-radius-24);
     box-shadow: 25px 25px 54px 0 rgb(0 0 0 / 20%);
     pointer-events: none;
-    transform-origin: top left;
-  }
-
-  &:dir(rtl) .hero-card-pile-shadow {
-    transform-origin: top right;
   }
 
   .hero-card-media {
@@ -257,7 +253,7 @@
 }
 
 @keyframes offer-hero-shadow-to-grid {
-  to { opacity: 0; transform: none; }
+  to { opacity: 0; }
 }
 
 @keyframes offer-hero-content-fade {
@@ -266,7 +262,7 @@
 
 @supports (animation-timeline: scroll()) {
   .offer-hero.scroll-driven-ready {
-    .hero-card-tile {
+    .hero-card {
       transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
         rotate(var(--pile-rot, 0deg))
         scale(var(--pile-scale, 1));
@@ -275,9 +271,6 @@
     }
 
     .hero-card-pile-shadow {
-      transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
-        rotate(var(--pile-rot, 0deg))
-        scale(var(--pile-scale, 1));
       animation: offer-hero-shadow-to-grid linear forwards;
       animation-timeline: scroll(root);
     }
