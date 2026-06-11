@@ -1453,9 +1453,7 @@ export function decoratePictures(area, config = { size: 1, type: 'webp' }) {
     const image = picture.querySelector('img');
     if (!sources.length || !image) return;
 
-    if (Number(image.getAttribute('width')) < 1500) return;
     const path = image.src.split('?')[0];
-
     const renditions = [
       {
         // mobile
