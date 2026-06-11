@@ -280,6 +280,7 @@ function initAnimation(block) {
   }
 
   function computeLayouts() {
+    block.classList.remove('scroll-driven-ready');
     naturalBoxes = cards.map((card) => {
       const rect = card.getBoundingClientRect();
       return { x: rect.left, y: rect.top, w: rect.width, h: rect.height };
