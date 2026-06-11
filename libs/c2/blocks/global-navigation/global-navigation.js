@@ -74,5 +74,4 @@ export default async function init(el) {
     return {};
   });
   config.federal = { fedsGlobalNavigation: gnavPromise };
-  console.log(config);
 }
