@@ -17,6 +17,7 @@
   --slide-animation-range: contain 0% contain 100%;
   --grid-col-rise-animation-range: contain 0% contain 100%;
   --grid-gap-animation-range: contain 0% contain 50%;
+  --grid-fade-range: contain 0% contain 88%;
   --carousel-items-top: 35%;
   --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: 394px;
@@ -120,36 +121,36 @@ font-size: var(--s2a-typography-font-size-heading-1);
 .hub-hero-image-grid-container-col:nth-child(1) {
   transform: translate(0, var(--grid-col-one-offset));
   animation: hubHeroGridCol1 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), var(--grid-fade-range);
 }
 
 .hub-hero-image-grid-container-col:nth-child(2) {
   transform: translate(0, var(--grid-col-two-offset));
   animation: hubHeroGridCol2 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), var(--grid-fade-range);
 }
 
 .hub-hero-image-grid-container-col:nth-child(3) {
   transform: translate(0, var(--grid-col-three-offset));
   animation: hubHeroGridCol3 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), var(--grid-fade-range);
 }
 
 .hub-hero-image-grid-container-col:nth-child(4) {
   transform: translate(0, var(--grid-col-four-offset));
   animation: hubHeroGridCol4 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), var(--grid-fade-range);
 }
 
 .hub-hero-image-grid-container-col:nth-child(5) {
   transform: translate(0, var(--grid-col-five-offset));
   animation: hubHeroGridCol5 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), var(--grid-fade-range);
 }
 
 .hub-hero-image-grid-container-col div {
@@ -697,7 +698,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     flex-basis: 0;
     animation: carouselSlide3Transition ease both;
     animation-timeline: --hub-hero;
-    animation-range: contain 0% contain 40%;
+    animation-range: contain 0% contain 80%;
   }
 
   .hub-hero-carousel-item:nth-child(4) {
@@ -745,6 +746,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --grid-col-two-offset: 94px;
     --grid-col-three-offset: 150px;
     --grid-col-four-offset: 94px;
+    --grid-fade-range: contain 0% contain 66%;
   }
 
   .hub-hero-carousel {
@@ -785,6 +787,18 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-container {
     max-height: var(--hub-hero-carousel-container-height-desktop);
+  }
+}
+@media (width >= 768px) {
+  .hub-hero {
+    --hub-hero-height: 2520px;
+    --header-animation-range: contain 60% contain 100%;
+    --grid-gap-animation-range: contain 0% contain 100%;
+    --slide-from-card-slide-range: contain 0% contain 60%;
+  }
+
+  .hub-hero-header {
+    animation-range: contain 0% contain 30%;
   }
 }
 
@@ -1093,12 +1107,12 @@ font-size: var(--s2a-typography-font-size-heading-1);
     transform: translate(0px, calc(var(--grid-col-one-offset) + var(--carousel-slide-1-correction, 0px)));
   }
 
-  20% {
+  40% {
     transform: translate(0px, 20%);
     animation-timing-function: var(--slide-offset-timing);
   }
 
-  50% {
+  100% {
     transform: translate(0px, 0%);
   }
 }
@@ -1109,7 +1123,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     animation-timing-function: var(--slide-offset-timing);
   }
 
-  50% {
+  100% {
     transform: translate(0px, 0%);
   }
 
@@ -1121,7 +1135,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     animation-timing-function: var(--slide-offset-timing);
   }
 
-  44% {
+  88% {
     transform: translate(0px, 0%);
   }
 }
@@ -1131,12 +1145,12 @@ font-size: var(--s2a-typography-font-size-heading-1);
     transform: translate(0px, calc(var(--grid-col-five-offset) + var(--carousel-slide-5-correction, 0px)));
   }
 
-  20% {
+  40% {
     transform: translate(0px, 20%);
     animation-timing-function: var(--slide-offset-timing);
   }
 
-  50% {
+  100% {
     transform: translate(0px, 0%);
   }
 }
@@ -1386,17 +1400,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
     pointer-events: none;
   }
 
-  10% {
+  20% {
     padding: 0 0;
     pointer-events: none;
-  }
-  
-  50% {
-    padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
-    pointer-events: none;
-  }
-  51% {
-    pointer-events: all;
   }
 
   100% {
