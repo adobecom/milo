@@ -2,6 +2,7 @@ import { CONTROLS, getDefaultState, STAGGER_CONTROLS, getDefaultStaggerState } f
 
 const STORAGE_KEY = `pa:${window.location.pathname}`;
 const STAGGER_KEY = `pa-stagger:${window.location.pathname}`;
+export const FOLLOW_KEY = 'pa-follow-hover';
 
 export function loadStoredState() {
   try {
@@ -114,14 +115,22 @@ export function buildPanel(
     collapseBtn.setAttribute('title', label);
   }
 
-  collapseBtn.addEventListener('click', () => {
-    const ids = getAllSectionIds();
-    const allCollapsed = ids.every((id) => collapsedSections.has(id));
-    if (allCollapsed) collapsedSections.clear();
-    else ids.forEach((id) => collapsedSections.add(id));
-    // eslint-disable-next-line no-use-before-define
-    renderTree();
-  });
+  function selectItem(item) {
+    if (selectedEl) {
+      selectedEl.classList.remove('pa-highlight');
+      selectedEl.removeAttribute('data-pa-label');
+    }
+    if (selectedId === item.id) {
+      selectedId = null;
+      selectedEl = null;
+      return;
+    }
+    selectedId = item.id;
+    selectedEl = item.el;
+    selectedEl.classList.add('pa-highlight');
+    selectedEl.setAttribute('data-pa-label', item.label);
+    selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 
   function buildCopyHtml(item) {
     const sectionNode = tree.find(
@@ -142,7 +151,7 @@ export function buildPanel(
     return `<table><tr><td colspan="2">${header}</td></tr>${rows}</table>`;
   }
 
-  function buildControls(item) {
+  function buildControls(item, refresh) {
     const state = stateMap[item.id] || getDefaultState();
     const wrap = document.createElement('div');
     wrap.className = 'pa-controls';
@@ -198,7 +207,7 @@ export function buildPanel(
     const fromBlock = blockSourceIds.has(item.id);
 
     const resetBtn = document.createElement('button');
-    resetBtn.className = 'pa-reset-btn';
+    resetBtn.className = 'pa-action-btn';
     resetBtn.textContent = fromBlock ? 'Reset to block' : 'Reset animation';
     resetBtn.addEventListener('click', () => {
       if (fromBlock) {
@@ -212,15 +221,13 @@ export function buildPanel(
         onReset(item.el, item.id);
         saveState(stateMap);
       }
-      // eslint-disable-next-line no-use-before-define
-      renderTree();
+      refresh();
     });
     wrap.appendChild(resetBtn);
 
     const copyBtn = document.createElement('button');
-    copyBtn.className = 'pa-reset-btn';
+    copyBtn.className = 'pa-action-btn';
     copyBtn.textContent = fromBlock ? 'Copy updated' : 'Copy to DA';
-    copyBtn.style.marginTop = '6px';
     copyBtn.addEventListener('click', () => {
       if (!stateMap[item.id]) stateMap[item.id] = getDefaultState();
       const html = buildCopyHtml(item);
@@ -236,7 +243,7 @@ export function buildPanel(
     return wrap;
   }
 
-  function buildStaggerControls(section) {
+  function buildStaggerControls(section, refresh) {
     const blockIds = section.blocks.map((b) => b.id);
     const state = staggerMap[section.id] || getDefaultStaggerState();
     const wrap = document.createElement('div');
@@ -284,14 +291,13 @@ export function buildPanel(
     });
 
     const resetBtn = document.createElement('button');
-    resetBtn.className = 'pa-reset-btn';
+    resetBtn.className = 'pa-action-btn';
     resetBtn.textContent = 'Reset stagger';
     resetBtn.addEventListener('click', () => {
       delete staggerMap[section.id];
       onStaggerReset(section.id);
       saveStaggerState(staggerMap);
-      // eslint-disable-next-line no-use-before-define
-      renderTree();
+      refresh();
     });
     wrap.appendChild(resetBtn);
 
@@ -324,7 +330,7 @@ export function buildPanel(
     return div;
   }
 
-  function buildLenisControls() {
+  function buildLenisControls(refresh) {
     const wrap = document.createElement('div');
     wrap.className = 'pa-controls';
     const { lenis } = window;
@@ -359,22 +365,21 @@ export function buildPanel(
     }));
 
     const resetBtn = document.createElement('button');
-    resetBtn.className = 'pa-reset-btn';
+    resetBtn.className = 'pa-action-btn';
     resetBtn.textContent = 'Reset Lenis';
     resetBtn.addEventListener('click', () => {
       if (!window.lenis) return;
       window.lenisBaseLerp = LENIS_DEFAULT_LERP;
       window.lenis.options.lerp = LENIS_DEFAULT_LERP;
       window.lenis.options.wheelMultiplier = LENIS_DEFAULT_WHEEL;
-      // eslint-disable-next-line no-use-before-define
-      renderTree();
+      refresh();
     });
     wrap.appendChild(resetBtn);
 
     return wrap;
   }
 
-  function buildLenisSection() {
+  function buildLenisSection(refresh) {
     const group = document.createElement('div');
     group.className = 'pa-section-group';
     const isCollapsed = collapsedSections.has(LENIS_ID);
@@ -385,12 +390,11 @@ export function buildPanel(
     sLabel.addEventListener('click', () => {
       if (collapsedSections.has(LENIS_ID)) collapsedSections.delete(LENIS_ID);
       else collapsedSections.add(LENIS_ID);
-      // eslint-disable-next-line no-use-before-define
-      renderTree();
+      refresh();
     });
     group.appendChild(sLabel);
 
-    if (!isCollapsed) group.appendChild(buildLenisControls());
+    if (!isCollapsed) group.appendChild(buildLenisControls(refresh));
     return group;
   }
 
@@ -398,7 +402,7 @@ export function buildPanel(
     const treeEl = panel.querySelector('#pa-tree');
     treeEl.innerHTML = '';
 
-    treeEl.appendChild(buildLenisSection());
+    treeEl.appendChild(buildLenisSection(renderTree));
 
     tree.forEach((section) => {
       const group = document.createElement('div');
@@ -438,14 +442,16 @@ export function buildPanel(
           const hasStagger = item.id === section.id && !!staggerMap[section.id]?.['--pa-stagger-drift'];
           row.className = `pa-item${isSelected ? ' pa-selected' : ''}${hasAnim ? ' pa-has-anim' : ''}${fromBlock ? ' pa-from-block' : ''}${hasStagger ? ' pa-has-stagger' : ''}`;
           row.innerHTML = `<span class="pa-dot"></span><span>${item.label}</span>`;
-          // eslint-disable-next-line no-use-before-define
-          row.addEventListener('click', () => selectItem(item));
+          row.addEventListener('click', () => {
+            selectItem(item);
+            renderTree();
+          });
           row.addEventListener('mouseenter', () => {
             if (item.id !== selectedId) {
               item.el.classList.add('pa-highlight');
               item.el.setAttribute('data-pa-label', item.label);
               // Auto-scroll page to keep hovered element in view — toggled via #pa-follow-btn.
-              if (localStorage.getItem('pa-follow-hover') !== 'off') {
+              if (localStorage.getItem(FOLLOW_KEY) !== 'off') {
                 item.el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
               }
             }
@@ -459,9 +465,9 @@ export function buildPanel(
           group.appendChild(row);
 
           if (isSelected) {
-            group.appendChild(buildControls(item));
+            group.appendChild(buildControls(item, renderTree));
             if (item.id === section.id && section.blocks.length > 1) {
-              group.appendChild(buildStaggerControls(section));
+              group.appendChild(buildStaggerControls(section, renderTree));
             }
           }
         });
@@ -472,24 +478,13 @@ export function buildPanel(
     syncCollapseBtn();
   }
 
-  function selectItem(item) {
-    if (selectedEl) {
-      selectedEl.classList.remove('pa-highlight');
-      selectedEl.removeAttribute('data-pa-label');
-    }
-    if (selectedId === item.id) {
-      selectedId = null;
-      selectedEl = null;
-      renderTree();
-      return;
-    }
-    selectedId = item.id;
-    selectedEl = item.el;
-    selectedEl.classList.add('pa-highlight');
-    selectedEl.setAttribute('data-pa-label', item.label);
-    selectedEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  collapseBtn.addEventListener('click', () => {
+    const ids = getAllSectionIds();
+    const allCollapsed = ids.every((id) => collapsedSections.has(id));
+    if (allCollapsed) collapsedSections.clear();
+    else ids.forEach((id) => collapsedSections.add(id));
     renderTree();
-  }
+  });
 
   renderTree();
   return panel;

@@ -1,12 +1,13 @@
 import { scanPage, readBlockAnimations } from './scanner.js';
 import StyleManager from './style-manager.js';
-import { buildPanel, loadStoredState, saveState, loadStaggerState, saveStaggerState } from './panel.js';
+import {
+  buildPanel, loadStoredState, saveState, loadStaggerState, saveStaggerState, FOLLOW_KEY,
+} from './panel.js';
 import { serializeState, deserializeState, CONTROLS, buildStaggerCssRules } from './controls.js';
 
 const MODE_KEY = `pa-panel-mode:${window.location.pathname}`;
 const POS_KEY = `pa-panel-pos:${window.location.pathname}`;
 const THEME_KEY = 'pc-theme';
-const FOLLOW_KEY = 'pa-follow-hover';
 const SNAP_ZONE = 60;
 
 function applyTheme(theme) {
@@ -41,7 +42,25 @@ function savePos(pos) {
   localStorage.setItem(POS_KEY, JSON.stringify(pos));
 }
 
-(function init() { // eslint-disable-line wrap-iife
+function showError(panelEl, message) {
+  const existing = panelEl.querySelector('.pa-error-bar');
+  if (existing) existing.remove();
+  const bar = document.createElement('div');
+  bar.className = 'pa-error-bar';
+  const span = document.createElement('span');
+  span.textContent = message;
+  const btn = document.createElement('button');
+  btn.className = 'pa-error-dismiss';
+  btn.setAttribute('aria-label', 'Dismiss');
+  btn.textContent = '✕';
+  btn.addEventListener('click', () => bar.remove());
+  bar.appendChild(span);
+  bar.appendChild(btn);
+  setTimeout(() => bar.remove(), 5000);
+  panelEl.prepend(bar);
+}
+
+function init() {
   if (document.getElementById('page-animator-panel')) return;
 
   // Inject stylesheet
@@ -98,8 +117,14 @@ function savePos(pos) {
     },
   };
 
-  // eslint-disable-next-line max-len
-  let currentPanel = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds, staggerMap);
+  let currentPanel = buildPanel(
+    tree,
+    stateMap,
+    callbacks,
+    blockStateMap,
+    blockSourceIds,
+    staggerMap,
+  );
   document.body.appendChild(currentPanel);
 
   // Snap preview rectangle (shown while dragging near a screen edge)
@@ -346,8 +371,14 @@ function savePos(pos) {
           }
           saveState(stateMap);
           saveStaggerState(staggerMap);
-          // eslint-disable-next-line max-len
-          const fresh = buildPanel(tree, stateMap, callbacks, blockStateMap, blockSourceIds, staggerMap);
+          const fresh = buildPanel(
+            tree,
+            stateMap,
+            callbacks,
+            blockStateMap,
+            blockSourceIds,
+            staggerMap,
+          );
           panelEl.replaceWith(fresh);
           applyMode(fresh, loadMode(), loadPos());
           setPanelOpen(fresh, true);
@@ -356,8 +387,7 @@ function savePos(pos) {
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('[page-animator] Import failed:', err);
-          // eslint-disable-next-line no-alert
-          alert(`Import failed: ${err.message}`);
+          showError(currentPanel, `Import failed: ${err.message}`);
         }
       });
       input.click();
@@ -365,4 +395,6 @@ function savePos(pos) {
   }
 
   wireListeners(currentPanel);
-})();
+}
+
+init();
