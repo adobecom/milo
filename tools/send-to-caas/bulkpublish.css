@@ -247,7 +247,13 @@ div#caas-draft-cb {
   margin-top: 15px;
 }
 
-label.dry-run-label {
+.button-container {
+  display: flex;
+  align-items: center;
+}
+
+label.dry-run-label,
+label.auto-detect-lingo-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -255,6 +261,9 @@ label.dry-run-label {
   font-size: 15px;
   font-weight: 300;
   cursor: pointer;
+}
+
+label.auto-detect-lingo-label span.help {
   vertical-align: middle;
 }
 
@@ -623,4 +632,16 @@ a.classic {
 }
 .bulk-publisher.dark td.error {
   color: #d00;
+}
+
+#language-first.lingo-auto {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+#language-first.lingo-auto label::after {
+  content: ' (auto)';
+  font-style: italic;
+  font-size: 0.85em;
+  color: #666;
 }
