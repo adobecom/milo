@@ -45,7 +45,7 @@ export default async function init(el) {
 
   const personalizationHandler = async (cs, root) => {
     const { handleCommands } = await import('../../../features/personalization/personalization.js');
-    return handleCommands(cs, root);
+    return handleCommands(cs, root, true, true);
   };
 
   const { main } = await import(federalGnavUrl);
