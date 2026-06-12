@@ -322,8 +322,9 @@ const decorateHubHeroCTA = (heroHeader) => {
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
   const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons?.arrowRightWhite);
   const cta = createTag('a', { href, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
-  cta.addEventListener('click', (e) => e.stopPropagation());
-  cta.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
+  cta.addEventListener('focus', (e) => {
+    if (e.currentTarget.matches(':focus-visible')) scrollHubHeroTo(e.currentTarget, 0);
+  });
   linkEl.parentElement.replaceChildren(cta);
 };
 
