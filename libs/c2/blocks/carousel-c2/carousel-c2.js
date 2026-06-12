@@ -16,6 +16,10 @@ const MAX_SLIDE_TRANISTION_DURATION = 500;
 let carouselGap = 8;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+function isRTL() {
+  return document.documentElement.dir === 'rtl';
+}
+
 function setSlideSpreadSign(activeSlide, slides) {
   if (!activeSlide || !slides) return;
   const activeIndex = slides.indexOf(activeSlide);
@@ -24,7 +28,7 @@ function setSlideSpreadSign(activeSlide, slides) {
     const newSign = i - activeIndex;
     const current = parseInt(slide.style.getPropertyValue('--slide-spread-sign'), 10);
     if (current === newSign) return;
-    slide.style.setProperty('--slide-spread-sign', newSign);
+    slide.style.setProperty('--slide-spread-sign', newSign * (isRTL() ? -1 : 1));
   });
 }
 
@@ -99,10 +103,6 @@ function getCarouselDimensions(slide) {
   const maxSlideWidth = Math.min(carouselWidth, fluidGrid);
 
   return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth, maxSlideWidth };
-}
-
-function isRTL() {
-  return document.documentElement.dir === 'rtl';
 }
 
 function getDirection(direction) {
