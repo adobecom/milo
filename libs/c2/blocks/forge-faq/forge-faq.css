@@ -1,0 +1,31 @@
+.forge-faq img {display:block;max-width:100%}
+
+.forge-faq main {max-width:1440px;margin:0 auto;position:relative;background:#000;overflow:hidden}
+
+.forge-faq .t-title-2 {font:900 56px/56px var(--s2a-font-family-heading);letter-spacing:-1.68px}
+
+.forge-faq .t-faq-q {font:700 16px/16px var(--s2a-font-family-heading);letter-spacing:-0.16px}
+
+.forge-faq .t-body-md {font:400 16px/20px var(--s2a-font-family-body)}
+
+.forge-faq section {position:relative;width:100%}
+
+.forge-faq {background:#000;padding:0 124px}
+
+.forge-faq .faq__head {display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:10px}
+
+.forge-faq .faq__head h2 {color:#fff;width:100%}
+
+.forge-faq .acc__item {border-bottom:1px solid var(--s2a-color-transparent-white-10);padding:32px 0}
+
+.forge-faq .acc__row {display:flex;gap:40px;align-items:center;cursor:pointer;list-style:none}
+
+.forge-faq .acc__q {flex:1;color:#fff}
+
+.forge-faq .acc__icon {width:12px;height:12px;flex:none;color:#fff}
+
+.forge-faq .acc__a {color:#fff;opacity:.7;max-width:587px;margin-top:8px}
+
+.forge-faq details .acc__icon .plus-v {transition:opacity .2s}
+
+.forge-faq details[open] .acc__icon .plus-v {opacity:0}

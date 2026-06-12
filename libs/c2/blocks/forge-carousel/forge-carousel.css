@@ -1,0 +1,60 @@
+.forge-carousel img {display:block;max-width:100%}
+
+.forge-carousel main {max-width:1440px;margin:0 auto;position:relative;background:#000;overflow:hidden}
+
+.forge-carousel .t-eyebrow {font:700 16px/20px var(--s2a-font-family-body);letter-spacing:0}
+
+.forge-carousel .t-title-2 {font:900 56px/56px var(--s2a-font-family-heading);letter-spacing:-1.68px}
+
+.forge-carousel .t-super {font:900 96px/92px var(--s2a-font-family-heading);letter-spacing:-3.84px}
+
+.forge-carousel .t-heading-6 {font:900 18px/18px var(--s2a-font-family-heading);letter-spacing:-0.2px}
+
+.forge-carousel .appicon {display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius-4);
+  background:var(--color-cross-cloud-tile);color:#fff;font:800 13px/1 var(--s2a-font-family-heading);letter-spacing:0;flex:none}
+
+.forge-carousel .appicon--ae {background:var(--dva-tile);color:var(--dva-mnemonic)}
+
+.forge-carousel section {position:relative;width:100%}
+
+.forge-carousel .bento--image .appicon {position:absolute;top:var(--sp-lg);left:var(--sp-lg);z-index:2}
+
+.forge-carousel {padding:160px 24px 0;background:#000;position:relative;overflow:hidden}
+
+.forge-carousel .carousel__blur {position:absolute;inset:0;z-index:0;filter:blur(145px);opacity:.9}
+
+.forge-carousel .carousel__blur img {width:100%;height:100%;object-fit:cover}
+
+.forge-carousel .carousel__blur::after {content:"";position:absolute;inset:0;background:rgba(0,0,0,0.2)}
+
+.forge-carousel .carousel__inner {position:relative;z-index:1;max-width:1392px;margin:0 auto;display:flex;gap:var(--sp-xs);padding-left:var(--sp-md)}
+
+.forge-carousel .carousel__left {flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:var(--layout-md)}
+
+.forge-carousel .carousel__head {display:flex;flex-direction:column;align-items:center;gap:var(--sp-xs);text-align:center;color:#fff}
+
+.forge-carousel .carousel__cat {display:flex;flex-direction:column;gap:0;padding-bottom:var(--sp-md)}
+
+.forge-carousel .carousel__cat .t-heading-6 {color:#fff}
+
+.forge-carousel .carousel__divider {height:1px;background:var(--s2a-color-transparent-white-10);width:100%}
+
+.forge-carousel .carousel__window {height:495px;overflow:hidden;position:relative;margin-top:0}
+
+.forge-carousel .carousel__list {display:flex;flex-direction:column;transition:transform .5s ease}
+
+.forge-carousel .carousel__item {height:92px;display:flex;align-items:center;color:var(--s2a-color-transparent-white-12)}
+
+.forge-carousel .carousel__item.active {color:var(--s2a-color-content-knockout)}
+
+.forge-carousel .carousel__right {flex:1 1 0;min-width:0;max-width:650px;display:flex;align-items:center}
+
+.forge-carousel .carousel__media {width:100%;height:550px;border-radius:var(--radius-md);overflow:hidden;position:relative;padding:var(--sp-md) 0 0 var(--sp-md)}
+
+.forge-carousel .carousel__media img {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:var(--radius-md)}
+
+.forge-carousel .carousel__media .appicon {position:relative;z-index:1}
+
+@media (max-width:1100px) {
+.forge-carousel .t-super {font-size:64px;line-height:62px}
+}
