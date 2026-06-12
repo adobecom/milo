@@ -52,6 +52,7 @@ const C1_BLOCKS = [
   'language-selector',
   'language-banner',
   'market-selector',
+  'mas-compare-chart-autoblock',
   'locui',
   'locui-create',
   'm7',
@@ -117,8 +118,10 @@ const C2_BLOCKS = [
   'explore-card',
   'global-footer',
   'global-navigation',
+  'iframe',
   'martech-metadata',
   'modal',
+  'modal-metadata',
   'news',
   'region-nav',
   'rich-content',
@@ -145,6 +148,7 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
+  { 'mas-compare-chart-autoblock': 'mas.adobe.com/studio.html#content-type=mas-compare-chart' },
   { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
   { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
   { m7: '/creativecloud/business-plans', styles: false },
@@ -568,7 +572,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
   }
 
   if (link.dataset.wcsOsi) {
-    link.classList.add('hidden-osi-trial-link');
+    link.dataset.hideKrFreeTrial = 'true';
     return false;
   }
 
@@ -1439,6 +1443,25 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function decoratePictures(area) {
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+    if (Number(image.getAttribute('width')) < 2000) return;
+    const path = image.src.split('?')[0];
+    const largeImageSource = createTag('source', {
+      type: 'image/webp',
+      srcset: `${path}?width=3000&format=webply`,
+      media: '(min-width: 1920px)',
+    });
+
+    picture.prepend(largeImageSource);
+    picture.classList.add('large-image-decorated');
+  });
+}
+
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
@@ -1884,6 +1907,7 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
+  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');

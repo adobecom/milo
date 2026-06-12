@@ -23,25 +23,24 @@ function decorateCard(block, root) {
   decorateBlockText(foreground, { heading: '4' });
   markStandaloneLinks(foreground);
 
-  if (media) {
-    media.classList.add('media');
-    if (root.classList.contains('featured')) media.classList.add('parallax-featured-card-media');
-    const pic = media.querySelector('picture');
-    if (pic) pic.classList.add('parallax-scale-down');
+  if (!media) return;
 
-    // Move icon from foreground to media overlay
-    const firstCell = foreground.children[0];
-    if (firstCell?.childElementCount === 1 && firstCell?.firstElementChild?.tagName === 'PICTURE') {
-      const iconPicture = firstCell.firstElementChild;
-      const iconImg = iconPicture.querySelector('img');
-      if (iconImg?.hasAttribute('src') && isSvgUrl(iconImg?.src)) {
-        iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
-      }
-      iconPicture.classList.add('icon');
-      media.appendChild(iconPicture);
-      firstCell.remove();
-    }
+  media.classList.add('media');
+  if (root.classList.contains('featured')) media.classList.add('parallax-featured-card-media');
+  media.querySelector('picture')?.classList.add('parallax-scale-down');
+
+  // Move icon from foreground to media overlay
+  const firstCell = foreground.children[0];
+  if (firstCell?.childElementCount !== 1 || firstCell?.firstElementChild?.tagName !== 'PICTURE') return;
+
+  const iconPicture = firstCell.firstElementChild;
+  const iconImg = iconPicture.querySelector('img');
+  if (iconImg?.hasAttribute('src') && isSvgUrl(iconImg?.src)) {
+    iconImg.src = getFederatedUrl(iconImg.getAttribute('src'));
   }
+  iconPicture.classList.add('icon');
+  media.appendChild(iconPicture);
+  firstCell.remove();
 }
 
 export default function init(el) {

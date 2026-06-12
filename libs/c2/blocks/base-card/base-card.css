@@ -48,10 +48,10 @@
   }
 
   .foreground {
-    padding: var(--s2a-spacing-24) var(--s2a-spacing-16) 0 var(--s2a-spacing-16);
+    padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
 
     :is(h1, h2, h3, h4, h5, h6) {
-      margin-bottom: var(--s2a-spacing-8);
+      margin-bottom: var(--s2a-spacing-xs);
       color: var(--s2a-color-gray-1000);
     }
 
@@ -59,9 +59,9 @@
       color: var(--s2a-color-gray-1000);
       text-decoration: none;
       display: inline-block;
-      margin-top: var(--s2a-spacing-24);
-      margin-inline-end: var(--s2a-spacing-12);
-      margin-bottom: var(--s2a-spacing-4);
+      margin-top: var(--s2a-spacing-md);
+      margin-inline-end: var(--s2a-spacing-sm);
+      margin-bottom: var(--s2a-spacing-2xs);
 
       &::before {
         content: '';
@@ -78,7 +78,7 @@
 
   &.featured {
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-16) var(--s2a-spacing-40) var(--s2a-spacing-16);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-2xl) var(--s2a-spacing-md);
     }
 
     .parallax-featured-card-media {
@@ -96,7 +96,7 @@
 @media (width < 768px) {
   div.section.base-card-section {
     grid-template-columns: 1fr;
-    gap: var(--s2a-spacing-40);
+    gap: var(--s2a-spacing-2xl);
   }
 }
 
@@ -104,7 +104,7 @@
   .base-card {
     &.featured {
       .foreground {
-        padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-40) var(--s2a-spacing-24);
+        padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-2xl) var(--s2a-spacing-md);
       }
     }
   }
@@ -114,6 +114,10 @@
   .base-card {
     .media picture:not(.icon) img {
       aspect-ratio: 4/3;
+    }
+
+    .foreground {
+      :is(h1, h2, h3, h4, h5, h6) { margin-bottom: var(--s2a-spacing-2xs); }
     }
 
     &.featured {
@@ -153,11 +157,11 @@
 @media (width >= 1280px) {
   .base-card {
     &.featured .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) var(--s2a-spacing-64) var(--s2a-spacing-24);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) var(--s2a-spacing-4xl) var(--s2a-spacing-md);
     }
 
     .foreground {
-      padding: var(--s2a-spacing-24) var(--s2a-spacing-24) 0 var(--s2a-spacing-24);
+      padding: var(--s2a-spacing-md) var(--s2a-spacing-md) 0 var(--s2a-spacing-md);
     }
   }
 }

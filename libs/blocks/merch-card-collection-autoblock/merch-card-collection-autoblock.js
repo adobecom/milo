@@ -9,6 +9,8 @@ import {
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
   MAS_MERCH_CARD_COLLECTION,
@@ -338,12 +340,15 @@ export async function createCollection(el, options) {
     : el;
   toReplace.replaceWith(container);
 
+  if (isMasErrorEnv()) {
+    collection.addEventListener('aem:error', async (e) => {
+      collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection', e.detail?.status));
+    }, { once: true });
+  }
+
   const success = await collection.checkReady();
-  if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
+  if (!success && isMasErrorEnv() && !collection.querySelector('.mas-frag-error')) {
+    collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
   }
   container.classList.add('collection-container', collection.variant);
 

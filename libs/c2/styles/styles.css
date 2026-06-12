@@ -399,7 +399,8 @@
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
-  --body-font-family: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
   /* Animation properties */
@@ -416,37 +417,43 @@
 
   /* Regional font variations */
   &:lang(ar) {
-    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family);
+    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family-base);
 
     font-size: 125%;
   }
 
   &:lang(ko-KR),
   &:lang(ko) {
-    --body-font-family: adobe-clean-han-korean, var(--body-font-family);
+    --body-font-family: adobe-clean-han-korean, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
 
     word-break: keep-all;
   }
 
   &:lang(ja-JP),
   &:lang(ja) {
-    --body-font-family: adobe-clean-han-japanese, var(--body-font-family);
+    --body-font-family: adobe-clean-han-japanese, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-TW) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-CN) {
-    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family);
+    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-HK) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(th) {
-    --body-font-family: adobe-clean-thai, var(--body-font-family);
+    --body-font-family: adobe-clean-thai, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   /* New tokens get added here, move them to the correct location above */
@@ -605,7 +612,7 @@ h1, h2, h3, h4, h5, h6, [class*="title-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-adobe-clean-black);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {
@@ -1138,7 +1145,7 @@ p {
   }
 
   @keyframes garage-door-line-height {
-    from { line-height: 0.6; }
+    from { line-height: 60%; }
   }
 
   /* Section 1 to section 2 parallax declarations */
@@ -1187,7 +1194,7 @@ p {
   }
 
   @keyframes text-reveal-up {
-    from { line-height: 3; }
+    from { line-height: 300%; }
   }
 }
 
