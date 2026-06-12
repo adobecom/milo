@@ -26,8 +26,7 @@
   --end-gap: .5rem;
   --hub-hero-mobile-bottom-margin: 80px;
   --slide-offset-timing: cubic-bezier(0, 0, 0.1, 1);
-  --carousel-item-width: calc(100vw / 5);
-  --gap-shrink-timline: linear;
+  --gap-shrink-timline: ease;
 
   --hubHeroCarouselContainerWidthAdj: 0px;
   --hub-hero-carousel-container-width: calc((var(--slides) * var(--hub-hero-carousel-item-max-width)) + ((var(--end-gap) * (var(--slides) - 1))) + var(--hubHeroCarouselContainerWidthAdj));
@@ -54,12 +53,13 @@
   padding-inline: var(--s2a-spacing-lg);
   padding-top: var(--hub-hero-top-spacing);
   position: sticky;
-  top: 0;
+  top: 0%;
   z-index: 0;
-  will-change: opacity, transform;
+  /* transform: translateZ(0); */
+  will-change: opacity, translate;
   animation: hubHeroHeaderFade linear both;
   animation-timeline: --hub-hero;
-  animation-range: contain 0% contain 15%;
+  animation-range: contain 0% contain 100%;
 }
 
 .hub-hero-header .icon-button {
@@ -79,9 +79,11 @@
 .hub-hero-header div[class^="body"] p {
   margin-bottom: 0;
   max-width: 700px;
+
   &.eyebrow {
     margin-bottom: var(--s2a-spacing-md);
   }
+
   &[class^="body"] {
     margin: var(--s2a-spacing-xs) 0 var(--s2a-spacing-lg) 0;
     font-weight: var(--s2a-font-weight-adobe-clean-regular);
@@ -89,7 +91,7 @@
 }
 
 .hub-hero-header h1 {
-font-size: var(--s2a-typography-font-size-heading-1);
+  font-size: var(--s2a-typography-font-size-heading-1);
   line-height: var(--s2a-typography-line-height-heading-1);
   letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
   max-inline-size: 20ch;
@@ -105,61 +107,59 @@ font-size: var(--s2a-typography-font-size-heading-1);
   gap: var(--start-gap);
   overflow-x: clip;
   contain: layout;
-  animation: hubHeroGridGapShrink var(--gap-shrink-timline) both;
-  animation-timeline: --hub-hero;
-  animation-range: var(--grid-gap-animation-range);
 }
 
 .hub-hero-image-grid-container-col {
   display: flex;
   flex-direction: column;
+  will-change: transform, opacity;
   gap: var(--start-gap);
-  will-change: auto;
 }
 
 .hub-hero-image-grid-container-col:nth-child(1) {
   transform: translate(0, var(--grid-col-one-offset));
-  animation: hubHeroGridCol1 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation: hubHeroGridCol1 ease both, hubHeroGridColFadeOut ease both;
+  animation-timeline: --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(2) {
   transform: translate(0, var(--grid-col-two-offset));
-  animation: hubHeroGridCol2 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation: hubHeroGridCol2 ease both, hubHeroGridColFadeOut ease both;
+  animation-timeline: --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(3) {
   transform: translate(0, var(--grid-col-three-offset));
-  animation: hubHeroGridCol3 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation: hubHeroGridCol3 ease both, hubHeroGridColFadeOut ease both;
+  animation-timeline: --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(4) {
   transform: translate(0, var(--grid-col-four-offset));
-  animation: hubHeroGridCol4 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation: hubHeroGridCol4 ease both, hubHeroGridColFadeOut ease both;
+  animation-timeline: --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col:nth-child(5) {
   transform: translate(0, var(--grid-col-five-offset));
-  animation: hubHeroGridCol5 linear both, hubHeroGridGapShrink linear both, hubHeroGridColFadeOut linear both;
-  animation-timeline: --hub-hero, --hub-hero, view();
-  animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range), entry 0% exit 100%;
+  animation: hubHeroGridCol5 ease both, hubHeroGridColFadeOut ease both;
+  animation-timeline: --hub-hero, view();
+  animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
 }
 
 .hub-hero-image-grid-container-col div {
   overflow: hidden;
+
   img {
     border-radius: var(--s2a-border-radius-md);
   }
 }
 
-.hub-hero-image-grid-container-col img {
+.hub-hero-image-grid-container-col * {
   max-width: var(--grid-img-width);
   min-width: var(--grid-img-width-min);
   width: var(--grid-img-width);
@@ -171,7 +171,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   height: 0;
   width: 100%;
   font-size: var(--s2a-typography-font-size-heading-2);
-  will-change: auto;
+  will-change: opacity;
   animation: hubHeroCarouselHeaderFade var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -184,7 +184,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   right: 0;
   transform: translateY(calc(-100% - var(--s2a-spacing-2xl)));
   flex-direction: column;
-  will-change: auto;
   animation: hubHeroCarouselHeaderShrink var(--paralax-easing) both;
   animation-timeline: --hub-hero;
   animation-range: var(--header-animation-range);
@@ -200,7 +199,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   right: 0;
   z-index: 1;
   overflow-x: clip;
-  will-change: auto;
   animation-timeline: --hub-hero;
   animation-range: contain calc(100% - 180px) contain 100%;
 }
@@ -272,6 +270,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
   padding: var(--s2a-spacing-lg);
 }
 
+.hub-hero-carousel-item-footer p {
+  flex-basis: 1;
+}
 .hub-hero-carousel-item-footer span {
   opacity: 0;
   transition: opacity .3s;
@@ -281,6 +282,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
   padding: var(--s2a-spacing-md);
   border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
   background: var(--s2a-color-transparent-white-12);
+  max-width: 0%;
+  transition: max-width .3s;
 }
 
 .hub-hero-carousel-item-footer span svg {
@@ -303,7 +306,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   -webkit-line-clamp: 1;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 65%;
   white-space: nowrap;
 }
 
@@ -315,10 +317,11 @@ font-size: var(--s2a-typography-font-size-heading-1);
     position: relative;
     --hub-hero-top-spacing: 190px;
     --start-gap: 4rem;
+    --end-gap: 12rem;
     --grid-gap-animation-range: 15% 100%;
     --hub-hero-carousel-width-mobile: 60vh;
     --header-animation-range: contain 30% contain 45%;
-    --hub-hero-grip-col-float-mobile: 320%;
+    --hub-hero-grip-col-float-mobile: 250%;
   }
 
   .hub-hero-carousel-header {
@@ -326,14 +329,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;
-    will-change: auto;
   }
 
   .hub-hero-carousel-header>div {
-    animation: hubHeroCarouselHeaderMobileLeave linear forwards;
+    animation: hubHeroCarouselHeaderMobileLeave ease forwards;
     animation-timeline: --hub-hero;
     animation-range: contain 50% contain 102%;
     position: relative;
+    will-change: transform, opacity;
     left: unset;
     right: unset;
     transform: none;
@@ -354,8 +357,8 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
     visibility: hidden;
-    will-change: auto;
-    animation: hubHeroGridCarouselSlideHover linear both;
+    will-change: transform;
+    animation: hubHeroGridCarouselSlideHover ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
   }
@@ -368,35 +371,32 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-image-grid-container-col:nth-child(1) {
     transform: translate(0, var(--grid-col-one-offset));
     gap: var(--start-gap);
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol1Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol1Mobile ease-out both, hubHeroGridMobileFadeOut ease both;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range);
   }
 
   .hub-hero-image-grid-container-col:nth-child(2) {
     transform: translate(0, var(--grid-col-two-offset));
     gap: var(--start-gap);
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol2Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol2Mobile ease-out both, hubHeroGridMobileFadeOut ease both;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range);
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-three-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol3Mobile linear both;
-    animation-timeline: --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform;
+    animation: hubHeroGridCol3Mobile ease-out both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range);
   }
 
   .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
-    animation: hubHeroGridMobileFadeOut linear both;
+    animation: hubHeroGridMobileFadeOut ease both;
     animation-timeline: --hub-hero;
     animation-range: var(--grid-gap-animation-range);
     display: flex;
@@ -406,21 +406,19 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-image-grid-container-col:nth-child(4) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-four-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol4Mobile linear both, hubHeroGridMobileFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol4Mobile ease-out both, hubHeroGridMobileFadeOut ease both;
+    animation-timeline: --hub-hero, --hub-hero;
+    animation-range: var(--grid-col-rise-animation-range), var(--grid-gap-animation-range);
   }
 
   .hub-hero-image-grid-container-col:nth-child(5) {
     gap: var(--start-gap);
     transform: translate(0, var(--grid-col-five-offset));
-    animation: hubHeroGridGapExpand linear both, hubHeroGridCol5Mobile linear both, hubHeroGridColFadeOut linear both;
-    animation-timeline: --hub-hero, --hub-hero, view();
-    animation-range: var(--grid-gap-animation-range),
-      var(--grid-col-rise-animation-range),
-      var(--grid-gap-animation-range);
+    will-change: transform, opacity;
+    animation: hubHeroGridCol5Mobile ease-out both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
   }
 
   .hub-hero-carousel {
@@ -435,6 +433,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     top: unset;
     height: auto;
     overflow: visible;
+    contain: layout;
     width: 100%;
     margin: 0;
   }
@@ -443,14 +442,12 @@ font-size: var(--s2a-typography-font-size-heading-1);
     top: 0%;
     height: 100%;
     position: relative;
-    transform: unset;
-    left: unset;
+
     flex-direction: column;
     display: grid;
     gap: 20vh;
-    margin: auto;
     min-width: unset;
-    will-change: max-width;
+    max-width: var(--grid-img-width);
     width: 100%;
     animation: carouselMobileContainerExpand ease forwards;
     animation-timeline: --hub-hero;
@@ -467,7 +464,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     background: transparent;
     pointer-events: all;
     contain: none;
-    will-change: auto;
+    will-change: transform, opacity;
     animation: elasticMobileStackSlides ease-out both;
     animation-timeline: view();
     animation-range: entry 0% exit 100%;
@@ -475,15 +472,16 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-media {
     height: 100%;
-      min-height: 240px;
-    }
-  
+    min-height: 240px;
+  }
+
 
   .hub-hero-carousel-item:nth-child(1) {
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 4) - var(--offset-variance-index) * 4);
     --stack-contrast: 0;
-    --stack-shrink: 2.5rem;
+    --stack-scale-x: 0.88;
     z-index: 1;
+    will-change: transform, opacity;
     animation: elasticMobileFirstSlide ease-out both;
     animation-timeline: --hub-hero;
     animation-range: entry 100% exit 100%;
@@ -498,7 +496,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
     bottom: 0;
-    animation: slideOneFooterReveal linear forwards;
+    animation: slideOneFooterReveal ease forwards;
     animation-timeline: --hub-hero;
     animation-range: var(--slide-one-header-footer-reveal);
   }
@@ -507,7 +505,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 3) - var(--offset-variance-index) * 3);
     z-index: 2;
     --stack-contrast: .25;
-    --stack-shrink: 2rem;
+    --stack-scale-x: 0.91;
     margin-top: calc(var(--slide-footer-h) + var(--slide-header-h) + 500px);
   }
 
@@ -515,15 +513,15 @@ font-size: var(--s2a-typography-font-size-heading-1);
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 2) - var(--offset-variance-index) * 2);
     z-index: 3;
     --stack-contrast: .5;
-    --stack-shrink: 1.5rem;
+    --stack-scale-x: 0.94;
     margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
   }
 
   .hub-hero-carousel-item:nth-child(5) {
     --stack-offset: calc(var(--last-offset) - (var(--last-offset)/(var(--slides)) * 1) - var(--offset-variance-index) * 1);
     z-index: 4;
-    --stack-contrast: .75;
-    --stack-shrink: 1rem;
+    --stack-scale-x: 0.97;
+    --stack-contrast: 1;
     margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
   }
 
@@ -536,8 +534,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
     background-color: var(--s2a-color-gray-1000);
     border-radius: var(--s2a-border-radius-md);
     justify-content: unset;
-    will-change: margin;
-    animation: elasticItemsShrink linear both;
+    transform-origin: top center;
+    will-change: scale;
+    animation: elasticItemsShrink ease both;
     animation-timeline: --hub-hero;
     animation-range: entry 50% exit 100%;
   }
@@ -567,6 +566,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media {
     max-height: var(--media-mobile-max-height);
   }
+
   .hub-hero-carousel-item-container .hub-hero-carousel-item-media video {
     border-radius: var(--s2a-border-radius-0);
     width: 100%;
@@ -585,7 +585,9 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item-footer span {
     opacity: 1;
+    max-width: 20%;
   }
+
   .hub-hero-carousel-item-footer *:not(svg) {
     display: block;
     white-space: nowrap;
@@ -599,14 +601,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
 @media (width >=768px) {
   .hub-hero {
     --hub-hero-top-spacing: 184px;
+    --header-animation-range: contain 30% contain 42%;
+    animation: hubHeroDesktopShrink ease both;
+    animation-timeline: --hub-hero;
+    animation-range: contain 45% contain 55%;
   }
 
-  /* Both h2s get translateY(4rem→0).
-     Top h2: the 4rem translateY exactly cancels the 4rem container descent
-             caused by gap shrinking (float uses own height via 100%) → top h2 is stationary.
-     Bottom h2: also starts 4rem below its final layout position and rises to meet the top h2. */
   .hub-hero-carousel-header>div>* {
-    animation: hubHeroCarouselHeaderLineRise linear both;
+    animation: hubHeroCarouselHeaderLineRise ease both;
     animation-timeline: --hub-hero;
     animation-range: var(--header-animation-range);
   }
@@ -617,6 +619,52 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-image-grid-container-col:nth-child(4) div:nth-child(3) {
     display: none;
+  }
+
+  .hub-hero-image-grid-container {
+    animation: none;
+  }
+
+  .hub-hero-image-grid-container-col div:nth-child(2) {
+    will-change: translate;
+    animation: hubHeroGridGapDesktopY ease both;
+    animation-timeline: --hub-hero;
+    animation-range: var(--grid-gap-animation-range);
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(1) {
+    will-change: transform, opacity;
+    animation: hubHeroGridCol1 ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(2) {
+    will-change: transform, opacity;
+    animation: hubHeroGridCol2 ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(3) {
+    will-change: transform, opacity;
+    animation: hubHeroGridCol3 ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(4) {
+    will-change: transform, opacity;
+    animation: hubHeroGridCol4 ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(5) {
+    will-change: transform, opacity;
+    animation: hubHeroGridCol5 ease both, hubHeroGridColFadeOut ease both;
+    animation-timeline: --hub-hero, view();
+    animation-range: var(--grid-col-rise-animation-range), entry 0% exit 100%;
   }
 
   .hub-hero-carousel {
@@ -644,7 +692,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
     max-width: var(--hub-hero-carousel-item-max-width);
     min-width: var(--hub-hero-carousel-item-min-width);
 
-    will-change: max-width, width;
     transition: max-width .3s var(--paralax-easing), width .3s var(--paralax-easing), background-color .2s var(--paralax-easing);
   }
 
@@ -667,13 +714,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
     color: var(--s2a-color-gray-25);
   }
 
-  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span,svg),
-  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span,svg) {
+  .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer *:not(span, svg),
+  .hub-hero-carousel-item:focus-visible .hub-hero-carousel-item-footer *:not(span, svg) {
     max-width: 80%;
   }
 
   .hub-hero-carousel-item.hovered .hub-hero-carousel-item-footer span {
     opacity: 1;
+    max-width: 20%;
   }
 
   .hub-hero-carousel-item:nth-child(1) {
@@ -758,7 +806,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 }
 
 /** custom media rule 1 */
-@media (768px <=width <= 1200px) {
+@media (768px <=width <=1200px) {
   .hub-hero-carousel-container {
     transition: all .3s var(--paralax-easing);
     gap: var(--end-gap);
@@ -807,13 +855,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 /** prefers-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
+
   .hub-hero,
-  .hub-hero * ,
-  .hub-hero-image-grid-container, 
-  .hub-hero-image-grid-container-col:nth-child(1), 
-  .hub-hero-image-grid-container-col:nth-child(2), 
-  .hub-hero-image-grid-container-col:nth-child(3), 
-  .hub-hero-image-grid-container-col:nth-child(4), 
+  .hub-hero *,
+  .hub-hero-image-grid-container,
+  .hub-hero-image-grid-container-col:nth-child(1),
+  .hub-hero-image-grid-container-col:nth-child(2),
+  .hub-hero-image-grid-container-col:nth-child(3),
+  .hub-hero-image-grid-container-col:nth-child(4),
   .hub-hero-image-grid-container-col:nth-child(5),
   .hub-hero-image-grid-container-col:nth-child(5),
   .hub-hero-carousel,
@@ -847,10 +896,11 @@ font-size: var(--s2a-typography-font-size-heading-1);
     margin-top: calc(var(--grid-col-three-offset) + var(--s2a-layout-lg));
     height: auto;
   }
-  
-  .hub-hero-carousel-header > div {
+
+  .hub-hero-carousel-header>div {
     transform: none;
   }
+
   .hub-hero-carousel-header {
     opacity: 1;
     transform: none;
@@ -866,7 +916,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
   .hub-hero-carousel-item {
     pointer-events: all;
-    
+
     width: var(--carousel-slide-width);
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
@@ -878,11 +928,12 @@ font-size: var(--s2a-typography-font-size-heading-1);
     min-width: 0;
     visibility: hidden;
   }
+
   .hub-hero-carousel-item.hovered,
   .hub-hero-carousel-item:focus-visible {
     width: var(--grid-img-width);
   }
-  
+
 }
 
 @media (prefers-reduced-motion: reduce) and (width < 768px) {
@@ -899,11 +950,17 @@ font-size: var(--s2a-typography-font-size-heading-1);
     padding: 0;
     z-index: 1;
   }
+
   .hub-hero-carousel-header {
     height: auto;
   }
+
   .hub-hero-carousel {
-    margin-top: calc(var(--grid-col-three-offset) );
+    margin-top: calc(var(--grid-col-three-offset));
+  }
+
+  .hub-hero-image-grid-container {
+    animation: none;
   }
 
   .hub-hero-carousel-item:nth-child(1),
@@ -912,7 +969,7 @@ font-size: var(--s2a-typography-font-size-heading-1);
   .hub-hero-carousel-item:nth-child(4),
   .hub-hero-carousel-item:nth-child(5) {
     margin: 0;
-    padding: 0; 
+    padding: 0;
     position: relative;
   }
 
@@ -924,22 +981,18 @@ font-size: var(--s2a-typography-font-size-heading-1);
     gap: var(--s2a-spacing-sm);
   }
 
-    .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
-      height: var(--slide-footer-h);
-    }
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
+    height: var(--slide-footer-h);
+  }
 }
 
 /** animations */
 
-@keyframes hubHeroGridGapShrink {
-  0% {
-    gap: var(--start-gap);
-  }
-
-  100% {
-    gap: var(--end-gap);
-  }
+@keyframes hubHeroDesktopShrink {
+  0% { max-height: var(--hub-hero-height); }
+  100% { max-height: 2900px; }
 }
+
 
 @keyframes carouselGapShrinkWidthGrowth {
   0% {
@@ -976,19 +1029,6 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 }
 
-@keyframes hubHeroGridGapExpand {
-  0% {
-    gap: var(--start-gap);
-  }
-
-  50% {
-    gap: calc(var(--start-gap) * 4);
-  }
-
-  100% {
-    gap: calc(var(--start-gap) * 4);
-  }
-}
 
 @keyframes hubHeroGridCarouselSlideHover {
   0% {
@@ -1004,17 +1044,14 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 @keyframes carouselMobileContainerExpand {
   0% {
-    /* width: var(--grid-img-width); */
-    max-width: var(--grid-img-width);
+    max-width: var(--grid-img-width-min);
   }
 
   75% {
-    /* width: 100%; */
     max-width: 100%;
   }
 
   100% {
-    /* width: 100%; */
     max-width: 100%;
   }
 }
@@ -1043,48 +1080,47 @@ font-size: var(--s2a-typography-font-size-heading-1);
 @keyframes elasticMobileFirstSlide {
   0% {
     transform: translateY(-290px);
-    filter: contrast(1);
     opacity: 1;
-    min-width: var(--grid-img-width-min);
+    filter: contrast(1);
   }
 
-  15% {
-    transform: translateY(0);
-    filter: contrast(1);
+  30% {
+    transform: translateY(calc(var(--stack-offset)));
     opacity: 1;
+    filter: contrast(1);
   }
 
-  70% {
+  75% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
     opacity: 1;
   }
 
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    filter: contrast(var(--stack-contrast));
     opacity: .2;
+    filter: contrast(var(--stack-contrast, 1));
   }
 }
+
 
 
 @keyframes elasticMobileStackSlides {
   0% {
     transform: translateY(var(--stack-offset));
-    filter: contrast(1);
     opacity: 0;
+    filter: contrast(1);
   }
 
   3% {
     opacity: 1;
   }
-
-  25% {
+  30% {
     filter: contrast(1);
   }
 
   100% {
     transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
-    filter: contrast(var(--stack-contrast));
-
+    filter: contrast(var(--stack-contrast, 1));
   }
 }
 
@@ -1143,15 +1179,15 @@ font-size: var(--s2a-typography-font-size-heading-1);
 
 @keyframes elasticItemsShrink {
   0% {
-    margin: 0
+    scale: 1;
   }
 
   30% {
-    margin: 0
+    scale: 1;
   }
 
   100% {
-    margin: 0 var(--stack-shrink);
+    scale: var(--stack-scale-x, 1);
   }
 }
 
@@ -1208,17 +1244,21 @@ font-size: var(--s2a-typography-font-size-heading-1);
 @keyframes hubHeroHeaderFade {
   0% {
     opacity: 1;
-    transform: translateY(0);
+    translate: 0 0;
   }
 
-  50% {
+  5% {
     opacity: .4;
-    transform: translateY(-10%);
+    translate: 0 -10%;
   }
 
+  10% {
+    opacity: 0;
+    translate: 0 -15%;
+  }
   100% {
     opacity: 0;
-    transform: translateY(-15%);
+    translate: 0 -15%;
   }
 }
 
@@ -1255,105 +1295,61 @@ font-size: var(--s2a-typography-font-size-heading-1);
   }
 }
 
-@keyframes hubHeroGridCol1Mobile {
-  0% {
-    transform: translate(0, var(--grid-col-one-offset));
-  }
 
-  100% {
-    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
-  }
+@keyframes hubHeroGridGapDesktopY {
+  0% { translate: 0 0; }
+  100% { translate: 0 calc(-(var(--start-gap) - var(--end-gap))); }
+}
+
+
+@keyframes hubHeroGridCol1Mobile {
+  0% { transform: translate(0, var(--grid-col-one-offset)); }
+  100% { transform: translate(calc(-2 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile)); }
 }
 
 @keyframes hubHeroGridCol2Mobile {
-  0% {
-    transform: translate(0, var(--grid-col-two-offset));
-  }
-
-
-  100% {
-    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
-  }
+  0% { transform: translate(0, var(--grid-col-two-offset)); }
+  100% { transform: translate(calc(-1 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile)); }
 }
 
 @keyframes hubHeroGridCol3Mobile {
-  0% {
-    transform: translate(0, var(--grid-col-three-offset));
-  }
-
-  100% {
-    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
-  }
+  0% { transform: translate(0, var(--grid-col-three-offset)); }
+  100% { transform: translate(0, var(--hub-hero-grip-col-float-mobile)); }
 }
 
 @keyframes hubHeroGridCol4Mobile {
-  0% {
-    transform: translate(0, var(--grid-col-four-offset));
-  }
-
-  100% {
-    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
-  }
+  0% { transform: translate(0, var(--grid-col-four-offset)); }
+  100% { transform: translate(calc(1 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile)); }
 }
 
 @keyframes hubHeroGridCol5Mobile {
-  0% {
-    transform: translate(0, var(--grid-col-five-offset));
-  }
-
-  100% {
-    transform: translate(0, var(--hub-hero-grip-col-float-mobile));
-  }
+  0% { transform: translate(0, var(--grid-col-five-offset)); }
+  100% { transform: translate(calc(2 * (var(--end-gap) - var(--start-gap))), var(--hub-hero-grip-col-float-mobile)); }
 }
 
 @keyframes hubHeroGridCol1 {
-  0% {
-    transform: translate(0, var(--grid-col-one-offset));
-  }
-
-  100% {
-    transform: translate(0, 0%);
-  }
+  0% { transform: translate(0, var(--grid-col-one-offset)); }
+  100% { transform: translate(calc(2 * (var(--start-gap) - var(--end-gap))), 0%); }
 }
 
 @keyframes hubHeroGridCol2 {
-  0% {
-    transform: translate(0, var(--grid-col-two-offset));
-  }
-
-  100% {
-    transform: translate(0, -5%);
-  }
+  0% { transform: translate(0, var(--grid-col-two-offset)); }
+  100% { transform: translate(calc(1 * (var(--start-gap) - var(--end-gap))), -5%); }
 }
 
 @keyframes hubHeroGridCol3 {
-  0% {
-    transform: translate(0, var(--grid-col-three-offset));
-  }
-
-  100% {
-    transform: translate(0, -200%);
-  }
+  0% { transform: translate(0, var(--grid-col-three-offset)); }
+  100% { transform: translate(0, -100%); }
 }
 
 @keyframes hubHeroGridCol4 {
-  0% {
-    transform: translate(0, var(--grid-col-four-offset));
-  }
-
-  100% {
-    transform: translate(0, -52%);
-  }
+  0% { transform: translate(0, var(--grid-col-four-offset)); }
+  100% { transform: translate(calc(-1 * (var(--start-gap) - var(--end-gap))), -52%); }
 }
 
 @keyframes hubHeroGridCol5 {
-  0% {
-    transform: translate(0, var(--grid-col-five-offset));
-  }
-
-  100% {
-    transform: translate(0, 60%);
-  }
+  0% { transform: translate(0, var(--grid-col-five-offset)); }
+  100% { transform: translate(calc(-2 * (var(--start-gap) - var(--end-gap))), 60%); }
 }
 
 @keyframes carouselSlideExpandSize {
@@ -1390,11 +1386,12 @@ font-size: var(--s2a-typography-font-size-heading-1);
     padding: 0 0;
     pointer-events: none;
   }
-  
+
   50% {
     padding: var(--slide-header-h) 0 var(--slide-footer-h) 0;
     pointer-events: none;
   }
+
   51% {
     pointer-events: all;
   }
@@ -1404,4 +1401,3 @@ font-size: var(--s2a-typography-font-size-heading-1);
     pointer-events: all;
   }
 }
-
