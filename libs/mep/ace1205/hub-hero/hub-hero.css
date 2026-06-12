@@ -53,11 +53,18 @@
   padding-inline: var(--s2a-spacing-lg);
   padding-top: var(--hub-hero-top-spacing);
   position: sticky;
-  top: 0%;
+  top: 0;
   z-index: 0;
-  /* transform: translateZ(0); */
-  will-change: opacity, translate;
+  transform: translateZ(0);
+  will-change: opacity;
   animation: hubHeroHeaderFade linear both;
+  animation-timeline: --hub-hero;
+  animation-range: contain 0% contain 100%;
+}
+
+.hub-hero-header > * {
+  will-change: translate;
+  animation: hubHeroHeaderSlide linear both;
   animation-timeline: --hub-hero;
   animation-range: contain 0% contain 100%;
 }
@@ -1242,24 +1249,16 @@
 }
 
 @keyframes hubHeroHeaderFade {
-  0% {
-    opacity: 1;
-    translate: 0 0;
-  }
+  0% { opacity: 1; }
+  10% { opacity: 0; }
+  100% { opacity: 0; }
+}
 
-  5% {
-    opacity: .4;
-    translate: 0 -10%;
-  }
-
-  10% {
-    opacity: 0;
-    translate: 0 -15%;
-  }
-  100% {
-    opacity: 0;
-    translate: 0 -15%;
-  }
+@keyframes hubHeroHeaderSlide {
+  0% { translate: 0 0; }
+  5% { translate: 0 -10%; }
+  10% { translate: 0 -15%; }
+  100% { translate: 0 -15%; }
 }
 
 
