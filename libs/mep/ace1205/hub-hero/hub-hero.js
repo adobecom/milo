@@ -339,8 +339,8 @@ export default async function init(el) {
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
-    body: findSize(classes, 'body-') ?? 'l',
-    button: findSize(classes, 'button-') ?? 'l',
+    body: findSize(classes, 'body-') ?? 'lg',
+    button: findSize(classes, 'button-') ?? 'lg',
   });
   heroHeader.classList.add('hub-hero-header');
   decorateHubHeroCTA(heroHeader);
