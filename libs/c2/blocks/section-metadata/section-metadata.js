@@ -1,5 +1,5 @@
-import { handleFocalpoint } from '../../../utils/decorate.js';
-import { createTag, decoratePictures } from '../../../utils/utils.js';
+import { handleFocalpoint, decoratePictures } from '../../../utils/decorate.js';
+import { createTag } from '../../../utils/utils.js';
 
 const mediaQueries = {
   mobile: window.matchMedia('(max-width: 767px)'),
@@ -175,19 +175,7 @@ function handleAnchor(anchor, section) {
 }
 function handleImages(section, imageOptions) {
   if (!section || !imageOptions) return;
-  const config = { size: 1 };
-  const options = imageOptions.split(',').map((opt) => opt.trim().toLowerCase());
-  if (!options.length) return;
-  if (options.includes('off')) return;
-  const SIZES = ['1x', '2x', '3x'];
-
-  options.forEach((opt) => {
-    if (SIZES.includes(opt)) config.size = Number(opt.replace('x', ''));
-    if (opt === 'photography') config.type = 'avif';
-    if (opt === 'product') config.type = 'webp';
-  });
-
-  decoratePictures(section, config);
+  decoratePictures(section, imageOptions);
 }
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
