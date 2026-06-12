@@ -1294,10 +1294,10 @@ function createGlobeRuntime(authoredCards, root, gid) {
     const badgesEl = targetEl.querySelector('.card-modal__badges');
     badgesEl.innerHTML = '';
     meta.badges.forEach((b) => {
-      const row = document.createElement('div');
+      const row = document.createElement('li');
       row.className = 'card-modal__badge';
       row.innerHTML = '<div class="card-modal__badge-left">'
-          + `<div class="card-modal__badge-icon card-modal__badge-icon--${b.app.id}">${b.app.abbr}</div>`
+          + `<div class="card-modal__badge-icon card-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>`
           + `<span class="card-modal__badge-app">${b.app.name}</span>`
         + '</div>'
         + `<span class="card-modal__badge-role">${b.role}</span>`;

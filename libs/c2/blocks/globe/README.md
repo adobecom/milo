@@ -176,11 +176,7 @@ smooth-scroll position — no separate setup needed); ~~v1 scope decided~~ (core
 arc→grid→sphere→zoom; modal + a11y + CA are fast-follow).
 
 Remaining:
-
 1. **Static reduced-motion poster** (currently the section just collapses).
-2. **Fast-follow hardening** of the deferred features (modal, a11y gallery,
-   chromatic aberration) now that they're multi-instance-scoped — verify two
-   globes on one page don't fight over the body `.modal-open` lock / focus ring.
 
 ## Model to copy
 

@@ -32,10 +32,10 @@ const buildMarkup = (gid) => `
     </defs>
   </svg>
 
-  <div class="offer-arc-copy">
-    <p class="offer-arc-copy__title">Deliver professional work that stands out.</p>
+  <aside class="offer-arc-copy" role="region" aria-label="Image gallery intro">
+    <h2 class="offer-arc-copy__title">Deliver professional work that stands out.</h2>
     <p class="offer-arc-copy__body">Whether you're designing a logo, or retouching 100 event photos, you can get the results you want with apps that set the industry standard.</p>
-  </div>
+  </aside>
 
   <div class="offer-pullquote-pin">
     <div class="offer-pullquote">
@@ -53,7 +53,7 @@ const buildMarkup = (gid) => `
 
   <canvas class="modal-card-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
 
-  <div class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name-${gid}" aria-hidden="true">
+  <div class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name-${gid}" aria-describedby="card-modal-description-${gid}" aria-hidden="true">
     <button class="card-modal__nav card-modal__nav--prev" type="button" aria-label="Previous card">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -67,9 +67,9 @@ const buildMarkup = (gid) => `
     <img class="card-modal__image" alt="" />
     <div class="card-modal__info">
       <p class="card-modal__role-label">Photographer</p>
-      <h3 class="card-modal__name" id="card-modal-name-${gid}"></h3>
-      <p class="card-modal__description"></p>
-      <div class="card-modal__badges"></div>
+      <h2 class="card-modal__name" id="card-modal-name-${gid}"></h2>
+      <p class="card-modal__description" id="card-modal-description-${gid}"></p>
+      <ul class="card-modal__badges" aria-label="Apps used"></ul>
     </div>
   </div>
 `;
