@@ -813,3 +813,60 @@ export function hangOpeningQuote(el) {
   const span = createTag('span', { class: 'hang-opening-quote' }, quote);
   el.prepend(span);
 }
+
+export function decoratePictures(area, options) {
+  if (!area || !options) return;
+
+  const conf = {};
+  const opts = options?.split(',').map((opt) => opt.trim().toLowerCase());
+  if (!opts.filter(Boolean).length) return;
+  if (opts.includes('off')) return; // skip picture decoration
+
+  const SIZES = ['1x', '2x', '3x'];
+  opts.forEach((opt) => {
+    if (SIZES.includes(opt)) {
+      const size = Number(opt.replace('x', ''));
+      if (!Number.isNaN(size)) conf.size = size;
+    }
+    if (opt === 'photography') conf.type = 'avif';
+    if (opt === 'product') conf.type = 'webp';
+  });
+  if (!Object.keys(conf).length) return;
+  const DEFAULT_CONFIG = { size: 1, type: 'webp' };
+  const config = { ...DEFAULT_CONFIG, ...conf };
+  const RENDITIONS = [
+    { breakpoint: undefined, width: 500 }, // mobile
+    { breakpoint: '(min-width: 768px)', width: 768 }, // tablet
+    { breakpoint: '(min-width: 1280px)', width: 1280 }, // desktop
+    { breakpoint: '(min-width: 1440px)', width: 1440 }, // large desktop
+    { breakpoint: '(min-width: 1920px)', width: 1920 }, // larger desktop
+  ];
+
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+
+    const path = image.src.split('?')[0];
+
+    const imageNaturalSize = Number(image.getAttribute('width'));
+    if (Number.isNaN(imageNaturalSize)) return;
+
+    const newSources = [];
+    RENDITIONS.forEach(({ breakpoint, width }) => {
+      const targetWidth = width * config.size;
+      if (imageNaturalSize < targetWidth) return;
+      const source = createTag('source', {
+        type: `image/${config.type}`,
+        srcset: `${path}?width=${targetWidth}&format=${config.type === 'webp' ? 'webply' : config.type}`,
+      });
+      if (breakpoint) source.setAttribute('media', breakpoint);
+      newSources.push(source);
+    });
+
+    // TODO: consider replacing existing sources instead of prepending
+    picture.prepend(...newSources.reverse());
+    picture.classList.add('large-image-decorated', `${config.type}-${config.size}`);
+  });
+}
