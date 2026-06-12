@@ -274,12 +274,12 @@ test.describe('Milo Brand Concierge Block test suite', () => {
           window.scrollTo(0, el.scrollHeight + 100);
           // Webkit doesn't always fire a `scroll` event for programmatic
           // scrollTo in headless mode, so the BC scroll handler never runs.
-          // Dispatch one manually so the handler updates the floating-hidden
+          // Dispatch one manually so the handler updates the bc-floating-hidden
           // class regardless of browser quirk.
           window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
         expect(await bc.floatingButtonInput.textContent()).toBeTruthy();
       });
 
@@ -502,7 +502,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         });
         await page.waitForTimeout(1000);
 
-        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
         const ariaHidden = await bc.floatingButtonContainer.getAttribute('aria-hidden');
         expect(ariaHidden).toBeNull();
       });
@@ -564,7 +564,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(bc.floatingButton).toBeAttached({ timeout: 10000 });
         // Top delay (e.g. 100px) means the button stays hidden until scroll
         // passes that threshold.
-        await expect(bc.floatingButton).toHaveClass(/floating-hidden/);
+        await expect(bc.floatingButton).toHaveClass(/bc-floating-hidden/);
       });
 
       await test.step('step-4: Floating button is visible in the middle of the page', async () => {
@@ -574,7 +574,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
           window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).not.toHaveClass(/floating-hidden/, { timeout: 10000 });
+        await expect(bc.floatingButton).not.toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
       });
 
       await test.step('step-5: Floating button is hidden again near the footer', async () => {
@@ -584,7 +584,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
           window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForTimeout(1000);
-        await expect(bc.floatingButton).toHaveClass(/floating-hidden/, { timeout: 10000 });
+        await expect(bc.floatingButton).toHaveClass(/bc-floating-hidden/, { timeout: 10000 });
       });
 
       await test.step('step-6: Floating button has correct text content', async () => {
