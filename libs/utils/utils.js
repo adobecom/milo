@@ -572,7 +572,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
   }
 
   if (link.dataset.wcsOsi) {
-    link.classList.add('hidden-osi-trial-link');
+    link.dataset.hideKrFreeTrial = 'true';
     return false;
   }
 
