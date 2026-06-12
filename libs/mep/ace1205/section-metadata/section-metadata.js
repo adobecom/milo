@@ -1,4 +1,4 @@
-import { handleFocalpoint } from '../../../utils/decorate.js';
+import { handleFocalpoint, decoratePictures } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const mediaQueries = {
@@ -179,6 +179,10 @@ function handleAnchor(anchor, section) {
   section.id = anchor.toLowerCase().trim().replaceAll(/\s+/g, '-');
   section.classList.add('section-anchor');
 }
+function handleImages(section, imageOptions) {
+  if (!section || !imageOptions) return;
+  decoratePictures(section, imageOptions);
+}
 
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
@@ -198,5 +202,6 @@ export default async function init(el) {
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
+  if (metadata.images) handleImages(section, metadata.images?.text[0]);
   handleStickyFocus(section);
 }
