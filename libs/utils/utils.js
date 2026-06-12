@@ -1008,9 +1008,7 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
 
   if (useGeoLocation) {
     const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
-    if (intlPrefix) {
-      return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
-    }
+    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
   }
 
   const country = useGeoLocation
