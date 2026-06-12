@@ -28,8 +28,8 @@ a[is='checkout-link'].con-button > span {
   min-width: 66px;
 }
 
-.hidden-osi-trial-link {
-  display: none;
+a[data-hide-kr-free-trial="true"] {
+  display: none !important;
 }
 
 .price-unit-type:not(.disabled)::before,

@@ -182,13 +182,19 @@ export const formSuccess = (formEl, formData) => {
   window.mktoSubmitted = true;
 
   if (formData?.[SUCCESS_TYPE] === 'ims') {
-    const redirect = formData?.[SUCCESS_CONTENT];
+    const redirect = getMetadata('marketo-ims-redirect');
+
+    if (!redirect?.startsWith('https://')) {
+      window?.lana.log('Marketo IMS failure, full url needed for redirect', { tags: 'marketo', severity: 'i' });
+      return false;
+    }
 
     const emailInput = formEl.querySelector('input[name="Email"]');
     const email = emailInput?.value;
+    const param = getMetadata('marketo-ims');
 
-    if (email && redirect) {
-      window.adobeIMS?.signIn({ puser: email, redirect_uri: redirect });
+    if (param && email) {
+      window.location.href = `${redirect}?${param}=${email.replace(/[^\w.%+@-]/g, '')}`;
     } else {
       window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
     }
