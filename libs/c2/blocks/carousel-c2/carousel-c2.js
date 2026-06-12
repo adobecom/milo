@@ -15,10 +15,7 @@ const MIN_SLIDE_TRANISTION_DURATION = 100;
 const MAX_SLIDE_TRANISTION_DURATION = 500;
 let carouselGap = 8;
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-function isRTL() {
-  return document.documentElement.dir === 'rtl';
-}
+const isRTL = document.documentElement.dir === 'rtl';
 
 function setSlideSpreadSign(activeSlide, slides) {
   if (!activeSlide || !slides) return;
@@ -28,7 +25,7 @@ function setSlideSpreadSign(activeSlide, slides) {
     const newSign = i - activeIndex;
     const current = parseInt(slide.style.getPropertyValue('--slide-spread-sign'), 10);
     if (current === newSign) return;
-    slide.style.setProperty('--slide-spread-sign', newSign * (isRTL() ? -1 : 1));
+    slide.style.setProperty('--slide-spread-sign', newSign * (isRTL ? -1 : 1));
   });
 }
 
@@ -106,7 +103,7 @@ function getCarouselDimensions(slide) {
 }
 
 function getDirection(direction) {
-  if (!isRTL()) return direction;
+  if (!isRTL) return direction;
   return direction === 'next' ? 'prev' : 'next';
 }
 
@@ -115,7 +112,7 @@ function goToActive(carouselEls) {
   const actualSlideWidth = parseFloat(el.style.getPropertyValue('--actual-slide-width'));
   const indexOfActive = [...wrapper.children].indexOf(activeSlide);
   const gaps = indexOfActive * carouselGap;
-  const translateValue = isRTL()
+  const translateValue = isRTL
     ? indexOfActive * actualSlideWidth - marginWidth + gaps
     : indexOfActive * actualSlideWidth * -1 + marginWidth - gaps;
   wrapper.style.transition = 'none';
@@ -173,7 +170,7 @@ function slideAnimation(carouselEls, direction) {
     wrapper.style.setProperty('--transition-duration', `${eventInterval}ms`);
     duration = eventInterval;
   }
-  const negate = (direction === 'next') !== isRTL() ? -1 : 1;
+  const negate = (direction === 'next') !== isRTL ? -1 : 1;
   const translateValue = alreadyTranslated + (negate * slideWidth) + (negate * carouselGap);
   wrapper.style.transition = 'translate var(--transition-duration) var(--animation-curve)';
   setSlideSpreadSign(activeClone, allSlides);
