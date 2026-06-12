@@ -449,7 +449,7 @@
   padding: 40px 24px 12px;
 }
 
-.brand-concierge.hero.has-bg-image:not(.dark):not(.c2-dark) {
+.brand-concierge.hero.has-bg-image:not(.c2-dark) {
   background: linear-gradient(180deg, #fff0 0%, #fff0 38%, #fff 100%), var(--brand-concierge-bg) 50% / cover no-repeat;
 }
 
@@ -474,13 +474,7 @@
   margin-top: 4px;
 }
 
-/* dark  / c2-dark */
-.brand-concierge.dark.has-bg-image {
-  background-color:#000;
-}
-
-.dark .bc-header-title,
-.dark .bc-header-subtitle,
+/* c2-dark */
 .c2-dark .bc-header-title,
 .c2-dark .bc-header-subtitle {
   color: var(--bc-dark-text-color);
@@ -495,14 +489,12 @@
   margin-bottom: 24px;
 }
 
-.dark .prompt-card-button,
 .c2-dark .prompt-card-button {
   background: rgb(255 255 255 / 10%);
   border-radius: 24px;
   position: relative;
 }
 
-.dark .prompt-card-button::before,
 .c2-dark .prompt-card-button::before {
   content: '';
   position: absolute;
@@ -519,26 +511,21 @@
   mask-composite: exclude;
 }
 
-.dark .prompt-card-text,
 .c2-dark .prompt-card-text,
-.dark.hero .prompt-card-text,
 .c2-dark.hero .prompt-card-text {
   grid-template-columns: auto;
 }
 
-.dark .card-icon,
 .c2-dark .card-icon {
   display: none;
 }
 
-.dark .prompt-card-text p,
 .c2-dark .prompt-card-text p {
   color: var(--bc-dark-text-color-secondary);
   margin: 0;
 }
 
 
-.dark .bc-input-field::before,
 .c2-dark .bc-input-field::before {
   background: var(--bc-dark-input-border-color) border-box;
   border: 1px solid var(--bc-input-border-color);
@@ -548,7 +535,6 @@
   margin-bottom: 24px;
 }
 
-.dark .bc-input-field-container,
 .c2-dark .bc-input-field-container {
   border-radius: calc(var(--bc-input-radius) - (var(--bc-input-border-size) / 2));
   background: var(--bc-dark-input-background);
@@ -559,42 +545,33 @@
   background: var(--bc-dark-input-background);
 }
 
-.dark .bc-input-field-container:hover,
-.dark .bc-input-field-container:has(textarea:focus-visible),
 .c2-dark .bc-input-field-container:hover,
 .c2-dark .bc-input-field-container:has(textarea:focus-visible) {
   background: var(--bc-dark-input-background);
 }
 
-.dark .bc-input-field-container textarea,
 .c2-dark .bc-input-field-container textarea {
   color: var(--bc-dark-text-color);
 }
 
-.dark .bc-input-field-container textarea::placeholder,
 .c2-dark .bc-input-field-container textarea::placeholder {
   color: var(--bc-dark-text-color-secondary);
 }
 
-.dark .input-field-button,
 .c2-dark .input-field-button {
   background: var(--bc-dark-button-color);
   color: #000;
 }
 
-.dark .input-field-button:hover,
 .c2-dark .input-field-button:hover {
   background: var(--bc-dark-button-hover-color);
 }
 
-.dark .input-field-button:disabled,
 .c2-dark .input-field-button:disabled {
   background: transparent;
   color: #C6C6C6;
 }
 
-.dark .bc-legal,
-.dark .bc-legal a,
 .c2-dark .bc-legal,
 .c2-dark .bc-legal a {
   color: var(--bc-dark-text-color-secondary);
@@ -924,12 +901,12 @@
     animation: none;
   }
 
-  .brand-concierge.floating-input {
+  .bc-floating-input {
     backdrop-filter: none;
     background: #F8F8F8;
   }
 
-  .brand-concierge.floating-input.dark {
+  .floating-input-dark .bc-floating-input {
     background: #111;
   }
 }
@@ -1138,9 +1115,7 @@
     margin-top: 4px;
   }
 
-  .dark .prompt-card-text,
   .c2-dark .prompt-card-text,
-  .dark.hero .prompt-card-text,
   .c2-dark.hero .prompt-card-text {
     grid-template-columns: auto;
   }
