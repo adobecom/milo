@@ -592,4 +592,215 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
     },
   );
+
+  // Test 14: Brand Concierge floating-input light
+  test(
+    `[Test Id - ${features[14].tcid}] ${features[14].name},${features[14].tags}`,
+    async ({ page, baseURL, isMobile }) => {
+      console.info(`[Test Page]: ${baseURL}${features[14].path}`);
+      const { data } = features[14];
+
+      await test.step('step-1: Go to floating-input light page', async () => {
+        await page.goto(features[14].path);
+        await page.waitForLoadState('networkidle');
+        await expect(page).toHaveURL(features[14].path);
+      });
+
+      await test.step('step-2: Verify block has floating-input class and not inline', async () => {
+        await expect(bc.floatingInputBar).toBeAttached({ timeout: 10000 });
+        await expect(bc.block).not.toHaveClass(/\binline\b/);
+      });
+
+      await test.step('step-3: Verify bar is fixed and has correct background color', async () => {
+        await expect(bc.floatingInputBar).toHaveCSS('position', 'fixed', { timeout: 10000 });
+        await expect(bc.floatingInputBar).toHaveCSS('background-color', data.expectedBarBackground);
+      });
+
+      await test.step('step-4: Verify input field and prompt pills are visible', async () => {
+        await bc.inputField.first().waitFor({ state: 'attached', timeout: 10000 });
+        await expect(bc.inputField.first()).toBeVisible();
+        if (!isMobile) {
+          await expect(bc.floatingInputPromptPills.first()).toBeVisible();
+          expect(await bc.floatingInputPromptPills.count()).toBeGreaterThanOrEqual(data.minimumPromptCount);
+        }
+      });
+
+      await test.step('step-5: Verify submit button is disabled when input is empty and enabled after typing', async () => {
+        await expect(bc.inputSubmitButton).toBeDisabled();
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await expect(bc.inputSubmitButton).toBeEnabled();
+        await bc.floatingInputTextarea.clear();
+        await expect(bc.inputSubmitButton).toBeDisabled();
+      });
+
+      await test.step('step-6: Verify main has paddingBottom set to prevent content overlap', async () => {
+        const paddingBottom = await page.evaluate(() => {
+          const main = document.querySelector('main');
+          return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
+        });
+        expect(paddingBottom).toBeGreaterThan(0);
+      });
+
+      await test.step('step-7: Type query and press Enter — BC modal opens', async () => {
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await page.keyboard.press('Enter');
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-8: Close modal via close button — floating-input bar remains attached', async () => {
+        await bc.modalCloseButton.waitFor({ state: 'visible', timeout: 5000 });
+        await bc.modalCloseButton.click();
+        await expect(bc.modal).not.toBeVisible({ timeout: 10000 });
+        await expect(bc.floatingInputBar).toBeAttached();
+      });
+
+      await test.step('step-9: Type query and click submit button — BC modal opens', async () => {
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await bc.inputSubmitButton.click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-10: Close modal — floating-input bar remains attached', async () => {
+        await page.keyboard.press('Escape');
+        await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+        await expect(bc.floatingInputBar).toBeAttached();
+      });
+
+      if (!isMobile) {
+        await test.step('step-11: Click prompt pill — BC modal opens and closes', async () => {
+          await bc.floatingInputPromptPills.first().click();
+          await expect(bc.modal).toBeVisible({ timeout: 10000 });
+          await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+          await page.keyboard.press('Escape');
+          await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+          await expect(bc.floatingInputBar).toBeAttached();
+        });
+      }
+
+      await test.step('step-12: Bar lifts above footer when scrolled to bottom', async () => {
+        await page.evaluate(() => {
+          window.scrollTo(0, document.body.scrollHeight);
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForFunction(() => {
+          const bar = document.querySelector('.brand-concierge.floating-input');
+          return parseFloat(bar?.style.bottom ?? '0') > 0;
+        }, { timeout: 5000 });
+      });
+
+      await test.step('step-13: Run accessibility test', async () => {
+        await runAccessibilityTest({ page, testScope: bc.floatingInputBar });
+      });
+    },
+  );
+
+  // Test 15: Brand Concierge floating-input dark
+  test(
+    `[Test Id - ${features[15].tcid}] ${features[15].name},${features[15].tags}`,
+    async ({ page, baseURL, isMobile }) => {
+      console.info(`[Test Page]: ${baseURL}${features[15].path}`);
+      const { data } = features[15];
+
+      await test.step('step-1: Go to floating-input dark page', async () => {
+        await page.goto(features[15].path);
+        await page.waitForLoadState('networkidle');
+        await expect(page).toHaveURL(features[15].path);
+      });
+
+      await test.step('step-2: Verify block has both floating-input and dark classes', async () => {
+        await expect(bc.floatingInputDark).toBeAttached({ timeout: 10000 });
+        await expect(bc.block).not.toHaveClass(/\binline\b/);
+      });
+
+      await test.step('step-3: Verify bar is fixed and has correct background color', async () => {
+        await expect(bc.floatingInputDark).toHaveCSS('position', 'fixed', { timeout: 10000 });
+        await expect(bc.floatingInputDark).toHaveCSS('background-color', data.expectedBarBackground);
+      });
+
+      await test.step('step-4: Verify input field and prompt pills are visible', async () => {
+        await bc.inputField.first().waitFor({ state: 'attached', timeout: 10000 });
+        await expect(bc.inputField.first()).toBeVisible();
+        if (!isMobile) {
+          await expect(bc.floatingInputPromptPills.first()).toBeVisible();
+          expect(await bc.floatingInputPromptPills.count()).toBeGreaterThanOrEqual(data.minimumPromptCount);
+        }
+      });
+
+      await test.step('step-5: Verify submit button is disabled when input is empty and enabled after typing', async () => {
+        await expect(bc.inputSubmitButton).toBeDisabled();
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await expect(bc.inputSubmitButton).toBeEnabled();
+        await bc.floatingInputTextarea.clear();
+        await expect(bc.inputSubmitButton).toBeDisabled();
+      });
+
+      await test.step('step-6: Verify main has paddingBottom set to prevent content overlap', async () => {
+        const paddingBottom = await page.evaluate(() => {
+          const main = document.querySelector('main');
+          return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
+        });
+        expect(paddingBottom).toBeGreaterThan(0);
+      });
+
+      await test.step('step-7: Verify dark variant input and text colors', async () => {
+        await expect(bc.floatingInputContainer).toHaveCSS('background-color', data.expectedInputBackground);
+        await expect(bc.floatingInputTextarea).toHaveCSS('color', data.expectedTextColor);
+      });
+
+      await test.step('step-8: Type query and press Enter — BC modal opens', async () => {
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await page.keyboard.press('Enter');
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-9: Close modal via close button — floating-input dark bar remains attached', async () => {
+        await bc.modalCloseButton.waitFor({ state: 'visible', timeout: 5000 });
+        await bc.modalCloseButton.click();
+        await expect(bc.modal).not.toBeVisible({ timeout: 10000 });
+        await expect(bc.floatingInputDark).toBeAttached();
+      });
+
+      await test.step('step-10: Type query and click submit button — BC modal opens', async () => {
+        await bc.floatingInputTextarea.fill(data.inputText);
+        await bc.inputSubmitButton.click();
+        await expect(bc.modal).toBeVisible({ timeout: 10000 });
+        await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+      });
+
+      await test.step('step-11: Close modal — floating-input dark bar remains attached', async () => {
+        await page.keyboard.press('Escape');
+        await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+        await expect(bc.floatingInputDark).toBeAttached();
+      });
+
+      if (!isMobile) {
+        await test.step('step-12: Click prompt pill — BC modal opens and closes', async () => {
+          await bc.floatingInputPromptPills.first().click();
+          await expect(bc.modal).toBeVisible({ timeout: 10000 });
+          await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
+          await page.keyboard.press('Escape');
+          await expect(bc.modal).not.toBeVisible({ timeout: 5000 });
+          await expect(bc.floatingInputDark).toBeAttached();
+        });
+      }
+
+      await test.step('step-13: Bar lifts above footer when scrolled to bottom', async () => {
+        await page.evaluate(() => {
+          window.scrollTo(0, document.body.scrollHeight);
+          window.dispatchEvent(new Event('scroll'));
+        });
+        await page.waitForFunction(() => {
+          const bar = document.querySelector('.brand-concierge.floating-input');
+          return parseFloat(bar?.style.bottom ?? '0') > 0;
+        }, { timeout: 5000 });
+      });
+
+      await test.step('step-14: Run accessibility test', async () => {
+        await runAccessibilityTest({ page, testScope: bc.floatingInputDark });
+      });
+    },
+  );
 });

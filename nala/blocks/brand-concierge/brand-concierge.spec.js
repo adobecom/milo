@@ -157,5 +157,29 @@ module.exports = {
         anchorDelayPx: 450,
       },
     },
+    {
+      tcid: '14',
+      name: '@brand-concierge floating input light',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-light?milolibs=stage',
+      tags: '@brand-concierge @brand-concierge-floating-input-light @regression @milo',
+      data: {
+        inputText: 'i need help with billing',
+        minimumPromptCount: 3,
+        expectedBarBackground: 'rgba(248, 248, 248, 0.65)',
+      },
+    },
+    {
+      tcid: '15',
+      name: '@brand-concierge floating input dark',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-dark?milolibs=stage',
+      tags: '@brand-concierge @brand-concierge-floating-input-dark @regression @milo',
+      data: {
+        inputText: 'i need help with billing',
+        minimumPromptCount: 3,
+        expectedBarBackground: 'rgba(0, 0, 0, 0.65)',
+        expectedInputBackground: 'rgb(19, 19, 19)',
+        expectedTextColor: 'rgb(219, 219, 219)',
+      },
+    },
   ],
 };
