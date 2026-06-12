@@ -59,8 +59,6 @@ function dismissOthers(activeId) {
   Object.keys(TOOLS).forEach((id) => {
     if (id !== activeId && TOOLS[id].ownedEls !== null) {
       hideForge(id);
-      // eslint-disable-next-line no-console
-      console.info(`[Forge] ${id} hidden. Set window.forgeSidekick.parallel = true to show tools side by side.`);
     }
   });
 }

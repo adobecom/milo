@@ -510,7 +510,7 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   cursor: pointer;
 }
 
-.pa-reset-btn {
+.pa-action-btn {
   width: 100%;
   margin-top: 4px;
   background: var(--pc-bg);
@@ -522,8 +522,37 @@ html.pa-panel-open:not(.pa-panel-left):not(.pa-panel-floating) #page-animator-to
   font: 500 12px var(--pc-font);
 }
 
-.pa-reset-btn:hover {
+.pa-action-btn + .pa-action-btn {
+  margin-top: 6px;
+}
+
+.pa-action-btn:hover {
   background: var(--pc-bg-hover-strong);
+}
+
+/* ─── Error bar ─────────────────────────────────────────────────────────── */
+
+.pa-error-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #c9373f;
+  color: #fff;
+  font: 500 12px var(--pc-font);
+  flex-shrink: 0;
+}
+
+.pa-error-dismiss {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
 }
 
 /* ─── Highlight on the page ─────────────────────────────────────────────── */
