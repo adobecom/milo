@@ -870,6 +870,7 @@ export function decoratePictures(area, options) {
       newSources.push(source);
     });
 
+    // TODO: consider replacing existing sources instead of prepending
     picture.prepend(...newSources.reverse());
     picture.classList.add('large-image-decorated', `${config.type}-${config.size}`);
   });
