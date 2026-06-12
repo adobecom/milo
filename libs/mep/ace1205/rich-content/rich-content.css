@@ -504,16 +504,18 @@
     .section-background {
       overflow: hidden;
 
-      img {
-        filter: blur(var(--s2a-blur-md));
-        transform: scale(1.08);
-      }
+      &:not(:has(~ .rich-content.video.no-overlay)) {
+        img {
+          filter: blur(var(--s2a-blur-md));
+          transform: scale(1.08);
+        }
 
-      &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--s2a-color-transparent-black-48);
+        &::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: var(--s2a-color-transparent-black-48);
+        }
       }
     }
 
