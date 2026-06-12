@@ -26,24 +26,49 @@ gallery mirroring the sphere cards.
 
 | File | What it is |
 | --- | --- |
-| `globe.js` | The block. `export default init(el)` → builds DOM, runs the runtime (`createGlobeRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope, grouped by `// ── Section ──`) and the stateful render core (`tick`, modal, a11y, pointer, lifecycle). |
+| `globe.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows, fetches the card fragment. |
 | `markup.js` | `GLOBE_MARKUP` + `buildGlobeDom(el)` — the canvas/overlay/modal DOM the runtime expects. Default export. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
+| `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
+| `materials.js` | Pure material factories: `createCardMaterial` (CA ShaderMaterial + MeshBasicMaterial fallback, with the property-proxy) and `createModalMaterial` (SDF). |
+| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, updateFocusRing, teardown }`. The hidden keyboard-gallery button list + projected focus ring. All runtime state (cards, camera, viewport, `sphereFormT`, modal-open) is injected as getters; `openModal` is injected so it never imports the modal. Holds no globe state except its own DOM nodes. |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
+| `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `globe.css` | Globe-only CSS. Also defines `.globe`-scoped type-scale tokens (see Behavior notes). |
-| `src/three.js` | Build entry — re-exports only the 21 Three.js symbols globe.js uses. |
+| `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
 | `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
 | `_reference/globe-reference.html` | Trimmed, runnable globe-only copy of the original prototype — the target behavior. |
-| `hub-creative/` | Original prototype source (read-only reference, not shipped, eslint-ignored). |
+| `hub-creative-v1/`, `hub-creative-v2/` | Original prototype source (read-only reference; **git-ignored** via `.gitignore` `hub-creative-v*`, so not shipped or linted in CI). |
 
-Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). `.eslintrc.js`
-ignores `three.module.min.js`, `hub-creative/*`, `_reference/*`.
+Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
+and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
 
-All four JS files are **airbnb-clean** (`npx eslint` exit 0). The only exceptions
-are 5 targeted `// eslint-disable-next-line no-use-before-define` comments in
-`globe.js` for genuine forward refs (rAF driver → `tick`, click → `openCardModal`,
-`initRuntime` ↔ `destroy`). No blanket `/* eslint-disable */`.
+All nine shipped JS files (`globe.js`, `authoring.js`, `markup.js`, `shaders.js`,
+`textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are **airbnb-clean**
+(`npx eslint` exit 0). The only exceptions are 3 targeted
+`// eslint-disable-next-line no-use-before-define` comments in `globe.js` for genuine
+forward refs (rAF driver → `tick`, `onPointerUp` → `handleCardClick`,
+`doLayout` → `destroy`). No blanket `/* eslint-disable */`.
+
+### Module layout (post-refactor)
+
+`globe.js` is organized top-down: (1) module-scope tuning constants grouped by
+`// ── Section ──` (layout/breakpoints, phase timeline, entry, grid, drag, CA,
+hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpherePos`
+(generic easings + `lerpN` live in `math.js`); (3) `createGlobeRuntime()` — the
+per-instance closure holding sphere state + behavior. Inside the closure the
+**per-frame pipeline** is a sequence of small single-concern stages run in a fixed
+order by `tick()`; values that flow between stages (phase t-values, active camera,
+`sphGroupZ`, `sphereRotActive`) are passed as explicit params so the data flow is
+visible. Three DI modules are injected with getters over the live runtime state:
+GPU resources from `textures.js` / `materials.js`; the keyboard gallery + focus
+ring from `a11y.js`; the card-detail modal from `modal.js`. The modal owns its own
+canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
+and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
+objects + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep
+`sphereRotX/Y` and the nav-nudge spring in `updateSphereRotation`).
 
 ## How to run / verify
 
@@ -173,10 +198,20 @@ Done: ~~visual verification~~ (confirmed in a real Milo page); ~~scope DOM to `e
 authoring contract); ~~scroll feel~~ (on a c2 page Milo loads Lenis with
 `autoRaf:true` in `utils.js`, so `window.scrollY` *is* the Milo-approved
 smooth-scroll position — no separate setup needed); ~~v1 scope decided~~ (core
-arc→grid→sphere→zoom; modal + a11y + CA are fast-follow).
+arc→grid→sphere→zoom; modal + a11y + CA are fast-follow); ~~extract the a11y gallery
+into its own DI module~~ (`a11y.js`); ~~`MODAL_PHASE` state-machine constants~~
+(frozen enum, now in `modal.js`); ~~DRY modal magic numbers~~ (`MODAL_CAM_DIST`,
+`SDF_CORNER_RADIUS`); ~~extract the modal into its own DI module~~ (`modal.js` —
+`createGlobeModal(deps)`; the sphere coupling stayed narrow: shared
+`sphereRotEuler`/`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with
+`sphereRotX/Y` + the nav-nudge spring kept in `updateSphereRotation`).
 
 Remaining:
 1. **Static reduced-motion poster** (currently the section just collapses).
+2. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
+   this — start/stop the ticker on intersect), instead of running every frame. Behavior
+   change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
+   exit aren't cut off) — verify visually.
 
 ## Model to copy
 
