@@ -454,8 +454,8 @@
 }
 
 .hero .bc-header-title {
-  font-size: 28px;
-  line-height: 35px;
+  font-size: 36px;
+  line-height: 45px;
 }
 
 .hero .bc-input-field {
@@ -1108,11 +1108,6 @@
     padding: 0 50px;
   }
 
-  .hero .bc-header-title {
-    font-size: 36px;
-    line-height: 45px;
-  }
-
   .hero .bc-input-field {
     margin-bottom: 32px;
     max-width: calc(768px - 4px);
@@ -1221,8 +1216,8 @@
   }
 
   .hero .bc-header-title {
-    font-size: 80px;
-    line-height: 88px;
+    font-size: 44px;
+    line-height: 55px;
   }
 
   .bc-susi-modal button.dialog-close {
