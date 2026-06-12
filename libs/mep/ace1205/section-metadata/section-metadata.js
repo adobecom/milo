@@ -179,8 +179,8 @@ function handleAnchor(anchor, section) {
   section.id = anchor.toLowerCase().trim().replaceAll(/\s+/g, '-');
   section.classList.add('section-anchor');
 }
-function handleImages(section, imageOptions) {
-  if (!section || !imageOptions) return;
+
+function handleImages(imageOptions, section) {
   decoratePictures(section, imageOptions);
 }
 
@@ -202,6 +202,6 @@ export default async function init(el) {
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text[0], section);
   if (metadata.layout) handleStyle(metadata.layout.text, section);
-  if (metadata.images) handleImages(section, metadata.images?.text[0]);
+  if (metadata.images) handleImages(metadata.images?.text[0], section);
   handleStickyFocus(section);
 }
