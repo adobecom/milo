@@ -322,6 +322,9 @@ const decorateHubHeroCTA = (heroHeader) => {
   const [ctaText, ariaLabel = ctaText] = sourceText.split('|').map((s) => s.trim());
   const arrow = createTag('span', { class: 'icon-button', 'aria-hidden': 'true' }, icons?.arrowRightWhite);
   const cta = createTag('a', { href, class: 'promo-cta', 'aria-label': ariaLabel }, [img, ctaText, arrow]);
+  cta.addEventListener('focus', (e) => {
+    if (e.currentTarget.matches(':focus-visible')) scrollHubHeroTo(e.currentTarget, 0);
+  });
   linkEl.parentElement.replaceChildren(cta);
 };
 
@@ -342,10 +345,10 @@ export default async function init(el) {
     body: findSize(classes, 'body-') ?? 'lg',
     button: findSize(classes, 'button-') ?? 'lg',
   });
+
   heroHeader.classList.add('hub-hero-header');
   decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
-  heroHeader.querySelector('.promo-cta')?.addEventListener('focus', (e) => scrollHubHeroTo(e.currentTarget, 0));
   carouselHeader.classList.add('hub-hero-carousel-header');
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
   const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
