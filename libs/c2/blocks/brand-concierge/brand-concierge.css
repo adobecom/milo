@@ -540,11 +540,6 @@
   background: var(--bc-dark-input-background);
 }
 
-.c2-dark .bc-input-field-container {
-  border-radius: 28px;
-  background: var(--bc-dark-input-background);
-}
-
 .c2-dark .bc-input-field-container:hover,
 .c2-dark .bc-input-field-container:has(textarea:focus-visible) {
   background: var(--bc-dark-input-background);
