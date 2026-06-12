@@ -1,5 +1,4 @@
 import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
-import { handleCommands } from '../../../features/personalization/personalization.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -44,7 +43,10 @@ export default async function init(el) {
     (command) => command?.modifiers?.includes('include-gnav'),
   ) || [];
 
-  const personalizationHandler = (cs, root) => handleCommands(cs, root, true, true);
+  const personalizationHandler = async (cs, root) => {
+    const { handleCommands } = await import('../../../features/personalization/personalization.js');
+    return handleCommands(cs, root, true, true);
+  };
 
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
