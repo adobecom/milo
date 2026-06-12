@@ -1501,7 +1501,7 @@ export async function buildCta(el, params) {
     const prefix = getConfig()?.locale?.prefix;
     if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
     if (shouldAllowKrTrial(el, prefix)) {
-      cta.classList.remove('hidden-osi-trial-link');
+      cta.removeAttribute('data-hide-kr-free-trial');
       return;
     }
     cta.remove();
@@ -1585,6 +1585,34 @@ export default async function init(el) {
   }
   log.warn('Failed to get context:', { el });
   return null;
+}
+
+const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
+const MAS_FRAGMENT_API_KEY = 'wcms-commerce-ims-ro-user-milo';
+
+export function isMasErrorEnv(host = window.location.host) {
+  return host.includes('localhost') || host.includes('.aem.page');
+}
+
+export async function createFragmentErrorEl(uuid, label = 'Card', status = null) {
+  loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  let badge = 'Load Error';
+  if (status === 404) {
+    badge = 'Not Found';
+  } else if (uuid) {
+    try {
+      const { locale } = getMiloLocaleSettings(getConfig()?.locale);
+      const source = isMasErrorEnv() ? '&source=aem' : '';
+      const res = await fetch(`${MAS_FRAGMENT_API}?id=${uuid}&api_key=${MAS_FRAGMENT_API_KEY}&locale=${locale}${source}`);
+      if (res.status === 404) badge = 'Not Found';
+    } catch { /* network error */ }
+  }
+  const el = createTag('div', { class: 'mas-frag-error' });
+  const badgeEl = createTag('span', { class: 'mas-frag-error-badge' }, badge);
+  const labelEl = createTag('p', { class: 'mas-frag-error-label' }, `${label}:`);
+  const idEl = createTag('p', { class: 'mas-frag-error-id' }, uuid || 'unknown');
+  el.append(badgeEl, labelEl, idEl);
+  return el;
 }
 
 window.addEventListener('hashchange', updateModalState);
