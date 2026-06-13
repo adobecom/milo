@@ -5,7 +5,7 @@
    MeshBasicMaterial, and the SDF modal material) reads as one self-contained
    unit. All functions are pure factories — they take the texture + plain
    numbers and return a THREE.Material, holding no per-instance state. */
-import * as THREE from './three.module.min.js';
+import * as THREE from '../three.module.min.js';
 import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG } from './shaders.js';
 
 // Card material — chromatic-aberration ShaderMaterial when CA is on, else a

@@ -8,22 +8,17 @@
      0.78 – 1.00  Zoom: camera flies through sphere
    ───────────────────────────────────────────────────────────────────────── */
 import * as THREE from './three.module.min.js';
-// The globe carries its own package.json (build-only, to vendor Three.js), so
-// eslint-plugin-import treats these libs imports as crossing a package boundary
-// and flags import/no-relative-packages. At runtime there is no boundary — the
-// block is served as raw ES modules from the milo origin, so the relative paths
-// resolve correctly and the @adobecom/milo specifier the rule suggests would 404.
 // eslint-disable-next-line import/no-relative-packages
 import { getConfig } from '../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { replaceKeyArray } from '../../../features/placeholders.js';
-import { parseAuthoredContent, fetchFragmentCards } from './authoring.js';
-import buildGlobeDom from './markup.js';
-import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './textures.js';
-import { createCardMaterial } from './materials.js';
-import createGalleryA11y from './a11y.js';
-import createGlobeModal from './modal.js';
-import { easeOutCubic, easeInOutCubic, easeOutSine, lerpN } from './math.js';
+import { parseAuthoredContent, fetchFragmentCards } from './src/authoring.js';
+import buildGlobeDom from './src/markup.js';
+import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './src/textures.js';
+import { createCardMaterial } from './src/materials.js';
+import createGalleryA11y from './src/a11y.js';
+import createGlobeModal from './src/modal.js';
+import { easeOutCubic, easeInOutCubic, easeOutSine, lerpN } from './src/math.js';
 
 // ── Layout / breakpoints ─────────────────────────────────────────────────────
 // Image-derived (texture aspect, never changes)

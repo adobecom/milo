@@ -7,8 +7,8 @@ from the code alone.
 
 ## Hard rules (these override default behavior)
 
-- **All nine shipped JS files (`globe.js`, `authoring.js`, `markup.js`, `shaders.js`,
-  `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are airbnb-clean — keep
+- **All nine shipped JS files (`globe.js`, `src/authoring.js`, `src/markup.js`, `src/shaders.js`,
+  `src/textures.js`, `src/materials.js`, `src/a11y.js`, `src/modal.js`, `src/math.js`) are airbnb-clean — keep
   them that way (`npx eslint` exit 0, no banners).** The blanket `/* eslint-disable */` is
   gone. Targeted `// eslint-disable-next-line` comments are allowed when a rule genuinely
   misfires — keep them one-line, justified by a comment, never a blanket disable. Current
@@ -16,7 +16,7 @@ from the code alone.
   driver → `tick`, `onPointerUp` → `handleCardClick`, `doLayout` → `destroy`); and 2
   `import/no-relative-packages` on the `getConfig` / `replaceKeyArray` imports in `globe.js`
   (the block's build-only `package.json` makes eslint see a package boundary that doesn't
-  exist at runtime, where the block is served as raw ES modules from the milo origin).
+  exist at runtime).
 - **`tick()` is a thin orchestrator** — it runs named single-concern stages
   (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `modal.updateAnimation`,
   `updateCardTransforms`, `renderScene`, …) in a fixed order. **Stage order matters**
@@ -26,7 +26,7 @@ from the code alone.
   new per-frame work as a stage. The modal is a DI module (`modal.js`, owns its tuning
   constants); the sphere coupling is narrow (shared `sphereRotEuler/Quat` + the
   `snapToSphereSlot` / `requestNavNudge` callbacks, with `sphereRotX/Y` + the nav-nudge
-  spring kept in `updateSphereRotation`). GPU resources come from `textures.js`/`materials.js`
+  spring kept in `updateSphereRotation`). GPU resources come from `src/textures.js`/`src/materials.js`
   (DI: pass `renderer`).
 - **DOM is JS-built and scoped to the block root** — the runtime queries nodes by
   class within `el` (`root.querySelector`), so **multiple globes per page are
@@ -34,9 +34,11 @@ from the code alone.
   modal `aria-labelledby`). Don't reintroduce global ids or assume authored markup.
 - **`hub-creative-v1/`, `hub-creative-v2/`, `_reference/` are read-only reference**,
   not shipped code (the `hub-creative-v*` dirs are git-ignored). The block ships as
-  `globe.js` + its imports (`authoring.js`, `markup.js`, `shaders.js`, `textures.js`,
-  `materials.js`, `a11y.js`, `modal.js`, `math.js`) + `globe.css` (registered in
-  `C2_BLOCKS`, `libs/utils/utils.js`).
+  `globe.js` + `globe.css` + `three.module.min.js` + `src/` modules (`authoring.js`,
+  `markup.js`, `shaders.js`, `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`)
+  (registered in `C2_BLOCKS`, `libs/utils/utils.js`). The build-only Three.js vendoring
+  (`package.json`, `three-src.js`, `node_modules/`) lives at `/globe/` root — run
+  `npm run build` there to regenerate `three.module.min.js`.
 - **Verify visually against `_reference/globe-reference.html`** (served over http,
   not file://). Playwright is not used in this project.
 - **If you change animation behavior or land a milestone, update `README.md`**

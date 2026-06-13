@@ -211,7 +211,17 @@ cares about — code branches only on `'sm'`. Crossing 768px on resize changes t
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
 a band takes the cheap path (renderer/camera resize only). The `resize` handler is the
 sole driver — there are no `matchMedia` boundary listeners (a real `resize` always fires
-on a real viewport change; the old listeners were a DevTools-emulation crutch). CSS is
+on a real viewport change; the old listeners were a DevTools-emulation crutch).
+
+`modal.destroy()` includes a `resetModalDom()` call that synchronously resets the
+modal's DOM + page state to the closed baseline (removes `is-visible`/`is-open`/`aria-hidden`,
+hides `.modal-card-canvas`, clears `modal-open` from `<html>`/`<body>`, restarts Lenis).
+This is required because the block's `innerHTML` is built once in the outer `init(el)`, not
+per `initRuntime`, so a modal that was open when a breakpoint crossing fires would otherwise
+survive the rebuild visually stuck open: the flown-out card mesh is dropped with the old
+`modalScene` (image gone), `modalIdx` resets to -1 so re-wired chrome buttons early-return
+(close/arrows dead), and the scroll lock remains. An open modal is treated as closed cleanly
+when the breakpoint crosses — it does not re-open on the other side. CSS is
 authored **mobile-first** (Milo convention) and keeps its own three type tiers
 independently of these JS profiles: the sm scale is the unscoped `.globe` base, then
 `@media (min-width:768px)` (md) and `@media (min-width:1280px)` (lg) layer the larger

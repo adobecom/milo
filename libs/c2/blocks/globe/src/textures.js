@@ -8,7 +8,7 @@
    reads `renderer.capabilities` for max anisotropy when available and otherwise
    skips it. Nothing here holds per-globe state except the sphere-mask cache,
    which is created per call to createSphereMaskCache(). */
-import * as THREE from './three.module.min.js';
+import * as THREE from '../three.module.min.js';
 
 const ARC_CORNER_RATIO = 22 / 456; // 22px corner on the 456px-wide portrait source
 const SPHERE_CORNER_RATIO = 22 / 631; // 22px corner relative to the 631px-tall source

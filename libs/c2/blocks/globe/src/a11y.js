@@ -16,7 +16,7 @@
    the modal code. The localized `galleryLabel` (region) + `cardLabel(name, index,
    count)` (per-button) are injected too, so this module owns no UI copy. Multi-
    instance safe — all lookups go through the injected root-scoped `q`. */
-import * as THREE from './three.module.min.js';
+import * as THREE from '../three.module.min.js';
 
 export default function createGalleryA11y({
   q,
