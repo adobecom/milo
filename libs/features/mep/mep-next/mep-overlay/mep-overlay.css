@@ -27,7 +27,6 @@
   --mep-white-38: rgba(255, 255, 255, 0.38);
   --mep-white-12: rgba(255, 255, 255, 0.12);
 
-
   --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 
@@ -43,6 +42,7 @@
 }
 
 .mep-fab {
+  z-index: 100;
   position: fixed;
   display: flex;
   align-items: center;

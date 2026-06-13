@@ -1,167 +1,98 @@
-:root {   
-  --other-fragment-outline: #6c757d;
-  --other-fragment-background: #6c757d;
+:root {
+  --mep-amber-700: #ffa000; /* Caas Lang First */
+  --mep-blue-500: #2196f3;
+  --mep-blue-gray-500: #607d8b;
+  --mep-blue-grey-700: #455a64; /* Other Fragment (new) */
+  --mep-cyan-700: #0097a7; /* MEP */
+  --mep-green-700: #388e3c; /* MEP Lingo */
+  --mep-grey-700: #616161; /* Other Fragment (old) */
+  --mep-indigo-700: #303f9f; /* Caas Edit Block */
+  --mep-light-blue-700: #0288d1;
+  --mep-light-green-700: #689f38; /* Caas */
+  --mep-orange-500: #ff9800;
+  --mep-pink-500: #e91e63;
+  --mep-purple-700: #673ab7; /* MEP Code */
+  --mep-red-700: #ffebee; /* MEP Removed */
+
+  --mep-amber-50: #fff8e1; /* Caas Lang First */
+  --mep-blue-50: #e3f2fd;
+  --mep-blue-grey-50: #eceff1; /* Other Fragment (new) */
+  --mep-bp-green-50: #e8f5e9; /* MEP Lingo */
+  --mep-cyan-50: #e0f7fa; /* MEP */
+  --mep-grey-50: #fafafa; /* Other Fragment (old) */
+  --mep-indigo-50: #e8eaf6; /* Caas Edit Block */
+  --mep-light-green-50: #f1f8e9; /* Caas */
+  --mep-orange: #ffe5d0;
+  --mep-pink: #fcd3e1;
+  --mep-purple-50: #ede7f6; /* MEP Code */
+  --mep-purple-light: #f0e7fb;
+  --mep-red-50: #ffebee; /* MEP Removed */
+  --mep-violet: #d2cbff;
+  --mep-yellow: #fff3cd;
+
+  /* Badge text colors */
+  --mep-text-badge: #000;
+  --mep-text-caas: #003a75;
+  --mep-text-purple-dark: #4a2d80;
+  --mep-text-orange-dark: #80450b;
+  --mep-text-ost: #0a3677;
+  --mep-text-pink-dark: #80224d;
+  --mep-text-neutral: #212529;
+  --mep-text-green-dark: #155724;
+  --mep-text-mismatch: #856404;
+  
+  --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
+
+  --mep-link-svg: url("data:image/svg+xml,<svg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11ZM17 7H13V9H17C18.65 9 20 10.35 20 12C20 13.65 18.65 15 17 15H13V17H17C19.76 17 22 14.76 22 12C22 9.24 19.76 7 17 7ZM11 15H7C5.35 15 4 13.65 4 12C4 10.35 5.35 9 7 9H11V7H7C4.24 7 2 9.24 2 12C2 14.76 4.24 17 7 17H11V15ZM8 11H16V13H8V11Z' fill='black'/></svg>");
 }
 
-/* mepHighlight */
-body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *) {
-  outline: 3px #17a2b8 dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-}
-
-/* position:relative needed for badge positioning, but exclude gnav elements */
-body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *):not(header.global-navigation *),
-body[data-other-highlight='true'] [data-fragment-default] {
-  position: relative !important;
-}
-
-body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *:not(.feds-popup) {
-  outline: 3px #17a2b8 dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-}
-
-body[data-mep-highlight='true'] [data-code-manifest-id],
-body[data-mep-highlight='true'] [data-removed-manifest-id] {
-  outline: 3px #26ceef dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-}
-
-body[data-mep-highlight='true'] [data-mep-lingo-roc] {
-  outline: 3px #28a745 dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-  position: relative !important;
-}
-
-body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
-  outline: 3px #ffc107 dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-  position: relative !important;
-}
-
-body[data-other-highlight='true'] [data-fragment-default] {
-  outline: 3px #6c757d dashed !important;
-  box-shadow: 3px 3px 13px 0 #8f8f8f !important;
-  margin: 5px 2px;
-  position: relative !important;
-}
-
-body[data-mep-highlight='true'] [data-code-manifest-id] {
-  outline: 3px #6626ef dashed !important;
-}
-
-body[data-mep-highlight='true'] [data-removed-manifest-id] {
-  outline: 3px #ef3726 dashed !important;
-}
-
-body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
-  display: none !important;
-}
-
-body[data-mep-highlight='true'] [data-manifest-id]::before {
-  content: attr(data-manifest-display);
-}
-
-body[data-mep-highlight='true'] [data-code-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  content: attr(data-manifest-id);
-}
-
-/* Clickable fragment badges - show link icon */
-body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before,
-body[data-mep-highlight='true'] [data-manifest-id][data-path]::before {
-  content: '🔗 ' attr(data-manifest-display);
-  cursor: pointer !important;
-}
-
-/* HTML badges (no fragment-path or data-path) - show manifest name without link icon */
-body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path]):not([data-path])::before {
-  content: attr(data-manifest-display);
-}
-
+/* Badges */
+a.mep-caas-edit-badge,
+body a.mep-caas-edit-badge,
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
-body[data-other-highlight='true'] [data-fragment-default]::before {
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  min-height: 20px !important;
-  min-width: 60px !important;
-  text-align: center !important;
-  vertical-align: top;
-  position: absolute !important;
-  left: 5px;
-  top: var(--badge-top-offset, 0);
-  z-index: 3;
-  padding: 5px 10px !important;
-  margin: 2px;
-  color: #000 !important;
-  opacity: 0.9 !important;
-  border-radius: 5px;
-  box-shadow: 0 3px 8px 1px #808080;
-  pointer-events: auto !important;
-  line-height: 1.5;
+body[data-other-highlight='true'] [data-fragment-default]::before,
+body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+  cursor: default;
+  visibility: visible !important;
+  pointer-events: auto;
+  position: absolute;
+  max-width: max-content;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: normal;
+  padding: 4px;
+  box-shadow: var(--mep-elevation-4);
+  opacity: .95;
 }
 
-/* Non-fragment (HTML) badges - not clickable */
-body[data-mep-highlight='true'] [data-manifest-id]:not([data-fragment-path]):not([data-path])::before,
-body[data-mep-highlight='true'] [data-code-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  cursor: default !important;
+/* Clickable Badges */
+a.mep-caas-edit-badge::before,
+body[data-mep-highlight='true'] [data-manifest-id][data-path]::before,
+body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
+body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
+body[data-other-highlight='true'] [data-fragment-default]::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+  cursor: pointer;
+  background-image: var(--mep-link-svg);
+  background-repeat: no-repeat;
+  background-size: 24px 24px;
+  background-position: 4px center;
+  padding-left: 32px;
 }
 
-body[data-mep-highlight='true'] [data-manifest-id]::before,
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  background-color: #d1ecf1 !important;
-  border: 1px solid #17a2b8;
-}
 
-body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
-  content: '🔗 mep-lingo: ' attr(data-mep-lingo-roc);
-  cursor: pointer !important;
-  background-color: #d4edda !important;
-  border: 1px solid #28a745;
-  text-align: left !important;
-  margin-left: var(--badge-margin-left, 0);
-}
-
-body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
-  content: '🔗 fallback: ' attr(data-mep-lingo-fallback);
-  cursor: pointer !important;
-  background-color: #fff3cd !important;
-  border: 1px solid #ffc107;
-  text-align: left !important;
-  margin-left: var(--badge-margin-left, 0);
-}
-
-body[data-other-highlight='true'] [data-fragment-default]::before {
-  z-index: 3;
-  content: '🔗 fragment: ' attr(data-fragment-display);
-  cursor: pointer !important;
-  background-color: #e9ecef !important;
-  border: 1px solid #6c757d;
-}
-
-body[data-mep-highlight='true'] [data-code-manifest-id]::before {
-  content: 'code: ' attr(data-code-manifest-id);
-  background-color: #d2cbff !important;
-  border: 1px solid #6626ef;
-  left: unset;
-  right: 5px;
-}
-
-body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
-  content: 'removed: ' attr(data-removed-manifest-id);
-  background-color: #ffe0e4 !important;
-  border: 1px solid #ef3726;
-}
-
+/* Not sure what these are, page replacement and ? */
 body[data-mep-highlight='true'] main[data-manifest-id]::before {
   content: 'page: ' attr(data-manifest-id);
 }
@@ -170,98 +101,103 @@ body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-m
   display: none;
 }
 
-/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated
-   [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
-  outline: 2px dashed transparent;
-  outline-offset: 2px;
+/* MEP */
+body[data-mep-highlight='true'] section.feds-navItem[data-manifest-id] > *:not(.feds-popup),
+body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not(.feds-popup):not(.feds-popup *) {
   position: relative !important;
+  border: 2px var(--mep-cyan-700) dashed !important;
 }
 
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before,
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
-  font-size: 14px !important;
-  font-weight: 400 !important;
-  min-height: 20px !important;
-  min-width: 60px !important;
-  max-width: 400px;
-  text-align: left !important;
-  vertical-align: top;
-  position: absolute !important;
-  left: 5px;
-  top: var(--badge-top-offset, 0);
-  z-index: 3;
-  padding: 5px 10px !important;
-  margin: 2px;
-  margin-left: var(--badge-margin-left, 0);
-  color: #000 !important;
-  opacity: 0.9 !important;
-  border-radius: 5px;
-  box-shadow: 0 3px 8px 1px #808080;
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.5;
+body[data-mep-highlight='true'] [data-manifest-id]::before {
+  content: 'MEP Manifest | ' attr(data-manifest-display);
+  color: var(--mep-cyan-700);
+  border: 2px solid var(--mep-cyan-700);
+  background-color: var(--mep-cyan-50);
 }
 
-/* Market-specific (any country code other than xx) - green */
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
-  outline-color: #28a745;
+body[data-mep-highlight='true'] [data-code-manifest-id] {
+  position: relative !important;
+  border: 2px var(--mep-purple-700) dashed !important;
 }
 
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
-  content: '🔗 caas-market: ' attr(data-card-path);
-  background-color: #d4edda !important;
-  border: 1px solid #28a745;
+body[data-mep-highlight='true'] [data-code-manifest-id]::before {
+  content: 'MEP Code | ' attr(data-code-manifest-id);
+  color: var(--mep-purple-700);
+  border: 1px solid var(--mep-purple-20);
+  background-color: var(--mep-purple-700);
 }
 
-/* Lang-first / global (xx) - yellow */
+body[data-mep-highlight='true'] [data-mep-lingo-roc] {
+  position: relative !important;
+  border: 2px var(--mep-green-700) dashed !important;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-roc]::before {
+  content: 'MEP Lingo | ' attr(data-mep-lingo-roc);
+  color: var(--mep-green-700);
+  border: 1px solid var(--mep-green-700);
+  background-color: var(--mep-green-20);
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-fallback] {
+  position: relative !important;
+  border: 2px var(--mep-amber-700) dashed !important;
+}
+
+body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before {
+  content: 'MEP Lingo Fallback | ' attr(data-mep-lingo-fallback);
+  color: var(--mep-amber-700);
+  background-color: var(--mep-amber-50);
+  border: 1px solid var(--mep-amber-700);
+}
+
+body[data-mep-highlight='true'] [data-removed-manifest-id] {
+  position: relative !important;
+  border: 2px var(--mep-red-700) dashed !important;
+}
+
+body[data-mep-highlight='true'] [data-removed-manifest-id]::before {
+  content: 'MEP Removed |' attr(data-removed-manifest-id);
+  color: var(--mep-red-700);
+  background-color: var(--mep-red-50) !important;
+  border: 1px solid var(--mep-red-700);
+}
+
+body:not([data-mep-highlight='true']) [data-removed-manifest-id] {
+  display: none !important;
+}
+
+/* OTHER FRAGMENTS */
+body[data-other-highlight='true'] [data-fragment-default] {
+  position: relative !important;
+  border: 2px var(--mep-blue-grey-700) dashed !important;
+}
+
+body[data-other-highlight='true'] [data-fragment-default]::before {
+  content: 'Other Fragment | ' attr(data-fragment-display);
+  color: var(--mep-blue-grey-700);
+  border: 1px solid var(--mep-blue-grey-700);
+  background-color: var(--mep-blue-grey-50) !important;
+}
+
+
+/* CAAS */
+/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
+/* body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
-  outline-color: #ffc107;
-}
+  position: relative !important;
+  outline: 2px dashed transparent;
+} */
 
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
-  content: '🔗 caas-lang: ' attr(data-card-path);
-  background-color: #fff3cd !important;
-  border: 1px solid #ffc107;
-}
-
-/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the
-   badge would otherwise show "🔗 caas-market: " with an empty path. */
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
-  content: none;
-}
-
-/* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
 body[data-mep-caas-highlight='true'] [data-caas-block] {
-  outline: 2px dashed #007bff;
-  outline-offset: 4px;
+  outline: 2px dashed var(--mep-indigo-700);
 }
 
 a.mep-caas-edit-badge,
 body a.mep-caas-edit-badge {
-  visibility: visible !important; /* override caas.css hiding /tools/caas# links */
-  display: inline-block;
-  margin: 0 0 12px 5px;
-  padding: 6px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  background-color: #cce5ff;
-  color: #003a75;
-  border: 1px solid #007bff;
-  border-radius: 5px;
-  box-shadow: 0 3px 8px 1px #808080;
-  text-decoration: none;
-  cursor: pointer;
-  opacity: 0.95;
-  z-index: 4;
-  position: relative;
-}
-
-a.mep-caas-edit-badge::before {
-  content: '🔗 ';
+  color: var(--mep-indigo-700);
+  border: 1px solid var(--mep-indigo-700);
+  background-color: var(--mep-indigo-50);
 }
 
 a.mep-caas-edit-badge:hover,
@@ -270,15 +206,44 @@ a.mep-caas-edit-badge:focus {
   text-decoration: none;
 }
 
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
+  position: relative !important;
+  border: 2px var(--mep-light-green-700) dashed !important;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+  content: 'CaaS Market | ' attr(data-card-path);
+  color: var(--mep-light-green-700);
+  background-color: var(--mep-light-green-50);
+  border: 1px solid var(--mep-light-green-700);
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
+  position: relative !important;
+  border: 2px var(--mep-amber-700) dashed !important;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
+  content: 'CaaS Lang First | ' attr(data-card-path);
+  color: var(--mep-amber-700);
+  background-color: var(--mep-amber-50);
+  border: 1px solid var(--mep-amber-700);
+}
+
+/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the badge would otherwise show "🔗 caas-market: " with an empty path. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
+  content: none;
+}
+
 /* M@S surface highlights ---------------------------------------------------- */
 body[data-mep-mas-highlight='true'] [data-mas-block='collection'] {
   outline: 2px dashed #6f42c1; /* purple */
-  outline-offset: 4px;
+
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
   outline: 2px dashed #fd7e14; /* orange */
-  outline-offset: 4px;
+
   position: relative;
 
   /* Anchors the .mep-mas-card-actions overlay; prevents host overflow
@@ -286,15 +251,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
   overflow: visible;
 }
 
-/* Inset the child-card outline so it sits inside the parent collection's
-   outline (avoids stacked dashed lines). */
-body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-block='card'] {
-  outline-offset: -2px;
-}
-
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
   outline: 2px dashed #e83e8c; /* pink */
-  outline-offset: 2px;
+
   position: relative;
   overflow: visible;
 
@@ -307,7 +266,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
   outline: 2px dashed #0d6efd; /* blue — unified with the offer surface */
-  outline-offset: 2px;
+
   position: relative;
   overflow: visible;
 }
@@ -320,7 +279,7 @@ body a.mep-mas-edit-badge {
   font-size: 14px;
   font-weight: 500;
   border-radius: 5px;
-  box-shadow: 0 3px 8px 1px #808080;
+  box-shadow: var(--mep-elevation-4);
   text-decoration: none;
   cursor: pointer;
   opacity: 0.95;
@@ -348,7 +307,7 @@ body a.mep-mas-sub-collection-badge {
   background-color: #f0e7fb;
   color: #4a2d80;
   border: 1px dashed #9b6dd7;
-  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 15%);
+  box-shadow: var(--mep-elevation-4);
   text-decoration: none;
   cursor: pointer;
   opacity: 0.92;
@@ -408,7 +367,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 25%);
+  box-shadow: var(--mep-elevation-4);
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -456,7 +415,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-action
    opens the OST URL on hits inside the badge box. */
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
   outline: 1px dashed #0d6efd;
-  outline-offset: 2px;
+
   position: relative;
 
   /* Prevent ancestor overflow from clipping the corner badge (some
@@ -467,8 +426,6 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   content: '🔗 View in OST';
   position: absolute;
-  top: -10px;
-  right: -2px;
   z-index: 3;
   padding: 3px 6px;
   background-color: #cfe2ff;
@@ -480,8 +437,7 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   line-height: 1.3;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
-  min-width: 112px;
+  box-shadow: var(--mep-elevation-4);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::before {
@@ -504,22 +460,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='off
    disturbing document flow inside paragraphs/headings. */
 body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
   content: '🔗 Edit Inline Field';
-  position: absolute;
-  top: -10px;
-  right: -2px;
-  z-index: 3;
-  padding: 3px 6px;
   background-color: #fcd3e1;
   color: #80224d;
   border: 1px solid #e83e8c;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
-  min-width: 130px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::before {
@@ -543,27 +486,26 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'] :is([data-mas-bloc
    full authoring URL, offer derives a minimal one from the OSI). */
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
   content: '🔗 View in OST';
-  position: absolute;
-  top: -10px;
-  right: -2px;
-  z-index: 11;
-  padding: 3px 6px;
   background-color: #cfe2ff;
   color: #0a3677;
   border: 1px solid #0d6efd;
-  border-radius: 3px;
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
-  min-width: 96px;
+  
+  font-size: 14px;
+  font-weight: 400;
+  width: max-content;
+  max-width: calc(100vw - 64px);
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  z-index: 3;
+  padding: 4px;
+  box-shadow: var(--mep-elevation-4);
+  line-height: 1.5;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::before {
   content: '🔗 View in OST · ' attr(data-mas-market);
-  min-width: 112px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-mismatch='true']::before {
