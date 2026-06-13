@@ -28,7 +28,7 @@ gallery mirroring the sphere cards.
 | --- | --- |
 | `globe.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows, fetches the card fragment. |
-| `markup.js` | `GLOBE_MARKUP` + `buildGlobeDom(el)` — the canvas/overlay/modal DOM the runtime expects. Default export. |
+| `markup.js` | `GLOBE_MARKUP` + `buildGlobeDom(el, labels)` — the canvas/overlay/modal DOM the runtime expects; mints + returns the per-instance `gid` id suffix. Default export. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
 | `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
 | `materials.js` | Pure material factories: `createCardMaterial` (CA ShaderMaterial + MeshBasicMaterial fallback, with the property-proxy) and `createModalMaterial` (SDF). |
@@ -167,13 +167,16 @@ them. If the key is absent everywhere, the code falls back to the English templa
 
 **DOM is JS-built and scoped to the block root.** `init(el)` calls
 `parseAuthoredContent(el)` first (arc-copy, pull-quote, fragment href), then
-`buildGlobeDom(el, gid)` wipes the block and injects the markup. The runtime
-finds nodes by **class, queried within `el`** (`root.querySelector('.offer-globe-canvas')`,
-`.modal-card-canvas`, `.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`,
-…) → **multiple globes can coexist on a page**. The only id-bearing nodes are
-made unique per instance via a `gid` suffix: the CA SVG filter (referenced as
-`filter: url(#ca-filter-<gid>)`) and the modal heading (the dialog's
-`aria-labelledby` target). `el` itself becomes the `850vh` scroll spacer
+`buildGlobeDom(el, labels)` wipes the block, injects the markup, and **returns
+the `gid`** (the per-instance unique-id suffix it mints from a module-level
+counter in `markup.js`). The runtime finds nodes by **class, queried within
+`el`** (`root.querySelector('.offer-globe-canvas')`, `.modal-card-canvas`,
+`.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`, …) →
+**multiple globes can coexist on a page**. The only id-bearing nodes are made
+unique per instance via that `gid` suffix (ids, not classes, because both are
+document-wide id references): the CA SVG filter (referenced from JS as
+`filter: url(#ca-filter-<gid>)`) and the modal heading/description (the dialog's
+`aria-labelledby` / `aria-describedby` IDREFs). `el` itself becomes the `850vh` scroll spacer
 (`.globe.offer-pin-spacer`); the canvas is `position:fixed`. Body-level globals
 that remain shared (acceptable, one modal at a time): the `.modal-open` scroll
 lock and the keyboard focus-ring overlay.

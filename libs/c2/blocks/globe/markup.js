@@ -6,9 +6,13 @@
 // the block root* (root.querySelector('.class')), so ids are no longer needed
 // for lookup → more than one globe can coexist on a page.
 //
-// Two things still require a real id, made unique per instance via `gid`:
-//   • the CA SVG filter — referenced from CSS as `filter: url(#ca-filter-<gid>)`.
-//   • the modal heading — referenced by the dialog's `aria-labelledby`.
+// Two things still require a real id (no classname equivalent — both are
+// document-wide id references), made unique per instance via `gid`:
+//   • the CA SVG filter — referenced from JS as `filter: url(#ca-filter-<gid>)`.
+//   • the modal heading/description — referenced by the dialog's aria-labelledby
+//     / aria-describedby IDREFs.
+// `gid` is minted here (this module owns both creating and embedding the ids)
+// and returned by buildGlobeDom so the runtime can build the same url(#…) ref.
 //
 // Fixed-position overlays (ca-svg, pull-quote, modal) can live inside the block:
 // position:fixed escapes the relative/sticky ancestors here (no transform/filter
@@ -74,7 +78,18 @@ const buildMarkup = (gid, labels) => `
   </div>
 `;
 
-export default function buildGlobeDom(el, gid, labels) {
+// Per-page instance counter → a unique suffix for this instance's id-bearing
+// nodes. Only needs to be unique within the document so multiple globes don't
+// collide on their shared-namespace ids; an incrementing int is the simplest
+// guarantee of that.
+let globeInstanceSeq = 0;
+
+// Build the block's DOM and return the `gid` used for its unique ids so the
+// runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
+export default function buildGlobeDom(el, labels) {
+  globeInstanceSeq += 1;
+  const gid = globeInstanceSeq;
   el.classList.add('offer-pin-spacer');
   el.innerHTML = buildMarkup(gid, labels);
+  return gid;
 }

@@ -177,16 +177,13 @@ function fibSpherePos(i, total, radius) {
   );
 }
 
-// Per-page instance counter → unique ids for the few nodes that still need one
-// (the CA SVG filter referenced via url(#…), and the modal's aria-labelledby).
-let globeInstanceSeq = 0;
-
 // The globe runtime. Originally an IIFE exposing window.offerGlobe in the
 // hub-creative prototype; now a factory returning { init, destroy }.
 // Key changes from the prototype: gsap.ticker → requestAnimationFrame,
 // Lenis reads → window.scrollY. `root` is the block element; all DOM lookups
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
-// `gid` is this instance's unique-id suffix (see globeInstanceSeq).
+// `gid` is this instance's unique-id suffix, minted by buildGlobeDom (markup.js)
+// and threaded in here so the CA filter url(#…) ref matches the built node.
 function createGlobeRuntime(authoredCards, root, gid, labels) {
   // rAF driver replacing gsap.ticker.
   let rafId = 0;
@@ -1503,11 +1500,10 @@ export default async function init(el) {
   // fragmentHref is captured here so it survives the DOM wipe.
   const { arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
 
-  // Unique suffix for this instance's id-bearing nodes (CA filter, aria target).
-  globeInstanceSeq += 1;
-  const gid = globeInstanceSeq;
   const labels = await resolveGlobeLabels();
-  buildGlobeDom(el, gid, labels);
+  // buildGlobeDom mints + returns this instance's unique id suffix (CA filter,
+  // modal aria targets); the runtime reuses it for the url(#…) filter ref.
+  const gid = buildGlobeDom(el, labels);
 
   // Inject authored arc-copy / pull-quote text into the built DOM slots. The slots
   // ship empty (no hardcoded copy), so any unauthored field simply stays blank.
