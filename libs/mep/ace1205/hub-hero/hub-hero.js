@@ -85,16 +85,19 @@ const handleMobileAutoplay = (carousel) => {
 };
 
 const scrollHubHeroTo = (el, progress) => {
-  // defer so native focus-scroll completes before we override it
-  setTimeout(() => {
-    const hubHero = el.closest('.hub-hero');
-    if (!hubHero) return;
-    const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
-    if (totalScrollRange <= 0) return;
-    const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
-    const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
-    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
-  }, 0);
+  // double-rAF: runs after VoiceOver's async focus-scroll settles,
+  // preventing it from cancelling our scroll on backward keyboard nav
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const hubHero = el.closest('.hub-hero');
+      if (!hubHero) return;
+      const totalScrollRange = hubHero.offsetHeight - window.innerHeight;
+      if (totalScrollRange <= 0) return;
+      const hubHeroAbsTop = window.scrollY + hubHero.getBoundingClientRect().top;
+      const targetScrollY = hubHeroAbsTop + totalScrollRange * progress;
+      window.scrollTo({ top: targetScrollY, behavior: 'instant' });
+    });
+  });
 };
 
 const onSlideLeave = (event) => {
