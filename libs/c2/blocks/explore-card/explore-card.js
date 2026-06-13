@@ -39,7 +39,7 @@ function decorate(block, root) {
   firstRow.classList.add(`${blockName}-container`);
 
   getForegroundContent(foregroundRow, contentDiv, blockName);
-  decorateBlockText(contentDiv, { heading: '4' });
+  decorateBlockText(contentDiv, { heading: '5' });
 
   if (!link) return;
   const linkContainer = createTag('a', { class: `${blockName}-link-container`, href: link.href, 'data-tracking-label': heading?.textContent });
