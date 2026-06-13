@@ -187,7 +187,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
-  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -963,7 +963,7 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     const locale = lingoRegion?.ietf
       ? lingoRegion.ietf.replace('-', '_')
       : getUniversalNavLocale(config.locale);
