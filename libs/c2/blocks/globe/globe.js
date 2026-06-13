@@ -15,41 +15,22 @@ import { createCardMaterial } from './materials.js';
 import createGalleryA11y from './a11y.js';
 import createGlobeModal from './modal.js';
 import { easeOutCubic, easeInOutCubic, easeOutSine, lerpN } from './math.js';
-// ════════════════════════════════════════════════════════════════════════════
-// Tuning constants + pure helpers (module scope — pure, no per-instance state).
-// Grouped by concern; the render loop in createGlobeRuntime() reads them directly.
-// (authoring.js, markup.js, shaders.js remain separate modules.)
-// ════════════════════════════════════════════════════════════════════════════
 
 // ── Layout / breakpoints ─────────────────────────────────────────────────────
 // Image-derived (texture aspect, never changes)
 const CARD_ASPECT = 456 / 631; // portrait
 
-// Visual-layout knobs that change between viewport sizes. Tablet & mobile start as
-// EXACT mirrors of desktop — tuning a non-desktop BP cannot affect desktop because
-// each BP holds its own values. Resolved once at init() via resolveBP(W); crossing
-// a BP boundary on resize triggers full destroy() + init() (see doLayout).
-//
-// To add a new breakpoint: copy one of the entries below, give it a new key (e.g.
-// 'largeDesktop'), set minWidth, and update resolveBP() to test for it.
-// Thresholds match the ACOM design system (Consonant 2.0):
-//   desktop ≥1024, tablet 768–1023, mobile <768.
-// Type/layout @media queries in CSS use the same boundaries.
+// Resolved once at init() via resolveBP(W). Two render profiles, split at 768px
+// (the Milo sm↔md boundary). They differ in card count, so crossing 768px on
+// resize triggers a full destroy()+init() rebuild (see doLayout); resizing within
+// a band takes the cheap path. There is deliberately no md↔lg distinction here:
+// Milo md (768–1279) and lg (1280–1440) render identically, so this `md` band
+// covers both (md and up). A separate lg band would never change anything the
+// WebGL cares about. CSS keeps its own md/lg type tiers (see globe.css).
 const BREAKPOINTS = {
-  desktop: {
-    minWidth: 1024,
-    N_TOTAL: 45,
-    ARC_SPAN: 4.50,
-    SPHERE_R: 35,
-    CARD_H_SPHERE: 6.5,
-    CARD_W_ARC: 456,
-    CAM_Z_SPHERE: 65,
-    CAM_Z_END: -60,
-    GRID_COLS: 9,
-    GRID_ROWS: 5,
-    ARC_DENSE_COUNT: 27,
-  },
-  tablet: {
+  // ≥768 — Milo md + lg (named for its lower bound). Full experience: 45 cards,
+  // 9×5 grid, large sphere.
+  md: {
     minWidth: 768,
     N_TOTAL: 45,
     ARC_SPAN: 4.50,
@@ -62,12 +43,11 @@ const BREAKPOINTS = {
     GRID_ROWS: 5,
     ARC_DENSE_COUNT: 27,
   },
-  mobile: {
-    // Tuned for 375x667 portrait. Sphere fits ~88% viewport width / 49% height
-    // at SPHERE_R=20, CAM_Z_SPHERE=70. Card count + grid layout adjusted to
-    // portrait orientation. Arc cards sized to fit within viewport with margin.
-    // ARC_DENSE_COUNT=0 → cards spread uniformly across arc (no off-screen
-    // dense cluster), since N_TOTAL=24 isn't crowded enough to need clustering.
+  // <768 — Milo sm. Tuned for 375x667 portrait: sphere fits ~88% viewport width /
+  // 49% height at SPHERE_R=20, CAM_Z_SPHERE=70; card count + grid adjusted to
+  // portrait; arc cards sized to fit with margin. ARC_DENSE_COUNT=0 → cards spread
+  // uniformly across the arc (N_TOTAL=24 isn't crowded enough to need clustering).
+  sm: {
     minWidth: 0,
     N_TOTAL: 24,
     ARC_SPAN: 3.6,
@@ -83,20 +63,19 @@ const BREAKPOINTS = {
 };
 
 function resolveBP(w) {
-  if (w >= BREAKPOINTS.desktop.minWidth) return { name: 'desktop', cfg: BREAKPOINTS.desktop };
-  if (w >= BREAKPOINTS.tablet.minWidth) return { name: 'tablet', cfg: BREAKPOINTS.tablet };
-  return { name: 'mobile', cfg: BREAKPOINTS.mobile };
+  if (w >= BREAKPOINTS.md.minWidth) return { name: 'md', cfg: BREAKPOINTS.md };
+  return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
 
 // ── Phase timeline (progress 0→1 across the 850vh spacer) ────────────────────
 const ARC_STAGGER = 0.594;
-const P_PAN_END = 0.55;
-const P_ARC_PREROLL = 0.30;
+const PROGRESS_PAN_END = 0.55;
+const PROGRESS_ARC_PREROLL = 0.30;
 // Grid peel expressed as arc-rotation fraction (0=arc start, 1=arc end).
-const P_GRID_ARC_START = 0.30;
-const P_GRID_ARC_END = 0.60;
-const P_FOLD_DUR = 0.25;
-const P_ZOOM_END = 1.00;
+const PROGRESS_GRID_ARC_START = 0.30;
+const PROGRESS_GRID_ARC_END = 0.60;
+const PROGRESS_FOLD_DUR = 0.25;
+const PROGRESS_ZOOM_END = 1.00;
 
 // ── Entry timing ─────────────────────────────────────────────────────────────
 // Two independent knobs (the WebGL canvas is transparent, so an early reveal only
@@ -404,11 +383,11 @@ function createGlobeRuntime(authoredCards, root, gid) {
   // ── Grid layout (9×5 = 45 cards, sized to fit viewport) ───────────────────
   function computeGridLayout() {
     if (cards.length === 0) return;
-    // Desktop/tablet: cards fill viewport width via W/GRID_COLS; gaps push grid
+    // md (≥768): cards fill viewport width via W/GRID_COLS; gaps push grid
     // off-screen by design (cards on the side overflow as a "more cards beyond" cue).
-    // Mobile: fit the grid within the viewport exactly — solve cardW so that
+    // sm (<768): fit the grid within the viewport exactly — solve cardW so that
     // GRID_COLS*cardW + (GRID_COLS-1)*cardW*GRID_GAP_RATIO == W. No overflow.
-    const isMobile = (currentBPName === 'mobile');
+    const isMobile = (currentBPName === 'sm');
     gridCardW = isMobile
       ? W / (GRID_COLS + (GRID_COLS - 1) * GRID_GAP_RATIO)
       : W / GRID_COLS;
@@ -744,27 +723,31 @@ function createGlobeRuntime(authoredCards, root, gid) {
     arcCopyEntryT = Math.max(0, Math.min(1, (lenisY - entryStart) / entryRange));
     progress = Math.max(0, Math.min(1, (lenisY - spacerOffsetTop) / spacerHeight));
 
-    // arcPanT: preroll animates in WITH the entry (0 before section, P_ARC_PREROLL by entry)
+    // arcPanT: preroll animates in WITH the entry (0 before section, PROGRESS_ARC_PREROLL by entry)
     // so the arc is already in motion as the section scrolls into view.
-    const arcPanT = Math.min(1, progress / P_PAN_END + P_ARC_PREROLL * arcCopyEntryT);
+    const arcPanT = Math.min(1, progress / PROGRESS_PAN_END + PROGRESS_ARC_PREROLL * arcCopyEntryT);
     const slideT = Math.max(arcCopyEntryT, Math.max(0, Math.min(1, progress / 0.07)));
     const slideE = easeOutSine(slideT);
 
     // gridFormT driven by arc rotation — peel is always relative to how far the arc has rotated
     const gridFormT = Math.max(0, Math.min(
       1,
-      (arcPanT - P_GRID_ARC_START) / (P_GRID_ARC_END - P_GRID_ARC_START),
+      (arcPanT - PROGRESS_GRID_ARC_START) / (PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START),
     ));
 
     // Convert arc-pan arrival times to progress units for fold/zoom phase calculations.
-    // arcPanT(progress) ≈ progress/P_PAN_END + P_ARC_PREROLL
-    //   →  progress ≈ (arcPanT - P_ARC_PREROLL) * P_PAN_END
+    // arcPanT(progress) ≈ progress/PROGRESS_PAN_END + PROGRESS_ARC_PREROLL
+    //   →  progress ≈ (arcPanT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END
     const gpWin = 1.0 - GRID_PEEL_STAGGER;
-    const foldFirstArcT = P_GRID_ARC_START + gpWin * (P_GRID_ARC_END - P_GRID_ARC_START);
-    const foldFirst = Math.max(0, (foldFirstArcT - P_ARC_PREROLL) * P_PAN_END);
-    const foldLast = Math.max(0, (P_GRID_ARC_END - P_ARC_PREROLL) * P_PAN_END) + P_FOLD_DUR;
+    const arcRange = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
+    const foldFirstArcT = PROGRESS_GRID_ARC_START + gpWin * arcRange;
+    const foldFirst = Math.max(0, (foldFirstArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+    const foldLast = Math.max(
+      0,
+      (PROGRESS_GRID_ARC_END - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
+    ) + PROGRESS_FOLD_DUR;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
-    const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (P_ZOOM_END - foldLast)));
+    const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (PROGRESS_ZOOM_END - foldLast)));
     sphereFormTAtLastTick = sphereFormT; // cache for click handler
 
     return {
@@ -975,19 +958,19 @@ function createGlobeRuntime(authoredCards, root, gid) {
   function updateArcCopy() {
     const arcCopyEl = q('.offer-arc-copy');
     if (arcCopyEl) {
-      const P_HEADLINE_IN = 0.25;
-      const P_ARC_COPY_OUT = 0.50;
+      const PROGRESS_HEADLINE_IN = 0.25;
+      const PROGRESS_ARC_COPY_OUT = 0.50;
       const arcCopyInE = easeOutCubic(Math.min(1, arcCopyEntryT / 0.336));
       const arcCopyOutT = Math.max(0, Math.min(
         1,
-        (progress - P_HEADLINE_IN) / (P_ARC_COPY_OUT - P_HEADLINE_IN),
+        (progress - PROGRESS_HEADLINE_IN) / (PROGRESS_ARC_COPY_OUT - PROGRESS_HEADLINE_IN),
       ));
       const arcCopyOutE = easeOutCubic(arcCopyOutT);
       const arcCopyOp = arcCopyInE * (1 - arcCopyOutE);
       const arcCopySlide = 24 * (1 - arcCopyInE);
-      // Mobile pins to 8px from viewport left (matches nav pill outer padding).
-      // Desktop/tablet uses the 24px-grid-aligned position with centering offset.
-      const gridLeft = (currentBPName === 'mobile')
+      // sm pins to 8px from viewport left (matches nav pill outer padding).
+      // md uses the 24px-grid-aligned position with centering offset.
+      const gridLeft = (currentBPName === 'sm')
         ? 8
         : 24 + Math.max(0, (W - 48 - 1392) / 2);
       arcCopyEl.style.left = `${gridLeft}px`;
@@ -1037,10 +1020,10 @@ function createGlobeRuntime(authoredCards, root, gid) {
 
       // ── Grid → sphere fold: starts immediately when this card arrives in grid ──
       // Convert arc-pan arrival back to progress for fold timer
-      const gpArrivalArcT = P_GRID_ARC_START
-        + Math.min(1, gpDelay + gpWin) * (P_GRID_ARC_END - P_GRID_ARC_START);
-      const gpArrivalProg = Math.max(0, (gpArrivalArcT - P_ARC_PREROLL) * P_PAN_END);
-      const fdLocalT = Math.max(0, Math.min(1, (progress - gpArrivalProg) / P_FOLD_DUR));
+      const gpArrivalArcT = PROGRESS_GRID_ARC_START
+        + Math.min(1, gpDelay + gpWin) * (PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START);
+      const gpArrivalProg = Math.max(0, (gpArrivalArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+      const fdLocalT = Math.max(0, Math.min(1, (progress - gpArrivalProg) / PROGRESS_FOLD_DUR));
       const fdE = gpE >= 1 ? easeInOutCubic(fdLocalT) : 0;
 
       // ── Option B: per-card CA strength driven by transition state ──
@@ -1293,7 +1276,6 @@ function createGlobeRuntime(authoredCards, root, gid) {
   // ── Layout ─────────────────────────────────────────────────────────────────
   let resizeHandler = null;
   let layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
-  let bpMediaQueries = []; // matchMedia listeners for BP boundaries (DevTools toggle backup)
 
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
@@ -1339,9 +1321,10 @@ function createGlobeRuntime(authoredCards, root, gid) {
       W = window.innerWidth;
       H = window.innerHeight;
 
-      // Crossing a breakpoint boundary → full destroy()+init() so all geometry,
-      // textures, and grid layout rebuild with the new BP's constants. Falls
-      // through to the same-BP path otherwise (cheap resize handling).
+      // Crossing the 768px boundary changes the render profile (card count,
+      // grid, sphere) → full destroy()+init() so all geometry, textures, and
+      // grid layout rebuild with the new band's constants. Resizing within a
+      // band falls through to the cheap path below.
       const nextBP = resolveBP(W);
       if (nextBP.name !== currentBPName) {
         // eslint-disable-next-line no-use-before-define
@@ -1351,9 +1334,9 @@ function createGlobeRuntime(authoredCards, root, gid) {
       }
       spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
       spacerHeight = spacer ? spacer.offsetHeight : window.innerHeight * 7;
-      // Re-apply DPR — Chrome's DevTools device-emulation toggle changes DPR but
-      // doesn't always fire 'resize'; without this the canvas would keep the old DPR's
-      // internal buffer size and render at the wrong resolution.
+      // Re-apply DPR — it can change at runtime (e.g. dragging the window between
+      // monitors of different pixel density); without this the canvas would keep
+      // the old DPR's internal buffer size and render at the wrong resolution.
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(W, H);
       modal.resize(W, H);
@@ -1382,23 +1365,6 @@ function createGlobeRuntime(authoredCards, root, gid) {
         : window.innerHeight * 7;
     });
     layoutObs.observe(document.body);
-
-    // matchMedia listeners for the BP boundaries are a backup for the 'resize' event,
-    // which Chrome doesn't always fire when DevTools device-emulation is toggled.
-    // Each listener fires once when the viewport crosses its boundary in either direction.
-    if (bpMediaQueries.length === 0) {
-      const queries = [
-        window.matchMedia('(max-width: 767px)'),
-        window.matchMedia('(min-width: 768px) and (max-width: 1023px)'),
-        window.matchMedia('(min-width: 1024px)'),
-      ];
-      const onMQChange = () => { doLayout(); };
-      queries.forEach((mq) => {
-        if (mq.addEventListener) mq.addEventListener('change', onMQChange);
-        else mq.addListener(onMQChange); // Safari < 14 fallback
-        bpMediaQueries.push({ mq, handler: onMQChange });
-      });
-    }
 
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('mousemove', onHover);
@@ -1445,13 +1411,6 @@ function createGlobeRuntime(authoredCards, root, gid) {
       layoutObs.disconnect();
       layoutObs = null;
     }
-    if (bpMediaQueries.length) {
-      bpMediaQueries.forEach((entry) => {
-        if (entry.mq.removeEventListener) entry.mq.removeEventListener('change', entry.handler);
-        else entry.mq.removeListener(entry.handler);
-      });
-      bpMediaQueries = [];
-    }
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
     window.removeEventListener('pointercancel', onPointerUp);
@@ -1474,9 +1433,9 @@ function createGlobeRuntime(authoredCards, root, gid) {
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
-    // NOTE: currentBPName and <html data-bp> are intentionally NOT cleared here.
-    // doLayout() relies on currentBPName to detect crossings, and init() will
-    // overwrite both. Clearing them would break the re-init flow.
+    // NOTE: currentBPName is intentionally NOT cleared here. doLayout() compares
+    // it against the resolved band to detect a profile crossing, and initRuntime()
+    // overwrites it. Clearing it would break the re-init flow.
   }
 
   return { init: initRuntime, destroy };

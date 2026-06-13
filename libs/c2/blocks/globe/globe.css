@@ -53,7 +53,8 @@
   --type-body-m-ls: 0.01em;
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
+/* Milo md (768–1279): smaller type than the lg default (≥1280). */
+@media (min-width: 768px) and (max-width: 1279px) {
   .globe {
     --type-title-1-size: 56px;
     --type-title-1-ls: -0.03em;

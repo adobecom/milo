@@ -165,11 +165,20 @@ CA_ENABLED=true
 - `ENTRY_RAMP_VH` (default `1.05`) — ramp length over which `arcCopyEntryT` goes
   0→1 (arc-copy fade, arc pre-roll speed, text→arc gap).
 
-**Breakpoints** resolve once in `init()`; crossing a boundary → `destroy()`+`init()`.
-`desktop ≥1024`, `tablet 768–1023`, `mobile <768`. Per-BP knobs in `BREAKPOINTS`
-(`N_TOTAL`, `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`, `GRID_COLS/ROWS`,
-`ARC_DENSE_COUNT`). Desktop/tablet identical (45 cards, 9×5); mobile = 24 cards,
-3×8, smaller sphere.
+**Breakpoints** resolve once in `init()`. There are **two render profiles** split at
+768px (the Milo sm↔md boundary): `md` (≥768 — 45 cards, 9×5 grid, large sphere) and
+`sm` (<768 — 24 cards, 3×8, smaller sphere). The `md` band is named for its lower
+bound and covers Milo md *and* lg. Per-profile knobs in `BREAKPOINTS`:
+`N_TOTAL`, `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`, `GRID_COLS/ROWS`,
+`ARC_DENSE_COUNT`. There is deliberately no md↔lg split: Milo md (768–1279) and lg
+(1280–1440) render identically, so a third band would never change anything the WebGL
+cares about — code branches only on `'sm'`. Crossing 768px on resize changes the card
+count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
+a band takes the cheap path (renderer/camera resize only). The `resize` handler is the
+sole driver — there are no `matchMedia` boundary listeners (a real `resize` always fires
+on a real viewport change; the old listeners were a DevTools-emulation crutch). CSS keeps
+its own three type tiers via `@media` (sm ≤767, md 768–1279, lg ≥1280) independently of
+these JS profiles.
 
 **Reduced motion**: skips WebGL and adds `.globe--reduced` (collapses the spacer).
 A static poster fallback is a TODO.

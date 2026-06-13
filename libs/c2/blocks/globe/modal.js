@@ -209,7 +209,7 @@ export default function createGlobeModal({
     //   the nav arrows before the info panel (whose natural height was measured
     //   in open()). Width is proportional via sphereScaleX (aspect kept).
     // Desktop: centered horizontally, slight upward bias, width clamped to 92% W.
-    const isMobile = (getBP() === 'mobile');
+    const isMobile = (getBP() === 'sm');
     const sScaleX = (card && card.sphereScaleX) ? card.sphereScaleX : 1;
     let scaleY; let
       scaleX;
@@ -343,7 +343,7 @@ export default function createGlobeModal({
     const SDF_RADIUS_PX = SDF_CORNER_RADIUS * (cardBotPx - cardTopPx);
     const INSET = 24 + Math.round(SDF_RADIUS_PX);
 
-    const isMobile = (getBP() === 'mobile');
+    const isMobile = (getBP() === 'sm');
 
     if (isMobile) {
       // ── Mobile layout ──
@@ -791,7 +791,7 @@ export default function createGlobeModal({
 
     // Pre-attach prev/next cards to modalScene at offset positions so horizontal
     // swipes reveal the neighbor mid-gesture (iOS Photos style). Mobile only.
-    if (getBP() === 'mobile') prepSwipeNeighbors();
+    if (getBP() === 'sm') prepSwipeNeighbors();
   }
 
   function close() {
@@ -889,7 +889,7 @@ export default function createGlobeModal({
     // over top with matching warp). Mobile keeps its instant-swap flow because
     // its arrow buttons are paired with the live swipe gesture which already
     // provides the warp + slide feel.
-    if (getBP() !== 'mobile') {
+    if (getBP() !== 'sm') {
       startDesktopNavTransition(next);
       return;
     }
@@ -940,7 +940,7 @@ export default function createGlobeModal({
     requestNavNudge(next);
 
     // Prep prev/next of the new current for the next swipe gesture.
-    if (getBP() === 'mobile') prepSwipeNeighbors();
+    if (getBP() === 'sm') prepSwipeNeighbors();
   }
 
   // Modal card animation (the flown-out card). The card is parented to the modal
@@ -1202,7 +1202,7 @@ export default function createGlobeModal({
     const PULL_SCALE_MIN = 0.80;
 
     modalEl.addEventListener('touchstart', (e) => {
-      if (getBP() !== 'mobile') return;
+      if (getBP() !== 'sm') return;
       if (modalIdx < 0) return;
       if (e.touches.length !== 1) return;
       if (!modalCanvasEl) return;
