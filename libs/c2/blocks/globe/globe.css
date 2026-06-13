@@ -1,6 +1,11 @@
 /* ─────────────────────────────────────────────────────────────────────────
    Globe — C2 block styles. Ported from hub-creative offer-section.css.
 
+   Mobile-first (Milo convention): the unscoped base rules are the sm (<768)
+   layout, and every `@media (min-width: …)` block layers the larger viewports
+   on top. So a property's sm value lives in the base rule and only the deltas
+   for md (≥768) / lg (≥1280) live in the media queries.
+
    Two stylelint rules are disabled file-wide, both deliberate:
    • selector-class-pattern — class names are BEM (.offer-pullquote__quote,
      .card-modal__badge-icon--ps). The names are queried verbatim by globe.js
@@ -29,46 +34,49 @@
    pull-quote and arc-copy fall back to default 16px text. Scoped to .globe so
    they cascade to the JS-built overlays (pull-quote / arc-copy / modal are DOM
    descendants — position:fixed doesn't break custom-property inheritance).
-   Keep values in sync with hub-creative/styles/global/typography.css. */
+   Keep values in sync with hub-creative/styles/global/typography.css.
+
+   Mobile-first: the base values are the sm (<768) scale; the media queries
+   below step the title + body-l up for md (≥768) and lg (≥1280). body-m never
+   changes across tiers, so it lives only here. */
 .globe {
   --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
 
-  /* Title 1 — 80/76.8/-3.2px */
-  --type-title-1-size: 80px;
+  /* Title 1 — sm: 40/38.4/-1.2px */
+  --type-title-1-size: 40px;
   --type-title-1-weight: 900;
   --type-title-1-lh: 0.96;
-  --type-title-1-ls: -0.04em;
+  --type-title-1-ls: -0.03em;
 
-  /* Body Large — 20/24/0 */
-  --type-body-l-size: 20px;
+  /* Body Large — sm: 16/20.8/0 */
+  --type-body-l-size: 16px;
   --type-body-l-weight: 400;
-  --type-body-l-lh: 1.2;
+  --type-body-l-lh: 1.3;
   --type-body-l-ls: 0;
 
-  /* Body Medium — 16/20.8/+0.16px */
+  /* Body Medium — 16/20.8/+0.16px (all tiers) */
   --type-body-m-size: 16px;
   --type-body-m-weight: 400;
   --type-body-m-lh: 1.3;
   --type-body-m-ls: 0.01em;
 }
 
-/* Milo md (768–1279): smaller type than the lg default (≥1280). */
-@media (min-width: 768px) and (max-width: 1279px) {
+/* Milo md (≥768): step the title + body-l up from the sm base. */
+@media (min-width: 768px) {
   .globe {
     --type-title-1-size: 56px;
-    --type-title-1-ls: -0.03em;
     --type-body-l-size: 18px;
-    --type-body-l-lh: 1.3;
   }
 }
 
-@media (max-width: 767px) {
+/* Milo lg (≥1280): the largest type scale. */
+@media (min-width: 1280px) {
   .globe {
-    --type-title-1-size: 40px;
-    --type-title-1-ls: -0.03em;
-    --type-body-l-size: 16px;
-    --type-body-l-lh: 1.3;
+    --type-title-1-size: 80px;
+    --type-title-1-ls: -0.04em;
+    --type-body-l-size: 20px;
+    --type-body-l-lh: 1.2;
   }
 }
 
@@ -89,12 +97,28 @@
   z-index: 2;
 }
 
-/* ── Arc copy (slides up before arc, fades+scales out as headline arrives) ── */
+/* ── Arc copy (slides up before arc, fades+scales out as headline arrives) ──
+   Mobile-first: the base rule is the sm treatment — a dark frosted-glass pill
+   capped to the viewport width, resting 8px above the bottom (mirrors the top
+   nav pill's blur + radius, with a dark fill for legibility over the WebGL
+   cards; background at 0.30 alpha so the cards read through while the opaque
+   text stays legible). The min-width:768 block strips the panel back to plain
+   floating text. JS sets the `left` each frame in tick(). */
 .offer-arc-copy {
   position: fixed;
-  bottom: calc(72px + 20vh);
+
+  /* width allows up to (viewport - 16px) so the panel can reach 359px on a 375px
+     viewport (8px gap each side, symmetric). max-width caps at 359 for larger
+     phones. An earlier calc(100vw - 32px) was clamping to 343px on iPhone SE. */
+  width: calc(100vw - 16px);
+  max-width: 359px;
+  bottom: 8px;
   box-sizing: border-box;
-  width: 382px;
+  padding: 16px;
+  background: rgb(0 0 0 / 30%);
+  -webkit-backdrop-filter: blur(64px);
+  backdrop-filter: blur(64px);
+  border-radius: 16px;
   pointer-events: none;
   opacity: 0;
   will-change: opacity, transform;
@@ -249,7 +273,9 @@
 /* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
 .card-modal__image { display: none; }
 
-/* Nav arrows — position/top/left/right set by JS; CSS handles visual style only. */
+/* Nav arrows — position/top/left/right set by JS; CSS handles visual style only.
+   Base (sm) is the dark frosted treatment that sits over the photo; the
+   min-width:768 block swaps them to white buttons in the dark margin. */
 .card-modal__nav {
   position: absolute;
   width: 44px;
@@ -298,20 +324,25 @@
 .card-modal__close:hover { background: rgb(0 0 0 / 55%); }
 
 /* Info panel — position (top/left/right) set by JS.
-   Desktop: no background — panel lives in the right column outside the image area,
-   so the dark backdrop already provides contrast for the text.
-   Flex column layout pairs with `margin-top: auto` on .card-modal__badges so the
+   Base (sm): the panel overlays the asset, so it carries a dark frosted-glass
+   background + light text for legibility, with tight vertical padding to fit the
+   ~230px below the card. The min-width:768 block turns it into a SOLID WHITE card
+   with dark text (matching the prototype) — there the panel lives lower over the
+   image and the dark backdrop already provides contrast.
+   Flex column layout pairs with `margin-top` on .card-modal__badges so the
    eyebrow/title/description hug the top of the panel and the product list hugs
    the bottom — JS sets the panel's `top` to the asset's top-corner-radius point
    and its `min-height` to the corner-to-corner interior span, so the badges land
    on the asset's bottom-corner-radius point when there's room (and flow naturally
-   when content is too tall). Mobile re-introduces vertical padding (and the dark
-   frosted glass) below. */
+   when content is too tall). */
 .card-modal__info {
   position: absolute;
   margin: 0;
-  border-radius: 18px;
-  padding: 0 24px;
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  background: rgb(0 0 0 / 30%);
+  -webkit-backdrop-filter: blur(64px);
+  backdrop-filter: blur(64px);
   box-shadow: none;
   pointer-events: auto;
   display: flex;
@@ -326,17 +357,17 @@
 .card-modal__badges {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
 .card-modal__info > .card-modal__badges {
-  /* Desktop/tablet: gap below the body copy. The panel now overlays the lower
-     image (rather than living in a tall right-hand column), so the badges sit
-     close under the description instead of the old 96px split-view spacing.
-     Mobile compresses this further in its media query below. */
+  /* Gap below the body copy. The panel overlays the lower image (rather than
+     living in a tall right-hand column), so the badges sit close under the
+     description. The 0,2,0 specificity here intentionally beats the 0,1,0
+     .card-modal__badges rule above; the value is the same at every tier. */
   margin-top: 20px;
 }
 
@@ -351,20 +382,27 @@
 .card-modal__name {
   font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
   font-weight: 900;
-  font-size: 24px;
-  line-height: 28px;
+  font-size: 20px;
+  line-height: 24px;
   letter-spacing: -0.6px;
   color: #fff;
-  margin: 4px 0 12px;
+  margin: 2px 0 8px;
 }
 
 .card-modal__description {
   font-family: 'Adobe Clean', system-ui, sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 13px;
+  line-height: 18px;
   color: #c6c6c6;
-  margin: 0;
+  margin: 0 0 12px;
   max-width: 375px;
+
+  /* Cap the description to 3 lines (sm) so badges don't get pushed off-screen.
+     The min-width:768 block unclamps it (display:block / overflow:visible). */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-modal__badge {
@@ -381,15 +419,15 @@
 }
 
 .card-modal__badge-icon {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px;
   color: #fff;
   flex-shrink: 0;
 }
@@ -437,22 +475,22 @@
 .card-modal__badge-app {
   font-family: 'Adobe Clean', system-ui, sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
 }
 
 .card-modal__badge-role {
   font-family: 'Adobe Clean', system-ui, sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   color: #c6c6c6;
 }
 
-/* Counter ("1/N") — default style covers desktop/tablet. Position: bottom-center
-   of viewport. The mobile media query below tightens the bottom inset to align
-   with the mobile chrome (where nav arrows live at bottom corners). */
+/* Counter ("1/N") — position: bottom-center of viewport. Base (sm) sits close to
+   the bottom edge to align with the mobile chrome (nav arrows at bottom corners);
+   the min-width:768 block relaxes the bottom inset. */
 .card-modal__counter {
   position: absolute;
-  bottom: 32px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   height: 44px;
@@ -549,18 +587,32 @@ body.modal-open { overflow: hidden; }
 .globe-gallery-a11y__focus-ring.is-visible { display: block; }
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Desktop / tablet (≥768px) — modal info card overlaid on the image.
-   positionModalChrome anchors .card-modal__info over the image's lower area, so
-   the panel is a SOLID WHITE card with dark text (matching the prototype),
-   nav arrows are white buttons in the margin outside the image, and the close
-   button keeps the dark frosted treatment over the photo (top-right).
-   Mobile (<768px) below keeps the dark frosted panel + light text instead.
+   Milo md+ (≥768px) — desktop modal + arc-copy treatment layered on the sm base.
+   The info card becomes a SOLID WHITE card with dark text overlaid on the lower
+   image (matching the prototype), nav arrows become white buttons in the dark
+   margin outside the image, the description unclamps, and the arc-copy drops its
+   frosted pill for plain floating text. The close button keeps the dark frosted
+   treatment over the photo at every width.
 ───────────────────────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
+  /* Plain floating text — strip the sm frosted pill. */
+  .offer-arc-copy {
+    width: 382px;
+    max-width: none;
+    bottom: calc(72px + 20vh);
+    padding: 0;
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-radius: 0;
+  }
+
   .card-modal__info {
     background: #fff;
     border-radius: 20px;
     padding: 40px;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 
   .card-modal__role-label { color: #6e6e6e; }
@@ -578,10 +630,32 @@ body.modal-open { overflow: hidden; }
     font-size: 18px;
     line-height: 26px;
     max-width: 660px;
+    margin: 0;
+
+    /* Undo the sm 3-line clamp — desktop has room for the full description. */
+    display: block;
+    overflow: visible;
   }
 
-  .card-modal__badge-app { color: #1d1d1d; }
-  .card-modal__badge-role { color: #6e6e6e; }
+  .card-modal__badges { gap: 10px; }
+
+  .card-modal__badge-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .card-modal__badge-app {
+    color: #1d1d1d;
+    font-size: 14px;
+  }
+
+  .card-modal__badge-role {
+    color: #6e6e6e;
+    font-size: 14px;
+  }
+
+  .card-modal__counter { bottom: 32px; }
 
   /* Nav arrows: white buttons (dark chevron) sitting in the dark margin beside
      the image, not the frosted-dark treatment used over the photo on mobile. */
@@ -594,94 +668,4 @@ body.modal-open { overflow: hidden; }
   }
 
   .card-modal__nav:hover { background: #f2f2f2; }
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
-   Mobile (<768px) — modal info panel + chrome adjustments
-   Positioning is handled by JS (positionModalChrome with mobile branch).
-   These overrides shrink padding/typography to fit the ~230px below the card.
-───────────────────────────────────────────────────────────────────────── */
-@media (max-width: 767px) {
-  /* Arc-copy text block: 382px overflows a 375px viewport; cap to viewport-fit.
-     Final resting position on mobile: 8px above the viewport bottom (matches
-     the nav pill's outer 8px padding at top of viewport).
-     Left position: 8px (set by JS in tick); right margin stays ~24px, so width
-     is `calc(100vw - 32px)` (8 left + 24 right).
-     Dark frosted glass panel mirrors the top nav pill's blur strength + radius,
-     with a dark fill (vs nav's white) for legibility over the WebGL cards.
-     Background at 0.30 alpha so the cards behind read through; text inside
-     stays fully opaque (color: #fff/#c6c6c6 isn't affected by container alpha). */
-  .offer-arc-copy {
-    /* width allows up to (viewport - 16px) so the panel can reach 359px on a 375px
-       viewport (8px gap each side, symmetric). max-width caps at 359 for larger
-       phones. Earlier calc(100vw - 32px) was clamping to 343px on iPhone SE. */
-    width: calc(100vw - 16px);
-    max-width: 359px;
-    bottom: 8px;
-    background: rgb(0 0 0 / 30%);
-    -webkit-backdrop-filter: blur(64px);
-    backdrop-filter: blur(64px);
-    border-radius: 16px;
-    padding: 16px;
-  }
-
-  /* Hide dev/prototype UI on mobile so it doesn't compete with content or
-     overlap with modal nav arrows / close button. */
-  .layout-panel,
-  .rt-panel,
-  #bp-badge { display: none !important; }
-
-  /* Info panel on mobile sits over the asset, so it needs the dark frosted glass
-     background for legibility. Desktop has no background (the panel lives in the
-     right column outside the image area). */
-  .card-modal__info {
-    background: rgb(0 0 0 / 30%);
-    -webkit-backdrop-filter: blur(64px);
-    backdrop-filter: blur(64px);
-    padding: 16px 16px 14px;
-    border-radius: 16px;
-  }
-
-  .card-modal__name {
-    font-size: 20px;
-    line-height: 24px;
-    margin: 2px 0 8px;
-  }
-
-  .card-modal__description {
-    font-size: 13px;
-    line-height: 18px;
-    margin: 0 0 12px;
-
-    /* Cap description to 3 lines so badges don't get pushed off-screen */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .card-modal__badges {
-    gap: 8px;
-
-    /* Reset the desktop 96px top gap — mobile keeps the badges tight against
-       the description (the description already has margin-bottom: 12px below). */
-    margin-top: 0;
-  }
-
-  .card-modal__badge-icon {
-    width: 24px;
-    height: 24px;
-    font-size: 11px;
-  }
-
-  .card-modal__badge-app,
-  .card-modal__badge-role {
-    font-size: 13px;
-  }
-
-  /* Counter on mobile sits closer to the bottom edge to align with the nav
-     arrows that live at bottom corners. Other styles inherit from the default. */
-  .card-modal__counter {
-    bottom: 16px;
-  }
 }

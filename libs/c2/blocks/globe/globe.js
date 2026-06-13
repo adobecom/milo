@@ -8,6 +8,15 @@
      0.78 – 1.00  Zoom: camera flies through sphere
    ───────────────────────────────────────────────────────────────────────── */
 import * as THREE from './three.module.min.js';
+// The globe carries its own package.json (build-only, to vendor Three.js), so
+// eslint-plugin-import treats these libs imports as crossing a package boundary
+// and flags import/no-relative-packages. At runtime there is no boundary — the
+// block is served as raw ES modules from the milo origin, so the relative paths
+// resolve correctly and the @adobecom/milo specifier the rule suggests would 404.
+// eslint-disable-next-line import/no-relative-packages
+import { getConfig } from '../../../utils/utils.js';
+// eslint-disable-next-line import/no-relative-packages
+import { replaceKeyArray } from '../../../features/placeholders.js';
 import { parseAuthoredContent, fetchFragmentCards } from './authoring.js';
 import buildGlobeDom from './markup.js';
 import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './textures.js';
@@ -178,7 +187,7 @@ let globeInstanceSeq = 0;
 // Lenis reads → window.scrollY. `root` is the block element; all DOM lookups
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
 // `gid` is this instance's unique-id suffix (see globeInstanceSeq).
-function createGlobeRuntime(authoredCards, root, gid) {
+function createGlobeRuntime(authoredCards, root, gid, labels) {
   // rAF driver replacing gsap.ticker.
   let rafId = 0;
   // eslint-disable-next-line no-use-before-define -- tick() runs only via rAF, after init
@@ -699,6 +708,8 @@ function createGlobeRuntime(authoredCards, root, gid) {
     getCardDims: () => ({ w: CARD_W_SPHERE, h: CARD_H_SPHERE }),
     // Keyboard open: no pointer position, so emanate the open-warp from screen center.
     openModal: (idx) => modal.open(idx, W / 2, H / 2),
+    galleryLabel: labels.galleryRegion,
+    cardLabel: labels.cardLabel,
   });
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -1441,6 +1452,40 @@ function createGlobeRuntime(authoredCards, root, gid) {
   return { init: initRuntime, destroy };
 }
 
+// ── Localized UI strings ──────────────────────────────────────────────────────
+// Chrome aria-labels (modal nav/close, region labels) + the keyboard-gallery
+// button labels all resolve through Milo's placeholder dictionary so they localize
+// per locale, with English as the fallback (the default-locale sheet supplies it;
+// see README "Localization" for the keys to add). The card label is a tokenized
+// template so each locale controls word order around the interpolated values.
+async function resolveGlobeLabels() {
+  const [
+    arcRegion, prevCard, nextCard, closeBtn, appsUsed, galleryRegion, cardTplRaw,
+  ] = await replaceKeyArray(
+    ['image-gallery-intro', 'previous-card', 'next-card', 'close',
+      'apps-used', 'image-gallery', 'image-gallery-card-label'],
+    getConfig(),
+  );
+  // replaceKey returns the de-hyphenated key when a placeholder is absent from every
+  // sheet; for the tokenized card label that leaves no {{name}} to fill, so fall back
+  // to the English template. (The static labels de-hyphenate to readable English.)
+  const cardTpl = cardTplRaw.includes('{{name}}')
+    ? cardTplRaw
+    : 'View photo by {{name}}, {{index}} of {{count}}';
+  return {
+    arcRegion,
+    prevCard,
+    nextCard,
+    closeBtn,
+    appsUsed,
+    galleryRegion,
+    cardLabel: (name, index, count) => cardTpl
+      .replace('{{name}}', name)
+      .replace('{{index}}', String(index))
+      .replace('{{count}}', String(count)),
+  };
+}
+
 // ── Block entry point ────────────────────────────────────────────────────────
 export default async function init(el) {
   if (el.dataset.globeReady) return el;
@@ -1456,14 +1501,16 @@ export default async function init(el) {
 
   // Extract authored content BEFORE buildGlobeDom() wipes the block's children.
   // fragmentHref is captured here so it survives the DOM wipe.
-  const { cards: domCards, arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
+  const { arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
 
   // Unique suffix for this instance's id-bearing nodes (CA filter, aria target).
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
-  buildGlobeDom(el, gid);
+  const labels = await resolveGlobeLabels();
+  buildGlobeDom(el, gid, labels);
 
-  // Inject authored text into the built DOM slots (fallback to GLOBE_MARKUP defaults if absent).
+  // Inject authored arc-copy / pull-quote text into the built DOM slots. The slots
+  // ship empty (no hardcoded copy), so any unauthored field simply stays blank.
   if (arcCopy) {
     const titleEl = el.querySelector('.offer-arc-copy__title');
     const bodyEl = el.querySelector('.offer-arc-copy__body');
@@ -1479,18 +1526,20 @@ export default async function init(el) {
     if (roleEl && pullQuote.role) roleEl.textContent = pullQuote.role;
   }
 
-  const fetchedCards = await (
-    fragmentHref ? fetchFragmentCards(fragmentHref) : Promise.resolve(null)
-  );
-
-  // Prefer fully-fetched cards; fall back to what was in the DOM at init() time.
-  const cards = fetchedCards || domCards;
+  // Cards come from the authored fragment link, resolved by Milo before init().
+  let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
   // No cards → nothing to render. Collapse the spacer rather than init an empty scene.
   if (!cards || cards.length === 0) {
     el.classList.add('globe--reduced');
     return el;
   }
-  const runtime = createGlobeRuntime(cards, el, gid);
+  // ?local=on: reuse the first card's image for every slot so only 1 network
+  // fetch is needed. All card metadata (name, role, description) is preserved.
+  if (new URLSearchParams(window.location.search).get('local') === 'on') {
+    const firstImg = cards[0].img;
+    cards = cards.map((c) => ({ ...c, img: firstImg }));
+  }
+  const runtime = createGlobeRuntime(cards, el, gid, labels);
   if (!runtime) { el.classList.add('globe--reduced'); return el; }
   runtime.init();
   el.globeRuntime = runtime;

@@ -41,7 +41,8 @@ function findApp(token) {
 //   Row 2 — pull-quote: heading → .offer-pullquote__quote;
 //                       first <p> → .offer-pullquote__name;
 //                       second <p> → .offer-pullquote__role
-// Returns { cards, arcCopy, pullQuote }. cards falls back to [] (factory uses placeholders).
+// Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
+// link separately (fetchFragmentCards); the block collapses if the fetch yields none.
 
 function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -67,7 +68,7 @@ function parsePullQuote(row) {
 
 function parseFragmentCardSegment(nodes) {
   let picture = null; let img = null;
-  let role = 'Photographer'; let name = ''; let description = '';
+  let role = ''; let name = ''; let description = '';
   const badges = [];
 
   nodes.forEach((node) => {
@@ -108,7 +109,7 @@ function parseFragmentCardSegment(nodes) {
   return {
     img: img.currentSrc || img.getAttribute('src') || img.src,
     picture,
-    name: name || 'Untitled',
+    name,
     role,
     description,
     badges,
@@ -157,7 +158,7 @@ export async function fetchFragmentCards(href) {
 
 export function parseAuthoredContent(el) {
   const rows = [...el.querySelectorAll(':scope > div')];
-  if (!rows.length) return { cards: [], arcCopy: null, pullQuote: null, fragmentHref: null };
+  if (!rows.length) return { arcCopy: null, pullQuote: null, fragmentHref: null };
 
   let cardRows = rows;
   let arcCopy = null;
@@ -173,25 +174,17 @@ export function parseAuthoredContent(el) {
     cardRows = cardRows.slice(0, -1);
   }
 
-  // Extract the fragment href before buildGlobeDom() wipes the DOM.
-  // Canonical path: the link is authored with #_dnb (e.g. /fragments/…#_dnb) so
-  // Milo skips auto-resolution and the raw <a href> is still in the DOM here.
-  // Strip the hash before fetching. Fall back to data-path + image origin if
-  // Milo already replaced the link (e.g. on a page that predates the #_dnb convention).
+  // Extract the fragment href before buildGlobeDom() wipes the DOM. The link is
+  // authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
+  // the raw <a href> stays in the DOM here; strip the hash before fetching.
+  // Authoring must use #_dnb — there is no data-path fallback for pre-resolved links.
   const fragmentHref = (() => {
     for (const row of cardRows) {
       const a = row.querySelector('a[href]');
       if (a) return a.href.replace(/#.*$/, '');
-      const pathEl = row.querySelector('[data-path]');
-      if (pathEl) {
-        const imgSrc = row.querySelector('img')?.src;
-        const origin = imgSrc ? new URL(imgSrc).origin : window.location.origin;
-        return `${origin}${pathEl.dataset.path}`;
-      }
     }
     return null;
   })();
 
-  const cards = cardRows.flatMap((row) => parseFragmentCards(row)).filter(Boolean);
-  return { cards, arcCopy, pullQuote, fragmentHref };
+  return { arcCopy, pullQuote, fragmentHref };
 }

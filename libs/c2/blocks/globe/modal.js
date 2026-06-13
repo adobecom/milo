@@ -487,9 +487,9 @@ export default function createGlobeModal({
     if (!targetEl) return;
     const meta = getCardMetadata(i);
     const imgEl = targetEl.querySelector('.card-modal__image');
-    if (imgEl) { imgEl.src = meta.img; imgEl.alt = `${meta.name} — photograph`; }
+    if (imgEl) { imgEl.src = meta.img; imgEl.alt = meta.name; }
     const roleLabelEl = targetEl.querySelector('.card-modal__role-label');
-    if (roleLabelEl) roleLabelEl.textContent = meta.role || 'Photographer';
+    if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.card-modal__name').textContent = meta.name;
     targetEl.querySelector('.card-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.card-modal__counter');

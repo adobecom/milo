@@ -97,7 +97,8 @@ The block expects **three direct child rows**:
 
 Row roles are detected by whether the row contains a `<picture>`/`<img>` (only
 card rows do). `parseAuthoredContent(el)` returns
-`{ cards, arcCopy, pullQuote, fragmentHref }`.
+`{ arcCopy, pullQuote, fragmentHref }`; cards are loaded separately from the
+fragment link by `fetchFragmentCards`.
 
 ### Fragment loading
 
@@ -109,7 +110,10 @@ itself — AEM Edge Delivery returns all card sections as bare `<div>`s (one per
 `---`). Without `#_dnb`, Milo injects sections one-by-one before `init()` fires,
 racing the parse.
 
-Fallback chain: fetched cards → partial DOM cards (legacy auto-resolved pages) → `[]`.
+Cards come solely from the fetched fragment. If the fetch yields none — a failed
+request, or no fragment link authored — the block collapses to `.globe--reduced`
+rather than rendering an empty scene. There is no inline-DOM-card fallback (authoring
+is expected to provide a valid fragment link).
 
 ### Card shape
 
@@ -119,8 +123,8 @@ Each fragment section is flat P/UL elements:
 
 | Element | Becomes | Notes |
 | --- | --- | --- |
-| `<p><em>…</em></p>` | **role** | defaults to "Photographer" |
-| `<p><strong>…</strong></p>` | **name** | |
+| `<p><em>…</em></p>` | **role** | empty if unauthored (no hardcoded default) |
+| `<p><strong>…</strong></p>` | **name** | empty if unauthored (no hardcoded default) |
 | plain `<p>` | **description** | shown in the modal |
 | `<ul>` with nested `<ul><li>` per badge | **badges** | outer li = app name, inner li = role |
 | `<p><picture>…</picture></p>` | **image** | required — sections without one are skipped |
@@ -130,6 +134,34 @@ colors; unknown apps render with a derived abbreviation. `N_TOTAL` follows the
 authored card count, capped at the per-BP grid capacity (45 desktop/tablet = 9×5,
 24 mobile = 3×8). Fewer cards → the last grid column is partially filled; more →
 extras are dropped. No modulo wrapping (`getCardMetadata(i)` indexes directly).
+
+## Localization
+
+The block ships **no hardcoded user-facing copy**. Authored text (arc-copy,
+pull-quote, card name/role/description) comes from the fragment + rows; everything
+else — the chrome aria-labels and the keyboard-gallery button labels — resolves
+through Milo's placeholder dictionary via `replaceKeyArray` (`resolveGlobeLabels()`
+in `globe.js`, fetched once per init and threaded into `buildGlobeDom` and the a11y
+factory). English is the fallback: the default-locale sheet supplies it, and a
+missing key degrades to the de-hyphenated key text.
+
+**Add these keys to the `placeholders` sheet** (default locale = English; translate
+per locale):
+
+| Key | English value | Used for |
+| --- | --- | --- |
+| `image-gallery-intro` | Image gallery intro | `.offer-arc-copy` region label |
+| `previous-card` | Previous card | modal prev-arrow `aria-label` |
+| `next-card` | Next card | modal next-arrow `aria-label` |
+| `close` | Close | modal close-button `aria-label` |
+| `apps-used` | Apps used | modal badges list `aria-label` |
+| `image-gallery` | Image gallery | keyboard-gallery region label |
+| `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | each keyboard-gallery button (`aria-label` + text) |
+
+`image-gallery-card-label` is a **tokenized template** — `{{name}}`, `{{index}}`,
+`{{count}}` are substituted at runtime, so each locale controls word order around
+them. If the key is absent everywhere, the code falls back to the English template
+(the static keys de-hyphenate to readable English on their own).
 
 ## Architecture notes
 
@@ -176,9 +208,12 @@ cares about — code branches only on `'sm'`. Crossing 768px on resize changes t
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
 a band takes the cheap path (renderer/camera resize only). The `resize` handler is the
 sole driver — there are no `matchMedia` boundary listeners (a real `resize` always fires
-on a real viewport change; the old listeners were a DevTools-emulation crutch). CSS keeps
-its own three type tiers via `@media` (sm ≤767, md 768–1279, lg ≥1280) independently of
-these JS profiles.
+on a real viewport change; the old listeners were a DevTools-emulation crutch). CSS is
+authored **mobile-first** (Milo convention) and keeps its own three type tiers
+independently of these JS profiles: the sm scale is the unscoped `.globe` base, then
+`@media (min-width:768px)` (md) and `@media (min-width:1280px)` (lg) layer the larger
+scales on top. The modal/arc-copy treatment is the same — sm (dark frosted panels,
+clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop card.
 
 **Reduced motion**: skips WebGL and adds `.globe--reduced` (collapses the spacer).
 A static poster fallback is a TODO.

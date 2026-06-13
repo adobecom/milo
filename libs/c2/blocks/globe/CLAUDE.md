@@ -10,10 +10,13 @@ from the code alone.
 - **All nine shipped JS files (`globe.js`, `authoring.js`, `markup.js`, `shaders.js`,
   `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are airbnb-clean — keep
   them that way (`npx eslint` exit 0, no banners).** The blanket `/* eslint-disable */` is
-  gone. The only lint exceptions are 3 targeted `// eslint-disable-next-line
-  no-use-before-define` comments in `globe.js` for genuine forward refs (the rAF driver →
-  `tick`, `onPointerUp` → `handleCardClick`, `doLayout` → `destroy`); don't add blanket
-  disables to silence new issues.
+  gone. Targeted `// eslint-disable-next-line` comments are allowed when a rule genuinely
+  misfires — keep them one-line, justified by a comment, never a blanket disable. Current
+  exceptions: 3 `no-use-before-define` in `globe.js` for genuine forward refs (the rAF
+  driver → `tick`, `onPointerUp` → `handleCardClick`, `doLayout` → `destroy`); and 2
+  `import/no-relative-packages` on the `getConfig` / `replaceKeyArray` imports in `globe.js`
+  (the block's build-only `package.json` makes eslint see a package boundary that doesn't
+  exist at runtime, where the block is served as raw ES modules from the milo origin).
 - **`tick()` is a thin orchestrator** — it runs named single-concern stages
   (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `modal.updateAnimation`,
   `updateCardTransforms`, `renderScene`, …) in a fixed order. **Stage order matters**

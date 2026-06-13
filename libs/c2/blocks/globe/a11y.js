@@ -13,8 +13,9 @@
    viewport, the live sphereFormT / modalIdx, card dimensions) is injected as a
    getter so the module holds no globe-specific state except its own DOM nodes.
    `openModal(i)` is injected so the gallery can open the modal without importing
-   the modal code. Multi-instance safe — all lookups go through the injected
-   root-scoped `q`. */
+   the modal code. The localized `galleryLabel` (region) + `cardLabel(name, index,
+   count)` (per-button) are injected too, so this module owns no UI copy. Multi-
+   instance safe — all lookups go through the injected root-scoped `q`. */
 import * as THREE from './three.module.min.js';
 
 export default function createGalleryA11y({
@@ -29,6 +30,8 @@ export default function createGalleryA11y({
   interactiveThreshold,
   getCardDims,
   openModal,
+  galleryLabel,
+  cardLabel,
 }) {
   let galleryBtns = null; // NodeList of buttons (set in setup)
   let interactive = false; // current tabbable state of the gallery buttons
@@ -53,7 +56,7 @@ export default function createGalleryA11y({
     container.id = 'globe-gallery-a11y';
     container.className = 'globe-gallery-a11y';
     container.setAttribute('role', 'region');
-    container.setAttribute('aria-label', 'Image gallery');
+    container.setAttribute('aria-label', galleryLabel);
 
     const list = document.createElement('ul');
     list.className = 'globe-gallery-a11y__list';
@@ -99,10 +102,11 @@ export default function createGalleryA11y({
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'globe-gallery-a11y__btn';
-      btn.setAttribute('aria-label', `View photo by ${meta.name}, ${i + 1} of ${count}`);
+      const label = cardLabel(meta.name, i + 1, count);
+      btn.setAttribute('aria-label', label);
       btn.dataset.cardIdx = String(i);
       btn.tabIndex = -1; // off until the sphere is interactive
-      btn.textContent = `${meta.name}, ${i + 1} of ${count}`;
+      btn.textContent = label;
 
       attachGalleryButton(i, btn);
 
