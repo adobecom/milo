@@ -1322,12 +1322,49 @@ export default function createGlobeModal({
     }, { passive: true });
   }
 
+  // Synchronously return the modal's DOM + page state to the closed baseline.
+  // destroy() forces the phase straight to CLOSED without playing the close
+  // animation, so the classes / scroll-lock / canvas that open() set are never
+  // undone by the normal close path. A breakpoint re-init keeps the SAME modal
+  // DOM (innerHTML is built once in init, not per initRuntime) — so without this
+  // the modal stays visually stuck open after the rebuild: the flown-out card
+  // mesh was dropped with the old modalScene (image vanishes), modalIdx is reset
+  // to -1 so the re-wired close/nav buttons early-return (chrome goes dead), and
+  // body stays scroll-locked. Queries the main canvas via `q` (not getRenderer)
+  // because core destroy() nulls the renderer before calling modal.destroy().
+  function resetModalDom() {
+    if (modalEl) {
+      modalEl.classList.remove('is-visible', 'is-open');
+      modalEl.setAttribute('aria-hidden', 'true');
+    }
+    const chromeEl = q('.card-modal-chrome');
+    if (chromeEl) {
+      chromeEl.classList.remove('is-visible', 'is-open');
+      chromeEl.setAttribute('aria-hidden', 'true');
+    }
+    if (modalCanvasEl) {
+      modalCanvasEl.style.display = 'none';
+      modalCanvasEl.style.transition = 'none';
+      modalCanvasEl.style.transform = '';
+    }
+    const mainCanvas = q('.offer-globe-canvas');
+    if (mainCanvas) mainCanvas.classList.remove('is-modal-active');
+    document.documentElement.classList.remove('modal-open');
+    document.body.classList.remove('modal-open');
+    if (window.lenis) window.lenis.start();
+    modalChromeRevealT0 = -1;
+    modalChromeFadeT = 0;
+    modalFocusRestoreEl = null;
+  }
+
   // Dispose the modal renderer + clear the pending close timeout (mirrors the
   // main renderer's lifecycle in core destroy()). The keydown handler is removed
-  // so it doesn't outlive a teardown.
+  // so it doesn't outlive a teardown, and the modal's DOM/page state is reset so
+  // an open modal doesn't survive a breakpoint re-init stuck + non-functional.
   function destroy() {
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
     if (keydownHandler) { document.removeEventListener('keydown', keydownHandler); keydownHandler = null; }
+    resetModalDom();
     if (modalRenderer) {
       modalRenderer.dispose();
       modalRenderer = null;
