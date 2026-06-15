@@ -133,6 +133,7 @@ const C2_BLOCKS = [
   'product-marquee-grid',
   'hover-list',
   'tabs',
+  'split-aside-grid',
 ];
 
 const AUTO_BLOCKS = [
