@@ -1007,7 +1007,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1015,7 +1015,14 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
+  if (useGeoLocation) {
+    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
+    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
+  }
+
+  const country = useGeoLocation
+    ? normCountryCode(await getCountry())
+    : (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -1990,7 +1997,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
@@ -2007,7 +2014,12 @@ export async function loadIms() {
         scope: imsScope || defaultScope,
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+          ? (() => {
+            const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
+            const acomPrefix = (lingoRegion?.prefix || locale.prefix).slice(1);
+            if (acomPrefix === 'cn' || acomPrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            return `${baseUrl}/home${acomPrefix ? `?acomLocale=${acomPrefix}` : ''}`;
+          })() : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,
