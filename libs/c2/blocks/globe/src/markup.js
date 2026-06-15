@@ -89,7 +89,6 @@ let globeInstanceSeq = 0;
 export default function buildGlobeDom(el, labels) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
-  el.classList.add('offer-pin-spacer');
   el.innerHTML = buildMarkup(gid, labels);
   return gid;
 }

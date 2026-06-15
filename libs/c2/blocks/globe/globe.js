@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────
    Offer Globe — Three.js WebGL scrolled hero.
 
-   Phases (progress 0→1 across 850vh .offer-pin-spacer):
+   Phases (progress 0→1 across the block's 850vh scroll length):
      0.00 – 0.55  Arc: 45 cards rotate across viewport
      0.14 – 0.65  Grid peel: cards peel off arc into 9×5 grid (staggered)
      0.37 – 0.78  Sphere fold: each card folds to sphere immediately after arriving in grid
@@ -71,7 +71,7 @@ function resolveBP(w) {
   return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
 
-// ── Phase timeline (progress 0→1 across the 850vh spacer) ────────────────────
+// ── Phase timeline (progress 0→1 across the block's 850vh scroll length) ─────
 const ARC_STAGGER = 0.594;
 const PROGRESS_PAN_END = 0.55;
 const PROGRESS_ARC_PREROLL = 0.30;
@@ -84,7 +84,7 @@ const PROGRESS_ZOOM_END = 1.00;
 // ── Entry timing ─────────────────────────────────────────────────────────────
 // Two independent knobs (the WebGL canvas is transparent, so an early reveal only
 // draws the card meshes, not an opaque sheet over the content above):
-//   ENTRY_LEAD_VH — how far, in viewport heights, BEFORE the spacer's top the
+//   ENTRY_LEAD_VH — how far, in viewport heights, BEFORE the block's top the
 //     globe starts entering (arc-copy fade-in, arc pre-roll, canvas reveal).
 //     The prototype used 0.85 (hero, nothing above it) — that pre-rolls the arc
 //     across most of the viewport while preceding blocks are still on screen,
@@ -245,8 +245,13 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
 
   let progress = 0;
   let arcCopyEntryT = 0;
-  let spacerOffsetTop = 0;
-  let spacerHeight = 0;
+  // The block element itself is the scroll runway:
+  // blockDocTop = its top in document space, blockHeight = its full scroll length.
+  let blockDocTop = 0;
+  let blockHeight = 0;
+  // Non-null → the timeline is driven from this synthetic scroll position instead of
+  // window.scrollY (set via setVirtualProgress; see its definition). null = real scroll.
+  let virtualScrollY = null;
   let W = 0; let
     H = 0;
 
@@ -687,6 +692,13 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     applyMotionCA,
   });
 
+  // Drive the timeline from a synthetic progress value (0→1) instead of scroll, so
+  // keyboard focus can step through phases without scrolling. Pass null to release
+  // control back to window.scrollY. computeFrame reads the resulting virtualScrollY.
+  const setVirtualProgress = (p) => {
+    virtualScrollY = p == null ? null : blockDocTop + Math.max(0, Math.min(1, p)) * blockHeight;
+  };
+
   a11y = createGalleryA11y({
     q,
     getCards: () => cards,
@@ -700,6 +712,9 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     getCardDims: () => ({ w: CARD_W_SPHERE, h: CARD_H_SPHERE }),
     // Keyboard open: no pointer position, so emanate the open-warp from screen center.
     openModal: (idx) => modal.open(idx, W / 2, H / 2),
+    // Phase-stepping hook: focus handlers can advance the timeline without scrolling
+    // (not wired into a11y's keyboard handling yet — plumbing for that feature).
+    setVirtualProgress,
     galleryLabel: labels.galleryRegion,
     cardLabel: labels.cardLabel,
   });
@@ -717,14 +732,15 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
   // Also refreshes the closure scroll state other code reads between ticks
   // (scrollVel for motion CA, sphereFormTAtLastTick for the click/hover handlers).
   function computeFrame() {
-    const lenisY = window.scrollY;
+    // virtualScrollY (a11y phase-stepping) overrides real scroll when set.
+    const lenisY = virtualScrollY != null ? virtualScrollY : window.scrollY;
     const scrollingDown = lenisY >= prevLenisY;
     scrollVel = Math.abs(lenisY - prevLenisY); // px/frame — drives motion trail intensity
     prevLenisY = lenisY;
-    const entryStart = spacerOffsetTop - H * ENTRY_LEAD_VH;
+    const entryStart = blockDocTop - H * ENTRY_LEAD_VH;
     const entryRange = H * ENTRY_RAMP_VH;
     arcCopyEntryT = Math.max(0, Math.min(1, (lenisY - entryStart) / entryRange));
-    progress = Math.max(0, Math.min(1, (lenisY - spacerOffsetTop) / spacerHeight));
+    progress = Math.max(0, Math.min(1, (lenisY - blockDocTop) / blockHeight));
 
     // arcPanT: preroll animates in WITH the entry (0 before section, PROGRESS_ARC_PREROLL by entry)
     // so the arc is already in motion as the section scrolls into view.
@@ -882,7 +898,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
   // fade (the arc's own rotation/slide-up handles the "appearing" feel).
   function updateCanvasVisibility(lenisY, zoomT) {
     const canvas = renderer.domElement;
-    const showTrigger = spacerOffsetTop - H * ENTRY_LEAD_VH; // matches entryStart in computeFrame
+    const showTrigger = blockDocTop - H * ENTRY_LEAD_VH; // matches entryStart in computeFrame
     if (lenisY < showTrigger || zoomT >= 0.95) {
       canvas.style.display = 'none';
     } else {
@@ -1278,7 +1294,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   let resizeHandler = null;
-  let layoutObs = null; // ResizeObserver keeping spacer metrics fresh as page content loads
+  let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
 
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
@@ -1319,7 +1335,6 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     cameraOrtho.position.set(0, 0, 100);
     cameraOrtho.lookAt(0, 0, 0);
 
-    const spacer = root; // the block element is the scroll spacer (.offer-pin-spacer)
     function doLayout() {
       W = window.innerWidth;
       H = window.innerHeight;
@@ -1335,8 +1350,8 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
         initRuntime();
         return;
       }
-      spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
-      spacerHeight = spacer ? spacer.offsetHeight : window.innerHeight * 7;
+      blockDocTop = root.getBoundingClientRect().top + window.scrollY;
+      blockHeight = root.offsetHeight || window.innerHeight * 7;
       // Re-apply DPR — it can change at runtime (e.g. dragging the window between
       // monitors of different pixel density); without this the canvas would keep
       // the old DPR's internal buffer size and render at the wrong resolution.
@@ -1357,15 +1372,13 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     resizeHandler = doLayout;
     window.addEventListener('resize', resizeHandler, { passive: true });
 
-    // Recompute spacer metrics whenever page height changes (images/blocks loading
-    // above the spacer shift its offsetTop; spacerHeight=0 at first paint makes
+    // Recompute block metrics whenever page height changes (images/blocks loading
+    // above the block shift its offsetTop; blockHeight=0 at first paint makes
     // progress=Infinity and skips straight to the zoom/pull-quote phase).
     if (layoutObs) layoutObs.disconnect();
     layoutObs = new ResizeObserver(() => {
-      spacerOffsetTop = spacer ? spacer.getBoundingClientRect().top + window.scrollY : 0;
-      spacerHeight = spacer
-        ? (spacer.offsetHeight || window.innerHeight * 7)
-        : window.innerHeight * 7;
+      blockDocTop = root.getBoundingClientRect().top + window.scrollY;
+      blockHeight = root.offsetHeight || window.innerHeight * 7;
     });
     layoutObs.observe(document.body);
 
@@ -1483,8 +1496,8 @@ export default async function init(el) {
   if (el.dataset.globeReady) return el;
   el.dataset.globeReady = 'true';
 
-  // Reduced-motion: skip the WebGL experience entirely and collapse the tall
-  // scroll spacer. TODO (iterate): author a static poster fallback like pdf-space.
+  // Reduced-motion: skip the WebGL experience entirely and collapse the block's
+  // tall scroll length. TODO (iterate): author a static poster fallback like pdf-space.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (reducedMotion.matches) {
     el.classList.add('globe--reduced');
@@ -1519,7 +1532,7 @@ export default async function init(el) {
 
   // Cards come from the authored fragment link, resolved by Milo before init().
   let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
-  // No cards → nothing to render. Collapse the spacer rather than init an empty scene.
+  // No cards → nothing to render. Collapse the block rather than init an empty scene.
   if (!cards || cards.length === 0) {
     el.classList.add('globe--reduced');
     return el;

@@ -176,16 +176,29 @@ counter in `markup.js`). The runtime finds nodes by **class, queried within
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal heading/description (the dialog's
-`aria-labelledby` / `aria-describedby` IDREFs). `el` itself becomes the `850vh` scroll spacer
-(`.globe.offer-pin-spacer`); the canvas is `position:fixed`. Body-level globals
+`aria-labelledby` / `aria-describedby` IDREFs). `el` itself is the `850vh` scroll runway
+(styled directly on `.globe`, no extra class); the canvas is `position:fixed`. Body-level globals
 that remain shared (acceptable, one modal at a time): the `.modal-open` scroll
 lock and the keyboard focus-ring overlay.
 
-**Scroll model.** `progress = clamp((scrollY - spacerOffsetTop) / spacerHeight, 0, 1)`.
-Milo's page-level Lenis keeps `window.scrollY` in sync (gsap was dropped for a
-`requestAnimationFrame` driver, `startTicker`/`stopTicker`). The modal pauses
-Lenis via `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }`
-CSS lock. Phase constants (module scope):
+**Scroll model.** The block element *is* the scroll runway (it's `850vh` tall) —
+there's no separate runway element, so progress is measured against the block's own
+metrics: `progress = clamp((scrollY - blockDocTop) / blockHeight, 0, 1)`, where
+`blockDocTop` is the block's top in document space and `blockHeight` its full scroll
+length (both refreshed in `doLayout` + a body `ResizeObserver`). Milo's page-level
+Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFrame`
+driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
+`window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
+
+**Virtual progress.** `computeFrame` reads `virtualScrollY != null ? virtualScrollY
+: window.scrollY`, so the whole timeline can be driven from a synthetic position
+instead of real scroll. The `setVirtualProgress(p)` closure (p in 0→1, `null` to
+release) maps a progress value to that synthetic scroll position and is injected into
+the a11y module's deps. It's **plumbing, not yet wired**: the intended consumer is
+keyboard focus stepping through phases (tab into the gallery → advance to the
+sphere-interactive phase without scrolling). a11y doesn't call it yet.
+
+Phase constants (module scope):
 
 ```
 P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
@@ -194,7 +207,7 @@ CA_ENABLED=true
 ```
 
 **Entry timing** is split into two independent constants (module scope):
-- `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the spacer top that
+- `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the block top that
   the entry begins. `0` feels late; `0.85` is the prototype's hero pre-roll but
   sweeps card meshes over preceding content.
 - `ENTRY_RAMP_VH` (default `1.05`) — ramp length over which `arcCopyEntryT` goes
@@ -228,7 +241,7 @@ independently of these JS profiles: the sm scale is the unscoped `.globe` base, 
 scales on top. The modal/arc-copy treatment is the same — sm (dark frosted panels,
 clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop card.
 
-**Reduced motion**: skips WebGL and adds `.globe--reduced` (collapses the spacer).
+**Reduced motion**: skips WebGL and adds `.globe--reduced` (collapses the block).
 A static poster fallback is a TODO.
 
 ## Behavior notes (intentional differences from the prototype)

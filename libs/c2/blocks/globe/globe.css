@@ -16,11 +16,9 @@
    ───────────────────────────────────────────────────────────────────────── */
 /* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
 
-/* Block element is the tall scroll spacer (850vh scroll budget). */
-.globe.offer-pin-spacer { height: 850vh; }
-
-/* Reduced-motion / THREE-unavailable fallback: collapse the section. */
-.globe--reduced {
+/* Reduced-motion / THREE-unavailable fallback: collapse the runway. The compound
+   selector beats the .globe runway height regardless of source order. */
+.globe.globe--reduced {
   height: auto;
   min-height: 0;
 }
@@ -40,6 +38,13 @@
    below step the title + body-l up for md (≥768) and lg (≥1280). body-m never
    changes across tiers, so it lives only here. */
 .globe {
+  /* The block element itself is the tall scroll runway (850vh scroll budget). */
+  height: 850vh;
+  position: relative;
+  background: #131313;
+  margin-top: 0;
+  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
+
   --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
 
@@ -78,13 +83,6 @@
     --type-body-l-size: 20px;
     --type-body-l-lh: 1.2;
   }
-}
-
-.offer-pin-spacer {
-  position: relative;
-  background: #131313;
-  margin-top: 0;
-  overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
 }
 
 /* Sticky viewport — cards are absolutely positioned within this */
@@ -148,9 +146,9 @@
 }
 
 /* ── Pull-quote (sticky inside .offer-pullquote-pin) ──
-   The pin container is absolute at the bottom of the 850vh spacer. The pull-quote
+   The pin container is absolute at the bottom of the 850vh runway. The pull-quote
    is sticky inside it, so it scrolls in naturally from below, sticks centered through
-   the zoom phase, and scrolls off the top as the spacer ends — no JS required. */
+   the zoom phase, and scrolls off the top as the runway ends — no JS required. */
 .offer-pullquote-pin {
   position: absolute;
   bottom: 0;
