@@ -8,8 +8,8 @@
 .brand-concierge {
   --bc-header-font-size: 36px;
   --bc-header-line-height: 45px;
-  --bc-header-subtitle-font-size: 16px;
-  --bc-header-subtitle-line-height: 24px;
+  --bc-header-subtitle-font-size: 18px;
+  --bc-header-subtitle-line-height: 27px;
   --bc-header-margin-bottom: 32px;
   --bc-header-padding: 0 24px;
   --bc-header-color: #131313;
@@ -36,6 +36,12 @@
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
   --bc-keyboard-focus-color: #5574F7;
+  --bc-dark-text-color: #fff;
+  --bc-dark-text-color-secondary: #aba8a6;
+  --bc-dark-input-background: #131313;
+  --bc-dark-input-border-color: linear-gradient(98deg, #9A3CF9 0%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 100%);
+  --bc-dark-button-color: rgba(255 255 255 / 80%);
+  --bc-dark-button-hover-color: rgba(255 255 255 / 90%);
 
   box-sizing: border-box;
   padding: 40px 24px 12px;
@@ -342,6 +348,20 @@
   color: #4B4B4B;
 }
 
+.bc-floating-element {
+  position: fixed;
+  transition: opacity 0.2s ease;
+}
+
+.bc-floating-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bc-floating-show {
+  opacity: 1;
+}
+
 /* floating-button */
 .bc-floating-button {
   bottom: 0;
@@ -349,23 +369,12 @@
   right: 0;
   margin: var(--bc-floating-button-spacing) auto;
   max-height: var(--bc-floating-button-height);
-  position: fixed;
-  transition: opacity 0.25s ease;
   width: calc(100% - var(--bc-floating-button-spacing) * 2 - var(--bc-input-border-size) * 2);
-  z-index: 4;
+  z-index: 5;
 }
 
 .bc-floating-button::before {
   border-color: var(--bc-floating-button-border-color);
-}
-
-.bc-floating-button.floating-hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.bc-floating-button.floating-show {
-  opacity: 1;
 }
 
 .bc-floating-button-container {
@@ -440,7 +449,7 @@
   padding: 40px 24px 12px;
 }
 
-.brand-concierge.hero.has-bg-image {
+.brand-concierge.hero.has-bg-image:not(.c2-dark) {
   background: linear-gradient(180deg, #fff0 0%, #fff0 38%, #fff 100%), var(--brand-concierge-bg) 50% / cover no-repeat;
 }
 
@@ -463,6 +472,332 @@
 .pill-cards .card-icon {
   align-self: flex-start;
   margin-top: 4px;
+}
+
+/* c2-dark */
+.c2-dark .bc-header-title,
+.c2-dark .bc-header-subtitle {
+  color: var(--bc-dark-text-color);
+}
+
+.c2-dark .bc-header-title {
+  font-size: 32px;
+  line-height: 32px;
+}
+
+.c2-dark.input-first .bc-prompt-cards {
+  margin-bottom: 24px;
+}
+
+.c2-dark .prompt-card-button {
+  background: rgb(255 255 255 / 10%);
+  border-radius: 24px;
+  position: relative;
+}
+
+.c2-dark .prompt-card-button::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 24px;
+  border: 1.5px solid transparent;
+  background: linear-gradient(to right, rgba(225 29 26 / 16%), rgba(144 13 235 / 16%)) border-box;
+  mask:
+    linear-gradient(#fff 0 0) padding-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.c2-dark .prompt-card-text,
+.c2-dark.hero .prompt-card-text {
+  grid-template-columns: auto;
+}
+
+.c2-dark .card-icon {
+  display: none;
+}
+
+.c2-dark .prompt-card-text p {
+  color: var(--bc-dark-text-color-secondary);
+  margin: 0;
+}
+
+
+.c2-dark .bc-input-field::before {
+  background: var(--bc-dark-input-border-color) border-box;
+  border: 1px solid var(--bc-input-border-color);
+}
+
+.c2-dark.input-first .bc-input-field {
+  margin-bottom: 24px;
+}
+
+.c2-dark .bc-input-field-container {
+  border-radius: calc(var(--bc-input-radius) - (var(--bc-input-border-size) / 2));
+  background: var(--bc-dark-input-background);
+}
+
+.c2-dark .bc-input-field-container:hover,
+.c2-dark .bc-input-field-container:has(textarea:focus-visible) {
+  background: var(--bc-dark-input-background);
+}
+
+.c2-dark .bc-input-field-container textarea {
+  color: var(--bc-dark-text-color);
+}
+
+.c2-dark .bc-input-field-container textarea::placeholder {
+  color: var(--bc-dark-text-color-secondary);
+}
+
+.c2-dark .input-field-button {
+  background: var(--bc-dark-button-color);
+  color: #000;
+}
+
+.c2-dark .input-field-button:hover {
+  background: var(--bc-dark-button-hover-color);
+}
+
+.c2-dark .input-field-button:disabled {
+  background: transparent;
+  color: #C6C6C6;
+}
+
+.c2-dark .bc-legal,
+.c2-dark .bc-legal a {
+  color: var(--bc-dark-text-color-secondary);
+  font-size: 12px;
+}
+
+/* floating-input */
+.brand-concierge.floating-input-only {
+  padding: 0;
+}
+
+.floating-input .bc-floating-input {
+  --bc-fi-bar-bg: rgba(248 248 248 / 65%);
+  --bc-fi-bar-border: rgba(0 0 0 / 12%);
+  --bc-fi-input-bg: rgba(255 255 255 / 85%);
+  --bc-fi-pill-bg: rgba(255 255 255 / 94%);
+  --bc-fi-pill-border: rgba(0 0 0 / 12%);
+  --bc-fi-text: #292929;
+  --bc-fi-pill-text: #292929;
+
+  backdrop-filter: blur(20px);
+  background: var(--bc-fi-bar-bg);
+  border: 1px solid var(--bc-fi-bar-border);
+  border-radius: 16px;
+  bottom: 0;
+  margin: 16px 0;
+  box-shadow: 0 8px 32px rgba(0 0 0 / 12%);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  left: 50%;
+  padding: 16px;
+  transform: translateX(-50%);
+  width: calc(100% - 32px);
+  z-index: 5;
+}
+
+.floating-input .bc-floating-input .bc-input-field,
+.floating-input .bc-floating-input .bc-prompt-cards {
+  margin: 0;
+}
+
+.floating-input .bc-floating-input .bc-input-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.floating-input .bc-floating-input .bc-input-field-container {
+  background: var(--bc-fi-input-bg);
+  margin-bottom: 0;
+  min-height: 48px;
+}
+
+.floating-input .bc-floating-input .bc-input-field-container:hover,
+.floating-input .bc-floating-input .bc-input-field-container:has(textarea:focus-visible) {
+  background: var(--bc-fi-input-bg);
+}
+
+.floating-input .bc-floating-input .bc-input-tooltip {
+  color: #000;
+}
+
+.floating-input .bc-floating-input.light .bc-input-tooltip {
+  color: #fff;
+}
+
+.floating-input .bc-floating-input .bc-input-field::before {
+  backdrop-filter: none;
+  background:
+    linear-gradient(var(--bc-fi-input-bg), var(--bc-fi-input-bg)) padding-box,
+    linear-gradient(135deg, #7155FA, #D92361, #D73220) border-box;
+  border: 2px solid transparent;
+}
+
+.floating-input .bc-floating-input .bc-input-field::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #7155FA, #D92361, #D73220);
+  filter: blur(15px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 0;
+}
+
+.floating-input .bc-floating-input .bc-input-field:hover::after,
+.floating-input .bc-floating-input .bc-input-field:has(textarea:focus-visible)::after {
+  opacity: 0.4;
+}
+
+.floating-input .bc-floating-input .bc-textarea-grow-wrap {
+  overflow: hidden;
+}
+
+.floating-input .bc-floating-input .bc-input-field-container textarea,
+.floating-input .bc-floating-input .bc-textarea-grow-wrap::after {
+  max-height: 48px;
+  min-height: 48px;
+  overflow: hidden;
+  overflow-wrap: normal;
+  padding: 12px 0;
+  white-space: nowrap;
+}
+
+.floating-input .bc-floating-input .bc-input-field-label {
+  align-self: center;
+  margin-top: 0;
+}
+
+.floating-input .bc-floating-input .input-field-button {
+  align-self: center;
+  margin-bottom: 0;
+}
+
+.floating-input .bc-floating-input .input-field-button,
+.floating-input .bc-floating-input .input-field-button:hover {
+  background: transparent;
+  color: #0004;
+}
+
+.floating-input .bc-floating-input .input-field-button:disabled {
+  color: #0004;
+}
+
+.floating-input .bc-floating-input .input-field-button:not(:disabled) {
+  background: var(--bc-button-color);
+  color: #fff;
+}
+
+.floating-input .bc-floating-input .bc-prompt-cards {
+  display: none;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.floating-input .bc-floating-input .prompt-card-button {
+  background: var(--bc-fi-pill-bg);
+  border-color: var(--bc-fi-pill-border);
+  border-radius: 26px;
+  flex: 0 0 auto;
+  height: 36px;
+  padding: 0;
+  white-space: nowrap;
+  width: auto;
+}
+
+.floating-input .bc-floating-input .prompt-card-button:hover {
+  background: #F8F8F8;
+  border-color: rgba(0 0 0 / 22%);
+}
+
+.floating-input .bc-floating-input .prompt-card-button:focus-visible {
+  outline-offset: -2px;
+}
+
+.floating-input .bc-floating-input .prompt-card-text {
+  align-items: center;
+  color: var(--bc-fi-pill-text);
+  display: flex;
+  font-size: 14px;
+  gap: 6px;
+  line-height: 1.4;
+  padding: 4px 16px;
+  white-space: nowrap;
+}
+
+.floating-input .bc-floating-input .prompt-card-text .card-icon {
+  display: none;
+}
+
+.floating-input .bc-floating-input .prompt-card-text p {
+  color: var(--bc-fi-pill-text);
+  margin: 0;
+  white-space: nowrap;
+}
+
+.floating-input-dark .bc-floating-input {
+  --bc-fi-bar-bg: rgba(0 0 0 / 65%);
+  --bc-fi-bar-border: rgba(255 255 255 / 21%);
+  --bc-fi-input-bg: #131313;
+  --bc-fi-pill-bg: rgba(0 0 0 / 93%);
+  --bc-fi-pill-border: #8F8F8F;
+  --bc-fi-text: #DBDBDB;
+  --bc-fi-pill-text: var(--bc-fi-text);
+  --bc-button-color: var(--bc-fi-text);
+  --bc-fi-icon-color: #C6C6C6;
+  --bc-fi-input-hover-bg: #292929;
+  --bc-fi-pill-hover-bg: #222;
+}
+
+.floating-input-dark .bc-floating-input .bc-input-field::before {
+  background:
+    linear-gradient(#111, #111) padding-box,
+    linear-gradient(135deg, #D73220, #F98F06, #7155FA) border-box;
+}
+
+.floating-input-dark .bc-floating-input .bc-input-field-container textarea::placeholder {
+  color: rgba(219 219 219 / 70%);
+}
+
+.floating-input-dark .bc-floating-input .bc-textarea-grow-wrap textarea {
+  color: var(--bc-fi-text);
+}
+
+/* stylelint-disable */
+.floating-input-dark .bc-floating-input .input-field-button {
+  color: var(--bc-fi-icon-color);
+}
+/* stylelint-enable */
+
+.floating-input-dark .bc-floating-input .input-field-button:disabled {
+  color: var(--bc-fi-icon-color);
+  pointer-events: none;
+}
+
+.floating-input-dark .bc-floating-input .input-field-button:not(:disabled) {
+  color: var(--bc-fi-input-bg);
+}
+
+.floating-input-dark .bc-floating-input .bc-input-field-container:hover,
+.floating-input-dark .bc-floating-input .bc-input-field-container:has(textarea:focus-visible) {
+  background: var(--bc-fi-input-hover-bg);
+}
+
+.floating-input-dark .bc-floating-input .prompt-card-button:hover {
+  border: 1px solid var(--bc-fi-icon-color);
+  background-color: var(--bc-fi-pill-hover-bg);
 }
 
 /* Modal */
@@ -560,6 +895,15 @@
   #brand-concierge-modal.closing ~ .modal-curtain {
     animation: none;
   }
+
+  .bc-floating-input {
+    backdrop-filter: none;
+    background: #F8F8F8;
+  }
+
+  .floating-input-dark .bc-floating-input {
+    background: #111;
+  }
 }
 
 #brand-concierge-modal .dialog-close {
@@ -652,6 +996,13 @@
   /* hero */
   .brand-concierge.hero {
     padding: 80px 32px 24px;
+  }
+
+  .floating-input .bc-floating-input {
+    margin: 24px 0;
+    max-width: 1412px;
+    padding: 20px;
+    width: calc(100% - 48px);
   }
 }
 
@@ -759,6 +1110,11 @@
     margin-top: 4px;
   }
 
+  .c2-dark .prompt-card-text,
+  .c2-dark.hero .prompt-card-text {
+    grid-template-columns: auto;
+  }
+
   #brand-concierge-modal.dialog-modal {
     height: calc(100dvh - 32px);
     margin-top: 32px;
@@ -770,6 +1126,14 @@
     #brand-concierge-modal.dialog-modal {
       height: calc(100vh - 32px);
     }
+  }
+
+  .floating-input .bc-floating-input .bc-prompt-cards {
+    display: flex;
+  }
+
+  .floating-input .bc-floating-input .bc-input-field {
+    min-width: 340px;
   }
 }
 
@@ -786,6 +1150,11 @@
 
   #brand-concierge-modal.dialog-modal {
     max-width: 960px;
+  }
+
+  body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
+    max-width: 1412px;
+    width: calc(100% - 48px);
   }
 }
 
