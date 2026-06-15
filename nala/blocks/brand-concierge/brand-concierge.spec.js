@@ -160,7 +160,7 @@ module.exports = {
     {
       tcid: '14',
       name: '@brand-concierge floating input light',
-      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-light?milolibs=stage',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-light',
       tags: '@brand-concierge @brand-concierge-floating-input-light @regression @milo',
       data: {
         inputText: 'i need help with billing',
@@ -171,14 +171,39 @@ module.exports = {
     {
       tcid: '15',
       name: '@brand-concierge floating input dark',
-      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-dark?milolibs=stage',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-dark',
       tags: '@brand-concierge @brand-concierge-floating-input-dark @regression @milo',
       data: {
         inputText: 'i need help with billing',
         minimumPromptCount: 3,
         expectedBarBackground: 'rgba(0, 0, 0, 0.65)',
-        expectedInputBackground: 'rgb(19, 19, 19)',
+        expectedInputBackground: 'rgb(41, 41, 41)',
         expectedTextColor: 'rgb(219, 219, 219)',
+      },
+    },
+    {
+      tcid: '16',
+      name: '@brand-concierge floating input only',
+      path: 'https://bc-sync-up--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-input-only',
+      tags: '@brand-concierge @brand-concierge-floating-input-only @regression @milo',
+      data: {
+        inputText: 'i need help with billing',
+        minimumPromptCount: 4,
+        expectedBarBackground: 'rgba(248, 248, 248, 0.65)',
+      },
+    },
+    {
+      tcid: '17',
+      name: '@brand-concierge floating input delay dark',
+      path: 'https://bc-sync-up--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-input-delay',
+      tags: '@brand-concierge @brand-concierge-floating-input-delay @regression @milo',
+      data: {
+        inputText: 'i need help with billing',
+        minimumBarPromptCount: 4,
+        inlineHeading: 'Find the right app to bring your ideas to life.',
+        expectedBarBackground: 'rgba(0, 0, 0, 0.65)',
+        topDelayClass: 'floating-delay-100',
+        anchorDelayClass: 'floating-anchor-delay-450',
       },
     },
   ],

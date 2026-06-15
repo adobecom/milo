@@ -44,6 +44,9 @@ export default class BrandConciergeBlock {
     this.floatingInputTextarea = this.page.locator('.brand-concierge.floating-input textarea');
     this.inputSubmitButton = this.block.locator('.input-field-button');
 
+    this.floatingInputInnerBar = this.page.locator('.bc-floating-input.bc-floating-element');
+    this.floatingInputInnerBarPills = this.page.locator('.bc-floating-input.bc-floating-element .prompt-card-button');
+
     // Web client script loader (used for pre-load + ?webclient= tests)
     // Matches base/prod/stage URLs for BC agent main.js
     this.webClientScript = this.page.locator(
