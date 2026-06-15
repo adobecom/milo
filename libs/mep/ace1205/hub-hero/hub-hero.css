@@ -1400,3 +1400,111 @@
     pointer-events: all;
   }
 }
+
+/** Firefox / no scroll-driven animation support fallback */
+@supports not (animation-timeline: view()) {
+
+  .hub-hero {
+    --carousel-items-top: 15%;
+  }
+
+  .hub-hero-image-grid-container,
+  .hub-hero-header,
+  .hub-hero-header > div,
+  .hub-hero-image-grid-container-col:nth-child(1),
+  .hub-hero-image-grid-container-col:nth-child(2),
+  .hub-hero-image-grid-container-col:nth-child(3),
+  .hub-hero-image-grid-container-col:nth-child(4),
+  .hub-hero-image-grid-container-col:nth-child(5) {
+    animation: none !important;
+    transition: none;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
+  .hub-hero-header div[class^="body"] {
+    top: 0;
+  }
+
+  .hub-hero-carousel .hub-hero-carousel-header > div {
+    position: relative;
+    transform: none;
+  }
+  .hub-hero-carousel .hub-hero-carousel-header {
+    height: auto;
+    margin-bottom: var(--s2a-spacing-lg);
+  }
+  .hub-hero-carousel {
+    margin-top: calc(var(--grid-col-three-offset) + var(--s2a-spacing-4xl));
+  }
+  
+  @media (width < 768px) {
+    .hub-hero {
+      height: auto;
+    }
+    .hub-hero-carousel-item {
+      animation: none !important;
+    }
+
+    .hub-hero-carousel-item:nth-child(3) {
+      display: none; 
+    }
+
+    .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1) {
+      animation: none;
+    }
+
+    .hub-hero-carousel-container {
+      animation: none;
+      width: 100%;
+      max-width: 550px;
+    }
+
+    .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
+    .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
+      position: relative;
+      top: unset;
+      bottom: unset;
+      z-index: 1;
+    }
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+      top: unset;
+      bottom: unset;
+      animation: none;
+    }
+
+    .hub-hero-carousel-header {
+      height: auto;
+    }
+
+    .hub-hero-carousel {
+      margin-top: calc(var(--grid-col-three-offset));
+    }
+
+    .hub-hero-image-grid-container {
+      animation: none;
+    }
+
+    .hub-hero-carousel-item:nth-child(1),
+    .hub-hero-carousel-item:nth-child(2),
+    .hub-hero-carousel-item:nth-child(3),
+    .hub-hero-carousel-item:nth-child(4),
+    .hub-hero-carousel-item:nth-child(5) {
+      margin: 0;
+      padding: 0;
+    }
+
+    .hub-hero-carousel-container {
+      max-width: var(--hub-hero-carousel-item-max-width);
+      min-width: var(--hub-hero-carousel-item-min-width);
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2a-spacing-sm);
+    }
+
+    .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
+      height: var(--slide-footer-h);
+    }
+  }
+}
