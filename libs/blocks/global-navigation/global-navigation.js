@@ -303,7 +303,6 @@ export const CONFIG = {
                   enableWorkflow: true,
                   params: {
                     enableinlineoverlay: 's2-compat',
-                    locale: (getConfig().locale?.ietf || 'en-US').replace('-', '_'),
                   },
                   ...getConfig().unav?.profile?.managePeopleConfig,
                 },
@@ -1004,21 +1003,23 @@ class Gnav {
       appId: 'adobe_com',
       apiKey: imsClientId,
       getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-      getProfile: () => window.adobeIMS?.getProfile(),
+      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
       environment,
       cdnEnvironment: environment,
-      locale: locale.split('_')[0],
+      locale: config.locale?.ietf || 'en-US',
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
       ...(enableBE && {
         showDialog: async (element, _, closeCallback) => {
+          document.getElementById('feds-manage-people-dialog')?.remove();
           const dialog = document.createElement('dialog');
           dialog.id = 'feds-manage-people-dialog';
           dialog.appendChild(element);
           document.body.appendChild(dialog);
           dialog.addEventListener('cancel', () => {
             closeCallback({ type: 'close' });
+            dialog.close();
             dialog.remove();
             document.documentElement.classList.remove('disable-scroll');
           });
@@ -1026,6 +1027,7 @@ class Gnav {
             if (e.target === dialog) {
               closeCallback({ type: 'close' });
               dialog.close();
+              dialog.remove();
               document.documentElement.classList.remove('disable-scroll');
             }
           });
@@ -1104,6 +1106,21 @@ class Gnav {
     }
 
     const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
+
+    const addFetchAUPSDKInstance = () => {
+      if (!window.adobeIMS?.isSignedInUser()) return {};
+      // Eager init was kicked off in imsReady(); just return that promise.
+      // Fallback to inline preload only for races (e.g. user signed in after
+      // imsReady ran, or the eager promise errored and was reset to null).
+      return {
+        fetchAUPSDKInstance: async () => {
+          if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
+          this.aupsdkInstancePromise = this.preloadAupSdk();
+          return this.aupsdkInstancePromise;
+        }
+      }
+    }
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1147,14 +1164,7 @@ class Gnav {
           },
         }),
       }),
-      fetchAUPSDKInstance: async () => {
-        // Eager init was kicked off in imsReady(); just return that promise.
-        // Fallback to inline preload only for races (e.g. user signed in after
-        // imsReady ran, or the eager promise errored and was reset to null).
-        if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
-        this.aupsdkInstancePromise = this.preloadAupSdk();
-        return this.aupsdkInstancePromise;
-      },
+      ...addFetchAUPSDKInstance(),
     });
 
     // Exposing UNAV config for consumers
