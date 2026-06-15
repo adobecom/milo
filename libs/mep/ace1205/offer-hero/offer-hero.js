@@ -157,6 +157,7 @@ function decorate(block) {
 
 function initAnimation(block) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!CSS.supports('animation-timeline', 'scroll()')) return;
 
   block.classList.add('cards-animating');
 
