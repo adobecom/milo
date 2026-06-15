@@ -1555,7 +1555,7 @@ export function createAemFragment(options, seenFragments = null) {
   const { fragment, pzn, mask } = options;
   const cacheKey = `${fragment}|${pzn || ''}|${mask || ''}`;
   const attrs = Object.fromEntries(
-    Object.entries({ fragment, pzn, mask }).filter(([, v]) => v != null),
+    Object.entries({ pzn, mask, fragment }).filter(([, v]) => v != null),
   );
   if (seenFragments?.has(cacheKey)) attrs.loading = 'cache';
   seenFragments?.add(cacheKey);
