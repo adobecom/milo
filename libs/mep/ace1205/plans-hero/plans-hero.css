@@ -1,0 +1,86 @@
+.plans-hero {
+  --plans-hero-cols: 4;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 400px;
+  color: var(--s2a-color-content-knockout);
+}
+
+.plans-hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  picture, img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &::after {
+    --scrim-stop-start: 0.88%;
+    --scrim-stop-end: 99.12%;
+
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(271deg,
+      var(--s2a-color-transparent-black-00) var(--scrim-stop-start),
+      var(--s2a-color-transparent-black-64) var(--scrim-stop-end));
+    pointer-events: none;
+  }
+
+  [dir='rtl'] &::after {
+    scale: -1 1;
+  }
+}
+
+.plans-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-md);
+  max-width: calc(100% * var(--plans-hero-cols) / var(--grid-columns));
+  text-wrap: balance;
+
+  .eyebrow {
+    color: var(--s2a-color-content-subtle);
+  }
+}
+
+@media (width >= 768px) {
+  .plans-hero {
+    --plans-hero-cols: 6;
+
+    min-height: min-content;
+    height: 35vw;
+    max-height: 600px;
+  }
+
+  .plans-hero-media::after {
+    --scrim-stop-start: 50.27%;
+    --scrim-stop-end: 99.12%;
+  }
+}
+
+@media (width >= 1024px) {
+  .plans-hero {
+    --plans-hero-cols: 5;
+  }
+}
+
+@media (width >= 1440px) {
+  .plans-hero {
+    align-items: flex-start;
+  }
+
+  .plans-hero-content {
+    padding-block-start: var(--s2a-layout-lg);
+  }
+}

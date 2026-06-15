@@ -104,7 +104,7 @@ export async function closeModal(modal, shouldFocusTriggerEl = true) {
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
-    document.body.classList.remove('disable-scroll');
+    document.documentElement.classList.remove('disable-scroll');
     /** Restore lenis behaviour on modal close */
     window.lenis?.start();
   }
@@ -263,7 +263,7 @@ export async function getModal(details, custom) {
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
-    document.body.classList.add('disable-scroll');
+    document.documentElement.classList.add('disable-scroll');
     /** Stop lenis behaviour on modal open */
     window.lenis?.stop();
     const curtain = createTag('div', {

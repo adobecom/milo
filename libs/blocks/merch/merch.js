@@ -1501,7 +1501,7 @@ export async function buildCta(el, params) {
     const prefix = getConfig()?.locale?.prefix;
     if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
     if (shouldAllowKrTrial(el, prefix)) {
-      cta.classList.remove('hidden-osi-trial-link');
+      cta.removeAttribute('data-hide-kr-free-trial');
       return;
     }
     cta.remove();

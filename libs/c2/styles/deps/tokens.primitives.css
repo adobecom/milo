@@ -3,6 +3,7 @@
  */
 
 :root {
+  /* Color / Neutrals */
   --s2a-color-gray-25: #fff;
   --s2a-color-gray-50: #f8f8f8;
   --s2a-color-gray-75: #f3f3f3;
@@ -16,6 +17,8 @@
   --s2a-color-gray-800: #292929;
   --s2a-color-gray-900: #131313;
   --s2a-color-gray-1000: #000;
+
+  /* Color / Green */
   --s2a-color-green-100: #edfcf1;
   --s2a-color-green-200: #d7f7e1;
   --s2a-color-green-300: #adeec5;
@@ -32,6 +35,8 @@
   --s2a-color-green-1400: #002e22;
   --s2a-color-green-1500: #002119;
   --s2a-color-green-1600: #000f0c;
+
+  /* Color / Blue */
   --s2a-color-blue-100: #f5f9ff;
   --s2a-color-blue-200: #e5f0fe;
   --s2a-color-blue-300: #cbe2fe;
@@ -48,6 +53,8 @@
   --s2a-color-blue-1400: #0c1f69;
   --s2a-color-blue-1500: #0e1843;
   --s2a-color-blue-1600: #070b1e;
+
+  /* Color / Red */
   --s2a-color-red-100: #fff6f5;
   --s2a-color-red-200: #ffebe8;
   --s2a-color-red-300: #ffd6d1;
@@ -64,6 +71,8 @@
   --s2a-color-red-1400: #501006;
   --s2a-color-red-1500: #3b0b04;
   --s2a-color-red-1600: #1d0502;
+
+  /* Color / Orange */
   --s2a-color-orange-100: #fff6e7;
   --s2a-color-orange-200: #ffeccf;
   --s2a-color-orange-300: #ffda9e;
@@ -80,6 +89,8 @@
   --s2a-color-orange-1400: #491800;
   --s2a-color-orange-1500: #341200;
   --s2a-color-orange-1600: #190800;
+
+  /* Color / Yellow */
   --s2a-color-yellow-100: #fff8cc;
   --s2a-color-yellow-200: #fff197;
   --s2a-color-yellow-300: #ffde2c;
@@ -96,29 +107,43 @@
   --s2a-color-yellow-1400: #382300;
   --s2a-color-yellow-1500: #281900;
   --s2a-color-yellow-1600: #120b00;
-  --s2a-color-transparent-black-12: rgb(0 0 0 / 12%);
-  --s2a-color-transparent-black-16: rgb(0 0 0 / 16%);
-  --s2a-color-transparent-black-24: rgb(0 0 0 / 24%);
-  --s2a-color-transparent-black-32: rgb(0 0 0 / 32%);
-  --s2a-color-transparent-black-48: rgb(0 0 0 / 48%);
-  --s2a-color-transparent-black-64: rgb(0 0 0 / 64%);
+
+  /* Color / Transparent */
   --s2a-color-transparent-black-00: rgb(0 0 0 / 0);
-  --s2a-color-transparent-black-04: rgb(0 0 0 / 4%);
-  --s2a-color-transparent-black-08: rgb(0 0 0 / 8%);
-  --s2a-color-transparent-white-12: rgb(255 255 255 / 12%);
-  --s2a-color-transparent-white-16: rgb(255 255 255 / 16%);
-  --s2a-color-transparent-white-24: rgb(255 255 255 / 24%);
-  --s2a-color-transparent-white-32: rgb(255 255 255 / 32%);
-  --s2a-color-transparent-white-48: rgb(255 255 255 / 48%);
-  --s2a-color-transparent-white-64: rgb(255 255 255 / 64%);
   --s2a-color-transparent-white-00: rgb(255 255 255 / 0);
+  --s2a-color-transparent-black-04: rgb(0 0 0 / 4%);
   --s2a-color-transparent-white-04: rgb(255 255 255 / 4%);
+  --s2a-color-transparent-black-08: rgb(0 0 0 / 8%);
   --s2a-color-transparent-white-08: rgb(255 255 255 / 8%);
+  --s2a-color-transparent-black-12: rgb(0 0 0 / 12%);
+  --s2a-color-transparent-white-12: rgb(255 255 255 / 12%);
+  --s2a-color-transparent-black-16: rgb(0 0 0 / 16%);
+  --s2a-color-transparent-white-16: rgb(255 255 255 / 16%);
+  --s2a-color-transparent-black-24: rgb(0 0 0 / 24%);
+  --s2a-color-transparent-white-24: rgb(255 255 255 / 24%);
+  --s2a-color-transparent-black-32: rgb(0 0 0 / 32%);
+  --s2a-color-transparent-white-32: rgb(255 255 255 / 32%);
+  --s2a-color-transparent-black-48: rgb(0 0 0 / 48%);
+  --s2a-color-transparent-white-48: rgb(255 255 255 / 48%);
+  --s2a-color-transparent-black-64: rgb(0 0 0 / 64%);
+  --s2a-color-transparent-white-64: rgb(255 255 255 / 64%);
+  --s2a-color-transparent-black-72: rgb(0 0 0 / 72%);
+  --s2a-color-transparent-white-72: rgb(255 255 255 / 72%);
+  --s2a-color-transparent-black-80: rgb(0 0 0 / 80%);
+  --s2a-color-transparent-white-80: rgb(255 255 255 / 80%);
+  --s2a-color-transparent-black-88: rgb(0 0 0 / 88%);
+  --s2a-color-transparent-white-88: rgb(255 255 255 / 88%);
+  --s2a-color-transparent-black-96: rgb(0 0 0 / 96%);
+  --s2a-color-transparent-white-96: rgb(255 255 255 / 96%);
+
+  /* Color / Brand */
   --s2a-color-brand-adobe-red: #eb1000;
   --s2a-color-brand-cc-3dar: #99e83f;
   --s2a-color-brand-cc-il: #ff9a00;
   --s2a-color-brand-cc-ppafx: #99f;
   --s2a-color-brand-cc-ps: #3a18ff;
+
+  /* Border Radius */
   --s2a-border-radius-0: 0;
   --s2a-border-radius-2: 2px;
   --s2a-border-radius-4: 4px;
@@ -128,34 +153,46 @@
   --s2a-border-radius-24: 24px;
   --s2a-border-radius-32: 32px;
   --s2a-border-radius-999: 999px;
+
+  /* Border Width */
   --s2a-border-width-0: 0;
   --s2a-border-width-1: 1px;
   --s2a-border-width-2: 2px;
   --s2a-border-width-4: 4px;
-  --s2a-opacity-16: 16px;
-  --s2a-opacity-24: 24px;
-  --s2a-opacity-32: 32px;
-  --s2a-opacity-48: 48px;
-  --s2a-opacity-64: 64px;
-  --s2a-opacity-100: 100px;
+
+  /* Opacity */
   --s2a-opacity-00: 0;
-  --s2a-opacity-08: 8px;
+  --s2a-opacity-08: 8%;
+  --s2a-opacity-16: 16%;
+  --s2a-opacity-24: 24%;
+  --s2a-opacity-32: 32%;
+  --s2a-opacity-48: 48%;
+  --s2a-opacity-64: 64%;
+  --s2a-opacity-100: 100%;
+
+  /* Shadow */
   --s2a-shadow-level-1-x: 0;
   --s2a-shadow-level-1-y: 1px;
   --s2a-shadow-level-1-blur: 6px;
   --s2a-shadow-level-1-spread: 0;
+  --s2a-shadow-level-1-color: var(--s2a-color-transparent-black-12);
   --s2a-shadow-level-2-x: 0;
   --s2a-shadow-level-2-y: 2px;
   --s2a-shadow-level-2-blur: 8px;
   --s2a-shadow-level-2-spread: 0;
+  --s2a-shadow-level-2-color: var(--s2a-color-transparent-black-16);
   --s2a-shadow-level-3-x: 0;
   --s2a-shadow-level-3-y: 4px;
   --s2a-shadow-level-3-blur: 12px;
   --s2a-shadow-level-3-spread: 0;
+  --s2a-shadow-level-3-color: var(--s2a-color-transparent-black-16);
   --s2a-shadow-level-4-x: 0;
   --s2a-shadow-level-4-y: 6px;
   --s2a-shadow-level-4-blur: 16px;
   --s2a-shadow-level-4-spread: 0;
+  --s2a-shadow-level-4-color: var(--s2a-color-transparent-black-16);
+
+  /* Spacing */
   --s2a-spacing-0: 0;
   --s2a-spacing-2: 2px;
   --s2a-spacing-4: 4px;
@@ -173,31 +210,39 @@
   --s2a-spacing-124: 124px;
   --s2a-spacing-160: 160px;
   --s2a-spacing-240: 240px;
+
+  /* Font Family */
   --s2a-font-family-adobe-clean: "Adobe Clean";
   --s2a-font-family-adobe-clean-display: "Adobe Clean Display";
-  --s2a-font-letter-spacing-0: 0;
+
+  /* Font Letter Spacing */
   --s2a-font-letter-spacing-neg-3_84: -3.84px;
   --s2a-font-letter-spacing-neg-3_2: -3.2px;
   --s2a-font-letter-spacing-neg-2_88: -2.88px;
   --s2a-font-letter-spacing-neg-1_68: -1.68px;
   --s2a-font-letter-spacing-neg-1_44: -1.44px;
-  --s2a-font-letter-spacing-neg-1_2: -1.2px;
+  --s2a-font-letter-spacing-neg-1: -1px;
   --s2a-font-letter-spacing-neg-0_96: -0.96px;
   --s2a-font-letter-spacing-neg-0_48: -0.48px;
   --s2a-font-letter-spacing-neg-0_2: -0.2px;
-  --s2a-font-letter-spacing-0_16: 0.16px;
-  --s2a-font-letter-spacing-0_24: 0.24px;
-  --s2a-font-line-height-16: 1.333;
-  --s2a-font-line-height-18: 1.286;
-  --s2a-font-line-height-20: 1.25;
-  --s2a-font-line-height-24: 1.2;
-  --s2a-font-line-height-32: 1.143;
-  --s2a-font-line-height-40: 1.111;
-  --s2a-font-line-height-48: 1.2;
-  --s2a-font-line-height-56: 1.167;
-  --s2a-font-line-height-69: 1.232;
-  --s2a-font-line-height-76: 1.188;
-  --s2a-font-line-height-92: 1.278;
+  --s2a-font-letter-spacing-neg-0_16: -0.16px; /** Letter spacing primitive: -0.16px */
+  --s2a-font-letter-spacing-0: 0;
+
+  /* Font Line Height */
+  --s2a-font-line-height-16: 16px;
+  --s2a-font-line-height-18: 18px;
+  --s2a-font-line-height-20: 20px;
+  --s2a-font-line-height-21: 21px;
+  --s2a-font-line-height-24: 24px;
+  --s2a-font-line-height-32: 32px;
+  --s2a-font-line-height-40: 40px;
+  --s2a-font-line-height-48: 48px;
+  --s2a-font-line-height-56: 56px;
+  --s2a-font-line-height-69: 69px;
+  --s2a-font-line-height-76: 76px;
+  --s2a-font-line-height-92: 92px;
+
+  /* Font Size */
   --s2a-font-size-12: 0.75rem;
   --s2a-font-size-14: 0.875rem;
   --s2a-font-size-16: 1rem;
@@ -205,6 +250,7 @@
   --s2a-font-size-20: 1.25rem;
   --s2a-font-size-24: 1.5rem;
   --s2a-font-size-32: 2rem;
+  --s2a-font-size-36: 2.25rem;
   --s2a-font-size-40: 2.5rem;
   --s2a-font-size-48: 3rem;
   --s2a-font-size-56: 3.5rem;
@@ -212,20 +258,20 @@
   --s2a-font-size-72: 4.5rem;
   --s2a-font-size-80: 5rem;
   --s2a-font-size-96: 6rem;
-  --s2a-font-weight-adobe-clean-black: 900;
+
+  /* Font Weight */
+  --s2a-font-weight-adobe-clean-regular: 400;
+  --s2a-font-weight-adobe-clean-medium: 500;
   --s2a-font-weight-adobe-clean-extrabold: 800;
   --s2a-font-weight-adobe-clean-bold: 700;
-  --s2a-font-weight-adobe-clean-medium: 500;
-  --s2a-font-weight-adobe-clean-regular: 400;
+  --s2a-font-weight-adobe-clean-black: 900;
   --s2a-font-weight-adobe-clean-display-black: 900;
+
+  /* Blur */
   --s2a-blur-8: 8px;
   --s2a-blur-16: 16px;
+  --s2a-blur-24: 24px;
   --s2a-blur-32: 32px;
   --s2a-blur-64: 64px;
-  --color-transparent-black-12: rgb(0 0 0 / 12%);
-  --color-transparent-black-16: rgb(0 0 0 / 16%);
-  --s2a-shadow-level-1-color: var(--color-transparent-black-12);
-  --s2a-shadow-level-2-color: var(--color-transparent-black-16);
-  --s2a-shadow-level-3-color: var(--color-transparent-black-16);
-  --s2a-shadow-level-4-color: var(--color-transparent-black-16);
+  --s2a-blur-128: 128px;
 }
