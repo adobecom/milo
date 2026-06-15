@@ -45,13 +45,13 @@ export default async function init(el) {
 
   const personalizationHandler = async (cs, root) => {
     const { handleCommands } = await import('../../../features/personalization/personalization.js');
-    return handleCommands(cs, root);
+    return handleCommands(cs, root, true, true);
   };
 
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  main({
+  const gnavPromise = main({
     localizeLink,
     gnavSource: gnavUrl,
     asideSource: null,
@@ -70,5 +70,7 @@ export default async function init(el) {
       tags: 'global-navigation',
       errorType: 'e',
     });
+    return {};
   });
+  config.federal = { fedsGlobalNavigation: gnavPromise };
 }

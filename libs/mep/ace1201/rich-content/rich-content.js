@@ -18,12 +18,12 @@ function decorateText(el) {
   hangOpeningQuote(firstText);
 }
 
-function promoteParagraphTitle(content, headingSize = '2') {
+function promoteParagraphHeading(content, headingSize = '2') {
   if (!content || content.querySelector('h1, h2, h3, h4, h5, h6')) return;
   const firstP = content.querySelector('p');
   if (!firstP) return;
   const bodyClass = [...firstP.classList].find((c) => c.startsWith('body-'));
-  if (bodyClass) firstP.classList.replace(bodyClass, `title-${headingSize}`);
+  if (bodyClass) firstP.classList.replace(bodyClass, `heading-${headingSize}`);
 }
 
 function decorate(block) {
@@ -32,7 +32,7 @@ function decorate(block) {
   content?.classList.add('content');
   foreground?.classList.add('foreground');
   decorateText(content);
-  promoteParagraphTitle(content);
+  promoteParagraphHeading(content);
 }
 
 function decorateMultiViewport(el, viewportContent) {
