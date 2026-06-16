@@ -596,14 +596,14 @@ function decorateInput(el, input) {
   });
 
   fieldInput.addEventListener('keydown', (e) => {
+    e.preventDefault();
     if (e.key === 'Enter') {
       if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
       fieldButton.click();
     }
   });
 
-  fieldButton.addEventListener('click', (event) => {
-    event.preventDefault();
+  fieldButton.addEventListener('click', () => {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
     openChatModal(fieldInput.value, el);
   });
