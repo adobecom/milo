@@ -69,7 +69,7 @@ function floatingElement(targetEl, el, focusableEl = null) {
 
   const floatingSpacer = createTag('div', { class: 'bc-spacer' });
   floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
-  mainElement.append(floatingSpacer);
+  mainElement.appendChild(floatingSpacer);
 
   targetEl.classList.add('bc-floating-element');
 
