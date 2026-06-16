@@ -55,7 +55,6 @@ body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
 body[data-other-highlight='true'] [data-fragment-default]::before,
-body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before,
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before,
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
   cursor: default;
@@ -186,11 +185,11 @@ body[data-other-highlight='true'] [data-fragment-default]::before {
 /* body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
   position: relative !important;
-  outline: 2px dashed transparent;
+  border: 2px dashed transparent;
 } */
 
 body[data-mep-caas-highlight='true'] [data-caas-block] {
-  outline: 2px dashed var(--mep-indigo-700);
+  border: 2px dashed var(--mep-indigo-700);
 }
 
 a.mep-caas-edit-badge,
@@ -235,40 +234,36 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-
   content: none;
 }
 
-/* M@S surface highlights ---------------------------------------------------- */
+/* M@S */
 body[data-mep-mas-highlight='true'] [data-mas-block='collection'] {
-  outline: 2px dashed #6f42c1; /* purple */
-
+  border: 2px dashed #6f42c1; /* purple */
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
-  outline: 2px dashed #fd7e14; /* orange */
-
   position: relative;
-
-  /* Anchors the .mep-mas-card-actions overlay; prevents host overflow
-     from clipping it. */
   overflow: visible;
+  border: 2px dashed #fd7e14; /* orange */
 }
 
-body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
-  outline: 2px dashed #e83e8c; /* pink */
 
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
+  display: inline-block;
   position: relative;
   overflow: visible;
+  border: 2px dashed #e83e8c; /* pink */
+
 
   /* Override M@S's `mas-field { display: inline }`: an inline host that
      wraps block children (e.g., a body field with multiple <p>s) splits
      into degenerate inline boxes and the outline disappears. inline-block
      gives a single coherent box; scoped to highlight mode only. */
-  display: inline-block;
+
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
-  outline: 2px dashed #0d6efd; /* blue — unified with the offer surface */
-
   position: relative;
   overflow: visible;
+  border: 2px dashed #0d6efd; /* blue — unified with the offer surface */
 }
 
 a.mep-mas-edit-badge,
@@ -279,7 +274,7 @@ body a.mep-mas-edit-badge {
   font-size: 14px;
   font-weight: 500;
   border-radius: 5px;
-  box-shadow: var(--mep-elevation-4);
+  box-shadow: 0 3px 8px 1px #808080;
   text-decoration: none;
   cursor: pointer;
   opacity: 0.95;
@@ -307,7 +302,7 @@ body a.mep-mas-sub-collection-badge {
   background-color: #f0e7fb;
   color: #4a2d80;
   border: 1px dashed #9b6dd7;
-  box-shadow: var(--mep-elevation-4);
+  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 15%);
   text-decoration: none;
   cursor: pointer;
   opacity: 0.92;
@@ -367,7 +362,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: var(--mep-elevation-4);
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 25%);
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -415,7 +410,6 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-action
    opens the OST URL on hits inside the badge box. */
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
   outline: 1px dashed #0d6efd;
-
   position: relative;
 
   /* Prevent ancestor overflow from clipping the corner badge (some
@@ -426,6 +420,8 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
 body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   content: '🔗 View in OST';
   position: absolute;
+  top: -10px;
+  right: -2px;
   z-index: 3;
   padding: 3px 6px;
   background-color: #cfe2ff;
@@ -437,7 +433,8 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
   line-height: 1.3;
   letter-spacing: 0.5px;
   cursor: pointer;
-  box-shadow: var(--mep-elevation-4);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 112px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::before {
@@ -460,9 +457,22 @@ body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='off
    disturbing document flow inside paragraphs/headings. */
 body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
   content: '🔗 Edit Inline Field';
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  z-index: 3;
+  padding: 3px 6px;
   background-color: #fcd3e1;
   color: #80224d;
   border: 1px solid #e83e8c;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 130px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::before {
@@ -486,26 +496,27 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'] :is([data-mas-bloc
    full authoring URL, offer derives a minimal one from the OSI). */
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
   content: '🔗 View in OST';
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  z-index: 11;
+  padding: 3px 6px;
   background-color: #cfe2ff;
   color: #0a3677;
   border: 1px solid #0d6efd;
-  
-  font-size: 14px;
-  font-weight: 400;
-  width: max-content;
-  max-width: calc(100vw - 64px);
-  position: absolute;
-  left: 0;
-  top: 0;
-  pointer-events: auto;
-  z-index: 3;
-  padding: 4px;
-  box-shadow: var(--mep-elevation-4);
-  line-height: 1.5;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 96px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::before {
   content: '🔗 View in OST · ' attr(data-mas-market);
+  min-width: 112px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-mismatch='true']::before {

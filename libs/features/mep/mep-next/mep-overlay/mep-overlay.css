@@ -241,6 +241,15 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border: 1px solid var(--mep-white-12);
 }
 
+.mep-drawer .mep-card.center {
+  align-items: center;
+}
+
+.mep-drawer .mep-card.center p {
+  margin: 0;
+  color: var(--mep-white-60);
+}
+
 .mep-drawer .mep-body h1 svg {
   fill: var(--mep-white-100);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);

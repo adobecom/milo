@@ -21,12 +21,15 @@ import {
   TOGGLE_KEYS,
   toggleHighlight,
   getParameters,
-  setBadgeEventListeners,
   getPageUpdates,
+  setHighlightData,
+  setBadgeEventListeners,
 } from './mep-overlay-highlight.js';
 import { saveToMmm } from '../mep-next.js';
 
 const CARD_STORAGE_KEY = 'mep-expanded-cards';
+
+let authenticated = false;
 
 const CARD_DATA = {
   actions: [
@@ -80,10 +83,8 @@ function getGnavOffset() {
 }
 
 function buildRow(label, value) {
-  const val = (typeof value === 'string' || value == null)
-    ? createTag('div', { class: 'mep-row-value' }, value ?? '')
-    : value;
-  return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), val]);
+  const row = createTag('div', { class: 'mep-row-value' }, value);
+  return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
 function getExpandedCards() {
@@ -300,7 +301,75 @@ function buildFAB(gnavOffset, svgData) {
   return fab;
 }
 
-function buildDrawerContents(svgData, pageId, isAuthed) {
+function buildLoginCard() {
+  return createTag('div', { class: 'mep-card expanded center' }, [
+    createTag('h1', {}, 'Content Unavailable'),
+    createTag('p', { class: 'mep-card-body' }, 'Sign into AEM Sidekick for options.'),
+  ]);
+}
+
+function buildFooter() {
+  return createTag('div', { class: 'mep-footer' }, [
+    createTag('a', { class: 'con-button button-l fill', title: 'Preview', href: '#' }, 'Preview'),
+  ]);
+}
+
+function buildActionsContent(svgData, pageId) {
+  if (!authenticated) return [buildLoginCard()];
+  return [
+    ...buildManifestList(svgData),
+    ...CARD_DATA.actions.map(([header, data]) => (
+      buildCard({ header, label: data }, svgData, pageId)
+    )),
+  ];
+}
+
+function buildTabsAndBody(svgData, pageId) {
+  const tabDefs = [
+    ['Actions', buildActionsContent(svgData, pageId)],
+    ['Summary', CARD_DATA.summary.map(([header, data]) => buildCard({ header, getData: data }, svgData, pageId))],
+  ];
+
+  const tabsEl = createTag('div', { class: 'mep-tabs' });
+  const bodyEl = createTag('div', { class: 'mep-body' });
+
+  tabDefs.forEach(([name, content], index) => {
+    const isActive = index === 0;
+    const tabEl = createTag('div', { class: `mep-tab${isActive ? ' active' : ''}`, 'data-tab': index }, name);
+    const contentEl = createTag('div', { class: `mep-tab-content${isActive ? ' active' : ''}`, 'data-tab': index });
+    content.forEach((el) => contentEl.appendChild(el));
+    tabsEl.appendChild(tabEl);
+    bodyEl.appendChild(contentEl);
+  });
+
+  return { tabsEl, bodyEl };
+}
+
+function checkAuthAndBuild(svgData, pageId) {
+  onSidekickAuth((isAuthed) => {
+    const mockAuth = new URLSearchParams(window.location.search).get('mock-auth');
+    const finalAuth = mockAuth !== null ? mockAuth === 'true' : isAuthed;
+    // eslint-disable-next-line no-console
+    console.log('[mep-overlay] sidekick auth state:', finalAuth, mockAuth !== null ? '(mocked)' : '');
+    if (finalAuth === authenticated) return;
+    authenticated = finalAuth;
+
+    const drawerEl = document.querySelector('#mep-drawer');
+    const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
+    if (!contentEl) return;
+
+    if (!authenticated) {
+      contentEl.replaceChildren(buildLoginCard());
+      drawerEl.querySelector('.mep-footer')?.remove();
+      return;
+    }
+
+    contentEl.replaceChildren(...buildActionsContent(svgData, pageId));
+    drawerEl.appendChild(buildFooter());
+  }, { envs: ['prod', 'stage'] });
+}
+
+function buildDrawer(gnavOffset, svgData, pageId) {
   const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank' });
   logoLink.appendChild(svgIcon(svgData, 'logo-mep'));
 
@@ -308,52 +377,17 @@ function buildDrawerContents(svgData, pageId, isAuthed) {
   closeBtn.appendChild(svgIcon(svgData, 'icon-close'));
 
   const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
-
-  if (!isAuthed) {
-    const headerEl = createTag('div', { class: 'mep-header' }, [navEl]);
-    const messageEl = createTag('div', { class: 'mep-unauthed-message' }, [
-      createTag('h2', {}, 'Sign in with AEM Sidekick'),
-      createTag('p', {}, 'Install and sign in to AEM Sidekick to manage manifests on this page.'),
-    ]);
-    return [headerEl, messageEl];
-  }
-
-  const tabsEl = createTag('div', { class: 'mep-tabs' });
-  const bodyEl = createTag('div', { class: 'mep-body' });
-
-  ['Actions', 'Summary'].forEach((name, index) => {
-    const tabEl = createTag('div', { class: 'mep-tab', 'data-tab': index }, name);
-    const contentEl = createTag('div', { class: 'mep-tab-content', 'data-tab': index });
-    if (index === 0) {
-      tabEl.classList.add('active');
-      contentEl.classList.add('active');
-      buildManifestList(svgData).forEach((el) => contentEl.appendChild(el));
-    }
-    const section = CARD_DATA[name.toLowerCase()];
-    const cards = section.map(([header, data]) => (
-      name === 'Summary' ? { header, getData: data } : { header, label: data }
-    ));
-    cards.forEach((card) => contentEl.appendChild(buildCard(card, svgData, pageId)));
-    tabsEl.appendChild(tabEl);
-    bodyEl.appendChild(contentEl);
-  });
-
+  const { tabsEl, bodyEl } = buildTabsAndBody(svgData, pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
-  const footerEl = createTag('div', { class: 'mep-footer' }, [
-    createTag('a', { class: 'con-button button-l fill', title: 'Preview', href: '#' }, 'Preview'),
-  ]);
+  const children = [headerEl, bodyEl];
+  if (authenticated) children.push(buildFooter());
 
-  return [headerEl, bodyEl, footerEl];
-}
-
-function buildDrawer(gnavOffset, svgData, pageId, isAuthed) {
-  const className = isAuthed ? 'mep-drawer' : 'mep-drawer mep-unauthed';
   return createTag('div', {
     id: 'mep-drawer',
-    class: className,
+    class: 'mep-drawer',
     popover: 'manual',
     style: `top: ${gnavOffset}px; height: calc(100vh - ${gnavOffset}px)`,
-  }, buildDrawerContents(svgData, pageId, isAuthed));
+  }, children);
 }
 
 function buildAdditionalManifests() {
@@ -412,7 +446,7 @@ async function setDefaultValues() {
   } = getParameters();
   [
     [`#${TOGGLE_KEYS.mep}`, mepHighlight],
-    [`#${TOGGLE_KEYS.cas}`, mepCaasHighlight],
+    [`#${TOGGLE_KEYS.caas}`, mepCaasHighlight],
     [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
     [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
   ].forEach(([id, param]) => {
@@ -423,7 +457,15 @@ async function setDefaultValues() {
     toggleHighlight({ target: checkbox });
   });
 
-  if (!mepAkamaiLocale) return;
+  if (!mepAkamaiLocale) {
+    const radioEl = document.querySelector('#spoof-geo-top-markets');
+    const selectEl = document.querySelector('select.mep-spoof-geo');
+    if (!radioEl || radioEl.disabled || !selectEl) return;
+    radioEl.checked = true;
+    await populateGeoSelect(selectEl, 'spoof-geo-top-markets');
+    selectEl.value = '';
+    return;
+  }
 
   const masRegions = await getMasRegions();
   const geoGroups = [
@@ -503,59 +545,31 @@ function setMasObserver() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-function buildOverlay({ svgData, gnavOffset, pageId, isAuthed }) {
-  document.body.append(
+async function buildOverlay() {
+  const [svgData, gnavOffset] = await Promise.all([
+    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
+    getGnavOffset(),
+  ]);
+
+  const pageId = getPageId();
+  document.querySelector('main').append(
     buildFAB(gnavOffset, svgData),
-    buildDrawer(gnavOffset, svgData, pageId, isAuthed),
+    buildDrawer(gnavOffset, svgData, pageId),
   );
+  checkAuthAndBuild(svgData, pageId);
 }
 
 async function init() {
   saveToMmm();
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
-  const [svgData, gnavOffset] = await Promise.all([
-    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
-    getGnavOffset(),
-  ]);
-  const pageId = getPageId();
+  await buildOverlay();
+  setEventListeners();
+  setDefaultValues();
+  setPreviewButton();
   setMasObserver();
+  setHighlightData();
   setBadgeEventListeners();
-
-  function rebuildOverlay(isAuthed) {
-    const existing = document.querySelector('#mep-drawer');
-    if (existing?.matches(':popover-open')) {
-      // In-place content swap. Popover stays open; event handlers persist
-      // because they're delegated on the drawer element, not its children.
-      existing.replaceChildren(...buildDrawerContents(svgData, pageId, isAuthed));
-      existing.className = isAuthed ? 'mep-drawer' : 'mep-drawer mep-unauthed';
-      setDefaultValues();
-      setPreviewButton();
-      return;
-    }
-    existing?.remove();
-    document.querySelector('.mep-fab')?.remove();
-    buildOverlay({ svgData, gnavOffset, pageId, isAuthed });
-    setEventListeners();
-    setDefaultValues();
-    setPreviewButton();
-  }
-
-  // TEMP: `envs` expanded to include stage/local for preview-page testing.
-  // Revert to default envs (`['prod']`) before merge.
-  onSidekickAuth((isAuthed) => {
-    // TEMP: `?mock-auth=true|false` overrides the real sidekick state for testing.
-    // Remove this block before merge.
-    const mockAuth = new URLSearchParams(window.location.search).get('mock-auth');
-    let finalAuth = isAuthed;
-    if (mockAuth === 'true') finalAuth = true;
-    else if (mockAuth === 'false') finalAuth = false;
-    // TEMP: remove before merge. Verifies auth state.
-    // eslint-disable-next-line no-console
-    console.log('[mep-overlay] sidekick auth state:', finalAuth, mockAuth ? '(mocked)' : '');
-
-    rebuildOverlay(finalAuth);
-  }, { envs: ['prod', 'stage'] });
 }
 
 init();

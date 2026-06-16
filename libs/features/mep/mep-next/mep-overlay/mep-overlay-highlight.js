@@ -1,3 +1,4 @@
+import { getFileName } from '../../../personalization/personalization.js';
 import {
   watchForMasContent,
   unwatchForMasContent,
@@ -12,6 +13,7 @@ import {
   rewriteForPreviewHost,
   rewriteBlogPreviewHost,
 } from '../mep-caas.js';
+import { getConfig } from '../../../../utils/utils.js';
 
 export const HIGHLIGHT_KEYS = {
   mep: 'mepHighlight',
@@ -27,6 +29,66 @@ export const TOGGLE_KEYS = {
   other: 'toggle-other-fragments',
 };
 
+export function setHighlightData() {
+  function markDefaultFragments() {
+    document.querySelectorAll('[data-path]').forEach((fragment) => {
+      const { manifestId, mepLingoRoc, mepLingoFallback, path } = fragment.dataset;
+      if (!manifestId && !mepLingoRoc && !mepLingoFallback && path) {
+        fragment.dataset.fragmentDefault = '';
+        fragment.dataset.fragmentDisplay = path;
+      }
+    });
+  }
+
+  function processExperiment({ selectedVariant, manifest }) {
+    const manifestName = getFileName(manifest);
+
+    function applyManifestId(selector, prop = 'manifestId') {
+      document.querySelectorAll(selector).forEach((el) => {
+        el.dataset[prop] = manifestName;
+        if (prop === 'manifestId') el.dataset.manifestDisplay = `${manifestName}: html`;
+      });
+    }
+
+    selectedVariant?.replacefragment?.forEach(({ val }) => {
+      document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+        el.dataset.manifestId = manifestName;
+        el.dataset.fragmentPath = val;
+        el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
+      });
+    });
+
+    selectedVariant?.useblockcode?.forEach(({ selector }) => {
+      if (selector) applyManifestId(`.${selector}`, 'codeManifestId');
+    });
+
+    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
+      if (selector === 'gnav-source') applyManifestId('header, footer');
+    });
+
+    const merchCardSel = `.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`;
+    document.querySelectorAll(merchCardSel).forEach((el) => {
+      el.dataset.manifestId = manifestName;
+    });
+
+    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
+      if (el.dataset.manifestDisplay) return;
+      if (el.dataset.path) {
+        el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
+        el.dataset.fragmentPath = el.dataset.path;
+      } else {
+        el.dataset.manifestDisplay = `${manifestName}: html`;
+        el.dataset.mepHtmlBadge = 'true'; // gnav workaround: non-clickable badge
+      }
+    });
+  }
+
+  markDefaultFragments();
+  const config = getConfig();
+  if (!config.mep?.preview) return;
+  config.mep.experiments.forEach(processExperiment);
+}
+
 export function toggleHighlight(event) {
   const HIGHLIGHT_HANDLERS = {
     [TOGGLE_KEYS.mep]: {
@@ -34,7 +96,7 @@ export function toggleHighlight(event) {
       on: [],
       off: [],
     },
-    [TOGGLE_KEYS.cas]: {
+    [TOGGLE_KEYS.caas]: {
       dataKey: HIGHLIGHT_KEYS.caas,
       on: [watchForCaasBlocks, injectCaasBadges],
       off: [unwatchForCaasBlocks, removeCaasBadges],
