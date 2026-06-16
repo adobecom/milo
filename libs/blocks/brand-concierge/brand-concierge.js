@@ -602,7 +602,8 @@ function decorateInput(el, input) {
     }
   });
 
-  fieldButton.addEventListener('click', () => {
+  fieldButton.addEventListener('click', (event) => {
+    event.preventDefault();
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
     openChatModal(fieldInput.value, el);
   });
