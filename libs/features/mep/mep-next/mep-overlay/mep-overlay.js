@@ -282,7 +282,7 @@ function buildCard(card, svgData, pageId) {
   headerEl.appendChild(svgIcon(svgData, 'icon-expand-circle-down'));
 
   const bodyEl = createTag('div', { class: 'mep-card-body' });
-  Promise.resolve(buildCardContent(card, svgData, pageId))
+  cardEl.ready = Promise.resolve(buildCardContent(card, svgData, pageId))
     .then((nodes) => bodyEl.append(...[nodes].flat()));
 
   markExpanded(cardEl, card.header);
@@ -344,8 +344,61 @@ function buildTabsAndBody(svgData, pageId) {
   return { tabsEl, bodyEl };
 }
 
+async function setDefaultValues() {
+  const {
+    mepCaasHighlight,
+    mepMasHighlight,
+    mepOtherHighlight,
+    mepHighlight,
+    mepAkamaiLocale,
+  } = getParameters();
+  [
+    [`#${TOGGLE_KEYS.mep}`, mepHighlight],
+    [`#${TOGGLE_KEYS.caas}`, mepCaasHighlight],
+    [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
+    [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
+  ].forEach(([id, param]) => {
+    if (!param) return;
+    const checkbox = document.querySelector(id);
+    if (!checkbox) return;
+    checkbox.toggleAttribute('checked', true);
+    toggleHighlight({ target: checkbox });
+  });
+
+  if (!mepAkamaiLocale) {
+    const radioEl = document.querySelector('#spoof-geo-top-markets');
+    const selectEl = document.querySelector('select.mep-spoof-geo');
+    if (!radioEl || radioEl.disabled || !selectEl) return;
+    radioEl.checked = true;
+    await populateGeoSelect(selectEl, 'spoof-geo-top-markets');
+    selectEl.value = '';
+    return;
+  }
+
+  const masRegions = await getMasRegions();
+  const geoGroups = [
+    ['spoof-geo-top-markets', TOP_MARKETS],
+    ['spoof-geo-mep-lingo', getLingoRegions()],
+    ['spoof-geo-lingo-mas', masRegions],
+  ];
+
+  const match = geoGroups.find(([, regions]) => regions.includes(mepAkamaiLocale));
+  if (!match) return;
+
+  const [id] = match;
+  const radioEl = document.querySelector(`#${id}`);
+  if (!radioEl || radioEl.disabled) return;
+
+  radioEl.checked = true;
+  const selectEl = document.querySelector('select.mep-spoof-geo');
+  if (!selectEl) return;
+
+  await populateGeoSelect(selectEl, id);
+  selectEl.value = mepAkamaiLocale;
+}
+
 function checkAuthAndBuild(svgData, pageId) {
-  onSidekickAuth((isAuthed) => {
+  onSidekickAuth(async (isAuthed) => {
     const mockAuth = new URLSearchParams(window.location.search).get('mock-auth');
     const finalAuth = mockAuth !== null ? mockAuth === 'true' : isAuthed;
     // eslint-disable-next-line no-console
@@ -363,8 +416,11 @@ function checkAuthAndBuild(svgData, pageId) {
       return;
     }
 
-    contentEl.replaceChildren(...buildActionsContent(svgData, pageId));
+    const cards = buildActionsContent(svgData, pageId);
+    contentEl.replaceChildren(...cards);
     drawerEl.appendChild(buildFooter());
+    await Promise.all(cards.map((c) => c.ready).filter(Boolean));
+    setDefaultValues();
   }, { envs: ['prod', 'stage'] });
 }
 
@@ -433,59 +489,6 @@ function setEventListeners() {
     toggleHighlight(event);
     setPreviewButton(event);
   });
-}
-
-async function setDefaultValues() {
-  const {
-    mepCaasHighlight,
-    mepMasHighlight,
-    mepOtherHighlight,
-    mepHighlight,
-    mepAkamaiLocale,
-  } = getParameters();
-  [
-    [`#${TOGGLE_KEYS.mep}`, mepHighlight],
-    [`#${TOGGLE_KEYS.caas}`, mepCaasHighlight],
-    [`#${TOGGLE_KEYS.mas}`, mepMasHighlight],
-    [`#${TOGGLE_KEYS.other}`, mepOtherHighlight],
-  ].forEach(([id, param]) => {
-    if (!param) return;
-    const checkbox = document.querySelector(id);
-    if (!checkbox) return;
-    checkbox.toggleAttribute('checked', true);
-    toggleHighlight({ target: checkbox });
-  });
-
-  if (!mepAkamaiLocale) {
-    const radioEl = document.querySelector('#spoof-geo-top-markets');
-    const selectEl = document.querySelector('select.mep-spoof-geo');
-    if (!radioEl || radioEl.disabled || !selectEl) return;
-    radioEl.checked = true;
-    await populateGeoSelect(selectEl, 'spoof-geo-top-markets');
-    selectEl.value = '';
-    return;
-  }
-
-  const masRegions = await getMasRegions();
-  const geoGroups = [
-    ['spoof-geo-top-markets', TOP_MARKETS],
-    ['spoof-geo-mep-lingo', getLingoRegions()],
-    ['spoof-geo-lingo-mas', masRegions],
-  ];
-
-  const match = geoGroups.find(([, regions]) => regions.includes(mepAkamaiLocale));
-  if (!match) return;
-
-  const [id] = match;
-  const radioEl = document.querySelector(`#${id}`);
-  if (!radioEl || radioEl.disabled) return;
-
-  radioEl.checked = true;
-  const selectEl = document.querySelector('select.mep-spoof-geo');
-  if (!selectEl) return;
-
-  await populateGeoSelect(selectEl, id);
-  selectEl.value = mepAkamaiLocale;
 }
 
 function setMasObserver() {
@@ -564,7 +567,6 @@ async function init() {
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
   setEventListeners();
-  setDefaultValues();
   setPreviewButton();
   setMasObserver();
   setBadgeEventListeners();
