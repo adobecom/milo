@@ -182,7 +182,10 @@ describe('preview feature', () => {
     expect(document.querySelector('header').getAttribute('data-manifest-id')).to.equal('selected-example.json');
   });
   it('adjusts highlights for merch cards', () => {
-    expect(document.querySelector('merch-card').getAttribute('data-manifest-id')).to.equal('selected-example.json');
+    const card = document.querySelector('merch-card');
+    expect(card.getAttribute('data-manifest-id')).to.equal('selected-example.json');
+    expect(card.getAttribute('data-fragment-path')).to.equal('/fragments/replaced-merch-card');
+    expect(card.getAttribute('data-manifest-display')).to.equal('selected-example.json: /fragments/replaced-merch-card');
   });
   it('preselects form inputs', () => {
     expect(document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('selected')).to.equal('');
