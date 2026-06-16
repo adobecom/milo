@@ -1003,6 +1003,131 @@
   }
 }
 
+/** extra small screens (320px = 640px at 200% zoom) — same static fallback as reduced-motion */
+@media (width <= 480px) {
+
+  .hub-hero,
+  .hub-hero *,
+  .hub-hero-image-grid-container,
+  .hub-hero-image-grid-container-col:nth-child(1),
+  .hub-hero-image-grid-container-col:nth-child(2),
+  .hub-hero-image-grid-container-col:nth-child(3),
+  .hub-hero-image-grid-container-col:nth-child(4),
+  .hub-hero-image-grid-container-col:nth-child(5),
+  .hub-hero-carousel,
+  .hub-hero-carousel-header,
+  .hub-hero-carousel-header > div,
+  .hub-hero-carousel-header > div > *,
+  .hub-hero-carousel-item {
+    animation: none !important;
+    transition: none;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
+  .hub-hero-header div[class^="body"] {
+    top: 0;
+  }
+
+  .hub-hero-carousel-item-media {
+    height: var(--carousel-item-media-height);
+  }
+
+  .hub-hero-carousel-container {
+    gap: var(--end-gap);
+  }
+
+  .hub-hero-carousel-item:nth-child(3) {
+    display: none;
+  }
+
+  .hub-hero-carousel {
+    margin-top: calc(var(--grid-col-three-offset) + var(--s2a-layout-lg));
+    height: auto;
+  }
+
+  .hub-hero-carousel-header > div {
+    transform: none;
+  }
+
+  .hub-hero-carousel-header {
+    opacity: 1;
+    transform: none;
+    height: auto;
+    top: 0;
+    margin-bottom: var(--s2a-spacing-2xl);
+  }
+
+  .hub-hero-image-grid-container-col {
+    opacity: 1;
+    transform: none;
+  }
+
+  .hub-hero-carousel-item {
+    pointer-events: all;
+    max-width: var(--grid-img-width);
+    min-width: var(--grid-img-width-min);
+    padding: calc(var(--s2a-spacing-lg) * 2 + var(--s2a-typography-line-height-eyebrow)) 0 calc(var(--s2a-spacing-xl) * 2 + var(--s2a-typography-line-height-eyebrow)) 0;
+  }
+
+  .hub-hero-carousel-item:nth-child(3) {
+    max-width: 0;
+    min-width: 0;
+    visibility: hidden;
+  }
+
+  .hub-hero-carousel-item.hovered,
+  .hub-hero-carousel-item:focus-visible {
+    width: var(--grid-img-width);
+  }
+
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
+    position: relative;
+    top: unset;
+    bottom: unset;
+    z-index: 1;
+  }
+
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
+    padding-bottom: 0;
+  }
+
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-header *,
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-footer * {
+    margin: 0;
+  }
+
+  .hub-hero-carousel-item:nth-child(1),
+  .hub-hero-carousel-item:nth-child(2),
+  .hub-hero-carousel-item:nth-child(3),
+  .hub-hero-carousel-item:nth-child(4),
+  .hub-hero-carousel-item:nth-child(5) {
+    margin: 0;
+    padding: 0;
+  }
+
+  .hub-hero-carousel-item {
+    max-width: 100%;
+  }
+
+  .hub-hero-carousel-item.hovered {
+    width: 100%;
+  }
+
+  .hub-hero-carousel-container {
+    max-width: 550px;
+    min-width: var(--hub-hero-carousel-item-min-width);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-sm);
+  }
+
+  .hub-hero-carousel-item-container .hub-hero-carousel-item-footer {
+    height: var(--slide-footer-h);
+  }
+}
+
 /** animations */
 
 @keyframes hubHeroDesktopShrink {

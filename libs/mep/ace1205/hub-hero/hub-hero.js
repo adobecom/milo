@@ -200,20 +200,22 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   `;
 
   let ariaLabel = `${index + 1} of ${slidesTotal}`;
-  // assign unique aria-label to the first slide
-  if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
+  // assign unique aria-label to the first slide (no "carousel" — desktop has no carousel semantics)
+  if (index === 0) ariaLabel = `${getCarouselName(link)}: ${ariaLabel}`;
+
+  const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
 
   const slideEl = createTag('a', {
     class: 'hub-hero-carousel-item',
     tabindex: 0,
     href: link?.href,
     'data-index': index + 1,
-    role: 'link',
-    ...(isMobile() && {
+    role: isModal ? 'button' : 'link',
+    ...(!isMobile() && {
       'aria-roledescription': 'slide',
       'aria-label': ariaLabel,
+      'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
     }),
-    'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
