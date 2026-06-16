@@ -5,6 +5,36 @@ import {
 
 const fragMap = {};
 
+// Registry of fragment URLs loaded during the current page session.
+// Used only for duplicate-reference detection; does not affect loading behaviour.
+const _loadedFragments = new Set();
+
+/**
+ * Clears the duplicate-fragment registry. Intended for test isolation only —
+ * do not call this in production code paths.
+ */
+export const _resetFragmentRegistry = () => _loadedFragments.clear();
+
+/**
+ * Returns a normalised form of a fragment URL so that trivial formatting
+ * differences (trailing slash, mixed case on scheme/host) do not create
+ * false negatives in the duplicate registry.
+ * @param {string} href
+ * @returns {string}
+ */
+const normalizeFragmentUrl = (href) => {
+  try {
+    const u = new URL(href);
+    // Lowercase scheme and host; remove a trailing slash from the pathname
+    // (but keep a bare "/" intact).
+    u.pathname = u.pathname.replace(/\/$/, '') || '/';
+    return `${u.protocol.toLowerCase()}//${u.host.toLowerCase()}${u.pathname}${u.search}${u.hash}`;
+  } catch {
+    // Relative or unparseable href — normalise by trimming only.
+    return href.trim().replace(/\/$/, '');
+  }
+};
+
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
   return url.includes('#_dnt') ? `${urlNoHash}#_dnt` : urlNoHash;
@@ -139,6 +169,14 @@ export default async function init(a) {
     });
     return;
   }
+
+  // Duplicate-fragment detection (warn only — loading is unaffected).
+  const normalizedFragUrl = normalizeFragmentUrl(relHref);
+  if (_loadedFragments.has(normalizedFragUrl)) {
+    // eslint-disable-next-line no-console
+    console.warn('[milo] Duplicate fragment reference detected:', normalizedFragUrl, a);
+  }
+  _loadedFragments.add(normalizedFragUrl);
 
   let resourcePath = a.href;
   if (a.href.includes('/federal/')) {
