@@ -1,4 +1,16 @@
+/**
+ * figure.js – Milo figure block.
+ *
+ * Lazy-load strategy
+ * ------------------
+ * Only the first figure that is above the fold (top < 1.5 × window.innerHeight)
+ * keeps its original loading attribute so it remains LCP-eligible.  Every other
+ * figure has loading='lazy' and decoding='async' stamped on its <img> elements,
+ * and the srcset of sibling <source> elements is withheld until the block enters
+ * the extended viewport (200 px rootMargin) via an IntersectionObserver.
+ */
 import { createTag } from '../../utils/utils.js';
+import { isAboveFold, setLazyImg } from '../../utils/lazy-load.js';
 
 function buildCaption(pEl) {
   const figCaptionEl = document.createElement('figcaption');
@@ -68,5 +80,12 @@ export default function init(blockEl) {
 
   if (blockCount > 1) {
     blockEl.classList.add('figure-list', `figure-list-${blockCount}`);
+  }
+
+  // Apply lazy-loading to images that are not in the LCP zone.
+  // isAboveFold is evaluated after the DOM is built so getBoundingClientRect
+  // reflects the block's actual position in the document.
+  if (!isAboveFold(blockEl)) {
+    blockEl.querySelectorAll('img').forEach(setLazyImg);
   }
 }
