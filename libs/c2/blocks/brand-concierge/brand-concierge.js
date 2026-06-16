@@ -597,7 +597,7 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
+      e.preventDefault();
       fieldButton.click();
     }
   });
