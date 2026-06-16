@@ -2,6 +2,7 @@
 import {
   createTag, getConfig, loadArea, localizeLinkAsync, customFetch, getGeoLocalePrefix,
 } from '../../utils/utils.js';
+import { registerFragment, warnDuplicate } from '../../utils/fragment-registry.js';
 
 const fragMap = {};
 
@@ -138,6 +139,13 @@ export default async function init(a) {
       severity: 'error',
     });
     return;
+  }
+
+  const locationHint = `fragment block – ${document.location.href}`;
+  const isDuplicate = registerFragment(relHref, locationHint);
+  if (isDuplicate) {
+    const { warnDuplicateFragments = true } = getConfig();
+    warnDuplicate(relHref, warnDuplicateFragments);
   }
 
   let resourcePath = a.href;
