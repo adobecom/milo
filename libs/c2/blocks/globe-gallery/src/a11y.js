@@ -45,7 +45,7 @@ export default function createGalleryA11y({
   // Called after buildCards() once card metadata is available. tabindex stays
   // -1 until the sphere is interactive — see updateTabStops().
   function setup() {
-    const canvas = q('.offer-globe-canvas');
+    const canvas = q('.globe-gallery-canvas');
     if (!canvas || !canvas.parentNode) return;
 
     // Remove existing on re-init so we don't double up.

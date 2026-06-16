@@ -26,7 +26,7 @@ gallery mirroring the sphere cards.
 
 | File | What it is |
 | --- | --- |
-| `globe.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
+| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
 | `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
@@ -34,7 +34,7 @@ gallery mirroring the sphere cards.
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, updateFocusRing, teardown }`. The hidden keyboard-gallery button list + projected focus ring. All runtime state (cards, camera, viewport, `sphereFormT`, modal-open) is injected as getters; `openModal` is injected so it never imports the modal. Holds no globe state except its own DOM nodes. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
-| `globe.css` | Globe-only CSS. Also defines `.globe`-scoped type-scale tokens (see Behavior notes). |
+| `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
 | `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
@@ -44,19 +44,19 @@ gallery mirroring the sphere cards.
 Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
 and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
 
-All eight shipped JS files (`globe.js`, `authoring.js`, `shaders.js`,
+All eight shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
 `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are **airbnb-clean**
 (`npx eslint` exit 0). The only exceptions are 3 targeted
-`// eslint-disable-next-line no-use-before-define` comments in `globe.js` for genuine
+`// eslint-disable-next-line no-use-before-define` comments in `globe-gallery.js` for genuine
 forward refs (rAF driver → `tick`, `onPointerUp` → `handleCardClick`,
 `doLayout` → `destroy`). No blanket `/* eslint-disable */`.
 
 ### Module layout (post-refactor)
 
-`globe.js` is organized top-down: (1) module-scope tuning constants grouped by
+`globe-gallery.js` is organized top-down: (1) module-scope tuning constants grouped by
 `// ── Section ──` (layout/breakpoints, phase timeline, entry, grid, drag, CA,
 hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpherePos`
-(generic easings + `lerpN` live in `math.js`); (3) `createGlobeRuntime()` — the
+(generic easings + `lerpN` live in `math.js`); (3) `createGlobeGalleryRuntime()` — the
 per-instance closure holding sphere state + behavior. Inside the closure the
 **per-frame pipeline** is a sequence of small single-concern stages run in a fixed
 order by `tick()`; values that flow between stages (phase t-values, active camera,
@@ -140,7 +140,7 @@ The block ships **no hardcoded user-facing copy**. Authored text (arc-copy,
 pull-quote, card name/role/description) comes from the fragment + rows; everything
 else — the chrome aria-labels and the keyboard-gallery button labels — resolves
 through Milo's placeholder dictionary via `replaceKeyArray` (`resolveGlobeLabels()`
-in `globe.js`, fetched once per init and threaded into `buildGlobeDom` and the a11y
+in `globe-gallery.js`, fetched once per init and threaded into `buildGlobeDom` and the a11y
 factory). English is the fallback: the default-locale sheet supplies it, and a
 missing key degrades to the de-hyphenated key text.
 
@@ -253,10 +253,10 @@ A static poster fallback is a TODO.
   lower area (inset by `INSET` = 24px + corner radius), dark text, white nav arrows
   in the margin *outside* the image, a dark frosted close button at the image's
   top-right, and the counter below the image. Styled via `@media (min-width:768px)`
-  in `globe.css`. Mobile (<768px) is unchanged: dark frosted panel + light text
+  in `globe-gallery.css`. Mobile (<768px) is unchanged: dark frosted panel + light text
   beneath the asset. The diverging JS block carries a `DELIBERATE DIVERGENCE` comment.
-- **`.globe`-scoped type-scale tokens in `globe.css`.** The prototype relied on
-  `:root` tokens from a typography stylesheet Milo doesn't ship. `globe.css` defines
+- **`.globe-gallery`-scoped type-scale tokens in `globe-gallery.css`.** The prototype relied on
+  `:root` tokens from a typography stylesheet Milo doesn't ship. `globe-gallery.css` defines
   the needed `--font-display`/`--type-title-1-*`/`--type-body-*` tokens scoped to
   `.globe`. Keep in sync with `hub-creative/styles/global/typography.css`.
 

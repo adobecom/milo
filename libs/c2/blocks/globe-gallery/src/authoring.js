@@ -30,7 +30,7 @@ function findApp(token) {
 
 // AUTHORING CONTRACT:
 // The block has three authored rows (direct child <div>s), in fixed order:
-//   Row 0 — arc-copy:   heading → .offer-arc-copy__title; <p> → .offer-arc-copy__body
+//   Row 0 — arc-copy:   heading → .globe-gallery-arc-copy__title; <p> → .globe-gallery-arc-copy__body
 //   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
 //                       Each card in the fragment is a flat sequence of elements
 //                       (separated by <hr> for multiple cards):
@@ -39,8 +39,8 @@ function findApp(token) {
 //                         <p>Description text</p>
 //                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
 //                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote (optional): heading → .offer-pullquote__quote;
-//                       first <p> → .offer-pullquote__name; second <p> → .offer-pullquote__role
+//   Row 2 — pull-quote (optional): heading → .globe-gallery-pullquote__quote;
+//                       first <p> → .globe-gallery-pullquote__name; second <p> → .globe-gallery-pullquote__role
 // Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
 // link separately (fetchFragmentCards); the block collapses if the fetch yields none.
 
@@ -189,62 +189,62 @@ export function parseAuthoredContent(el) {
 // position:fixed escapes the relative/sticky ancestors here (no transform/filter
 // on the chain).
 const buildMarkup = (gid, labels) => `
-  <div class="offer-world">
-    <canvas class="offer-globe-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+  <div class="globe-gallery-world">
+    <canvas class="globe-gallery-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
   </div>
 
-  <svg class="ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <svg class="globe-gallery-ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
     <defs>
       <filter id="ca-filter-${gid}" color-interpolation-filters="sRGB">
         <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rch"/>
-        <feOffset in="rch" class="ca-r-offset" dx="0" dy="0" result="rOff"/>
+        <feOffset in="rch" class="globe-gallery-ca-r-offset" dx="0" dy="0" result="rOff"/>
         <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gch"/>
         <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bch"/>
-        <feOffset in="bch" class="ca-b-offset" dx="0" dy="0" result="bOff"/>
+        <feOffset in="bch" class="globe-gallery-ca-b-offset" dx="0" dy="0" result="bOff"/>
         <feComposite in="rOff" in2="gch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="rg"/>
         <feComposite in="rg" in2="bOff" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
       </filter>
     </defs>
   </svg>
 
-  <aside class="offer-arc-copy" role="region" aria-label="${labels.arcRegion}">
-    <h2 class="offer-arc-copy__title"></h2>
-    <p class="offer-arc-copy__body"></p>
+  <aside class="globe-gallery-arc-copy" role="region" aria-label="${labels.arcRegion}">
+    <h2 class="globe-gallery-arc-copy__title"></h2>
+    <p class="globe-gallery-arc-copy__body"></p>
   </aside>
 
-  <div class="offer-pullquote-pin">
-    <div class="offer-pullquote">
-      <blockquote class="offer-pullquote__quote"></blockquote>
-      <div class="offer-pullquote__attribution">
-        <p class="offer-pullquote__name"></p>
-        <p class="offer-pullquote__role"></p>
+  <div class="globe-gallery-pullquote-pin">
+    <div class="globe-gallery-pullquote">
+      <blockquote class="globe-gallery-pullquote__quote"></blockquote>
+      <div class="globe-gallery-pullquote__attribution">
+        <p class="globe-gallery-pullquote__name"></p>
+        <p class="globe-gallery-pullquote__role"></p>
       </div>
     </div>
   </div>
 
-  <div class="card-modal" aria-hidden="true">
-    <div class="card-modal__backdrop"></div>
+  <div class="globe-gallery-modal" aria-hidden="true">
+    <div class="globe-gallery-modal__backdrop"></div>
   </div>
 
-  <canvas class="modal-card-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
 
-  <div class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name-${gid}" aria-describedby="card-modal-description-${gid}" aria-hidden="true">
-    <button class="card-modal__nav card-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
+  <div class="globe-gallery-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}" aria-hidden="true">
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <button class="card-modal__nav card-modal__nav--next" type="button" aria-label="${labels.nextCard}">
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${labels.nextCard}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
-    <div class="card-modal__counter" aria-hidden="true"></div>
-    <button class="card-modal__close" type="button" aria-label="${labels.closeBtn}">
+    <div class="globe-gallery-modal__counter" aria-hidden="true"></div>
+    <button class="globe-gallery-modal__close" type="button" aria-label="${labels.closeBtn}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <img class="card-modal__image" alt="" />
-    <div class="card-modal__info">
-      <p class="card-modal__role-label"></p>
-      <h2 class="card-modal__name" id="card-modal-name-${gid}"></h2>
-      <p class="card-modal__description" id="card-modal-description-${gid}"></p>
-      <ul class="card-modal__badges" aria-label="${labels.appsUsed}"></ul>
+    <img class="globe-gallery-modal__image" alt="" />
+    <div class="globe-gallery-modal__info">
+      <p class="globe-gallery-modal__role-label"></p>
+      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
+      <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
+      <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
     </div>
   </div>
 `;
@@ -264,12 +264,12 @@ export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   el.innerHTML = buildMarkup(gid, labels);
 
   const fill = (selector, text) => { if (text) el.querySelector(selector).textContent = text; };
-  fill('.offer-arc-copy__title', arcCopy.title);
-  fill('.offer-arc-copy__body', arcCopy.body);
+  fill('.globe-gallery-arc-copy__title', arcCopy.title);
+  fill('.globe-gallery-arc-copy__body', arcCopy.body);
   if (pullQuote) {
-    fill('.offer-pullquote__quote', pullQuote.quote);
-    fill('.offer-pullquote__name', pullQuote.name);
-    fill('.offer-pullquote__role', pullQuote.role);
+    fill('.globe-gallery-pullquote__quote', pullQuote.quote);
+    fill('.globe-gallery-pullquote__name', pullQuote.name);
+    fill('.globe-gallery-pullquote__role', pullQuote.role);
   }
   return gid;
 }

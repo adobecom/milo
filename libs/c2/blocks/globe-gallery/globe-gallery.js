@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────────────────────────────────
-   Offer Globe — Three.js WebGL scrolled hero.
+   Globe Gallery — Three.js WebGL scrolled hero.
 
    Phases (progress 0→1 across the block's 850vh scroll length):
      0.00 – 0.55  Arc: 45 cards rotate across viewport
@@ -179,7 +179,7 @@ function fibSpherePos(i, total, radius) {
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
 // `gid` is this instance's unique-id suffix, minted by buildGlobeDom (authoring.js)
 // and threaded in here so the CA filter url(#…) ref matches the built node.
-function createGlobeRuntime(authoredCards, root, gid, labels) {
+function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // rAF driver replacing gsap.ticker.
   let rafId = 0;
   // eslint-disable-next-line no-use-before-define -- tick() runs only via rAF, after init
@@ -255,7 +255,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
   let W = 0; let
     H = 0;
 
-  const pqEl = q('.offer-pullquote');
+  const pqEl = q('.globe-gallery-pullquote');
   let pqShown = false;
 
   let caFilterR = null; // SVG feOffset element for red channel  (Option C)
@@ -975,7 +975,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
   // Arc-copy overlay: fades/slides in with the entry, fades + scales out as the
   // headline arrives. Pinned left per breakpoint.
   function updateArcCopy() {
-    const arcCopyEl = q('.offer-arc-copy');
+    const arcCopyEl = q('.globe-gallery-arc-copy');
     if (arcCopyEl) {
       const PROGRESS_HEADLINE_IN = 0.25;
       const PROGRESS_ARC_COPY_OUT = 0.50;
@@ -1298,7 +1298,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
 
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
-    const canvas = q('.offer-globe-canvas');
+    const canvas = q('.globe-gallery-canvas');
     if (!canvas) return;
 
     W = window.innerWidth;
@@ -1395,8 +1395,8 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     canvas.style.display = 'block';
 
     // Cache SVG filter elements for Option C global CA
-    caFilterR = q('.ca-r-offset');
-    caFilterB = q('.ca-b-offset');
+    caFilterR = q('.globe-gallery-ca-r-offset');
+    caFilterB = q('.globe-gallery-ca-b-offset');
 
     modal.setup();
 
@@ -1445,7 +1445,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
     // A11y gallery cleanup so a fresh init starts clean.
     a11y.teardown();
     // Reset arc-copy and pull-quote
-    const arcCopyEl = q('.offer-arc-copy');
+    const arcCopyEl = q('.globe-gallery-arc-copy');
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
@@ -1498,7 +1498,7 @@ export default async function init(el) {
   // tall scroll length. TODO (iterate): author a static poster fallback like pdf-space.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   if (reducedMotion.matches) {
-    el.classList.add('globe--reduced');
+    el.classList.add('globe-gallery--reduced');
     return el;
   }
 
@@ -1516,7 +1516,7 @@ export default async function init(el) {
   let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
   // No cards → nothing to render. Collapse the block rather than init an empty scene.
   if (!cards || cards.length === 0) {
-    el.classList.add('globe--reduced');
+    el.classList.add('globe-gallery--reduced');
     return el;
   }
   // ?local=on: reuse the first card's image for every slot so only 1 network
@@ -1525,8 +1525,8 @@ export default async function init(el) {
     const firstImg = cards[0].img;
     cards = cards.map((c) => ({ ...c, img: firstImg }));
   }
-  const runtime = createGlobeRuntime(cards, el, gid, labels);
-  if (!runtime) { el.classList.add('globe--reduced'); return el; }
+  const runtime = createGlobeGalleryRuntime(cards, el, gid, labels);
+  if (!runtime) { el.classList.add('globe-gallery--reduced'); return el; }
   runtime.init();
   el.globeRuntime = runtime;
 

@@ -297,15 +297,15 @@ export default function createGlobeModal({
   // (close button, info panel, nav buttons) to align with the card's visible area.
   // Called every frame when modal is open so elements stay locked to the card.
   function positionModalChrome() {
-    const chromeEl = q('.card-modal-chrome');
+    const chromeEl = q('.globe-gallery-modal-chrome');
     const camera = getCamera();
     if (!chromeEl || !camera) return;
     const { W, H } = getViewport();
     const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
-    const infoEl = chromeEl.querySelector('.card-modal__info');
-    const closeEl = chromeEl.querySelector('.card-modal__close');
-    const prevEl = chromeEl.querySelector('.card-modal__nav--prev');
-    const nextEl = chromeEl.querySelector('.card-modal__nav--next');
+    const infoEl = chromeEl.querySelector('.globe-gallery-modal__info');
+    const closeEl = chromeEl.querySelector('.globe-gallery-modal__close');
+    const prevEl = chromeEl.querySelector('.globe-gallery-modal__nav--prev');
+    const nextEl = chromeEl.querySelector('.globe-gallery-modal__nav--next');
 
     const tgtPos = new THREE.Vector3();
     const tgtQuat = new THREE.Quaternion();
@@ -457,7 +457,7 @@ export default function createGlobeModal({
       }
 
       // Counter: just below the image, left-aligned with it (clamped on screen).
-      const counterEl = chromeEl.querySelector('.card-modal__counter');
+      const counterEl = chromeEl.querySelector('.globe-gallery-modal__counter');
       if (counterEl) {
         counterEl.style.position = 'absolute';
         counterEl.style.top = `${Math.min(visBot + 8, H - 28)}px`;
@@ -483,28 +483,28 @@ export default function createGlobeModal({
 
   // Write the authored metadata for card index i into the modal chrome DOM.
   function populateModal(i) {
-    const targetEl = q('.card-modal-chrome') || modalEl;
+    const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
-    const imgEl = targetEl.querySelector('.card-modal__image');
+    const imgEl = targetEl.querySelector('.globe-gallery-modal__image');
     if (imgEl) { imgEl.src = meta.img; imgEl.alt = meta.name; }
-    const roleLabelEl = targetEl.querySelector('.card-modal__role-label');
+    const roleLabelEl = targetEl.querySelector('.globe-gallery-modal__role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
-    targetEl.querySelector('.card-modal__name').textContent = meta.name;
-    targetEl.querySelector('.card-modal__description').textContent = meta.description;
-    const counterEl = targetEl.querySelector('.card-modal__counter');
+    targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
+    targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
+    const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
     // TODO: localize this
     if (counterEl) counterEl.textContent = `${i + 1}/${getCount()}`;
-    const badgesEl = targetEl.querySelector('.card-modal__badges');
+    const badgesEl = targetEl.querySelector('.globe-gallery-modal__badges');
     badgesEl.innerHTML = '';
     meta.badges.forEach((b) => {
       const row = document.createElement('li');
-      row.className = 'card-modal__badge';
-      row.innerHTML = '<div class="card-modal__badge-left">'
-          + `<div class="card-modal__badge-icon card-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>`
-          + `<span class="card-modal__badge-app">${b.app.name}</span>`
+      row.className = 'globe-gallery-modal__badge';
+      row.innerHTML = '<div class="globe-gallery-modal__badge-left">'
+          + `<div class="globe-gallery-modal__badge-icon globe-gallery-modal__badge-icon--${b.app.id}" aria-hidden="true">${b.app.abbr}</div>`
+          + `<span class="globe-gallery-modal__badge-app">${b.app.name}</span>`
         + '</div>'
-        + `<span class="card-modal__badge-role">${b.role}</span>`;
+        + `<span class="globe-gallery-modal__badge-role">${b.role}</span>`;
       badgesEl.appendChild(row);
     });
   }
@@ -724,7 +724,7 @@ export default function createGlobeModal({
     // chrome itself in case open() is called from inside it (shouldn't
     // happen, but defensive).
     const focusedNow = document.activeElement;
-    const chromeRoot = q('.card-modal-chrome');
+    const chromeRoot = q('.globe-gallery-modal-chrome');
     modalFocusRestoreEl = (chromeRoot && chromeRoot.contains(focusedNow)) ? null : focusedNow;
     modalIdx = i;
     modalCard = cards[i];
@@ -770,7 +770,7 @@ export default function createGlobeModal({
 
     modalEl.classList.add('is-visible');
     modalEl.setAttribute('aria-hidden', 'false');
-    const chromeEl = q('.card-modal-chrome');
+    const chromeEl = q('.globe-gallery-modal-chrome');
     if (chromeEl) { chromeEl.classList.add('is-visible'); chromeEl.setAttribute('aria-hidden', 'false'); }
     positionModalChrome();
     requestAnimationFrame(() => {
@@ -779,7 +779,7 @@ export default function createGlobeModal({
       // Move keyboard focus into the modal — close button is the safest default
       // (always present, no destructive default action). Falls back to chromeEl
       // for screen-reader announcement if close button is somehow missing.
-      const closeBtn = chromeEl && chromeEl.querySelector('.card-modal__close');
+      const closeBtn = chromeEl && chromeEl.querySelector('.globe-gallery-modal__close');
       if (closeBtn) { try { closeBtn.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
@@ -822,7 +822,7 @@ export default function createGlobeModal({
     // applied. Without this, the close button (which user just clicked) retains
     // focus → browser blocks aria-hidden + warns in console + can interfere with
     // subsequent pointer event delivery on touch in DevTools device emulation.
-    const chromeEl = q('.card-modal-chrome');
+    const chromeEl = q('.globe-gallery-modal-chrome');
     if (chromeEl && document.activeElement && chromeEl.contains(document.activeElement)) {
       document.activeElement.blur();
     }
@@ -1113,7 +1113,7 @@ export default function createGlobeModal({
 
     // Modal renderer / scene — renders only the flown-out card on a separate canvas
     // above .card-modal__backdrop, so it stays sharp while the backdrop blurs the main canvas.
-    modalCanvasEl = q('.modal-card-canvas');
+    modalCanvasEl = q('.globe-gallery-modal-canvas');
     if (modalCanvasEl) {
       const modalGlOpts = { canvas: modalCanvasEl, antialias: true, alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
@@ -1123,7 +1123,7 @@ export default function createGlobeModal({
       modalScene = new THREE.Scene();
     }
 
-    modalEl = q('.card-modal');
+    modalEl = q('.globe-gallery-modal');
     if (!modalEl) return;
     modalStartPos = new THREE.Vector3();
     modalStartQuat = new THREE.Quaternion();
@@ -1132,12 +1132,12 @@ export default function createGlobeModal({
     modalCloseStartQuat = new THREE.Quaternion();
     modalCloseStartScale = new THREE.Vector3();
     // Chrome div hosts the interactive elements (close, nav, info) above the WebGL card canvas.
-    const chromeEl = q('.card-modal-chrome');
+    const chromeEl = q('.globe-gallery-modal-chrome');
     const evtRoot = chromeEl || modalEl;
-    evtRoot.querySelector('.card-modal__close').addEventListener('click', close);
-    evtRoot.querySelector('.card-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
-    evtRoot.querySelector('.card-modal__nav--next').addEventListener('click', () => { navigate(1); });
-    modalEl.querySelector('.card-modal__backdrop').addEventListener('click', close);
+    evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
+    evtRoot.querySelector('.globe-gallery-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
+    evtRoot.querySelector('.globe-gallery-modal__nav--next').addEventListener('click', () => { navigate(1); });
+    modalEl.querySelector('.globe-gallery-modal__backdrop').addEventListener('click', close);
 
     // Detach any prior document keydown handler before re-adding (a breakpoint
     // re-init calls setup() again on the same instance — avoid stacking → double-nav).
@@ -1151,7 +1151,7 @@ export default function createGlobeModal({
       // while modal is open so the globe doesn't scroll/zoom behind the modal.
       // Space is exempted when focus is inside the modal chrome — Space should
       // activate a focused button (e.g., close), not be blocked.
-      const chromeRoot = q('.card-modal-chrome');
+      const chromeRoot = q('.globe-gallery-modal-chrome');
       const focusInChrome = chromeRoot && chromeRoot.contains(document.activeElement);
       if (e.key === 'PageUp' || e.key === 'PageDown'
           || e.key === 'Home' || e.key === 'End'
@@ -1338,7 +1338,7 @@ export default function createGlobeModal({
       modalEl.classList.remove('is-visible', 'is-open');
       modalEl.setAttribute('aria-hidden', 'true');
     }
-    const chromeEl = q('.card-modal-chrome');
+    const chromeEl = q('.globe-gallery-modal-chrome');
     if (chromeEl) {
       chromeEl.classList.remove('is-visible', 'is-open');
       chromeEl.setAttribute('aria-hidden', 'true');
@@ -1348,7 +1348,7 @@ export default function createGlobeModal({
       modalCanvasEl.style.transition = 'none';
       modalCanvasEl.style.transform = '';
     }
-    const mainCanvas = q('.offer-globe-canvas');
+    const mainCanvas = q('.globe-gallery-canvas');
     if (mainCanvas) mainCanvas.classList.remove('is-modal-active');
     document.documentElement.classList.remove('modal-open');
     document.body.classList.remove('modal-open');
