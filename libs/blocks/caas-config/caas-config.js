@@ -82,7 +82,7 @@ const defaultOptions = {
     'horizontal-card': 'Horizontal Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
-    'product': 'Product Card',
+    product: 'Product Card',
     'text-card': 'Text Card',
   },
   flexCardImageOptions: {
