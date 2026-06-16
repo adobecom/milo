@@ -303,7 +303,6 @@ export const CONFIG = {
                   enableWorkflow: true,
                   params: {
                     enableinlineoverlay: 's2-compat',
-                    locale: (getConfig().locale?.ietf || 'en-US').replace('-', '_'),
                   },
                   ...getConfig().unav?.profile?.managePeopleConfig,
                 },
@@ -878,6 +877,25 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+
+    // Kick off AUP SDK init in parallel with the rest of imsReady so its cost
+    // (script + preloadSDK + updateConfig) does not land inside Unav-Time.
+    // The fetchAUPSDKInstance callback below will just return this promise.
+    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+      this.aupsdkInstancePromise = this.preloadAupSdk();
+      this.aupsdkInstancePromise.catch((e) => {
+        // Reset so the fetchAUPSDKInstance fallback re-runs the inline init.
+        this.aupsdkInstancePromise = null;
+        lanaLog({
+          message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
+          e,
+          tags: 'universalnav',
+          errorType: 'i',
+          severity: 'info',
+        });
+      });
+    }
+
     const tasks = [
       this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
       this.setUpProductCTA,
@@ -968,6 +986,61 @@ class Gnav {
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
+  preloadAupSdk = async () => {
+    const config = getConfig();
+    const { imsClientId } = config;
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+
+    await loadScript(
+      `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
+      null,
+      { mode: 'async' },
+    );
+
+    window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
+      appId: 'adobe_com',
+      apiKey: imsClientId,
+      getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
+      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      environment,
+      cdnEnvironment: environment,
+      locale: config.locale?.ietf || 'en-US',
+      appName: 'adobecom',
+      appVersion: '1.0',
+      colorScheme: isDarkMode() ? 'dark' : 'light',
+      ...(enableBE && {
+        showDialog: async (element, _, closeCallback) => {
+          document.getElementById('feds-manage-people-dialog')?.remove();
+          const dialog = document.createElement('dialog');
+          dialog.id = 'feds-manage-people-dialog';
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          dialog.addEventListener('cancel', () => {
+            closeCallback({ type: 'close' });
+            dialog.close();
+            dialog.remove();
+            document.documentElement.classList.remove('disable-scroll');
+          });
+          dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+              closeCallback({ type: 'close' });
+              dialog.close();
+              dialog.remove();
+              document.documentElement.classList.remove('disable-scroll');
+            }
+          });
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+        },
+      }),
+    });
+
+    if (enableBE) {
+      await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    }
+    return window.aupsdk;
+  };
+
   decorateUniversalNav = async () => {
     performance.mark('Unav-Start');
     const signedOut = !window.adobeIMS?.isSignedInUser();
@@ -1003,14 +1076,6 @@ class Gnav {
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
     ];
 
-    if(window.adobeIMS?.isSignedInUser()) {
-      scriptsToLoad.push(loadScript(
-        `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
-        null,
-        { mode: 'async' },
-      ));
-    }
-    
     await Promise.all(scriptsToLoad);
 
     const getChildren = () => {
@@ -1039,6 +1104,21 @@ class Gnav {
     }
 
     const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
+
+    const addFetchAUPSDKInstance = () => {
+      if (!window.adobeIMS?.isSignedInUser()) return {};
+      // Eager init was kicked off in imsReady(); just return that promise.
+      // Fallback to inline preload only for races (e.g. user signed in after
+      // imsReady ran, or the eager promise errored and was reset to null).
+      return {
+        fetchAUPSDKInstance: async () => {
+          if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
+          this.aupsdkInstancePromise = this.preloadAupSdk();
+          return this.aupsdkInstancePromise;
+        }
+      }
+    }
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1082,48 +1162,7 @@ class Gnav {
           },
         }),
       }),
-      fetchAUPSDKInstance: async () => {
-        // Initialize AUP SDK — required by UNav 1.6 for fetchAUPSDKInstance
-        const { imsClientId } = getConfig();
-        window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
-          appId: 'adobe_com',
-          apiKey: imsClientId,
-          getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
-          getProfile: () => window.adobeIMS?.getProfile(),
-          environment,
-          cdnEnvironment: environment,
-          locale: locale.split('_')[0],
-          appName: 'adobecom',
-          appVersion: '1.0',
-          colorScheme: isDarkMode() ? 'dark' : 'light',
-          ...(enableBE && {
-            showDialog: async (element, _, closeCallback) => {
-              const dialog = document.createElement('dialog');
-              dialog.id = 'feds-manage-people-dialog';
-              dialog.appendChild(element);
-              document.body.appendChild(dialog);
-              dialog.addEventListener('cancel', () => {
-                closeCallback({ type: 'close' });
-                dialog.remove();
-                document.documentElement.classList.remove('disable-scroll');
-              });
-              dialog.addEventListener('click', (e) => {
-                if (e.target === dialog) {
-                  closeCallback({ type: 'close' });
-                  dialog.close();
-                  document.documentElement.classList.remove('disable-scroll');
-                }
-              });
-              document.documentElement.classList.add('disable-scroll');
-              dialog.showModal();
-            },
-          }),
-        });
-        if (enableBE) {
-          await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
-        }
-        return window.aupsdk;
-      },
+      ...addFetchAUPSDKInstance(),
     });
 
     // Exposing UNAV config for consumers
