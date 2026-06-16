@@ -13,7 +13,6 @@ import {
   rewriteForPreviewHost,
   rewriteBlogPreviewHost,
 } from '../mep-caas.js';
-import { getConfig } from '../../../../utils/utils.js';
 
 export const HIGHLIGHT_KEYS = {
   mep: 'mepHighlight',

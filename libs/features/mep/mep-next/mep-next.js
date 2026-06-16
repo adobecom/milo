@@ -1225,16 +1225,16 @@ export async function saveToMmm() {
     });
 }
 export default async function decoratePreviewMode() {
-  // const { miloLibs, codeRoot, mep } = getConfig();
+  const { miloLibs, codeRoot, mep } = getConfig();
   // loadStyle(`${miloLibs || codeRoot}/features/mep/mep-next/mep-next.css`);
   // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
   // getMarketConfig();
   // await createPreviewPill();
-  // if (mep?.experiments) addHighlightData(mep.experiments);
-  // markDefaultFragments();
-  // addFragmentBadgeClickHandlers();
+  if (mep?.experiments) addHighlightData(mep.experiments);
+  markDefaultFragments();
+  addFragmentBadgeClickHandlers();
   // if (document.body.dataset.mepCaasHighlight === 'true') {
   //   watchForCaasBlocks();
   //   injectCaasBadges();
