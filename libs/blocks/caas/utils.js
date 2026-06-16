@@ -1109,7 +1109,7 @@ export const getConfig = async (originalState, strs = {}) => {
       ...((state.cardStyle === 'flex-card'
         && (state.flexCardImageOptions !== 'default'
           || state.flexCardTextAlign !== 'text-left'
-          || state.flexCardTextSize !== 'medium'
+          || state.flexCardTextSize !== 'default'
           || state.flexCardHideDetails
           || state.flexCardHideTitle
           || state.flexCardHideDescription
@@ -1247,7 +1247,6 @@ export const getConfig = async (originalState, strs = {}) => {
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
   };
-  console.log('[DEBUG]', config);
   return config;
 };
 
@@ -1372,14 +1371,14 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  flexCardImageOptions: 'default',
   detailsTextOption: 'default',
+  flexCardTextSize: 'default',
   flexCardTextAlign: 'text-left',
-  flexCardTextSize: 'medium',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
   flexCardHideFooter: false,
-  flexCardImageOptions: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useCenterVideoPlay: false,

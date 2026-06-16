@@ -412,7 +412,7 @@ const UiPanel = () => {
         prop="paginationAnimationStyle"
         options=${defaultOptions.paginationAnimationStyle}
       />
-      <${Input} label="Light background (Modern only)" prop="useLightControls" type="checkbox" />
+      <${Input} label="Light (Modern only)" prop="useLightControls" type="checkbox" />
     </div>
   `;
 
@@ -437,12 +437,6 @@ const UiPanel = () => {
       <${Input} label="Hide Title" prop="flexCardHideTitle" type="checkbox" />
       <${Input} label="Hide Description" prop="flexCardHideDescription" type="checkbox" />
       <${Input} label="Hide Footer (CTA)" prop="flexCardHideFooter" type="checkbox" />
-    </div>
-  `;
-
-  const flextCardFontSizeOptions = html`
-    <div class="nested">
-      <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
     </div>
   `;
 
