@@ -4,6 +4,10 @@ import {
 } from '../../utils/utils.js';
 
 const fragMap = {};
+const seenFragmentPaths = new Set();
+
+/** @internal – test-only helper to reset duplicate-detection state between test cases */
+export const _resetSeenFragmentPaths = () => seenFragmentPaths.clear();
 
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
@@ -131,6 +135,13 @@ export default async function init(a) {
     a.href = a.href.replace('#_inline', '');
     relHref = relHref.replace('#_inline', '');
   }
+
+  const normalizedPath = relHref.trim().replace(/\/$/, '');
+  if (seenFragmentPaths.has(normalizedPath)) {
+    // eslint-disable-next-line no-console
+    console.warn('Duplicate fragment reference detected: ', normalizedPath);
+  }
+  seenFragmentPaths.add(normalizedPath);
 
   if (isCircularRef(relHref)) {
     window.lana?.log(`Fragment Circular Reference loading ${a.href}`, {
