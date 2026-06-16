@@ -462,7 +462,7 @@ presetSelector.addEventListener('change', () => {
   loadFromLS();
   checkCaasEnv();
 
-  const langFirstEl = document.getElementById('language-first');
+  const langFirstEl = document.querySelector('.language-first-label');
   const autoDetectLingoEl = document.getElementById('autoDetectLingo');
   langFirstEl.classList.toggle('lingo-auto', autoDetectLingoEl.checked);
 });
@@ -540,7 +540,7 @@ dryRun.addEventListener('change', () => {
 });
 
 document.getElementById('autoDetectLingo').addEventListener('change', (e) => {
-  document.getElementById('language-first').classList.toggle('lingo-auto', e.target.checked);
+  document.querySelector('.language-first-label').classList.toggle('lingo-auto', e.target.checked);
 });
 
 const checkUserStatus = async () => {

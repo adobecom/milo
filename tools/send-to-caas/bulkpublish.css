@@ -253,7 +253,7 @@ div#caas-draft-cb {
 }
 
 label.dry-run-label,
-label.auto-detect-lingo-label {
+label.language-first-label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -263,7 +263,7 @@ label.auto-detect-lingo-label {
   cursor: pointer;
 }
 
-label.auto-detect-lingo-label span.help {
+label.language-first-label span.help {
   vertical-align: middle;
 }
 
@@ -634,12 +634,12 @@ a.classic {
   color: #d00;
 }
 
-#language-first.lingo-auto {
+label.language-first-label.lingo-auto {
   opacity: 0.5;
   pointer-events: none;
 }
 
-#language-first.lingo-auto label::after {
+label.language-first-label.lingo-auto::after {
   content: ' (auto)';
   font-style: italic;
   font-size: 0.85em;
