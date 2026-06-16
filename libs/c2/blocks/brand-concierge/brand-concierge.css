@@ -732,7 +732,6 @@
   display: flex;
   font-size: 14px;
   gap: 6px;
-  line-height: 1.4;
   padding: 4px 16px;
   white-space: nowrap;
 }
