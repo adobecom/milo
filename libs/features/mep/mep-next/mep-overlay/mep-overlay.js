@@ -22,7 +22,6 @@ import {
   toggleHighlight,
   getParameters,
   getPageUpdates,
-  setHighlightData,
   setBadgeEventListeners,
 } from './mep-overlay-highlight.js';
 import { saveToMmm } from '../mep-next.js';
@@ -568,7 +567,6 @@ async function init() {
   setDefaultValues();
   setPreviewButton();
   setMasObserver();
-  setHighlightData();
   setBadgeEventListeners();
 }
 
