@@ -88,7 +88,7 @@ function getContentElement(parent, traversalDepth) {
 }
 
 function changeTabs(e, config) {
-  const { target } = e;
+  const target = e.currentTarget;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
@@ -341,6 +341,17 @@ const init = async (block) => {
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
 
+  const HIGHLIGHT_COLORS = {
+    green: { bg: '#05834E', color: '#fff' },
+    yellow: { bg: '#FFCC00', color: '#000' },
+  };
+  let highlight = null;
+  if (config.highlight) {
+    const parts = config.highlight.split(',').map((s) => s.trim());
+    const { bg, color } = HIGHLIGHT_COLORS[parts[2]?.toLowerCase()] ?? HIGHLIGHT_COLORS.green;
+    highlight = { index: parseInt(parts[0], 10), label: parts[1], bg, color };
+  }
+
   const activeTabIndex = loadActiveTab(config);
   if (activeTabIndex) config['active-tab'] = activeTabIndex;
 
@@ -384,6 +395,16 @@ const init = async (block) => {
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
+      if (highlight) {
+        if (highlight.index === i + 1) {
+          const badge = createTag('span', { class: 'tab-highlight' }, highlight.label);
+          badge.style.backgroundColor = highlight.bg;
+          badge.style.color = highlight.color;
+          tabBtn.append(badge);
+        } else {
+          tabBtn.append(createTag('span', { class: 'tab-highlight-placeholder', 'aria-hidden': 'true' }));
+        }
+      }
       tabListContainer.append(tabBtn);
 
       const tabContentAttributes = {

@@ -275,4 +275,49 @@ describe('tabs', () => {
       expect(tabsWithTabindex0[0]).to.equal(buttons[targetIndex]);
     });
   });
+
+  describe('highlight badge', () => {
+    it('renders a badge only on the specified tab', () => {
+      const section = document.querySelector('#highlight-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+
+      expect(buttons[0].querySelector('.tab-highlight')).to.not.exist;
+      expect(buttons[1].querySelector('.tab-highlight')).to.not.exist;
+      expect(buttons[2].querySelector('.tab-highlight')).to.exist;
+    });
+
+    it('adds invisible placeholders to non-highlighted tabs for height consistency', () => {
+      const section = document.querySelector('#highlight-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+
+      expect(buttons[0].querySelector('.tab-highlight-placeholder')).to.exist;
+      expect(buttons[1].querySelector('.tab-highlight-placeholder')).to.exist;
+      expect(buttons[2].querySelector('.tab-highlight-placeholder')).to.not.exist;
+    });
+
+    it('badge has correct label, green bg, and white text', () => {
+      const section = document.querySelector('#highlight-tabs');
+      const tabs = section.querySelector('.tabs');
+      const badge = tabs.querySelectorAll('button[role="tab"]')[2].querySelector('.tab-highlight');
+
+      expect(badge.textContent).to.equal('Best value');
+      expect(badge.style.backgroundColor).to.equal('rgb(5, 131, 78)');
+      expect(badge.style.color).to.equal('rgb(255, 255, 255)');
+    });
+
+    it('clicking the badge label activates its tab', () => {
+      const section = document.querySelector('#highlight-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+      const badge = buttons[2].querySelector('.tab-highlight');
+
+      badge.click();
+
+      expect(buttons[2].getAttribute('aria-selected')).to.equal('true');
+      expect(buttons[0].getAttribute('aria-selected')).to.equal('false');
+    });
+
+  });
 });
