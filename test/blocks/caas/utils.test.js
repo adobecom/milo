@@ -859,8 +859,8 @@ describe('getCountryAndLang', () => {
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
         'site-locales': {
           data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '/be, /ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: '/be, /us' },
           ],
         },
       }),
