@@ -493,6 +493,7 @@ export default function createGlobeModal({
     targetEl.querySelector('.card-modal__name').textContent = meta.name;
     targetEl.querySelector('.card-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.card-modal__counter');
+    // TODO: localize this
     if (counterEl) counterEl.textContent = `${i + 1}/${getCount()}`;
     const badgesEl = targetEl.querySelector('.card-modal__badges');
     badgesEl.innerHTML = '';

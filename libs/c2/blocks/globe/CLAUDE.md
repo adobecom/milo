@@ -7,7 +7,7 @@ from the code alone.
 
 ## Hard rules (these override default behavior)
 
-- **All nine shipped JS files (`globe.js`, `src/authoring.js`, `src/markup.js`, `src/shaders.js`,
+- **All eight shipped JS files (`globe.js`, `src/authoring.js`, `src/shaders.js`,
   `src/textures.js`, `src/materials.js`, `src/a11y.js`, `src/modal.js`, `src/math.js`) are airbnb-clean — keep
   them that way (`npx eslint` exit 0, no banners).** The blanket `/* eslint-disable */` is
   gone. Targeted `// eslint-disable-next-line` comments are allowed when a rule genuinely
@@ -35,7 +35,7 @@ from the code alone.
 - **`hub-creative-v1/`, `hub-creative-v2/`, `_reference/` are read-only reference**,
   not shipped code (the `hub-creative-v*` dirs are git-ignored). The block ships as
   `globe.js` + `globe.css` + `three.module.min.js` + `src/` modules (`authoring.js`,
-  `markup.js`, `shaders.js`, `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`)
+  `shaders.js`, `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`)
   (registered in `C2_BLOCKS`, `libs/utils/utils.js`). The build-only Three.js vendoring
   (`package.json`, `three-src.js`, `node_modules/`) lives at `/globe/` root — run
   `npm run build` there to regenerate `three.module.min.js`.

@@ -1,4 +1,5 @@
-/* Authoring layer: parses the block rows + fetches the card fragment. */
+/* Authoring layer: parses the block rows + fetches the card fragment, and builds
+   the canvas/overlay/modal DOM the runtime expects. */
 
 // ── Authoring ────────────────────────────────────────────────────────────────
 // Adobe app catalog used to render the modal badge chips (the id drives the
@@ -28,7 +29,7 @@ function findApp(token) {
 }
 
 // AUTHORING CONTRACT:
-// The block has three authored rows (direct child <div>s):
+// The block has three authored rows (direct child <div>s), in fixed order:
 //   Row 0 — arc-copy:   heading → .offer-arc-copy__title; <p> → .offer-arc-copy__body
 //   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
 //                       Each card in the fragment is a flat sequence of elements
@@ -38,9 +39,8 @@ function findApp(token) {
 //                         <p>Description text</p>
 //                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
 //                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote: heading → .offer-pullquote__quote;
-//                       first <p> → .offer-pullquote__name;
-//                       second <p> → .offer-pullquote__role
+//   Row 2 — pull-quote (optional): heading → .offer-pullquote__quote;
+//                       first <p> → .offer-pullquote__name; second <p> → .offer-pullquote__role
 // Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
 // link separately (fetchFragmentCards); the block collapses if the fetch yields none.
 
@@ -48,19 +48,19 @@ function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
   const paras = [...row.querySelectorAll('p')]
     .filter((p) => !p.querySelector('picture,img'))
-    .map((p) => p.textContent.trim())
+    .map((p) => p.textContent)
     .filter(Boolean);
   return {
-    title: heading ? heading.textContent.trim() : paras.shift() || '',
+    title: heading ? heading.textContent : paras.shift() || '',
     body: paras.join(' '),
   };
 }
 
 function parsePullQuote(row) {
   const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent.trim()).filter(Boolean);
+  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent).filter(Boolean);
   return {
-    quote: quoteEl ? quoteEl.textContent.trim() : paras.shift() || '',
+    quote: quoteEl ? quoteEl.textContent : paras.shift() || '',
     name: paras[0] || '',
     role: paras[1] || '',
   };
@@ -156,35 +156,120 @@ export async function fetchFragmentCards(href) {
   }
 }
 
+// The rows are positional (see AUTHORING CONTRACT): arc-copy is always row 0,
+// the card fragment link is row 1, and an optional pull-quote is row 2. The
+// fragment href is read here (before buildGlobeDom wipes the DOM) — links are
+// authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
+// the raw <a href> survives to here; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
-  const rows = [...el.querySelectorAll(':scope > div')];
-  if (!rows.length) return { arcCopy: null, pullQuote: null, fragmentHref: null };
+  const [arcCopyRow, cardsRow, pullQuoteRow] = [...el.children];
+  const fragmentLink = cardsRow?.querySelector('a[href]');
+  return {
+    arcCopy: parseArcCopy(arcCopyRow),
+    pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
+    fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
+  };
+}
 
-  let cardRows = rows;
-  let arcCopy = null;
-  let pullQuote = null;
+// ── DOM the runtime expects ──────────────────────────────────────────────────
+// The original prototype hand-authored these nodes in index.html. We build them
+// inside the block element instead. The runtime finds nodes by querying *within
+// the block root* (root.querySelector('.class')), so ids are no longer needed
+// for lookup → more than one globe can coexist on a page.
+//
+// Two things still require a real id (no classname equivalent — both are
+// document-wide id references), made unique per instance via `gid`:
+//   • the CA SVG filter — referenced from JS as `filter: url(#ca-filter-<gid>)`.
+//   • the modal heading/description — referenced by the dialog's aria-labelledby
+//     / aria-describedby IDREFs.
+// `gid` is minted here (this module owns both creating and embedding the ids)
+// and returned by buildGlobeDom so the runtime can build the same url(#…) ref.
+//
+// Fixed-position overlays (ca-svg, pull-quote, modal) can live inside the block:
+// position:fixed escapes the relative/sticky ancestors here (no transform/filter
+// on the chain).
+const buildMarkup = (gid, labels) => `
+  <div class="offer-world">
+    <canvas class="offer-globe-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:3;display:none;pointer-events:auto;touch-action:pan-y;"></canvas>
+  </div>
 
-  if (rows.length > 1 && !rows[0].querySelector('picture, img')) {
-    arcCopy = parseArcCopy(rows[0]);
-    cardRows = cardRows.slice(1);
+  <svg class="ca-svg" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+    <defs>
+      <filter id="ca-filter-${gid}" color-interpolation-filters="sRGB">
+        <feColorMatrix in="SourceGraphic" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="rch"/>
+        <feOffset in="rch" class="ca-r-offset" dx="0" dy="0" result="rOff"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="gch"/>
+        <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="bch"/>
+        <feOffset in="bch" class="ca-b-offset" dx="0" dy="0" result="bOff"/>
+        <feComposite in="rOff" in2="gch" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="rg"/>
+        <feComposite in="rg" in2="bOff" operator="arithmetic" k1="0" k2="1" k3="1" k4="0"/>
+      </filter>
+    </defs>
+  </svg>
+
+  <aside class="offer-arc-copy" role="region" aria-label="${labels.arcRegion}">
+    <h2 class="offer-arc-copy__title"></h2>
+    <p class="offer-arc-copy__body"></p>
+  </aside>
+
+  <div class="offer-pullquote-pin">
+    <div class="offer-pullquote">
+      <blockquote class="offer-pullquote__quote"></blockquote>
+      <div class="offer-pullquote__attribution">
+        <p class="offer-pullquote__name"></p>
+        <p class="offer-pullquote__role"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-modal" aria-hidden="true">
+    <div class="card-modal__backdrop"></div>
+  </div>
+
+  <canvas class="modal-card-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
+
+  <div class="card-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="card-modal-name-${gid}" aria-describedby="card-modal-description-${gid}" aria-hidden="true">
+    <button class="card-modal__nav card-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="card-modal__nav card-modal__nav--next" type="button" aria-label="${labels.nextCard}">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="card-modal__counter" aria-hidden="true"></div>
+    <button class="card-modal__close" type="button" aria-label="${labels.closeBtn}">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+    </button>
+    <img class="card-modal__image" alt="" />
+    <div class="card-modal__info">
+      <p class="card-modal__role-label"></p>
+      <h2 class="card-modal__name" id="card-modal-name-${gid}"></h2>
+      <p class="card-modal__description" id="card-modal-description-${gid}"></p>
+      <ul class="card-modal__badges" aria-label="${labels.appsUsed}"></ul>
+    </div>
+  </div>
+`;
+
+// Per-page instance counter → a unique suffix for this instance's id-bearing
+// nodes. Only needs to be unique within the document so multiple globes don't
+// collide on their shared-namespace ids; an incrementing int is the simplest
+// guarantee of that.
+let globeInstanceSeq = 0;
+
+// Build the block's DOM, fill its (otherwise empty) arc-copy / pull-quote slots
+// with the parsed authored text, and return the `gid` used for this instance's
+// unique ids so the runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
+export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
+  globeInstanceSeq += 1;
+  const gid = globeInstanceSeq;
+  el.innerHTML = buildMarkup(gid, labels);
+
+  const fill = (selector, text) => { if (text) el.querySelector(selector).textContent = text; };
+  fill('.offer-arc-copy__title', arcCopy.title);
+  fill('.offer-arc-copy__body', arcCopy.body);
+  if (pullQuote) {
+    fill('.offer-pullquote__quote', pullQuote.quote);
+    fill('.offer-pullquote__name', pullQuote.name);
+    fill('.offer-pullquote__role', pullQuote.role);
   }
-
-  if (cardRows.length > 1 && !cardRows[cardRows.length - 1].querySelector('picture, img')) {
-    pullQuote = parsePullQuote(cardRows[cardRows.length - 1]);
-    cardRows = cardRows.slice(0, -1);
-  }
-
-  // Extract the fragment href before buildGlobeDom() wipes the DOM. The link is
-  // authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
-  // the raw <a href> stays in the DOM here; strip the hash before fetching.
-  // Authoring must use #_dnb — there is no data-path fallback for pre-resolved links.
-  const fragmentHref = (() => {
-    for (const row of cardRows) {
-      const a = row.querySelector('a[href]');
-      if (a) return a.href.replace(/#.*$/, '');
-    }
-    return null;
-  })();
-
-  return { arcCopy, pullQuote, fragmentHref };
+  return gid;
 }

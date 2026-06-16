@@ -12,8 +12,7 @@ import * as THREE from './three.module.min.js';
 import { getConfig } from '../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { replaceKeyArray } from '../../../features/placeholders.js';
-import { parseAuthoredContent, fetchFragmentCards } from './src/authoring.js';
-import buildGlobeDom from './src/markup.js';
+import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
 import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './src/textures.js';
 import { createCardMaterial } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
@@ -162,13 +161,14 @@ const NAV_NUDGE_STIFF = 0.05; // softer pull
 const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
 
 // ── Fibonacci sphere distribution ────────────────────────────────────────────
+const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 function fibSpherePos(i, total, radius) {
-  const phi = Math.acos(1 - (2 * (i + 0.5)) / total);
-  const theta = Math.PI * (1 + Math.sqrt(5)) * (i + 0.5);
+  const polarAngle = Math.acos(1 - (2 * i) / total);
+  const azimuth = GOLDEN_ANGLE * i;
   return new THREE.Vector3(
-    radius * Math.sin(phi) * Math.cos(theta),
-    radius * Math.cos(phi),
-    radius * Math.sin(phi) * Math.sin(theta),
+    radius * Math.sin(polarAngle) * Math.cos(azimuth),
+    radius * Math.cos(polarAngle),
+    radius * Math.sin(polarAngle) * Math.sin(azimuth),
   );
 }
 
@@ -177,7 +177,7 @@ function fibSpherePos(i, total, radius) {
 // Key changes from the prototype: gsap.ticker → requestAnimationFrame,
 // Lenis reads → window.scrollY. `root` is the block element; all DOM lookups
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
-// `gid` is this instance's unique-id suffix, minted by buildGlobeDom (markup.js)
+// `gid` is this instance's unique-id suffix, minted by buildGlobeDom (authoring.js)
 // and threaded in here so the CA filter url(#…) ref matches the built node.
 function createGlobeRuntime(authoredCards, root, gid, labels) {
   // rAF driver replacing gsap.ticker.
@@ -1463,6 +1463,7 @@ function createGlobeRuntime(authoredCards, root, gid, labels) {
 // per locale, with English as the fallback (the default-locale sheet supplies it;
 // see README "Localization" for the keys to add). The card label is a tokenized
 // template so each locale controls word order around the interpolated values.
+// TODO: finalize authoring these keys
 async function resolveGlobeLabels() {
   const [
     arcRegion, prevCard, nextCard, closeBtn, appsUsed, galleryRegion, cardTplRaw,
@@ -1493,9 +1494,6 @@ async function resolveGlobeLabels() {
 
 // ── Block entry point ────────────────────────────────────────────────────────
 export default async function init(el) {
-  if (el.dataset.globeReady) return el;
-  el.dataset.globeReady = 'true';
-
   // Reduced-motion: skip the WebGL experience entirely and collapse the block's
   // tall scroll length. TODO (iterate): author a static poster fallback like pdf-space.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -1510,25 +1508,9 @@ export default async function init(el) {
 
   const labels = await resolveGlobeLabels();
   // buildGlobeDom mints + returns this instance's unique id suffix (CA filter,
-  // modal aria targets); the runtime reuses it for the url(#…) filter ref.
-  const gid = buildGlobeDom(el, labels);
-
-  // Inject authored arc-copy / pull-quote text into the built DOM slots. The slots
-  // ship empty (no hardcoded copy), so any unauthored field simply stays blank.
-  if (arcCopy) {
-    const titleEl = el.querySelector('.offer-arc-copy__title');
-    const bodyEl = el.querySelector('.offer-arc-copy__body');
-    if (titleEl && arcCopy.title) titleEl.textContent = arcCopy.title;
-    if (bodyEl && arcCopy.body) bodyEl.textContent = arcCopy.body;
-  }
-  if (pullQuote) {
-    const quoteEl = el.querySelector('.offer-pullquote__quote');
-    const nameEl = el.querySelector('.offer-pullquote__name');
-    const roleEl = el.querySelector('.offer-pullquote__role');
-    if (quoteEl && pullQuote.quote) quoteEl.textContent = pullQuote.quote;
-    if (nameEl && pullQuote.name) nameEl.textContent = pullQuote.name;
-    if (roleEl && pullQuote.role) roleEl.textContent = pullQuote.role;
-  }
+  // modal aria targets); the runtime reuses it for the url(#…) filter ref. It also
+  // fills the arc-copy / pull-quote slots with the parsed authored text.
+  const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote });
 
   // Cards come from the authored fragment link, resolved by Milo before init().
   let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;

@@ -27,8 +27,7 @@ gallery mirroring the sphere cards.
 | File | What it is |
 | --- | --- |
 | `globe.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
-| `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows, fetches the card fragment. |
-| `markup.js` | `GLOBE_MARKUP` + `buildGlobeDom(el, labels)` — the canvas/overlay/modal DOM the runtime expects; mints + returns the per-instance `gid` id suffix. Default export. |
+| `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
 | `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
 | `materials.js` | Pure material factories: `createCardMaterial` (CA ShaderMaterial + MeshBasicMaterial fallback, with the property-proxy) and `createModalMaterial` (SDF). |
@@ -45,7 +44,7 @@ gallery mirroring the sphere cards.
 Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
 and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
 
-All nine shipped JS files (`globe.js`, `authoring.js`, `markup.js`, `shaders.js`,
+All eight shipped JS files (`globe.js`, `authoring.js`, `shaders.js`,
 `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are **airbnb-clean**
 (`npx eslint` exit 0). The only exceptions are 3 targeted
 `// eslint-disable-next-line no-use-before-define` comments in `globe.js` for genuine
@@ -167,9 +166,10 @@ them. If the key is absent everywhere, the code falls back to the English templa
 
 **DOM is JS-built and scoped to the block root.** `init(el)` calls
 `parseAuthoredContent(el)` first (arc-copy, pull-quote, fragment href), then
-`buildGlobeDom(el, labels)` wipes the block, injects the markup, and **returns
-the `gid`** (the per-instance unique-id suffix it mints from a module-level
-counter in `markup.js`). The runtime finds nodes by **class, queried within
+`buildGlobeDom(el, labels, { arcCopy, pullQuote })` wipes the block, injects the
+markup, fills the arc-copy / pull-quote slots, and **returns the `gid`** (the
+per-instance unique-id suffix it mints from a module-level counter in
+`authoring.js`). The runtime finds nodes by **class, queried within
 `el`** (`root.querySelector('.offer-globe-canvas')`, `.modal-card-canvas`,
 `.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`, …) →
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
