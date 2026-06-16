@@ -98,6 +98,11 @@ function floatingElement(targetEl, el, focusableEl = null) {
     const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
     const bottomValue = threshold - mainHeight;
 
+    // if the spacer is not the last element in main, move it to the end
+    if (mainElement.children[mainElement.children.length - 1] !== floatingSpacer) {
+      mainElement.appendChild(floatingSpacer);
+    }
+
     if (threshold > mainHeight) {
       target.style.bottom = `${bottomValue}px`;
       if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
