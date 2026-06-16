@@ -705,8 +705,10 @@ export default async function init(el) {
   }
   if (el.classList.contains('floating-button')) {
     variants.isFloatingButton = true;
-  } else if (el.classList.contains('floating-button-only')) {
+  }
+  if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+    variants.isFloatingButton = false;
   }
 
   if (el.classList.contains('floating-anchor-hide')) {
@@ -726,8 +728,10 @@ export default async function init(el) {
 
   if (el.classList.contains('floating-input')) {
     variants.isFloatingInput = true;
-  } else if (el.classList.contains('floating-input-only')) {
+  }
+  if (el.classList.contains('floating-input-only')) {
     variants.isFloatingInputOnly = true;
+    variants.isFloatingInput = false;
   }
 
   if (variants.isFloatingButton) {
