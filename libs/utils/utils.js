@@ -569,7 +569,8 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
-  if (shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
+  const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
       || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
        && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
          .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
