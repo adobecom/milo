@@ -986,12 +986,10 @@ class Gnav {
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
-  // eslint-disable-next-line class-methods-use-this
   preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
-    const locale = getUniversalNavLocale(config.locale);
 
     await loadScript(
       `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
