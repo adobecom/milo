@@ -173,7 +173,7 @@ function buildToggleRow([title, description], pageId) {
     input,
     createTag('span', { class: 'mep-switch-track' }),
   ]);
-  const desc = typeof description === 'function' ? description() : description;
+  const desc = typeof description === 'function' ? description(title) : description;
   const textEl = createTag('div', { class: 'mep-toggle-text' }, [
     createTag('h2', {}, title),
     createTag('p', { class: 'mep-row-value' }, desc),

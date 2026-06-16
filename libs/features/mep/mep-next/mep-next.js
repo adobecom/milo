@@ -1230,7 +1230,7 @@ export default async function decoratePreviewMode() {
   // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
-  // getMarketConfig();
+  getMarketConfig();
   // await createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
@@ -1244,8 +1244,8 @@ export default async function decoratePreviewMode() {
   //   injectMasBadges();
   // }
   // Adjust badge positions after a short delay to allow rendering
-  // setTimeout(() => {
-  //   adjustBadgesForZeroHeightSections();
-  //   adjustStackedBadges();
-  // }, 100);
+  setTimeout(() => {
+    adjustBadgesForZeroHeightSections();
+    adjustStackedBadges();
+  }, 100);
 }

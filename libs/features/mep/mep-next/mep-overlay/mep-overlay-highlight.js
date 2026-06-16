@@ -133,7 +133,53 @@ export function setBadgeEventListeners() {
   });
 }
 
-export function getPageUpdates() {
-  const count = 0;
-  return `${count} Page Updates`;
+export function getPageUpdates(label) {
+  const SELECTORS = {
+    MEP: `
+      [data-code-manifest-id],
+      [data-manifest-id],
+      [data-mep-lingo-fallback],
+      [data-mep-lingo-roc],
+      [data-removed-manifest-id]
+    `,
+    Caas: `
+      body[data-mep-caas-highlight='true'] [data-caas-block],
+      body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url]),
+      body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
+      body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']
+    `,
+    'M@S': `
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy-copied,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit.mep-mas-card-actions-mismatch,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-actions-mismatch,
+      body[data-mep-mas-highlight='true'] .mep-mas-card-actions,
+      body[data-mep-mas-highlight='true'] [data-mas-block='card'],
+      body[data-mep-mas-highlight='true'] [data-mas-block='collection'],
+      body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-block='card'],
+      body[data-mep-mas-highlight='true'] [data-mas-block='inline'],
+      body[data-mep-mas-highlight='true'] [data-mas-block='offer'],
+      body[data-mep-mas-highlight='true'] [data-mas-block='ost']
+    `,
+    'Other Fragments': '[data-fragment-default]',
+  };
+
+  const getCount = () => {
+    const selector = SELECTORS[label];
+    return selector ? document.querySelectorAll(selector).length : 0;
+  };
+
+  const observer = new MutationObserver(() => {
+    const h2 = [...document.querySelectorAll('.mep-toggle-text h2')]
+      .find((el) => el.textContent === label);
+    const valueEl = h2?.nextElementSibling;
+    const newText = `${getCount()} Page Updates`;
+    if (valueEl && valueEl.textContent !== newText) valueEl.textContent = newText;
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  return `${getCount()} Page Updates`;
 }

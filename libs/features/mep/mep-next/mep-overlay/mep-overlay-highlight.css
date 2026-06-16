@@ -47,16 +47,12 @@
 }
 
 /* Badges */
-a.mep-caas-edit-badge,
-body a.mep-caas-edit-badge,
 body[data-mep-highlight='true'] [data-manifest-id]::before,
 body[data-mep-highlight='true'] [data-code-manifest-id]::before,
 body[data-mep-highlight='true'] [data-removed-manifest-id]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
-body[data-other-highlight='true'] [data-fragment-default]::before,
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before,
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+body[data-other-highlight='true'] [data-fragment-default]::before {
   cursor: default;
   visibility: visible !important;
   pointer-events: auto;
@@ -74,14 +70,11 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
 }
 
 /* Clickable Badges */
-a.mep-caas-edit-badge::before,
 body[data-mep-highlight='true'] [data-manifest-id][data-path]::before,
 body[data-mep-highlight='true'] [data-manifest-id][data-fragment-path]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-fallback]::before,
 body[data-mep-highlight='true'] [data-mep-lingo-roc]::before,
-body[data-other-highlight='true'] [data-fragment-default]::before,
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before,
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+body[data-other-highlight='true'] [data-fragment-default]::before {
   cursor: pointer;
   background-image: var(--mep-link-svg);
   background-repeat: no-repeat;
@@ -108,7 +101,7 @@ body[data-mep-highlight='true'] [data-manifest-id]:not(section.feds-navItem):not
 }
 
 body[data-mep-highlight='true'] [data-manifest-id]::before {
-  content: 'MEP Manifest | ' attr(data-manifest-display);
+  content: attr(data-manifest-display);
   color: var(--mep-cyan-700);
   border: 2px solid var(--mep-cyan-700);
   background-color: var(--mep-cyan-50);
@@ -180,23 +173,107 @@ body[data-other-highlight='true'] [data-fragment-default]::before {
 }
 
 
-/* CAAS */
-/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
-/* body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
+/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated
+   [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
+  outline: 2px dashed transparent;
+  outline-offset: 2px;
   position: relative !important;
-  border: 2px dashed transparent;
-} */
+}
 
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  min-height: 20px !important;
+  min-width: 60px !important;
+  max-width: 400px;
+  text-align: left !important;
+  vertical-align: top;
+  position: absolute !important;
+  left: 5px;
+  top: var(--badge-top-offset, 0);
+  z-index: 3;
+  padding: 5px 10px !important;
+  margin: 2px;
+  margin-left: var(--badge-margin-left, 0);
+  color: #000 !important;
+  opacity: 0.9 !important;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+/* Market-specific (any country code other than xx) - green */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
+  outline-color: #28a745;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+  content: '🔗 caas-market: ' attr(data-card-path);
+  background-color: #d4edda !important;
+  border: 1px solid #28a745;
+}
+
+/* Lang-first / global (xx) - yellow */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
+  outline-color: #ffc107;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
+  content: '🔗 caas-lang: ' attr(data-card-path);
+  background-color: #fff3cd !important;
+  border: 1px solid #ffc107;
+}
+
+/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the
+   badge would otherwise show "🔗 caas-market: " with an empty path. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
+  content: none;
+}
+
+/* temporarily suppress the outline and pill so they don't render as a broken badge in stage/prod */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url]) {
+  outline: none;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url])::before {
+  content: none;
+}
+
+/* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
 body[data-mep-caas-highlight='true'] [data-caas-block] {
-  border: 2px dashed var(--mep-indigo-700);
+  outline: 2px dashed #007bff;
+  outline-offset: 4px;
 }
 
 a.mep-caas-edit-badge,
 body a.mep-caas-edit-badge {
-  color: var(--mep-indigo-700);
-  border: 1px solid var(--mep-indigo-700);
-  background-color: var(--mep-indigo-50);
+  visibility: visible !important; /* override caas.css hiding /tools/caas# links */
+  display: inline-block;
+  margin: 0 0 12px 5px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #cce5ff;
+  color: #003a75;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.95;
+  z-index: 4;
+  position: relative;
+}
+
+a.mep-caas-edit-badge::before {
+  content: '🔗 ';
 }
 
 a.mep-caas-edit-badge:hover,
@@ -205,65 +282,46 @@ a.mep-caas-edit-badge:focus {
   text-decoration: none;
 }
 
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
-  position: relative !important;
-  border: 2px var(--mep-light-green-700) dashed !important;
-}
-
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
-  content: 'CaaS Market | ' attr(data-card-path);
-  color: var(--mep-light-green-700);
-  background-color: var(--mep-light-green-50);
-  border: 1px solid var(--mep-light-green-700);
-}
-
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
-  position: relative !important;
-  border: 2px var(--mep-amber-700) dashed !important;
-}
-
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
-  content: 'CaaS Lang First | ' attr(data-card-path);
-  color: var(--mep-amber-700);
-  background-color: var(--mep-amber-50);
-  border: 1px solid var(--mep-amber-700);
-}
-
-/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the badge would otherwise show "🔗 caas-market: " with an empty path. */
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
-  content: none;
-}
-
-/* M@S */
+/* M@S surface highlights ---------------------------------------------------- */
 body[data-mep-mas-highlight='true'] [data-mas-block='collection'] {
-  border: 2px dashed #6f42c1; /* purple */
+  outline: 2px dashed #6f42c1; /* purple */
+  outline-offset: 4px;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
+  outline: 2px dashed #fd7e14; /* orange */
+  outline-offset: 4px;
   position: relative;
+
+  /* Anchors the .mep-mas-card-actions overlay; prevents host overflow
+     from clipping it. */
   overflow: visible;
-  border: 2px dashed #fd7e14; /* orange */
 }
 
+/* Inset the child-card outline so it sits inside the parent collection's
+   outline (avoids stacked dashed lines). */
+body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-block='card'] {
+  outline-offset: -2px;
+}
 
 body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
-  display: inline-block;
+  outline: 2px dashed #e83e8c; /* pink */
+  outline-offset: 2px;
   position: relative;
   overflow: visible;
-  border: 2px dashed #e83e8c; /* pink */
-
 
   /* Override M@S's `mas-field { display: inline }`: an inline host that
      wraps block children (e.g., a body field with multiple <p>s) splits
      into degenerate inline boxes and the outline disappears. inline-block
      gives a single coherent box; scoped to highlight mode only. */
-
+  display: inline-block;
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
+  outline: 2px dashed #0d6efd; /* blue — unified with the offer surface */
+  outline-offset: 2px;
   position: relative;
   overflow: visible;
-  border: 2px dashed #0d6efd; /* blue — unified with the offer surface */
 }
 
 a.mep-mas-edit-badge,
@@ -410,6 +468,7 @@ body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-action
    opens the OST URL on hits inside the badge box. */
 body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
   outline: 1px dashed #0d6efd;
+  outline-offset: 2px;
   position: relative;
 
   /* Prevent ancestor overflow from clipping the corner badge (some
