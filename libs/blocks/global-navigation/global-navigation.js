@@ -74,6 +74,7 @@ const {
   getActiveLink,
   getExperienceName,
   isActiveLink,
+  resetActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -1900,6 +1901,25 @@ class Gnav {
     });
 
     return this.elements.search;
+  };
+
+  updateActiveLink = () => {
+    resetActiveLink();
+
+    const nav = this.elements.mainNav;
+    if (!nav) return;
+
+    nav.querySelectorAll(selectors.activeNavItem).forEach((el) => {
+      el.classList.remove(selectors.activeNavItem.slice(1));
+      el.classList.remove(selectors.deferredActiveNavItem.slice(1));
+      el.style.width = '';
+    });
+
+    nav.querySelectorAll('.feds-navItem').forEach((navItem) => {
+      if (getActiveLink(navItem) instanceof HTMLElement) {
+        navItem.classList.add(selectors.activeNavItem.slice(1));
+      }
+    });
   };
 }
 
