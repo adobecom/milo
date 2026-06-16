@@ -304,7 +304,7 @@ async function openSusiLightModal() {
 
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
+  const title = createTag('h1', { class: 'bc-modal-title', tabindex: '-1' }, chatLabelText);
   const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
   const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
@@ -327,6 +327,7 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
+  modal.querySelector('.bc-modal-title')?.focus({ preventScroll: true });
 
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
