@@ -31,11 +31,13 @@ const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" vi
   <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
+const isAnimationDisabled = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  || !CSS.supports('animation-timeline', 'scroll()');
 
 function setupVideo(media) {
   const videoEl = media.querySelector('video');
   if (!videoEl) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (isAnimationDisabled()) {
     const poster = videoEl.getAttribute('poster');
     if (!poster) { videoEl.remove(); return; }
     videoEl.replaceWith(createTag('img', { src: poster, alt: '' }));
@@ -150,8 +152,7 @@ function decorate(block) {
 }
 
 function initAnimation(block) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!CSS.supports('animation-timeline', 'scroll()')) return;
+  if (isAnimationDisabled()) return;
 
   block.classList.add('cards-animating');
 
