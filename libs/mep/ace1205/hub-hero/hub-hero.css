@@ -864,23 +864,52 @@
 @media (prefers-reduced-motion: reduce) {
 
   .hub-hero,
-  .hub-hero *,
-  .hub-hero-image-grid-container,
+  .hub-hero-header,
+  .hub-hero-header > *,
+  .hub-hero-carousel,
+  .hub-hero-carousel-header,
+  .hub-hero-carousel-container,
+  .hub-hero-carousel-item,
+  .hub-hero-carousel-item-container {
+    animation: none;
+    transition: none;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
+  .hub-hero-carousel-header > div,
+  .hub-hero-carousel-header > div > * {
+    animation: none;
+  }
+
   .hub-hero-image-grid-container-col:nth-child(1),
   .hub-hero-image-grid-container-col:nth-child(2),
   .hub-hero-image-grid-container-col:nth-child(3),
   .hub-hero-image-grid-container-col:nth-child(4),
   .hub-hero-image-grid-container-col:nth-child(5),
-  .hub-hero-image-grid-container-col:nth-child(5),
-  .hub-hero-carousel,
-  .hub-hero-carousel-header,
-  .hub-hero-carousel-header>div,
-  .hub-hero-carousel-header>div>*,
-  .hub-hero-carousel-item {
-    animation: none !important;
+  .hub-hero-carousel-item:nth-child(1),
+  .hub-hero-carousel-item:nth-child(2),
+  .hub-hero-carousel-item:nth-child(3),
+  .hub-hero-carousel-item:nth-child(4),
+  .hub-hero-carousel-item:nth-child(5) {
+    animation: none;
     transition: none;
     position: relative;
     --hub-hero-height: auto;
+  }
+
+  .hub-hero-image-grid-container-col div:nth-child(2) {
+    animation: none;
+  }
+
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+    animation: none;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1),
+  .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
+    animation: none;
   }
 
   .hub-hero-header div[class^="body"] {
@@ -1007,22 +1036,52 @@
 @media (width <= 480px) {
 
   .hub-hero,
-  .hub-hero *,
-  .hub-hero-image-grid-container,
+  .hub-hero-header,
+  .hub-hero-header > *,
+  .hub-hero-carousel,
+  .hub-hero-carousel-header,
+  .hub-hero-carousel-container,
+  .hub-hero-carousel-item,
+  .hub-hero-carousel-item-container {
+    animation: none;
+    transition: none;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
+  .hub-hero-carousel-header > div,
+  .hub-hero-carousel-header > div > * {
+    animation: none;
+  }
+
   .hub-hero-image-grid-container-col:nth-child(1),
   .hub-hero-image-grid-container-col:nth-child(2),
   .hub-hero-image-grid-container-col:nth-child(3),
   .hub-hero-image-grid-container-col:nth-child(4),
   .hub-hero-image-grid-container-col:nth-child(5),
-  .hub-hero-carousel,
-  .hub-hero-carousel-header,
-  .hub-hero-carousel-header > div,
-  .hub-hero-carousel-header > div > *,
-  .hub-hero-carousel-item {
-    animation: none !important;
+  .hub-hero-carousel-item:nth-child(1),
+  .hub-hero-carousel-item:nth-child(2),
+  .hub-hero-carousel-item:nth-child(3),
+  .hub-hero-carousel-item:nth-child(4),
+  .hub-hero-carousel-item:nth-child(5) {
+    animation: none;
     transition: none;
     position: relative;
     --hub-hero-height: auto;
+  }
+
+  .hub-hero-image-grid-container-col div:nth-child(2) {
+    animation: none;
+  }
+
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
+  .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+    animation: none;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(1),
+  .hub-hero-image-grid-container-col:nth-child(3) div:nth-child(2) {
+    animation: none;
   }
 
   .hub-hero-header div[class^="body"] {
@@ -1543,15 +1602,20 @@
     --carousel-items-top: 15%;
   }
 
-  .hub-hero-image-grid-container,
   .hub-hero-header,
-  .hub-hero-header > div,
+  .hub-hero-header > * {
+    animation: none;
+    transition: none;
+    position: relative;
+    --hub-hero-height: auto;
+  }
+
   .hub-hero-image-grid-container-col:nth-child(1),
   .hub-hero-image-grid-container-col:nth-child(2),
   .hub-hero-image-grid-container-col:nth-child(3),
   .hub-hero-image-grid-container-col:nth-child(4),
   .hub-hero-image-grid-container-col:nth-child(5) {
-    animation: none !important;
+    animation: none;
     transition: none;
     position: relative;
     --hub-hero-height: auto;
@@ -1577,8 +1641,22 @@
     .hub-hero {
       height: auto;
     }
-    .hub-hero-carousel-item {
-      animation: none !important;
+    .hub-hero-carousel-item,
+    .hub-hero-carousel-item-container {
+      animation: none;
+    }
+
+    .hub-hero-carousel-item:nth-child(1),
+    .hub-hero-carousel-item:nth-child(2),
+    .hub-hero-carousel-item:nth-child(3),
+    .hub-hero-carousel-item:nth-child(4),
+    .hub-hero-carousel-item:nth-child(5) {
+      animation: none;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-header,
+    .hub-hero-carousel-item:nth-child(1) .hub-hero-carousel-item-footer {
+      animation: none;
     }
 
     .hub-hero-carousel-item:nth-child(3) {
