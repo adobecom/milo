@@ -42,7 +42,7 @@ function getStandaloneNavOrigin(env) {
 async function loadFederalLocales(env) {
   const origin = getStandaloneNavOrigin(env);
   const url = `${origin}/federal/utils/locales.js`;
-  const mod = await import(url);
+  const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ url);
   return mod.default;
 }
 
