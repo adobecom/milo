@@ -282,7 +282,13 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // kept at identity so cards in non-sphere phases (arc/grid) aren't transformed by stale
   // drag rotation. sphereRotEuler/Quat are shared by reference into modal.js (its closing
   // animation reads the live rotation), so they're created eagerly — the reference is stable.
-  const sphereRotEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+  // 'XYZ' → R = R_pitch · R_yaw: pitch (sphereRotX, clamped ±60°) is the OUTER
+  // rotation about world X, so vertical drag always tilts about the screen-horizontal
+  // axis regardless of how far the globe has been spun. Yaw (sphereRotY, unclamped) is
+  // the inner turntable spin about the local up-axis. Putting the clamped axis outside
+  // is what avoids the gimbal flip ('YXZ' had unclamped yaw outside, so passing 180°
+  // of yaw inverted the local pitch axis and reversed vertical drag).
+  const sphereRotEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const sphereRotQuat = new THREE.Quaternion();
   const foldRotQuat = new THREE.Quaternion();
   const tmpVec3 = new THREE.Vector3();
@@ -512,7 +518,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   function onPointerMove(e) {
     if (!isDragging) return;
     dragVelX = Math.max(-MAX_VEL, Math.min(MAX_VEL, (e.clientX - lastMX) * DRAG_SENSITIVITY));
-    dragVelY = Math.max(-MAX_VEL, Math.min(MAX_VEL, -(e.clientY - lastMY) * DRAG_SENSITIVITY));
+    // +Y cursor delta (drag down) → +sphereRotX → +X-axis rotation tips the front
+    // surface downward, so the globe follows the cursor (drag down reveals the top).
+    dragVelY = Math.max(-MAX_VEL, Math.min(MAX_VEL, (e.clientY - lastMY) * DRAG_SENSITIVITY));
     lastMX = e.clientX; lastMY = e.clientY;
   }
   // sphereFormT is computed inside tick(); cache it so the click handler (which fires
@@ -594,7 +602,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     if (!card || !card.mesh) return;
     const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
     if (hasRot && sphereRotEuler) {
-      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
+      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'XYZ');
       sphereRotQuat.setFromEuler(sphereRotEuler);
       card.mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
       card.mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
@@ -899,7 +907,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     // sphereRotActive is a fast-path flag so the rotation math can be skipped when upright.
     const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
     if (sphereRotEuler) {
-      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'YXZ');
+      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'XYZ');
       sphereRotQuat.setFromEuler(sphereRotEuler);
     }
     return sphereRotActive;
