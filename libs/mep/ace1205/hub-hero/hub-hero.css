@@ -880,6 +880,7 @@
   .hub-hero-carousel-header > div,
   .hub-hero-carousel-header > div > * {
     animation: none;
+    position: relative;
   }
 
   .hub-hero-image-grid-container-col:nth-child(1),
@@ -922,6 +923,11 @@
 
   .hub-hero-carousel-container {
     gap: var(--end-gap);
+  }
+
+  .hub-hero-carousel-container.stick-left,
+  .hub-hero-carousel-container.stick-right {
+    transform: translateX(-50%);
   }
 
   .hub-hero-carousel-item:nth-child(3) {
@@ -1052,6 +1058,7 @@
   .hub-hero-carousel-header > div,
   .hub-hero-carousel-header > div > * {
     animation: none;
+    position: relative;
   }
 
   .hub-hero-image-grid-container-col:nth-child(1),
