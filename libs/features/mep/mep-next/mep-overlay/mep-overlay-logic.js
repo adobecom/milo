@@ -230,6 +230,10 @@ function getFoundation() {
   return (getMetadata('foundation') || 'c1').toUpperCase();
 }
 
+function getTheme() {
+  return (getMetadata('theme') || 'None');
+}
+
 function getTargetIntegration() {
   const { page } = parseMepConfig();
   const mepTarget = TARGET_MAP[getConfig().mep?.targetEnabled];
@@ -304,6 +308,7 @@ export function getPageSummary() {
   return resolvePairs([
     ['Manifests Found', getManifestsFound()],
     ['Foundation', getFoundation()],
+    ['Theme', getTheme()],
     ['Target Integration', getTargetIntegration()],
     ['Personalization', getPersonalization()],
   ]);
@@ -311,8 +316,8 @@ export function getPageSummary() {
 
 export function getConsentSummary() {
   return resolvePairs([
-    ['Performance Consent', getPerformanceConsent()],
-    ['Advertising Consent', getAdvertisingConsent()],
+    ['Level 2: Performance', getPerformanceConsent()],
+    ['Level 4: Advertising', getAdvertisingConsent()],
   ]);
 }
 
@@ -508,7 +513,7 @@ export async function getSpoofGeoOptions(id) {
   const toOption = (key) => {
     const region = key?.includes('_') ? key.split('_')[0] : key;
     const opt = toGeoOption(region, currentAkamaiLocale);
-    return { ...opt, label: region ? region.toUpperCase() : 'All' };
+    return { ...opt, label: region ? region.toUpperCase() : "None (Don't spoof)" };
   };
 
   if (id === 'spoof-geo-top-markets' && getTopMarketsAvailability()) {

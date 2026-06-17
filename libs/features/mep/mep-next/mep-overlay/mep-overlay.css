@@ -4,7 +4,7 @@
   --mep-overline-font: normal 500 12px / var(--Static-Label-Medium-Line-Height, 16px) "Adobe Clean";
   --mep-overline-letter-spacing: var(--Static-Label-Medium-Tracking, 0.5px);
 
-  --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 125% var(--Font-adobe-clean, "Adobe Clean");
+  --mep-h1-font: normal 700 var(--Typography-Heading-s, 20px) / 24px var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-h2-font: normal 500 var(--Static-Title-Medium-Size, 16px) / var(--Static-Title-Medium-Line-Height, 24px) "Adobe Clean";
   --mep-h2-letter-spacing: var(--Static-Title-Medium-Tracking, 0.15px);
@@ -30,7 +30,7 @@
   --mep-elevation-fab: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
   --mep-elevation-drawer: 0 6px 10px 0 rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 
-  --mep-highlight: #00ff73;
+  --mep-emphasis: #00ff73;
 
   --caas-block-outline: #007bff;
   --caas-market-outline: #28a745;
@@ -299,7 +299,6 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 
 .mep-drawer .mep-body h1 {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 16px;
   margin: 0;
@@ -322,6 +321,11 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   font: var(--mep-body-font);
   letter-spacing: var(--mep-body-letter-spacing);
 }
+
+.mep-drawer .mep-row-value.emphasis {
+  color: var(--mep-emphasis);
+}
+
 
 .mep-drawer .mep-body input:not([type="radio"]),
 .mep-drawer .mep-body select {

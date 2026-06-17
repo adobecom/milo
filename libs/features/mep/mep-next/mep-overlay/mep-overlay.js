@@ -27,7 +27,6 @@ import {
   getPageUpdates,
   setBadgeEventListeners,
 } from './mep-overlay-highlight.js';
-import { saveToMmm } from '../mep-next.js';
 
 let authenticated = false;
 
@@ -93,7 +92,8 @@ function updateGnavOffset() {
 }
 
 function buildRow(label, value) {
-  const row = createTag('div', { class: 'mep-row-value' }, value);
+  const cls = value === 'on' ? 'mep-row-value emphasis' : 'mep-row-value';
+  const row = createTag('div', { class: cls }, value);
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
