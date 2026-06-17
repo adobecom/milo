@@ -35,7 +35,6 @@ async function checkMartechMeta() {
 
 function copyTable() {
   try {
-    /* global ClipboardItem */
     const clipboardData = [new ClipboardItem({ 'text/html': new Blob([martechBlock.value], { type: 'text/html' }) })];
     navigator.clipboard.write(clipboardData);
     btnText.value = '✔ Copied!';
