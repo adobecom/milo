@@ -2503,15 +2503,50 @@ export async function decorateLanguageBanner() {
   };
 
   const useBannerFlow = usesBannerFlow();
+
+  const dedupe = (markets) => {
+    const deduplicated = [];
+    const seen = new Set();
+    markets.forEach((m) => {
+      // Group by language group if it exists, otherwise fallback to language code
+      const key = m.group || m.lang?.split('-')[0] || m.lang;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduplicated.push(m);
+      }
+    });
+    return deduplicated;
+  };
+
+  const sortMarkets = (markets, geo) => {
+    const prioritized = getMarketsByRegionPriority(markets, geo);
+    if (prioritized) return prioritized;
+    return [...markets].sort((a, b) => {
+      if (a.prefix === geo && b.prefix !== geo) return -1;
+      if (b.prefix === geo && a.prefix !== geo) return 1;
+      const aIsLegacy = a.isLingo === false || String(a.isLingo).toLowerCase() === 'false';
+      const bIsLegacy = b.isLingo === false || String(b.isLingo).toLowerCase() === 'false';
+      if (aIsLegacy && !bIsLegacy) return -1;
+      if (bIsLegacy && !aIsLegacy) return 1;
+      return 0;
+    });
+  };
+
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
-      market.lang === prefLang
+    
+    const matchingPrefMarkets = languageEntries.filter((market) => (
+      market.lang?.split('-')[0] === prefLang
       && market.supportedRegions.includes(geoIp)
     ));
-    if (prefMarket) addAndShow(prefMarket);
-    else return;
+    
+    if (matchingPrefMarkets.length > 0) {
+      const sortedPrefMarkets = sortMarkets(matchingPrefMarkets, geoIp);
+      addAndShow(...dedupe(sortedPrefMarkets));
+    } else {
+      return;
+    }
   } else {
     // Unsupported Market Path
     const marketsForGeo = languageEntries.filter((market) => (
@@ -2520,28 +2555,32 @@ export async function decorateLanguageBanner() {
     if (useBannerFlow) {
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
-        if (prefMarketForGeo) addAndShow(prefMarketForGeo);
+        const matchingPrefMarkets = marketsForGeo.filter((market) => market.lang?.split('-')[0] === prefLang);
+        if (matchingPrefMarkets.length > 0) {
+           const sortedPrefMarkets = sortMarkets(matchingPrefMarkets, geoIp);
+           addAndShow(...dedupe(sortedPrefMarkets));
+           prefMarketForGeo = sortedPrefMarkets[0];
+        }
       }
       if (!prefMarketForGeo) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeo, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? [marketsForGeo[0]]));
+        const sorted = sortMarkets(marketsForGeo, geoIp);
+        addAndShow(...dedupe(sorted));
       }
     } else {
       // ACOM flow: US exclusion + regionPriorities filter, multi-option modal
       const marketsForGeoFiltered = excludeUsUnlessExplicit(marketsForGeo, geoIp);
       if (prefLang) {
-        const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang === prefLang);
+        const marketsWithPrefLang = marketsForGeoFiltered.filter((m) => m.lang?.split('-')[0] === prefLang);
         if (marketsWithPrefLang.length === 1) {
           addAndShow(marketsWithPrefLang[0]);
         } else if (marketsWithPrefLang.length > 1) {
-          const marketsSortedByPriority = getMarketsByRegionPriority(marketsWithPrefLang, geoIp);
-          addAndShow(...(marketsSortedByPriority ?? marketsWithPrefLang));
+          const sorted = sortMarkets(marketsWithPrefLang, geoIp);
+          addAndShow(...dedupe(sorted));
         }
       }
       if (!showBanner) {
-        const marketsSortedByPriority = getMarketsByRegionPriority(marketsForGeoFiltered, geoIp);
-        addAndShow(...(marketsSortedByPriority ?? marketsForGeoFiltered));
+        const sorted = sortMarkets(marketsForGeoFiltered, geoIp);
+        addAndShow(...dedupe(sorted));
       }
     }
   }

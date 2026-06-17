@@ -129,19 +129,24 @@ function getCurrentMarket(markets, currentMarketCode, currentLang) {
 function getLanguageOptions(languages, currentLang) {
   const languageOptions = [];
   const addedKeys = new Set();
+  const isLegacy = (l) => l.isLingo === false || String(l.isLingo).toLowerCase() === 'false';
+
   languages.forEach((lang) => {
     const groupKey = lang.group || lang.prefix || 'us';
     if (addedKeys.has(groupKey)) return;
     addedKeys.add(groupKey);
 
+    const groupEntries = languages.filter((l) => (l.group || l.prefix || 'us') === groupKey);
+    const primaryLang = groupEntries.find((l) => !isLegacy(l)) || groupEntries[0];
+
     const isCurrentGroup = currentLang.group
-      ? lang.group === currentLang.group
-      : lang.prefix === currentLang.prefix;
-    const targetPrefix = isCurrentGroup ? (currentLang.prefix || '') : (lang.prefix || '');
+      ? primaryLang.group === currentLang.group
+      : primaryLang.prefix === currentLang.prefix;
+    const targetPrefix = isCurrentGroup ? (currentLang.prefix || '') : (primaryLang.prefix || '');
 
     languageOptions.push({
-      label: lang.group || lang.nativeName,
-      englishName: lang.group || lang.langName,
+      label: primaryLang.group || primaryLang.nativeName,
+      englishName: primaryLang.group || primaryLang.langName,
       value: targetPrefix,
       url: getTargetUrl(targetPrefix, window.location.pathname),
     });
@@ -181,16 +186,37 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
   const regionalPrefix = `${marketItem.value}_${currentLangPrefix.replace('/', '')}`;
 
   let marketPrefix;
+  let isLegacySite = false;
+  const isLegacy = (l) => l.isLingo === false || String(l.isLingo).toLowerCase() === 'false';
 
   if (currentLang.group) {
-    const sameGroupLang = config.languages.find((lang) => (
-      lang.group === currentLang.group && lang.defaultMarket === marketItem.value
-    ));
-    if (sameGroupLang) marketPrefix = sameGroupLang.prefix;
+    const legacyLangForMarket = config.languages.find((lang) => {
+      if (lang.group !== currentLang.group || !isLegacy(lang)) return false;
+      const regions = lang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+      return regions.includes(marketItem.value.toLowerCase());
+    });
+
+    if (legacyLangForMarket) {
+      marketPrefix = legacyLangForMarket.prefix;
+      isLegacySite = true;
+    } else {
+      const lingoLang = config.languages.find((lang) => lang.group === currentLang.group && !isLegacy(lang));
+      if (lingoLang) marketPrefix = lingoLang.prefix;
+    }
+  } else {
+    // If not grouped, but we are on a legacy site, we should stay on it if it supports the region
+    const regions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+    if (regions.includes(marketItem.value.toLowerCase()) && isLegacy(currentLang)) {
+      marketPrefix = currentLang.prefix;
+      isLegacySite = true;
+    }
   }
 
-  if (marketPrefix === undefined && locales?.[regionalPrefix]) {
+  // If we haven't found a specific legacy site yet, check if locales.js has a mapping.
+  // We prefer locales.js mappings over generic Lingo group fallbacks for unmigrated regions.
+  if (!isLegacySite && locales?.[regionalPrefix]) {
     marketPrefix = regionalPrefix;
+    isLegacySite = true;
   }
 
   setMarket(marketItem.value);
@@ -201,14 +227,16 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
   if (marketPrefix !== undefined) {
     targetPrefix = marketPrefix ? `/${marketPrefix}` : '';
   }
-  const isRedirect = targetPrefix !== currentPrefix;
+  
+  // A redirect is needed if the target prefix is different OR if we are forcing a legacy site
+  const isRedirect = targetPrefix !== currentPrefix || isLegacySite;
   const targetUrl = isRedirect
     ? getTargetUrl(marketPrefix, window.location.pathname)
     : window.location.href;
 
-  const finalHref = appendCountryParam(targetUrl, marketItem.value);
+  const finalHref = isLegacySite ? targetUrl : appendCountryParam(targetUrl, marketItem.value);
 
-  if (isRedirect) {
+  if (isRedirect && !isLegacySite) {
     const fallbackHref = appendCountryParam(window.location.href, marketItem.value);
     handleEvent({
       prefix: marketPrefix,
@@ -221,8 +249,16 @@ function handleMarketSelect(marketItem, config, currentLang, currentPrefix, opts
   }
 }
 
-function getMarketOptions(markets, currentLang) {
-  const supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+function getMarketOptions(markets, currentLang, config) {
+  let supportedRegions = [];
+  if (currentLang.group) {
+    supportedRegions = config.languages
+      .filter((l) => l.group === currentLang.group)
+      .flatMap((l) => l.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || []);
+  } else {
+    supportedRegions = currentLang.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()) || [];
+  }
+
   const langKey = getLangKeyForMarket(currentLang);
   return markets
     .filter((market) => supportedRegions.includes(market.marketCode?.toLowerCase()))
@@ -671,7 +707,7 @@ export default async function init(block) {
   );
 
   const languageOptions = getLanguageOptions(config.languages, currentLang);
-  const marketOptions = getMarketOptions(markets, currentLang);
+  const marketOptions = getMarketOptions(markets, currentLang, config);
   const marketLangKey = getLangKeyForMarket(currentLang);
   const currentMarketLabel = getMarketLabel(currentMarket, marketLangKey, currentLang.prefix);
 
