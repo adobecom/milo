@@ -27,30 +27,30 @@ export const TOGGLE_KEYS = {
   other: 'toggle-other-fragments',
 };
 
-export function toggleHighlight(event) {
-  const HIGHLIGHT_HANDLERS = {
-    [TOGGLE_KEYS.mep]: {
-      dataKey: HIGHLIGHT_KEYS.mep,
-      on: [],
-      off: [],
-    },
-    [TOGGLE_KEYS.caas]: {
-      dataKey: HIGHLIGHT_KEYS.caas,
-      on: [watchForCaasBlocks, injectCaasBadges],
-      off: [unwatchForCaasBlocks, removeCaasBadges],
-    },
-    [TOGGLE_KEYS.mas]: {
-      dataKey: HIGHLIGHT_KEYS.mas,
-      on: [watchForMasContent, injectMasBadges],
-      off: [unwatchForMasContent, removeMasBadges],
-    },
-    [TOGGLE_KEYS.other]: {
-      dataKey: HIGHLIGHT_KEYS.other,
-      on: [],
-      off: [],
-    },
-  };
+const HIGHLIGHT_HANDLERS = {
+  [TOGGLE_KEYS.mep]: {
+    dataKey: HIGHLIGHT_KEYS.mep,
+    on: [],
+    off: [],
+  },
+  [TOGGLE_KEYS.caas]: {
+    dataKey: HIGHLIGHT_KEYS.caas,
+    on: [watchForCaasBlocks, injectCaasBadges],
+    off: [unwatchForCaasBlocks, removeCaasBadges],
+  },
+  [TOGGLE_KEYS.mas]: {
+    dataKey: HIGHLIGHT_KEYS.mas,
+    on: [watchForMasContent, injectMasBadges],
+    off: [unwatchForMasContent, removeMasBadges],
+  },
+  [TOGGLE_KEYS.other]: {
+    dataKey: HIGHLIGHT_KEYS.other,
+    on: [],
+    off: [],
+  },
+};
 
+export function toggleHighlight(event) {
   const { checked, id } = event.target;
   const handler = HIGHLIGHT_HANDLERS[id];
   if (!handler) return;

@@ -55,12 +55,8 @@ const CARD_DATA = {
   ],
 };
 
-function parseSvg(svgString) {
-  return new DOMParser().parseFromString(svgString, 'image/svg+xml').documentElement;
-}
-
 function svgIcon(svgData, key) {
-  return parseSvg(svgData.svg[key]);
+  return new DOMParser().parseFromString(svgData.svg[key], 'image/svg+xml').documentElement;
 }
 
 function calcGnavOffset() {
@@ -275,9 +271,9 @@ function buildCardContent(card, svgData, pageId) {
   const builders = {
     'Load Manifest': () => buildLoadManifest(card, pageId),
     Toggle: () => buildToggle(card, pageId),
+    Highlight: () => buildToggle(card, pageId),
     'Spoof Geo': () => buildSpoofGeo(card, pageId, svgData),
   };
-  builders.Highlight = builders.Toggle;
   return builders[card.header]?.() ?? createTag('div', {}, 'No content available');
 }
 
@@ -316,7 +312,7 @@ function buildLoginCard() {
 
 function buildFooter() {
   return createTag('div', { class: 'mep-footer' }, [
-    createTag('a', { class: 'con-button button-l fill', title: 'Preview', href: '#' }, 'Preview'),
+    createTag('a', { class: 'con-button button-l fill', title: 'Preview' }, 'Preview'),
   ]);
 }
 
@@ -419,6 +415,7 @@ function checkAuthAndBuild(svgData, pageId) {
     drawerEl.appendChild(buildFooter());
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
+    setPreviewButton();
   }, { envs: ['prod', 'stage'] });
 }
 
@@ -443,8 +440,11 @@ function buildDrawer(gnavOffset, svgData, pageId) {
   }, children);
 }
 
-function buildAdditionalManifests() {
-  const manifests = getAdditionalManifests();
+async function buildAdditionalManifests() {
+  const data = await getAdditionalManifests();
+  const manifests = data?.activities ?? [];
+  if (!manifests.length) return;
+
   const drawerEl = document.querySelector('#mep-drawer');
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
@@ -551,15 +551,13 @@ async function buildOverlay() {
   checkAuthAndBuild(svgData, pageId);
 }
 
-async function init() {
-  saveToMmm();
+export default async function () {
+  const config = getConfig();
+  if (!config.mep.preview) return;
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
   setEventListeners();
-  setPreviewButton();
   setMasObserver();
   setBadgeEventListeners();
 }
-
-init();

@@ -129,8 +129,8 @@ function formatDate(dateTime, format = 'local') {
   if (!dateTime) return '';
   const dateObj = typeof dateTime === 'string' ? new Date(dateTime) : dateTime;
   if (format === 'iso') return dateObj.toISOString();
-  const date = dateObj.toLocaleDateString(false, { year: 'numeric', month: 'short', day: 'numeric' });
-  const time = dateObj.toLocaleTimeString(false, { timeStyle: 'short' });
+  const date = dateObj.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  const time = dateObj.toLocaleTimeString(undefined, { timeStyle: 'short' });
   return `${date} ${time}`;
 }
 
@@ -449,6 +449,7 @@ export async function setPreviewButton() {
     : simulateHref.searchParams.delete(key));
 
   setOrDelete('akamaiLocale', getSpoofGeoParams(popup));
+  setOrDelete('mepButton', getCheckboxParam(popup, 'toggle-preview-link') && 'off');
   setOrDelete(HIGHLIGHT_KEYS.mep, getCheckboxParam(popup, 'toggle-mep'));
   setOrDelete(HIGHLIGHT_KEYS.caas, getCheckboxParam(popup, 'toggle-caas'));
   setOrDelete(HIGHLIGHT_KEYS.mas, getCheckboxParam(popup, 'toggle-mas'));

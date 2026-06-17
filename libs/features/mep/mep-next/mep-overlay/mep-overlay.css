@@ -427,6 +427,7 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-footer .con-button {
+  cursor: pointer;
   flex: 1;
   text-align: center;
   color: var(--mep-white-100);

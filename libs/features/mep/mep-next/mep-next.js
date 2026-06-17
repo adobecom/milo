@@ -1231,7 +1231,7 @@ export default async function decoratePreviewMode() {
   // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
   // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
   getMarketConfig();
-  // await createPreviewPill();
+  await createPreviewPill();
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();

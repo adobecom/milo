@@ -1,3 +1,5 @@
+import init from './image-video-link.js';
+
 /* eslint-disable no-console */
 const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
 export const isBot = () => BOT_REGEX.test(navigator.userAgent);
@@ -2376,6 +2378,8 @@ export async function loadDeferred(area, blocks, config) {
   if (config.mep?.preview) {
     import('../features/mep/mep-next/mep-next.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+      .then(({ default: init }) => init());
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
