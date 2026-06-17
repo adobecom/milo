@@ -40,11 +40,16 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
   sk.addEventListener('custom:annotations', annotationsListener);
-  sk.addEventListener('custom:hello', debounce(() => { 
-      const script = document.createElement('script');
-      script.type = 'module';
-      script.src = 'https://standaloneAnnotation--stream-mapper--adobecom.aem.live/streamlibs/operations/standaloneAnnotation/milo-collab-init.js';
-      document.head.appendChild(script);
+  sk.addEventListener('custom:hello', debounce(async () => { 
+      const { loadIms } = await import(`./utils.js`);
+      await loadIms();
+      if (window.adobeIMS?.isSignedInUser()) {
+        await window.adobeIMS.validateToken();
+        const script = document.createElement('script');
+        script.type = 'module';
+        script.src = 'https://standaloneAnnotation--stream-mapper--adobecom.aem.live/streamlibs/operations/standaloneAnnotation/milo-collab-init.js';
+        document.head.appendChild(script);
+      }
   }, 500));
 
   // Auto-open annotations panel when ?pcThread= is in the URL (e.g. from a
