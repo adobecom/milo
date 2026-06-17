@@ -64,12 +64,22 @@ function AssetsItem({ title, description }) {
 /**
  * Component to display a group of assets.
  */
+function AssetMetric({ label, value, recommended }) {
+  return html`
+    <div class="asset-metric${recommended ? ' is-recommended' : ''}">
+      <span class="asset-metric-label">${label}</span>
+      <span class="asset-metric-value">${value}</span>
+    </div>`;
+}
+
 function AssetGroup({ group }) {
-  const { title, assetArray } = group;
+  const { title, assetArray, empty } = group;
   const isCriticalGroup = title.includes('Critical');
+  const isWarningGroup = title.includes('Warning');
+  const headingClass = `grid-heading${isCriticalGroup ? ' is-critical' : ''}${isWarningGroup ? ' is-warning' : ''}`;
 
   return html`
-    <div class="grid-heading">
+    <div class="${headingClass}">
       <div class="grid-toggle">${title}</div>
     </div>
 
@@ -82,22 +92,21 @@ function AssetGroup({ group }) {
     ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
       ${assetArray.value.map((asset) => {
-    const isAboveFoldWithMismatch = isCriticalGroup;
-    const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
+    const itemClass = isCriticalGroup ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div class='${itemClass}' title='${isCriticalGroup ? 'Above-the-fold asset with critical dimension issues' : ''}'>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
         <div class='assets-image-grid-item-text'>
-          <span>Factor: ${asset.roundedFactor}</span>
-          <span>Upload size: ${asset.naturalDimensions}</span>
-          <span>Display size: ${asset.displayDimensions}</span>
-          ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
-          <span>Type: ${asset.typeLabel}</span>
-          ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
-          ${isAboveFoldWithMismatch && html`<span class="above-fold-notice"><strong>⚠️ CRITICAL:</strong></span>`}
+          <${AssetMetric} label="Factor" value=${asset.roundedFactor} />
+          <${AssetMetric} label="Upload" value=${asset.naturalDimensions} />
+          <${AssetMetric} label="Display" value=${asset.displayDimensions} />
+          ${asset.hasMismatch && html`<${AssetMetric} label="Recommended" value=${asset.recommendedDimensions} recommended=${true} />`}
+          <${AssetMetric} label="Type" value=${asset.typeLabel} />
+          ${asset.notes && html`<p class="asset-note"><strong>Notes:</strong> ${asset.notes}</p>`}
+          ${isCriticalGroup && html`<span class="asset-critical-pill">⚠️ Critical</span>`}
         </div>
       </div>`;
   })}
@@ -105,7 +114,7 @@ function AssetGroup({ group }) {
 
     ${!viewportTooSmall.value && assetArray.value.length === 0 && html`
       <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>No assets found</div>
+        <div class='assets-image-grid-item full-width'>${empty || 'No assets found'}</div>
       </div>
     `}
   `;
@@ -139,9 +148,9 @@ export default function Assets() {
   }, []);
 
   const groups = [
-    { title: 'Critical Asset Issues (Above-the-fold)', assetArray: criticalAssetFailures },
-    { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures },
-    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch },
+    { title: 'Critical Asset Issues (Above-the-fold)', assetArray: criticalAssetFailures, empty: 'No critical asset issues.' },
+    { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures, empty: 'No warnings.' },
+    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch, empty: 'No matching assets found.' },
   ];
 
   return html`

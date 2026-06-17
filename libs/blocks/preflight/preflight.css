@@ -837,11 +837,11 @@ body.preflight-assets-analysis {
 }
 
 .assets-columns .grid-heading {
-  margin-bottom: 20px;
+  margin-bottom: var(--s2a-spacing-16);
 }
 
 .assets-columns .grid-toggle {
-  color: var(--preflight-text);
+  color: var(--preflight-text-subtle);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   font-size: var(--s2a-font-size-12);
   letter-spacing: 0.06em;
@@ -851,17 +851,30 @@ body.preflight-assets-analysis {
   align-items: center;
 }
 
+.assets-columns .grid-heading.is-critical .grid-toggle {
+  color: var(--s2a-color-red-900);
+}
+
+.assets-columns .grid-heading.is-warning .grid-toggle {
+  color: var(--s2a-color-orange-700);
+}
+
 .assets-item-title {
-  margin: 0;
+  margin: 0 0 4px;
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   font-size: var(--s2a-font-size-20);
 }
 
+.assets-item-description {
+  margin: 0;
+  color: var(--preflight-text-subtle);
+}
+
 .assets-image-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 35px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--s2a-spacing-12);
+  margin-bottom: var(--s2a-spacing-32);
   width: 100%;
 }
 
@@ -872,48 +885,92 @@ body.preflight-assets-analysis {
 .assets-image-grid-item {
   background: var(--preflight-surface-subtle);
   border: 1px solid var(--preflight-border);
-  display: grid;
-  justify-items: center;
-  padding: 10px;
-  border-radius: var(--s2a-border-radius-8);
+  border-radius: var(--s2a-border-radius-12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.above-fold-notice {
-  color: var(--s2a-color-red-900);
-  font-weight: bold;
-  background: var(--s2a-color-red-100);
-  padding: 4px 8px;
-  border-radius: var(--s2a-border-radius-4);
-  border-left: 3px solid var(--s2a-color-red-900);
-  margin-top: 8px;
+/* Compact thumbnail on a neutral checkerboard so the metadata stays visible. */
+.assets-image-grid-item > :is(img, video, iframe) {
+  width: 100%;
+  height: 132px;
+  object-fit: contain;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--preflight-border);
+  background-color: var(--s2a-color-gray-100);
+  background-image:
+    linear-gradient(45deg, var(--s2a-color-gray-200) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--s2a-color-gray-200) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--s2a-color-gray-200) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--s2a-color-gray-200) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.assets-image-grid-item iframe {
+  border: none;
+}
+
+.assets-image-grid-item.above-fold-critical {
+  border-color: var(--s2a-color-red-900);
+  box-shadow: inset 0 0 0 1px var(--s2a-color-red-900);
 }
 
 .assets-image-grid-item.full-width {
   grid-column: 1 / -1;
+  padding: var(--s2a-spacing-16);
+  text-align: center;
+  color: var(--preflight-text-subtle);
 }
 
 .assets-image-grid-item-text {
   display: flex;
-  align-self: flex-end;
   flex-direction: column;
-  width: 100%;
-  margin-top: 10px;
+  gap: 6px;
+  padding: var(--s2a-spacing-12);
 }
 
-.assets-image-grid-item span {
-  font-size: var(--s2a-font-size-16);
+.asset-metric {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-8);
+  font-size: var(--s2a-font-size-12);
   line-height: 1.4;
 }
 
-.assets-image-grid-item span:first-of-type {
-  margin: 10px 0;
-  font-weight: bold;
+.asset-metric-label {
+  color: var(--preflight-text-subtle);
 }
 
-.assets-image-grid-item iframe {
-  width: 100%;
-  height: 100%;
-  border: none;
+.asset-metric-value {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  text-align: right;
+}
+
+.asset-metric.is-recommended .asset-metric-value {
+  color: var(--s2a-color-green-900);
+}
+
+.asset-note {
+  margin: 0;
+  font-size: var(--s2a-font-size-12);
+  color: var(--preflight-text-subtle);
+  line-height: 1.4;
+}
+
+.asset-critical-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px 8px;
+  border-radius: var(--s2a-border-radius-999);
+  background: var(--s2a-color-red-100);
+  color: var(--s2a-color-red-900);
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
 }
 
 /* Page-injected: asset metadata overlay drawn on top of media (outside modal). */
