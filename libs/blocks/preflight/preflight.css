@@ -892,6 +892,7 @@ body.preflight-assets-analysis {
   object-fit: contain;
   box-sizing: border-box;
   border-bottom: 1px solid var(--preflight-border);
+  transition: transform 0.2s ease;
   background-color: var(--s2a-color-gray-100);
   background-image:
     linear-gradient(45deg, var(--s2a-color-gray-200) 25%, transparent 25%),
@@ -904,6 +905,20 @@ body.preflight-assets-analysis {
 
 .assets-image-grid-item iframe {
   border: none;
+}
+
+/* Cards are clickable: jump to the asset on the page. */
+.assets-image-grid-item[role="button"] {
+  cursor: pointer;
+}
+
+.assets-image-grid-item[role="button"]:focus-visible {
+  outline: 2px solid var(--preflight-focus);
+  outline-offset: 2px;
+}
+
+.assets-image-grid-item[role="button"]:hover > :is(img, video, iframe) {
+  transform: scale(1.08);
 }
 
 .assets-image-grid-item.above-fold-critical {
@@ -1196,6 +1211,17 @@ img:hover ~ .asset-meta,
 
 .performance-element-preview:hover {
   text-decoration: none;
+}
+
+.performance-no-lcp {
+  color: var(--preflight-text-subtle);
+}
+
+/* Page-injected: transient highlight when jumping to an asset from the modal. */
+.preflight-asset-highlight {
+  outline: 4px solid var(--s2a-color-blue-900) !important;
+  outline-offset: 3px !important;
+  scroll-margin: 100px;
 }
 
 /* Page-injected: LCP element preview box (outside modal). */
@@ -1733,7 +1759,7 @@ img:hover ~ .asset-meta,
 /* Mobile + tablet: collapse the rail into a horizontal top nav. */
 @media (max-width: 899px) {
   .preflight {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto 1fr;
   }
 
@@ -1741,17 +1767,21 @@ img:hover ~ .asset-meta,
     border-right: none;
     border-bottom: 1px solid var(--preflight-border);
     gap: var(--s2a-spacing-12);
+    min-width: 0;
+    overflow: visible;
   }
 
   .preflight-tab-button-group {
-    flex-direction: row;
+    flex-flow: row nowrap;
     overflow-x: auto;
     gap: 4px;
+    min-width: 0;
     scrollbar-width: none;
   }
 
   button.preflight-tab-button {
     width: auto;
+    flex: 0 0 auto;
     white-space: nowrap;
   }
 

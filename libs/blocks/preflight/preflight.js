@@ -1,6 +1,7 @@
 import { html, render, signal } from '../../deps/htm-preact.js';
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { getPreflightResults } from './checks/preflightApi.js';
+import { runChecks as runLocalizationChecks } from './checks/localization.js';
 import { SEVERITY } from './checks/constants.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
@@ -94,14 +95,31 @@ function countCategory(title, runChecks) {
   return countChecks(checks);
 }
 
+// Localization (faulty links) is shown in the General panel but is not part of
+// the central run, so fold its violations into the General badge separately.
+async function getLocalizationErrors() {
+  try {
+    const [loc] = await runLocalizationChecks({ area: document });
+    return loc?.details?.violations?.length || 0;
+  } catch {
+    return 0;
+  }
+}
+
 async function loadIssueCounts() {
   try {
     const results = await getPreflightResults({ url: window.location.href, area: document });
     if (!results?.runChecks) return;
-    tabStatus.value = Object.keys(TAB_CATEGORY).reduce((acc, title) => {
+    const status = Object.keys(TAB_CATEGORY).reduce((acc, title) => {
       acc[title] = countCategory(title, results.runChecks);
       return acc;
     }, {});
+    const locErrors = await getLocalizationErrors();
+    status.General = {
+      errors: status.General.errors + locErrors,
+      warnings: status.General.warnings,
+    };
+    tabStatus.value = status;
   } catch (e) {
     window.lana?.log?.(`Preflight tab badges failed: ${e}`, { tags: 'preflight' });
   }

@@ -27,7 +27,7 @@ function normalizePath(path) {
   return path.replace(/\/+$/, '');
 }
 
-export async function runChecks({ area = document } = {}) {
+async function computeChecks(area) {
   const { locales } = getConfig();
   const locale = getLocale(locales, window.location.pathname);
   const links = Array.from(area.querySelectorAll('a[href]'));
@@ -73,6 +73,14 @@ export async function runChecks({ area = document } = {}) {
       : `${violationsCount} link${violationsCount > 1 ? 's' : ''} potentially not localized or invalid.`,
     details: { violations },
   }];
+}
+
+// Memoized for the modal session: both the General badge and the General panel
+// call this, and each run HEAD-fetches every link on the page.
+let cachedRun;
+export function runChecks({ area = document } = {}) {
+  if (!cachedRun) cachedRun = computeChecks(area);
+  return cachedRun;
 }
 
 export default { runChecks };

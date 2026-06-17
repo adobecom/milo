@@ -64,6 +64,17 @@ function AssetsItem({ title, description }) {
 /**
  * Component to display a group of assets.
  */
+// Close the preflight modal and jump to the asset on the page.
+function goToAsset(el) {
+  if (!el) return;
+  document.getElementById('preflight')?.dispatchEvent(new CustomEvent('closeModal'));
+  requestAnimationFrame(() => {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.classList.add('preflight-asset-highlight');
+    setTimeout(() => el.classList.remove('preflight-asset-highlight'), 2400);
+  });
+}
+
 function AssetMetric({ label, value, recommended }) {
   return html`
     <div class="asset-metric${recommended ? ' is-recommended' : ''}">
@@ -95,7 +106,13 @@ function AssetGroup({ group }) {
     const itemClass = isCriticalGroup ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`
-      <div class='${itemClass}' title='${isCriticalGroup ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div
+        class='${itemClass}'
+        role="button"
+        tabindex="0"
+        title='Go to this asset on the page'
+        onClick=${() => goToAsset(asset.asset)}
+        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToAsset(asset.asset); } }}>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
