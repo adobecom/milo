@@ -44,7 +44,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
       const { loadIms } = await import(`./utils.js`);
       await loadIms();
       if (window.adobeIMS?.isSignedInUser()) {
-        await window.adobeIMS.validateToken();
         const script = document.createElement('script');
         script.type = 'module';
         script.src = 'https://standaloneAnnotation--stream-mapper--adobecom.aem.live/streamlibs/operations/standaloneAnnotation/milo-collab-init.js';
