@@ -874,6 +874,7 @@
     animation: none;
     transition: none;
     position: relative;
+    contain: none;
     --hub-hero-height: auto;
   }
 
@@ -915,6 +916,12 @@
 
   .hub-hero-header div[class^="body"] {
     top: 0;
+  }
+
+  .hub-hero-header .promo-cta {
+    max-width: 320px;
+    white-space: normal;
+    text-align: center;
   }
 
   .hub-hero-carousel-item-media {
@@ -1021,8 +1028,10 @@
     max-width: 100%;
   }
 
-  .hub-hero-carousel-item.hovered {
-    width: 100%;
+  .hub-hero-carousel-item.hovered,
+  .hub-hero-carousel-item:focus-visible {
+    width: 100vw;
+    max-width: 100vw;
   }
 
   .hub-hero-carousel-container {

@@ -127,7 +127,7 @@ const onCarouselLeave = (event) => {
 const onHover = (event) => {
   const isFocus = event.type === 'focus';
   const slideEl = event.target;
-  if (isFocus) scrollHubHeroTo(slideEl, 0.6);
+  if (isFocus && isMobile()) scrollHubHeroTo(slideEl, 0.6);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -163,7 +163,7 @@ const onHover = (event) => {
 };
 
 const buildSlide = ({ slide, index }) => {
-  if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
+  if (!slide?.children) return createTag('a', { class: `${slide.class} hub-hero-carousel-item` });
   const children = [...slide.children];
   const left = children[0];
   const right = children[1];
@@ -185,7 +185,7 @@ const buildSlide = ({ slide, index }) => {
   decorateBlockText(left);
 
   const content = `
-    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
+    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-card-${index + 1}'>
       <div class='hub-hero-carousel-item-header'>
         ${eyebrow?.outerHTML}
       </div>
@@ -199,8 +199,6 @@ const buildSlide = ({ slide, index }) => {
     </div>
   `;
 
-  const ariaLabel = `${eyebrow?.outerText} | ${heading?.innerText}`;
-
   const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
 
   const slideEl = createTag('a', {
@@ -209,11 +207,7 @@ const buildSlide = ({ slide, index }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
-    ...(!isMobile() && {
-      'aria-roledescription': 'card',
-      'aria-label': ariaLabel,
-      'aria-describedby': `hub-hero-carousel-card-${index + 1}`,
-    }),
+    'aria-labelledby': `${eyebrow?.innerText} - ${heading?.innerText}`,
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
@@ -230,16 +224,18 @@ const decorateCarousel = (slides) => {
   const carousel = createTag('div', { class: 'hub-hero-carousel' }, slides);
   if (isRtl()) slides.reverse();
   const decoratedSlides = slides.map((slide, index) => buildSlide(
-    { slide, index, slidesTotal: slides.length },
+    {
+      slide,
+      index: index > 2 ? index - 1 : index,
+      slidesTotal: slides.length - 1,
+    }, // adjusting for a placeholder slide
   ));
   const carouselContainer = createTag('div', { class: 'hub-hero-carousel-container' });
   carouselContainer.append(...decoratedSlides);
   carousel.replaceChildren();
   carousel.append(carouselContainer);
-  carousel.dataset.role = 'group';
   carousel.dataset.ariaRoledescription = 'carousel';
   carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
-  carousel.dataset.ariaRole = 'group';
   return carousel;
 };
 
@@ -257,7 +253,7 @@ const upgradeVideoPreload = (carousel) => {
 };
 
 const handleCarousel = (slds) => {
-  const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
+  const slides = [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
