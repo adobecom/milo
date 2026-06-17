@@ -13,7 +13,7 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
 
-const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe Cards';
 
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
@@ -162,7 +162,7 @@ const onHover = (event) => {
   sendAnalytics(`user-hover|${sectionName}|${blockName}`);
 };
 
-const buildSlide = ({ slide, index, slidesTotal }) => {
+const buildSlide = ({ slide, index }) => {
   if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
   const children = [...slide.children];
   const left = children[0];
@@ -199,9 +199,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     </div>
   `;
 
-  let ariaLabel = `${index + 1} of ${slidesTotal}`;
-  // assign unique aria-label to the first slide (no "carousel" — desktop has no carousel semantics)
-  if (index === 0) ariaLabel = `${getCarouselName(link)}: ${ariaLabel}`;
+  const ariaLabel = `${eyebrow?.outerText} | ${heading?.innerText}`;
 
   const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
 
@@ -212,9 +210,9 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
     ...(!isMobile() && {
-      'aria-roledescription': 'slide',
+      'aria-roledescription': 'card',
       'aria-label': ariaLabel,
-      'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
+      'aria-describedby': `hub-hero-carousel-card-${index + 1}`,
     }),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
