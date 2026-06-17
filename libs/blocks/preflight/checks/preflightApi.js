@@ -2,7 +2,6 @@ import { getConfig, getFederatedContentRoot } from '../../../utils/utils.js';
 import { fetchPreflightChecks, asoCache } from './asoApi.js';
 import { isViewportTooSmall, checkImageDimensions, runChecks as runChecksAssets } from './assets.js';
 import runChecksAccessibility from './accessibility.js';
-import captureMetrics from './captureMetrics.js';
 import {
   getLcpEntry,
   checkSingleBlock,
@@ -162,8 +161,6 @@ export async function getPreflightResults(options = {}) {
     runChecks: res,
     hasFailures: allResults.some((check) => check.status === 'fail' && check.severity === SEVERITY.CRITICAL),
   };
-
-  captureMetrics(res).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
 
   if (useCache) globalPreflightCache.set(cacheKey, result);
 
