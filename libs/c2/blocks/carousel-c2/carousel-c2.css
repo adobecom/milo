@@ -1,7 +1,7 @@
 .carousel-c2 {
   --carousel-slide-max-width: 1920px;
   --carousel-slide-max-height: 890px;
-  --carousel-slide-width: calc(100% - var(--grid-margin-width) * 2);
+  --carousel-slide-width: var(--actual-slide-width);
   --carousel-hint-slide: calc((100% - min(var(--carousel-slide-width), var(--carousel-slide-max-width))) / 2);
   --carousel-wrapper-offset: calc(min(var(--carousel-slide-max-width), var(--carousel-slide-width)) - var(--carousel-hint-slide));
   --carousel-slides-gap: 8px;

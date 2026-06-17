@@ -86,9 +86,9 @@ function setActualSlideWidth(carousel, carouselWidth) {
     ? parseFloat(gridMarginProperty) / 100 : parseFloat(gridMarginProperty);
   const actualSlideWidth = Math.min(carouselWidth - 2
     * (isGridMarginPer ? carouselWidth : 1) * gridMarginPropertyValue, 1920);
-  carousel.style.setProperty('--actual-slide-width', `${actualSlideWidth}px`);
+  carousel.style.setProperty('--actual-slide-width', `${Math.ceil(actualSlideWidth)}px`);
 
-  return actualSlideWidth;
+  return Math.ceil(actualSlideWidth);
 }
 
 function getCarouselDimensions(slide) {
@@ -98,8 +98,9 @@ function getCarouselDimensions(slide) {
 
   const fluidGrid = parseFloat(getComputedStyle(carousel).getPropertyValue('--grid-max-width-fluid'));
   const maxSlideWidth = Math.min(carouselWidth, fluidGrid);
+  const marginWidth = Math.ceil((carouselWidth - slideWidth) / 2);
 
-  return { marginWidth: (carouselWidth - slideWidth) / 2, slideWidth, maxSlideWidth };
+  return { marginWidth, slideWidth, maxSlideWidth, carouselWidth };
 }
 
 function getDirection(direction) {
@@ -115,6 +116,7 @@ function goToActive(carouselEls) {
   const translateValue = isRTL
     ? indexOfActive * actualSlideWidth - marginWidth + gaps
     : indexOfActive * actualSlideWidth * -1 + marginWidth - gaps;
+
   wrapper.style.transition = 'none';
   wrapper.style.translate = `${translateValue}px`;
   setSlideSpreadSign(activeSlide, allSlides);
@@ -286,12 +288,8 @@ function attachListeners(carouselEls) {
     moveSlides(carouselEls, getDirection(diff < 0 ? 'next' : 'prev'), e);
   });
 
-  const slideToObserve = wrapper.querySelector('.active');
-  const mq = window.matchMedia('(width >= 1280px)');
   let ro;
   function createObserver() {
-    ro?.disconnect();
-    const observeEl = mq.matches ? wrapper : slideToObserve;
     ro = new ResizeObserver(() => {
       const activeSlide = wrapper.querySelector('.active');
       const { marginWidth, slideWidth, maxSlideWidth } = getCarouselDimensions(activeSlide);
@@ -304,9 +302,8 @@ function attachListeners(carouselEls) {
 
       goToActive(carouselEls, activeSlide);
     });
-    ro.observe(observeEl);
+    ro.observe(wrapper);
   }
-  mq.addEventListener('change', createObserver);
   createObserver();
 }
 
