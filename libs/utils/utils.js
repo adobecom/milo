@@ -114,25 +114,36 @@ const C2_BLOCKS = [
   'box',
   'brand-concierge',
   'carousel-c2',
+  'comparison-table-c2',
   'elastic-carousel',
   'explore-card',
   'faq',
+  'floating-cta',
   'global-footer',
   'global-navigation',
+  'hover-list',
+  'hub-hero',
   'iframe',
+  'logo-ticker',
   'martech-metadata',
-  'modal',
   'modal-metadata',
+  'modal',
   'news',
+  'offer-hero',
+  'pdf-space',
+  'plans-hero',
+  'product-marquee-grid',
+  'quick-actions',
   'region-nav',
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'side-by-side',
   'social-proof',
-  'visually-hidden',
-  'product-marquee-grid',
-  'hover-list',
+  'split-aside-grid',
   'tabs',
+  'tour',
+  'visually-hidden',
 ];
 
 const AUTO_BLOCKS = [
@@ -569,7 +580,8 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
-  if (shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
+  const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
       || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
        && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
          .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
@@ -1007,7 +1019,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1015,7 +1027,14 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
+  if (useGeoLocation) {
+    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
+    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
+  }
+
+  const country = useGeoLocation
+    ? normCountryCode(await getCountry())
+    : (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -1990,7 +2009,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
@@ -2007,7 +2026,12 @@ export async function loadIms() {
         scope: imsScope || defaultScope,
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+          ? (() => {
+            const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
+            const acomPrefix = (lingoRegion?.prefix || locale.prefix).slice(1);
+            if (acomPrefix === 'cn' || acomPrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            return `${baseUrl}/home${acomPrefix ? `?acomLocale=${acomPrefix}` : ''}`;
+          })() : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,

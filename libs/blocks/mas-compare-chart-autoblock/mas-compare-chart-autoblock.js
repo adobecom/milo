@@ -2,6 +2,7 @@ import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import {
   getOptions,
   initService,
+  createAemFragment,
   loadMasComponent,
   MAS_MERCH_CARD,
   overrideOptions,
@@ -56,11 +57,7 @@ function loadCompareChartStyles() {
 }
 
 export async function createCompareChart(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const compareChart = createTag(MAS_COMPARE_CHART, { consonant: '' }, aemFragment);
   const paragraph = el.parentElement;
   paragraph.parentElement.className = 'mas-compare-chart-container';

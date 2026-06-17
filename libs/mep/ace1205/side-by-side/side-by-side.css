@@ -30,7 +30,6 @@
 
     position: relative;
     overflow: hidden;
-    min-height: 305px;
     aspect-ratio: 33/37;
     border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
 
@@ -52,6 +51,11 @@
       pointer-events: none;
     }
 
+    .video-container {
+      border-radius: inherit;
+      width: 100%;
+    }
+
     .foreground {
       position: relative;
       padding: var(--s2a-spacing-lg);
@@ -69,10 +73,6 @@
     display: flex;
     flex-direction: column;
     padding-left: 15%;
-
-    .media {
-      min-width: 233px;
-    }
 
     .foreground {
       padding: var(--s2a-spacing-md);

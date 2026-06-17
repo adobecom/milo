@@ -343,8 +343,15 @@ function setupBlock(el) {
 
   function onPointerMove(e) {
     if (!drag || e.pointerId !== drag.id || !target) return;
-    drag.dx = e.clientX - drag.x0;
-    drag.dy = e.clientY - drag.y0;
+
+    const xDrag = e.clientX - drag.x0;
+    const yDrag = e.clientY - drag.y0;
+    const isScroll = Math.abs(xDrag) - Math.abs(yDrag) < 5;
+    if (isScroll && !drag.animation) return;
+
+    drag.dx = xDrag;
+    drag.dy = yDrag;
+    drag.animation = true;
 
     let direction = null;
     if (drag.dx < 0) direction = 'left';
