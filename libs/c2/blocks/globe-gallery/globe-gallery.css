@@ -593,16 +593,11 @@ body.modal-open { overflow: hidden; }
    treatment over the photo at every width.
 ───────────────────────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
-  /* Plain floating text — strip the sm frosted pill. */
   .globe-gallery-arc-copy {
     width: 382px;
     max-width: none;
     bottom: calc(72px + 20vh);
-    padding: 0;
-    background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    border-radius: 0;
+    background: none;
   }
 
   .globe-gallery-modal__info {
