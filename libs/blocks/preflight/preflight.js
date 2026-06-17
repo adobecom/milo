@@ -9,19 +9,32 @@ import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
 
 const HEADING = 'Milo Preflight';
+const SUBHEADING = 'Pre-publish quality checks for this page';
 const IMG_PATH = '/blocks/preflight/img';
 // c2 (--s2a-*) design tokens are only defined on c2 pages; preflight runs on every Milo
 // page, so load them at :root so both the modal and the page-injected overlays resolve.
 const C2_TOKENS = ['tokens.primitives.css', 'tokens.semantic.light.css'];
 
+const svg = (paths) => html`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+
+const ICONS = {
+  general: svg(html`<rect x="2.5" y="2.5" width="6" height="6" rx="1.5" /><rect x="11.5" y="2.5" width="6" height="6" rx="1.5" /><rect x="2.5" y="11.5" width="6" height="6" rx="1.5" /><rect x="11.5" y="11.5" width="6" height="6" rx="1.5" />`),
+  seo: svg(html`<circle cx="8.5" cy="8.5" r="5.5" /><line x1="12.5" y1="12.5" x2="17" y2="17" />`),
+  martech: svg(html`<line x1="4" y1="16.5" x2="4" y2="11" /><line x1="10" y1="16.5" x2="10" y2="5.5" /><line x1="16" y1="16.5" x2="16" y2="9" />`),
+  mas: svg(html`<path d="M9.6 2.5H4A1.5 1.5 0 0 0 2.5 4v5.6L10.9 18l6.6-6.6L9.6 2.5z" /><circle cx="6" cy="6" r="1.1" />`),
+  accessibility: svg(html`<circle cx="10" cy="3.8" r="1.6" /><path d="M3.5 7.3c2 1 4 1.5 6.5 1.5s4.5-.5 6.5-1.5" /><path d="M10 7v5" /><path d="M6.8 17.5 10 12l3.2 5.5" />`),
+  performance: svg(html`<path d="M3.2 15.5a7 7 0 1 1 13.6 0" /><line x1="10" y1="13.5" x2="13.2" y2="9.2" /><circle cx="10" cy="13.5" r="1" fill="currentColor" stroke="none" />`),
+  assets: svg(html`<rect x="2.5" y="3.8" width="15" height="12.4" rx="2" /><circle cx="7" cy="8" r="1.4" /><path d="M3.2 14.5 7.5 11l3 2.2L14 9.8l3.5 3.4" />`),
+};
+
 const tabs = signal([
-  { title: 'General', selected: true },
-  { title: 'SEO' },
-  { title: 'Martech' },
-  { title: 'M@S' },
-  { title: 'Accessibility' },
-  { title: 'Performance' },
-  { title: 'Assets' },
+  { title: 'General', desc: 'Page structure, localization and content status.', icon: ICONS.general, selected: true },
+  { title: 'SEO', desc: 'Search engine optimization checks for this page.', icon: ICONS.seo },
+  { title: 'Martech', desc: 'Marketing metadata extracted for tagging.', icon: ICONS.martech },
+  { title: 'M@S', desc: 'Merch-at-scale fragment and offer checks.', icon: ICONS.mas },
+  { title: 'Accessibility', desc: 'WCAG conformance and alt-text auditing.', icon: ICONS.accessibility },
+  { title: 'Performance', desc: 'Core Web Vitals and LCP readiness.', icon: ICONS.performance },
+  { title: 'Assets', desc: 'Image dimensions and asset optimization.', icon: ICONS.assets },
 ]);
 
 function setTab(active) {
@@ -59,10 +72,12 @@ function TabButton(props) {
     <button
       id=${id}
       class=preflight-tab-button
+      role="tab"
       key=${props.tab.title}
       aria-selected=${selected}
       onClick=${() => setTab(props.tab)}>
-      ${props.tab.title}
+      <span class=preflight-tab-icon>${props.tab.icon}</span>
+      <span class=preflight-tab-label>${props.tab.title}</span>
     </button>`;
 }
 
@@ -84,16 +99,26 @@ function TabPanel(props) {
 }
 
 export function Preflight() {
+  const active = tabs.value.find((tab) => tab.selected) || tabs.value[0];
   return html`
-    <div class=preflight-heading>
-      <p id=preflight-title>${HEADING}</p>
-      <div class=preflight-tab-button-group role="tablist" aria-labelledby=preflight-title>
-        ${tabs.value.map((tab, idx) => html`<${TabButton} tab=${tab} idx=${idx} />`)}
+    <aside class=preflight-sidebar>
+      <div class=preflight-brand>
+        <p id=preflight-title>${HEADING}</p>
+        <p class=preflight-subtitle>${SUBHEADING}</p>
       </div>
-    </div>
-    <div class=preflight-content>
-      ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} />`)}
-    </div>
+      <nav class=preflight-tab-button-group role="tablist" aria-orientation="vertical" aria-labelledby=preflight-title>
+        ${tabs.value.map((tab, idx) => html`<${TabButton} tab=${tab} idx=${idx} />`)}
+      </nav>
+    </aside>
+    <main class=preflight-main>
+      <header class=preflight-main-header>
+        <h2 class=preflight-main-title>${active.title}</h2>
+        <p class=preflight-main-desc>${active.desc}</p>
+      </header>
+      <div class=preflight-content>
+        ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} />`)}
+      </div>
+    </main>
   `;
 }
 
