@@ -64,7 +64,9 @@ export default async function init(el) {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
     },
-    convertStageLinks,
+    convertStageLinks: ({ anchors, hostname, href }) => {
+      convertStageLinks({ anchors, config, hostname, href });
+    },
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
