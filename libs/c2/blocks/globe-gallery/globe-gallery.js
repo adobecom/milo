@@ -271,6 +271,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     lastMY = 0;
   let tickerAdded = false;
   let sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
+  // True once the zoom-through has carried the camera past the sphere's front
+  // surface (camera between ±SPHERE_R of the sphere centre). Set in
+  // updateActiveCamera, read by updateSphereRotation to invert drag so spinning
+  // from inside feels like grabbing the globe's inner wall, not its outer shell.
+  let cameraInsideSphere = false;
 
   // Per-card sphere-rotation state (THREE objects). The sphere drag rotation is applied
   // MANUALLY to each card in the sphere/fold blocks of tick() — sphereGroup.rotation is
@@ -797,6 +802,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       camera.position.z = camZ;
       camera.updateProjectionMatrix();
     }
+    cameraInsideSphere = zoomT > 0 && Math.abs(camera.position.z) < SPHERE_R;
     return activeCamera;
   }
 
@@ -846,8 +852,13 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
           dragVelY *= DRAG_FRICTION;
           dragVelX += AUTO_ROT_SPEED;
         }
-        sphereRotY += dragVelX;
-        sphereRotX += dragVelY;
+        // Inside the globe the visible (far-hemisphere) wall moves opposite to the
+        // same world rotation, so a drag that pulls the outer shell right would push
+        // the inner wall left. Negate the delta so dragging always tracks the surface
+        // the user is looking at — consistent feel inside and out.
+        const dragDir = cameraInsideSphere ? -1 : 1;
+        sphereRotY += dragVelX * dragDir;
+        sphereRotX += dragVelY * dragDir;
         sphereRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX));
       }
 

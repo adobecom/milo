@@ -30,7 +30,7 @@ function findApp(token) {
 
 // AUTHORING CONTRACT:
 // The block has three authored rows (direct child <div>s), in fixed order:
-//   Row 0 — arc-copy:   heading → .globe-gallery-arc-copy__title; <p> → .globe-gallery-arc-copy__body
+//   Row 0 — arc-copy:   heading → arc-copy title; <p> → arc-copy body
 //   Row 1 — cards:      a fragment link resolved by Milo before init() fires.
 //                       Each card in the fragment is a flat sequence of elements
 //                       (separated by <hr> for multiple cards):
@@ -39,8 +39,8 @@ function findApp(token) {
 //                         <p>Description text</p>
 //                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
 //                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote (optional): heading → .globe-gallery-pullquote__quote;
-//                       first <p> → .globe-gallery-pullquote__name; second <p> → .globe-gallery-pullquote__role
+//   Row 2 — pull-quote (optional): heading → quote;
+//                       first <p> → name; second <p> → role
 // Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
 // link separately (fetchFragmentCards); the block collapses if the fetch yields none.
 
@@ -255,21 +255,16 @@ const buildMarkup = (gid, labels) => `
 // guarantee of that.
 let globeInstanceSeq = 0;
 
-// Build the block's DOM, fill its (otherwise empty) arc-copy / pull-quote slots
-// with the parsed authored text, and return the `gid` used for this instance's
-// unique ids so the runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
+// Build the block's DOM and return the `gid` used for this instance's unique ids
+// so the runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
 export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
-
-  const fill = (selector, text) => { if (text) el.querySelector(selector).textContent = text; };
-  fill('.globe-gallery-arc-copy__title', arcCopy.title);
-  fill('.globe-gallery-arc-copy__body', arcCopy.body);
-  if (pullQuote) {
-    fill('.globe-gallery-pullquote__quote', pullQuote.quote);
-    fill('.globe-gallery-pullquote__name', pullQuote.name);
-    fill('.globe-gallery-pullquote__role', pullQuote.role);
-  }
+  el.querySelector('.globe-gallery-arc-copy__title').textContent = arcCopy.title;
+  el.querySelector('.globe-gallery-arc-copy__body').textContent = arcCopy.body;
+  el.querySelector('.globe-gallery-pullquote__quote').textContent = pullQuote.quote;
+  el.querySelector('.globe-gallery-pullquote__name').textContent = pullQuote.name;
+  el.querySelector('.globe-gallery-pullquote__role').textContent = pullQuote.role;
   return gid;
 }

@@ -78,20 +78,25 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'varying vec2 vUv;',
   'void main() {',
+  // When the camera is inside the globe, the far-hemisphere cards are seen from
+  // behind. A DoubleSide plane viewed from its back shows the image mirrored
+  // horizontally. Flip uv.x on back-facing fragments so the back reads identically
+  // to the front (gl_FrontFacing is true for the outward-facing side).
+  '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
   // Fisheye magnify anchored at uHoverPos (cursor position in UV space).
   // Dividing the offset-from-cursor by (1 + uWarp * r² * 4) samples from closer
   // to the cursor as r grows, so image content visually expands AROUND the cursor —
   // the classic "lens loupe" look. uHoverPos = (0.5, 0.5) → centered fisheye.
-  '  vec2 d  = vUv - uHoverPos;',
+  '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
   '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
-  '  float a = texture2D(uAlphaMap, vUv).g;',
+  '  float a = texture2D(uAlphaMap, fUv).g;',
   // Radial CA (transition peaks) + directional motion trail (velocity-driven)
   // R: trails behind — displaced opposite to motion + radial spread outward
   // G: current position, no displacement
   // B: ghost slightly ahead — displaced in motion direction + radial spread inward
-  '  vec2 radial = (vUv - 0.5) * uCA;',
+  '  vec2 radial = (fUv - 0.5) * uCA;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
