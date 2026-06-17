@@ -1225,8 +1225,10 @@ img:hover ~ .asset-meta,
 }
 
 .preflight-return-popover {
-  position: absolute;
-  z-index: 1000;
+  position: fixed;
+  top: var(--s2a-spacing-16);
+  left: var(--s2a-spacing-16);
+  z-index: 10000;
   display: flex;
   align-items: center;
   gap: var(--s2a-spacing-12);

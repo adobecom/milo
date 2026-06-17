@@ -70,9 +70,9 @@ function clearAssetHighlight() {
     .forEach((n) => n.classList.remove('preflight-asset-highlight'));
 }
 
-// Floating popover anchored to the asset's top-left, so the user can hop
-// straight back to preflight (which reopens on the same tab) or dismiss it.
-function showReturnPopover(el) {
+// Fixed popover at the top-left of the screen, so the user can hop straight
+// back to preflight (which reopens on the same tab) or dismiss it.
+function showReturnPopover() {
   document.querySelector('.preflight-return-popover')?.remove();
 
   const label = createTag('span', { class: 'preflight-return-label' }, 'Reviewing asset on page');
@@ -89,13 +89,6 @@ function showReturnPopover(el) {
   });
 
   document.body.append(popover);
-
-  // Anchor to the asset's top-left, clamped within the viewport.
-  const rect = el.getBoundingClientRect();
-  const maxLeft = window.scrollX + document.documentElement.clientWidth - popover.offsetWidth - 8;
-  const left = Math.max(window.scrollX + 8, Math.min(rect.left + window.scrollX + 8, maxLeft));
-  popover.style.top = `${rect.top + window.scrollY + 8}px`;
-  popover.style.left = `${left}px`;
 }
 
 // Close the preflight modal and jump to the asset on the page.
@@ -106,7 +99,7 @@ function goToAsset(el) {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     clearAssetHighlight();
     el.classList.add('preflight-asset-highlight');
-    showReturnPopover(el);
+    showReturnPopover();
   });
 }
 
