@@ -551,9 +551,7 @@ async function buildOverlay() {
   checkAuthAndBuild(svgData, pageId);
 }
 
-export default async function () {
-  const config = getConfig();
-  if (!config.mep.preview) return;
+export default async function init() {
   loadStyle(new URL('./mep-overlay.css', import.meta.url));
   loadStyle(new URL('./mep-overlay-highlight.css', import.meta.url));
   await buildOverlay();
