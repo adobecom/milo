@@ -1,4 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { createTag } from '../../../utils/utils.js';
 import { STATUS } from '../checks/constants.js';
 import { getPreflightResults } from '../checks/preflightApi.js';
 import { isViewportTooSmall } from '../checks/assets.js';
@@ -64,14 +65,41 @@ function AssetsItem({ title, description }) {
 /**
  * Component to display a group of assets.
  */
+function clearAssetHighlight() {
+  document.querySelectorAll('.preflight-asset-highlight')
+    .forEach((n) => n.classList.remove('preflight-asset-highlight'));
+}
+
+// Floating popover shown on the page after jumping to an asset, so the user can
+// hop straight back to preflight (which reopens on the same tab) or dismiss it.
+function showReturnPopover() {
+  document.querySelector('.preflight-return-popover')?.remove();
+
+  const label = createTag('span', { class: 'preflight-return-label' }, 'Reviewing asset on page');
+  const reopen = createTag('button', { class: 'preflight-return-reopen' }, 'Back to Preflight');
+  const dismiss = createTag('button', { class: 'preflight-return-dismiss' }, 'Dismiss');
+  const popover = createTag('div', { class: 'preflight-return-popover', role: 'dialog', 'aria-label': 'Asset review' }, [label, reopen, dismiss]);
+
+  const cleanup = () => { popover.remove(); clearAssetHighlight(); };
+  dismiss.addEventListener('click', cleanup);
+  reopen.addEventListener('click', () => {
+    cleanup();
+    document.querySelector('aem-sidekick, helix-sidekick')
+      ?.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+  });
+
+  document.body.append(popover);
+}
+
 // Close the preflight modal and jump to the asset on the page.
 function goToAsset(el) {
   if (!el) return;
   document.getElementById('preflight')?.dispatchEvent(new CustomEvent('closeModal'));
   requestAnimationFrame(() => {
     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    clearAssetHighlight();
     el.classList.add('preflight-asset-highlight');
-    setTimeout(() => el.classList.remove('preflight-asset-highlight'), 2400);
+    showReturnPopover();
   });
 }
 
