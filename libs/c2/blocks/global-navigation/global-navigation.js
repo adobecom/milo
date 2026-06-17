@@ -1,4 +1,4 @@
-import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
+import { getEnv, getConfig, getMetadata, localizeLink, convertStageLinks } from '../../../utils/utils.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -64,6 +64,7 @@ export default async function init(el) {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
     },
+    convertStageLinks,
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
