@@ -1115,9 +1115,9 @@ class Gnav {
           if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
           this.aupsdkInstancePromise = this.preloadAupSdk();
           return this.aupsdkInstancePromise;
-        }
-      }
-    }
+        },
+      };
+    };
 
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
@@ -1147,12 +1147,18 @@ class Gnav {
             window.adobeArp = window.adobeArp || {};
             window.adobeArp.sessionToken = token;
             window.dispatchEvent(new CustomEvent('arp:tokenReady', { detail: { token } }));
-            console.log('[ARP] tokenCallback:', token);
+            /* eslint-disable no-underscore-dangle */
+            window.alloy_all ??= {};
+            window.alloy_all.data ??= {};
+            window.alloy_all.data._adobe_corpnew ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom.arp_token = token;
+            /* eslint-enable no-underscore-dangle */
           },
-          successCallback: () => console.log('[ARP] successCallback: vendors initialized'),
+          successCallback: () => {},
           errorCallback: (err) => {
             lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' });
-            console.error('[ARP] errorCallback:', err);
           },
           ...getConfig()?.unav?.arpConfig,
           metadata: {
@@ -1167,11 +1173,6 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-    // TEMPORARY DEBUG logs
-    console.log('[ARP Debug] isArpEnabled:', CONFIG.universalNav.universalNavConfig.isArpEnabled);
-    CONFIG.universalNav.universalNavConfig.arpConfig?.then((resolved) => {
-      console.log('[ARP Debug] arpConfig:', resolved);
-    });
 
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
