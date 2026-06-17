@@ -20,7 +20,7 @@
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { chromium, devices } = require('playwright');
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies, import/extensions
 const { getComparator } = require('playwright-core/lib/utils');
 const fs = require('fs');
 const { takeTwo } = require('./lib/take.js');
@@ -76,8 +76,10 @@ async function run() {
 
   const result = await takeTwo(
     page,
-    urlA, null,
-    urlB, null,
+    urlA,
+    null,
+    urlB,
+    null,
     folderPath,
     'shot',
     { fullPage },

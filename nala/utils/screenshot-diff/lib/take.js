@@ -78,7 +78,7 @@ async function takeTwo(
   folderPath,
   fileName,
   options = {},
-  beforeBeta,
+  beforeBeta = undefined,
 ) {
   const urls = [];
   const result = {};

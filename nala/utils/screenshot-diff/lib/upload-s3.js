@@ -31,9 +31,7 @@ function makeClient() {
  * @param {string} args.mimeType - Content-Type for the upload
  * @param {S3Client} [args.s3] - Reuse a client; otherwise one is built per call.
  */
-async function uploadFile({
-  fileName, s3Path, s3Key, mimeType, s3,
-}) {
+async function uploadFile({ fileName, s3Path, s3Key, mimeType, s3 }) {
   const client = s3 || makeClient();
   const baseName = path.basename(fileName);
   const key = path.join(s3Path, s3Key || baseName).replace(/\\/g, '/');

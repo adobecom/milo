@@ -27,7 +27,7 @@
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { chromium, devices } = require('playwright');
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import/no-extraneous-dependencies, import/extensions
 const { getComparator } = require('playwright-core/lib/utils');
 const fs = require('fs');
 const { takeTwo } = require('../../utils/screenshot-diff/lib/take.js');
@@ -53,8 +53,8 @@ const VIEWPORTS = {
 // flags any single-pixel anti-aliasing variance as a diff, drowning real
 // layout changes in noise.
 const COMPARE_OPTS = {
-  threshold: 0.2,           // per-pixel color tolerance (0 = strict, 1 = anything goes)
-  maxDiffPixelRatio: 0.01,  // page-level: less than 1% pixels differ → not a diff
+  threshold: 0.2, // per-pixel color tolerance (0 = strict, 1 = anything goes)
+  maxDiffPixelRatio: 0.01, // page-level: less than 1% pixels differ → not a diff
 };
 
 /**
@@ -90,7 +90,7 @@ async function waitForPageReady(page, strategy) {
     while (y < max) {
       window.scrollTo(0, y);
       // eslint-disable-next-line no-await-in-loop
-      await new Promise((r) => setTimeout(r, delay));
+      await new Promise((r) => { setTimeout(r, delay); });
       y += step;
     }
     window.scrollTo(0, 0);
@@ -149,9 +149,12 @@ async function captureViewport(viewportName, urls, folderPath, milolibs, waitStr
       await resetState(); // before A's goto
       const result = await takeTwo(
         page,
-        urlA, () => waitForPageReady(page, waitStrategy),
-        urlB, () => waitForPageReady(page, waitStrategy),
-        folderPath, name,
+        urlA,
+        () => waitForPageReady(page, waitStrategy),
+        urlB,
+        () => waitForPageReady(page, waitStrategy),
+        folderPath,
+        name,
         { fullPage: true },
         resetState, // beforeBeta hook — reset between A capture and B goto
       );
@@ -219,6 +222,7 @@ async function main() {
   const raw = await loadSiteData(site, { dir: __dirname });
   // `__config__` is a reserved top-level key for per-site options.
   // Everything else is a URL entry.
+  // eslint-disable-next-line no-underscore-dangle
   const yamlConfig = raw.__config__ || {};
   const allEntries = Object.entries(raw).filter(([k]) => !k.startsWith('__'));
   // Resolution order: WAIT_STRATEGY env > yaml __config__.waitStrategy > 'footer'
@@ -232,8 +236,8 @@ async function main() {
     console.error(`Invalid SHARD='${shardSpec}'. Use 'X/Y' with 1 ≤ X ≤ Y.`);
     process.exit(1);
   }
-  const sliceFrom = Math.floor((shardIdx - 1) * allEntries.length / shardTotal);
-  const sliceTo = Math.floor(shardIdx * allEntries.length / shardTotal);
+  const sliceFrom = Math.floor(((shardIdx - 1) * allEntries.length) / shardTotal);
+  const sliceTo = Math.floor((shardIdx * allEntries.length) / shardTotal);
   const urls = Object.fromEntries(allEntries.slice(sliceFrom, sliceTo));
 
   console.log(`▶ Site: ${site}  ·  URLs: ${Object.keys(urls).length}/${allEntries.length} (shard ${shardSpec}, slice [${sliceFrom},${sliceTo}))  ·  Viewports: ${viewports.join(',')}`);

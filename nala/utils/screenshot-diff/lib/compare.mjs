@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies, import/extensions
 import { getComparator } from 'playwright-core/lib/utils';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import axios from 'axios';
 import path from 'path';
 import fs from 'fs';

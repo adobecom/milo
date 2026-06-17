@@ -15,9 +15,9 @@ if (!filePath) {
   process.exit(1);
 }
 
-const mimeType = filePath.endsWith('.json') ? 'application/json'
-  : filePath.endsWith('.png') ? 'image/png'
-    : 'application/octet-stream';
+let mimeType = 'application/octet-stream';
+if (filePath.endsWith('.json')) mimeType = 'application/json';
+else if (filePath.endsWith('.png')) mimeType = 'image/png';
 
 uploadFile({
   fileName: filePath,

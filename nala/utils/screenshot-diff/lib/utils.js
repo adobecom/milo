@@ -8,7 +8,7 @@ const config = require('./config.js');
 let getComparator;
 function loadComparator() {
   if (!getComparator) {
-    // eslint-disable-next-line import/no-extraneous-dependencies, global-require
+    // eslint-disable-next-line import/no-extraneous-dependencies, global-require, import/extensions
     ({ getComparator } = require('playwright-core/lib/utils'));
   }
   return getComparator;
