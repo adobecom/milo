@@ -52,7 +52,15 @@ function decorateJumpLinks(content, foreground) {
     anchor.append(badge, label);
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
-      scrollToHashedElement(getSectionHash(anchor));
+      const hash = getSectionHash(anchor);
+      if (window.lenis?.scrollTo) {
+        const target = document.querySelector(`#${hash.slice(1)}:not(.dialog-modal)`);
+        if (!target) return;
+        const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
+        window.lenis.scrollTo(target, { offset, force: true });
+        return;
+      }
+      scrollToHashedElement(hash);
     });
     list.append(createTag('li', {}, anchor));
   });

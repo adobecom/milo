@@ -194,7 +194,7 @@ export const formSuccess = (formEl, formData) => {
     const param = getMetadata('marketo-ims');
 
     if (param && email) {
-      window.location.href = `${redirect}?${param}=${email.replace(/[^\w.%+@-]/g, '')}`;
+      window.location.href = `${redirect}?${param}=${encodeURIComponent(email)}`;
     } else {
       window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
     }
