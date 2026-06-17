@@ -124,6 +124,30 @@ button.preflight-tab-button {
   display: block;
 }
 
+.preflight-tab-label {
+  flex: 1;
+}
+
+/* Issue-count badge: red for errors, orange for warnings. */
+.preflight-tab-badge {
+  flex-shrink: 0;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 6px;
+  box-sizing: border-box;
+  border-radius: var(--s2a-border-radius-999);
+  font-size: var(--s2a-font-size-12);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: 18px;
+  text-align: center;
+  color: var(--s2a-color-gray-25);
+  background: var(--s2a-color-red-900);
+}
+
+.preflight-tab-badge.has-warnings {
+  background: var(--s2a-color-orange-700);
+}
+
 button.preflight-tab-button:hover {
   background: var(--s2a-color-transparent-black-04);
   color: var(--preflight-text);
