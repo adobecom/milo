@@ -1235,6 +1235,11 @@ export default async function decoratePreviewMode() {
   if (mep?.experiments) addHighlightData(mep.experiments);
   markDefaultFragments();
   addFragmentBadgeClickHandlers();
+
+  // Needs to check at all times for update counts
+  watchForCaasBlocks();
+  watchForMasContent();
+
   // if (document.body.dataset.mepCaasHighlight === 'true') {
   //   watchForCaasBlocks();
   //   injectCaasBadges();

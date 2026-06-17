@@ -1,6 +1,9 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
 import { onSidekickAuth } from '../../sidekick-auth.js';
 import {
+  CARD_STORAGE_KEY,
+  getExpandedCards,
+  toSlug,
   getPageId,
   getManifestList,
   getAdditionalManifests,
@@ -13,9 +16,9 @@ import {
   getMasAvailability,
   getSpoofGeoOptions,
   setPreviewButton,
-  getLingoRegions,
   getMasRegions,
-  TOP_MARKETS,
+  hasMasChanges,
+  findGeoGroupForLocale,
 } from './mep-overlay-logic.js';
 import {
   TOGGLE_KEYS,
@@ -25,8 +28,6 @@ import {
   setBadgeEventListeners,
 } from './mep-overlay-highlight.js';
 import { saveToMmm } from '../mep-next.js';
-
-const CARD_STORAGE_KEY = 'mep-expanded-cards';
 
 let authenticated = false;
 
@@ -100,12 +101,6 @@ function buildRow(label, value) {
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
-function getExpandedCards() {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
-  } catch { return new Set(); }
-}
-
 function markExpanded(el, key) {
   el.dataset.cardKey = key;
   if (getExpandedCards().has(key)) el.classList.add('expanded');
@@ -177,8 +172,6 @@ function buildLoadManifest(card, pageId) {
     placeholder: card.label,
   });
 }
-
-const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
 
 function buildToggleRow([title, description], pageId) {
   const id = `toggle-${toSlug(title)}${pageId}`;
@@ -389,17 +382,8 @@ async function setDefaultValues() {
     return;
   }
 
-  const masRegions = await getMasRegions();
-  const geoGroups = [
-    ['spoof-geo-top-markets', TOP_MARKETS],
-    ['spoof-geo-mep-lingo', getLingoRegions()],
-    ['spoof-geo-lingo-mas', masRegions],
-  ];
-
-  const match = geoGroups.find(([, regions]) => regions.includes(mepAkamaiLocale));
-  if (!match) return;
-
-  const [id] = match;
+  const id = await findGeoGroupForLocale(mepAkamaiLocale);
+  if (!id) return;
   const radioEl = document.querySelector(`#${id}`);
   if (!radioEl || radioEl.disabled) return;
 
@@ -509,17 +493,6 @@ function setEventListeners() {
 }
 
 function setMasObserver() {
-  const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
-
-  const isMasNode = (node) => (
-    node.nodeType === Node.ELEMENT_NODE
-    && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR))
-  );
-
-  const hasMasChanges = (mutations) => mutations.some(
-    ({ addedNodes }) => [...addedNodes].some(isMasNode),
-  );
-
   const refreshMasSummary = () => {
     const bodyEl = document.querySelector('[data-card-key="M@S"] .mep-card-body');
     if (!bodyEl) return;

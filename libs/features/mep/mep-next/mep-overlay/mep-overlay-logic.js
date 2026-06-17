@@ -34,6 +34,16 @@ export const API_URLS = {
   report: `${API_DOMAIN}/get-report`,
 };
 
+export const CARD_STORAGE_KEY = 'mep-expanded-cards';
+
+export function getExpandedCards() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(CARD_STORAGE_KEY)) || []);
+  } catch { return new Set(); }
+}
+
+export const toSlug = (str) => str.toLowerCase().replace(/@|\s+/g, (m) => (m === '@' ? 'a' : '-')).replace(/[^\w-]/g, '');
+
 const STAGE_ALLOWED_HOSTS = [
   'business.stage.adobe.com',
   'www.stage.adobe.com',
@@ -369,6 +379,17 @@ export function getMasSummary() {
   ];
 }
 
+const MAS_SELECTOR = 'merch-card, mas-field, [data-mas-block], [data-wcs-osi]';
+
+const isMasNode = (node) => (
+  node.nodeType === Node.ELEMENT_NODE
+  && (node.matches(MAS_SELECTOR) || node.querySelector(MAS_SELECTOR))
+);
+
+export const hasMasChanges = (mutations) => mutations.some(
+  ({ addedNodes }) => [...addedNodes].some(isMasNode),
+);
+
 let additionalManifests;
 export async function getAdditionalManifests() {
   const mepConfig = parseMepConfig();
@@ -466,6 +487,17 @@ const toGeoOption = (key, currentAkamaiLocale) => ({
   label: key,
   selected: currentAkamaiLocale === key,
 });
+
+export async function findGeoGroupForLocale(locale) {
+  const masRegions = await getMasRegions();
+  const groups = [
+    ['spoof-geo-top-markets', TOP_MARKETS],
+    ['spoof-geo-mep-lingo', getLingoRegions()],
+    ['spoof-geo-lingo-mas', masRegions],
+  ];
+  const match = groups.find(([, regions]) => regions.includes(locale));
+  return match ? match[0] : null;
+}
 
 export async function getSpoofGeoOptions(id) {
   const urlParams = new URLSearchParams(window.location.search);
