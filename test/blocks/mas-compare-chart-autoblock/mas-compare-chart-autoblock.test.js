@@ -158,6 +158,28 @@ describe('mas-compare-chart-autoblock', () => {
     expect(aemFragment.getAttribute('fragment')).to.equal('compare-chart-promo');
   });
 
+  it('passes pzn attribute to aem-fragment', async () => {
+    const a = createLink('https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=pzn-chart-1&pzn=abc');
+    document.body.append(a);
+    await init(a);
+    const frag = document.querySelector('mas-compare-chart aem-fragment');
+    expect(frag.getAttribute('pzn')).to.equal('abc');
+  });
+
+  it('treats same fragment with different pzn as distinct cache entries', async () => {
+    const a1 = createLink('https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=cache-pzn-chart-1&pzn=v1');
+    document.body.append(a1);
+    await init(a1);
+
+    const a2 = createLink('https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=cache-pzn-chart-1&pzn=v2');
+    document.body.append(a2);
+    await init(a2);
+
+    const frags = document.querySelectorAll('mas-compare-chart aem-fragment');
+    expect(frags[0].getAttribute('loading')).to.not.exist;
+    expect(frags[1].getAttribute('loading')).to.not.exist;
+  });
+
   it('uses cached loading for repeated fragments', async () => {
     const a1 = createLink('https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=compare-chart-cache');
     const a2 = createLink('https://mas.adobe.com/studio.html#content-type=mas-compare-chart&fragment=compare-chart-cache');

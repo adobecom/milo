@@ -243,6 +243,17 @@
   }
 }
 
+@supports not (animation-timeline: scroll()) {
+  .offer-hero .hero {
+    min-height: unset;
+    padding-bottom: 74px;
+  }
+
+  .offer-hero :is(.hero-card-title, .hero-card-body-text, .learn-more) {
+    opacity: 1;
+  }
+}
+
 @keyframes offer-hero-eyebrow-fade {
   from { opacity: 0; }
   to { opacity: 1; }

@@ -4,6 +4,7 @@ import { postProcessAutoblock } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   overrideOptions,
   loadMasComponent,
@@ -129,10 +130,7 @@ function normalizeBlockFieldWrappers(masField) {
 }
 
 async function createJsonLd(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
   await checkReady(merchCard, options.fragment);
@@ -150,10 +148,7 @@ async function createJsonLd(el, options) {
 }
 
 export async function createCard(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   // For the "Edit Card" mep preview badge.
   if (getConfig()?.mep?.preview) {
@@ -178,10 +173,7 @@ function copyMasFieldIdToParent(masField, name) {
 
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   if (getConfig()?.mep?.preview) {
     mepMasStudioUrls.set(masField, el.href);
