@@ -1020,13 +1020,71 @@ img:hover ~ .asset-meta,
 }
 
 .preflight .martech {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block;
 }
 
 .preflight .martech .preflight-action {
   cursor: pointer;
+  flex-shrink: 0;
+}
+
+.martech-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-16);
+  margin-bottom: var(--s2a-spacing-16);
+}
+
+.martech-hint {
+  margin: 0;
+  font-size: var(--s2a-font-size-14);
+  color: var(--preflight-text-subtle);
+}
+
+.martech-table {
+  overflow-x: auto;
+  border: 1px solid var(--preflight-border);
+  border-radius: var(--s2a-border-radius-12);
+}
+
+.dialog-modal#preflight .martech-table table {
+  width: 100%;
+  border: none;
+  background: var(--preflight-surface);
+}
+
+.dialog-modal#preflight .martech-table th,
+.dialog-modal#preflight .martech-table td {
+  text-align: left;
+  padding: var(--s2a-spacing-12) var(--s2a-spacing-16);
+  border-bottom: 1px solid var(--preflight-border);
+  vertical-align: top;
+}
+
+.dialog-modal#preflight .martech-table th {
+  background: var(--preflight-surface-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: var(--s2a-font-size-12);
+  color: var(--preflight-text-subtle);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+}
+
+.dialog-modal#preflight .martech-table tr:last-child td {
+  border-bottom: none;
+}
+
+.dialog-modal#preflight .martech-table tr:hover td {
+  background: var(--preflight-hover);
+}
+
+.dialog-modal#preflight .martech-table td h3 {
+  margin: 0;
+  font-size: var(--s2a-font-size-14);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  line-height: 1.4;
+  font-family: var(--body-font-family);
 }
 
 .dialog-modal#preflight table {
@@ -1619,6 +1677,11 @@ img:hover ~ .asset-meta,
 
   .preflight-structure-title {
     padding-left: var(--s2a-spacing-16);
+  }
+
+  .martech-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .accessibility-columns {
