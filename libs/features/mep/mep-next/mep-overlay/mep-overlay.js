@@ -62,23 +62,37 @@ function svgIcon(svgData, key) {
   return parseSvg(svgData.svg[key]);
 }
 
+function calcGnavOffset() {
+  const header = document.querySelector('header');
+  if (!header) return 0;
+  const elements = [
+    header,
+    document.querySelector('.feds-localnav'),
+    document.querySelector('.feds-promo-aside-wrapper'),
+  ].filter(Boolean);
+  return Math.max(0, ...elements.map((el) => el.getBoundingClientRect().bottom));
+}
+
 function getGnavOffset() {
-  const calculate = () => {
-    const header = document.querySelector('header');
-    if (!header?.offsetHeight) return 0;
-    const localNav = document.querySelector('.feds-localnav');
-    const promoAside = document.querySelector('.feds-promo-aside-wrapper');
-    return header.offsetHeight + (localNav?.offsetHeight || 0) + (promoAside?.offsetHeight || 0);
-  };
   return new Promise((resolve) => {
-    const height = calculate();
+    const height = calcGnavOffset();
     if (height) { resolve(height); return; }
     const observer = new MutationObserver(() => {
-      const calculation = calculate();
+      const calculation = calcGnavOffset();
       if (calculation) { observer.disconnect(); resolve(calculation); }
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
   });
+}
+
+function updateGnavOffset() {
+  const offset = calcGnavOffset();
+  document.querySelector('.mep-fab')?.style.setProperty('top', `${offset + 16}px`);
+  const drawer = document.querySelector('#mep-drawer');
+  if (drawer) {
+    drawer.style.top = `${offset}px`;
+    drawer.style.height = `calc(100vh - ${offset}px)`;
+  }
 }
 
 function buildRow(label, value) {
@@ -464,6 +478,9 @@ function buildAdditionalManifests() {
 }
 
 function setEventListeners() {
+  window.addEventListener('scroll', updateGnavOffset, { passive: true });
+  window.addEventListener('resize', updateGnavOffset, { passive: true });
+
   const drawerEl = document.querySelector('#mep-drawer');
 
   drawerEl.addEventListener('click', (event) => {

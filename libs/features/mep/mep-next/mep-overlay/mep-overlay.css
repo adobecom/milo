@@ -17,7 +17,7 @@
   --mep-radio-label-font: normal 400 16px / 150% var(--Font-adobe-clean, "Adobe Clean");
 
   --mep-primary-100: rgb(34, 136, 0);
-  --mep-primary-60: rgba(34, 136, 0, 0.60);
+  --mep-primary-60: rgb(34, 95, 14);
 
   --mep-dark-34: rgb(34, 34, 34);
   --mep-dark-44: rgb(44, 44, 44);
@@ -27,8 +27,8 @@
   --mep-white-38: rgba(255, 255, 255, 0.38);
   --mep-white-12: rgba(255, 255, 255, 0.12);
 
-  --mep-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
-  --mep-elevation-4: 0 6px 10px 4px rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
+  --mep-elevation-fab: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
+  --mep-elevation-drawer: 0 6px 10px 0 rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 
   --mep-highlight: #00ff73;
 
@@ -157,7 +157,8 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 .mep-drawer .mep-header .mep-tabs .mep-tab {
   text-align: center;
   flex: 1;
-  padding: 14px;
+  padding: 8px;
+  line-height: 30px;
 }
 
 .mep-drawer .mep-header .mep-tabs .mep-tab:hover {
