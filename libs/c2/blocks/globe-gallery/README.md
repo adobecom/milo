@@ -26,7 +26,7 @@ gallery mirroring the sphere cards.
 
 | File | What it is |
 | --- | --- |
-| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere, drag-rotation, the nav-nudge spring, pointer picking, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. Instantiates the `modal`/`a11y` DI modules and injects live runtime state into them. |
+| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the nav-nudge spring, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
 | `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
@@ -34,6 +34,8 @@ gallery mirroring the sphere cards.
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, updateFocusRing, teardown }`. The hidden keyboard-gallery button list + projected focus ring. All runtime state (cards, camera, viewport, `sphereFormT`, modal-open) is injected as getters; `openModal` is injected so it never imports the modal. Holds no globe state except its own DOM nodes. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
+| `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
+| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
@@ -44,26 +46,32 @@ gallery mirroring the sphere cards.
 Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
 and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
 
-All eight shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
-`textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`) are **airbnb-clean**
-(`npx eslint` exit 0). The only exceptions are 3 targeted
+All ten shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
+`textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`, `arc.js`,
+`interaction.js`) are **airbnb-clean**
+(`npx eslint` exit 0). The only exceptions are 2 targeted
 `// eslint-disable-next-line no-use-before-define` comments in `globe-gallery.js` for genuine
-forward refs (rAF driver → `tick`, `onPointerUp` → `handleCardClick`,
-`doLayout` → `destroy`). No blanket `/* eslint-disable */`.
+forward refs (rAF driver → `tick`, `doLayout` → `destroy`). No blanket `/* eslint-disable */`.
 
 ### Module layout (post-refactor)
 
 `globe-gallery.js` is organized top-down: (1) module-scope tuning constants grouped by
 `// ── Section ──` (layout/breakpoints, phase timeline, entry, grid, drag, CA,
 hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpherePos`
-(generic easings + `lerpN` live in `math.js`); (3) `createGlobeGalleryRuntime()` — the
+(generic easings + `lerpN` live in `math.js`; the arc-phase geometry lives in
+`arc.js`); (3) `createGlobeGalleryRuntime()` — the
 per-instance closure holding sphere state + behavior. Inside the closure the
 **per-frame pipeline** is a sequence of small single-concern stages run in a fixed
 order by `tick()`; values that flow between stages (phase t-values, active camera,
 `sphGroupZ`, `sphereRotActive`) are passed as explicit params so the data flow is
-visible. Three DI modules are injected with getters over the live runtime state:
+visible. The per-card placement (the largest stage) is a dispatcher over four
+runtime-scope branch fns fed an explicit per-frame `frame` context — kept in this
+file, not a module, because they read deeply from the closure (BP constants,
+sphere-rotation quats, drag velocity) and run in the per-card hot loop. Four DI
+modules are injected with getters over the live runtime state:
 GPU resources from `textures.js` / `materials.js`; the keyboard gallery + focus
-ring from `a11y.js`; the card-detail modal from `modal.js`. The modal owns its own
+ring from `a11y.js`; the card-detail modal from `modal.js`; pointer/drag/picking
+from `interaction.js` (sharing drag velocity via the `drag` object). The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
 and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
 objects + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep

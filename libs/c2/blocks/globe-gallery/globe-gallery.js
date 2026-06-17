@@ -17,7 +17,9 @@ import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './sr
 import { createCardMaterial } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
+import createInteraction from './src/interaction.js';
 import { easeOutCubic, easeInOutCubic, easeOutSine, lerpN } from './src/math.js';
+import { buildArcCtx, getFanData, cssToWorld, rotateArcPoint, arcCamZ } from './src/arc.js';
 
 // ── Layout / breakpoints ─────────────────────────────────────────────────────
 // Image-derived (texture aspect, never changes)
@@ -113,8 +115,9 @@ const ARC_PEEL_JITTER = 0.40;
 const ARC_DENSE_SPLIT = 0.50;
 
 // ── Drag / auto-rotation ─────────────────────────────────────────────────────
+// (Pointer→velocity sensitivity lives in src/interaction.js; MAX_VEL is shared —
+// the interaction module clamps drag velocity to it, the core normalizes by it.)
 const DRAG_FRICTION = 0.94;
-const DRAG_SENSITIVITY = 0.005;
 const MAX_VEL = 0.06;
 const AUTO_ROT_SPEED = 0.000045;
 
@@ -265,10 +268,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
   let sphereRotY = 0; let
     sphereRotX = 0;
-  let dragVelX = 0; let
-    dragVelY = 0;
-  let isDragging = false; let lastMX = 0; let
-    lastMY = 0;
+  // Pointer-drag state, shared by reference with the interaction module
+  // (src/interaction.js): it writes velX/velY/isDragging from raw pointer events;
+  // the sphere stage (updateSphereRotation) reads them, applies inertia/auto-rot
+  // friction, and writes velX/velY back. applyMotionCA + placeSphereCard also read.
+  const drag = { isDragging: false, velX: 0, velY: 0 };
   let tickerAdded = false;
   let sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
   // True once the zoom-through has carried the camera past the sphere's front
@@ -305,97 +309,27 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   let navNudgeVelY = 0;
   let navNudgeVelX = 0; // tuning consts (NAV_NUDGE_*) are at module scope
 
-  // Click-vs-drag detection (canvas needs both — drag for sphere rotation, click for modal)
-  let pointerDownX = 0; let pointerDownY = 0; let
-    pointerDownT = 0;
-
-  // Raycaster + NDC scratch for canvas picking (hover + click → modal). Created in
-  // initRuntime; shared by onHover + handleCardClick. The modal itself doesn't pick.
-  let raycaster = null;
-  let mouseNDC = null;
-
-  // DI modules — the card-detail modal (modal.js) + keyboard gallery (a11y.js).
-  // Declared here (assigned further below, once the sphere helpers + applyMotionCA
-  // they depend on exist) so the pointer handlers can reference `modal` without a
-  // forward-reference.
+  // DI modules — the card-detail modal (modal.js), keyboard gallery (a11y.js), and
+  // pointer interaction (interaction.js). Declared here (assigned further below,
+  // once the sphere helpers + applyMotionCA they depend on exist) so the runtime
+  // can reference `modal` without a forward-reference.
   let modal = null;
   let a11y = null;
+  let interaction = null;
 
-  // Current arc context (computed once per frame)
+  // Current arc context (computed once per frame in tick() via buildArcCtx)
   let arcCtx = null;
 
   // ── Arc math ─────────────────────────────────────────────────────────────────
-  function arcRotationEase(t) {
-    const k = 0.08; const
-      a = 1 / (k * (2 - k));
-    const v0 = a * k * k; const
-      s = 2 * a * k;
-    return t <= k ? a * t * t : v0 + s * (t - k);
-  }
-
-  function buildArcCtx(arcPanT) {
-    const arcRot0 = arcRotationEase(arcPanT);
-    const R = Math.max(W, H) * 1.5; // smaller radius = more visible arc curvature
-    const alpha = Math.atan2(H, W);
-    const fanCX = W * 0.5 - R * Math.sin(alpha);
-    const fanCY = H * 0.5 + R * Math.cos(alpha) - H * 0.15;
-    const thetaM = Math.atan2(-Math.cos(alpha), Math.sin(alpha));
-    const rotOffset = ARC_SPAN * 0.5 - ARC_SPAN * 1.5 * arcRot0;
-    const effectiveSpan = ARC_SPAN * (1 + 0.4 * arcRot0);
-    arcCtx = {
-      R,
-      fanCX,
-      fanCY,
-      thetaM,
-      rotOffset,
-      effectiveSpan,
-    };
-  }
-
-  // t = 0..1 normalized position across the arc span (0 = one end, 1 = other end)
-  function getFanData(t) {
-    const angle = arcCtx.thetaM + arcCtx.effectiveSpan / 2
-              - t * arcCtx.effectiveSpan
-              + arcCtx.rotOffset;
-    const px = arcCtx.fanCX + arcCtx.R * Math.cos(angle);
-    const py = arcCtx.fanCY + arcCtx.R * Math.sin(angle);
-    // Radial direction (CSS screen space, Y-down)
-    const rx = Math.cos(angle);
-    const ry = Math.sin(angle);
-    // CSS card rotation (in radians) — tangent to arc circle
-    const cssRot = Math.atan2(rx, -ry);
-    return { px, py, rx, ry, cssRot };
-  }
-
-  // Convert CSS screen coordinates to WebGL world coordinates
-  // (origin at screen center; Y flipped)
-  function cssToWorld(px, py) {
-    return { x: px - W / 2, y: -(py - H / 2) };
-  }
-
-  // Rotate a point (in CSS screen space) around (fanCX, fanCY) by angle A (CW in CSS)
-  // then convert to world space.
-  function rotateArcPoint(px, py, A) {
-    const dx = px - arcCtx.fanCX;
-    const dy = py - arcCtx.fanCY;
-    const cosA = Math.cos(A); const
-      sinA = Math.sin(A);
-    const rpx = arcCtx.fanCX + dx * cosA - dy * sinA;
-    const rpy = arcCtx.fanCY + dx * sinA + dy * cosA;
-    return cssToWorld(rpx, rpy);
-  }
+  // The fanned-arc layout + CSS↔WebGL coordinate helpers live in src/arc.js as
+  // pure functions; the runtime owns `arcCtx` (rebuilt each frame in tick() via
+  // buildArcCtx) and threads it + the viewport (W, H) back into them.
 
   // ── Rounded-rect alpha masks + materials ───────────────────────────────────
   // Mask + texture creation lives in textures.js; material factories in
   // materials.js. sphereMasks caches one mask per distinct card aspect and is
   // built in buildCards() (once `renderer` exists, so anisotropy is available).
   let sphereMasks = null;
-
-  // ── Camera Z for arc phase ──────────────────────────────────────────────────
-  // Set camera Z so that at z=0 frustum height = H, making 1 world unit = 1 CSS pixel
-  function arcCamZ() {
-    return H / (2 * Math.tan(Math.PI / 6)); // fov=60, half-angle=30°
-  }
 
   // ── Grid layout (9×5 = 45 cards, sized to fit viewport) ───────────────────
   function computeGridLayout() {
@@ -505,95 +439,12 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     computeGridLayout();
   }
 
-  // ── Drag + click ───────────────────────────────────────────────────────────
-  function onPointerDown(e) {
-    if (modal.getModalIdx() >= 0) return; // modal open — don't drag the globe
-    isDragging = true;
-    lastMX = e.clientX; lastMY = e.clientY;
-    dragVelX = 0; dragVelY = 0;
-    pointerDownX = e.clientX;
-    pointerDownY = e.clientY;
-    pointerDownT = Date.now();
-  }
-  function onPointerMove(e) {
-    if (!isDragging) return;
-    dragVelX = Math.max(-MAX_VEL, Math.min(MAX_VEL, (e.clientX - lastMX) * DRAG_SENSITIVITY));
-    // +Y cursor delta (drag down) → +sphereRotX → +X-axis rotation tips the front
-    // surface downward, so the globe follows the cursor (drag down reveals the top).
-    dragVelY = Math.max(-MAX_VEL, Math.min(MAX_VEL, (e.clientY - lastMY) * DRAG_SENSITIVITY));
-    lastMX = e.clientX; lastMY = e.clientY;
-  }
-  // sphereFormT is computed inside tick(); cache it so the click handler (which fires
-  // between ticks) knows whether the sphere is in the clickable state.
+  // Drag + click + hover live in the interaction module (src/interaction.js),
+  // created below once the modal exists. sphereFormT is computed inside tick();
+  // cache it here so the interaction module's click/hover handlers (which fire
+  // between ticks) know whether the sphere is in the clickable state — they read
+  // it via the getSphereFormT getter injected into createInteraction.
   let sphereFormTAtLastTick = 0;
-
-  function onPointerUp(e) {
-    const wasDragging = isDragging;
-    isDragging = false;
-    if (!wasDragging) return;
-    // Click vs drag thresholds — tuned for both mouse and touch.
-    // 10px / 500ms is generous enough for fingertip taps (which can jitter 8–15px)
-    // while still distinguishing from intentional drag gestures.
-    const dx = Math.abs(e.clientX - pointerDownX);
-    const dy = Math.abs(e.clientY - pointerDownY);
-    const dt = Date.now() - pointerDownT;
-    if (dx < 10 && dy < 10 && dt < 500
-      && sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T && modal.getModalIdx() < 0) {
-      // eslint-disable-next-line no-use-before-define
-      handleCardClick(e);
-    }
-  }
-
-  // ── Card click → modal ────────────────────────────────────────────────────
-  function handleCardClick(e) {
-    if (!renderer || !camera) return;
-    const canvas = renderer.domElement;
-    const rect = canvas.getBoundingClientRect();
-    mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(mouseNDC, camera);
-    const meshes = cards.map((c) => c.mesh);
-    const hits = raycaster.intersectObjects(meshes, false);
-    if (hits.length > 0) {
-      const hitMesh = hits[0].object;
-      for (let i = 0; i < cards.length; i += 1) {
-        if (cards[i].mesh === hitMesh) {
-          modal.open(i, e.clientX, e.clientY);
-          break;
-        }
-      }
-    }
-  }
-
-  // ── Hover cursor ──────────────────────────────────────────────────────────
-  function onHover(e) {
-    if (!renderer || !camera) return;
-    const canvas = renderer.domElement;
-    // Only show pointer + run hover state during sphere + zoom phases.
-    // When out of sphere phase, clear ALL hoverTargets so the ease-out kicks in.
-    if (sphereFormTAtLastTick < SPHERE_INTERACTIVE_T || modal.getModalIdx() >= 0) {
-      canvas.style.cursor = '';
-      for (let ci = 0; ci < cards.length; ci += 1) cards[ci].hoverTarget = 0;
-      return;
-    }
-    const rect = canvas.getBoundingClientRect();
-    mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(mouseNDC, camera);
-    const meshes = cards.map((c) => c.mesh);
-    const hits = raycaster.intersectObjects(meshes, false);
-    canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
-
-    // First-hit mesh is the front-most card. Set its hoverTarget to 1, clear all others.
-    // Also capture the UV at the cursor — the shader anchors its fisheye warp at this point.
-    const hitMesh = hits.length > 0 ? hits[0].object : null;
-    const hitUV = hits.length > 0 ? hits[0].uv : null;
-    for (let i = 0; i < cards.length; i += 1) {
-      const isHit = (cards[i].mesh === hitMesh);
-      cards[i].hoverTarget = isHit ? 1 : 0;
-      if (isHit && hitUV) cards[i].hoverUV.copy(hitUV);
-    }
-  }
 
   // Set a card's local transform to its canonical sphere slot with the current
   // sphere-drag rotation baked in. Used by reparent sites so there's no one-frame
@@ -656,7 +507,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     const sY = Math.max(mesh.scale.y, 0.01);
     const uvDX = dx / (CARD_W_SPHERE * sX);
     const uvDY = dy / (CARD_H_SPHERE * sY);
-    const dragSpeed = Math.sqrt(dragVelX * dragVelX + dragVelY * dragVelY);
+    const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
     const amp = ampOverride !== undefined
       ? ampOverride
       : Math.min(1.0, Math.max(scrollVel / SCROLL_VEL_MAX, dragSpeed / MAX_VEL));
@@ -732,6 +583,21 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     cardLabel: labels.cardLabel,
   });
 
+  // Pointer interaction (drag-to-spin, click → modal, hover). Owns its listeners +
+  // raycaster; setup(canvas)/teardown() are called from initRuntime/destroy. Reads
+  // live runtime state through getters; shares drag velocity via the `drag` object.
+  interaction = createInteraction({
+    getRenderer: () => renderer,
+    getCamera: () => camera,
+    getCards: () => cards,
+    getModalIdx: () => modal.getModalIdx(),
+    openModal: (idx, x, y) => modal.open(idx, x, y),
+    getSphereFormT: () => sphereFormTAtLastTick,
+    interactiveThreshold: SPHERE_INTERACTIVE_T,
+    maxVel: MAX_VEL,
+    drag,
+  });
+
   // ════════════════════════════════════════════════════════════════════════════
   // Per-frame pipeline. tick() (defined at the end of this section) is a thin
   // orchestrator: it reads scroll → derives phase progress → runs each stage
@@ -794,7 +660,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   //   Zoom-through: perspective continuing CAM_Z_SPHERE → CAM_Z_END.
   function updateActiveCamera(sphereFormT, zoomT) {
     let activeCamera;
-    const camZArc = arcCamZ();
+    const camZArc = arcCamZ(H);
     if (sphereFormT === 0) {
       activeCamera = cameraOrtho;
       camera.position.z = camZArc;
@@ -855,18 +721,18 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
       // Pause auto-rotation + drag while a modal is open — sphere freezes at its current rotation
       if (modal.getModalIdx() < 0) {
-        if (!isDragging) {
-          dragVelX *= DRAG_FRICTION;
-          dragVelY *= DRAG_FRICTION;
-          dragVelX += AUTO_ROT_SPEED;
+        if (!drag.isDragging) {
+          drag.velX *= DRAG_FRICTION;
+          drag.velY *= DRAG_FRICTION;
+          drag.velX += AUTO_ROT_SPEED;
         }
         // Inside the globe the visible (far-hemisphere) wall moves opposite to the
         // same world rotation, so a drag that pulls the outer shell right would push
         // the inner wall left. Negate the delta so dragging always tracks the surface
         // the user is looking at — consistent feel inside and out.
         const dragDir = cameraInsideSphere ? -1 : 1;
-        sphereRotY += dragVelX * dragDir;
-        sphereRotX += dragVelY * dragDir;
+        sphereRotY += drag.velX * dragDir;
+        sphereRotX += drag.velY * dragDir;
         sphereRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX));
       }
 
@@ -879,9 +745,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       // popped, which read as a pixel-level "jump" right when the modal opened.
       let warpTarget;
       if (modal.getModalIdx() < 0) {
-        const dragSpeed = Math.sqrt(dragVelX * dragVelX + dragVelY * dragVelY);
+        const dragSpeed = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
         const burst = dragSpeed * SPHERE_DRAG_WARP_VEL;
-        const baseline = isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
+        const baseline = drag.isDragging ? SPHERE_DRAG_WARP_BASELINE : 0;
         warpTarget = Math.min(SPHERE_DRAG_WARP_MAX, baseline + burst);
       } else {
         warpTarget = 0;
@@ -894,8 +760,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       // and back doesn't lose the user's accumulated rotation. Zero only at the very
       // top of the section so a fresh entry into the sphere starts upright.
       // Warp eases (same rate as the interactive-zone branch) rather than snapping.
-      dragVelX = 0;
-      dragVelY = 0;
+      drag.velX = 0;
+      drag.velY = 0;
       sphereDragWarp += (0 - sphereDragWarp) * 0.20;
       if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
       if (sphereFormT < 0.01) {
@@ -1023,259 +889,291 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     modal.render();
   }
 
-  // Position every card for this frame: arc → peel → grid-dwell → fold → sphere.
-  // updateCardTransform is a per-card state machine (exactly one branch runs per
-  // card). The modal-active card + swipe-neighbors are skipped (managed elsewhere).
+  // ════════════════════════════════════════════════════════════════════════════
+  // Card transform stage. Each card runs exactly one phase branch per frame:
+  // arc → peel → grid-dwell → fold → sphere. The four place*Card branches + the
+  // per-card dispatcher live at runtime scope (not nested in updateCardTransforms)
+  // so each reads as a standalone named function. They stay in THIS file rather
+  // than a src/ module because they read deeply from the runtime closure (BP
+  // constants, sphere-rotation quats, drag velocity, setCardUV / applyMotionCA,
+  // arcCtx, …) — a module boundary here would mean a huge DI surface and getter
+  // calls in the per-card hot loop. The per-frame values that vary (sphGroupZ,
+  // sphereRotActive, the entry/arc transforms) are passed in via the `frame`
+  // context built once per frame in updateCardTransforms.
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── Branch: fully in sphere ──
+  function placeSphereCard(card, mesh, cardCA, frame) {
+    const { sphereRotActive } = frame;
+    mesh.visible = true;
+    const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
+    // Apply manual sphere-drag rotation: world position = R × spherePos.
+    // sphereGroup.rotation is identity, so the rotated local position becomes the
+    // rotated world position (offset only by sphereGroup.position.z).
+    if (sphereRotActive) {
+      mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
+    } else {
+      mesh.position.copy(card.spherePos);
+    }
+    mesh.scale.set(card.sphereScaleX * hs, hs, hs);
+    setCardUV(mesh, 1, 1, 0, 0);
+    if (mesh.material.alphaMap !== card.sphereMask) {
+      mesh.material.alphaMap = card.sphereMask;
+      mesh.material.needsUpdate = true;
+    }
+    if (sphereRotActive) {
+      mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
+    } else {
+      mesh.quaternion.copy(card.sphereQuat);
+    }
+    mesh.renderOrder = 0;
+    mesh.material.opacity = 1;
+    // Hover composes additively on top of transition CA (which is 0 in steady sphere state).
+    // uHoverPos anchors the warp at the cursor's UV position on this card when hovered;
+    // when not hovered, the sphere-drag warp uses each card's own center (0.5, 0.5).
+    if (CA_ENABLED) {
+      mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
+      mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
+      if (card.hoverT > 0.01) {
+        mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
+      } else {
+        mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
+      }
+    }
+    // Sphere phase: local position is constant (sphereGroup rotates). Approximate
+    // world-space delta as depth × angular velocity — front-facing cards (large z) show
+    // more CA than side-facing cards (z ≈ 0), giving a convincing rotation smear.
+    applyMotionCA(mesh, card.spherePos.z * drag.velX, -card.spherePos.z * drag.velY);
+  }
+
+  // ── Branch: grid → sphere fold ──
+  function placeFoldingCard(card, mesh, fdE, prevMeshX, prevMeshY, frame) {
+    const { sphGroupZ, sphereRotActive } = frame;
+    mesh.visible = true;
+    // Sphere endpoint is FULLY rotated by the current drag; the lerp itself
+    // handles the unwind (at fdE=0 the card is at unrotated gridPos, at fdE=1
+    // it's at fully-rotated sphere position; in between, a straight-line lerp
+    // between those two world points). Quaternion slerps between gridQuat and
+    // the rotated sphereQuat by fdE, so orientation reaches the rotated slot
+    // exactly when position does.
+    //
+    // Cards with fdE = 0 fall through to the grid/arc blocks below where no
+    // rotation is applied — so non-sphere-phase cards are never transformed
+    // by the drag rotation.
+    let sX; let sY; let sZ;
+    if (sphereRotActive) {
+      tmpVec3.copy(card.spherePos).applyEuler(sphereRotEuler);
+      sX = tmpVec3.x; sY = tmpVec3.y; sZ = tmpVec3.z;
+    } else {
+      sX = card.spherePos.x; sY = card.spherePos.y; sZ = card.spherePos.z;
+    }
+    mesh.position.set(
+      lerpN(card.gridPos.x, sX, fdE),
+      lerpN(card.gridPos.y, sY, fdE),
+      lerpN(card.gridPos.z - sphGroupZ, sZ, fdE),
+    );
+    mesh.scale.set(
+      lerpN(card.gridScale, card.sphereScaleX, fdE),
+      lerpN(card.gridScale, 1, fdE),
+      1,
+    );
+    setCardUV(
+      mesh,
+      lerpN(card.arcRepeatX, 1, fdE),
+      lerpN(card.arcRepeatY, 1, fdE),
+      lerpN(card.arcOffsetX, 0, fdE),
+      lerpN(card.arcOffsetY, 0, fdE),
+    );
+    if (mesh.material.alphaMap !== card.arcMask) {
+      mesh.material.alphaMap = card.arcMask;
+      mesh.material.needsUpdate = true;
+    }
+    if (sphereRotActive) {
+      foldRotQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
+      mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
+    } else {
+      mesh.quaternion.slerpQuaternions(card.gridQuat, card.sphereQuat, fdE);
+    }
+    mesh.renderOrder = 0;
+    mesh.material.opacity = 1;
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+  }
+
+  // ── Branch: fully in grid (dwell phase) ──
+  function placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame) {
+    const { sphGroupZ } = frame;
+    mesh.visible = true;
+    mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
+    mesh.scale.setScalar(card.gridScale);
+    setCardUV(mesh, card.arcRepeatX, card.arcRepeatY, card.arcOffsetX, card.arcOffsetY);
+    if (mesh.material.alphaMap !== card.arcMask) {
+      mesh.material.alphaMap = card.arcMask;
+      mesh.material.needsUpdate = true;
+    }
+    mesh.quaternion.copy(card.gridQuat);
+    mesh.renderOrder = N_TOTAL - i;
+    mesh.material.opacity = 1;
+    applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+  }
+
+  // ── Branch: arc phase — waiting to peel, or actively peeling arc→grid ──
+  function placeArcCard(card, mesh, i, gpE, prevMeshX, prevMeshY, frame) {
+    const { arcPanT, entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
+    // No conveyor: all cards on arc simultaneously, slot = i for every card.
+    const slot = i;
+    const rawT = Math.max(0, Math.min(1, slot / (N_VISIBLE - 1)));
+    // Non-uniform fanT distribution (see constants block): cluster low-i cards off-screen,
+    // spread high-i cards across the visible upper arc for ~17% overlap instead of ~35%.
+    const splitR = ARC_DENSE_COUNT / (N_VISIBLE - 1);
+    let fanT;
+    if (rawT < splitR) {
+      fanT = (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT;
+    } else {
+      fanT = ARC_DENSE_SPLIT
+           + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
+    }
+    const fan = getFanData(fanT, arcCtx);
+    const arcDelay = fanT * ARC_STAGGER;
+    const arcLocalT = Math.max(
+      0,
+      Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - ARC_STAGGER)),
+    );
+    const arcLocalE = easeInOutCubic(arcLocalT);
+    const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
+    const pyPushed = fan.py + fan.ry * 60 * arcLocalE;
+    const wp = entryRot > 0.001
+      ? rotateArcPoint(pxPushed, pyPushed, entryRot, arcCtx, W, H)
+      : cssToWorld(pxPushed, pyPushed, W, H);
+    const arcY = wp.y - entryYOffset;
+    const webglRot = -fan.cssRot - entryRot;
+
+    mesh.visible = true;
+
+    if (mesh.material.alphaMap !== card.arcMask) {
+      mesh.material.alphaMap = card.arcMask;
+      mesh.material.needsUpdate = true;
+    }
+
+    if (gpE <= 0) {
+      // Arc phase — reset peel snapshot so the next peel re-captures cleanly
+      card.peelStartRot = null;
+      mesh.position.set(wp.x, arcY, -sphGroupZ);
+      mesh.scale.setScalar(arcScale);
+      mesh.rotation.set(0, 0, webglRot);
+      mesh.renderOrder = N_VISIBLE - Math.round(slot);
+      mesh.material.opacity = 1;
+      applyMotionCA(mesh, wp.x - prevMeshX, arcY - prevMeshY, undefined, CA_MOTION_STRENGTH_ARC);
+    } else {
+      // Peel phase — snapshot the rotation on the first frame, normalized to within ±π of
+      // gridTilt for shortest angular path. Direct z-angle lerp avoids the quaternion slerp
+      // hemisphere flip that snaps when webglRot wraps across atan2's discontinuity.
+      if (card.peelStartRot == null) {
+        let startRot = webglRot;
+        while (startRot - card.gridTilt > Math.PI) startRot -= 2 * Math.PI;
+        while (startRot - card.gridTilt < -Math.PI) startRot += 2 * Math.PI;
+        card.peelStartRot = startRot;
+      }
+      const interpRot = card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE;
+      mesh.position.set(
+        lerpN(wp.x, card.gridPos.x, gpE),
+        lerpN(arcY, card.gridPos.y, gpE),
+        -sphGroupZ,
+      );
+      mesh.scale.setScalar(lerpN(arcScale, card.gridScale, gpE));
+      mesh.rotation.set(0, 0, interpRot);
+      mesh.renderOrder = N_TOTAL + N_VISIBLE - i;
+      mesh.material.opacity = 1;
+      applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
+    }
+  }
+
+  // Per-card dispatcher: derive this card's timing (peel/fold easings, CA, hover),
+  // then run exactly one phase branch. Extracted from the old `for` body so the
+  // early-outs read as `return` (no-continue) — called once per card by
+  // updateCardTransforms.
+  function updateCardTransform(i, frame) {
+    const { gridFormT, gpWin, sphereFormT, entryRot } = frame;
+    const card = cards[i];
+    const { mesh } = card;
+
+    // Skip cards the modal manages — the active modal card + any swipe-neighbors
+    // parented into the modal scene. Their positions/materials/scales are driven by
+    // modal.js; the main loop would otherwise overwrite them every frame.
+    if (modal.isCardManaged(card)) return;
+
+    // ── Arc → grid peel stagger: i-based base cascade + per-card jitter for organic timing ──
+    const baseDelay = (i / (N_TOTAL - 1)) * GRID_PEEL_STAGGER;
+    const jitter = (card.peelJitter - 0.5) * ARC_PEEL_JITTER;
+    const gpDelay = Math.max(0, Math.min(GRID_PEEL_STAGGER, baseDelay + jitter));
+    const gpLocalT = Math.max(0, Math.min(1, (gridFormT - gpDelay) / Math.max(0.01, gpWin)));
+    const gpE = easeOutCubic(gpLocalT);
+
+    // ── Grid → sphere fold: starts immediately when this card arrives in grid ──
+    // Convert arc-pan arrival back to progress for fold timer
+    const gpArrivalArcT = PROGRESS_GRID_ARC_START
+      + Math.min(1, gpDelay + gpWin) * (PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START);
+    const gpArrivalProg = Math.max(0, (gpArrivalArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
+    const fdLocalT = Math.max(0, Math.min(1, (progress - gpArrivalProg) / PROGRESS_FOLD_DUR));
+    const fdE = gpE >= 1 ? easeInOutCubic(fdLocalT) : 0;
+
+    // ── Option B: per-card CA strength driven by transition state ──
+    // Arc entry: CA peaks when entryRot is large (arc rotating in), fades to 0 when settled.
+    // Peel + fold: bell curve (peaks at midpoint of each transition, 0 at start/end).
+    let cardCA = 0;
+    if (CA_ENABLED) {
+      cardCA = Math.max(
+        entryRot / 0.9,
+        gpE * (1 - gpE) * 4,
+        fdE * (1 - fdE) * 4,
+      ) * CA_STRENGTH;
+      mesh.material.uniforms.uCA.value = cardCA;
+      // uWarp default = 0 every frame; sphere block re-applies based on hoverT below.
+      mesh.material.uniforms.uWarp.value = 0;
+    }
+
+    // ── Hover state ease ──
+    // Gated on the GLOBAL interactive threshold (same as drag/click), not per-card
+    // fdE. Previously `if (fdE < 1) card.hoverTarget = 0;` blocked hover on any card
+    // still finishing its fold animation — meaning hover wouldn't activate at
+    // sphereFormT = 0.8 for the late-folding cards even though drag/click did.
+    // Hover VISUAL effects still only render inside the sphere block (fdE >= 1)
+    // so a card lerping through fold doesn't get scale/warp applied mid-motion.
+    if (sphereFormT < SPHERE_INTERACTIVE_T) card.hoverTarget = 0;
+    card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
+
+    // Capture position BEFORE this frame's section block updates it — delta drives motion CA.
+    const prevMeshX = mesh.position.x;
+    const prevMeshY = mesh.position.y;
+
+    // Exactly one phase branch runs per card, in order of latest phase first.
+    if (fdE >= 1) { placeSphereCard(card, mesh, cardCA, frame); return; }
+    if (fdE > 0) { placeFoldingCard(card, mesh, fdE, prevMeshX, prevMeshY, frame); return; }
+    if (gpE >= 1) { placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame); return; }
+    placeArcCard(card, mesh, i, gpE, prevMeshX, prevMeshY, frame);
+  }
+
+  // Position every card for this frame: build the per-frame context (entry/arc
+  // transforms + the phase t-values from tick), then place each card. The
+  // modal-active card + swipe-neighbors are skipped inside updateCardTransform.
   function updateCardTransforms({
     arcPanT, gridFormT, gpWin, slideE, sphereFormT, sphGroupZ, sphereRotActive,
   }) {
-    // No conveyor: all cards on arc simultaneously, slot = i for every card.
-    const windowPos = 0;
-    const entryYOffset = (1 - slideE) * H * 0.30;
-    const arcScale = CARD_W_ARC / CARD_W_SPHERE;
     // Entry rotation: arc holds off-screen for the first 5% of entry (while text settles),
     // then sweeps counter-clockwise into its final fanned position over the remaining 95%.
     const arcEntryT = Math.max(0, Math.min(1, (arcCopyEntryT - 0.05) / 0.95));
     const entryRot = (1 - easeOutCubic(arcEntryT)) * 0.9;
-
-    // Per-card transform for one frame. Extracted from the old `for` loop body so the
-    // early-outs read as `return` (no-continue) — called once per card just below.
-    function updateCardTransform(i) {
-      const card = cards[i];
-      const { mesh } = card;
-
-      // Skip cards the modal manages — the active modal card + any swipe-neighbors
-      // parented into the modal scene. Their positions/materials/scales are driven by
-      // modal.js; the main loop would otherwise overwrite them every frame.
-      if (modal.isCardManaged(card)) return;
-
-      // ── Arc → grid peel stagger: i-based base cascade + per-card jitter for organic timing ──
-      const baseDelay = (i / (N_TOTAL - 1)) * GRID_PEEL_STAGGER;
-      const jitter = (card.peelJitter - 0.5) * ARC_PEEL_JITTER;
-      const gpDelay = Math.max(0, Math.min(GRID_PEEL_STAGGER, baseDelay + jitter));
-      const gpLocalT = Math.max(0, Math.min(1, (gridFormT - gpDelay) / Math.max(0.01, gpWin)));
-      const gpE = easeOutCubic(gpLocalT);
-
-      // ── Grid → sphere fold: starts immediately when this card arrives in grid ──
-      // Convert arc-pan arrival back to progress for fold timer
-      const gpArrivalArcT = PROGRESS_GRID_ARC_START
-        + Math.min(1, gpDelay + gpWin) * (PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START);
-      const gpArrivalProg = Math.max(0, (gpArrivalArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
-      const fdLocalT = Math.max(0, Math.min(1, (progress - gpArrivalProg) / PROGRESS_FOLD_DUR));
-      const fdE = gpE >= 1 ? easeInOutCubic(fdLocalT) : 0;
-
-      // ── Option B: per-card CA strength driven by transition state ──
-      // Arc entry: CA peaks when entryRot is large (arc rotating in), fades to 0 when settled.
-      // Peel + fold: bell curve (peaks at midpoint of each transition, 0 at start/end).
-      let cardCA = 0;
-      if (CA_ENABLED) {
-        cardCA = Math.max(
-          entryRot / 0.9,
-          gpE * (1 - gpE) * 4,
-          fdE * (1 - fdE) * 4,
-        ) * CA_STRENGTH;
-        mesh.material.uniforms.uCA.value = cardCA;
-        // uWarp default = 0 every frame; sphere block re-applies based on hoverT below.
-        mesh.material.uniforms.uWarp.value = 0;
-      }
-
-      // ── Hover state ease ──
-      // Gated on the GLOBAL interactive threshold (same as drag/click), not per-card
-      // fdE. Previously `if (fdE < 1) card.hoverTarget = 0;` blocked hover on any card
-      // still finishing its fold animation — meaning hover wouldn't activate at
-      // sphereFormT = 0.8 for the late-folding cards even though drag/click did.
-      // Hover VISUAL effects still only render inside the sphere block (fdE >= 1)
-      // so a card lerping through fold doesn't get scale/warp applied mid-motion.
-      if (sphereFormT < SPHERE_INTERACTIVE_T) card.hoverTarget = 0;
-      card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
-
-      // Capture position BEFORE this frame's section block updates it — delta drives motion CA.
-      const prevMeshX = mesh.position.x;
-      const prevMeshY = mesh.position.y;
-
-      // ── Fully in sphere ──
-      if (fdE >= 1) {
-        mesh.visible = true;
-        const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
-        // Apply manual sphere-drag rotation: world position = R × spherePos.
-        // sphereGroup.rotation is identity, so the rotated local position becomes the
-        // rotated world position (offset only by sphereGroup.position.z).
-        if (sphereRotActive) {
-          mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
-        } else {
-          mesh.position.copy(card.spherePos);
-        }
-        mesh.scale.set(card.sphereScaleX * hs, hs, hs);
-        setCardUV(mesh, 1, 1, 0, 0);
-        if (mesh.material.alphaMap !== card.sphereMask) {
-          mesh.material.alphaMap = card.sphereMask;
-          mesh.material.needsUpdate = true;
-        }
-        if (sphereRotActive) {
-          mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
-        } else {
-          mesh.quaternion.copy(card.sphereQuat);
-        }
-        mesh.renderOrder = 0;
-        mesh.material.opacity = 1;
-        // Hover composes additively on top of transition CA (which is 0 in steady sphere state).
-        // uHoverPos anchors the warp at the cursor's UV position on this card when hovered;
-        // when not hovered, the sphere-drag warp uses each card's own center (0.5, 0.5).
-        if (CA_ENABLED) {
-          mesh.material.uniforms.uCA.value = cardCA + card.hoverT * HOVER_CA;
-          mesh.material.uniforms.uWarp.value = card.hoverT * HOVER_WARP + sphereDragWarp;
-          if (card.hoverT > 0.01) {
-            mesh.material.uniforms.uHoverPos.value.copy(card.hoverUV);
-          } else {
-            mesh.material.uniforms.uHoverPos.value.set(0.5, 0.5);
-          }
-        }
-        // Sphere phase: local position is constant (sphereGroup rotates). Approximate
-        // world-space delta as depth × angular velocity — front-facing cards (large z) show
-        // more CA than side-facing cards (z ≈ 0), giving a convincing rotation smear.
-        applyMotionCA(mesh, card.spherePos.z * dragVelX, -card.spherePos.z * dragVelY);
-        return;
-      }
-
-      // ── Grid → sphere fold ──
-      if (fdE > 0) {
-        mesh.visible = true;
-        // Sphere endpoint is FULLY rotated by the current drag; the lerp itself
-        // handles the unwind (at fdE=0 the card is at unrotated gridPos, at fdE=1
-        // it's at fully-rotated sphere position; in between, a straight-line lerp
-        // between those two world points). Quaternion slerps between gridQuat and
-        // the rotated sphereQuat by fdE, so orientation reaches the rotated slot
-        // exactly when position does.
-        //
-        // Cards with fdE = 0 fall through to the grid/arc blocks below where no
-        // rotation is applied — so non-sphere-phase cards are never transformed
-        // by the drag rotation.
-        let sX; let sY; let sZ;
-        if (sphereRotActive) {
-          tmpVec3.copy(card.spherePos).applyEuler(sphereRotEuler);
-          sX = tmpVec3.x; sY = tmpVec3.y; sZ = tmpVec3.z;
-        } else {
-          sX = card.spherePos.x; sY = card.spherePos.y; sZ = card.spherePos.z;
-        }
-        mesh.position.set(
-          lerpN(card.gridPos.x, sX, fdE),
-          lerpN(card.gridPos.y, sY, fdE),
-          lerpN(card.gridPos.z - sphGroupZ, sZ, fdE),
-        );
-        mesh.scale.set(
-          lerpN(card.gridScale, card.sphereScaleX, fdE),
-          lerpN(card.gridScale, 1, fdE),
-          1,
-        );
-        setCardUV(
-          mesh,
-          lerpN(card.arcRepeatX, 1, fdE),
-          lerpN(card.arcRepeatY, 1, fdE),
-          lerpN(card.arcOffsetX, 0, fdE),
-          lerpN(card.arcOffsetY, 0, fdE),
-        );
-        if (mesh.material.alphaMap !== card.arcMask) {
-          mesh.material.alphaMap = card.arcMask;
-          mesh.material.needsUpdate = true;
-        }
-        if (sphereRotActive) {
-          foldRotQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
-          mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
-        } else {
-          mesh.quaternion.slerpQuaternions(card.gridQuat, card.sphereQuat, fdE);
-        }
-        mesh.renderOrder = 0;
-        mesh.material.opacity = 1;
-        applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-        return;
-      }
-
-      // ── Fully in grid (dwell phase) ──
-      if (gpE >= 1) {
-        mesh.visible = true;
-        mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
-        mesh.scale.setScalar(card.gridScale);
-        setCardUV(mesh, card.arcRepeatX, card.arcRepeatY, card.arcOffsetX, card.arcOffsetY);
-        if (mesh.material.alphaMap !== card.arcMask) {
-          mesh.material.alphaMap = card.arcMask;
-          mesh.material.needsUpdate = true;
-        }
-        mesh.quaternion.copy(card.gridQuat);
-        mesh.renderOrder = N_TOTAL - i;
-        mesh.material.opacity = 1;
-        applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-        return;
-      }
-
-      // ── Arc phase: waiting to peel, or actively peeling arc→grid ──
-      const slot = i - windowPos;
-      const rawT = Math.max(0, Math.min(1, slot / (N_VISIBLE - 1)));
-      // Non-uniform fanT distribution (see constants block): cluster low-i cards off-screen,
-      // spread high-i cards across the visible upper arc for ~17% overlap instead of ~35%.
-      const splitR = ARC_DENSE_COUNT / (N_VISIBLE - 1);
-      let fanT;
-      if (rawT < splitR) {
-        fanT = (rawT / Math.max(0.001, splitR)) * ARC_DENSE_SPLIT;
-      } else {
-        fanT = ARC_DENSE_SPLIT
-             + ((rawT - splitR) / Math.max(0.001, 1 - splitR)) * (1 - ARC_DENSE_SPLIT);
-      }
-      const fan = getFanData(fanT);
-      const arcDelay = fanT * ARC_STAGGER;
-      const arcLocalT = Math.max(
-        0,
-        Math.min(1, (arcPanT - arcDelay) / Math.max(0.01, 1 - ARC_STAGGER)),
-      );
-      const arcLocalE = easeInOutCubic(arcLocalT);
-      const pxPushed = fan.px + fan.rx * 60 * arcLocalE;
-      const pyPushed = fan.py + fan.ry * 60 * arcLocalE;
-      const wp = entryRot > 0.001
-        ? rotateArcPoint(pxPushed, pyPushed, entryRot)
-        : cssToWorld(pxPushed, pyPushed);
-      const arcY = wp.y - entryYOffset;
-      const webglRot = -fan.cssRot - entryRot;
-
-      mesh.visible = true;
-
-      if (mesh.material.alphaMap !== card.arcMask) {
-        mesh.material.alphaMap = card.arcMask;
-        mesh.material.needsUpdate = true;
-      }
-
-      if (gpE <= 0) {
-        // Arc phase — reset peel snapshot so the next peel re-captures cleanly
-        card.peelStartRot = null;
-        mesh.position.set(wp.x, arcY, -sphGroupZ);
-        mesh.scale.setScalar(arcScale);
-        mesh.rotation.set(0, 0, webglRot);
-        mesh.renderOrder = N_VISIBLE - Math.round(slot);
-        mesh.material.opacity = 1;
-        applyMotionCA(mesh, wp.x - prevMeshX, arcY - prevMeshY, undefined, CA_MOTION_STRENGTH_ARC);
-      } else {
-        // Peel phase — snapshot the rotation on the first frame, normalized to within ±π of
-        // gridTilt for shortest angular path. Direct z-angle lerp avoids the quaternion slerp
-        // hemisphere flip that snaps when webglRot wraps across atan2's discontinuity.
-        if (card.peelStartRot == null) {
-          let startRot = webglRot;
-          while (startRot - card.gridTilt > Math.PI) startRot -= 2 * Math.PI;
-          while (startRot - card.gridTilt < -Math.PI) startRot += 2 * Math.PI;
-          card.peelStartRot = startRot;
-        }
-        const interpRot = card.peelStartRot + (card.gridTilt - card.peelStartRot) * gpE;
-        mesh.position.set(
-          lerpN(wp.x, card.gridPos.x, gpE),
-          lerpN(arcY, card.gridPos.y, gpE),
-          -sphGroupZ,
-        );
-        mesh.scale.setScalar(lerpN(arcScale, card.gridScale, gpE));
-        mesh.rotation.set(0, 0, interpRot);
-        mesh.renderOrder = N_TOTAL + N_VISIBLE - i;
-        mesh.material.opacity = 1;
-        applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);
-      }
-    }
-
-    for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i);
+    const frame = {
+      arcPanT,
+      gridFormT,
+      gpWin,
+      sphereFormT,
+      sphGroupZ,
+      sphereRotActive,
+      entryRot,
+      entryYOffset: (1 - slideE) * H * 0.30,
+      arcScale: CARD_W_ARC / CARD_W_SPHERE,
+    };
+    for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i, frame);
   }
 
   // ── Per-frame tick — thin orchestrator ──────────────────────────────────────
@@ -1290,7 +1188,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     } = computeFrame();
 
     a11y.updateTabStops(sphereFormT);
-    buildArcCtx(arcPanT);
+    arcCtx = buildArcCtx(arcPanT, W, H, ARC_SPAN);
     const activeCamera = updateActiveCamera(sphereFormT, zoomT);
     const sphereRotActive = updateSphereRotation(sphereFormT);
     modal.updateAnimation(sphereRotActive);
@@ -1338,14 +1236,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
     scene = new THREE.Scene();
 
-    // Raycaster + NDC scratch for canvas picking (hover + click → modal). The modal
-    // renderer/scene are owned by modal.js (created in modal.setup() below).
-    raycaster = new THREE.Raycaster();
-    mouseNDC = new THREE.Vector2();
-
     // Perspective camera — used during sphere + zoom phases
     camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 5000);
-    camera.position.set(0, 0, arcCamZ());
+    camera.position.set(0, 0, arcCamZ(H));
     camera.lookAt(0, 0, 0);
 
     // Orthographic camera — used during arc phase for true flat 2D (no perspective distortion)
@@ -1401,15 +1294,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     });
     layoutObs.observe(document.body);
 
-    canvas.addEventListener('pointerdown', onPointerDown);
-    canvas.addEventListener('mousemove', onHover);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    // pointercancel fires when the browser hijacks the gesture (common in Chrome
-    // DevTools touch emulation with touch-action restrictions). Treat it as
-    // pointerup so taps still register — the dx/dy/dt thresholds inside onPointerUp
-    // already filter out genuine drags from taps.
-    window.addEventListener('pointercancel', onPointerUp);
+    interaction.setup(canvas);
 
     canvas.style.display = 'block';
 
@@ -1446,12 +1331,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       layoutObs.disconnect();
       layoutObs = null;
     }
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    window.removeEventListener('pointercancel', onPointerUp);
+    // Pointer interaction cleanup (removes canvas + window listeners, clears cursor).
+    interaction.teardown();
     if (renderer) {
-      renderer.domElement.removeEventListener('mousemove', onHover);
-      renderer.domElement.style.cursor = '';
       renderer.domElement.style.filter = '';
       renderer.dispose();
       renderer.domElement.style.display = 'none';
