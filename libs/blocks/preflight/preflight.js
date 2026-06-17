@@ -1,5 +1,5 @@
 import { html, render, signal } from '../../deps/htm-preact.js';
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
 import Accessibility from './accessibility/accessibility.js';
@@ -10,6 +10,9 @@ import Assets from './panels/assets.js';
 
 const HEADING = 'Milo Preflight';
 const IMG_PATH = '/blocks/preflight/img';
+// c2 (--s2a-*) design tokens are only defined on c2 pages; preflight runs on every Milo
+// page, so load them at :root so both the modal and the page-injected overlays resolve.
+const C2_TOKENS = ['tokens.primitives.css', 'tokens.semantic.light.css'];
 
 const tabs = signal([
   { title: 'General', selected: true },
@@ -80,7 +83,7 @@ function TabPanel(props) {
     </div>`;
 }
 
-function Preflight() {
+export function Preflight() {
   return html`
     <div class=preflight-heading>
       <p id=preflight-title>${HEADING}</p>
@@ -94,25 +97,17 @@ function Preflight() {
   `;
 }
 
-function preloadAssets(el) {
-  return new Promise((resolve) => {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-    const bg = createTag('img', { src: `${base}${IMG_PATH}/preflight-bg.png` });
-    const pic = createTag('picture', { class: 'bg-img' }, bg);
-    bg.addEventListener('load', () => {
-      resolve(pic);
-      el.insertAdjacentElement('afterbegin', pic);
-
-      // Lazily load other images
-      const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
-      const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
-      document.head.append(check, expand);
-    });
-  });
+function loadAssets() {
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  C2_TOKENS.forEach((file) => loadStyle(`${base}/c2/styles/deps/${file}`));
+  // Preload the icons used as CSS masks across the panels.
+  const check = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/check.svg` });
+  const expand = createTag('link', { rel: 'preload', as: 'image', href: `${base}${IMG_PATH}/expand.svg` });
+  document.head.append(check, expand);
 }
 
-export default async function init(el) {
-  await preloadAssets(el);
+export default function init(el) {
+  loadAssets();
   render(html`<${Preflight} />`, el);
 }
