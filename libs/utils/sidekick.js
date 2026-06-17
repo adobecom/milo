@@ -41,8 +41,6 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
   sk.addEventListener('custom:annotations', annotationsListener);
   sk.addEventListener('custom:hello', async () => { 
-      const { loadIms } = await import(`./utils.js`);
-      await loadIms();
       if (window.adobeIMS?.isSignedInUser()) {
         const script = document.createElement('script');
         script.type = 'module';
