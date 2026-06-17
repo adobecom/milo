@@ -473,8 +473,9 @@ export async function getSpoofGeoOptions(id) {
   const currentAkamaiLocale = masMarketChecked ? null : urlParams.get('akamaiLocale');
 
   const toOption = (key) => {
-    const opt = toGeoOption(key, currentAkamaiLocale);
-    return { ...opt, label: key ? key.toUpperCase() : 'All' };
+    const region = key?.includes('_') ? key.split('_')[0] : key;
+    const opt = toGeoOption(region, currentAkamaiLocale);
+    return { ...opt, label: region ? region.toUpperCase() : 'All' };
   };
 
   if (id === 'spoof-geo-top-markets' && getTopMarketsAvailability()) {
