@@ -1,0 +1,19 @@
+# Imported from adobecom/nala/data/homepage/sot-basic.yml
+# Mode: milolibs (A = stage URL, B = stage URL + ?milolibs=stage)
+# Tests stage page rendering with default milo vs stage milo branch.
+
+# Homepage has lots of below-the-fold content (cards, fragments) that
+# only hydrate on scroll. Without `scroll` strategy we captured 24/27
+# diffs — many of which were "loading spinner vs loaded card".
+__config__:
+  waitStrategy: scroll
+
+AdobeHomepageNoMEP: 'https://www.stage.adobe.com/?mep=off'
+AdobeHomepage: 'https://www.stage.adobe.com'
+AdobeHomepageUK: 'https://www.stage.adobe.com/uk/?mep=off&akamaiLocale=uk'
+AdobeHomepageUKNoMEP: 'https://www.stage.adobe.com/uk/?akamaiLocale=uk'
+AdobeHomepageDE: 'https://www.stage.adobe.com/de?akamaiLocale=de'
+AdobeHomepageFR: 'https://www.stage.adobe.com/fr?akamaiLocale=fr'
+AdobeHomepageES: 'https://www.stage.adobe.com/es?akamaiLocale=es'
+AdobeHomepageJP: 'https://www.stage.adobe.com/jp?akamaiLocale=jp'
+AdobeHomepageMENA: 'https://www.stage.adobe.com/mena_ar?akamaiLocale=mena'

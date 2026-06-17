@@ -1,0 +1,110 @@
+# UAR / Brand Concierge — block variant visual regression
+#
+# Source: BC block variant catalog (Confluence — Jacky Sun).
+# One representative URL per BC block variant. Many real product
+# pages share the same block variant (e.g. 5 different CC category
+# pages all use "basic inline + floating button"), so we test the
+# variant once instead of every page that consumes it.
+#
+# Comparison modes:
+#   • Milolibs (string)      — A=page, B=page?milolibs=stage
+#     For real product pages — tests what stage milo changes for
+#     pages that already render BC.
+#   • Explicit pair (a/b)    — for block fragments where we
+#     explicitly compare main--milo vs stage--milo, or pages using a
+#     non-default milolibs branch (e.g. bc-floating-input-update,
+#     site-redesign-foundation, webclient=baseStage).
+#
+# Note: scroll wait strategy is required — BC entry blade is lazy-
+# injected (Target treatment + IntersectionObserver). Without
+# scrolling, screenshots capture the page before BC mounts.
+__config__:
+  waitStrategy: scroll
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Real product pages (milolibs mode — A = stage URL, B = + ?milolibs=stage)
+# One representative page per variant
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Basic Inline — stage adobe.com /cc-shared fragment (the canonical
+# inline blade host)
+'basic-inline': 'https://www.stage.adobe.com/cc-shared/fragments/uar/brand-concierge/brand-concierge'
+
+# Basic Inline — direct block fragment comparison (main milo vs stage milo)
+'basic-inline-block':
+  a: 'https://main--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/brand-concierge'
+  b: 'https://stage--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/brand-concierge'
+
+# Basic inline light — BACOM Brand Concierge product page
+'basic-inline-light': 'https://business.stage.adobe.com/products/brand-concierge.html'
+
+# Basic inline light — also used on Adobe.com CCO (different layout
+# context: marketing landing vs. product detail)
+'basic-inline-light-cco': 'https://www.stage.adobe.com/creativecloud.html'
+
+# Basic hero — BACOM home
+'basic-hero': 'https://business.stage.adobe.com/'
+
+# 404 page — adobe.com error page
+'bc-404': 'https://www.stage.adobe.com/error-pages/404.html'
+
+# Basic inline + floating button (representative: design — also
+# covers /creativecloud/adobe/campaign/pricing, video, illustration;
+# all share this variant)
+'inline-floating-button': 'https://www.stage.adobe.com/creativecloud/design.html'
+
+# Basic inline + floating button — Photography Apps (different
+# content category, same variant)
+'inline-floating-button-photo': 'https://www.stage.adobe.com/creativecloud/photography/apps.html'
+
+# Floating button delay — BACOM b2b-marketing solution page
+'floating-button-delay': 'https://business.stage.adobe.com/solutions/b2b-marketing.html'
+
+# Floating button delay — BACOM AI top-level page (different page
+# template than solutions/*)
+'floating-button-delay-ai': 'https://business.stage.adobe.com/ai.html'
+
+# Floating anchor hide — adobe.com homepage variant
+'floating-anchor-hide': 'https://www.stage.adobe.com/'
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# BC block fragments (no real page yet OR a non-default milolibs branch)
+# Explicit {a, b} — main milo vs stage milo, or prod vs feature branch
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# Hero + floating button (block fragment only — not on a real page yet)
+'hero-floating-button':
+  a: 'https://main--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-hero-floating-button'
+  b: 'https://stage--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-hero-floating-button'
+
+# Floating button only (block fragment only)
+'floating-button-only':
+  a: 'https://main--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-button-only'
+  b: 'https://stage--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-button-only'
+
+# webclient=baseStage param — block fragment + extra query
+'webclient-basestage':
+  a: 'https://main--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/brand-concierge?webclient=baseStage'
+  b: 'https://stage--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/brand-concierge?webclient=baseStage'
+
+# c2 dark (aem.page, different drafts folder /colloyd/)
+'c2-dark':
+  a: 'https://main--milo--adobecom.aem.page/drafts/colloyd/brand-concierge/bc-floating-button-c2-dark'
+  b: 'https://stage--milo--adobecom.aem.page/drafts/colloyd/brand-concierge/bc-floating-button-c2-dark'
+
+# BACOM new floating field — light variant.
+# Tests milo feature branch `bc-floating-input-update` (B) against
+# current prod milo (A) on the same bacom block fragment.
+'bacom-floating-field-light':
+  a: 'https://main--da-bacom--adobecom.aem.live/drafts/slavin/brand-concierge/home-light'
+  b: 'https://main--da-bacom--adobecom.aem.live/drafts/slavin/brand-concierge/home-light?milolibs=bc-floating-input-update'
+
+# BACOM new floating field — dark variant
+'bacom-floating-field-dark':
+  a: 'https://main--da-bacom--adobecom.aem.live/drafts/slavin/brand-concierge/home-dark'
+  b: 'https://main--da-bacom--adobecom.aem.live/drafts/slavin/brand-concierge/home-dark?milolibs=bc-floating-input-update'
+
+# DC BizPro Hub — site-redesign-foundation milo branch
+'dc-bizpro-hub':
+  a: 'https://main--da-dc--adobecom.aem.page/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-bizpro-hub'
+  b: 'https://main--da-dc--adobecom.aem.page/dc-shared/fragments/tests/2026/q2/ace1205/fragments/ace1205-bizpro-hub?milolibs=site-redesign-foundation'

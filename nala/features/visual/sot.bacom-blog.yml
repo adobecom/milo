@@ -1,0 +1,24 @@
+# Imported from adobecom/nala/data/bacom-blog/visual/sot.yml
+# Comparison: URL vs URL+?milolibs=stage (milolibs mode)
+# Note: tried `waitStrategy: scroll` — it made iphone diff JUMP from
+# 14/18 to 18/18 (likely scroll-triggered content varies between A and
+# B captures on mobile). Default `footer` is better here.
+
+homepage: 'https://main--da-bacom-blog--adobecom.aem.live/blog/'
+de-homepage: 'https://main--da-bacom-blog--adobecom.aem.live/de/blog/'
+fr-homepage: 'https://main--da-bacom-blog--adobecom.aem.live/fr/blog/'
+au-homepage: 'https://main--da-bacom-blog--adobecom.aem.live/au/blog/'
+uk-homepage: 'https://main--da-bacom-blog--adobecom.aem.live/uk/blog/'
+jp-homepage: 'https://main--da-bacom-blog--adobecom.aem.live/jp/blog/'
+blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/blog/trends'
+blog-news: 'https://main--da-bacom-blog--adobecom.aem.live/blog/news'
+jp-blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/jp/blog/trends'
+de-blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/de/blog/trends'
+fr-blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/fr/blog/trends'
+au-blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/au/blog/trends'
+uk-blog-trends: 'https://main--da-bacom-blog--adobecom.aem.live/uk/blog/trends'
+uk-blog-the-latest: 'https://main--da-bacom-blog--adobecom.aem.live/uk/blog/the-latest/harness-the-power-of-generative-ai-with-adobe-genstudio'
+blog-the-latest-deliver: 'https://main--da-bacom-blog--adobecom.aem.live/blog/the-latest/deliver-winning-campaigns-at-speed-and-scale-with-adobe-genstudio-for-performance-marketing'
+blog-the-latest-harness: 'https://main--da-bacom-blog--adobecom.aem.live/blog/the-latest/harness-the-power-of-generative-ai-with-adobe-genstudio'
+de-blog-the-latest-deliver: 'https://main--da-bacom-blog--adobecom.aem.live/de/blog/the-latest/deliver-winning-campaigns-at-speed-and-scale-with-adobe-genstudio-for-performance-marketing'
+jp-blog-the-latest-deliver: 'https://main--da-bacom-blog--adobecom.aem.live/jp/blog/the-latest/deliver-winning-campaigns-at-speed-and-scale-with-adobe-genstudio-for-performance-marketing'

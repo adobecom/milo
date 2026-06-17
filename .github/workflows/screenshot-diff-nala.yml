@@ -1,0 +1,77 @@
+name: Screenshot Diff (Site SOT)
+
+# Runs visual regression for one of the sites whose data lives at
+# nala/features/visual/sot.<site>.yml.
+#
+# For each URL in the data file: captures twice — once unmodified, once
+# with MILO_LIBS appended (default `?milolibs=stage`) — across the
+# requested viewports, computes pixel diffs, uploads to internal S3.
+#
+# Use before promoting a milo stage→main change to verify it doesn't break
+# a downstream site visually.
+#
+# Result URL after completion:
+#   http://nala-auto.corp.adobe.com/imagediff/<site>
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 'Site (matches nala/features/visual/sot.<site>.yml — e.g. bacom, graybox-poc)'
+        required: true
+        default: 'bacom'
+        type: string
+      viewports:
+        description: 'Viewports (comma-separated)'
+        required: false
+        default: 'chrome'
+        type: string
+      milo_libs:
+        description: 'Query string appended to URL B (the candidate)'
+        required: false
+        default: '?milolibs=stage'
+        type: string
+
+jobs:
+  diff:
+    name: ${{ inputs.site }} · ${{ inputs.viewports }}
+    runs-on: [self-hosted, macOS, screendiff]
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install milo dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual diff
+        env:
+          SITE: ${{ inputs.site }}
+          VIEWPORTS: ${{ inputs.viewports }}
+          MILO_LIBS: ${{ inputs.milo_libs }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3ACCESSKEY }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3SECRETKEY }}
+        run: node nala/features/visual/sot.run.js
+
+      - name: Upload artifacts to GitHub
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diff-${{ inputs.site }}-${{ inputs.viewports }}
+          path: screenshots/${{ inputs.site }}/
+          retention-days: 7
+
+      - name: Print result URL
+        if: success()
+        run: |
+          echo "::notice title=View results::http://nala-auto.corp.adobe.com/imagediff/${{ inputs.site }}"

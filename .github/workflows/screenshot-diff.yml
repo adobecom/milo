@@ -1,0 +1,81 @@
+name: Screenshot Diff
+
+# Manually triggered visual regression — captures two URLs, computes a pixel
+# diff, uploads results to internal S3. Runs on the self-hosted Mac Mini pool
+# (labels: self-hosted, macOS, screendiff) because internal S3
+# (s3-sj3.corp.adobe.com) is only reachable from Adobe corp network.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url_a:
+        description: 'URL A (stable / baseline)'
+        required: true
+        type: string
+      url_b:
+        description: 'URL B (beta / candidate)'
+        required: true
+        type: string
+      project:
+        description: 'S3 subfolder name (e.g. milo, bacom, adhoc)'
+        required: false
+        default: 'adhoc'
+        type: string
+      viewport:
+        description: 'Viewport preset'
+        required: false
+        default: 'chrome'
+        type: choice
+        options:
+          - chrome
+          - ipad
+          - iphone
+      full_page:
+        description: 'Capture full page (vs. viewport only)'
+        required: false
+        default: true
+        type: boolean
+
+jobs:
+  diff:
+    name: ${{ inputs.project }} · ${{ inputs.viewport }}
+    runs-on: [self-hosted, macOS, screendiff]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install milo dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run screenshot diff
+        env:
+          URL_A: ${{ inputs.url_a }}
+          URL_B: ${{ inputs.url_b }}
+          PROJECT: ${{ inputs.project }}
+          VIEWPORT: ${{ inputs.viewport }}
+          FULL_PAGE: ${{ inputs.full_page }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3ACCESSKEY }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3SECRETKEY }}
+          S3_REGION: ${{ vars.SCREENSHOT_S3_REGION || 'us-west-1' }}
+          S3_ENDPOINT: ${{ vars.SCREENSHOT_S3_ENDPOINT || 'https://s3-sj3.corp.adobe.com' }}
+          S3_BUCKET: ${{ vars.SCREENSHOT_S3_BUCKET || 'milo' }}
+        run: node nala/utils/screenshot-diff/run.js
+
+      - name: Upload artifacts (also kept on S3)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diff-${{ inputs.project }}-${{ inputs.viewport }}
+          path: screenshots/${{ inputs.project }}/
+          retention-days: 7

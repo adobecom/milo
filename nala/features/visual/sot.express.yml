@@ -1,0 +1,16 @@
+# Imported from adobecom/nala/data/express/sot-basic.yml
+# Mode: milolibs (A = stage URL, B = stage URL + ?milolibs=stage)
+# Paths prepended with www.stage.adobe.com host.
+
+blog: 'https://www.stage.adobe.com/express/learn/blog'
+business: 'https://www.stage.adobe.com/express/business'
+color: 'https://www.stage.adobe.com/express/colors/red'
+entitled: 'https://www.stage.adobe.com/express/entitled'
+feature: 'https://www.stage.adobe.com/express/feature'
+homepage: 'https://www.stage.adobe.com/express/?martech=off'
+pricing: 'https://www.stage.adobe.com/express/pricing'
+create: 'https://www.stage.adobe.com/express/create'
+templates: 'https://www.stage.adobe.com/express/templates/'
+education: 'https://www.stage.adobe.com/education/express'
+nonprofits: 'https://www.stage.adobe.com/express/nonprofits'
+students: 'https://www.stage.adobe.com/express/learn/students'

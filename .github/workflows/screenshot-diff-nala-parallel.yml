@@ -1,0 +1,141 @@
+name: Screenshot Diff (Parallel Matrix)
+
+# Runs visual regression for one site across 3 viewports in parallel
+# on the self-hosted Mac Mini pool.
+#
+# The merge step is bundled into the iphone capture job (iphone is
+# reliably the last viewport to finish). This eliminates the separate
+# `merge` job and the queueing it caused: with 6 runners and 7 sites,
+# 7 separate merge jobs would pile up behind 21 capture jobs and the
+# whole batch was waiting for the last capture before any merge could
+# claim a runner.
+#
+# Iphone polls S3 (via nala-auto proxy) for the chrome and ipad shards,
+# then runs lib/merge.js, then uploads the consolidated results.json.
+#
+# Result URL after completion:
+#   http://nala-auto.corp.adobe.com/imagediff/<site>
+
+on:
+  workflow_dispatch:
+    inputs:
+      site:
+        description: 'Site (matches nala/features/visual/sot.<site>.yml — e.g. bacom, graybox-poc)'
+        required: true
+        default: 'bacom'
+        type: string
+      milo_libs:
+        description: 'Query string appended to URL B (the candidate)'
+        required: false
+        default: '?milolibs=stage'
+        type: string
+
+jobs:
+  capture:
+    name: capture-${{ matrix.viewport }}
+    strategy:
+      fail-fast: false
+      matrix:
+        viewport: [chrome, ipad, iphone]
+    runs-on: [self-hosted, macOS, screendiff]
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install milo dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run visual diff (this viewport only)
+        env:
+          SITE: ${{ inputs.site }}
+          VIEWPORTS: ${{ matrix.viewport }}
+          SHARD_NAME: ${{ matrix.viewport }}
+          MILO_LIBS: ${{ inputs.milo_libs }}
+          S3_ACCESS_KEY_ID: ${{ secrets.S3ACCESSKEY }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3SECRETKEY }}
+        run: node nala/features/visual/sot.run.js
+
+      - name: Upload shard JSON to GH artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ inputs.site }}-${{ matrix.viewport }}
+          path: screenshots/${{ inputs.site }}/results-${{ matrix.viewport }}.json
+          retention-days: 7
+
+      # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      # iphone-only: bundle the merge into this job (iphone is the slowest
+      # viewport, so by the time we get here chrome and ipad are usually
+      # already uploaded to S3). No separate merge job → no queue gap.
+      # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+      - name: Wait for sibling chrome + ipad jobs in THIS run to finish
+        if: matrix.viewport == 'iphone' && success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          API_URL: https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs
+        run: |
+          # Wait on the SIBLING JOBS in this run, not on file presence on
+          # S3 (S3 shards persist from previous runs — presence-only check
+          # pulls last-run data). Use curl + node (node is already on PATH
+          # from setup-node; `python3` on bare macOS triggers the Xcode
+          # CLT install prompt, while `gh` CLI isn't installed at all).
+          for i in $(seq 1 60); do
+            done_count=$(curl -sS -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" "$API_URL" | node -e "const d=JSON.parse(require('fs').readFileSync(0,'utf8'));console.log(d.jobs.filter(j=>(j.name.startsWith('capture-chrome')||j.name.startsWith('capture-ipad'))&&j.status==='completed').length)")
+            if [ "$done_count" = "2" ]; then
+              echo "✓ chrome + ipad capture jobs completed"
+              break
+            fi
+            echo "Waiting ($done_count/2 sibling jobs done) ..."
+            sleep 10
+          done
+
+      - name: Pull fresh chrome + ipad shards from S3
+        if: matrix.viewport == 'iphone' && success()
+        run: |
+          SITE="${{ inputs.site }}"
+          mkdir -p "screenshots/$SITE"
+          for shard in chrome ipad; do
+            if curl -sSf -o "screenshots/$SITE/results-$shard.json" \
+                 "http://nala-auto.corp.adobe.com/api/milo/screenshots/$SITE/results-$shard.json"; then
+              echo "✓ pulled $shard shard"
+            else
+              echo "::warning::No $shard shard on S3 — merge will proceed without it"
+            fi
+          done
+
+      - name: Merge shards into results.json
+        if: matrix.viewport == 'iphone' && success()
+        run: node nala/utils/screenshot-diff/lib/merge.js screenshots/${{ inputs.site }}
+
+      - name: Upload merged results.json to S3
+        if: matrix.viewport == 'iphone' && success()
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3ACCESSKEY }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3SECRETKEY }}
+        run: node nala/utils/screenshot-diff/lib/upload-one.js screenshots/${{ inputs.site }}/results.json
+
+      - name: Write fresh timestamp + upload
+        if: matrix.viewport == 'iphone' && success()
+        env:
+          S3_ACCESS_KEY_ID: ${{ secrets.S3ACCESSKEY }}
+          S3_SECRET_ACCESS_KEY: ${{ secrets.S3SECRETKEY }}
+        run: |
+          node -e "require('fs').writeFileSync('screenshots/${{ inputs.site }}/timestamp.json', JSON.stringify([new Date().toLocaleString()], null, 2))"
+          node nala/utils/screenshot-diff/lib/upload-one.js screenshots/${{ inputs.site }}/timestamp.json
+
+      - name: Print result URL
+        if: matrix.viewport == 'iphone' && success()
+        run: |
+          echo "::notice title=View results::http://nala-auto.corp.adobe.com/imagediff/${{ inputs.site }}"

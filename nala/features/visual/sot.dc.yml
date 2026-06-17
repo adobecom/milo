@@ -1,0 +1,10 @@
+# Imported from adobecom/nala/data/dc/sot-basic.yml
+# Mode: milolibs (A = stage URL, B = stage URL + ?milolibs=stage)
+# Tests stage page rendering with default milo vs stage milo branch.
+
+Homepage: 'https://www.stage.adobe.com/documentcloud.html'
+AcrobatPro: 'https://www.stage.adobe.com/acrobat/business/acrobat-pro.html'
+Pricing: 'https://www.stage.adobe.com/acrobat/pricing.html'
+PricingBusiness: 'https://www.stage.adobe.com/acrobat/pricing/business.html'
+Word2PDF: 'https://www.stage.adobe.com/acrobat/online/word-to-pdf.html'
+AIChatPDF: 'https://www.stage.adobe.com/acrobat/online/ai-chat-pdf.html'
