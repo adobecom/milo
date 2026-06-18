@@ -37,6 +37,12 @@ export default {
       fireflyHostname: 'https://firefly.adobe.com',
       fireflyEnv: 'prod',
     },
+    chatTranscript: {
+      enabled: true,
+      maxSessions: 10,
+      maxMessagesPerSession: 100,
+      cleanupInterval: 24,
+    },
     disclaimer: { attachWithInput: false },
     responsive: {
       breakpoints: {
