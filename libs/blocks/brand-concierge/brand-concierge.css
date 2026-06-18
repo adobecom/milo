@@ -800,46 +800,6 @@
 }
 
 /* Modal */
-@keyframes slide-up {
-  from {
-    bottom: -100vh;
-  }
-
-  to {
-    bottom: 0;
-  }
-}
-
-@keyframes slide-down {
-  from {
-    bottom: 0;
-  }
-
-  to {
-    bottom: -100vh;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes fade-out {
-  from {
-    opacity: 1;
-  }
-
-  to {
-    opacity: 0;
-  }
-}
-
 #bc-susi-modal {
   z-index: calc( var(--modal-z-index) + 1);
 }

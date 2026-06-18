@@ -702,6 +702,10 @@ function decorateFloatingButton(bc) {
 
   floatingButton.addEventListener('click', () => {
     if (bc.floatingButtonClicked) return;
+    // If the shared modal is already open (another block owns it), the floating
+    // button has no message to contribute — no-op without latching the flag, so
+    // the button stays usable after the modal closes.
+    if (sharedModal && document.body.contains(sharedModal)) return;
     bc.floatingButtonClicked = true;
     openChatModal(null, bc);
   });
