@@ -32,9 +32,7 @@ const webClientVersion = params.get('webclientversion');
 // Module-level state that is legitimately shared by every block on the page:
 // a single auth token (one signed-in user) and a single shared chat modal.
 let bcToken;
-// eslint-disable-next-line prefer-const, no-unused-vars
 let sharedModal = null; // the one shared dialog element while open, else null
-// eslint-disable-next-line prefer-const, no-unused-vars
 let modalOwnerBc = null; // the block instance that opened the modal
 // Default source for the no-arg getUpdatedChatUIConfig() (used by the unit test);
 // the live bootstrap path always passes an explicit per-block authoredContent.
@@ -329,77 +327,12 @@ function clearBlockInput(bc) {
   }
 }
 
-async function openChatModal(initialMessage, bc) {
-  const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
-  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
-  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
-  const mountEl = createTag('div', { id: mountId });
-
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
-  innerModal.append(header, mountEl);
-  const modal = await getModal(null, {
-    id: 'brand-concierge-modal',
-    class: 'curtain-off',
-    content: innerModal,
-    closeCallback: async () => {
-      const floatingButton = bc.el.querySelector('.bc-floating-button');
-      if (floatingButton && bc.floatingButtonClicked) {
-        resetFloatingButton(bc);
-      }
-      modal.classList.add('closing');
-      await new Promise((resolve) => {
-        setTimeout(() => resolve(), animationMs);
-      });
-    },
-  });
-  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-
-  clearBlockInput(bc);
-
-  const logWebClient = (text, src) => {
-    // eslint-disable-next-line no-console
-    console.log(text, src);
-  };
-
-  const { env, locale } = getConfig();
-  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
-
-  if (env?.name === 'prod') {
-    src = prod;
-  }
-
-  if (webClient === 'prod') {
-    logWebClient('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    logWebClient('stage', stage);
-    src = stage;
-  } else if (webClient === 'baseProd') {
-    logWebClient('baseProd', baseProd);
-    src = baseProd;
-  } else if (webClient === 'baseStage') {
-    logWebClient('baseStage', baseStage);
-    src = baseStage;
-  }
-
-  if (webClientVersion) {
-    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
-    src = pr;
-  }
-
-  loadScript(src);
-
-  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
+function createOnBeforeEventSend() {
   const surfaceURL = window.location.href;
   const { userAgent, language } = window.navigator;
+  const { locale } = getConfig();
 
-  const onBeforeEventSend = (content) => {
+  return (content) => {
     const MEETING_EVENT_TYPES = [
       'form-fetch',
       'form-submit',
@@ -450,13 +383,141 @@ async function openChatModal(initialMessage, bc) {
       content.xdm.consentStrings = consentConfObject;
     }
   };
+}
+
+// PoC: prefer handing the message straight to the already-bootstrapped web client.
+// The web client's public API surface is not documented here, so probe a small set
+// of plausible method names at runtime and use the first that exists.
+function sendMessageToWebClient(message) {
+  const concierge = window.adobe?.concierge;
+  if (!concierge || !message) return false;
+  const candidates = ['sendMessage', 'send', 'submitMessage', 'submit', 'ask'];
+  for (const name of candidates) {
+    if (typeof concierge[name] === 'function') {
+      try {
+        concierge[name](message);
+        return true;
+      } catch (e) {
+        window.lana?.log(`Brand Concierge: direct send via ${name} failed: ${e}`, { tags: 'brand-concierge', severity: 'warn' });
+      }
+    }
+  }
+  return false;
+}
+
+// Fallback when no direct-send API exists: re-mount the web client with the
+// secondary block's authored config and its message as the initial message.
+function rebootstrapWebClient(message, bc) {
+  const mountEl = document.getElementById(mountId);
+  if (!mountEl || !window.adobe?.concierge?.bootstrap) return;
+  mountEl.dataset.initialMessage = message;
+  mountEl.replaceChildren(); // clear the prior web-client render before re-mounting
+  window.adobe.concierge.bootstrap({
+    instanceName: 'alloy',
+    stylingConfigurations: getUpdatedChatUIConfig(bc.authoredContent),
+    selector: `#${mountId}`,
+    onBeforeEventSend: createOnBeforeEventSend(),
+    onEvent: (event) => {
+      bcAnalytics(event);
+    },
+  });
+}
+
+// Route a submission into the already-open shared modal.
+// Preferred: direct send. Fallback: rebootstrap, but only for a *secondary*
+// block (the block that opened the modal does not rebootstrap on its own input).
+function routeMessageIntoModal(message, bc) {
+  if (!message) return;
+  if (sendMessageToWebClient(message)) return;
+  if (bc === modalOwnerBc) return;
+  rebootstrapWebClient(message, bc);
+}
+
+async function openChatModal(initialMessage, bc) {
+  // Single shared modal: if it is already open, route into it instead of reopening.
+  if (sharedModal && document.body.contains(sharedModal)) {
+    routeMessageIntoModal(initialMessage, bc);
+    clearBlockInput(bc);
+    return;
+  }
+
+  const innerModal = new DocumentFragment();
+  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
+  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
+  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
+  const mountEl = createTag('div', { id: mountId });
+
+  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
+  innerModal.append(header, mountEl);
+  const modal = await getModal(null, {
+    id: 'brand-concierge-modal',
+    class: 'curtain-off',
+    content: innerModal,
+    closeCallback: async () => {
+      const floatingButton = bc.el.querySelector('.bc-floating-button');
+      if (floatingButton && bc.floatingButtonClicked) {
+        resetFloatingButton(bc);
+      }
+      modal.classList.add('closing');
+      await new Promise((resolve) => {
+        setTimeout(() => resolve(), animationMs);
+      });
+      sharedModal = null;
+      modalOwnerBc = null;
+    },
+  });
+  sharedModal = modal;
+  modalOwnerBc = bc;
+  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
+
+  clearBlockInput(bc);
+
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
+  const { env } = getConfig();
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+  let src = stage;
+
+  if (env?.name === 'prod') {
+    src = prod;
+  }
+
+  if (webClient === 'prod') {
+    logWebClient('prod', prod);
+    src = prod;
+  } else if (webClient === 'stage') {
+    logWebClient('stage', stage);
+    src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
+  }
+
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  loadScript(src);
+
+  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
 
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
       stylingConfigurations: getUpdatedChatUIConfig(bc.authoredContent),
       selector: `#${mountId}`,
-      onBeforeEventSend,
+      onBeforeEventSend: createOnBeforeEventSend(),
       onEvent: (event) => {
         bcAnalytics(event);
       },
