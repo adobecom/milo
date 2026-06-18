@@ -1064,13 +1064,10 @@ class Gnav {
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
       unavVersion = '1.6';
     }
-
-    const scriptsToLoad = [
+    await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
       loadStyles(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.css`, true),
-    ];
-
-    await Promise.all(scriptsToLoad);
+    ]);
 
     const getChildren = () => {
       const children = [CONFIG.universalNav.components.profile];
