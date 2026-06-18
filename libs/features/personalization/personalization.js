@@ -1676,6 +1676,7 @@ export async function init(enablements = {}) {
   } else {
     for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
     config.mep = {
+      ...(config.mep || {}),
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
