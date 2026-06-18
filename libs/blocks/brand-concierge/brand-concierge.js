@@ -25,21 +25,28 @@ const chatLabelText = 'Ask';
 const mountId = 'brand-concierge-mount';
 const animationMs = 500;
 
-const authoredContent = {};
-const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
 const webClientVersion = params.get('webclientversion');
 
-let floatingButtonClicked = false;
+// Module-level state that is legitimately shared by every block on the page:
+// a single auth token (one signed-in user) and a single shared chat modal.
 let bcToken;
+// eslint-disable-next-line prefer-const, no-unused-vars
+let sharedModal = null; // the one shared dialog element while open, else null
+// eslint-disable-next-line prefer-const, no-unused-vars
+let modalOwnerBc = null; // the block instance that opened the modal
+// Default source for the no-arg getUpdatedChatUIConfig() (used by the unit test);
+// the live bootstrap path always passes an explicit per-block authoredContent.
+let lastAuthoredContent;
 
 const getTargetHeight = (target) => {
   const { marginBottom } = window.getComputedStyle(target);
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
-function floatingElement(targetEl, el, focusableEl = null) {
+function floatingElement(bc, targetEl, focusableEl = null) {
+  const { el } = bc;
   const hideFloating = () => {
     if (focusableEl) {
       focusableEl.setAttribute('aria-hidden', 'true');
@@ -61,8 +68,9 @@ function floatingElement(targetEl, el, focusableEl = null) {
 
   const mainElement = document.querySelector('main');
   const mainTop = mainElement.offsetTop;
-  const hasDelay = variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay;
-  const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
+  const hasDelay = bc.variants.isHero
+    || bc.variants.floatingDelay || bc.variants.floatingAnchorDelay;
+  const anchorDelay = bc.variants.floatingAnchorDelay ? bc.variants.floatingAnchorDelayAmount : 0;
   let mainHeight = mainElement.scrollHeight;
   let targetHeight = getTargetHeight(targetEl);
   let elHeight = el.scrollHeight;
@@ -88,14 +96,14 @@ function floatingElement(targetEl, el, focusableEl = null) {
   ro.observe(mainElement);
   ro.observe(targetEl);
 
-  if (variants.isHero || variants.floatingDelay) {
+  if (bc.variants.isHero || bc.variants.floatingDelay) {
     hideFloating();
   }
 
   const handleScroll = (target) => {
     // only values that need to be calculated on scroll are here, to optimize performance
     const threshold = window.scrollY + window.innerHeight - mainTop;
-    const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+    const topDelay = bc.variants.floatingDelay ? bc.variants.floatingDelayAmount : elHeight;
     const bottomValue = threshold - mainHeight;
 
     // if the spacer is not the last element in main, move it to the end
@@ -105,7 +113,7 @@ function floatingElement(targetEl, el, focusableEl = null) {
 
     if (threshold > mainHeight) {
       target.style.bottom = `${bottomValue}px`;
-      if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
+      if (bc.variants.isFloatingAnchorHide || bc.variants.floatingAnchorDelay) {
         hideFloating();
       } else {
         floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
@@ -119,7 +127,7 @@ function floatingElement(targetEl, el, focusableEl = null) {
         showFloating();
       }
       if (window.scrollY < topDelay
-        || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
+        || (bc.variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
         hideFloating();
       }
     }
@@ -149,11 +157,11 @@ export function updateReplicatedValue(textareaWrapper, textarea) {
   textareaWrapper.dataset.replicatedValue = textarea.value || textarea.placeholder;
 }
 
-export function getUpdatedChatUIConfig() {
-  if (authoredContent.header) chatUIConfig.text['welcome.heading'] = authoredContent.header.title;
-  if (authoredContent.header.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
-  if (authoredContent.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;
-  if (authoredContent.input) chatUIConfig.text['input.placeholder'] = authoredContent.input;
+export function getUpdatedChatUIConfig(authoredContent = lastAuthoredContent) {
+  if (authoredContent?.header) chatUIConfig.text['welcome.heading'] = authoredContent.header.title;
+  if (authoredContent?.header?.subTitle) chatUIConfig.text['welcome.subheading'] = authoredContent.header.subTitle;
+  if (authoredContent?.cards) chatUIConfig.arrays['welcome.examples'] = authoredContent.cards;
+  if (authoredContent?.input) chatUIConfig.text['input.placeholder'] = authoredContent.input;
 
   // For stage, override specific env variables
   const config = getConfig();
@@ -183,11 +191,11 @@ function waitForCondition(checkFn, timeout = 5000, interval = 100) {
   });
 }
 
-function resetFloatingButton(el) {
-  const floatingButton = el.querySelector('.bc-floating-button');
+function resetFloatingButton(bc) {
+  const floatingButton = bc.el.querySelector('.bc-floating-button');
   if (floatingButton) {
     const cleanup = setTimeout(() => {
-      floatingButtonClicked = false;
+      bc.floatingButtonClicked = false;
       clearTimeout(cleanup);
     }, animationMs);
   }
@@ -310,7 +318,18 @@ async function openSusiLightModal() {
   });
 }
 
-async function openChatModal(initialMessage, el) {
+function clearBlockInput(bc) {
+  const textareaWrapper = bc.el.querySelector('.bc-textarea-grow-wrap');
+  const textarea = bc.el.querySelector('.bc-input-field textarea');
+  const submitButton = bc.el.querySelector('.input-field-button');
+  if (textareaWrapper && textarea && submitButton) {
+    textarea.value = '';
+    submitButton.disabled = true;
+    updateReplicatedValue(textareaWrapper, textarea);
+  }
+}
+
+async function openChatModal(initialMessage, bc) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
   const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
@@ -323,9 +342,9 @@ async function openChatModal(initialMessage, el) {
     id: 'brand-concierge-modal',
     content: innerModal,
     closeCallback: async () => {
-      const floatingButton = el.querySelector('.bc-floating-button');
-      if (floatingButton && floatingButtonClicked) {
-        resetFloatingButton(el);
+      const floatingButton = bc.el.querySelector('.bc-floating-button');
+      if (floatingButton && bc.floatingButtonClicked) {
+        resetFloatingButton(bc);
       }
       modal.classList.add('closing');
       await new Promise((resolve) => {
@@ -336,15 +355,7 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
-  const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
-  const textarea = el.querySelector('.bc-input-field textarea');
-  const submitButton = el.querySelector('.input-field-button');
-
-  if (textareaWrapper && textarea && submitButton) {
-    textarea.value = '';
-    submitButton.disabled = true;
-    updateReplicatedValue(textareaWrapper, textarea);
-  }
+  clearBlockInput(bc);
 
   const logWebClient = (text, src) => {
     // eslint-disable-next-line no-console
@@ -443,7 +454,7 @@ async function openChatModal(initialMessage, el) {
   if (bootstrapAPIReady) {
     window.adobe.concierge.bootstrap({
       instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(),
+      stylingConfigurations: getUpdatedChatUIConfig(bc.authoredContent),
       selector: `#${mountId}`,
       onBeforeEventSend,
       onEvent: (event) => {
@@ -462,7 +473,8 @@ async function openChatModal(initialMessage, el) {
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
-function setAuthoredContent(rows) {
+function setAuthoredContent(rows, bc) {
+  const { authoredContent } = bc;
   const [, header, cards, input] = rows;
   if (header) {
     const title = header.querySelector('h1, h2, h3, h4, h5, h6');
@@ -525,7 +537,7 @@ function decorateHeader(el, header) {
   if (el.contains(header)) el.removeChild(header);
 }
 
-function decorateCards(el, cards) {
+function decorateCards(bc, el, cards) {
   const cardSection = createTag('section', { class: 'bc-prompt-cards' });
   const cardRows = cards.querySelectorAll(':scope > div');
   cardRows.forEach((card, index) => {
@@ -547,7 +559,7 @@ function decorateCards(el, cards) {
       const input = el.querySelector('.bc-input-field textarea');
 
       input.value = cardText.textContent.trim();
-      openChatModal(input.value, el);
+      openChatModal(input.value, bc);
     });
   });
 
@@ -555,7 +567,7 @@ function decorateCards(el, cards) {
   if (el.contains(cards)) el.removeChild(cards);
 }
 
-function decorateInput(el, input) {
+function decorateInput(bc, el, input) {
   const fieldSection = createTag('section', { class: 'bc-input-field' });
   const fieldLabel = createTag('label', {
     for: 'bc-input-field',
@@ -604,7 +616,7 @@ function decorateInput(el, input) {
 
   fieldButton.addEventListener('click', () => {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
-    openChatModal(fieldInput.value, el);
+    openChatModal(fieldInput.value, bc);
   });
 }
 
@@ -616,10 +628,11 @@ function decorateLegal(el, legal) {
   if (el.contains(legal)) el.removeChild(legal);
 }
 
-function decorateFloatingButton(el) {
+function decorateFloatingButton(bc) {
+  const { el } = bc;
   const floatingButton = createTag('section', { class: 'bc-floating-button' });
   const floatingIcon = createTag('div', { class: 'bc-floating-icon' }, aiIcon('ai-icon-floating', 'floating-icon', chatLabelText, 20));
-  const floatingInput = createTag('div', { class: 'bc-floating-input' }, authoredContent.input);
+  const floatingInput = createTag('div', { class: 'bc-floating-input' }, bc.authoredContent.input);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
 
@@ -627,16 +640,17 @@ function decorateFloatingButton(el) {
   el.append(floatingButton);
 
   floatingButton.addEventListener('click', () => {
-    if (floatingButtonClicked) return;
-    floatingButtonClicked = true;
-    openChatModal(null, el);
+    if (bc.floatingButtonClicked) return;
+    bc.floatingButtonClicked = true;
+    openChatModal(null, bc);
   });
 
-  floatingElement(floatingButton, el, floatingContainer);
+  floatingElement(bc, floatingButton, floatingContainer);
 }
 
-function decorateFloatingInput(el, cards, input) {
-  if (variants.isFloatingInputOnly) {
+function decorateFloatingInput(bc, cards, input) {
+  const { el } = bc;
+  if (bc.variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
   function updatePillVisibility(target) {
@@ -660,8 +674,8 @@ function decorateFloatingInput(el, cards, input) {
   }
 
   const floatingInput = createTag('section', { class: 'bc-floating-input' });
-  decorateInput(floatingInput, input);
-  decorateCards(floatingInput, cards);
+  decorateInput(bc, floatingInput, input);
+  decorateCards(bc, floatingInput, cards);
   el.append(floatingInput);
 
   const updateLayout = () => {
@@ -670,7 +684,7 @@ function decorateFloatingInput(el, cards, input) {
 
   window.addEventListener('resize', updateLayout);
   requestAnimationFrame(updateLayout);
-  floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
+  floatingElement(bc, floatingInput, el.querySelector('.bc-input-field'));
 }
 
 function handleConsent(el) {
@@ -691,94 +705,97 @@ export default async function init(el) {
     window.UniversalNav?.reload();
   });
 
+  const bc = { el, authoredContent: {}, variants: {}, floatingButtonClicked: false };
+
   const rows = el.querySelectorAll(':scope > div');
 
-  setAuthoredContent(rows);
+  setAuthoredContent(rows, bc);
+  lastAuthoredContent = bc.authoredContent;
 
   // set variant
   if (!el.classList.contains('hero')
     && !el.classList.contains('floating-button-only')
     && !el.classList.contains('floating-input-only')) {
     el.classList.add('inline');
-    variants.isDefault = true;
+    bc.variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
     el.classList.add('hero');
-    variants.isHero = true;
+    bc.variants.isHero = true;
   }
   if (el.classList.contains('input-first')) {
-    variants.inputFirst = true;
+    bc.variants.inputFirst = true;
   }
   if (el.classList.contains('floating-button')) {
-    variants.isFloatingButton = true;
+    bc.variants.isFloatingButton = true;
   }
   if (el.classList.contains('floating-button-only')) {
-    variants.isFloatingButtonOnly = true;
-    variants.isFloatingButton = false;
+    bc.variants.isFloatingButtonOnly = true;
+    bc.variants.isFloatingButton = false;
   }
 
   if (el.classList.contains('floating-anchor-hide')) {
-    variants.isFloatingAnchorHide = true;
+    bc.variants.isFloatingAnchorHide = true;
   }
 
   el.classList.forEach((classItem) => {
     if (classItem.includes('floating-delay')) {
-      variants.floatingDelay = true;
-      variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+      bc.variants.floatingDelay = true;
+      bc.variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
     }
     if (classItem.includes('floating-anchor-delay')) {
-      variants.floatingAnchorDelay = true;
-      variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
+      bc.variants.floatingAnchorDelay = true;
+      bc.variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
     }
   });
 
   if (el.classList.contains('floating-input')) {
-    variants.isFloatingInput = true;
+    bc.variants.isFloatingInput = true;
   }
   if (el.classList.contains('floating-input-only')) {
-    variants.isFloatingInputOnly = true;
-    variants.isFloatingInput = false;
+    bc.variants.isFloatingInputOnly = true;
+    bc.variants.isFloatingInput = false;
   }
 
-  if (variants.isFloatingButton) {
-    decorateFloatingButton(el);
+  if (bc.variants.isFloatingButton) {
+    decorateFloatingButton(bc);
   }
-  if (variants.isFloatingButtonOnly) {
+  if (bc.variants.isFloatingButtonOnly) {
     rows.forEach((row) => {
       el.removeChild(row);
     });
-    decorateFloatingButton(el);
+    decorateFloatingButton(bc);
   }
 
-  if (variants.isDefault) {
+  if (bc.variants.isDefault) {
     const [background, header, cards, input, legal] = rows;
     decorateBackground(el, background);
     decorateHeader(el, header);
-    if (variants.inputFirst) {
-      decorateInput(el, input);
-      decorateCards(el, cards);
+    if (bc.variants.inputFirst) {
+      decorateInput(bc, el, input);
+      decorateCards(bc, el, cards);
     } else {
-      decorateCards(el, cards);
-      decorateInput(el, input);
+      decorateCards(bc, el, cards);
+      decorateInput(bc, el, input);
     }
     decorateLegal(el, legal);
   }
 
-  if (variants.isHero) {
+  if (bc.variants.isHero) {
     const [background, header, cards, input, legal] = rows;
     decorateBackground(el, background);
     decorateHeader(el, header);
-    decorateInput(el, input);
-    decorateCards(el, cards);
+    decorateInput(bc, el, input);
+    decorateCards(bc, el, cards);
     decorateLegal(el, legal);
   }
 
-  if (variants.isFloatingInput) {
+  if (bc.variants.isFloatingInput) {
     const [, , cards, input] = rows;
-    decorateFloatingInput(el, cards, input);
+    decorateFloatingInput(bc, cards, input);
   }
-  if (variants.isFloatingInputOnly) {
+  if (bc.variants.isFloatingInputOnly) {
     const [, , cards, input] = rows;
-    decorateFloatingInput(el, cards, input);
+    decorateFloatingInput(bc, cards, input);
     rows.forEach((row) => {
       el.removeChild(row);
     });
