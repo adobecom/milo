@@ -218,7 +218,7 @@
   z-index: 1;
 }
 
-.tabs .tabList button .tab-highlight-placeholder {
+.tabs .tabList button .tab-badge-placeholder {
   display: block;
   height: 24px;
   margin-top: 6px;
@@ -229,7 +229,7 @@
   flex: 1;
 }
 
-.tabs .tabList button .tab-highlight {
+.tabs .tabList button .tab-badge {
   display: block;
   font-size: var(--type-body-xxs-size, 11px);
   font-weight: 700;
@@ -242,7 +242,7 @@
   white-space: nowrap;
 }
 
-.tabs:has(.tab-highlight) .paddle {
+.tabs:has(.tab-badge) .paddle {
   height: 78px;
 }
 

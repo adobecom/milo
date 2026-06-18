@@ -335,21 +335,29 @@ const init = async (block) => {
   configRows.forEach((row) => {
     const rowKey = getStringKeyName(row.children[0].textContent);
     const rowVal = row.children[1].textContent.trim();
-    config[rowKey] = rowVal;
+    if (rowKey === 'badge') {
+      if (!config.badge) config.badge = [];
+      config.badge.push(rowVal);
+    } else {
+      config[rowKey] = rowVal;
+    }
     row.remove();
   });
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
 
-  const HIGHLIGHT_COLORS = {
+  const BADGE_COLORS = {
     green: { bg: '#05834E', color: '#fff' },
     yellow: { bg: '#FFCC00', color: '#000' },
   };
-  let highlight = null;
-  if (config.highlight) {
-    const parts = config.highlight.split(',').map((s) => s.trim());
-    const { bg, color } = HIGHLIGHT_COLORS[parts[2]?.toLowerCase()] ?? HIGHLIGHT_COLORS.green;
-    highlight = { index: parseInt(parts[0], 10), label: parts[1], bg, color };
+  const badges = [];
+  if (config.badge) {
+    const badgeEntries = Array.isArray(config.badge) ? config.badge : [config.badge];
+    badgeEntries.forEach((entry) => {
+      const parts = entry.split(',').map((s) => s.trim());
+      const { bg, color } = BADGE_COLORS[parts[2]?.toLowerCase()] ?? BADGE_COLORS.green;
+      badges.push({ index: parseInt(parts[0], 10), label: parts[1], bg, color });
+    });
   }
 
   const activeTabIndex = loadActiveTab(config);
@@ -395,14 +403,15 @@ const init = async (block) => {
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
-      if (highlight) {
-        if (highlight.index === i + 1) {
-          const badge = createTag('span', { class: 'tab-highlight' }, highlight.label);
-          badge.style.backgroundColor = highlight.bg;
-          badge.style.color = highlight.color;
-          tabBtn.append(badge);
+      if (badges.length) {
+        const badgeForTab = badges.find((b) => b.index === i + 1);
+        if (badgeForTab) {
+          const badgeEl = createTag('span', { class: 'tab-badge' }, badgeForTab.label);
+          badgeEl.style.backgroundColor = badgeForTab.bg;
+          badgeEl.style.color = badgeForTab.color;
+          tabBtn.append(badgeEl);
         } else {
-          tabBtn.append(createTag('span', { class: 'tab-highlight-placeholder', 'aria-hidden': 'true' }));
+          tabBtn.append(createTag('span', { class: 'tab-badge-placeholder', 'aria-hidden': 'true' }));
         }
       }
       tabListContainer.append(tabBtn);

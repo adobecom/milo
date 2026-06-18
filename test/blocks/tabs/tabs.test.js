@@ -276,48 +276,53 @@ describe('tabs', () => {
     });
   });
 
-  describe('highlight badge', () => {
-    it('renders a badge only on the specified tab', () => {
-      const section = document.querySelector('#highlight-tabs');
+  describe('badge', () => {
+    it('renders badges on the specified tabs', () => {
+      const section = document.querySelector('#badge-tabs');
       const tabs = section.querySelector('.tabs');
       const buttons = tabs.querySelectorAll('button[role="tab"]');
 
-      expect(buttons[0].querySelector('.tab-highlight')).to.not.exist;
-      expect(buttons[1].querySelector('.tab-highlight')).to.not.exist;
-      expect(buttons[2].querySelector('.tab-highlight')).to.exist;
+      expect(buttons[0].querySelector('.tab-badge')).to.not.exist;
+      expect(buttons[1].querySelector('.tab-badge')).to.exist;
+      expect(buttons[2].querySelector('.tab-badge')).to.exist;
     });
 
-    it('adds invisible placeholders to non-highlighted tabs for height consistency', () => {
-      const section = document.querySelector('#highlight-tabs');
+    it('adds invisible placeholders to non-badged tabs for height consistency', () => {
+      const section = document.querySelector('#badge-tabs');
       const tabs = section.querySelector('.tabs');
       const buttons = tabs.querySelectorAll('button[role="tab"]');
 
-      expect(buttons[0].querySelector('.tab-highlight-placeholder')).to.exist;
-      expect(buttons[1].querySelector('.tab-highlight-placeholder')).to.exist;
-      expect(buttons[2].querySelector('.tab-highlight-placeholder')).to.not.exist;
+      expect(buttons[0].querySelector('.tab-badge-placeholder')).to.exist;
+      expect(buttons[1].querySelector('.tab-badge-placeholder')).to.not.exist;
+      expect(buttons[2].querySelector('.tab-badge-placeholder')).to.not.exist;
     });
 
-    it('badge has correct label, green bg, and white text', () => {
-      const section = document.querySelector('#highlight-tabs');
-      const tabs = section.querySelector('.tabs');
-      const badge = tabs.querySelectorAll('button[role="tab"]')[2].querySelector('.tab-highlight');
-
-      expect(badge.textContent).to.equal('Best value');
-      expect(badge.style.backgroundColor).to.equal('rgb(5, 131, 78)');
-      expect(badge.style.color).to.equal('rgb(255, 255, 255)');
-    });
-
-    it('clicking the badge label activates its tab', () => {
-      const section = document.querySelector('#highlight-tabs');
+    it('badge has correct labels and colors', () => {
+      const section = document.querySelector('#badge-tabs');
       const tabs = section.querySelector('.tabs');
       const buttons = tabs.querySelectorAll('button[role="tab"]');
-      const badge = buttons[2].querySelector('.tab-highlight');
+      const badge2 = buttons[1].querySelector('.tab-badge');
+      const badge3 = buttons[2].querySelector('.tab-badge');
+
+      expect(badge2.textContent).to.equal('Limited Time Offer');
+      expect(badge2.style.backgroundColor).to.equal('rgb(255, 204, 0)');
+      expect(badge2.style.color).to.equal('rgb(0, 0, 0)');
+
+      expect(badge3.textContent).to.equal('Best value');
+      expect(badge3.style.backgroundColor).to.equal('rgb(5, 131, 78)');
+      expect(badge3.style.color).to.equal('rgb(255, 255, 255)');
+    });
+
+    it('clicking a badge label activates its tab', () => {
+      const section = document.querySelector('#badge-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+      const badge = buttons[2].querySelector('.tab-badge');
 
       badge.click();
 
       expect(buttons[2].getAttribute('aria-selected')).to.equal('true');
       expect(buttons[0].getAttribute('aria-selected')).to.equal('false');
     });
-
   });
 });
