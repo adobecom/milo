@@ -184,6 +184,11 @@ const buildSlide = ({ slide, index }) => {
 
   decorateBlockText(left);
 
+  const titleId = `hub-hero-slide-${index + 1}-title`;
+  const descId = `hub-hero-slide-${index + 1}-desc`;
+  if (eyebrow) eyebrow.id = titleId;
+  if (heading) heading.id = descId;
+
   const content = `
     <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-card-${index + 1}'>
       <div class='hub-hero-carousel-item-header'>
@@ -207,7 +212,7 @@ const buildSlide = ({ slide, index }) => {
     href: link?.href,
     'data-index': index + 1,
     role: isModal ? 'button' : 'link',
-    'aria-labelledby': `${eyebrow?.innerText} - ${heading?.innerText}`,
+    'aria-labelledby': [eyebrow && titleId, heading && descId].filter(Boolean).join(' '),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
