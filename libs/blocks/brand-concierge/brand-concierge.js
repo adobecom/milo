@@ -409,13 +409,16 @@ async function forceMessageIntoWebClient(message) {
 
   setReactLikeValue(input, message);
 
-  // Wait for the web client to enable its send button after the input event.
-  await waitForCondition(() => {
-    const btn = document.querySelector('.chat-input-wrapper .submit-button');
-    return !!btn && !btn.disabled;
-  }, 1000);
-  const submitButton = document.querySelector('.chat-input-wrapper .submit-button');
-  if (!submitButton || submitButton.disabled) return false;
+  // The send button is a sibling of the input wrapper inside .input-container,
+  // and the web client marks it enabled via aria-disabled (not the disabled
+  // property), flipping it to "false" once it registers the input value.
+  const getSubmitButton = () => input.closest('.input-container')?.querySelector('.submit-button')
+    ?? document.querySelector('.submit-button');
+  const isEnabled = (btn) => !!btn && btn.getAttribute('aria-disabled') !== 'true';
+
+  await waitForCondition(() => isEnabled(getSubmitButton()), 1000);
+  const submitButton = getSubmitButton();
+  if (!isEnabled(submitButton)) return false;
   submitButton.click();
   return true;
 }
