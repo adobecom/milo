@@ -853,45 +853,55 @@
 }
 
 #brand-concierge-modal.dialog-modal {
-  height: calc(100dvh - 22px);
-  width: 100vw;
+  position: fixed;
+  width: 30vw;
   max-width: unset;
+  min-width: unset;
+  height: 80vh;
   max-height: unset;
-  margin-top: 22px;
-  border-radius: 24px 24px 0 0;
+  top: 50%;
+  right: 24px;
+  bottom: unset;
+  left: unset;
+  margin: 0;
+  transform: translateY(-50%);
+  border-radius: 16px;
   font-size: 16px;
-  top: unset;
-  bottom: 0;
-  animation: var(--bc-modal-animation-time) ease-in-out slide-up;
-}
-
-/* Fallback for browsers that don't support dvh */
-@supports not (height: 100dvh) {
-  #brand-concierge-modal.dialog-modal {
-    height: calc(100vh - 22px);
-  }
+  box-shadow: 0 8px 32px rgb(0 0 0 / 18%);
+  animation: var(--bc-modal-animation-time) ease-in-out bc-panel-in;
 }
 
 #brand-concierge-modal.dialog-modal.closing {
-  animation: var(--bc-modal-animation-time) ease-in-out slide-down;
-  bottom: -100vh;
+  animation: var(--bc-modal-animation-time) ease-in-out bc-panel-out;
 }
 
-#brand-concierge-modal ~ .modal-curtain {
-  animation: var(--bc-modal-animation-time) ease-in-out fade-in;
-  opacity: 1;
+@keyframes bc-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
 }
 
-#brand-concierge-modal.closing ~ .modal-curtain {
-  animation: var(--bc-modal-animation-time) ease-in-out fade-out;
-  opacity: 0;
+@keyframes bc-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-50%) translateX(16px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   #brand-concierge-modal.dialog-modal,
-  #brand-concierge-modal.dialog-modal.closing,
-  #brand-concierge-modal ~ .modal-curtain,
-  #brand-concierge-modal.closing ~ .modal-curtain {
+  #brand-concierge-modal.dialog-modal.closing {
     animation: none;
   }
 
@@ -1114,19 +1124,6 @@
     grid-template-columns: auto;
   }
 
-  #brand-concierge-modal.dialog-modal {
-    height: calc(100dvh - 32px);
-    margin-top: 32px;
-    border-radius: 12px 12px 0 0;
-  }
-
-  /* Fallback for browsers that don't support dvh */
-  @supports not (height: 100dvh) {
-    #brand-concierge-modal.dialog-modal {
-      height: calc(100vh - 32px);
-    }
-  }
-
   .floating-input .bc-floating-input .bc-prompt-cards {
     display: flex;
   }
@@ -1147,14 +1144,6 @@
     max-width: 932px;
   }
 
-  #brand-concierge-modal.dialog-modal {
-    max-width: 960px;
-  }
-
-  body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal {
-    max-width: 1412px;
-    width: calc(100% - 48px);
-  }
 }
 
 /* desktop up */
@@ -1192,9 +1181,5 @@
   .bc-susi-modal button.dialog-close {
     right: 24px;
     top: 24px;
-  }
-
-  #brand-concierge-modal.dialog-modal {
-    max-width: 80vw;
   }
 }

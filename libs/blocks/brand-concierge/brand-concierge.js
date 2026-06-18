@@ -340,6 +340,7 @@ async function openChatModal(initialMessage, bc) {
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
+    class: 'curtain-off',
     content: innerModal,
     closeCallback: async () => {
       const floatingButton = bc.el.querySelector('.bc-floating-button');
@@ -353,7 +354,6 @@ async function openChatModal(initialMessage, bc) {
     },
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
   clearBlockInput(bc);
 
