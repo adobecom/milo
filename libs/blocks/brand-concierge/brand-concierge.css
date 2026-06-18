@@ -829,6 +829,7 @@
   font-size: 16px;
   box-shadow: 0 8px 32px rgb(0 0 0 / 18%);
   animation: var(--bc-modal-animation-time) ease-in-out bc-panel-in;
+  position: fixed;
 }
 
 #brand-concierge-modal.dialog-modal.closing {
