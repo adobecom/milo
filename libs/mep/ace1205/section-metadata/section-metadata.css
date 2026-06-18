@@ -89,9 +89,17 @@
       max-width: 450px;
     }
 
+    .icon {
+      position: absolute;
+      inset: var(--s2a-spacing-xl);
+      z-index: 1;
+      text-align: start;
+    }
+
     .explore-card-foreground {
       aspect-ratio: 1 / 1.2;
       transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
+      will-change: transform;
 
       img {
         object-fit: cover;
@@ -166,8 +174,13 @@
     }
   }
 
+  &.bento .explore-card.dark,
+  &.bento .explore-card.light {background-color: transparent;} 
+
   &.bento .explore-card {
     border-radius: var(--s2a-border-radius-md);
+    border: 2px solid rgb(255 255 255 / 10%);
+    box-sizing: border-box;
     z-index: inherit;
 
     .explore-card-container:hover [class*='body-'] {
@@ -202,6 +215,7 @@
       & .explore-card-foreground {
         filter: brightness(0.98);
         transform: scale(1.015);
+        will-change: transform;
       }
     }
   }
