@@ -109,6 +109,9 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
 };
 
 export const loadPreflightResults = async () => {
+  const { hostname } = window.location;
+  if (!hostname.endsWith('.aem.page') && !hostname.endsWith('.aem.live')) return;
+
   const run = async () => {
     const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
     await showPreflightNotification();

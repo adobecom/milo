@@ -187,7 +187,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
-  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -959,11 +959,9 @@ class Gnav {
 
     // Decorate the profile dropdown
     // after user interacts with button or after 3s have passed
-    let decorationTimeout;
-
     const decorateDropdown = async (e) => {
       this.blocks.profile.buttonElem.removeEventListener('click', decorateDropdown);
-      clearTimeout(decorationTimeout);
+      clearTimeout(this.blocks.profile.decorationTimeout);
       await this.loadDelayed();
       this.blocks.profile.dropdownInstance = new this.ProfileDropdown({
         rawElem,
@@ -977,7 +975,15 @@ class Gnav {
     };
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
-    decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+    this.blocks.profile.decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+  };
+
+  reloadProfile = async () => {
+    clearTimeout(this.blocks.profile.decorationTimeout);
+    this.blocks.profile.decoratedElem.replaceChildren();
+    delete this.blocks.profile.buttonElem;
+    delete this.blocks.profile.dropdownInstance;
+    await this.decorateProfile();
   };
 
   static preloadAupSdk = async () => {
@@ -1043,7 +1049,7 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     const locale = lingoRegion?.ietf
       ? lingoRegion.ietf.replace('-', '_')
       : getUniversalNavLocale(config.locale);
@@ -1925,6 +1931,10 @@ export default async function init(block) {
   if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
+  if (!gnav.useUniversalNav && gnav.blocks?.profile?.rawElem) {
+    window.feds = window.feds || {};
+    window.feds.nav = { reload: () => gnav.reloadProfile() };
+  }
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';

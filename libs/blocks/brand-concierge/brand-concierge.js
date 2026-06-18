@@ -34,20 +34,20 @@ const webClientVersion = params.get('webclientversion');
 let floatingButtonClicked = false;
 let bcToken;
 
-function floatingElement(targetEl, el, focusableEl = null) {
-  const getTargetHeight = (target) => {
-    const { marginBottom } = window.getComputedStyle(target);
-    return target.scrollHeight + (parseFloat(marginBottom) * 2);
-  };
+const getTargetHeight = (target) => {
+  const { marginBottom } = window.getComputedStyle(target);
+  return target.scrollHeight + (parseFloat(marginBottom) * 2);
+};
 
+function floatingElement(targetEl, el, focusableEl = null) {
   const hideFloating = () => {
     if (focusableEl) {
       focusableEl.setAttribute('aria-hidden', 'true');
       focusableEl.setAttribute('tabindex', '-1');
       focusableEl.blur();
     }
-    targetEl.classList.add('floating-hidden');
-    targetEl.classList.remove('floating-show');
+    targetEl.classList.add('bc-floating-hidden');
+    targetEl.classList.remove('bc-floating-show');
   };
 
   const showFloating = () => {
@@ -55,8 +55,8 @@ function floatingElement(targetEl, el, focusableEl = null) {
       focusableEl.removeAttribute('aria-hidden');
       focusableEl.removeAttribute('tabindex');
     }
-    targetEl.classList.remove('floating-hidden');
-    targetEl.classList.add('floating-show');
+    targetEl.classList.remove('bc-floating-hidden');
+    targetEl.classList.add('bc-floating-show');
   };
 
   const mainElement = document.querySelector('main');
@@ -69,7 +69,9 @@ function floatingElement(targetEl, el, focusableEl = null) {
 
   const floatingSpacer = createTag('div', { class: 'bc-spacer' });
   floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
-  mainElement.append(floatingSpacer);
+  mainElement.appendChild(floatingSpacer);
+
+  targetEl.classList.add('bc-floating-element');
 
   const ro = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -94,9 +96,15 @@ function floatingElement(targetEl, el, focusableEl = null) {
     // only values that need to be calculated on scroll are here, to optimize performance
     const threshold = window.scrollY + window.innerHeight - mainTop;
     const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+    const bottomValue = threshold - mainHeight;
+
+    // if the spacer is not the last element in main, move it to the end
+    if (mainElement.children[mainElement.children.length - 1] !== floatingSpacer) {
+      mainElement.appendChild(floatingSpacer);
+    }
 
     if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
+      target.style.bottom = `${bottomValue}px`;
       if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
         hideFloating();
       } else {
@@ -493,7 +501,7 @@ function decorateBackground(el, background) {
       el.style.setProperty('--brand-concierge-bg', `url(${rawImage})`);
     }
   }
-  el.removeChild(background);
+  if (el.contains(background)) el.removeChild(background);
 }
 
 function decorateHeader(el, header) {
@@ -514,7 +522,7 @@ function decorateHeader(el, header) {
   }
 
   el.append(headerSection);
-  el.removeChild(header);
+  if (el.contains(header)) el.removeChild(header);
 }
 
 function decorateCards(el, cards) {
@@ -525,7 +533,7 @@ function decorateCards(el, cards) {
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
-      'daa-ll': getAnalyticsLabel('1'),
+      'daa-ll': getAnalyticsLabel(`1|BC-suggested_prompt_clicked|inline|${cardText.textContent.trim()}`),
       'aria-label': cardText.textContent.trim(),
     });
     if (cardImage) {
@@ -544,7 +552,7 @@ function decorateCards(el, cards) {
   });
 
   el.append(cardSection);
-  el.removeChild(cards);
+  if (el.contains(cards)) el.removeChild(cards);
 }
 
 function decorateInput(el, input) {
@@ -575,7 +583,7 @@ function decorateInput(el, input) {
 
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
-  el.removeChild(input);
+  if (el.contains(input)) el.removeChild(input);
   updateReplicatedValue(textareaWrapper, fieldInput);
 
   fieldInput.addEventListener('input', () => {
@@ -589,7 +597,7 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
+      e.preventDefault();
       fieldButton.click();
     }
   });
@@ -605,7 +613,7 @@ function decorateLegal(el, legal) {
   const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
   legalSection.append(legalContent);
   el.append(legalSection);
-  el.removeChild(legal);
+  if (el.contains(legal)) el.removeChild(legal);
 }
 
 function decorateFloatingButton(el) {
@@ -625,6 +633,44 @@ function decorateFloatingButton(el) {
   });
 
   floatingElement(floatingButton, el, floatingContainer);
+}
+
+function decorateFloatingInput(el, cards, input) {
+  if (variants.isFloatingInputOnly) {
+    el.classList.add('floating-input');
+  }
+  function updatePillVisibility(target) {
+    const prompts = target.querySelector('.bc-prompt-cards');
+    if (!prompts) return;
+
+    const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
+    buttons.forEach((btn) => { btn.style.display = ''; });
+
+    requestAnimationFrame(() => {
+      const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
+
+      buttons.forEach((btn) => {
+        const { left, right } = btn.getBoundingClientRect();
+
+        if (right > containerRight || left < containerLeft) {
+          btn.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  const floatingInput = createTag('section', { class: 'bc-floating-input' });
+  decorateInput(floatingInput, input);
+  decorateCards(floatingInput, cards);
+  el.append(floatingInput);
+
+  const updateLayout = () => {
+    updatePillVisibility(floatingInput);
+  };
+
+  window.addEventListener('resize', updateLayout);
+  requestAnimationFrame(updateLayout);
+  floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
 }
 
 function handleConsent(el) {
@@ -651,7 +697,8 @@ export default async function init(el) {
 
   // set variant
   if (!el.classList.contains('hero')
-  && !el.classList.contains('floating-button-only')) {
+    && !el.classList.contains('floating-button-only')
+    && !el.classList.contains('floating-input-only')) {
     el.classList.add('inline');
     variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
@@ -663,8 +710,10 @@ export default async function init(el) {
   }
   if (el.classList.contains('floating-button')) {
     variants.isFloatingButton = true;
-  } else if (el.classList.contains('floating-button-only')) {
+  }
+  if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+    variants.isFloatingButton = false;
   }
 
   if (el.classList.contains('floating-anchor-hide')) {
@@ -681,6 +730,14 @@ export default async function init(el) {
       variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
     }
   });
+
+  if (el.classList.contains('floating-input')) {
+    variants.isFloatingInput = true;
+  }
+  if (el.classList.contains('floating-input-only')) {
+    variants.isFloatingInputOnly = true;
+    variants.isFloatingInput = false;
+  }
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
@@ -713,6 +770,18 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isFloatingInput) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+  }
+  if (variants.isFloatingInputOnly) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+    rows.forEach((row) => {
+      el.removeChild(row);
+    });
   }
 
   const loginTestButton = params.get('susi-test-btn');

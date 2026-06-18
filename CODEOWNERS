@@ -82,6 +82,7 @@
 /libs/blocks/marquee/ @adobecom/milo-core
 /libs/blocks/martech-metadata/ @vgoodric
 /libs/blocks/media/ @adobecom/milo-core
+/libs/blocks/mas-compare-chart-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-collection-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-collection/ @adobecom/tacocat
