@@ -990,6 +990,8 @@ class Gnav {
     const config = getConfig();
     const { imsClientId } = config;
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
       `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
@@ -1004,7 +1006,7 @@ class Gnav {
       getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
       environment,
       cdnEnvironment: environment,
-      locale: config.locale?.ietf || 'en-US',
+      locale,
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
