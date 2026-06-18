@@ -1,3 +1,6 @@
+import { getConfig } from '../../../../utils/utils.js';
+import { getMarketConfig } from '../../../../utils/market.js';
+import { getFileName } from '../../../personalization/personalization.js';
 import {
   watchForMasContent,
   unwatchForMasContent,
@@ -69,22 +72,21 @@ export function getParameters() {
   };
 }
 
+function getBadgeDimensions(beforeStyles) {
+  return {
+    width: Math.max(parseFloat(beforeStyles.width) + 30, 200),
+    height: parseFloat(beforeStyles.height) || parseFloat(beforeStyles.minHeight) || 35,
+  };
+}
+
+function getFragmentPath(fragment) {
+  const path = fragment.dataset.path || fragment.dataset.fragmentPath || fragment.dataset.cardUrl;
+  if (!fragment.dataset.cardUrl) return path;
+  return rewriteBlogPreviewHost(path) || rewriteForPreviewHost(path);
+}
+
 export function setBadgeEventListeners() {
   const FRAGMENT_SELECTOR = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]';
-
-  function getBadgeDimensions(beforeStyles) {
-    const width = Math.max(parseFloat(beforeStyles.width) + 30, 200);
-    const height = parseFloat(beforeStyles.height) || parseFloat(beforeStyles.minHeight) || 35;
-    return { width, height };
-  }
-
-  function getFragmentPath(fragment) {
-    const path = fragment.dataset.path || fragment.dataset.fragmentPath || fragment.dataset.cardUrl;
-    if (fragment.dataset.cardUrl) {
-      return rewriteBlogPreviewHost(path) || rewriteForPreviewHost(path);
-    }
-    return path;
-  }
 
   function isInBadgeArea(x, y, topOffset, width, height) {
     return x >= 0 && x < width && y >= topOffset && y < topOffset + height;
@@ -175,4 +177,124 @@ export function getPageUpdates(label) {
   observer.observe(document.body, { childList: true, subtree: true });
 
   return `${getCount()} Page Updates`;
+}
+
+function setManifestIdOnElements(selector, manifestName, prop = 'manifestId') {
+  document.querySelectorAll(selector).forEach((el) => {
+    el.dataset[prop] = manifestName;
+    if (prop === 'manifestId') el.dataset.manifestDisplay = `${manifestName}: html`;
+  });
+}
+
+function setHighlightData(manifests) {
+  const { mep } = getConfig();
+  if (!mep?.experiments) return;
+
+  manifests.forEach(({ selectedVariant, manifest }) => {
+    const manifestName = getFileName(manifest);
+
+    selectedVariant?.replacefragment?.forEach(({ val }) => {
+      document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
+        el.dataset.manifestId = manifestName;
+        el.dataset.fragmentPath = val;
+        el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
+      });
+    });
+
+    selectedVariant?.useblockcode?.forEach(({ selector }) => {
+      if (selector) setManifestIdOnElements(`.${selector}`, manifestName, 'codeManifestId');
+    });
+
+    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
+      if (selector === 'gnav-source') setManifestIdOnElements('header, footer', manifestName);
+    });
+
+    const fragmentAttr = `[data-manifest-id="${manifestName}"]`;
+    const merchCardSelector = `.section[class*="merch-cards"] .fragment${fragmentAttr} merch-card`;
+    document.querySelectorAll(merchCardSelector).forEach((el) => {
+      el.dataset.manifestId = manifestName;
+    });
+
+    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
+      if (el.dataset.manifestDisplay) return;
+      if (el.dataset.path) {
+        el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
+        el.dataset.fragmentPath = el.dataset.path;
+      } else {
+        el.dataset.manifestDisplay = `${manifestName}: html`;
+        el.dataset.mepHtmlBadge = 'true'; // gnav workaround: non-clickable badge
+      }
+    });
+  });
+}
+
+function setDefaultFragments() {
+  document.querySelectorAll('[data-path]').forEach((fragment) => {
+    const { manifestId, mepLingoRoc, mepLingoFallback, path } = fragment.dataset;
+    if (manifestId || mepLingoRoc || mepLingoFallback || !path) return;
+    fragment.dataset.fragmentDefault = '';
+    fragment.dataset.fragmentDisplay = path;
+  });
+}
+
+const BADGE_SELECTOR = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]';
+
+function isAnyHighlightEnabled() {
+  const { mepHighlight, mepFragments, mepCaasHighlight } = document.body.dataset;
+  return mepHighlight === 'true' || mepFragments === 'true' || mepCaasHighlight === 'true';
+}
+
+function clickHitsBadgeInContents(e, fragment, badgeWidth, badgeHeight, topOffset) {
+  const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
+  if (visibleChildren.length === 0) return e.clientX >= 0 && e.clientX < badgeWidth;
+  return visibleChildren.some((child) => {
+    const { top, left } = child.getBoundingClientRect();
+    const relX = e.clientX - left;
+    const relY = e.clientY - top;
+    return relY >= (topOffset - badgeHeight) && relY < topOffset && relX >= 0 && relX < badgeWidth;
+  });
+}
+
+function setBadgeHandlers() {
+  document.body.addEventListener('click', (e) => {
+    if (!isAnyHighlightEnabled()) return;
+    if (e.target.closest('.mep-preview-overlay')) return;
+
+    const fragment = e.target.closest(BADGE_SELECTOR);
+    if (!fragment) return;
+
+    const beforeStyles = window.getComputedStyle(fragment, '::before');
+    if (beforeStyles.display === 'none' || beforeStyles.content === 'none') return;
+
+    const { width: badgeWidth, height: badgeHeight } = getBadgeDimensions(beforeStyles);
+    const fragmentPath = getFragmentPath(fragment);
+    const topOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
+
+    const openFragment = () => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (fragmentPath) window.open(fragmentPath, '_blank');
+    };
+
+    if (window.getComputedStyle(fragment).display === 'contents') {
+      if (clickHitsBadgeInContents(e, fragment, badgeWidth, badgeHeight, topOffset)) openFragment();
+      return;
+    }
+
+    const { left, top } = fragment.getBoundingClientRect();
+    const clickX = e.clientX - left;
+    const clickY = e.clientY - top;
+    const inBadgeY = clickY >= topOffset && clickY < topOffset + badgeHeight;
+    const inBadgeX = clickX >= 0 && clickX < badgeWidth;
+    if (inBadgeY && inBadgeX) openFragment();
+  });
+}
+
+export default async function init() {
+  getMarketConfig();
+  setHighlightData();
+  setDefaultFragments();
+  setBadgeHandlers();
+  watchForCaasBlocks();
+  watchForMasContent();
 }

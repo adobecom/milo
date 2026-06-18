@@ -2376,7 +2376,7 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    import('../features/mep/mep-next/mep-next.js')
+    import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
     import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
       .then(({ default: init }) => init());
