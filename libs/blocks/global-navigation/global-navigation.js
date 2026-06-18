@@ -263,6 +263,7 @@ const getSignInCtaStyle = () => {
 };
 
 const enableBE = new URLSearchParams(window.location.search).has('enableBE');
+const enableManagePeople = getConfig().unav?.profile?.enableManagePeople ?? true;
 
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
@@ -289,7 +290,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
-                ...(enableBE && { enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true }),
+                ...(enableBE && { enableManagePeople }),
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -301,9 +302,7 @@ export const CONFIG = {
               ...(enableBE && {
                 managePeopleConfig: {
                   enableWorkflow: true,
-                  params: {
-                    enableinlineoverlay: 's2-compat',
-                  },
+                  params: { enableinlineoverlay: 's2-compat' },
                   ...getConfig().unav?.profile?.managePeopleConfig,
                 },
               }),
@@ -877,14 +876,9 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
-
-    // Kick off AUP SDK init in parallel with the rest of imsReady so its cost
-    // (script + preloadSDK + updateConfig) does not land inside Unav-Time.
-    // The fetchAUPSDKInstance callback below will just return this promise.
     if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
-      this.aupsdkInstancePromise = this.preloadAupSdk();
+      this.aupsdkInstancePromise = Gnav.preloadAupSdk();
       this.aupsdkInstancePromise.catch((e) => {
-        // Reset so the fetchAUPSDKInstance fallback re-runs the inline init.
         this.aupsdkInstancePromise = null;
         lanaLog({
           message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
@@ -986,7 +980,7 @@ class Gnav {
     decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
   };
 
-  preloadAupSdk = async () => {
+  static preloadAupSdk = async () => {
     const config = getConfig();
     const { imsClientId } = config;
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
@@ -1113,7 +1107,7 @@ class Gnav {
       return {
         fetchAUPSDKInstance: async () => {
           if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
-          this.aupsdkInstancePromise = this.preloadAupSdk();
+          this.aupsdkInstancePromise = Gnav.preloadAupSdk();
           return this.aupsdkInstancePromise;
         },
       };
