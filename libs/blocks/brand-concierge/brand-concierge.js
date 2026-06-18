@@ -402,38 +402,28 @@ function setReactLikeValue(el, value) {
 // Redirect a block input's message into the already-open web client by driving
 // the web client's own input + send button. Returns true on success so the
 // caller can fall back to a rebootstrap when the web client DOM isn't present.
-// TEMP: instrumented with [bc-force] logging to diagnose why send isn't firing.
 async function forceMessageIntoWebClient(message) {
-  // eslint-disable-next-line no-console
-  const log = (...a) => console.log('[bc-force]', ...a);
   if (!message) return false;
   const inputReady = await waitForCondition(() => !!document.getElementById('ai-chat-input'), 2000);
   const input = document.getElementById('ai-chat-input');
-  log('inputReady:', inputReady, 'input found:', !!input);
   if (!inputReady || !input) return false;
 
   input.focus();
   setReactLikeValue(input, message);
-  log('value after set:', JSON.stringify(input.value));
 
-  // The send button is a sibling of the input wrapper inside .input-container,
-  // and the web client marks it enabled via aria-disabled (not the disabled
-  // property), flipping it to "false" once it registers the input value.
+  // The send button is a sibling of the input wrapper inside .input-container.
+  // Give the web client a moment to register the value and enable the button
+  // (it toggles aria-disabled), then click it.
   const getSubmitButton = () => input.closest('.input-container')?.querySelector('.submit-button')
     ?? document.querySelector('.submit-button');
-  const isEnabled = (btn) => !!btn && btn.getAttribute('aria-disabled') !== 'true';
+  await waitForCondition(() => {
+    const btn = getSubmitButton();
+    return !!btn && btn.getAttribute('aria-disabled') !== 'true';
+  }, 1500);
 
-  const btn0 = getSubmitButton();
-  log('button found:', !!btn0, 'initial aria-disabled:', btn0?.getAttribute('aria-disabled'));
-
-  const enabled = await waitForCondition(() => isEnabled(getSubmitButton()), 1500);
   const submitButton = getSubmitButton();
-  log('after wait — enabled:', enabled, 'aria-disabled:', submitButton?.getAttribute('aria-disabled'));
   if (!submitButton) return false;
-
-  // TEMP: click regardless of aria-disabled to observe whether the click sends.
   submitButton.click();
-  log('clicked send; input value now:', JSON.stringify(input.value));
   return true;
 }
 
