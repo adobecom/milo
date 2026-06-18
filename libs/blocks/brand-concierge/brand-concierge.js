@@ -33,7 +33,6 @@ const webClientVersion = params.get('webclientversion');
 // a single auth token (one signed-in user) and a single shared chat modal.
 let bcToken;
 let sharedModal = null; // the one shared dialog element while open, else null
-let modalOwnerBc = null; // the block whose web client is currently bootstrapped in the shared modal
 // Default source for the no-arg getUpdatedChatUIConfig() (used by the unit test);
 // the live bootstrap path always passes an explicit per-block authoredContent.
 let lastAuthoredContent;
@@ -385,28 +384,8 @@ function createOnBeforeEventSend() {
   };
 }
 
-// PoC: prefer handing the message straight to the already-bootstrapped web client.
-// The web client's public API surface is not documented here, so probe a small set
-// of plausible method names at runtime and use the first that exists.
-function sendMessageToWebClient(message) {
-  const concierge = window.adobe?.concierge;
-  if (!concierge || !message) return false;
-  const candidates = ['sendMessage', 'send', 'submitMessage', 'submit', 'ask'];
-  for (const name of candidates) {
-    if (typeof concierge[name] === 'function') {
-      try {
-        concierge[name](message);
-        return true;
-      } catch (e) {
-        window.lana?.log(`Brand Concierge: direct send via ${name} failed: ${e}`, { tags: 'brand-concierge', severity: 'warn' });
-      }
-    }
-  }
-  return false;
-}
-
-// Fallback when no direct-send API exists: re-mount the web client with the
-// secondary block's authored config and its message as the initial message.
+// Re-mount the web client with this block's authored config and its message as
+// the initial message, switching the open modal to this block's content.
 function rebootstrapWebClient(message, bc) {
   const mountEl = document.getElementById(mountId);
   if (!mountEl || !window.adobe?.concierge?.bootstrap) return;
@@ -421,20 +400,13 @@ function rebootstrapWebClient(message, bc) {
       bcAnalytics(event);
     },
   });
-  // This block is now the one mounted in the modal, so it becomes the current
-  // owner. Without this, the original opener stays "owner" forever and a switch
-  // back to it would be wrongly short-circuited (its message dropped).
-  modalOwnerBc = bc;
 }
 
-// Route a submission into the already-open shared modal.
-// Preferred: direct send. Fallback: rebootstrap, but only when the submitting
-// block is not the one currently bootstrapped — the currently-mounted block is
-// already connected, so it does not rebootstrap on its own subsequent input.
+// Route a submission into the already-open shared modal: any input from any
+// block rebootstraps the modal with that block's content and message —
+// regardless of which block originally opened it.
 function routeMessageIntoModal(message, bc) {
   if (!message) return;
-  if (sendMessageToWebClient(message)) return;
-  if (bc === modalOwnerBc) return;
   rebootstrapWebClient(message, bc);
 }
 
@@ -468,11 +440,9 @@ async function openChatModal(initialMessage, bc) {
         setTimeout(() => resolve(), animationMs);
       });
       sharedModal = null;
-      modalOwnerBc = null;
     },
   });
   sharedModal = modal;
-  modalOwnerBc = bc;
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
   clearBlockInput(bc);
