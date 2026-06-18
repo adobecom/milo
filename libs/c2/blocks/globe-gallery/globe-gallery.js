@@ -183,13 +183,6 @@ function fibSpherePos(i, total, radius) {
 // `gid` is this instance's unique-id suffix, minted by buildGlobeDom (authoring.js)
 // and threaded in here so the CA filter url(#…) ref matches the built node.
 function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
-  // rAF driver replacing gsap.ticker.
-  let rafId = 0;
-  // eslint-disable-next-line no-use-before-define -- tick() runs only via rAF, after init
-  function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
-  function startTicker() { if (!rafId) rafId = requestAnimationFrame(rafLoop); }
-  function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
-
   // Root-scoped query helper — every DOM lookup goes through this so the runtime
   // only ever touches its own block's nodes (multi-instance safe).
   const q = (sel) => root.querySelector(sel);
@@ -600,11 +593,13 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
   // ════════════════════════════════════════════════════════════════════════════
   // Per-frame pipeline. tick() (defined at the end of this section) is a thin
-  // orchestrator: it reads scroll → derives phase progress → runs each stage
-  // below in a fixed order → renders. Each stage owns one concern; the values
-  // that flow between stages (phase t-values, the active camera, sphGroupZ,
-  // sphereRotActive) are passed explicitly so the data flow is visible. All other
-  // per-instance render state lives in the closure and is read directly.
+  // orchestrator: computeFrame() builds the per-frame `frame` context (scroll +
+  // every phase t-value + the card-entry transforms), each stage below reads what
+  // it needs from `frame` (destructured at its top) and the producer stages
+  // (updateActiveCamera, updateSphereRotation, updateSphereGroupDepth) write their
+  // result back onto `frame`, then the same object flows into the card loop. ONE
+  // per-frame context, not several. Stage order matters (see tick()'s note). All
+  // other per-instance render state lives in the closure and is read directly.
   // ════════════════════════════════════════════════════════════════════════════
 
   // Read scroll position and derive every phase progress value for this frame.
@@ -646,10 +641,38 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     ) + PROGRESS_FOLD_DUR;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
     const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (PROGRESS_ZOOM_END - foldLast)));
-    sphereFormTAtLastTick = sphereFormT; // cache for click handler
+    sphereFormTAtLastTick = sphereFormT; // cache for the interaction module's click/hover handlers
+
+    // Card-entry transforms (consumed by the arc branch of updateCardTransform):
+    // entryRot — the arc holds off-screen for the first 5% of entry (while the text
+    // settles), then sweeps counter-clockwise into its fanned position over the rest;
+    // entryYOffset — the vertical slide-up; arcScale — the arc→sphere card size ratio.
+    const arcEntryT = Math.max(0, Math.min(1, (arcCopyEntryT - 0.05) / 0.95));
+    const entryRot = (1 - easeOutCubic(arcEntryT)) * 0.9;
+    const entryYOffset = (1 - slideE) * H * 0.30;
+    const arcScale = CARD_W_ARC / CARD_W_SPHERE;
 
     return {
-      lenisY, scrollingDown, arcPanT, slideE, gridFormT, gpWin, sphereFormT, zoomT,
+      // scroll
+      lenisY,
+      scrollingDown,
+      // phase t-values
+      arcPanT,
+      gridFormT,
+      gpWin,
+      sphereFormT,
+      zoomT,
+      // card-entry transforms (arc branch)
+      entryRot,
+      entryYOffset,
+      arcScale,
+      // Filled in by the pipeline stages below — declared here so the frame's shape is
+      // stable + documented in one place: the active camera (updateActiveCamera),
+      // whether any sphere rotation is applied (updateSphereRotation), and the
+      // sphere-group z offset (updateSphereGroupDepth).
+      activeCamera: null,
+      sphereRotActive: false,
+      sphGroupZ: 0,
     };
   }
 
@@ -658,7 +681,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   //   Fold phase: perspective approaching CAM_Z_SPHERE in lockstep with the fold so
   //     the sphere reaches normal size exactly when cards finish folding.
   //   Zoom-through: perspective continuing CAM_Z_SPHERE → CAM_Z_END.
-  function updateActiveCamera(sphereFormT, zoomT) {
+  function updateActiveCamera(frame) {
+    const { sphereFormT, zoomT } = frame;
     let activeCamera;
     const camZArc = arcCamZ(H);
     if (sphereFormT === 0) {
@@ -695,7 +719,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   //     off-screen drift the previous sphereGroup-level rotation caused.
   // sphereGroup.rotation is forced to identity each frame so world-matrix queries
   // (modal snapshots, sphereGroup.attach) read the baked-in per-card rotation.
-  function updateSphereRotation(sphereFormT) {
+  function updateSphereRotation(frame) {
+    const { sphereFormT } = frame;
     sphereGroup.rotation.x = 0;
     sphereGroup.rotation.y = 0;
 
@@ -781,7 +806,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
   // Canvas visibility — instantly visible once the section approaches; no opacity
   // fade (the arc's own rotation/slide-up handles the "appearing" feel).
-  function updateCanvasVisibility(lenisY, zoomT) {
+  function updateCanvasVisibility(frame) {
+    const { lenisY, zoomT } = frame;
     const canvas = renderer.domElement;
     const showTrigger = blockDocTop - H * ENTRY_LEAD_VH; // matches entryStart in computeFrame
     if (lenisY < showTrigger || zoomT >= 0.95) {
@@ -798,7 +824,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // Scroll-up exit: the sticky element unsticks only ~84px after the fade threshold,
   // so a full 0.7s transition would still be playing when the element starts drifting
   // downward. On scroll-up we use a fast 0.15s fade so it disappears before moving.
-  function updatePullQuote(zoomT, scrollingDown) {
+  function updatePullQuote(frame) {
+    const { zoomT, scrollingDown } = frame;
     if (pqEl) {
       if (zoomT >= 0.38 && !pqShown) {
         pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
@@ -829,7 +856,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // FOLD block, its world z = (sphGroupZ + spherePos.z) × fdE jumped from 0 → ~25 in one
   // frame — a visible forward "dart" that read as a scene glitch during scroll.
   // Using camera.position.z directly (always set in both ortho/perspective branches above).
-  function updateSphereGroupDepth(sphereFormT, zoomT) {
+  function updateSphereGroupDepth(frame) {
+    const { sphereFormT, zoomT } = frame;
     const sphereFormT3 = sphereFormT * sphereFormT * sphereFormT;
     const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT3);
     const sphGroupZ = zoomT === 0 ? (camera.position.z - foldSphDist) : 0;
@@ -898,8 +926,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // constants, sphere-rotation quats, drag velocity, setCardUV / applyMotionCA,
   // arcCtx, …) — a module boundary here would mean a huge DI surface and getter
   // calls in the per-card hot loop. The per-frame values that vary (sphGroupZ,
-  // sphereRotActive, the entry/arc transforms) are passed in via the `frame`
-  // context built once per frame in updateCardTransforms.
+  // sphereRotActive, the entry/arc transforms) are read from the shared `frame`
+  // context (built by computeFrame, threaded through the pipeline).
   // ════════════════════════════════════════════════════════════════════════════
 
   // ── Branch: fully in sphere ──
@@ -1152,62 +1180,54 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     placeArcCard(card, mesh, i, gpE, prevMeshX, prevMeshY, frame);
   }
 
-  // Position every card for this frame: build the per-frame context (entry/arc
-  // transforms + the phase t-values from tick), then place each card. The
-  // modal-active card + swipe-neighbors are skipped inside updateCardTransform.
-  function updateCardTransforms({
-    arcPanT, gridFormT, gpWin, slideE, sphereFormT, sphGroupZ, sphereRotActive,
-  }) {
-    // Entry rotation: arc holds off-screen for the first 5% of entry (while text settles),
-    // then sweeps counter-clockwise into its final fanned position over the remaining 95%.
-    const arcEntryT = Math.max(0, Math.min(1, (arcCopyEntryT - 0.05) / 0.95));
-    const entryRot = (1 - easeOutCubic(arcEntryT)) * 0.9;
-    const frame = {
-      arcPanT,
-      gridFormT,
-      gpWin,
-      sphereFormT,
-      sphGroupZ,
-      sphereRotActive,
-      entryRot,
-      entryYOffset: (1 - slideE) * H * 0.30,
-      arcScale: CARD_W_ARC / CARD_W_SPHERE,
-    };
+  // Position every card for this frame: run the per-card dispatcher over the shared
+  // `frame` context (built by computeFrame, with the producer stages' results already
+  // written back). The modal-active card + swipe-neighbors are skipped inside it.
+  function updateCardTransforms(frame) {
     for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i, frame);
   }
 
   // ── Per-frame tick — thin orchestrator ──────────────────────────────────────
-  // Stage order matters (e.g. the modal-closing stage reads sphereGroup.position
-  // set by updateSphereGroupDepth on the PREVIOUS frame; the card loop reads
-  // sphGroupZ from THIS frame). Keep this sequence intact.
+  // Builds the per-frame `frame` context, then runs each stage in a fixed order,
+  // writing producer results (activeCamera, sphereRotActive, sphGroupZ) back onto
+  // `frame` so later stages + the card loop read them. Stage ORDER matters and is
+  // load-bearing in two ways: (1) a producer must run before its consumers
+  // (updateActiveCamera sets cameraInsideSphere + camera.z, read by
+  // updateSphereRotation + updateSphereGroupDepth); (2) modal.updateAnimation's
+  // closing branch reads sphereGroup.position from the PREVIOUS frame and the live
+  // sphereRotEuler/Quat refreshed by updateSphereRotation THIS frame. Keep it intact.
   function tick() {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
-    const {
-      lenisY, scrollingDown, arcPanT, slideE, gridFormT, gpWin, sphereFormT, zoomT,
-    } = computeFrame();
+    const frame = computeFrame();
+    arcCtx = buildArcCtx(frame.arcPanT, W, H, ARC_SPAN);
 
-    a11y.updateTabStops(sphereFormT);
-    arcCtx = buildArcCtx(arcPanT, W, H, ARC_SPAN);
-    const activeCamera = updateActiveCamera(sphereFormT, zoomT);
-    const sphereRotActive = updateSphereRotation(sphereFormT);
-    modal.updateAnimation(sphereRotActive);
+    a11y.updateTabStops(frame.sphereFormT);
+    frame.activeCamera = updateActiveCamera(frame);
+    frame.sphereRotActive = updateSphereRotation(frame);
+    modal.updateAnimation(frame.sphereRotActive);
     modal.updateDesktopNav();
-    updateCanvasVisibility(lenisY, zoomT);
-    updatePullQuote(zoomT, scrollingDown);
+    updateCanvasVisibility(frame);
+    updatePullQuote(frame);
 
     // Arc needs manual render order; sphere needs camera-distance sorting.
-    renderer.sortObjects = sphereFormT > 0.5;
+    renderer.sortObjects = frame.sphereFormT > 0.5;
 
-    const sphGroupZ = updateSphereGroupDepth(sphereFormT, zoomT);
+    frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateGlobalCA();
-    updateCardTransforms({
-      arcPanT, gridFormT, gpWin, slideE, sphereFormT, sphGroupZ, sphereRotActive,
-    });
+    updateCardTransforms(frame);
     updateArcCopy();
-    renderScene(activeCamera);
+    renderScene(frame.activeCamera);
     a11y.updateFocusRing();
   }
+
+  // rAF driver (replacing the prototype's gsap.ticker). Defined here, after tick(),
+  // so there's no forward reference; startTicker/stopTicker are called from
+  // initRuntime (once textures load) and destroy.
+  let rafId = 0;
+  function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
+  function startTicker() { if (!rafId) rafId = requestAnimationFrame(rafLoop); }
+  function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   let resizeHandler = null;

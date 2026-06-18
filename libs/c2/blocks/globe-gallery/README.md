@@ -49,9 +49,9 @@ and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
 All ten shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
 `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`, `arc.js`,
 `interaction.js`) are **airbnb-clean**
-(`npx eslint` exit 0). The only exceptions are 2 targeted
-`// eslint-disable-next-line no-use-before-define` comments in `globe-gallery.js` for genuine
-forward refs (rAF driver → `tick`, `doLayout` → `destroy`). No blanket `/* eslint-disable */`.
+(`npx eslint` exit 0). The only exception is 1 targeted
+`// eslint-disable-next-line no-use-before-define` comment in `globe-gallery.js` for a genuine
+forward ref (`doLayout` → `destroy`, a mutual reference). No blanket `/* eslint-disable */`.
 
 ### Module layout (post-refactor)
 
@@ -62,9 +62,11 @@ hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpher
 `arc.js`); (3) `createGlobeGalleryRuntime()` — the
 per-instance closure holding sphere state + behavior. Inside the closure the
 **per-frame pipeline** is a sequence of small single-concern stages run in a fixed
-order by `tick()`; values that flow between stages (phase t-values, active camera,
-`sphGroupZ`, `sphereRotActive`) are passed as explicit params so the data flow is
-visible. The per-card placement (the largest stage) is a dispatcher over four
+order by `tick()`. `computeFrame()` builds one per-frame `frame` context (scroll +
+phase t-values + card-entry transforms); each stage reads what it needs from `frame`
+(destructured at its top) and the producer stages write their result back onto it
+(`activeCamera`, `sphereRotActive`, `sphGroupZ`), so the same object flows through to
+the card loop — one context, not several. The per-card placement (the largest stage) is a dispatcher over four
 runtime-scope branch fns fed an explicit per-frame `frame` context — kept in this
 file, not a module, because they read deeply from the closure (BP constants,
 sphere-rotation quats, drag velocity) and run in the per-card hot loop. Four DI
