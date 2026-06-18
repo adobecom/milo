@@ -112,7 +112,7 @@
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
-  margin: 0 var(--spacing-m);
+  margin: 0;
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
   overflow-y: hidden;
