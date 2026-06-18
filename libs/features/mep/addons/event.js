@@ -44,6 +44,8 @@ export default async function init(eventId) {
   const consentCookieValue = getCookie('OptanonConsent');
   if (consentCookieValue?.includes('C0002:0')) return false;
 
-  const eventDetails = await fetchFromRainfocus(eventId);
-  return eventDetails?.isRegistered === true;
+  const config = getConfig();
+  config.mep ??= {};
+  config.mep.eventDetails = await fetchFromRainfocus(eventId);
+  return config.mep.eventDetails?.isRegistered === true;
 }
