@@ -60,7 +60,11 @@ forward ref (`doLayout` → `destroy`, a mutual reference). No blanket `/* eslin
 hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpherePos`
 (generic easings + `lerpN` live in `math.js`; the arc-phase geometry lives in
 `arc.js`); (3) `createGlobeGalleryRuntime()` — the
-per-instance closure holding sphere state + behavior. Inside the closure the
+per-instance closure holding sphere state + behavior. The active breakpoint's
+resolved render profile (card count, sphere radius, grid dims, camera Z, …) is one
+frozen `bp` object built by `resolveBpProfile()` on each (re)init; functions
+destructure what they need from it at their top (`const { N_TOTAL, SPHERE_R } = bp;`),
+the DI getters read `bp.*` live. Inside the closure the
 **per-frame pipeline** is a sequence of small single-concern stages run in a fixed
 order by `tick()`. `computeFrame()` builds one per-frame `frame` context (scroll +
 phase t-values + card-entry transforms); each stage reads what it needs from `frame`

@@ -190,41 +190,49 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // The card content the runtime renders. authoredCards is always present (from the fragment).
   const CARD_CONTENT = authoredCards || [];
 
-  // Per-card accessor. N_TOTAL is clamped to the authored count (see applyBP),
-  // so i is always in range — no modulo wrap. Fewer authored cards than the grid
+  // Per-card accessor. bp.N_TOTAL is clamped to the authored count (see
+  // resolveBpProfile), so i is always in range — no modulo wrap. Fewer authored cards than the grid
   // can hold simply leaves the last grid column partially filled.
   function getCardMetadata(i) {
     return CARD_CONTENT[i];
   }
 
-  // ── Per-BP values — declared here, assigned by applyBP() before buildCards() runs ──
-  // Do NOT read these at module load time; their values are only valid after init().
-  let N_TOTAL; let N_VISIBLE; let ARC_SPAN; let SPHERE_R; let CARD_H_SPHERE; let CARD_W_SPHERE;
-  let CARD_W_ARC; let CAM_Z_SPHERE; let CAM_Z_END;
-  let FOLD_SPHERE_DIST; let GRID_COLS; let GRID_ROWS;
-  let ARC_DENSE_COUNT;
-  let currentBPName = null;
+  // Active breakpoint profile — the static BREAKPOINTS config (module scope)
+  // resolved against the viewport band + authored card count. Assigned by
+  // resolveBpProfile() in initRuntime, rebuilt on a band crossing (destroy→init);
+  // frozen + constant within a band. Read throughout as bp.N_TOTAL, bp.SPHERE_R,
+  // bp.GRID_COLS, etc. — functions destructure what they need at their top; the DI
+  // getters read bp.* live so they never capture a stale band. null until
+  // initRuntime() runs — do NOT read at module load time.
+  let bp = null;
 
-  function applyBP(cfg) {
+  // Resolve a band's static cfg into the active profile: clamps N_TOTAL to the
+  // authored card count, derives the sphere card width + fold distance, clamps the
+  // dense-arc cluster. Pure — returns a frozen object assigned to `bp`.
+  function resolveBpProfile(name, cfg) {
     // N_TOTAL follows the authored card count, capped at the per-BP maximum
     // (cfg.N_TOTAL == GRID_COLS*GRID_ROWS — the grid can't hold more). Fewer
     // cards → ragged last grid column (accepted). More cards → extras dropped.
-    N_TOTAL = Math.min(CARD_CONTENT.length, cfg.N_TOTAL);
-    N_VISIBLE = N_TOTAL; // all cards on arc simultaneously (no conveyor)
-    ARC_SPAN = cfg.ARC_SPAN;
-    SPHERE_R = cfg.SPHERE_R;
-    CARD_H_SPHERE = cfg.CARD_H_SPHERE;
-    CARD_W_SPHERE = CARD_H_SPHERE * CARD_ASPECT;
-    CARD_W_ARC = cfg.CARD_W_ARC;
-    CAM_Z_SPHERE = cfg.CAM_Z_SPHERE;
-    CAM_Z_END = cfg.CAM_Z_END;
-    // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
-    FOLD_SPHERE_DIST = Math.round(SPHERE_R / (0.35 * Math.tan(Math.PI / 6)));
-    GRID_COLS = cfg.GRID_COLS;
-    GRID_ROWS = cfg.GRID_ROWS;
-    // Clamp the dense-arc cluster to the actual card count so a small authored
-    // set still leaves cards for the visible spread region (fanT > ARC_DENSE_SPLIT).
-    ARC_DENSE_COUNT = Math.min(cfg.ARC_DENSE_COUNT, N_TOTAL);
+    const nTotal = Math.min(CARD_CONTENT.length, cfg.N_TOTAL);
+    return Object.freeze({
+      name,
+      N_TOTAL: nTotal,
+      N_VISIBLE: nTotal, // all cards on arc simultaneously (no conveyor)
+      ARC_SPAN: cfg.ARC_SPAN,
+      SPHERE_R: cfg.SPHERE_R,
+      CARD_H_SPHERE: cfg.CARD_H_SPHERE,
+      CARD_W_SPHERE: cfg.CARD_H_SPHERE * CARD_ASPECT,
+      CARD_W_ARC: cfg.CARD_W_ARC,
+      CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
+      CAM_Z_END: cfg.CAM_Z_END,
+      // Sphere-camera distance at fold start → ~70% viewport height; lerps to CAM_Z_SPHERE.
+      FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
+      GRID_COLS: cfg.GRID_COLS,
+      GRID_ROWS: cfg.GRID_ROWS,
+      // Clamp the dense-arc cluster to the actual card count so a small authored
+      // set still leaves cards for the visible spread region (fanT > ARC_DENSE_SPLIT).
+      ARC_DENSE_COUNT: Math.min(cfg.ARC_DENSE_COUNT, nTotal),
+    });
   }
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -327,11 +335,12 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // ── Grid layout (9×5 = 45 cards, sized to fit viewport) ───────────────────
   function computeGridLayout() {
     if (cards.length === 0) return;
+    const { GRID_COLS, GRID_ROWS, CARD_W_SPHERE } = bp;
     // md (≥768): cards fill viewport width via W/GRID_COLS; gaps push grid
     // off-screen by design (cards on the side overflow as a "more cards beyond" cue).
     // sm (<768): fit the grid within the viewport exactly — solve cardW so that
     // GRID_COLS*cardW + (GRID_COLS-1)*cardW*GRID_GAP_RATIO == W. No overflow.
-    const isMobile = (currentBPName === 'sm');
+    const isMobile = (bp.name === 'sm');
     gridCardW = isMobile
       ? W / (GRID_COLS + (GRID_COLS - 1) * GRID_GAP_RATIO)
       : W / GRID_COLS;
@@ -358,6 +367,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
   // ── Build scene geometry ────────────────────────────────────────────────────
   function buildCards() {
+    const {
+      N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
+    } = bp;
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
     cards = [];
@@ -495,6 +507,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   //   animation both drive CA without relying on scroll.
   function applyMotionCA(mesh, dx, dy, ampOverride, strength) {
     if (!CA_ENABLED) return;
+    const { CARD_W_SPHERE, CARD_H_SPHERE } = bp;
     const s = strength !== undefined ? strength : CA_MOTION_STRENGTH;
     const sX = Math.max(mesh.scale.x, 0.01);
     const sY = Math.max(mesh.scale.y, 0.01);
@@ -535,11 +548,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     getSphereGroup: () => sphereGroup,
     getRenderer: () => renderer,
     getCards: () => cards,
-    getCount: () => N_TOTAL,
+    getCount: () => bp.N_TOTAL,
     getCardMetadata,
     getViewport: () => ({ W, H }),
-    getBP: () => currentBPName,
-    getCardDims: () => ({ w: CARD_W_SPHERE, h: CARD_H_SPHERE }),
+    getBP: () => bp.name,
+    getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
     caEnabled: CA_ENABLED,
     sphereRotEuler,
@@ -559,14 +572,14 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   a11y = createGalleryA11y({
     q,
     getCards: () => cards,
-    getCount: () => N_TOTAL,
+    getCount: () => bp.N_TOTAL,
     getCardMetadata,
     getCamera: () => camera,
     getViewport: () => ({ W, H }),
     getSphereFormT: () => sphereFormTAtLastTick,
     getModalIdx: () => modal.getModalIdx(),
     interactiveThreshold: SPHERE_INTERACTIVE_T,
-    getCardDims: () => ({ w: CARD_W_SPHERE, h: CARD_H_SPHERE }),
+    getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     // Keyboard open: no pointer position, so emanate the open-warp from screen center.
     openModal: (idx) => modal.open(idx, W / 2, H / 2),
     // Phase-stepping hook: focus handlers can advance the timeline without scrolling
@@ -606,6 +619,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // Also refreshes the closure scroll state other code reads between ticks
   // (scrollVel for motion CA, sphereFormTAtLastTick for the click/hover handlers).
   function computeFrame() {
+    const { CARD_W_ARC, CARD_W_SPHERE } = bp;
     // virtualScrollY (a11y phase-stepping) overrides real scroll when set.
     const lenisY = virtualScrollY != null ? virtualScrollY : window.scrollY;
     const scrollingDown = lenisY >= prevLenisY;
@@ -683,6 +697,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   //   Zoom-through: perspective continuing CAM_Z_SPHERE → CAM_Z_END.
   function updateActiveCamera(frame) {
     const { sphereFormT, zoomT } = frame;
+    const { SPHERE_R, CAM_Z_SPHERE, CAM_Z_END } = bp;
     let activeCamera;
     const camZArc = arcCamZ(H);
     if (sphereFormT === 0) {
@@ -858,6 +873,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // Using camera.position.z directly (always set in both ortho/perspective branches above).
   function updateSphereGroupDepth(frame) {
     const { sphereFormT, zoomT } = frame;
+    const { FOLD_SPHERE_DIST, CAM_Z_SPHERE } = bp;
     const sphereFormT3 = sphereFormT * sphereFormT * sphereFormT;
     const foldSphDist = lerpN(FOLD_SPHERE_DIST, CAM_Z_SPHERE, sphereFormT3);
     const sphGroupZ = zoomT === 0 ? (camera.position.z - foldSphDist) : 0;
@@ -902,7 +918,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       const arcCopySlide = 24 * (1 - arcCopyInE);
       // sm pins to 8px from viewport left (matches nav pill outer padding).
       // md uses the 24px-grid-aligned position with centering offset.
-      const gridLeft = (currentBPName === 'sm')
+      const gridLeft = (bp.name === 'sm')
         ? 8
         : 24 + Math.max(0, (W - 48 - 1392) / 2);
       arcCopyEl.style.left = `${gridLeft}px`;
@@ -1030,6 +1046,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // ── Branch: fully in grid (dwell phase) ──
   function placeGridCard(card, mesh, i, prevMeshX, prevMeshY, frame) {
     const { sphGroupZ } = frame;
+    const { N_TOTAL } = bp;
     mesh.visible = true;
     mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
@@ -1047,6 +1064,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // ── Branch: arc phase — waiting to peel, or actively peeling arc→grid ──
   function placeArcCard(card, mesh, i, gpE, prevMeshX, prevMeshY, frame) {
     const { arcPanT, entryRot, entryYOffset, arcScale, sphGroupZ } = frame;
+    const { N_TOTAL, N_VISIBLE, ARC_DENSE_COUNT } = bp;
     // No conveyor: all cards on arc simultaneously, slot = i for every card.
     const slot = i;
     const rawT = Math.max(0, Math.min(1, slot / (N_VISIBLE - 1)));
@@ -1121,6 +1139,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // updateCardTransforms.
   function updateCardTransform(i, frame) {
     const { gridFormT, gpWin, sphereFormT, entryRot } = frame;
+    const { N_TOTAL } = bp;
     const card = cards[i];
     const { mesh } = card;
 
@@ -1184,7 +1203,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // `frame` context (built by computeFrame, with the producer stages' results already
   // written back). The modal-active card + swipe-neighbors are skipped inside it.
   function updateCardTransforms(frame) {
-    for (let i = 0; i < N_TOTAL; i += 1) updateCardTransform(i, frame);
+    for (let i = 0; i < bp.N_TOTAL; i += 1) updateCardTransform(i, frame);
   }
 
   // ── Per-frame tick — thin orchestrator ──────────────────────────────────────
@@ -1200,7 +1219,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     if (!renderer || !scene || !camera || !sphereGroup) return;
 
     const frame = computeFrame();
-    arcCtx = buildArcCtx(frame.arcPanT, W, H, ARC_SPAN);
+    arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN);
 
     a11y.updateTabStops(frame.sphereFormT);
     frame.activeCamera = updateActiveCamera(frame);
@@ -1241,12 +1260,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     W = window.innerWidth;
     H = window.innerHeight;
 
-    // Resolve breakpoint and apply its constants BEFORE anything reads N_TOTAL,
-    // SPHERE_R, etc. CSS is intentionally NOT BP-aware here — author per-BP CSS
-    // with traditional @media queries.
-    const bp = resolveBP(W);
-    currentBPName = bp.name;
-    applyBP(bp.cfg);
+    // Resolve the breakpoint profile BEFORE anything reads bp.N_TOTAL, bp.SPHERE_R,
+    // etc. CSS is intentionally NOT BP-aware here — author per-BP CSS with
+    // traditional @media queries.
+    const band = resolveBP(W);
+    bp = resolveBpProfile(band.name, band.cfg);
 
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1275,8 +1293,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       // grid, sphere) → full destroy()+init() so all geometry, textures, and
       // grid layout rebuild with the new band's constants. Resizing within a
       // band falls through to the cheap path below.
-      const nextBP = resolveBP(W);
-      if (nextBP.name !== currentBPName) {
+      const nextBand = resolveBP(W);
+      if (nextBand.name !== bp.name) {
         // eslint-disable-next-line no-use-before-define
         destroy();
         initRuntime();
@@ -1325,9 +1343,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     modal.setup();
 
     loadCardTextures({
-      count: N_TOTAL,
+      count: bp.N_TOTAL,
       getSrc: (i) => getCardMetadata(i).img,
-      planeAspect: CARD_W_SPHERE / CARD_H_SPHERE,
+      planeAspect: bp.CARD_W_SPHERE / bp.CARD_H_SPHERE,
     }, (loadedTextures, loadedTexData) => {
       textures = loadedTextures;
       cardTexData = loadedTexData;
@@ -1370,8 +1388,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     if (arcCopyEl) arcCopyEl.style.cssText = '';
     if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
-    // NOTE: currentBPName is intentionally NOT cleared here. doLayout() compares
-    // it against the resolved band to detect a profile crossing, and initRuntime()
+    // NOTE: `bp` is intentionally NOT cleared here. doLayout() compares bp.name
+    // against the resolved band to detect a profile crossing, and initRuntime()
     // overwrites it. Clearing it would break the re-init flow.
   }
 
