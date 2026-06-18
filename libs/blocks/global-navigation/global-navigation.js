@@ -1157,7 +1157,6 @@ class Gnav {
 
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
-
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const updatePromoZIndex = () => {
