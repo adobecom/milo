@@ -448,6 +448,12 @@
   }
 }
 
+@media (width >= 768px) {
+  [dir="rtl"] .rm-content {
+    margin-inline-start: auto;
+  }
+}
+
 /* desktop */
 @media (width >= 1280px) {
   .rm-viewport[data-viewport="desktop"] {
