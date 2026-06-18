@@ -2290,7 +2290,7 @@ async function loadPostLCP(config) {
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
+  loadFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
@@ -2741,10 +2741,19 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function warmTypekit() {
+  loadLink('https://use.typekit.net', { rel: 'preconnect', crossorigin: 'anonymous' });
+  loadLink('https://p.typekit.net', { rel: 'preconnect', crossorigin: 'anonymous' });
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    if (getMetadata('foundation') === 'c2') {
+      warmTypekit();
+      import('./fonts.js').then(({ default: loadFonts }) => loadFonts(getConfig().locale));
+    }
     setCountry();
     preloadMarketsConfig();
     await checkForPageMods();

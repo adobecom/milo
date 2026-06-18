@@ -1,7 +1,10 @@
 @font-face {
   font-family: 'Arial Bold Adjusted';
   font-weight: 900;
-  size-adjust: 92%;
+  size-adjust: 93%;
+  ascent-override: 91%;
+  descent-override: 25%;
+  line-gap-override: 0%;
   src: local('Arial Bold'), local('Arial-BoldMT'), local('ArialBold');
 }
 
@@ -424,7 +427,8 @@
   --scroll-padding-block: 0;
   --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --body-font-family: var(--body-font-family-base);
-  --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  /* --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif; */
+  --heading-font-family: adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
