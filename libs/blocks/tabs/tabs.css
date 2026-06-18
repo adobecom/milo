@@ -112,7 +112,7 @@
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
   z-index: 2;
-  margin: 0;
+  margin: 0 var(--spacing-m);
   /* ScrollProps - If content exceeds height of container, overflow! */
   overflow: auto;
   overflow-y: hidden;
@@ -254,6 +254,7 @@
   top: 0;
   background: var(--tabs-active-bg-color);
   border: 0;
+  border-bottom: 1px solid var(--tabs-border-color);
   padding: 14px 0 12px;
   display: flex;
   align-items: center;
@@ -659,6 +660,10 @@
 
   .tabs .paddle {
     height: 62px;
+  }
+
+  .tabs:has(.tab-badge) .paddle {
+    height: 92px;
   }
 
   .tabs .paddle svg {
