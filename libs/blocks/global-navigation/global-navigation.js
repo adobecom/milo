@@ -1101,9 +1101,6 @@ class Gnav {
 
     const addFetchAUPSDKInstance = () => {
       if (!window.adobeIMS?.isSignedInUser()) return {};
-      // Eager init was kicked off in imsReady(); just return that promise.
-      // Fallback to inline preload only for races (e.g. user signed in after
-      // imsReady ran, or the eager promise errored and was reset to null).
       return {
         fetchAUPSDKInstance: async () => {
           if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
