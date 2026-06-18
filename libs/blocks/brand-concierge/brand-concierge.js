@@ -33,7 +33,7 @@ const webClientVersion = params.get('webclientversion');
 // a single auth token (one signed-in user) and a single shared chat modal.
 let bcToken;
 let sharedModal = null; // the one shared dialog element while open, else null
-let modalOwnerBc = null; // the block instance that opened the modal
+let modalOwnerBc = null; // the block whose web client is currently bootstrapped in the shared modal
 // Default source for the no-arg getUpdatedChatUIConfig() (used by the unit test);
 // the live bootstrap path always passes an explicit per-block authoredContent.
 let lastAuthoredContent;
@@ -421,11 +421,16 @@ function rebootstrapWebClient(message, bc) {
       bcAnalytics(event);
     },
   });
+  // This block is now the one mounted in the modal, so it becomes the current
+  // owner. Without this, the original opener stays "owner" forever and a switch
+  // back to it would be wrongly short-circuited (its message dropped).
+  modalOwnerBc = bc;
 }
 
 // Route a submission into the already-open shared modal.
-// Preferred: direct send. Fallback: rebootstrap, but only for a *secondary*
-// block (the block that opened the modal does not rebootstrap on its own input).
+// Preferred: direct send. Fallback: rebootstrap, but only when the submitting
+// block is not the one currently bootstrapped — the currently-mounted block is
+// already connected, so it does not rebootstrap on its own subsequent input.
 function routeMessageIntoModal(message, bc) {
   if (!message) return;
   if (sendMessageToWebClient(message)) return;
