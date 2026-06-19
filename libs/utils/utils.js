@@ -2305,11 +2305,16 @@ async function loadPostLCP(config) {
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
-    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    const lenisPreventSelectors = [
+      '.dialog-modal',
+      '.ot-sdk-container',
+      '.global-navigation',
+      'div[data-testid="main-content-area"]',
+    ];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
-      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
