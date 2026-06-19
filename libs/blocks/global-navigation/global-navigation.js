@@ -262,6 +262,9 @@ const getSignInCtaStyle = () => {
   return isPrimary ? 'primary' : 'secondary';
 };
 
+const enableBE = new URLSearchParams(window.location.search).has('enableBE');
+const enableManagePeople = getConfig().unav?.profile?.enableManagePeople ?? true;
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -287,6 +290,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                ...(enableBE && { enableManagePeople }),
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -295,6 +299,13 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
+              ...(enableBE && {
+                managePeopleConfig: {
+                  enableWorkflow: true,
+                  params: { enableinlineoverlay: 's2-compat' },
+                  ...getConfig().unav?.profile?.managePeopleConfig,
+                },
+              }),
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
@@ -865,6 +876,20 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+      this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+      this.aupsdkInstancePromise.catch((e) => {
+        this.aupsdkInstancePromise = null;
+        lanaLog({
+          message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
+          e,
+          tags: 'universalnav',
+          errorType: 'i',
+          severity: 'info',
+        });
+      });
+    }
+
     const tasks = [
       this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
       this.setUpProductCTA,
@@ -961,6 +986,63 @@ class Gnav {
     await this.decorateProfile();
   };
 
+  static preloadAupSdk = async () => {
+    const config = getConfig();
+    const { imsClientId } = config;
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
+
+    await loadScript(
+      `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
+      null,
+      { mode: 'async' },
+    );
+
+    window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
+      appId: 'adobe_com',
+      apiKey: imsClientId,
+      getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
+      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      environment,
+      cdnEnvironment: environment,
+      locale,
+      appName: 'adobecom',
+      appVersion: '1.0',
+      colorScheme: isDarkMode() ? 'dark' : 'light',
+      ...(enableBE && {
+        showDialog: async (element, _, closeCallback) => {
+          document.getElementById('feds-manage-people-dialog')?.remove();
+          const dialog = document.createElement('dialog');
+          dialog.id = 'feds-manage-people-dialog';
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          dialog.addEventListener('cancel', () => {
+            closeCallback({ type: 'close' });
+            dialog.close();
+            dialog.remove();
+            document.documentElement.classList.remove('disable-scroll');
+          });
+          dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+              closeCallback({ type: 'close' });
+              dialog.close();
+              dialog.remove();
+              document.documentElement.classList.remove('disable-scroll');
+            }
+          });
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+        },
+      }),
+    });
+
+    if (enableBE) {
+      await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    }
+    return window.aupsdk;
+  };
+
   decorateUniversalNav = async () => {
     performance.mark('Unav-Start');
     const signedOut = !window.adobeIMS?.isSignedInUser();
@@ -988,7 +1070,7 @@ class Gnav {
     let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
     // If versions follow a predictable format (digit.digit), validate using a regex
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
+      unavVersion = '1.6';
     }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
@@ -1020,6 +1102,19 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
+    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
+
+    const addFetchAUPSDKInstance = () => {
+      if (!window.adobeIMS?.isSignedInUser()) return {};
+      return {
+        fetchAUPSDKInstance: async () => {
+          if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
+          this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+          return this.aupsdkInstancePromise;
+        },
+      };
+    };
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1040,6 +1135,36 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
+      isArpEnabled,
+      ...(isArpEnabled && {
+        arpConfig: Promise.resolve({
+          sessionId: visitorGuid,
+          tokenCallback: (token) => {
+            window.adobeArp = window.adobeArp || {};
+            window.adobeArp.sessionToken = token;
+            window.dispatchEvent(new CustomEvent('arp:tokenReady', { detail: { token } }));
+            /* eslint-disable no-underscore-dangle */
+            window.alloy_all ??= {};
+            window.alloy_all.data ??= {};
+            window.alloy_all.data._adobe_corpnew ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom.arp_token = token;
+            /* eslint-enable no-underscore-dangle */
+          },
+          successCallback: () => {},
+          errorCallback: (err) => {
+            lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' });
+          },
+          ...getConfig()?.unav?.arpConfig,
+          metadata: {
+            source: 'universal-navigation',
+            version: unavVersion,
+            ...getConfig()?.unav?.arpConfig?.metadata,
+          },
+        }),
+      }),
+      ...addFetchAUPSDKInstance(),
     });
 
     // Exposing UNAV config for consumers
