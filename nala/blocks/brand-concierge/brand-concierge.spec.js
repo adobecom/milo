@@ -184,7 +184,7 @@ module.exports = {
     {
       tcid: '16',
       name: '@brand-concierge floating input only',
-      path: 'https://bc-sync-up--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-input-only',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-only',
       tags: '@brand-concierge @brand-concierge-floating-input-only @regression @milo',
       data: {
         inputText: 'i need help with billing',
@@ -195,7 +195,7 @@ module.exports = {
     {
       tcid: '17',
       name: '@brand-concierge floating input delay dark',
-      path: 'https://bc-sync-up--milo--adobecom.aem.live/drafts/nala/blocks/brand-concierge/bc-floating-input-delay',
+      path: '/drafts/nala/blocks/brand-concierge/bc-floating-input-delay',
       tags: '@brand-concierge @brand-concierge-floating-input-delay @regression @milo',
       data: {
         inputText: 'i need help with billing',

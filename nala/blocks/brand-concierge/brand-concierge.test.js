@@ -606,14 +606,13 @@ test.describe('Milo Brand Concierge Block test suite', () => {
         await expect(page).toHaveURL(features[14].path);
       });
 
-      await test.step('step-2: Verify block has floating-input class and not inline', async () => {
+      await test.step('step-2: Verify block has floating-input class', async () => {
         await expect(bc.floatingInputBar).toBeAttached({ timeout: 10000 });
-        await expect(bc.block).not.toHaveClass(/\binline\b/);
       });
 
       await test.step('step-3: Verify bar is fixed and has correct background color', async () => {
-        await expect(bc.floatingInputBar).toHaveCSS('position', 'fixed', { timeout: 10000 });
-        await expect(bc.floatingInputBar).toHaveCSS('background-color', data.expectedBarBackground);
+        await expect(bc.floatingInputInnerBar).toHaveCSS('position', 'fixed', { timeout: 10000 });
+        await expect(bc.floatingInputInnerBar).toHaveCSS('background-color', data.expectedBarBackground);
       });
 
       await test.step('step-4: Verify input field and prompt pills are visible', async () => {
@@ -626,23 +625,19 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-5: Verify submit button is disabled when input is empty and enabled after typing', async () => {
-        await expect(bc.inputSubmitButton).toBeDisabled();
-        await bc.floatingInputTextarea.fill(data.inputText);
-        await expect(bc.inputSubmitButton).toBeEnabled();
-        await bc.floatingInputTextarea.clear();
-        await expect(bc.inputSubmitButton).toBeDisabled();
+        await expect(bc.floatingInputSubmitButton).toBeDisabled();
+        await bc.floatingInputBarTextarea.fill(data.inputText);
+        await expect(bc.floatingInputSubmitButton).toBeEnabled();
+        await bc.floatingInputBarTextarea.clear();
+        await expect(bc.floatingInputSubmitButton).toBeDisabled();
       });
 
-      await test.step('step-6: Verify main has paddingBottom set to prevent content overlap', async () => {
-        const paddingBottom = await page.evaluate(() => {
-          const main = document.querySelector('main');
-          return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
-        });
-        expect(paddingBottom).toBeGreaterThan(0);
+      await test.step('step-6: Verify bc-spacer is appended to main to prevent content overlap', async () => {
+        await expect(page.locator('main .bc-spacer')).toBeAttached({ timeout: 5000 });
       });
 
       await test.step('step-7: Type query and press Enter — BC modal opens', async () => {
-        await bc.floatingInputTextarea.fill(data.inputText);
+        await bc.floatingInputBarTextarea.fill(data.inputText);
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
@@ -657,8 +652,8 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-9: Type query and click submit button — BC modal opens', async () => {
-        await bc.floatingInputTextarea.fill(data.inputText);
-        await bc.inputSubmitButton.click();
+        await bc.floatingInputBarTextarea.fill(data.inputText);
+        await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
@@ -687,7 +682,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
           window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForFunction(() => {
-          const bar = document.querySelector('.brand-concierge.floating-input');
+          const bar = document.querySelector('.bc-floating-input.bc-floating-element');
           return parseFloat(bar?.style.bottom ?? '0') > 0;
         }, { timeout: 5000 });
       });
@@ -713,12 +708,11 @@ test.describe('Milo Brand Concierge Block test suite', () => {
 
       await test.step('step-2: Verify block has both floating-input and dark classes', async () => {
         await expect(bc.floatingInputDark).toBeAttached({ timeout: 10000 });
-        await expect(bc.block).not.toHaveClass(/\binline\b/);
       });
 
       await test.step('step-3: Verify bar is fixed and has correct background color', async () => {
-        await expect(bc.floatingInputDark).toHaveCSS('position', 'fixed', { timeout: 10000 });
-        await expect(bc.floatingInputDark).toHaveCSS('background-color', data.expectedBarBackground);
+        await expect(bc.floatingInputInnerBar).toHaveCSS('position', 'fixed', { timeout: 10000 });
+        await expect(bc.floatingInputInnerBar).toHaveCSS('background-color', data.expectedBarBackground);
       });
 
       await test.step('step-4: Verify input field and prompt pills are visible', async () => {
@@ -731,28 +725,24 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-5: Verify submit button is disabled when input is empty and enabled after typing', async () => {
-        await expect(bc.inputSubmitButton).toBeDisabled();
-        await bc.floatingInputTextarea.fill(data.inputText);
-        await expect(bc.inputSubmitButton).toBeEnabled();
-        await bc.floatingInputTextarea.clear();
-        await expect(bc.inputSubmitButton).toBeDisabled();
+        await expect(bc.floatingInputSubmitButton).toBeDisabled();
+        await bc.floatingInputBarTextarea.fill(data.inputText);
+        await expect(bc.floatingInputSubmitButton).toBeEnabled();
+        await bc.floatingInputBarTextarea.clear();
+        await expect(bc.floatingInputSubmitButton).toBeDisabled();
       });
 
-      await test.step('step-6: Verify main has paddingBottom set to prevent content overlap', async () => {
-        const paddingBottom = await page.evaluate(() => {
-          const main = document.querySelector('main');
-          return main ? parseFloat(window.getComputedStyle(main).paddingBottom) : 0;
-        });
-        expect(paddingBottom).toBeGreaterThan(0);
+      await test.step('step-6: Verify bc-spacer is appended to main to prevent content overlap', async () => {
+        await expect(page.locator('main .bc-spacer')).toBeAttached({ timeout: 5000 });
       });
 
       await test.step('step-7: Verify dark variant input and text colors', async () => {
-        await expect(bc.floatingInputContainer).toHaveCSS('background-color', data.expectedInputBackground);
-        await expect(bc.floatingInputTextarea).toHaveCSS('color', data.expectedTextColor);
+        await expect(bc.floatingInputBarContainer).toHaveCSS('background-color', data.expectedInputBackground);
+        await expect(bc.floatingInputBarTextarea).toHaveCSS('color', data.expectedTextColor);
       });
 
       await test.step('step-8: Type query and press Enter — BC modal opens', async () => {
-        await bc.floatingInputTextarea.fill(data.inputText);
+        await bc.floatingInputBarTextarea.fill(data.inputText);
         await page.keyboard.press('Enter');
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
@@ -767,8 +757,8 @@ test.describe('Milo Brand Concierge Block test suite', () => {
       });
 
       await test.step('step-10: Type query and click submit button — BC modal opens', async () => {
-        await bc.floatingInputTextarea.fill(data.inputText);
-        await bc.inputSubmitButton.click();
+        await bc.floatingInputBarTextarea.fill(data.inputText);
+        await bc.floatingInputSubmitButton.click();
         await expect(bc.modal).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount).toBeVisible({ timeout: 10000 });
         await expect(bc.modalMount.locator(`text=${data.inputText}`)).toBeVisible({ timeout: 10000 });
@@ -797,7 +787,7 @@ test.describe('Milo Brand Concierge Block test suite', () => {
           window.dispatchEvent(new Event('scroll'));
         });
         await page.waitForFunction(() => {
-          const bar = document.querySelector('.brand-concierge.floating-input');
+          const bar = document.querySelector('.bc-floating-input.bc-floating-element');
           return parseFloat(bar?.style.bottom ?? '0') > 0;
         }, { timeout: 5000 });
       });
