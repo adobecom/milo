@@ -182,7 +182,7 @@ describe('Modals', () => {
     await waitForRemoval('#paragraph');
   });
 
-  it('Focuses on a header when there are no other focusables', async () => {
+  it('Focuses on close instead of heading when there are no focusables', async () => {
     const meta = document.createElement('meta');
     meta.name = '-title';
     meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
@@ -191,7 +191,8 @@ describe('Modals', () => {
     await delay(200);
     await waitForElement('#title');
     expect(document.getElementById('title')).to.exist;
-    expect(document.activeElement.getAttribute('id')).to.equal('test-title');
+    expect(document.querySelector('#test-title')?.hasAttribute('tabindex')).to.be.false;
+    expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
     window.location.hash = '';
     await waitForRemoval('#title');
   });
