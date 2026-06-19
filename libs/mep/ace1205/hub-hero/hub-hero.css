@@ -536,6 +536,14 @@
     height: auto;
   }
 
+  .hub-hero-carousel-item:focus-visible {
+    z-index: 5;
+    animation-name: none !important;
+    opacity: 1;
+    filter: contrast(1);
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+  }
+
   .hub-hero-carousel-item-container {
     position: relative;
     background-color: var(--s2a-color-gray-1000);
