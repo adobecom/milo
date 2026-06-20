@@ -109,13 +109,17 @@ export function canonicalizeReferences(node: JsonLdNode): void;
 export function canonicalizeBreadcrumbItems(node: JsonLdNode): void;
 
 /**
- * Recursively walks `value` and replaces any `{ @id }` reference whose
+ * Recursively walks `value` and replaces any nested `{ @id }` reference whose
  * value appears as a key in `remap` with the remapped value.
- * The node's own top-level `@id` is intentionally skipped so identities
- * are not inadvertently aliased.
  *
- * Used to fix dangling back-references after type transforms change a
- * node's `@id` (most notably `Product` → `SoftwareApplication`).
+ * Producer payloads frequently cross-reference a node by its original `@id`
+ * (e.g. an inline `Offer`'s `itemOffered` points at the parent `Product` id).
+ * Once normalization rewrites that node's `@id` — most notably the
+ * `Product` → `SoftwareApplication` transform — those back-references would
+ * otherwise dangle. This remaps the references so they keep resolving.
+ *
+ * The node's own top-level `@id` is intentionally skipped: we remap
+ * references, not identities, so a node is never aliased to another.
  */
 export function remapReferences(value: unknown, remap: Map<string, string>): void;
 
@@ -173,11 +177,17 @@ export function parseIgnoreParam(search?: string): Set<string>;
 /**
  * Returns `true` when a `<script>` element should be skipped based on
  * the `ignoreTypes` set:
- * - the pseudo-type `"graph"` bypasses any script that contains a `@graph`
- *   wrapper, regardless of the types inside it
- * - otherwise the script is skipped when every type it contains is ignored;
- *   mixed-type scripts are skipped entirely (with a `lana` warn) rather
- *   than partially processed
+ * - The pseudo-type `"graph"` short-circuits: if the script contains any
+ *   `@graph` wrapper (directly or as a top-level array element) and `"graph"`
+ *   is on the ignore list, the whole script is bypassed with no further
+ *   analysis.
+ * - Otherwise the script is skipped when every type it contains is ignored.
+ *   Type-name matching recurses into `@graph` wrappers via `flattenPayload`,
+ *   so an ignored type matches whether it appears at top level or inside a
+ *   wrapped graph.
+ * - Mixed-type scripts (some ignored, some not) are skipped entirely with a
+ *   `lana` warn rather than partially processed, so the caller can split the
+ *   producer into separate scripts or use `"graph"` to bypass intentionally.
  */
 export function shouldIgnoreScript(scriptEl: HTMLScriptElement, ignoreTypes: Set<string>): boolean;
 

@@ -2750,13 +2750,6 @@ export async function loadArea(area = document) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
-    // Initialize the JSON-LD graph manager before block decoration runs.
-    // The manager's boot scan captures the JSON-LD already in the DOM (the
-    // HTML-authored scripts) as `bootDom`, and its MutationObserver captures
-    // everything blocks/features emit afterward as `runtime` — so it is its
-    // own HTML-vs-runtime signal and needs no separate snapshot. Runs after
-    // appendHtmlToCanonicalUrl so page-scoped @ids derive from the final
-    // canonical URL.
     const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
     if (jsonLdFlag === 'true') {
       const { default: initJsonLd } = await import('../features/jsonld-graph-manager/jsonld-graph-manager.js');

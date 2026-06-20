@@ -186,7 +186,7 @@ export function canonicalizeBreadcrumbItems(node) {
       const u = new URL(li.item, window.location.href);
       const origin = u.origin === currentOrigin ? prodOrigin : u.origin;
       li.item = `${origin}${u.pathname}`;
-    } catch { /* leave as-is */ }
+    } catch { /* noop */ }
   }
 }
 
@@ -203,13 +203,6 @@ function maybeRewriteWebPageRef(val) {
   return val;
 }
 
-// Rewrite every nested { @id } reference whose value matches a remapped id.
-// Producer payloads frequently cross-reference a node by its original @id
-// (e.g. an inline Offer's itemOffered points at the parent Product id). Once
-// normalization rewrites that node's @id — most notably the Product →
-// SoftwareApplication transform — those back-references would otherwise dangle.
-// The node's own top-level @id is intentionally skipped: we remap references,
-// not identities.
 export function remapReferences(value, remap) {
   if (Array.isArray(value)) {
     value.forEach((item) => remapReferences(item, remap));
@@ -393,17 +386,12 @@ export function shouldIgnoreScript(scriptEl, ignoreTypes) {
   try { data = JSON.parse(scriptEl.textContent); } catch { return false; }
   if (!data || typeof data !== 'object') return false;
 
-  // 'graph' pseudo-type short-circuits: if the script contains any @graph wrapper
-  // (directly or as a top-level array element) and 'graph' is on the ignore list,
-  // bypass the whole script with no further analysis.
   const items = Array.isArray(data) ? data : [data];
   const hasWrapper = items.some((item) => (
     item && typeof item === 'object' && !Array.isArray(item) && '@graph' in item
   ));
   if (hasWrapper && ignoreTypes.has('graph')) return true;
 
-  // Type-name matching recurses into @graph wrappers via flattenPayload, so an
-  // ignored type matches whether it appears at top level or inside a wrapped graph.
   const types = flattenPayload(data)
     .map((n) => (typeof n?.['@type'] === 'string' ? n['@type'].toLowerCase() : null))
     .filter(Boolean);
