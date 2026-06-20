@@ -246,6 +246,12 @@ const buildMarkup = (gid, labels) => `
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
       <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
     </div>
+    <!-- Polite live region for carousel navigation. The dialog's aria-labelledby/
+         describedby announce the FIRST item on open; this announces each SUBSEQUENT
+         item once as the user navigates (focus stays on the Prev/Next button, so the
+         content change would otherwise be silent). Visually hidden; phrasing is
+         controlled in JS (modal.populateModal) so it skips the verbose badge list. -->
+    <div class="globe-gallery-modal__live globe-gallery-sr-only" aria-live="polite" aria-atomic="true"></div>
   </div>
 `;
 

@@ -19,8 +19,9 @@ phases:
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
-fixed pull-quote that fades in near the zoom end, and an off-screen a11y button
-gallery mirroring the sphere cards.
+fixed pull-quote that fades in near the zoom end, and a single focusable a11y
+**globe widget** (see Accessibility below) that exposes the sphere as one
+keyboard/screen-reader gallery rather than a per-card list.
 
 ## Files
 
@@ -31,7 +32,7 @@ gallery mirroring the sphere cards.
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. |
 | `textures.js` | GPU resource factories (DI: `renderer` is passed in, not imported): `createRoundedMask`, `createSphereMaskCache`, `loadCardTextures`. No per-instance state. |
 | `materials.js` | Pure material factories: `createCardMaterial` (CA ShaderMaterial + MeshBasicMaterial fallback, with the property-proxy) and `createModalMaterial` (SDF). |
-| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, updateFocusRing, teardown }`. The hidden keyboard-gallery button list + projected focus ring. All runtime state (cards, camera, viewport, `sphereFormT`, modal-open) is injected as getters; `openModal` is injected so it never imports the modal. Holds no globe state except its own DOM nodes. |
+| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown }`. Exposes the globe as **one** focusable widget (a transparent centered `<button>` over the sphere): a stable tab stop (out of tab order only while the modal traps focus), Left/Right arrows → `spinGlobe`, Enter/Space → `openModal` (first item), and `onFocus` snaps the page to the interactive state (pdf-space pattern). All runtime state (`count`, `sphereFormT`, modal-open) + actions (`spinGlobe`, `openModal`, `onFocus`) are injected; holds no globe state except its own DOM node. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
@@ -75,8 +76,8 @@ runtime-scope branch fns fed an explicit per-frame `frame` context — kept in t
 file, not a module, because they read deeply from the closure (BP constants,
 sphere-rotation quats, drag velocity) and run in the per-card hot loop. Four DI
 modules are injected with getters over the live runtime state:
-GPU resources from `textures.js` / `materials.js`; the keyboard gallery + focus
-ring from `a11y.js`; the card-detail modal from `modal.js`; pointer/drag/picking
+GPU resources from `textures.js` / `materials.js`; the single keyboard/SR globe
+widget from `a11y.js`; the card-detail modal from `modal.js`; pointer/drag/picking
 from `interaction.js` (sharing drag velocity via the `drag` object). The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
 and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
@@ -124,9 +125,10 @@ itself — AEM Edge Delivery returns all card sections as bare `<div>`s (one per
 racing the parse.
 
 Cards come solely from the fetched fragment. If the fetch yields none — a failed
-request, or no fragment link authored — the block collapses to `.globe--reduced`
-rather than rendering an empty scene. There is no inline-DOM-card fallback (authoring
-is expected to provide a valid fragment link).
+request, or no fragment link authored — the block collapses to `.globe-gallery--empty`
+(`height:auto`) rather than rendering an empty scene. There is no inline-DOM-card
+fallback (authoring is expected to provide a valid fragment link). (Distinct from
+`.globe-gallery--reduced`, the reduced-motion render path — see Accessibility.)
 
 ### Card shape
 
@@ -152,29 +154,29 @@ extras are dropped. No modulo wrapping (`getCardMetadata(i)` indexes directly).
 
 The block ships **no hardcoded user-facing copy**. Authored text (arc-copy,
 pull-quote, card name/role/description) comes from the fragment + rows; everything
-else — the chrome aria-labels and the keyboard-gallery button labels — resolves
-through Milo's placeholder dictionary via `replaceKeyArray` (`resolveGlobeLabels()`
-in `globe-gallery.js`, fetched once per init and threaded into `buildGlobeDom` and the a11y
-factory). English is the fallback: the default-locale sheet supplies it, and a
-missing key degrades to the de-hyphenated key text.
+else — the chrome aria-labels, the globe widget instructions, and the carousel
+announcement — resolves through Milo's placeholder dictionary via `replaceKeyArray`
+(`resolveGlobeLabels()` in `globe-gallery.js`, fetched once per init and threaded into
+`buildGlobeDom`, the a11y factory, and the modal). English is the fallback: the
+default-locale sheet supplies it, and a missing key degrades to the de-hyphenated key text.
 
 **Add these keys to the `placeholders` sheet** (default locale = English; translate
 per locale):
 
 | Key | English value | Used for |
 | --- | --- | --- |
-| `image-gallery-intro` | Image gallery intro | `.offer-arc-copy` region label |
+| `image-gallery-intro` | Image gallery intro | `.globe-gallery-arc-copy` region label |
 | `previous-card` | Previous card | modal prev-arrow `aria-label` |
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
 | `apps-used` | Apps used | modal badges list `aria-label` |
-| `image-gallery` | Image gallery | keyboard-gallery region label |
-| `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | each keyboard-gallery button (`aria-label` + text) |
+| `image-gallery-instructions` | `Interactive image gallery, {{count}} images. Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.` | globe widget `aria-label` (the screen-reader "what is this" + controls) |
+| `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation (`{{index}} of {{count}}`) |
 
-`image-gallery-card-label` is a **tokenized template** — `{{name}}`, `{{index}}`,
-`{{count}}` are substituted at runtime, so each locale controls word order around
-them. If the key is absent everywhere, the code falls back to the English template
-(the static keys de-hyphenate to readable English on their own).
+`image-gallery-instructions` and `image-gallery-card-label` are **tokenized templates**
+(`{{count}}`, `{{name}}`, `{{index}}` substituted at runtime, so each locale controls word
+order). If a key is absent everywhere, the code falls back to the English template (the
+static keys de-hyphenate to readable English on their own).
 
 ## Architecture notes
 
@@ -191,9 +193,9 @@ unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal heading/description (the dialog's
 `aria-labelledby` / `aria-describedby` IDREFs). `el` itself is the `850vh` scroll runway
-(styled directly on `.globe`, no extra class); the canvas is `position:fixed`. Body-level globals
-that remain shared (acceptable, one modal at a time): the `.modal-open` scroll
-lock and the keyboard focus-ring overlay.
+(styled directly on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery--reduced`);
+the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
+time) is the `.modal-open` scroll lock.
 
 **Scroll model.** The block element *is* the scroll runway (it's `850vh` tall) —
 there's no separate runway element, so progress is measured against the block's own
@@ -204,13 +206,37 @@ Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFr
 driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
 
-**Virtual progress.** `computeFrame` reads `virtualScrollY != null ? virtualScrollY
-: window.scrollY`, so the whole timeline can be driven from a synthetic position
-instead of real scroll. The `setVirtualProgress(p)` closure (p in 0→1, `null` to
-release) maps a progress value to that synthetic scroll position and is injected into
-the a11y module's deps. It's **plumbing, not yet wired**: the intended consumer is
-keyboard focus stepping through phases (tab into the gallery → advance to the
-sphere-interactive phase without scrolling). a11y doesn't call it yet.
+## Accessibility
+
+The globe is exposed as **one widget**, not a per-card list — a single focusable
+`<button>` (`a11y.js`, built over the sphere; `pointer-events:none` so it never blocks
+mouse drag). It's a **stable tab stop** (only pulled from the tab order while the modal
+traps focus), so the block is never skipped. Focusing it runs `snapToInteractive` —
+`window.lenis.scrollTo(top, { force, immediate })` to `SPHERE_FORMED_PROGRESS` (the
+`sphereFormT=1, zoomT=0` offset), bringing the block into its interactive state *and*
+into view before the focus ring shows (the pdf-space focus pattern). A focus guard
+(`suppressFocusSnap`, armed on window blur / `visibilitychange:hidden`) stops a
+tab-return from re-snapping.
+
+- **Keyboard:** Tab → globe; Left/Right → `spinGlobe` (velocity impulse into the drag
+  inertia; a fixed yaw step under reduced motion); Enter/Space → open carousel mode at
+  item 1. In the modal, Prev/Next/Close are all tab stops with a focus trap (WAI-ARIA
+  dialog); Left/Right also traverse; Esc / Enter-on-Close exit and restore focus to the
+  globe widget.
+- **Screen reader:** the widget's `aria-label` (`image-gallery-instructions`) describes
+  the globe + controls. The dialog announces the first item on open via
+  `aria-labelledby`/`describedby`; each **subsequent** item is announced once by a polite
+  live region (`.globe-gallery-modal__live`, updated only on navigation with `cardLabel`
+  so it doesn't double the open announcement or read the badge list).
+
+**Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive**
+globe instead of the scroll choreography: `computeFrame` pins the scroll input to
+`SPHERE_FORMED_PROGRESS` (formed sphere, no arc/grid/fold/zoom, `scrollVel` forced 0),
+auto-spin is disabled (drag + arrow-spin still work, arrow-spin steps yaw directly), and
+the modal open/close/nav snap with no fly/warp. The block collapses to `100vh`
+(`.globe-gallery--reduced`); canvas visibility uses **real** scroll vs the block bounds
+(the pinned `frame.lenisY` can't gate it). The no-cards / WebGL-unavailable fallback is
+the separate `.globe-gallery--empty` (collapse to nothing).
 
 Phase constants (module scope):
 
@@ -255,8 +281,9 @@ independently of these JS profiles: the sm scale is the unscoped `.globe` base, 
 scales on top. The modal/arc-copy treatment is the same — sm (dark frosted panels,
 clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop card.
 
-**Reduced motion**: skips WebGL and adds `.globe--reduced` (collapses the block).
-A static poster fallback is a TODO.
+**Reduced motion**: renders a static interactive globe (`.globe-gallery--reduced`,
+`100vh`) — see Accessibility. The no-cards / WebGL-unavailable case is the separate
+`.globe-gallery--empty` collapse.
 
 ## Behavior notes (intentional differences from the prototype)
 
@@ -290,12 +317,17 @@ into its own DI module~~ (`a11y.js`); ~~`MODAL_PHASE` state-machine constants~~
 `sphereRotEuler`/`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with
 `sphereRotX/Y` + the nav-nudge spring kept in `updateSphereRotation`).
 
+Done: ~~reduced-motion handling~~ (renders a static interactive globe + snaps the
+modal — see Accessibility; supersedes the old "static poster" idea); ~~single-widget
+keyboard/SR model~~ (replaced the per-card button list with one focusable globe widget +
+carousel-mode modal).
+
 Remaining:
-1. **Static reduced-motion poster** (currently the section just collapses).
-2. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
+1. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
    this — start/stop the ticker on intersect), instead of running every frame. Behavior
    change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
-   exit aren't cut off) — verify visually.
+   exit aren't cut off) — verify visually. Now more worthwhile since reduced motion also
+   keeps the ticker running on a static globe.
 
 ## Model to copy
 

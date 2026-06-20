@@ -16,9 +16,20 @@
    ───────────────────────────────────────────────────────────────────────── */
 /* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
 
-/* Reduced-motion / THREE-unavailable fallback: collapse the runway. The compound
-   selector beats the .globe runway height regardless of source order. */
+/* Reduced motion: collapse the tall scroll runway to a single ~100vh section. The
+   globe still renders (fixed canvas) as a STATIC, interactive sphere — the runtime pins
+   the timeline to the formed sphere and disables auto-spin / fly-through (see
+   globe-gallery.js). The compound selector beats the .globe runway height regardless of
+   source order. (Cards failing to load falls back to this same collapse via JS.) */
 .globe-gallery.globe-gallery--reduced {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+/* Nothing to render (no authored cards / WebGL unavailable): collapse the runway to
+   nothing so the block takes no space. Distinct from --reduced, which still shows the
+   static globe. */
+.globe-gallery.globe-gallery--empty {
   height: auto;
   min-height: 0;
 }
@@ -514,27 +525,33 @@
 html.modal-open,
 body.modal-open { overflow: hidden; }
 
-/* Hidden but keyboard-focusable buttons that mirror each card on the globe.
-   Built by JS (setupGlobeGalleryA11y) once cards are loaded. Tab cycles through
-   them when the sphere is interactive; focusing a button triggers the same
-   hover effect on the corresponding WebGL card, and Enter / Space opens the
-   modal at that card. Visually hidden (1×1 clipped) but reachable by keyboard
-   + screen readers. */
+/* The globe is exposed to assistive tech as ONE focusable widget (built by JS in
+   src/a11y.js once cards load), not a per-card list: Tab selects the globe, Left/Right
+   arrows spin it, Enter/Space opens carousel mode (the modal) at the first item. The
+   widget is a transparent button centered over the sphere so sighted keyboard users get
+   a circular :focus-visible ring tracing the globe; pointer-events:none so it never
+   intercepts mouse drag on the canvas beneath. Tabbable only while the sphere is
+   interactive (toggled in JS). */
 .globe-gallery-a11y {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.globe-gallery-a11y__list {
-  margin: 0;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: min(80vw, 80vh);
+  height: min(80vw, 80vh);
+  transform: translate(-50%, -50%);
   padding: 0;
-  list-style: none;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none; /* never intercept canvas drag */
+  z-index: 4; /* above globe-gallery-canvas (z:3), below nav (z:10) */
 }
+.globe-gallery-a11y:focus { outline: none; }
 
-.globe-gallery-a11y__btn {
+/* Visually-hidden but screen-reader-readable (e.g. the modal carousel live region).
+   1×1 clipped is the standard sr-only recipe that keeps the node in the a11y tree. */
+.globe-gallery-sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -544,45 +561,18 @@ body.modal-open { overflow: hidden; }
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
-  background: transparent;
-  color: inherit;
-  pointer-events: none;
 }
 
-/* Visible focus indicator for sighted keyboard users — projects a ring over
-   the focused card's screen-space position. Container has zero size, so the
-   :focus-visible style on the button itself stays clipped; the card's hover
-   state on the WebGL canvas is the primary visual cue (scale + warp). */
-.globe-gallery-a11y__btn:focus { outline: none; }
-
 /* ── Keyboard focus indicators (Spectrum-style: 2px #1473E6 with 2px offset) ──
-   Modal chrome buttons are real DOM elements, so :focus-visible can style them
-   directly. The globe cards are WebGL meshes — their focus ring is a separately
-   tracked DOM element (.globe-gallery-a11y__focus-ring) positioned each frame
-   by JS to match the focused card's projected screen-space bounding box. Both
-   match Adobe.com / Spectrum conventions. */
+   The globe widget + the modal chrome buttons are all real DOM elements, so
+   :focus-visible styles them directly. (Outline follows the widget's border-radius in
+   modern browsers, so the globe ring reads as a circle.) */
+.globe-gallery-a11y:focus-visible,
 .globe-gallery-modal__close:focus-visible,
 .globe-gallery-modal__nav:focus-visible {
   outline: 2px solid #1473E6;
   outline-offset: 2px;
 }
-
-.globe-gallery-a11y__focus-ring {
-  position: fixed;
-  pointer-events: none;
-  outline: 2px solid #1473E6;
-  outline-offset: 2px;
-
-  /* border-radius set per-frame in JS based on the focused card's projected
-     height (the card's rounded corners scale with screen size). */
-  border-radius: 8px;
-
-  /* No background — only the outline is visible. */
-  background: transparent;
-  display: none;
-  z-index: 4;  /* above globe-gallery-canvas (z:3), below nav (z:10) */
-}
-.globe-gallery-a11y__focus-ring.is-visible { display: block; }
 
 /* ─────────────────────────────────────────────────────────────────────────
    Milo md+ (≥768px) — desktop modal + arc-copy treatment layered on the sm base.

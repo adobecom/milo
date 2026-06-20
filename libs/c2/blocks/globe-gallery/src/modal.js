@@ -75,6 +75,11 @@ export default function createGlobeModal({
   getCardDims,
   cardAspect,
   caEnabled,
+  // Localized per-item label ("… {name}, {index} of {count}") used for the polite
+  // live-region announcement on carousel navigation.
+  cardLabel,
+  // When true, open/close/nav snap instantly with no fly/warp (prefers-reduced-motion).
+  reducedMotion,
   // Sphere-rotation bridge (live THREE objects shared by reference + core callbacks):
   sphereRotEuler,
   sphereRotQuat,
@@ -481,8 +486,13 @@ export default function createGlobeModal({
     });
   }
 
-  // Write the authored metadata for card index i into the modal chrome DOM.
-  function populateModal(i) {
+  // Write the authored metadata for card index i into the modal chrome DOM. When
+  // `announce` is true (carousel navigation, not the initial open), also update the
+  // polite live region so a screen reader reads the new item once — necessary because
+  // activating Prev/Next keeps focus on the button, so the content change is otherwise
+  // silent. The initial open is announced by the dialog's aria-labelledby/describedby,
+  // so open() passes announce=false to avoid a double-announcement.
+  function populateModal(i, announce) {
     const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
@@ -507,6 +517,10 @@ export default function createGlobeModal({
         + `<span class="globe-gallery-modal__badge-role">${b.role}</span>`;
       badgesEl.appendChild(row);
     });
+    if (announce) {
+      const liveEl = targetEl.querySelector('.globe-gallery-modal__live');
+      if (liveEl) liveEl.textContent = cardLabel(meta.name, i + 1, getCount());
+    }
   }
 
   // ── Swipe-neighbors helpers ───────────────────────────────────────────────
@@ -666,7 +680,7 @@ export default function createGlobeModal({
     modalIdx = newIdx;
     modalCard = newCard;
     modalPhase = MODAL_PHASE.OPEN;
-    populateModal(newIdx);
+    populateModal(newIdx, true);
     requestNavNudge(newIdx);
 
     dnNavOldCard = oldCard;
@@ -702,7 +716,7 @@ export default function createGlobeModal({
     attachCardToModal(cards[newFarIdx]);
     positionCardInModal(cards[newFarIdx], direction);
 
-    populateModal(newIdx);
+    populateModal(newIdx, true);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
     requestNavNudge(newIdx);
@@ -840,6 +854,13 @@ export default function createGlobeModal({
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 0;
 
+    // Clear the live region so re-opening + navigating to the same index later still
+    // registers as a change and re-announces (and nothing stale lingers).
+    if (chromeEl) {
+      const liveEl = chromeEl.querySelector('.globe-gallery-modal__live');
+      if (liveEl) liveEl.textContent = '';
+    }
+
     modalEl.classList.remove('is-open');
     if (chromeEl) chromeEl.classList.remove('is-open');
 
@@ -935,7 +956,7 @@ export default function createGlobeModal({
     // Chrome stays fully visible during navigation — no animation, instant swap.
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 1;
-    populateModal(next);
+    populateModal(next, true);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
     requestNavNudge(next);
@@ -953,7 +974,11 @@ export default function createGlobeModal({
     if (modalCard && modalPhase) {
       const sphereGroup = getSphereGroup();
       const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-      const aT = Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
+      // Reduced motion: force aT to 1 so the open/close fly snaps to its endpoint in one
+      // frame (the aT>=1 branches below finalize the phase) and the warp bell curves —
+      // sin(aT·π) — collapse to 0. No fly, no fisheye.
+      const aT = reducedMotion
+        ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
       const aE = easeInOutCubic(aT);
       const tgtPos = new THREE.Vector3();
       const tgtQuat = new THREE.Quaternion();
@@ -979,10 +1004,14 @@ export default function createGlobeModal({
         // Chrome reveal: start fade-in once card is 90% to its target position.
         // Guard: skip if already at 1 (navigate snaps chrome instantly — no re-animation).
         if (modalChromeFadeT < 1) {
-          if (aT >= 0.90 && modalChromeRevealT0 < 0) modalChromeRevealT0 = now;
-          modalChromeFadeT = modalChromeRevealT0 >= 0
-            ? Math.max(0, Math.min(1, (now - modalChromeRevealT0) / CHROME_REVEAL_DUR))
-            : 0;
+          if (reducedMotion) {
+            modalChromeFadeT = 1; // chrome appears instantly — no fade-in
+          } else {
+            if (aT >= 0.90 && modalChromeRevealT0 < 0) modalChromeRevealT0 = now;
+            modalChromeFadeT = modalChromeRevealT0 >= 0
+              ? Math.max(0, Math.min(1, (now - modalChromeRevealT0) / CHROME_REVEAL_DUR))
+              : 0;
+          }
         }
       } else if (modalPhase === MODAL_PHASE.CLOSING) {
         // Live target = the slot's current world transform.
@@ -1074,7 +1103,9 @@ export default function createGlobeModal({
   function updateDesktopNav() {
     if (dnNavActive) {
       const dnNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-      const dnT = Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
+      // Reduced motion: force completion so the cross-fade/warp is skipped — the new
+      // card just becomes visible (completeDesktopNavTransition resets it to opaque).
+      const dnT = reducedMotion ? 1 : Math.max(0, Math.min(1, (dnNow - dnNavT0) / DN_NAV_DUR));
       if (dnT >= 1) {
         completeDesktopNavTransition();
       } else {
@@ -1159,8 +1190,9 @@ export default function createGlobeModal({
           || (e.key === ' ' && !focusInChrome)) {
         e.preventDefault();
       }
-      // Focus trap: when Tab/Shift+Tab would leave the modal chrome, wrap
-      // around to the other end so focus stays inside the modal.
+      // Focus trap: keep focus inside the dialog (WAI-ARIA dialog pattern). Prev, Next,
+      // and Close are all tabbable, so Tab/Shift+Tab cycle among them and wrap at the
+      // ends — focus never escapes to the page (or the globe) behind the modal.
       if (e.key === 'Tab' && chromeRoot) {
         const focusables = chromeRoot.querySelectorAll('button:not([disabled])');
         if (focusables.length === 0) return;
@@ -1342,6 +1374,8 @@ export default function createGlobeModal({
     if (chromeEl) {
       chromeEl.classList.remove('is-visible', 'is-open');
       chromeEl.setAttribute('aria-hidden', 'true');
+      const liveEl = chromeEl.querySelector('.globe-gallery-modal__live');
+      if (liveEl) liveEl.textContent = '';
     }
     if (modalCanvasEl) {
       modalCanvasEl.style.display = 'none';

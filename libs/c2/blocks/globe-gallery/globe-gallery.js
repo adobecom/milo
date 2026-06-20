@@ -81,6 +81,13 @@ const PROGRESS_GRID_ARC_START = 0.30;
 const PROGRESS_GRID_ARC_END = 0.60;
 const PROGRESS_FOLD_DUR = 0.25;
 const PROGRESS_ZOOM_END = 1.00;
+// Progress at which the sphere is fully formed and the zoom hasn't started yet
+// (sphereFormT=1, zoomT=0) — the canonical "interactive globe" scroll position keyboard
+// focus snaps to. Mirrors the foldLast computation in computeFrame (single source).
+const SPHERE_FORMED_PROGRESS = Math.max(
+  0,
+  (PROGRESS_GRID_ARC_END - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
+) + PROGRESS_FOLD_DUR;
 
 // ── Entry timing ─────────────────────────────────────────────────────────────
 // Two independent knobs (the WebGL canvas is transparent, so an early reveal only
@@ -120,6 +127,10 @@ const ARC_DENSE_SPLIT = 0.50;
 const DRAG_FRICTION = 0.94;
 const MAX_VEL = 0.06;
 const AUTO_ROT_SPEED = 0.000045;
+// Keyboard arrow-spin (focused globe widget): per-press velocity impulse (normal
+// motion, decays via DRAG_FRICTION) and the direct yaw step (reduced motion, instant).
+const KEY_SPIN_IMPULSE = 0.025;
+const KEY_SPIN_STEP = 0.5; // radians (~29°) per Left/Right press under reduced motion
 
 // ── Sphere interaction ───────────────────────────────────────────────────────
 // Sphere becomes interactive (drag-rotate, hover, click → modal) at this
@@ -182,7 +193,7 @@ function fibSpherePos(i, total, radius) {
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
 // `gid` is this instance's unique-id suffix, minted by buildGlobeDom (authoring.js)
 // and threaded in here so the CA filter url(#…) ref matches the built node.
-function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
+function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMotion) {
   // Root-scoped query helper — every DOM lookup goes through this so the runtime
   // only ever touches its own block's nodes (multi-instance safe).
   const q = (sel) => root.querySelector(sel);
@@ -253,9 +264,6 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // blockDocTop = its top in document space, blockHeight = its full scroll length.
   let blockDocTop = 0;
   let blockHeight = 0;
-  // Non-null → the timeline is driven from this synthetic scroll position instead of
-  // window.scrollY (set via setVirtualProgress; see its definition). null = real scroll.
-  let virtualScrollY = null;
   let W = 0; let
     H = 0;
 
@@ -267,19 +275,12 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   let prevLenisY = 0; // previous frame scroll position — used to compute scrollVel
   let scrollVel = 0; // |lenisY - prevLenisY| — drives motion trail intensity
 
-  let sphereRotY = 0; let
-    sphereRotX = 0;
-  // Pointer-drag state, shared by reference with the interaction module
-  // (src/interaction.js): it writes velX/velY/isDragging from raw pointer events;
-  // the sphere stage (updateSphereRotation) reads them, applies inertia/auto-rot
-  // friction, and writes velX/velY back. applyMotionCA + placeSphereCard also read.
+  let sphereRotY = 0;
+  let sphereRotX = 0;
+
   const drag = { isDragging: false, velX: 0, velY: 0 };
   let tickerAdded = false;
-  let sphereDragWarp = 0; // current value pushed to all sphere cards (relocated from config block)
-  // True once the zoom-through has carried the camera past the sphere's front
-  // surface (camera between ±SPHERE_R of the sphere centre). Set in
-  // updateActiveCamera, read by updateSphereRotation to invert drag so spinning
-  // from inside feels like grabbing the globe's inner wall, not its outer shell.
+  let sphereDragWarp = 0;
   let cameraInsideSphere = false;
 
   // Per-card sphere-rotation state (THREE objects). The sphere drag rotation is applied
@@ -310,13 +311,14 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   let navNudgeVelY = 0;
   let navNudgeVelX = 0; // tuning consts (NAV_NUDGE_*) are at module scope
 
-  // DI modules — the card-detail modal (modal.js), keyboard gallery (a11y.js), and
-  // pointer interaction (interaction.js). Declared here (assigned further below,
-  // once the sphere helpers + applyMotionCA they depend on exist) so the runtime
-  // can reference `modal` without a forward-reference.
   let modal = null;
   let a11y = null;
   let interaction = null;
+
+  // Suppresses the focus→snap-scroll while the tab is backgrounded, so returning to the
+  // tab (which refocuses the globe widget) doesn't yank the page to the globe. Armed on
+  // window blur / visibility-hidden, disarmed (deferred a frame) on focus. (pdf-space.)
+  let suppressFocusSnap = false;
 
   // Current arc context (computed once per frame in tick() via buildArcCtx)
   let arcCtx = null;
@@ -340,8 +342,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     // off-screen by design (cards on the side overflow as a "more cards beyond" cue).
     // sm (<768): fit the grid within the viewport exactly — solve cardW so that
     // GRID_COLS*cardW + (GRID_COLS-1)*cardW*GRID_GAP_RATIO == W. No overflow.
-    const isMobile = (bp.name === 'sm');
-    gridCardW = isMobile
+    gridCardW = (bp.name === 'sm')
       ? W / (GRID_COLS + (GRID_COLS - 1) * GRID_GAP_RATIO)
       : W / GRID_COLS;
     const gridGap = gridCardW * GRID_GAP_RATIO;
@@ -380,7 +381,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     for (let i = 0; i < N_TOTAL; i += 1) {
       // cardTexData is fully populated by the time buildCards() fires (called from onDone)
       const ctd = cardTexData[i] || {};
-      const sScaleX = ctd.sphereScaleX !== undefined ? ctd.sphereScaleX : 1;
+      const sphereScaleX = ctd.sphereScaleX !== undefined ? ctd.sphereScaleX : 1;
+      const imgAspect = sphereScaleX * CARD_ASPECT;
       // Cover-crop UVs (fall back to the no-crop identity if the texture errored).
       const repeatX = ctd.arcRepeatX !== undefined ? ctd.arcRepeatX : 1;
       const repeatY = ctd.arcRepeatY !== undefined ? ctd.arcRepeatY : 1;
@@ -424,13 +426,13 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
         gridCol: GRID_COLS - 1 - Math.floor(i / GRID_ROWS),
         gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
-        sphereScaleX: sScaleX,
+        sphereScaleX,
         arcRepeatX: repeatX,
         arcRepeatY: repeatY,
         arcOffsetX: offsetX,
         arcOffsetY: offsetY,
         arcMask: roundedMask,
-        sphereMask: sphereMasks.get(sScaleX * CARD_ASPECT),
+        sphereMask: sphereMasks.get(imgAspect),
         hoverT: 0, // eased 0→1 hover progress (sphere phase only)
         hoverTarget: 0, // instant 0|1 set by onHover() raycast
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
@@ -555,6 +557,8 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
     caEnabled: CA_ENABLED,
+    cardLabel: labels.cardLabel,
+    reducedMotion,
     sphereRotEuler,
     sphereRotQuat,
     snapToSphereSlot: snapCardToSphereSlot,
@@ -562,31 +566,57 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     applyMotionCA,
   });
 
-  // Drive the timeline from a synthetic progress value (0→1) instead of scroll, so
-  // keyboard focus can step through phases without scrolling. Pass null to release
-  // control back to window.scrollY. computeFrame reads the resulting virtualScrollY.
-  const setVirtualProgress = (p) => {
-    virtualScrollY = p == null ? null : blockDocTop + Math.max(0, Math.min(1, p)) * blockHeight;
+  // Keyboard spin: Left/Right arrows on the focused globe widget call this. Normal
+  // motion injects a velocity impulse into the shared drag.velX so the existing
+  // friction/inertia in updateSphereRotation gives a natural eased flick (clamped to
+  // MAX_VEL). Reduced motion steps sphereRotY directly by a fixed angle — a discrete
+  // reposition with no momentum/auto-rotate (auto-spin is also off in that mode).
+  function spinGlobe(dir) {
+    if (reducedMotion) {
+      sphereRotY += dir * KEY_SPIN_STEP;
+    } else {
+      drag.velX = Math.max(-MAX_VEL, Math.min(MAX_VEL, drag.velX + dir * KEY_SPIN_IMPULSE));
+    }
+  }
+
+  // Focusing the globe widget snaps the page so the block enters its interactive "globe"
+  // state instead of being skipped, and is in view before the focus ring shows. Normal
+  // motion scrolls to the formed-sphere offset inside the tall runway; reduced motion
+  // (a ~100vh section that already renders the formed sphere) aligns the block to the
+  // viewport top. Deferred a frame so the focus settles first (pdf-space pattern).
+  function snapToInteractive() {
+    if (suppressFocusSnap) return;
+    const top = reducedMotion
+      ? blockDocTop
+      : blockDocTop + SPHERE_FORMED_PROGRESS * blockHeight;
+    requestAnimationFrame(() => {
+      if (window.lenis?.scrollTo) window.lenis.scrollTo(top, { force: true, immediate: true });
+      else window.scrollTo(0, top);
+    });
+  }
+
+  // Focus-snap guard: while the tab is backgrounded, the browser refocuses the last
+  // element on return — which would re-fire the widget's focus → snap. Arm on blur /
+  // hidden; disarm a frame after focus so the synchronous refocus stays suppressed.
+  const armFocusGuard = () => { suppressFocusSnap = true; };
+  const disarmFocusGuard = () => { requestAnimationFrame(() => { suppressFocusSnap = false; }); };
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') armFocusGuard();
+    else disarmFocusGuard();
   };
 
   a11y = createGalleryA11y({
     q,
-    getCards: () => cards,
     getCount: () => bp.N_TOTAL,
-    getCardMetadata,
-    getCamera: () => camera,
-    getViewport: () => ({ W, H }),
     getSphereFormT: () => sphereFormTAtLastTick,
     getModalIdx: () => modal.getModalIdx(),
     interactiveThreshold: SPHERE_INTERACTIVE_T,
-    getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
-    // Keyboard open: no pointer position, so emanate the open-warp from screen center.
-    openModal: (idx) => modal.open(idx, W / 2, H / 2),
-    // Phase-stepping hook: focus handlers can advance the timeline without scrolling
-    // (not wired into a11y's keyboard handling yet — plumbing for that feature).
-    setVirtualProgress,
-    galleryLabel: labels.galleryRegion,
-    cardLabel: labels.cardLabel,
+    spinGlobe,
+    // Keyboard activation has no pointer target → open the first item (decision 3),
+    // emanating the open-warp from screen center.
+    openModal: () => modal.open(0, W / 2, H / 2),
+    onFocus: snapToInteractive,
+    galleryLabel: labels.galleryLabel,
   });
 
   // Pointer interaction (drag-to-spin, click → modal, hover). Owns its listeners +
@@ -620,10 +650,17 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   // (scrollVel for motion CA, sphereFormTAtLastTick for the click/hover handlers).
   function computeFrame() {
     const { CARD_W_ARC, CARD_W_SPHERE } = bp;
-    // virtualScrollY (a11y phase-stepping) overrides real scroll when set.
-    const lenisY = virtualScrollY != null ? virtualScrollY : window.scrollY;
+    // Reduced motion: pin the scroll input to the formed-sphere position so every
+    // downstream phase value resolves to the static interactive globe (sphereFormT=1,
+    // zoomT=0) with no scroll dependence — and no motion trail (scrollVel forced 0).
+    // The pin cancels in `progress` (it's (lenisY - blockDocTop)/blockHeight), so it's
+    // independent of the collapsed blockHeight. Canvas visibility uses REAL scroll (see
+    // updateCanvasVisibility) so the fixed canvas still hides when scrolled away.
+    const lenisY = reducedMotion
+      ? blockDocTop + SPHERE_FORMED_PROGRESS * blockHeight
+      : window.scrollY;
     const scrollingDown = lenisY >= prevLenisY;
-    scrollVel = Math.abs(lenisY - prevLenisY); // px/frame — drives motion trail intensity
+    scrollVel = reducedMotion ? 0 : Math.abs(lenisY - prevLenisY); // px/frame — motion trail
     prevLenisY = lenisY;
     const entryStart = blockDocTop - H * ENTRY_LEAD_VH;
     const entryRange = H * ENTRY_RAMP_VH;
@@ -649,10 +686,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     const arcRange = PROGRESS_GRID_ARC_END - PROGRESS_GRID_ARC_START;
     const foldFirstArcT = PROGRESS_GRID_ARC_START + gpWin * arcRange;
     const foldFirst = Math.max(0, (foldFirstArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
-    const foldLast = Math.max(
-      0,
-      (PROGRESS_GRID_ARC_END - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END,
-    ) + PROGRESS_FOLD_DUR;
+    const foldLast = SPHERE_FORMED_PROGRESS;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
     const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (PROGRESS_ZOOM_END - foldLast)));
     sphereFormTAtLastTick = sphereFormT; // cache for the interaction module's click/hover handlers
@@ -764,7 +798,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
         if (!drag.isDragging) {
           drag.velX *= DRAG_FRICTION;
           drag.velY *= DRAG_FRICTION;
-          drag.velX += AUTO_ROT_SPEED;
+          // Auto-spin is disabled under reduced motion (decision 2) — the globe sits
+          // still until the user drags or arrow-keys it. Drag inertia is preserved.
+          if (!reducedMotion) drag.velX += AUTO_ROT_SPEED;
         }
         // Inside the globe the visible (far-hemisphere) wall moves opposite to the
         // same world rotation, so a drag that pulls the outer shell right would push
@@ -824,6 +860,16 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
   function updateCanvasVisibility(frame) {
     const { lenisY, zoomT } = frame;
     const canvas = renderer.domElement;
+    // Reduced motion pins frame.lenisY to the formed-sphere position, so it can't gate
+    // visibility — use REAL scroll vs the block's bounds instead, so the fixed canvas
+    // hides when the (collapsed ~100vh) block is scrolled out of view.
+    if (reducedMotion) {
+      const realY = window.scrollY;
+      const inView = realY + H > blockDocTop && realY < blockDocTop + blockHeight;
+      canvas.style.display = inView ? 'block' : 'none';
+      if (inView) canvas.style.opacity = '1';
+      return;
+    }
     const showTrigger = blockDocTop - H * ENTRY_LEAD_VH; // matches entryStart in computeFrame
     if (lenisY < showTrigger || zoomT >= 0.95) {
       canvas.style.display = 'none';
@@ -1221,7 +1267,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     const frame = computeFrame();
     arcCtx = buildArcCtx(frame.arcPanT, W, H, bp.ARC_SPAN);
 
-    a11y.updateTabStops(frame.sphereFormT);
+    a11y.updateTabStops();
     frame.activeCamera = updateActiveCamera(frame);
     frame.sphereRotActive = updateSphereRotation(frame);
     modal.updateAnimation(frame.sphereRotActive);
@@ -1237,7 +1283,6 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     updateCardTransforms(frame);
     updateArcCopy();
     renderScene(frame.activeCamera);
-    a11y.updateFocusRing();
   }
 
   // rAF driver (replacing the prototype's gsap.ticker). Defined here, after tick(),
@@ -1334,6 +1379,12 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 
     interaction.setup(canvas);
 
+    // Focus-snap guard listeners (see snapToInteractive): suppress the snap while the tab
+    // is backgrounded so returning to the tab doesn't yank the page to the globe.
+    window.addEventListener('blur', armFocusGuard);
+    window.addEventListener('focus', disarmFocusGuard);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     canvas.style.display = 'block';
 
     // Cache SVG filter elements for Option C global CA
@@ -1345,7 +1396,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
     loadCardTextures({
       count: bp.N_TOTAL,
       getSrc: (i) => getCardMetadata(i).img,
-      planeAspect: bp.CARD_W_SPHERE / bp.CARD_H_SPHERE,
+      planeAspect: CARD_ASPECT,
     }, (loadedTextures, loadedTexData) => {
       textures = loadedTextures;
       cardTexData = loadedTexData;
@@ -1369,6 +1420,9 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
       layoutObs.disconnect();
       layoutObs = null;
     }
+    window.removeEventListener('blur', armFocusGuard);
+    window.removeEventListener('focus', disarmFocusGuard);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     // Pointer interaction cleanup (removes canvas + window listeners, clears cursor).
     interaction.teardown();
     if (renderer) {
@@ -1405,15 +1459,19 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels) {
 // TODO: finalize authoring these keys
 async function resolveGlobeLabels() {
   const [
-    arcRegion, prevCard, nextCard, closeBtn, appsUsed, galleryRegion, cardTplRaw,
+    arcRegion, prevCard, nextCard, closeBtn, appsUsed, galleryTplRaw, cardTplRaw,
   ] = await replaceKeyArray(
     ['image-gallery-intro', 'previous-card', 'next-card', 'close',
-      'apps-used', 'image-gallery', 'image-gallery-card-label'],
+      'apps-used', 'image-gallery-instructions', 'image-gallery-card-label'],
     getConfig(),
   );
   // replaceKey returns the de-hyphenated key when a placeholder is absent from every
-  // sheet; for the tokenized card label that leaves no {{name}} to fill, so fall back
-  // to the English template. (The static labels de-hyphenate to readable English.)
+  // sheet; for the tokenized templates that leaves no {{…}} to fill, so fall back to
+  // the English template. (The static labels de-hyphenate to readable English.)
+  const galleryTpl = galleryTplRaw.includes('{{count}}')
+    ? galleryTplRaw
+    : 'Interactive image gallery, {{count}} images. '
+      + 'Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.';
   const cardTpl = cardTplRaw.includes('{{name}}')
     ? cardTplRaw
     : 'View photo by {{name}}, {{index}} of {{count}}';
@@ -1423,7 +1481,9 @@ async function resolveGlobeLabels() {
     nextCard,
     closeBtn,
     appsUsed,
-    galleryRegion,
+    // aria-label for the single globe widget — describes what the globe is + how to
+    // drive it (screen-reader "what is this"). count is the live card total.
+    galleryLabel: (count) => galleryTpl.replace('{{count}}', String(count)),
     cardLabel: (name, index, count) => cardTpl
       .replace('{{name}}', name)
       .replace('{{index}}', String(index))
@@ -1435,11 +1495,13 @@ async function resolveGlobeLabels() {
 export default async function init(el) {
   // Reduced-motion: skip the WebGL experience entirely and collapse the block's
   // tall scroll length. TODO (iterate): author a static poster fallback like pdf-space.
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (reducedMotion.matches) {
-    el.classList.add('globe-gallery--reduced');
-    return el;
-  }
+  // Reduced motion: render a STATIC, still-interactive globe instead of the scroll
+  // choreography. The runtime pins the timeline to the formed-sphere state (no arc/grid/
+  // fold/zoom), disables auto-spin, and snaps the modal open/close — drag, arrow-spin,
+  // and click→open all still work. The block collapses to ~100vh (see .globe-gallery--
+  // reduced in the CSS) so it's a normal-height section rather than a tall scroll runway.
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) el.classList.add('globe-gallery--reduced');
 
   // Extract authored content BEFORE buildGlobeDom() wipes the block's children.
   // fragmentHref is captured here so it survives the DOM wipe.
@@ -1455,7 +1517,7 @@ export default async function init(el) {
   let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
   // No cards → nothing to render. Collapse the block rather than init an empty scene.
   if (!cards || cards.length === 0) {
-    el.classList.add('globe-gallery--reduced');
+    el.classList.add('globe-gallery--empty');
     return el;
   }
   // ?local=on: reuse the first card's image for every slot so only 1 network
@@ -1464,8 +1526,8 @@ export default async function init(el) {
     const firstImg = cards[0].img;
     cards = cards.map((c) => ({ ...c, img: firstImg }));
   }
-  const runtime = createGlobeGalleryRuntime(cards, el, gid, labels);
-  if (!runtime) { el.classList.add('globe-gallery--reduced'); return el; }
+  const runtime = createGlobeGalleryRuntime(cards, el, gid, labels, reducedMotion);
+  if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
   runtime.init();
   el.globeRuntime = runtime;
 
