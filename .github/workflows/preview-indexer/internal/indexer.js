@@ -1,5 +1,5 @@
 // node --env-file=.env .github/workflows/preview-indexer/incremental.js (node >= 21)
-import { fetchLogsForSite, getSiteEnvKey, triggerPreview, getPreviewPathsForRegion } from './helix-client.js';
+import { fetchLogsForSite, getSiteEnvKey, triggerPreview, getPreviewPathsForRegion, getRedirects } from './helix-client.js';
 import { getLastRunInfo, saveLastRuns } from './indexer-state.js';
 import SiteConfig from './site-config.js';
 
@@ -33,6 +33,7 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
   // Initialize site configuration
   const config = SiteConfig(siteOrg, siteRepo, lingoConfigMap);
   const orgWithRepo = getSiteEnvKey(siteOrg, siteRepo);
+  const pathExtn = config.getPreviewPathExtension();
 
   function getISOSinceXDaysAgo(days) {
     const now = new Date();
@@ -87,7 +88,6 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
   }
 
   function getPathsPerRoot(previewRoots, filteredPreviewPaths) {
-    const pathExtn = config.getPreviewPathExtension();
     return previewRoots.reduce((acc, root) => {
       const paths = filteredPreviewPaths.filter((path) => path.startsWith(root));
       if (paths.length) {
@@ -128,6 +128,16 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
       return;
     }
 
+    const redirectPaths = [];
+    const redirectFolders = [];
+    for (const redirectEntry of await getRedirects(siteOrg, siteRepo)) {
+      if (redirectEntry.endsWith('*')) {
+        redirectFolders.push(redirectEntry.slice(0, -1));
+      } else {
+        redirectPaths.push(`${redirectEntry}${pathExtn}`);
+      }
+    }
+
     const unpreviewPaths = await getUnpreviewPaths(entries);
     const filteredUnpreviewPaths = getFilteredPaths(unpreviewPaths);
 
@@ -154,13 +164,17 @@ const initIndexer = async (siteOrg, siteRepo, lingoConfigMap, datalayer) => {
           mergedSet.add(path);
         });
         const mergedData = [...mergedSet].map((path) => ({ Path: path }));
-        const { length } = mergedData;
-        previewIndex = { ...previewIndex, total: length, limit: length, data: mergedData };
+        previewIndex = { ...previewIndex, data: mergedData };
       } else if (previewRoot?.paths) {
         const pathData = previewRoot.paths.map((path) => ({ Path: path }));
-        const { length } = previewRoot.paths;
-        previewIndex = { ...previewIndex, total: length, limit: length, data: pathData };
+        previewIndex = { ...previewIndex, data: pathData };
       }
+      // Remove the redirect paths from the preview index
+      previewIndex.data = previewIndex.data
+        .filter((item) => !redirectPaths.find((path) => path.startsWith(rootPath) && item.Path.startsWith(path)))
+        .filter((item) => !redirectFolders.find((fldr) => item.Path.startsWith(fldr)));
+      const { length } = previewIndex.data;
+      previewIndex = { ...previewIndex, total: length, limit: length };
       const result = await datalayer.savePreviewIndexJson(siteOrg, siteRepo, `${previewIndexPath}${config.getPreviewFileExtension()}`, previewIndex);
       console.log(`Preview index saved at ${result.href} with ${result.status}`);
       const previewResult = await triggerPreview(siteOrg, siteRepo, previewIndexPreviewPath);

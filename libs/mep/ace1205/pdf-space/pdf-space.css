@@ -1,0 +1,461 @@
+.pdf-space {
+  height: 650vh;
+
+  --card-label-bg: #e1e1f1;
+  --text-block-width-mobile: 273px;
+  --text-block-width-tablet: 292px;
+  --text-block-width-desktop: 367px;
+
+  /*
+   * Stacking order within .pdf-space-stage (isolated stacking context):
+   *   10  .adbe-logo-svg              — drawn-on background mark
+   *   20  .text-block                  — marketing copy column
+   *   30  .acrobat-title, .acrobat-cta — title + CTA chrome
+   *   40  .acrobat-(mobile|desktop)-mockup — app-window chrome
+   *   50  .card-scene                  — animated card layer (own context)
+   *
+   * Cards inside .card-scene are layered by JS (renderArcPeelToGrid):
+   * fanIdx 0–7 → 0–7 at rest, 10–17 while peeling. These compete only
+   * with each other inside the scene, never with the chrome above.
+   */
+
+  .pdf-space-stage {
+    position: sticky;
+    top: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100vh;
+    isolation: isolate;
+  }
+
+  .text-block {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 20;
+    width: var(--text-block-width-mobile);
+    text-align: left;
+    will-change: transform, opacity;
+
+    .heading {
+      margin: 0 0 var(--s2a-spacing-xs);
+      color: var(--s2a-color-gray-1000);
+    }
+
+    p {
+      margin: 0 0 var(--s2a-spacing-sm);
+      color: var(--s2a-color-transparent-black-64);
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--s2a-spacing-2xs);
+      color: var(--s2a-color-gray-1000);
+      text-decoration: none;
+    }
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+    mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+  }
+
+  .adbe-logo-svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 10;
+    width: 80vw;
+    max-width: 900px;
+    height: auto;
+    opacity: var(--adbe-opacity, 0);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    will-change: opacity;
+
+    path {
+      fill: none;
+      stroke: #e1e1ef;
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+      stroke-dashoffset: calc(var(--adbe-logo-length) * (1 - var(--adbe-draw, 0)));
+    }
+  }
+
+  .card-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    perspective: 900px;
+    perspective-origin: 50% 50%;
+    pointer-events: none;
+  }
+
+  .card-stack {
+    position: absolute;
+    inset: 0;
+  }
+
+  .acrobat-mobile-mockup {
+    position: absolute;
+    top: 0;
+    left: calc((100% - var(--acrobat-mobile-mockup-width)) / 2);
+    z-index: 40;
+    overflow: hidden;
+    width: var(--acrobat-mobile-mockup-width);
+    height: var(--acrobat-mobile-mockup-height);
+    border-radius: var(--s2a-border-radius-md);
+    box-shadow: 0 40px 80px rgb(0 0 0 / 20%);
+    transform: translateY(var(--mockup-y, 100vh)) scale(var(--mockup-scale, 2));
+    will-change: transform;
+    contain: layout style paint;
+
+    picture,
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
+  }
+
+  .acrobat-desktop-mockup {
+    position: absolute;
+    display: none;
+    z-index: 40;
+    overflow: hidden;
+    aspect-ratio: 971 / 576;
+    border-radius: 18px;
+    box-shadow: 0 40px 80px rgb(0 0 0 / 20%);
+    transform: translateY(var(--mockup-y, 150vh)) scale(var(--mockup-scale, 1.3));
+    will-change: transform;
+    contain: layout style paint;
+
+    picture,
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
+  }
+
+  .acrobat-desktop-panel {
+    position: absolute;
+    inset: 10px;
+    display: none;
+    flex-direction: row-reverse;
+    align-items: flex-end;
+    overflow: hidden;
+
+    picture {
+      box-sizing: border-box;
+      transform: translateX(100%);
+      will-change: transform;
+      padding: 10px;
+      width: auto;
+      height: 95%;
+    }
+  }
+
+  .card {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 192px;
+    height: 230px;
+    overflow: hidden;
+    border-radius: 10px;
+    will-change: transform, opacity;
+    contain: layout style;
+
+    picture {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+
+  .card-label-outer,
+  .no-motion-card-label {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 6px;
+    white-space: nowrap;
+
+    /* Deliberate one-off: card labels are 10px at every breakpoint */
+    font-size: 0.625rem;
+    font-weight: var(--s2a-font-weight-label);
+    color: var(--s2a-color-gray-1000);
+    background: var(--card-label-bg);
+    border-radius: var(--s2a-border-radius-2);
+  }
+
+  .card-label-outer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    will-change: transform, opacity;
+  }
+
+  .acrobat-title {
+    position: absolute;
+    left: calc((100% - var(--acrobat-mobile-mockup-width)) / 2);
+    z-index: 30;
+    width: var(--acrobat-mobile-mockup-width);
+    text-align: center;
+    opacity: var(--title-opacity, 0);
+    transform: translateY(var(--title-y, 100vh)) scale(var(--title-scale, 1));
+    will-change: transform, opacity;
+
+    .heading {
+      margin-bottom: 6px;
+      color: var(--s2a-color-gray-1000);
+    }
+
+    .subcopy {
+      box-sizing: border-box;
+      margin: 0 auto;
+      max-width: 616px;
+      padding-top: var(--s2a-spacing-xs);
+      color: var(--s2a-color-gray-900);
+    }
+  }
+
+  .acrobat-cta {
+    position: absolute;
+    left: 50%;
+    z-index: 30;
+    display: flex;
+    background: var(--s2a-color-gray-1000);
+    border-radius: var(--s2a-border-radius-round);
+    transform: translateX(-50%) translateY(var(--cta-y, 100vh));
+    will-change: transform;
+
+    a {
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+      padding: 0 var(--s2a-spacing-lg);
+      white-space: nowrap;
+      color: var(--s2a-color-gray-25);
+      text-decoration: none;
+      border-radius: inherit;
+    }
+  }
+
+  @media (width >= 768px) {
+    --desktop-mockup-width: clamp(680px, 68.6vw, 971px);
+
+    & {
+      padding-bottom: 44px;
+    }
+
+    .text-block {
+      width: var(--text-block-width-tablet);
+    }
+
+    .acrobat-mobile-mockup {
+      display: none;
+    }
+
+    .acrobat-desktop-mockup {
+      display: block;
+      width: var(--desktop-mockup-width);
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
+    }
+
+    .acrobat-desktop-panel {
+      display: flex;
+    }
+
+    .acrobat-title {
+      left: calc((100vw - var(--desktop-mockup-width)) / 2);
+      width: var(--desktop-mockup-width);
+      transform: translateY(var(--title-y, 150vh)) scale(var(--title-scale, 0.92));
+
+      .heading {
+        margin-bottom: 0;
+        white-space: nowrap;
+      }
+    }
+
+    .acrobat-cta {
+      transform: translateX(-50%) translateY(var(--cta-y, 150vh));
+    }
+  }
+
+  /* .acrobat-cta top is set by JS resize() for both desktop and tablet */
+
+  @media (width >= 1280px) {
+    --desktop-mockup-width: min(68.6vw, 971px);
+
+    .text-block {
+      width: var(--text-block-width-desktop);
+    }
+  }
+
+  @media (width >= 1440px) {
+    --desktop-mockup-width: min(68.6vw, 1200px);
+  }
+
+  &.no-motion {
+    height: auto;
+
+    .pdf-space-stage {
+      position: static;
+      height: auto;
+      overflow: visible;
+      isolation: auto;
+    }
+
+    .no-motion-grid-section,
+    .no-motion-mockup-section {
+      box-sizing: border-box;
+      position: relative;
+      margin: 0 auto;
+      max-width: 1200px;
+      padding: var(--s2a-spacing-80) var(--s2a-spacing-40) 0;
+    }
+
+    .no-motion-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      align-items: start;
+      gap: var(--s2a-spacing-sm);
+      margin-bottom: var(--s2a-spacing-xl);
+    }
+
+    .no-motion-card-desktop-only {
+      display: none;
+    }
+
+    .no-motion-card {
+      margin: 0;
+
+      picture {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 10px;
+      }
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+    }
+
+    .no-motion-card-label {
+      margin-top: var(--s2a-spacing-2xs);
+    }
+
+    .text-block,
+    .acrobat-title,
+    .acrobat-cta {
+      position: static;
+      transform: none;
+      opacity: 1;
+    }
+
+    .text-block {
+      width: 100%;
+      max-width: var(--text-block-width-desktop);
+    }
+
+    .acrobat-title {
+      width: 100%;
+      text-align: center;
+    }
+
+    .acrobat-cta {
+      width: fit-content;
+      margin: var(--s2a-spacing-lg) auto 0;
+    }
+
+    .acrobat-mobile-mockup,
+    .acrobat-desktop-mockup {
+      position: relative;
+      left: auto;
+      margin: var(--s2a-spacing-lg) auto 0;
+      transform: none;
+    }
+
+    .acrobat-mobile-mockup {
+      display: block;
+      width: var(--acrobat-mobile-mockup-width);
+      height: var(--acrobat-mobile-mockup-height);
+    }
+
+    .acrobat-desktop-mockup {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .acrobat-desktop-panel picture {
+      transform: none;
+    }
+
+    .no-motion-slotted-card {
+      position: absolute;
+      overflow: hidden;
+      border-radius: 6px;
+
+      picture,
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    @media (width >= 768px) {
+      .no-motion-card-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .no-motion-card-desktop-only {
+        display: block;
+      }
+
+      .acrobat-mobile-mockup {
+        display: none;
+      }
+
+      .acrobat-desktop-mockup {
+        display: block;
+        margin-top: 40px;
+      }
+    }
+
+    @media (width >= 1280px) {
+      .no-motion-grid-section {
+        padding: var(--s2a-spacing-124) var(--s2a-spacing-64) 0;
+      }
+
+      .text-block {
+        margin-left: auto;
+      }
+    }
+  }
+}
