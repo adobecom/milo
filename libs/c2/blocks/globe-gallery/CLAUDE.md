@@ -32,8 +32,9 @@ from the code alone.
   preserve it. Add new per-frame work as a stage that takes `frame`. The modal is a DI module (`modal.js`, owns its tuning
   constants); the sphere coupling is narrow (shared `sphereRotEuler/Quat` + the
   `snapToSphereSlot` / `requestNavNudge` callbacks, with `sphereRotX/Y` + the nav-nudge
-  spring kept in `updateSphereRotation`). GPU resources come from `src/textures.js`/`src/materials.js`
-  (DI: pass `renderer`).
+  spring kept in `updateSphereRotation`). Card images come from `src/textures.js`
+  (`loadCardTextures`); materials from `src/materials.js`. Rounded corners are an analytic
+  SDF in the card/modal shaders (`uAspect`/`uRadius`), not a rasterized mask.
 - **DOM is JS-built and scoped to the block root** — the runtime queries nodes by
   class within `el` (`root.querySelector`), so **multiple globes per page are
   supported**. The only per-instance ids use a `gid` suffix (CA filter url +

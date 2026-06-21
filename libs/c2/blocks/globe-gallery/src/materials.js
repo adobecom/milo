@@ -8,31 +8,22 @@
 import * as THREE from '../three.module.min.js';
 import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG } from './shaders.js';
 
-// Card material — chromatic-aberration ShaderMaterial when CA is on, else a
-// plain MeshBasicMaterial. The ShaderMaterial gets property proxies (opacity /
-// alphaMap / map / needsUpdate) so the tick loop can drive it through the same
-// `mesh.material.opacity = …` API a MeshBasicMaterial exposes, without caring
-// which one it got. `needsUpdate` is suppressed — uniform texture swaps don't
-// require a shader relink.
+// Card material — a ShaderMaterial that handles the texture cover-crop, optional
+// chromatic aberration, hover warp, and rounded corners (analytic SDF, same as the
+// modal card). Rounded corners are driven by uAspect (the card's current world-space
+// width/height, set per phase by the tick loop) + uRadius (22/631), replacing the old
+// rasterized alphaMap. When the CA kill switch (CA_ENABLED) is off the caller just leaves
+// the CA/warp/motion uniforms at 0, so the shader renders a plain rounded card with no
+// aberration — no separate material path needed.
+// Property proxies (opacity / map / needsUpdate) let the tick loop drive it through the
+// same `mesh.material.opacity = …` API MeshBasicMaterial exposes; `needsUpdate` is a
+// no-op (uniform writes don't require a shader relink).
 export function createCardMaterial({
-  texture, alphaMap, repeatX, repeatY, offsetX, offsetY, caEnabled,
+  texture, aspect, repeatX, repeatY, offsetX, offsetY,
 }) {
-  if (!caEnabled) {
-    return new THREE.MeshBasicMaterial({
-      map: texture,
-      alphaMap,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0,
-      alphaTest: 0.0,
-      depthTest: true,
-      depthWrite: false,
-    });
-  }
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       uMap: { value: texture },
-      uAlphaMap: { value: alphaMap },
       uOpacity: { value: 0 },
       uCA: { value: 0 },
       uRepeat: { value: new THREE.Vector2(repeatX, repeatY) },
@@ -40,6 +31,8 @@ export function createCardMaterial({
       uMotionDir: { value: new THREE.Vector2(0, 0) },
       uWarp: { value: 0 },
       uHoverPos: { value: new THREE.Vector2(0.5, 0.5) },
+      uAspect: { value: aspect },
+      uRadius: { value: 22.0 / 631.0 },
     },
     vertexShader: CARD_VERT,
     fragmentShader: CARD_FRAG,
@@ -47,9 +40,9 @@ export function createCardMaterial({
     transparent: true,
     depthTest: true,
     depthWrite: false,
+    extensions: { derivatives: true }, // enables fwidth in WebGL1; no-op in WebGL2
   });
   Object.defineProperty(mat, 'opacity', { get() { return mat.uniforms.uOpacity.value; }, set(v) { mat.uniforms.uOpacity.value = v; } });
-  Object.defineProperty(mat, 'alphaMap', { get() { return mat.uniforms.uAlphaMap.value; }, set(v) { mat.uniforms.uAlphaMap.value = v; } });
   Object.defineProperty(mat, 'map', { get() { return mat.uniforms.uMap.value; }, set(v) { mat.uniforms.uMap.value = v; } });
   Object.defineProperty(mat, 'needsUpdate', { get() { return false; }, set() {} });
   return mat;

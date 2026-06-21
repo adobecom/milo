@@ -13,7 +13,7 @@ import { getConfig } from '../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { replaceKeyArray } from '../../../features/placeholders.js';
 import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
-import { createRoundedMask, createSphereMaskCache, loadCardTextures } from './src/textures.js';
+import loadCardTextures from './src/textures.js';
 import { createCardMaterial } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
@@ -328,11 +328,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
   // pure functions; the runtime owns `arcCtx` (rebuilt each frame in tick() via
   // buildArcCtx) and threads it + the viewport (W, H) back into them.
 
-  // ── Rounded-rect alpha masks + materials ───────────────────────────────────
-  // Mask + texture creation lives in textures.js; material factories in
-  // materials.js. sphereMasks caches one mask per distinct card aspect and is
-  // built in buildCards() (once `renderer` exists, so anisotropy is available).
-  let sphereMasks = null;
+  // ── Materials ───────────────────────────────────────────────────────────────
+  // Texture loading lives in textures.js; material factories in materials.js.
+  // Rounded corners are computed analytically in the card shader (SDF), driven by
+  // each card's uAspect uniform (set per phase by the card-transform stages) — no
+  // rasterized mask textures.
 
   // ── Grid layout (9×5 = 45 cards, sized to fit viewport) ───────────────────
   function computeGridLayout() {
@@ -375,9 +375,6 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     scene.add(sphereGroup);
     cards = [];
 
-    sphereMasks = createSphereMaskCache(renderer);
-    const roundedMask = createRoundedMask(renderer);
-
     for (let i = 0; i < N_TOTAL; i += 1) {
       // cardTexData is fully populated by the time buildCards() fires (called from onDone)
       const ctd = cardTexData[i] || {};
@@ -392,12 +389,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
       const geo = new THREE.PlaneGeometry(CARD_W_SPHERE, CARD_H_SPHERE, 1, 1);
       const mat = createCardMaterial({
         texture: textures[i],
-        alphaMap: roundedMask,
+        aspect: CARD_ASPECT, // arc/grid start shape; per-phase stages update uAspect
         repeatX,
         repeatY,
         offsetX,
         offsetY,
-        caEnabled: CA_ENABLED,
       });
       const mesh = new THREE.Mesh(geo, mat);
       mesh.renderOrder = N_VISIBLE - i;
@@ -427,12 +423,11 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
         gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
         sphereScaleX,
+        imgAspect, // world-space aspect on the sphere (CARD_ASPECT × sphereScaleX)
         arcRepeatX: repeatX,
         arcRepeatY: repeatY,
         arcOffsetX: offsetX,
         arcOffsetY: offsetY,
-        arcMask: roundedMask,
-        sphereMask: sphereMasks.get(imgAspect),
         hoverT: 0, // eased 0→1 hover progress (sphere phase only)
         hoverTarget: 0, // instant 0|1 set by onHover() raycast
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
@@ -524,15 +519,18 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     mesh.material.uniforms.uMotionDir.value.set(mx, my);
   }
 
-  // ── UV helper — routes to shader uniforms (CA on) or texture properties (CA off) ──
+  // ── UV helper — drives the cover-crop through the card shader's uniforms ──
   function setCardUV(mesh, rx, ry, ox, oy) {
-    if (CA_ENABLED) {
-      mesh.material.uniforms.uRepeat.value.set(rx, ry);
-      mesh.material.uniforms.uOffset.value.set(ox, oy);
-    } else {
-      const texMap = mesh.material.map;
-      if (texMap) { texMap.repeat.set(rx, ry); texMap.offset.set(ox, oy); }
-    }
+    mesh.material.uniforms.uRepeat.value.set(rx, ry);
+    mesh.material.uniforms.uOffset.value.set(ox, oy);
+  }
+
+  // ── Aspect helper — sets the rounded-corner SDF's world-space aspect for this
+  // card's current phase, so corners stay circular as the card stretches from
+  // portrait (arc/grid) to its image aspect (sphere). Replaces the old per-phase
+  // alphaMap swap (arcMask ↔ per-aspect sphereMask).
+  function setCardAspect(mesh, aspect) {
+    mesh.material.uniforms.uAspect.value = aspect;
   }
 
   // ── Modal + keyboard-gallery DI modules ─────────────────────────────────────
@@ -1007,10 +1005,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     }
     mesh.scale.set(card.sphereScaleX * hs, hs, hs);
     setCardUV(mesh, 1, 1, 0, 0);
-    if (mesh.material.alphaMap !== card.sphereMask) {
-      mesh.material.alphaMap = card.sphereMask;
-      mesh.material.needsUpdate = true;
-    }
+    setCardAspect(mesh, card.imgAspect);
     if (sphereRotActive) {
       mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
     } else {
@@ -1074,10 +1069,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
       lerpN(card.arcOffsetX, 0, fdE),
       lerpN(card.arcOffsetY, 0, fdE),
     );
-    if (mesh.material.alphaMap !== card.arcMask) {
-      mesh.material.alphaMap = card.arcMask;
-      mesh.material.needsUpdate = true;
-    }
+    setCardAspect(mesh, lerpN(CARD_ASPECT, card.imgAspect, fdE));
     if (sphereRotActive) {
       foldRotQuat.copy(sphereRotQuat).multiply(card.sphereQuat);
       mesh.quaternion.slerpQuaternions(card.gridQuat, foldRotQuat, fdE);
@@ -1097,10 +1089,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     mesh.position.set(card.gridPos.x, card.gridPos.y, card.gridPos.z - sphGroupZ);
     mesh.scale.setScalar(card.gridScale);
     setCardUV(mesh, card.arcRepeatX, card.arcRepeatY, card.arcOffsetX, card.arcOffsetY);
-    if (mesh.material.alphaMap !== card.arcMask) {
-      mesh.material.alphaMap = card.arcMask;
-      mesh.material.needsUpdate = true;
-    }
+    setCardAspect(mesh, CARD_ASPECT);
     mesh.quaternion.copy(card.gridQuat);
     mesh.renderOrder = N_TOTAL - i;
     mesh.material.opacity = 1;
@@ -1140,11 +1129,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     const webglRot = -fan.cssRot - entryRot;
 
     mesh.visible = true;
-
-    if (mesh.material.alphaMap !== card.arcMask) {
-      mesh.material.alphaMap = card.arcMask;
-      mesh.material.needsUpdate = true;
-    }
+    setCardAspect(mesh, CARD_ASPECT);
 
     if (gpE <= 0) {
       // Arc phase — reset peel snapshot so the next peel re-captures cleanly

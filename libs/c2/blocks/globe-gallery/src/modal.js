@@ -1040,7 +1040,7 @@ export default function createGlobeModal({
           // / uMotionDir values would persist on card.modalMat and ghost the
           // next time this card is shown in modal.
           resetModalMaterialUniforms(modalCard.modalMat, 1);
-          // Restore original MeshBasicMaterial before re-parenting to globe
+          // Restore the card's own material before re-parenting to globe
           if (modalCard.mesh.origMaterial) {
             modalCard.mesh.material = modalCard.mesh.origMaterial;
             modalCard.mesh.origMaterial = null;

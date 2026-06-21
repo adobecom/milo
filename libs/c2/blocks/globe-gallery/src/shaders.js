@@ -54,8 +54,14 @@ export const MODAL_FRAG = [
 
 // ── Card ShaderMaterial — chromatic aberration (Option B) ─────────────────
 // uCA = 0 → normal render; uCA > 0 → R/B channels split outward from card center.
-// uRepeat/uOffset replicate the texture cover-crop that MeshBasicMaterial tracked
-// via texture.repeat/offset (ShaderMaterial doesn't apply the texture matrix).
+// uRepeat/uOffset replicate the texture cover-crop the texture matrix would track
+// (a ShaderMaterial doesn't apply texture.repeat/offset automatically).
+// Rounded corners use the same analytic SDF the modal card uses (rrSDF below):
+// uRadius is a fraction of card height (22/631) and uAspect is the card's current
+// world-space width/height, set per phase so corners stay circular as the card
+// stretches from portrait (arc/grid) to its image aspect (sphere). This replaces
+// the old rasterized alphaMap + per-aspect mask cache — sharp at any size, no
+// texture uploads, and the fold morph can lerp uAspect with no mask-swap pop.
 // sRGB re-encode: Three.js uploads SRGBColorSpace textures decoded to linear;
 // custom ShaderMaterial must re-encode linear→sRGB to match MeshBasicMaterial output.
 export const CARD_VERT = [
@@ -68,7 +74,6 @@ export const CARD_VERT = [
 
 export const CARD_FRAG = [
   'uniform sampler2D uMap;',
-  'uniform sampler2D uAlphaMap;',
   'uniform float uOpacity;',
   'uniform float uCA;',
   'uniform float uWarp;', // barrel-distortion amount (0 = none, ~0.07 = subtle bulge); used for hover
@@ -76,7 +81,13 @@ export const CARD_FRAG = [
   'uniform vec2 uRepeat;',
   'uniform vec2 uOffset;',
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
+  'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
+  'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
   'varying vec2 vUv;',
+  'float rrSDF(vec2 p, vec2 b, float r) {',
+  '  vec2 q = abs(p) - b + r;',
+  '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
   'void main() {',
   // When the camera is inside the globe, the far-hemisphere cards are seen from
   // behind. A DoubleSide plane viewed from its back shows the image mirrored
@@ -91,7 +102,18 @@ export const CARD_FRAG = [
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
   '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
-  '  float a = texture2D(uAlphaMap, fUv).g;',
+  // Rounded-corner alpha: SDF of the card outline in raw geometry UV (the rect is
+  // symmetric, so the back-face uv.x flip doesn't affect it). pos maps UV to a space
+  // uAspect units wide × 1 tall, matching world proportions, so the corner radius is
+  // isotropic in world space. fwidth gives ~1px edge antialiasing at any zoom.
+  // The box half-size is the FULL plane half-size (uAspect/2, 0.5) so the rect fills
+  // the card plane edge-to-edge, matching the old mask. (The modal insets the box by
+  // uRadius and rescales its plane to compensate — the globe card has no such rescale,
+  // so insetting here would shrink every card by uRadius on each side.)
+  '  vec2 pos = (vUv - 0.5) * vec2(uAspect, 1.0);',
+  '  float dsd = rrSDF(pos, vec2(uAspect * 0.5, 0.5), uRadius);',
+  '  float px = fwidth(pos.y);',
+  '  float a = 1.0 - smoothstep(-px, px, dsd);',
   // Radial CA (transition peaks) + directional motion trail (velocity-driven)
   // R: trails behind — displaced opposite to motion + radial spread outward
   // G: current position, no displacement
