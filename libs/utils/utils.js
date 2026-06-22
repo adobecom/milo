@@ -2159,7 +2159,6 @@ async function checkForPageMods() {
   const { base } = getConfig();
   loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-  loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
   if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();

@@ -14,7 +14,43 @@ import {
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
-import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+
+function stringToHTML(str) {
+  const emptyBody = document.createElement('body');
+  if (!str?.trim()) return emptyBody;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(str, 'text/html');
+    return doc.body || emptyBody;
+  } catch (err) {
+    return emptyBody;
+  }
+}
+
+function isPossiblyDangerous(name, value) {
+  const val = value.replace(/\s+/g, '').toLowerCase();
+  if (['src', 'href', 'xlink:href'].includes(name)) {
+    // eslint-disable-next-line no-script-url
+    if (val.includes('javascript:') || val.includes('data:text/html')) return true;
+  }
+  if (name.startsWith('on')) return true;
+  return false;
+}
+
+function sanitizeHtmlNode(html) {
+  const htmlElem = stringToHTML(html);
+  htmlElem.querySelectorAll('script').forEach((s) => s.remove());
+  [htmlElem, ...htmlElem.querySelectorAll('*')].forEach((el) => {
+    [...el.attributes].forEach(({ name, value }) => {
+      if (isPossiblyDangerous(name, value)) el.removeAttribute(name);
+    });
+  });
+  return htmlElem;
+}
+
+export function sanitizeHtmlBody(html) {
+  return sanitizeHtmlNode(html);
+}
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
