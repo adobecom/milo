@@ -2,7 +2,15 @@ import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, formSuccess, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
+import init, {
+  setPreferences,
+  decorateURL,
+  formSuccess,
+  FORM_PARAM,
+  handleIframeTimeout,
+  watchSubmit,
+  watchLoad,
+} from '../../../libs/blocks/marketo/marketo.js';
 
 const ogFetch = window.fetch;
 const blockHTML = await readFile({ path: './mocks/block.html' });
@@ -215,6 +223,7 @@ describe('Marketo Iframe Timeout Handler', () => {
   beforeEach(() => {
     clock = sinon.useFakeTimers();
     window.fetch = sinon.stub();
+    window.lana = { log: sinon.spy() };
     setConfig(config);
     document.body.innerHTML = blockHTML;
     marketoBlock = document.querySelector('.marketo');
@@ -228,6 +237,7 @@ describe('Marketo Iframe Timeout Handler', () => {
     sinon.restore();
     clock.restore();
     window.fetch = ogFetch;
+    window.mcz_marketoForm_pref = undefined;
   });
 
   const tick = async (ms) => {
@@ -280,6 +290,270 @@ describe('Marketo Iframe Timeout Handler', () => {
     await tick(500);
     expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
     expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
+  });
+
+  it('tags the render failure with cookie-8k when cookies are large', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => 'x'.repeat(9000));
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,cookie-8k', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('adds the pp-incomplete tag when a program is present and no mktoReady', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    window.mcz_marketoForm_pref = { program: { id: '92814' } };
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,pp-incomplete', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('emits no cookie tag when cookies are small and no program is present', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('buckets cookie size into the 6k band', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => 'x'.repeat(7000));
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,cookie-6k', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('buckets cookie size into the 4k band', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => 'x'.repeat(5000));
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,cookie-4k', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('appends known-visitor tag when the visitor is known', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    window.mcz_marketoForm_pref = { profile: { known_visitor: true } };
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,known-visitor', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('appends preflang-empty tag when prefLanguage failed to resolve', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    window.mcz_marketoForm_pref = { profile: { prefLanguage: '' } };
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed,preflang-empty', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('does not log when the form is visible and mktoReady fired', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    marketoBlock.appendChild(document.createElement('form'));
+    handleIframeTimeout(marketoBlock);
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://engage.adobe.com',
+      data: JSON.stringify({ mktoReady: true }),
+    }));
+    await tick(10000);
+    const failed = window.lana.log.getCalls().some((c) => /did not render|handshake failed/.test(c.args[0]));
+    expect(failed).to.be.false;
+  });
+
+  it('logs a render failure when mktoReady fired but the form stayed hidden', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const form = document.createElement('form');
+    form.style.opacity = '0';
+    form.style.visibility = 'hidden';
+    marketoBlock.appendChild(form);
+    handleIframeTimeout(marketoBlock);
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://engage.adobe.com',
+      data: JSON.stringify({ mktoReady: true }),
+    }));
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form did not render',
+      { tags: 'marketo,render-failed', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('logs a handshake failure when the form is visible but mktoReady never fired', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    marketoBlock.appendChild(document.createElement('form'));
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form handshake failed',
+      { tags: 'marketo,handshake-failed', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('tags a handshake failure with cookie-8k when cookies are large', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => 'x'.repeat(9000));
+    marketoBlock.appendChild(document.createElement('form'));
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form handshake failed',
+      { tags: 'marketo,handshake-failed,cookie-8k', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('logs a failure when the form is present but kept hidden (opacity 0)', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const form = document.createElement('form');
+    form.style.opacity = '0';
+    form.style.visibility = 'hidden';
+    marketoBlock.appendChild(form);
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+    const failed = window.lana.log.getCalls().some((c) => /did not render/.test(c.args[0]));
+    expect(failed).to.be.true;
+  });
+
+  it('logs recovery when mktoReady arrives after a failure was logged', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    handleIframeTimeout(marketoBlock);
+    await tick(10000);
+
+    window.dispatchEvent(new MessageEvent('message', {
+      origin: 'https://engage.adobe.com',
+      data: JSON.stringify({ mktoReady: true }),
+    }));
+    await tick(10);
+
+    expect(window.lana.log.calledWith(
+      'Marketo form rendered after timeout',
+      { tags: 'marketo,render-recovered', severity: 'i' },
+    )).to.be.true;
+  });
+
+  it('logs never-ready when whenReady never fires', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    watchLoad(marketoBlock);
+    await tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form failed to initialize',
+      { tags: 'marketo,never-ready', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('does not log never-ready once the form signals ready', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const markReady = watchLoad(marketoBlock);
+    markReady();
+    await tick(10000);
+    const logged = window.lana.log.getCalls().some((c) => /failed to initialize/.test(c.args[0]));
+    expect(logged).to.be.false;
+  });
+});
+
+describe('Marketo submit failure', () => {
+  let clock;
+  let formEl;
+
+  const fakeForm = () => {
+    const cbs = {};
+    return {
+      onSubmit: (cb) => { cbs.submit = cb; },
+      onSuccess: (cb) => { cbs.success = cb; },
+      fireSubmit: () => cbs.submit?.(),
+      fireSuccess: () => cbs.success?.(),
+    };
+  };
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    window.lana = { log: sinon.spy() };
+    setConfig(config);
+    document.body.innerHTML = blockHTML;
+    formEl = document.createElement('form');
+    document.querySelector('.marketo').appendChild(formEl);
+  });
+
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+    window.mcz_marketoForm_pref = undefined;
+    delete window.mkto_isTestRecord;
+  });
+
+  it('logs submit failure via the backstop when nothing resolves', () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const form = fakeForm();
+    watchSubmit(form, formEl, {});
+    form.fireSubmit();
+    clock.tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form submit failed',
+      { tags: 'marketo,submit-failed', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('logs submit failure immediately when the error message appears', async () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const form = fakeForm();
+    watchSubmit(form, formEl, {});
+    form.fireSubmit();
+    const err = document.createElement('div');
+    err.className = 'mktoErrorMsg';
+    err.textContent = 'Submission failed, please try again later.';
+    formEl.appendChild(err);
+    await clock.tickAsync(0);
+    expect(window.lana.log.calledWith(
+      'Marketo form submit failed',
+      { tags: 'marketo,submit-failed', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
+  });
+
+  it('does not log when the submit succeeds', () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => '');
+    const form = fakeForm();
+    watchSubmit(form, formEl, {});
+    form.fireSubmit();
+    form.fireSuccess();
+    clock.tick(10000);
+    expect(window.lana.log.calledWith('Marketo form submit failed')).to.be.false;
+  });
+
+  it('skips test records', () => {
+    window.mkto_isTestRecord = () => 'test_no_submit';
+    const form = fakeForm();
+    watchSubmit(form, formEl, {});
+    form.fireSubmit();
+    clock.tick(10000);
+    expect(window.lana.log.calledWith('Marketo form submit failed')).to.be.false;
+  });
+
+  it('tags the submit failure with cookie-8k when cookies are large', () => {
+    sinon.stub(Document.prototype, 'cookie').get(() => 'x'.repeat(9000));
+    const form = fakeForm();
+    watchSubmit(form, formEl, {});
+    form.fireSubmit();
+    clock.tick(10000);
+    expect(window.lana.log.calledWith(
+      'Marketo form submit failed',
+      { tags: 'marketo,submit-failed,cookie-8k', severity: 'e', sampleRate: 100 },
+    )).to.be.true;
   });
 });
 

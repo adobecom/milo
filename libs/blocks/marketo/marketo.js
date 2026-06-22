@@ -29,6 +29,13 @@ import { replaceKey } from '../../features/placeholders.js';
 
 const ROOT_MARGIN = 50;
 const IFRAME_TIMEOUT = 3000;
+const FAILURE_TIMEOUT = 10000;
+const SUBMIT_TIMEOUT = 10000;
+const RENDER_FAILED_MSG = 'Marketo form did not render';
+const HANDSHAKE_FAILED_MSG = 'Marketo form handshake failed';
+const RENDER_RECOVERED_MSG = 'Marketo form rendered after timeout';
+const SUBMIT_FAILED_MSG = 'Marketo form submit failed';
+const NEVER_READY_MSG = 'Marketo form failed to initialize';
 const FORM_ID = 'form id';
 const BASE_URL = 'marketo host';
 const MUNCHKIN_ID = 'marketo munckin';
@@ -214,28 +221,56 @@ export const formSuccess = (formEl, formData) => {
   return false;
 };
 
+const failureTags = (failureClass, mktoReadyFired) => {
+  const pref = window.mcz_marketoForm_pref;
+  const len = document.cookie.length;
+  const tags = ['marketo', failureClass];
+  if (len >= 8192) tags.push('cookie-8k');
+  else if (len >= 6144) tags.push('cookie-6k');
+  else if (len >= 4096) tags.push('cookie-4k');
+  if (pref?.program?.id && !mktoReadyFired) tags.push('pp-incomplete');
+  if (pref?.profile?.known_visitor === true) tags.push('known-visitor');
+  if (pref?.profile?.prefLanguage === '') tags.push('preflang-empty');
+  return tags.join(',');
+};
+
 export const handleIframeTimeout = (el) => {
   const searchParams = new URLSearchParams(window.location.search);
   const config = getConfig();
   const iframe = document.querySelector('iframe[src*="/index.php/form/XDFrame"]');
   const formEl = el.querySelector('form');
+  const overlayDelay = config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT;
+  const failureDelay = config.marketo?.failureTimeout ?? FAILURE_TIMEOUT;
   let iframeTimeout = null;
+  let mktoReadyFired = false;
+  let failureLogged = false;
 
   const handleIframeReady = (event) => {
     if (event.origin !== 'https://engage.adobe.com') return;
     const message = JSON.parse(event.data);
     if (!message.mktoReady) return;
+    mktoReadyFired = true;
     setPreference('form.status', 'ready');
     if (iframeTimeout) clearTimeout(iframeTimeout);
     const errorOverlay = el.querySelector('.marketo-overlay');
     if (formEl) formEl.inert = false;
     if (errorOverlay) errorOverlay.remove();
+    if (failureLogged) {
+      window.lana?.log(RENDER_RECOVERED_MSG, { tags: 'marketo,render-recovered', severity: 'i' });
+    }
     window.removeEventListener('message', handleIframeReady);
   };
 
+  const logFailure = () => {
+    const visible = formEl?.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+    if (visible && mktoReadyFired) return;
+    const message = visible ? HANDSHAKE_FAILED_MSG : RENDER_FAILED_MSG;
+    const tags = failureTags(visible ? 'handshake-failed' : 'render-failed', mktoReadyFired);
+    window.lana?.log(message, { tags, severity: 'e', sampleRate: 100 });
+    failureLogged = true;
+  };
+
   const decorateOverlay = async () => {
-    const cookieSize = document.cookie.length > 4096 ? '> 4k' : '< 4k';
-    window.lana?.log(`Marketo iframe timeout - Cookie Size ${cookieSize}`, { tags: 'marketo', severity: 'e' });
     setPreference('form.status', 'error');
     if (el.querySelector('.marketo-overlay')) return;
     if (!config.marketo?.showError && searchParams.get('marketoOverlay') !== 'error') return;
@@ -265,7 +300,7 @@ export const handleIframeTimeout = (el) => {
       iframe.src = '';
       iframe.src = iframeSrc;
       clearTimeout(iframeTimeout);
-      iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
+      iframeTimeout = setTimeout(decorateOverlay, overlayDelay);
     });
 
     el.appendChild(errorOverlay);
@@ -277,8 +312,50 @@ export const handleIframeTimeout = (el) => {
     return;
   }
 
-  iframeTimeout = setTimeout(decorateOverlay, config.marketo?.iframeTimeout ?? IFRAME_TIMEOUT);
+  iframeTimeout = setTimeout(decorateOverlay, overlayDelay);
+  setTimeout(logFailure, failureDelay);
   window.addEventListener('message', handleIframeReady);
+};
+
+export const watchSubmit = (form, formEl, formData) => {
+  let teardown = null;
+  const cancel = () => { teardown?.(); teardown = null; };
+
+  form.onSubmit(() => {
+    const testRecord = window.mkto_isTestRecord?.();
+    if (testRecord && testRecord !== 'not_test') return;
+    cancel();
+    let logged = false;
+    const fail = () => {
+      if (logged) return;
+      logged = true;
+      cancel();
+      window.lana?.log(SUBMIT_FAILED_MSG, { tags: failureTags('submit-failed', true), severity: 'e', sampleRate: 100 });
+    };
+    const observer = new MutationObserver(() => {
+      if ([...formEl.querySelectorAll('.mktoErrorMsg')].some((e) => e.checkVisibility())) fail();
+    });
+    observer.observe(formEl, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+    const backstop = setTimeout(fail, getConfig().marketo?.submitTimeout ?? SUBMIT_TIMEOUT);
+    teardown = () => { observer.disconnect(); clearTimeout(backstop); };
+  });
+
+  form.onSuccess(() => {
+    cancel();
+    return formSuccess(formEl, formData);
+  });
+};
+
+export const watchLoad = (el) => {
+  const failureDelay = getConfig().marketo?.failureTimeout ?? FAILURE_TIMEOUT;
+  let ready = false;
+  setTimeout(() => {
+    if (ready) return;
+    const formEl = el.querySelector('form');
+    if (formEl?.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true })) return;
+    window.lana?.log(NEVER_READY_MSG, { tags: failureTags('never-ready', false), severity: 'e', sampleRate: 100 });
+  }, failureDelay);
+  return () => { ready = true; };
 };
 
 const readyForm = (form, formData) => {
@@ -301,7 +378,7 @@ const readyForm = (form, formData) => {
     window.scrollTo(0, offsetPosition);
   }, true);
   form.onValidate(() => formValidate(formEl));
-  form.onSuccess(() => formSuccess(formEl, formData));
+  watchSubmit(form, formEl, formData);
 };
 
 export const loadMarketo = (el, formData) => {
@@ -315,8 +392,9 @@ export const loadMarketo = (el, formData) => {
       const { MktoForms2 } = window;
       if (!MktoForms2) throw new Error('Marketo forms not loaded');
 
+      const markReady = watchLoad(el);
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
-      MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      MktoForms2.whenReady((form) => { markReady(); readyForm(form, formData); });
 
       /* c8 ignore next 3 */
       if (el.classList.contains('multi-step')) {
