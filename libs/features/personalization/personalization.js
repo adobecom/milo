@@ -1760,6 +1760,9 @@ export async function init(enablements = {}) {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
       loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
+      loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+      loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
       });
