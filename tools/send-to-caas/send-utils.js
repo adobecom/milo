@@ -10,8 +10,11 @@ import {
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
 const URL_POSTXDM = 'https://14257-milocaasproxy.adobeio-static.net/api/v1/web/milocaas/postXDM';
+const URL_POSTXDM_DEV = 'https://14257-milocaasproxy-dev.adobeio-static.net/api/v1/web/milocaas/postXDM';
 const VALID_URL_RE = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
 const VALID_MODAL_RE = /fragments(.*)#[a-zA-Z0-9_-]+$/;
+
+const LANG_FIRST_SOURCE_MAPPINGS = { cc: 'hawks', dc: 'doccloud' };
 
 const isKeyValPair = /(\s*\S+\s*:\s*\S+\s*)/;
 const isValidUrl = (u) => VALID_URL_RE.test(u);
@@ -139,8 +142,12 @@ const [getCaasTags, loadCaasTags] = (() => {
 const getTag = (tagName, errors) => {
   if (!tagName) return undefined;
   const caasTags = getCaasTags();
-  // search all except Events first
-  const tag = findTag(caasTags, tagName, ['Events']) || findTag(caasTags.events.tags, tagName, []);
+  // Skip the Events namespace root by tagID (not by title "Events", which would also
+  // exclude unrelated tags like caas:newsroom/article/events). Falls back to a search
+  // inside the Events subtree only if no non-Events match is found, preserving the
+  // historical "prefer non-Events" resolution.
+  const tag = findTag(caasTags, tagName, ['caas:events'])
+    || findTag(caasTags.events.tags, tagName, []);
 
   if (!tag) {
     errors.push(tagName);
@@ -183,20 +190,26 @@ const getDateProp = (dateStr, errorMsg) => {
 
 const processRepoForFloodgate = (repo, fgColor) => {
   if (repo && fgColor && fgColor !== 'default') {
-    return repo.slice(0, repo.lastIndexOf(`-${fgColor}`));
+    const fgInfix = `-fg-${fgColor}`;
+    if (repo.endsWith(fgInfix)) {
+      return repo.slice(0, repo.lastIndexOf(fgInfix));
+    }
   }
   return repo;
+};
+
+export const getFloodgateColorFromHost = (host) => {
+  const parts = host?.split('.')[0].split('--') || [];
+  const repo = parts.length >= 3 ? parts.slice(1, -1).join('--') : '';
+  const match = repo.match(/-fg-(\w+)$/);
+  return match ? match[1] : '';
 };
 
 export const getOrigin = (fgColor) => {
   const { project, repo } = getConfig();
   const origin = project || processRepoForFloodgate(repo, fgColor);
 
-  const mappings = {
-    cc: 'hawks',
-    dc: 'doccloud',
-  };
-  const originLC = mappings[origin.toLowerCase()] || origin;
+  const originLC = LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin;
   if (originLC) {
     return originLC;
   }
@@ -298,15 +311,52 @@ const isPagePublished = async () => {
   return false;
 };
 
-const getBulkPublishLangAttr = async (options) => {
-  let { getLocale } = getConfig();
-  if (options.languageFirst) {
-    const { country, lang } = await getLanguageFirstCountryAndLang(
+const MAX_LANG_FIRST_RETRIES = 3;
+const RETRY_DELAY_MS = 1000;
+
+const delay = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+
+/**
+ * Runs the language-first retry loop. Only retries when the resolver returns the
+ * default (en/xx) because of an error (fromFallback: true), e.g. mapping fetch failed.
+ * When the result is a real success (or default without error), returns immediately.
+ * Used by getBulkPublishLangAttr; exported for tests.
+ * @param {object} options - prodUrl, repo, host
+ * @param {Function} getLangFirst - async (prodUrl, repo, host) => { country, lang, fromFallback? }
+ * @param {{ retryDelayMs?: number }} [retryOpts] - optional; use in tests to avoid delay
+ * @returns {Promise<string>} lang-country e.g. 'de-xx'
+ */
+export async function runLanguageFirstRetry(options, getLangFirst, retryOpts = {}) {
+  const { retryDelayMs = RETRY_DELAY_MS } = retryOpts;
+
+  let lastResult;
+  for (let attempt = 0; attempt <= MAX_LANG_FIRST_RETRIES; attempt += 1) {
+    if (attempt > 0) await delay(retryDelayMs);
+
+    const result = await getLangFirst(
       options.prodUrl,
       options.repo,
       options.host,
     );
-    return `${lang}-${country}`;
+    const { country, lang, fromFallback } = result;
+    lastResult = `${lang}-${country}`;
+
+    const gotDefault = lang === 'en' && country === 'xx';
+    if (!gotDefault || !fromFallback) return lastResult;
+  }
+
+  return lastResult;
+}
+
+const getBulkPublishLangAttr = async (options) => {
+  let { getLocale } = getConfig();
+  if (options.languageFirst) {
+    const mappedGetLangFirst = (path, repo, fqdn) => getLanguageFirstCountryAndLang(
+      path,
+      LANG_FIRST_SOURCE_MAPPINGS[repo.toLowerCase()] || repo,
+      fqdn,
+    );
+    return runLanguageFirstRetry(options, mappedGetLangFirst);
   }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
@@ -321,10 +371,12 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options, origin) => {
   const langFirst = lingoActive();
   if (langFirst) {
+    const isBulkPublisher = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher');
+    const fqdn = isBulkPublisher ? 'bulkpublisher' : window.location.hostname;
     return getLanguageFirstCountryAndLang(
       window.location.pathname,
-      origin,
-      window.location.hostname,
+      LANG_FIRST_SOURCE_MAPPINGS[origin.toLowerCase()] || origin,
+      fqdn,
     );
   }
   /* c8 ignore next */
@@ -558,10 +610,10 @@ const getCaasProps = (p, pageUrl = null) => {
               target: p.cta1target,
             },
           }),
-          ...(p.cta2url && {
+          ...((p.cta2url || (p.cta2style === 'button' && p.cta2text)) && {
             secondaryCta: {
               text: p.cta2text,
-              url: p.cta2url,
+              url: p.cta2style === 'button' ? p.cta1url : p.cta2url,
               style: p.cta2style,
               icon: p.cta2icon,
               target: p.cta2target,
@@ -615,18 +667,20 @@ const getCardMetadata = async (options) => {
 };
 
 const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) => {
+  const isDev = new URLSearchParams(window.location.search).get('caas-env') === 'dev';
+  const postXdmUrl = isDev ? URL_POSTXDM_DEV : URL_POSTXDM;
+  const resolvedEnv = isDev ? 'dev' : caasEnv;
   const options = {
     method: 'POST',
     body: JSON.stringify(caasProps),
     headers: {
       Authorization: `Bearer ${accessToken}`,
       draft: !!draftOnly,
-      'caas-env': caasEnv,
+      'caas-env': resolvedEnv,
     },
   };
-
   let response;
-  const res = await fetch(URL_POSTXDM, options);
+  const res = await fetch(postXdmUrl, options);
   if (res !== undefined) {
     const text = await res.text();
 

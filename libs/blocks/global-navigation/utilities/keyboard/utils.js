@@ -21,7 +21,6 @@ const selectors = {
   breadCrumbItems: '.feds-breadcrumbs li:not(:nth-last-child(n+3):not(:first-child)) > a',
   expandedPopupTrigger: '.feds-navLink[aria-expanded = "true"]',
   promoLink: '.feds-promo-link',
-  imagePromo: 'a.feds-promo-image',
   fedsNav: '.feds-nav',
   popup: '.feds-popup',
   headline: '.feds-menu-headline',
@@ -31,7 +30,9 @@ const selectors = {
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
   featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
+  marketSelector: '.market-selector-button',
   languagePicker: '.language-dropdown',
+  marketPicker: '.market-selector-popover',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
@@ -63,9 +64,9 @@ selectors.profileDropdown = `
 selectors.popupItems = `
   ${selectors.navLink}:not(.feds-navLink--header),
   ${selectors.promoLink},
-  ${selectors.imagePromo},
   ${selectors.cta},
   ${selectors.regionPicker},
+  ${selectors.marketSelector},
   ${selectors.socialLink},
   ${selectors.privacyLink}
 `;

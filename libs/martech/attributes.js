@@ -60,7 +60,7 @@ export function decorateDefaultLinkAnalytics(block, config) {
           });
           item.setAttribute('daa-ll', labelArray.join('-'));
         } else {
-          let label = item.textContent?.trim();
+          let label = item.dataset.trackingLabel || item.textContent?.trim();
           if (label === '') {
             label = item.getAttribute('title')
                 || item.getAttribute('aria-label')
@@ -91,8 +91,9 @@ export async function decorateSectionAnalytics(section, idx, config) {
   const mepMartech = config?.mep?.martech || '';
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
     const lhAtt = block.getAttribute('daa-lh');
+    const { blockDaaLh } = block.dataset;
     if (lhAtt) {
-      block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
+      if (!blockDaaLh) block.setAttribute('daa-lh', `${lhAtt}${mepMartech}`);
     } else {
       const blockName = block.classList[0] || '';
       let closest = block;
@@ -103,7 +104,7 @@ export async function decorateSectionAnalytics(section, idx, config) {
           nestedLH = `${closest.getAttribute('data-nested-lh')}--${nestedLH}`;
         }
       }
-      block.setAttribute('daa-lh', `b${blockIdx + 1}|${nestedLH}${blockName.slice(0, 15)}${mepMartech}`);
+      if (!blockDaaLh) block.setAttribute('daa-lh', `b${blockIdx + 1}|${nestedLH}${blockName.slice(0, 15)}${mepMartech}`);
       decorateDefaultLinkAnalytics(block, config);
     }
     block.removeAttribute('data-block');

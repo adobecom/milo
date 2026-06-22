@@ -20,6 +20,7 @@ import {
   localizeLinkAsync,
   createTag,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   SLD,
   MILO_EVENTS,
@@ -73,7 +74,8 @@ export const decorateURL = async (destination, baseURL = window.location) => {
       destinationUrl = new URL(`${pathname}${search}${hash}`, baseURL.origin);
     }
 
-    if (baseURL.pathname.endsWith('.html') && !pathname.endsWith('.html') && !pathname.endsWith('/') && !exclude) {
+    const hasFileExtension = /\.[^/.]+$/.test(pathname);
+    if (baseURL.pathname.endsWith('.html') && !hasFileExtension && !pathname.endsWith('/') && !exclude) {
       destinationUrl.pathname = `${pathname}.html`;
     }
 
@@ -178,6 +180,26 @@ export const formSuccess = (formEl, formData) => {
   el.classList.add('success');
   window.dispatchEvent(mktoSubmit);
   window.mktoSubmitted = true;
+
+  if (formData?.[SUCCESS_TYPE] === 'ims') {
+    const redirect = getMetadata('marketo-ims-redirect');
+
+    if (!redirect?.startsWith('https://')) {
+      window?.lana.log('Marketo IMS failure, full url needed for redirect', { tags: 'marketo', severity: 'i' });
+      return false;
+    }
+
+    const emailInput = formEl.querySelector('input[name="Email"]');
+    const email = emailInput?.value;
+    const param = getMetadata('marketo-ims');
+
+    if (param && email) {
+      window.location.href = `${redirect}?${param}=${encodeURIComponent(email)}`;
+    } else {
+      window?.lana.log('Marketo IMS failure, missing data', { tags: 'marketo', severity: 'e' });
+    }
+    return false;
+  }
 
   /* c8 ignore next 5 */
   if (parentModal) {
@@ -385,6 +407,12 @@ export default async function init(el) {
     el.classList.add('hide-block');
     toggleSuccessSection(formData);
     return;
+  }
+
+  const imsSuccessType = getMetadata('marketo-ims');
+
+  if (imsSuccessType) {
+    formData[SUCCESS_TYPE] = 'ims';
   }
 
   formData[SUCCESS_TYPE] = formData[SUCCESS_TYPE] || 'redirect';

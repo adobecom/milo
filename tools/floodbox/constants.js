@@ -6,6 +6,7 @@ const SUPPORTED_FILES = {
   jpeg: 'image/jpeg',
   json: 'application/json',
   jpg: 'image/jpeg',
+  link: 'text/plain',
   png: 'image/png',
   gif: 'image/gif',
   mp4: 'video/mp4',

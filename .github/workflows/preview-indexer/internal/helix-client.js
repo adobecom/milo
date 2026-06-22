@@ -1,5 +1,7 @@
 import { createAxiosWithRetry } from './utils.js';
 
+const MAX_REDIRECT_ENTRIES = 999999;
+
 const axiosWithRetry = createAxiosWithRetry();
 
 const axiosWithRetryError = async (request) => {
@@ -152,7 +154,6 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
   const body = {
     select: ['preview'],
     paths: [`${path}*`],
-    pathsOnly: true,
     forceAsync: true,
   };
   const initialUrl = `https://admin.hlx.page/status/${siteOrg}/${siteRepo}/main/*`;
@@ -178,10 +179,36 @@ async function getPreviewPathsForRegion(siteOrg, siteRepo, regionPath) {
     });
     const detailsJson = detailsResponse.data;
     const isCompleted = detailsJson?.data?.phase === 'completed';
-    return isCompleted ? detailsJson?.data?.resources?.preview || [] : [];
+    if (isCompleted && detailsJson?.data?.resources?.length) {
+      return detailsJson?.data?.resources
+        .filter((data) => !data.previewConfigRedirectLocation)
+        .map((data) => data.path) || [];
+    }
+    return [];
   }
   console.error(`Job not stopped: ${job.links.self}`);
   throw new Error(`Job not stopped: ${job.links.self}`);
 }
 
-export { getSiteEnvKey, fetchLogsForSite, triggerPreview, getPreviewPathsForRegion };
+async function getRedirects(siteOrg, siteRepo) {
+  const adminTokenKey = getSiteEnvKey(siteOrg, siteRepo, 'AEM_ADMIN_TOKEN_');
+  const adminToken = process.env[adminTokenKey];
+  const url = `https://main--${siteRepo}--${siteOrg}.aem.page/redirects.json?limit=${MAX_REDIRECT_ENTRIES}`;
+  try {
+    const response = await axiosWithRetryError({
+      method: 'GET',
+      url,
+      headers: { Authorization: `token ${adminToken}` }
+    });
+    return response.data?.data?.map(item => item.Source) || [];
+  } catch (error) {
+    const status = error.status || error.response?.status;
+    if (status === 404 || status === 401) {
+      console.warn(`Redirects not found or unauthorized for ${siteOrg}/${siteRepo} (status ${status}). Returning empty list.`);
+      return [];
+    }
+    throw error;
+  }
+}
+
+export { getSiteEnvKey, fetchLogsForSite, triggerPreview, getPreviewPathsForRegion, getRedirects };

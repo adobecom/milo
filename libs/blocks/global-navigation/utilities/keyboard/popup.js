@@ -155,7 +155,7 @@ class Popup {
     document.querySelector(selectors.globalFooterTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.globalFooter)) return;
-        if (!isDesktopForContext('footer') || e.target.closest(selectors.languagePicker)) return;
+        if (!isDesktopForContext('footer') || e.target.closest(selectors.languagePicker) || e.target.closest(selectors.marketPicker)) return;
         const element = e.target.closest(selectors.globalFooter);
         this.handleKeyDown({ e, element, isFooter: true });
       }, `footer key failed ${e.code}`, 'gnav-keyboard', 'e'));

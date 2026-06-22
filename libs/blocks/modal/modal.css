@@ -365,7 +365,7 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
   }
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1280px) {
   .dialog-modal.s-size {
     max-width: 650px;
   }
@@ -378,6 +378,14 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
     width: 1200px;
     max-width: calc((100% - 6px) - 2em);
   }
+
+  .dialog-modal.commerce-frame.crm,
+  .dialog-modal.commerce-frame.d2p,
+  .dialog-modal.commerce-frame.twp {
+    width: 1030px;
+    max-width: 90vw;
+  }
+
 
   .dialog-modal.commerce-frame {
     width: 1024px;
@@ -418,15 +426,13 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 
   .dialog-modal.upgrade-flow-modal {
     height: 820px;
-    max-width: 1100px;
+    max-width: 1280px;
     overflow: hidden;
-    width: 80%;
   }
 
   .dialog-modal.three-in-one {
     height: 820px;
-    width: 80%;
-    max-width: 1100px;
+    max-width: 1280px;
     overflow: hidden;
   }
 
@@ -482,3 +488,4 @@ html[dir="rtl"] .dialog-modal button.dialog-close {
 body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   z-index: var(--jarvis-z-index-override);
 }
+

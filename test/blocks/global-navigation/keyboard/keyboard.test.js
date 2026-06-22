@@ -10,7 +10,7 @@ const isOpen = (element) => element.getAttribute('aria-expanded') === 'true'
 const isClosed = (element) => element.getAttribute('aria-expanded') === 'false'
   && element.hasAttribute('daa-lh', 'header|Open');
 const getPopup = (element) => element.parentElement.querySelector(selectors.popup);
-const getNavLinks = (trigger) => [...getPopup(trigger).querySelectorAll(`${selectors.navLink}, ${selectors.promoLink}, ${selectors.imagePromo}`)];
+const getNavLinks = (trigger) => [...getPopup(trigger).querySelectorAll(`${selectors.navLink}, ${selectors.promoLink}`)];
 let mainNavItems;
 let otherNavItems;
 let keyboardNavigation;
@@ -253,8 +253,7 @@ describe('keyboard navigation', () => {
         const navLinks = [
           ...triggerOne.parentElement.querySelectorAll(`
         ${selectors.navLink},
-        ${selectors.promoLink},
-        ${selectors.imagePromo}
+        ${selectors.promoLink}
       `),
         ];
         const lastNavLink = navLinks[navLinks.length - 1];

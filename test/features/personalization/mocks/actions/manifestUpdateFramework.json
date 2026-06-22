@@ -1,0 +1,14 @@
+{
+  "total": 1,
+  "offset": 0,
+  "limit": 1,
+  "data": [
+    {
+      "action": "updateframework",
+      "selector": "",
+      "page filter (optional)": "",
+      "all": "c2"
+    }
+  ],
+  ":type": "sheet"
+}

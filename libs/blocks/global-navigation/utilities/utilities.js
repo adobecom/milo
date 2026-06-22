@@ -362,9 +362,14 @@ export function setActiveDropdown(elem, type) {
   });
 }
 
-export const animateInSequence = (xs, gap) => {
+export const animateInSequence = (xs, gap, { restart = false } = {}) => {
   for (let i = 0; i < xs.length; i += 1) {
-    xs[i].style = `animation-delay: ${(i + 1) * gap}s`;
+    if (restart) {
+      xs[i].style.setProperty('animation', 'none');
+      xs[i].getBoundingClientRect();
+      xs[i].style.removeProperty('animation');
+    }
+    xs[i].style.setProperty('animation-delay', `${(i + 1) * gap}s`);
   }
 };
 
@@ -562,7 +567,12 @@ export async function fetchAndProcessPlainHtml({
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
-      link.href = await localizeLinkAsync(getFederatedUrl(link.href));
+      link.href = await localizeLinkAsync(
+        getFederatedUrl(link.href),
+        window.location.hostname,
+        false,
+        link,
+      );
       // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
       if (link.dataset.manifestId) {
         link.dataset.skipLoadArea = 'true';
@@ -775,8 +785,11 @@ export const transformTemplateToMobile = async ({
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
   const tabbuttonClickCallbacks = [...tabbuttons].map((tab, i) => () => {
+    const activePanel = tabpanels[i];
+    const activePanelChildren = activePanel ? [...activePanel.children] : [];
     closeAllTabs(tabbuttons, tabpanels);
-    tabpanels?.[i]?.removeAttribute('hidden');
+    activePanel?.removeAttribute('hidden');
+    animateInSequence(activePanelChildren, 0.02, { restart: true });
     tab.setAttribute('aria-selected', 'true');
   });
 

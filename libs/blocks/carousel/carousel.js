@@ -1,5 +1,5 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
+import { decorateAnchorVideo, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -36,6 +36,7 @@ const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > vid
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
 const isMobileVp = window.matchMedia('(max-width: 599px)');
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -185,7 +186,7 @@ function handlePrevious(previousElment, elements) {
   return elements[elements.length - 1];
 }
 
-async function waitImgReady(img) {
+export async function waitImgReady(img) {
   if (!img) return;
 
   if (!img.complete) {
@@ -389,6 +390,12 @@ function isSlideVisible(currentIdx, targetIdx, n, isNext) {
   return currentIdx === prev || currentIdx === targetIdx || currentIdx === next;
 }
 
+// Skip focus on touch events to prevent the browser from scrolling the page
+function focusNavButton(button, event) {
+  if (event.type === 'touchend') return;
+  button.focus({ preventScroll: true });
+}
+
 function moveSlides(event, carouselElements) {
   const {
     el,
@@ -448,7 +455,7 @@ function moveSlides(event, carouselElements) {
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend')) {
-    nextPreviousBtns[1].focus();
+    focusNavButton(nextPreviousBtns[1], event);
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
@@ -460,7 +467,7 @@ function moveSlides(event, carouselElements) {
   if ((event.currentTarget).dataset.toggle === 'previous'
     || event.key === KEY_CODES.ARROW_LEFT
     || (direction === 'right' && event.type === 'touchend')) {
-    nextPreviousBtns[0].focus();
+    focusNavButton(nextPreviousBtns[0], event);
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
@@ -479,10 +486,12 @@ function moveSlides(event, carouselElements) {
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
-  if (isHintingTablet(el) || isHintingMobile) {
+  if ((isHintingTablet(el) || isHintingMobile) && !prefersReducedMotion()) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
-    if (video?.paused && video.readyState >= 2) {
+    if (video?.paused
+      && video.readyState >= 2
+      && !video.hasAttribute(USER_PAUSED_ATTR)) {
       video.play().catch(() => {});
       syncPausePlayIcon(video);
     }

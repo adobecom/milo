@@ -1,6 +1,7 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
+import bcAnalytics from './bc-analytics.js';
 
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
 const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,10 +29,112 @@ const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
 const webClient = params.get('webclient');
+const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
+let bcToken;
 
-let bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+const getTargetHeight = (target) => {
+  const { marginBottom } = window.getComputedStyle(target);
+  return target.scrollHeight + (parseFloat(marginBottom) * 2);
+};
+
+function floatingElement(targetEl, el, focusableEl = null) {
+  const hideFloating = () => {
+    if (focusableEl) {
+      focusableEl.setAttribute('aria-hidden', 'true');
+      focusableEl.setAttribute('tabindex', '-1');
+      focusableEl.blur();
+    }
+    targetEl.classList.add('bc-floating-hidden');
+    targetEl.classList.remove('bc-floating-show');
+  };
+
+  const showFloating = () => {
+    if (focusableEl) {
+      focusableEl.removeAttribute('aria-hidden');
+      focusableEl.removeAttribute('tabindex');
+    }
+    targetEl.classList.remove('bc-floating-hidden');
+    targetEl.classList.add('bc-floating-show');
+  };
+
+  const mainElement = document.querySelector('main');
+  const mainTop = mainElement.offsetTop;
+  const hasDelay = variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay;
+  const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
+  let mainHeight = mainElement.scrollHeight;
+  let targetHeight = getTargetHeight(targetEl);
+  let elHeight = el.scrollHeight;
+
+  const floatingSpacer = createTag('div', { class: 'bc-spacer' });
+  floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
+  mainElement.appendChild(floatingSpacer);
+
+  targetEl.classList.add('bc-floating-element');
+
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = Math.floor(entry.borderBoxSize?.[0]?.blockSize);
+      switch (entry.target) {
+        case el: elHeight = size ?? el.scrollHeight; break;
+        case mainElement: mainHeight = size ?? mainElement.scrollHeight; break;
+        case targetEl: targetHeight = getTargetHeight(targetEl); break;
+        default: break;
+      }
+    }
+  });
+  ro.observe(el);
+  ro.observe(mainElement);
+  ro.observe(targetEl);
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloating();
+  }
+
+  const handleScroll = (target) => {
+    // only values that need to be calculated on scroll are here, to optimize performance
+    const threshold = window.scrollY + window.innerHeight - mainTop;
+    const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+    const bottomValue = threshold - mainHeight;
+
+    // if the spacer is not the last element in main, move it to the end
+    if (mainElement.children[mainElement.children.length - 1] !== floatingSpacer) {
+      mainElement.appendChild(floatingSpacer);
+    }
+
+    if (threshold > mainHeight) {
+      target.style.bottom = `${bottomValue}px`;
+      if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
+        hideFloating();
+      } else {
+        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+      }
+    } else {
+      showFloating();
+      target.style.bottom = '0';
+    }
+    if (hasDelay) {
+      if (window.scrollY > topDelay && threshold <= mainHeight) {
+        showFloating();
+      }
+      if (window.scrollY < topDelay
+        || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
+        hideFloating();
+      }
+    }
+  };
+
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(targetEl);
+      scrollPending = false;
+    });
+  }, { passive: true });
+}
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -39,16 +142,6 @@ function getBetaLabel() {
 
 function getAnalyticsLabel(step) {
   return `Filters|${getConfig()?.brandConciergeAA ? getConfig()?.brandConciergeAA : 'app-reco'}|bc#${step}`;
-}
-
-function updateModalHeight() {
-  const modal = document.getElementById('brand-concierge-modal');
-  if (!modal) return;
-  const isMobile = window.innerWidth < 768;
-  const marginTop = isMobile ? 22 : 32;
-  const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  const modalHeight = Math.min(viewportHeight - marginTop, window.innerHeight - marginTop);
-  modal.style.height = `${modalHeight}px`;
 }
 
 export function updateReplicatedValue(textareaWrapper, textarea) {
@@ -106,7 +199,15 @@ function resetFloatingButton(el) {
  * close modal on 'redirect' (onCloseRedirect) and on 'on-token' (onSuccessfulToken).
  */
 export function createSusiComponentForModal({
-  authParams, config, variant, redirectUrl, isStage, popup, onCloseRedirect, onSuccessfulToken,
+  authParams,
+  config,
+  variant,
+  redirectUrl,
+  isStage,
+  popup,
+  onCloseRedirect,
+  onSuccessfulToken,
+  onError,
 }) {
   const susi = createTag('susi-sentry-light');
   susi.authParams = {
@@ -125,7 +226,6 @@ export function createSusiComponentForModal({
       window.location.assign(e.detail);
     }
   };
-  const onError = (e) => { window.lana?.log('SUSI Light error:', e); };
   const onAnalytics = () => { /* TODO: send analytics from e.detail (type, event, client_id) */ };
   const onAuthFailed = () => { /* TODO: handle auth failed (e.detail) */ };
 
@@ -165,6 +265,8 @@ async function openSusiLightModal() {
   const susiConfig = { consentProfile: 'free', fullWidth: true };
   const onSuccessfulToken = ({ detail }) => {
     closeSusiModal();
+    window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
+    window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
     if (!bcToken) {
       bcToken = token;
@@ -173,6 +275,17 @@ async function openSusiLightModal() {
         mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
       }
     }
+  };
+
+  const onError = (e) => {
+    const mountEl = document.getElementById(mountId);
+    window.lana?.log(`SUSI Light error: ${e}`, { tags: 'brand-concierge', severity: 'error' });
+    if (mountEl) {
+      mountEl.dispatchEvent(
+        new CustomEvent('bc:cta-action-error', { detail: { message: 'Something went wrong signing in. Please try again in a moment.' } }),
+      );
+    }
+    closeSusiModal();
   };
   const susiEl = createSusiComponentForModal({
     authParams,
@@ -183,9 +296,10 @@ async function openSusiLightModal() {
     popup: true,
     onCloseRedirect: closeSusiModal,
     onSuccessfulToken,
+    onError,
   });
   const wrapper = createTag('div', { class: 'bc-susi-modal-content' }, susiEl);
-  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in');
+  const title = createTag('h2', { class: 'bc-susi-modal-title' }, 'Sign in or create an account');
   const fragment = new DocumentFragment();
 
   fragment.append(title, wrapper);
@@ -221,7 +335,6 @@ async function openChatModal(initialMessage, el) {
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  updateModalHeight();
 
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
@@ -233,8 +346,15 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
+  const logWebClient = (text, src) => {
+    // eslint-disable-next-line no-console
+    console.log(text, src);
+  };
+
   const { env, locale } = getConfig();
-  const prod = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
   let src = stage;
 
@@ -243,20 +363,48 @@ async function openChatModal(initialMessage, el) {
   }
 
   if (webClient === 'prod') {
-    console.log('prod', prod);
+    logWebClient('prod', prod);
     src = prod;
   } else if (webClient === 'stage') {
-    console.log('stage', stage);
+    logWebClient('stage', stage);
     src = stage;
+  } else if (webClient === 'baseProd') {
+    logWebClient('baseProd', baseProd);
+    src = baseProd;
+  } else if (webClient === 'baseStage') {
+    logWebClient('baseStage', baseStage);
+    src = baseStage;
   }
 
-  await loadScript(src);
+  if (webClientVersion) {
+    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
+    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
+    src = pr;
+  }
+
+  loadScript(src);
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
   const { userAgent, language } = window.navigator;
 
   const onBeforeEventSend = (content) => {
+    const MEETING_EVENT_TYPES = [
+      'form-fetch',
+      'form-submit',
+      'calendar-fetch',
+      'calendar-submit',
+      'conversation-command',
+    ];
+
+    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
+      return;
+    }
+
+    if (!bcToken) {
+      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+    }
+
     if (bcToken) {
       content.data = {
         type: 'auth',
@@ -271,6 +419,9 @@ async function openChatModal(initialMessage, el) {
         rdx.push({
           consentStandard: key,
           consentStringValue: consentsConfig[key].toString(),
+          consentStandardVersion: '2.0',
+          gdprApplies: true,
+          containsPersonalData: true,
         });
         return rdx;
       }, []);
@@ -295,6 +446,9 @@ async function openChatModal(initialMessage, el) {
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
       onBeforeEventSend,
+      onEvent: (event) => {
+        bcAnalytics(event);
+      },
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
@@ -305,22 +459,6 @@ async function openChatModal(initialMessage, el) {
       openSusiLightModal();
     }
   });
-
-  const handleViewportResize = () => updateModalHeight();
-  const handleOrientationChange = () => setTimeout(updateModalHeight, 100);
-  window.visualViewport?.addEventListener('resize', handleViewportResize);
-  window.addEventListener('resize', handleViewportResize);
-  window.addEventListener('orientationchange', handleOrientationChange);
-  const cleanup = () => {
-    window.visualViewport?.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('resize', handleViewportResize);
-    window.removeEventListener('orientationchange', handleOrientationChange);
-  };
-  const handleBCModalClose = () => {
-    cleanup();
-    window.removeEventListener('milo:modal:closed', handleBCModalClose);
-  };
-  window.addEventListener('milo:modal:closed', handleBCModalClose);
 }
 
 // sets values that will be used to overwrite json config values before invoking chat
@@ -363,7 +501,7 @@ function decorateBackground(el, background) {
       el.style.setProperty('--brand-concierge-bg', `url(${rawImage})`);
     }
   }
-  el.removeChild(background);
+  if (el.contains(background)) el.removeChild(background);
 }
 
 function decorateHeader(el, header) {
@@ -384,7 +522,7 @@ function decorateHeader(el, header) {
   }
 
   el.append(headerSection);
-  el.removeChild(header);
+  if (el.contains(header)) el.removeChild(header);
 }
 
 function decorateCards(el, cards) {
@@ -395,7 +533,7 @@ function decorateCards(el, cards) {
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
-      'daa-ll': getAnalyticsLabel('1'),
+      'daa-ll': getAnalyticsLabel(`1|BC-suggested_prompt_clicked|inline|${cardText.textContent.trim()}`),
       'aria-label': cardText.textContent.trim(),
     });
     if (cardImage) {
@@ -414,7 +552,7 @@ function decorateCards(el, cards) {
   });
 
   el.append(cardSection);
-  el.removeChild(cards);
+  if (el.contains(cards)) el.removeChild(cards);
 }
 
 function decorateInput(el, input) {
@@ -445,7 +583,7 @@ function decorateInput(el, input) {
 
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
-  el.removeChild(input);
+  if (el.contains(input)) el.removeChild(input);
   updateReplicatedValue(textareaWrapper, fieldInput);
 
   fieldInput.addEventListener('input', () => {
@@ -459,7 +597,7 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
+      e.preventDefault();
       fieldButton.click();
     }
   });
@@ -475,7 +613,7 @@ function decorateLegal(el, legal) {
   const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
   legalSection.append(legalContent);
   el.append(legalSection);
-  el.removeChild(legal);
+  if (el.contains(legal)) el.removeChild(legal);
 }
 
 function decorateFloatingButton(el) {
@@ -484,38 +622,9 @@ function decorateFloatingButton(el) {
   const floatingInput = createTag('div', { class: 'bc-floating-input' }, authoredContent.input);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
+
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
-
-  if (variants.isHero) {
-    floatingButton.classList.add('floating-hidden');
-  }
-
-  const mainElement = document.querySelector('main');
-  const gnavElement = document.querySelector('header.global-navigation');
-
-  const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const gnavHeight = gnavElement.offsetHeight;
-    const threshold = (window.scrollY + window.innerHeight - gnavHeight);
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2);
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      mainElement.style.paddingBottom = `${targetHeight}px`;
-    } else {
-      target.style.bottom = '0';
-    }
-    if (variants.isHero) {
-      if (window.scrollY > el.scrollHeight) {
-        floatingButton.classList.remove('floating-hidden');
-        floatingButton.classList.add('floating-show');
-      } else {
-        floatingButton.classList.add('floating-hidden');
-        floatingButton.classList.remove('floating-show');
-      }
-    }
-  };
 
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
@@ -523,7 +632,45 @@ function decorateFloatingButton(el) {
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  floatingElement(floatingButton, el, floatingContainer);
+}
+
+function decorateFloatingInput(el, cards, input) {
+  if (variants.isFloatingInputOnly) {
+    el.classList.add('floating-input');
+  }
+  function updatePillVisibility(target) {
+    const prompts = target.querySelector('.bc-prompt-cards');
+    if (!prompts) return;
+
+    const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
+    buttons.forEach((btn) => { btn.style.display = ''; });
+
+    requestAnimationFrame(() => {
+      const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
+
+      buttons.forEach((btn) => {
+        const { left, right } = btn.getBoundingClientRect();
+
+        if (right > containerRight || left < containerLeft) {
+          btn.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  const floatingInput = createTag('section', { class: 'bc-floating-input' });
+  decorateInput(floatingInput, input);
+  decorateCards(floatingInput, cards);
+  el.append(floatingInput);
+
+  const updateLayout = () => {
+    updatePillVisibility(floatingInput);
+  };
+
+  window.addEventListener('resize', updateLayout);
+  requestAnimationFrame(updateLayout);
+  floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
 }
 
 function handleConsent(el) {
@@ -539,6 +686,10 @@ export default async function init(el) {
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS?.refreshToken();
+    window.UniversalNav?.reload();
+  });
 
   const rows = el.querySelectorAll(':scope > div');
 
@@ -546,7 +697,8 @@ export default async function init(el) {
 
   // set variant
   if (!el.classList.contains('hero')
-  && !el.classList.contains('floating-button-only')) {
+    && !el.classList.contains('floating-button-only')
+    && !el.classList.contains('floating-input-only')) {
     el.classList.add('inline');
     variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
@@ -558,8 +710,33 @@ export default async function init(el) {
   }
   if (el.classList.contains('floating-button')) {
     variants.isFloatingButton = true;
-  } else if (el.classList.contains('floating-button-only')) {
+  }
+  if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+    variants.isFloatingButton = false;
+  }
+
+  if (el.classList.contains('floating-anchor-hide')) {
+    variants.isFloatingAnchorHide = true;
+  }
+
+  el.classList.forEach((classItem) => {
+    if (classItem.includes('floating-delay')) {
+      variants.floatingDelay = true;
+      variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
+    }
+    if (classItem.includes('floating-anchor-delay')) {
+      variants.floatingAnchorDelay = true;
+      variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
+    }
+  });
+
+  if (el.classList.contains('floating-input')) {
+    variants.isFloatingInput = true;
+  }
+  if (el.classList.contains('floating-input-only')) {
+    variants.isFloatingInputOnly = true;
+    variants.isFloatingInput = false;
   }
 
   if (variants.isFloatingButton) {
@@ -593,6 +770,18 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isFloatingInput) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+  }
+  if (variants.isFloatingInputOnly) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+    rows.forEach((row) => {
+      el.removeChild(row);
+    });
   }
 
   const loginTestButton = params.get('susi-test-btn');

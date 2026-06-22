@@ -1,8 +1,10 @@
 import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-components/dist/commerce.js';
 
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
+import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,
@@ -33,6 +35,9 @@ import merch, {
   getMasComponentUrl,
   getMasLibsBaseUrl,
   getMasLibs,
+  shouldHideStPriceLabels,
+  isMasErrorEnv,
+  createFragmentErrorEl,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -265,10 +270,18 @@ describe('Merch Block', () => {
         { prefix: '/langstore/el', expectedLocale: 'el_GR' },
         { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
         { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
+        { prefix: '/pr', expectedLocale: 'es_PR' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it('should use es_PR, es, US for Puerto Rico path', () => {
+      const s = getMiloLocaleSettings({ prefix: '/pr' });
+      expect(s.locale).to.equal('es_PR');
+      expect(s.language).to.equal('es');
+      expect(s.country).to.equal('US');
     });
 
     it('should use geo locale for lang-first sites', async () => {
@@ -352,6 +365,120 @@ describe('Merch Block', () => {
     it('renders merch link to GB price', async () => {
       const el = await validatePriceSpan('.merch.price.gb', {});
       expect(/£/.test(el.textContent)).to.be.true;
+    });
+
+    it('MEP Highlight M@S: stamps data-mas-block=ost and captures original /tools/ost href when mep.preview is on', async () => {
+      setConfig({ ...config, mep: { preview: true } });
+      // Earlier tests consume the canned mock anchors via replaceWith; build
+      // a fresh link in a scoped container.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap', class: 'merch-mep-ost-test' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const originalHref = link.href;
+      expect(originalHref).to.include('/tools/ost?');
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal('ost');
+      const captured = mepMasStudioUrls.get(renderedEl);
+      expect(captured).to.equal(originalHref);
+      expect(captured).to.include('osi=03');
+      expect(captured).to.include('type=price');
+      expect(captured).to.include('term=false');
+      wrap.remove();
+    });
+
+    it('MEP Highlight M@S: does NOT stamp data-mas-block or capture href when mep.preview is off', async () => {
+      // beforeEach calls setConfig(config) with no mep.preview.
+      const wrap = createTag('div', { id: 'mep-ost-test-wrap-off', class: 'merch-mep-ost-test-off' });
+      const link = createTag(
+        'a',
+        { class: 'merch price', href: '/tools/ost?osi=03&type=price&term=false' },
+        'Price - MEP Test',
+      );
+      wrap.append(link);
+      document.body.append(wrap);
+      const renderedEl = await merch(link);
+      await renderedEl.onceSettled();
+      expect(renderedEl.dataset.masBlock).to.equal(undefined);
+      expect(mepMasStudioUrls.get(renderedEl)).to.equal(undefined);
+      wrap.remove();
+    });
+
+    it('should hide ST price labels with promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price');
+      div.append(elementST);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price'));
+      expect(hide).to.be.true;
+    });
+
+    it('should hide ST price labels with promo price right after and character between', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price2');
+      div.append(elementST);
+      const text = document.createTextNode('* ');
+      div.append(text);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price2'));
+      expect(hide).to.be.true;
+    });
+
+    it('should not hide ST price labels without promo price', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price3');
+      div.append(elementST);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price3'));
+      expect(hide).to.be.false;
+    });
+
+    it('should not hide ST price labels without promo price right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=price');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
+    });
+    it('should not hide ST price labels with some link right after', async () => {
+      const div = document.createElement('div');
+      const elementST = document.createElement('a');
+      elementST.setAttribute('href', 'https://milo.adobe.com/tools/ost?osi=xxx&type=strikethrough');
+      elementST.setAttribute('class', 'my-price4');
+      div.append(elementST);
+      const elementI = document.createElement('i');
+      div.append(elementI);
+      const element = document.createElement('a');
+      element.setAttribute('href', 'https://www.adobe.com/plans');
+      div.append(element);
+      document.body.appendChild(div);
+      const hide = await shouldHideStPriceLabels(document.body.querySelector('.my-price4'));
+      expect(hide).to.be.false;
     });
   });
 
@@ -1579,5 +1706,76 @@ describe('Merch Block', () => {
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
+  });
+});
+
+describe('isMasErrorEnv', () => {
+  it('returns true for localhost', () => {
+    expect(isMasErrorEnv('localhost:6456')).to.be.true;
+  });
+
+  it('returns true for aem.page', () => {
+    expect(isMasErrorEnv('main--milo--adobecom.aem.page')).to.be.true;
+  });
+
+  it('returns false for aem.live', () => {
+    expect(isMasErrorEnv('main--milo--adobecom.aem.live')).to.be.false;
+  });
+
+  it('returns false for stage.adobe.com', () => {
+    expect(isMasErrorEnv('stage.adobe.com')).to.be.false;
+  });
+
+  it('returns false for www.adobe.com', () => {
+    expect(isMasErrorEnv('www.adobe.com')).to.be.false;
+  });
+});
+
+describe('createFragmentErrorEl', () => {
+  let fetchStub;
+
+  afterEach(() => {
+    fetchStub?.restore();
+  });
+
+  it('shows Not Found badge when fragment API returns 404', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 404 }));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.classList.contains('mas-frag-error')).to.be.true;
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Not Found');
+    expect(el.querySelector('.mas-frag-error-label').textContent).to.equal('Card:');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('test-uuid');
+  });
+
+  it('shows Load Error badge when fragment API returns non-404', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 500 }));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('shows Load Error badge when fetch throws', async () => {
+    fetchStub = sinon.stub(window, 'fetch').rejects(new Error('network error'));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('uses Collection label for collections', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 404 }));
+    const el = await createFragmentErrorEl('some-collection', 'Collection');
+    expect(el.querySelector('.mas-frag-error-label').textContent).to.equal('Collection:');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('some-collection');
+  });
+
+  it('shows unknown when uuid is not provided', async () => {
+    const el = await createFragmentErrorEl(null, 'Card');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('unknown');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('shows Not Found when status 404 is passed directly without fetching', async () => {
+    fetchStub = sinon.stub(window, 'fetch');
+    const el = await createFragmentErrorEl('test-uuid', 'Card', 404);
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Not Found');
+    expect(fetchStub.called).to.be.false;
   });
 });

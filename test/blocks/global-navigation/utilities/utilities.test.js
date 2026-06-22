@@ -15,6 +15,7 @@ import {
   dropWhile,
   getGnavHeight,
   getBranchBannerInfo,
+  animateInSequence,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
 import { getAnalyticsValue, decorateCta } from '../../../../libs/blocks/global-navigation/global-navigation.js';
 import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
@@ -26,6 +27,9 @@ const baseHost = 'https://main--federal--adobecom.aem.page';
 describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
+  });
+  afterEach(() => {
+    sinon.restore();
   });
   it('fetchAndProcessPlainHtml with MEP', () => {
     expect(fetchAndProcessPlainHtml).to.exist;
@@ -47,6 +51,19 @@ describe('global navigation utilities', () => {
     fetchAndProcessPlainHtml({ url: '/old/navigations' }).then((fragment) => {
       expect(fragment).to.be.null;
     });
+  });
+
+  it('fetchAndProcessPlainHtml passes the link element to localizeLinkAsync for inline fragment mep-lingo detection', async () => {
+    setConfig(config);
+    const gnavHtml = '<div><a href="http://localhost:2000/fr/fragments/buy-now#_inline#_mep-lingo">Subscribe</a></div>';
+    sinon.stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('buy-now')) return mockRes({ payload: null, ok: false, status: 404 });
+      return mockRes({ payload: gnavHtml });
+    });
+
+    const fragment = await fetchAndProcessPlainHtml({ url: '/fr/gnav' });
+
+    expect(fragment.querySelector('a[href*="buy-now"]')).to.be.null;
   });
 
   it('toFragment', () => {
@@ -349,6 +366,16 @@ describe('global navigation utilities', () => {
     // Calling 'trigger' again should close the element
     expect(trigger({ element })).to.equal(false);
     expect(element.getAttribute('aria-expanded')).to.equal('false');
+  });
+
+  it('animateInSequence can restart animations without clobbering inline styles', () => {
+    const link = toFragment`<a class="feds-navLink" style="color: red">One</a>`;
+
+    animateInSequence([link], 0.02, { restart: true });
+
+    expect(link.style.animationDelay).to.equal('0.02s');
+    expect(link.style.animation).to.equal('');
+    expect(link.style.color).to.equal('red');
   });
 
   it('getExperienceName defaults to imsClientId', () => {

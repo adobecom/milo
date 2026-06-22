@@ -1,12 +1,16 @@
 .mep-preview-overlay {
   z-index: 101;
   position: fixed;
-  bottom: 16px;
-  left: 32px;
-  color: #eee; 
+  inset: auto auto 16px 32px;
+  color: #eee;
   font-size: 24px;
   display: block !important;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  overflow: visible;
 }
 
 .mep-badge {
@@ -172,6 +176,12 @@
   text-transform: initial;
 }
 
+/* Sub-rows under "Surfaces Detected" — indented and de-emphasized. */
+.mep-popup .mep-section-data .mep-mas-subitem {
+  padding-left: 12px;
+  opacity: 0.7;
+}
+
 .mep-popup a.mep-edit-manifest {
   cursor: pointer;
   display: flex;
@@ -317,6 +327,10 @@
   align-items: center;
   justify-content: right;
   padding: 12px;
+}
+
+.mep-popup .mep-popup-footer.dark {
+  background-color: transparent;
 }
 
 .mep-popup .mep-popup-footer a:not([active]) {
@@ -612,6 +626,7 @@ body[data-mep-fragments='true'] [data-fragment-default]::before {
   border-radius: 5px;
   box-shadow: 0 3px 8px 1px #808080;
   pointer-events: auto !important;
+  line-height: 1.5;
 }
 
 /* Non-fragment (HTML) badges - not clickable */
@@ -672,4 +687,470 @@ body[data-mep-highlight='true'] main[data-manifest-id]::before {
 
 body[data-mep-highlight='true'] .section[class*="-merch-cards"] .fragment[data-manifest-id]::before {
   display: none;
+}
+
+/* CaaS region highlights — scoped to [data-caas-block] descendants so unrelated
+   [data-country] elements (country pickers, form inputs, etc.) are unaffected. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
+  outline: 2px dashed transparent;
+  outline-offset: 2px;
+  position: relative !important;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before,
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  min-height: 20px !important;
+  min-width: 60px !important;
+  max-width: 400px;
+  text-align: left !important;
+  vertical-align: top;
+  position: absolute !important;
+  left: 5px;
+  top: var(--badge-top-offset, 0);
+  z-index: 3;
+  padding: 5px 10px !important;
+  margin: 2px;
+  margin-left: var(--badge-margin-left, 0);
+  color: #000 !important;
+  opacity: 0.9 !important;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+/* Market-specific (any country code other than xx) - green */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
+  outline-color: #28a745;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx'])::before {
+  content: '🔗 caas-market: ' attr(data-card-path);
+  background-color: #d4edda !important;
+  border: 1px solid #28a745;
+}
+
+/* Lang-first / global (xx) - yellow */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
+  outline-color: #ffc107;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
+  content: '🔗 caas-lang: ' attr(data-card-path);
+  background-color: #fff3cd !important;
+  border: 1px solid #ffc107;
+}
+
+/* Cards with no resolvable source URL (no data-card-url, or unparseable) — the
+   badge would otherwise show "🔗 caas-market: " with an empty path. */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country][data-card-path='']::before {
+  content: none;
+}
+
+/* temporarily suppress the outline and pill so they don't render as a broken badge in stage/prod */
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url]) {
+  outline: none;
+}
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-card-url])::before {
+  content: none;
+}
+
+/* CaaS collection wrapper (block-level "Edit in Configurator" badge) -------- */
+body[data-mep-caas-highlight='true'] [data-caas-block] {
+  outline: 2px dashed #007bff;
+  outline-offset: 4px;
+}
+
+a.mep-caas-edit-badge,
+body a.mep-caas-edit-badge {
+  visibility: visible !important; /* override caas.css hiding /tools/caas# links */
+  display: inline-block;
+  margin: 0 0 12px 5px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  background-color: #cce5ff;
+  color: #003a75;
+  border: 1px solid #007bff;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.95;
+  z-index: 4;
+  position: relative;
+}
+
+a.mep-caas-edit-badge::before {
+  content: '🔗 ';
+}
+
+a.mep-caas-edit-badge:hover,
+a.mep-caas-edit-badge:focus {
+  opacity: 1;
+  text-decoration: none;
+}
+
+/* M@S surface highlights ---------------------------------------------------- */
+body[data-mep-mas-highlight='true'] [data-mas-block='collection'] {
+  outline: 2px dashed #6f42c1; /* purple */
+  outline-offset: 4px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='card'] {
+  outline: 2px dashed #fd7e14; /* orange */
+  outline-offset: 4px;
+  position: relative;
+
+  /* Anchors the .mep-mas-card-actions overlay; prevents host overflow
+     from clipping it. */
+  overflow: visible;
+}
+
+/* Inset the child-card outline so it sits inside the parent collection's
+   outline (avoids stacked dashed lines). */
+body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-block='card'] {
+  outline-offset: -2px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'] {
+  outline: 2px dashed #e83e8c; /* pink */
+  outline-offset: 2px;
+  position: relative;
+  overflow: visible;
+
+  /* Override M@S's `mas-field { display: inline }`: an inline host that
+     wraps block children (e.g., a body field with multiple <p>s) splits
+     into degenerate inline boxes and the outline disappears. inline-block
+     gives a single coherent box; scoped to highlight mode only. */
+  display: inline-block;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
+  outline: 2px dashed #0d6efd; /* blue — unified with the offer surface */
+  outline-offset: 2px;
+  position: relative;
+  overflow: visible;
+}
+
+a.mep-mas-edit-badge,
+body a.mep-mas-edit-badge {
+  display: inline-block;
+  margin: 0 0 8px 5px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 5px;
+  box-shadow: 0 3px 8px 1px #808080;
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.95;
+  z-index: 4;
+  position: relative;
+}
+
+a.mep-mas-edit-badge-collection {
+  background-color: #e2d4f7;
+  color: #4a2d80;
+  border: 1px solid #6f42c1;
+}
+
+/* Sub-collection edit badge — sibling between the parent collection badge
+   and the collection. Lavender palette, lower-emphasis than the parent,
+   to communicate hierarchy. */
+a.mep-mas-sub-collection-badge,
+body a.mep-mas-sub-collection-badge {
+  display: inline-block;
+  margin: 0 0 8px 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  background-color: #f0e7fb;
+  color: #4a2d80;
+  border: 1px dashed #9b6dd7;
+  box-shadow: 0 2px 5px 0 rgb(0 0 0 / 15%);
+  text-decoration: none;
+  cursor: pointer;
+  opacity: 0.92;
+  z-index: 4;
+  position: relative;
+}
+
+a.mep-mas-sub-collection-badge::before {
+  content: '↳ 🔗 ';
+}
+
+a.mep-mas-sub-collection-badge:hover,
+a.mep-mas-sub-collection-badge:focus {
+  opacity: 1;
+  text-decoration: none;
+}
+
+a.mep-mas-edit-badge-card {
+  background-color: #ffe5d0;
+  color: #80450b;
+  border: 1px solid #fd7e14;
+}
+
+a.mep-mas-edit-badge::before {
+  content: '🔗 ';
+}
+
+a.mep-mas-edit-badge:hover,
+a.mep-mas-edit-badge:focus {
+  opacity: 1;
+  text-decoration: none;
+}
+
+/* Card action stack — three stacked actions in the top-right of every
+   highlighted card: Edit Card, View in OST, Copy Fragment ID. Real DOM (not
+   a ::before pseudo) so the Copy button can host a clipboard handler.
+   Anchored by the card host's position:relative + overflow:visible above. */
+body[data-mep-mas-highlight='true'] .mep-mas-card-actions {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+  font-family: inherit;
+}
+
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit,
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost,
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 25%);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* Edit Card (orange) — matches the card outline. */
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit {
+  background-color: #ffe5d0;
+  color: #80450b;
+  border: 1px solid #fd7e14;
+}
+
+/* View in OST (blue) — matches the offer/ost palette. */
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost {
+  background-color: #cfe2ff;
+  color: #0a3677;
+  border: 1px solid #0d6efd;
+}
+
+/* Copy Fragment ID (neutral grey) — visually distinct from the link
+   buttons; flips green for ~1.5s after a successful clipboard write. */
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy {
+  background-color: #e9ecef;
+  color: #212529;
+  border: 1px solid #6c757d;
+  font-family: inherit;
+}
+
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-copy-copied {
+  background-color: #d4edda;
+  color: #155724;
+  border-color: #28a745;
+}
+
+/* Market-mismatch flip: yellow palette (consistent with inline/ost/offer)
+   when the card's market differs from the page market. Copy stays neutral. */
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-edit.mep-mas-card-actions-mismatch,
+body[data-mep-mas-highlight='true'] .mep-mas-card-action-ost.mep-mas-card-actions-mismatch {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffc107;
+}
+
+/* Offer surface — every [data-wcs-osi] element. Stamped by annotateOffers().
+   CSS-only ::before badge; the capture-phase click handler in preview.js
+   opens the OST URL on hits inside the badge box. */
+body[data-mep-mas-highlight='true'] [data-mas-block='offer'] {
+  outline: 1px dashed #0d6efd;
+  outline-offset: 2px;
+  position: relative;
+
+  /* Prevent ancestor overflow from clipping the corner badge (some
+     <merch-card> variants hide overflow on the price slot). */
+  overflow: visible;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='offer']::before {
+  content: '🔗 View in OST';
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  z-index: 3;
+  padding: 3px 6px;
+  background-color: #cfe2ff;
+  color: #0a3677;
+  border: 1px solid #0d6efd;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 112px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market]::before {
+  content: '🔗 View in OST · ' attr(data-mas-market);
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market-mismatch='true']::before {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffc107;
+}
+
+/* Suppress the per-offer pseudo when nested in a card — the card's action
+   stack already has a consolidated "View in OST" button. Outline preserved. */
+body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='offer']::before {
+  content: none;
+}
+
+/* Inline (mas-field) surface — overhanging top-right ::before to avoid
+   disturbing document flow inside paragraphs/headings. */
+body[data-mep-mas-highlight='true'] [data-mas-block='inline']::before {
+  content: '🔗 Edit Inline Field';
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  z-index: 3;
+  padding: 3px 6px;
+  background-color: #fcd3e1;
+  color: #80224d;
+  border: 1px solid #e83e8c;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 130px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market]::before {
+  content: '🔗 Edit Inline Field · ' attr(data-mas-market);
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mismatch='true']::before {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffc107;
+}
+
+/* When an ost/offer badge is nested inside an inline (mas-field) host, flip it
+   below its element so it doesn't overlap the inline badge above. */
+body[data-mep-mas-highlight='true'] [data-mas-block='inline'] :is([data-mas-block='ost'], [data-mas-block='offer'])::before {
+  top: calc(100% + 4px);
+}
+
+/* OST surface — standalone <a class="merch"> autoblock. Unified palette
+   with the offer surface; the difference is internal (OST captures the
+   full authoring URL, offer derives a minimal one from the OSI). */
+body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
+  content: '🔗 View in OST';
+  position: absolute;
+  top: -10px;
+  right: -2px;
+  z-index: 11;
+  padding: 3px 6px;
+  background-color: #cfe2ff;
+  color: #0a3677;
+  border: 1px solid #0d6efd;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 25%);
+  min-width: 96px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market]::before {
+  content: '🔗 View in OST · ' attr(data-mas-market);
+  min-width: 112px;
+}
+
+body[data-mep-mas-highlight='true'] [data-mas-block='ost'][data-mas-market-mismatch='true']::before {
+  background-color: #fff3cd;
+  color: #856404;
+  border-color: #ffc107;
+}
+
+/* Market chip suffix on the badge label (e.g. "Edit Card · FR"). Plain
+   when the card market matches the page; yellow pill on mismatch. */
+.mep-mas-edit-badge-market {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  vertical-align: 1px;
+}
+
+.mep-mas-edit-badge-market-mismatch {
+  padding: 1px 6px;
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  border-radius: 3px;
+}
+
+.mep-mas-no-content {
+  margin-top: 4px;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* M@S market spoofer (mode-toggle checkbox between Lingo and M@S dropdowns) */
+.mep-mas-market-toggle {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mep-mas-market-dropdown {
+  margin-top: 8px;
+  border-left: 3px solid #20c997;
+  padding-left: 8px;
+}
+
+/* Non-Lingo pages: no companion toggle, so drop the green border that
+   signaled "alternative to the Lingo dropdown". */
+.mep-mas-market-dropdown.standalone {
+  border-left: none;
+  padding-left: 0;
+}
+
+.mep-mas-market-dropdown[hidden] {
+  display: none;
+}
+
+.mep-popup select[id^='mepLingoRegionSelect']:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

@@ -33,8 +33,8 @@ test.describe('Footer Block Test Suite', () => {
 
       // updated the footer section and heading content as per consuming sites
       // milo=6, cc=9 and so on
-      await expect([4, 6, 9].includes(await Footer.footerSections.count())).toBeTruthy();
-      await expect([4, 6, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
+      await expect([4, 6, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
+      await expect([4, 6, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
 
       await expect(Footer.socialIcons).toHaveCount(4);
       await expect(Footer.legalLinks).toHaveCount(5);

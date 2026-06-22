@@ -82,6 +82,7 @@
 /libs/blocks/marquee/ @adobecom/milo-core
 /libs/blocks/martech-metadata/ @vgoodric
 /libs/blocks/media/ @adobecom/milo-core
+/libs/blocks/mas-compare-chart-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-collection-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-collection/ @adobecom/tacocat
@@ -140,3 +141,8 @@
 # Standalone Gnav
 /libs/navigation/ @adobecom/feds
 /libs/martech/attributes.js @adobecom/mep-squad
+
+# Claude Skills
+/.claude/skills/build-block-from-figma/ @adobecom/milo-core
+/.claude/skills/build-content-from-figma/ @adobecom/milo-core
+/.claude/skills/build-scroll-animation/ @adobecom/milo-core

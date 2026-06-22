@@ -5,20 +5,16 @@
 import {
   createTag,
   getConfig,
+  getMetadata,
   loadLink,
   loadScript,
   localizeLinkAsync,
   getFederatedUrl,
   isSignedOut,
-  getCountry,
+  resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
-import {
-  getConsentState,
-  parseOptanonConsent,
-  getAllCookies,
-  KNDCTR_CONSENT_COOKIE,
-  OPT_ON_AND_CONSENT_COOKIE,
-} from '../../martech/helpers.js';
+import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
+import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
 
 /* c8 ignore start */
 const getUA = () => navigator.userAgent;
@@ -93,6 +89,35 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
+const TRUSTED_DOMAINS = ['.adobe.com'];
+const TRUSTED_AEM_PATTERN = /--adobecom\.(hlx|aem)\.(page|live)$/;
+
+export function isTrustedUrl(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (/^[^/]*:/.test(url) && !/^https:\/\//i.test(url)) return false;
+  let parsed;
+  try {
+    parsed = new URL(url, window.location.origin);
+  } catch {
+    return false;
+  }
+  if (parsed.origin === window.location.origin) return true;
+  if (parsed.protocol !== 'https:') return false;
+  return TRUSTED_DOMAINS.some(
+    (domain) => parsed.hostname === domain.slice(1) || parsed.hostname.endsWith(domain),
+  ) || TRUSTED_AEM_PATTERN.test(parsed.hostname);
+}
+
+function isSameOriginManifestPath(manifestPath) {
+  if (typeof manifestPath !== 'string' || !manifestPath) return false;
+  if (!manifestPath.startsWith('/') || manifestPath.startsWith('//')) return false;
+  try {
+    return new URL(manifestPath, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
 export const normalizePath = (p, localize = true) => {
   let path = p;
 
@@ -111,11 +136,13 @@ export const normalizePath = (p, localize = true) => {
     const firstFolder = pathname.split('/')[1];
     const mepHash = '#_dnt';
 
-    if (path.startsWith(config.codeRoot)
+    const isKnownOrigin = path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
       || path.includes('.adobe.')
-      || path.includes('localhost:')) {
+      || path.includes('localhost:');
+
+    if (isKnownOrigin) {
       if (!localize
         || config.locale?.ietf === 'en-US'
         || hash?.includes(mepHash)
@@ -123,11 +150,18 @@ export const normalizePath = (p, localize = true) => {
         || path?.includes('.json')) {
         path = pathname;
       } else {
-        path = `${config.locale.prefix}${normalizePath(pathname)}`;
+        path = isFederal
+          ? `${config.locale.prefix}${pathname}`
+          : `${config.locale.prefix}${normalizePath(pathname)}`;
       }
     }
     path = isFederal ? getFederatedUrl(path) : path;
-    return `${path}${search}${hash.replace(mepHash, '')}`;
+    if (isKnownOrigin) {
+      return `${path}${search}${hash.replace(mepHash, '')}`;
+    }
+    const normalizedUrl = new URL(path);
+    normalizedUrl.hash = normalizedUrl.hash.replace(mepHash, '');
+    return normalizedUrl.toString();
   } catch (e) {
     path = isFederal ? getFederatedUrl(path) : path;
     return path;
@@ -144,6 +178,7 @@ const isInLcpSection = (el) => {
 const GLOBAL_CMDS = [
   'insertscript',
   'replacepage',
+  'updateframework',
   'updatemetadata',
   'useblockcode',
 ];
@@ -262,34 +297,6 @@ export const handleTwpButtons = (el, selector) => {
   }
 };
 
-function fireAnalyticsEvent(val) {
-  window._satellite?.track?.('event', {
-    documentUnloading: true,
-    xdm: {
-      eventType: 'web.webinteraction.linkClicks',
-      web: {
-        webInteraction: {
-          linkClicks: { value: 1 },
-          type: 'other',
-          name: val,
-        },
-      },
-    },
-    data:
-      { _adobe_corpnew: { digitalData: { primaryEvent: { eventInfo: { eventName: val } } } } },
-  });
-}
-
-function sendAnalytics(val) {
-  if (window._satellite?.track) {
-    fireAnalyticsEvent(val);
-  } else {
-    window.addEventListener('alloy_sendEvent', () => {
-      fireAnalyticsEvent(val);
-    }, { once: true });
-  }
-}
-
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
@@ -338,10 +345,16 @@ const COMMANDS = {
       }
     } else {
       value = cmd.content;
-      if (attribute === 'href') value = normalizePath(value);
+      if (attribute === 'href'
+        && (!value.startsWith('http') || /\.(hlx|aem)\.|localhost:/.test(value))) {
+        value = normalizePath(value);
+      }
     }
 
     if (value) {
+      if (attribute === 'href' && /^(javascript|data):/i.test(value.trim())) {
+        return;
+      }
       el.setAttribute(attribute, value);
       addIds(el, manifestId, targetManifestId);
     }
@@ -426,10 +439,10 @@ export async function replaceInner(path, element) {
   if (!path || !element) return false;
   let plainPath = path.endsWith('/') ? `${path}index` : path;
   plainPath = plainPath.endsWith('.plain.html') ? plainPath : `${plainPath}.plain.html`;
-  const html = await fetchData(plainPath, DATA_TYPE.TEXT);
+  const html = await fetchData(plainPath, DATA_TYPE.TEXT, { redirect: 'error' });
   if (!html) return false;
 
-  element.innerHTML = html;
+  element.replaceChildren(...Array.from(sanitizeHtmlBody(html).childNodes));
   const { decorateArea } = getConfig();
   if (decorateArea) decorateArea(element);
   return true;
@@ -448,9 +461,30 @@ const setMetadata = (metadata) => {
   metaEl.setAttribute('content', val);
 };
 
+function updateFramework(updateFrameworkList) {
+  if (!updateFrameworkList?.length) return;
+  const fwVal = updateFrameworkList[0].val?.trim().toLowerCase();
+  if (!/^c\d+$/.test(fwVal)) return;
+  const currentFoundation = getMetadata('foundation') || 'c1';
+  if (currentFoundation === fwVal) return;
+  const { miloLibs, codeRoot } = getConfig();
+  const libsPath = miloLibs || codeRoot;
+  const existing = document.head.querySelector(
+    `link[href^="${libsPath}"][href$="/styles/styles.css"]`,
+  );
+  setMetadata({ selector: 'foundation', val: fwVal });
+  const stylesPrefix = fwVal === 'c1' ? '' : `/${fwVal}`;
+  loadLink(`${libsPath}${stylesPrefix}/styles/styles.css`, {
+    rel: 'stylesheet',
+    callback: (status) => {
+      if (status === 'load') existing?.remove();
+    },
+  });
+}
+
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
   return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
@@ -756,8 +790,8 @@ export async function handleCommands(
           }
         }
       }
-      if ((els.length && !cmd.modifiers.includes(FLAGS.all))
-        || !cmd.modifiers.includes(FLAGS.includeFragments)) {
+      if ((els?.length && !cmd.modifiers?.includes(FLAGS.all))
+        || !cmd.modifiers?.includes(FLAGS.includeFragments)) {
         cmd.completed = true;
       }
     }
@@ -886,32 +920,29 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
-const matchesCountryChoiceOrIP = (name, config) => {
-  if (!name.includes('countrychoice') && !name.includes('countryip')) return false;
+const matchesCountryIP = (name, config) => {
+  if (!name.includes('countryip')) return false;
   const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
   if (!countryList?.length) return false;
-  const { countryChoice, countryIP } = config.mep;
-  const testCountry = name.includes('countrychoice') ? countryChoice : countryIP;
-  return countryList.includes(testCountry);
+  return countryList.includes(config.mep?.countryIP);
 };
 
 function hasCountryMatch(str, config) {
-  if (str.includes('countrychoice') || str.includes('countryip')) {
+  if (str.includes('countryip')) {
     const modifiedStr = str.replace('uk', 'gb');
-    return matchesCountryChoiceOrIP(modifiedStr, config);
+    return matchesCountryIP(modifiedStr, config);
   }
   return false;
 }
 
 export function parsePlaceholders(placeholders, config, selectedVariantName = '', pathname = new URL(window.location).pathname) {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
-  const { countryIP, countryChoice } = config.mep || {};
+  const { countryIP } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
     ...(countryIP ? [`countryip(${countryIP})`] : []),
-    ...(countryChoice ? [`countrychoice(${countryChoice})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
@@ -987,7 +1018,7 @@ export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
   const entitlementUrl = getXLGListURL(config);
-  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
   fetchedData?.data?.forEach((ent) => {
@@ -1012,33 +1043,11 @@ export const getEntitlements = async (data) => {
   });
 };
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
 async function setMepCountry(config) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = await getCountry(true);
+  const resolvedCountry = await resolveDetectedMarketCountry();
   config.mep = config.mep || {};
-  if (country) {
-    config.mep.countryChoice = normCountry(country);
-  }
-  if (akamaiCode) {
-    config.mep.countryIP = normCountry(akamaiCode);
-  }
-  if (!config.mep.countryChoice && config.mep.countryIP) {
-    config.mep.countryChoice = config.mep.countryIP;
-  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
-    try {
-      let countryIP = await config.mep.countryIPPromise;
-      if (countryIP) {
-        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
-        config.mep.countryIP = countryIP;
-        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
-      }
-    } catch (e) {
-      log('MEP Error: Unable to get user country');
-    }
+  if (resolvedCountry) {
+    config.mep.countryIP = resolvedCountry;
   }
 }
 
@@ -1129,21 +1138,6 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 
-export function getMepConsentConfig() {
-  const cookies = getAllCookies();
-  const optOnConsentCookie = cookies[OPT_ON_AND_CONSENT_COOKIE];
-  const kndctrConsentCookie = cookies[KNDCTR_CONSENT_COOKIE] || '';
-  const consentState = getConsentState({ optOnConsentCookie, kndctrConsentCookie });
-
-  if (!optOnConsentCookie || consentState === 'pre') {
-    return {
-      performance: true,
-      advertising: isSignedOut() && consentState !== 'pre',
-    };
-  }
-  return parseOptanonConsent(optOnConsentCookie).configuration;
-}
-
 export const overrideVariant = (manifestPath, variantName) => {
   const config = getConfig();
   if (!config.mep.variantOverride) config.mep.variantOverride = {};
@@ -1162,32 +1156,31 @@ export const getGeoRestriction = (manifestConfig) => {
 };
 
 export function getManifestMarketingAction(mktgAction, source) {
-  const allowedServices = ['core services', 'non-marketing', 'marketing decrease', 'marketing increase'];
-  if (allowedServices.includes(mktgAction)) return mktgAction;
-  if (source?.includes('promo')) return 'core services';
+  const coreServicesNonMarketing = 'core services/non-marketing';
+  const allowedServices = [coreServicesNonMarketing, 'non-marketing', 'marketing decrease', 'marketing increase'];
+  const normalizedMktgAction = mktgAction === 'core services' ? coreServicesNonMarketing : mktgAction;
+  if (allowedServices.includes(normalizedMktgAction)) return normalizedMktgAction;
+  if (source?.includes('promo')) return coreServicesNonMarketing;
   return 'marketing increase';
 }
 
 export function canServeManifest(manifestConfig) {
   if (!getGeoRestriction(manifestConfig)) return false;
   const { mktgAction, variantNames, manifestPath } = manifestConfig;
-  if (mktgAction === 'core services') return true;
+  if (mktgAction?.includes('core services')) return true;
 
   const { performance, advertising } = getConfig().mep.consentState;
+
+  if (mktgAction?.startsWith('marketing') && performance && advertising) {
+    const fileName = getFileName(manifestPath)?.replace('.json', '');
+    sendAnalytics(`${fileName} was served`);
+  }
+
   if (mktgAction === 'non-marketing') return performance;
   if (mktgAction === 'marketing increase') return advertising;
 
   if (!advertising || !performance) overrideVariant(manifestPath, variantNames[0]);
   return true;
-}
-
-export function sendMktgTracking(fileName, mktgAction) {
-  if (!mktgAction?.startsWith('marketing')) return false;
-  const { advertising } = getConfig().mep.consentState;
-  if (!advertising) return false;
-  const eventName = `${fileName} was served`;
-  sendAnalytics(eventName);
-  return eventName;
 }
 
 async function getManifestConfig(info, variantOverride) {
@@ -1208,7 +1201,7 @@ async function getManifestConfig(info, variantOverride) {
   }
   let data = manifestData;
   if (!data) {
-    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
+    const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON, { redirect: 'error' });
     if (fetchData) data = fetchedData;
   }
 
@@ -1266,8 +1259,6 @@ async function getManifestConfig(info, variantOverride) {
     overrideVariant(normalizePath(manifestPath), 'Default');
     if (!getConfig().mep?.preview) return null;
     finalDisabled = true;
-  } else {
-    sendMktgTracking(fileName, manifestConfig.mktgAction);
   }
 
   manifestConfig.selectedVariantName = await getPersonalizationVariant(
@@ -1286,13 +1277,19 @@ async function getManifestConfig(info, variantOverride) {
   return manifestConfig;
 }
 
-const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => ({
-  selector: normalizePath(selector),
-  val: normalizePath(val),
-  action,
-  manifestId,
-  targetManifestId,
-});
+const normalizeFragPaths = ({ selector, val, action, manifestId, targetManifestId }) => {
+  const normalizedVal = normalizePath(val);
+  if (val && !isTrustedUrl(normalizedVal)) {
+    return null;
+  }
+  return {
+    selector: normalizePath(selector),
+    val: normalizedVal,
+    action,
+    manifestId,
+    targetManifestId,
+  };
+};
 export async function categorizeActions(experiment, config) {
   if (!experiment) return null;
   const { manifestPath, selectedVariant } = experiment;
@@ -1303,10 +1300,18 @@ export async function categorizeActions(experiment, config) {
   // eslint-disable-next-line prefer-destructuring
   if (selectedVariant.replacepage?.length) config.mep.replacepage = replacepage[0];
 
-  selectedVariant.insertscript?.map((script) => loadScript(script.val));
+  selectedVariant.insertscript?.forEach((script) => {
+    if (isTrustedUrl(script.val)) {
+      loadScript(script.val);
+    }
+  });
   selectedVariant.updatemetadata?.map((metadata) => setMetadata(metadata));
 
-  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths);
+  if (selectedVariant.updateframework?.length) {
+    [config.mep.updateframework] = selectedVariant.updateframework;
+  }
+
+  selectedVariant.fragments &&= selectedVariant.fragments.map(normalizeFragPaths).filter(Boolean);
 
   return {
     manifestPath,
@@ -1395,6 +1400,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
+  if (!isTrustedUrl(fragment)) return false;
   const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
@@ -1442,11 +1448,17 @@ export async function applyPers({ manifests }) {
   config.mep.fragments = consolidateObjects(results, 'fragments', config.mep.fragments);
   config.mep.commands = consolidateArray(results, 'commands', config.mep.commands);
 
+  if (config.mep.updateframework) {
+    updateFramework([config.mep.updateframework]);
+  }
+
   const main = document.querySelector('main');
   if (config.mep.replacepage && !isPostLCP && main) {
-    await replaceInner(config.mep.replacepage.val, main);
-    const { manifestId, targetManifestId } = config.mep.replacepage;
-    addIds(main, manifestId, targetManifestId);
+    if (isTrustedUrl(config.mep.replacepage.val)) {
+      await replaceInner(config.mep.replacepage.val, main);
+      const { manifestId, targetManifestId } = config.mep.replacepage;
+      addIds(main, manifestId, targetManifestId);
+    }
   }
 
   config.mep.commands = await handleCommands(config.mep.commands);
@@ -1473,7 +1485,12 @@ function parseManifestUrlAndAddSource(manifestString, source) {
   if (!manifestString) return [];
   return manifestString.toLowerCase()
     .split(/,|(\s+)|(\\n)/g)
-    .filter((path) => path?.trim())
+    .map((path) => path?.trim())
+    .filter((path) => {
+      if (!path) return false;
+      if (isTrustedUrl(path)) return true;
+      return false;
+    })
     .map((manifestPath) => ({ manifestPath, source: [source] }));
 }
 
@@ -1515,6 +1532,9 @@ export const combineMepSources = async (
 
     mepParam.split('---').forEach((manifestPair) => {
       const manifestPath = manifestPair.trim().toLowerCase().split('--')[0];
+      if (!isSameOriginManifestPath(manifestPath)) {
+        return;
+      }
       if (!persManifestPaths.includes(manifestPath)) {
         persManifests.push({ manifestPath, source: ['mep param'] });
       }
@@ -1574,6 +1594,9 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
   ?.map((item) => {
     const content = item?.data?.content;
     if (!content || !(content.manifestLocation || content.manifestContent)) return null;
+    if (content.manifestLocation && !isTrustedUrl(content.manifestLocation)) {
+      return null;
+    }
     return {
       manifestPath: content.manifestLocation || content.manifestPath,
       manifestUrl: content.manifestLocation,
@@ -1598,7 +1621,7 @@ async function handleMartechTargetInteraction(
     const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
     if (targetInteractionData.result) {
-      const roundedResponseTime = roundToQuarter(respTime);
+      const roundedResponseTime = roundToQuarter(respTime?.duration ?? respTime);
       performance.clearMarks();
       performance.clearMeasures();
       try {

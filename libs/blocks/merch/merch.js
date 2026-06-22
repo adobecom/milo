@@ -3,6 +3,7 @@ import {
   shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
+import { mepMasStudioUrls } from './mas-mep-utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -93,7 +94,7 @@ const LanguageMap = {
   vi: 'VN',
 };
 
-const GeoMap = {
+export const GeoMap = {
   ar: 'AR_es',
   be_en: 'BE_en',
   be_fr: 'BE_fr',
@@ -119,7 +120,7 @@ const GeoMap = {
   gr_el: 'GR_el',
   gr_en: 'GR_en',
   ie: 'IE_en',
-  il_he: 'IL_iw',
+  il_he: 'IL_he',
   it: 'IT_it',
   lv: 'LV_lv',
   lt: 'LT_lt',
@@ -157,9 +158,9 @@ const GeoMap = {
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
   sg: 'SG_en',
-  cn: 'CN_zh-Hans',
-  tw: 'TW_zh-Hant',
-  hk_zh: 'HK_zh-hant',
+  cn: 'CN_zh',
+  tw: 'TW_zh',
+  hk_zh: 'HK_zh',
   jp: 'JP_ja',
   kr: 'KR_ko',
   za: 'ZA_en',
@@ -174,6 +175,12 @@ const GeoMap = {
   th_en: 'TH_en',
   th_th: 'TH_th',
 };
+
+/**
+ * MAS WCS `locale` when it differs from `${language}_${country}` derived from {@link GeoMap}.
+ * @type {Record<string, string>}
+ */
+const EXTRA_MAS_LOCALES = { pr: 'es_PR' };
 
 /**
  * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
@@ -221,7 +228,7 @@ export function getMiloLocaleSettings(miloLocale) {
   return {
     language,
     country,
-    locale: `${language}_${country}`,
+    locale: EXTRA_MAS_LOCALES[geo] ?? `${language}_${country}`,
   };
 }
 
@@ -235,11 +242,15 @@ export async function getGeoLocaleSettings(miloLocale) {
   return settings;
 }
 
-export async function getLocaleSettings(miloLocale) {
+export function isMasGeoDetectionEnabled() {
   const queryParam = new URLSearchParams(window.location.search).get('mas-geo-detection');
   const metaValue = getMetadata('mas-geo-detection');
   const geoDetection = queryParam ?? metaValue;
-  if (!geoDetection || !['on', 'true'].includes(geoDetection.toLowerCase())) {
+  return !!(geoDetection && ['on', 'true'].includes(geoDetection.toLowerCase()));
+}
+
+export async function getLocaleSettings(miloLocale) {
+  if (!isMasGeoDetectionEnabled()) {
     return Promise.resolve(getMiloLocaleSettings(miloLocale));
   }
   return getGeoLocaleSettings(miloLocale);
@@ -866,7 +877,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   }
 
   const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
-  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal') || openedDialog?.id?.includes('region-modal');
   const modal = isLocaleModal ? null : openedDialog;
 
   if (hash && !cta && modalState.isOpen && !modal) {
@@ -1029,7 +1040,7 @@ export async function getModalAction(offers, options, el, isMiloPreview = isPrev
   if (!url && !el?.isOpen3in1Modal) return undefined;
   const prodModalUrl = isProdModal(url);
   if (isInternalModal(url) || prodModalUrl) {
-    const localized = await localizeLinkAsync(url);
+    const localized = await localizeLinkAsync(url, window.location.hostname, false, el);
     url = prodModalUrl && !localized.startsWith('http')
       ? `${new URL(url).origin}${localized}`
       : localized;
@@ -1119,13 +1130,20 @@ export async function initService(force = false, attributes = {}) {
       }
 
       const { language, locale, country } = await getLocaleSettings(miloLocale);
+      const useGeoMarket = isMasGeoDetectionEnabled();
+      let countryFromMarket = country;
+      if (useGeoMarket) {
+        const { getValidatedMarket } = await import('../../utils/market.js');
+        const validatedMarket = await getValidatedMarket();
+        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
+      }
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
         service = createTag('mas-commerce-service', {
           locale,
           language,
-          country,
+          country: countryFromMarket,
           ...attributes,
           ...commerce,
         });
@@ -1150,6 +1168,8 @@ export async function initService(force = false, attributes = {}) {
         service.imsSignedInPromise?.then((isSignedIn) => {
           if (isSignedIn) fetchEntitlements();
         });
+      } else if (useGeoMarket && countryFromMarket !== country) {
+        service.setAttribute('country', countryFromMarket);
       }
       if (isAnnualPriceEnabled()) {
         loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
@@ -1481,7 +1501,7 @@ export async function buildCta(el, params) {
     const prefix = getConfig()?.locale?.prefix;
     if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
     if (shouldAllowKrTrial(el, prefix)) {
-      cta.classList.remove('hidden-osi-trial-link');
+      cta.removeAttribute('data-hide-kr-free-trial');
       return;
     }
     cta.remove();
@@ -1490,10 +1510,29 @@ export async function buildCta(el, params) {
   return cta;
 }
 
+export function shouldHideStPriceLabels(element) {
+  const nextElSibling = element.nextElementSibling?.nodeName === 'BR'
+    ? element.nextElementSibling.nextElementSibling
+    : element.nextElementSibling;
+
+  const href = nextElSibling?.getAttribute('href');
+  return !!(
+    (element.nextSibling?.nodeName !== '#text'
+      || element.nextSibling.textContent.trim().length < 2)
+    && href?.match('/tools/ost[?]osi=.*type=price')
+  );
+}
+
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
   const service = await initService();
+
+  if (context.template === 'strikethrough' && shouldHideStPriceLabels(el)) {
+    context.displayPerUnit = 'false';
+    context.displayTax = 'false';
+  }
+
   const price = service.createInlinePrice(context);
   return price;
 }
@@ -1512,15 +1551,45 @@ export function overrideOptions(fragment, options) {
   return options;
 }
 
+export function createAemFragment(options, seenFragments = null) {
+  const { fragment, pzn, mask } = options;
+  const cacheKey = `${fragment}|${pzn || ''}|${mask || ''}`;
+  const attrs = Object.fromEntries(
+    Object.entries({ pzn, mask, fragment }).filter(([, v]) => v != null),
+  );
+  if (seenFragments?.has(cacheKey)) attrs.loading = 'cache';
+  seenFragments?.add(cacheKey);
+  return createTag('aem-fragment', attrs);
+}
+
 export function getOptions(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
   const searchParams = new URLSearchParams(hashValue);
   const options = {};
   for (const [key, value] of searchParams.entries()) {
-    if (key === 'sidenav') options.sidenav = value === 'true';
-    else if (key === 'fragment' || key === 'query') options.fragment = value;
-    else if (key === 'field') options.field = value;
+    switch (key) {
+      case 'sidenav':
+        options.sidenav = value === 'true';
+        break;
+
+      case 'fragment':
+      case 'query':
+        options.fragment = value;
+        break;
+
+      case 'mask':
+      case 'pzn':
+      case 'field':
+        options[key] = value;
+        break;
+
+      case 'jsonld':
+        options.jsonld = value === 'on';
+        break;
+      default:
+        break;
+    }
   }
   return options;
 }
@@ -1534,11 +1603,45 @@ export default async function init(el) {
   log = service.Log.module('merch');
   if (merch) {
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+    // Rebuilt merch href keeps only the OSI; stash the original for
+    // the "Edit OSI" badge.
+    if (getConfig()?.mep?.preview) {
+      mepMasStudioUrls.set(merch, el.href);
+      merch.dataset.masBlock = 'ost';
+    }
     el.replaceWith(merch);
     return merch;
   }
   log.warn('Failed to get context:', { el });
   return null;
+}
+
+const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
+const MAS_FRAGMENT_API_KEY = 'wcms-commerce-ims-ro-user-milo';
+
+export function isMasErrorEnv(host = window.location.host) {
+  return host.includes('localhost') || host.includes('.aem.page');
+}
+
+export async function createFragmentErrorEl(uuid, label = 'Card', status = null) {
+  loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  let badge = 'Load Error';
+  if (status === 404) {
+    badge = 'Not Found';
+  } else if (uuid) {
+    try {
+      const { locale } = getMiloLocaleSettings(getConfig()?.locale);
+      const source = isMasErrorEnv() ? '&source=aem' : '';
+      const res = await fetch(`${MAS_FRAGMENT_API}?id=${uuid}&api_key=${MAS_FRAGMENT_API_KEY}&locale=${locale}${source}`);
+      if (res.status === 404) badge = 'Not Found';
+    } catch { /* network error */ }
+  }
+  const el = createTag('div', { class: 'mas-frag-error' });
+  const badgeEl = createTag('span', { class: 'mas-frag-error-badge' }, badge);
+  const labelEl = createTag('p', { class: 'mas-frag-error-label' }, `${label}:`);
+  const idEl = createTag('p', { class: 'mas-frag-error-id' }, uuid || 'unknown');
+  el.append(badgeEl, labelEl, idEl);
+  return el;
 }
 
 window.addEventListener('hashchange', updateModalState);

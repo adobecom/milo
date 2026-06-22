@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta', 'useSusiModal'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta', 'useSusiModal', 'whatsNew', 'showPlansCta'],
   },
   {
     key: 'footer',
@@ -22,6 +22,33 @@ const envMap = {
   stage: 'https://www.stage.adobe.com',
   qa: 'https://gnav--milo--adobecom.aem.page',
 };
+
+/**
+ * Origin for federal content (locales, etc.) in standalone gnav.
+ * Matches adobe.com / federal, not Milo libs.
+ */
+function getStandaloneNavOrigin(env) {
+  switch (env) {
+    case 'prod': return 'https://www.adobe.com';
+    case 'stage': return 'https://www.stage.adobe.com';
+    default: return 'https://main--federal--adobecom.aem.page';
+  }
+}
+
+/**
+ * Load locale map from the federal project (same source as adobe.com consumers).
+ * Dynamic import avoids bundling federal URLs.
+ */
+async function loadFederalLocales(env) {
+  const origin = getStandaloneNavOrigin(env);
+  const url = `${origin}/federal/utils/locales.js`;
+  const mod = await import(url);
+  return mod.default;
+}
+
+async function resolveLocales(env, localesOverride) {
+  return localesOverride ?? loadFederalLocales(env);
+}
 
 const getStageDomainsMap = (stageDomainsMap, env) => {
   const defaultUrls = {
@@ -117,23 +144,17 @@ export default async function loadBlock(configs, customLib) {
     loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
-  // Relative paths work just fine since they exist in the context of this file's origin
+  const origin = getStandaloneNavOrigin(env);
   const [
     { default: bootstrapBlock },
-    { default: locales },
-    { setConfig, getConfig, createTag }] = await Promise.all([
+    locales,
+    { setConfig, getConfig, createTag },
+  ] = await Promise.all([
     import('./bootstrapper.js'),
-    import('../utils/locales.js'),
+    resolveLocales(env, configs?.locales),
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
-  const origin = (() => {
-    switch (env) {
-      case 'prod': return 'https://www.adobe.com';
-      case 'stage': return 'https://www.stage.adobe.com';
-      default: return 'https://main--federal--adobecom.aem.page';
-    }
-  })();
   const clientConfig = {
     theme,
     prodDomains,
@@ -141,7 +162,7 @@ export default async function loadBlock(configs, customLib) {
     standaloneGnav: true,
     pathname: `/${locale}`,
     miloLibs: `${miloLibs}/libs`,
-    locales: configs.locales || locales,
+    locales,
     contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap, env),
     origin,

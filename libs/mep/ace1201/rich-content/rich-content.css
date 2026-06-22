@@ -1,0 +1,107 @@
+.rich-content {
+  --content-gap: var(--s2a-spacing-8);
+
+  position: relative;
+  box-sizing: border-box;
+
+  &.center {
+    text-align: center;
+  }
+
+  &.hero {
+    height: 640px;
+  }
+
+  &.dark {
+    background-color: unset;
+  }
+
+  .foreground .content {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--content-gap);
+    position: relative;
+    z-index: 2;
+
+    [class*="body-"]:not(.action-area) {
+      max-width: 680px;
+    }
+  }
+
+  &.center .foreground .content {
+    align-items: center;
+  }
+
+  .action-area {
+    margin-top: calc(var(--s2a-spacing-24) - var(--content-gap));
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--content-gap);
+  }
+}
+
+.section {
+  &:has(.rich-content.hero) {
+    box-sizing: border-box;
+    height: 640px;
+    &.has-background .section-background {
+      max-width: 100vw;
+      margin: 0 auto;
+      z-index: 1;
+
+      img {
+        object-position: top center;
+      }
+    }
+  }
+}
+
+.section.has-background:has(.rich-content.hero) .section-background picture::after {
+  content: '';
+  position: absolute;
+  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%);
+  inset: 0;
+  z-index: 1;
+}
+
+.section:not(.has-background):has(.rich-content.hero) {
+  background: linear-gradient(180deg, #000 10.13%, rgba(0, 0, 0, 0.00) 70.89%, rgba(0, 0, 0, 0.00) 75.53%, #000 95%), var(--s2a-color-background-default);
+}
+
+@media (width >= 768px) {
+  .rich-content .content [class*="body-"]:not(.action-area) {
+    min-width: 560px;
+    width: calc((100% / var(--grid-columns)) * 8);
+  }
+}
+
+@media (width >= 1024px) {
+  .section:has(.rich-content.hero) {
+    height: 1040px;
+  }
+
+  .rich-content {
+    &.hero {
+      height: 1040px;
+
+      &.max-width-8 .foreground {
+        --grid-content-width: var(--grid-width-8);
+      }
+
+      &.max-width-10 .foreground {
+        --grid-content-width: var(--grid-width-10);
+      }
+    }
+  }
+}
+
+@media (width >= 1440px) {
+}
+
+@media (width >= 1920px) {
+  .section.has-background:has(.rich-content.hero) .section-background img {
+    object-position: unset;
+  }
+}

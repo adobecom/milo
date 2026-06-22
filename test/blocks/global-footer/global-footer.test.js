@@ -16,6 +16,7 @@ import icons from './mocks/icons.js';
 import { isElementVisible, mockRes } from '../global-navigation/test-utilities.js';
 import placeholders from '../global-navigation/mocks/placeholders.js';
 import { logErrorFor } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 
 describe('global footer', () => {
   let clock = null;
@@ -432,6 +433,46 @@ describe('global footer', () => {
       });
       await createFullGlobalFooter({ waitForDecoration: true });
       expect(window.lana.log.getCalls().find((c) => c.args[0].includes('Issue with loadIcons')));
+    });
+  });
+
+  describe('market-selector in footer', () => {
+    it('decorateRegionPicker returns the market-selector element when present', async () => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('/footer')) {
+          const footerHtml = fetchedFooter({ regionPickerHash: '/fragments/regions#langnav' });
+          const withMarket = footerHtml.replace(
+            /<div class="region-selector popup">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>/,
+            '<div class="market-selector"><p>Search language</p><p>Search market</p><p>No results</p><p>No results</p></div>',
+          );
+          return mockRes({ payload: withMarket });
+        }
+        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+        if (url.includes('icons.svg')) return mockRes({ payload: icons });
+        if (url.includes('supported-markets')) {
+          const langRow = { prefix: '', nativeName: 'English', langName: 'English', supportedRegions: 'us', defaultMarket: 'us' };
+          const supportedMarketsPayload = JSON.stringify({ languages: { data: [langRow] } });
+          return mockRes({ payload: supportedMarketsPayload });
+        }
+        if (url.includes('markets.json')) {
+          const marketsPayload = JSON.stringify({ data: [{ marketCode: 'us', en: 'United States' }] });
+          return mockRes({ payload: marketsPayload });
+        }
+        return mockRes({ payload: '', ok: true });
+      });
+      // Market-only footers never get .feds-regionPicker / wrapper;
+      // waitForFooterToDecorate would hang.
+      const selectorsWithoutRegionPicker = { ...allSelectors };
+      delete selectorsWithoutRegionPicker.regionPicker;
+      delete selectorsWithoutRegionPicker.regionPickerWrapper;
+
+      const globalFooter = await createFullGlobalFooter({ waitForDecoration: false });
+      await Promise.all(
+        Object.keys(selectorsWithoutRegionPicker).map((key) => waitForElement(allSelectors[key])),
+      );
+      const regionPicker = await globalFooter.decorateRegionPicker();
+      expect(regionPicker).to.not.be.null;
     });
   });
 

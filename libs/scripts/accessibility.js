@@ -25,7 +25,7 @@ function removeScrollPadding() {
 
 function getElementFromPoint(x, y) {
   let elFromPoint = document.elementFromPoint(x, y);
-  while (elFromPoint.shadowRoot) {
+  while (elFromPoint?.shadowRoot) {
     const el = elFromPoint.shadowRoot.elementFromPoint(x, y);
     if (el === elFromPoint) break;
     elFromPoint = el;
@@ -64,6 +64,15 @@ function scrollTabFocusedElIntoView() {
 
     if (shouldntScroll(element, elFromPointTop)
       && shouldntScroll(element, elFromPointBottom)) return;
+    // TODO: There may also be a need to add support for the bottom section,
+    // e.g. parallax-move-down-fast
+    const hasPrallaxMvUp = element.closest('.parallax-move-up-fast.section');
+    if (hasPrallaxMvUp) {
+      const nextSection = hasPrallaxMvUp.nextElementSibling;
+      if (!nextSection) return;
+      const scrollPosition = Math.max(nextSection.offsetTop - window.innerHeight - 1, 0);
+      window.scrollTo({ top: scrollPosition });
+    }
 
     element.scrollIntoView({ behavior: 'instant', block: 'center' });
   }

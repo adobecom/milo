@@ -2,6 +2,7 @@ import {
   createTag,
   loadStyle,
   getConfig,
+  getMetadata,
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
@@ -10,6 +11,7 @@ import {
 
 const { miloLibs, codeRoot } = getConfig();
 const HIDE_CONTROLS = '_hide-controls';
+export const USER_PAUSED_ATTR = 'data-user-paused';
 let firstVideo = null;
 let videoLabels = {
   playMotion: 'Play',
@@ -18,19 +20,45 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+
+const C2_PLAY_PAUSE_ICONS = `
+<div class='offset-filler accessibility-control'>
+  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none" class="play-icon" aria-hidden="true">
+    <g clip-path="url(#clip0_16178_1778)">
+      <path d="M10.4279 5.39378C10.8946 5.66321 10.8946 6.33679 10.4279 6.60622L3.52791 10.5899C3.06124 10.8594 2.47791 10.5226 2.47791 9.98372V2.01628C2.47791 1.47742 3.06124 1.14064 3.52791 1.41007L10.4279 5.39378Z" fill="#292929"/>
+    </g>
+    <defs>
+      <clipPath id="clip0_16178_1778">
+        <rect width="12" height="12" fill="white"/>
+      </clipPath>
+    </defs>
+  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="12" viewBox="0 0 10 12" fill="none" class="pause-icon" aria-hidden="true">
+    <path d="M2.48822 9.42876V1.74622M7.28981 9.42876V1.74622" stroke="#292929" stroke-width="1.86008" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</div>
+`;
 const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
+
+export function getButtonType(buttonParent) {
+  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  let { nodeName } = buttonParent;
+  if (nodeName === 'STRONG') {
+    nodeName = buttonParent.parentElement?.nodeName === 'EM' ? 'EM' : nodeName;
+  }
+  return buttonTypeMap[nodeName] || 'outline';
+}
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
-  const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
     if (shouldBlockFreeTrialLinks(button)) return;
     let target = button;
-    const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
+    const buttonType = getButtonType(parent);
     if (button.nodeName === 'STRONG') {
       target = parent;
     } else {
@@ -87,25 +115,36 @@ export function decorateIconArea(el) {
 }
 
 function elContainsText(el) {
-  return [...el.childNodes].some(({ nodeType, innerText, textContent }) => (
-    (nodeType === Node.ELEMENT_NODE && innerText.trim() !== '')
-    || (nodeType === Node.TEXT_NODE && textContent.trim() !== '')
-  ));
+  return [...el.childNodes].some((node) => {
+    if (node.nodeType === Node.TEXT_NODE) return node.textContent.trim() !== '';
+    if (node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.innerText.trim() !== '') return true;
+    // Custom elements (tag name contains a hyphen) may render content asynchronously;
+    // treat non-hidden ones as containing text so body classes are applied upfront.
+    return node.tagName?.includes('-') && !node.hidden;
+  });
 }
 
-export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
+const isC2 = getMetadata('foundation') === 'c2';
+const blockTextConfig = isC2 ? { heading: '2', body: 'md', button: 'md' } : ['m', 's', 'm'];
+
+export function decorateBlockText(el, config = blockTextConfig, type = null) {
+  const sizeMap = Array.isArray(config)
+    ? { heading: config[0], body: config[1], detail: config[2], button: config[3] }
+    : { ...blockTextConfig, ...config };
+
   if (!el.classList.contains('default')) {
     let headings = el?.querySelectorAll('h1, h2, h3, h4, h5, h6');
     if (headings) {
       if (type === 'hasDetailHeading' && headings.length > 1) headings = [...headings].splice(1);
-      headings.forEach((h) => h.classList.add(`heading-${config[0]}`));
-      if (config[2]) {
+      headings.forEach((h) => h.classList.add(`heading-${sizeMap.heading}`));
+      if (sizeMap.detail || isC2) {
         const prevSib = headings[0]?.previousElementSibling;
-        prevSib?.classList.toggle(`detail-${config[2]}`, !prevSib.querySelector('picture'));
+        prevSib?.classList.toggle(isC2 ? 'eyebrow' : `detail-${sizeMap.detail}`, !prevSib.querySelector('picture'));
         decorateIconArea(el);
       }
     }
-    const bodyStyle = `body-${config[1]}`;
+    const bodyStyle = `body-${sizeMap.body}`;
     const emptyEls = el?.querySelectorAll(':is(p, ul, ol, div):not([class])');
     if (emptyEls.length) {
       [...emptyEls].filter(elContainsText).forEach((e) => e.classList.add(bodyStyle));
@@ -113,8 +152,7 @@ export function decorateBlockText(el, config = ['m', 's', 'm'], type = null) {
       el.classList.add(bodyStyle);
     }
   }
-  const buttonSize = config.length > 3 ? `button-${config[3]}` : '';
-  decorateButtons(el, buttonSize);
+  decorateButtons(el, sizeMap.button ? `button-${sizeMap.button}` : '');
   if (type === 'merch') decorateIconStack(el);
 }
 
@@ -209,19 +247,25 @@ export const decorateBlockHrs = (el) => {
 
 function applyTextOverrides(el, override, targetEl) {
   const parts = override.split('-');
-  const type = parts[1];
-  const scopeEl = (targetEl !== false) ? targetEl : el;
-  const els = scopeEl.querySelectorAll(`[class^="${type}"]`);
+  const type = isC2 ? parts[0] : parts[1];
+  const modifier = isC2 ? parts[1] : parts[0];
+  const scopeEl = targetEl !== false ? targetEl : el;
+  const els = [...scopeEl.querySelectorAll('[class]')]
+    .filter((elOfType) => [...elOfType.classList].some((cls) => cls.startsWith(type)));
   if (!els.length) return;
   els.forEach((elem) => {
     const replace = [...elem.classList].find((i) => i.startsWith(type));
-    elem.classList.replace(replace, `${parts[1]}-${parts[0]}`);
+    elem.classList.replace(replace, `${type}-${modifier}`);
   });
 }
 
-export function decorateTextOverrides(el, options = ['-heading', '-body', '-detail'], target = false) {
+const textOverridesConfig = isC2 ? ['heading-', 'body-', 'button-'] : ['-heading', '-body', '-detail'];
+
+export function decorateTextOverrides(el, options = textOverridesConfig, target = false) {
   const overrides = [...el.classList]
-    .filter((elClass) => options.findIndex((ovClass) => elClass.endsWith(ovClass)) >= 0);
+    .filter((elClass) => options.some((ovClass) => (
+      isC2 ? elClass.startsWith(ovClass) : elClass.endsWith(ovClass)
+    )));
   if (!overrides.length) return;
   overrides.forEach((override) => {
     applyTextOverrides(el, override, target);
@@ -253,7 +297,7 @@ export function getVideoAttrs(hash, dataset) {
   const playInViewport = hash?.includes('viewportplay');
   const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
-  const autoPlayAttrs = 'autoplay muted';
+  const autoPlayAttrs = playInViewport ? 'muted' : 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
@@ -272,40 +316,50 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  if (!video.getAttributeNames().includes('data-hoverplay')) {
-    const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
-    if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
-    const anchorTag = video.closest('.video-holder').querySelector('a');
-    offsetFiller?.classList.toggle('is-playing');
-    const isPlaying = offsetFiller?.classList.contains('is-playing');
-    const indexOfVideo = (anchorTag.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : anchorTag.getAttribute('video-index');
-    const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
-    const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
-    anchorTag?.setAttribute('title', `${ariaLabel}`);
-    anchorTag?.setAttribute('aria-label', `${ariaLabel} `);
-    anchorTag?.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
-    const daaLL = anchorTag.getAttribute('daa-ll');
-    if (daaLL) anchorTag.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
-  }
+  if (!video || video.hasAttribute('data-hoverplay')) return;
+  const holder = video.closest('.video-holder');
+  if (!holder) return;
+  const offsetFiller = holder.querySelector('.offset-filler');
+  if (!offsetFiller) return;
+  const playPauseBtn = holder.querySelector('.pause-play-wrapper, .play-pause-button') || holder.querySelector('a, button');
+  if (!playPauseBtn) return;
+  if (event?.type === 'playing' && offsetFiller.classList.contains('is-playing')) return;
+  offsetFiller.classList.toggle('is-playing');
+  const isPlaying = offsetFiller.classList.contains('is-playing');
+  const indexOfVideo = (playPauseBtn.getAttribute('video-index') === '1' && videoCounter === 1) ? '' : playPauseBtn.getAttribute('video-index');
+  const changedLabel = `${isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const oldLabel = `${!isPlaying ? videoLabels?.pauseMotion : videoLabels?.playMotion}`;
+  const ariaLabel = `${changedLabel} ${indexOfVideo}`.trim();
+  playPauseBtn.setAttribute('title', `${ariaLabel}`);
+  playPauseBtn.setAttribute('aria-label', ariaLabel);
+  playPauseBtn.setAttribute('aria-pressed', isPlaying ? 'true' : 'false');
+  const daaLL = playPauseBtn.getAttribute('daa-ll');
+  if (daaLL) playPauseBtn.setAttribute('daa-ll', daaLL.replace(oldLabel, changedLabel));
 }
 
 export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, tabIndex = 0) {
   if (videoAttrs.includes('controls')) return videoString;
-  const fedRoot = getFederatedContentRoot();
+
   if (videoAttrs.includes('hoverplay')) {
-    return `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
+    return isC2
+      ? `<div class='video-holder' tabindex=${tabIndex}>${videoString}</div>`
+      : `<a class='pause-play-wrapper video-holder' tabindex=${tabIndex}>${videoString}</a>`;
   }
-  return `
-    <div class='video-container video-holder'>${videoString}
-      <a class='pause-play-wrapper' title='${videoLabels.pauseMotion}' aria-label='${videoLabels.pauseMotion}' role='button' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}>
-        <div class='offset-filler'>
-          <img class='accessibility-control pause-icon' alt='${videoLabels.pauseIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
-          <img class='accessibility-control play-icon' alt='${videoLabels.playIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
-        </div>
-      </a>
+
+  const fedRoot = getFederatedContentRoot();
+  const labels = `title='${videoLabels.pauseMotion}' aria-label='${videoLabels.pauseMotion}' tabindex=${tabIndex} aria-pressed=true video-index=${indexOfVideo}`;
+  const icons = `
+    <div class='offset-filler'>
+      <img class='accessibility-control pause-icon' alt='${videoLabels.pauseIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-pause.svg'/>
+      <img class='accessibility-control play-icon' alt='${videoLabels.playIcon}' src='${fedRoot}/federal/assets/svgs/accessibility-play.svg'/>
     </div>
   `;
+
+  const control = isC2
+    ? `<button class='play-pause-button' ${labels}>${C2_PLAY_PAUSE_ICONS}</button>`
+    : `<a class='pause-play-wrapper' role='button' ${labels}>${icons}</a>`;
+
+  return `<div class='video-container video-holder'>${videoString}${control}</div>`;
 }
 
 function isVideoReady(video) {
@@ -319,12 +373,15 @@ export function handlePause(event) {
   event.preventDefault();
   event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
+  const isManualToggle = event.type === 'click' || event.code === 'Enter' || event.code === 'Space';
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
+    if (isManualToggle) video.removeAttribute(USER_PAUSED_ATTR);
     if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
+    if (isManualToggle) video.setAttribute(USER_PAUSED_ATTR, '');
   }
   syncPausePlayIcon(video);
 }
@@ -344,7 +401,7 @@ export function applyHoverPlay(video) {
 }
 
 export function applyAccessibilityEvents(videoEl) {
-  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+  const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button') || videoEl.closest('.pause-play-wrapper, .play-pause-button');
   if (pausePlayWrapper?.querySelector('.accessibility-control')) {
     pausePlayWrapper.addEventListener('click', handlePause);
     pausePlayWrapper.addEventListener('keydown', handlePause);
@@ -391,13 +448,16 @@ function getVideoIntersectionObserver() {
         const { intersectionRatio, target: video } = entry;
         const isHaveLoopAttr = video.getAttributeNames().includes('loop');
         const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
         const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
           && video.readyState > video.HAVE_CURRENT_DATA;
 
         if (intersectionRatio <= 0.8) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
           video.pause();
-        } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying) {
           video.play();
+          syncPausePlayIcon(video, { type: 'playing' });
         }
       });
     }, { threshold: [0.8] });
@@ -411,6 +471,7 @@ function applyInViewPortPlay(video) {
     const observer = getVideoIntersectionObserver();
     video.addEventListener('ended', () => {
       video.dataset.playedOnce = true;
+      syncPausePlayIcon(video);
     });
     observer.observe(video);
   }
@@ -455,7 +516,11 @@ export function isVideoAccessible(anchorTag) {
 function updateFirstVideo() {
   if (firstVideo != null && firstVideo?.controls === false && videoCounter > 1) {
     let videoHolder = document.querySelector('[video-index="1"]') || firstVideo.closest('.video-holder');
-    if (videoHolder.nodeName !== 'A') videoHolder = videoHolder.querySelector('a.pause-play-wrapper');
+    if (!videoHolder) return;
+    if (!videoHolder.classList.contains('pause-play-wrapper') && !videoHolder.classList.contains('play-pause-button')) {
+      videoHolder = videoHolder.querySelector('.pause-play-wrapper, .play-pause-button');
+    }
+    if (!videoHolder) return;
     const firstVideoLabel = videoHolder.getAttribute('aria-label');
     videoHolder.setAttribute('aria-label', `${firstVideoLabel} 1`);
     firstVideo = null;
@@ -464,7 +529,7 @@ function updateFirstVideo() {
 
 function updateAriaLabel(videoEl, videoAttrs) {
   if (!videoEl.getAttributeNames().includes('data-hoverplay')) {
-    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper') || videoEl.closest('.pause-play-wrapper');
+    const pausePlayWrapper = videoEl.parentElement.querySelector('.pause-play-wrapper, .play-pause-button') || videoEl.closest('.pause-play-wrapper, .play-pause-button');
     const pauseIcon = pausePlayWrapper.querySelector('.pause-icon');
     const playIcon = pausePlayWrapper.querySelector('.play-icon');
     const indexOfVideo = pausePlayWrapper.getAttribute('video-index');
@@ -542,4 +607,266 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
+}
+
+/* NOTE: Experimental logic to substitute authored classes
+   with centralized kit classes */
+export function decorateBlockKit(el, kits = {}) {
+  const kitClass = [...el.classList].find((cls) => cls.endsWith('-kit'));
+  if (!kitClass || !Object.keys(kits).includes(kitClass)) return;
+
+  const blockClass = [...el.classList][0];
+  const kitClasses = kits[kitClass];
+  el.className = blockClass;
+  el.classList.add(kitClass, ...kitClasses);
+}
+
+/* Per-viewport content decoration */
+const VIEWPORT_KEYWORDS = ['mobile', 'tablet', 'desktop'];
+const VIEWPORT_SUFFIX = '-viewport';
+
+const VIEWPORT_QUERIES = {
+  'mobile-tablet-desktop': {
+    mobile: '(width < 768px)',
+    tablet: '(768px <= width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-desktop': {
+    mobile: '(width < 1280px)',
+    desktop: '(width >= 1280px)',
+  },
+  'mobile-tablet': {
+    mobile: '(width < 768px)',
+    tablet: '(width >= 768px)',
+  },
+  mobile: { mobile: 'all' },
+  tablet: { tablet: 'all' },
+  desktop: { desktop: 'all' },
+};
+
+function isEmptyCell(el) {
+  if (!el) return true;
+  return !el.children.length && !el.textContent?.trim();
+}
+
+function cloneChildren(source) {
+  return [...source.childNodes].map((child) => child.cloneNode(true));
+}
+
+function parseVariants(text) {
+  const match = text.match(/\(([^)]+)\)/);
+  return match
+    ? match[1].split(',').map((cls) => cls.trim()).filter(Boolean)
+    : [];
+}
+
+function getDelimiterKeyword(row) {
+  if (row.children.length !== 1) return null;
+  const text = row.children[0].textContent.trim().toLowerCase();
+  // TODO: remove bare-keyword fallback post-rollout (replace with the line below)
+  // return VIEWPORT_KEYWORDS.find((kw) => text.startsWith(kw + VIEWPORT_SUFFIX)) ?? null;
+  return VIEWPORT_KEYWORDS.find((kw) => (
+    text.startsWith(kw + VIEWPORT_SUFFIX) || text === kw || text.startsWith(`${kw} `) || text.startsWith(`${kw}(`)
+  )) ?? null;
+}
+
+function warnDuplicateH1s(viewportData) {
+  const h1Count = Object.values(viewportData)
+    .reduce((n, vp) => n + vp.container.querySelectorAll('h1').length, 0);
+  if (h1Count > 1) {
+    /* TODO: this should be surfaced in Preflight */
+    /* eslint-disable-next-line no-console */
+    console.warn(
+      '[parseViewportContent] Multiple <h1> elements detected across viewport sections. '
+      + 'This may cause SEO issues — consider using a single <h1> and swapping its text content.',
+    );
+  }
+}
+
+function resolveInheritance(rows, previousContent) {
+  if (!previousContent) return;
+
+  const [contentRow, ...extraRows] = rows;
+  const prevChildren = [...previousContent.children];
+  const [prevContentRow, ...prevExtraRows] = prevChildren;
+
+  if (contentRow && prevContentRow) {
+    [...contentRow.children].forEach((col, i) => {
+      const prevCol = prevContentRow.children[i];
+      if (isEmptyCell(col) && prevCol && !isEmptyCell(prevCol)) {
+        col.replaceChildren(...cloneChildren(prevCol));
+      }
+    });
+  }
+
+  extraRows.forEach((row, i) => {
+    const prevRow = prevExtraRows[i];
+    const cell = row?.children[0];
+    const prevCell = prevRow?.children[0];
+    if (cell && isEmptyCell(cell) && prevCell && !isEmptyCell(prevCell)) {
+      cell.replaceChildren(...cloneChildren(prevCell));
+    }
+  });
+}
+
+function parseViewportContent(el) {
+  const children = [...el.children];
+  const content = {};
+  const delimiterEls = [];
+
+  VIEWPORT_KEYWORDS.forEach((keyword, kwIndex) => {
+    const delimiterIdx = children.findIndex((child) => getDelimiterKeyword(child) === keyword);
+    if (delimiterIdx < 0) return;
+
+    // Find the next delimiter (if any) to bound this section
+    const nextIdx = children.findIndex((child, i) => {
+      if (i <= delimiterIdx) return false;
+      const nextKw = getDelimiterKeyword(child);
+      return nextKw && VIEWPORT_KEYWORDS.indexOf(nextKw) > kwIndex;
+    });
+
+    const rows = children.slice(
+      delimiterIdx + 1,
+      nextIdx < 0 ? children.length : nextIdx,
+    );
+
+    // Inherit from the nearest defined lower viewport
+    const prevKey = VIEWPORT_KEYWORDS.slice(0, kwIndex).reverse()
+      .find((k) => content[k]);
+    resolveInheritance(rows, content[prevKey]?.container);
+
+    const container = createTag('div');
+    container.append(...rows);
+
+    const delimiterEl = children[delimiterIdx];
+    const variants = parseVariants(delimiterEl.textContent);
+    delimiterEls.push(delimiterEl);
+
+    content[keyword] = { container, variants };
+  });
+
+  delimiterEls.forEach((d) => d.remove());
+
+  if (!Object.keys(content).length) {
+    return { hasViewportVariations: false };
+  }
+
+  warnDuplicateH1s(content);
+
+  const allVariants = Object.values(content).flatMap(({ variants }) => variants);
+
+  return { hasViewportVariations: true, content, allVariants };
+}
+
+function applyViewportContent(el, viewports) {
+  if (!viewports.hasViewportVariations) return;
+
+  const { content, allVariants } = viewports;
+  const vpKeys = Object.keys(content);
+  const queryKey = vpKeys.join('-');
+  const queries = VIEWPORT_QUERIES[queryKey];
+
+  if (!queries) return;
+
+  vpKeys.forEach((viewport) => {
+    const mq = window.matchMedia(queries[viewport]);
+    const { container, variants } = content[viewport];
+    const children = [...container.children];
+
+    const setContent = () => {
+      if (!mq.matches) return;
+      el.classList.remove(...allVariants);
+      if (variants.length) el.classList.add(...variants);
+      el.replaceChildren(...children);
+      decorateTextOverrides(el);
+    };
+
+    setContent();
+    mq.addEventListener('change', setContent);
+  });
+}
+
+/* decorateFn receives:
+ * - block — the element to decorate (viewport container or el itself)
+ * - root  — for checking base classes on detached containers */
+export function decorateViewportContent(el, decorateFn) {
+  const viewports = parseViewportContent(el);
+  if (viewports.hasViewportVariations) {
+    Object.values(viewports.content).forEach(({ container }) => {
+      decorateFn(container, el);
+    });
+    applyViewportContent(el, viewports);
+  } else {
+    decorateFn(el, el);
+    decorateTextOverrides(el);
+  }
+  return viewports;
+}
+
+export function hangOpeningQuote(el) {
+  if (!el) return;
+  const openingQuotes = /^(\p{Pi})/u;
+  const match = el.textContent.match(openingQuotes);
+  if (!match) return;
+  const quote = match[1];
+  el.textContent = el.textContent.slice(1);
+  const span = createTag('span', { class: 'hang-opening-quote' }, quote);
+  el.prepend(span);
+}
+
+export function decoratePictures(area, options) {
+  if (!area || !options) return;
+
+  const conf = {};
+  const opts = options?.split(',').map((opt) => opt.trim().toLowerCase());
+  if (!opts.filter(Boolean).length) return;
+  if (opts.includes('off')) return; // skip picture decoration
+
+  const SIZES = ['1x', '2x', '3x'];
+  opts.forEach((opt) => {
+    if (SIZES.includes(opt)) {
+      const size = Number(opt.replace('x', ''));
+      if (!Number.isNaN(size)) conf.size = size;
+    }
+    if (opt === 'photography') conf.type = 'avif';
+    if (opt === 'product') conf.type = 'webp';
+  });
+  if (!Object.keys(conf).length) return;
+  const DEFAULT_CONFIG = { size: 1, type: 'webp' };
+  const config = { ...DEFAULT_CONFIG, ...conf };
+  const RENDITIONS = [
+    { breakpoint: undefined, width: 500 }, // mobile
+    { breakpoint: '(min-width: 768px)', width: 768 }, // tablet
+    { breakpoint: '(min-width: 1280px)', width: 1280 }, // desktop
+    { breakpoint: '(min-width: 1440px)', width: 1440 }, // large desktop
+    { breakpoint: '(min-width: 1920px)', width: 1920 }, // larger desktop
+  ];
+
+  area.querySelectorAll('picture').forEach((picture) => {
+    if (picture.classList.contains('large-image-decorated')) return;
+    const sources = picture.querySelectorAll('source');
+    const image = picture.querySelector('img');
+    if (!sources.length || !image) return;
+
+    const path = image.src.split('?')[0];
+
+    const imageNaturalSize = Number(image.getAttribute('width'));
+    if (Number.isNaN(imageNaturalSize)) return;
+
+    const newSources = [];
+    RENDITIONS.forEach(({ breakpoint, width }) => {
+      const targetWidth = width * config.size;
+      if (imageNaturalSize < targetWidth) return;
+      const source = createTag('source', {
+        type: `image/${config.type}`,
+        srcset: `${path}?width=${targetWidth}&format=${config.type === 'webp' ? 'webply' : config.type}`,
+      });
+      if (breakpoint) source.setAttribute('media', breakpoint);
+      newSources.push(source);
+    });
+
+    // TODO: consider replacing existing sources instead of prepending
+    picture.prepend(...newSources.reverse());
+    picture.classList.add('large-image-decorated', `${config.type}-${config.size}`);
+  });
 }

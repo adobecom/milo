@@ -1,13 +1,17 @@
 import { createTag, getConfig, localizeLinkAsync } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
 import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
+import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
   updateModalState,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
   MAS_MERCH_CARD_COLLECTION,
@@ -296,10 +300,19 @@ export const enableModalOpeningOnPageLoad = () => {
   });
 };
 
+function paintStPriceRed(collection, locale) {
+  const tabsEl = collection.closest('.tab-content-container:not(.red-strikethrough-price)');
+  if (collection.variant === 'plans' && tabsEl && locale?.prefix) {
+    const prefix = locale.prefix.substring(1);
+    const redStPriceGeos = ['gr_el', 'gr_en', 'lt', 'lv', 'pl', 'ro', 'si', 'bg', 'cz', 'ee', 'es', 'hu', 'pt', 'sk', 'hk_en', 'hk_zh', 'ph_en', 'ph_fil', 'th_en', 'th_th', 'tw', 'ng', 'vn_en', 'vn_vi', 'cr', 'ec', 'gt', 'at', 'dk', 'no', 'ca', 'ca_fr', 'ch_de', 'ch_fr', 'ch_it', 'de', 'fi', 'fr', 'nl', 'se', 'au', 'nz', 'uk', 'jp', 'it', 'br'];
+    if (redStPriceGeos.includes(prefix)) tabsEl.classList.add('red-strikethrough-price');
+  }
+}
+
 export async function createCollection(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const aemFragment = createAemFragment(options);
   // Get MEP overrides if available
-  const { mep } = getConfig();
+  const { mep, locale } = getConfig();
   const mepFragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments || {};
   // Create attributes object only if we have fragments
   let attributes;
@@ -311,18 +324,32 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
+  if (getConfig()?.mep?.preview) {
+    mepMasStudioUrls.set(container, el.href);
+    container.dataset.masBlock = 'collection';
+    // Attach BEFORE the replaceWith below — M@S removes aem-fragment
+    // immediately after dispatching aem:load. Dynamic import keeps
+    // preview-only code out of the production bundle.
+    const { attachAemLoadListener } = await import(
+      '../../features/personalization/preview-mas-subcollection.js'
+    );
+    attachAemLoadListener(aemFragment, container);
+  }
   const paragraph = el.parentElement;
   const toReplace = paragraph?.tagName === 'P' && hasOnlyTargetContent(paragraph, el)
     ? paragraph
     : el;
   toReplace.replaceWith(container);
 
+  if (isMasErrorEnv()) {
+    collection.addEventListener('aem:error', async (e) => {
+      collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection', e.detail?.status));
+    }, { once: true });
+  }
+
   const success = await collection.checkReady();
-  if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      collection.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
+  if (!success && isMasErrorEnv() && !collection.querySelector('.mas-frag-error')) {
+    collection.prepend(await createFragmentErrorEl(options.fragment, 'Collection'));
   }
   container.classList.add('collection-container', collection.variant);
 
@@ -346,6 +373,7 @@ export async function createCollection(el, options) {
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
   enableAnalytics(collection);
+  paintStPriceRed(collection, locale);
 }
 
 export default async function init(el) {

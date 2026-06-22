@@ -113,6 +113,19 @@ describe('Bulk Publish Tool', () => {
     expect(errors.querySelector('strong').innerText).to.equal('Invalid Url');
   });
 
+  it('can detect mixed project urls', async () => {
+    const mixed = 'https://main--da-bacom--adobecom.aem.page/page1 https://main--da-bacom-blog--adobecom.aem.page/page2';
+    await setTextArea(rootEl, mixed);
+    const errors = rootEl.querySelector('.errors');
+    expect(errors.querySelector('strong').innerText).to.include('All URLs must belong to the same project');
+  });
+
+  it('can accept urls from same project', async () => {
+    await setTextArea(rootEl, 'https://main--milo--adobecom.aem.page/page1 https://main--milo--adobecom.aem.page/page2');
+    const errors = rootEl.querySelector('.errors');
+    expect(errors).to.not.exist;
+  });
+
   it('can handle api error response', async () => {
     await setTextArea(rootEl, 'https://error--milo--adobecom.aem.page/not/a/valid/path');
     await mouseEvent(rootEl.querySelector('#RunProcess'));
@@ -252,5 +265,19 @@ describe('Bulk Publish Tool', () => {
     await clock.runAllAsync();
     await mouseEvent(rootEl.querySelector('.clear-jobs'));
     expect(rootEl.querySelectorAll('job-process')).to.have.lengthOf(0);
+  });
+
+  it('can authenticate when sidekick already has status fetched', async () => {
+    const { authenticate } = await import('../../../libs/blocks/bulk-publish-v2/services.js');
+    const sidekick = document.querySelector('helix-sidekick');
+    sidekick.appStore.status = {
+      profile: { name: 'Unit Test', email: 'tester@adobe.com' },
+      preview: { permissions: ['delete', 'read', 'write', 'list'] },
+      live: { permissions: ['delete', 'read', 'write', 'list'] },
+    };
+    const tool = { user: null };
+    await authenticate(tool);
+    expect(tool.user).to.exist;
+    expect(tool.user.profile.email).to.equal('tester@adobe.com');
   });
 });
