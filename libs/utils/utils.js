@@ -677,14 +677,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain) {
+function processQueryIndexMap(link, domain, fetchOptions = {}) {
   const result = {
     pathsRequest: null,
     requestResolved: false,
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(`${link}?limit=30000`)
+  result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -756,7 +756,7 @@ async function loadQueryIndexes(prefix, links = []) {
 
   lingoSiteMapping = (async () => {
     try {
-      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
+      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`, { priority: 'low' });
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
       siteQueryIndexMapLingo = json['site-query-index-map']?.data ?? [];
@@ -770,6 +770,12 @@ async function loadQueryIndexes(prefix, links = []) {
           if (qi && !qi.domains.includes(existingDomain)) qi.domains.push(existingDomain);
         });
       }
+
+      // Wait for Wave 1 (primary + base) before firing cross-site indexes,
+      // so Wave 2 fetches don't compete for bandwidth during the LCP window.
+      await Promise.all(
+        [queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean),
+      );
 
       siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
@@ -785,7 +791,7 @@ async function loadQueryIndexes(prefix, links = []) {
             suffix,
             window.location.hostname,
           );
-          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
+          queryIndexes[uid] = processQueryIndexMap(url, prodDomain, { priority: 'low' });
           if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
         });
     } catch (e) {
