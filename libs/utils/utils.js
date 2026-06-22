@@ -744,12 +744,14 @@ async function loadQueryIndexes(prefix, links = []) {
   const host = window.location.hostname;
   const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
-  queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
+  const primaryUrl = indexUrl(prefix);
+  queryIndexes[siteId] = processQueryIndexMap(primaryUrl, host);
 
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
+  const baseUrl = indexUrl(basePfx, '');
+  baseQueryIndex = primaryUrl === baseUrl ? queryIndexes[siteId] : processQueryIndexMap(baseUrl, host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
@@ -2752,15 +2754,15 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
-  if (isDoc) {
-    await decorateDocumentExtras();
-    initModalEventListener();
-  }
-
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
   if (isLingoActive) loadLingoIndexes(area);
+
+  if (isDoc) {
+    await decorateDocumentExtras();
+    initModalEventListener();
+  }
 
   const areaBlocks = [];
   let lcpSectionId = null;
