@@ -2765,6 +2765,10 @@ export async function loadArea(area = document) {
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
   htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
 
+  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
+    loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  }
+
   if (isLingoActive) loadLingoIndexes(area);
 
   if (isDoc) {

@@ -1760,7 +1760,9 @@ export async function init(enablements = {}) {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
       loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+      import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+        log(`MEP save error: ${e.toString()}`);
+      });
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
