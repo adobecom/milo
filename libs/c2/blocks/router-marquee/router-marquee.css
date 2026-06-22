@@ -76,9 +76,9 @@
   }
 }
 
- [dir="rtl"] .rm-content {
-    margin-inline-start: auto;
-  }
+[dir="rtl"] .rm-content {
+  margin-inline-start: auto;
+}
 
 .rm-eyebrow {
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
