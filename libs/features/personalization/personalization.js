@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   isSignedOut,
   resolveDetectedMarketCountry,
+  MILO_EVENTS,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 
@@ -1759,10 +1760,11 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
-        log(`MEP save error: ${e.toString()}`);
-      });
+      document.addEventListener(MILO_EVENTS.DEFERRED, () => {
+        import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+          log(`MEP save error: ${e.toString()}`);
+        });
+      }, { once: true });
     }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
