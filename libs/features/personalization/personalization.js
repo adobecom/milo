@@ -1475,7 +1475,9 @@ export async function applyPers({ manifests }) {
 
   let results = [];
 
-  results = (await Promise.all(experiments.map((exp) => categorizeActions(exp, config)))).filter(Boolean);
+  results = (await Promise.all(
+    experiments.map((exp) => categorizeActions(exp, config)),
+  )).filter(Boolean);
 
   config.mep.experiments = [...config.mep.experiments, ...experiments];
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);

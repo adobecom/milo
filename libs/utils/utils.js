@@ -751,7 +751,9 @@ async function loadQueryIndexes(prefix, links = []) {
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
   const baseUrl = indexUrl(basePfx, '');
-  baseQueryIndex = primaryUrl === baseUrl ? queryIndexes[siteId] : processQueryIndexMap(baseUrl, host);
+  baseQueryIndex = primaryUrl === baseUrl
+    ? queryIndexes[siteId]
+    : processQueryIndexMap(baseUrl, host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
