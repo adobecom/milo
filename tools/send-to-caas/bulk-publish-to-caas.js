@@ -39,7 +39,7 @@ STATUS_EL.addEventListener('click', (e) => {
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst', 'autoDetectLingo'];
+const FIELDS_CB = ['draftOnly', 'dryRun', 'useHtml', 'usePreview', 'languageFirst'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -57,7 +57,6 @@ const DEFAULT_VALUES_CB = {
   usePreview: false,
   useHtml: false,
   languageFirst: false,
-  autoDetectLingo: false,
 };
 
 // Hold the selected preset data
@@ -541,6 +540,8 @@ dryRun.addEventListener('change', () => {
 
 document.getElementById('autoDetectLingo').addEventListener('change', (e) => {
   document.querySelector('.language-first-label').classList.toggle('lingo-auto', e.target.checked);
+  setConfig({ autoDetectLingo: e.target.checked });
+  window.localStorage.setItem(LS_KEY, JSON.stringify(getConfig()));
 });
 
 const checkUserStatus = async () => {
