@@ -1,5 +1,3 @@
-import init from './image-video-link.js';
-
 /* eslint-disable no-console */
 const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
 export const isBot = () => BOT_REGEX.test(navigator.userAgent);
