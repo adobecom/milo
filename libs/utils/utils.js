@@ -1003,20 +1003,11 @@ export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
-  let detectedMarket = computeDetectedMarketCountry(
+  return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
   );
-  if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = normCountryCode(await getAkamaiCode());
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-    }
-  }
-  return detectedMarket;
 }
 
 export async function getLingoRegion({ useGeoLocation = false } = {}) {
