@@ -39,13 +39,9 @@ async function fetchFromRainfocus(eventId) {
   }
 }
 export default async function init(eventId) {
-  if (eventId === true) return eventId;
+  if (eventId === true) return { isRegistered: eventId };
 
   const consentCookieValue = getCookie('OptanonConsent');
   if (consentCookieValue?.includes('C0002:0')) return false;
-
-  const config = getConfig();
-  config.mep ??= {};
-  config.mep.eventDetails = await fetchFromRainfocus(eventId);
-  return config.mep.eventDetails?.isRegistered === true;
+  return fetchFromRainfocus(eventId);
 }

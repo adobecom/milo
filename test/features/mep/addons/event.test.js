@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import init from '../../../../libs/features/mep/addons/event.js';
-import { getConfig } from '../../../../libs/utils/utils.js';
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
@@ -73,7 +72,6 @@ describe('event', () => {
       isRegistered: true,
     });
     const event = await init('adobe-max-2025');
-    expect(getConfig().mep.eventDetails.isRegistered).to.equal(true);
     expect(event).to.equal(true);
   });
 });

@@ -1084,7 +1084,10 @@ async function getPersonalizationVariant(
     if (userEntitlements?.includes(name)) return true;
     const { lob, event } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) return true;
+    if (name === 'registered' && event) {
+      config.mep.eventDetails = event;
+      if (event.isRegistered) return true;
+    }
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
