@@ -1084,10 +1084,7 @@ async function getPersonalizationVariant(
     if (userEntitlements?.includes(name)) return true;
     const { lob, event } = config.mep.promises;
     if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
-    if (name === 'registered' && event) {
-      config.mep.eventDetails = event;
-      if (event.isRegistered) return true;
-    }
+    if (name === 'registered' && event.isRegistered) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1679,6 +1676,7 @@ export async function init(enablements = {}) {
   } else {
     for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
     config.mep = {
+      ...(promises.event && { eventDetails: promises.event }),
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
