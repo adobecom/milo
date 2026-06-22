@@ -186,11 +186,11 @@ function setManifestIdOnElements(selector, manifestName, prop = 'manifestId') {
   });
 }
 
-function setHighlightData(manifests) {
+function setHighlightData() {
   const { mep } = getConfig();
   if (!mep?.experiments) return;
 
-  manifests.forEach(({ selectedVariant, manifest }) => {
+  mep?.experiments?.forEach(({ selectedVariant, manifest }) => {
     const manifestName = getFileName(manifest);
 
     selectedVariant?.replacefragment?.forEach(({ val }) => {
