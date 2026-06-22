@@ -415,7 +415,6 @@
 }
 
 /* tablet */
-
 @media (767px < width < 1280px) {
   .rm-viewport[data-viewport="tablet"] {
     display: flex;
