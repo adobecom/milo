@@ -634,11 +634,6 @@ a.classic {
   color: #d00;
 }
 
-label.language-first-label.lingo-auto {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 label.language-first-label.lingo-auto::after {
   content: ' (auto)';
   font-style: italic;
