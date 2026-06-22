@@ -1740,7 +1740,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(normalizePath(getXLGListURL(config)), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
