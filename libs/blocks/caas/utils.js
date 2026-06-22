@@ -1260,7 +1260,6 @@ export const getConfig = async (originalState, strs = {}) => {
     headers: caasRequestHeaders,
     products,
   };
-  console.log('[DEBUG]', config);
   return config;
 };
 
