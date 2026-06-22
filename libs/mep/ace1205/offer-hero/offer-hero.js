@@ -31,7 +31,27 @@ const CHEVRON = `<svg xmlns="http://www.w3.org/2000/svg" width="5" height="8" vi
   <path d="M0.75 6.75L3.75 3.75L0.75 0.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 const isSvgSrc = (src) => /\.svg(\?.*)?$/i.test(src || '');
-const isVideoSrc = (src) => /\.(mp4|webm)(\?.*)?$/i.test(src || '');
+const isAnimationDisabled = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  || !CSS.supports('animation-timeline', 'scroll()');
+
+function setupVideo(media) {
+  const videoEl = media.querySelector('video');
+  if (!videoEl) return;
+  if (isAnimationDisabled()) {
+    const poster = videoEl.getAttribute('poster');
+    if (!poster) { videoEl.remove(); return; }
+    videoEl.replaceWith(createTag('img', { src: poster, alt: '' }));
+    return;
+  }
+  videoEl.removeAttribute('controls');
+  Object.entries({ muted: '', preload: 'metadata', tabindex: '-1', 'aria-hidden': 'true' })
+    .forEach(([key, val]) => videoEl.setAttribute(key, val));
+  videoEl.muted = true;
+  videoEl.addEventListener('loadedmetadata', () => {
+    try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
+  }, { once: true });
+  media.append(createTag('div', { class: 'hero-card-media-fade' }));
+}
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const isRtl = (el) => getComputedStyle(el).direction === 'rtl';
@@ -42,8 +62,6 @@ const isZoomedIn = () => window.matchMedia('(height < 500px)').matches;
 function decorate(block) {
   const rows = [...block.children];
   if (!rows.length) return;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   const heroRow = rows[0];
   const heroCell = heroRow.children[0];
   if (!heroCell) return;
@@ -96,29 +114,7 @@ function decorate(block) {
     const media = createTag('div', { class: 'hero-card-media' });
     while (mediaCell.firstChild) media.append(mediaCell.firstChild);
 
-    const posterImg = media.querySelector('img');
-    const videoSrc = posterImg?.getAttribute('alt') || '';
-    if (isVideoSrc(videoSrc)) {
-      posterImg.alt = '';
-      if (!reducedMotion) {
-        const videoEl = createTag('video', {
-          src: videoSrc,
-          poster: posterImg.getAttribute('src') || '',
-          playsinline: '',
-          muted: '',
-          preload: 'metadata',
-          tabindex: '-1',
-          'aria-hidden': 'true',
-        });
-        videoEl.muted = true;
-        videoEl.addEventListener('loadedmetadata', () => {
-          try { videoEl.currentTime = 0.001; } catch (e) { /* */ }
-        }, { once: true });
-        (posterImg.closest('picture') || posterImg).replaceWith(videoEl);
-        const fade = createTag('div', { class: 'hero-card-media-fade' });
-        media.append(fade);
-      }
-    }
+    setupVideo(media);
 
     const learnMore = textCell.querySelector('a');
     if (learnMore) {
@@ -156,8 +152,7 @@ function decorate(block) {
 }
 
 function initAnimation(block) {
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!CSS.supports('animation-timeline', 'scroll()')) return;
+  if (isAnimationDisabled()) return;
 
   block.classList.add('cards-animating');
 

@@ -1663,3 +1663,19 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
     min-height: max-content;
   }
 }
+
+/* Manage People Dialog */
+#feds-manage-people-dialog {
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  margin: auto;
+  width: 100%;
+  max-width: min(1200px, calc((100% - 6px) - 2em));
+  height: min(900px, calc((100svh - 6px) - 2em));
+  overflow: auto;
+}
+
+#feds-manage-people-dialog::backdrop {
+  background: rgb(50 50 50 / 0.8);
+}

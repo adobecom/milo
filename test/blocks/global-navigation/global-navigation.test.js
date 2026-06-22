@@ -133,6 +133,47 @@ describe('global navigation', () => {
     });
   });
 
+  describe('reloadProfile / window.feds.nav.reload', () => {
+    afterEach(() => {
+      sinon.restore();
+      delete window.feds;
+    });
+
+    it('should expose window.feds.nav.reload when feds profile is active', async () => {
+      await createFullGlobalNavigation();
+      expect(window.feds?.nav?.reload).to.be.a('function');
+    });
+
+    it('should not expose window.feds.nav.reload when UniversalNav is active', async () => {
+      await createFullGlobalNavigation({ unavContent: 'on' });
+      expect(window.feds?.nav?.reload).to.be.undefined;
+    });
+
+    it('should re-render the profile after reload', async () => {
+      const gnav = await createFullGlobalNavigation();
+      window.adobeIMS = { isSignedInUser: () => true, getAccessToken: () => ({ token: 'mock-token' }) };
+      sinon.stub(window, 'fetch').callsFake((url) => {
+        if (url.includes('/profile')) return mockRes({ payload: { sections: {}, user: { avatar: '' } } });
+        return null;
+      });
+      const decorateProfileSpy = sinon.spy(gnav, 'decorateProfile');
+      await gnav.reloadProfile();
+      expect(decorateProfileSpy.calledOnce).to.be.true;
+    });
+
+    it('should cancel a pending decoration timeout on reload', async () => {
+      const gnav = await createFullGlobalNavigation();
+      window.adobeIMS = { isSignedInUser: () => false };
+      const clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      let fired = false;
+      gnav.blocks.profile.decorationTimeout = setTimeout(() => { fired = true; }, 9999);
+      await gnav.reloadProfile();
+      clock.tick(10000);
+      clock.restore();
+      expect(fired).to.be.false;
+    });
+  });
+
   describe('basic sanity tests', () => {
     it('should render the navigation on desktop', async () => {
       const nav = await createFullGlobalNavigation();

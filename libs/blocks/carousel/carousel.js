@@ -36,6 +36,7 @@ const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > vid
 
 const isDesktop = window.matchMedia('(min-width: 900px)');
 const isMobileVp = window.matchMedia('(max-width: 599px)');
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function getPreviousAriaLabel(currentIndex, totalSlides) {
   return currentIndex === 0 && totalSlides > 0
@@ -485,7 +486,7 @@ function moveSlides(event, carouselElements) {
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
-  if (isHintingTablet(el) || isHintingMobile) {
+  if ((isHintingTablet(el) || isHintingMobile) && !prefersReducedMotion()) {
     const video = activeSlide?.querySelector('video');
     /* c8 ignore start */
     if (video?.paused
