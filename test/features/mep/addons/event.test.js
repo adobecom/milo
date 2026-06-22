@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import init from '../../../../libs/features/mep/addons/event.js';
-import { getConfig } from '../../../../libs/utils/utils.js';
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({
