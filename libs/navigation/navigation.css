@@ -14,6 +14,16 @@
   --modal-close-accent-color: #707070;
   --text-color: #2c2c2c;
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+  --global-height-navPromo: 72px;
+
+  --spacing-xxs: 8px;
+  --spacing-xs: 16px;
+  --spacing-s: 24px;
+  --spacing-m: 32px;
+  --spacing-l: 40px;
+  --spacing-xl: 48px;
+  --spacing-xxl: 56px;
+  --spacing-xxxl: 80px;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
@@ -125,3 +135,120 @@ header.global-navigation + .feds-localnav {
 .feds-client-search {
   margin-left: auto;
 }
+
+/* con button styles extacted from styles.css */
+.con-button {
+  background-color: transparent;
+  border-radius: 16px;
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+  display: inline-block;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 5px 14px;
+  text-decoration: none;
+}
+
+.con-button:hover {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+.l-button .con-button,
+.con-button.button-l {
+  border-radius: 20px;
+  font-size: 17px;
+  line-height: 20px;
+  min-height: 21px;
+  padding: 7px 18px 8px;
+}
+
+.xl-button .con-button,
+.con-button.button-xl {
+  border-radius: 25px;
+  font-size: 19px;
+  line-height: 24px;
+  min-height: 28px;
+  padding: 10px 24px 8px;
+}
+
+.xxl-button .con-button,
+.con-button.button-xxl {
+  border-radius: 30px;
+  font-size: 22px;
+  line-height: 27px;
+  min-height: 27px;
+  padding: 14px 30px 15px;
+}
+
+.con-button.button-justified {
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.dark .con-button {
+  border-color: var(--color-white);
+  color: var(--color-white);
+}
+
+.light .con-button {
+  border-color: var(--text-color);
+  color: var(--text-color);
+}
+
+.light .con-button:hover,
+.light .con-button:active  {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+.dark .con-button:hover {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  text-decoration: none;
+}
+
+.con-button.blue {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-white);
+}
+
+.con-button.blue:hover,
+.con-button.blue:active {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-white);
+}
+
+.con-button.fill {
+  background: var(--text-color);
+  border-color: var(--text-color);
+  color: var(--color-white);
+}
+
+.con-button.fill:hover,
+.con-button.fill:active {
+  background: var(--color-black);
+  border-color: var(--color-black);
+}
+
+.dark .con-button.fill {
+  background: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--text-color);
+}
+
+.dark .con-button.fill:hover,
+.dark .con-button.fill:active {
+  background: var(--color-white);
+  border-color: var(--color-white);
+  color: var(--color-black);
+}
+
