@@ -3,7 +3,6 @@ import { createTag, loadStyle } from '../../../utils/utils.js';
 const ACTIVE_CLASS = 'is-active';
 const OPEN_CLASS = 'is-open';
 const DESKTOP_BREAKPOINT = 1200;
-const DEFAULT_LABEL = 'Jump to section';
 
 function slugify(text) {
   return text
@@ -32,7 +31,7 @@ function getBlockConfig(block) {
   const ol = block.querySelector('ol');
   const ul = block.querySelector('ul');
   const list = ol || ul;
-  const label = block.querySelector('p')?.textContent?.trim() || DEFAULT_LABEL;
+  const label = block.querySelector('p')?.textContent?.trim() || '';
   if (!list) return { links: null, label };
   const numbered = !!ol;
   const links = [...list.querySelectorAll('li')].map((li, i) => {
@@ -53,6 +52,7 @@ function discoverSections(navSection) {
   const navLinks = [];
   const allSections = [];
   let el = startEl;
+  let foundEnd = false;
 
   while (el) {
     const skip = hasMeta(el, 'sticky-nav-skip');
@@ -64,16 +64,20 @@ function discoverSections(navSection) {
       }
     }
     allSections.push(el);
-    if (hasMeta(el, 'sticky-nav-end')) break;
+    if (hasMeta(el, 'sticky-nav-end')) { foundEnd = true; break; }
     el = el.nextElementSibling;
+  }
+
+  if (!foundEnd) {
+    // eslint-disable-next-line no-console
+    console.warn('[sticky-nav] No sticky-nav-end marker found — walked to end of main.');
   }
 
   return { navLinks, allSections };
 }
 
 function buildDesktopNav(links, label) {
-  const nav = createTag('nav', { class: 'ssn-desktop', 'aria-label': label });
-  const labelEl = createTag('p', { class: 'ssn-label' }, label.toUpperCase());
+  const nav = createTag('nav', { class: 'ssn-desktop', ...(label && { 'aria-label': label }) });
   const list = createTag('ul', { class: 'ssn-list' });
 
   links.forEach(({ label: text, href, num }) => {
@@ -85,26 +89,26 @@ function buildDesktopNav(links, label) {
     list.append(li);
   });
 
-  nav.append(labelEl, list);
+  if (label) nav.append(createTag('p', { class: 'ssn-label' }, label.toUpperCase()));
+  nav.append(list);
   return nav;
 }
 
 function buildMobileNav(links, label) {
-  const nav = createTag('nav', { class: 'ssn-mobile', 'aria-label': label });
+  const nav = createTag('nav', { class: 'ssn-mobile', ...(label && { 'aria-label': label }) });
   const overlay = createTag('div', { class: 'ssn-overlay', 'aria-hidden': 'true' });
 
   const dropId = `ssn-dropdown-${Math.random().toString(36).slice(2, 7)}`;
   const bar = createTag('button', {
     class: 'ssn-bar',
     'aria-expanded': 'false',
-    'aria-haspopup': 'true',
     'aria-controls': dropId,
   });
   const firstLink = links[0];
   let firstLabel = '';
   if (firstLink) firstLabel = firstLink.num !== undefined ? `${firstLink.num}: ${firstLink.label}` : firstLink.label;
   const barCurrent = createTag('span', { class: 'ssn-bar-current' }, firstLabel);
-  const barLabel = createTag('span', { class: 'ssn-bar-label' }, label.toUpperCase());
+  const barLabel = createTag('span', { class: 'ssn-bar-label' }, label ? label.toUpperCase() : '');
   const barIcon = createTag('span', { class: 'ssn-bar-icon', 'aria-hidden': 'true' }, '+');
   bar.append(barCurrent, barLabel, barIcon);
 
