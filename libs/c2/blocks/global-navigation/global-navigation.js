@@ -1,4 +1,12 @@
-import { getEnv, getConfig, getMetadata, localizeLink, convertStageLinks } from '../../../utils/utils.js';
+import {
+  getEnv,
+  getConfig,
+  getMetadata,
+  localizeLink,
+  convertStageLinks,
+  lingoActive,
+  getLingoRegion,
+} from '../../../utils/utils.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -51,6 +59,8 @@ export default async function init(el) {
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
+  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
+
   const gnavPromise = main({
     localizeLink,
     gnavSource: gnavUrl,
@@ -60,6 +70,7 @@ export default async function init(el) {
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: config,
+    lingoRegion,
     personalization: {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
