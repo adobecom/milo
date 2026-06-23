@@ -142,6 +142,7 @@
 
 .tabs .tabList .tab-list-container {
   display: flex;
+  align-items: stretch;
   width: var(--grid-container-width);
   margin: 0 auto;
   box-sizing: content-box;
@@ -201,7 +202,10 @@
   border: 1px solid transparent;
   color: var(--tabs-text-color);
   cursor: pointer;
-  float: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   font-family: var(--body-font-family);
   font-weight: 600;
   margin-inline-start: 0;
@@ -214,8 +218,32 @@
   z-index: 1;
 }
 
+.tabs .tabList button .tab-badge-placeholder {
+  display: block;
+  height: 24px;
+  margin-top: 6px;
+  visibility: hidden;
+}
+
 .tabs.same-width .tabList button {
   flex: 1;
+}
+
+.tabs .tabList button .tab-badge {
+  display: block;
+  font-size: var(--type-body-xxs-size, 11px);
+  font-weight: 700;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 10px;
+  border-radius: 4px;
+  margin-top: 6px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tabs:has(.tab-badge) .paddle {
+  height: 78px;
 }
 
 .tabs .paddle {
@@ -632,6 +660,10 @@
 
   .tabs .paddle {
     height: 62px;
+  }
+
+  .tabs:has(.tab-badge) .paddle {
+    height: 92px;
   }
 
   .tabs .paddle svg {
