@@ -1,5 +1,4 @@
 import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
-import { getCookie } from '../../../martech/helpers.js';
 
 const defaultReturn = { isRegistered: false };
 async function getUserId() {
@@ -41,8 +40,5 @@ async function fetchFromRainfocus(eventId) {
 }
 export default async function init(eventId) {
   if (eventId === true) return { isRegistered: eventId };
-
-  const consentCookieValue = getCookie('OptanonConsent');
-  if (consentCookieValue?.includes('C0002:0')) return defaultReturn;
   return fetchFromRainfocus(eventId);
 }
