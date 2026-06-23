@@ -344,6 +344,17 @@ Remaining:
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
    after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
    resources, or collapse gracefully.
+3. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
+   `caFilterR`/`caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`).** It's a
+   second, scroll-velocity-only CA system layered on top of the shader's per-card CA. Its
+   magnitude is sub-pixel on slow scroll, ~`CA_PX_MAX` (3px) max on fast scroll, and zero at
+   rest (now also dead-banded via `SCROLL_VEL_DEADBAND`) — so it's nearly imperceptible,
+   especially on the formed globe (per-card motion CA there is rotation-driven, not
+   scroll-driven, so plain scrolling produces almost no per-card CA either). The shader CA
+   (radial transition split + motion trails) is the CA users actually see and would stay.
+   Product call, not pure cleanup: keep it only if the canvas-wide fringe during *fast*
+   scroll is worth it — easiest way to judge is to crank `CA_PX_MAX` temporarily and see
+   what it contributes. If dropped, it's a tidy self-contained removal.
 
 ## Model to copy
 
