@@ -404,6 +404,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: [],
       search: {
         enabled: false,
         searchFields: [],
@@ -678,6 +679,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: [],
       search: {
         enabled: false,
         searchFields: [],
@@ -1284,6 +1286,7 @@ describe('getFloodgateCaasConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: [],
       search: {
         enabled: false,
         searchFields: [],
