@@ -993,8 +993,12 @@ class Gnav {
     const lingoRegion = lingoActive() ? await getLingoRegion() : null;
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
+    const aupHost = environment === 'prod'
+      ? 'shared-components.adobe.com'
+      : `shared-components.${environment}.adobe.com`;
+
     await loadScript(
-      `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://${aupHost}/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
