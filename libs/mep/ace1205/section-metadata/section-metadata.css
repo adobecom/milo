@@ -2,6 +2,109 @@
   display: none;
 }
 
+@property --stack-depth-mask-t {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 0;
+}
+
+@keyframes bento-mobile-stack-slides {
+  0% {
+    transform: translateY(var(--stack-offset));
+    opacity: 0;
+  }
+
+  10% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 1;
+  }
+
+  70% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 0;
+  }
+}
+
+@keyframes bento-mobile-stack-slides-front {
+  0% {
+    transform: translateY(var(--stack-offset));
+    opacity: 0;
+  }
+
+  10% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(calc(var(--stack-offset) - var(--offset-adjuster)));
+    opacity: 1;
+  }
+}
+
+@keyframes stack-section-exit {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate3d(0, calc(-1 * var(--section-exit-y)), 0); }
+}
+
+@keyframes bento-items-shrink {
+  0%,
+  20% {
+    transform: scale(1);
+    box-shadow: var(--bento-shadow-none);
+  }
+
+  100% {
+    transform: scale(var(--stack-scale, 1));
+    box-shadow: var(--bento-shadow);
+  }
+}
+
+@keyframes bento-depth-mask-drive {
+  0%,
+  20% { --stack-depth-mask-t: 0; }
+  100% { --stack-depth-mask-t: 1; }
+}
+
+.section.bento.stack-mobile {
+  --phone-h: 775px;
+  --phone-vh: calc(var(--phone-h) / 100);
+  --gnav-offset: 72px;
+
+  /* Breathing room between the gnav and where the title/cards pin.
+     Single knob for design fine-tuning — everything pins at --stack-pin-top. */
+  --bento-stack-top-gap: 30px;
+  --stack-pin-top: calc(var(--gnav-offset) + var(--bento-stack-top-gap));
+  --title-height: 24px;
+  --title-card-gap: var(--s2a-spacing-24, 24px);
+
+  /* Whole-section lift on exit — DISABLED per design (was 40px).
+     To re-enable, set this back to 40px; the stack-section-exit animation
+     + --section-vt timeline are kept intact, so it's a one-value revert. */
+  --section-exit-y: 0;
+  --paralax-easing: cubic-bezier(0.42, 0, 0, 1);
+  --last-offset: 2.5rem;
+  --offset-adjuster: 6px;
+  --offset-variance-index: -2px;
+  --stack-scale-max: 0.08;
+  --bento-surface-front: #fff;
+  --bento-surface-middle: #edebeb;
+  --bento-surface-deepest: #e3e2e2;
+  --bento-shadow:
+    0 86.137px 34.455px #00000012,
+    0 35.986px 14.394px #0000000d,
+    0 19.24px 7.696px #0000000a,
+    0 10.786px 4.314px #0000000a,
+    0 5.728px 2.291px #00000008,
+    0 2.384px 0.953px #00000005;
+  --bento-shadow-none: 0 0 0 #0000;
+}
+
 .section {
   &.has-background {
     background-color: unset;
@@ -274,6 +377,93 @@
 
 /* mobile only */
 @media (width < 768px) {
+  .section.bento.stack-mobile:where(.bento-stack-ready) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--title-card-gap);
+    padding-bottom: calc(var(--offset-adjuster) + var(--phone-vh) * 12);
+    scroll-margin-top: var(--stack-pin-top);
+
+    --card-front-y: calc(var(--stack-pin-top) + var(--title-height) + var(--title-card-gap));
+
+    view-timeline-name: --section-vt, --stack-title-vt;
+    view-timeline-axis: block;
+    animation: stack-section-exit linear both;
+    animation-timeline: --section-vt;
+    animation-range: exit;
+
+    &:not(:has(> .rich-content)) {
+      --card-front-y: var(--stack-pin-top);
+    }
+
+    > .explore-card {
+      --depth: calc((var(--slides) - 1 - var(--card-idx)) / max(1, (var(--slides) - 1)));
+      --stack-offset: calc(
+        var(--last-offset)
+        - (var(--last-offset) / var(--slides) * (var(--slides) - var(--card-idx)))
+        - var(--offset-variance-index) * (var(--slides) - var(--card-idx))
+      );
+      --stack-scale: calc(1 - var(--depth) * var(--stack-scale-max));
+      --stack-depth-mask-opacity: calc(var(--depth) * 0.15);
+
+      position: sticky;
+      top: var(--card-front-y);
+      width: 100%;
+      max-width: 100%;
+      height: var(--card-height, auto);
+      z-index: calc(var(--card-idx) + 1);
+      animation: bento-mobile-stack-slides var(--paralax-easing) both;
+      animation-timeline: view();
+      animation-range: entry exit;
+    }
+
+    > .explore-card:nth-last-child(1 of .explore-card) {
+      --stack-scale: 1;
+      --stack-depth-mask-opacity: 0;
+
+      animation-name: bento-mobile-stack-slides-front;
+    }
+
+    > .explore-card .explore-card-container {
+      transform-origin: center top;
+      height: 100%;
+
+      /* Rounding + clip live on the SCALED element (like the prototype's .stack-card)
+         so corners scale uniformly with the card and stay intact. Without this the
+         rounding came from the non-scaling slot clip and buried cards squared off. */
+      border-radius: inherit;
+      overflow: clip;
+      animation:
+        bento-items-shrink var(--paralax-easing) both,
+        bento-depth-mask-drive var(--paralax-easing) both;
+      animation-timeline: view(), view();
+      animation-range: entry exit, entry exit;
+    }
+
+    > .explore-card:not(.dark):not(.scrim) .explore-card-background {
+      background-color: color-mix(
+        in srgb,
+        var(--bento-surface-deepest) calc(var(--depth) * 100%),
+        var(--bento-surface-front)
+      );
+    }
+
+    > .explore-card .explore-card-container::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      pointer-events: none;
+      background: #000;
+      opacity: calc(var(--stack-depth-mask-opacity) * var(--stack-depth-mask-t));
+    }
+
+    > .explore-card:nth-last-child(1 of .explore-card) .explore-card-container::after {
+      content: none;
+    }
+  }
+
   .section-background .mobile-only {
     display: block;
   }
@@ -366,4 +556,44 @@
       }
     }
   }
+}
+
+@supports not (animation-timeline: view()) {
+  .section.bento.stack-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--title-card-gap, 24px);
+  }
+
+  .section.bento.stack-mobile > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-container::after { content: none; }
+}
+
+@media (prefers-reduced-motion: reduce) and (width < 768px) {
+  .section.bento.stack-mobile > .explore-card {
+    position: static;
+    height: auto;
+    transform: none;
+    opacity: 1;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-container {
+    transform: none;
+    animation: none;
+  }
+
+  .section.bento.stack-mobile > .explore-card .explore-card-container::after { content: none; }
 }

@@ -8,8 +8,15 @@
       true,
       {
         "ignoreUnits": [
-          "dvh"
+          "dvh",
+          "svh"
         ]
+      }
+    ],
+    "property-no-unknown": [
+      true,
+      {
+        "ignoreProperties": ["animation-timeline", "animation-range", "view-timeline-name", "view-timeline-axis"]
       }
     ]
   }
