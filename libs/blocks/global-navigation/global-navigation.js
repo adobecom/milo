@@ -994,7 +994,7 @@ class Gnav {
     const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
 
     await loadScript(
-      `https://shared-components.${environment}.adobe.com/aup-sdk/1.0.756/main.js`,
+      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
       null,
       { mode: 'async' },
     );
