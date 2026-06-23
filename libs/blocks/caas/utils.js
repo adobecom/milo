@@ -1121,7 +1121,7 @@ export const getConfig = async (originalState, strs = {}) => {
       ...((state.cardStyle === 'flex-card'
         && (state.flexCardImageOptions !== 'default'
           || state.flexCardTextAlign !== 'text-left'
-          || state.flexCardTextSize !== 'medium'
+          || state.flexCardTextSize !== 'default'
           || state.flexCardHideDetails
           || state.flexCardHideTitle
           || state.flexCardHideDescription
@@ -1386,8 +1386,7 @@ export const defaultState = {
   theme: 'lightest',
   detailsTextOption: 'default',
   flexCardTextAlign: 'text-left',
-  flexCardTextSize: 'medium',
-  flexCardHideImage: false,
+  flexCardTextSize: 'default',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
