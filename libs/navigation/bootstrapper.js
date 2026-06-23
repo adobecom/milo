@@ -20,7 +20,8 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
     setNavLayout();
-    if (blockConfig?.promoSource?.length) {
+    const promo = document.querySelector('meta[name="gnav-promo-source"]')?.content;
+    if (promo?.length) {
       const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
       element.before(fedsPromoWrapper);
       element.classList.add('has-promo');
