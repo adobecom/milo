@@ -17,7 +17,6 @@ import {
   getSpoofGeoOptions,
   setPreviewButton,
   getMasRegions,
-  hasMasChanges,
   findGeoGroupForLocale,
 } from './mep-overlay-logic.js';
 import {
@@ -526,11 +525,10 @@ function setMasObserver() {
   };
 
   let debounceTimer;
-  new MutationObserver((mutations) => {
-    refreshPageUpdateCounts();
-    if (!hasMasChanges(mutations)) return;
+  new MutationObserver(() => {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
+      refreshPageUpdateCounts();
       refreshMasSummary();
       refreshSpoofGeoMas();
     }, 200);
