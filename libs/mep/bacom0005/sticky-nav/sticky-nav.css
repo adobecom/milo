@@ -236,4 +236,9 @@
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
+
+  /* Aligns intro/outro sections to the same content column as sticky-nav sections */
+  .sticky-nav-align {
+    padding-left: calc(var(--grid-margins-width-10) + 268px + 40px) !important;
+  }
 }
