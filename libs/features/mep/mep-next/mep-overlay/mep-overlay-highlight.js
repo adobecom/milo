@@ -93,6 +93,8 @@ export function setBadgeEventListeners() {
   }
 
   document.body.addEventListener('click', (e) => {
+    if (e.target.closest('.mep-preview-overlay')) return;
+
     const fragment = e.target.closest(FRAGMENT_SELECTOR);
     if (!fragment) return;
 
@@ -237,64 +239,9 @@ function setDefaultFragments() {
   });
 }
 
-const BADGE_SELECTOR = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]';
-
-function isAnyHighlightEnabled() {
-  const { mepHighlight, mepFragments, mepCaasHighlight } = document.body.dataset;
-  return mepHighlight === 'true' || mepFragments === 'true' || mepCaasHighlight === 'true';
-}
-
-function clickHitsBadgeInContents(e, fragment, badgeWidth, badgeHeight, topOffset) {
-  const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
-  if (visibleChildren.length === 0) return e.clientX >= 0 && e.clientX < badgeWidth;
-  return visibleChildren.some((child) => {
-    const { top, left } = child.getBoundingClientRect();
-    const relX = e.clientX - left;
-    const relY = e.clientY - top;
-    return relY >= (topOffset - badgeHeight) && relY < topOffset && relX >= 0 && relX < badgeWidth;
-  });
-}
-
-function setBadgeHandlers() {
-  document.body.addEventListener('click', (e) => {
-    if (!isAnyHighlightEnabled()) return;
-    if (e.target.closest('.mep-preview-overlay')) return;
-
-    const fragment = e.target.closest(BADGE_SELECTOR);
-    if (!fragment) return;
-
-    const beforeStyles = window.getComputedStyle(fragment, '::before');
-    if (beforeStyles.display === 'none' || beforeStyles.content === 'none') return;
-
-    const { width: badgeWidth, height: badgeHeight } = getBadgeDimensions(beforeStyles);
-    const fragmentPath = getFragmentPath(fragment);
-    const topOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
-
-    const openFragment = () => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (fragmentPath) window.open(fragmentPath, '_blank');
-    };
-
-    if (window.getComputedStyle(fragment).display === 'contents') {
-      if (clickHitsBadgeInContents(e, fragment, badgeWidth, badgeHeight, topOffset)) openFragment();
-      return;
-    }
-
-    const { left, top } = fragment.getBoundingClientRect();
-    const clickX = e.clientX - left;
-    const clickY = e.clientY - top;
-    const inBadgeY = clickY >= topOffset && clickY < topOffset + badgeHeight;
-    const inBadgeX = clickX >= 0 && clickX < badgeWidth;
-    if (inBadgeY && inBadgeX) openFragment();
-  });
-}
-
 export default async function init() {
   getMarketConfig();
   setHighlightData();
   setDefaultFragments();
-  setBadgeHandlers();
-  watchForCaasBlocks();
-  watchForMasContent();
+  setBadgeEventListeners();
 }

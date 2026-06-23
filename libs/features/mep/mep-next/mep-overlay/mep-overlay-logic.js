@@ -2,8 +2,6 @@ import { mepMasSubCollections } from '../mep-mas-subcollection.js';
 import { HIGHLIGHT_KEYS } from './mep-overlay-highlight.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../../utils/market.js';
 import {
-} from '../mep-caas.js';
-import {
   hasMasSurfaces,
   MAS_OSI_SELECTOR,
 } from '../mep-mas.js';
