@@ -1126,15 +1126,18 @@ export const getConfig = async (originalState, strs = {}) => {
           || state.flexCardHideTitle
           || state.flexCardHideDescription
           || state.flexCardHideFooter))
-        && { flexCard: {
-          imageOption: state.flexCardImageOptions,
-          textAlign: state.flexCardTextAlign,
-          textSize: state.flexCardTextSize,
-          hideDetails: !!state.flexCardHideDetails,
-          hideTitle: !!state.flexCardHideTitle,
-          hideDescription: !!state.flexCardHideDescription,
-          hideFooter: !!state.flexCardHideFooter,
-        } }),
+        && {
+          flexCard: {
+            imageOption: state.flexCardImageOptions,
+            textAlign: state.flexCardTextAlign,
+            textSize: state.flexCardTextSize,
+            hideDetails: !!state.flexCardHideDetails,
+            hideTitle: !!state.flexCardHideTitle,
+            hideDescription: !!state.flexCardHideDescription,
+            hideFooter: !!state.flexCardHideFooter,
+          },
+        }
+      ),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
