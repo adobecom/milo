@@ -21,11 +21,11 @@ function getAnchorId(href) {
 function hasMeta(section, value) {
   if (section.classList.contains(value)) return true;
   // Milo section-metadata uses divs not table cells — check value cells (second div in each row)
-  const meta = section.querySelector('.section-metadata');
-  if (!meta) return false;
-  return [...meta.querySelectorAll(':scope > div > div:last-child')].some(
+  const metas = section.querySelectorAll('.section-metadata');
+  if (!metas.length) return false;
+  return [...metas].some((meta) => [...meta.querySelectorAll(':scope > div > div:last-child')].some(
     (cell) => cell.textContent.toLowerCase().split(',').map((s) => s.trim().replace(/\s+/g, '-')).includes(value),
-  );
+  ));
 }
 
 function getBlockConfig(block) {
@@ -306,7 +306,5 @@ export default function init(block) {
 
   const { links: blockLinks, label } = getBlockConfig(block);
   block.innerHTML = '';
-
-  // Defer discovery until after section-metadata has applied classes to siblings
-  setTimeout(() => setup(navSection, blockLinks, label), 0);
+  setup(navSection, blockLinks, label);
 }
