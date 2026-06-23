@@ -36,6 +36,20 @@ export default class BrandConciergeBlock {
     this.modalCloseButton = this.page.locator('#brand-concierge-modal .dialog-close');
     this.modalCurtain = this.page.locator('.modal-curtain');
 
+    // Floating-input variant bar
+    this.floatingInputBar = this.page.locator('.brand-concierge.floating-input');
+    this.floatingInputDark = this.page.locator('.brand-concierge.floating-input.dark');
+    this.floatingInputPromptPills = this.page.locator('.brand-concierge.floating-input .prompt-card-button');
+    this.floatingInputContainer = this.page.locator('.brand-concierge.floating-input .bc-input-field-container');
+    this.floatingInputTextarea = this.page.locator('.brand-concierge.floating-input textarea');
+    this.inputSubmitButton = this.block.locator('.input-field-button');
+
+    this.floatingInputInnerBar = this.page.locator('.bc-floating-input.bc-floating-element');
+    this.floatingInputInnerBarPills = this.page.locator('.bc-floating-input.bc-floating-element .prompt-card-button');
+    this.floatingInputSubmitButton = this.page.locator('.bc-floating-input.bc-floating-element .input-field-button');
+    this.floatingInputBarTextarea = this.page.locator('.bc-floating-input.bc-floating-element textarea');
+    this.floatingInputBarContainer = this.page.locator('.bc-floating-input.bc-floating-element .bc-input-field-container');
+
     // Web client script loader (used for pre-load + ?webclient= tests)
     // Matches base/prod/stage URLs for BC agent main.js
     this.webClientScript = this.page.locator(
