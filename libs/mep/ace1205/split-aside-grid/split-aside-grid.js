@@ -76,12 +76,13 @@ function updateAriaLive(ariaLive, items) {
 }
 
 function decorateItem(item, index) {
+  const headingSize = 5;
   item.classList.add('split-aside-grid-item');
   item.dataset.slideIndex = String(index);
   const [content, media] = item.children;
   if (content) {
     content.classList.add('foreground');
-    decorateBlockText(content, { heading: '5', body: 'md', button: 'md' });
+    decorateBlockText(content, { heading: headingSize, body: 'md', button: 'md' });
     markStandaloneLinks(content);
     const text = content.querySelectorAll('p');
     const container = createTag(
@@ -97,13 +98,13 @@ function decorateItem(item, index) {
   }
 
   const headingText = content?.querySelector(':is(h1,h2,h3,h4,h5,h6)')?.textContent || `Slide ${index + 1}`;
+  const icon = createTag('span', { class: 'grid-item-toggle-icon' }, CHEVRON_SVG);
+  const text = createTag('span', { class: `grid-item-toggle-text heading-${headingSize}` }, headingText);
   const toggle = createTag('button', {
     class: 'split-aside-grid-toggle',
     type: 'button',
     'aria-expanded': 'false',
-    'aria-label': headingText,
-  });
-  toggle.innerHTML = CHEVRON_SVG;
+  }, [icon, text]);
   item.prepend(toggle);
   return { content, media, toggle };
 }
