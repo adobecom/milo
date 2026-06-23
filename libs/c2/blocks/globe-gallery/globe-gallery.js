@@ -1285,7 +1285,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
     const canvas = q('.globe-gallery-canvas');
-    if (!canvas) return;
+    if (!canvas) return false;
 
     W = window.innerWidth;
     H = window.innerHeight;
@@ -1296,7 +1296,12 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     const band = resolveBP(W);
     bp = resolveBpProfile(band.name, band.cfg);
 
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch (e) {
+      renderer = null;
+      return false;
+    }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
@@ -1327,7 +1332,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
       if (nextBand.name !== bp.name) {
         // eslint-disable-next-line no-use-before-define
         destroy();
-        initRuntime();
+        if (initRuntime() === false) root.classList.add('globe-gallery--empty');
         return;
       }
       blockDocTop = root.getBoundingClientRect().top + window.scrollY;
@@ -1392,6 +1397,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
         tickerAdded = true;
       }
     });
+    return true;
   }
 
   function destroy() {
@@ -1505,15 +1511,9 @@ export default async function init(el) {
     el.classList.add('globe-gallery--empty');
     return el;
   }
-  // ?local=on: reuse the first card's image for every slot so only 1 network
-  // fetch is needed. All card metadata (name, role, description) is preserved.
-  if (new URLSearchParams(window.location.search).get('local') === 'on') {
-    const firstImg = cards[0].img;
-    cards = cards.map((c) => ({ ...c, img: firstImg }));
-  }
   const runtime = createGlobeGalleryRuntime(cards, el, gid, labels, reducedMotion);
   if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
-  runtime.init();
+  if (runtime.init() === false) { el.classList.add('globe-gallery--empty'); return el; }
   el.globeRuntime = runtime;
 
   // Teardown when the block is removed from the document (SPA / MEP swaps).

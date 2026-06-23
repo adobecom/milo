@@ -130,6 +130,14 @@ request, or no fragment link authored — the block collapses to `.globe-gallery
 fallback (authoring is expected to provide a valid fragment link). (Distinct from
 `.globe-gallery--reduced`, the reduced-motion render path — see Accessibility.)
 
+The same `--empty` collapse is the fallback when **WebGL is unavailable**: `initRuntime`
+creates the `WebGLRenderer` in a `try/catch` (Three.js throws when `getContext` returns
+null — blocklisted GPU/driver, refused software renderer, headless/sandboxed context, or a
+context lost on a breakpoint-crossing rebuild). On failure `initRuntime` returns `false`,
+the caller adds `--empty`, and no ticker starts — so the block degrades to a collapsed
+section instead of throwing out of `init()` or running on a null renderer. (Note: a context
+*lost while running* after a successful init is not yet handled — see backlog.)
+
 ### Card shape
 
 `{ img, picture, name, role, description, badges:[{app:{id,name,abbr}, role}] }`
@@ -332,6 +340,10 @@ Remaining:
    change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
    exit aren't cut off) — verify visually. Now more worthwhile since reduced motion also
    keeps the ticker running on a static globe.
+2. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
+   today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
+   after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
+   resources, or collapse gracefully.
 
 ## Model to copy
 
