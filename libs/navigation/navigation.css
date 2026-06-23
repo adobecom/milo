@@ -11,6 +11,13 @@
   --global-height-nav: 56px;
   --feds-height-nav: 55px;
   --color-white: #FFF;
+  --color-black: #000;
+  --color-gray-300: #D4D4D4;
+  --color-gray-500: #909090;
+  --link-color-dark: rgb(59, 99, 251);
+  --link-hover-color-dark: rgb(39, 77, 234);
+  --color-accent: var(--link-color-dark);
+  --color-accent-hover: var(--link-hover-color-dark);
   --modal-close-accent-color: #707070;
   --text-color: #2c2c2c;
   --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
@@ -24,6 +31,28 @@
   --spacing-xl: 48px;
   --spacing-xxl: 56px;
   --spacing-xxxl: 80px;
+
+  /* Typography sizes used by the gnav promo (aside.promobar) */
+  --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * 36px);
+  --type-heading-xxl-lh: 45px;
+  --type-heading-xl-size: calc(var(--font-size-multiplier, 1) * 28px);
+  --type-heading-xl-lh: 35px;
+  --type-heading-l-size: calc(var(--font-size-multiplier, 1) * 24px);
+  --type-heading-l-lh: 30px;
+  --type-heading-m-size: calc(var(--font-size-multiplier, 1) * 20px);
+  --type-heading-m-lh: 25px;
+  --type-heading-s-size: calc(var(--font-size-multiplier, 1) * 18px);
+  --type-heading-s-lh: 22.5px;
+  --type-body-xl-size: calc(var(--font-size-multiplier, 1) * 22px);
+  --type-body-xl-lh: 33px;
+  --type-body-l-size: calc(var(--font-size-multiplier, 1) * 20px);
+  --type-body-l-lh: 30px;
+  --type-body-m-size: calc(var(--font-size-multiplier, 1) * 18px);
+  --type-body-m-lh: 27px;
+  --type-body-s-size: calc(var(--font-size-multiplier, 1) * 16px);
+  --type-body-s-lh: 24px;
+  --type-body-xs-size: calc(var(--font-size-multiplier, 1) * 14px);
+  --type-body-xs-lh: 21px;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
@@ -136,7 +165,72 @@ header.global-navigation + .feds-localnav {
   margin-left: auto;
 }
 
-/* con button styles extacted from styles.css */
+/* Typography classes used by the gnav promo (aside.promobar), copied from styles.css */
+.heading-xxl,
+.heading-xl,
+.heading-l,
+.heading-m,
+.heading-s,
+.body-xl,
+.body-l,
+.body-m,
+.body-s,
+.detail-xs {
+  margin: 0;
+}
+
+.heading-xxl {
+  font-size: var(--type-heading-xxl-size);
+  line-height: var(--type-heading-xxl-lh);
+}
+
+.heading-xl {
+  font-size: var(--type-heading-xl-size);
+  line-height: var(--type-heading-xl-lh);
+}
+
+.heading-l {
+  font-size: var(--type-heading-l-size);
+  line-height: var(--type-heading-l-lh);
+}
+
+.heading-m {
+  font-size: var(--type-heading-m-size);
+  line-height: var(--type-heading-m-lh);
+}
+
+.heading-s {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
+}
+
+.body-xl {
+  font-size: var(--type-body-xl-size);
+  line-height: var(--type-body-xl-lh);
+}
+
+.body-l {
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+}
+
+.body-m {
+  font-size: var(--type-body-m-size);
+  line-height: var(--type-body-m-lh);
+}
+
+.body-s {
+  font-size: var(--type-body-s-size);
+  line-height: var(--type-body-s-lh);
+}
+
+.detail-xs {
+  font-size: var(--type-body-xs-size);
+  line-height: var(--type-body-xs-lh);
+  font-weight: 700;
+}
+
+/* con-button styles, copied from styles.css */
 .con-button {
   background-color: transparent;
   border-radius: 16px;
