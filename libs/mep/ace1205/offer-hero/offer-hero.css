@@ -376,3 +376,9 @@
     }
   }
 }
+
+@media (width > 1440px) {
+  .offer-hero .what-included {
+    padding-bottom: var(--s2a-spacing-124);
+  }
+}
