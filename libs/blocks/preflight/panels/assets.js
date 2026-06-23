@@ -49,6 +49,60 @@ async function getResults() {
 }
 
 /**
+ * Navigate to an asset element on the page:
+ * 1. Close the Preflight modal.
+ * 2. Scroll the element into view and focus it.
+ * 3. Show the 'Back to Preflight' popover.
+ */
+function navigateToAsset(asset) {
+  // Find the element on the page by src
+  const el = document.querySelector(`img[src="${asset.src}"], video[src="${asset.src}"]`);
+
+  // Close the Preflight modal
+  const modal = document.querySelector('.dialog-modal#preflight');
+  if (modal) {
+    // Dispatch a close event that the modal infrastructure listens to
+    modal.dispatchEvent(new CustomEvent('closeModal', { bubbles: true }));
+    // Also try clicking the close button if present
+    const closeBtn = modal.querySelector('.dialog-close, [aria-label="Close"]');
+    if (closeBtn) closeBtn.click();
+  }
+
+  // Scroll and focus the element
+  if (el) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.setAttribute('tabindex', '-1');
+    el.focus({ preventScroll: true });
+    el.style.outline = '3px solid var(--s2a-color-accent-primary, #0265dc)';
+    setTimeout(() => { el.style.outline = ''; }, 3000);
+  }
+
+  // Show 'Back to Preflight' popover
+  showBackPopover();
+}
+
+/**
+ * Show the 'Back to Preflight' popover pinned to top-left of viewport.
+ */
+function showBackPopover() {
+  let popover = document.querySelector('.preflight-back-popover');
+  if (!popover) {
+    popover = document.createElement('button');
+    popover.className = 'preflight-back-popover';
+    popover.innerHTML = '<span class="preflight-back-popover-icon">←</span> Back to Preflight';
+    popover.addEventListener('click', () => {
+      popover.remove();
+      // Re-open Preflight by dispatching the same event the sidekick uses
+      window.dispatchEvent(new CustomEvent('preflight:reopen'));
+      // Fallback: find and click the preflight trigger
+      const trigger = document.querySelector('[data-preflight-trigger], .preflight-trigger');
+      if (trigger) trigger.click();
+    });
+    document.body.appendChild(popover);
+  }
+}
+
+/**
  * Component to display a single asset check result.
  */
 function AssetsItem({ title, description }) {
@@ -86,10 +140,16 @@ function AssetGroup({ group }) {
     const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
-        ${asset.type === 'image' && html`<img src='${asset.src}' />`}
+      <div
+        class='${itemClass}'
+        title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'
+        onClick=${() => navigateToAsset(asset)}
+        role="button"
+        tabIndex="0"
+        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') navigateToAsset(asset); }}>
+        ${asset.type === 'image' && html`<img src='${asset.src}' alt="" />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
-        ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
+        ${asset.type === 'mpc' && html`<iframe src='${asset.src}' title="asset" />`}
         <div class='assets-image-grid-item-text'>
           <span>Factor: ${asset.roundedFactor}</span>
           <span>Upload size: ${asset.naturalDimensions}</span>

@@ -14,6 +14,9 @@ const personalizationResult = signal({ icon: 'purple', title: 'Personalization',
 const placeholdersResult = signal({ icon: 'purple', title: 'Placeholders', description: 'Checking...' });
 const iconsResult = signal({ icon: 'purple', title: 'Icons', description: 'Checking...' });
 
+// Signal for whether an LCP element was found
+const lcpElementFound = signal(false);
+
 /**
  * Runs performance checks and updates signals with the results.
  */
@@ -51,6 +54,10 @@ async function getResults() {
   });
 
   await Promise.all(checkPromises);
+
+  // Determine whether an LCP element was found
+  const lcp = await getLcpEntry(window.location.pathname, document).catch(() => null);
+  lcpElementFound.value = !!(lcp && lcp.element);
 }
 
 /**
@@ -130,13 +137,19 @@ export default function Panel() {
         <${PerformanceItem} ...${placeholdersResult.value} />
         <${PerformanceItem} ...${iconsResult.value} />
       </div>
-      <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
-      <div> 
-        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
-          Highlight the found LCP section
-        </span> 
+      <div>
+        Unsure on how to get this page fully into the green? Check out the
+        <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.
       </div>
+      ${lcpElementFound.value && html`
+        <div>
+          <span
+            class="performance-element-preview"
+            onMouseEnter=${highlightElement}
+            onMouseLeave=${removeHighlight}>
+            Highlight the found LCP section
+          </span>
+        </div>`}
       <div class="lcp-tooltip-modal"></div>
-    </div>
-  `;
+    </div>`;
 }
