@@ -145,6 +145,7 @@ const CA_STRENGTH = 0.012; // radial UV shift per channel (bell-curve at transit
 const CA_MOTION_STRENGTH = 1.0; // directional UV shift max — peel / fold / sphere / modal
 const CA_MOTION_STRENGTH_ARC = 0.04; // softer clamp while cards sit on the arc
 const SCROLL_VEL_MAX = 15; // px/frame scroll speed that saturates motion trail at full strength
+const SCROLL_VEL_DEADBAND = 2; // px/frame below this = Lenis settle noise → no CA (anti-shimmer)
 const CA_PX_MAX = 3; // max vertical pixel shift for global canvas SVG filter (Option C)
 
 // ── Hover (sphere phase only) ────────────────────────────────────────────────
@@ -153,6 +154,19 @@ const HOVER_CA = 0.025; // CA bump composed additively onto transition CA
 const HOVER_WARP = 0.4; // barrel-distortion amount sent to shader
 const HOVER_SCALE = 0.25; // scale multiplier added: 1.0 → 1.25
 const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
+
+// ── Near-camera proximity fade (zoom-through) ────────────────────────────────
+// During the zoom-through the camera flies through the sphere shell, so any card on
+// the flight path passes within a hair of the lens and fills the screen. Fade a card
+// out by its depth in front of the camera so it dissolves before it can cover the
+// frame, instead of hard-clipping at the near plane (which would slice + pop cards).
+// Thresholds are in card-heights (× bp.CARD_H_SPHERE) so they scale per breakpoint.
+// A 60° FOV card fills the viewport height at ~0.87 card-heights of depth, so the
+// fade completes above that. Both thresholds sit well inside the resting interactive
+// distance (nearest card depth ≈ CAM_Z_SPHERE − SPHERE_R ≈ 4–5 card-heights), so the
+// steady globe + the approach are untouched — the fade only engages mid zoom-through.
+const NEAR_FADE_START = 2.5; // begin fading when card depth < 2.5 card-heights
+const NEAR_FADE_END = 1.0; // fully transparent when card depth < 1.0 card-height
 
 // ── Sphere-drag warp (all breakpoints) ───────────────────────────────────────
 // Hybrid intensity: a baseline while actively dragging, plus a velocity-driven
@@ -658,7 +672,13 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
       ? blockDocTop + SPHERE_FORMED_PROGRESS * blockHeight
       : window.scrollY;
     const scrollingDown = lenisY >= prevLenisY;
-    scrollVel = reducedMotion ? 0 : Math.abs(lenisY - prevLenisY); // px/frame — motion trail
+    // px/frame scroll speed — drives the velocity-based CA (global filter + motion trail).
+    // Dead-band it: after a scroll, Lenis eases to its target for several frames, wobbling
+    // window.scrollY by sub-pixel/±1px amounts. Without the dead-band that residual keeps
+    // re-firing the CA every frame, which shimmers near (large) cards light/dark. Real
+    // scrolling moves many px/frame, so this only suppresses settle noise.
+    const rawScrollVel = reducedMotion ? 0 : Math.abs(lenisY - prevLenisY);
+    scrollVel = rawScrollVel < SCROLL_VEL_DEADBAND ? 0 : rawScrollVel;
     prevLenisY = lenisY;
     const entryStart = blockDocTop - H * ENTRY_LEAD_VH;
     const entryRange = H * ENTRY_RAMP_VH;
@@ -992,7 +1012,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
 
   // ── Branch: fully in sphere ──
   function placeSphereCard(card, mesh, cardCA, frame) {
-    const { sphereRotActive } = frame;
+    const { sphereRotActive, sphGroupZ } = frame;
     mesh.visible = true;
     const hs = 1 + card.hoverT * HOVER_SCALE; // 1.0 → 1.08 on hover
     // Apply manual sphere-drag rotation: world position = R × spherePos.
@@ -1003,6 +1023,20 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     } else {
       mesh.position.copy(card.spherePos);
     }
+    // Near-camera proximity fade: how far this card sits in front of the lens
+    // (sphereGroup is offset only in z, so card world z = sphGroupZ + mesh.position.z).
+    // Dissolve it before it can fill the screen during the zoom-through.
+    // Cull (visible=false) only at depth ≤ 0 — cards at/behind the lens, e.g. the far
+    // hemisphere once we're inside — NOT at the fade edge: proxFade is already 0 for
+    // depth ≤ fadeEnd, so the only visibility toggle happens where the card is invisible
+    // on both sides. Toggling at the fade edge instead would let a sub-pixel scroll
+    // jitter (Lenis easing to its target after a scroll) flash near cards on/off.
+    const { CARD_H_SPHERE } = bp;
+    const depth = camera.position.z - (sphGroupZ + mesh.position.z);
+    if (depth <= 0) { mesh.visible = false; return; }
+    const fadeEnd = NEAR_FADE_END * CARD_H_SPHERE;
+    const fadeStart = NEAR_FADE_START * CARD_H_SPHERE;
+    const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
     mesh.scale.set(card.sphereScaleX * hs, hs, hs);
     setCardUV(mesh, 1, 1, 0, 0);
     setCardAspect(mesh, card.imgAspect);
@@ -1012,7 +1046,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
       mesh.quaternion.copy(card.sphereQuat);
     }
     mesh.renderOrder = 0;
-    mesh.material.opacity = 1;
+    mesh.material.opacity = proxFade;
     // Hover composes additively on top of transition CA (which is 0 in steady sphere state).
     // uHoverPos anchors the warp at the cursor's UV position on this card when hovered;
     // when not hovered, the sphere-drag warp uses each card's own center (0.5, 0.5).
@@ -1505,7 +1539,7 @@ export default async function init(el) {
   const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote });
 
   // Cards come from the authored fragment link, resolved by Milo before init().
-  let cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
+  const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;
   // No cards → nothing to render. Collapse the block rather than init an empty scene.
   if (!cards || cards.length === 0) {
     el.classList.add('globe-gallery--empty');
