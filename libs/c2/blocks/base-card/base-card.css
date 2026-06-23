@@ -52,11 +52,11 @@
 
     :is(h1, h2, h3, h4, h5, h6) {
       margin-bottom: var(--s2a-spacing-xs);
-      color: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-content-heading);
     }
 
     .standalone-link {
-      color: var(--s2a-color-gray-1000);
+      color: var(--s2a-color-content-default);
       text-decoration: none;
       display: inline-block;
       margin-top: var(--s2a-spacing-md);
@@ -73,7 +73,7 @@
   }
 
   p {
-    color: var(--s2a-color-transparent-black-64);
+    color: var(--s2a-color-content-subtle);
   }
 
   &.featured {
