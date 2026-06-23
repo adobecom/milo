@@ -93,7 +93,13 @@ function buildMobileNav(links, label) {
   const nav = createTag('nav', { class: 'ssn-mobile', 'aria-label': label });
   const overlay = createTag('div', { class: 'ssn-overlay', 'aria-hidden': 'true' });
 
-  const bar = createTag('button', { class: 'ssn-bar', 'aria-expanded': 'false', 'aria-haspopup': 'listbox' });
+  const dropId = `ssn-dropdown-${Math.random().toString(36).slice(2, 7)}`;
+  const bar = createTag('button', {
+    class: 'ssn-bar',
+    'aria-expanded': 'false',
+    'aria-haspopup': 'true',
+    'aria-controls': dropId,
+  });
   const firstLink = links[0];
   let firstLabel = '';
   if (firstLink) firstLabel = firstLink.num !== undefined ? `${firstLink.num}: ${firstLink.label}` : firstLink.label;
@@ -102,11 +108,11 @@ function buildMobileNav(links, label) {
   const barIcon = createTag('span', { class: 'ssn-bar-icon', 'aria-hidden': 'true' }, '+');
   bar.append(barCurrent, barLabel, barIcon);
 
-  const dropdown = createTag('div', { class: 'ssn-dropdown', hidden: true, role: 'listbox' });
-  const dropList = createTag('ul', { class: 'ssn-dropdown-list' });
+  const dropdown = createTag('div', { class: 'ssn-dropdown', id: dropId, hidden: true });
+  const dropList = createTag('ul', { class: 'ssn-dropdown-list', role: 'list' });
 
   links.forEach(({ label: text, href, num }) => {
-    const li = createTag('li', { role: 'option' });
+    const li = createTag('li', { role: 'listitem' });
     const a = createTag('a', { href, class: 'ssn-dropdown-link' });
     if (num !== undefined) a.append(createTag('span', { class: 'ssn-num' }, String(num)));
     a.append(createTag('span', { class: 'ssn-link-label' }, text));
@@ -123,6 +129,7 @@ function buildMobileNav(links, label) {
     nav.classList.add(OPEN_CLASS);
     overlay.classList.add(OPEN_CLASS);
     barIcon.textContent = '—';
+    dropdown.querySelector('.ssn-dropdown-link')?.focus();
   }
 
   function closeDropdown() {
@@ -131,11 +138,25 @@ function buildMobileNav(links, label) {
     nav.classList.remove(OPEN_CLASS);
     overlay.classList.remove(OPEN_CLASS);
     barIcon.textContent = '+';
+    bar.focus();
   }
 
   bar.addEventListener('click', () => {
     if (bar.getAttribute('aria-expanded') === 'true') closeDropdown();
     else openDropdown();
+  });
+
+  bar.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeDropdown();
+  });
+
+  dropdown.addEventListener('keydown', (e) => {
+    const items = [...dropdown.querySelectorAll('.ssn-dropdown-link')];
+    const idx = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[idx + 1]?.focus(); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); if (items[idx - 1]) items[idx - 1].focus(); else bar.focus(); }
+    if (e.key === 'Escape') closeDropdown();
+    if (e.key === 'Tab' && !e.shiftKey && idx === items.length - 1) closeDropdown();
   });
 
   overlay.addEventListener('click', closeDropdown);
@@ -245,11 +266,17 @@ function setup(navSection, blockLinks, label) {
     currentId = id;
 
     desktopNav.querySelectorAll('.ssn-link').forEach((a) => {
-      a.classList.toggle(ACTIVE_CLASS, getAnchorId(a.getAttribute('href')) === id);
+      const isActive = getAnchorId(a.getAttribute('href')) === id;
+      a.classList.toggle(ACTIVE_CLASS, isActive);
+      if (isActive) a.setAttribute('aria-current', 'location');
+      else a.removeAttribute('aria-current');
     });
 
     dropList.querySelectorAll('.ssn-dropdown-link').forEach((a) => {
-      a.classList.toggle(ACTIVE_CLASS, getAnchorId(a.getAttribute('href')) === id);
+      const isActive = getAnchorId(a.getAttribute('href')) === id;
+      a.classList.toggle(ACTIVE_CLASS, isActive);
+      if (isActive) a.setAttribute('aria-current', 'location');
+      else a.removeAttribute('aria-current');
     });
 
     const active = links.find((l) => l.id === id);
