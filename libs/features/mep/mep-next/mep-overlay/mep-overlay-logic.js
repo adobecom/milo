@@ -102,7 +102,9 @@ function toActivity({
   };
 }
 
+let mepConfigCache;
 function parseMepConfig() {
+  if (mepConfigCache) return mepConfigCache;
   const config = getConfig();
   const { mep, locale } = config;
   if (!mep || !locale) return null;
@@ -110,7 +112,7 @@ function parseMepConfig() {
   const { experiments, prefix, highlight } = mep;
   const { page, url } = parsePageAndUrl(config, window.location, prefix);
 
-  return {
+  mepConfigCache = {
     page: {
       url,
       page,
@@ -123,6 +125,7 @@ function parseMepConfig() {
     },
     activities: experiments.map(toActivity),
   };
+  return mepConfigCache;
 }
 
 function formatDate(dateTime, format = 'local') {
@@ -467,11 +470,14 @@ export function getLingoRegions() {
   return Object.keys(locale?.regions || {});
 }
 
+let masRegionsCache;
 export async function getMasRegions() {
+  if (masRegionsCache) return masRegionsCache;
   const { locale } = getConfig();
   const marketsConfig = await getMarketConfig();
   const lang = marketsConfig ? marketsLangForLocale(marketsConfig, locale) : null;
-  return lang?.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()).filter(Boolean) ?? [];
+  masRegionsCache = lang?.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()).filter(Boolean) ?? [];
+  return masRegionsCache;
 }
 
 export const TOP_MARKETS = ['', 'jp', 'us', 'ca', 'au', 'kr', 'in', 'mx', 'br', 'de', 'uk', 'fr'];
