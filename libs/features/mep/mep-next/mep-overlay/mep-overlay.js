@@ -25,6 +25,7 @@ import {
   toggleHighlight,
   getParameters,
   getPageUpdates,
+  refreshPageUpdateCounts,
   setBadgeEventListeners,
 } from './mep-overlay-highlight.js';
 
@@ -525,16 +526,15 @@ function setMasObserver() {
   };
 
   let debounceTimer;
-  const observer = new MutationObserver((mutations) => {
+  new MutationObserver((mutations) => {
+    refreshPageUpdateCounts();
     if (!hasMasChanges(mutations)) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       refreshMasSummary();
       refreshSpoofGeoMas();
     }, 200);
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
+  }).observe(document.body, { childList: true, subtree: true });
 }
 
 async function buildOverlay() {

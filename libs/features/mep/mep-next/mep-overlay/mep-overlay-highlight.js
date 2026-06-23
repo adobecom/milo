@@ -167,7 +167,7 @@ const getPageUpdateCount = (label) => {
   return selector ? document.querySelectorAll(selector).length : 0;
 };
 
-new MutationObserver(() => {
+export function refreshPageUpdateCounts() {
   document.querySelectorAll('.mep-toggle-text h2').forEach((h2) => {
     const label = h2.textContent;
     if (!PAGE_UPDATE_SELECTORS[label]) return;
@@ -175,7 +175,7 @@ new MutationObserver(() => {
     const newText = `${getPageUpdateCount(label)} Page Updates`;
     if (valueEl && valueEl.textContent !== newText) valueEl.textContent = newText;
   });
-}).observe(document.body, { childList: true, subtree: true });
+}
 
 export function getPageUpdates(label) {
   return `${getPageUpdateCount(label)} Page Updates`;
