@@ -45,8 +45,7 @@
   font-weight: 400;
   line-height: 1.5;
   color: var(--color-black, #2c2c2c) !important;
-  text-decoration: underline !important;
-  text-underline-offset: 2px;
+  text-decoration: none !important;
   transition: opacity 0.15s;
 }
 
@@ -185,8 +184,7 @@
   font-weight: 400;
   line-height: 1.5;
   color: var(--color-black, #2c2c2c);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration: none;
   transition: opacity 0.15s;
 }
 
