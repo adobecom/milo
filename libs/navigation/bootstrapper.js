@@ -7,6 +7,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     ?? (() => {
       const block = createTag(targetEl, { class: name });
       document.body[blockConfig.appendType](block);
+      return block;
     })();
   const setNavLayout = () => {
     if (layout === 'fullWidth') {
