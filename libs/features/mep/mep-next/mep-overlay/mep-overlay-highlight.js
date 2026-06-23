@@ -137,48 +137,48 @@ export function setBadgeEventListeners() {
   });
 }
 
-export function getPageUpdates(label) {
-  const SELECTORS = {
-    MEP: `
-      [data-code-manifest-id],
-      [data-manifest-id],
-      [data-mep-lingo-fallback],
-      [data-mep-lingo-roc],
-      [data-removed-manifest-id]
-    `,
-    Caas: `
-      [data-caas-block],
-      [data-caas-block] [data-country]:not([data-card-url]),
-      [data-caas-block] [data-country]:not([data-country='xx']),
-      [data-caas-block] [data-country='xx']
-    `,
-    'M@S': `
-      [data-mas-block='card'],
-      [data-mas-block='collection'],
-      [data-mas-block='collection'] [data-mas-block='card'],
-      [data-mas-block='inline'],
-      [data-mas-block='offer'],
-      [data-mas-block='ost']
-    `,
-    'Other Fragments': '[data-fragment-default]',
-  };
+const PAGE_UPDATE_SELECTORS = {
+  MEP: `
+    [data-code-manifest-id],
+    [data-manifest-id],
+    [data-mep-lingo-fallback],
+    [data-mep-lingo-roc],
+    [data-removed-manifest-id]
+  `,
+  Caas: `
+    [data-caas-block],
+    [data-caas-block] [data-country]:not([data-card-url]),
+    [data-caas-block] [data-country]:not([data-country='xx']),
+    [data-caas-block] [data-country='xx']
+  `,
+  'M@S': `
+    [data-mas-block='card'],
+    [data-mas-block='collection'],
+    [data-mas-block='collection'] [data-mas-block='card'],
+    [data-mas-block='inline'],
+    [data-mas-block='offer'],
+    [data-mas-block='ost']
+  `,
+  'Other Fragments': '[data-fragment-default]',
+};
 
-  const getCount = () => {
-    const selector = SELECTORS[label];
-    return selector ? document.querySelectorAll(selector).length : 0;
-  };
+const getPageUpdateCount = (label) => {
+  const selector = PAGE_UPDATE_SELECTORS[label];
+  return selector ? document.querySelectorAll(selector).length : 0;
+};
 
-  const observer = new MutationObserver(() => {
-    const h2 = [...document.querySelectorAll('.mep-toggle-text h2')]
-      .find((el) => el.textContent === label);
-    const valueEl = h2?.nextElementSibling;
-    const newText = `${getCount()} Page Updates`;
+new MutationObserver(() => {
+  document.querySelectorAll('.mep-toggle-text h2').forEach((h2) => {
+    const label = h2.textContent;
+    if (!PAGE_UPDATE_SELECTORS[label]) return;
+    const valueEl = h2.nextElementSibling;
+    const newText = `${getPageUpdateCount(label)} Page Updates`;
     if (valueEl && valueEl.textContent !== newText) valueEl.textContent = newText;
   });
+}).observe(document.body, { childList: true, subtree: true });
 
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  return `${getCount()} Page Updates`;
+export function getPageUpdates(label) {
+  return `${getPageUpdateCount(label)} Page Updates`;
 }
 
 function setManifestIdOnElements(selector, manifestName, prop = 'manifestId') {
