@@ -89,10 +89,21 @@ export default function loadCardTextures({ count, getSrc, planeAspect }, onDone)
 // type fills ~75% of it). The plane geometry is sized separately in world units.
 const TEXT_CANVAS_W = 4096;
 
-// Render the "Click & Drag" hint to a CanvasTexture, centered, white-on-transparent.
-// `aspect` is the canvas (= camera) aspect so texture pixels stay square on the plane.
-// Copy is hardcoded (matches the prototype) — not yet localized (see README backlog).
-// No per-instance state; the caller owns disposal.
+// Hint copy — hardcoded for now (will eventually be authored / localized via a placeholder
+// key; see README backlog). OVERRIDE HERE to test other languages, e.g. '點擊並拖曳'.
+// const HINT_TEXT = 'Click & Drag';
+const HINT_TEXT = '點擊並拖曳';
+
+// Fraction of canvas width the text fills at rest (the warp-overflow scale then pushes
+// letterforms off-screen during entrance/drag). The font auto-scales to hit this for ANY
+// string, so the copy can change/localize without re-tuning per word.
+const HINT_FILL = 0.8;
+
+// Render the hint copy to a CanvasTexture, centered, white-on-transparent. `aspect` is the
+// canvas (= camera) aspect so texture pixels stay square on the plane. The font size is
+// derived by measuring HINT_TEXT and scaling it to span HINT_FILL of the width (capped so a
+// short string can't overflow the height) — language-agnostic, unlike a fixed per-word
+// layout. No per-instance state; the caller owns disposal.
 export function createClickDragTexture(aspect) {
   const canvas = document.createElement('canvas');
   const ctxH = Math.round(TEXT_CANVAS_W / aspect);
@@ -100,25 +111,30 @@ export function createClickDragTexture(aspect) {
   canvas.height = ctxH;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, TEXT_CANVAS_W, ctxH);
-
-  // Font size proportional to Figma (250px / 1440px viewport → ~17.4% of canvas width).
-  const fontSize = Math.round((TEXT_CANVAS_W * 250) / 1440);
-  ctx.font = `900 ${fontSize}px 'Adobe Clean Display', sans-serif`;
   ctx.fillStyle = 'white';
   ctx.textBaseline = 'middle';
-  // Negative letter spacing (−0.04em) matches the Figma tracking on 250px type.
-  if (typeof ctx.letterSpacing !== 'undefined') {
-    ctx.letterSpacing = `-${Math.round(fontSize * 0.04)}px`;
-  }
-  const midY = ctxH * 0.5;
-  // At rest the text spans 80% of the viewport: "Click" 10% from left, "Drag" 10% from
-  // right (warp-overflow scale pushes letterforms off-screen during entrance/drag).
-  ctx.textAlign = 'left';
-  ctx.fillText('Click ', Math.round(TEXT_CANVAS_W * 0.1), midY);
   ctx.textAlign = 'center';
-  ctx.fillText('&', TEXT_CANVAS_W / 2, midY);
-  ctx.textAlign = 'right';
-  ctx.fillText(' Drag', Math.round(TEXT_CANVAS_W * 0.9), midY);
+
+  // Adobe Clean Display covers Latin; CJK / other scripts fall back to a system font.
+  const setFont = (px) => {
+    ctx.font = `900 ${px}px 'Adobe Clean Display', sans-serif`;
+    // Negative letter spacing (−0.04em) matches the Figma tracking; scales with the font.
+    if (typeof ctx.letterSpacing !== 'undefined') {
+      ctx.letterSpacing = `-${Math.round(px * 0.04)}px`;
+    }
+  };
+
+  // Measure at a reference size, then scale to fill HINT_FILL of the width. Cap to a
+  // height budget so a very short string (e.g. one glyph) can't scale up and clip top/bottom.
+  const refSize = Math.round((TEXT_CANVAS_W * 250) / 1440); // Figma: 250px @ 1440 viewport
+  setFont(refSize);
+  const measured = Math.max(1, ctx.measureText(HINT_TEXT).width);
+  const maxSize = Math.round(ctxH * 0.55); // keeps glyphs within the ~75% height budget
+  const fitSize = Math.round(refSize * ((TEXT_CANVAS_W * HINT_FILL) / measured));
+  const fontSize = Math.min(maxSize, fitSize);
+  setFont(fontSize);
+
+  ctx.fillText(HINT_TEXT, TEXT_CANVAS_W / 2, ctxH * 0.5);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
