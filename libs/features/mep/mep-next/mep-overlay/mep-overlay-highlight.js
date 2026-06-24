@@ -193,8 +193,36 @@ export function refreshPageUpdateCounts() {
   });
 }
 
-new MutationObserver(refreshPageUpdateCounts)
-  .observe(document.body, { childList: true, subtree: true });
+function adjustBadgePositions() {
+  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+  const badgeHeight = 35;
+  const spacing = 5;
+
+  document.querySelectorAll(badgeSelectors).forEach((el) => {
+    const section = el.closest('.section');
+    const height = section ? section.offsetHeight : el.offsetHeight;
+    if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + spacing}px`);
+  });
+
+  document.querySelectorAll('.section').forEach((section) => {
+    const directBadges = [...section.querySelectorAll(badgeSelectors)].filter(
+      (el) => el.closest('.section') === section && window.getComputedStyle(el).display === 'contents',
+    );
+    if (directBadges.length <= 1) return;
+    let offset = 0;
+    directBadges.forEach((el) => {
+      if (offset > 0) el.style.setProperty('--badge-top-offset', `${offset}px`);
+      offset += badgeHeight + spacing;
+    });
+  });
+}
+
+let badgeAdjustTimer;
+new MutationObserver(() => {
+  refreshPageUpdateCounts();
+  clearTimeout(badgeAdjustTimer);
+  badgeAdjustTimer = setTimeout(adjustBadgePositions, 50);
+}).observe(document.body, { childList: true, subtree: true });
 
 export function getPageUpdates(label) {
   return `${getPageUpdateCount(label)} Page Updates`;
@@ -270,4 +298,5 @@ export default async function init() {
   setHighlightData();
   setDefaultFragments();
   setBadgeEventListeners();
+  requestAnimationFrame(adjustBadgePositions);
 }
