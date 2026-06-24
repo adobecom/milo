@@ -104,7 +104,6 @@ export function setBadgeEventListeners() {
 
     const { width: badgeWidth, height: badgeHeight } = getBadgeDimensions(beforeStyles);
     const fragmentPath = getFragmentPath(fragment);
-    const topOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
 
     const handleBadgeClick = () => {
       e.preventDefault();
@@ -112,7 +111,10 @@ export function setBadgeEventListeners() {
       if (fragmentPath) window.open(fragmentPath, '_blank');
     };
 
-    if (window.getComputedStyle(fragment).display === 'contents') {
+    const elementStyle = window.getComputedStyle(fragment);
+
+    if (elementStyle.display === 'contents') {
+      const topOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
       const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
       if (visibleChildren.length === 0) {
         if (e.clientX >= 0 && e.clientX < badgeWidth) handleBadgeClick();
@@ -130,10 +132,24 @@ export function setBadgeEventListeners() {
       return;
     }
 
-    const { top, left } = fragment.getBoundingClientRect();
-    const clickX = e.clientX - left;
-    const clickY = e.clientY - top;
-    if (isInBadgeArea(clickX, clickY, topOffset, badgeWidth, badgeHeight)) handleBadgeClick();
+    // ::before badges anchor to the host's nearest positioned ancestor — usually
+    // the host, but not for gnav promos (host is position:static, badge resolves
+    // up to header.global-navigation). Walk up to find the real containing block.
+    let containerRect;
+    if (elementStyle.position !== 'static') {
+      containerRect = fragment.getBoundingClientRect();
+    } else {
+      let ancestor = fragment.parentElement;
+      while (ancestor && window.getComputedStyle(ancestor).position === 'static') {
+        ancestor = ancestor.parentElement;
+      }
+      containerRect = (ancestor || document.documentElement).getBoundingClientRect();
+    }
+    const badgeAbsTop = containerRect.top + (parseFloat(beforeStyles.top) || 0);
+    const badgeAbsLeft = containerRect.left + (parseFloat(beforeStyles.left) || 0);
+    const inBadgeY = e.clientY >= badgeAbsTop && e.clientY < (badgeAbsTop + badgeHeight);
+    const inBadgeX = e.clientX >= badgeAbsLeft && e.clientX < (badgeAbsLeft + badgeWidth);
+    if (inBadgeY && inBadgeX) handleBadgeClick();
   });
 }
 
@@ -212,9 +228,16 @@ function setHighlightData() {
     });
 
     const fragmentAttr = `[data-manifest-id="${manifestName}"]`;
-    const merchCardSelector = `.section[class*="merch-cards"] .fragment${fragmentAttr} merch-card`;
-    document.querySelectorAll(merchCardSelector).forEach((el) => {
-      el.dataset.manifestId = manifestName;
+    const parentFragSelector = `.section[class*="merch-cards"] .fragment${fragmentAttr}`;
+    document.querySelectorAll(parentFragSelector).forEach((parentFrag) => {
+      const parentPath = parentFrag.dataset.path;
+      parentFrag.querySelectorAll('merch-card').forEach((card) => {
+        card.dataset.manifestId = manifestName;
+        if (parentPath) {
+          card.dataset.fragmentPath = parentPath;
+          card.dataset.manifestDisplay = `${manifestName}: ${parentPath}`;
+        }
+      });
     });
 
     document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {

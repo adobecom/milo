@@ -383,9 +383,16 @@ describe('setBadgeEventListeners', () => {
     expect(windowOpenStub.called).to.be.false;
   });
 
-  it('respects a non-zero --badge-top-offset when computing the badge area', () => {
+  it('respects a non-zero ::before top when computing the badge area', () => {
+    getComputedStyleStub.restore();
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((el, pseudo) => {
+      if (pseudo === '::before') {
+        return { display: 'block', content: '"badge"', width: '170px', height: '35px', top: '20px' };
+      }
+      return originalGetComputedStyle(el, pseudo);
+    });
+
     testEl = makeFragment({ 'data-manifest-id': 'offset-badge', 'data-path': '/fragments/test' });
-    testEl.style.setProperty('--badge-top-offset', '20');
 
     click(testEl, 10, 10);
     expect(windowOpenStub.called).to.be.false;
