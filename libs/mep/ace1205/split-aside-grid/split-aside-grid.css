@@ -434,21 +434,15 @@
       --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
       --btn-position: calc(var(--grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
       button.play-pause-button {
-        right: var(--btn-position);
-      }
-    }
-
-    &[dir="rtl"] .split-aside-grid-stack {
-      button.play-pause-button {
         right: unset;
-        left: var(--btn-position);
+        inset-inline-end: var(--btn-position);
       }
     }
-  }
 
-  @media (width >= 1280px) {
-    .split-aside-grid-stack {
-      --btn-spacing: var(--s2a-spacing-xl);
+    @media (width >= 1280px) {
+      .split-aside-grid-stack {
+        --btn-spacing: var(--s2a-spacing-xl);
+      }
     }
   }
 
@@ -481,6 +475,7 @@
         margin-block-start: var(--grid-item-spacing);
       }
     }
+
     .split-aside-grid-toggle svg {
       transform: rotate(180deg);
     }
@@ -490,4 +485,3 @@
     }
   }
 }
-
