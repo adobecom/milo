@@ -12,6 +12,7 @@ import {
   stageMapToCaasTransforms,
   getGrayboxExperienceId,
   initBulkPublisherLingoMapping,
+  isLingoLangFirstPath,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -858,8 +859,8 @@ describe('getCountryAndLang', () => {
         'site-query-index-map': { data: [{ uniqueSiteId: 'hawks-site', caasOrigin: 'hawks' }] },
         'site-locales': {
           data: [
-            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: 'be,ch' },
-            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: 'be,us' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/fr', regionalSites: '/be, /ch' },
+            { uniqueSiteId: 'hawks-site', baseSite: '/', regionalSites: '/be, /us' },
           ],
         },
       }),
@@ -1441,6 +1442,58 @@ describe('isLocaleInRegionalSites helper function tests', () => {
       const result = isLocaleInRegionalSites('/ca, /ie, /nz', 'sg');
       expect(result).to.be.false;
     });
+  });
+});
+
+describe('isLingoLangFirstPath', () => {
+  // bacom is in mapping; /de/ is a LFL baseSite; /at/ is regional of /de/
+  // /gb/ and /au/ are English regionals
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/de', regionalSites: '/at' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('returns null when origin is absent from the mapping', async () => {
+    const result = await isLingoLangFirstPath('unknown-origin', '/de/article', 'test');
+    expect(result).to.be.null;
+  });
+
+  it('returns true when locale matches the baseSite of a non-English entry', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns true when locale is a regional site of a non-English baseSite', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/at/article', 'test');
+    expect(result).to.be.true;
+  });
+
+  it('returns false when locale is an English regional site', async () => {
+    const result = await isLingoLangFirstPath('bacom', '/gb/article', 'test');
+    expect(result).to.be.false;
+  });
+
+  it('returns false when fetch fails', async () => {
+    window.fetch = stub().rejects(new Error('network error'));
+    initBulkPublisherLingoMapping();
+    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    expect(result).to.be.false;
   });
 });
 
