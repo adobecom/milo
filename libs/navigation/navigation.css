@@ -102,6 +102,7 @@ header.global-navigation + .feds-localnav {
   top: 0;
   z-index: 11;
   height: var(--global-height-navpromo);
+  font-family: var(--body-font-family);
 }
 
 .feds-client-desktop-apps {
