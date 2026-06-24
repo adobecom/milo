@@ -1551,16 +1551,45 @@ export function overrideOptions(fragment, options) {
   return options;
 }
 
+export function createAemFragment(options, seenFragments = null) {
+  const { fragment, pzn, mask } = options;
+  const cacheKey = `${fragment}|${pzn || ''}|${mask || ''}`;
+  const attrs = Object.fromEntries(
+    Object.entries({ pzn, mask, fragment }).filter(([, v]) => v != null),
+  );
+  if (seenFragments?.has(cacheKey)) attrs.loading = 'cache';
+  seenFragments?.add(cacheKey);
+  return createTag('aem-fragment', attrs);
+}
+
 export function getOptions(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
   const searchParams = new URLSearchParams(hashValue);
   const options = {};
   for (const [key, value] of searchParams.entries()) {
-    if (key === 'sidenav') options.sidenav = value === 'true';
-    else if (key === 'fragment' || key === 'query') options.fragment = value;
-    else if (key === 'field') options.field = value;
-    else if (key === 'jsonld') options.jsonld = value === 'on';
+    switch (key) {
+      case 'sidenav':
+        options.sidenav = value === 'true';
+        break;
+
+      case 'fragment':
+      case 'query':
+        options.fragment = value;
+        break;
+
+      case 'mask':
+      case 'pzn':
+      case 'field':
+        options[key] = value;
+        break;
+
+      case 'jsonld':
+        options.jsonld = value === 'on';
+        break;
+      default:
+        break;
+    }
   }
   return options;
 }

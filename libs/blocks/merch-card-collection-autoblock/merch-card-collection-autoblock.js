@@ -4,6 +4,7 @@ import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autob
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
@@ -309,7 +310,7 @@ function paintStPriceRed(collection, locale) {
 }
 
 export async function createCollection(el, options) {
-  const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const aemFragment = createAemFragment(options);
   // Get MEP overrides if available
   const { mep, locale } = getConfig();
   const mepFragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments || {};
