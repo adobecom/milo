@@ -51,15 +51,12 @@ const MODAL_WARP_SWIPE = 0.25; // full mobile horizontal swipe
 // Desktop/tablet modal-nav cross-warp transition (old card warps out, new warps in).
 const DN_NAV_DUR = 500; // ms
 const DN_NAV_WARP = 0.40; // peak warp
-// Desktop/tablet modal layout — sizes the modal image + bounds the chrome columns
-// (see computeModalTarget / positionModalChrome). Vertical padding is symmetric so
-// the image's center stays at viewport H/2 whether height- or width-constrained.
-const DT_IMG_PAD_T = 80; // image top padding (landscape assets, uAspect > 1)
-const DT_IMG_PAD_B = 80; // image bottom padding (landscape assets)
-const DT_PORTRAIT_VPAD = 24; // tighter top/bottom padding for portrait / 1×1 (uAspect ≤ 1)
-const DT_NAV_INSET = 24; // nav arrow inset baseline (feeds the image-width cap)
-const DT_NAV_W = 44; // matches .card-modal__nav width
-const DT_GROUP_PAD_H = DT_NAV_INSET + DT_NAV_W + 20; // 88px — keeps the image clear of chevrons
+// Desktop/tablet modal layout — the image fills the viewport height minus a
+// symmetric 12px margin top + bottom (see computeModalTarget). The info scrim
+// (fixed width) overlays the image's left edge; chrome positions are derived
+// from the image's projected bounds (see positionModalChrome).
+const DT_IMG_VPAD = 12; // image top/bottom margin
+const DT_SCRIM_W = 316; // info scrim fixed width
 
 export default function createGlobeModal({
   q,
@@ -254,37 +251,17 @@ export default function createGlobeModal({
       const worldY = (H / 2 - centerScreenY) / pxPerWorld;
       outPos.set(worldX, worldY, camZ - dist);
     } else {
-      // Desktop / tablet — image is centered in the viewport. The info panel
-      // is anchored to bottom-right of viewport (positioned by chrome logic),
-      // so the image no longer pairs horizontally with the info panel.
-      //
-      // Sizing rules:
-      //   - Portrait / 1x1 (uAspect ≤ 1): fill viewport height minus 24px top
-      //       + 24px bottom margins. Image grows as large as the aspect lets it.
-      //       Cap horizontally to the chevron-bounded width so the image never
-      //       extends under the chevron columns.
-      //   - Landscape (uAspect > 1): keep the 80/80 vertical padding (height
-      //       isn't the limiting factor for landscape anyway). Cap horizontally
-      //       to the chevron-bounded width.
-      //
-      // Image is centered at viewport center (W/2, H/2) for all aspects so the
-      // nav arrows (centered at mid-viewport) align with image middle.
+      // Desktop / tablet — image fills the viewport height minus a 12px margin
+      // top + bottom, centered. Width follows the native aspect, capped to the
+      // viewport width so wide landscape assets don't overflow. The info scrim
+      // overlays the image's left edge and the nav group its bottom (positioned
+      // by the chrome logic), so the image no longer reserves horizontal room.
       const uAspect = cardAspect * sScaleX;
-      const availW = W - 2 * DT_GROUP_PAD_H;
-
-      let imgH; let
-        imgW;
-      if (uAspect <= 1) {
-        // Portrait / square: height-first.
-        imgH = H - 2 * DT_PORTRAIT_VPAD;
-        imgW = imgH * uAspect;
-      } else {
-        // Landscape: width-driven, but capped by 80/80 vertical padding.
-        imgH = H - DT_IMG_PAD_T - DT_IMG_PAD_B;
-        imgW = imgH * uAspect;
-      }
-      if (imgW > availW) {
-        imgW = Math.max(1, availW);
+      let imgH = H - 2 * DT_IMG_VPAD;
+      let imgW = imgH * uAspect;
+      const maxW = W - 2 * DT_IMG_VPAD;
+      if (imgW > maxW) {
+        imgW = Math.max(1, maxW);
         imgH = imgW / uAspect;
       }
 
@@ -309,8 +286,7 @@ export default function createGlobeModal({
     const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
     const infoEl = chromeEl.querySelector('.globe-gallery-modal__info');
     const closeEl = chromeEl.querySelector('.globe-gallery-modal__close');
-    const prevEl = chromeEl.querySelector('.globe-gallery-modal__nav--prev');
-    const nextEl = chromeEl.querySelector('.globe-gallery-modal__nav--next');
+    const navbarEl = chromeEl.querySelector('.globe-gallery-modal__navbar');
 
     const tgtPos = new THREE.Vector3();
     const tgtQuat = new THREE.Quaternion();
@@ -337,7 +313,6 @@ export default function createGlobeModal({
     const cardRightPx = (pv.x + 1) * 0.5 * W;
 
     // Clamp to visible viewport (card may bleed off edges at large scale)
-    const visTop = Math.max(0, cardTopPx);
     const visBot = Math.min(H, cardBotPx);
     const visLeft = Math.max(0, cardLeftPx);
     const visRight = Math.min(W, cardRightPx);
@@ -350,140 +325,75 @@ export default function createGlobeModal({
 
     const isMobile = (getBP() === 'sm');
 
-    if (isMobile) {
-      // ── Mobile layout ──
-      //   Close button → top-right of viewport (16px inset)
-      //   Nav arrows → bottom-left & bottom-right of viewport (16px inset)
-      //   Info panel → bottom-anchored, bottom edge 16px above nav arrow tops
-      //   Asset (computed in computeModalTarget) → top-left with 24px gap to info top
-      const EDGE = 16; const NAV_H = 44; const
-        INFO_TO_NAV_GAP = 16;
+    // Close button → top-right of the viewport (16px inset) at every breakpoint.
+    if (closeEl) {
+      closeEl.style.position = 'absolute';
+      closeEl.style.top = '16px';
+      closeEl.style.right = '16px';
+      closeEl.style.bottom = 'auto';
+      closeEl.style.left = 'auto';
+    }
 
-      if (closeEl) {
-        closeEl.style.position = 'absolute';
-        closeEl.style.top = `${EDGE}px`;
-        closeEl.style.right = `${EDGE}px`;
-        closeEl.style.bottom = 'auto';
-        closeEl.style.left = 'auto';
+    // Nav group (prev + counter pill + next) — one centered flex row (CSS lays
+    // out the children; JS only positions the container). Centered via the
+    // translateX(-50%) applied in the fade step below.
+    //   Mobile  → bottom-center of the viewport (16px from the bottom edge).
+    //   Desktop → bottom-center of the image (anchored to its projected bounds).
+    if (navbarEl) {
+      navbarEl.style.position = 'absolute';
+      navbarEl.style.top = 'auto';
+      navbarEl.style.right = 'auto';
+      if (isMobile) {
+        navbarEl.style.left = '50%';
+        navbarEl.style.bottom = '16px';
+      } else {
+        navbarEl.style.left = `${(visLeft + visRight) / 2}px`;
+        navbarEl.style.bottom = `${H - visBot + INSET}px`;
       }
+    }
 
-      // Nav arrows: bottom corners
-      if (prevEl) {
-        prevEl.style.position = 'absolute';
-        prevEl.style.bottom = `${EDGE}px`;
-        prevEl.style.left = `${EDGE}px`;
-        prevEl.style.top = 'auto';
-        prevEl.style.right = 'auto';
-      }
-      if (nextEl) {
-        nextEl.style.position = 'absolute';
-        nextEl.style.bottom = `${EDGE}px`;
-        nextEl.style.right = `${EDGE}px`;
-        nextEl.style.top = 'auto';
-        nextEl.style.left = 'auto';
-      }
-
-      // Info panel: bottom-anchored. Bottom edge = (nav bottom edge + nav height + gap).
-      // Math: nav bottom = 16, nav top = 16 + 44 = 60 from viewport bottom.
-      //       info bottom = 60 + 16 = 76 from viewport bottom (16px above nav tops).
-      // Panel left/right edges sit at 8px (matching the asset's 8px viewport margins),
-      // so panel width = asset visible width = (viewport - 16).
-      if (infoEl) {
-        const infoBottomPx = EDGE + NAV_H + INFO_TO_NAV_GAP;
-        infoEl.style.position = 'absolute';
-        infoEl.style.bottom = `${infoBottomPx}px`;
+    // Info panel.
+    //   Mobile  → bottom-anchored panel just above the nav row (nav bottom 16 +
+    //     nav height 44 + 16 gap = 76px), spanning the asset's visible width
+    //     (8px viewport margins each side).
+    //   Desktop → a readability scrim attached to the viewport's LEFT edge, full
+    //     viewport height (independent of the image bounds). CSS gives it the
+    //     dark frosted treatment; its flex column hugs the name block to the top
+    //     and the badges to the bottom.
+    if (infoEl) {
+      infoEl.style.position = 'absolute';
+      infoEl.style.minHeight = '';
+      if (isMobile) {
         infoEl.style.top = 'auto';
+        infoEl.style.bottom = '76px';
         infoEl.style.left = '8px';
         infoEl.style.right = '8px';
         infoEl.style.width = 'auto';
-        infoEl.style.minHeight = ''; // clear desktop value if responsive resize happened
-      }
-    } else {
-      // ── Desktop / tablet: info OVERLAID on the image's lower area ──
-      // DELIBERATE DIVERGENCE FROM THE PROTOTYPE (hub-creative/offer-globe.js
-      // anchored a fixed-width info panel to the viewport's bottom-right). The
-      // authored card images are portrait, so a viewport-anchored panel landed
-      // in the empty space beside the centered image. Per design, the role /
-      // name / description / badges now overlay the lower portion of the image
-      // itself, with a CSS gradient scrim on .card-modal__info for legibility.
-      // All chrome is anchored to the image's projected bounds, not the
-      // viewport. See README.md / PROGRESS.md (modal layout note).
-      //
-      // visTop/visBot/visLeft/visRight (clamped image bounds) and INSET (24px +
-      // SDF rounded-corner radius) were computed above. Inset keeps overlaid
-      // chrome on the photo, not over the transparent rounded corner.
-      const imgLeft = visLeft + INSET;
-      const imgRight = visRight - INSET;
-      const imgTop = visTop + INSET;
-      const imgBot = visBot - INSET;
-      const imgInnerW = Math.max(1, imgRight - imgLeft);
-      const imageMidY = (visTop + visBot) / 2;
-
-      // Info panel: overlaid on the image, left-aligned, spanning the image's
-      // inner width, bottom edge at the image's lower inset. Auto height.
-      if (infoEl) {
-        infoEl.style.position = 'absolute';
-        infoEl.style.top = 'auto';
-        infoEl.style.bottom = `${H - imgBot}px`;
-        infoEl.style.left = `${imgLeft}px`;
+      } else {
+        infoEl.style.top = '0';
+        infoEl.style.bottom = '0';
+        infoEl.style.left = '0';
         infoEl.style.right = 'auto';
-        infoEl.style.width = `${imgInnerW}px`;
-        infoEl.style.minHeight = '';
-      }
-
-      // Close button: top-right corner of the image.
-      if (closeEl) {
-        closeEl.style.position = 'absolute';
-        closeEl.style.top = `${imgTop}px`;
-        closeEl.style.right = `${W - imgRight}px`;
-        closeEl.style.bottom = 'auto';
-        closeEl.style.left = 'auto';
-      }
-
-      // Nav arrows: in the margin OUTSIDE the image's left/right edges (in the
-      // dark backdrop area, not over the photo), vertically centered on the
-      // image. Clamped to a 16px viewport inset so they never run off-screen
-      // when the image is wide.
-      const NAV_GAP = 24;
-      const navTop = imageMidY - DT_NAV_W / 2;
-      if (prevEl) {
-        prevEl.style.position = 'absolute';
-        prevEl.style.top = `${navTop}px`;
-        prevEl.style.left = `${Math.max(16, visLeft - NAV_GAP - DT_NAV_W)}px`;
-        prevEl.style.right = 'auto';
-        prevEl.style.bottom = 'auto';
-      }
-      if (nextEl) {
-        nextEl.style.position = 'absolute';
-        nextEl.style.top = `${navTop}px`;
-        nextEl.style.left = `${Math.min(visRight + NAV_GAP, W - 16 - DT_NAV_W)}px`;
-        nextEl.style.right = 'auto';
-        nextEl.style.bottom = 'auto';
-      }
-
-      // Counter: just below the image, left-aligned with it (clamped on screen).
-      const counterEl = chromeEl.querySelector('.globe-gallery-modal__counter');
-      if (counterEl) {
-        counterEl.style.position = 'absolute';
-        counterEl.style.top = `${Math.min(visBot + 8, H - 28)}px`;
-        counterEl.style.left = `${imgLeft}px`;
-        counterEl.style.right = 'auto';
-        counterEl.style.bottom = 'auto';
-        counterEl.style.transform = '';
+        infoEl.style.width = `${DT_SCRIM_W}px`;
       }
     }
 
     // Chrome fade + slide-up: driven by modalChromeFadeT (0→1 after card is 90% settled).
     // transition:none during the reveal so JS animation isn't fought by CSS hover transitions.
+    // The nav group is faded as a unit (the navbar), preserving its translateX(-50%) centering.
     const cFade = easeOutCubic(modalChromeFadeT);
     const cShift = Math.round((1 - cFade) * 8);
-    const cTrans = modalChromeFadeT >= 1 ? '' : 'none';
-    [infoEl, closeEl, prevEl, nextEl].forEach((el) => {
+    const settled = modalChromeFadeT >= 1;
+    const cTrans = settled ? '' : 'none';
+    const applyFade = (el, base) => {
       if (!el) return;
       el.style.opacity = String(cFade);
-      el.style.transform = modalChromeFadeT >= 1 ? '' : (`translateY(${cShift}px)`);
+      el.style.transform = settled ? base : `${base} translateY(${cShift}px)`.trim();
       el.style.transition = cTrans;
-    });
+    };
+    applyFade(infoEl, '');
+    applyFade(closeEl, '');
+    applyFade(navbarEl, 'translateX(-50%)');
   }
 
   // Write the authored metadata for card index i into the modal chrome DOM. When

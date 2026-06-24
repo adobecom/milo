@@ -295,15 +295,20 @@ clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop c
 
 ## Behavior notes (intentional differences from the prototype)
 
-- **Desktop/tablet modal — white info card overlaid on the image.** The prototype
-  anchored a fixed-width info panel to the viewport's bottom-right, which landed
-  beside the (portrait) image in empty space. Desktop/tablet now anchor all chrome
-  to the image's projected bounds: a solid white info card overlapping the image's
-  lower area (inset by `INSET` = 24px + corner radius), dark text, white nav arrows
-  in the margin *outside* the image, a dark frosted close button at the image's
-  top-right, and the counter below the image. Styled via `@media (min-width:768px)`
-  in `globe-gallery.css`. Mobile (<768px) is unchanged: dark frosted panel + light text
-  beneath the asset. The diverging JS block carries a `DELIBERATE DIVERGENCE` comment.
+- **Modal — single bottom-center nav group; desktop adds a screen-edge scrim.**
+  The nav prev/counter/next are one centered flex row (`.globe-gallery-modal__navbar`,
+  built in `authoring.js`); `positionModalChrome` positions only the container —
+  bottom-center of the viewport on mobile, bottom-center of the image on desktop
+  (anchored to the image's projected bounds). The close button sits in the viewport's
+  top-right margin at every breakpoint. On **desktop/tablet** (`@media min-width:768px`)
+  the image fills the viewport height (12px margins, `DT_IMG_VPAD`), centered, width
+  capped to the viewport; a fixed-width (`DT_SCRIM_W` = 316px) dark frosted readability
+  scrim is attached to the **viewport's left edge, full viewport height** (independent
+  of the image — role/name/description hug the top, badges pinned to the bottom via
+  `margin-top:auto`), and the counter renders as a frosted pill. Scrim/nav/counter are
+  all dark frosted (`rgb(0 0 0 / 64%)` + `blur(12px)`). **Mobile** (<768px): dark
+  frosted info panel + light text bottom-anchored above the nav row, asset top-left;
+  the counter is plain text in the nav group.
 - **`.globe-gallery`-scoped type-scale tokens in `globe-gallery.css`.** The prototype relied on
   `:root` tokens from a typography stylesheet Milo doesn't ship. `globe-gallery.css` defines
   the needed `--font-display`/`--type-title-1-*`/`--type-body-*` tokens scoped to

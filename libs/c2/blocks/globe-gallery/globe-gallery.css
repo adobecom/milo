@@ -282,18 +282,24 @@
 /* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
 .globe-gallery-modal__image { display: none; }
 
-/* Nav arrows — position/top/left/right set by JS; CSS handles visual style only.
-   Base (sm) is the dark frosted treatment that sits over the photo; the
-   min-width:768 block swaps them to white buttons in the dark margin. */
+/* Nav group (prev + counter + next) — a single centered flex row. JS positions
+   the container (.globe-gallery-modal__navbar); the children are static flow. */
+.globe-gallery-modal__navbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Nav arrows — flex children of the navbar; CSS handles visual style only.
+   Dark frosted treatment that sits over the photo at every breakpoint. */
 .globe-gallery-modal__nav {
-  position: absolute;
   width: 44px;
   height: 44px;
-  border-radius: 10px;
-  border: none;
-  background: rgb(0 0 0 / 30%);
-  -webkit-backdrop-filter: blur(64px);
-  backdrop-filter: blur(64px);
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   color: #fff;
   cursor: pointer;
   display: flex;
@@ -305,7 +311,7 @@
 }
 
 .globe-gallery-modal__nav:hover {
-  background: rgb(0 0 0 / 55%);
+  background: rgb(0 0 0 / 78%);
   transform: scale(1.05);
 }
 
@@ -494,14 +500,9 @@
   color: #c6c6c6;
 }
 
-/* Counter ("1/N") — position: bottom-center of viewport. Base (sm) sits close to
-   the bottom edge to align with the mobile chrome (nav arrows at bottom corners);
-   the min-width:768 block relaxes the bottom inset. */
+/* Counter ("1/N") — a flex child of the navbar (between the arrows). Base (sm)
+   is plain text; the min-width:768 block turns it into a dark frosted pill. */
 .globe-gallery-modal__counter {
-  position: absolute;
-  bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
   height: 44px;
   display: flex;
   align-items: center;
@@ -590,37 +591,46 @@ body.modal-open { overflow: hidden; }
     background: none;
   }
 
+  /* Info scrim: dark frosted glass on the viewport's left edge, full height.
+     JS sets top/bottom/left/width; the flex column vertically centers the
+     role/name/description block (role-label margin-top:auto below) and pins the
+     badges to the bottom (badges margin-top:auto below). */
   .globe-gallery-modal__info {
-    background: #fff;
-    border-radius: 20px;
-    padding: 40px;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    border: 1px solid rgb(255 255 255 / 0%);
+    border-radius: 0;
+    padding: 40px 32px;
+    background: rgb(0 0 0 / 64%);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
 
-  .globe-gallery-modal__role-label { color: #6e6e6e; }
+  /* Vertically center the role/name/description block in the space above the
+     badges (paired with the badges' margin-top:auto, the two auto margins split
+     the free space evenly above and below the text block). */
+  .globe-gallery-modal__role-label { margin-top: auto; }
 
   .globe-gallery-modal__name {
-    color: #1d1d1d;
-    font-size: 40px;
-    line-height: 44px;
-    letter-spacing: -1px;
-    margin: 4px 0 16px;
+    font-size: 24px;
+    line-height: 28px;
+    letter-spacing: -0.6px;
+    margin: 4px 0 12px;
   }
 
   .globe-gallery-modal__description {
-    color: #4b4b4b;
-    font-size: 18px;
-    line-height: 26px;
-    max-width: 660px;
+    font-size: 15px;
+    line-height: 22px;
     margin: 0;
+    max-width: none;
 
-    /* Undo the sm 3-line clamp — desktop has room for the full description. */
+    /* Undo the sm 3-line clamp — the full-height scrim has room. */
     display: block;
     overflow: visible;
   }
 
   .globe-gallery-modal__badges { gap: 10px; }
+
+  /* Pin the badges to the bottom of the full-height scrim column. */
+  .globe-gallery-modal__info > .globe-gallery-modal__badges { margin-top: auto; }
 
   .globe-gallery-modal__badge-icon {
     width: 28px;
@@ -628,27 +638,17 @@ body.modal-open { overflow: hidden; }
     font-size: 12px;
   }
 
-  .globe-gallery-modal__badge-app {
-    color: #1d1d1d;
-    font-size: 14px;
+  .globe-gallery-modal__badge-app { font-size: 14px; }
+  .globe-gallery-modal__badge-role { font-size: 14px; }
+
+  /* Counter becomes a frosted pill between the arrows (matches the nav buttons). */
+  .globe-gallery-modal__counter {
+    min-width: 96px;
+    padding: 0 20px;
+    border-radius: var(--s2a-border-radius-4);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+    background: var(--s2a-color-transparent-black-64);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
-
-  .globe-gallery-modal__badge-role {
-    color: #6e6e6e;
-    font-size: 14px;
-  }
-
-  .globe-gallery-modal__counter { bottom: 32px; }
-
-  /* Nav arrows: white buttons (dark chevron) sitting in the dark margin beside
-     the image, not the frosted-dark treatment used over the photo on mobile. */
-  .globe-gallery-modal__nav {
-    background: #fff;
-    color: #1d1d1d;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    box-shadow: 0 4px 16px rgb(0 0 0 / 25%);
-  }
-
-  .globe-gallery-modal__nav:hover { background: #f2f2f2; }
 }
