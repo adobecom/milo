@@ -193,6 +193,9 @@ export function refreshPageUpdateCounts() {
   });
 }
 
+new MutationObserver(refreshPageUpdateCounts)
+  .observe(document.body, { childList: true, subtree: true });
+
 export function getPageUpdates(label) {
   return `${getPageUpdateCount(label)} Page Updates`;
 }

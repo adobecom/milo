@@ -408,6 +408,18 @@ describe('setBadgeEventListeners', () => {
     expect(windowOpenStub.firstCall.args[0]).to.equal('/fragments/via-fragment-path');
   });
 
+  it('uses fragment.getBoundingClientRect as containerRect when position is not static', () => {
+    getComputedStyleStub.restore();
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((el, pseudo) => {
+      if (pseudo === '::before') return { display: 'block', content: '"badge"', width: '170px', height: '35px' };
+      return { display: 'block', position: 'relative' };
+    });
+    testEl = makeFragment({ 'data-manifest-id': 'positioned', 'data-path': '/fragments/positioned' });
+    click(testEl, 10, 10);
+    expect(windowOpenStub.calledOnce).to.be.true;
+    expect(windowOpenStub.firstCall.args[0]).to.equal('/fragments/positioned');
+  });
+
   it('opens window for display:contents fragment with no children when click is inside badge width', () => {
     getComputedStyleStub.restore();
     getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((el, pseudo) => {
@@ -593,7 +605,7 @@ describe('init (default export)', () => {
 
 describe('setHighlightData via init (with experiments)', () => {
   let fragmentEl; let pathEl; let noPathEl; let blockEl; let sectionEl; let
-    headerEl;
+    headerEl; let cardWithPath;
 
   before(async () => {
     fragmentEl = document.createElement('div');
@@ -624,6 +636,15 @@ describe('setHighlightData via init (with experiments)', () => {
     const card = document.createElement('merch-card');
     fragDiv.append(card);
     sectionEl.append(fragDiv);
+
+    const fragDivWithPath = document.createElement('div');
+    fragDivWithPath.className = 'fragment';
+    fragDivWithPath.dataset.manifestId = 'test-manifest.json';
+    fragDivWithPath.dataset.path = '/merch-cards/test-path';
+    cardWithPath = document.createElement('merch-card');
+    fragDivWithPath.append(cardWithPath);
+    sectionEl.append(fragDivWithPath);
+
     document.body.append(sectionEl);
 
     setConfig({
@@ -666,6 +687,12 @@ describe('setHighlightData via init (with experiments)', () => {
 
   it('merch-card inside merch-cards section fragment gets manifestId set', () => {
     expect(sectionEl.querySelector('merch-card').dataset.manifestId).to.equal('test-manifest.json');
+  });
+
+  it('merch-card inside fragment with data-path gets fragmentPath and manifestDisplay set', () => {
+    expect(cardWithPath.dataset.manifestId).to.equal('test-manifest.json');
+    expect(cardWithPath.dataset.fragmentPath).to.equal('/merch-cards/test-path');
+    expect(cardWithPath.dataset.manifestDisplay).to.equal('test-manifest.json: /merch-cards/test-path');
   });
 
   it('final querySelectorAll: element with data-path but no manifestDisplay gets fragmentPath and manifestDisplay', () => {
