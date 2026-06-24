@@ -1807,6 +1807,7 @@ class Gnav {
               const url = new URL(linkElem.href);
               linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
               if (isActiveLink(linkElem)) {
+                linkElem.dataset.href = linkElem.href;
                 linkElem.removeAttribute('href');
               }
               const linkHash = url.hash.slice(2);
@@ -1905,10 +1906,9 @@ class Gnav {
 }
 
 export const updateGnavActiveLink = () => {
-  resetActiveLink();
-
   const nav = document.querySelector(selectors.globalNav)?.querySelector('.feds-nav');
   if (!nav) return;
+  resetActiveLink();
 
   nav.querySelectorAll(selectors.activeNavItem).forEach((el) => {
     el.classList.remove(selectors.activeNavItem.slice(1));
@@ -1917,8 +1917,11 @@ export const updateGnavActiveLink = () => {
   });
 
   nav.querySelectorAll(selectors.navItem).forEach((navItem) => {
-    if (getActiveLink(navItem) instanceof HTMLElement) {
+    const activeLink = getActiveLink(navItem);
+    if (activeLink instanceof HTMLElement) {
       navItem.classList.add(selectors.activeNavItem.slice(1));
+      activeLink.dataset.href = activeLink.href;
+      activeLink.removeAttribute('href');
     }
   });
 };

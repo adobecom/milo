@@ -418,7 +418,14 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink, resetAc
       setActiveLink(true);
       return activeLink;
     },
-    () => { activeLinkFound = false; },
+    (root) => {
+      activeLinkFound = false;
+      if (!root) return;
+      root.querySelectorAll('a[data-href]').forEach((el) => {
+        el.setAttribute('href', el.dataset.href);
+        delete el.dataset.href;
+      });
+    },
   ];
 })();
 
