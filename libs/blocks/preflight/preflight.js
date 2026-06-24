@@ -16,7 +16,7 @@ const SUBHEADING = 'Pre-publish quality checks for this page';
 const IMG_PATH = '/blocks/preflight/img';
 // c2 (--s2a-*) design tokens are only defined on c2 pages; preflight runs on every Milo
 // page, so load them at :root so both the modal and the page-injected overlays resolve.
-const C2_TOKENS = ['tokens.primitives.css', 'tokens.semantic.light.css'];
+const C2_TOKENS = ['tokens.primitives.css', 'tokens.primitives.light.css', 'tokens.semantic.light.css'];
 
 const svg = (paths) => html`<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
 
