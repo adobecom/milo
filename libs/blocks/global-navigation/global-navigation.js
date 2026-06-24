@@ -979,7 +979,7 @@ class Gnav {
     }
 
     const profileJson = await profileData.json();
-    const avatar = profileJson?.images?.['100'];
+    const avatar = profileJson?.images?.['138'] || '';
 
     this.blocks.profile.buttonElem = await decorateProfileTrigger({ avatar });
     decoratedElem.append(this.blocks.profile.buttonElem);

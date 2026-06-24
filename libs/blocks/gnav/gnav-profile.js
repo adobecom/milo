@@ -22,7 +22,7 @@ function decorateProfileLink(href, service) {
 
 function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   const { displayName, email } = profiles.ims;
-  const avatar = profiles.io?.images?.['100'];
+  const avatar = profiles.io?.images?.['138'] || '';
 
   const displayEmail = decorateEmail(email);
   const avatarImg = createTag('img', { class: 'gnav-profile-img', src: avatar });
