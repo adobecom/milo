@@ -180,7 +180,7 @@ const ENVS = {
   stage: {
     name: 'stage',
     ims: 'stg1',
-    adobeIO: 'cc-collab-stage.adobe.io',
+    adobeIO: 'pps-stage.adobe.io',
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
@@ -189,7 +189,7 @@ const ENVS = {
   prod: {
     name: 'prod',
     ims: 'prod',
-    adobeIO: 'cc-collab.adobe.io',
+    adobeIO: 'pps.adobe.io',
     adminconsole: 'adminconsole.adobe.com',
     account: 'account.adobe.com',
     edgeConfigId: '2cba807b-7430-41ae-9aac-db2b0da742d5',
@@ -2019,7 +2019,7 @@ export async function loadIms() {
         return;
       }
       const [unavMeta, ahomeMeta, imsGuest] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect'), getMetadata('ims-guest-token')];
-      const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
+      const defaultScope = `AdobeID,openid,gnav,pps.read,read_organizations${unavMeta && unavMeta !== 'off' ? ',firefly_api,additional_info.roles,account_cluster.read' : ''}`;
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
