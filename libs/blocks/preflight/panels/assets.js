@@ -122,13 +122,7 @@ function AssetGroup({ group }) {
       <div class="grid-toggle">${title}</div>
     </div>
 
-    ${viewportTooSmall.value && html`
-      <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
-      </div>
-    `}
-
-    ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
+    ${assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
       ${assetArray.value.map((asset) => {
     const itemClass = isCriticalGroup ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
@@ -157,7 +151,7 @@ function AssetGroup({ group }) {
   })}
     </div>`}
 
-    ${!viewportTooSmall.value && assetArray.value.length === 0 && html`
+    ${assetArray.value.length === 0 && html`
       <div class='assets-image-grid'>
         <div class='assets-image-grid-item full-width'>${empty || 'No assets found'}</div>
       </div>
@@ -197,6 +191,17 @@ export default function Assets() {
     { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures, empty: 'No warnings.' },
     { title: 'Assets with matching dimensions', assetArray: assetsWithMatch, empty: 'No matching assets found.' },
   ];
+
+  if (viewportTooSmall.value) {
+    return html`
+      <div class="assets-columns">
+        <${AssetsItem} ...${assetDimensionsResult.value} />
+        <div class='assets-image-grid'>
+          <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
+        </div>
+      </div>
+    `;
+  }
 
   return html`
     <div class="assets-columns">

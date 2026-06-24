@@ -717,7 +717,7 @@ span.preflight-time {
 
 /* Accessibility css */
 .access-columns {
-  margin: var(--s2a-spacing-24) var(--s2a-spacing-32);
+  margin: var(--s2a-spacing-24) var(--s2a-spacing-16);
   gap: var(--s2a-spacing-32);
 }
 
@@ -1874,7 +1874,10 @@ img:hover ~ .asset-meta,
 
   .accessibility-columns {
     gap: var(--s2a-spacing-24);
-    margin-inline: 0;
+  }
+
+  .access-columns {
+    margin-inline: var(--s2a-spacing-32);
   }
 
   .problem-links {
