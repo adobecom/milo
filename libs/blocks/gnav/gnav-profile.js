@@ -1,4 +1,5 @@
-import { getConfig, createTag } from '../../utils/utils.js';
+import { getConfig, createTag, getFedsPlaceholderConfig } from '../../utils/utils.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 function decorateEmail(email) {
   const MAX_CHAR = 12;
@@ -21,8 +22,7 @@ function decorateProfileLink(href, service) {
 
 function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   const { displayName, email } = profiles.ims;
-  const { user, sections } = profiles.io;
-  const { avatar } = user;
+  const avatar = profiles.io?.images?.['138'] || '';
 
   const displayEmail = decorateEmail(email);
   const avatarImg = createTag('img', { class: 'gnav-profile-img', src: avatar });
@@ -55,18 +55,10 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   const profileViewAccount = createTag('p', { class: 'gnav-profile-account' }, accountText);
   profileDetails.append(profileName, profileEmail, profileViewAccount);
 
-  if (sections.manage.items.team?.id) {
-    const teamLink = blockEl.querySelector('div > div > p:nth-child(3) a');
-    teamLink.href = decorateProfileLink(teamLink.href, 'adminconsole');
-    const manageTeam = createTag('li', { class: 'gnav-profile-action' }, teamLink);
-    profileActions.append(manageTeam);
-  }
-
-  if (sections.manage.items.enterprise?.id) {
-    const manageLink = blockEl.querySelector('div > div > p:nth-child(4) a');
-    manageLink.href = decorateProfileLink(manageLink.href, 'adminconsole');
-    const manageEnt = createTag('li', { class: 'gnav-profile-action' }, manageLink);
-    profileActions.append(manageEnt);
+  if (profiles.hasOrgs) {
+    const adminConsoleLink = createTag('a', { href: decorateProfileLink('https://adminconsole.adobe.com', 'adminconsole') }, profiles.goToAdminConsole || 'Go to Admin Console');
+    const adminConsoleItem = createTag('li', { class: 'gnav-profile-action' }, adminConsoleLink);
+    profileActions.append(adminConsoleItem);
   }
 
   const signOutLink = blockEl.querySelector('div > div > p:nth-child(5) a');
@@ -82,12 +74,16 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   profileEl.append(profileButton, profileMenu);
 }
 
-export default async function getProfile(blockEl, profileEl, toggle, ioResp) {
+export default async function getProfile(blockEl, profileEl, toggle, ioResp, hasOrgs) {
   const gnav = profileEl.closest('nav.gnav');
   gnav.classList.add('signed-in');
 
   const profiles = {};
-  profiles.ims = await window.adobeIMS.getProfile();
-  profiles.io = await ioResp.json();
+  [profiles.ims, profiles.io, profiles.goToAdminConsole] = await Promise.all([
+    window.adobeIMS.getProfile(),
+    ioResp.json(),
+    replaceKey('go-to-admin-console', getFedsPlaceholderConfig()),
+  ]);
+  profiles.hasOrgs = hasOrgs;
   decorateProfileMenu(blockEl, profileEl, profiles, toggle);
 }
