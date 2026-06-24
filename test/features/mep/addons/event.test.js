@@ -33,28 +33,28 @@ describe('event', () => {
   });
   it('should return true when sending true into init', async () => {
     const event = await init(true);
-    expect(event).to.equal(true);
+    expect(event.isRegistered).to.equal(true);
   });
   it('should return false when consent cookie is set to C0002:0', async () => {
     setCookie('OptanonConsent', 'C0002:0');
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(false);
+    expect(event.isRegistered).to.equal(false);
   });
   it('should return false when the user is signed out', async () => {
     document.head.innerHTML = '';
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(false);
+    expect(event.isRegistered).to.equal(false);
   });
   it('should return false when userId is set to off', async () => {
     setMetadata('userId', 'off');
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(false);
+    expect(event.isRegistered).to.equal(false);
   });
   it('should return false when getAccessToken returns an empty object', async () => {
     setMetadata('userId', '1234567890');
     window.adobeIMS.getAccessToken = () => Promise.resolve({});
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(false);
+    expect(event.isRegistered).to.equal(false);
   });
   it('should return false when api returns false', async () => {
     setMetadata('userId', '1234567890');
@@ -63,7 +63,7 @@ describe('event', () => {
       isRegistered: false,
     });
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(false);
+    expect(event.isRegistered).to.equal(false);
   });
   it('should return true when api returns true', async () => {
     setMetadata('userId', '1234567890');
@@ -72,6 +72,6 @@ describe('event', () => {
       isRegistered: true,
     });
     const event = await init('adobe-max-2025');
-    expect(event).to.equal(true);
+    expect(event.isRegistered).to.equal(true);
   });
 });

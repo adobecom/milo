@@ -1,6 +1,6 @@
 import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
-import { getCookie } from '../../../martech/helpers.js';
 
+const defaultReturn = { isRegistered: false };
 async function getUserId() {
   if (isSignedOut() && !getMepEnablement('signedIn')) return false;
   if (getMepEnablement('userId') !== 'undefined') return getMepEnablement('userId');
@@ -11,10 +11,10 @@ async function getUserId() {
 }
 async function fetchFromRainfocus(eventId) {
   const userId = await getUserId();
-  if (!userId) return {};
+  if (!userId) return defaultReturn;
 
   const accessToken = window.adobeIMS.getAccessToken()?.token;
-  if (!accessToken) return {};
+  if (!accessToken) return defaultReturn;
 
   const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '.stage';
   const url = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventId}?user_id=${encodeURIComponent(userId)}`;
@@ -29,21 +29,16 @@ async function fetchFromRainfocus(eventId) {
       tags: 'mep-event',
       severity: 'error',
     });
-    return {};
+    return defaultReturn;
   } catch (e) {
     window.lana?.log(`Unable to fetch from Rainfocus: ${e.toString()}`, {
       tags: 'mep-event',
       severity: 'error',
     });
-    return {};
+    return defaultReturn;
   }
 }
 export default async function init(eventId) {
-  if (eventId === true) return eventId;
-
-  const consentCookieValue = getCookie('OptanonConsent');
-  if (consentCookieValue?.includes('C0002:0')) return false;
-
-  const eventDetails = await fetchFromRainfocus(eventId);
-  return eventDetails?.isRegistered === true;
+  if (eventId === true) return { isRegistered: eventId };
+  return fetchFromRainfocus(eventId);
 }
