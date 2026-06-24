@@ -60,7 +60,7 @@ body[data-other-highlight='true'] [data-fragment-default]::before {
   max-width: max-content;
   z-index: 5;
   left: 0;
-  top: 0;
+  top: var(--badge-top-offset, 0);
   font-size: 14px;
   font-weight: 400;
   line-height: normal;

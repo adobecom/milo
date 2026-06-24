@@ -193,27 +193,59 @@ export function refreshPageUpdateCounts() {
   });
 }
 
-function adjustBadgePositions() {
-  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
-  const badgeHeight = 35;
-  const spacing = 5;
+function getBadgeHeight(el) {
+  const s = window.getComputedStyle(el, '::before');
+  const content = parseFloat(s.height) || parseFloat(s.minHeight) || 0;
+  const padding = (parseFloat(s.paddingTop) || 0) + (parseFloat(s.paddingBottom) || 0);
+  const border = (parseFloat(s.borderTopWidth) || 0) + (parseFloat(s.borderBottomWidth) || 0);
+  return content + padding + border || 35;
+}
 
-  document.querySelectorAll(badgeSelectors).forEach((el) => {
+const BADGE_SELECTORS = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+const BADGE_SPACING = 4;
+
+function getBadgeEntry(el) {
+  const beforeStyles = window.getComputedStyle(el, '::before');
+  if (beforeStyles.content === 'none' || beforeStyles.display === 'none') return null;
+
+  const badgeHeight = getBadgeHeight(el);
+  const topOffset = parseFloat(el.style.getPropertyValue('--badge-top-offset')) || 0;
+
+  if (window.getComputedStyle(el).display === 'contents') {
+    const visibleChild = Array.from(el.children).find((c) => c.offsetHeight > 0);
+    if (!visibleChild) return null;
+    const anchor = visibleChild.getBoundingClientRect().top;
+    const top = anchor - badgeHeight + topOffset;
+    const toOffset = (t) => t - anchor + badgeHeight;
+    return { el, badgeHeight, top, toOffset };
+  }
+
+  const anchor = el.getBoundingClientRect().top;
+  return { el, badgeHeight, top: anchor + topOffset, toOffset: (t) => t - anchor };
+}
+
+function adjustBadgePositions() {
+  const allBadges = [...document.querySelectorAll(BADGE_SELECTORS)];
+
+  allBadges.forEach((el) => el.style.removeProperty('--badge-top-offset'));
+
+  allBadges.forEach((el) => {
+    const badgeHeight = getBadgeHeight(el);
     const section = el.closest('.section');
     const height = section ? section.offsetHeight : el.offsetHeight;
-    if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + spacing}px`);
+    if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + BADGE_SPACING}px`);
   });
 
-  document.querySelectorAll('.section').forEach((section) => {
-    const directBadges = [...section.querySelectorAll(badgeSelectors)].filter(
-      (el) => el.closest('.section') === section && window.getComputedStyle(el).display === 'contents',
-    );
-    if (directBadges.length <= 1) return;
-    let offset = 0;
-    directBadges.forEach((el) => {
-      if (offset > 0) el.style.setProperty('--badge-top-offset', `${offset}px`);
-      offset += badgeHeight + spacing;
-    });
+  const positioned = allBadges.map(getBadgeEntry).filter(Boolean);
+  positioned.sort((a, b) => a.top - b.top);
+
+  let prevBottom = -Infinity;
+  positioned.forEach((badge) => {
+    if (badge.top < prevBottom + BADGE_SPACING) {
+      badge.top = prevBottom + BADGE_SPACING;
+      badge.el.style.setProperty('--badge-top-offset', `${badge.toOffset(badge.top)}px`);
+    }
+    prevBottom = badge.top + badge.badgeHeight;
   });
 }
 
