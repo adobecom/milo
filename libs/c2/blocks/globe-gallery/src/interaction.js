@@ -28,7 +28,7 @@ const CLICK_MAX_TIME = 500; // ms
 
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
-  getSphereFormT, interactiveThreshold, maxVel, drag,
+  getSphereFormT, interactiveThreshold, maxVel, drag, isCursorActive,
 }) {
   // Raycaster + NDC scratch for canvas picking (hover + click → modal).
   const raycaster = new THREE.Raycaster();
@@ -107,15 +107,18 @@ export default function createInteraction({
     if (!renderer || !camera) return;
     const canvas = renderer.domElement;
     const cards = getCards();
+    // The custom cursor (cursor.js) owns the canvas cursor while it's active (sets
+    // `cursor: none`), so defer all our cursor writes to it then — otherwise the two fight.
+    const cursorActive = typeof isCursorActive === 'function' && isCursorActive();
     // Only show pointer + run hover state during sphere + zoom phases.
     // When out of sphere phase, clear ALL hoverTargets so the ease-out kicks in.
     if (getSphereFormT() < interactiveThreshold || getModalIdx() >= 0) {
-      canvas.style.cursor = '';
+      if (!cursorActive) canvas.style.cursor = '';
       for (let ci = 0; ci < cards.length; ci += 1) cards[ci].hoverTarget = 0;
       return;
     }
     const hits = pickCards(e);
-    canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
+    if (!cursorActive) canvas.style.cursor = hits.length > 0 ? 'pointer' : '';
 
     // First-hit mesh is the front-most card. Set its hoverTarget to 1, clear all others.
     // Also capture the UV at the cursor — the shader anchors its fisheye warp at this point.

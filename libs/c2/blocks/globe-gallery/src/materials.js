@@ -6,7 +6,7 @@
    unit. All functions are pure factories — they take the texture + plain
    numbers and return a THREE.Material, holding no per-instance state. */
 import * as THREE from '../three.module.min.js';
-import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG } from './shaders.js';
+import { CARD_VERT, CARD_FRAG, MODAL_VERT, MODAL_FRAG, TEXT_FRAG } from './shaders.js';
 
 // Card material — a ShaderMaterial that handles the texture cover-crop, optional
 // chromatic aberration, hover warp, and rounded corners (analytic SDF, same as the
@@ -70,5 +70,32 @@ export function createModalMaterial(texture, aspect) {
     depthWrite: false,
     side: THREE.DoubleSide,
     extensions: { derivatives: true }, // enables fwidth in WebGL1; no-op in WebGL2
+  });
+}
+
+// "Click & Drag" hint-text material (TEXT_FRAG). Drives the warp/dissolve/exit entirely
+// through its uniforms (the tick stage writes uOpacity/uWarp/uExitP/uCA/uMotionDir/uZoom
+// directly — no opacity proxy needed). `aspect` is the canvas/camera aspect (x-axis warp
+// correction); `resolution` is the device-pixel canvas size (edge fade). renderOrder is
+// set by the caller so the plane draws behind the sphere cards.
+export function createTextMaterial({ texture, aspect, resolution }) {
+  return new THREE.ShaderMaterial({
+    uniforms: {
+      uMap: { value: texture },
+      uOpacity: { value: 0 },
+      uCA: { value: 0 },
+      uWarp: { value: 0 },
+      uZoom: { value: 0 },
+      uUVScale: { value: 1.0 },
+      uAspect: { value: aspect },
+      uExitP: { value: 0 },
+      uResolution: { value: new THREE.Vector2(resolution.x, resolution.y) },
+      uMotionDir: { value: new THREE.Vector2(0, 0) },
+    },
+    vertexShader: CARD_VERT,
+    fragmentShader: TEXT_FRAG,
+    transparent: true,
+    depthTest: true,
+    depthWrite: false,
   });
 }

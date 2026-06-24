@@ -652,3 +652,104 @@ body.modal-open { overflow: hidden; }
     backdrop-filter: blur(12px);
   }
 }
+
+/* ── Custom "Click & Drag" cursor (desktop / hover-capable only) ──────────────
+   Body-level elements created by src/cursor.js (not scoped to .globe-gallery — the
+   disc must be a direct body child for mix-blend-mode to blend against the page). The
+   @media guard mirrors the JS gate so these never apply on touch/coarse-pointer. */
+@media (hover: hover) and (pointer: fine) {
+  .globe-gallery-cursor {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+  }
+
+  /* Disc — direct body child so mix-blend-mode: difference blends against real page
+     content (nesting in a position:fixed container GPU-isolates it). top/left positioning
+     keeps `transform` free for the scale entrance. */
+  .globe-gallery-cursor__disc {
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9998; /* just below the cursor container */
+    width: 48px;
+    height: 48px;
+    margin: -24px; /* center on the pointer hot-point */
+    border-radius: 50%;
+    background: #fff;
+    mix-blend-mode: difference;
+    transform: scale(0);
+    visibility: hidden; /* snaps instantly — no disc lingering at the click point on modal open */
+    transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor__disc--active {
+    transform: scale(1);
+    visibility: visible; /* entrance scale animation still plays */
+  }
+
+  .globe-gallery-cursor__disc--dragging {
+    transform: scale(0.82);
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor__ring-wrap,
+  .globe-gallery-cursor__text-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .globe-gallery-cursor__text-wrap { will-change: transform; }
+
+  /* Chevron SVG — no blend mode; its own opacity/scale entrance, separate from the disc. */
+  .globe-gallery-cursor__ring {
+    display: block;
+    position: absolute;
+    top: -24px;
+    left: -24px;
+    width: 48px;
+    height: 48px;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.5);
+    transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .globe-gallery-cursor--active .globe-gallery-cursor__ring {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+  }
+
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__ring {
+    transform: scale(0.82);
+    transition: opacity 0.35s ease, transform 0.15s ease;
+  }
+
+  /* Chevrons squeeze inward while dragging. */
+  .globe-gallery-cursor__chevron-l,
+  .globe-gallery-cursor__chevron-r {
+    transition: transform 0.15s ease;
+  }
+
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__chevron-l { transform: translateX(4px); }
+  .globe-gallery-cursor--dragging .globe-gallery-cursor__chevron-r { transform: translateX(-4px); }
+
+  .globe-gallery-cursor__text {
+    display: block;
+    font-family: 'Adobe Clean Display', 'Adobe Clean', system-ui, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    color: #fff;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.15s;
+  }
+
+  .globe-gallery-cursor--active .globe-gallery-cursor__text { opacity: 0.45; }
+}

@@ -1,7 +1,7 @@
 # globe — C2 block
 
 A scroll-driven **Three.js WebGL** hero. Status: **work in progress** — ported
-and visually verified in a real Milo page. Core arc→grid→sphere→zoom is the v1
+and running in a real Milo page. Core arc→grid→sphere→zoom is the v1
 target; modal, a11y gallery, and chromatic aberration (CA) are fast-follow.
 
 ## What it is
@@ -19,9 +19,11 @@ phases:
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
-fixed pull-quote that fades in near the zoom end, and a single focusable a11y
-**globe widget** (see Accessibility below) that exposes the sphere as one
-keyboard/screen-reader gallery rather than a per-card list.
+fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
+text** behind the sphere (warps in on fold, dissolves away on first drag — see
+Behavior notes), and a single focusable a11y **globe widget** (see Accessibility
+below) that exposes the sphere as one keyboard/screen-reader gallery rather than a
+per-card list.
 
 ## Files
 
@@ -29,27 +31,28 @@ keyboard/screen-reader gallery rather than a per-card list.
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the nav-nudge spring, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the 3 block rows positionally, fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
-| `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`. Both frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. |
-| `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
-| `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy) and `createModalMaterial` (the modal SDF material). |
+| `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
+| `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect)` (named) — renders the hardcoded "Click & Drag" hint to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
+| `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown }`. Exposes the globe as **one** focusable widget (a transparent centered `<button>` over the sphere): a stable tab stop (out of tab order only while the modal traps focus), Left/Right arrows → `spinGlobe`, Enter/Space → `openModal` (first item), and `onFocus` snaps the page to the interactive state (pdf-space pattern). All runtime state (`count`, `sphereFormT`, modal-open) + actions (`spinGlobe`, `openModal`, `onFocus`) are injected; holds no globe state except its own DOM node. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
-| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. |
+| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
+| `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`) and follows the pointer; `isActive()` lets interaction.js cede the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is hardcoded (see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
 | `package.json` | Local mini build. `npm install && npm run build` regenerates `three.module.min.js`. |
-| `_reference/globe-reference.html` | Trimmed, runnable globe-only copy of the original prototype — the target behavior. |
-| `hub-creative-v1/`, `hub-creative-v2/` | Original prototype source (read-only reference; **git-ignored** via `.gitignore` `hub-creative-v*`, so not shipped or linted in CI). |
+| `hub-creative-v3/index.html` | The current-target prototype (self-contained, full page). **Design/source reference for porting.** |
+| `hub-creative-v1/`, `hub-creative-v2/`, `hub-creative-v3/` | Original prototype source (read-only reference; **git-ignored** via `.gitignore` `hub-creative-v*`, so not shipped or linted in CI). **`v3` is the newest design reference** — the source for the now-shipped shortened grid phase, WebGL "Click & Drag" text, and desktop custom cursor; `hub-creative-v3/CHANGES.md` explains the design intent if you're tuning them. |
 
 Registered as `'globe'` in `C2_BLOCKS` (`libs/utils/utils.js`). The prototype dirs
-and `_reference/` are git-ignored; `three.module.min.js` is eslint-ignored.
+are git-ignored; `three.module.min.js` is eslint-ignored.
 
-All ten shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
+All eleven shipped JS files (`globe-gallery.js`, `authoring.js`, `shaders.js`,
 `textures.js`, `materials.js`, `a11y.js`, `modal.js`, `math.js`, `arc.js`,
-`interaction.js`) are **airbnb-clean**
+`interaction.js`, `cursor.js`) are **airbnb-clean**
 (`npx eslint` exit 0). The only exception is 1 targeted
 `// eslint-disable-next-line no-use-before-define` comment in `globe-gallery.js` for a genuine
 forward ref (`doLayout` → `destroy`, a mutual reference). No blanket `/* eslint-disable */`.
@@ -74,27 +77,28 @@ phase t-values + card-entry transforms); each stage reads what it needs from `fr
 the card loop — one context, not several. The per-card placement (the largest stage) is a dispatcher over four
 runtime-scope branch fns fed an explicit per-frame `frame` context — kept in this
 file, not a module, because they read deeply from the closure (BP constants,
-sphere-rotation quats, drag velocity) and run in the per-card hot loop. Four DI
+sphere-rotation quats, drag velocity) and run in the per-card hot loop. Five DI
 modules are injected with getters over the live runtime state:
 GPU resources from `textures.js` / `materials.js`; the single keyboard/SR globe
 widget from `a11y.js`; the card-detail modal from `modal.js`; pointer/drag/picking
-from `interaction.js` (sharing drag velocity via the `drag` object). The modal owns its own
+from `interaction.js` (sharing drag velocity via the `drag` object); and the desktop
+custom cursor from `cursor.js` (its `isActive()` gates interaction's hover cursor).
+The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
 and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
 objects + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep
 `sphereRotX/Y` and the nav-nudge spring in `updateSphereRotation`).
 
-## How to run / verify
+## How to run
 
-No Playwright (per project preference) — eyeball in a browser, served over http
-(not `file://`, or textures CORS-taint to gray):
+The block is authored at
+`https://www.adobe.com/homepage/drafts/jingleh/globe-dev` with a 45-card fragment
+at `/homepage/fragments/drafts/jingle/globe-cards-filled`. Load with
+`?milolibs=local` against `npm run libs`, or against the stage CDN. (Serve over
+http, not `file://`, or textures CORS-taint to gray.)
 
-- **Target behavior:** serve the `globe/` dir (`python3 -m http.server`) and open
-  `/_reference/globe-reference.html`.
-- **The ported block:** authored at
-  `https://www.adobe.com/homepage/drafts/jingleh/globe-dev` with a 45-card
-  fragment at `/homepage/fragments/drafts/jingle/globe-cards-filled`. Load with
-  `?milolibs=local` against `npm run libs`, or against the stage CDN.
+The `hub-creative-v*` dirs are **design/source reference only** — read them (and
+`hub-creative-v3/CHANGES.md`) to understand what a feature should do when porting.
 
 To regenerate Three.js after adding a new `THREE.*` call: add the symbol to
 `src/three.js`, then `cd libs/c2/blocks/globe && npm install && npm run build`.
@@ -160,7 +164,13 @@ extras are dropped. No modulo wrapping (`getCardMetadata(i)` indexes directly).
 
 ## Localization
 
-The block ships **no hardcoded user-facing copy**. Authored text (arc-copy,
+The block ships **no hardcoded user-facing copy** — with **one known temporary
+exception**: the "Click & Drag" affordance string is hardcoded in two places — the WebGL
+hint text (`createClickDragTexture`, textures.js) and the desktop custom-cursor label
+(`cursor.js`). Both are decorative (not exposed to assistive tech; the a11y widget
+instructions cover the real affordance) but should move to a shared placeholder key before
+the block ships — the 3D text plane will additionally need to handle variable string widths.
+Authored text (arc-copy,
 pull-quote, card name/role/description) comes from the fragment + rows; everything
 else — the chrome aria-labels, the globe widget instructions, and the carousel
 announcement — resolves through Milo's placeholder dictionary via `replaceKeyArray`
@@ -251,8 +261,17 @@ Phase constants (module scope):
 ```
 P_PAN_END=0.55  P_ARC_PREROLL=0.30  P_GRID_ARC_START=0.30  P_GRID_ARC_END=0.60
 P_FOLD_DUR=0.25  P_ZOOM_END=1.00  GRID_PEEL_STAGGER=0.20  SPHERE_INTERACTIVE_T=0.8
-CA_ENABLED=true
+FOLD_PEEL_OVERLAP=0.35  CA_ENABLED=true
 ```
+
+`FOLD_PEEL_OVERLAP` (0–1) makes each card begin folding to the sphere that far — in
+peel position-space — **before** it fully lands in the grid, folding from its live peel
+position (no snap). Effect: the 9×5 grid never visibly "resolves" as a finished
+composition, so the grid phase reads shorter and the sphere forms earlier. The fold opens
+at peel localT `FOLD_START_LOCAL_T = 1 − FOLD_PEEL_OVERLAP^(1/3)`; the global fold window
+(`SPHERE_FORMED_PROGRESS` / `computeFrame`'s `foldFirst`/`foldLast`) and the per-card fold
+timer all derive from it, so camera / depth-sort / interactivity stay aligned.
+`FOLD_PEEL_OVERLAP = 0` exactly restores the prior "settle in grid, then fold" behavior.
 
 **Entry timing** is split into two independent constants (module scope):
 - `ENTRY_LEAD_VH` (default `0.4`) — viewport-heights before the block top that
@@ -295,6 +314,33 @@ clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop c
 
 ## Behavior notes (intentional differences from the prototype)
 
+- **"Click & Drag" hint text (WebGL).** A `PlaneGeometry` in `sphereGroup`, positioned
+  behind the sphere's back surface (`z = −(SPHERE_R + TEXT_BEHIND_GAP)`, `renderOrder = -1`)
+  so it rotates with the globe and draws behind the cards. Hidden until `sphereFormT >
+  TEXT_APPEAR_START (0.10)`, then warps in (barrel warp + particle dissolve via `TEXT_FRAG`),
+  settles to a faint resting opacity (`TEXT_OPACITY_PEAK 0.15 → RESTING 0.06`), and fades out
+  over the zoom. The plane is sized to fill the frustum at the text's live camera distance
+  (`textPlaneSize` + a per-frame scale off `frame.foldSphDist`), with warp-proportional
+  overflow so letterforms bleed off-screen. On the user's **first drag** it warps/dissolves
+  away permanently: `textExitProgress` (0→1) accumulates from drag distance + hold time +
+  velocity burst and drives the shader's `uExitP` (horizontal stretch + radial scatter +
+  amplified warp + full dissolve + opacity fade); it resets only when the section scrolls out
+  of the interactive range (`sphereFormT < SPHERE_INTERACTIVE_T`). Shows on **all** devices
+  (no mobile-specific affordance yet — see backlog). Built async in `buildTextMesh` (waits for
+  `document.fonts.ready` so it renders in Adobe Clean), driven by the `updateClickDragText`
+  tick stage, rebuilt on resize, static-and-faint under reduced motion. Copy is hardcoded
+  (see Localization).
+- **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only,
+  over the interactive sphere with no modal open: the system cursor is replaced by a 48px
+  `mix-blend-mode: difference` disc (so it inverts whatever's beneath it) flanked by two
+  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. Two
+  body-level DOM layers (NOT scoped to the block root): the disc **must** be a direct `<body>`
+  child — `mix-blend-mode` only reaches page content from outside a `position: fixed`
+  (GPU-isolated) container — while the chevrons + label live in a fixed container. The module
+  sets `cursor: none` on the canvas while active; `interaction.js` cedes its own hover cursor
+  via the injected `isActive()`. No-op on touch (nothing is created). With multiple globes per
+  page each instance makes its own pair, but only the hovered one activates (one mouse) and
+  inactive discs are `visibility: hidden`. Label copy hardcoded (see Localization).
 - **Modal — single bottom-center nav group; desktop adds a screen-edge scrim.**
   The nav prev/counter/next are one centered flex row (`.globe-gallery-modal__navbar`,
   built in `authoring.js`); `positionModalChrome` positions only the container —
@@ -316,7 +362,7 @@ clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop c
 
 ## Open items / backlog
 
-Done: ~~visual verification~~ (confirmed in a real Milo page); ~~scope DOM to `el`~~
+Done: ~~scope DOM to `el`~~
 (now class-scoped to the block root, multiple globes per page supported);
 ~~align `N_TOTAL`/grid to authored count~~ (fixed grid, partial fill — see
 authoring contract); ~~scroll feel~~ (on a c2 page Milo loads Lenis with
@@ -339,17 +385,29 @@ canvas mask + per-aspect mask cache + per-frame `alphaMap` swap are gone, corner
 at any size, and the fold morph lerps `uAspect` with no swap pop; `createCardMaterial` is now
 always the ShaderMaterial, the `CA_ENABLED` kill switch just zeroes the CA uniforms).
 
-Remaining:
-1. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
+Done: ~~shortened grid phase~~ (`FOLD_PEEL_OVERLAP` — cards fold from their live peel position
+before fully landing, so the grid never resolves; see Behavior notes / Phase constants);
+~~WebGL "Click & Drag" hint text~~ and ~~desktop custom cursor~~ (both documented under
+Behavior notes; copy hardcoded — see Localization).
+
+Remaining (each an independent enhancement / fix — no ordering dependency):
+1. **Localize the "Click & Drag" copy.** It's hardcoded in two places — the WebGL hint text
+   (`createClickDragTexture`, textures.js) and the cursor label (`cursor.js`). Move both to a
+   shared placeholder key; the 3D text plane additionally needs to handle variable string
+   widths. (Decorative, not exposed to AT — see Localization.)
+2. **Mobile drag affordance.** The cursor is desktop-only and the WebGL hint text is the only
+   touch hint today. Options: a brief auto-nudge rotation on first view, a touch-specific
+   on-canvas glyph, or leave the text as-is — a design call, judge on a real device.
+3. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
    this — start/stop the ticker on intersect), instead of running every frame. Behavior
    change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
-   exit aren't cut off) — verify visually. Now more worthwhile since reduced motion also
+   exit aren't cut off). Now more worthwhile since reduced motion also
    keeps the ticker running on a static globe.
-2. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
+4. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
    after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
    resources, or collapse gracefully.
-3. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
+5. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
    `caFilterR`/`caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`).** It's a
    second, scroll-velocity-only CA system layered on top of the shader's per-card CA. Its
    magnitude is sub-pixel on slow scroll, ~`CA_PX_MAX` (3px) max on fast scroll, and zero at

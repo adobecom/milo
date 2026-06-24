@@ -126,3 +126,77 @@ export const CARD_FRAG = [
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
   '}',
 ].join('\n');
+
+// "Click & Drag" hint text. A simplified CARD_FRAG variant: samples a centered
+// text canvas (alpha = glyph coverage, no rounded-corner SDF), with a barrel warp
+// + per-pixel particle "dissolve" that scatters the glyphs edge-first. uExitP (0→1)
+// drives the one-way exit on the user's first drag: horizontal stretch + radial
+// scatter + amplified warp + full dissolve + opacity fade. uAspect scales the x-axis
+// to world-proportional space so the warp falloff is isotropic on wide viewports
+// (otherwise glyphs stretch horizontally). uUVScale = 1 (kept for symmetry/zoom).
+export const TEXT_FRAG = [
+  'uniform sampler2D uMap;',
+  'uniform float uOpacity;',
+  'uniform float uCA;',
+  'uniform float uWarp;',
+  'uniform float uZoom;',
+  'uniform float uUVScale;',
+  'uniform float uAspect;',
+  'uniform float uExitP;',
+  'uniform vec2  uResolution;',
+  'uniform vec2  uMotionDir;',
+  'varying vec2  vUv;',
+  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
+  '}',
+  'void main() {',
+  '  vec2 d = vUv - 0.5;',
+  // Exit: horizontal stretch (mimics drag direction) + radial scatter (letters fly outward)
+  '  d.x *= 1.0 + uExitP * 1.6;',
+  '  d    += d * uExitP * 0.7;',
+  '  vec2 dA = vec2(d.x * uAspect, d.y);', // scale x to world-proportional space
+  '  float r2 = dot(dA, dA);', // isotropic radius in world space
+  // Exit amplifies the barrel warp on top of the normal warp
+  '  float exitWarp = uWarp + uExitP * 3.0;',
+  '  vec2 warpedVUv = d / (1.0 + exitWarp * r2 * 4.0) + 0.5;',
+  '  vec2 finalUv = (warpedVUv - 0.5) / uUVScale + 0.5;',
+  '  vec2 radial = (vUv - 0.5) * uCA;',
+  '  float r = texture2D(uMap, finalUv + radial - uMotionDir).r;',
+  '  float g = texture2D(uMap, finalUv).g;',
+  '  float b = texture2D(uMap, finalUv - radial + uMotionDir * 0.5).b;',
+  '  float a = texture2D(uMap, finalUv).a;',
+  // Edge-proximity map: sample alpha at a wide offset in 4 dirs. Deep interior → all
+  // 4 hits opaque → no boost; near a glyph edge → some hits transparent → edgeProx
+  // rises, so dissolution fires at character edges first and eats inward.
+  '  float _bl  = 0.020;',
+  '  float _a4  = texture2D(uMap, finalUv + vec2( _bl, 0.0)).a',
+  '              + texture2D(uMap, finalUv + vec2(-_bl, 0.0)).a',
+  '              + texture2D(uMap, finalUv + vec2(0.0,  _bl)).a',
+  '              + texture2D(uMap, finalUv + vec2(0.0, -_bl)).a;',
+  '  float edgeProx = 1.0 - _a4 * 0.25;', // 0=deep interior, 1=at/near edge
+  // Particle dissolve: 2px screen-space grain, per-channel seeds → RGB split
+  '  vec2  cell    = floor(gl_FragCoord.xy * 0.5);',
+  '  float nR      = hash21(cell + vec2(0.00,  0.00));',
+  '  float nG      = hash21(cell + vec2(2.10,  1.30));',
+  '  float nB      = hash21(cell + vec2(1.70, -0.50));',
+  // Exit progress drives dissolve toward 0.97 (full scatter) on top of warp/zoom dissolve
+  '  float dissolve  = clamp(uWarp * 0.2 + uZoom * 2.0 + uExitP * 0.97, 0.0, 0.97);',
+  '  float localDis  = clamp(dissolve + edgeProx * dissolve * 2.0, 0.0, 0.97);',
+  '  float pedge     = 0.06;',
+  '  float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '  float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '  float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
+  '  r *= dR;  g *= dG;  b *= dB;',
+  '  a *= (dR + dG + dB) * 0.333;',
+  '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
+  '  vec2  sc   = gl_FragCoord.xy / uResolution;',
+  '  float fz   = max(0.005, uWarp * 0.025);',
+  '  float fadeX = smoothstep(0.0, fz,       sc.x) * smoothstep(1.0, 1.0 - fz,       sc.x);',
+  '  float fadeY = smoothstep(0.0, fz * 0.5, sc.y) * smoothstep(1.0, 1.0 - fz * 0.5, sc.y);',
+  '  float exitFade = 1.0 - smoothstep(0.0, 0.85, uExitP);',
+  '  gl_FragColor = vec4(srgb, a * uOpacity * fadeX * fadeY * exitFade);',
+  '}',
+].join('\n');
