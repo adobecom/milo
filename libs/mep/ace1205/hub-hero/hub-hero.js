@@ -13,7 +13,7 @@ const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
 const isMobile = () => window.matchMedia('(min-width: 768px)').matches;
 
-const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe slides';
+const getCarouselName = (link) => link?.innerText?.split('|')?.[1]?.trim() || 'Adobe Cards';
 
 const stopRewind = (video) => {
   clearInterval(rewindIntervals.get(video));
@@ -127,7 +127,7 @@ const onCarouselLeave = (event) => {
 const onHover = (event) => {
   const isFocus = event.type === 'focus';
   const slideEl = event.target;
-  if (isFocus) scrollHubHeroTo(slideEl, 0.6);
+  if (isFocus && isMobile()) scrollHubHeroTo(slideEl, 0.6);
   const carouselContainer = slideEl.closest('.hub-hero-carousel-container');
   if (!carouselContainer) return;
   clearTimeout(leaveTimeouts.get(carouselContainer));
@@ -162,8 +162,8 @@ const onHover = (event) => {
   sendAnalytics(`user-hover|${sectionName}|${blockName}`);
 };
 
-const buildSlide = ({ slide, index, slidesTotal }) => {
-  if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
+const buildSlide = ({ slide, index }) => {
+  if (!slide?.children) return createTag('a', { class: `${slide.class} hub-hero-carousel-item` });
   const children = [...slide.children];
   const left = children[0];
   const right = children[1];
@@ -184,8 +184,13 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
 
   decorateBlockText(left);
 
+  const titleId = `hub-hero-slide-${index + 1}-title`;
+  const descId = `hub-hero-slide-${index + 1}-desc`;
+  if (eyebrow) eyebrow.id = titleId;
+  if (heading) heading.id = descId;
+
   const content = `
-    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-slide-${index + 1}'>
+    <div class='hub-hero-carousel-item-container' id='hub-hero-carousel-card-${index + 1}'>
       <div class='hub-hero-carousel-item-header'>
         ${eyebrow?.outerHTML}
       </div>
@@ -199,21 +204,15 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
     </div>
   `;
 
-  let ariaLabel = `${index + 1} of ${slidesTotal}`;
-  // assign unique aria-label to the first slide
-  if (index === 0) ariaLabel = `${getCarouselName(link)}, carousel. ${ariaLabel}`;
+  const isModal = !!(link?.dataset?.modalHash || link?.dataset?.modalPath);
 
   const slideEl = createTag('a', {
     class: 'hub-hero-carousel-item',
     tabindex: 0,
     href: link?.href,
     'data-index': index + 1,
-    role: 'link',
-    ...(isMobile() && {
-      'aria-roledescription': 'slide',
-      'aria-label': ariaLabel,
-    }),
-    'aria-describedby': `hub-hero-carousel-slide-${index + 1}`,
+    role: isModal ? 'button' : 'link',
+    'aria-labelledby': [eyebrow && titleId, heading && descId].filter(Boolean).join(' '),
     'daa-ll': `${processTrackingLabels(heading?.textContent)}-${index + 1}--${processTrackingLabels(heading?.textContent)}`,
   }, content);
 
@@ -230,16 +229,18 @@ const decorateCarousel = (slides) => {
   const carousel = createTag('div', { class: 'hub-hero-carousel' }, slides);
   if (isRtl()) slides.reverse();
   const decoratedSlides = slides.map((slide, index) => buildSlide(
-    { slide, index, slidesTotal: slides.length },
+    {
+      slide,
+      index: index > 2 ? index - 1 : index,
+      slidesTotal: slides.length - 1,
+    }, // adjusting for a placeholder slide
   ));
   const carouselContainer = createTag('div', { class: 'hub-hero-carousel-container' });
   carouselContainer.append(...decoratedSlides);
   carousel.replaceChildren();
   carousel.append(carouselContainer);
-  carousel.dataset.role = 'group';
   carousel.dataset.ariaRoledescription = 'carousel';
   carousel.dataset.ariaLabel = getCarouselName(slides[0]?.querySelector('a'));
-  carousel.dataset.ariaRole = 'group';
   return carousel;
 };
 
@@ -257,7 +258,7 @@ const upgradeVideoPreload = (carousel) => {
 };
 
 const handleCarousel = (slds) => {
-  const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
+  const slides = [...slds.slice(0, 2), { class: 'placeholder' }, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);

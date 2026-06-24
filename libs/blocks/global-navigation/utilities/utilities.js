@@ -390,28 +390,35 @@ export const [setAsyncDropdownCount, getAsyncDropdownCount] = (() => {
   ];
 })();
 
-export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
+export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink, resetActiveLink] = (() => {
   let activeLinkFound;
-  const { origin, pathname } = window.location;
-  const url = `${origin}${pathname}`;
+
+  // Read window.location at call time
+  const getUrl = () => `${window.location.origin}${window.location.pathname}`;
+
+  const checkIsActiveLink = (el) => {
+    const url = getUrl();
+    return el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`);
+  };
 
   return [
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
-    (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
+    checkIsActiveLink,
     (area) => {
       const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
       const disableAED = getDisableAEDState() || isCustomLinks;
       if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find(isActiveLink);
+      ].find(checkIsActiveLink);
 
       if (!activeLink) return null;
 
       setActiveLink(true);
       return activeLink;
     },
+    () => { activeLinkFound = false; },
   ];
 })();
 

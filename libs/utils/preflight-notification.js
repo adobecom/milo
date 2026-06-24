@@ -1,4 +1,5 @@
 import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
+import captureMetrics from '../blocks/preflight/checks/captureMetrics.js';
 import { loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
@@ -9,6 +10,19 @@ function openPreflightPanel() {
   if (!sidekick) return;
   sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
 }
+
+['previewed', 'published'].forEach((event) => {
+  sidekick?.addEventListener(event, async () => {
+    const results = await getPreflightResults({
+      url: window.location.href,
+      area: document,
+      useCache: false,
+    }).catch(() => null);
+    if (!results) return;
+    window.hasCapturedPreflightMetrics = false;
+    captureMetrics(results.runChecks).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
+  });
+});
 
 function getMasUnpublishedCount(results) {
   const merchResults = results?.runChecks?.merch || [];

@@ -238,7 +238,8 @@ html:has(meta[name="foundation"][content="c2"]) {
     /* c2 styles for tabs */
 
     .locale-text {
-      margin: var(--s2a-spacing-2xs) var(--s2a-spacing-sm) var(--s2a-spacing-lg) 0;
+      margin-inline: 0 var(--s2a-spacing-sm);
+      margin-block: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
     }
 
     .link-wrapper {
@@ -326,10 +327,7 @@ html:has(meta[name="foundation"][content="c2"]) {
     .dialog-modal.locale-modal-v2 {
       .dialog-close {
         left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
-      }
-
-      .locale-text {
-        margin: var(--s2a-spacing-2xs) 0 var(--s2a-spacing-lg) var(--s2a-spacing-sm);
+        right: auto;
       }
 
       .link-wrapper {

@@ -198,7 +198,11 @@ const COMMANDS_KEYS = {
 };
 
 function addIds(el, manifestId, targetManifestId) {
-  if (manifestId) el.dataset.manifestId = manifestId;
+  if (manifestId) {
+    el.dataset.manifestId = manifestId;
+    const { path } = el.dataset;
+    el.dataset.manifestDisplay = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+  }
   if (targetManifestId) el.dataset.adobeTargetTestid = targetManifestId;
 }
 
@@ -717,7 +721,12 @@ const setDataIdOnChildren = (sections, id, value) => {
 export const updateFragDataProps = (a, inline, sections, fragment) => {
   const { manifestId, adobeTargetTestid } = a.dataset;
   if (inline) {
-    if (manifestId) setDataIdOnChildren(sections, 'manifestId', manifestId);
+    if (manifestId) {
+      setDataIdOnChildren(sections, 'manifestId', manifestId);
+      const { path } = fragment.dataset;
+      const display = path ? `${manifestId}: ${path}` : `${manifestId}: html`;
+      setDataIdOnChildren(sections, 'manifestDisplay', display);
+    }
     if (adobeTargetTestid) setDataIdOnChildren(sections, 'adobeTargetTestid', adobeTargetTestid);
     if (fragment.dataset.mepLingoRoc) setDataIdOnChildren(sections, 'mepLingoRoc', fragment.dataset.mepLingoRoc);
     if (fragment.dataset.mepLingoFallback) {
