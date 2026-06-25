@@ -26,13 +26,16 @@
  */
 
 import {
-  getCardMetadata,
-  getCaasProps,
-  loadCaasTags,
+  buildCaasXdmPayload,
+  hasCardMetadata,
+  isDisabledOnPage,
   postDataToCaaS,
-  setConfig,
 } from './send-utils.js';
 import { getCustomConfig } from '../utils/utils.js';
+
+// Re-exported from send-utils so the per-page opt-out check stays importable
+// from this module (used by tests and any host that already depends on it).
+export { isDisabledOnPage };
 
 const CONFIG_PATH = '/.milo/caas/config.json';
 
@@ -68,25 +71,6 @@ export const resolveTargets = (rule, action) => {
   if (Array.isArray(rule?.targets) && rule.targets.length) return rule.targets;
   return DEFAULT_TARGETS[action];
 };
-
-// Per-page explicit override: a row inside .card-metadata of the form
-// "auto-publish | false" lets an author opt a single page out without
-// touching the site config.
-export const isDisabledOnPage = (dom) => {
-  if (!dom?.querySelector) return false;
-  const md = dom.querySelector('.card-metadata');
-  if (!md) return false;
-  const rows = [...md.querySelectorAll(':scope > div')];
-  return rows.some((row) => {
-    const cells = row.querySelectorAll(':scope > div');
-    if (cells.length < 2) return false;
-    const key = cells[0].textContent.trim().toLowerCase();
-    const val = cells[1].textContent.trim().toLowerCase();
-    return key === 'auto-publish' && val === 'false';
-  });
-};
-
-const hasCardMetadata = (dom) => !!dom?.querySelector?.('.card-metadata');
 
 const fetchPageDom = async (url) => {
   try {
@@ -135,17 +119,10 @@ export const caasAutoPublish = async ({
     if (!hasCardMetadata(dom)) return { skipped: true, reason: 'no-card-metadata' };
     if (isDisabledOnPage(dom)) return { skipped: true, reason: 'page-override-disabled' };
 
-    setConfig({
-      bulkPublish: true,
-      doc: dom,
+    const { caasProps, caasMetadata, errors } = await buildCaasXdmPayload({
+      dom,
       pageUrl: url,
       lastModified,
-      host,
-      repo,
-    });
-    await loadCaasTags();
-    const { caasMetadata, errors } = await getCardMetadata({
-      prodUrl: url,
       host,
       repo,
       floodgatecolor,
@@ -153,7 +130,6 @@ export const caasAutoPublish = async ({
     });
     if (errors?.length) return { skipped: false, error: 'metadata-errors', errors };
     if (!caasMetadata?.tags?.length) return { skipped: false, error: 'no-tags' };
-    const caasProps = getCaasProps(caasMetadata, url);
 
     const targets = resolveTargets(rule, action);
     const accessToken = await getAuthToken();
