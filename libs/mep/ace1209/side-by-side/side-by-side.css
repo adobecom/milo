@@ -78,7 +78,7 @@
 
     display: flex;
     flex-direction: column;
-    padding-left: 15%;
+    padding-inline: 15% 0;
 
     .foreground {
       padding: var(--s2a-spacing-md);
@@ -91,6 +91,10 @@
         color: var(--s2a-color-content-subtle);
       }
     }
+  }
+
+  &.equal .card-stacked {
+    padding-inline: 0 15%;
   }
 }
 
@@ -105,6 +109,14 @@
       grid-template-columns: 1fr 1.81fr;
     }
 
+    &.equal {
+      grid-template-columns: 1fr 1fr 1fr;
+
+      > :first-child {
+        grid-column: 2;
+      }
+    }
+
     .card-overlay {
       .foreground {
         max-width: 480px;
@@ -112,7 +124,7 @@
     }
 
     .card-stacked {
-      padding-left: 0;
+      padding-inline: unset;
 
       .media {
         min-height: 306px;
@@ -121,6 +133,10 @@
       .foreground {
         max-width: 480px;
       }
+    }
+
+    &.equal .card-stacked {
+      padding-inline: unset;
     }
   }
 }
