@@ -26,16 +26,25 @@ function decorate(block, root, el) {
   const contentDiv = firstRow.querySelector(':scope > div:first-child');
   const backgroundDiv = firstRow.querySelector(':scope > div:last-child');
   const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
-  const prodIcon = contentDiv?.querySelector('img');
+  const prodIcons = [...(contentDiv?.querySelectorAll('img') ?? [])];
   const isVideoHref = (href) => /\.(mp4|webm|ogg|mov|m4v)(\?[^#]*)?(#.*)?$/i.test(href);
   const link = [...(contentDiv?.querySelectorAll('a[href]:not([data-video-poster])') ?? [])]
     .find((a) => !isVideoHref(a.href)) ?? null;
   const heading = contentDiv?.querySelector(':is(h1, h2, h3, h4, h5, h6)');
   const contentAux = createTag('div', { class: 'content-aux' });
 
-  if (prodIcon && isSvgUrl(prodIcon.src)) {
-    prodIcon.src = getFederatedUrl(prodIcon.src);
-    prodIcon.closest('p').classList.add('icon');
+  if (prodIcons.length) {
+    const iconPara = prodIcons[0].closest('p');
+    iconPara?.classList.add('icon');
+    prodIcons.forEach((icon) => {
+      if (isSvgUrl(icon.src)) icon.src = getFederatedUrl(icon.src);
+      const para = icon.closest('p');
+      if (para && para !== iconPara) {
+        const pic = icon.parentElement?.tagName === 'PICTURE' ? icon.parentElement : icon;
+        iconPara?.append(pic);
+        para.remove();
+      }
+    });
   }
 
   backgroundDiv?.classList.add(`${blockName}-background`);
