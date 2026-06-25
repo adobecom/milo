@@ -1153,14 +1153,36 @@ const buildCaasXdmPayload = async ({
   return { caasProps, caasMetadata, errors, tags, tagErrors };
 };
 
+// A page only auto-publishes to CaaS when it carries a caas:content-type tag
+// (mirrors the original AEM behavior). Other card-metadata pages without a
+// content-type tag — e.g. product/solution/index pages — are intentionally
+// excluded. `tags` is the array of resolved tag ids from buildCaasXdmPayload.
+const hasContentTypeTag = (tags) => Array.isArray(tags)
+  && tags.some((id) => typeof id === 'string' && id.startsWith('caas:content-type'));
+
+// Compute the CaaS identifiers for a page from its prodUrl alone (no DOM needed).
+// Used for removal: a deactivated/deleted page's HTML is gone, but its card
+// identity is fully determined by the prodUrl, exactly as on publish
+// (contentId = uuid(prodUrl); entityId = uuid(prodUrl + floodgate salt)).
+const getCaasIds = async (prodUrl, floodgatecolor = 'default') => {
+  const salt = floodgatecolor === 'default' || !floodgatecolor ? '' : floodgatecolor;
+  const [contentId, entityId] = await Promise.all([
+    getUuid(prodUrl),
+    getUuid(`${prodUrl}${salt}`),
+  ]);
+  return { contentId, entityId };
+};
+
 export {
   buildCaasXdmPayload,
   checkUrl,
+  getCaasIds,
   getCardMetadata,
   getCaasProps,
   getConfig,
   getKeyValPairs,
   hasCardMetadata,
+  hasContentTypeTag,
   isDisabledOnPage,
   loadCaasTags,
   setConfig,

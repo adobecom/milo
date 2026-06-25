@@ -9,6 +9,7 @@
 import {
   buildCaasXdmPayload,
   checkUrl,
+  getCaasIds,
   getCardMetadata,
   getCaasProps,
   getConfig,
@@ -16,6 +17,7 @@ import {
   getFloodgateColorFromHost,
   getOrigin,
   hasCardMetadata,
+  hasContentTypeTag,
   isDisabledOnPage,
   loadCaasTags,
   runLanguageFirstRetry,
@@ -86,6 +88,7 @@ const postDataToCaaS = async ({ accessToken, caasEnv, caasProps, draftOnly }) =>
 export {
   buildCaasXdmPayload,
   checkUrl,
+  getCaasIds,
   getCardMetadata,
   getCaasProps,
   getConfig,
@@ -93,6 +96,7 @@ export {
   getFloodgateColorFromHost,
   getOrigin,
   hasCardMetadata,
+  hasContentTypeTag,
   isDisabledOnPage,
   isPagePublished,
   loadCaasTags,

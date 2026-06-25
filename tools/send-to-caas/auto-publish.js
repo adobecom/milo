@@ -28,6 +28,7 @@
 import {
   buildCaasXdmPayload,
   hasCardMetadata,
+  hasContentTypeTag,
   isDisabledOnPage,
   postDataToCaaS,
 } from './send-utils.js';
@@ -119,7 +120,7 @@ export const caasAutoPublish = async ({
     if (!hasCardMetadata(dom)) return { skipped: true, reason: 'no-card-metadata' };
     if (isDisabledOnPage(dom)) return { skipped: true, reason: 'page-override-disabled' };
 
-    const { caasProps, caasMetadata, errors } = await buildCaasXdmPayload({
+    const { caasProps, errors, tags } = await buildCaasXdmPayload({
       dom,
       pageUrl: url,
       lastModified,
@@ -129,7 +130,9 @@ export const caasAutoPublish = async ({
       languageFirst,
     });
     if (errors?.length) return { skipped: false, error: 'metadata-errors', errors };
-    if (!caasMetadata?.tags?.length) return { skipped: false, error: 'no-tags' };
+    // Only pages with a caas:content-type tag participate. Pages without one
+    // (product/solution/index/etc.) are a normal skip, not an error.
+    if (!hasContentTypeTag(tags)) return { skipped: true, reason: 'no-content-type-tag' };
 
     const targets = resolveTargets(rule, action);
     const accessToken = await getAuthToken();
