@@ -397,13 +397,8 @@ async function setDefaultValues() {
 
 function checkAuthAndBuild(pageId) {
   onSidekickAuth(async (isAuthed) => {
-    const isProd = getConfig().env?.name === 'prod';
-    const mockAuth = !isProd ? new URLSearchParams(window.location.search).get('mock-auth') : null;
-    const finalAuth = mockAuth !== null ? mockAuth === 'true' : isAuthed;
-    // eslint-disable-next-line no-console
-    console.log('[mep-overlay] sidekick auth state:', finalAuth, mockAuth !== null ? '(mocked)' : '');
-    if (finalAuth === authenticated) return;
-    authenticated = finalAuth;
+    if (isAuthed === authenticated) return;
+    authenticated = isAuthed;
 
     const drawerEl = document.querySelector('#mep-drawer');
     const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
@@ -421,7 +416,7 @@ function checkAuthAndBuild(pageId) {
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
-  }, { envs: ['prod', 'stage'] });
+  }, { envs: ['prod'] });
 }
 
 function buildDrawer(gnavOffset, pageId) {
@@ -527,14 +522,16 @@ function setMasObserver() {
   };
 
   let debounceTimer;
-  new MutationObserver(() => {
+  const masObserver = new MutationObserver(() => {
+    if (!document.querySelector('#mep-drawer')?.matches(':popover-open')) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       refreshPageUpdateCounts();
       refreshMasSummary();
       refreshSpoofGeoMas();
     }, 200);
-  }).observe(document.body, { childList: true, subtree: true });
+  });
+  masObserver.observe(document.body, { childList: true, subtree: true });
 }
 
 async function buildOverlay() {

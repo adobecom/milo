@@ -250,11 +250,12 @@ function adjustBadgePositions() {
 }
 
 let badgeAdjustTimer;
-new MutationObserver(() => {
+const highlightObserver = new MutationObserver(() => {
   refreshPageUpdateCounts();
   clearTimeout(badgeAdjustTimer);
   badgeAdjustTimer = setTimeout(adjustBadgePositions, 50);
-}).observe(document.body, { childList: true, subtree: true });
+});
+highlightObserver.observe(document.body, { childList: true, subtree: true });
 
 export function getPageUpdates(label) {
   return `${getPageUpdateCount(label)} Page Updates`;
