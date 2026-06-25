@@ -68,21 +68,38 @@ const defaultOptions = {
     6: '6',
   },
   cardStyle: {
-    '1:2': '1/2 Card...',
-    '3:4': '3/4 Card',
+    '1:2': '1/2 Card',
     'half-height': '1/2 Height Card',
+    '3:4': '3/4 Card',
     'blade-card': 'Blade Card...',
     'blog-card': 'Blog Card',
     'button-card': 'Button Card',
-    'custom-card': 'Custom Card',
+    'custom-card': 'Custom Card...',
     'double-wide': 'Double Width Card',
     'editorial-card': 'Editorial Card...',
+    'flex-card': 'Flex Card...',
     'full-card': 'Full Card',
     'horizontal-card': 'Horizontal Card',
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
     product: 'Product Card',
     'text-card': 'Text Card',
+  },
+  flexCardImageOptions: {
+    default: 'Default',
+    hidden: 'Hidden',
+    'image-small-center': 'Small Center',
+    'image-small-left': 'Small Left',
+  },
+  flexCardTextAlign: {
+    'text-left': 'Default',
+    'text-center': 'Center',
+    'text-justify': 'Justify',
+    'text-right': 'Right',
+  },
+  flexCardTextSize: {
+    default: 'Default',
+    'text-large': 'Large',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -96,7 +113,7 @@ const defaultOptions = {
     '1600MaxWidth': '1600px Container',
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
-    carousel: 'Carousel',
+    carousel: 'Carousel...',
     categories: 'Product Categories',
   },
   ctaActions: {
@@ -381,7 +398,7 @@ const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
 
   const bladeCardOptions = html`
-    <div class="blade-card-options">
+    <div class="nested">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
       <${Input} label="Light text" prop="bladeCardLightText" class="blade-card-option" type="checkbox" />
       <${Input} label="Transparent background" prop="bladeCardTransparent" class="blade-card-option" type="checkbox" />
@@ -389,19 +406,43 @@ const UiPanel = () => {
   `;
 
   const carouselOptions = html`
-    <div class="carousel-options">
+    <div class="nested">
       <${Select}
         label="Carousel Controls Options"
         prop="paginationAnimationStyle"
         options=${defaultOptions.paginationAnimationStyle}
       />
-      <${Input} label="Light background (Modern only)" prop="useLightControls" type="checkbox" />
+      <${Input} label="Light (Modern only)" prop="useLightControls" type="checkbox" />
     </div>
   `;
 
   const editorialCardOptions = html`
     <div class="nested">
       <${Input} label="Editorial Open variant" prop="editorialCardOpenVariant" type="checkbox" />
+    </div>
+  `;
+
+  const buttonStyleOptions = html`
+    <div class="nested">
+      <p class="note">Uses <i>URL2Text</i> for the button label</p>
+    </div>
+  `;
+
+  const flexCardOptions = html`
+    <div class="nested">
+      <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />
+      <${Select} label="Image Options" prop="flexCardImageOptions" options=${defaultOptions.flexCardImageOptions} />
+      <${Select} label="Text Align" prop="flexCardTextAlign" options=${defaultOptions.flexCardTextAlign} />
+      <${Input} label="Hide Details Text" prop="flexCardHideDetails" type="checkbox" />
+      <${Input} label="Hide Title" prop="flexCardHideTitle" type="checkbox" />
+      <${Input} label="Hide Description" prop="flexCardHideDescription" type="checkbox" />
+      <${Input} label="Hide Footer (CTA)" prop="flexCardHideFooter" type="checkbox" />
+    </div>
+  `;
+
+  const customCardOptions = html`
+    <div class="nested">
+      <${Input} label="Custom Card HTML" prop="customCard" type="text" />
     </div>
   `;
 
@@ -419,7 +460,10 @@ const UiPanel = () => {
     <${Input} label="Use Rounded Corners [new]" prop="useRoundedCorners" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
+      ${state.cardStyle === 'button-card' && buttonStyleOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
+      ${state.cardStyle === 'flex-card' && flexCardOptions}
+      ${state.cardStyle === 'custom-card' && customCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
     <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
       ${state.container === 'carousel' && carouselOptions}
@@ -442,7 +486,6 @@ const UiPanel = () => {
       prop="loadMoreBtnStyle"
       options=${defaultOptions.loadMoreBtnStyle}
     />
-    <${Input} label="Custom Card HTML" prop="customCard" type="text" />
     <${Select}
       label="CTA Link Behavior"
       prop="ctaAction"
