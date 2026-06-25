@@ -1,4 +1,4 @@
-import { getCountry, setMarket, pageExist, getCookie } from '../../utils/utils.js';
+import { getCountry, setMarket, pageExist, getCookie, getMetadata } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { marketsLangForLocale, norm } from '../../utils/market.js';
 
@@ -7,6 +7,8 @@ let createTag;
 let loadStyleFn;
 let loadBlockFn;
 let sendAnalyticsFunc;
+let isC2Page;
+let isC2Path;
 
 const COUNTRY_PLACEHOLDER = /\{country\}/g;
 
@@ -473,16 +475,16 @@ async function showModal(details) {
   const { miloLibs, codeRoot } = config;
   const hasTabs = details.querySelector('.tabs');
 
-  const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
+  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Path}/blocks/section-metadata/section-metadata.css`;
   const regionModalPath = `${miloLibs || codeRoot}/features/region-modal/region-modal.css`;
-  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
+  const modalPath = `${miloLibs || codeRoot}${isC2Path}/blocks/modal/modal.css`;
 
   const promises = [
     hasTabs ? loadBlockFn(details.querySelector('.tabs')) : null,
     hasTabs ? new Promise((resolve) => { loadStyleFn(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyleFn(regionModalPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(modalPath, resolve); }),
-    import('../../blocks/modal/modal.js'),
+    import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
   const { getModal, sendAnalytics } = result[4];
@@ -509,6 +511,8 @@ export default async function showRegionModal(
   createTag = createTagFunc;
   loadStyleFn = loadStyleFunc;
   loadBlockFn = loadBlockFunc ?? (() => Promise.resolve());
+  isC2Page = getMetadata('foundation')?.toLowerCase() === 'c2';
+  isC2Path = isC2Page ? '/c2' : '';
 
   const marketsForModal = mapLangRoutingMarketsForModal(suggestedMarkets);
   let availableMarkets = await getAvailableMarkets(marketsForModal);
