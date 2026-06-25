@@ -48,6 +48,7 @@ function replaceVideoIntersectionObserver(medias) {
 function getCardType(block) {
   const CARD_TYPE = ['card-overlay', 'card-stacked'];
   if (block.classList.contains('reverse')) return CARD_TYPE.reverse();
+  if (block.classList.contains('equal')) return [CARD_TYPE[1], CARD_TYPE[1]];
 
   return CARD_TYPE;
 }
