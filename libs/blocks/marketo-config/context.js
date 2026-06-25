@@ -23,9 +23,7 @@ function deepCopy(obj) {
 
 export const sanitizeConfigValue = (value) => {
   if (typeof value !== 'string') return value;
-  const el = document.createElement('span');
-  el.innerHTML = value;
-  return el.textContent;
+  return new DOMParser().parseFromString(value, 'text/html').body.textContent;
 };
 
 export const sanitizeHashConfig = (config) => {
