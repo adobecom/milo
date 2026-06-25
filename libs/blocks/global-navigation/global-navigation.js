@@ -1818,6 +1818,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.href = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');

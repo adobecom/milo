@@ -397,8 +397,10 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink, resetAc
   const getUrl = () => `${window.location.origin}${window.location.pathname}`;
 
   const checkIsActiveLink = (el) => {
+    const href = el.href || el.dataset.href || '';
+    if (!href) return false;
     const url = getUrl();
-    return el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`);
+    return href === url || href.startsWith(`${url}?`) || href.startsWith(`${url}#`);
   };
 
   return [
@@ -424,6 +426,10 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink, resetAc
       root.querySelectorAll('a[data-href]').forEach((el) => {
         el.setAttribute('href', el.dataset.href);
         delete el.dataset.href;
+        el.removeAttribute('role');
+        el.removeAttribute('aria-disabled');
+        el.removeAttribute('aria-current');
+        el.removeAttribute('tabindex');
       });
     },
   ];
