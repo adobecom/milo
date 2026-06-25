@@ -35,7 +35,6 @@ async function checkMartechMeta() {
 
 function copyTable() {
   try {
-    /* global ClipboardItem */
     const clipboardData = [new ClipboardItem({ 'text/html': new Blob([martechBlock.value], { type: 'text/html' }) })];
     navigator.clipboard.write(clipboardData);
     btnText.value = '✔ Copied!';
@@ -56,8 +55,11 @@ export default function Martech() {
   return html`
   <div class="access-columns martech">
     ${martechBlock.value && html`
-      <button class="preflight-action" onclick=${copyTable}>${btnText.value}</button>
-      <div dangerouslySetInnerHTML="${{ __html: martechBlock.value }}"></div>
+      <div class="martech-toolbar">
+        <p class="martech-hint">Copy this metadata to paste into your martech tooling.</p>
+        <button class="preflight-action" onclick=${copyTable}>${btnText.value}</button>
+      </div>
+      <div class="martech-table" dangerouslySetInnerHTML="${{ __html: martechBlock.value }}"></div>
     `}
   </div>`;
 }
