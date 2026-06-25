@@ -25,9 +25,15 @@
     }
   }
 
-  .card-overlay {
+  > div:first-child {
     --parallax-stagger-index: 0.5;
+  }
 
+  > div:last-child {
+    --parallax-stagger-index: 1.5;
+  }
+
+  .card-overlay {
     position: relative;
     overflow: hidden;
     aspect-ratio: 33/37;
