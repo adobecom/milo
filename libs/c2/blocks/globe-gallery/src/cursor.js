@@ -5,7 +5,7 @@
    over the interactive sphere, with no modal open, the system cursor is replaced
    by a white disc (mix-blend-mode: difference → inverts the page beneath it),
    flanked by two chevrons that squeeze inward while dragging, plus a small
-   "Click & Drag" label. On touch / coarse-pointer devices setup() is a no-op, so
+   label. On touch / coarse-pointer devices setup() is a no-op, so
    nothing is created and update()/teardown() are inert.
 
    Two sibling DOM layers, both appended to <body> (not the block root): the disc
@@ -14,9 +14,9 @@
    per page each create their own pair, but only the hovered one activates (one
    mouse), and inactive discs are visibility:hidden, so they don't collide.
 
-   The label is hardcoded "Click & Drag" (decorative; not exposed to assistive
-   tech — the a11y widget covers the real affordance). Localize alongside the
-   WebGL hint text (see README Localization) when that lands.
+   The label text is the authored hint string (deps.labelText, shared with the
+   WebGL hint text; falls back to "Click & Drag"). Decorative — not exposed to
+   assistive tech; the a11y widget covers the real affordance.
 
    Owns its DOM + listeners; teardown() removes them and clears the canvas cursor.
    isActive() lets the interaction module defer its hover cursor (pointer/default)
@@ -32,7 +32,9 @@ const RING_SVG = [
 ].join('');
 
 export default function createCursor(deps) {
-  const { getCanvas, getSphereInteractive, getModalOpen, getReducedMotion, drag } = deps;
+  const {
+    getCanvas, getSphereInteractive, getModalOpen, getReducedMotion, labelText, drag,
+  } = deps;
   let containerEl = null; // fixed container: chevrons + label (no blend mode)
   let discEl = null; // body-level disc (mix-blend-mode: difference)
   let ringWrap = null;
@@ -60,13 +62,16 @@ export default function createCursor(deps) {
     // Chevrons + label — no blend mode, safe inside the fixed container.
     containerEl = document.createElement('div');
     containerEl.className = 'globe-gallery-cursor';
+    // Static structure via innerHTML; the authored label is set as textContent
+    // afterward (block convention — never interpolate authored copy into markup).
     containerEl.innerHTML = `<div class="globe-gallery-cursor__ring-wrap">${RING_SVG}</div>`
       + '<div class="globe-gallery-cursor__text-wrap">'
-      + '<span class="globe-gallery-cursor__text">Click &amp; Drag</span>'
+      + '<span class="globe-gallery-cursor__text"></span>'
       + '</div>';
     document.body.appendChild(containerEl);
     ringWrap = containerEl.querySelector('.globe-gallery-cursor__ring-wrap');
     textWrap = containerEl.querySelector('.globe-gallery-cursor__text-wrap');
+    containerEl.querySelector('.globe-gallery-cursor__text').textContent = labelText || 'Click & Drag';
 
     const canvas = getCanvas();
     if (canvas) {

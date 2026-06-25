@@ -13,7 +13,7 @@ import { getConfig } from '../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { replaceKeyArray } from '../../../features/placeholders.js';
 import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
-import loadCardTextures, { createClickDragTexture } from './src/textures.js';
+import { loadCardTextures, createClickDragTexture } from './src/textures.js';
 import { createCardMaterial, createTextMaterial } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
@@ -243,7 +243,7 @@ function fibSpherePos(i, total, radius) {
 // are scoped to it (root.querySelector) so >1 globe can coexist on a page.
 // `gid` is this instance's unique-id suffix, minted by buildGlobeDom (authoring.js)
 // and threaded in here so the CA filter url(#…) ref matches the built node.
-function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMotion) {
+function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, reducedMotion) {
   // Root-scoped query helper — every DOM lookup goes through this so the runtime
   // only ever touches its own block's nodes (multi-instance safe).
   const q = (sel) => root.querySelector(sel);
@@ -512,7 +512,6 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     return { w: visW, h: visH };
   }
 
-  // Remove + free the text mesh's GPU resources (geometry, material, canvas texture).
   function disposeTextMesh() {
     if (!textMesh) return;
     if (textMesh.parent) textMesh.parent.remove(textMesh);
@@ -522,21 +521,19 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     textMesh = null;
   }
 
-  // Build (or rebuild) the "Click & Drag" text plane and add it to sphereGroup. Async: waits
-  // for fonts so the canvas renders in Adobe Clean, not a fallback. Disposes any prior mesh
-  // first (resize rebuild). Guarded against a destroy()/init() landing mid-await by capturing
-  // the live sphereGroup and bailing if it's been replaced.
+  // Build (or rebuild) text plane and add it to sphereGroup. Async: waits
+  // for fonts so the canvas renders in Adobe Clean, not a fallback.
   function buildTextMesh() {
     disposeTextMesh();
     const targetGroup = sphereGroup;
     const aspect = camera ? camera.aspect : W / H;
     const dpr = Math.min(window.devicePixelRatio, 2);
     const create = () => {
-      if (sphereGroup !== targetGroup || !sphereGroup) return; // destroyed/rebuilt mid-await
+      if (sphereGroup !== targetGroup || !sphereGroup) return;
       const { SPHERE_R } = bp;
       const sz = textPlaneSize();
       const mat = createTextMaterial({
-        texture: createClickDragTexture(aspect),
+        texture: createClickDragTexture(aspect, hintText || 'Click & Drag'),
         aspect,
         resolution: { x: W * dpr, y: H * dpr },
       });
@@ -740,6 +737,7 @@ function createGlobeGalleryRuntime(authoredCards, root, gid, labels, reducedMoti
     getSphereInteractive: () => sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T,
     getModalOpen: () => modal.getModalIdx() >= 0,
     getReducedMotion: () => reducedMotion,
+    labelText: hintText || 'Click & Drag',
     drag,
   });
 
@@ -1783,7 +1781,7 @@ export default async function init(el) {
 
   // Extract authored content BEFORE buildGlobeDom() wipes the block's children.
   // fragmentHref is captured here so it survives the DOM wipe.
-  const { arcCopy, pullQuote, fragmentHref } = parseAuthoredContent(el);
+  const { arcCopy, pullQuote, hintText, fragmentHref } = parseAuthoredContent(el);
 
   const labels = await resolveGlobeLabels();
   // buildGlobeDom mints + returns this instance's unique id suffix (CA filter,
@@ -1798,7 +1796,7 @@ export default async function init(el) {
     el.classList.add('globe-gallery--empty');
     return el;
   }
-  const runtime = createGlobeGalleryRuntime(cards, el, gid, labels, reducedMotion);
+  const runtime = createGlobeGalleryRuntime(cards, hintText, el, gid, labels, reducedMotion);
   if (!runtime) { el.classList.add('globe-gallery--empty'); return el; }
   if (runtime.init() === false) { el.classList.add('globe-gallery--empty'); return el; }
   el.globeRuntime = runtime;

@@ -157,17 +157,20 @@ export async function fetchFragmentCards(href) {
 }
 
 // The rows are positional (see AUTHORING CONTRACT): arc-copy is always row 0,
-// the card fragment link is row 1, and an optional pull-quote is row 2. The
+// the card fragment link is row 1, an optional hint-text row is 2, and an
+// optional pull-quote is row 3. The
 // fragment href is read here (before buildGlobeDom wipes the DOM) — links are
 // authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
 // the raw <a href> survives to here; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
-  const [arcCopyRow, cardsRow, pullQuoteRow] = [...el.children];
+  const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
+  const hintText = hintTextRow?.textContent.trim() || '';
   return {
     arcCopy: parseArcCopy(arcCopyRow),
     pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
+    hintText,
   };
 }
 

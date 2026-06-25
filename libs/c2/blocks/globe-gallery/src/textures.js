@@ -17,7 +17,7 @@ import * as THREE from '../three.module.min.js';
 //
 // onDone(textures, cardTexData) fires once all `count` textures have settled.
 // cardTexData[i] carries the cover-crop UVs + sphereScaleX the build step needs.
-export default function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
+export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
   let loaded = 0;
   const textures = new Array(count);
   const cardTexData = [];
@@ -89,11 +89,6 @@ export default function loadCardTextures({ count, getSrc, planeAspect }, onDone)
 // type fills ~75% of it). The plane geometry is sized separately in world units.
 const TEXT_CANVAS_W = 4096;
 
-// Hint copy — hardcoded for now (will eventually be authored / localized via a placeholder
-// key; see README backlog). OVERRIDE HERE to test other languages, e.g. '點擊並拖曳'.
-// const HINT_TEXT = 'Click & Drag';
-const HINT_TEXT = '點擊並拖曳';
-
 // Fraction of canvas width the text fills at rest (the warp-overflow scale then pushes
 // letterforms off-screen during entrance/drag). The font auto-scales to hit this for ANY
 // string, so the copy can change/localize without re-tuning per word.
@@ -104,7 +99,7 @@ const HINT_FILL = 0.8;
 // derived by measuring HINT_TEXT and scaling it to span HINT_FILL of the width (capped so a
 // short string can't overflow the height) — language-agnostic, unlike a fixed per-word
 // layout. No per-instance state; the caller owns disposal.
-export function createClickDragTexture(aspect) {
+export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
   const canvas = document.createElement('canvas');
   const ctxH = Math.round(TEXT_CANVAS_W / aspect);
   canvas.width = TEXT_CANVAS_W;
@@ -128,13 +123,13 @@ export function createClickDragTexture(aspect) {
   // height budget so a very short string (e.g. one glyph) can't scale up and clip top/bottom.
   const refSize = Math.round((TEXT_CANVAS_W * 250) / 1440); // Figma: 250px @ 1440 viewport
   setFont(refSize);
-  const measured = Math.max(1, ctx.measureText(HINT_TEXT).width);
+  const measured = Math.max(1, ctx.measureText(hintText).width);
   const maxSize = Math.round(ctxH * 0.55); // keeps glyphs within the ~75% height budget
   const fitSize = Math.round(refSize * ((TEXT_CANVAS_W * HINT_FILL) / measured));
   const fontSize = Math.min(maxSize, fitSize);
   setFont(fontSize);
 
-  ctx.fillText(HINT_TEXT, TEXT_CANVAS_W / 2, ctxH * 0.5);
+  ctx.fillText(hintText, TEXT_CANVAS_W / 2, ctxH * 0.5);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
