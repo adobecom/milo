@@ -14,8 +14,16 @@
 
 import {
   buildCaasXdmPayload,
+  getCaasIds,
   hasCardMetadata,
+  hasContentTypeTag,
   isDisabledOnPage,
 } from '../tools/send-to-caas/caas-payload-core.js';
 
-export { buildCaasXdmPayload, hasCardMetadata, isDisabledOnPage };
+export {
+  buildCaasXdmPayload,
+  getCaasIds,
+  hasCardMetadata,
+  hasContentTypeTag,
+  isDisabledOnPage,
+};

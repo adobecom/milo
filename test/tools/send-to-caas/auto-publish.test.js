@@ -358,6 +358,44 @@ describe('auto-publish: caasAutoPublish gating', () => {
     expect(result.skipped).to.be.true;
     expect(result.reason).to.equal('page-override-disabled');
   });
+
+  it('skips with no-content-type-tag when the card has no caas:content-type tag', async () => {
+    const origin = uniqueOrigin();
+    // Same shape as a valid card (so no metadata errors) but without any tags —
+    // i.e. a core page (product/solution/index) that should not auto-publish.
+    const htmlNoContentType = `
+      <!DOCTYPE html><html lang="en"><head><title>Core page</title></head>
+      <body><main>
+        <img src="https://example.com/img/card.jpg" alt="card alt">
+        <div><div class="card-metadata">
+          <div><div>title</div><div>A product page</div></div>
+          <div><div>cardtitle</div><div>Product</div></div>
+          <div><div>carddescription</div><div>A product page description</div></div>
+          <div><div>cardimagealttext</div><div>A descriptive alt</div></div>
+          <div><div>country</div><div>us</div></div>
+          <div><div>lang</div><div>en</div></div>
+        </div></div>
+      </main></body></html>`;
+    fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.callsFake(async (input) => {
+      const u = typeof input === 'string' ? input : input.url;
+      if (u.includes('/.milo/caas/config.json')) {
+        return jsonResponse({ autoPublish: { data: [{ url: '/x', enabled: true }] } });
+      }
+      return htmlResponse(htmlNoContentType);
+    });
+    const result = await caasAutoPublish({
+      action: 'publish',
+      url: `${origin}/x`,
+      path: '/x',
+      origin,
+      getAuthToken: async () => 'tok',
+      host: 'x.adobe.com',
+      repo: 'x',
+    });
+    expect(result.skipped).to.be.true;
+    expect(result.reason).to.equal('no-content-type-tag');
+  });
 });
 
 describe('auto-publish: caasAutoPublish posting', () => {
