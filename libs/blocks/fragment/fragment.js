@@ -4,6 +4,20 @@ import {
 } from '../../utils/utils.js';
 
 const fragMap = {};
+export const loadedFragments = new Set();
+
+const normalizeFragmentUrl = (href) => {
+  try {
+    const u = new URL(href, document.baseURI);
+    // lowercase scheme + host, strip trailing slash from pathname
+    u.hostname = u.hostname.toLowerCase();
+    u.protocol = u.protocol.toLowerCase();
+    if (u.pathname.endsWith('/')) u.pathname = u.pathname.slice(0, -1);
+    return u.href;
+  } catch (e) {
+    return href;
+  }
+};
 
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
@@ -138,6 +152,14 @@ export default async function init(a) {
       severity: 'error',
     });
     return;
+  }
+
+  const normalizedHref = normalizeFragmentUrl(relHref);
+  if (loadedFragments.has(normalizedHref)) {
+    // eslint-disable-next-line no-console
+    console.warn('[Milo] Duplicate fragment reference detected:', normalizedHref, a);
+  } else {
+    loadedFragments.add(normalizedHref);
   }
 
   let resourcePath = a.href;
