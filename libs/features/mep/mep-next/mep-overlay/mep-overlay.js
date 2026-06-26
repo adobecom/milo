@@ -26,10 +26,10 @@ import {
   getPageUpdates,
   refreshPageUpdateCounts,
 } from './mep-overlay-highlight.js';
+import svgs from './mep-overlay-svg.js';
 
 let authenticated = false;
 const domParser = new DOMParser();
-let svgData;
 
 const CARD_DATA = {
   actions: [
@@ -56,7 +56,7 @@ const CARD_DATA = {
 };
 
 function svgIcon(key) {
-  const el = domParser.parseFromString(svgData.svg[key], 'image/svg+xml').documentElement;
+  const el = domParser.parseFromString(svgs[key], 'image/svg+xml').documentElement;
   [el, ...el.querySelectorAll('*')].forEach((node) => {
     [...node.attributes]
       .filter(({ name }) => /^on/i.test(name))
@@ -535,11 +535,7 @@ function setMasObserver() {
 }
 
 async function buildOverlay() {
-  let gnavOffset;
-  [svgData, gnavOffset] = await Promise.all([
-    fetch(new URL('./mep-overlay-svg.json', import.meta.url)).then((r) => r.json()),
-    getGnavOffset(),
-  ]);
+  const gnavOffset = await getGnavOffset();
 
   const pageId = getPageId();
   document.querySelector('main').append(
