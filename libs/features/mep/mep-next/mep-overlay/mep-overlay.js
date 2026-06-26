@@ -552,3 +552,5 @@ export default async function init() {
   setEventListeners();
   setMasObserver();
 }
+
+export { buildCardContent as __buildCardContent };
