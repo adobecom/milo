@@ -48,6 +48,20 @@ merch-card.special-offers del span[is="inline-price"] {
   text-decoration: none;
 }
 
+.footer-row-icon-checkmark {
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.footer-row-cell-checkmark:not(:has(.footer-row-icon-checkmark)) .footer-row-cell-description {
+  margin-left: calc(20px + var(--consonant-merch-spacing-xxs, 8px));
+}
+
+.footer-row-cell-description {
+  flex: 1;
+  min-width: 0;
+}
+
 @media screen and (max-width: 1199px) {
   merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
     min-width: 66px; /* same as merch links */
