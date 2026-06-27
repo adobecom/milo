@@ -147,26 +147,39 @@ body:has(.dialog-modal:not(.region-modal, .curtain-off)) #region-modal + .modal-
 
 /* ============================================================
    C2 (foundation: c2) overrides — based on Figma designs
-   Note: inactive tab uses --s2a-color-transparent-black-48 (48%);
-   Figma shows rgba(0,0,0,0.56) — confirm with designer.
    ============================================================ */
 
 html:has(meta[name="foundation"][content="c2"]) {
   .dialog-modal.region-modal {
     .georouting-wrapper {
-      padding: var(--s2a-spacing-lg);
+      overflow: visible;
+      padding: var(--s2a-spacing-lg) var(--s2a-spacing-3xl) var(--s2a-spacing-3xl);
+
+      @media (min-width: 600px) {
+        padding: var(--s2a-spacing-lg) var(--s2a-spacing-3xl) var(--s2a-spacing-3xl);
+      }
 
       &:not(:has(.tabs)) {
         padding-top: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--dialog-modal-close-size));
+
+        h3 {
+          padding-top: var(--s2a-spacing-lg);
+        }
+      }
+
+      &:has(.tabs) {
+        padding-top: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--dialog-modal-close-size));
+
+        @media (min-width: 600px) {
+          padding-top: calc(var(--s2a-spacing-lg) + (2 * var(--s2a-spacing-xs)) + var(--dialog-modal-close-size));
+        }
       }
 
       h3 {
-        font-size: var(--s2a-font-size-24);
-        line-height: var(--s2a-font-line-height-24);
-        letter-spacing: var(--s2a-font-letter-spacing-neg-0_48);
+        font-size: var(--s2a-typography-font-size-heading-5);
+        line-height: var(--s2a-typography-line-height-heading-5);
+        letter-spacing: var(--s2a-typography-letter-spacing-heading-5);
         margin: 0;
-        padding-inline-start: var(--s2a-spacing-lg);
-        padding-inline-end: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-4xl) + var(--dialog-modal-close-size));
       }
 
       &:has(.tabs) h3 {
@@ -174,25 +187,20 @@ html:has(meta[name="foundation"][content="c2"]) {
       }
     }
 
-    /* Move close button below tab section (tabs variant only) */
-    &:has(.tabs) .dialog-close {
-      top: calc((2 * var(--s2a-spacing-lg)) + 68px);
+    .dialog-close {
+      z-index: 2;
+      right: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-sm));
     }
 
     .locale-text {
       font-size: var(--s2a-typography-font-size-body-md);
       line-height: var(--s2a-typography-line-height-body-md);
       letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+      margin-inline: 0 var(--s2a-spacing-sm);
       margin-block: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
-      padding-inline-start: var(--s2a-spacing-lg);
-      padding-inline-end: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-4xl) + var(--dialog-modal-close-size));
     }
 
     /* c2 tab styles */
-    .section.tabs-background-transparent {
-      padding: var(--s2a-spacing-xs) var(--s2a-spacing-lg);
-    }
-
     .tabs {
       &.quiet div[role="tablist"] button {
         background: transparent;
@@ -214,20 +222,23 @@ html:has(meta[name="foundation"][content="c2"]) {
           color: var(--s2a-color-gray-1000);
           border-bottom-color: var(--s2a-color-gray-1000);
         }
+
+        &:focus-visible {
+          outline: 2px solid var(--s2a-color-blue-800);
+          outline-offset: -2px;
+          border-color: var(--s2a-color-gray-500);
+        }
       }
 
       .tab-content {
-        padding-top: var(--s2a-spacing-lg);
+        padding: 0;
       }
     }
     /* c2 tab styles */
 
     .link-wrapper {
-      padding: var(--s2a-spacing-lg);
+      padding: var(--s2a-spacing-lg) var(--s2a-spacing-sm) 0 0;
       line-height: initial;
-      gap: var(--s2a-spacing-lg);
-      display: flex;
-      align-items: center;
 
       > a {
         font-size: var(--s2a-typography-font-size-body-sm);
@@ -235,15 +246,11 @@ html:has(meta[name="foundation"][content="c2"]) {
         letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
 
         &:first-child {
-          margin-inline-end: 0;
+          margin-inline-end: var(--s2a-spacing-md);
         }
       }
 
       .con-button.blue {
-        background-color: var(--s2a-color-blue-900);
-        border-color: var(--s2a-color-blue-900);
-        color: var(--s2a-color-gray-25);
-        box-sizing: border-box;
         display: inline-flex;
         flex-direction: row;
         align-items: center;
@@ -256,8 +263,8 @@ html:has(meta[name="foundation"][content="c2"]) {
 
         img {
           float: none;
-          margin-left: 0;
-          margin-top: 3px;
+          margin-inline-start: 0;
+          margin-block-start: 3px;
         }
       }
 
@@ -275,22 +282,29 @@ html:has(meta[name="foundation"][content="c2"]) {
     }
 
     .picker {
-      padding: var(--s2a-spacing-xs) var(--s2a-spacing-md);
+      padding: var(--s2a-spacing-xs) 0;
       box-sizing: border-box;
       min-width: auto;
       border-radius: var(--s2a-spacing-sm);
       border: 1px solid var(--s2a-color-transparent-black-08);
       margin-top: var(--s2a-spacing-xs);
-      display: flex;
-      flex-direction: column;
-      gap: var(--s2a-spacing-sm);
+
+      &.top {
+        bottom: var(--s2a-spacing-2xl);
+      }
 
       li {
+        &:not(:last-child) {
+          margin-bottom: var(--s2a-spacing-sm);
+        }
+
         > a {
-          padding: var(--s2a-spacing-2xs) 0;
+          padding: var(--s2a-spacing-2xs) var(--s2a-spacing-md);
           font-size: var(--s2a-typography-font-size-body-sm);
           line-height: var(--s2a-typography-line-height-body-sm);
           letter-spacing: var(--s2a-typography-letter-spacing-body-sm);
+          box-sizing: border-box;
+          width: 100%;
           margin-inline-end: 0;
           text-decoration: none;
           display: block;
@@ -307,6 +321,23 @@ html:has(meta[name="foundation"][content="c2"]) {
   @media (min-width: 838px) {
     .dialog-modal.region-modal {
       max-width: 798px;
+
+      .dialog-close {
+        right: calc(2 * var(--s2a-spacing-lg));
+        top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs));
+      }
+
+      &:has(.tabs) .dialog-close {
+        top: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-xs) + 25px); /* Adjust based on tab height */
+      }
+
+      .tabs div[role="tablist"] {
+        padding-top: var(--s2a-spacing-xs);
+      }
+
+      .link-wrapper > a:first-child {
+        margin-inline-end: var(--s2a-spacing-lg);
+      }
     }
   }
 }
