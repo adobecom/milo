@@ -86,5 +86,6 @@ export default async function init(el) {
     });
     return {};
   });
+  gnavPromise.then(() => requestAnimationFrame(() => window.lenis?.resize()));
   config.federal = { fedsGlobalNavigation: gnavPromise };
 }
