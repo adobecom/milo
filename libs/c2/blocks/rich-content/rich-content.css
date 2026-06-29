@@ -76,6 +76,11 @@
     min-width: 560px;
     width: calc((100% / var(--grid-columns)) * 8);
   }
+
+  .section[class*='-up'] .rich-content .content > * {
+    min-width: unset;
+    width: unset;
+  }
 }
 
 @media (width >= 1024px) {
