@@ -247,6 +247,11 @@
   .rich-content .content [class*="body-"]:not(.action-area) {
     min-width: 560px;
     width: calc((100% / var(--grid-columns)) * 8);
+
+    .section[class*='-up'] & {
+      min-width: unset;
+      width: unset;
+    }
   }
 
   .rich-content.narrow .content [class*="body-"]:not(.action-area),
