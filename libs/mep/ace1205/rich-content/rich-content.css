@@ -202,7 +202,7 @@
 }
 
 .section:has(.rich-content.hero:not(.jump-link)) {
-  --rc-hero-gradient: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%);
+  --rc-hero-gradient: linear-gradient(180deg, var(--s2a-color-gray-1000) 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, var(--s2a-color-gray-1000) 95%);
 }
 
 .section.has-background:has(.rich-content.hero:not(.jump-link)) .section-background picture::after {
