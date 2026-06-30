@@ -709,6 +709,57 @@ function resolveInheritance(rows, previousContent) {
   });
 }
 
+const HERO_GRADIENT_KEY = 'hero-gradient';
+const HERO_GRADIENT_VARIANTS = [
+  ['jump-link', '--rc-hero-jump-link-gradient'],
+  ['hero', '--rc-hero-gradient'],
+];
+
+function isCssGradient(value) {
+  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
+}
+
+function getHeroGradientProp(el) {
+  return HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
+}
+
+function extractHeroGradientFromRows(rows) {
+  let gradient;
+  rows.forEach((row) => {
+    if (row.children?.length < 2) return;
+    const key = row.children[0].textContent.trim().toLowerCase();
+    if (key !== HERO_GRADIENT_KEY) return;
+    const value = row.children[1].textContent.trim();
+    if (!isCssGradient(value)) return;
+    gradient = value;
+    row.remove();
+  });
+  return gradient;
+}
+
+function applyHeroGradient(el, gradient) {
+  if (!gradient) return;
+  const prop = getHeroGradientProp(el);
+  const section = el.closest('.section');
+  if (!prop || !section) return;
+  section.style.setProperty(prop, gradient);
+}
+
+function extractPreViewportHeroGradient(el) {
+  const children = [...el.children];
+  const firstDelimiterIdx = children.findIndex((child) => getDelimiterKeyword(child));
+  const preRows = firstDelimiterIdx < 0 ? children : children.slice(0, firstDelimiterIdx);
+  return extractHeroGradientFromRows(preRows);
+}
+
+function getInheritedHeroGradient(content, vpKeys, activeIndex, fallback) {
+  for (let i = activeIndex; i >= 0; i -= 1) {
+    const gradient = content[vpKeys[i]]?.heroGradient;
+    if (gradient) return gradient;
+  }
+  return fallback;
+}
+
 function parseViewportContent(el) {
   const children = [...el.children];
   const content = {};
@@ -742,7 +793,11 @@ function parseViewportContent(el) {
     const variants = parseVariants(delimiterEl.textContent);
     delimiterEls.push(delimiterEl);
 
-    content[keyword] = { container, variants };
+    content[keyword] = {
+      container,
+      variants,
+      heroGradient: extractHeroGradientFromRows([...container.children]),
+    };
   });
 
   delimiterEls.forEach((d) => d.remove());
@@ -758,7 +813,7 @@ function parseViewportContent(el) {
   return { hasViewportVariations: true, content, allVariants };
 }
 
-function applyViewportContent(el, viewports) {
+function applyViewportContent(el, viewports, globalHeroGradient) {
   if (!viewports.hasViewportVariations) return;
 
   const { content, allVariants } = viewports;
@@ -778,6 +833,9 @@ function applyViewportContent(el, viewports) {
       el.classList.remove(...allVariants);
       if (variants.length) el.classList.add(...variants);
       el.replaceChildren(...children);
+      const activeIndex = vpKeys.indexOf(viewport);
+      const gradient = getInheritedHeroGradient(content, vpKeys, activeIndex, globalHeroGradient);
+      applyHeroGradient(el, gradient);
       decorateTextOverrides(el);
     };
 
@@ -786,46 +844,21 @@ function applyViewportContent(el, viewports) {
   });
 }
 
-const HERO_GRADIENT_KEY = 'hero-gradient';
-const HERO_GRADIENT_VARIANTS = [
-  ['jump-link', '--rc-hero-jump-link-gradient'],
-  ['hero', '--rc-hero-gradient'],
-];
-
-function isCssGradient(value) {
-  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
-}
-
-export function decorateHeroGradient(el) {
-  const prop = HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
-  if (!prop) return;
-
-  const section = el.closest('.section');
-  if (!section) return;
-
-  [...el.children].forEach((row) => {
-    if (row.children?.length < 2) return;
-    const key = row.children[0].textContent.trim().toLowerCase();
-    if (key !== HERO_GRADIENT_KEY) return;
-    const value = row.children[1].textContent.trim();
-    if (!isCssGradient(value)) return;
-    section.style.setProperty(prop, value);
-    row.remove();
-  });
-}
-
 /* decorateFn receives:
  * - block — the element to decorate (viewport container or el itself)
  * - root  — for checking base classes on detached containers */
 export function decorateViewportContent(el, decorateFn) {
+  const globalHeroGradient = extractPreViewportHeroGradient(el);
   const viewports = parseViewportContent(el);
   if (viewports.hasViewportVariations) {
     Object.values(viewports.content).forEach(({ container }) => {
       decorateFn(container, el);
     });
-    applyViewportContent(el, viewports);
+    applyViewportContent(el, viewports, globalHeroGradient);
   } else {
+    const gradient = extractHeroGradientFromRows([...el.children]) || globalHeroGradient;
     decorateFn(el, el);
+    applyHeroGradient(el, gradient);
     decorateTextOverrides(el);
   }
   return viewports;

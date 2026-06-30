@@ -1,8 +1,4 @@
-import {
-  decorateBlockText,
-  decorateHeroGradient,
-  decorateViewportContent,
-} from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 function hangOpeningQuote(header) {
@@ -40,6 +36,5 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  decorateHeroGradient(el);
   decorateViewportContent(el, decorate);
 }
