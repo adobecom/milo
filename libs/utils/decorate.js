@@ -786,6 +786,34 @@ function applyViewportContent(el, viewports) {
   });
 }
 
+const HERO_GRADIENT_KEY = 'hero-gradient';
+const HERO_GRADIENT_VARIANTS = [
+  ['jump-link', '--rc-hero-jump-link-gradient'],
+  ['hero', '--rc-hero-gradient'],
+];
+
+function isCssGradient(value) {
+  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
+}
+
+export function decorateHeroGradient(el) {
+  const prop = HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
+  if (!prop) return;
+
+  const section = el.closest('.section');
+  if (!section) return;
+
+  [...el.children].forEach((row) => {
+    if (row.children?.length < 2) return;
+    const key = row.children[0].textContent.trim().toLowerCase();
+    if (key !== HERO_GRADIENT_KEY) return;
+    const value = row.children[1].textContent.trim();
+    if (!isCssGradient(value)) return;
+    section.style.setProperty(prop, value);
+    row.remove();
+  });
+}
+
 /* decorateFn receives:
  * - block — the element to decorate (viewport container or el itself)
  * - root  — for checking base classes on detached containers */
