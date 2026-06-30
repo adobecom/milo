@@ -1,7 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import {
   getConfig,
-  getMetadata,
   createTag,
   loadStyle,
   getLangRoutingConfig,
@@ -62,8 +61,7 @@ async function showBanner(market, config) {
   const banner = buildBanner(market, translatedUrl);
   if (!banner) return;
   const { codeRoot, miloLibs } = config;
-  const cssFile = getMetadata('foundation') === 'c2' ? 'language-banner-c2.css' : 'language-banner.css';
-  loadStyle(`${miloLibs || codeRoot}/features/language-banner/${cssFile}`);
+  loadStyle(`${miloLibs || codeRoot}/features/language-banner/language-banner.css`);
 
   const pagePrefix = config.locale.prefix?.replace('/', '') || 'us';
   // eventName = "suggestedSite-currentSite|language-banner"
