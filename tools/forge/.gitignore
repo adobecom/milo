@@ -1,0 +1,7 @@
+# Build dependencies
+node_modules/
+
+# If Vite ever creates a dist/ (e.g. vite preview), ignore it.
+# The three build artifacts (page-forge.html, page-forge.js, page-forge.css)
+# live directly in client/ and ARE committed — they are the deploy unit.
+dist/

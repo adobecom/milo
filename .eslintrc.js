@@ -60,6 +60,7 @@ module.exports = {
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
+    '/tools/forge/*',
     '/libs/features/spectrum-web-components/*',
     '/libs/navigation/dist/*',
   ],

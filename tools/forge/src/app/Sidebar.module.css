@@ -1,0 +1,306 @@
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	width: 232px;
+	flex-shrink: 0;
+	background: var(--pf-surface);
+	border-right: 1px solid var(--pf-border);
+	overflow: hidden;
+	transition: width 0.18s ease;
+}
+
+.listWrap {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.list {
+	list-style: none;
+	margin: 0;
+	padding: 2px 0 0;
+	flex: 1;
+	overflow-y: auto;
+}
+
+/* ── Time / state groups ── */
+.group {
+	list-style: none;
+}
+
+/* The first group's label line also carries the collapse control, so the label
+   and the chevron sit on one baseline (no orphan collapse row). */
+.groupHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-right: 6px;
+}
+
+/* Sentence-case, faint, no border/badge/uppercase — NOT an eyebrow kicker. */
+.groupLabel {
+	display: block;
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--pf-text-faint);
+	padding: 14px 18px 6px;
+}
+
+/* When inside .groupHead the label keeps its left/top rhythm but yields the
+   trailing space to the collapse button. */
+.groupHead .groupLabel {
+	flex: 1;
+	min-width: 0;
+}
+
+/* The collapse button is visually quiet and small so the group label stays the
+   dominant text on the line. */
+.groupHead :global(button) {
+	flex-shrink: 0;
+}
+
+.groupList {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+/* ── One session row ── */
+.item {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 8px 12px;
+	margin: 2px 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.1s;
+}
+
+.item:hover {
+	background: var(--pf-surface-2);
+}
+
+.itemActive {
+	background: var(--pf-accent-soft) !important;
+}
+
+.itemTitle {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--pf-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+.itemActive .itemTitle {
+	font-weight: 600;
+}
+
+.meta {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+/* Source becomes a tinted WORD, not a filled chip — keeps Figma/URL triage
+   without the filled blue pill that collided with interactive blue. */
+.src {
+	font-size: 11px;
+	white-space: nowrap;
+}
+
+.srcFigma { color: #6b27d1; }
+.srcUrl { color: #0e63b3; }
+.srcHtml { color: #7a6f4c; }
+
+.mid {
+	font-size: 11px;
+	color: var(--pf-text-faint);
+}
+
+.age {
+	font-size: 11px;
+	color: var(--pf-text-faint);
+	white-space: nowrap;
+}
+
+.phase {
+	font-size: 11px;
+	color: var(--pf-text-muted);
+	white-space: nowrap;
+}
+
+.del {
+	all: unset;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-left: auto;
+	cursor: pointer;
+	color: var(--pf-text-faint);
+	padding: 1px 4px;
+	border-radius: 4px;
+	line-height: 1;
+	opacity: 0;
+	transition: opacity 0.1s, color 0.1s, background 0.1s;
+}
+
+.del svg,
+.del [class*="spectrum-Icon"] {
+	width: 13px;
+	height: 13px;
+}
+
+.item:hover .del {
+	opacity: 1;
+}
+
+.del:hover {
+	color: var(--pf-bad);
+	background: var(--pf-surface-2);
+}
+
+/* ── Status indicator: shape + neutral/semantic fill. NO gradient, NO blue. ── */
+.st {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+/* solid green = settled, good (published / live) */
+.stDone { background: var(--pf-good); }
+
+/* solid yellow = built but awaiting the deliberate publish step ("Ready to
+   publish"). Settled (solid), but a distinct color from live so a built page
+   never reads as already shipped. Spectrum yellow-600. */
+.stReady { background: var(--pf-ready); }
+
+/* solid red = needs review (real problem only) */
+.stErr { background: var(--pf-bad); }
+
+/* hollow gray = idle (paused / cancelled) */
+.stIdle {
+	border: 1.5px solid var(--pf-text-faint);
+	background: transparent;
+}
+
+/* hollow + breathing = working. The 2.4s opacity breathe is the same physics as
+   the entry/generating screens (forge.css pf-ring) — native to v4, not bolted on. */
+.stGen {
+	border: 1.5px solid var(--pf-text-muted);
+	background: transparent;
+	animation: pf-side-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes pf-side-breathe {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.45; }
+}
+
+/* ── Empty state ── */
+.empty {
+	flex: 1;
+	padding: 40px 22px 0;
+	text-align: center;
+}
+
+/* The WebPage icon: a quiet, faint browser-frame glyph. Sized + tinted here;
+   the S2 icon inherits color via currentColor. */
+.emptyGlyph {
+	display: block;
+	width: 30px;
+	height: 30px;
+	margin: 0 auto 14px;
+	color: var(--pf-border-strong);
+}
+
+.emptyGlyph svg,
+.emptyGlyph[class*="spectrum-Icon"] {
+	width: 30px;
+	height: 30px;
+}
+
+.emptyHead {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--pf-text-muted);
+	margin: 0 0 4px;
+}
+
+.emptySub {
+	font-size: 12px;
+	color: var(--pf-text-faint);
+	margin: 0;
+	line-height: 1.5;
+}
+
+/* ── Footer ── */
+.loadMore {
+	all: unset;
+	cursor: pointer;
+	padding: 10px 16px;
+	font-size: 12px;
+	color: var(--pf-text-muted);
+	border-top: 1px solid var(--pf-border);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	box-sizing: border-box;
+	transition: color 0.15s;
+}
+
+.loadMore svg,
+.loadMore [class*="spectrum-Icon"] {
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+}
+
+.loadMore:hover {
+	color: var(--pf-text);
+}
+
+/* ── Collapsed rail = status spine ── */
+.rail {
+	width: 44px;
+	align-items: center;
+	padding: 8px 0;
+}
+
+.spine {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	margin-top: 6px;
+	width: 100%;
+}
+
+.spineItem {
+	all: unset;
+	width: 30px;
+	height: 26px;
+	display: grid;
+	place-items: center;
+	border-radius: 6px;
+	cursor: pointer;
+}
+
+.spineItem:hover {
+	background: var(--pf-surface-2);
+}
+
+.spineItemActive {
+	background: var(--pf-accent-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.stGen { animation: none; opacity: 0.7; }
+}

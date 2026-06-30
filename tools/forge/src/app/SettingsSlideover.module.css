@@ -1,0 +1,153 @@
+/* Slide-over settings. Always mounted; .open toggles the transform so it animates
+   in and out (the old version returned null, which can't transition). */
+.scrim {
+	position: fixed;
+	inset: 0;
+	background: rgba(20, 20, 20, 0.32);
+	z-index: 500;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.22s;
+}
+
+.scrimOpen {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.slideover {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 460px;
+	max-width: 92vw;
+	display: flex;
+	flex-direction: column;
+	background: var(--pf-surface);
+	color: var(--pf-text);
+	z-index: 501;
+	box-shadow: var(--pf-shadow-lg);
+	transform: translateX(100%);
+	transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slideoverOpen {
+	transform: translateX(0);
+}
+
+.head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 24px 16px;
+	border-bottom: 1px solid var(--pf-border);
+	flex-shrink: 0;
+}
+
+.title {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+.closeBtn {
+	all: unset;
+	display: grid;
+	place-items: center;
+	cursor: pointer;
+	width: 30px;
+	height: 30px;
+	border-radius: 6px;
+	color: var(--pf-text-faint);
+}
+
+.closeBtn svg,
+.closeBtn [class*="spectrum-Icon"] {
+	width: 16px;
+	height: 16px;
+}
+
+.closeBtn:hover {
+	color: var(--pf-text);
+	background: var(--pf-surface-2);
+}
+
+.body {
+	flex: 1;
+	overflow-y: auto;
+	padding: 8px 24px 20px;
+}
+
+/* A quiet group: sentence-case heading, optional one-line intro. NOT an uppercase
+   letterspaced eyebrow. A hairline separates groups. */
+.group {
+	padding: 18px 0 0;
+}
+
+.group + .group {
+	border-top: 1px solid var(--pf-border);
+	margin-top: 18px;
+}
+
+.groupTitle {
+	margin: 0 0 4px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--pf-text);
+}
+
+.groupIntro {
+	margin: 0 0 14px;
+	font-size: 12.5px;
+	color: var(--pf-text-faint);
+	line-height: 1.5;
+}
+
+.field {
+	margin-bottom: 16px;
+}
+
+.field:last-child {
+	margin-bottom: 0;
+}
+
+/* Inline "Connected" status next to the Figma field label — green dot, never blue. */
+.connected {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11.5px;
+	font-weight: 600;
+	color: var(--pf-text-muted);
+	background: var(--pf-surface-2);
+	padding: 2px 9px;
+	border-radius: 20px;
+	margin-left: 8px;
+}
+
+.connectedDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--pf-good);
+}
+
+.footer {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 16px 24px;
+	border-top: 1px solid var(--pf-border);
+	background: var(--pf-surface-2);
+	flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scrim,
+	.slideover {
+		transition: none !important;
+	}
+}

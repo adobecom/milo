@@ -1,0 +1,53 @@
+/* ── ActivityLog — custom CSS (not using S2 cascade layers intentionally) ──── */
+
+.pf-log-container {
+  margin-top: 8px;
+}
+
+/* Scrollable log area */
+.pf-log {
+  font-family: 'Menlo', 'Monaco', 'Cascadia Code', 'Consolas', 'Liberation Mono', monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 12px;
+  background: var(--spectrum-gray-75, #fafafa);
+  border: 1px solid var(--spectrum-gray-200, #e5e5e5);
+  border-radius: 4px;
+  scroll-behavior: smooth;
+}
+
+/* Each line */
+.pf-log-line {
+  padding: 1px 0;
+  color: var(--spectrum-gray-800, #333);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.pf-log-line strong {
+  font-weight: 700;
+  color: var(--spectrum-gray-900, #1a1a1a);
+}
+
+.pf-log-line em {
+  font-style: italic;
+}
+
+.pf-log-line code {
+  background: var(--spectrum-gray-100, #f0f0f0);
+  border-radius: 2px;
+  padding: 0 3px;
+  font-size: 10.5px;
+}
+
+.pf-log-line a {
+  color: var(--spectrum-blue-800, #0066cc);
+  text-decoration: underline;
+}
+
+.pf-log-line a:hover {
+  color: var(--spectrum-blue-900, #004d99);
+}

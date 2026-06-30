@@ -1,0 +1,108 @@
+.backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(20, 20, 20, 0.32);
+	z-index: 500;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+}
+
+.modal {
+	width: 440px;
+	max-width: 100%;
+	background: var(--pf-surface);
+	border-radius: var(--pf-radius-xl);
+	box-shadow: var(--pf-shadow-lg);
+	overflow: hidden;
+	color: var(--pf-text);
+}
+
+.head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 22px 24px 0;
+}
+
+.glyph {
+	width: 38px;
+	height: 38px;
+	border-radius: 9px;
+	background: #f3f0ff;
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+}
+
+.glyph svg {
+	width: 21px;
+	height: 21px;
+}
+
+.title {
+	margin: 0;
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+.close {
+	all: unset;
+	margin-left: auto;
+	width: 30px;
+	height: 30px;
+	border-radius: 6px;
+	color: var(--pf-text-faint);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+}
+
+.close:hover {
+	background: var(--pf-surface-2);
+	color: var(--pf-text);
+}
+
+.close svg,
+.close [class*="spectrum-Icon"] {
+	width: 16px;
+	height: 16px;
+}
+
+.body {
+	padding: 8px 24px 22px;
+}
+
+.sub {
+	font-size: 13.5px;
+	color: var(--pf-text-muted);
+	line-height: 1.5;
+	margin: 6px 0 18px;
+}
+
+.help {
+	font-size: 12.5px;
+	color: var(--pf-text-faint);
+	margin: 8px 2px 0;
+	line-height: 1.5;
+}
+
+.link {
+	color: var(--pf-accent);
+	text-decoration: none;
+	font-weight: 600;
+}
+
+.link:hover {
+	text-decoration: underline;
+}
+
+.foot {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 16px 24px;
+	border-top: 1px solid var(--pf-border);
+	background: var(--pf-surface-2);
+}

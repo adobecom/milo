@@ -1,0 +1,2753 @@
+/* Page Forge — global CSS
+ *
+ * Ported from the vanilla page-forge.css. S2's page.css owns background/color
+ * on html/body — we deliberately skip those two declarations here.
+ */
+
+:root {
+  --pf-bg: #f4f4f4;
+  --pf-surface: #ffffff;
+  --pf-surface-2: #fafafa;
+  --pf-surface-3: #f0f0ee;
+  --pf-border: #e6e6e3;
+  --pf-border-strong: #cdcdc8;
+  --pf-text: #141414;
+  --pf-text-muted: #565650;
+  --pf-text-faint: #8e8e88;
+  --pf-accent: #1473e6;
+  --pf-accent-hover: #0f5fb5;
+  --pf-accent-soft: rgba(20, 115, 230, 0.10);
+  --pf-good: #198038;
+  --pf-warn: #b45309;
+  /* "Ready to publish" gate — Spectrum yellow. The BRIGHTNESS lives in the chip
+     fill (a lemon wash of yellow-300 #f8d804); the dot/marker is yellow-400
+     (#e8c600, vivid yet visible on white); text is a dark warm near-black so the
+     chip reads unmistakably yellow while staying AA-legible (pure yellow text
+     always fails contrast — the fill carries the color, the text stays dark). */
+  --pf-ready: #e8c600;
+  --pf-ready-text: #4a3a00;
+  --pf-bad: #cc2233;
+  --pf-info: #5a5a52;
+  /* Stardust — the Reimagine engine's identity hue. ATTRIBUTION ONLY: it tints the
+     Stardust mark + the "Reimagined with Stardust" chip and nothing else (never a
+     button, link, status pill, or the composition bar). Indigo sits clearly cooler
+     than the live-control azure (#1473e6) and bluer than any Figma violet, so it
+     never reads as "control" or "Figma". */
+  --pf-stardust: #4b3fd9;
+  --pf-stardust-text: #3a30b0;
+  --pf-stardust-soft: rgba(75, 63, 217, 0.10);
+  --pf-shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --pf-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+  --pf-shadow-lg: 0 4px 8px rgba(0,0,0,0.06), 0 12px 32px rgba(0,0,0,0.08);
+  --pf-radius: 6px;
+  --pf-radius-lg: 10px;
+  --pf-radius-xl: 14px;
+  --pf-font: adobe-clean-spectrum-vf, 'adobe-clean', 'Adobe Clean', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --pf-mono: ui-monospace, 'SF Mono', Menlo, 'Cascadia Mono', Consolas, monospace;
+  --pf-gradient: linear-gradient(135deg, #b539c8 0%, #7155fa 55%, #3b63fb 100%);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  /* background and color intentionally omitted — owned by S2 page.css */
+  font-family: var(--pf-font);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+@layer forge-base {
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+  }
+
+  button:disabled { cursor: not-allowed; opacity: 0.55; }
+}
+
+input, textarea {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+a { color: var(--pf-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Shell ──────────────────────────────────────────────────────────────── */
+
+.pf-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.pf-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 20px;
+  background: var(--pf-surface);
+  border-bottom: 1px solid var(--pf-border);
+  flex-shrink: 0;
+  box-shadow: var(--pf-shadow-sm);
+  z-index: 10;
+}
+
+.pf-brand { display: flex; align-items: center; gap: 10px; }
+.pf-brand-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, var(--pf-accent) 0%, #6c5ce7 100%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+}
+.pf-brand-dot::after { content: 'PF'; font-size: 9px; letter-spacing: -0.02em; }
+.pf-brand-name {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  color: var(--pf-text);
+}
+
+.pf-topbar-actions { display: flex; gap: 4px; }
+
+.pf-iconbtn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--pf-radius);
+  font-size: 16px;
+  color: var(--pf-text-muted);
+}
+.pf-iconbtn:hover { background: var(--pf-surface-2); color: var(--pf-text); }
+
+.pf-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+
+.pf-sidebar {
+  width: 280px;
+  border-right: 1px solid var(--pf-border);
+  background: var(--pf-surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.pf-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px 10px;
+}
+.pf-side-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--pf-text-muted);
+}
+
+.pf-side-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+.pf-side-empty {
+  padding: 24px 16px;
+  color: var(--pf-text-faint);
+  font-style: italic;
+  text-align: center;
+  font-size: 12.5px;
+}
+.pf-side-loadmore {
+  flex-shrink: 0;
+  margin: 0 8px 10px;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pf-text-muted);
+  background: var(--pf-surface-2);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  cursor: pointer;
+}
+.pf-side-loadmore:hover:not(:disabled) { background: var(--pf-surface-3); color: var(--pf-text); }
+.pf-side-loadmore:disabled { opacity: 0.6; cursor: default; }
+.pf-side-item {
+  padding: 10px 12px;
+  border-radius: var(--pf-radius);
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.1s;
+}
+.pf-side-item:hover { background: var(--pf-surface-2); }
+.pf-side-item--active {
+  background: var(--pf-accent-soft);
+}
+.pf-side-item--active .pf-side-item-label {
+  color: var(--pf-text);
+  font-weight: 600;
+}
+.pf-side-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pf-side-chip {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.pf-side-chip--figma { background: #f5ecff; color: #6b27d1; }
+.pf-side-chip--eds-url { background: #e3f1fd; color: #0e63b3; }
+.pf-side-chip--raw-html { background: #ede9da; color: #7a6f4c; }
+.pf-side-item-label {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  color: var(--pf-text);
+}
+.pf-side-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--pf-text-faint);
+}
+.pf-side-remove {
+  margin-left: auto;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--pf-text-faint);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.1s, color 0.1s;
+}
+.pf-side-item:hover .pf-side-remove { opacity: 1; }
+.pf-side-remove:hover { color: var(--pf-bad); background: rgba(200, 60, 60, 0.08); }
+.pf-shipped { font-size: 12px; }
+
+.pf-side-running {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--pf-gradient);
+  animation: pf-pulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(113, 85, 250, 0.55);
+}
+
+/* Collapsed sidebar rail */
+.pf-sidebar--collapsed {
+  width: 44px;
+}
+.pf-sidebar--collapsed .pf-side-list,
+.pf-sidebar--collapsed .pf-side-title,
+.pf-sidebar--collapsed .pf-side-loadmore,
+.pf-sidebar--collapsed .pf-side-empty {
+  display: none;
+}
+.pf-side-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0;
+  flex: 1;
+}
+.pf-side-collapse-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--pf-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+.pf-side-collapse-btn:hover {
+  background: var(--pf-surface-2);
+  color: var(--pf-text);
+}
+.pf-side-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── Work area ─────────────────────────────────────────────────────────── */
+
+.pf-work-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pf-work {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.pf-active-session {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Progress timeline card ──────────────────────────────────────────────── */
+
+.pf-timeline {
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-xl);
+  padding: 20px 20px 16px;
+  box-shadow: var(--pf-shadow);
+}
+
+/* Grid of 6 equal-width step cells; track pseudo-elements use percentage math
+   anchored to the grid so the gradient always passes through icon centres. */
+.pf-tl-steps {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  position: relative;
+}
+
+/* Unfilled background track — runs from centre-of-col-0 to centre-of-col-5 */
+.pf-tl-steps::before {
+  content: '';
+  position: absolute;
+  left: calc(100% / 12);
+  right: calc(100% / 12);
+  top: 18px; /* half of 36px node height */
+  transform: translateY(-50%);
+  height: 2px;
+  background: var(--pf-border-strong);
+  border-radius: 1px;
+  z-index: 0;
+}
+
+/* Gradient fill — advances with --pf-step-fill (0–1) */
+.pf-tl-steps::after {
+  content: '';
+  position: absolute;
+  left: calc(100% / 12);
+  top: 18px;
+  transform: translateY(-50%);
+  /* full track width = (100% - 100%/6) = 5/6 * 100%; scale by fill ratio */
+  width: calc((100% - 100% / 6) * var(--pf-step-fill, 0));
+  height: 2px;
+  background: var(--pf-accent);
+  border-radius: 1px;
+  z-index: 0;
+  transition: width 0.5s cubic-bezier(.4, 0, .2, 1);
+}
+
+.pf-tl-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Step icon node ───────────────────────────────────────────────────────── */
+
+.pf-tl-node {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--pf-surface);
+  border: 2px solid var(--pf-border-strong);
+  color: var(--pf-text-faint);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pf-tl-node--past {
+  background: var(--pf-accent);
+  border-color: transparent;
+  color: #fff;
+}
+
+.pf-tl-node--active {
+  background: var(--pf-accent);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(20, 115, 230, 0.22), 0 0 10px rgba(20, 115, 230, 0.50);
+  animation: pf-pulse 1.4s ease-in-out infinite;
+}
+
+.pf-tl-node--error {
+  background: #f56565;
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 0 18px rgba(245, 101, 101, 0.40);
+}
+
+.pf-tl-node--cancelled {
+  background: #9aa0a6;
+  border-color: transparent;
+  color: white;
+}
+
+/* ── Step icon sizing ─────────────────────────────────────────────────────── */
+
+.pf-tl-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  color: inherit;
+}
+
+/* S2 icons use var(--iconPrimary) for path fill — override on coloured nodes */
+.pf-tl-node--past,
+.pf-tl-node--active,
+.pf-tl-node--error,
+.pf-tl-node--cancelled {
+  --iconPrimary: #fff;
+}
+
+/* ── Step label ───────────────────────────────────────────────────────────── */
+
+.pf-tl-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--pf-text-faint);
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.pf-tl-label--lit {
+  color: var(--pf-text-muted);
+  font-weight: 600;
+}
+
+.pf-tl-label--error {
+  color: var(--pf-bad);
+}
+
+.pf-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--pf-text-muted);
+}
+
+/* ── Input panel ─────────────────────────────────────────────────────────── */
+
+.pf-input-card {
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-xl);
+  padding: 32px;
+  box-shadow: var(--pf-shadow);
+  max-width: 760px;
+  margin: 24px auto 0;
+  width: 100%;
+}
+.pf-input-title {
+  margin: 0 0 6px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--pf-text);
+}
+.pf-input-sub {
+  margin: 0 0 28px;
+  color: var(--pf-text-muted);
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+.pf-field { margin-bottom: 16px; }
+.pf-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-muted);
+  margin-bottom: 6px;
+}
+.pf-label-opt {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--pf-text-faint);
+}
+
+.pf-segmented {
+  display: inline-flex;
+  background: var(--pf-surface-3);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+.pf-seg {
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pf-text-muted);
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.pf-seg:hover { color: var(--pf-text); }
+.pf-seg--active {
+  background: var(--pf-surface);
+  color: var(--pf-text);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* ── Toggle row (Settings → Developer → Debug mode) ────────────────────────────
+   A full-width labeled switch: copy on the left, an iOS-style track on the right.
+   Quiet when off; accent track when on. */
+.pf-toggle-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  width: 100%; padding: 14px 16px; text-align: left; cursor: pointer;
+  background: var(--pf-surface); border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius); transition: border-color 0.15s, background 0.15s;
+}
+.pf-toggle-row:hover { border-color: var(--pf-border-strong); }
+.pf-toggle-row--on { border-color: var(--pf-accent-soft); background: var(--pf-accent-soft); }
+.pf-toggle-copy { display: flex; flex-direction: column; gap: 3px; }
+.pf-toggle-label { font-size: 14px; font-weight: 600; color: var(--pf-text); }
+.pf-toggle-desc { font-size: 12.5px; color: var(--pf-text-muted); line-height: 1.45; }
+.pf-toggle-track {
+  flex-shrink: 0; position: relative; width: 40px; height: 22px; border-radius: 11px;
+  background: var(--pf-border-strong); transition: background 0.18s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+.pf-toggle-row--on .pf-toggle-track { background: var(--pf-accent); }
+.pf-toggle-knob {
+  position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.18s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+.pf-toggle-row--on .pf-toggle-knob { transform: translateX(18px); }
+.pf-toggle-row:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--pf-accent-soft); }
+@media (prefers-reduced-motion: reduce) {
+  .pf-toggle-track, .pf-toggle-knob { transition: none !important; }
+}
+
+.pf-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--pf-border-strong);
+  border-radius: var(--pf-radius);
+  background: var(--pf-surface);
+  color: var(--pf-text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  font-size: 14px;
+}
+.pf-input:focus {
+  border-color: var(--pf-accent);
+  box-shadow: 0 0 0 3px var(--pf-accent-soft);
+}
+.pf-input--ta { resize: vertical; min-height: 80px; font-family: var(--pf-mono); font-size: 12.5px; line-height: 1.5; }
+.pf-input--intent { resize: vertical; min-height: 64px; line-height: 1.5; }
+.pf-input--select { max-width: 420px; }
+
+.pf-help {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--pf-text-faint);
+  line-height: 1.4;
+}
+
+.pf-section-title {
+  margin: 24px 0 4px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pf-text);
+  border-top: 1px solid var(--pf-border, rgba(255, 255, 255, 0.08));
+  padding-top: 16px;
+}
+.pf-section-title:first-of-type { border-top: none; padding-top: 0; }
+.pf-section-intro { margin: 0 0 12px; }
+
+.pf-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.pf-radio,
+.pf-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.pf-radio input,
+.pf-checkbox input {
+  margin: 2px 0 0;
+  flex: 0 0 auto;
+}
+
+.pf-form-error {
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: rgba(209, 25, 57, 0.08);
+  border-left: 3px solid var(--pf-bad);
+  color: var(--pf-bad);
+  font-size: 13px;
+  border-radius: 0 var(--pf-radius) var(--pf-radius) 0;
+}
+
+.pf-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pf-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: none;
+  background: #3b63fb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s cubic-bezier(.45, 0, .4, 1);
+}
+.pf-btn-primary:hover:not(:disabled) { background: #274dea; }
+.pf-btn-primary:active:not(:disabled) { background: #2549e5; }
+.pf-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* The entry CTA — a touch larger than a stock primary, it's THE action. */
+.pf-entry-cta { min-height: 40px; padding: 0 24px; font-size: 15px; border-radius: 20px; }
+/* Reimagine gets a Stardust-family gradient so the heavier path stands out AND
+   reinforces the engine's indigo identity (not a new palette). Used only here.
+   The hover/active rules repeat the gradient so the base primary's solid-blue
+   hover doesn't win and flash the button back to blue. */
+.pf-btn-primary.pf-btn-gradient,
+.pf-btn-primary.pf-btn-gradient:hover:not(:disabled),
+.pf-btn-primary.pf-btn-gradient:active:not(:disabled) {
+  background: linear-gradient(120deg, var(--pf-stardust) 0%, #7048c4 100%);
+}
+.pf-btn-primary.pf-btn-gradient:hover:not(:disabled) { filter: brightness(1.07); }
+.pf-btn-primary.pf-btn-gradient:active:not(:disabled) { filter: brightness(0.96); }
+
+/* Destructive confirm button — same shape as primary, red fill, so an
+   irreversible action (delete) LOOKS as serious as its copy. */
+.pf-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: none;
+  background: var(--pf-bad);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s cubic-bezier(.45, 0, .4, 1);
+}
+.pf-btn-danger:hover:not(:disabled) { background: #b01e2e; }
+.pf-btn-danger:active:not(:disabled) { background: #9c1a28; }
+.pf-btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pf-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 2px solid var(--pf-border-strong);
+  background: transparent;
+  color: var(--pf-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s cubic-bezier(.45, 0, .4, 1), border-color 0.15s cubic-bezier(.45, 0, .4, 1);
+}
+.pf-btn-secondary:hover:not(:disabled) { background: var(--pf-surface-2); border-color: var(--pf-text-muted); }
+.pf-btn-secondary:active:not(:disabled) { background: var(--pf-surface-3); }
+.pf-btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pf-btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: none;
+  background-color: #3b63fb;
+  background-image: linear-gradient(to bottom right, #b539c8 0%, #7155fa 66%, #3b63fb 100%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s cubic-bezier(.45, 0, .4, 1);
+}
+.pf-btn-accent:hover:not(:disabled) { opacity: 0.88; }
+.pf-btn-accent:active:not(:disabled) { opacity: 0.75; }
+.pf-btn-accent:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pf-primary {
+  padding: 9px 20px;
+  background: var(--pf-accent);
+  color: white;
+  border-radius: var(--pf-radius);
+  font-weight: 600;
+  font-size: 13px;
+  transition: background 0.15s, transform 0.06s, box-shadow 0.15s;
+  box-shadow: 0 1px 2px rgba(20, 115, 230, 0.25);
+}
+.pf-primary:hover:not(:disabled) {
+  background: var(--pf-accent-hover);
+  box-shadow: 0 2px 6px rgba(20, 115, 230, 0.35);
+}
+.pf-primary:active:not(:disabled) { transform: translateY(1px); }
+.pf-secondary {
+  padding: 9px 20px;
+  border: 1px solid var(--pf-border-strong);
+  border-radius: var(--pf-radius);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--pf-text);
+  background: var(--pf-surface);
+  transition: background 0.15s, border-color 0.15s;
+}
+.pf-secondary:hover:not(:disabled) { background: var(--pf-surface-2); border-color: var(--pf-text-muted); }
+
+.pf-field--check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.pf-check-label {
+  font-size: 12.5px;
+  color: var(--pf-text-muted);
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+/* ── Breakpoints ────────────────────────────────────────────────────────── */
+
+.pf-bp-toggle {
+  margin-top: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12.5px;
+  color: var(--pf-accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+.pf-bp-toggle:hover { color: var(--pf-accent-hover, #0d5bba); }
+.pf-bp-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+.pf-bp-header { display: flex; align-items: baseline; gap: 8px; }
+.pf-bp-hint { font-size: 10.5px; color: var(--pf-text-faint); }
+.pf-bp-list { display: flex; flex-direction: column; gap: 6px; }
+.pf-bp-row {
+  display: grid;
+  grid-template-columns: 90px 110px 1fr auto;
+  gap: 6px;
+  align-items: center;
+}
+.pf-bp-remove {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--pf-border);
+  background: var(--pf-surface);
+  border-radius: var(--pf-radius);
+  cursor: pointer;
+  color: var(--pf-text-muted);
+  font-size: 16px;
+  line-height: 1;
+}
+.pf-bp-remove:hover { color: var(--pf-bad); border-color: var(--pf-bad); }
+.pf-bp-add {
+  align-self: flex-start;
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px dashed var(--pf-border);
+  background: transparent;
+  border-radius: var(--pf-radius);
+  cursor: pointer;
+  color: var(--pf-text-muted);
+}
+.pf-bp-add:hover { border-color: var(--pf-accent); color: var(--pf-accent); }
+
+/* ── Session header ─────────────────────────────────────────────────────── */
+
+.pf-session-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pf-session-head-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.pf-session-source {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12.5px;
+  color: var(--pf-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+.pf-session-intent {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-left: 4px;
+}
+.pf-session-intent-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pf-text-faint);
+  flex-shrink: 0;
+}
+.pf-session-intent-text {
+  font-style: italic;
+  color: var(--pf-text-muted);
+  font-size: 13px;
+}
+
+/* ── Generating card ────────────────────────────────────────────────────── */
+
+.pf-gen-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 32px;
+  background: linear-gradient(180deg, var(--pf-surface) 0%, var(--pf-surface-2) 100%);
+}
+.pf-gen-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  max-width: min(800px, 90%);
+}
+/* ── Status headline: phase-derived friendly text ────────────────────────── */
+.pf-gen-headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--pf-text);
+  font-family: inherit;
+}
+
+/* ── Breathing pulse dot ─────────────────────────────────────────────────── */
+.pf-gen-pulse {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pf-accent, #0265dc);
+  opacity: 0.35;
+}
+.pf-gen-pulse--live {
+  animation: pf-pulse 1.8s ease-in-out infinite;
+}
+@keyframes pf-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%       { opacity: 1;    transform: scale(1.25); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-gen-pulse--live { animation: none; opacity: 0.7; }
+}
+
+/* ── Cleaned detail line (optional, hidden when only noise available) ─────── */
+.pf-gen-detail {
+  font-size: 13px;
+  color: var(--pf-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(640px, 90%);
+}
+
+/* ── Elapsed time ────────────────────────────────────────────────────────── */
+.pf-gen-elapsed {
+  font-size: 12px;
+  color: var(--pf-text-faint);
+}
+.pf-btn-negative {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  border-radius: 16px;
+  border: 2px solid #c0362c;
+  background: transparent;
+  color: #c0362c;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-top: 8px;
+  transition: background 0.15s cubic-bezier(.45, 0, .4, 1), color 0.15s cubic-bezier(.45, 0, .4, 1);
+}
+.pf-btn-negative:hover:not(:disabled) { background: #c0362c; color: #fff; }
+.pf-btn-negative:active:not(:disabled) { background: #a02d24; border-color: #a02d24; color: #fff; }
+.pf-btn-negative:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Activity log ───────────────────────────────────────────────────────── */
+
+.pf-log-details {
+  width: 100%;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+  background: var(--pf-surface);
+}
+.pf-log-summary {
+  cursor: pointer;
+  padding: 7px 12px;
+  font-size: 12px;
+  color: var(--pf-text-muted);
+  user-select: none;
+}
+.pf-log-summary:hover { color: var(--pf-text); }
+.pf-log {
+  max-height: 240px;
+  overflow-y: auto;
+  border-top: 1px solid var(--pf-border);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.pf-log-line {
+  font-family: var(--pf-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--pf-text-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.pf-log-line:last-child { color: var(--pf-text); }
+.pf-log-line strong { font-weight: 600; color: var(--pf-text); }
+.pf-log-line em { font-style: italic; }
+.pf-log-line code { font-family: var(--pf-mono); background: var(--pf-surface-3); padding: 0 3px; border-radius: 3px; }
+
+/* ── Deploy button cards ────────────────────────────────────────────────── */
+
+.pf-deploy-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 16px 18px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+  text-align: left;
+  transition: all 0.15s;
+}
+.pf-deploy-btn:hover:not(:disabled) {
+  background: var(--pf-surface);
+  border-color: var(--pf-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 115, 230, 0.12);
+}
+.pf-deploy-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pf-deploy-icon { font-size: 20px; flex-shrink: 0; }
+.pf-deploy-btn-row > span:nth-child(2) {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--pf-text);
+}
+.pf-deploy-sub {
+  font-size: 12px;
+  color: var(--pf-text-muted);
+  line-height: 1.4;
+}
+
+/* ── Shipped row ────────────────────────────────────────────────────────── */
+
+.pf-shipped-row {
+  grid-column: 1 / -1;
+  padding: 10px 14px;
+  background: rgba(25, 128, 56, 0.07);
+  border-left: 3px solid var(--pf-good);
+  font-size: 12.5px;
+  border-radius: 0 var(--pf-radius) var(--pf-radius) 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pf-shipped-branch {
+  margin-left: auto;
+  font-size: 11px;
+  font-family: var(--pf-mono);
+  color: var(--pf-text-muted);
+}
+
+/* ── Result card ────────────────────────────────────────────────────────── */
+
+.pf-result-card {
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+  padding: 20px 22px;
+  box-shadow: var(--pf-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pf-result-card--gen {
+  min-height: 220px;
+  padding: 0;
+  overflow: hidden;
+}
+.pf-result-card--err {
+  align-items: center;
+  text-align: center;
+  padding: 32px;
+}
+.pf-result-card--empty {
+  min-height: 120px;
+}
+.pf-result-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pf-result-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pf-accent);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.pf-result-link:hover {
+  text-decoration: underline;
+}
+.pf-result-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--pf-text-faint);
+  margin-bottom: 2px;
+}
+.pf-result-deploy {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* ── Numbered step card ─────────────────────────────────────────────────── */
+
+.pf-result-card--steps {
+  padding: 0;
+  overflow: hidden;
+}
+.pf-steps {
+  display: flex;
+  flex-direction: column;
+}
+.pf-step-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+}
+.pf-step-divider {
+  height: 1px;
+  background: var(--pf-border);
+  margin: 0 22px;
+}
+.pf-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--pf-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-step-body {
+  flex: 1;
+  min-width: 0;
+}
+.pf-step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pf-text);
+  margin-bottom: 2px;
+}
+.pf-step-desc {
+  font-size: 12.5px;
+  color: var(--pf-text-muted);
+  line-height: 1.4;
+}
+
+/* ── Error display utilities ────────────────────────────────────────────── */
+
+.pf-err-title { font-weight: 600; font-size: 16px; }
+.pf-err-msg { font-family: ui-monospace, monospace; font-size: 12.5px; max-width: 600px; text-align: center; word-break: break-word; }
+.pf-err-actions { display: flex; gap: 8px; margin-top: 14px; }
+
+/* ── Cancelled card ──────────────────────────────────────────────────────── */
+
+.pf-result-card--cancelled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 20px;
+  text-align: center;
+}
+.pf-cancelled-title { font-weight: 600; font-size: 16px; color: var(--pf-text-muted); }
+.pf-cancelled-msg { font-size: 13px; color: var(--pf-text-muted); max-width: 340px; }
+
+/* ── Score pills ─────────────────────────────────────────────────────────── */
+
+.pf-score-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  cursor: default;
+}
+.pf-score-pill--high {
+  background: #e6f9ed;
+  color: #1a7a3c;
+}
+.pf-score-pill--med {
+  background: #fef3cd;
+  color: #7d5a00;
+}
+.pf-score-pill--low {
+  background: #fdecea;
+  color: #b91c1c;
+}
+
+/* ── Tech details disclosure ─────────────────────────────────────────────── */
+
+.pf-tech-details {
+  margin: 6px 0 0;
+}
+.pf-tech-details-summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--pf-text-muted);
+  user-select: none;
+  list-style: none;
+}
+.pf-tech-details-summary::-webkit-details-marker { display: none; }
+.pf-tech-details[open] .pf-tech-details-summary {
+  margin-bottom: 8px;
+}
+
+/* ── Section muted placeholder ───────────────────────────────────────────── */
+
+.pf-section-muted {
+  color: var(--pf-text-faint);
+  font-style: italic;
+}
+
+/* ── Status strip ──────────────────────────────────────────────────────── */
+
+.pf-status-strip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 20px;
+  background: #1a1a1a;
+  color: #e0e0d8;
+  border-top: 1px solid var(--pf-border-strong);
+  font-size: 12.5px;
+  font-family: var(--pf-mono);
+  flex-shrink: 0;
+}
+.pf-status-strip[hidden] { display: none; }
+.pf-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--pf-info);
+  flex-shrink: 0;
+}
+.pf-status--run .pf-status-dot { background: #4d9fff; animation: pf-pulse 1.4s ease-in-out infinite; box-shadow: 0 0 8px rgba(77, 159, 255, 0.6); }
+.pf-status--ok .pf-status-dot { background: #4fcb6b; }
+.pf-status--err .pf-status-dot { background: #f56565; }
+.pf-status--err { color: #ffc0c8; }
+.pf-status-state {
+  font-weight: 700;
+  text-transform: capitalize;
+  color: white;
+  letter-spacing: 0.02em;
+}
+.pf-status--err .pf-status-state { color: #ff8090; }
+.pf-status-msg {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #b8b8b0;
+}
+.pf-status-elapsed {
+  font-variant-numeric: tabular-nums;
+  color: #888880;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+/* ── Session reports ───────────────────────────────────────────────────── */
+
+.pf-report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pf-report-card {
+  padding: 16px 18px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+}
+.pf-report-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-muted);
+}
+.pf-report-empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pf-text-faint);
+  font-style: italic;
+}
+.pf-report-summary {
+  margin: 0 0 12px;
+  padding: 12px;
+  background: var(--pf-surface-2);
+  border-radius: var(--pf-radius);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: var(--pf-mono);
+}
+.pf-conversion-report {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pf-conv-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 13px;
+}
+.pf-conv-label {
+  flex: 0 0 100px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--pf-text-faint);
+}
+.pf-conv-value { flex: 1; min-width: 0; word-break: break-all; }
+.pf-conv-value--code {
+  font-family: var(--pf-mono);
+  font-size: 12px;
+  background: var(--pf-surface-2);
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+.pf-block-tag {
+  display: inline-block;
+  margin: 2px 4px 2px 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: var(--pf-mono);
+  background: var(--pf-accent-soft);
+  color: var(--pf-accent);
+  border-radius: 3px;
+}
+.pf-block-tag--snow {
+  background: #f0f4f8;
+  color: #5a6a7a;
+}
+
+/* ── Per-section match report ───────────────────────────────────────────── */
+
+.pf-section-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  table-layout: fixed;
+}
+.pf-section-table th,
+.pf-section-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--pf-border);
+  vertical-align: top;
+  word-break: break-word;
+}
+.pf-section-table th {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-faint);
+  font-weight: 600;
+  border-bottom: 1px solid var(--pf-border);
+  background: var(--pf-surface-2);
+}
+.pf-section-row:last-child td { border-bottom: none; }
+.pf-section-num {
+  width: 36px;
+  font-family: var(--pf-mono);
+  font-size: 11px;
+  color: var(--pf-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pf-section-block {
+  font-family: var(--pf-mono);
+  font-size: 12px;
+}
+.pf-section-score {
+  color: var(--pf-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.pf-section-variants {
+  color: var(--pf-text-faint);
+  font-size: 11px;
+}
+.pf-section-action {
+  color: var(--pf-text-muted);
+  font-size: 12px;
+}
+.pf-section-issues {
+  color: var(--pf-text-muted);
+  font-size: 11.5px;
+}
+.pf-section-issues:empty::after { content: '—'; color: var(--pf-text-faint); }
+.pf-section-th-expand { width: 28px; }
+.pf-section-expand { width: 28px; }
+.pf-section-expand-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0 2px;
+  color: var(--pf-text-faint);
+  font-size: 11px;
+}
+.pf-section-expand-btn:hover { color: var(--pf-accent); }
+.pf-section-caret { display: inline-block; }
+.pf-section-detail-cell {
+  padding: 0 10px 14px !important;
+  background: var(--pf-surface-2);
+}
+.pf-section-empty {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--pf-text-faint);
+  font-style: italic;
+}
+
+/* ── Decision pills ──────────────────────────────────────────────────────── */
+
+.pf-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+.pf-pill--tight {
+  background: rgba(79, 203, 107, 0.16);
+  color: #2d8a47;
+}
+.pf-pill--loose {
+  background: rgba(232, 174, 32, 0.18);
+  color: #8a6608;
+}
+.pf-pill--forge {
+  background: rgba(232, 88, 124, 0.16);
+  color: #a3324f;
+}
+.pf-pill--ambiguous {
+  background: rgba(224, 138, 32, 0.18);
+  color: #9a5a08;
+}
+
+/* ── Match meter ─────────────────────────────────────────────────────────── */
+
+.pf-match-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.pf-match-meter-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pf-surface-2);
+  overflow: hidden;
+}
+.pf-match-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.pf-match-meter-pct {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--pf-text-muted);
+  min-width: 30px;
+  text-align: right;
+}
+.pf-match-meter--high .pf-match-meter-fill { background: #4fcb6b; }
+.pf-match-meter--mid  .pf-match-meter-fill { background: #e8ae20; }
+.pf-match-meter--low  .pf-match-meter-fill { background: #e8587c; }
+
+/* ── Render-diff fidelity meter (honest result readout) ─────────────────── */
+
+.pf-result-label--ready { color: #2d8a47; }
+.pf-result-label--review { color: #a3324f; }
+.pf-result-label--unknown { color: var(--pf-text-muted); }
+
+.pf-fidelity {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  background: var(--pf-surface-2);
+}
+.pf-fidelity--compact {
+  padding: 0;
+  border: none;
+  background: transparent;
+  gap: 4px;
+}
+.pf-fidelity-title {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--pf-text-faint);
+}
+.pf-fidelity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pf-fidelity-label {
+  flex: 0 0 84px;
+  font-size: 11px;
+  color: var(--pf-text-muted);
+}
+.pf-fidelity--compact .pf-fidelity-label {
+  flex: 0 0 70px;
+  font-size: 10.5px;
+}
+.pf-fidelity-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.pf-fidelity-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--pf-surface);
+  overflow: hidden;
+  border: 1px solid var(--pf-border);
+}
+.pf-fidelity-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.pf-fidelity--high .pf-fidelity-fill { background: #4fcb6b; }
+.pf-fidelity--mid  .pf-fidelity-fill { background: #e8ae20; }
+.pf-fidelity--low  .pf-fidelity-fill { background: #e8587c; }
+.pf-fidelity-pct {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--pf-text-muted);
+  min-width: 32px;
+  text-align: right;
+}
+.pf-fidelity-meter--na {
+  color: var(--pf-text-faint);
+  font-size: 11px;
+  gap: 8px;
+}
+.pf-fidelity-na {
+  font-family: var(--pf-mono);
+}
+.pf-fidelity-na-note {
+  font-style: italic;
+  font-size: 11px;
+}
+
+/* ── Match counters ─────────────────────────────────────────────────────── */
+
+.pf-match-counters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
+  margin: 4px 0 14px;
+}
+.pf-match-count {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px;
+  min-width: 84px;
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  background: var(--pf-surface-2);
+}
+.pf-match-count-value {
+  font-family: var(--pf-mono);
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  color: var(--pf-text);
+}
+.pf-match-count-value--sm { font-size: 17px; }
+.pf-match-count-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-faint);
+  font-weight: 600;
+}
+.pf-match-count--reused { border-color: rgba(79, 203, 107, 0.5); }
+.pf-match-count--reused .pf-match-count-value { color: #2d8a47; }
+.pf-match-count--new { border-color: rgba(20, 115, 230, 0.4); }
+.pf-match-count--new .pf-match-count-value { color: var(--pf-accent); }
+.pf-match-count--rate .pf-match-count-value { color: var(--pf-text); }
+.pf-match-count--aux { background: var(--pf-surface); }
+.pf-match-milolibs {
+  align-self: center;
+  margin-left: auto;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Usage / token strip ─────────────────────────────────────────────────── */
+
+.pf-usage-label {
+  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pf-text-muted, #888);
+}
+.pf-token-strip {
+  display: flex;
+  gap: 32px;
+  padding-top: 8px;
+  border-top: 1px solid var(--pf-border);
+}
+.pf-token-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-token-value {
+  font-family: var(--pf-mono);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.pf-token-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-faint);
+}
+
+/* ── Session usage strip (persistent, always mounted above activity log) ─── */
+
+.pf-usage-report {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  padding: 10px 0 6px;
+  margin-top: 8px;
+  border-top: 1px solid var(--pf-border);
+}
+.pf-usage-report--pending {
+  align-items: center;
+}
+.pf-usage-pending {
+  font-size: 12px;
+  color: var(--pf-text-faint);
+  font-style: italic;
+}
+.pf-usage-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-usage-tile-value {
+  font-family: var(--pf-mono);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--pf-text);
+}
+.pf-usage-tile-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--pf-text-faint);
+}
+
+/* ── Local artifacts panel ──────────────────────────────────────────────── */
+
+.pf-path-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+.pf-path-label {
+  flex: 0 0 130px;
+  color: var(--pf-text-faint);
+}
+.pf-path-value {
+  flex: 1 1 auto;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 11px;
+  color: var(--pf-text);
+  background: var(--pf-surface-3);
+  padding: 2px 6px;
+  border-radius: 3px;
+  word-break: break-all;
+}
+.pf-deploy-block-tags {
+  flex: 1 1 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ── Modals & slideover ────────────────────────────────────────────────── */
+
+.pf-modal-root:empty { display: none; }
+.pf-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.18);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-modal-card {
+  position: relative;
+  z-index: 101;
+  background: var(--pf-surface);
+  border-radius: var(--pf-radius-xl);
+  padding: 24px;
+  box-shadow: var(--pf-shadow-lg);
+  width: min(460px, calc(100vw - 32px));
+}
+.pf-modal-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.pf-modal-sub {
+  margin: 0 0 20px;
+  color: var(--pf-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.pf-modal-url {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: var(--pf-surface-3);
+  font-family: var(--pf-mono);
+  word-break: break-all;
+  font-size: 11px;
+  border-radius: 4px;
+  color: var(--pf-text-muted);
+}
+
+.pf-slideover {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: var(--pf-surface);
+  z-index: 101;
+  padding: 24px;
+  box-shadow: var(--pf-shadow-lg);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: pf-slidein 0.18s ease-out;
+}
+.pf-slideover-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* ── Spectrum icon sizing (inline uses) ─────────────────────────────────── */
+
+/* Icon that trails a link/button label (↗ replacement) */
+.pf-link-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* Icon inside the deploy-status pill */
+.pf-deploy-status-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Icon in the lint-warning title */
+.pf-lint-warning-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+
+@keyframes pf-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes pf-slidein {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-tl-node--active,
+  .pf-gen-pulse,
+  .pf-side-running,
+  .pf-status-dot {
+    animation: none !important;
+  }
+  .pf-tl-steps::after {
+    transition: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Entry point — two doors, one destination (InputPanel)
+   Deslopped per impeccable critique: transformation rows (not a card grid),
+   no badges, no eyebrows, neutral headline, solid-blue CTA. Red appears only
+   inside the result thumbnail, where it depicts the real Adobe-page output.
+   ══════════════════════════════════════════════════════════════════════════ */
+.pf-entry {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 36px 8px 64px;
+  width: 100%;
+}
+
+/* ── Hero copy ── */
+.pf-entry-title {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 0 0 12px;
+  max-width: 18ch;
+  text-wrap: balance;
+  color: var(--pf-text);
+}
+.pf-entry-sub {
+  font-size: 15px;
+  color: var(--pf-text-muted);
+  line-height: 1.55;
+  margin: 0 0 30px;
+  max-width: 62ch;
+}
+
+/* ── Start-from label (NOT an eyebrow kicker: sentence case, faint, no tracking) ── */
+.pf-start-label { font-size: 12px; font-weight: 600; color: var(--pf-text-faint); margin: 0 0 10px; }
+
+/* ── Doors as rows, each showing its own transformation (source → page) ── */
+.pf-doors { display: flex; flex-direction: column; gap: 12px; }
+
+/* The row is a clickable REGION (role=button), NOT a <button>, so the Connect
+   control + open chevron can be real sibling buttons (no nested-button hazard). */
+.pf-door {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 22px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-xl);
+  padding: 18px 22px;
+  cursor: pointer;
+  box-shadow: var(--pf-shadow-sm);
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+}
+.pf-door:hover { border-color: var(--pf-border-strong); box-shadow: var(--pf-shadow); transform: translateY(-1px); }
+.pf-door:focus-visible { outline: none; border-color: var(--pf-accent); box-shadow: 0 0 0 3px var(--pf-accent-soft); }
+
+/* Per-door transformation: source glyph → arrow → finished-page thumb. */
+.pf-door-transform { display: flex; align-items: center; gap: 13px; flex: 0 0 auto; }
+
+.pf-src-glyph {
+  width: 46px; height: 46px;
+  border-radius: 11px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+}
+.pf-src-glyph svg { width: 24px; height: 24px; }
+.pf-src-glyph--figma { background: #f3f0ff; }
+.pf-src-glyph--url { background: var(--pf-surface-3); }
+
+.pf-flow-arrow { color: var(--pf-text-muted); display: grid; place-items: center; }
+.pf-flow-arrow svg { width: 24px; height: 24px; }
+
+/* The finished-page thumbnail (the "after"). Brand-red appears here, depicting
+   real Adobe-page output — the one place red is allowed on this screen. */
+.pf-result {
+  width: 132px; height: 86px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--pf-border);
+  box-shadow: var(--pf-shadow-sm);
+  display: flex;
+  flex-direction: column;
+}
+.pf-result-hero {
+  height: 30px;
+  background: linear-gradient(118deg, #1f1f1f, #3a3a3a);
+  display: flex;
+  align-items: flex-end;
+  padding: 5px 7px;
+}
+.pf-result-eyebrow { width: 22px; height: 3px; border-radius: 2px; background: var(--pf-adobe-red, #eb1000); }
+.pf-result-body {
+  flex: 1;
+  padding: 6px 7px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  align-content: start;
+}
+/* Scoped under .pf-result so the thumb's tiny card never collides with the
+   ResultCard's own .pf-result-card (error/cancelled states) defined above. */
+.pf-result .pf-result-card {
+  background: var(--pf-surface-3);
+  border-radius: 3px;
+  height: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 3px;
+}
+.pf-result .pf-result-card span { height: 2px; border-radius: 1px; background: #d4d4cf; }
+.pf-result .pf-result-card span:first-child { background: #c2c2bc; width: 80%; }
+.pf-result-cta {
+  grid-column: 1 / -1;
+  height: 7px; width: 38px;
+  border-radius: 4px;
+  background: var(--pf-adobe-red, #eb1000);
+  margin-top: 2px;
+}
+
+.pf-door-copy { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.pf-door-name { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--pf-text); }
+.pf-door-blurb { font-size: 14px; color: var(--pf-text-muted); line-height: 1.45; }
+
+/* Trailing slot — holds the Connect control or the connected chip. */
+.pf-door-trailing { display: inline-flex; align-items: center; }
+
+/* The Connect Figma control is neutral; blue appears only on its focus ring
+   (S2 ActionButton provides that). The small Figma mark sits before the label. */
+.pf-door-trailing button svg,
+.pf-door-trailing [class*="spectrum-Icon"] { width: 15px; height: 15px; }
+
+/* Connected status chip — NEVER blue (status, not action); green dot, no name. */
+.pf-connected {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: var(--pf-radius);
+  background: var(--pf-surface-2);
+  color: var(--pf-text-muted);
+  white-space: nowrap;
+}
+.pf-connected-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pf-good); flex: 0 0 auto; }
+
+.pf-door-go {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  border: 0;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  background: var(--pf-surface-2);
+  color: var(--pf-text-muted);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, transform 0.12s;
+}
+.pf-door:hover .pf-door-go { background: var(--pf-accent); color: #fff; transform: translateX(2px); }
+.pf-door-go svg { width: 17px; height: 17px; }
+
+/* ── (5) Convergence ── */
+.pf-converge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 24px;
+  font-size: 13px;
+  color: var(--pf-text-faint);
+}
+.pf-converge svg { width: 14px; height: 14px; opacity: 0.8; }
+
+/* Focused input (a door is open) */
+.pf-focus-card {
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-xl);
+  padding: 32px;
+  box-shadow: var(--pf-shadow);
+  max-width: 600px;
+  margin: 8px auto 0;
+  animation: pf-rise 0.3s var(--ease, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+@keyframes pf-rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.pf-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pf-text-muted);
+  margin-bottom: 24px;
+  cursor: pointer;
+}
+.pf-back-btn:hover { color: var(--pf-text); }
+.pf-back-btn svg { width: 15px; height: 15px; }
+
+/* The focused door is just header + input + button. One consistent gap owns all
+   the vertical spacing (no per-element margins) so it always reads tidy. */
+.pf-focus-body { display: flex; flex-direction: column; gap: 20px; }
+.pf-focus-head { display: flex; align-items: center; gap: 13px; margin: 0; }
+.pf-focus-head .pf-src-glyph { width: 42px; height: 42px; border-radius: 10px; flex: 0 0 auto; }
+.pf-focus-head .pf-src-glyph svg { width: 22px; height: 22px; }
+.pf-focus-head .pf-connected { margin-left: auto; }
+.pf-focus-title { font-size: 19px; font-weight: 700; margin: 0; letter-spacing: -0.015em; color: var(--pf-text); }
+.pf-focus-actions { display: flex; justify-content: flex-end; }
+.pf-focus-sub { font-size: 13.5px; color: var(--pf-text-muted); margin: 4px 0 24px; line-height: 1.5; }
+
+
+.pf-flabel { font-size: 12px; font-weight: 600; color: var(--pf-text); margin: 0 0 8px; }
+
+/* ── Departure slider ("How far should we go?") — 3-notch snapping ───────────── */
+.pf-seg-label { font-size: 12px; font-weight: 600; color: var(--pf-text); margin: 0 0 16px; }
+/* The intent dial's helper line (under the 2-stop segmented control). */
+.pf-dial-help { font-size: 12.5px; color: var(--pf-text-faint); margin: 10px 2px 18px; min-height: 1.4em; }
+
+/* ── Advanced — a quiet borderless text toggle (NO accordion rules) ── */
+.pf-advanced { margin: 6px 0 4px; }
+.pf-adv-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pf-text);
+  padding: 4px 0;
+  user-select: none;
+}
+.pf-adv-summary::-webkit-details-marker { display: none; }
+.pf-adv-caret { display: inline-grid; place-items: center; color: var(--pf-text-muted); transition: transform 0.15s ease; }
+.pf-adv-caret svg { width: 14px; height: 14px; }
+.pf-advanced[open] .pf-adv-caret { transform: rotate(90deg); }
+.pf-adv-note { font-size: 12.5px; font-weight: 400; color: var(--pf-text-faint); }
+.pf-adv-body { padding: 16px 2px 4px 22px; }
+/* A quiet explainer line inside Advanced (e.g. the responsive-frames note). */
+.pf-adv-hint { font-size: 12.5px; color: var(--pf-text-faint); line-height: 1.5; margin: 0 0 14px; }
+/* Vertical breathing room between stacked fields in Advanced. */
+.pf-field-gap { height: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-adv-caret { transition: none !important; }
+}
+
+@media (max-width: 720px) {
+  .pf-entry-title { font-size: 27px; }
+  .pf-door { grid-template-columns: auto 1fr auto; gap: 14px; }
+  /* Drop the result thumb on narrow screens; keep glyph + arrow as the cue. */
+  .pf-door-transform .pf-result { display: none; }
+  .pf-door-trailing { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-door, .pf-door-go { transition: none !important; }
+  .pf-focus-card { animation: none !important; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Generating (calm, long-wait) + Result (preview-first)
+   A run can take up to ~30 min, so the generating state is tuned for a long,
+   uncertain wait: indeterminate quiet progress (no clock, no count, no "almost
+   done"), generic monochrome page-build, honest copy. The result leads with the
+   page; Publish is a deliberate, separate step (blocks → Milo, content → DA).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Generating ─────────────────────────────────────────────────────────────── */
+.pf-gen2-wrap { display: flex; flex-direction: column; gap: 14px; }
+.pf-gen2 {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 48px;
+  align-items: center;
+  min-height: 56vh;
+}
+/* min-width:0 lets grid tracks shrink instead of overflowing their container */
+.pf-gen2 > * { min-width: 0; }
+.pf-gen2-left { max-width: 430px; min-width: 0; }
+.pf-gen2-eyebrow { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 600; color: var(--pf-accent); margin-bottom: 16px; }
+.pf-gen2-orb { width: 11px; height: 11px; border-radius: 50%; background: var(--pf-accent); position: relative; flex: 0 0 auto; }
+.pf-gen2-orb::after { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 1.5px solid var(--pf-accent); opacity: 0; animation: pf-ring 2.4s var(--ease, cubic-bezier(0.16,1,0.3,1)) infinite; }
+@keyframes pf-ring { 0% { transform: scale(0.7); opacity: 0.6; } 100% { transform: scale(1.7); opacity: 0; } }
+.pf-gen2-head { font-size: 29px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; margin: 0 0 12px; text-wrap: balance; color: var(--pf-text); }
+.pf-gen2-sub { font-size: 15px; color: var(--pf-text-muted); line-height: 1.6; margin: 0 0 24px; min-height: 48px; }
+
+/* indeterminate quiet progress — a slow sweep, NOT a determinate fill */
+.pf-gen2-prog { margin-bottom: 14px; }
+.pf-gen2-prog-track { position: relative; height: 5px; border-radius: 3px; background: var(--pf-surface-3); overflow: hidden; }
+.pf-gen2-prog-sweep { position: absolute; top: 0; bottom: 0; width: 38%; left: -40%; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--pf-accent), transparent); animation: pf-gen-sweep 2.6s var(--ease, cubic-bezier(0.16,1,0.3,1)) infinite; }
+@keyframes pf-gen-sweep { 0% { left: -40%; } 100% { left: 100%; } }
+.pf-gen2-prog-label { margin-top: 8px; font-size: 12px; color: var(--pf-text-faint); }
+
+.pf-gen2-time { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--pf-text-faint); margin: 0 0 24px; }
+.pf-gen2-time svg { width: 14px; height: 14px; flex: 0 0 auto; }
+.pf-gen2-actions { display: flex; align-items: center; gap: 14px; }
+.pf-btn-cancel2 { appearance: none; background: transparent; border: 1px solid var(--pf-border-strong); color: var(--pf-text-muted); font-family: inherit; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 18px; cursor: pointer; }
+.pf-btn-cancel2:hover { border-color: var(--pf-text-faint); color: var(--pf-text); }
+.pf-gen2-leave { font-size: 12.5px; color: var(--pf-text-faint); }
+
+/* the generic monochrome page that assembles on the right */
+.pf-build { border-radius: var(--pf-radius-lg); border: 1px solid var(--pf-border); overflow: hidden; background: #fff; box-shadow: var(--pf-shadow); position: relative; }
+.pf-build-chrome { height: 30px; background: var(--pf-surface-3); border-bottom: 1px solid var(--pf-border); display: flex; align-items: center; gap: 6px; padding: 0 12px; }
+.pf-build-chrome i { width: 8px; height: 8px; border-radius: 50%; background: var(--pf-border-strong); }
+.pf-build-bar { margin-left: 8px; height: 9px; flex: 1; max-width: 160px; border-radius: 5px; background: #dededa; }
+/* slow ambient sheen = "still working", calm (not a fast loading shimmer) */
+.pf-build::after { content: ''; position: absolute; left: 0; right: 0; top: 30px; bottom: 0; z-index: 3; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.40) 50%, transparent 62%); transform: translateX(-120%); animation: pf-sheen 3.8s ease-in-out infinite; }
+@keyframes pf-sheen { 0% { transform: translateX(-120%); } 60%, 100% { transform: translateX(120%); } }
+.pf-build-page { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* Blocks "grow" into place: start a touch lower, smaller, and slightly squashed
+   vertically, then ease up to full size. A little more life than a plain fade,
+   still calm. transform-origin top so they expand downward like the page filling. */
+.pf-blk {
+  opacity: 0;
+  transform: translateY(12px) scale(0.96) scaleY(0.82);
+  transform-origin: top center;
+  transition:
+    opacity 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1)),
+    transform 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1)),
+    background 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+.pf-blk--in { opacity: 1; transform: translateY(0) scale(1) scaleY(1); }
+
+.pf-b-hero { height: 64px; border-radius: 7px; background: var(--pf-surface-3); display: flex; flex-direction: column; justify-content: flex-end; gap: 7px; padding: 12px 14px; }
+.pf-b-hero--lit { background: linear-gradient(118deg, #1f1f1f, #3a3a3a); }
+/* skeleton stays monochrome — eyebrow is a calm light bar, NOT brand red */
+.pf-b-eyebrow { width: 42px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.35); opacity: 0; transition: opacity 0.5s var(--ease, cubic-bezier(0.16,1,0.3,1)); }
+.pf-b-hero--lit .pf-b-eyebrow { opacity: 1; }
+.pf-b-ln { height: 8px; border-radius: 3px; background: #cfcfca; }
+.pf-b-ln--t { width: 48%; }
+.pf-b-hero--lit .pf-b-ln--t { background: rgba(255,255,255,0.9); }
+.pf-b-hero--lit .pf-b-ln { background: rgba(255,255,255,0.4); }
+
+.pf-b-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.pf-b-row--2up { grid-template-columns: 1fr 1fr; }
+.pf-b-card { height: 74px; border-radius: 6px; background: var(--pf-surface-3); display: flex; flex-direction: column; gap: 6px; padding: 8px; box-shadow: inset 0 0 0 1px transparent; transition: background 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1)), box-shadow 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1)); }
+.pf-b-card .pf-b-th { height: 34px; border-radius: 4px; background: #e0e0db; }
+.pf-b-card .pf-b-ln { height: 5px; border-radius: 2px; background: #e0e0db; }
+.pf-b-card .pf-b-ln--s { width: 66%; }
+.pf-b-card--settled { background: #fff; box-shadow: inset 0 0 0 1px var(--pf-border); }
+.pf-b-card--settled .pf-b-th { background: var(--pf-surface-3); }
+
+.pf-b-band { height: 30px; border-radius: 6px; background: var(--pf-surface-3); }
+.pf-b-band--settled { background: #fafafa; box-shadow: inset 0 0 0 1px var(--pf-border); }
+.pf-b-cta { height: 14px; width: 96px; border-radius: 7px; background: var(--pf-surface-3); margin: 2px auto 0; }
+/* settled CTA is neutral in the skeleton — red is reserved for the finished result */
+.pf-b-cta--settled { background: var(--pf-text-faint); }
+
+/* ── Terminal states (stopped / error) — quiet, on-brand, matches the result ──
+   One calm centered card in the same surface language as pf-result2. A glyph
+   carries the meaning (gray square = stopped, the only red is a real error),
+   one plain line, one clear primary action. No mono error dump, no faux-alert. */
+.pf-state2 {
+  max-width: 920px; margin: 8px 0; padding: 40px 28px;
+  border: 1px solid var(--pf-border); border-radius: var(--pf-radius-xl); background: var(--pf-surface);
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px;
+}
+.pf-state2-glyph { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; margin-bottom: 6px; }
+.pf-state2-glyph svg { width: 22px; height: 22px; }
+.pf-state2--stopped .pf-state2-glyph { background: var(--pf-surface-3); color: var(--pf-text-faint); }
+.pf-state2--error .pf-state2-glyph { background: rgba(204, 34, 51, 0.10); color: var(--pf-bad); }
+.pf-state2-title { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; margin: 0; color: var(--pf-text); }
+.pf-state2-msg { font-size: 13.5px; color: var(--pf-text-muted); line-height: 1.55; margin: 0; max-width: 46ch; word-break: break-word; }
+.pf-state2-actions { display: flex; gap: 10px; margin-top: 16px; }
+
+/* ── Result (preview-first) ─────────────────────────────────────────────────── */
+/* ── Reimagine variants strip (Stardust directions) ─────────────────────────── */
+.pf-rv { margin: 0 0 18px; }
+.pf-rv-head { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--pf-text-muted); margin-bottom: 12px; }
+.pf-rv-head b { color: var(--pf-text); font-weight: 800; }
+.pf-rv-mark { display: inline-flex; }
+.pf-rv-mark svg { width: 16px; height: 16px; }
+.pf-rv-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+/* Clean card: a quiet header row (label + icon buttons) sits ON the card surface,
+   above a framed screenshot, with one calm Send button below. Nothing overlays
+   the image. */
+.pf-rv-card {
+	display: flex; flex-direction: column;
+	border: 1px solid var(--pf-border); border-radius: var(--pf-radius-lg); background: var(--pf-surface);
+	padding: 10px; gap: 10px;
+	transition: border-color 0.15s, box-shadow 0.15s;
+}
+/* Post-send: the chosen direction stays vivid; the others grey out + go inert. */
+.pf-rv-card--dim { opacity: 0.45; filter: grayscale(0.7); pointer-events: none; }
+.pf-rv-card--locked { border-color: var(--pf-good, #198038); box-shadow: 0 0 0 2px var(--pf-good-soft, rgba(25,128,56,0.16)); }
+
+/* Header row — off the image. */
+.pf-rv-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 2px 0; }
+.pf-rv-label { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--pf-text); }
+.pf-rv-card--locked .pf-rv-label { color: var(--pf-good, #198038); }
+.pf-rv-icons { display: inline-flex; align-items: center; gap: 4px; }
+.pf-rv-icon {
+	display: grid; place-items: center; width: 28px; height: 28px; cursor: pointer;
+	border-radius: 8px; border: 0; background: transparent; color: var(--pf-text-muted);
+	transition: background 0.15s, color 0.15s;
+}
+.pf-rv-icon:hover { background: var(--pf-surface-3); color: var(--pf-text); }
+.pf-rv-ic { width: 15px; height: 15px; }
+
+/* Framed screenshot — clean, no overlays. */
+.pf-rv-shot-wrap {
+	border-radius: var(--pf-radius); overflow: hidden; border: 1px solid var(--pf-border);
+	aspect-ratio: 4 / 3; background: var(--pf-surface-3);
+}
+.pf-rv-shot { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+
+/* One calm Send button. */
+.pf-rv-send {
+	width: 100%; padding: 9px 14px; border: 0; border-radius: 10px; cursor: pointer;
+	font-size: 12.5px; font-weight: 700; letter-spacing: -0.01em; color: #fff;
+	background: var(--pf-accent); transition: background 0.15s;
+}
+.pf-rv-send:hover:not(:disabled) { background: var(--pf-accent-hover); }
+.pf-rv-send:disabled { opacity: 0.6; cursor: default; }
+@media (max-width: 760px) { .pf-rv-grid { grid-template-columns: 1fr; } }
+
+.pf-result2 { max-width: 920px; }
+.pf-result2-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 18px; flex-wrap: wrap; }
+.pf-verdict { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; padding: 6px 13px; border-radius: 20px; }
+.pf-verdict svg { width: 15px; height: 15px; }
+.pf-verdict--ready { background: var(--pf-good-soft, rgba(25,128,56,0.12)); color: var(--pf-good); }
+/* published & live — green, the settled "good, done, shipped" state */
+.pf-verdict--live { background: var(--pf-good-soft, rgba(25,128,56,0.12)); color: var(--pf-good); }
+/* built-but-unpublished gate — bright Spectrum lemon fill carries the color; the
+   text stays dark so it's unmistakably yellow AND legible. Matches the sidebar
+   "Ready to publish" dot. */
+.pf-verdict--gate { background: rgba(248,216,4,0.32); color: var(--pf-ready-text, #4a3a00); }
+.pf-verdict--gate svg { color: #b8930a; }
+.pf-result2-title { font-size: 24px; font-weight: 800; letter-spacing: -0.025em; margin: 12px 0 0; color: var(--pf-text); }
+.pf-result2-actions { display: flex; gap: 10px; align-items: center; }
+
+.pf-preview { position: relative; border-radius: var(--pf-radius-lg); overflow: hidden; border: 1px solid var(--pf-border); box-shadow: var(--pf-shadow); cursor: pointer; background: #fff; outline: none; }
+.pf-preview:focus-visible { box-shadow: 0 0 0 3px var(--pf-accent-soft), var(--pf-shadow); }
+/* Skeleton fallback: a quiet "open" chip, always visible (no hover gate). */
+.pf-preview-open { position: absolute; top: 14px; right: 14px; z-index: 3; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #fff; background: rgba(20,20,20,0.7); padding: 7px 13px; border-radius: 16px; }
+.pf-preview-open .pf-link-icon { --iconPrimary: #fff; }
+.pf-pv-hero { height: 150px; background: linear-gradient(118deg, #1b1b1b, #383838); display: flex; flex-direction: column; justify-content: flex-end; gap: 9px; padding: 26px 30px; }
+.pf-pv-eyebrow { width: 90px; height: 6px; border-radius: 3px; background: var(--pf-adobe-red, #eb1000); }
+.pf-pv-htitle { width: 54%; height: 16px; border-radius: 5px; background: rgba(255,255,255,0.94); }
+.pf-pv-hsub { width: 38%; height: 9px; border-radius: 4px; background: rgba(255,255,255,0.4); }
+.pf-pv-body { padding: 26px 30px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; background: #fff; }
+.pf-pv-card { display: flex; flex-direction: column; gap: 8px; }
+.pf-pv-thumb { height: 82px; border-radius: 7px; background: var(--pf-surface-3); }
+.pf-pv-line { height: 8px; border-radius: 3px; background: #e4e4e0; }
+.pf-pv-line--s { width: 68%; }
+.pf-pv-cta { grid-column: 1 / -1; height: 13px; width: 120px; border-radius: 7px; background: var(--pf-adobe-red, #eb1000); margin: 6px auto 0; }
+
+/* ── Image preview (real screenshot): a SCROLLABLE window + FROSTED HEADER ──────
+   The window shows the real finished page and scrolls through the whole thing in
+   place. The next actions live in a translucent frosted bar pinned to the TOP of
+   the window — always visible (no hover gate), so an exec never hunts for a
+   control. The page content scrolls beneath the frosted glass. */
+.pf-preview--img { cursor: default; }
+.pf-preview-bar {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; padding: 12px 14px;
+  background: rgba(255,255,255,0.62);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+  box-shadow: 0 1px 12px rgba(0,0,0,0.06);
+}
+.pf-preview-scroll {
+  position: relative;
+  display: block; width: 100%; height: 360px; overflow-y: auto; overflow-x: hidden;
+  outline: none; scroll-behavior: smooth; background: #fff;
+  /* gentle scrollbar so it reads as a scrollable surface without shouting */
+  scrollbar-width: thin; scrollbar-color: var(--pf-border-strong) transparent;
+}
+.pf-preview-scroll::-webkit-scrollbar { width: 9px; }
+.pf-preview-scroll::-webkit-scrollbar-thumb { background: var(--pf-border-strong); border-radius: 5px; border: 2px solid #fff; }
+.pf-preview-scroll::-webkit-scrollbar-track { background: transparent; }
+.pf-preview-scroll:focus-visible { box-shadow: inset 0 0 0 2px var(--pf-accent-soft); }
+.pf-preview-scroll img { display: block; width: 100%; height: auto; }
+.pf-preview-act {
+  pointer-events: auto; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 36px; font-size: 13px; font-weight: 700; color: var(--pf-text);
+  cursor: pointer; background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.08);
+  padding: 8px 15px; border-radius: 18px; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  transition: transform 0.12s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+.pf-preview-act:hover { transform: translateY(-1px); }
+.pf-preview-act:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--pf-accent-soft), 0 1px 4px rgba(0,0,0,0.08); }
+.pf-preview-act .pf-link-icon { width: 15px; height: 15px; }
+.pf-preview-act--primary { color: #fff; background: var(--pf-accent); border-color: transparent; }
+.pf-preview-act--primary .pf-link-icon { --iconPrimary: #fff; }
+@media (prefers-reduced-motion: reduce) {
+  .pf-preview-act { transition: none !important; }
+  .pf-preview-scroll { scroll-behavior: auto; }
+}
+
+/* Shrinking viewport (not mobile-extreme): the result top already wraps via
+   flex-wrap; here we keep the preview a calm window and let the frosted bar's
+   actions stay on one line, and let the top action buttons span the row. */
+@media (max-width: 640px) {
+  .pf-preview-scroll { height: 280px; }
+  .pf-preview-bar { padding: 10px 12px; }
+  .pf-preview-act { padding: 6px 12px; }
+  .pf-result2-actions { width: 100%; }
+  .pf-result2-actions > * { flex: 1; }
+}
+
+.pf-result2-summary { font-size: 14.5px; color: var(--pf-text-muted); line-height: 1.6; margin: 18px 2px 0; max-width: 64ch; }
+/* The counts are the scannable payload — bold them a touch darker than the prose. */
+.pf-result2-summary strong { font-weight: 700; color: var(--pf-text); }
+
+/* ── "What now" panel (published only) ────────────────────────────────────────
+   ONE grouped unit: share the live page, then the next move. A single surface
+   with a hairline between the two beats — tight within, so it reads as one tidy
+   block instead of three loose fragments. */
+.pf-finish {
+  margin-top: 22px;
+  border: 1px solid var(--pf-border); border-radius: var(--pf-radius-lg);
+  background: var(--pf-surface); overflow: hidden;
+}
+
+/* Share beat — label + copy on one line, the link beneath (tight grouping). */
+.pf-finish-share { padding: 15px 18px; }
+.pf-finish-share-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.pf-finish-label { font-size: 12px; font-weight: 700; color: var(--pf-text-muted); letter-spacing: 0.01em; }
+.pf-finish-link {
+  display: block; margin-top: 6px; font-family: var(--pf-mono); font-size: 13px;
+  color: var(--pf-accent); text-decoration: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pf-finish-link:hover { text-decoration: underline; }
+.pf-copy-btn { min-height: 30px; padding: 0 12px; font-size: 12.5px; gap: 6px; flex-shrink: 0; }
+.pf-copy-btn svg { width: 14px; height: 14px; }
+
+/* Next beat — separated from share by a hairline, the natural next move. Quiet
+   text affordances, not competing CTAs (the page is already done). */
+.pf-finish-next {
+  display: flex; flex-wrap: wrap; gap: 24px;
+  padding: 13px 18px; border-top: 1px solid var(--pf-border);
+  background: var(--pf-surface-2);
+}
+/* When there's no share beat above it, the next row IS the whole panel — no
+   top rule needed. */
+.pf-finish-share + .pf-finish-next { border-top: 1px solid var(--pf-border); }
+.pf-finish > .pf-finish-next:only-child { border-top: none; background: var(--pf-surface); }
+.pf-next-act {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  font-size: 13.5px; font-weight: 600; color: var(--pf-text-muted);
+  background: none; border: none; padding: 2px 0;
+  transition: color 0.14s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+.pf-next-act:hover { color: var(--pf-text); }
+.pf-next-act:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--pf-accent-soft); border-radius: 6px; }
+.pf-next-icon { width: 16px; height: 16px; }
+@media (max-width: 640px) {
+  .pf-finish-share-head { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+.pf-result2-links { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 16px; }
+
+/* Refine action glyph (quiet pencil in the secondary button). */
+.pf-refine-icon { width: 15px; height: 15px; }
+
+/* ── "For engineering" handoff — post-publish only, its own quiet section ── */
+.pf-eng { margin-top: 22px; padding: 18px 20px; border: 1px solid var(--pf-border); border-radius: var(--pf-radius-lg); background: var(--pf-surface); }
+.pf-eng-head { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--pf-text-muted); margin-bottom: 12px; letter-spacing: 0.01em; }
+.pf-eng-head svg { width: 14px; height: 14px; color: var(--pf-text-faint); }
+.pf-eng-row { display: flex; align-items: baseline; gap: 10px; font-size: 13px; padding: 4px 0; }
+.pf-eng-k { color: var(--pf-text-faint); width: 110px; flex-shrink: 0; }
+.pf-eng-v { color: var(--pf-text); font-weight: 500; }
+.pf-eng-v code { font-family: var(--pf-mono); font-size: 12px; background: var(--pf-surface-3); padding: 1px 6px; border-radius: 4px; }
+.pf-eng-blocks { display: flex; flex-wrap: wrap; gap: 6px; }
+.pf-eng-chip { font-family: var(--pf-mono); font-size: 11.5px; background: var(--pf-surface-3); color: var(--pf-text-muted); padding: 2px 8px; border-radius: 4px; }
+.pf-eng-link { font-size: 13px; font-weight: 600; }
+
+/* ── Publish hero — the deliberate, separate ship step, PROMOTED ───────────────
+   Once a page is built, publishing is the unmissable next action. This banner
+   sits directly under the verdict (above the preview) with an accent-tinted
+   surface + accent button, so the deliberate ship step reads as primary without
+   auto-shipping. blocks → Milo, content → DA. */
+.pf-publish-hero {
+  display: flex; align-items: center; gap: 18px;
+  margin: 4px 0 20px; padding: 18px 22px;
+  background: var(--pf-accent-soft, rgba(20,115,230,0.10));
+  border: 1px solid rgba(20,115,230,0.22);
+  border-radius: var(--pf-radius-lg);
+}
+.pf-publish-hero-copy { flex: 1; }
+/* The publish CTA — the proven filled button, sized up as THE primary action. */
+.pf-btn-publish { min-height: 40px; padding: 0 26px; font-size: 15px; border-radius: 20px; flex-shrink: 0; }
+.pf-publish-hero-title { font-size: 15.5px; font-weight: 800; letter-spacing: -0.01em; color: var(--pf-text); }
+.pf-publish-hero-desc { font-size: 13px; color: var(--pf-text-muted); margin-top: 3px; line-height: 1.5; max-width: 60ch; }
+@media (max-width: 640px) {
+  .pf-publish-hero { flex-direction: column; align-items: stretch; gap: 14px; }
+}
+
+/* ── Footer disclosures (How we built this / Activity log / Local artifacts) ──
+   One quiet group: a single hairline ABOVE the group, and a hairline between
+   each item — never the double top+bottom rule the S2 Disclosure drew. */
+.pf-foot-discs { margin-top: 20px; max-width: 920px; border-top: 1px solid var(--pf-border); }
+.pf-foot-disc { border-bottom: 1px solid var(--pf-border); }
+.pf-foot-disc-summary {
+  display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+  font-size: 13px; font-weight: 600; color: var(--pf-text);
+  padding: 13px 2px; user-select: none;
+}
+.pf-foot-disc-summary::-webkit-details-marker { display: none; }
+.pf-foot-disc-caret { display: inline-grid; place-items: center; color: var(--pf-text-faint); transition: transform 0.15s ease; }
+.pf-foot-disc-caret svg { width: 13px; height: 13px; }
+.pf-foot-disc[open] .pf-foot-disc-caret { transform: rotate(90deg); }
+.pf-foot-disc-body { padding: 4px 2px 18px 21px; }
+/* The log/artifacts containers no longer need their own chrome inside the group. */
+.pf-foot-discs .pf-log-container { margin: 0; }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   "How we built your page" — composition bar + detail drawer
+   The bar scales to any section count without breaking; the plain sentence
+   carries the story; per-section detail lives in the slide-over drawer.
+   ══════════════════════════════════════════════════════════════════════════ */
+.pf-report2 { max-width: 640px; }
+.pf-report2-lede { font-size: 15px; color: var(--pf-text); line-height: 1.6; margin: 0 0 20px; max-width: 58ch; }
+.pf-report2-bar-label { font-size: 12px; font-weight: 600; color: var(--pf-text-faint); margin: 0 0 10px; }
+.pf-report2-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 3px; }
+.pf-report2-bar span { display: block; height: 100%; border-radius: 4px; }
+.pf-report2-bar-reused { background: var(--pf-good); }
+.pf-report2-bar-new { background: var(--pf-border-strong); }
+.pf-report2-counts { display: flex; justify-content: space-between; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.pf-report2-count { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--pf-text-muted); }
+.pf-report2-count b { color: var(--pf-text); font-weight: 700; }
+.pf-report2-sw { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+.pf-report2-sw--reused { background: var(--pf-good); }
+.pf-report2-sw--new { background: var(--pf-border-strong); }
+.pf-report2-viewall { margin-top: 20px; }
+.pf-report2-viewall button {
+  all: unset; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--pf-accent);
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 0;
+}
+.pf-report2-viewall button:hover { text-decoration: underline; }
+.pf-report2-viewall svg { width: 14px; height: 14px; }
+
+/* ── Detail drawer (slide-over) ── */
+.pf-drawer-scrim {
+  position: fixed; inset: 0; background: rgba(20, 20, 20, 0.32); z-index: 400;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.pf-drawer-scrim--open { opacity: 1; pointer-events: auto; }
+.pf-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 460px; max-width: 92vw;
+  background: var(--pf-surface); z-index: 401; box-shadow: var(--pf-shadow-lg);
+  transform: translateX(100%); transition: transform 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
+}
+.pf-drawer--open { transform: translateX(0); }
+.pf-drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 20px 22px 14px; border-bottom: 1px solid var(--pf-border); flex-shrink: 0; }
+.pf-drawer-title { font-size: 16px; font-weight: 700; margin: 0; }
+.pf-drawer-sub { font-size: 12.5px; color: var(--pf-text-faint); margin: 3px 0 0; }
+.pf-drawer-close { all: unset; cursor: pointer; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; color: var(--pf-text-faint); flex-shrink: 0; }
+.pf-drawer-close:hover { background: var(--pf-surface-2); color: var(--pf-text); }
+.pf-drawer-close svg, .pf-drawer-close [class*="spectrum-Icon"] { width: 16px; height: 16px; }
+.pf-drawer-body { overflow-y: auto; padding: 4px 0 8px; flex: 1; }
+.pf-drow { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid var(--pf-border); }
+.pf-drow:last-child { border-bottom: 0; }
+.pf-drow-n { font-size: 12px; color: var(--pf-text-faint); font-variant-numeric: tabular-nums; }
+.pf-drow-mid { min-width: 0; }
+.pf-drow-act { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+.pf-drow-act--reused { color: var(--pf-good); }
+.pf-drow-act--new { color: var(--pf-text-muted); }
+.pf-drow-ic { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }
+.pf-drow-ic svg { width: 11px; height: 11px; }
+.pf-drow-ic--reused { background: rgba(25, 128, 56, 0.12); color: var(--pf-good); }
+.pf-drow-ic--new { background: var(--pf-surface-3); color: var(--pf-text-muted); }
+.pf-drow-blk { font-family: var(--pf-mono); font-size: 11.5px; color: var(--pf-text-faint); margin-top: 3px; }
+.pf-drow-conf { font-size: 12px; color: var(--pf-text-muted); font-variant-numeric: tabular-nums; }
+.pf-drow-conf--none { color: var(--pf-text-faint); }
+.pf-drawer-note { font-size: 12px; color: var(--pf-text-faint); line-height: 1.5; padding: 14px 22px 18px; flex-shrink: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-drawer { transition: none !important; }
+  .pf-drawer-scrim { transition: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-foot-disc-caret { transition: none !important; }
+}
+
+@media (max-width: 860px) {
+  .pf-gen2 { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-gen2-orb::after, .pf-gen2-prog-sweep, .pf-build::after { animation: none !important; }
+  .pf-blk { transition: none !important; }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   INTENT + STARDUST + COST + FLYWHEEL  (this iteration)
+   ════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Intent dial — the Reimagine (Stardust) stop ───────────────────────────── */
+/* The 3rd stop on the URL door's dial. It carries the Stardust mark + indigo tint
+   when active, so "a separate, heavier engine" reads at a glance — without being a
+   separate door. The segmented container allows wrapping so 3 stops fit narrow. */
+/* inline-flex so the bar hugs its tabs (never stretches full-width); wrap only if
+   the viewport is genuinely too narrow for all three stops. */
+.pf-segmented--intent { display: inline-flex; flex-wrap: wrap; max-width: 100%; }
+.pf-seg-glyph { display: inline-flex; margin-right: 5px; vertical-align: -2px; }
+.pf-seg-glyph svg { width: 13px; height: 13px; }
+.pf-seg--stardust { color: var(--pf-stardust-text); }
+.pf-seg--stardust .pf-seg-glyph { color: var(--pf-stardust); }
+.pf-seg--stardust.pf-seg--active { background: var(--pf-stardust-soft); color: var(--pf-stardust-text); }
+.pf-seg:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Intent chip (result) ──────────────────────────────────────────────────── */
+/* Sits on a row beside the verdict — verdict = run STATE, chip = MODE. */
+.pf-verdict-row { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.pf-intent-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 600;
+  color: var(--pf-text-muted); background: var(--pf-surface-3);
+  border-radius: 20px; padding: 5px 12px;
+}
+.pf-intent-chip--stardust { color: var(--pf-stardust-text); background: var(--pf-stardust-soft); }
+.pf-intent-chip-glyph { display: inline-flex; color: var(--pf-stardust); }
+.pf-intent-chip-glyph svg { width: 13px; height: 13px; }
+
+/* ── Cost line (result) — one quiet fact, no tile, no border ───────────────── */
+.pf-cost-line { font-size: 13px; color: var(--pf-text-muted); margin: 8px 2px 0; }
+.pf-cost-amount { font-family: var(--pf-mono); font-weight: 700; color: var(--pf-text); font-variant-numeric: tabular-nums; }
+.pf-cost-line--none .pf-cost-amount { color: var(--pf-text-faint); }
+.pf-cost-note { color: var(--pf-text-muted); }
+
+/* ── Build report — intent context + Stardust attribution ──────────────────── */
+.pf-report2-intent { font-size: 13px; font-weight: 600; color: var(--pf-text-muted); margin: 0 0 8px; }
+.pf-report2-stardust {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; color: var(--pf-stardust-text); margin: 0 0 14px;
+}
+.pf-report2-stardust-glyph { display: inline-flex; color: var(--pf-stardust); }
+.pf-report2-stardust-glyph svg { width: 15px; height: 15px; }
+
+/* ── Roadmap honesty pill (the single primitive across the flywheel) ───────── */
+/* ── Planned — the "not built yet" primitive (greyed term + asterisk) ──────── */
+/* Replaces the old dashed pill. The term reads in-flight (muted) with a small
+   asterisk pointing at one footnote (Planned.Note). Reused for anything unbuilt. */
+.pf-planned { color: var(--pf-text-muted); }
+.pf-planned-star { color: var(--pf-text-faint); font-weight: 700; margin-left: 1px; vertical-align: super; font-size: 0.8em; }
+.pf-planned-note { color: var(--pf-text-muted); }
+.pf-planned-note .pf-planned-star { margin-right: 4px; margin-left: 0; vertical-align: baseline; font-size: 1em; }
+
+/* ── Preview block dot rail (the "Show blocks" rail on the result preview) ──── */
+/* Reused = green, new = the same grey used for "newly designed" everywhere. A
+   SECTION MAP over a static screenshot: click-to-jump scrolls to an even
+   proportional offset (becomes DOM-exact when the preview is a live iframe). The
+   rail is `sticky` so it rides the scroll, pinned right and clear of the frosted bar. */
+.pf-pvb-rail {
+  position: sticky; top: 0; z-index: 4; float: right;
+  width: 14px; margin-right: 10px; transform: translateY(64px);
+  display: flex; flex-direction: column; gap: 9px;
+}
+.pf-pvb-dot {
+  position: relative; width: 12px; height: 12px; border-radius: 50%;
+  border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); cursor: pointer; padding: 0;
+  transition: transform 0.12s;
+}
+.pf-pvb-dot:hover { transform: scale(1.35); }
+.pf-pvb-dot--reused { background: var(--pf-good); }
+.pf-pvb-dot--new { background: var(--pf-border-strong); }
+.pf-pvb-dot-tip {
+  position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+  white-space: nowrap; font-size: 11px; font-weight: 600; color: #fff;
+  background: rgba(20,20,20,0.82); padding: 3px 8px; border-radius: 6px;
+  opacity: 0; pointer-events: none; transition: opacity 0.12s;
+}
+.pf-pvb-dot:hover .pf-pvb-dot-tip, .pf-pvb-dot:focus-visible .pf-pvb-dot-tip { opacity: 1; }
+.pf-preview-act.pf-preview-act--on { color: var(--pf-accent); }
+@media (prefers-reduced-motion: reduce) {
+  .pf-pvb-dot { transition: none !important; }
+}
+
+/* ── Catalog candidates (per-run result strip) ─────────────────────────────── */
+.pf-cand { font-size: 14px; color: var(--pf-text); }
+.pf-cand-lede { line-height: 1.6; margin: 0 0 10px; max-width: 64ch; }
+.pf-cand-lede b { font-weight: 700; }
+.pf-cand-lede--none { color: var(--pf-text-muted); }
+.pf-cand-list { display: flex; flex-direction: column; gap: 8px; margin: 0 0 16px; }
+.pf-cand-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px;
+  border: 1px solid var(--pf-border); border-radius: var(--pf-radius);
+  background: var(--pf-surface);
+}
+.pf-cand-name { font-family: var(--pf-mono); font-size: 13px; font-weight: 600; color: var(--pf-text); flex: 1 1 auto; }
+.pf-cand-states { display: inline-flex; align-items: center; gap: 7px; }
+/* Shipped = the only REAL state → solid, confident, green. */
+.pf-cand-shipped {
+  font-size: 12px; font-weight: 600; color: var(--pf-good);
+  background: rgba(25,128,56,0.10); border-radius: 20px; padding: 3px 10px;
+  white-space: nowrap;
+}
+/* Candidate = ROADMAP eligibility → dashed outline (not green), readable text. */
+.pf-cand-elig {
+  font-size: 12px; font-weight: 600; color: var(--pf-text-muted);
+  border: 1px dashed var(--pf-border-strong); border-radius: 20px; padding: 3px 10px;
+  white-space: nowrap;
+}
+/* The trigger reason, plain text, subordinate. */
+.pf-cand-trigger { font-size: 12px; color: var(--pf-text-muted); flex: 0 0 auto; }
+.pf-cand-foot { font-size: 12.5px; color: var(--pf-text-muted); line-height: 1.6; margin: 0; }
+.pf-cand-link {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 12.5px; font-weight: 600; color: var(--pf-accent);
+  background: none; border: 0; padding: 0; cursor: pointer;
+}
+.pf-cand-link svg { width: 14px; height: 14px; }
+.pf-cand-link:hover { color: var(--pf-accent-hover); }
+
+/* ── Design system view (the standing flywheel destination) ────────────────── */
+.pf-ds { max-width: 920px; }
+.pf-ds-title { font-size: 26px; font-weight: 800; letter-spacing: -0.025em; margin: 14px 0 6px; color: var(--pf-text); }
+.pf-ds-sub { font-size: 14.5px; color: var(--pf-text-muted); line-height: 1.6; margin: 0 0 18px; max-width: 70ch; }
+.pf-ds-banner {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-size: 13px; color: var(--pf-text-muted); line-height: 1.5;
+  background: var(--pf-surface-3); border-radius: var(--pf-radius); padding: 12px 16px;
+  margin: 0 0 28px;
+}
+.pf-ds-banner b { color: var(--pf-text); font-weight: 700; }
+.pf-ds-section { margin: 0 0 30px; }
+.pf-ds-h3 { display: inline-flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--pf-text); margin: 0 0 12px; }
+.pf-ds-note { font-size: 13px; color: var(--pf-text-muted); line-height: 1.6; margin: 0 0 14px; max-width: 64ch; }
+/* "How promotion works" — the crunchy detail, hosted here (not on every result). */
+.pf-ds-how { border-top: 1px solid var(--pf-border); padding-top: 24px; }
+.pf-ds-steps { margin: 0 0 12px; padding-left: 20px; max-width: 64ch; }
+.pf-ds-steps li { font-size: 13.5px; color: var(--pf-text-muted); line-height: 1.6; margin: 0 0 6px; }
+.pf-ds-steps b { color: var(--pf-text); font-weight: 700; }
+.pf-ds-foot { font-size: 12.5px; line-height: 1.6; margin: 0; max-width: 64ch; }
+.pf-ds-empty { display: flex; flex-direction: column; gap: 14px; }
+.pf-ds-empty-msg { font-size: 13.5px; color: var(--pf-text-muted); line-height: 1.6; margin: 0; max-width: 64ch; }
+
+/* Lifecycle track — static, labeled, NEVER an animated wheel. */
+.pf-fw-track { display: flex; align-items: stretch; flex-wrap: wrap; gap: 0; margin: 0 0 36px; }
+.pf-fw-stage-wrap { display: flex; align-items: center; flex: 1 1 0; min-width: 150px; }
+.pf-fw-stage {
+  flex: 1; display: flex; flex-direction: column; gap: 5px;
+  padding: 14px 16px;
+  border: 1px solid var(--pf-border); border-radius: var(--pf-radius);
+  background: var(--pf-surface);
+}
+.pf-fw-stage--real { border-color: var(--pf-good); background: rgba(25,128,56,0.05); }
+.pf-fw-stage-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pf-fw-count { font-size: 22px; font-weight: 800; color: var(--pf-text); }
+.pf-fw-stage--real .pf-fw-count { color: var(--pf-good); }
+.pf-fw-label { font-size: 13px; font-weight: 700; color: var(--pf-text); }
+.pf-fw-note { font-size: 11.5px; color: var(--pf-text-muted); line-height: 1.45; }
+.pf-fw-arrow { color: var(--pf-border-strong); display: grid; place-items: center; padding: 0 6px; flex: 0 0 auto; }
+.pf-fw-arrow svg { width: 18px; height: 18px; }
+
+/* Candidate / review / promoted rows in the interactive walkthrough. */
+.pf-fw-cand-list { display: flex; flex-direction: column; gap: 8px; }
+.pf-fw-cand, .pf-fw-review {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 11px 15px;
+  border: 1px solid var(--pf-border); border-radius: var(--pf-radius);
+  background: var(--pf-surface);
+}
+.pf-fw-cand-name { font-family: var(--pf-mono); font-size: 13px; font-weight: 600; color: var(--pf-text); }
+.pf-fw-cand-meta { font-size: 12.5px; color: var(--pf-text-muted); margin-right: auto; }
+.pf-fw-cand-act { margin-left: auto; }
+.pf-fw-review-acts { margin-left: auto; display: inline-flex; gap: 8px; }
+.pf-fw-approve { padding: 6px 16px; font-size: 13px; }
+/* Promoted = the loop closed → confident green, like the Shipped lane. */
+.pf-fw-cand--promoted { border-color: var(--pf-good); background: rgba(25,128,56,0.05); }
+.pf-fw-promoted-ic {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--pf-good); color: #fff; flex: 0 0 auto;
+}
+.pf-fw-promoted-ic svg { width: 13px; height: 13px; --iconPrimary: #fff; }
+
+@media (max-width: 760px) {
+  .pf-fw-stage-wrap { flex-basis: 100%; }
+  .pf-fw-arrow { transform: rotate(90deg); }
+}

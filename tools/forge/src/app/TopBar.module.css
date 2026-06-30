@@ -1,0 +1,126 @@
+.topbar {
+	display: flex;
+	align-items: center;
+	height: 48px;
+	padding: 0 16px;
+	background: var(--pf-surface);
+	border-bottom: 1px solid var(--pf-border);
+	flex-shrink: 0;
+}
+
+/* Brand lockup = home affordance. The shipped PF logo chip (rounded square),
+   never a bare dot. */
+.brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+	background: none;
+	border: 0;
+	padding: 4px 6px 4px 0;
+	font-family: inherit;
+}
+
+.brandMark {
+	width: 22px;
+	height: 22px;
+	border-radius: 5px;
+	background: linear-gradient(135deg, var(--pf-accent) 0%, #6c5ce7 100%);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	flex-shrink: 0;
+}
+
+.brandName {
+	font-size: 15px;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	color: var(--pf-text);
+	white-space: nowrap;
+}
+
+/* Wayfinding breadcrumb */
+.crumb {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+	flex: 1;
+}
+
+.sep {
+	font-size: 14px;
+	color: var(--pf-text-faint);
+	margin: 0 8px;
+}
+
+.crumbPlace {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--pf-text-muted);
+	white-space: nowrap;
+}
+
+.crumbSrc {
+	font-size: 14px;
+	color: var(--pf-text-faint);
+	white-space: nowrap;
+}
+
+.crumbTitle {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--pf-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 360px;
+	margin-left: 6px;
+}
+
+.crumbState {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--pf-text-muted);
+	white-space: nowrap;
+	margin-left: 8px;
+}
+
+.crumbStateErr {
+	color: var(--pf-bad);
+}
+
+/* The breathing hollow ring, shared shape language with the sidebar. */
+.ring {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	margin: 0 8px 0 2px;
+}
+
+.ringGen {
+	border: 1.5px solid var(--pf-text-muted);
+	background: transparent;
+	animation: pf-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes pf-breathe {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.45; }
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ringGen { animation: none; opacity: 0.7; }
+}

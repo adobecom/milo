@@ -1,0 +1,333 @@
+/* ── Deck — leadership slideshow styles (THROWAWAY) ──────────────────────────
+   Reuses the pf- design tokens from forge.css. Full-viewport stage with a quiet
+   caption and a framed live UI. Calm, exec-grade, minimal. */
+
+.pf-deck {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; flex-direction: column;
+  background: var(--pf-bg);
+  font-family: var(--pf-font);
+  overflow: hidden;
+}
+.pf-deck--hero { background: #0f1115; }
+.pf-deck--dark { background: #14161b; }
+
+/* ── Slide ─────────────────────────────────────────────────────────────────── */
+.pf-deck-slide {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 40px 56px 12px;
+  text-align: center;
+  animation: pf-deck-in 0.4s cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes pf-deck-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* A slide that hosts the live product gives the stage the room; the header stays
+   tight so the canvas is the hero. */
+.pf-deck-slide--stage { padding: 26px 48px 8px; }
+
+.pf-deck-eyebrow {
+  font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--pf-accent); margin-bottom: 12px;
+}
+.pf-deck-title {
+  font-size: 38px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
+  color: var(--pf-text); margin: 0; max-width: 22ch; text-wrap: balance;
+}
+.pf-deck-slide--stage .pf-deck-title { font-size: 28px; max-width: none; text-wrap: nowrap; white-space: nowrap; }
+.pf-deck-caption {
+  font-size: 16px; line-height: 1.5; color: var(--pf-text-muted);
+  margin: 14px 0 0; max-width: 64ch; text-wrap: pretty;
+}
+.pf-deck-slide--stage .pf-deck-caption { font-size: 14.5px; margin-top: 8px; }
+
+/* Hero / dark slides invert text. */
+.pf-deck--hero .pf-deck-title, .pf-deck--dark .pf-deck-title { color: #fff; }
+.pf-deck--hero .pf-deck-caption, .pf-deck--dark .pf-deck-caption { color: #b9bec8; }
+.pf-deck--hero .pf-deck-eyebrow, .pf-deck--dark .pf-deck-eyebrow { color: #8aa6ff; }
+
+/* ── Text slide: a real Adobe-style deck slide ────────────────────────────────
+   A white 16:9 slide card floating on the dark stage, with the corporate lockup,
+   a red accent rule, a big Adobe Clean headline, a footer, and a faint oversized
+   "A" watermark. Reads like a projected deck, not centered text on a void. */
+.pf-deck-slide--text {
+  padding: 40px;
+  text-align: left;
+  justify-content: center;
+}
+.pf-tslide {
+  position: relative;
+  width: 100%; max-width: 1180px; aspect-ratio: 16 / 9; max-height: 100%;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55), 0 2px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 5.2% 6%;
+  /* hint the slide forward as it enters */
+  animation: pf-tslide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes pf-tslide-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Top-left: the Adobe icon glyph (no wordmark). */
+.pf-tslide-brand {
+  position: relative; z-index: 2;
+  flex: 0 0 auto;
+}
+.pf-tslide-icon { height: 38px; width: auto; display: block; }
+
+/* Oversized faint watermark, bleeding off the lower-right corner. The glyph is a
+   solid red square + white A, too loud at scale, so wash it to a faint tint. */
+.pf-tslide-watermark {
+  position: absolute; z-index: 0;
+  right: -3%; bottom: -14%;
+  width: 30%; height: auto;
+  pointer-events: none;
+}
+.pf-tslide-watermark .pf-adobe-sq { fill: #fbeae8; }
+.pf-tslide-watermark .pf-adobe-a { fill: #fff; }
+
+/* Body — vertically centered between the lockup and footer. */
+.pf-tslide-body {
+  position: relative; z-index: 2;
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  max-width: 80%;
+}
+.pf-tslide-rule {
+  width: 56px; height: 5px; border-radius: 3px;
+  background: var(--pf-adobe-red, #eb1000);
+  margin-bottom: 22px;
+}
+.pf-tslide-eyebrow {
+  font-size: 15px; font-weight: 700; letter-spacing: 0.10em; text-transform: uppercase;
+  color: var(--pf-adobe-red, #eb1000); margin-bottom: 18px;
+}
+.pf-tslide-title {
+  font-size: clamp(34px, 4.6vw, 60px); font-weight: 800; letter-spacing: -0.035em;
+  line-height: 1.04; color: #1a1a1a; margin: 0; max-width: 18ch; text-wrap: balance;
+}
+.pf-tslide-caption {
+  font-size: clamp(16px, 1.6vw, 21px); line-height: 1.5; color: #5a5a52;
+  margin: 24px 0 0; max-width: 52ch; text-wrap: pretty;
+}
+
+/* Footer rule + meta. */
+.pf-tslide-foot {
+  position: relative; z-index: 2;
+  flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid #ececea;
+  font-size: 12.5px; color: #8e8e88; letter-spacing: 0.02em;
+}
+.pf-tslide-foot-name { font-weight: 700; color: #6e6e68; }
+.pf-tslide-foot-num { font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-tslide { animation: none; }
+}
+
+/* ── Stage: the framed live UI ───────────────────────────────────────────────
+   A clean card the real component renders into. Scrolls internally if tall. */
+.pf-deck-stage {
+  margin-top: 18px; width: 100%; max-width: 1180px; flex: 1; min-height: 0;
+  display: flex; justify-content: center;
+}
+.pf-deck-stage--fill {
+  display: block;
+}
+
+/* ── Live product stage (faux-browser frame around the REAL app) ──────────────*/
+.pf-stage-frame {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-xl);
+  box-shadow: var(--pf-shadow-lg);
+  overflow: hidden;
+  text-align: left;
+}
+.pf-stage-chrome {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 12px;
+  height: 42px; padding: 0 16px;
+  background: var(--pf-surface-2);
+  border-bottom: 1px solid var(--pf-border);
+}
+.pf-stage-dots { display: inline-flex; gap: 7px; }
+.pf-stage-dots i { width: 11px; height: 11px; border-radius: 50%; background: var(--pf-border-strong); }
+.pf-stage-url {
+  flex: 1; text-align: center;
+  font-size: 12.5px; font-weight: 600; color: var(--pf-text-faint);
+  letter-spacing: 0.01em;
+}
+/* The live canvas: the real app's WorkArea scrolls inside here. */
+.pf-stage-canvas {
+  flex: 1; min-height: 0; position: relative;
+  overflow-y: auto; overflow-x: hidden;
+  background: var(--pf-bg);
+}
+/* The embedded WorkArea uses its own .pf-work padding; keep it centered + capped
+   so it reads as a focused canvas, not a stretched full-bleed app. */
+.pf-stage-canvas .pf-work { max-width: 900px; margin: 0 auto; }
+
+/* Per-slide door focus: grey + disable the door that ISN'T this slide's path, so
+   the presenter and the room look at the one live option. The doors render in
+   order (1st = Figma, 2nd = URL/Stardust) as direct children of .pf-doors. CSS-
+   only, so the real InputPanel is untouched; pointer-events:none makes it inert. */
+.pf-stage-canvas[data-highlight='figma'] .pf-doors > .pf-door:nth-child(2),
+.pf-stage-canvas[data-highlight='url'] .pf-doors > .pf-door:nth-child(1) {
+  opacity: 0.4;
+  filter: grayscale(0.85);
+  pointer-events: none;
+}
+
+/* ── Nav: quiet dots + arrows ────────────────────────────────────────────────*/
+.pf-deck-nav {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  padding: 12px; flex: 0 0 auto;
+}
+.pf-deck-arrow {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--pf-border); background: var(--pf-surface);
+  font-size: 18px; color: var(--pf-text-muted); cursor: pointer; line-height: 1;
+  display: grid; place-items: center;
+}
+.pf-deck-arrow:hover:not(:disabled) { color: var(--pf-text); border-color: var(--pf-border-strong); }
+.pf-deck-arrow:disabled { opacity: 0.3; cursor: default; }
+.pf-deck--hero .pf-deck-arrow, .pf-deck--dark .pf-deck-arrow { background: transparent; border-color: #333a46; color: #b9bec8; }
+
+.pf-deck-dots { display: flex; gap: 9px; }
+.pf-deck-dot {
+  width: 8px; height: 8px; border-radius: 50%; padding: 0; border: 0; cursor: pointer;
+  background: var(--pf-border-strong); transition: transform 0.15s, background 0.15s;
+}
+.pf-deck-dot--on { background: var(--pf-accent); transform: scale(1.4); }
+.pf-deck--hero .pf-deck-dot, .pf-deck--dark .pf-deck-dot { background: #333a46; }
+.pf-deck--hero .pf-deck-dot--on, .pf-deck--dark .pf-deck-dot--on { background: #8aa6ff; }
+
+/* ── Viz slide card: two columns (text left, diagram right) ────────────────────
+   Splitting the body keeps the wheel out of the heading's and footer's padding —
+   each column owns its space, vertically centered, with a gap between. */
+.pf-tslide-body--split {
+  flex-direction: row; align-items: center; gap: clamp(28px, 5vw, 72px);
+  max-width: 100%;
+}
+.pf-tslide-col-text {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.pf-tslide-col-viz {
+  flex: 0 0 auto;
+  display: flex; align-items: center; justify-content: center;
+  min-width: 0;
+  /* Keep the wheel off the card's right edge. */
+  padding-right: clamp(16px, 3vw, 56px);
+}
+.pf-tslide--viz .pf-tslide-title { font-size: clamp(26px, 3vw, 40px); max-width: 16ch; }
+.pf-tslide--viz .pf-tslide-caption { margin-top: 16px; max-width: 36ch; font-size: clamp(15px, 1.5vw, 19px); }
+
+/* Single-column fallback on a narrow/short stage: stack text over the wheel. */
+@media (max-width: 720px) {
+  .pf-tslide-body--split { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .pf-tslide-col-viz { width: 100%; }
+}
+
+/* ── Flywheel: a real turning wheel (4 stations + hub + clockwise ring) ─────────*/
+.pf-fw3 {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 22px;
+}
+.pf-fw3-wheel { position: relative; width: clamp(240px, 26vw, 340px); aspect-ratio: 1 / 1; }
+
+/* Ring + clockwise motion arc. */
+.pf-fw3-ring { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.pf-fw3-ring-track { fill: none; stroke: #ececea; stroke-width: 1.5; }
+.pf-fw3-ring-arc { fill: none; stroke: var(--pf-adobe-red, #eb1000); stroke-width: 2; stroke-linecap: round; opacity: 0.85; }
+.pf-fw3-arrowhead { fill: var(--pf-adobe-red, #eb1000); }
+
+/* The hub — what compounds. A soft brand-red disc at the center. Smaller than the
+   ring so the station chips clear it with room to spare. */
+.pf-fw3-hub {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 38%; aspect-ratio: 1 / 1; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #fdeeec 100%);
+  border: 1.5px solid rgba(235, 16, 0, 0.25);
+  box-shadow: inset 0 0 0 5px rgba(235, 16, 0, 0.04);
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; padding: 8px; z-index: 1;
+}
+.pf-fw3-hub-label { font-size: clamp(12px, 1.2vw, 14px); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; color: var(--pf-adobe-red, #eb1000); }
+
+/* Station chips: a small dot + ONE word, positioned at the 4 cardinal points.
+   Compact (no subtitle) so they never overlap the hub or the footer. */
+.pf-fw3-station {
+  position: absolute;
+  display: inline-flex; align-items: center; gap: 8px; white-space: nowrap;
+  background: #fff; border: 1px solid #e6e6e3; border-radius: 999px;
+  padding: 7px 15px 7px 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); z-index: 2;
+}
+.pf-fw3-station--real { border-color: rgba(25, 128, 56, 0.5); background: rgba(25, 128, 56, 0.07); }
+.pf-fw3-station--top    { left: 50%;  top: 0;    transform: translate(-50%, -50%); }
+.pf-fw3-station--right  { left: 100%; top: 50%;  transform: translate(-50%, -50%); }
+.pf-fw3-station--bottom { left: 50%;  top: 100%; transform: translate(-50%, -50%); }
+.pf-fw3-station--left   { left: 0;    top: 50%;  transform: translate(-50%, -50%); }
+.pf-fw3-dot {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 12px; font-weight: 800;
+  background: #ececea; color: #6e6e68;
+}
+.pf-fw3-station--real .pf-fw3-dot { background: var(--pf-good, #198038); color: #fff; }
+.pf-fw3-dot svg { width: 13px; height: 13px; }
+.pf-fw3-label { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; color: #1a1a1a; }
+.pf-fw3-station--real .pf-fw3-label { color: #157a34; }
+
+/* ── Input funnel: many inputs converge to one engine, one page ────────────────*/
+.pf-funnel {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.pf-funnel-cap { font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #8e8e88; }
+.pf-funnel-ins { display: flex; flex-wrap: wrap; gap: 9px; justify-content: center; max-width: 360px; }
+.pf-funnel-chip {
+  display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  font-size: 14px; font-weight: 700; color: #6e6e68;
+  background: #fff; border: 1px solid #e6e6e3; border-radius: 999px;
+  padding: 7px 14px 7px 9px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.pf-funnel-chip--live { color: #157a34; border-color: rgba(25,128,56,0.5); background: rgba(25,128,56,0.07); }
+.pf-funnel-dot {
+  width: 19px; height: 19px; border-radius: 50%; flex: 0 0 auto;
+  display: grid; place-items: center; background: #ececea; color: #6e6e68;
+}
+.pf-funnel-chip--live .pf-funnel-dot { background: var(--pf-good, #198038); color: #fff; }
+.pf-funnel-dot svg { width: 11px; height: 11px; }
+.pf-funnel-merge { width: 130px; height: 26px; color: var(--pf-border-strong, #cdcdc8); }
+.pf-funnel-merge svg { width: 100%; height: 100%; }
+.pf-funnel-merge path { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.pf-funnel-engine {
+  font-size: 17px; font-weight: 800; letter-spacing: -0.01em; color: var(--pf-adobe-red, #eb1000);
+  background: radial-gradient(circle, #fff 0%, #fdeeec 100%);
+  border: 1.5px solid rgba(235,16,0,0.28); border-radius: 999px;
+  padding: 9px 26px; box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.pf-funnel-down { color: #b0b0aa; font-size: 19px; line-height: 1; }
+.pf-funnel-page {
+  font-size: 14.5px; font-weight: 700; color: #1a1a1a;
+  border: 1px solid #e6e6e3; border-radius: 10px; padding: 9px 18px; background: #fafafa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pf-deck-slide { animation: none; }
+  .pf-deck-dot { transition: none; }
+}
