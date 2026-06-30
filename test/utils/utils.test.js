@@ -2729,6 +2729,39 @@ describe('Utils', () => {
     });
   });
 
+  describe('getCountryFromParams', () => {
+    const params = (qs) => new URLSearchParams(qs);
+
+    it('reads the country param (country-only)', () => {
+      expect(utils.getCountryFromParams(params('country=sg'))).to.equal('sg');
+    });
+
+    it('reads the akamaiLocale param (akamaiLocale-only)', () => {
+      expect(utils.getCountryFromParams(params('akamaiLocale=sg'))).to.equal('sg');
+    });
+
+    it('produces the same result for ?country= as ?akamaiLocale=', () => {
+      expect(utils.getCountryFromParams(params('country=sg')))
+        .to.equal(utils.getCountryFromParams(params('akamaiLocale=sg')));
+    });
+
+    it('prefers country over akamaiLocale when both are set', () => {
+      expect(utils.getCountryFromParams(params('country=sg&akamaiLocale=fr'))).to.equal('sg');
+    });
+
+    it('falls through to akamaiLocale when country is invalid', () => {
+      expect(utils.getCountryFromParams(params('country=123&akamaiLocale=fr'))).to.equal('fr');
+    });
+
+    it('ignores an invalid akamaiLocale too (neither valid)', () => {
+      expect(utils.getCountryFromParams(params('country=1&akamaiLocale=99'))).to.equal(null);
+    });
+
+    it('returns null when neither param is set', () => {
+      expect(utils.getCountryFromParams(params(''))).to.equal(null);
+    });
+  });
+
   describe('getLingoRegion', () => {
     let lingoModule;
 

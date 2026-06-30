@@ -964,12 +964,15 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
+export function getCountryFromParams(searchParams) {
+  const validate = (v) => (typeof v === 'string' && /^[a-zA-Z]{2,6}$/.test(v) ? v : null);
+  return validate(searchParams.get('country')) || validate(searchParams.get('akamaiLocale'));
+}
+
 export async function getCountry(skipFallback = false) {
   if (isBot()) return null;
 
-  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
-  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
-  const country = akamaiLocale || sessionStorage.getItem('akamai');
+  const country = getCountryFromParams(PAGE_URL.searchParams) || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
