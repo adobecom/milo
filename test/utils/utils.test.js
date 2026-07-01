@@ -2763,10 +2763,8 @@ describe('Utils', () => {
       expect(await country('country=1&akamaiLocale=99')).to.equal('de');
     });
 
-    it('matches the param name case-insensitively (and lowercases the value)', async () => {
-      expect(await country('akamailocale=SG')).to.equal('sg');
-      expect(await country('AkamaiLocale=sg')).to.equal('sg');
-      expect(await country('COUNTRY=sg')).to.equal('sg');
+    it('lowercases the resolved value', async () => {
+      expect(await country('country=SG')).to.equal('sg');
     });
   });
 

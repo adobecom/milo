@@ -968,10 +968,8 @@ export async function getCountry(skipFallback = false, searchParams = PAGE_URL.s
   if (isBot()) return null;
 
   const validate = (v) => (typeof v === 'string' && /^[a-zA-Z]{2,6}$/.test(v) ? v : null);
-  const getParam = (name) => [...searchParams]
-    .find(([key]) => key.toLowerCase() === name)?.[1] ?? null;
-  const country = validate(getParam('country'))
-    || validate(getParam('akamailocale'))
+  const country = validate(searchParams.get('country'))
+    || validate(searchParams.get('akamaiLocale'))
     || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
