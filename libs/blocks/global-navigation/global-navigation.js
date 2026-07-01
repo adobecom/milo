@@ -110,7 +110,10 @@ const {
   setupKeyboardNav,
   KEYBOARD_DELAY,
   isSmallScreen,
+  updateActiveLink,
 } = utilities;
+
+export { updateActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 

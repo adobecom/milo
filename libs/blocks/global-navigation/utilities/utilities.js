@@ -409,11 +409,65 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
 
       if (!activeLink) return null;
 
+      activeLink.dataset.activeLinkHref = activeLink.href;
       setActiveLink(true);
       return activeLink;
     },
   ];
 })();
+
+export function updateActiveLink() {
+  const { origin, pathname } = window.location;
+  const currentUrl = `${origin}${pathname}`;
+  const matchesUrl = (el) => el.href === currentUrl
+    || el.href.startsWith(`${currentUrl}?`)
+    || el.href.startsWith(`${currentUrl}#`);
+
+  const activeNavItemClass = selectors.activeNavItem.slice(1);
+  const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
+
+  // Remove previous active state
+  document.querySelectorAll(selectors.activeNavItem).forEach((navItem) => {
+    navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
+    navItem.style.width = '';
+
+    const prevLink = navItem.querySelector('a[data-active-link-href]');
+    if (prevLink) {
+      prevLink.setAttribute('href', prevLink.dataset.activeLinkHref);
+      prevLink.removeAttribute('data-active-link-href');
+      prevLink.removeAttribute('role');
+      prevLink.removeAttribute('aria-disabled');
+      prevLink.removeAttribute('aria-current');
+      prevLink.removeAttribute('tabindex');
+    }
+  });
+
+  setActiveLink(false);
+
+  // Find and apply new active state
+  const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
+  if (!nav) return;
+
+  const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])')].find(matchesUrl);
+  if (!newActiveLink) return;
+
+  const navItem = newActiveLink.closest(selectors.navItem);
+  if (!navItem) return;
+
+  navItem.classList.add(activeNavItemClass);
+  newActiveLink.dataset.activeLinkHref = newActiveLink.href;
+
+  // Only strip href and apply aria attrs for simple link items (no dropdown popup sibling)
+  if (!newActiveLink.nextElementSibling?.classList.contains('feds-popup')) {
+    newActiveLink.removeAttribute('href');
+    newActiveLink.setAttribute('role', 'link');
+    newActiveLink.setAttribute('aria-disabled', 'true');
+    newActiveLink.setAttribute('aria-current', 'page');
+    newActiveLink.setAttribute('tabindex', '0');
+  }
+
+  setActiveLink(true);
+}
 
 export const setAriaAtributes = (dropdownTrigger) => {
   const popup = dropdownTrigger.nextElementSibling;
