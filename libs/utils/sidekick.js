@@ -42,7 +42,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:annotations', annotationsListener);
   sk.addEventListener('custom:hello', async (e) => {
     const { initializeStreamAnnotation } = await import(
-      'http://localhost:3000/streamlibs/operations/standaloneAnnotation/milo-collab-init.js'
+      'http://localhost:3000/peregrine-annotation/operations/standaloneAnnotation/milo-collab-init.js'
     );
     await initializeStreamAnnotation(e.detail);
   });
