@@ -2729,6 +2729,45 @@ describe('Utils', () => {
     });
   });
 
+  describe('getCountry query params', () => {
+    // getCountry reads PAGE_URL.searchParams (frozen at module load); the optional
+    // searchParams arg is the test seam. skipFallback=true avoids the geo import.
+    const params = (qs) => new URLSearchParams(qs);
+    const country = (qs) => utils.getCountry(true, params(qs));
+
+    beforeEach(() => sessionStorage.removeItem('akamai'));
+    afterEach(() => sessionStorage.removeItem('akamai'));
+
+    it('reads the country param (country-only)', async () => {
+      expect(await country('country=sg')).to.equal('sg');
+    });
+
+    it('reads the akamaiLocale param (akamaiLocale-only)', async () => {
+      expect(await country('akamaiLocale=sg')).to.equal('sg');
+    });
+
+    it('resolves ?country=sg the same as ?akamaiLocale=sg', async () => {
+      expect(await country('country=sg')).to.equal(await country('akamaiLocale=sg'));
+    });
+
+    it('prefers country over akamaiLocale when both are set', async () => {
+      expect(await country('country=sg&akamaiLocale=fr')).to.equal('sg');
+    });
+
+    it('falls through to akamaiLocale when country is invalid', async () => {
+      expect(await country('country=123&akamaiLocale=fr')).to.equal('fr');
+    });
+
+    it('falls through to sessionStorage when neither param is valid', async () => {
+      sessionStorage.setItem('akamai', 'de');
+      expect(await country('country=1&akamaiLocale=99')).to.equal('de');
+    });
+
+    it('lowercases the resolved value', async () => {
+      expect(await country('country=SG')).to.equal('sg');
+    });
+  });
+
   describe('getLingoRegion', () => {
     let lingoModule;
 
