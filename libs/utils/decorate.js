@@ -723,6 +723,10 @@ function getHeroGradientProp(el) {
   return HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
 }
 
+function supportsHeroGradient(el) {
+  return el.classList.contains('rich-content') && Boolean(getHeroGradientProp(el));
+}
+
 function extractHeroGradientFromRows(rows) {
   let gradient;
   rows.forEach((row) => {
@@ -761,6 +765,7 @@ function getInheritedHeroGradient(content, vpKeys, activeIndex, fallback) {
 }
 
 function parseViewportContent(el) {
+  const hasHeroGradient = supportsHeroGradient(el);
   const children = [...el.children];
   const content = {};
   const delimiterEls = [];
@@ -796,7 +801,9 @@ function parseViewportContent(el) {
     content[keyword] = {
       container,
       variants,
-      heroGradient: extractHeroGradientFromRows([...container.children]),
+      heroGradient: hasHeroGradient
+        ? extractHeroGradientFromRows([...container.children])
+        : undefined,
     };
   });
 
@@ -813,7 +820,7 @@ function parseViewportContent(el) {
   return { hasViewportVariations: true, content, allVariants };
 }
 
-function applyViewportContent(el, viewports, globalHeroGradient) {
+function applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient) {
   if (!viewports.hasViewportVariations) return;
 
   const { content, allVariants } = viewports;
@@ -833,9 +840,11 @@ function applyViewportContent(el, viewports, globalHeroGradient) {
       el.classList.remove(...allVariants);
       if (variants.length) el.classList.add(...variants);
       el.replaceChildren(...children);
-      const activeIndex = vpKeys.indexOf(viewport);
-      const gradient = getInheritedHeroGradient(content, vpKeys, activeIndex, globalHeroGradient);
-      applyHeroGradient(el, gradient);
+      if (hasHeroGradient) {
+        const activeIndex = vpKeys.indexOf(viewport);
+        const gradient = getInheritedHeroGradient(content, vpKeys, activeIndex, globalHeroGradient);
+        applyHeroGradient(el, gradient);
+      }
       decorateTextOverrides(el);
     };
 
@@ -848,17 +857,20 @@ function applyViewportContent(el, viewports, globalHeroGradient) {
  * - block — the element to decorate (viewport container or el itself)
  * - root  — for checking base classes on detached containers */
 export function decorateViewportContent(el, decorateFn) {
-  const globalHeroGradient = extractPreViewportHeroGradient(el);
+  const hasHeroGradient = supportsHeroGradient(el);
+  const globalHeroGradient = hasHeroGradient ? extractPreViewportHeroGradient(el) : undefined;
   const viewports = parseViewportContent(el);
   if (viewports.hasViewportVariations) {
     Object.values(viewports.content).forEach(({ container }) => {
       decorateFn(container, el);
     });
-    applyViewportContent(el, viewports, globalHeroGradient);
+    applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient);
   } else {
-    const gradient = extractHeroGradientFromRows([...el.children]) || globalHeroGradient;
     decorateFn(el, el);
-    applyHeroGradient(el, gradient);
+    if (hasHeroGradient) {
+      const gradient = extractHeroGradientFromRows([...el.children]) || globalHeroGradient;
+      applyHeroGradient(el, gradient);
+    }
     decorateTextOverrides(el);
   }
   return viewports;
