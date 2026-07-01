@@ -1463,6 +1463,11 @@ span.hang-opening-quote {
   }
 }
 
+.language-banner {
+  min-height: 44px;
+  visibility: hidden;
+}
+
 @media (width >= 768px) {
   :root {
     /* Grid definitions */
