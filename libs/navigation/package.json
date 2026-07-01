@@ -1,6 +1,6 @@
 {
   "name": "@adobecom/standalone-feds",
-  "version": "0.0.23-test",
+  "version": "0.0.24-1",
   "description": "",
   "main": "dist/navigation.js",
   "type": "module",
