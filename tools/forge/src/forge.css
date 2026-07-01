@@ -1996,28 +1996,7 @@ a:hover { text-decoration: underline; }
 .pf-door-name { font-size: 19px; font-weight: 700; letter-spacing: -0.02em; color: var(--pf-text); }
 .pf-door-blurb { font-size: 14px; color: var(--pf-text-muted); line-height: 1.45; }
 
-/* Trailing slot — holds the Connect control or the connected chip. */
 .pf-door-trailing { display: inline-flex; align-items: center; }
-
-/* The Connect Figma control is neutral; blue appears only on its focus ring
-   (S2 ActionButton provides that). The small Figma mark sits before the label. */
-.pf-door-trailing button svg,
-.pf-door-trailing [class*="spectrum-Icon"] { width: 15px; height: 15px; }
-
-/* Connected status chip — NEVER blue (status, not action); green dot, no name. */
-.pf-connected {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 7px 12px;
-  border-radius: var(--pf-radius);
-  background: var(--pf-surface-2);
-  color: var(--pf-text-muted);
-  white-space: nowrap;
-}
-.pf-connected-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--pf-good); flex: 0 0 auto; }
 
 .pf-door-go {
   width: 34px; height: 34px;
@@ -2078,7 +2057,6 @@ a:hover { text-decoration: underline; }
 .pf-focus-head { display: flex; align-items: center; gap: 13px; margin: 0; }
 .pf-focus-head .pf-src-glyph { width: 42px; height: 42px; border-radius: 10px; flex: 0 0 auto; }
 .pf-focus-head .pf-src-glyph svg { width: 22px; height: 22px; }
-.pf-focus-head .pf-connected { margin-left: auto; }
 .pf-focus-title { font-size: 19px; font-weight: 700; margin: 0; letter-spacing: -0.015em; color: var(--pf-text); }
 .pf-focus-actions { display: flex; justify-content: flex-end; }
 .pf-focus-sub { font-size: 13.5px; color: var(--pf-text-muted); margin: 4px 0 24px; line-height: 1.5; }

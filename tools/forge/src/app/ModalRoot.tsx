@@ -1,6 +1,5 @@
 import { useUiState } from './UiStateContext';
 import { SettingsSlideover } from './SettingsSlideover';
-import { ConnectFigmaModal } from './ConnectFigmaModal';
 import { ConnectConsumerModal } from './ConnectConsumerModal';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -15,10 +14,6 @@ export function ModalRoot() {
     <>
       <SettingsSlideover
         isOpen={state.modal === 'settings'}
-        onClose={handleClose}
-      />
-      <ConnectFigmaModal
-        isOpen={state.modal === 'connectFigma'}
         onClose={handleClose}
       />
       <ConnectConsumerModal

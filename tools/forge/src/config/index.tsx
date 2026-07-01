@@ -17,7 +17,6 @@ const LEGACY_KEYS: Record<string, string> = {
   serverUrl: 'page-forge:serverUrl',
   repoPath: 'page-forge:repoPath',
   miloPath: 'page-forge:miloPath',
-  figmaToken: 'page-forge:figmaToken',
   stardustSkillPath: 'page-forge:stardustSkillPath',
   impeccableSkillPath: 'page-forge:impeccableSkillPath',
   daUsername: 'page-forge:daUsername',
@@ -33,7 +32,6 @@ export interface ForgeConfig {
   daUsername: string;
   stardustSkillPath: string;
   impeccableSkillPath: string;
-  figmaToken: string;
   // Developer/debug mode. When ON, the result surfaces engineering-only detail
   // (the "For engineering" handoff, the activity log, and local artifacts) that
   // is hidden from designers/PMs by default. Off unless an engineer turns it on.
@@ -69,8 +67,6 @@ export function emptyForgeConfig(): ForgeConfig {
     daUsername: '',
     // Skills
     stardustSkillPath: '', impeccableSkillPath: '',
-    // Secrets
-    figmaToken: '',
     // Developer/debug mode — engineering detail hidden from creators by default.
     debugMode: false,
     // Export defaults — configurable in Settings.

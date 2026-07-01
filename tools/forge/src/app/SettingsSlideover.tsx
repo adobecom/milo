@@ -47,7 +47,6 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
     onClose();
   }
 
-  const figmaConnected = Boolean((draft.figmaToken || '').trim());
   const mode = draft.export.mode || 'milo';
 
   return (
@@ -172,21 +171,6 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                   ? 'Content and generated forge-* blocks ship to this consumer project (da-playground) only. Blocks are not migrated to the Milo fork.'
                   : 'Ships real forge-* blocks to the Milo fork on a feature branch; preview the page against those blocks via ?milolibs=<branch>.'}
               </div>
-            </div>
-          </div>
-
-          <div className={styles.group}>
-            <h3 className={styles.groupTitle}>Figma</h3>
-            <div className={styles.field}>
-              <TextField
-                label={figmaConnected ? 'Figma token (connected)' : 'Figma token'}
-                value={draft.figmaToken}
-                onChange={(v) => update('figmaToken', v)}
-                type="password"
-                placeholder="Figma personal access token"
-                description="Used to read your Figma frames at full resolution. Stored on this machine only."
-                UNSAFE_style={{ width: '100%' }}
-              />
             </div>
           </div>
 

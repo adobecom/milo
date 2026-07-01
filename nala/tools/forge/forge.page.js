@@ -43,22 +43,21 @@ export default class ForgePage {
 
   // Seed localStorage before the app boots.
   // repoPath: any non-empty string bypasses the ConnectConsumer modal on deploy.
-  // figmaToken: any non-empty value marks the Figma door as "connected".
-  // Seed config before the app boots.
   // Both repoPath AND consumerPreviewUrl must be set to skip the ConnectConsumer modal.
+  // serverUrl: overrides the default http://localhost:8080 (used in real mode).
   async seedDemoConfig({
-    figmaToken = '',
     repoPath = '/tmp/demo-repo',
     consumerPreviewUrl = 'http://localhost:3000',
+    serverUrl = '',
   } = {}) {
-    await this.page.addInitScript(({ ft, rp, cpu }) => {
+    await this.page.addInitScript(({ rp, cpu, su }) => {
       try {
         const stored = JSON.parse(localStorage.getItem('forge.config') || '{}');
         const next = { ...stored, repoPath: rp, consumerPreviewUrl: cpu };
-        if (ft) next.figmaToken = ft;
+        if (su) next.serverUrl = su;
         localStorage.setItem('forge.config', JSON.stringify(next));
       } catch { /* quota / restricted */ }
-    }, { ft: figmaToken, rp: repoPath, cpu: consumerPreviewUrl });
+    }, { rp: repoPath, cpu: consumerPreviewUrl, su: serverUrl });
   }
 
   async openUrlDoor() {

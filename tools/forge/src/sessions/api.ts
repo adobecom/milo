@@ -4,15 +4,19 @@ import type { RenderFidelity, Session } from './types';
 import type { ForgeConfig } from '../config';
 import { demoApi } from './demo/demoApi';
 
-// ── Demo-mode toggle ────────────────────────────────────────────────────────────
+// ── Mock-mode toggle ────────────────────────────────────────────────────────────
 // When on, every call routes to the smoke-and-mirrors driver (demo/demoApi.ts)
-// instead of the page-forge server — so the demo runs with no backend, no key,
+// instead of the page-forge server — so the UI runs with no backend, no key,
 // and no 30-minute wait. ON in dev (vite dev / :5173) AND in a build that sets
-// VITE_FORGE_DEMO=true (the da.live ?ref=local showtime build, which is a
+// FORGE_MOCK=true (the da.live ?ref=local showtime build, which is a
 // production build so DEV alone wouldn't cover it). A normal `client:build`
-// sets neither → demo OFF, real server used. Nothing to remember, no leak risk.
+// sets neither → mock OFF, real server used.
+//
+// Escape hatch: `FORGE_MOCK=false npm run dev` disables mock in dev so the
+// real milo-logs-deploy backend is used — useful for integration testing.
 const DEMO_MODE =
-  import.meta.env.DEV || import.meta.env.VITE_FORGE_DEMO === 'true';
+  import.meta.env.FORGE_MOCK === 'true' ||
+  (import.meta.env.DEV && import.meta.env.FORGE_MOCK !== 'false');
 
 // ── Backend namespace + per-account auth (milo-logs-deploy port) ──────────────
 // The backend now lives in milo-logs-deploy and namespaces forge routes under
@@ -129,7 +133,6 @@ function buildServerConfig(config: ForgeConfig): Record<string, unknown> {
     repoPath: config.repoPath,
     consumerPreviewUrl: config.consumerPreviewUrl,
     miloPath: config.miloPath,
-    figmaToken: config.figmaToken,
     stardustSkillPath: config.stardustSkillPath,
     impeccableSkillPath: config.impeccableSkillPath,
     daUsername: config.daUsername,

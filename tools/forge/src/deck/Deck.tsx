@@ -19,16 +19,15 @@ export function Deck() {
   const slide = SLIDES[i];
   const { config, setConfig } = useConfig();
 
-  // On-stage friction-killers (deck-only). The app gates two steps on saved config
-  // that, when missing, pop a Connect modal asking the presenter to paste values
-  // live: the Figma door (needs a token) and Send to Authoring (needs a consumer
-  // repo + preview URL). The demo stubs both flows end to end, so we seed harmless
-  // placeholder config to clear the gates, exactly as the app already forces
-  // stardustReady in demo mode ("show what works, working"). Real saved values are
-  // preserved. setConfig is in-memory only (not persisted), so nothing leaks.
+  // On-stage friction-killer (deck-only). The app gates Send to Authoring on
+  // saved config that, when missing, pops a Connect modal asking the presenter
+  // to paste values live: a consumer repo + preview URL. The demo stubs that
+  // flow end to end, so we seed harmless placeholder config to clear the gate,
+  // exactly as the app already forces stardustReady in demo mode ("show what
+  // works, working"). Real saved values are preserved. setConfig is in-memory
+  // only (not persisted), so nothing leaks.
   useEffect(() => {
     const patch: Partial<typeof config> = {};
-    if (!(config.figmaToken || '').trim()) patch.figmaToken = 'demo';
     if (!(config.repoPath || '').trim()) patch.repoPath = 'demo/consumer';
     if (!(config.consumerPreviewUrl || '').trim()) patch.consumerPreviewUrl = 'http://localhost:3000';
     if (Object.keys(patch).length) setConfig({ ...config, ...patch });

@@ -1,18 +1,17 @@
 // ── ConnectConsumerModal — focused, "connect to publish" step ─────────────────
-// Mirrors ConnectFigmaModal: a single focused modal, NOT the full settings panel.
-// Publishing needs a destination — the consumer site Forge ships your page to
-// (its local clone + preview URL). This collects exactly that and writes the same
-// config fields the settings panel does (config.repoPath + config.consumerPreviewUrl),
-// so once connected the publish step proceeds on its own. Opened from the deploy
-// gate when you press Publish without a destination connected — the same pattern
-// as the gated Figma door, so the demo never dead-ends on a toast.
+// A single focused modal, NOT the full settings panel. Publishing needs a
+// destination — the consumer site Forge ships your page to (its local clone +
+// preview URL). This collects exactly that and writes the same config fields
+// the settings panel does (config.repoPath + config.consumerPreviewUrl), so
+// once connected the publish step proceeds on its own. Opened from the deploy
+// gate when you press Publish without a destination connected, so the demo
+// never dead-ends on a toast.
 
 import { useState } from 'react';
 import { TextField } from '@react-spectrum/s2';
 import Close from '@react-spectrum/s2/icons/Close';
 import { useConfig } from '../config';
-// Reuse the Figma modal's styles verbatim — same focused-modal shell, one source.
-import styles from './ConnectFigmaModal.module.css';
+import styles from './FocusedModal.module.css';
 
 interface ConnectConsumerModalProps {
   isOpen: boolean;

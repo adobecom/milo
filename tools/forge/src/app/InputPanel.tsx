@@ -3,7 +3,7 @@
 //   1. An outcome PREVIEW per door (the kind of page Forge builds) — the only
 //      place brand-red appears, because it depicts real page output.
 //   2. Two SOURCE doors as compact rows (answer: what do you have?):
-//        • Build my design (Figma frame) + a proactive Connect Figma
+//        • Build my design (Figma frame)
 //        • Rebuild a page  (live URL)
 //      Each door carries the INTENT DIAL (IntentDial). The Figma dial offers
 //      conformance/fidelity; the URL dial adds a third stop — "Reimagine" — which
@@ -13,24 +13,21 @@
 //      would just duplicate the URL door's input.
 //
 // HONESTY NOTES (verified against the server):
-//   • "Connect Figma" promotes the EXISTING Figma OAuth (today only fired reactively
-//     mid-run via FigmaReauthCard) to a proactive front-door action. There is no
-//     /v1/me, no persisted identity and no disconnect endpoint yet, so the connected
-//     state says "Connected to Figma" with NO name, and persists for the session only.
-//     The reactive FigmaReauthCard stays the backstop.
+//   • Figma OAuth is entirely server-side (milo-logs-deploy) — the door opens
+//     straight to the frame input. If a run's OAuth session expires mid-run, the
+//     server attaches figmaAuthUrl and ResultCard renders the reactive
+//     FigmaReauthCard to send the user to sign in.
 //   • The conformance/fidelity split is PROMPT-ONLY today: the dial writes a
 //     structured `intentPolicy` + a bridged legacy `intent`, but the matcher does
 //     NOT yet read the policy (see IntentDial.departureIntent). Reimagine DOES route
 //     to a real, different pipeline (Stardust) via the bridge's `mode:'reimagine'`.
 //     Wiring conformance/fidelity into the matcher is a named backend milestone.
 
-import { useState, useEffect } from 'react';
-import { TextField, ActionButton } from '@react-spectrum/s2';
+import { useState } from 'react';
+import { TextField } from '@react-spectrum/s2';
 import { SOURCES } from '../sessions/types';
 import type { IntentPolicy } from '../sessions/types';
 import { useSessions } from '../sessions/SessionsProvider';
-import { useUiState } from './UiStateContext';
-import { useConfig } from '../config';
 
 // ── Door view state ─────────────────────────────────────────────────────────
 // Two SOURCE doors: 'figma' (a frame) and 'url' (a live page). Intent (including
@@ -104,14 +101,6 @@ function ResultThumb() {
 }
 
 
-// ── Connected-to-Figma status chip (neutral, green dot — NEVER blue: status, not
-// action). No name/avatar: the server exposes no Figma identity.
-function ConnectedChip() {
-  return (
-    <span className="pf-connected"><span className="pf-connected-dot" />Connected to Figma</span>
-  );
-}
-
 // ── Per-door copy ─────────────────────────────────────────────────────────────
 // Two doors, each with ONE fixed outcome (no dial). Copy stays terse and
 // frictionless: title + one input, nothing else. The demo prefills a real URL so
@@ -120,8 +109,7 @@ const DOORS = {
   // Stardust door first (top). Generic workflow name; the input is the whole UI.
   url: {
     title: 'Stardust',
-    blurbDisconnected: 'Point at any live page.',
-    blurbConnected: 'Point at any live page.',
+    blurb: 'Point at any live page.',
     label: 'Page URL',
     placeholder: 'https://example.com/page',
     prefill: 'https://inside.adobe.com',
@@ -130,8 +118,7 @@ const DOORS = {
   // Figma door second.
   figma: {
     title: 'Figma',
-    blurbDisconnected: 'Connect once, then paste a frame.',
-    blurbConnected: 'Paste a frame to start.',
+    blurb: 'Paste a frame to start.',
     label: 'Figma frame URL',
     placeholder: 'https://figma.com/design/…?node-id=…',
     prefill: 'https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=1-11&p=f&m=dev',
@@ -143,32 +130,11 @@ const DOORS = {
 
 export function InputPanel() {
   const { startSession } = useSessions();
-  const { dispatch: uiDispatch } = useUiState();
-  const { config } = useConfig();
 
   const [view, setView] = useState<View>('doors');
   const [sourceInput, setSourceInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // "Connected to Figma" is derived from real config, not a local flag: if the
-  // Figma token has a value, the inputs are wired, so we show connected. "Connect
-  // Figma" opens a focused one-field modal where that token is entered.
-  const figmaConnected = Boolean((config.figmaToken || '').trim());
-
-  // The Figma door is gated on connection: trying to open it while unconnected
-  // routes to Connect first. We remember the intent so that the moment the token
-  // lands, we advance into the door automatically ("once that's done we move on").
-  const [pendingFigmaOpen, setPendingFigmaOpen] = useState(false);
-  useEffect(() => {
-    if (figmaConnected && pendingFigmaOpen) {
-      setPendingFigmaOpen(false);
-      openDoor('figma');
-    }
-    // openDoor is stable for this component's lifetime.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [figmaConnected, pendingFigmaOpen]);
-
 
   // The DOOR fixes the intent now (no dial — see the simplification note below):
   //   Figma frame → build on the Adobe design system (conformance).
@@ -188,29 +154,10 @@ export function InputPanel() {
     setError(null);
   }
 
-  // The Figma door can't be entered until Figma is connected. If the user tries,
-  // remember the intent and send them to Connect; the effect above advances into
-  // the door once the token lands.
-  function tryOpenFigma() {
-    if (figmaConnected) {
-      openDoor('figma');
-    } else {
-      setPendingFigmaOpen(true);
-      uiDispatch({ type: 'openConnectFigma' });
-    }
-  }
-
   function back() {
     setView('doors');
     setSourceInput('');
     setError(null);
-  }
-
-  // Connect Figma opens a focused one-field modal (just the dev PAT), not the full
-  // settings slideover. It writes the same config.figmaToken, so once saved
-  // figmaConnected (above) flips to true on its own.
-  function connectFigma() {
-    uiDispatch({ type: 'openConnectFigma' });
   }
 
   async function handleSubmit() {
@@ -254,15 +201,15 @@ export function InputPanel() {
 
         <div className="pf-doors">
           {/* Figma door FIRST (Flow 1, CPro → DA — Audumber's framing). Clickable
-              region, NOT a <button>, so the Connect control + open chevron can be
-              real sibling buttons. */}
+              region, NOT a <button>, so the open chevron can be a real sibling
+              button. */}
           <div
             className="pf-door"
             role="button"
             tabIndex={0}
             aria-label="Build my design from a Figma frame"
-            onClick={tryOpenFigma}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tryOpenFigma(); } }}
+            onClick={() => openDoor('figma')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDoor('figma'); } }}
           >
             <span className="pf-door-transform">
               <span className="pf-src-glyph pf-src-glyph--figma"><FigmaMark /></span>
@@ -271,25 +218,14 @@ export function InputPanel() {
             </span>
             <span className="pf-door-copy">
               <span className="pf-door-name">{DOORS.figma.title}</span>
-              <span className="pf-door-blurb">
-                {figmaConnected ? DOORS.figma.blurbConnected : DOORS.figma.blurbDisconnected}
-              </span>
+              <span className="pf-door-blurb">{DOORS.figma.blurb}</span>
             </span>
-            <span className="pf-door-trailing" onClick={(e) => e.stopPropagation()}>
-              {figmaConnected ? (
-                <ConnectedChip />
-              ) : (
-                <ActionButton onPress={connectFigma} aria-label="Connect Figma">
-                  <FigmaMark />
-                  Connect Figma
-                </ActionButton>
-              )}
-            </span>
+            <span className="pf-door-trailing" />
             <button
               type="button"
               className="pf-door-go"
               aria-label="Open"
-              onClick={(e) => { e.stopPropagation(); tryOpenFigma(); }}
+              onClick={(e) => { e.stopPropagation(); openDoor('figma'); }}
             >
               <Chevron />
             </button>
@@ -311,7 +247,7 @@ export function InputPanel() {
             </span>
             <span className="pf-door-copy">
               <span className="pf-door-name">{DOORS.url.title}</span>
-              <span className="pf-door-blurb">{DOORS.url.blurbConnected}</span>
+              <span className="pf-door-blurb">{DOORS.url.blurb}</span>
             </span>
             <span className="pf-door-trailing" />
             <button
@@ -353,7 +289,6 @@ export function InputPanel() {
               {isFigma ? <FigmaMark /> : <LinkMark />}
             </span>
             <h3 className="pf-focus-title">{door.title}</h3>
-            {isFigma && figmaConnected && <ConnectedChip />}
           </div>
 
           <TextField

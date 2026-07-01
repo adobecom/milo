@@ -8,17 +8,20 @@ import macros from 'unplugin-parcel-macros';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 export default defineConfig(({ mode }) => {
-  // Demo build (VITE_FORGE_DEMO=true) ships the smoke-and-mirrors stub. It can run
-  // two ways: inside the real DA editor (da.live ?ref=local — real SDK present) OR
-  // on plain localhost:3000 (no real SDK). To make BOTH work, the demo build also
-  // aliases the DA SDK to the dev-stub — harmless inside DA (we don't depend on the
-  // real context for a stubbed run) and essential on bare localhost.
-  const isDemo = process.env.VITE_FORGE_DEMO === 'true';
+  // FORGE_MOCK=true ships the smoke-and-mirrors stub. It can run two ways: inside
+  // the real DA editor (da.live ?ref=local — real SDK present) OR on plain
+  // localhost:3000 (no real SDK). To make BOTH work, the mock build also aliases
+  // the DA SDK to the dev-stub — harmless inside DA (we don't depend on the real
+  // context for a stubbed run) and essential on bare localhost.
+  const isDemo = process.env.FORGE_MOCK === 'true';
   const stubDaSdk = mode === 'development' || isDemo;
   const daSdkUrl = 'https://da.live/nx/utils/sdk.js';
   const daStubPath = resolve(__dirname, 'src/da/dev-stub.ts');
 
   return {
+  // Expose FORGE_* vars to the browser bundle (same mechanism as VITE_*).
+  envPrefix: ['VITE_', 'FORGE_'],
+
   // Redirect the DA SDK import to the local stub in dev + demo builds.
   //
   // NOTE: resolve.alias does NOT rewrite a full `https://` specifier in the Vite
