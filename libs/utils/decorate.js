@@ -709,7 +709,63 @@ function resolveInheritance(rows, previousContent) {
   });
 }
 
+const HERO_GRADIENT_KEY = 'hero-gradient';
+const HERO_GRADIENT_VARIANTS = [
+  ['jump-link', '--rc-hero-jump-link-gradient'],
+  ['hero', '--rc-hero-gradient'],
+];
+
+function isCssGradient(value) {
+  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
+}
+
+function getHeroGradientProp(el) {
+  return HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
+}
+
+function supportsHeroGradient(el) {
+  return el.classList.contains('rich-content') && Boolean(getHeroGradientProp(el));
+}
+
+function extractHeroGradientFromRows(rows) {
+  let gradient;
+  rows.forEach((row) => {
+    if (row.children?.length < 2) return;
+    const key = row.children[0].textContent.trim().toLowerCase();
+    if (key !== HERO_GRADIENT_KEY) return;
+    const value = row.children[1].textContent.trim();
+    if (!isCssGradient(value)) return;
+    gradient = value;
+    row.remove();
+  });
+  return gradient;
+}
+
+function applyHeroGradient(el, gradient) {
+  if (!gradient) return;
+  const prop = getHeroGradientProp(el);
+  const section = el.closest('.section');
+  if (!prop || !section) return;
+  section.style.setProperty(prop, gradient);
+}
+
+function extractPreViewportHeroGradient(el) {
+  const children = [...el.children];
+  const firstDelimiterIdx = children.findIndex((child) => getDelimiterKeyword(child));
+  const preRows = firstDelimiterIdx < 0 ? children : children.slice(0, firstDelimiterIdx);
+  return extractHeroGradientFromRows(preRows);
+}
+
+function getInheritedHeroGradient(content, vpKeys, activeIndex, fallback) {
+  for (let i = activeIndex; i >= 0; i -= 1) {
+    const gradient = content[vpKeys[i]]?.heroGradient;
+    if (gradient) return gradient;
+  }
+  return fallback;
+}
+
 function parseViewportContent(el) {
+  const hasHeroGradient = supportsHeroGradient(el);
   const children = [...el.children];
   const content = {};
   const delimiterEls = [];
@@ -742,7 +798,13 @@ function parseViewportContent(el) {
     const variants = parseVariants(delimiterEl.textContent);
     delimiterEls.push(delimiterEl);
 
-    content[keyword] = { container, variants };
+    content[keyword] = {
+      container,
+      variants,
+      heroGradient: hasHeroGradient
+        ? extractHeroGradientFromRows([...container.children])
+        : undefined,
+    };
   });
 
   delimiterEls.forEach((d) => d.remove());
@@ -758,7 +820,7 @@ function parseViewportContent(el) {
   return { hasViewportVariations: true, content, allVariants };
 }
 
-function applyViewportContent(el, viewports) {
+function applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient) {
   if (!viewports.hasViewportVariations) return;
 
   const { content, allVariants } = viewports;
@@ -778,6 +840,11 @@ function applyViewportContent(el, viewports) {
       el.classList.remove(...allVariants);
       if (variants.length) el.classList.add(...variants);
       el.replaceChildren(...children);
+      if (hasHeroGradient) {
+        const activeIndex = vpKeys.indexOf(viewport);
+        const gradient = getInheritedHeroGradient(content, vpKeys, activeIndex, globalHeroGradient);
+        applyHeroGradient(el, gradient);
+      }
       decorateTextOverrides(el);
     };
 
@@ -790,14 +857,20 @@ function applyViewportContent(el, viewports) {
  * - block — the element to decorate (viewport container or el itself)
  * - root  — for checking base classes on detached containers */
 export function decorateViewportContent(el, decorateFn) {
+  const hasHeroGradient = supportsHeroGradient(el);
+  const globalHeroGradient = hasHeroGradient ? extractPreViewportHeroGradient(el) : undefined;
   const viewports = parseViewportContent(el);
   if (viewports.hasViewportVariations) {
     Object.values(viewports.content).forEach(({ container }) => {
       decorateFn(container, el);
     });
-    applyViewportContent(el, viewports);
+    applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient);
   } else {
     decorateFn(el, el);
+    if (hasHeroGradient) {
+      const gradient = extractHeroGradientFromRows([...el.children]) || globalHeroGradient;
+      applyHeroGradient(el, gradient);
+    }
     decorateTextOverrides(el);
   }
   return viewports;
