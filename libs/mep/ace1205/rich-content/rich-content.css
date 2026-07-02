@@ -128,7 +128,7 @@
             .jump-link-badge {
               background: var(--s2a-color-transparent-white-16);
               border-color: var(--s2a-color-transparent-white-12);
-              color: var(--s2a-color-transparent-white-48);
+              color: inherit;
             }
           }
         }
