@@ -1,4 +1,3 @@
-
 function notifyParent(redirRef, ackCode, targetUrl) {
   if (!redirRef) return;
   const payload = {
