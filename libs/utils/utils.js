@@ -2301,7 +2301,7 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lerp = 0.06;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
@@ -2314,6 +2314,7 @@ async function loadPostLCP(config) {
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
+      wheelMultiplier: 0.7,
       prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
@@ -2325,6 +2326,7 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
+
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());

@@ -1203,23 +1203,23 @@ span.hang-opening-quote {
     &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
     &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
     &.two-up   > :nth-child(2n of :not([class*="section-"])),
     &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 3.25; }
 
     &.three-up > :nth-child(3n of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
     &.four-up  > :nth-child(4n of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 7.75; }
 
-    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 10; }
 
-    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 12.25; }
 
     /* Row stagger indices per -up class */
     /* Row 1 */
@@ -1437,15 +1437,28 @@ span.hang-opening-quote {
 
   /* Line height parallax declarations */
   /* TODO: Adapt authoring to move and rename class */
-  .parallax-line-height * {
-    animation: text-reveal-up var(--parallax-easing) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-    will-change: line-height;
+  .parallax-line-height .foreground .content {
+    view-timeline: --text-reveal-timeline block;
   }
 
+  .parallax-line-height .foreground .content > * {
+    --text-reveal-ordinal: 0;
+    --text-reveal-step: 0.25;
+    --text-reveal-index: calc(1 + var(--text-reveal-ordinal) * var(--text-reveal-step));
+    --text-reveal-magnitude: 20px;
+
+    animation: text-reveal-up var(--parallax-easing) both;
+    animation-timeline: --text-reveal-timeline;
+    animation-range: entry 0% cover 40%;
+    will-change: transform;
+  }
+
+  .parallax-line-height .foreground .content > :nth-child(2) { --text-reveal-ordinal: 1; }
+  .parallax-line-height .foreground .content > :nth-child(3) { --text-reveal-ordinal: 2; }
+  .parallax-line-height .foreground .content > :nth-child(4) { --text-reveal-ordinal: 3; }
+
   @keyframes text-reveal-up {
-    from { line-height: 300%; }
+    from { transform: translate3d(0, calc(var(--text-reveal-index) * var(--text-reveal-magnitude)), 0); }
   }
 }
 
@@ -1518,6 +1531,11 @@ span.hang-opening-quote {
     --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-md);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
+  }
+
+  .parallax-line-height .foreground .content > * {
+    --text-reveal-magnitude: 40px;
+    --text-reveal-step: 1;
   }
 }
 
