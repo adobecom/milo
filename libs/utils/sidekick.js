@@ -40,9 +40,14 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
   sk.addEventListener('custom:annotations', annotationsListener);
-  sk.addEventListener('custom:hello', async (e) => {
+  sk.addEventListener('custom:start-collab', async (e) => {
+    const ref = new URLSearchParams(window.location.search).get('streamRef') || 'dev';
+    if (!/^[a-zA-Z0-9_-]+$/.test(ref)) throw new Error('Invalid streamRef.');
+    const base = ref === 'local'
+      ? 'http://localhost:3000'
+      : `https://${ref}--stream-mapper--adobecom.aem.live`;
     const { initializeStreamAnnotation } = await import(
-      'https://standaloneAnnotation--stream-mapper--adobecom.aem.live/streamlibs/operations/standaloneAnnotation/milo-collab-init.js'
+      `${base}/streamlibs/operations/standaloneAnnotation/milo-collab-init.js`
     );
     await initializeStreamAnnotation(e.detail);
   });
