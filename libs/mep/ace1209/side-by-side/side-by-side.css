@@ -3,6 +3,10 @@
   grid-template-columns: 1fr;
   gap: var(--s2a-spacing-xs);
 
+  &.dark {
+    background-color: unset;
+  }
+
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
@@ -34,10 +38,11 @@
   }
 
   .card-overlay {
-    position: relative;
     overflow: hidden;
     aspect-ratio: 33/37;
     border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
+    display: flex;
+    align-items: flex-end;
 
     &.dark {
       background-color: unset;
@@ -52,7 +57,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(144deg, var(--s2a-color-transparent-black-88) 6.95%, var(--s2a-color-transparent-black-00) 27.98%);
+      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
       filter: blur(0px);
       pointer-events: none;
     }
@@ -70,6 +75,27 @@
       flex-direction: column;
       gap: var(--s2a-spacing-2xs);
       max-width: 320px;
+    }
+
+    &:has(video) .foreground {
+      /* Play/pause button size + spacing */
+      padding-block-end: calc(32px + var(--s2a-spacing-lg));
+    }
+  }
+
+  &.featured {
+    .card-overlay {
+      display: flex;
+      align-items: flex-end;
+      aspect-ratio: 72 / 113;
+
+      .media::after {
+        background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
+      }
+    }
+
+    &:has(+ .side-by-side.equal) {
+      margin-block-end: var(--s2a-spacing-xs);
     }
   }
 
@@ -91,10 +117,31 @@
         color: var(--s2a-color-content-subtle);
       }
     }
+
+    .equal & {
+      padding-inline: 0 15%;
+    }
   }
 
-  &.equal .card-stacked {
-    padding-inline: 0 15%;
+  &.mobile-horizontal {
+    overflow-x: hidden;
+    view-timeline: --lol block;
+
+    > div {
+      animation: horizontal cubic-bezier(0.42, 0, 0, 1);
+      animation-timeline: --lol;
+      animation-range: entry 95% cover 70%;
+      animation-fill-mode: both;
+
+      display: flex;
+      width: 100%;
+      gap: var(--s2a-spacing-xs);
+    }
+
+    .card-stacked {
+      flex: 1 0 calc(100% - var(--s2a-spacing-xs) - var(--grid-padding));
+      padding-inline: unset;
+    }
   }
 }
 
@@ -110,16 +157,56 @@
     }
 
     &.equal {
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 0.81fr 1fr 1fr;
 
       > :first-child {
         grid-column: 2;
       }
+
+      .card-stacked {
+        padding-inline: unset;
+
+        .media {
+          min-height: unset;
+        }
+      }
+    }
+
+    &.featured {
+      grid-template-columns: 1fr;
+      .card-overlay {
+        aspect-ratio: 41 / 35;
+      }
+    }
+
+    &.mobile-horizontal {
+      overflow-x: clip;
+
+      > div {
+        animation: none;
+      }
+
+      .card-stacked {
+        flex: 1 0 100%;
+
+        &:last-child {
+          padding-inline-end: unset
+        }
+      }
     }
 
     .card-overlay {
+      align-items: flex-start;
       .foreground {
         max-width: 480px;
+      }
+
+      .media::after {
+        background: linear-gradient(144deg, var(--s2a-color-transparent-black-88) 6.95%, var(--s2a-color-transparent-black-00) 27.98%);
+      }
+
+      &:has(video) .foreground {
+        padding-block-end: var(--s2a-spacing-lg);
       }
     }
 
@@ -134,18 +221,16 @@
         max-width: 480px;
       }
     }
-
-    &.equal .card-stacked {
-      padding-inline: unset;
-    }
   }
 }
 
 @media (width >= 1280px) {
   .side-by-side {
-    .card-overlay {
-      .foreground {
-        padding: var(--s2a-spacing-xl);
+    .card-overlay .foreground {
+      padding: var(--s2a-spacing-xl);
+
+      .featured & {
+        padding: var(--s2a-spacing-2xl);
       }
     }
 
@@ -156,4 +241,16 @@
       }
     }
   }
+}
+
+@media (width >= 1440px) {
+  .side-by-side.featured .card-overlay {
+    height: 1200px;
+    aspect-ratio: unset;
+  }
+}
+
+@keyframes horizontal {
+  from { translate: 0% }
+  to { translate: calc((100% - var(--s2a-spacing-xs) - 2 * var(--grid-padding)) * -1); };
 }
