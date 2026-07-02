@@ -4,6 +4,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
+  margin: var(--tour-section-gap) auto;
+  background-color: var(--s2a-color-background-default);
+  border-radius: var(--s2a-border-radius-md);
+  clip-path: inset(0 round var(--s2a-border-radius-md));
 }
 
 .tour-header {
@@ -165,25 +170,20 @@
 /* Tour Modal Styles */
 .dialog-modal:has(.tour) {
   --tour-drag-y: 0px;
-  max-width: 696px;
-  width: 100dvw;
-  margin-top: 20px;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  max-height: 100dvh;
-  height: calc(100dvh - 20px);
+  --tour-section-gap: 20px;
+  --tour-modal-max-width: 696px;
+  width: 100svw;
+  max-width: 100svw;
+  height: 100svh;
+  max-height: 100svh;
   transform: translateY(var(--tour-drag-y));
   will-change: transform;
+  background-color: transparent;
+  margin: 0;
+  border-radius: 0;
   & > .fragment {
     max-height: 100%;
-    /* Firefox */
-    scrollbar-width: none;
-    /* IE and old Edge */
-    -ms-overflow-style: none;
-    /* Chrome, Safari, Edge (Chromium), Opera */
-    &::-webkit-scrollbar {
-      display: none;
-    }
+    pointer-events: none;
   }
 
   &.is-dragging {
@@ -223,27 +223,64 @@
     backdrop-filter: blur(var(--s2a-blur-32));
     will-change: backdrop-filter;
   }
+
+  .dialog-close {
+    /* If top spacing changes then update in JS as well */
+    top: calc(var(--tour-section-gap) + var(--s2a-spacing-md));
+    right: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
+  }
 }
 
 [dir='rtl'] {
   .dialog-modal:has(.tour) {
     .dialog-close {
       right: auto;
-      left: var(--s2a-spacing-md);
+      left: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
     }
   }
 }
 
-/* Below 696px the modal is full-width; above it the width is fixed at 696px */
+/* Below 696px the modal is full-width; above it the width is fixed at 696px(--tour-modal-max-width) */
 @media (max-width: 696px) {
   .dialog-modal:has(.tour) {
     max-width: 100dvw;
+    .dialog-close {
+      right: var(--s2a-spacing-md);
+    }
   }
+
+  [dir='rtl'] .dialog-modal:has(.tour) .dialog-close {
+    right: auto;
+    left: var(--s2a-spacing-md);
+  }
+
   .tour-row-image-center {
     img {
       max-height: 110px;
       width: auto;
     }
+  }
+}
+
+@supports (timeline-scope: none) {
+  .dialog-modal:has(.tour) {
+    timeline-scope: --tour-scroll;
+  }
+
+  .dialog-modal:has(.tour) > .fragment {
+    scroll-timeline-name: --tour-scroll;
+    scroll-timeline-axis: block;
+  }
+
+  .dialog-modal:has(.tour) > .dialog-close {
+    animation: tour-close-track linear both;
+    animation-timeline: --tour-scroll;
+    animation-range: 0px var(--tour-section-gap);
+  }
+
+  @keyframes tour-close-track {
+    from { top: calc(var(--tour-section-gap) + var(--s2a-spacing-md)); }
+    to { top: var(--s2a-spacing-md); }
   }
 }
 

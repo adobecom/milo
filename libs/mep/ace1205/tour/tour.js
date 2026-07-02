@@ -87,6 +87,39 @@ function addGrabHandle(el) {
   el.prepend(grabHandle);
 }
 
+function addScrollCloseSync(el) {
+  if (CSS.supports('timeline-scope', 'none')) return; // CSS scroll-driven animation handles it
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  requestAnimationFrame(() => {
+    const fragment = modal.querySelector('.fragment');
+    const closeBtn = modal.querySelector('.dialog-close');
+    if (!fragment || !closeBtn) return;
+
+    const style = getComputedStyle(modal);
+    const cardGap = parseFloat(style.getPropertyValue('--tour-card-gap'));
+    const spacingMd = parseFloat(style.getPropertyValue('--s2a-spacing-md'));
+    const initialTop = cardGap + spacingMd;
+
+    fragment.addEventListener('scroll', () => {
+      const offset = Math.min(fragment.scrollTop, cardGap);
+      closeBtn.style.top = `${initialTop - offset}px`;
+    }, { passive: true });
+  });
+}
+
+function addOutsideClickClose(el) {
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  modal.addEventListener('click', (e) => {
+    if (!el.contains(e.target) && !e.target.closest('.dialog-close')) {
+      modal.querySelector('.dialog-close')?.click();
+    }
+  });
+}
+
 export default function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   const singleColumns = [];
@@ -152,4 +185,6 @@ export default function init(el) {
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));
   addGrabHandle(el);
   addCloseAnimation(el);
+  addScrollCloseSync(el);
+  addOutsideClickClose(el);
 }
