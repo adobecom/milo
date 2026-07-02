@@ -42,8 +42,9 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:annotations', annotationsListener);
   sk.addEventListener('custom:hello', async (e) => {
     const { initializeStreamAnnotation } = await import(
-      'https://peregrine--stream-mapper--adobecom.aem.live/peregrine-annotation/standaloneAnnotation/milo-collab-init.js'
+      'https://localhost:8080/peregrine-annotation/standaloneAnnotation/milo-collab-init.js'
     );
+    // 'https://peregrine--stream-mapper--adobecom.aem.live/peregrine-annotation/standaloneAnnotation/milo-collab-init.js'
     await initializeStreamAnnotation(e.detail);
   });
 
