@@ -1434,32 +1434,6 @@ span.hang-opening-quote {
     from { transform: translateY(0); }
     to { transform: translateY(20vh); }
   }
-
-  /* Line height parallax declarations */
-  /* TODO: Adapt authoring to move and rename class */
-  .parallax-line-height .foreground .content {
-    view-timeline: --text-reveal-timeline block;
-  }
-
-  .parallax-line-height .foreground .content > * {
-    --text-reveal-ordinal: 0;
-    --text-reveal-step: 0.25;
-    --text-reveal-index: calc(1 + var(--text-reveal-ordinal) * var(--text-reveal-step));
-    --text-reveal-magnitude: 20px;
-
-    animation: text-reveal-up var(--parallax-easing) both;
-    animation-timeline: --text-reveal-timeline;
-    animation-range: entry 0% cover 40%;
-    will-change: transform;
-  }
-
-  .parallax-line-height .foreground .content > :nth-child(2) { --text-reveal-ordinal: 1; }
-  .parallax-line-height .foreground .content > :nth-child(3) { --text-reveal-ordinal: 2; }
-  .parallax-line-height .foreground .content > :nth-child(4) { --text-reveal-ordinal: 3; }
-
-  @keyframes text-reveal-up {
-    from { transform: translate3d(0, calc(var(--text-reveal-index) * var(--text-reveal-magnitude)), 0); }
-  }
 }
 
 .dark {
@@ -1531,11 +1505,6 @@ span.hang-opening-quote {
     --s2a-typography-line-height-heading-3: var(--s2a-font-line-height-lg);
     --s2a-typography-line-height-heading-4: var(--s2a-font-line-height-md);
     --s2a-typography-line-height-body-lg: var(--s2a-font-line-height-md);
-  }
-
-  .parallax-line-height .foreground .content > * {
-    --text-reveal-magnitude: 40px;
-    --text-reveal-step: 1;
   }
 }
 
