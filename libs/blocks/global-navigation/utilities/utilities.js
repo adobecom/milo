@@ -448,7 +448,9 @@ export function updateActiveLink() {
   const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
   if (!nav) return;
 
-  const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])')].find(matchesUrl);
+  const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])[href]')]
+    .filter((el) => !!el.getAttribute('href')).find(matchesUrl);
+
   if (!newActiveLink) return;
 
   const navItem = newActiveLink.closest(selectors.navItem);
