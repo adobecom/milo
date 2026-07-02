@@ -710,21 +710,15 @@ function resolveInheritance(rows, previousContent) {
 }
 
 const HERO_GRADIENT_KEY = 'hero-gradient';
-const HERO_GRADIENT_VARIANTS = [
-  ['jump-link', '--rc-hero-jump-link-gradient'],
-  ['hero', '--rc-hero-gradient'],
-];
+const HERO_GRADIENT_PROP = '--rc-hero-gradient';
 
 function isCssGradient(value) {
   return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
 }
 
-function getHeroGradientProp(el) {
-  return HERO_GRADIENT_VARIANTS.find(([variant]) => el.classList.contains(variant))?.[1];
-}
-
 function supportsHeroGradient(el) {
-  return el.classList.contains('rich-content') && Boolean(getHeroGradientProp(el));
+  return el.classList.contains('rich-content')
+    && (el.classList.contains('hero') || el.classList.contains('jump-link'));
 }
 
 function extractHeroGradientFromRows(rows) {
@@ -743,10 +737,9 @@ function extractHeroGradientFromRows(rows) {
 
 function applyHeroGradient(el, gradient) {
   if (!gradient) return;
-  const prop = getHeroGradientProp(el);
   const section = el.closest('.section');
-  if (!prop || !section) return;
-  section.style.setProperty(prop, gradient);
+  if (!section) return;
+  section.style.setProperty(HERO_GRADIENT_PROP, gradient);
 }
 
 function extractPreViewportHeroGradient(el) {

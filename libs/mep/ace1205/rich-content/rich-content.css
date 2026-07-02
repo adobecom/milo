@@ -219,24 +219,24 @@
 
 .section:has(.rich-content.jump-link.hero) {
   height: 584px;
-  --rc-hero-jump-link-gradient: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-50) 39.99%, var(--s2a-color-transparent-black-20) 59.99%, var(--s2a-color-transparent-black-80) 100%);
+  --rc-hero-gradient: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-50) 39.99%, var(--s2a-color-transparent-black-20) 59.99%, var(--s2a-color-transparent-black-80) 100%);
 }
 
 .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
   content: '';
   position: absolute;
-  background: var(--rc-hero-jump-link-gradient);
+  background: var(--rc-hero-gradient);
   inset: 0;
   z-index: 1;
 }
 
 .section:not(.has-background):has(.rich-content.jump-link.hero) {
-  background: var(--rc-hero-jump-link-gradient), var(--s2a-color-background-default);
+  background: var(--rc-hero-gradient), var(--s2a-color-background-default);
 }
 
 @media (width >= 768px) {
   .section:has(.rich-content.jump-link.hero) {
-    --rc-hero-jump-link-gradient: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
+    --rc-hero-gradient: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
   }
 
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
