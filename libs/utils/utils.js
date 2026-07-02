@@ -2316,6 +2316,9 @@ async function loadPostLCP(config) {
       lerp,
       prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
+    }
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {
