@@ -258,13 +258,26 @@ export default async function init(el) {
   const { fragment } = options;
   if (!fragment) return;
   options = overrideOptions(fragment, options);
-  await loadCoreDependencies();
-  if (options.jsonld) {
-    await createJsonLd(el, options);
-  } else if (options.field) {
-    await loadInlineDependencies();
-    await createInline(el, options);
-  } else {
-    await createCard(el, options);
-  }
+
+  // PERF EXPERIMENT (merch-lcp-exp): do NOT block the section's first paint / LCP on
+  // the MAS hydration chain (commerce service + web-components + aem-fragment fetch).
+  // loadBlock awaits this init(), and processSection keeps the section display:none
+  // until all block init()s resolve — so awaiting the full chain here holds the whole
+  // hero invisible until the cross-origin fragment resolves. MAS already hides
+  // unresolved cards/fields via CSS (:host(.placeholder){visibility:hidden}, mas-field
+  // hidden source), so we detach hydration and let it fill in place. Hide the raw
+  // authoring link meanwhile so it can't paint as an interim LCP element.
+  el.style.visibility = 'hidden';
+  const hydrate = async () => {
+    await loadCoreDependencies();
+    if (options.jsonld) {
+      await createJsonLd(el, options);
+    } else if (options.field) {
+      await loadInlineDependencies();
+      await createInline(el, options);
+    } else {
+      await createCard(el, options);
+    }
+  };
+  hydrate().catch((e) => window.lana?.log(`merch-card-autoblock async hydrate: ${e}`, { tags: 'merch', severity: 'info' }));
 }
