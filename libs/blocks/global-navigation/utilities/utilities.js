@@ -427,19 +427,26 @@ export function updateActiveLink() {
   const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
 
   // Remove previous active state
+  document.querySelectorAll('a[data-active-link-href]').forEach((prevLink) => {
+    prevLink.setAttribute('href', prevLink.dataset.activeLinkHref);
+    prevLink.removeAttribute('data-active-link-href');
+    prevLink.removeAttribute('role');
+    prevLink.removeAttribute('aria-disabled');
+    prevLink.removeAttribute('aria-current');
+    prevLink.removeAttribute('tabindex');
+  });
+
+  // Nav items with dropdowns carry data-active-link-href directly on the nav item element
+  document.querySelectorAll(`${selectors.navItem}[data-active-link-href]`).forEach((navItem) => {
+    navItem.removeAttribute('data-active-link-href');
+    navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
+    navItem.style.removeProperty('width');
+  });
+
+  // Catch any remaining active nav items (e.g. single mega-menu fallback) that have no stamped link
   document.querySelectorAll(selectors.activeNavItem).forEach((navItem) => {
     navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
-    navItem.style.width = '';
-
-    const prevLink = navItem.querySelector('a[data-active-link-href]');
-    if (prevLink) {
-      prevLink.setAttribute('href', prevLink.dataset.activeLinkHref);
-      prevLink.removeAttribute('data-active-link-href');
-      prevLink.removeAttribute('role');
-      prevLink.removeAttribute('aria-disabled');
-      prevLink.removeAttribute('aria-current');
-      prevLink.removeAttribute('tabindex');
-    }
+    navItem.style.removeProperty('width');
   });
 
   setActiveLink(false);
