@@ -426,32 +426,24 @@ export function updateActiveLink() {
   const activeNavItemClass = selectors.activeNavItem.slice(1);
   const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
 
+  const ATTRS_TO_REMOVE = ['role', 'aria-disabled', 'aria-current', 'tabindex'];
+
   // Remove previous active state
-  document.querySelectorAll('a[data-active-link-href]').forEach((prevLink) => {
-    prevLink.setAttribute('href', prevLink.dataset.activeLinkHref);
-    prevLink.removeAttribute('data-active-link-href');
-    prevLink.removeAttribute('role');
-    prevLink.removeAttribute('aria-disabled');
-    prevLink.removeAttribute('aria-current');
-    prevLink.removeAttribute('tabindex');
+  document.querySelectorAll('a[data-active-link-href]').forEach((link) => {
+    link.setAttribute('href', link.getAttribute('data-active-link-href'));
+    link.removeAttribute('data-active-link-href');
+    ATTRS_TO_REMOVE.forEach((attr) => link.removeAttribute(attr));
   });
-
-  // Nav items with dropdowns carry data-active-link-href directly on the nav item element
-  document.querySelectorAll(`${selectors.navItem}[data-active-link-href]`).forEach((navItem) => {
-    navItem.removeAttribute('data-active-link-href');
-    navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
-    navItem.style.removeProperty('width');
-  });
-
-  // Catch any remaining active nav items (e.g. single mega-menu fallback) that have no stamped link
-  document.querySelectorAll(selectors.activeNavItem).forEach((navItem) => {
-    navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
-    navItem.style.removeProperty('width');
-  });
+  document
+    .querySelectorAll(`${selectors.activeNavItem}, ${selectors.navItem}[data-active-link-href]`)
+    .forEach((navItem) => {
+      navItem.removeAttribute('data-active-link-href');
+      navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
+      navItem.style.removeProperty('width');
+    });
 
   setActiveLink(false);
 
-  // Find and apply new active state
   const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
   if (!nav) return;
 
@@ -466,7 +458,6 @@ export function updateActiveLink() {
   navItem.classList.add(activeNavItemClass);
   newActiveLink.dataset.activeLinkHref = newActiveLink.href;
 
-  // Only strip href and apply aria attrs for simple link items (no dropdown popup sibling)
   if (!newActiveLink.nextElementSibling?.classList.contains('feds-popup')) {
     newActiveLink.removeAttribute('href');
     newActiveLink.setAttribute('role', 'link');
