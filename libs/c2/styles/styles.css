@@ -1330,6 +1330,11 @@ span.hang-opening-quote {
       animation-range: entry 0% cover 48%;
     }
 
+    @media (width >= 1920px) {
+      --gd-grow-from: -70vh;
+      animation-range: entry 0% cover 36%;
+    }
+
     .section-background {
       overflow: hidden;
 
