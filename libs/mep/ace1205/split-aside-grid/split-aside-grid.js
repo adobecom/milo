@@ -15,6 +15,8 @@ const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 let videoObserver = null;
 let resizeObserver = null;
+const isRTL = document.documentElement.dir === 'rtl';
+const negateSwipe = isRTL ? -1 : 1;
 
 function markStandaloneLinks(foreground) {
   foreground.querySelectorAll('a').forEach((a) => {
@@ -74,12 +76,13 @@ function updateAriaLive(ariaLive, items) {
 }
 
 function decorateItem(item, index) {
+  const headingSize = 5;
   item.classList.add('split-aside-grid-item');
   item.dataset.slideIndex = String(index);
   const [content, media] = item.children;
   if (content) {
     content.classList.add('foreground');
-    decorateBlockText(content, { heading: '5', body: 'md', button: 'md' });
+    decorateBlockText(content, { heading: headingSize, body: 'md', button: 'md' });
     markStandaloneLinks(content);
     const text = content.querySelectorAll('p');
     const container = createTag(
@@ -95,13 +98,13 @@ function decorateItem(item, index) {
   }
 
   const headingText = content?.querySelector(':is(h1,h2,h3,h4,h5,h6)')?.textContent || `Slide ${index + 1}`;
+  const icon = createTag('span', { class: 'grid-item-toggle-icon' }, CHEVRON_SVG);
+  const text = createTag('span', { class: `grid-item-toggle-text heading-${headingSize}` }, headingText);
   const toggle = createTag('button', {
-    class: 'split-aside-grid-item-toggle',
+    class: 'split-aside-grid-toggle',
     type: 'button',
     'aria-expanded': 'false',
-    'aria-label': headingText,
-  });
-  toggle.innerHTML = CHEVRON_SVG;
+  }, [icon, text]);
   item.prepend(toggle);
   return { content, media, toggle };
 }
@@ -156,7 +159,8 @@ function setupBlock(el) {
     });
   }
 
-  function applyRotation(isSetup) {
+  function applyRotation(updateRotation, isSetup) {
+    rotation += updateRotation;
     medias.forEach((m, idx) => {
       const slot = slotOf(idx);
       m.style.setProperty('--split-aside-grid-stack-index', slot);
@@ -179,7 +183,7 @@ function setupBlock(el) {
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
       item.classList.toggle('split-aside-grid-active', isActive);
-      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope > .split-aside-grid-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     });
     dotEls.forEach((dot, idx) => {
@@ -197,11 +201,11 @@ function setupBlock(el) {
     medias.forEach((slide) => {
       if (slide === ignore) return;
       const slot = parseInt(slide.getAttribute('data-slot'), 10);
-      const indexUpdate = dir === 'right' ? slot + progress : slot - progress;
+      const indexUpdate = dir === 'prev' ? slot + progress : slot - progress;
       slide.style.transition = 'none';
       slide.style.transform = '';
       slide.style.setProperty('--split-aside-grid-stack-index', indexUpdate);
-      if (dir === 'left') return;
+      if (dir === 'next') return;
       slide.style.setProperty('--split-aside-grid-stack-slot', slot + 1);
     });
   }
@@ -217,7 +221,7 @@ function setupBlock(el) {
     return stack.getBoundingClientRect().width || 374;
   }
 
-  function commitLeft(progress) {
+  function commitNext(progress, isNavigation) {
     flying = true;
     const oldFront = slideAt(0);
     const width = stackWidth();
@@ -226,12 +230,10 @@ function setupBlock(el) {
 
     /* 1. Old front: fly off-screen left — no opacity change. */
     oldFront.style.transition = `transform ${FLY_MS}ms ease-out`;
-    oldFront.style.transform = `translateX(${-width}px) rotate(-25deg)`;
+    oldFront.style.transform = `translateX(${negateSwipe * -width}px) rotate(${negateSwipe * -25}deg)`;
 
     /* 2. Rotate state — new front + new mid transition smoothly into their new slots. */
-    rotation += 1;
-
-    applyRotation();
+    applyRotation(1);
     /* Freeze z-index at pre-rotation values until the fly-off ends. */
     medias.forEach((slide, idx) => {
       slide.style.setProperty('--split-aside-grid-stack-slot', String(preSlots[idx]));
@@ -261,32 +263,41 @@ function setupBlock(el) {
         oldFront.style.opacity = '';
         flying = false;
       }, 10);
-    }, FLY_MS * (1 - progress) + 150);
+    }, FLY_MS * (1 - progress) + (isNavigation ? 0 : 150));
   }
 
-  function animateToRight(progress, incoming) {
+  function animateNext() {
+    const front = slideAt(0);
+    const next = slideAt(1);
+    next.classList.add('show-image');
+    const progress = Math.min((negateSwipe * -drag.dx) / RIGHT_DRAG_DENOM, 1);
+    drag.progress = progress;
+    const rot = drag.dx * 0.07;
+    front.style.transition = 'none';
+    front.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
+  }
+
+  function animatePrev(progress, incoming) {
     const width = stackWidth();
-    const rot = -25 * (1 - progress);
-    updateStack('right', progress, incoming);
+    const rot = negateSwipe * -25 * (1 - progress);
+    updateStack('prev', progress, incoming);
     const front = slideAt(0);
     incoming.classList.add('show-image', 'incoming');
     front.classList.add('show-image');
     incoming.style.transition = 'none';
     incoming.style.setProperty('--split-aside-grid-stack-index', '0');
     incoming.style.setProperty('--split-aside-grid-stack-slot', '0');
-    incoming.style.transform = `translateX(${-width * (1 - progress)}px) rotate(${rot}deg)`;
+    incoming.style.transform = `translateX(${negateSwipe * -width * (1 - progress)}px) rotate(${rot}deg)`;
   }
 
-  function commitRight(progress, isKeyboard) {
+  function commitPrev(progress, isNavigation) {
     flying = true;
     const incoming = slideAt(-1);
 
-    rotation -= 1;
+    applyRotation(-1);
 
-    applyRotation();
-
-    if (isKeyboard) {
-      animateToRight(progress, incoming);
+    if (isNavigation) {
+      animatePrev(progress, incoming);
       setTimeout(() => {
         incoming.style.transform = '';
         medias.forEach((slide) => {
@@ -321,11 +332,11 @@ function setupBlock(el) {
       m.style.transform = '';
       m.classList.remove('show-image', 'incoming');
     });
-    if (direction === 'right') incoming.style.display = 'none';
-    applyRotation();
+    if (direction === 'prev') incoming.style.display = 'none';
+    applyRotation(0);
     setTimeout(() => {
       medias.forEach((m) => clearInline(m));
-      if (direction === 'right') incoming.style.display = 'block';
+      if (direction === 'prev') incoming.style.display = 'block';
     }, SNAP_MS + 40);
   }
 
@@ -341,6 +352,11 @@ function setupBlock(el) {
     try { stack.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
   }
 
+  function getDirection(dragX) {
+    if ((dragX < 0 && !isRTL) || (dragX > 0 && isRTL)) return 'next';
+    return 'prev';
+  }
+
   function onPointerMove(e) {
     if (!drag || e.pointerId !== drag.id || !target) return;
 
@@ -353,31 +369,22 @@ function setupBlock(el) {
     drag.dy = yDrag;
     drag.animation = true;
 
-    let direction = null;
-    if (drag.dx < 0) direction = 'left';
-    else if (drag.dx > 0) direction = 'right';
-    if (drag.direction && drag.direction !== direction) {
+    const dir = getDirection(drag.dx);
+    if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
       medias.forEach((m) => { m.style.transform = ''; });
-      applyRotation();
+      applyRotation(0);
     }
-    drag.direction = direction;
 
-    if (drag.dx < 0) {
-      const front = slideAt(0);
-      const next = slideAt(1);
-      next.classList.add('show-image');
-      const progress = Math.min(-drag.dx / RIGHT_DRAG_DENOM, 1);
-      drag.progress = progress;
-      const rot = drag.dx * 0.07;
-      front.style.transition = 'none';
-      front.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
-    } else if (drag.dx > 0) {
+    if (dir === 'next') {
+      animateNext();
+    } else if (dir === 'prev') {
       const incoming = slideAt(-1);
-      const progress = Math.min(drag.dx / RIGHT_DRAG_DENOM, 1);
-      animateToRight(progress, incoming);
+      const progress = Math.min(Math.abs(drag.dx) / RIGHT_DRAG_DENOM, 1);
       drag.progress = progress;
+      animatePrev(progress, incoming);
     }
+    drag.direction = dir;
   }
 
   function onPointerUp(e) {
@@ -391,42 +398,40 @@ function setupBlock(el) {
 
     if (!commit) { snapBack(direction); return; }
     if (reducedMotion()) {
-      rotation += dx < 0 ? 1 : -1;
-      applyRotation();
+      applyRotation(direction === 'next' ? 1 : -1);
       medias.forEach(clearInline);
       return;
     }
-    if (dx < 0) commitLeft(progress);
-    else commitRight(progress);
+    if (direction === 'next') commitNext(progress);
+    else commitPrev(progress);
   }
 
   function handleNavigation(e) {
-    const { key, type, target: clickTarget } = e;
-    if (type === 'click') {
-      if (clickTarget.classList.contains('prev')) commitRight(0.25, true);
-      else if (clickTarget.classList.contains('next')) commitLeft(0.25);
-      return;
-    }
-
-    if (key === 'ArrowLeft') {
-      commitRight(0.25, true);
-      prevBtn?.focus();
-    } else if (key === 'ArrowRight') {
-      commitLeft(0.25);
-      nextBtn?.focus();
-    }
+    const triggers = new Map([
+      ['ArrowLeft', isRTL ? 'next' : 'prev'],
+      ['ArrowRight', isRTL ? 'prev' : 'next'],
+      [prevBtn, 'prev'],
+      [nextBtn, 'next'],
+    ]);
+    const actions = { prev: [commitPrev, prevBtn], next: [commitNext, nextBtn] };
+    const { key, target: btn } = e;
+    const actionTrigger = key ? triggers.get(key) : triggers.get(btn);
+    if (!actionTrigger) return;
+    const [commit, toFocus] = actions[actionTrigger];
+    commit(0.25, true);
+    toFocus?.focus();
   }
 
   function selectByIndex(idx, item) {
     if (idx < 0 || idx >= slideNum) return;
     if (slotOf(idx) === 0) {
       const expanded = item.classList.toggle('split-aside-grid-active');
-      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope > .split-aside-grid-toggle');
       toggle?.setAttribute('aria-expanded', String(expanded));
       return;
     }
     rotation = idx;
-    applyRotation();
+    applyRotation(0);
   }
 
   function onItemClick(e) {
@@ -490,9 +495,9 @@ function setupBlock(el) {
       if (!entry) return;
       const { scrollWidth } = el;
       const width = document.documentElement.clientWidth;
-      stack.style.setProperty('--button-right', `${scrollWidth - width}px`);
+      stack.style.setProperty('--grid-stack-cutoff', `${scrollWidth - width}px`);
     });
-    resizeObserver.observe(el);
+    resizeObserver.observe(stack);
   }
 
   function removeResizeObserver() {
@@ -537,8 +542,7 @@ function setupBlock(el) {
       unbindDesktop();
       bindMobile();
     }
-
-    applyRotation(true);
+    applyRotation(0, true);
   }
 
   desktopMQ.addEventListener('change', syncBindings);
