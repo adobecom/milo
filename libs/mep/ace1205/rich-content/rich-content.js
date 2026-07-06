@@ -1,6 +1,6 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
-import { heroGradientHooks } from '../../../c2/blocks/rich-content/utils.js';
+import heroGradientHooks from '../../../c2/blocks/rich-content/utils.js';
 
 function hangOpeningQuote(header) {
   if (!header) return;

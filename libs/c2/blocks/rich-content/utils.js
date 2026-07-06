@@ -1,4 +1,5 @@
 const HERO_GRADIENT_PROP = '--rc-hero-gradient';
+const GRADIENT_VARIANTS = ['hero', 'jump-link'];
 
 function isCssGradient(value) {
   return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
@@ -31,13 +32,13 @@ function inheritHeroGradient(content, vpKeys, activeIndex, fallback) {
   return fallback;
 }
 
-export function createHeroGradientHooks(...variants) {
-  return {
-    shouldParse: (el) => variants.some((variant) => el.classList.contains(variant)),
-    parseRows: parseHeroGradient,
-    apply: applyHeroGradient,
-    inherit: inheritHeroGradient,
-  };
+function supportsHeroGradient(el) {
+  return GRADIENT_VARIANTS.some((variant) => el.classList.contains(variant));
 }
 
-export const heroGradientHooks = createHeroGradientHooks('hero');
+export default {
+  shouldParse: supportsHeroGradient,
+  parseRows: parseHeroGradient,
+  apply: applyHeroGradient,
+  inherit: inheritHeroGradient,
+};
