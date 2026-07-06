@@ -1,49 +1,6 @@
 import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
 import { createTag, getFederatedUrl, scrollToHashedElement } from '../../../utils/utils.js';
-
-const HERO_GRADIENT_PROP = '--rc-hero-gradient';
-
-function isCssGradient(value) {
-  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
-}
-
-function canAuthorHeroGradient(el) {
-  return el.classList.contains('hero') || el.classList.contains('jump-link');
-}
-
-function parseHeroGradient(rows) {
-  const contentRow = rows[0];
-  const bgCell = contentRow?.children?.[1];
-  if (!bgCell || bgCell.querySelector('picture, img')) return undefined;
-
-  const value = bgCell.textContent.trim();
-  if (!isCssGradient(value)) return undefined;
-
-  bgCell.remove();
-  return value;
-}
-
-function applyHeroGradient(gradient, el) {
-  if (!gradient) return;
-  const section = el.closest('.section');
-  if (!section) return;
-  section.style.setProperty(HERO_GRADIENT_PROP, gradient);
-}
-
-function inheritHeroGradient(content, vpKeys, activeIndex, fallback) {
-  for (let i = activeIndex; i >= 0; i -= 1) {
-    const gradient = content[vpKeys[i]]?.metadata;
-    if (gradient) return gradient;
-  }
-  return fallback;
-}
-
-const heroGradientHooks = {
-  shouldParse: canAuthorHeroGradient,
-  parseRows: parseHeroGradient,
-  apply: applyHeroGradient,
-  inherit: inheritHeroGradient,
-};
+import { heroGradientHooks } from '../../../c2/blocks/rich-content/utils.js';
 
 function hangOpeningQuote(header) {
   if (!header) return;
