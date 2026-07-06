@@ -505,7 +505,7 @@ const cancelActions = (() => {
     const isNPSForm = !!document.querySelector('form#nps nps-picker.nps-picker');
     const surveyType = isNPSForm ? 'NPS' : 'CSAT 5pt';
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
-    await sendToMartech(dataObj)
+    await sendToMartech(dataObj);
   };
 })();
 
@@ -701,9 +701,9 @@ const buildDataObject = (formData, surveyType, eventType) => {
 
 const sendToMartech = async (dataObj) => {
   try {
-    await window.alloy("sendEvent", dataObj);
+    await window.alloy('sendEvent', dataObj);
   } catch (e) {
-    console.warn("Failed to send form data to AEP", e);
+    console.warn('Failed to send form data to AEP', e);
   }
 };
 
