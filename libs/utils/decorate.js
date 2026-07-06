@@ -709,53 +709,8 @@ function resolveInheritance(rows, previousContent) {
   });
 }
 
-const HERO_GRADIENT_PROP = '--rc-hero-gradient';
-
-function isCssGradient(value) {
-  return /^(repeating-)?(linear|radial|conic)-gradient\(.+\)$/i.test(value?.trim());
-}
-
-function supportsHeroGradient(el) {
-  return el.classList.contains('rich-content')
-    && (el.classList.contains('hero') || el.classList.contains('jump-link'));
-}
-
-function extractHeroGradientFromContentRow(rows) {
-  const contentRow = rows[0];
-  const bgCell = contentRow?.children?.[1];
-  if (!bgCell || bgCell.querySelector('picture, img')) return undefined;
-
-  const value = bgCell.textContent.trim();
-  if (!isCssGradient(value)) return undefined;
-
-  bgCell.remove();
-  return value;
-}
-
-function applyHeroGradient(el, gradient) {
-  if (!gradient) return;
-  const section = el.closest('.section');
-  if (!section) return;
-  section.style.setProperty(HERO_GRADIENT_PROP, gradient);
-}
-
-function extractPreViewportHeroGradient(el) {
-  const children = [...el.children];
-  const firstDelimiterIdx = children.findIndex((child) => getDelimiterKeyword(child));
-  const preRows = firstDelimiterIdx < 0 ? children : children.slice(0, firstDelimiterIdx);
-  return extractHeroGradientFromContentRow(preRows);
-}
-
-function getInheritedHeroGradient(content, vpKeys, activeIndex, fallback) {
-  for (let i = activeIndex; i >= 0; i -= 1) {
-    const gradient = content[vpKeys[i]]?.heroGradient;
-    if (gradient) return gradient;
-  }
-  return fallback;
-}
-
-function parseViewportContent(el) {
-  const hasHeroGradient = supportsHeroGradient(el);
+function parseViewportContent(el, metadataHooks) {
+  const shouldParseMetadata = metadataHooks?.shouldParse?.(el) ?? false;
   const children = [...el.children];
   const content = {};
   const delimiterEls = [];
@@ -791,8 +746,8 @@ function parseViewportContent(el) {
     content[keyword] = {
       container,
       variants,
-      heroGradient: hasHeroGradient
-        ? extractHeroGradientFromContentRow([...container.children])
+      metadata: shouldParseMetadata
+        ? metadataHooks.parseRows([...container.children])
         : undefined,
     };
   });
@@ -810,7 +765,16 @@ function parseViewportContent(el) {
   return { hasViewportVariations: true, content, allVariants };
 }
 
-function applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient) {
+function resolveViewportMetadata(content, vpKeys, activeIndex, globalMetadata, inherit) {
+  if (inherit) return inherit(content, vpKeys, activeIndex, globalMetadata);
+  for (let i = activeIndex; i >= 0; i -= 1) {
+    const metadata = content[vpKeys[i]]?.metadata;
+    if (metadata !== undefined) return metadata;
+  }
+  return globalMetadata;
+}
+
+function applyViewportContent(el, viewports, globalMetadata, metadataHooks) {
   if (!viewports.hasViewportVariations) return;
 
   const { content, allVariants } = viewports;
@@ -830,10 +794,16 @@ function applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient
       el.classList.remove(...allVariants);
       if (variants.length) el.classList.add(...variants);
       el.replaceChildren(...children);
-      if (hasHeroGradient) {
+      if (metadataHooks?.apply) {
         const activeIndex = vpKeys.indexOf(viewport);
-        const gradient = getInheritedHeroGradient(content, vpKeys, activeIndex, globalHeroGradient);
-        applyHeroGradient(el, gradient);
+        const metadata = resolveViewportMetadata(
+          content,
+          vpKeys,
+          activeIndex,
+          globalMetadata,
+          metadataHooks.inherit,
+        );
+        metadataHooks.apply(metadata, el);
       }
       decorateTextOverrides(el);
     };
@@ -843,21 +813,24 @@ function applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient
   });
 }
 
-/* decorateFn receives:
- * - block — the element to decorate (viewport container or el itself)
- * - root  — for checking base classes on detached containers */
-export function decorateViewportContent(el, decorateFn) {
-  const hasHeroGradient = supportsHeroGradient(el);
-  const globalHeroGradient = hasHeroGradient ? extractPreViewportHeroGradient(el) : undefined;
-  const viewports = parseViewportContent(el);
+export function decorateViewportContent(el, decorateFn, metadataHooks) {
+  const shouldParseMetadata = metadataHooks?.shouldParse?.(el) ?? false;
+  let globalMetadata;
+  if (shouldParseMetadata) {
+    const children = [...el.children];
+    const firstDelimiterIdx = children.findIndex((child) => getDelimiterKeyword(child));
+    const preRows = firstDelimiterIdx < 0 ? children : children.slice(0, firstDelimiterIdx);
+    globalMetadata = metadataHooks.parseRows(preRows);
+  }
+  const viewports = parseViewportContent(el, metadataHooks);
   if (viewports.hasViewportVariations) {
     Object.values(viewports.content).forEach(({ container }) => {
       decorateFn(container, el);
     });
-    applyViewportContent(el, viewports, globalHeroGradient, hasHeroGradient);
+    applyViewportContent(el, viewports, globalMetadata, metadataHooks);
   } else {
     decorateFn(el, el);
-    if (hasHeroGradient) applyHeroGradient(el, globalHeroGradient);
+    if (metadataHooks?.apply) metadataHooks.apply(globalMetadata, el);
     decorateTextOverrides(el);
   }
   return viewports;
