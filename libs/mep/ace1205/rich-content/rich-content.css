@@ -121,6 +121,16 @@
         margin: 0;
         padding: 0;
 
+        &:has(.jump-link-anchor:focus-visible) .jump-link-anchor:not(:hover, :focus-visible) {
+          color: var(--s2a-color-transparent-white-48);
+
+          .jump-link-badge {
+            background: var(--s2a-color-transparent-white-16);
+            border-color: var(--s2a-color-transparent-white-12);
+            color: inherit;
+          }
+        }
+
         @media (hover: hover) {
           &:has(.jump-link-anchor:hover) .jump-link-anchor:not(:hover, :focus-visible) {
             color: var(--s2a-color-transparent-white-48);
