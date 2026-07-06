@@ -423,7 +423,8 @@ export function updateGnavActiveLink() {
   const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
 
   document.querySelectorAll('a[data-active-link-href]').forEach((link) => {
-    link.setAttribute('href', link.getAttribute('data-active-link-href'));
+    const savedHref = link.getAttribute('data-active-link-href');
+    if (savedHref) link.setAttribute('href', savedHref);
     link.removeAttribute('data-active-link-href');
     ACTIVE_LINK_ATTRS.forEach((attr) => link.removeAttribute(attr));
   });
