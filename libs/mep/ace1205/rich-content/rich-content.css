@@ -173,7 +173,7 @@
       }
     }
 
-    &.dark {
+    &.light-asset {
       .jump-link-anchor {
         .jump-link-badge {
           border-radius: var(--s2a-border-radius-4);
