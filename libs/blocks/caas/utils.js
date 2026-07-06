@@ -946,10 +946,10 @@ export const getGrayboxExperienceId = (
   return null;
 };
 
-export const getProducts = async () => {
+export const getProducts = async (state) => {
   try {
-    const { tags } = await getTags();
-    return tags.mnemonics.tags;
+    const { tags } = await getTags(state.tagsUrl);
+    return tags?.mnemonics?.tags || [];
   } catch (e) {
     window.lana?.log(`Failed to fetch CaaS products: ${e.message}`, { tags: 'caas' });
     return [];
@@ -1019,7 +1019,7 @@ export const getConfig = async (originalState, strs = {}) => {
     excludedCardsWithCurrent = excludedCards;
   }
 
-  const products = state.detailsTextOption === 'productName' ? await getProducts() : [];
+  const products = state.detailsTextOption === 'productName' ? await getProducts(state) : [];
 
   const config = {
     collection: {
