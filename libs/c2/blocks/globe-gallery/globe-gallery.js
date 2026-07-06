@@ -163,9 +163,9 @@ const CA_ENABLED = true; // master kill switch — set false to disable all CA w
 const CA_STRENGTH = 0.012; // radial UV shift per channel (bell-curve at transition peaks; Option B)
 const CA_MOTION_STRENGTH = 1.0; // directional UV shift max — peel / fold / sphere / modal
 const CA_MOTION_STRENGTH_ARC = 0.04; // softer clamp while cards sit on the arc
-const SCROLL_VEL_MAX = 15; // px/frame scroll speed that saturates motion trail at full strength
-const SCROLL_VEL_DEADBAND = 2; // px/frame below this = Lenis settle noise → no CA (anti-shimmer)
-const CA_PX_MAX = 3; // max vertical pixel shift for global canvas SVG filter (Option C)
+const SCROLL_VEL_MAX = 14; // px/frame scroll speed that saturates motion trail at full strength
+const SCROLL_VEL_DEADBAND = 7; // px/frame below this = Lenis settle noise → no CA (anti-shimmer)
+const CA_PX_MAX = 4; // max vertical pixel shift for global canvas SVG filter (Option C)
 
 // ── Hover (sphere phase only) ────────────────────────────────────────────────
 // Polished/premium feel — settles in/out, no continuous animation while hovered.
