@@ -1463,8 +1463,12 @@ span.hang-opening-quote {
   }
 }
 
+:root {
+  --feds-language-banner-height: 44px;
+}
+
 .language-banner {
-  min-height: 44px;
+  height: var(--feds-language-banner-height, 44px);
   visibility: hidden;
 }
 

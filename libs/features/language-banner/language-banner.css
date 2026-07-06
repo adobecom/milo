@@ -12,6 +12,7 @@
   visibility: visible;
   position: relative;
   z-index: 11;
+  overflow: hidden;
 }
 
 .language-banner-content {
@@ -104,7 +105,7 @@ html:has(meta[name="foundation"][content="c2"]) {
     font-size: var(--s2a-font-size-12);
     font-weight: 400;
     line-height: var(--s2a-font-line-height-18);
-    flex: 1 1 0;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     display: -webkit-box;
@@ -124,6 +125,9 @@ html:has(meta[name="foundation"][content="c2"]) {
     flex: 0 0 auto;
     white-space: nowrap;
     align-self: center;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .language-banner-link:hover {
