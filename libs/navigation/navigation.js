@@ -207,10 +207,10 @@ export default async function loadBlock(configs, customLib) {
             { key: 'promoSource', name: 'gnav-promo-source' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions, updateActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, gnavConfigs);
           window.closeGnav = closeGnavOptions;
-          window.updateGnavActiveLink = updateActiveLink;
+          window.updateGnavActiveLink = updateGnavActiveLink;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);

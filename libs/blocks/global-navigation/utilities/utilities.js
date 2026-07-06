@@ -416,23 +416,16 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
-export function updateActiveLink() {
-  const { origin, pathname } = window.location;
-  const currentUrl = `${origin}${pathname}`;
-  const matchesUrl = (el) => el.href === currentUrl
-    || el.href.startsWith(`${currentUrl}?`)
-    || el.href.startsWith(`${currentUrl}#`);
+const ACTIVE_LINK_ATTRS = ['role', 'aria-disabled', 'aria-current', 'tabindex'];
 
+export function updateGnavActiveLink() {
   const activeNavItemClass = selectors.activeNavItem.slice(1);
   const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
 
-  const ATTRS_TO_REMOVE = ['role', 'aria-disabled', 'aria-current', 'tabindex'];
-
-  // Remove previous active state
   document.querySelectorAll('a[data-active-link-href]').forEach((link) => {
     link.setAttribute('href', link.getAttribute('data-active-link-href'));
     link.removeAttribute('data-active-link-href');
-    ATTRS_TO_REMOVE.forEach((attr) => link.removeAttribute(attr));
+    ACTIVE_LINK_ATTRS.forEach((attr) => link.removeAttribute(attr));
   });
   document
     .querySelectorAll(`${selectors.activeNavItem}, ${selectors.navItem}[data-active-link-href]`)
@@ -447,8 +440,14 @@ export function updateActiveLink() {
   const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
   if (!nav) return;
 
+  const { origin, pathname } = window.location;
+  const currentUrl = `${origin}${pathname}`;
+  const matchesUrl = (el) => el.href === currentUrl
+    || el.href.startsWith(`${currentUrl}?`)
+    || el.href.startsWith(`${currentUrl}#`);
+
   const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])[href]')]
-    .filter((el) => !!el.getAttribute('href')).find(matchesUrl);
+    .find(matchesUrl);
 
   if (!newActiveLink) return;
 
