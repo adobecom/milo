@@ -57,9 +57,6 @@ const decorateForeground = async (el, rows) => {
     } else if (i === (rows.length - 1)) {
       row.classList.add('card-footer');
       if (!row.textContent.trim()) row.classList.add('empty');
-      row.querySelectorAll('div > a:only-child').forEach((link) => {
-        link.parentElement.classList.add('action-area');
-      });
     } else {
       row.classList.add('extra-row');
     }

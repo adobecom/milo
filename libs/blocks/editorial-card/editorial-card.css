@@ -55,6 +55,10 @@
   font-size: var(--type-body-s-size);
 }
 
+.editorial-card .card-footer > div > a:only-child { 
+  align-self: end; 
+}
+
 .editorial-card.static-links-copy .foreground a:not([class*="button"]) {
   color: inherit;
   text-decoration: underline;
