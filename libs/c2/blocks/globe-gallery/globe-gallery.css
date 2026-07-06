@@ -49,8 +49,14 @@
    below step the title + body-l up for md (≥768) and lg (≥1280). body-m never
    changes across tiers, so it lives only here. */
 .globe-gallery {
-  /* The block element itself is the tall scroll runway (850vh scroll budget). */
-  height: 850vh;
+  /* --runway-height is the block's total scroll length and the single source of truth for
+     pacing: the JS reads the rendered height (no hard-coded copy there), and the pull-quote
+     pin derives its height from it (see .globe-gallery-pullquote-pin) so the two stay in
+     proportion and the quote's reveal stays aligned. Tune the whole animation here — larger
+     = slower/more scroll, smaller = snappier with a shorter frozen-quote tail. */
+  --runway-height: 630vh;
+
+  height: var(--runway-height);
   position: relative;
   background: #131313;
   margin-top: 0;
@@ -157,15 +163,19 @@
 }
 
 /* ── Pull-quote (sticky inside .globe-gallery-pullquote-pin) ──
-   The pin container is absolute at the bottom of the 850vh runway. The pull-quote
-   is sticky inside it, so it scrolls in naturally from below, sticks centered through
-   the zoom phase, and scrolls off the top as the runway ends — no JS required. */
+   The pin container is absolute at the bottom of the runway. The pull-quote is sticky
+   inside it, so it scrolls in naturally from below, sticks centered through the zoom
+   phase, and scrolls off the top as the runway ends — no JS required.
+   The pin height is a fixed fraction of --runway-height, so it scales with the runway
+   and the quote's sticky reveal stays aligned with the zoomT threshold as you tune. The
+   fraction also sets how long the quote stays frozen (≈ pin height − quote height), i.e.
+   the scroll length after the fly-through. */
 .globe-gallery-pullquote-pin {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 300vh;
+  height: calc(var(--runway-height) * 0.4);
   pointer-events: none;
 }
 
@@ -174,13 +184,15 @@
    at rest at 50vh center), so the transition makes it emerge in place. The sticky
    container handles the natural exit — no JS needed to trigger it. */
 .globe-gallery-pullquote {
+  --pq-height: 583px;
+
   position: sticky;
-  top: calc(50vh - 291px);
+  top: calc(50vh - var(--pq-height) / 2); /* centered vertically */
   box-sizing: border-box;
   width: 100%;
   max-width: 1920px;
   margin: 0 auto;
-  height: 583px;
+  height: var(--pq-height);
   z-index: 5;
   background: transparent;
   display: flex;

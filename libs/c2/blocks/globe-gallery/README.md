@@ -6,8 +6,8 @@ target; modal, a11y gallery, and chromatic aberration (CA) are fast-follow.
 
 ## What it is
 
-Over a tall (`850vh`) pinned scroll range, 45 photo cards animate through four
-phases:
+Over a tall, pinned scroll range (`--runway-height` in the CSS), 45 photo cards animate
+through four phases:
 
 ```
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
@@ -211,13 +211,14 @@ per-instance unique-id suffix it mints from a module-level counter in
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
 `filter: url(#ca-filter-<gid>)`) and the modal heading/description (the dialog's
-`aria-labelledby` / `aria-describedby` IDREFs). `el` itself is the `850vh` scroll runway
-(styled directly on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery--reduced`);
+`aria-labelledby` / `aria-describedby` IDREFs). `el` itself is the scroll runway
+(height is `--runway-height` on `.globe-gallery`, collapsed to `100vh` under `.globe-gallery--reduced`);
 the canvas is `position:fixed`. The shared body-level global (acceptable, one modal at a
 time) is the `.modal-open` scroll lock.
 
-**Scroll model.** The block element *is* the scroll runway (it's `850vh` tall) —
-there's no separate runway element, so progress is measured against the block's own
+**Scroll model.** The block element *is* the scroll runway (its height is the
+`--runway-height` custom property) — there's no separate runway element, and nothing
+hard-codes the value: progress is measured against the block's own
 metrics: `progress = clamp((scrollY - blockDocTop) / blockHeight, 0, 1)`, where
 `blockDocTop` is the block's top in document space and `blockHeight` its full scroll
 length (both refreshed in `doLayout` + a body `ResizeObserver`). Milo's page-level

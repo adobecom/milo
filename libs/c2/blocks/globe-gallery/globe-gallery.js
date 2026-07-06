@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────────────
    Globe Gallery — Three.js WebGL scrolled hero.
 
-   Phases (progress 0→1 across the block's 850vh scroll length):
+   Phases (progress 0→1 across the block's full scroll length; height set in the CSS):
      0.00 – 0.55  Arc: 45 cards rotate across viewport
      0.14 – 0.65  Grid peel: cards peel off arc into 9×5 grid (staggered)
      0.37 – 0.78  Sphere fold: each card folds to sphere immediately after arriving in grid
@@ -73,7 +73,7 @@ function resolveBP(w) {
   return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
 
-// ── Phase timeline (progress 0→1 across the block's 850vh scroll length) ─────
+// ── Phase timeline (progress 0→1 across the block's full scroll length) ──────
 const ARC_STAGGER = 0.594;
 const PROGRESS_PAN_END = 0.55;
 const PROGRESS_ARC_PREROLL = 0.30;
@@ -820,6 +820,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const foldFirst = Math.max(0, (foldFirstArcT - PROGRESS_ARC_PREROLL) * PROGRESS_PAN_END);
     const foldLast = SPHERE_FORMED_PROGRESS;
     const sphereFormT = Math.max(0, Math.min(1, (progress - foldFirst) / (foldLast - foldFirst)));
+    // Zoom-through starts the instant the sphere finishes forming (no interactive gap).
+    // The pre-v3 zoom/tail pacing is preserved by the shorter runway height (see .css),
+    // not by delaying the zoom start — v3's grid compression is removed from the total
+    // scroll length rather than redistributed into a formed-but-static pause.
     const zoomT = Math.max(0, Math.min(1, (progress - foldLast) / (PROGRESS_ZOOM_END - foldLast)));
     sphereFormTAtLastTick = sphereFormT; // cache for the interaction module's click/hover handlers
 
