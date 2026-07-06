@@ -350,6 +350,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // of yaw inverted the local pitch axis and reversed vertical drag).
   const sphereRotEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const sphereRotQuat = new THREE.Quaternion();
+  const refreshSphereRotQuat = () => {
+    sphereRotEuler.set(sphereRotX, sphereRotY, 0);
+    sphereRotQuat.setFromEuler(sphereRotEuler);
+  };
   const foldRotQuat = new THREE.Quaternion();
   // Scratch quat/euler for the fold's residual peel-spin (reused per card, per frame —
   // see placeFoldingCard). Stable references, never retained.
@@ -564,9 +568,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   function snapCardToSphereSlot(card) {
     if (!card || !card.mesh) return;
     const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
-    if (hasRot && sphereRotEuler) {
-      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'XYZ');
-      sphereRotQuat.setFromEuler(sphereRotEuler);
+    if (hasRot) {
+      refreshSphereRotQuat();
       card.mesh.position.copy(card.spherePos).applyEuler(sphereRotEuler);
       card.mesh.quaternion.copy(sphereRotQuat).multiply(card.sphereQuat);
     } else {
@@ -580,7 +583,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // partway toward facing the new card's slot, then activate the spring. Injected
   // into modal.js as requestNavNudge and called on each prev/next nav (arrow or swipe).
   function triggerModalNavNudge(newIdx) {
-    if (!sphereRotEuler || !cards[newIdx]) return;
+    if (!cards[newIdx]) return;
     const newCard = cards[newIdx];
     // World position of new card's slot under the CURRENT sphere rotation.
     const wp = tmpVec3.copy(newCard.spherePos).applyEuler(sphereRotEuler);
@@ -978,10 +981,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
     // sphereRotActive is a fast-path flag so the rotation math can be skipped when upright.
     const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
-    if (sphereRotEuler) {
-      sphereRotEuler.set(sphereRotX, sphereRotY, 0, 'XYZ');
-      sphereRotQuat.setFromEuler(sphereRotEuler);
-    }
+    refreshSphereRotQuat();
     return sphereRotActive;
   }
 
