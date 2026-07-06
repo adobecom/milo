@@ -24,13 +24,15 @@
   &::after {
     --scrim-stop-start: 0.88%;
     --scrim-stop-end: 99.12%;
+    --scrim-color-start: var(--s2a-color-transparent-black-00);
+    --scrim-color-end: var(--s2a-color-transparent-black-72);
 
     content: '';
     position: absolute;
     inset: 0;
     background-image: linear-gradient(271deg,
-      var(--s2a-color-transparent-black-00) var(--scrim-stop-start),
-      var(--s2a-color-transparent-black-64) var(--scrim-stop-end));
+      var(--scrim-color-start) var(--scrim-stop-start),
+      var(--scrim-color-end) var(--scrim-stop-end));
     pointer-events: none;
   }
 
@@ -65,7 +67,7 @@
 
   .plans-hero-media::after {
     --scrim-stop-start: 50.27%;
-    --scrim-stop-end: 99.12%;
+    --scrim-color-end: var(--s2a-color-transparent-black-64);
   }
 }
 
