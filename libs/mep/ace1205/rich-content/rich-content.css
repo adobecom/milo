@@ -172,6 +172,33 @@
         mask-size: contain;
       }
     }
+
+    &.dark {
+      .jump-link-anchor {
+        .jump-link-badge {
+          border-radius: var(--s2a-border-radius-4);
+          border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+          background: var(--s2a-color-transparent-black-64);
+          backdrop-filter: blur(4px);
+        }
+
+        &:hover .jump-link-badge {
+          background: var(--s2a-color-transparent-black-80);
+        }
+
+        &:focus-visible .jump-link-badge {
+          background: var(--s2a-color-transparent-black-64);
+        }
+
+        &:active .jump-link-badge {
+          background: var(--s2a-color-gray-1000);
+
+          &::after {
+            background-color: var(--s2a-color-content-knockout);
+          }
+        }
+      }
+    }
   }
 }
 
