@@ -337,6 +337,53 @@ const CRM_HASH = 'CRM_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
+const CHECKOUT_LINK_SELECTOR = 'a[is="checkout-link"]';
+
+const krTrialCtas = new WeakSet();
+let krTrialObserverStarted = false;
+
+/**
+ * Applies KR free-trial visibility rules to a checkout-link.
+ * Safe to call on originals and clones; deduped per element.
+ * Relies on data-allow-kr-trial (copied by cloneNode) or page metadata.
+ */
+export function applyKrTrialCta(cta) {
+  if (!cta?.onceSettled || krTrialCtas.has(cta)) return;
+  krTrialCtas.add(cta);
+
+  cta.onceSettled().then(() => {
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    const allowed = cta.dataset.allowKrTrial === 'true'
+      || getMetadata('allow-kr-free-trial') === 'on';
+    if (allowed) {
+      cta.removeAttribute('data-hide-kr-free-trial');
+      return;
+    }
+    cta.remove();
+  });
+}
+
+function scanKrTrialCtas(root) {
+  if (root instanceof Element) {
+    if (root.matches(CHECKOUT_LINK_SELECTOR)) applyKrTrialCta(root);
+    root.querySelectorAll(CHECKOUT_LINK_SELECTOR).forEach(applyKrTrialCta);
+  }
+}
+
+function ensureKrTrialObserver() {
+  if (krTrialObserverStarted) return;
+  krTrialObserverStarted = true;
+  scanKrTrialCtas(document);
+  if (typeof MutationObserver === 'undefined') return;
+  new MutationObserver((mutations) => {
+    mutations.forEach(({ addedNodes }) => {
+      addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) scanKrTrialCtas(node);
+      });
+    });
+  }).observe(document.documentElement, { childList: true, subtree: true });
+}
 
 let log;
 let upgradeOffer = null;
@@ -1497,15 +1544,12 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.removeAttribute('data-hide-kr-free-trial');
-      return;
-    }
-    cta.remove();
-  });
+  if (el.dataset?.allowKrTrial === 'true' || el.href?.includes('#_allow-kr-trial')) {
+    cta.dataset.allowKrTrial = 'true';
+  }
+  shouldAllowKrTrial(el, getConfig()?.locale?.prefix);
+  ensureKrTrialObserver();
+  applyKrTrialCta(cta);
 
   return cta;
 }

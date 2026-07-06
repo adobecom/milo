@@ -564,8 +564,10 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
 */
 export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
-  const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
-  if (hasAllowKrTrial) {
+  const hasAllowKrTrial = link.href?.includes(allowKrTrialHash)
+    || link.dataset?.allowKrTrial === 'true';
+  if (link.href?.includes(allowKrTrialHash)) {
+    link.dataset.allowKrTrial = 'true';
     link.href = link.href.replace(allowKrTrialHash, '');
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
