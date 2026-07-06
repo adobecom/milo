@@ -1596,24 +1596,35 @@ export function getOptions(el) {
 
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
-  const { searchParams } = new URL(el.href);
-  const isCta = searchParams.get('type') === 'checkoutUrl';
-  const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
-  const service = await initService();
-  log = service.Log.module('merch');
-  if (merch) {
-    log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
-    // Rebuilt merch href keeps only the OSI; stash the original for
-    // the "Edit OSI" badge.
-    if (getConfig()?.mep?.preview) {
-      mepMasStudioUrls.set(merch, el.href);
-      merch.dataset.masBlock = 'ost';
+  // PERF EXPERIMENT (merch-lcp-exp): detach the classic merch block (OST checkout CTA /
+  // inline price) from the section-gate, same as the merch-card autoblock. This init
+  // awaits initService() -> commerce.js + geo; because the OST CTA lives in the first
+  // section, processSection would otherwise hold the hero (and thus LCP) until commerce
+  // loads — re-introducing the exact dependency the autoblock detach removed. Hide the
+  // raw authoring link so the /tools/ost URL can't flash as interim content.
+  el.style.visibility = 'hidden';
+  const hydrate = async () => {
+    const { searchParams } = new URL(el.href);
+    const isCta = searchParams.get('type') === 'checkoutUrl';
+    const merch = await (isCta ? buildCta : buildPrice)(el, searchParams);
+    const service = await initService();
+    log = service.Log.module('merch');
+    if (merch) {
+      log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
+      // Rebuilt merch href keeps only the OSI; stash the original for
+      // the "Edit OSI" badge.
+      if (getConfig()?.mep?.preview) {
+        mepMasStudioUrls.set(merch, el.href);
+        merch.dataset.masBlock = 'ost';
+      }
+      el.replaceWith(merch);
+      return merch;
     }
-    el.replaceWith(merch);
-    return merch;
-  }
-  log.warn('Failed to get context:', { el });
-  return null;
+    log.warn('Failed to get context:', { el });
+    return null;
+  };
+  hydrate().catch((e) => window.lana?.log(`merch OST async hydrate: ${e}`, { tags: 'merch', severity: 'info' }));
+  return undefined;
 }
 
 const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
