@@ -78,7 +78,7 @@
 
   /* Breathing room between the gnav and where the title/cards pin.
      Single knob for design fine-tuning — everything pins at --stack-pin-top. */
-  --bento-stack-top-gap: 30px;
+  --bento-stack-top-gap: 20px;
   --stack-pin-top: calc(var(--gnav-offset) + var(--bento-stack-top-gap));
   --title-height: 24px;
   --title-card-gap: var(--s2a-spacing-24, 24px);
@@ -103,6 +103,14 @@
     0 5.728px 2.291px #00000008,
     0 2.384px 0.953px #00000005;
   --bento-shadow-none: 0 0 0 #0000;
+}
+
+body:has(header.has-breadcrumbs) .section.bento.stack-mobile {
+  --stack-pin-top: calc(var(--gnav-offset) + var(--feds-breadcrumbs-height, 52px) + var(--bento-stack-top-gap));
+}
+
+body:has(header.local-nav) .section.bento.stack-mobile {
+  --stack-pin-top: calc(var(--gnav-offset) + var(--feds-localnav-height, 40px) + var(--bento-stack-top-gap));
 }
 
 .section {
