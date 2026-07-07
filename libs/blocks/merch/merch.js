@@ -1508,16 +1508,18 @@ export async function buildCta(el, params) {
       return cta;
     }
 
-    cta.setAttribute('data-hide-kr-free-trial', 'true');
+    cta.setAttribute('data-hide-kr-free-trial', crypto.randomUUID());
     cta.onceSettled().then(() => {
-      const { offerType: ctaOfferType } = cta.value[0] || {};
+      const uuid = cta.getAttribute('data-hide-kr-free-trial');
+      const { offerType: ctaOfferType } = cta.value?.[0] || {};
       if (ctaOfferType === OFFER_TYPE_TRIAL) cta.remove();
       else cta.removeAttribute('data-hide-kr-free-trial');
 
-      const ctaClone = document.querySelector('[data-hide-kr-free-trial="true"]');
+      const ctaClone = [...document.querySelectorAll(`[data-hide-kr-free-trial="${uuid}"]`)]
+        .find((clone) => clone !== cta);
       if (!ctaClone) return;
       const { offerType: cloneOfferType } = ctaClone.value?.[0] || {};
-      if (cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
+      if (!cloneOfferType || cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
       else ctaClone.removeAttribute('data-hide-kr-free-trial');
     });
   }
