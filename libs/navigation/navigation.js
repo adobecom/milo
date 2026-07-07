@@ -113,6 +113,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     stageDomainsMap = {},
     allowedOrigins = [],
+    promoSource = '',
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -195,6 +196,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
+            promoSource,
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -202,6 +204,7 @@ export default async function loadBlock(configs, customLib) {
             { key: 'redirect', name: 'adobe-home-redirect' },
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
+            { key: 'promoSource', name: 'gnav-promo-source' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
           const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');

@@ -1105,6 +1105,28 @@ export const getConfig = async (originalState, strs = {}) => {
       // Include editorialOpenVariant if necessary
       ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
         && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
+
+      // Include flexCardOptions when configured
+      ...((state.cardStyle === 'flex-card'
+        && (state.flexCardImageOptions !== 'default'
+          || state.flexCardTextAlign !== 'text-left'
+          || state.flexCardTextSize !== 'default'
+          || state.flexCardHideDetails
+          || state.flexCardHideTitle
+          || state.flexCardHideDescription
+          || state.flexCardHideFooter))
+        && {
+          flexCard: {
+            imageOption: state.flexCardImageOptions,
+            textAlign: state.flexCardTextAlign,
+            textSize: state.flexCardTextSize,
+            hideDetails: !!state.flexCardHideDetails,
+            hideTitle: !!state.flexCardHideTitle,
+            hideDescription: !!state.flexCardHideDescription,
+            hideFooter: !!state.flexCardHideFooter,
+          },
+        }
+      ),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
@@ -1353,7 +1375,14 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  flexCardImageOptions: 'default',
   detailsTextOption: 'default',
+  flexCardTextSize: 'default',
+  flexCardTextAlign: 'text-left',
+  flexCardHideDetails: false,
+  flexCardHideTitle: false,
+  flexCardHideDescription: false,
+  flexCardHideFooter: false,
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useCenterVideoPlay: false,
