@@ -13,17 +13,15 @@
 .faq-item {
   border-block-end: 1px solid var(--s2a-color-transparent-black-08);
   color: var(--s2a-color-content-default);
-  transition: opacity var(--faq-transition);
-
-  .faq:hover &:not(:hover, [open]),
-  .faq:focus-within &:not(:focus-within, :hover, [open]) {
-    opacity: 0.6;
-  }
 
   &::details-content {
     content-visibility: visible;
     display: block;
     block-size: auto;
+  }
+
+  &.parallax-move-up {
+    --parallax-translate-y: 100%;
   }
 
   > .faq-panel {
@@ -48,6 +46,12 @@
   gap: var(--s2a-spacing-2xl);
   list-style: none;
   padding-block: var(--s2a-spacing-xl);
+  transition: opacity var(--faq-transition);
+
+  .faq:hover .faq-item:not(:hover, [open]) &,
+  .faq:focus-within .faq-item:not(:focus-within, :hover, [open]) & {
+    opacity: 0.6;
+  }
 
   &::-webkit-details-marker {
     display: none;
@@ -94,6 +98,19 @@
 @media (width >= 768px) {
   .faq-panel {
     max-inline-size: calc(548 / 16 * 1rem);
+  }
+}
+
+/* anchor items to their trigger timeline to avoid jump on expansion */
+@supports (animation-timeline: view()) {
+  .faq-trigger {
+    view-timeline: --faq-trigger-timeline block;
+    view-timeline-inset: 40% 10%;
+  }
+
+  .faq-item {
+    timeline-scope: --faq-trigger-timeline;
+    animation-timeline: --faq-trigger-timeline;
   }
 }
 
