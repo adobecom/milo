@@ -54,7 +54,7 @@
   border-radius: 0 100% 100% 0;
   color: var(--mep-white-100);
   background: var(--mep-primary-100);
-  box-shadow: var(--mep-elevation-3);
+  box-shadow: var(--mep-elevation-4);
   opacity: 1;
   transform: translateX(0%);
   transition: transform 0.1s ease, opacity 0.1s ease;
@@ -248,26 +248,50 @@ body:has(#mep-drawer:popover-open) .mep-fab {
 }
 
 .mep-drawer .mep-card .mep-manifest-error {
+  cursor: pointer;
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  cursor: pointer;
+  /* justify-content: center; */
+  gap: 8px;
   margin: -16px -16px 8px;
   padding: 4px 16px;
   border-radius: 8px 8px 0 0;
   background: var(--mep-error);
   color: var(--mep-white-100);
-}
-
-.mep-drawer .mep-card .mep-manifest-error p {
-  margin: 0;
   font: var(--mep-body-font);
   letter-spacing: var(--mep-body-letter-spacing);
+  cursor: default;
 }
 
 .mep-drawer .mep-card .mep-manifest-error svg {
   flex-shrink: 0;
   fill: var(--mep-white-100);
+}
+
+.mep-drawer .mep-card .mep-manifest-error-tooltip {
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 16px;
+  display: none;
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  list-style: none;
+  border-radius: 4px;
+  background: var(--mep-error);
+  border: 1px solid var(--mep-error);
+  box-shadow: var(--mep-elevation-4);
+  background: var(--mep-dark-22, #222);
+  color: var(--mep-white-100);
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+  white-space: nowrap;
+}
+
+.mep-drawer .mep-card .mep-manifest-error:hover .mep-manifest-error-tooltip {
+  display: block;
 }
 
 .mep-drawer .mep-card.center {

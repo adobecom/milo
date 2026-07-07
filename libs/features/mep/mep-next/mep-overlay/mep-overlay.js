@@ -161,11 +161,13 @@ function buildManifestCard(manifest) {
   markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
 
-  const isDisabled = true; // placeholder
-  const label = 'Disabled Placeholder.';
-  if (isDisabled) {
+  const reasons = [];
+  if (!manifest.withinDateRange) reasons.push('Outside of promo date range.');
+  if (manifest.manifestGeoRestricted) reasons.push('User country is geo restricted.');
+  if (reasons.length) {
+    const list = createTag('ul', { class: 'mep-manifest-error-tooltip' }, reasons.map((reason) => createTag('li', {}, reason)));
     card.classList.add('manifest-disabled');
-    card.prepend(createTag('div', { class: 'mep-manifest-error' }, [svgIcon('icon-alert'), createTag('p', {}, label)]));
+    card.prepend(createTag('div', { class: 'mep-manifest-error' }, [svgIcon('icon-alert'), 'Disabled', list]));
   }
 
   return card;

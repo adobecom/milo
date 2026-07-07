@@ -136,6 +136,17 @@ function formatDate(dateTime, format = 'local') {
 
 const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
+function checkManifestConsent({ eventStart, eventEnd, geoRestriction }) {
+  const now = new Date();
+  const withinDateRange = !eventStart || !eventEnd || (now >= eventStart && now <= eventEnd);
+
+  const akamaiCode = getConfig().mep?.akamaiCode;
+  const manifestGeoRestricted = !!geoRestriction
+    && !geoRestriction.split(',').map((code) => code.trim()).includes(akamaiCode);
+
+  return { withinDateRange, manifestGeoRestricted };
+}
+
 export function getManifestList() {
   const mepConfig = parseMepConfig();
   const { activities, page } = mepConfig;
@@ -190,6 +201,11 @@ export function getManifestList() {
       });
     });
 
+    const {
+      withinDateRange,
+      manifestGeoRestricted,
+    } = checkManifestConsent({ eventStart, eventEnd, geoRestriction });
+
     return {
       index: mIdx + 1,
       editUrl: url,
@@ -203,6 +219,8 @@ export function getManifestList() {
       geoRestriction: geoRestriction ? geoRestriction.toUpperCase() : null,
       showActive: !!(eventStart && eventEnd) || !!disabled,
       isActive: disabled ? 'inactive' : 'active',
+      withinDateRange,
+      manifestGeoRestricted,
       eventStart: eventStart ? formatDate(eventStart) : null,
       eventStartIso: eventStart ? formatDate(eventStart, 'iso') : null,
       eventEnd: eventEnd ? formatDate(eventEnd) : null,
