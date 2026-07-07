@@ -409,7 +409,8 @@
     margin-top: 0;
   }
 
-  img {
+  > img,
+  .cta-area img {
     border-radius: var(--s2a-border-radius-24);
     border: 9px solid var(--s2a-color-transparent-white-04);
     max-width: 214px;
@@ -425,6 +426,7 @@
     }
 
     .video-container {
+      display: block;
       position: relative;
       box-sizing: border-box;
       max-width: 214px;
@@ -445,6 +447,35 @@
         object-fit: cover;
         outline: none;
       }
+    }
+
+    picture {
+      display: block;
+      position: relative;
+      box-sizing: border-box;
+      max-width: 214px;
+      margin-inline: auto;
+      border-radius: var(--s2a-border-radius-24);
+      overflow: hidden;
+      transform-origin: center bottom;
+      width: 100%;
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        max-width: none;
+        border: none;
+        border-radius: inherit;
+        margin: 0;
+      }
+    }
+
+    > :is(p, div):has(picture) {
+      margin: 0;
+      width: 100%;
+      max-width: 214px;
+      margin-inline: auto;
     }
 
     .action-area {
@@ -472,13 +503,20 @@
 
 @media (width >= 768px) {
   .rich-content.video {
-    img {
+    > img,
+    .cta-area img {
       max-width: unset;
     }
 
     .media {
       padding-inline: unset;
       max-width: var(--grid-width-10);
+
+      > :is(p, div):has(picture) {
+        display: contents;
+        max-width: none;
+        margin-inline: unset;
+      }
 
       .video-container {
         max-width: unset;
@@ -488,6 +526,11 @@
         video {
           height: auto;
         }
+      }
+
+      picture {
+        max-width: unset;
+        margin-inline: unset;
       }
 
       .action-area {
@@ -561,13 +604,15 @@
     gap: var(--s2a-spacing-xl);
   }
 
-  .rich-content.video img {
-    max-width: 1200px; 
+  .rich-content.video > img,
+  .rich-content.video .cta-area img {
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .rich-content.video .media .video-container { 
-    max-width: 1200px; 
+  .rich-content.video .media .video-container,
+  .rich-content.video .media picture {
+    max-width: 1200px;
     margin: 0 auto;
   }
 
@@ -634,8 +679,9 @@
       timeline-scope: --rc-video-enter;
     }
 
-    .section.parallax-video-garage-door .rich-content.video img,
-    .section.parallax-video-garage-door .rich-content.video .video-container {
+    .section.parallax-video-garage-door .rich-content.video > img,
+    .section.parallax-video-garage-door .rich-content.video .cta-area img,
+    .section.parallax-video-garage-door .rich-content.video .media :is(.video-container, picture) {
       view-timeline-name: --rc-video-enter;
       view-timeline-axis: block;
       animation: rc-video-enter linear both;
