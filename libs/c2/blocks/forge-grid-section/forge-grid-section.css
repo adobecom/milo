@@ -1,0 +1,175 @@
+/* forge-grid-section — distinctive "brand collage" masonry.
+   Every selector is scoped to .forge-grid-section and keys ONLY on the .fgs-*
+   classes init() stamps on the reconstructed DOM (DA strips authored classes).
+   Design-width pixels from Figma are translated to responsive units/ratios. */
+
+.forge-grid-section {
+  --fgs-radius: 16px;
+  --fgs-col-w: 260px;
+  --fgs-gap: clamp(16px, 2.2vw, 40px);
+  position: relative;
+  overflow: hidden;
+  background: var(--color-background-default, #fff);
+  color: var(--color-content-default, #000);
+  padding: var(--s2a-layout-section-top, 124px) clamp(16px, 4vw, 64px) var(--s2a-layout-section-bottom, 80px);
+}
+
+.forge-grid-section .fgs-band {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: clamp(120px, 16vw, 222px);
+  background: var(--color-background-knockout, #000);
+  z-index: 0;
+}
+
+.forge-grid-section .fgs-canvas {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.forge-grid-section .fgs-masonry {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: var(--fgs-gap);
+  flex-wrap: wrap;
+}
+
+.forge-grid-section .fgs-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fgs-gap);
+  flex: 1 1 var(--fgs-col-w);
+  max-width: 320px;
+  min-width: 0;
+}
+
+/* Staggered column offsets reproduce the masonry cadence (desktop only). */
+.forge-grid-section .fgs-col-2,
+.forge-grid-section .fgs-col-4 { margin-top: clamp(60px, 9vw, 176px); }
+.forge-grid-section .fgs-col-3 { margin-top: clamp(96px, 14vw, 280px); }
+
+.forge-grid-section .fgs-card {
+  position: relative;
+  width: 100%;
+  border-radius: var(--fgs-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.forge-grid-section .fgs-mark { display: inline-block; line-height: 1; }
+
+/* --- Decorative photo placeholders (aria-hidden gradients) --- */
+.forge-grid-section .fgs-photo {
+  width: 100%;
+  border-radius: var(--fgs-radius);
+  aspect-ratio: 4 / 5;
+  background-position: center;
+  background-size: cover;
+}
+.forge-grid-section .fgs-couch { background: linear-gradient(150deg, #4a3f34, #7a6a56 70%, #8d7a62); }
+.forge-grid-section .fgs-report { background: linear-gradient(155deg, #d9d1c4, #b4a992 60%, #6f8f8a); aspect-ratio: 1 / 1; }
+.forge-grid-section .fgs-team { background: linear-gradient(150deg, #7d7264, #b6a58e); aspect-ratio: 3 / 4; }
+.forge-grid-section .fgs-orange { background: linear-gradient(150deg, #5e4630, #a97f52 75%, #c39a63); aspect-ratio: 1 / 1; }
+.forge-grid-section .fgs-desk { background: linear-gradient(150deg, #4c3c2e, #8b7458 70%, #b79a6f); aspect-ratio: 3 / 4; }
+.forge-grid-section .fgs-maroon { background: linear-gradient(150deg, #cabfb4, #9a7169 70%, #7c4f4a); aspect-ratio: 1 / 1; }
+.forge-grid-section .fgs-coffee { background: linear-gradient(150deg, #6a5644, #a5835f 75%, #c2a074); aspect-ratio: 3 / 4; }
+
+.forge-grid-section .fgs-bar { display: block; height: 3px; border-radius: 2px; background: #cfcaba; }
+
+/* --- Survey (green) --- */
+.forge-grid-section .fgs-survey {
+  background: #183a26;
+  color: #cdeeae;
+  padding: 22px;
+  min-height: 360px;
+}
+.forge-grid-section .fgs-survey-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.forge-grid-section .fgs-survey .fgs-mark { color: #b6f24d; }
+.forge-grid-section .fgs-eyebrow { font-weight: 700; font-size: 9px; line-height: 12px; letter-spacing: 1px; color: #9fd06f; text-transform: uppercase; text-align: right; }
+.forge-grid-section .fgs-ring {
+  position: relative; width: 130px; height: 130px; margin: 24px auto 0;
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  background:
+    radial-gradient(closest-side, #183a26 76%, transparent 77%),
+    conic-gradient(#b6f24d 0 46%, #ffffff26 46% 100%);
+}
+.forge-grid-section .fgs-pct { font-weight: 900; font-size: 40px; line-height: 1; color: #eafbcf; letter-spacing: -1px; }
+.forge-grid-section .fgs-cap { margin: auto 0 0; font-size: 13px; line-height: 17px; color: #bfe39a; }
+
+/* --- Pipeline (yellow) --- */
+.forge-grid-section .fgs-pipeline { background: #ebfb00; color: #0a0a0a; padding: 20px; min-height: 360px; }
+.forge-grid-section .fgs-pipe-title { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 22px; line-height: 24px; margin: 14px 0 0; }
+.forge-grid-section .fgs-pipe-big { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: clamp(64px, 7vw, 96px); line-height: .92; letter-spacing: -3px; display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; }
+.forge-grid-section .fgs-arrow { font-size: .5em; line-height: 1.2; }
+.forge-grid-section .fgs-pipe-sub { font-family: "Source Serif Pro", Georgia, serif; font-size: 19px; margin: auto 0 0; }
+
+/* --- Sign (grey) --- */
+.forge-grid-section .fgs-sign { background: #e5e5e5; min-height: 300px; justify-content: center; padding: 34px 30px; }
+.forge-grid-section .fgs-sign-flag { position: absolute; left: 30px; top: 30px; width: 34px; height: 70px; background: var(--color-brand-adobe-red, #eb1000); clip-path: polygon(0 0, 100% 0, 100% 74%, 50% 100%, 0 74%); display: flex; align-items: center; justify-content: center; }
+.forge-grid-section .fgs-sign-flag span { color: #fff; font-weight: 700; font-size: 16px; transform: rotate(-90deg); }
+.forge-grid-section .fgs-sign-scribble { position: absolute; left: 76px; right: 30px; top: 40px; height: 60px; border-bottom: 3.4px solid #1f3aef; border-radius: 0 0 60% 40%; transform: rotate(-4deg); }
+.forge-grid-section .fgs-sign-line { display: block; height: 2px; background: #000; margin-top: 96px; }
+.forge-grid-section .fgs-sign-label { font-weight: 700; font-size: 16px; line-height: 20px; color: #000; margin-top: 8px; }
+
+/* --- Invoice (grey) --- */
+.forge-grid-section .fgs-invoice { background: #c5c9cd; min-height: 360px; align-items: center; justify-content: center; padding: 26px; }
+.forge-grid-section .fgs-inv-tab { position: absolute; left: 26px; top: 24px; background: #1c2f9c; color: #fff; font-weight: 700; font-size: 12px; letter-spacing: .5px; padding: 12px 14px 40px; border-radius: 3px; }
+.forge-grid-section .fgs-inv-paper { position: relative; width: 82%; margin-top: 26px; background: #f5f1e3; border-radius: 3px; box-shadow: 0 8px 22px rgba(0, 0, 0, .18); padding: 16px; display: flex; flex-direction: column; gap: 8px; min-height: 240px; }
+.forge-grid-section .fgs-inv-co { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 12px; color: #1a1a1a; margin: 0; }
+.forge-grid-section .fgs-inv-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.forge-grid-section .fgs-inv-total { margin-top: auto; align-self: flex-end; font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 15px; color: #1a1a1a; }
+.forge-grid-section .fgs-inv-foot { font-weight: 700; font-size: 9px; letter-spacing: 2px; color: #8a8577; text-align: center; }
+
+/* --- Benefits (red) --- */
+.forge-grid-section .fgs-benefits { background: var(--color-brand-adobe-red, #eb1000); min-height: 300px; }
+.forge-grid-section .fgs-ben-body { padding: 20px 20px 0; flex: 1; }
+.forge-grid-section .fgs-ben-title { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 19px; line-height: 20px; color: #2b0700; margin: 0; }
+.forge-grid-section .fgs-ben-team { display: inline-block; margin-top: 3px; font-weight: 700; font-size: 7px; letter-spacing: 1.5px; color: #7a1c0d; }
+.forge-grid-section .fgs-ben-list { list-style: none; margin: 16px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.forge-grid-section .fgs-ben-list li { font-family: "Source Serif Pro", Georgia, serif; font-size: 14px; line-height: 16px; color: #360800; border-bottom: 1px solid rgba(43, 7, 0, .28); padding-bottom: 6px; }
+.forge-grid-section .fgs-ben-foot { background: #efe9dd; padding: 10px 20px 12px; margin-top: 12px; }
+.forge-grid-section .fgs-ben-eyebrow { display: block; font-weight: 700; font-size: 6px; letter-spacing: 1.5px; color: #8a8577; }
+.forge-grid-section .fgs-ben-ftitle { display: block; font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 15px; color: #1a1a1a; margin-top: 2px; }
+
+/* --- Master Service Agreement (paper) --- */
+.forge-grid-section .fgs-msa { background: #ededed; min-height: 360px; align-items: center; padding: 22px 22px 0; }
+.forge-grid-section .fgs-msa-paper { width: 100%; background: #fff; box-shadow: 0 10px 26px rgba(0, 0, 0, .12); padding: 20px; }
+.forge-grid-section .fgs-msa-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.forge-grid-section .fgs-msa-brand { font-weight: 700; font-size: 6px; line-height: 8px; letter-spacing: .6px; color: #333; text-align: right; }
+.forge-grid-section .fgs-msa-title { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 20px; line-height: 20px; color: #111; margin: 24px 0 0; letter-spacing: -.3px; }
+.forge-grid-section .fgs-msa-prep { display: flex; gap: 16px; margin-top: 16px; }
+.forge-grid-section .fgs-msa-prep > div { flex: 1; }
+.forge-grid-section .fgs-msa-cap { display: block; font-weight: 700; font-size: 6px; letter-spacing: .8px; color: #666; margin-bottom: 4px; }
+.forge-grid-section .fgs-bars { display: flex; flex-direction: column; gap: 4px; }
+.forge-grid-section .fgs-msa-secs { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.forge-grid-section .fgs-msa-h { font-weight: 700; font-size: 8px; letter-spacing: .4px; color: #111; text-transform: uppercase; margin: 4px 0 0; }
+.forge-grid-section .fgs-msa-sub { font-weight: 700; font-size: 7px; color: #333; margin: 0; }
+
+/* --- Certificate / password (grey) --- */
+.forge-grid-section .fgs-cert { background: #d3d6d9; min-height: 300px; align-items: center; justify-content: center; padding: 22px; }
+.forge-grid-section .fgs-cert-faded { position: absolute; inset: 20px; opacity: .5; display: flex; flex-direction: column; gap: 8px; filter: blur(.4px); }
+.forge-grid-section .fgs-cert-h { font-family: "Source Serif Pro", Georgia, serif; font-weight: 600; font-size: 12px; color: #4a4a4a; margin: 0; }
+.forge-grid-section .fgs-cert-faded .fgs-bar { background: #b9bdc1; }
+.forge-grid-section .fgs-cert-input { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 999px; padding: 8px 8px 8px 16px; box-shadow: 0 6px 18px rgba(0, 0, 0, .14); width: 100%; }
+.forge-grid-section .fgs-cert-ph { flex: 1; font-size: 13px; color: #6b6b6b; }
+.forge-grid-section .fgs-cert-go { width: 30px; height: 30px; flex: 0 0 auto; border: none; border-radius: 999px; background: #f0f0f0; color: #111; cursor: pointer; font-size: 14px; line-height: 1; }
+.forge-grid-section .fgs-generic { background: #f3f3f3; padding: 20px; gap: 8px; color: inherit; }
+
+/* Collapse the column stagger and reflow as viewport narrows. */
+@media (max-width: 1200px) {
+  .forge-grid-section .fgs-col-2,
+  .forge-grid-section .fgs-col-3,
+  .forge-grid-section .fgs-col-4 { margin-top: 0; }
+  .forge-grid-section .fgs-col { flex-basis: 30%; }
+}
+@media (max-width: 767px) {
+  .forge-grid-section .fgs-col { flex-basis: 45%; max-width: none; }
+}
