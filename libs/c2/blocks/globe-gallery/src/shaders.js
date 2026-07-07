@@ -83,10 +83,17 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
+  'uniform float uDissolve;', // near-camera particle dissolve (0 = solid, 1 = fully dispersed)
   'varying vec2 vUv;',
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
   '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
+  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords.
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
   '}',
   'void main() {',
   // When the camera is inside the globe, the far-hemisphere cards are seen from
@@ -122,6 +129,32 @@ export const CARD_FRAG = [
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
+  // ── Near-camera particle dissolve + chromatic burn rim (uDissolve 0→1) ──
+  // Same edge-first chromatic grain as style 1, plus a glowing R/B-split rim riding the
+  // dissolve front: pixels whose per-cell threshold sits at localDis (the burning edge)
+  // emit an ember whose hue crossfades cyan↔red per cell, so the card looks like burning
+  // film — the border ignites first (edgeProx) and the fire eats inward.
+  '  if (uDissolve > 0.0) {',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
+  '    vec2 cell = floor(gl_FragCoord.xy * 0.5);',
+  '    float nR = hash21(cell + vec2(0.00,  0.00));',
+  '    float nG = hash21(cell + vec2(2.10,  1.30));',
+  '    float nB = hash21(cell + vec2(1.70, -0.50));',
+  '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.6, 0.0, 1.0);',
+  '    float pedge = 0.08;',
+  '    float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '    float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
+  '    r *= dR; g *= dG; b *= dB;',
+  '    a *= (dR + dG + dB) * 0.3333;',
+  // Rim glow: peaks where nG sits right at the dissolve front, gated so nothing glows
+  // before the dissolve begins. Ember added in linear space so the sRGB encode tone-maps it.
+  '    float heat = clamp(1.0 - abs(nG - localDis) / (pedge * 3.0), 0.0, 1.0);',
+  '    heat *= smoothstep(0.0, 0.06, uDissolve);',
+  '    vec3 ember = mix(vec3(0.15, 0.75, 1.0), vec3(1.0, 0.25, 0.08), nB);',
+  '    r += ember.r * heat; g += ember.g * heat; b += ember.b * heat;',
+  '    a = max(a, heat * 0.7);',
+  '  }',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
   '}',
