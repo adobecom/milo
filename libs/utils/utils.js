@@ -136,6 +136,7 @@ const C2_BLOCKS = [
   'quote',
   'region-nav',
   'rich-content',
+  'roller-carousel',
   'router-marquee',
   'section-metadata',
   'side-by-side',
