@@ -33,6 +33,7 @@ export function createCardMaterial({
       uHoverPos: { value: new THREE.Vector2(0.5, 0.5) },
       uAspect: { value: aspect },
       uRadius: { value: 22.0 / 631.0 },
+      uDissolve: { value: 0 }, // near-camera proximity dissolve (0 = solid, 1 = fully dispersed)
     },
     vertexShader: CARD_VERT,
     fragmentShader: CARD_FRAG,

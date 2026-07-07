@@ -1164,7 +1164,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       mesh.quaternion.copy(card.sphereQuat);
     }
     mesh.renderOrder = 0;
+    // opacity still tracks proxFade so interaction.js's pick-cull (opacity threshold) keeps
+    // dissolving cards non-interactable; uDissolve drives the shader's particle/melt effect.
     mesh.material.opacity = proxFade;
+    mesh.material.uniforms.uDissolve.value = 1 - proxFade;
     // Hover composes additively on top of transition CA (which is 0 in steady sphere state).
     // uHoverPos anchors the warp at the cursor's UV position on this card when hovered;
     // when not hovered, the sphere-drag warp uses each card's own center (0.5, 0.5).
@@ -1403,6 +1406,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // so a card lerping through fold doesn't get scale/warp applied mid-motion.
     if (sphereFormT < SPHERE_INTERACTIVE_T) card.hoverTarget = 0;
     card.hoverT += (card.hoverTarget - card.hoverT) * HOVER_RATE;
+
+    // Near-camera dissolve resets to 0 every frame; placeSphereCard raises it for cards
+    // close to the lens. Reset here (not in each branch) so a card leaving the sphere
+    // phase can't carry a stale dissolve value into the grid/fold/arc branches.
+    mesh.material.uniforms.uDissolve.value = 0;
 
     // Capture position BEFORE this frame's section block updates it — delta drives motion CA.
     const prevMeshX = mesh.position.x;
