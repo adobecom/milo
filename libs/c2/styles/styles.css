@@ -1015,6 +1015,12 @@ p {
 }
 
 .dark {
+  a.standalone-link {
+    &::after {
+      filter: invert(1);
+    }
+  }
+
   .con-button {
     &.outline {
       background-color: var(--s2a-color-transparent-white-00);
