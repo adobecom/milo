@@ -83,10 +83,17 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
+  'uniform float uDissolve;', // near-camera dissolve (0 = solid, 1 = expanded + smeared + dispersed)
   'varying vec2 vUv;',
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
   '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
+  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords.
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
   '}',
   'void main() {',
   // When the camera is inside the globe, the far-hemisphere cards are seen from
@@ -101,7 +108,15 @@ export const CARD_FRAG = [
   '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
+  // ── Near-camera dissolve, combined melt + particle (uDissolve 0→1) ──
+  // First the style-3 melt: content expands outward (sample from a UV contracted toward
+  // center) so the card stretches as it rushes past the lens. mdir is the outward radial.
+  '  vec2 mdir = fUv - 0.5;',
+  '  vec2 meltUv = warpedUv;',
+  '  if (uDissolve > 0.0) {',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 0.9) + 0.5;',
+  '  }',
+  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
   // Rounded-corner alpha: SDF of the card outline in raw geometry UV (the rect is
   // symmetric, so the back-face uv.x flip doesn't affect it). pos maps UV to a space
   // uAspect units wide × 1 tall, matching world proportions, so the corner radius is
@@ -118,10 +133,29 @@ export const CARD_FRAG = [
   // R: trails behind — displaced opposite to motion + radial spread outward
   // G: current position, no displacement
   // B: ghost slightly ahead — displaced in motion direction + radial spread inward
-  '  vec2 radial = (fUv - 0.5) * uCA;',
+  // Radial chromatic smear scales with dissolve × distance-from-center, so outer pixels
+  // streak farthest and the R/B split rides that outward vector for a chromatic tail.
+  '  vec2 meltRad = mdir * uDissolve * 0.22;',
+  '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
+  // Then the style-1 particle grain, eaten edge-first (edgeProx from the SDF distance),
+  // so the stretched/smeared card simultaneously breaks into a chromatic 2px-cell grain.
+  '  if (uDissolve > 0.0) {',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
+  '    vec2 cell = floor(gl_FragCoord.xy * 0.5);',
+  '    float nR = hash21(cell + vec2(0.00,  0.00));',
+  '    float nG = hash21(cell + vec2(2.10,  1.30));',
+  '    float nB = hash21(cell + vec2(1.70, -0.50));',
+  '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.4, 0.0, 1.0);',
+  '    float pedge = 0.10;',
+  '    float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '    float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
+  '    r *= dR; g *= dG; b *= dB;',
+  '    a *= (dR + dG + dB) * 0.3333;',
+  '  }',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
   '}',
