@@ -182,6 +182,14 @@ function buildManifestCard(manifest, { mmm = false } = {}) {
   const card = createTag('div', { class: 'mep-card mep-manifest-card' });
   markExpanded(card, manifest.editUrl);
   card.append(header, createTag('div', { class: 'mep-card-body' }, rows), select);
+
+  const isDisabled = true; // placeholder
+  const label = 'Disabled Placeholder.';
+  if (isDisabled) {
+    card.classList.add('manifest-disabled');
+    card.prepend(createTag('div', { class: 'mep-manifest-error' }, [svgIcon('icon-alert'), createTag('p', {}, label)]));
+  }
+
   return card;
 }
 
