@@ -412,7 +412,6 @@
   > img,
   .cta-area img {
     border-radius: var(--s2a-border-radius-24);
-    border: 9px solid var(--s2a-color-transparent-white-04);
     max-width: 214px;
   }
 
@@ -433,9 +432,6 @@
       margin-inline: auto;
       aspect-ratio: 9 / 16;
       border-radius: var(--s2a-border-radius-24);
-      border: 9px solid var(--s2a-color-transparent-white-04);
-      background: var(--s2a-color-transparent-white-04);
-      backdrop-filter: blur(var(--s2a-blur-md));
       overflow: hidden;
       transform-origin: center bottom;
       width: 100%;
@@ -498,6 +494,12 @@
 
   .action-area.dark {
     background-color: unset;
+  }
+
+  &.glass-border .media :is(.video-container, picture) {
+    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+    background: var(--s2a-color-transparent-white-04);
+    backdrop-filter: blur(var(--s2a-blur-md));
   }
 }
 
