@@ -993,21 +993,29 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo, imsCountry = null) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+  return countryParam || cookieCountry || imsCountry || akamaiParam || normCountryCode(countryFromGeo);
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
+  let imsCountry = null;
+  if (window.adobeIMS?.isSignedInUser()) {
+    try {
+      const profile = await window.adobeIMS.getProfile();
+      imsCountry = normCountryCode(profile?.countryCode);
+    } catch { /* ignore */ }
+  }
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
+    imsCountry,
   );
   if (!detectedMarket) {
     try {
