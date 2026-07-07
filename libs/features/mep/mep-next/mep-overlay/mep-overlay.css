@@ -53,7 +53,7 @@
   border-radius: 0 100% 100% 0;
   color: var(--mep-white-100);
   background: var(--mep-primary-100);
-  box-shadow: var(--mep-elevation-3);
+  box-shadow: var(--mep-elevation-4);
   opacity: 1;
   transform: translateX(0%);
   transition: transform 0.1s ease, opacity 0.1s ease;
