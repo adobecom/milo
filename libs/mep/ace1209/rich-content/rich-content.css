@@ -404,6 +404,11 @@
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
+  --grid-margin-width: 5px;
+
+  @media (width >= 768px) {
+    --grid-margin-width: var(--grid-margin-width-base);
+  }
 
   .action-area {
     margin-top: 0;
@@ -449,9 +454,8 @@
       display: block;
       position: relative;
       box-sizing: border-box;
-      max-width: 214px;
       margin-inline: auto;
-      border-radius: var(--s2a-border-radius-24);
+      border-radius: var(--s2a-border-radius-16);
       overflow: hidden;
       transform-origin: center bottom;
       width: 100%;
