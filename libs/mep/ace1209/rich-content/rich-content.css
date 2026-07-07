@@ -173,6 +173,31 @@
       }
     }
   }
+
+  &.light-asset {
+    .jump-link-anchor {
+      .jump-link-badge {
+        background: var(--s2a-color-transparent-black-64);
+        backdrop-filter: blur(4px);
+      }
+
+      &:hover .jump-link-badge {
+        background: var(--s2a-color-transparent-black-80);
+      }
+
+      &:focus-visible .jump-link-badge {
+        background: var(--s2a-color-transparent-black-64);
+      }
+
+      &:active .jump-link-badge {
+        background: var(--s2a-color-gray-1000);
+
+        &::after {
+          background-color: var(--s2a-color-content-knockout);
+        }
+      }
+    }
+  }
 }
 
 .section {
