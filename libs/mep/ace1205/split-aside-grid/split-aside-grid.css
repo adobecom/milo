@@ -38,18 +38,18 @@
     position: absolute;
     width: 245px;
     height: 465px;
-    border-radius: 28px; 
+    border-radius: 28px;
     border: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-04);
     padding: var(--s2a-spacing-xs);
     background-color: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(var(--s2a-blur-sm));
     overflow: hidden;
     box-sizing: border-box;
-    transform: translateX(calc(var(--split-aside-grid-stack-step) * var(--split-aside-grid-stack-offset) * var(--slides-reverse))) scaleY(var(--slide-scale));
-    transition:
+    transform: var(--split-aside-grid-transform, translateX(calc(var(--split-aside-grid-stack-step) * var(--split-aside-grid-stack-offset) * var(--slides-reverse))) scaleY(var(--slide-scale)));
+    opacity: var(--split-aside-grid-opacity, 1);
+    transition: var(--split-aside-grid-transition,
       transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 0.3s ease-out,
-      background-color 0.3s ease-out;
+      background-color 0.45s ease-out);
     z-index: calc(10 - var(--split-aside-grid-stack-slot));
     will-change: transform;
     box-shadow: 0 86.137px 68.909px 0 rgba(0, 0, 0, 0.07), 0 35.986px 28.789px 0 rgba(0, 0, 0, 0.05), 0 19.24px 15.392px 0 rgba(0, 0, 0, 0.04), 0 10.786px 8.629px 0 rgba(0, 0, 0, 0.04), 0 5.728px 4.583px 0 rgba(0, 0, 0, 0.03), 0 2.384px 1.907px 0 rgba(0, 0, 0, 0.02);
@@ -88,7 +88,7 @@
 
     &:not([data-slot="0"], .show-image) :is(video, img) {
       opacity: 0;
-      transition: opacity 0.3s ease-out;
+      transition: opacity 0.5s ease-out;
     }
   }
 }
@@ -100,7 +100,6 @@
   margin-bottom: var(--s2a-spacing-sm);
   gap: var(--s2a-spacing-20);
   z-index: 1;
-
 
   button {
     width: 32px;
@@ -387,15 +386,13 @@
     }
   }
 
-  .split-aside-grid-active .split-aside-grid-toggle {
-    .grid-item-toggle-icon {
-      background-color: var(--s2a-color-gray-25);
-      border-color: transparent;
-      color: var(--s2a-color-gray-1000);
+  .split-aside-grid-active .split-aside-grid-toggle .grid-item-toggle-icon {
+    background-color: var(--s2a-color-gray-25);
+    border-color: transparent;
+    color: var(--s2a-color-gray-1000);
 
-      svg {
-        transform: rotate(90deg);
-      }
+    svg {
+      transform: rotate(90deg);
     }
   }
 }
@@ -432,7 +429,7 @@
     .split-aside-grid-stack {
       --btn-spacing: var(--s2a-spacing-lg);
       --border-padding: calc(var(--s2a-border-width-1) + var(--s2a-spacing-xs));
-      --btn-position: calc(var(--grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
+      --btn-position: calc(var(--split-aside-grid-stack-cutoff) - var(--border-padding) + var(--btn-spacing));
       button.play-pause-button {
         right: unset;
         inset-inline-end: var(--btn-position);
