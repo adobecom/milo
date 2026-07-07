@@ -83,6 +83,7 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
+  'uniform float uDissolve;', // near-camera radial melt (0 = solid, 1 = fully streaked away)
   'varying vec2 vUv;',
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
@@ -101,7 +102,17 @@ export const CARD_FRAG = [
   '  vec2 d  = fUv - uHoverPos;',
   '  float r2 = dot(d, d);',
   '  vec2 warpedUv = d / (1.0 + uWarp * r2 * 4.0) + uHoverPos;',
-  '  vec2 baseUv = warpedUv * uRepeat + uOffset;',
+  // ── Near-camera melt (uDissolve 0→1) ──
+  // Content expands outward (sample from a UV contracted toward center) so the card
+  // stretches as it rushes past the lens, then a radial chromatic smear elongates the
+  // outer pixels into light streaks. mnorm is the outward radial direction from center.
+  '  vec2 mdir = fUv - 0.5;',
+  '  float mlen = length(mdir) + 1e-4;',
+  '  vec2 meltUv = warpedUv;',
+  '  if (uDissolve > 0.0) {',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.1) + 0.5;',
+  '  }',
+  '  vec2 baseUv = meltUv * uRepeat + uOffset;',
   // Rounded-corner alpha: SDF of the card outline in raw geometry UV (the rect is
   // symmetric, so the back-face uv.x flip doesn't affect it). pos maps UV to a space
   // uAspect units wide × 1 tall, matching world proportions, so the corner radius is
@@ -118,11 +129,16 @@ export const CARD_FRAG = [
   // R: trails behind — displaced opposite to motion + radial spread outward
   // G: current position, no displacement
   // B: ghost slightly ahead — displaced in motion direction + radial spread inward
-  '  vec2 radial = (fUv - 0.5) * uCA;',
+  // Radial melt smear scales with dissolve AND distance from center (mdir), so outer
+  // pixels streak farthest — the R/B split rides that same outward vector for a chromatic tail.
+  '  vec2 meltRad = mdir * uDissolve * 0.28;',
+  '  vec2 radial = (fUv - 0.5) * uCA + meltRad;',
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
+  // Fade out as it melts; feathered so it thins into the streaks rather than hard-cutting.
+  '  a *= 1.0 - smoothstep(0.0, 0.95, uDissolve);',
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
   '}',
 ].join('\n');
