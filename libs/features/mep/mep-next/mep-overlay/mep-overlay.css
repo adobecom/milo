@@ -31,6 +31,7 @@
   --mep-elevation-drawer: 0 6px 10px 0 rgba(0, 0, 0, 0.15), 0 2px 3px 0 rgba(0, 0, 0, 0.30);
 
   --mep-emphasis: #00ff73;
+  --mep-error: #c52424;
 
   --caas-block-outline: #007bff;
   --caas-market-outline: #28a745;
@@ -240,6 +241,33 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border-radius: 8px;
   background: var(--mep-dark-44);
   border: 1px solid var(--mep-white-12);
+}
+
+.mep-drawer .mep-card.manifest-disabled {
+  border-color: var(--mep-error);
+}
+
+.mep-drawer .mep-card .mep-manifest-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: -16px -16px 8px;
+  padding: 4px 16px;
+  border-radius: 8px 8px 0 0;
+  background: var(--mep-error);
+  color: var(--mep-white-100);
+}
+
+.mep-drawer .mep-card .mep-manifest-error p {
+  margin: 0;
+  font: var(--mep-body-font);
+  letter-spacing: var(--mep-body-letter-spacing);
+}
+
+.mep-drawer .mep-card .mep-manifest-error svg {
+  flex-shrink: 0;
+  fill: var(--mep-white-100);
 }
 
 .mep-drawer .mep-card.center {
