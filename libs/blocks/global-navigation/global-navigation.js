@@ -74,7 +74,6 @@ const {
   getActiveLink,
   getExperienceName,
   isActiveLink,
-  resetActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -111,7 +110,10 @@ const {
   setupKeyboardNav,
   KEYBOARD_DELAY,
   isSmallScreen,
+  updateGnavActiveLink,
 } = utilities;
+
+export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -1808,6 +1810,7 @@ class Gnav {
               const url = new URL(linkElem.href);
               linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
               if (isActiveLink(linkElem)) {
+                linkElem.dataset.activeLinkHref = linkElem.href;
                 linkElem.removeAttribute('href');
               }
               const linkHash = url.hash.slice(2);
@@ -1818,6 +1821,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.activeLinkHref = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');
@@ -1904,25 +1908,6 @@ class Gnav {
     return this.elements.search;
   };
 }
-
-export const updateGnavActiveLink = () => {
-  resetActiveLink();
-
-  const nav = document.querySelector(selectors.globalNav)?.querySelector('.feds-nav');
-  if (!nav) return;
-
-  nav.querySelectorAll(selectors.activeNavItem).forEach((el) => {
-    el.classList.remove(selectors.activeNavItem.slice(1));
-    el.classList.remove(selectors.deferredActiveNavItem.slice(1));
-    el.style.width = '';
-  });
-
-  nav.querySelectorAll(selectors.navItem).forEach((navItem) => {
-    if (getActiveLink(navItem) instanceof HTMLElement) {
-      navItem.classList.add(selectors.activeNavItem.slice(1));
-    }
-  });
-};
 
 export default async function init(block) {
   const { mep, miniGnav = false, showPlansCta } = getConfig();

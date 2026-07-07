@@ -390,37 +390,84 @@ export const [setAsyncDropdownCount, getAsyncDropdownCount] = (() => {
   ];
 })();
 
-export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink, resetActiveLink] = (() => {
+export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() => {
   let activeLinkFound;
-
-  // Read window.location at call time
-  const getUrl = () => `${window.location.origin}${window.location.pathname}`;
-
-  const checkIsActiveLink = (el) => {
-    const url = getUrl();
-    return el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`);
-  };
+  const { origin, pathname } = window.location;
+  const url = `${origin}${pathname}`;
 
   return [
     () => activeLinkFound,
     (val) => { activeLinkFound = !!val; },
-    checkIsActiveLink,
+    (el) => (el.href === url || el.href.startsWith(`${url}?`) || el.href.startsWith(`${url}#`)),
     (area) => {
       const isCustomLinks = area.closest('.link-group')?.classList.contains('mobile-only');
       const disableAED = getDisableAEDState() || isCustomLinks;
       if (disableAED || hasActiveLink() || !(area instanceof HTMLElement)) return null;
       const activeLink = [
         ...area.querySelectorAll('a:not([data-modal-hash])'),
-      ].find(checkIsActiveLink);
+      ].find(isActiveLink);
 
       if (!activeLink) return null;
 
+      activeLink.dataset.activeLinkHref = activeLink.href;
       setActiveLink(true);
       return activeLink;
     },
-    () => { activeLinkFound = false; },
   ];
 })();
+
+const ACTIVE_LINK_ATTRS = ['role', 'aria-disabled', 'aria-current', 'tabindex'];
+
+export function updateGnavActiveLink() {
+  const activeNavItemClass = selectors.activeNavItem.slice(1);
+  const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
+
+  document.querySelectorAll('a[data-active-link-href]').forEach((link) => {
+    const savedHref = link.getAttribute('data-active-link-href');
+    if (savedHref) link.setAttribute('href', savedHref);
+    link.removeAttribute('data-active-link-href');
+    ACTIVE_LINK_ATTRS.forEach((attr) => link.removeAttribute(attr));
+  });
+  document
+    .querySelectorAll(`${selectors.activeNavItem}, ${selectors.navItem}[data-active-link-href]`)
+    .forEach((navItem) => {
+      navItem.removeAttribute('data-active-link-href');
+      navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
+      navItem.style.removeProperty('width');
+    });
+
+  setActiveLink(false);
+
+  const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
+  if (!nav) return;
+
+  const { origin, pathname } = window.location;
+  const currentUrl = `${origin}${pathname}`;
+  const matchesUrl = (el) => el.href === currentUrl
+    || el.href.startsWith(`${currentUrl}?`)
+    || el.href.startsWith(`${currentUrl}#`);
+
+  const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])[href]')]
+    .find(matchesUrl);
+
+  if (!newActiveLink) return;
+
+  const navItem = newActiveLink.closest(selectors.navItem);
+  if (!navItem) return;
+
+  navItem.classList.add(activeNavItemClass);
+  newActiveLink.dataset.activeLinkHref = newActiveLink.href;
+
+  if (!newActiveLink.nextElementSibling?.classList.contains('feds-popup')) {
+    newActiveLink.removeAttribute('href');
+    newActiveLink.setAttribute('role', 'link');
+    newActiveLink.setAttribute('aria-disabled', 'true');
+    newActiveLink.setAttribute('aria-current', 'page');
+    newActiveLink.setAttribute('tabindex', '0');
+  }
+
+  setActiveLink(true);
+}
 
 export const setAriaAtributes = (dropdownTrigger) => {
   const popup = dropdownTrigger.nextElementSibling;
