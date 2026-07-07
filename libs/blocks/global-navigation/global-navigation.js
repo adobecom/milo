@@ -660,6 +660,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
