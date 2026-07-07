@@ -129,17 +129,15 @@ export const CARD_FRAG = [
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
-  // ── Near-camera particle dissolve + chromatic burn rim (uDissolve 0→1) ──
-  // Same edge-first chromatic grain as style 1, plus a glowing R/B-split rim riding the
-  // dissolve front: pixels whose per-cell threshold sits at localDis (the burning edge)
-  // emit an ember whose hue crossfades cyan↔red per cell, so the card looks like burning
-  // film — the border ignites first (edgeProx) and the fire eats inward.
+  // ── Near-camera particle dissolve + warm-white burn rim (uDissolve 0→1) ──
+  // Style-1 edge-first grain (border frays first via edgeProx) plus a clean monochrome
+  // glow riding the dissolve front — no per-cell colour tint, so the card burns away with
+  // a bright edge instead of the coloured pink/brown mosaic. The 3 channels dissolve on
+  // near-shared seeds so the grain itself barely fringes.
   '  if (uDissolve > 0.0) {',
   '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
   // Chunkier 4px cells (was 2px) — fewer, larger particles read as calmer, less speckle.
   '    vec2 cell = floor(gl_FragCoord.xy * 0.25);',
-  // Tighter seed spread → the 3 channels dissolve near-together, so the RGB colour
-  // fringing on the grain itself is subtle (the chromatic character comes from the rim).
   '    float n0 = hash21(cell);',
   '    float nR = n0;',
   '    float nG = hash21(cell + vec2(0.60, 0.30));',
@@ -152,14 +150,14 @@ export const CARD_FRAG = [
   '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
   '    r *= dR; g *= dG; b *= dB;',
   '    a *= (dR + dG + dB) * 0.3333;',
-  // Rim glow: narrower band + lower amplitude than before so only the thin burning front
-  // glows (dimmer, less busy). Ember desaturated toward warm/cool tints, added in linear
-  // space so the sRGB encode tone-maps it.
-  '    float heat = clamp(1.0 - abs(n0 - localDis) / (pedge * 1.4), 0.0, 1.0);',
+  // Rim glow: a single warm-white tint (not a per-cell hue crossfade) rides the thin
+  // burning front, so only the dissolving edge brightens. Added in linear space so the
+  // sRGB encode tone-maps it; balanced RGB keeps it a clean glow rather than a muddy tint.
+  '    float heat = clamp(1.0 - abs(n0 - localDis) / (pedge * 1.2), 0.0, 1.0);',
   '    heat *= smoothstep(0.0, 0.06, uDissolve);',
-  '    vec3 ember = mix(vec3(0.20, 0.55, 0.75), vec3(0.90, 0.35, 0.15), nB);',
-  '    r += ember.r * heat * 0.6; g += ember.g * heat * 0.6; b += ember.b * heat * 0.6;',
-  '    a = max(a, heat * 0.45);',
+  '    vec3 ember = vec3(1.00, 0.94, 0.82) * heat * 0.55;',
+  '    r += ember.r; g += ember.g; b += ember.b;',
+  '    a = max(a, heat * 0.4);',
   '  }',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
