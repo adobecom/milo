@@ -54,10 +54,10 @@
 
 /* ─── Roller track wrapper + track ─────────────────────────────────────────── */
 
-/* Mobile: starts at 80px (padding) + 140px (from Figma carousel y offset) = 220px */
+/* Mobile: category sits at 80px+140px=220px; track starts after category (220+33=253px) */
 .roller-track-wrapper {
   position: absolute;
-  inset-block-start: calc(var(--s2a-spacing-80) + 140px);
+  inset-block-start: calc(var(--s2a-spacing-80) + 140px + 33px);
   inset-inline-start: var(--s2a-spacing-24);
   width: calc(100% - var(--s2a-spacing-24) * 2);
   z-index: 1;
@@ -70,11 +70,16 @@
 /* ─── Category header ──────────────────────────────────────────────────────── */
 
 .roller-category {
+  position: absolute;
+  inset-block-start: calc(var(--s2a-spacing-80) + 140px);
+  inset-inline-start: var(--s2a-spacing-24);
+  width: calc(100% - var(--s2a-spacing-24) * 2);
   height: 33px; /* S */
   display: flex;
   flex-direction: column;
   justify-content: center;
   overflow: visible;
+  z-index: 2;
 }
 
 .roller-category-label {
@@ -181,14 +186,15 @@
     line-height: var(--s2a-font-line-height-2xl);
   }
 
-  /* M: track starts at 80+156=236px from stage top */
-  .roller-track-wrapper {
+  .roller-category {
     inset-block-start: calc(var(--s2a-spacing-80) + 156px);
-    width: 60%;
+    height: 35px; /* M */
   }
 
-  .roller-category {
-    height: 35px; /* M */
+  /* M: track starts at 80+156+35=271px from stage top */
+  .roller-track-wrapper {
+    inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px);
+    width: 60%;
   }
 
   .roller-item {
@@ -249,15 +255,18 @@
     letter-spacing: var(--s2a-font-letter-spacing-2xl);
   }
 
-  /* L: track starts at 160+180=340px from stage top, left edge at 40px */
-  .roller-track-wrapper {
+  .roller-category {
     inset-block-start: calc(var(--s2a-spacing-160) + 180px);
     inset-inline-start: calc(var(--s2a-spacing-24) + 16px);
     width: calc(50% - var(--s2a-spacing-24));
+    height: 35px; /* L */
   }
 
-  .roller-category {
-    height: 35px; /* L */
+  /* L: track starts at 160+180+35=375px from stage top, left edge at 40px */
+  .roller-track-wrapper {
+    inset-block-start: calc(var(--s2a-spacing-160) + 180px + 35px);
+    inset-inline-start: calc(var(--s2a-spacing-24) + 16px);
+    width: calc(50% - var(--s2a-spacing-24));
   }
 
   .roller-item {

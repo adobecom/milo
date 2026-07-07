@@ -2,7 +2,6 @@ import { createTag } from '../../../utils/utils.js';
 
 // Row/item heights from Figma (px)
 const ITEM_H = { S: 32, M: 56, L: 92 };
-const CAT_H = { S: 33, M: 35, L: 35 };
 
 function getBreakpoint() {
   const w = window.innerWidth;
@@ -65,12 +64,6 @@ function buildDOM(el, eyebrow, heading, items) {
   }
   stage.append(headlineEl);
 
-  // Media wrapper — right side, image snaps per active product
-  const mediaWrapper = createTag('div', { class: 'roller-media-wrapper', 'aria-hidden': 'true' });
-  const mediaInner = createTag('div', { class: 'roller-media' });
-  mediaWrapper.append(mediaInner);
-  stage.append(mediaWrapper);
-
   // Single fixed category label — text updated by JS, never scrolls
   const categoryLabelEl = createTag('span', { class: 'roller-category-label' });
   const categoryEl = createTag('div', { class: 'roller-category', 'aria-live': 'polite', 'aria-atomic': 'true' });
@@ -79,6 +72,12 @@ function buildDOM(el, eyebrow, heading, items) {
     createTag('hr', { class: 'roller-divider', 'aria-hidden': 'true' }),
   );
   stage.append(categoryEl);
+
+  // Media wrapper — right side, image snaps per active product
+  const mediaWrapper = createTag('div', { class: 'roller-media-wrapper', 'aria-hidden': 'true' });
+  const mediaInner = createTag('div', { class: 'roller-media' });
+  mediaWrapper.append(mediaInner);
+  stage.append(mediaWrapper);
 
   // Roller track — product items only, translated by JS
   const trackWrapper = createTag('div', { class: 'roller-track-wrapper', 'aria-label': 'Product list', role: 'list' });
@@ -110,7 +109,9 @@ function buildDOM(el, eyebrow, heading, items) {
   stage.append(trackWrapper);
   el.replaceChildren(stage);
 
-  return { stage, track, mediaInner, productEls, categoryLabelEl, productCategoryMap };
+  return {
+    stage, track, mediaInner, productEls, categoryLabelEl, productCategoryMap,
+  };
 }
 
 function setActiveImage(mediaInner, picture) {
@@ -137,20 +138,21 @@ export default function init(el) {
   const products = items.filter((i) => i.type === 'product');
   if (!products.length) return;
 
-  const { stage, track, mediaInner, productEls } = buildDOM(el, eyebrow, heading, items);
+  const {
+    stage, track, mediaInner, productEls, categoryLabelEl, productCategoryMap,
+  } = buildDOM(el, eyebrow, heading, items);
 
   // --- Estimate block height before measurement (prevents layout jump) ---
   function estimateBlockHeight() {
     const bp = getBreakpoint();
-    let h = 0;
-    items.forEach((item) => { h += item.type === 'product' ? ITEM_H[bp] : CAT_H[bp]; });
-    return h;
+    return products.length * ITEM_H[bp];
   }
   el.style.minHeight = `calc(100lvh + ${estimateBlockHeight()}px)`;
 
-  // Show first image immediately
+  // Show first image and category immediately
   setActiveImage(mediaInner, productEls[0]?.picture);
   updateItemStates(productEls, 0);
+  categoryLabelEl.textContent = productCategoryMap[0] || '';
 
   // --- Scroll state ---
   let initialised = false;
@@ -223,6 +225,7 @@ export default function init(el) {
       lastActiveIdx = activeIdx;
       setActiveImage(mediaInner, productEls[activeIdx].picture);
       updateItemStates(productEls, activeIdx);
+      categoryLabelEl.textContent = productCategoryMap[activeIdx] || '';
     }
   }
 
