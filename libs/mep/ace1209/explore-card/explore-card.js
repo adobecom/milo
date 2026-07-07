@@ -39,11 +39,10 @@ function decorate(block, root, el) {
     prodIcons.forEach((icon) => {
       if (isSvgUrl(icon.src)) icon.src = getFederatedUrl(icon.src);
       const para = icon.closest('p');
-      if (para && para !== iconPara) {
-        const pic = icon.parentElement?.tagName === 'PICTURE' ? icon.parentElement : icon;
-        iconPara?.append(pic);
-        para.remove();
-      }
+      if (!para || para === iconPara) return;
+      const pic = icon.parentElement?.tagName === 'PICTURE' ? icon.parentElement : icon;
+      iconPara?.append(pic);
+      para.remove();
     });
   }
 

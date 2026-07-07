@@ -179,7 +179,7 @@
 
   &.bento .explore-card {
     border-radius: var(--s2a-border-radius-md);
-    border: 2px inset rgb(255 255 255 / 10%);
+    border: var(--s2a-border-width-md) inset var(--s2a-color-transparent-white-12);
     z-index: inherit;
 
     .explore-card-container:hover [class*='body-'] {
