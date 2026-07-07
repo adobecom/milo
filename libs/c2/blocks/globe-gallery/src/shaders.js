@@ -83,10 +83,17 @@ export const CARD_FRAG = [
   'uniform vec2 uMotionDir;', // card motion in UV space × intensity; (0,0) = no smear
   'uniform float uAspect;', // card world-space width/height (set per phase) so corners stay circular
   'uniform float uRadius;', // corner radius as a fraction of card height (22/631)
+  'uniform float uDissolve;', // near-camera particle dissolve (0 = solid, 1 = fully dispersed)
   'varying vec2 vUv;',
   'float rrSDF(vec2 p, vec2 b, float r) {',
   '  vec2 q = abs(p) - b + r;',
   '  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;',
+  '}',
+  // Hash — scale inputs first to avoid sin() precision issues at large pixel coords.
+  'float hash21(vec2 p) {',
+  '  p = fract(p * vec2(0.1031, 0.1030));',
+  '  p += dot(p, p + 33.33);',
+  '  return fract((p.x + p.y) * p.x);',
   '}',
   'void main() {',
   // When the camera is inside the globe, the far-hemisphere cards are seen from
@@ -122,6 +129,24 @@ export const CARD_FRAG = [
   '  float r = texture2D(uMap, baseUv + radial - uMotionDir).r;',
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
+  // ── Near-camera particle dissolve (uDissolve 0→1) ──
+  // Scatter the card into a chromatic 2px-cell grain, eaten from the rounded-rect edge
+  // inward: edgeProx≈1 at the border (dsd→0), ≈0 deep inside (dsd very negative), so the
+  // border frays first. Per-channel hash seeds give an RGB split as pixels wink out.
+  '  if (uDissolve > 0.0) {',
+  '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
+  '    vec2 cell = floor(gl_FragCoord.xy * 0.5);',
+  '    float nR = hash21(cell + vec2(0.00,  0.00));',
+  '    float nG = hash21(cell + vec2(2.10,  1.30));',
+  '    float nB = hash21(cell + vec2(1.70, -0.50));',
+  '    float localDis = clamp(uDissolve + edgeProx * uDissolve * 1.6, 0.0, 1.0);',
+  '    float pedge = 0.08;',
+  '    float dR = smoothstep(localDis - pedge, localDis + pedge, nR);',
+  '    float dG = smoothstep(localDis - pedge, localDis + pedge, nG);',
+  '    float dB = smoothstep(localDis - pedge, localDis + pedge, nB);',
+  '    r *= dR; g *= dG; b *= dB;',
+  '    a *= (dR + dG + dB) * 0.3333;',
+  '  }',
   '  vec3 srgb = pow(max(vec3(r, g, b), 0.0), vec3(1.0 / 2.2));',
   '  gl_FragColor = vec4(srgb, a * uOpacity);',
   '}',
