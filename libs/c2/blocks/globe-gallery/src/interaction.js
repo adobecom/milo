@@ -25,6 +25,7 @@ const DRAG_SENSITIVITY = 0.005; // pointer px → rad/frame drag velocity
 // distinguishing from intentional drag gestures.
 const CLICK_MAX_MOVE = 10; // px
 const CLICK_MAX_TIME = 500; // ms
+const PICK_MIN_OPACITY = 0.1;
 
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
@@ -51,7 +52,9 @@ export default function createInteraction({
     mouseNDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouseNDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouseNDC, camera);
-    const meshes = getCards().map((c) => c.mesh);
+    const meshes = getCards()
+      .map((c) => c.mesh)
+      .filter((m) => m.visible && m.material.opacity >= PICK_MIN_OPACITY);
     return raycaster.intersectObjects(meshes, false);
   }
 
