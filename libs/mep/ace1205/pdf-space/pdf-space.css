@@ -34,7 +34,7 @@
     left: 0;
     z-index: 20;
     width: var(--text-block-width-mobile);
-    text-align: left;
+    text-align: start;
     will-change: transform, opacity;
 
     .heading {
@@ -146,6 +146,12 @@
     position: absolute;
     inset: 10px;
     display: none;
+
+    /* Force LTR so the product UI mockup stays fixed (cards left, panel right)
+       regardless of document direction — row-reverse and the JS translateX
+       reveal both key off inline direction. Product UI layout is not finalized
+       for RTL yet, so it is intentionally not mirrored with the card scene. */
+    direction: ltr;
     flex-direction: row-reverse;
     align-items: flex-end;
     overflow: hidden;
@@ -458,7 +464,7 @@
       }
 
       .text-block {
-        margin-left: auto;
+        margin-inline-start: auto;
       }
     }
   }
