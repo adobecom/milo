@@ -276,9 +276,9 @@
   --s2a-spacing-xs: var(--s2a-spacing-8);
   --s2a-spacing-sm: var(--s2a-spacing-12);
   --s2a-spacing-md: var(--s2a-spacing-16);
+  --s2a-spacing-lg: var(--s2a-spacing-24);
   --s2a-spacing-xl: var(--s2a-spacing-32);
   --s2a-spacing-2xl: var(--s2a-spacing-40);
-  --s2a-spacing-lg: var(--s2a-spacing-24);
   --s2a-spacing-3xl: var(--s2a-spacing-48);
   --s2a-spacing-4xl: var(--s2a-spacing-64);
   --s2a-font-family-heading: var(--s2a-font-family-adobe-clean-display);
@@ -370,12 +370,19 @@
 
   /* tokens.responsive.sm */
   --s2a-viewport-vertical-padding-none: var(--s2a-spacing-none);
+  --s2a-viewport-vertical-padding-5xs: var(--s2a-spacing-xs);
+  --s2a-viewport-vertical-padding-4xs: var(--s2a-spacing-sm);
+  --s2a-viewport-vertical-padding-3xs: var(--s2a-spacing-md);
   --s2a-viewport-vertical-padding-2xs: var(--s2a-spacing-md);
-  --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-lg);
-  --s2a-viewport-vertical-padding-sm: var(--s2a-spacing-xl);
-  --s2a-viewport-vertical-padding-md: var(--s2a-spacing-2xl);
-  --s2a-viewport-vertical-padding-lg: var(--s2a-spacing-4xl);
-  --s2a-viewport-vertical-padding-xl: var(--s2a-layout-sm);
+  --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-md);
+  --s2a-viewport-vertical-padding-sm: var(--s2a-spacing-lg);
+  --s2a-viewport-vertical-padding-md: var(--s2a-spacing-xl);
+  --s2a-viewport-vertical-padding-lg: var(--s2a-spacing-lg);
+  --s2a-viewport-vertical-padding-xl: var(--s2a-spacing-xl);
+  --s2a-viewport-vertical-padding-2xl: var(--s2a-spacing-2xl);
+  --s2a-viewport-vertical-padding-3xl: var(--s2a-spacing-2xl);
+  --s2a-viewport-vertical-padding-4xl: var(--s2a-spacing-4xl);
+  --s2a-viewport-vertical-padding-5xl: var(--s2a-layout-sm);
   --s2a-layout-guide-gap: var(--s2a-spacing-xs);
   --s2a-typography-font-size-super: var(--s2a-font-size-7xl);
   --s2a-typography-font-size-heading-1: var(--s2a-font-size-5xl);
@@ -740,28 +747,63 @@ p {
 }
 
 .spacing-none { padding-block: var(--s2a-viewport-vertical-padding-none); }
+.spacing-5xs  { padding-block: var(--s2a-viewport-vertical-padding-5xs); }
+.spacing-4xs  { padding-block: var(--s2a-viewport-vertical-padding-4xs); }
+.spacing-3xs  { padding-block: var(--s2a-viewport-vertical-padding-3xs); }
 .spacing-2xs  { padding-block: var(--s2a-viewport-vertical-padding-2xs); }
 .spacing-xs   { padding-block: var(--s2a-viewport-vertical-padding-xs); }
 .spacing-sm   { padding-block: var(--s2a-viewport-vertical-padding-sm); }
 .spacing-md   { padding-block: var(--s2a-viewport-vertical-padding-md); }
 .spacing-lg   { padding-block: var(--s2a-viewport-vertical-padding-lg); }
 .spacing-xl   { padding-block: var(--s2a-viewport-vertical-padding-xl); }
+.spacing-2xl  { padding-block: var(--s2a-viewport-vertical-padding-2xl); }
+.spacing-3xl  { padding-block: var(--s2a-viewport-vertical-padding-3xl); }
+.spacing-4xl  { padding-block: var(--s2a-viewport-vertical-padding-4xl); }
+.spacing-5xl  { padding-block: var(--s2a-viewport-vertical-padding-5xl); }
 
 .spacing-none-top { padding-top: var(--s2a-viewport-vertical-padding-none); }
+.spacing-5xs-top  { padding-top: var(--s2a-viewport-vertical-padding-5xs); }
+.spacing-4xs-top  { padding-top: var(--s2a-viewport-vertical-padding-4xs); }
+.spacing-3xs-top  { padding-top: var(--s2a-viewport-vertical-padding-3xs); }
 .spacing-2xs-top  { padding-top: var(--s2a-viewport-vertical-padding-2xs); }
 .spacing-xs-top   { padding-top: var(--s2a-viewport-vertical-padding-xs); }
 .spacing-sm-top   { padding-top: var(--s2a-viewport-vertical-padding-sm); }
 .spacing-md-top   { padding-top: var(--s2a-viewport-vertical-padding-md); }
 .spacing-lg-top   { padding-top: var(--s2a-viewport-vertical-padding-lg); }
 .spacing-xl-top   { padding-top: var(--s2a-viewport-vertical-padding-xl); }
+.spacing-2xl-top  { padding-top: var(--s2a-viewport-vertical-padding-2xl); }
+.spacing-3xl-top  { padding-top: var(--s2a-viewport-vertical-padding-3xl); }
+.spacing-4xl-top  { padding-top: var(--s2a-viewport-vertical-padding-4xl); }
+.spacing-5xl-top  { padding-top: var(--s2a-viewport-vertical-padding-5xl); }
 
 .spacing-none-bottom { padding-bottom: var(--s2a-viewport-vertical-padding-none); }
+.spacing-5xs-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-5xs); }
+.spacing-4xs-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-4xs); }
+.spacing-3xs-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-3xs); }
 .spacing-2xs-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-2xs); }
 .spacing-xs-bottom   { padding-bottom: var(--s2a-viewport-vertical-padding-xs); }
 .spacing-sm-bottom   { padding-bottom: var(--s2a-viewport-vertical-padding-sm); }
 .spacing-md-bottom   { padding-bottom: var(--s2a-viewport-vertical-padding-md); }
 .spacing-lg-bottom   { padding-bottom: var(--s2a-viewport-vertical-padding-lg); }
 .spacing-xl-bottom   { padding-bottom: var(--s2a-viewport-vertical-padding-xl); }
+.spacing-2xl-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-2xl); }
+.spacing-3xl-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-3xl); }
+.spacing-4xl-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-4xl); }
+.spacing-5xl-bottom  { padding-bottom: var(--s2a-viewport-vertical-padding-5xl); }
+
+.spacing-5xs-static  { padding-block: var(--s2a-spacing-xs); }
+.spacing-4xs-static  { padding-block: var(--s2a-spacing-sm); }
+.spacing-3xs-static  { padding-block: var(--s2a-spacing-md); }
+.spacing-2xs-static  { padding-block: var(--s2a-spacing-lg); }
+.spacing-xs-static   { padding-block: var(--s2a-spacing-xl); }
+.spacing-sm-static   { padding-block: var(--s2a-spacing-2xl); }
+.spacing-md-static   { padding-block: var(--s2a-spacing-3xl); }
+.spacing-lg-static   { padding-block: var(--s2a-spacing-4xl); }
+.spacing-xl-static   { padding-block: var(--s2a-layout-sm); }
+.spacing-2xl-static  { padding-block: var(--s2a-layout-md); }
+.spacing-3xl-static  { padding-block: var(--s2a-layout-lg); }
+.spacing-4xl-static  { padding-block: var(--s2a-layout-xl); }
+.spacing-5xl-static  { padding-block: var(--s2a-layout-2xl); }
 
 .container {
   --grid-max-width: var(--grid-max-width-default);
@@ -1496,12 +1538,16 @@ span.hang-opening-quote {
 @media (width >= 1024px) {
   :root {
     /* tokens.responsive.md */
-    --s2a-viewport-vertical-padding-2xs: var(--s2a-spacing-xl);
-    --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-2xl);
-    --s2a-viewport-vertical-padding-sm: var(--s2a-spacing-4xl);
-    --s2a-viewport-vertical-padding-md: var(--s2a-layout-sm);
-    --s2a-viewport-vertical-padding-lg: var(--s2a-layout-lg);
-    --s2a-viewport-vertical-padding-xl: var(--s2a-layout-xl);
+    --s2a-viewport-vertical-padding-2xs: var(--s2a-spacing-lg);
+    --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-lg);
+    --s2a-viewport-vertical-padding-sm: var(--s2a-spacing-xl);
+    --s2a-viewport-vertical-padding-md: var(--s2a-spacing-2xl);
+    --s2a-viewport-vertical-padding-lg: var(--s2a-spacing-2xl);
+    --s2a-viewport-vertical-padding-xl: var(--s2a-spacing-4xl);
+    --s2a-viewport-vertical-padding-2xl: var(--s2a-spacing-4xl);
+    --s2a-viewport-vertical-padding-3xl: var(--s2a-layout-sm);
+    --s2a-viewport-vertical-padding-4xl: var(--s2a-layout-lg);
+    --s2a-viewport-vertical-padding-5xl: var(--s2a-layout-xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-9xl);
     --s2a-typography-font-size-heading-1: var(--s2a-font-size-7xl);
     --s2a-typography-font-size-heading-2: var(--s2a-font-size-6xl);
@@ -1526,11 +1572,15 @@ span.hang-opening-quote {
 @media (width >= 1280px) {
   :root {
     /* tokens.responsive.lg */
-    --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-4xl);
-    --s2a-viewport-vertical-padding-sm: var(--s2a-layout-sm);
-    --s2a-viewport-vertical-padding-md: var(--s2a-layout-lg);
-    --s2a-viewport-vertical-padding-lg: var(--s2a-layout-xl);
-    --s2a-viewport-vertical-padding-xl: var(--s2a-layout-2xl);
+    --s2a-viewport-vertical-padding-xs: var(--s2a-spacing-xl);
+    --s2a-viewport-vertical-padding-sm: var(--s2a-spacing-2xl);
+    --s2a-viewport-vertical-padding-md: var(--s2a-spacing-3xl);
+    --s2a-viewport-vertical-padding-lg: var(--s2a-spacing-4xl);
+    --s2a-viewport-vertical-padding-xl: var(--s2a-layout-sm);
+    --s2a-viewport-vertical-padding-2xl: var(--s2a-layout-md);
+    --s2a-viewport-vertical-padding-3xl: var(--s2a-layout-lg);
+    --s2a-viewport-vertical-padding-4xl: var(--s2a-layout-xl);
+    --s2a-viewport-vertical-padding-5xl: var(--s2a-layout-2xl);
     --s2a-typography-font-size-super: var(--s2a-font-size-11xl);
     --s2a-typography-font-size-heading-1: var(--s2a-font-size-10xl);
     --s2a-typography-font-size-heading-2: var(--s2a-font-size-7xl);
