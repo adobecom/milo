@@ -144,6 +144,8 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-grid-section',
+  'forge-watermark-section',
 ];
 
 const AUTO_BLOCKS = [

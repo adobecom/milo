@@ -1,0 +1,96 @@
+
+
+.forge-watermark-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  min-height: clamp(360px, 58vw, 720px);
+  
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 64px) var(--s2a-layout-section-bottom, 80px);
+  background: var(--s2a-color-background-inverse, #000);
+  overflow: hidden; 
+  isolation: isolate;
+}
+
+
+.forge-watermark-section .forge-watermark-section__watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  width: clamp(280px, 55vw, 792px);
+  aspect-ratio: 792 / 713;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.forge-watermark-section .forge-watermark-section__mark {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.forge-watermark-section .forge-watermark-section__mark-path {
+  fill: none;
+  stroke: var(--border-256, #e1e1ef);
+  stroke-width: 2.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+
+.forge-watermark-section .forge-watermark-section__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--palette-white, #fff);
+}
+
+.forge-watermark-section .forge-watermark-section__content :is(h1, .forge-watermark-section h2, .forge-watermark-section h3, .forge-watermark-section h4, .forge-watermark-section h5, .forge-watermark-section h6, .forge-watermark-section p) {
+  margin: 0;
+  color: inherit;
+}
+
+
+.forge-watermark-section .forge-watermark-section__content a {
+  color: inherit;
+}
+
+.forge-watermark-section .forge-watermark-section__content img,
+.forge-watermark-section .forge-watermark-section__content picture,
+.forge-watermark-section .forge-watermark-section__content svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+
+@media (max-width: 1919px) {
+  .forge-watermark-section {
+    min-height: clamp(320px, 50vw, 640px);
+  }
+}
+
+
+@media (max-width: 767px) {
+  .forge-watermark-section {
+    min-height: 0;
+  }
+  .forge-watermark-section .forge-watermark-section__watermark {
+    display: none;
+  }
+}

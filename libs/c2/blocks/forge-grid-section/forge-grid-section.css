@@ -1,0 +1,188 @@
+/* forge-grid-section — scoped to the classes init() STAMPS on the reconstructed
+   DOM (DA strips the Figma classes, so nothing keys on .bento/.card g1/etc.).
+   Authored toward truth-target.css + the Figma frame; responsive (no pinned
+   design-width px — cards reflow via grid/aspect-ratio). */
+
+.forge-grid-section {
+  --fgs-radius: 18px;
+  --fgs-pill: #e1e1f1;
+  background: var(--s2a-color-background-inverse, #000);
+  color: #fff;
+  padding:
+    var(--s2a-layout-section-top, 124px)
+    var(--s2a-layout-lg, 64px)
+    var(--s2a-layout-section-bottom, 80px);
+}
+
+.forge-grid-section img,
+.forge-grid-section picture,
+.forge-grid-section svg { max-width: 100%; height: auto; }
+
+.forge-grid-section .content-frame {
+  width: 100%;
+  max-width: 1916px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;      /* copy sits right-aligned, per the comp */
+  gap: 40px;
+}
+
+.forge-grid-section .grid-rows {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(64px, 8vw, 200px);
+}
+
+.forge-grid-section .row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(16px, 1.6vw, 34px);
+  align-items: start;
+}
+
+/* ---- card + preview panel ---- */
+.forge-grid-section .card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 0;
+}
+
+.forge-grid-section .preview {
+  position: relative;
+  aspect-ratio: 334 / 418;
+  border-radius: var(--fgs-radius);
+  overflow: hidden;
+  padding: clamp(14px, 1.2vw, 24px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #1c1c20;
+  color: #fff;
+}
+
+.forge-grid-section .card-title {
+  margin: 0;
+  font-family: var(--font-adobe-clean-display, var(--body-font-family, sans-serif));
+  font-weight: 700;
+  font-size: clamp(18px, 1.55vw, 30px);
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  white-space: pre-line;
+  color: inherit;
+}
+
+.forge-grid-section .card-line {
+  margin: 0;
+  font-family: var(--font-adobe-clean, var(--body-font-family, sans-serif));
+  font-weight: 500;
+  font-size: clamp(11px, 0.95vw, 17px);
+  line-height: 1.2;
+  white-space: pre-line;
+  color: inherit;
+  opacity: 0.82;
+}
+
+/* ---- file pill ---- */
+.forge-grid-section .file-pill {
+  align-self: flex-start;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--fgs-pill);
+}
+
+.forge-grid-section .pill-label {
+  margin: 0;
+  font-family: var(--font-adobe-clean, var(--body-font-family, sans-serif));
+  font-weight: 700;
+  font-size: clamp(13px, 1.05vw, 19px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #0b0b0d;
+  white-space: nowrap;
+}
+
+/* ---- per-card identity (palette translated from the comp) ---- */
+.forge-grid-section .card--1 .preview { background: #060507; }
+.forge-grid-section .card--1 .preview::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(150deg, #fdad84 0%, #9be15d 44%, #35c66b 60%, #d98fe6 100%);
+  opacity: 0.9; mask: linear-gradient(#000 55%, transparent 62%);
+}
+.forge-grid-section .card--1 .card-title,
+.forge-grid-section .card--1 .card-line { position: relative; color: #060507; }
+
+.forge-grid-section .card--2 .preview { background: #e2e2e2; color: #141414; }
+.forge-grid-section .card--2 .card-line { color: #919191; opacity: 1; }
+
+.forge-grid-section .card--3 .preview { background: #fff; color: #141414; }
+.forge-grid-section .card--3 .card-title { color: var(--palette-blue-800, #0f63d2); }
+
+.forge-grid-section .card--4 .preview {
+  background: linear-gradient(180deg, #ededed 0%, #d3d3d3 38%, #9a9a9a 72%, #5f5f5f 100%);
+  color: #141414; justify-content: flex-end;
+}
+
+.forge-grid-section .card--5 .preview { background: #682c41; color: #f08478; }
+
+.forge-grid-section .card--6 .preview { background: #abdde8; color: #3d5572; }
+
+.forge-grid-section .card--7 .preview { background: #000; color: #f0f0f0; justify-content: flex-end; }
+.forge-grid-section .card--7 .preview::before {
+  content: ""; position: absolute; left: 50%; top: 12%;
+  width: 52%; aspect-ratio: 178 / 150; transform: translateX(-50%);
+  background: linear-gradient(135deg, #d98fe6 0%, #9be15d 55%, #fdad84 100%);
+  border-radius: 14px;
+}
+.forge-grid-section .card--7 .card-title,
+.forge-grid-section .card--7 .card-line { position: relative; }
+
+.forge-grid-section .card--8 .preview {
+  background: linear-gradient(158deg, #2c3648 0%, #1a2233 46%, #0a0d14 100%);
+}
+
+/* ---- copy block ---- */
+.forge-grid-section .copy {
+  width: min(474px, 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.forge-grid-section .headline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.forge-grid-section .copy-heading {
+  margin: 0;
+  font-family: var(--font-adobe-clean-display, var(--body-font-family, sans-serif));
+  font-weight: 900;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--s2a-color-content-heading, #fff);
+}
+
+.forge-grid-section .copy-body {
+  margin: 0;
+  font-family: var(--font-adobe-clean, var(--body-font-family, sans-serif));
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.25;
+  color: var(--s2a-color-content-body-subtle, #b3b3b3);
+}
+
+/* ---- responsive: reflow rows, center the copy ---- */
+@media (max-width: 1200px) {
+  .forge-grid-section .content-frame { align-items: center; }
+  .forge-grid-section .row { grid-template-columns: repeat(2, 1fr); gap: 40px 28px; }
+  .forge-grid-section .grid-rows { gap: 56px; }
+}
+
+@media (max-width: 600px) {
+  .forge-grid-section { padding: 64px 24px 48px; }
+  .forge-grid-section .row { grid-template-columns: 1fr; gap: 40px; }
+}
