@@ -132,14 +132,10 @@
   z-index: 1;
   border-radius: var(--s2a-border-radius-md);
   overflow: hidden;
-  /*
-   * S (375px): Figma x=52 within content (x=24), y=361px from stage top
-   *   content top=80, carousel y=140, right-wrapper y=33, media y=108
-   *   total y = 80+140+33+108 = 361px
-   *   x = 24+52 = 76px, w=275, h=360
-   */
-  inset-inline-start: calc(var(--s2a-spacing-24) + 52px);
-  inset-block-start: calc(var(--s2a-spacing-80) + 140px + 33px + 108px);
+  /* Always right-anchored — gap between list and image closes as viewport narrows */
+  inset-inline-start: auto;
+  inset-inline-end: var(--s2a-spacing-24);
+  inset-block-start: calc(var(--s2a-spacing-80) + 140px + 33px + 108px); /* S: 361px from stage top */
   width: 275px;
   height: 360px;
 }
@@ -183,7 +179,7 @@
   .roller-track-wrapper {
     inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px);
     height: calc(100lvh - var(--s2a-spacing-80) - 156px - 35px);
-    width: 60%;
+    width: 50%; /* image is 40% wide, right-aligned; gap = (10%vw − 48px) shrinks with viewport */
   }
 
   .roller-item {
@@ -197,17 +193,12 @@
   .roller-item[data-dist="2"] { opacity: 0.32; }
   .roller-item[data-dist="3"] { opacity: 0.24; }
 
-  /*
-   * M (768px): Figma image overlaps list
-   *   content top=80, carousel y=156, right-wrapper y=35, media y=150
-   *   total y = 80+156+35+150 = 421px
-   *   x = 24+315.5 ≈ 340px, w=396.5, h=467
-   */
+  /* M: image pinned to right, 40% wide — gap between list and image = (10%vw − 48px) */
   .roller-media-wrapper {
-    inset-inline-start: calc(var(--s2a-spacing-24) + 315px);
-    inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px + 150px);
-    width: 397px;
-    height: 467px;
+    inset-inline-end: var(--s2a-spacing-24);
+    inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px + 80px); /* 80px below track start */
+    width: 40%;
+    height: 55lvh;
   }
 }
 
@@ -257,15 +248,14 @@
   .roller-item[data-dist="4"] { opacity: 0.16; }
 
   /*
-   * L (1440px): Figma image = right column, offset 38px from right column left
-   *   left edge: 50% + 8px (half gap) + 38px = calc(50% + 46px)
-   *   width: calc(50% - 46px - 24px) = calc(50% - 70px)  →  650px @ 1440
-   *   top: 160px (same as content wrapper y in Figma)
-   *   height: 70lvh  →  ~763px @ 1090px viewport ≈ Figma's 766px
-   *   Active zone (image bottom) = 160px + 70lvh → computed dynamically by JS
+   * L (1440px): image right column, 24px from right edge
+   *   right-edge = viewport - 24px (same as original calc(50%+46px) + calc(50%-70px) = 100%-24px)
+   *   width: calc(50% - 70px)  →  650px @ 1440
+   *   top: 160px | height: 70lvh  →  ~763px @ 1090px viewport
    */
   .roller-media-wrapper {
-    inset-inline-start: calc(50% + 46px);
+    inset-inline-start: auto;
+    inset-inline-end: var(--s2a-spacing-24);
     inset-block-start: var(--s2a-spacing-160);
     width: calc(50% - 70px);
     height: 70lvh;
