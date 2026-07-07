@@ -1,0 +1,307 @@
+/*
+ * Roller Carousel
+ *
+ * Layout key (from Figma):
+ *   S (< 768px)   – 375 × 769  – item h: 32px  – cat h: 33px  – stage top: 80px
+ *   M (768–1279)  – 768 × 944  – item h: 56px  – cat h: 35px  – stage top: 80px
+ *   L (≥ 1280px)  – 1440 × 1090 – item h: 92px – cat h: 35px  – stage top: 160px
+ */
+
+/* ─── Block shell ──────────────────────────────────────────────────────────── */
+
+.roller-carousel {
+  /* min-height set by JS to create scroll room */
+}
+
+/* ─── Sticky stage ─────────────────────────────────────────────────────────── */
+
+.roller-stage {
+  position: sticky;
+  top: 0;
+  height: 100lvh;
+  overflow: hidden;
+  padding-inline: var(--s2a-spacing-24);
+  padding-block-start: var(--s2a-spacing-80);
+}
+
+/* ─── Headline ─────────────────────────────────────────────────────────────── */
+
+.roller-headline {
+  position: relative;
+  z-index: 2;
+}
+
+.roller-eyebrow {
+  color: var(--s2a-color-gray-25);
+  font-family: var(--s2a-font-family-default);
+  font-size: var(--s2a-font-size-sm);
+  font-weight: var(--s2a-font-weight-adobe-clean-regular);
+  line-height: var(--s2a-font-line-height-sm);
+  margin: 0 0 var(--s2a-spacing-xs) 0;
+  opacity: 0.7;
+}
+
+.roller-headline h2 {
+  color: var(--s2a-color-gray-25);
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-size: var(--s2a-font-size-6xl);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: var(--s2a-font-line-height-2xl);
+  letter-spacing: var(--s2a-font-letter-spacing-2xl);
+  margin: 0;
+}
+
+/* ─── Roller track wrapper + track ─────────────────────────────────────────── */
+
+/* Mobile: starts at 80px (padding) + 140px (from Figma carousel y offset) = 220px */
+.roller-track-wrapper {
+  position: absolute;
+  inset-block-start: calc(var(--s2a-spacing-80) + 140px);
+  inset-inline-start: var(--s2a-spacing-24);
+  width: calc(100% - var(--s2a-spacing-24) * 2);
+  z-index: 1;
+}
+
+.roller-track {
+  will-change: transform;
+}
+
+/* ─── Category header ──────────────────────────────────────────────────────── */
+
+.roller-category {
+  height: 33px; /* S */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: visible;
+}
+
+.roller-category-label {
+  display: block;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--s2a-font-family-default);
+  font-size: var(--s2a-font-size-md);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  line-height: var(--s2a-font-line-height-xs);
+  margin-block-end: var(--s2a-spacing-3xs);
+}
+
+.roller-divider {
+  border: none;
+  border-block-start: var(--s2a-border-width-1) solid var(--s2a-color-transparent-white-32);
+  margin: 0;
+}
+
+/* ─── Product items ────────────────────────────────────────────────────────── */
+
+.roller-item {
+  display: flex;
+  align-items: center;
+  height: 32px; /* S – layout height used for scroll calculation */
+  overflow: hidden;
+  color: var(--s2a-color-gray-25);
+  font-family: var(--s2a-font-family-adobe-clean-display);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  font-size: var(--s2a-font-size-md); /* default: far-away items */
+  letter-spacing: var(--s2a-font-letter-spacing-4xl);
+  opacity: 0.16;
+  white-space: nowrap;
+  transition: font-size 0.25s ease, opacity 0.25s ease;
+  user-select: none;
+}
+
+/* S: distance-based opacity + font-size */
+.roller-item[data-dist="0"] {
+  font-size: var(--s2a-font-size-2xl);
+  opacity: 1;
+}
+
+.roller-item[data-dist="1"] {
+  font-size: var(--s2a-font-size-lg);
+  opacity: 0.48;
+}
+
+.roller-item[data-dist="2"] {
+  font-size: var(--s2a-font-size-md);
+  opacity: 0.32;
+}
+
+.roller-item[data-dist="3"] {
+  font-size: var(--s2a-font-size-sm);
+  opacity: 0.24;
+}
+
+/* ─── Media wrapper ────────────────────────────────────────────────────────── */
+
+.roller-media-wrapper {
+  position: absolute;
+  z-index: 1;
+  border-radius: var(--s2a-border-radius-md);
+  overflow: hidden;
+  /*
+   * S (375px): Figma x=52 within content (x=24), y=361px from stage top
+   *   content top=80, carousel y=140, right-wrapper y=33, media y=108
+   *   total y = 80+140+33+108 = 361px
+   *   x = 24+52 = 76px, w=275, h=360
+   */
+  inset-inline-start: calc(var(--s2a-spacing-24) + 52px);
+  inset-block-start: calc(var(--s2a-spacing-80) + 140px + 33px + 108px);
+  width: 275px;
+  height: 360px;
+}
+
+.roller-media {
+  width: 100%;
+  height: 100%;
+}
+
+.roller-media picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.roller-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ─── Tablet (M) ────────────────────────────────────────────────────── 768px */
+
+@media (width >= 768px) {
+  .roller-stage {
+    padding-block-start: var(--s2a-spacing-80);
+  }
+
+  .roller-headline h2 {
+    font-size: var(--s2a-font-size-6xl);
+    line-height: var(--s2a-font-line-height-2xl);
+  }
+
+  /* M: track starts at 80+156=236px from stage top */
+  .roller-track-wrapper {
+    inset-block-start: calc(var(--s2a-spacing-80) + 156px);
+    width: 60%;
+  }
+
+  .roller-category {
+    height: 35px; /* M */
+  }
+
+  .roller-item {
+    height: 56px; /* M */
+    font-size: var(--s2a-font-size-xl); /* default far */
+    opacity: 0.16;
+  }
+
+  .roller-item[data-dist="0"] {
+    font-size: var(--s2a-font-size-5xl);
+    opacity: 1;
+  }
+
+  .roller-item[data-dist="1"] {
+    font-size: var(--s2a-font-size-3xl);
+    opacity: 0.48;
+  }
+
+  .roller-item[data-dist="2"] {
+    font-size: var(--s2a-font-size-2xl);
+    opacity: 0.32;
+  }
+
+  .roller-item[data-dist="3"] {
+    font-size: var(--s2a-font-size-xl);
+    opacity: 0.24;
+  }
+
+  /*
+   * M (768px): Figma image overlaps list
+   *   content top=80, carousel y=156, right-wrapper y=35, media y=150
+   *   total y = 80+156+35+150 = 421px
+   *   x = 24+315.5 ≈ 340px, w=396.5, h=467
+   */
+  .roller-media-wrapper {
+    inset-inline-start: calc(var(--s2a-spacing-24) + 315px);
+    inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px + 150px);
+    width: 397px;
+    height: 467px;
+  }
+}
+
+/* ─── Desktop (L) ──────────────────────────────────────────────────── 1280px */
+
+@media (width >= 1280px) {
+  .roller-stage {
+    padding-block-start: var(--s2a-spacing-160);
+  }
+
+  /* Headline: left column only */
+  .roller-headline {
+    max-width: calc(50% - 8px);
+  }
+
+  .roller-headline h2 {
+    font-size: var(--s2a-font-size-7xl);
+    line-height: var(--s2a-font-line-height-3xl);
+    letter-spacing: var(--s2a-font-letter-spacing-2xl);
+  }
+
+  /* L: track starts at 160+180=340px from stage top, left edge at 40px */
+  .roller-track-wrapper {
+    inset-block-start: calc(var(--s2a-spacing-160) + 180px);
+    inset-inline-start: calc(var(--s2a-spacing-24) + 16px);
+    width: calc(50% - var(--s2a-spacing-24));
+  }
+
+  .roller-category {
+    height: 35px; /* L */
+  }
+
+  .roller-item {
+    height: 92px; /* L */
+    font-size: var(--s2a-font-size-2xl); /* default far */
+    opacity: 0.16;
+  }
+
+  .roller-item[data-dist="0"] {
+    font-size: var(--s2a-font-size-7xl);
+    opacity: 1;
+  }
+
+  .roller-item[data-dist="1"] {
+    font-size: var(--s2a-font-size-5xl);
+    opacity: 0.48;
+  }
+
+  .roller-item[data-dist="2"] {
+    font-size: var(--s2a-font-size-4xl);
+    opacity: 0.32;
+  }
+
+  .roller-item[data-dist="3"] {
+    font-size: var(--s2a-font-size-3xl);
+    opacity: 0.24;
+  }
+
+  .roller-item[data-dist="4"] {
+    font-size: var(--s2a-font-size-2xl);
+    opacity: 0.16;
+  }
+
+  /*
+   * L (1440px): Figma image = right column, offset 38px from right column left
+   *   left edge: 50% + 8px (half gap) + 38px = calc(50% + 46px)
+   *   width: calc(50% - 46px - 24px) = calc(50% - 70px)  →  650px @ 1440
+   *   top: 160px (same as content wrapper y in Figma)
+   *   height: 70lvh  →  ~763px @ 1090px viewport ≈ Figma's 766px
+   *   Active zone (image bottom) = 160px + 70lvh → computed dynamically by JS
+   */
+  .roller-media-wrapper {
+    inset-inline-start: calc(50% + 46px);
+    inset-block-start: var(--s2a-spacing-160);
+    width: calc(50% - 70px);
+    height: 70lvh;
+  }
+}

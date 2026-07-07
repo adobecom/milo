@@ -127,6 +127,7 @@ const C2_BLOCKS = [
   'visually-hidden',
   'product-marquee-grid',
   'hover-list',
+  'roller-carousel',
 ];
 
 const AUTO_BLOCKS = [
