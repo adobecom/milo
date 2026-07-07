@@ -3188,15 +3188,17 @@ describe('Utils', () => {
       expect(result).to.equal('ca');
     });
 
-    it('prefers country cookie over IMS country', async () => {
+    it('prefers country cookie over IMS country and skips getProfile', async () => {
       document.cookie = 'country=be; path=/';
       sessionStorage.setItem('akamai', 'fr');
+      let profileCalled = false;
       window.adobeIMS = {
         isSignedInUser: () => true,
-        getProfile: () => Promise.resolve({ countryCode: 'CA' }),
+        getProfile: () => { profileCalled = true; return Promise.resolve({ countryCode: 'CA' }); },
       };
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('be');
+      expect(profileCalled).to.be.false;
     });
 
     it('ignores IMS country when user is not signed in', async () => {

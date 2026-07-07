@@ -1004,7 +1004,7 @@ export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   let imsCountry = null;
-  if (window.adobeIMS?.isSignedInUser()) {
+  if (!cookieMarket && window.adobeIMS?.isSignedInUser()) {
     try {
       const profile = await window.adobeIMS.getProfile();
       imsCountry = normCountryCode(profile?.countryCode);
