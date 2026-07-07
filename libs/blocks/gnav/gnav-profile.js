@@ -72,7 +72,7 @@ function decorateProfileMenu(blockEl, profileEl, profiles, toggle) {
   const signOutLink = blockEl.querySelector('div > div > p:nth-child(5) a');
   signOutLink.addEventListener('click', (e) => {
     e.preventDefault();
-    window.adobeIMS.signOut();
+    window.adobeIMS.signOut({ redirect_uri: window.location.href });
   });
   const signOut = createTag('li', { class: 'gnav-profile-action' }, signOutLink);
   profileActions.append(signOut);

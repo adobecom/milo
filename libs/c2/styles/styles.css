@@ -422,7 +422,8 @@
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
-  --body-font-family: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
   /* Animation properties */
@@ -440,37 +441,43 @@
 
   /* Regional font variations */
   &:lang(ar) {
-    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family);
+    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family-base);
 
     font-size: 125%;
   }
 
   &:lang(ko-KR),
   &:lang(ko) {
-    --body-font-family: adobe-clean-han-korean, var(--body-font-family);
+    --body-font-family: adobe-clean-han-korean, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
 
     word-break: keep-all;
   }
 
   &:lang(ja-JP),
   &:lang(ja) {
-    --body-font-family: adobe-clean-han-japanese, var(--body-font-family);
+    --body-font-family: adobe-clean-han-japanese, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-TW) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-CN) {
-    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family);
+    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-HK) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(th) {
-    --body-font-family: adobe-clean-thai, var(--body-font-family);
+    --body-font-family: adobe-clean-thai, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 }
 
@@ -521,7 +528,7 @@ body {
   line-height: var(--s2a-typography-line-height-body-md);
   letter-spacing: var(--s2a-typography-letter-spacing-body-md);
   background-color: var(--s2a-color-background-default);
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
   margin: 0;
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
@@ -584,7 +591,7 @@ blockquote {
 }
 
 a {
-  color: var(--s2a-color-gray-1000);
+  color: var(--s2a-color-content-default);
 
   &.standalone-link {
     &::after {
@@ -628,7 +635,7 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
   margin: 0;
   font-family: var(--heading-font-family);
   font-weight: var(--s2a-font-weight-heading);
-  line-height: 1;
+  line-height: 100%;
   scroll-margin-top: var(--feds-totalheight-nav); /* TODO: Replace with the eventual Gnav variable */
 
   strong {
@@ -823,106 +830,254 @@ p {
   color: inherit;
 }
 
-.con-button {
-  --cta-transparency: 0%;
-  --cta-background: var(--s2a-color-gray-1000);
-  --cta-border-color: var(--s2a-color-gray-1000);
+.action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-xs);
+}
 
+.con-button {
+  --cta-backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
   box-sizing: border-box;
-  background-color: color-mix(in srgb, var(--cta-background) var(--cta-transparency), transparent);
-  border-radius: var(--s2a-border-radius-md);
-  border: var(--s2a-border-width-sm) solid var(--cta-border-color);
+  background-color: var(--s2a-color-transparent-black-00);
+  backdrop-filter: var(--cta-backdrop-filter);
+  -webkit-backdrop-filter: var(--cta-backdrop-filter);
+  border-radius: var(--s2a-border-radius-round);
+  border: var(--s2a-border-width-md) solid var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-1000);
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  gap: var(--s2a-spacing-xs);
   font-size: var(--s2a-typography-font-size-label);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
   line-height: var(--s2a-typography-line-height-label);
   letter-spacing: var(--s2a-typography-letter-spacing-label);
-  padding: 5px 14px;
   text-decoration: none;
-  transition: background-color 300ms cubic-bezier(0.42, 0, 0, 1),
-    box-shadow 300ms cubic-bezier(0.42, 0, 0, 1),
-    color 300ms cubic-bezier(0.42, 0, 0, 1);
+  height: var(--s2a-spacing-2xl);
+  padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
+  transition: background-color 300ms var(--parallax-easing),
+    border-color 300ms var(--parallax-easing),
+    color 300ms var(--parallax-easing);
+
+  &:focus-visible {
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+    outline-offset: var(--s2a-border-width-2);
+  }
+
+  &:is(:disabled, [aria-disabled="true"], .disabled) {
+    pointer-events: none;
+    opacity: 48%;
+    cursor: not-allowed;
+  }
 
   &.outline {
     &:hover {
-      --cta-transparency: 64%;
-      box-shadow: inset 0 0 0 1px var(--cta-border-color);
+      background-color: var(--s2a-color-transparent-black-08);
     }
 
     &:active {
-      --cta-transparency: 100%;
-
+      background-color: var(--s2a-color-gray-1000);
       color: var(--s2a-color-gray-25);
     }
   }
 
-
-  &.button-lg {
-    min-height: var(--s2a-spacing-2xl);
-    border-radius: 75px;
-    padding: var(--s2a-spacing-none) var(--s2a-spacing-lg);
+  &.button-xs {
+    padding: var(--s2a-spacing-none) var(--s2a-spacing-sm);
+    height: var(--s2a-spacing-lg);
   }
 
   &.blue {
-    background-color: #3b63fb; /* Missing color */
-    border-color: #3b63fb;
+    background-color: var(--s2a-color-blue-900);
+    border-color: var(--s2a-color-blue-900);
+    --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
-    &:hover,
+    &:hover {
+      background-color: var(--s2a-color-blue-1000);
+      border-color: var(--s2a-color-blue-1000);
+    }
     &:active {
-      background-color: #274dea; /* Missing color */
-      border-color: #274dea;
-      color: var(--s2a-color-gray-25);
+      background-color: var(--s2a-color-blue-1100);
+      border-color: var(--s2a-color-blue-1100);
+    }
+
+    &:is(:disabled, [aria-disabled="true"], .disabled) {
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
     }
   }
 
   &.fill {
-    --cta-transparency: 100%;
-
+    background-color: var(--s2a-color-gray-1000);
+    border-color: var(--s2a-color-gray-1000);
+    --cta-backdrop-filter: none;
     color: var(--s2a-color-gray-25);
 
     &:hover {
-      --cta-transparency: 64%;
+      background-color: var(--s2a-color-transparent-black-64);
+      border-color: var(--s2a-color-transparent-black-64);
     }
 
     &:active {
-      --cta-transparency: 100%;
+      background-color: var(--s2a-color-gray-1000);
+      border-color: var(--s2a-color-gray-1000);
     }
   }
-}
 
-
-.dark {
-  .con-button.outline:not(.fill) {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-gray-25);
+  &.transparent {
+    border: none;
+    --cta-backdrop-filter: none;
 
     &:hover {
-      border-color: transparent;
-      box-shadow: none;;
-      color: var(--s2a-color-gray-1000);
+      background-color: var(--s2a-color-transparent-black-08);
     }
 
     &:active {
+      background-color: var(--s2a-color-transparent-black-12);
       color: var(--s2a-color-gray-1000);
     }
   }
 
-  .con-button.fill {
-    --cta-background: var(--s2a-color-gray-25);
-    --cta-border-color: var(--s2a-color-gray-25);
-    color: var(--s2a-color-gray-1000);
+  .icon  {
+    display: flex;
+    align-items: center;
+    svg {
+      width: 12px;
+      height: 12px;
+    }
   }
 }
 
-/* Needed for garage door JS animation in browsers without animation-timeline support */
+/* Icon Button Styles */
+.icon-button {
+  align-items: center;
+  background-color: var(--s2a-color-transparent-white-16);
+  block-size: 32px;
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  border-radius: 6px; /* No token */
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-shrink: 0;
+  inline-size: 32px;
+  justify-content: center;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  will-change: background-color, border-color;
+  path {
+    transition: fill 0.2s ease;
+    will-change: fill;
+  }
+}
+
+/* Promo CTA Styles */
+.promo-cta {
+  align-items: center;
+  background: var(--s2a-color-background-knockout);
+  border-radius: var(--s2a-border-radius-12);
+  color: var(--s2a-color-content-knockout);
+  display: inline-flex;
+  font-size: var(--s2a-typography-font-size-eyebrow);
+  font-weight: var(--s2a-font-weight-eyebrow);
+  gap: var(--s2a-spacing-sm);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+  line-height: var(--s2a-typography-line-height-eyebrow);
+  padding: var(--s2a-spacing-sm);
+  text-decoration: none;
+  white-space: nowrap;
+  img {
+    block-size: 32px;
+    flex-shrink: 0;
+    inline-size: 32px;
+    object-fit: cover;
+    overflow: hidden;
+  }
+
+  .icon-button {
+    margin-inline-start: var(--s2a-spacing-sm);
+  }
+
+  &:hover,
+  &:focus {
+    .icon-button {
+      background-color: var(--s2a-color-transparent-white-24);
+    }
+  }
+
+  &:active {
+    .icon-button {
+      background-color: var(--s2a-color-content-knockout);
+      border-color: var(--s2a-color-content-knockout);
+      path {
+        fill: var(--s2a-color-background-knockout);
+      }
+    }
+  }
+}
+
+.dark {
+  .con-button {
+    &.outline {
+      background-color: var(--s2a-color-transparent-white-00);
+      border-color: var(--s2a-color-gray-25);
+
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-64);
+        color: var(--s2a-color-gray-1000);
+      }
+      &:active {
+        background-color: var(--s2a-color-gray-25);
+        color: var(--s2a-color-gray-1000);
+      }
+    }
+
+    &.fill {
+      background-color: var(--s2a-color-gray-25);
+      border-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
+
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-64);
+      }
+
+      &:active {
+        background-color: var(--s2a-color-gray-25);
+      }
+    }
+
+    &.transparent {
+      background-color: var(--s2a-color-transparent-white-00);
+      color: var(--s2a-color-gray-25);
+
+      &:hover {
+        background-color: var(--s2a-color-transparent-white-12);
+        color: var(--s2a-color-gray-25);
+      }
+      &:active {
+        background-color: var(--s2a-color-transparent-white-16);
+        color: var(--s2a-color-gray-25);
+      }
+    }
+
+    &.blue:is(:disabled, [aria-disabled="true"], .disabled) {
+      border-color: var(--s2a-color-gray-25);
+      background-color: var(--s2a-color-gray-25);
+      color: var(--s2a-color-gray-1000);
+    }
+  }
+}
+
+span.hang-opening-quote {
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+[dir="rtl"] span.hang-opening-quote {
+  transform: translateX(100%);
+}
+
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
-
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1025,20 +1180,91 @@ p {
 
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
+    view-timeline: --parallax-stagger-timeline block;
+    view-timeline-inset: 40% 10%;
+
+    > :not([class*="section-"]) {
+      --parallax-stagger-row-index: 0;
+
+      animation-timing-function: var(--parallax-easing);
+      animation-fill-mode: both;
+      animation-timeline: --parallax-stagger-timeline;
+      animation-range: var(--parallax-range-start) var(--parallax-range-end);
+      will-change: transform;
+    }
+
+    /* Column count per -up class */
+    &.two-up { --parallax-stagger-cols: 2; }
+    &.three-up { --parallax-stagger-cols: 3; }
+    &.four-up { --parallax-stagger-cols: 4; }
+    &.six-up { --parallax-stagger-cols: 6; }
+
+    /* Column stagger indices per -up class */
+    &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+
+    &.two-up   > :nth-child(2n of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+
+    &.three-up > :nth-child(3n of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+
+    &.four-up  > :nth-child(4n of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+
+    /* Row stagger indices per -up class */
+    /* Row 1 */
+    &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 1;
+    }
+
+    /* Row 2 */
+    &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 2;
+    }
+
+    /* Row 3 */
+    &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 3;
+    }
+
+    /* Row 4 */
+    &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
+    &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 4;
+    }
+
     @media (width >= 768px) {
-      view-timeline: --parallax-stagger-timeline block;
-      view-timeline-inset: 40% 10%;
       animation-name: none;
 
       > :not([class*="section-"]) {
-        --parallax-stagger-row-index: 0;
-
         animation-name: enable-parallax-stagger;
-        animation-timing-function: var(--parallax-easing);
-        animation-fill-mode: both;
-        animation-timeline: --parallax-stagger-timeline;
-        animation-range: var(--parallax-range-start) var(--parallax-range-end);
-        will-change: transform;
+      }
+
+      &.masonry-layout > :not([class*="section-"]) {
+        --parallax-stagger-drift: 150px;
+
+        animation-timeline: view(block);
       }
 
       /* Prolong animation for 2 rows */
@@ -1057,67 +1283,6 @@ p {
       &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
         --parallax-range-end-length: 80%;
       }
-
-      /* Column count per -up class */
-      &.two-up { --parallax-stagger-cols: 2; }
-      &.three-up { --parallax-stagger-cols: 3; }
-      &.four-up { --parallax-stagger-cols: 4; }
-      &.six-up { --parallax-stagger-cols: 6; }
-
-      /* Column stagger indices per -up class */
-      &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
-      &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
-
-      &.two-up   > :nth-child(2n of :not([class*="section-"])),
-      &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
-
-      &.three-up > :nth-child(3n of :not([class*="section-"])),
-      &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
-
-      &.four-up  > :nth-child(4n of :not([class*="section-"])),
-      &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
-
-      &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
-
-      &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
-
-      /* Row stagger indices per -up class */
-      /* Row 1 */
-      &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 1;
-      }
-
-      /* Row 2 */
-      &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 2;
-      }
-
-      /* Row 3 */
-      &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
-      &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 3;
-      }
-
-      /* Row 4 */
-      &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
-      &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
-      &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
-      &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
-        --parallax-stagger-row-index: 4;
-      }
     }
   }
 
@@ -1135,8 +1300,16 @@ p {
     );
   }
 
+  .parallax-stagger-ltr.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc(var(--parallax-stagger-index) * var(--parallax-stagger-drift));
+  }
+
+  .parallax-stagger-rtl.masonry-layout > :not([class*="section-"]) {
+    --parallax-stagger-from: calc((1 - var(--parallax-stagger-index)) * var(--parallax-stagger-drift));
+  }
+
   @keyframes enable-parallax-stagger {
-    from { transform: translate3d(0, var(--parallax-stagger-from, 0px), 0); }
+    from { transform: translate3d(0, var(--parallax-stagger-from, 0), 0); }
     to { transform: translate3d(0, 0, 0); }
   }
 
@@ -1161,6 +1334,7 @@ p {
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
       --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 36%;
     }
 
     .section-background img {
@@ -1236,6 +1410,29 @@ p {
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
     to { opacity: 0.75; }
+  }
+
+  .section:has(+ .section.parallax-double-garage-door),
+  .section:has(+ .section:has(.parallax-double-garage-door)) {
+    z-index: 2;
+  }
+
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
+    overflow: clip;
+    animation: dg-top-door ease-out both, dg-exit ease-out both;
+    animation-timeline: view(), view();
+    animation-range: entry 0% entry 70%, exit 40% exit 90%;
+    animation-composition: replace, add;
+  }
+
+  @keyframes dg-top-door {
+    from { transform: translateY(-30vh); }
+    to { transform: translateY(0); }
+  }
+
+  @keyframes dg-exit {
+    from { transform: translateY(0); }
+    to { transform: translateY(20vh); }
   }
 
   /* Line height parallax declarations */
@@ -1358,5 +1555,9 @@ p {
   :root {
     /* tokens.responsive.xl */
     --s2a-typography-letter-spacing-heading-5: var(--s2a-font-letter-spacing-4xl);
+  }
+
+  .section:is(.parallax-double-garage-door, :has(.parallax-double-garage-door)) {
+    animation-range: entry 0% entry 70%, exit 50% exit 90%;
   }
 }

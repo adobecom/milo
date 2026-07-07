@@ -1,0 +1,104 @@
+.faq {
+  --faq-transition-duration: 400ms;
+  --faq-transition: var(--faq-transition-duration) var(--parallax-easing);
+
+  position: relative;
+}
+
+.faq-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item {
+  border-block-end: 1px solid var(--s2a-color-transparent-black-08);
+  color: var(--s2a-color-content-default);
+  transition: opacity var(--faq-transition);
+
+  .faq:hover &:not(:hover, [open]),
+  .faq:focus-within &:not(:focus-within, :hover, [open]) {
+    opacity: 0.6;
+  }
+
+  &::details-content {
+    content-visibility: visible;
+    display: block;
+    block-size: auto;
+  }
+
+  > .faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows var(--faq-transition),
+      visibility 0s linear var(--faq-transition-duration);
+  }
+
+  &[open] > .faq-panel {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows var(--faq-transition), visibility 0s linear 0s;
+  }
+}
+
+.faq-trigger {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: var(--s2a-spacing-2xl);
+  list-style: none;
+  padding-block: var(--s2a-spacing-xl);
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:focus-visible {
+    outline-offset: 4px;
+  }
+}
+
+.faq-question {
+  flex-grow: 1;
+}
+
+.faq-icon {
+  block-size: 7px;
+  inline-size: 12px;
+  background: currentcolor;
+  display: block;
+  flex-shrink: 0;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 7' fill='none'><path d='M1 1l5 5 5-5' stroke='currentColor' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  mask-position: center;
+  mask-repeat: no-repeat;
+  transition: transform var(--faq-transition);
+
+  .faq-item[open] & {
+    transform: rotate(180deg);
+  }
+}
+
+.faq-panel-inner {
+  min-block-size: 0;
+  overflow: hidden;
+
+  > *:last-child {
+    margin-block-end: var(--s2a-spacing-xl);
+  }
+
+  :is(p, ul, ol) + :is(p, ul, ol) {
+    margin-block-start: var(--s2a-spacing-xs);
+  }
+}
+
+@media (width >= 768px) {
+  .faq-panel {
+    max-inline-size: calc(548 / 16 * 1rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-item > .faq-panel {
+    transition: none;
+  }
+}

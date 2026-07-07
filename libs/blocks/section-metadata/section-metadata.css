@@ -160,7 +160,7 @@
 .section.sticky-top {
   position: sticky;
   top: 57px;
-  z-index: 4;
+  z-index: 8;
   background-color: var(--color-white);
 }
 
@@ -198,7 +198,6 @@
   padding-right: var(--grid-margins-width);
   display: grid;
   gap: var(--spacing-m);
-  grid-template-columns: minmax(0, 1fr);
 }
 
 .section[class*='grid-width-'] > .content,

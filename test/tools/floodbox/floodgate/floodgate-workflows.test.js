@@ -8,11 +8,12 @@ import RequestHandler from '../../../../tools/floodbox/request-handler.js';
 const ORG = 'test-org';
 const REPO = 'test-repo';
 
-function makeCmp({ files, color, chronoBoxFragmentsEnabled = false }) {
+function makeCmp({ files, color, chronoBoxFragmentsEnabled = false, accessMode } = {}) {
   return {
     token: 'test-token',
     _abortController: undefined,
     _floodgateConfig: { chronoBoxFragmentsEnabled },
+    _accessMode: accessMode,
     _filesToProcess: [...files],
     _selectedColor: color,
   };
@@ -150,6 +151,62 @@ describe('findFragments (floodgate-workflows)', () => {
       await findFragments(cmp, ORG, REPO, 'promote');
 
       expect(cmp._fragmentsAssets).to.eql(new Set());
+    });
+  });
+
+  describe('draftsOnly access mode', () => {
+    it('passes accessMode through to config for copy operation', async () => {
+      const cmp = makeCmp({
+        files: [`/${ORG}/${REPO}/some/page`],
+        accessMode: 'draftsOnly',
+      });
+      const html = `
+        <a href="https://main--${REPO}--${ORG}.aem.page/fragments/shared">shared</a>
+        <a href="https://main--${REPO}--${ORG}.aem.page/drafts/promo/fragments/hero">draft</a>`;
+      daFetchStub.resolves({ ok: true, text: async () => html });
+
+      await findFragments(cmp, ORG, REPO, 'copy');
+
+      expect(cmp._fragmentsAssets).to.eql(
+        new Set([`/${ORG}/${REPO}/drafts/promo/fragments/hero`]),
+      );
+      expect(cmp._filesToProcess).to.include(`/${ORG}/${REPO}/drafts/promo/fragments/hero`);
+      expect(cmp._filesToProcess).to.not.include(`/${ORG}/${REPO}/fragments/shared`);
+    });
+
+    it('passes accessMode through to config for promote operation', async () => {
+      const color = 'pink';
+      const fgRepo = `${REPO}-fg-${color}`;
+      const cmp = makeCmp({
+        files: [`/${ORG}/${REPO}/some/page`],
+        color,
+        accessMode: 'draftsOnly',
+      });
+      const html = `
+        <a href="https://main--${fgRepo}--${ORG}.aem.page/fragments/shared">shared</a>
+        <a href="https://main--${fgRepo}--${ORG}.aem.page/drafts/promo/fragments/hero">draft</a>`;
+      daFetchStub.resolves({ ok: true, text: async () => html });
+
+      await findFragments(cmp, ORG, REPO, 'promote');
+
+      expect(cmp._fragmentsAssets).to.eql(
+        new Set([`/${ORG}/${REPO}/drafts/promo/fragments/hero`]),
+      );
+    });
+
+    it('does not filter fragments when accessMode is undefined', async () => {
+      const cmp = makeCmp({ files: [`/${ORG}/${REPO}/some/page`] });
+      const html = `
+        <a href="https://main--${REPO}--${ORG}.aem.page/fragments/shared">shared</a>
+        <a href="https://main--${REPO}--${ORG}.aem.page/drafts/promo/fragments/hero">draft</a>`;
+      daFetchStub.resolves({ ok: true, text: async () => html });
+
+      await findFragments(cmp, ORG, REPO, 'copy');
+
+      expect(cmp._fragmentsAssets).to.eql(new Set([
+        `/${ORG}/${REPO}/fragments/shared`,
+        `/${ORG}/${REPO}/drafts/promo/fragments/hero`,
+      ]));
     });
   });
 });

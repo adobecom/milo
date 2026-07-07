@@ -1501,7 +1501,7 @@ export async function buildCta(el, params) {
     const prefix = getConfig()?.locale?.prefix;
     if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
     if (shouldAllowKrTrial(el, prefix)) {
-      cta.classList.remove('hidden-osi-trial-link');
+      cta.removeAttribute('data-hide-kr-free-trial');
       return;
     }
     cta.remove();
@@ -1510,10 +1510,29 @@ export async function buildCta(el, params) {
   return cta;
 }
 
+export function shouldHideStPriceLabels(element) {
+  const nextElSibling = element.nextElementSibling?.nodeName === 'BR'
+    ? element.nextElementSibling.nextElementSibling
+    : element.nextElementSibling;
+
+  const href = nextElSibling?.getAttribute('href');
+  return !!(
+    (element.nextSibling?.nodeName !== '#text'
+      || element.nextSibling.textContent.trim().length < 2)
+    && href?.match('/tools/ost[?]osi=.*type=price')
+  );
+}
+
 async function buildPrice(el, params) {
   const context = await getPriceContext(el, params);
   if (!context) return null;
   const service = await initService();
+
+  if (context.template === 'strikethrough' && shouldHideStPriceLabels(el)) {
+    context.displayPerUnit = 'false';
+    context.displayTax = 'false';
+  }
+
   const price = service.createInlinePrice(context);
   return price;
 }
@@ -1532,16 +1551,45 @@ export function overrideOptions(fragment, options) {
   return options;
 }
 
+export function createAemFragment(options, seenFragments = null) {
+  const { fragment, pzn, mask } = options;
+  const cacheKey = `${fragment}|${pzn || ''}|${mask || ''}`;
+  const attrs = Object.fromEntries(
+    Object.entries({ pzn, mask, fragment }).filter(([, v]) => v != null),
+  );
+  if (seenFragments?.has(cacheKey)) attrs.loading = 'cache';
+  seenFragments?.add(cacheKey);
+  return createTag('aem-fragment', attrs);
+}
+
 export function getOptions(el) {
   const { hash } = new URL(el.href);
   const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
   const searchParams = new URLSearchParams(hashValue);
   const options = {};
   for (const [key, value] of searchParams.entries()) {
-    if (key === 'sidenav') options.sidenav = value === 'true';
-    else if (key === 'fragment' || key === 'query') options.fragment = value;
-    else if (key === 'field') options.field = value;
-    else if (key === 'jsonld') options.jsonld = value === 'on';
+    switch (key) {
+      case 'sidenav':
+        options.sidenav = value === 'true';
+        break;
+
+      case 'fragment':
+      case 'query':
+        options.fragment = value;
+        break;
+
+      case 'mask':
+      case 'pzn':
+      case 'field':
+        options[key] = value;
+        break;
+
+      case 'jsonld':
+        options.jsonld = value === 'on';
+        break;
+      default:
+        break;
+    }
   }
   return options;
 }
@@ -1566,6 +1614,34 @@ export default async function init(el) {
   }
   log.warn('Failed to get context:', { el });
   return null;
+}
+
+const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
+const MAS_FRAGMENT_API_KEY = 'wcms-commerce-ims-ro-user-milo';
+
+export function isMasErrorEnv(host = window.location.host) {
+  return host.includes('localhost') || host.includes('.aem.page');
+}
+
+export async function createFragmentErrorEl(uuid, label = 'Card', status = null) {
+  loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  let badge = 'Load Error';
+  if (status === 404) {
+    badge = 'Not Found';
+  } else if (uuid) {
+    try {
+      const { locale } = getMiloLocaleSettings(getConfig()?.locale);
+      const source = isMasErrorEnv() ? '&source=aem' : '';
+      const res = await fetch(`${MAS_FRAGMENT_API}?id=${uuid}&api_key=${MAS_FRAGMENT_API_KEY}&locale=${locale}${source}`);
+      if (res.status === 404) badge = 'Not Found';
+    } catch { /* network error */ }
+  }
+  const el = createTag('div', { class: 'mas-frag-error' });
+  const badgeEl = createTag('span', { class: 'mas-frag-error-badge' }, badge);
+  const labelEl = createTag('p', { class: 'mas-frag-error-label' }, `${label}:`);
+  const idEl = createTag('p', { class: 'mas-frag-error-id' }, uuid || 'unknown');
+  el.append(badgeEl, labelEl, idEl);
+  return el;
 }
 
 window.addEventListener('hashchange', updateModalState);

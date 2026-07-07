@@ -640,6 +640,11 @@
 }
 
 @media screen and (max-width: 599px) {
+  /* grid-width display:grid breaks tablist on mobile */
+  .section[class*='grid-width-'][class*='tablist-'] {
+    display: block;
+  }
+
   .tabs.stacked-mobile .tabList {
     margin: 0;
   }
