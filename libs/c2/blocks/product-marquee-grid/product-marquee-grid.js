@@ -43,5 +43,5 @@ function decorate(block) {
 }
 
 export default function init(el) {
-  decorateViewportContent(el, decorate);
+  // decorateViewportContent(el, decorate);
 }
