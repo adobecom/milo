@@ -60,6 +60,9 @@
   inset-block-start: calc(var(--s2a-spacing-80) + 140px + 33px);
   inset-inline-start: var(--s2a-spacing-24);
   width: calc(100% - var(--s2a-spacing-24) * 2);
+  /* clip items that scroll above the category label */
+  height: calc(100lvh - var(--s2a-spacing-80) - 140px - 33px);
+  overflow: hidden;
   z-index: 1;
 }
 
@@ -108,34 +111,19 @@
   color: var(--s2a-color-gray-25);
   font-family: var(--s2a-font-family-adobe-clean-display);
   font-weight: var(--s2a-font-weight-adobe-clean-bold);
-  font-size: var(--s2a-font-size-md); /* default: far-away items */
+  font-size: var(--s2a-font-size-2xl); /* S – same size for all items */
   letter-spacing: var(--s2a-font-letter-spacing-4xl);
   opacity: 0.16;
   white-space: nowrap;
-  transition: font-size 0.25s ease, opacity 0.25s ease;
+  transition: opacity 0.25s ease;
   user-select: none;
 }
 
-/* S: distance-based opacity + font-size */
-.roller-item[data-dist="0"] {
-  font-size: var(--s2a-font-size-2xl);
-  opacity: 1;
-}
-
-.roller-item[data-dist="1"] {
-  font-size: var(--s2a-font-size-lg);
-  opacity: 0.48;
-}
-
-.roller-item[data-dist="2"] {
-  font-size: var(--s2a-font-size-md);
-  opacity: 0.32;
-}
-
-.roller-item[data-dist="3"] {
-  font-size: var(--s2a-font-size-sm);
-  opacity: 0.24;
-}
+/* S: distance-based opacity only — no font-size change */
+.roller-item[data-dist="0"] { opacity: 1; }
+.roller-item[data-dist="1"] { opacity: 0.48; }
+.roller-item[data-dist="2"] { opacity: 0.32; }
+.roller-item[data-dist="3"] { opacity: 0.24; }
 
 /* ─── Media wrapper ────────────────────────────────────────────────────────── */
 
@@ -194,34 +182,20 @@
   /* M: track starts at 80+156+35=271px from stage top */
   .roller-track-wrapper {
     inset-block-start: calc(var(--s2a-spacing-80) + 156px + 35px);
+    height: calc(100lvh - var(--s2a-spacing-80) - 156px - 35px);
     width: 60%;
   }
 
   .roller-item {
     height: 56px; /* M */
-    font-size: var(--s2a-font-size-xl); /* default far */
-    opacity: 0.16;
+    font-size: var(--s2a-font-size-5xl); /* M – same size for all items */
   }
 
-  .roller-item[data-dist="0"] {
-    font-size: var(--s2a-font-size-5xl);
-    opacity: 1;
-  }
-
-  .roller-item[data-dist="1"] {
-    font-size: var(--s2a-font-size-3xl);
-    opacity: 0.48;
-  }
-
-  .roller-item[data-dist="2"] {
-    font-size: var(--s2a-font-size-2xl);
-    opacity: 0.32;
-  }
-
-  .roller-item[data-dist="3"] {
-    font-size: var(--s2a-font-size-xl);
-    opacity: 0.24;
-  }
+  /* M: distance-based opacity only */
+  .roller-item[data-dist="0"] { opacity: 1; }
+  .roller-item[data-dist="1"] { opacity: 0.48; }
+  .roller-item[data-dist="2"] { opacity: 0.32; }
+  .roller-item[data-dist="3"] { opacity: 0.24; }
 
   /*
    * M (768px): Figma image overlaps list
@@ -266,39 +240,21 @@
   .roller-track-wrapper {
     inset-block-start: calc(var(--s2a-spacing-160) + 180px + 35px);
     inset-inline-start: calc(var(--s2a-spacing-24) + 16px);
+    height: calc(100lvh - var(--s2a-spacing-160) - 180px - 35px);
     width: calc(50% - var(--s2a-spacing-24));
   }
 
   .roller-item {
     height: 92px; /* L */
-    font-size: var(--s2a-font-size-2xl); /* default far */
-    opacity: 0.16;
+    font-size: var(--s2a-font-size-7xl); /* L – same size for all items */
   }
 
-  .roller-item[data-dist="0"] {
-    font-size: var(--s2a-font-size-7xl);
-    opacity: 1;
-  }
-
-  .roller-item[data-dist="1"] {
-    font-size: var(--s2a-font-size-5xl);
-    opacity: 0.48;
-  }
-
-  .roller-item[data-dist="2"] {
-    font-size: var(--s2a-font-size-4xl);
-    opacity: 0.32;
-  }
-
-  .roller-item[data-dist="3"] {
-    font-size: var(--s2a-font-size-3xl);
-    opacity: 0.24;
-  }
-
-  .roller-item[data-dist="4"] {
-    font-size: var(--s2a-font-size-2xl);
-    opacity: 0.16;
-  }
+  /* L: distance-based opacity only */
+  .roller-item[data-dist="0"] { opacity: 1; }
+  .roller-item[data-dist="1"] { opacity: 0.48; }
+  .roller-item[data-dist="2"] { opacity: 0.32; }
+  .roller-item[data-dist="3"] { opacity: 0.24; }
+  .roller-item[data-dist="4"] { opacity: 0.16; }
 
   /*
    * L (1440px): Figma image = right column, offset 38px from right column left
