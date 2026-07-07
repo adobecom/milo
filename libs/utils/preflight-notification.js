@@ -24,6 +24,18 @@ function openPreflightPanel() {
   });
 });
 
+function dismissNotification() {
+  document.querySelector('.milo-preflight-overlay')?.remove();
+  wasDismissed = true;
+  if (!linkCheckListener) return;
+  window.removeEventListener('preflightLinksComplete', linkCheckListener);
+  linkCheckListener = null;
+}
+
+// Dismiss the notification the moment preflight is opened (via the review link or
+// the sidekick plugin) — both routes fire `custom:preflight` on the sidekick.
+sidekick?.addEventListener('custom:preflight', dismissNotification);
+
 function getMasUnpublishedCount(results) {
   const merchResults = results?.runChecks?.merch || [];
   return merchResults.reduce((sum, check) => {
@@ -32,9 +44,15 @@ function getMasUnpublishedCount(results) {
   }, 0);
 }
 
+function isPreflightOpen() {
+  return !!document.getElementById('preflight');
+}
+
 async function createPreflightNotification(masUnpublishedCount = 0) {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
+  // The modal already surfaces the results, so don't also show the notification.
+  if (isPreflightOpen()) return;
   const { miloLibs, codeRoot } = getConfig();
   const base = miloLibs || codeRoot;
   loadStyle(`${base}/styles/preflight-notification.css`);
@@ -63,13 +81,7 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
   });
 
   const closeBtn = overlay.querySelector('.notification-close');
-  closeBtn.addEventListener('click', () => {
-    overlay.remove();
-    wasDismissed = true;
-    if (!linkCheckListener) return;
-    window.removeEventListener('preflightLinksComplete', linkCheckListener);
-    linkCheckListener = null;
-  });
+  closeBtn.addEventListener('click', dismissNotification);
 
   document.body.appendChild(overlay);
 }
