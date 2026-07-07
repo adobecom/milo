@@ -71,20 +71,26 @@ function buildDOM(el, eyebrow, heading, items) {
   mediaWrapper.append(mediaInner);
   stage.append(mediaWrapper);
 
-  // Roller track — category headers + product items, translated by JS
+  // Single fixed category label — text updated by JS, never scrolls
+  const categoryLabelEl = createTag('span', { class: 'roller-category-label' });
+  const categoryEl = createTag('div', { class: 'roller-category', 'aria-live': 'polite', 'aria-atomic': 'true' });
+  categoryEl.append(
+    categoryLabelEl,
+    createTag('hr', { class: 'roller-divider', 'aria-hidden': 'true' }),
+  );
+  stage.append(categoryEl);
+
+  // Roller track — product items only, translated by JS
   const trackWrapper = createTag('div', { class: 'roller-track-wrapper', 'aria-label': 'Product list', role: 'list' });
   const track = createTag('div', { class: 'roller-track' });
 
   const productEls = []; // { el, picture }
+  const productCategoryMap = []; // productIdx → category name
+  let currentCategory = '';
 
   items.forEach((item) => {
     if (item.type === 'category') {
-      const catEl = createTag('div', { class: 'roller-category', role: 'none' });
-      catEl.append(
-        createTag('span', { class: 'roller-category-label' }, item.text),
-        createTag('hr', { class: 'roller-divider', 'aria-hidden': 'true' }),
-      );
-      track.append(catEl);
+      currentCategory = item.text;
     } else {
       const idx = productEls.length;
       const itemEl = createTag('div', {
@@ -96,6 +102,7 @@ function buildDOM(el, eyebrow, heading, items) {
       itemEl.append(createTag('span', { 'aria-hidden': 'true' }, item.text));
       track.append(itemEl);
       productEls.push({ el: itemEl, picture: item.picture });
+      productCategoryMap.push(currentCategory);
     }
   });
 
@@ -103,7 +110,7 @@ function buildDOM(el, eyebrow, heading, items) {
   stage.append(trackWrapper);
   el.replaceChildren(stage);
 
-  return { stage, track, mediaInner, productEls };
+  return { stage, track, mediaInner, productEls, categoryLabelEl, productCategoryMap };
 }
 
 function setActiveImage(mediaInner, picture) {
