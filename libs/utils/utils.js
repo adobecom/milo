@@ -566,6 +566,7 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
   const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
+    link.setAttribute('data-allow-kr-free-trial', 'true');
     link.href = link.href.replace(allowKrTrialHash, '');
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
@@ -581,15 +582,14 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
   const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
-  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
-      || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  if (link.dataset.wcsOsi) {
-    link.dataset.hideKrFreeTrial = 'true';
+  const hasAllowAttribute = link.getAttribute('data-allow-kr-free-trial') === 'true';
+  if (hasAllowKrTrialMeta
+    || hasAllowAttribute
+    || shouldAllowKrTrial(link, localePrefix)
+    || localePrefix !== '/kr'
+    || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
+        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
