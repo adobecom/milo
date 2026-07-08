@@ -28,6 +28,9 @@ describe('global navigation utilities', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
+  afterEach(() => {
+    sinon.restore();
+  });
   it('fetchAndProcessPlainHtml with MEP', () => {
     expect(fetchAndProcessPlainHtml).to.exist;
     const mepConfig = getConfig();
@@ -48,6 +51,19 @@ describe('global navigation utilities', () => {
     fetchAndProcessPlainHtml({ url: '/old/navigations' }).then((fragment) => {
       expect(fragment).to.be.null;
     });
+  });
+
+  it('fetchAndProcessPlainHtml passes the link element to localizeLinkAsync for inline fragment mep-lingo detection', async () => {
+    setConfig(config);
+    const gnavHtml = '<div><a href="http://localhost:2000/fr/fragments/buy-now#_inline#_mep-lingo">Subscribe</a></div>';
+    sinon.stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('buy-now')) return mockRes({ payload: null, ok: false, status: 404 });
+      return mockRes({ payload: gnavHtml });
+    });
+
+    const fragment = await fetchAndProcessPlainHtml({ url: '/fr/gnav' });
+
+    expect(fragment.querySelector('a[href*="buy-now"]')).to.be.null;
   });
 
   it('toFragment', () => {

@@ -1618,9 +1618,17 @@ function addHighlightData(manifests) {
       if (selector === 'gnav-source') updateManifestId('header, footer');
     });
 
-    // eslint-disable-next-line max-len
-    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"] merch-card`)
-      .forEach((el) => (el.dataset.manifestId = manifestName));
+    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"]`)
+      .forEach((parentFrag) => {
+        const parentPath = parentFrag.dataset.path;
+        parentFrag.querySelectorAll('merch-card').forEach((card) => {
+          card.dataset.manifestId = manifestName;
+          if (parentPath) {
+            card.dataset.fragmentPath = parentPath;
+            card.dataset.manifestDisplay = `${manifestName}: ${parentPath}`;
+          }
+        });
+      });
 
     document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
       if (!el.dataset.manifestDisplay) {
@@ -1700,7 +1708,6 @@ function addFragmentBadgeClickHandlers() {
     const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
     if (!badgeIsVisible) return;
 
-    // Use max of calculated dimensions or reasonable minimums for badge text
     const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
     const badgeHeight = parseFloat(beforeStyles.height)
       || parseFloat(beforeStyles.minHeight)
@@ -1711,7 +1718,6 @@ function addFragmentBadgeClickHandlers() {
     if (fragment.dataset.cardUrl) {
       fragmentPath = rewriteBlogPreviewHost(fragmentPath) || rewriteForPreviewHost(fragmentPath);
     }
-    const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
     const handleBadgeClick = () => {
       e.preventDefault();
       e.stopPropagation();
@@ -1719,6 +1725,7 @@ function addFragmentBadgeClickHandlers() {
     };
 
     if (elementStyle.display === 'contents') {
+      const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
       const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
       if (visibleChildren.length === 0) {
         if (e.clientX >= 0 && e.clientX < badgeWidth) handleBadgeClick();
@@ -1739,11 +1746,24 @@ function addFragmentBadgeClickHandlers() {
       return;
     }
 
-    const rect = fragment.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const clickY = e.clientY - rect.top;
-    const inBadgeY = clickY >= badgeTopOffset && clickY < (badgeTopOffset + badgeHeight);
-    if (inBadgeY && clickX >= 0 && clickX < badgeWidth) handleBadgeClick();
+    // ::before badges are position:absolute, anchored to the host's nearest
+    // positioned ancestor — usually the host, but not always (gnav promos
+    // resolve up to header.global-navigation). Hit area = container rect + badge top/left.
+    let containerRect;
+    if (elementStyle.position !== 'static') {
+      containerRect = fragment.getBoundingClientRect();
+    } else {
+      let ancestor = fragment.parentElement;
+      while (ancestor && window.getComputedStyle(ancestor).position === 'static') {
+        ancestor = ancestor.parentElement;
+      }
+      containerRect = (ancestor || document.documentElement).getBoundingClientRect();
+    }
+    const badgeAbsTop = containerRect.top + (parseFloat(beforeStyles.top) || 0);
+    const badgeAbsLeft = containerRect.left + (parseFloat(beforeStyles.left) || 0);
+    const inBadgeY = e.clientY >= badgeAbsTop && e.clientY < (badgeAbsTop + badgeHeight);
+    const inBadgeX = e.clientX >= badgeAbsLeft && e.clientX < (badgeAbsLeft + badgeWidth);
+    if (inBadgeY && inBadgeX) handleBadgeClick();
   });
 }
 

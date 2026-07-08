@@ -52,6 +52,10 @@
   padding-inline-start: var(--spacing-xs);
 }
 
+.columns.columns-table > .row > .col {
+  min-width: 0;
+}
+
 .columns.columns-table .row .row-title {
   grid-column: 1 / -1;
 }

@@ -113,7 +113,7 @@ const defaultOptions = {
     '1600MaxWidth': '1600px Container',
     '83Percent': '83% Container',
     '32Margin': '32 Margin Container',
-    carousel: 'Carousel',
+    carousel: 'Carousel...',
     categories: 'Product Categories',
   },
   ctaActions: {
@@ -413,7 +413,7 @@ const UiPanel = () => {
         prop="paginationAnimationStyle"
         options=${defaultOptions.paginationAnimationStyle}
       />
-      <${Input} label="Light background (Modern only)" prop="useLightControls" type="checkbox" />
+      <${Input} label="Light (Modern only)" prop="useLightControls" type="checkbox" />
     </div>
   `;
 
@@ -455,6 +455,7 @@ const UiPanel = () => {
     <${Input} label="Use Rounded Corners [new]" prop="useRoundedCorners" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
+      ${state.cardStyle === 'button-card' && buttonStyleOptions}
       ${state.cardStyle === 'editorial-card' && editorialCardOptions}
       ${state.cardStyle === 'flex-card' && flexCardOptions}
       ${state.cardStyle === 'custom-card' && customCardOptions}

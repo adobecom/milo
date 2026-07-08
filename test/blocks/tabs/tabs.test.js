@@ -275,4 +275,54 @@ describe('tabs', () => {
       expect(tabsWithTabindex0[0]).to.equal(buttons[targetIndex]);
     });
   });
+
+  describe('badge', () => {
+    it('renders badges on the specified tabs', () => {
+      const section = document.querySelector('#badge-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+
+      expect(buttons[0].querySelector('.tab-badge')).to.not.exist;
+      expect(buttons[1].querySelector('.tab-badge')).to.exist;
+      expect(buttons[2].querySelector('.tab-badge')).to.exist;
+    });
+
+    it('adds invisible placeholders to non-badged tabs for height consistency', () => {
+      const section = document.querySelector('#badge-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+
+      expect(buttons[0].querySelector('.tab-badge-placeholder')).to.exist;
+      expect(buttons[1].querySelector('.tab-badge-placeholder')).to.not.exist;
+      expect(buttons[2].querySelector('.tab-badge-placeholder')).to.not.exist;
+    });
+
+    it('badge has correct labels and colors', () => {
+      const section = document.querySelector('#badge-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+      const badge2 = buttons[1].querySelector('.tab-badge');
+      const badge3 = buttons[2].querySelector('.tab-badge');
+
+      expect(badge2.textContent).to.equal('Limited Time Offer');
+      expect(badge2.style.backgroundColor).to.equal('rgb(255, 204, 0)');
+      expect(badge2.style.color).to.equal('rgb(0, 0, 0)');
+
+      expect(badge3.textContent).to.equal('Best value');
+      expect(badge3.style.backgroundColor).to.equal('rgb(5, 131, 78)');
+      expect(badge3.style.color).to.equal('rgb(255, 255, 255)');
+    });
+
+    it('clicking a badge label activates its tab', () => {
+      const section = document.querySelector('#badge-tabs');
+      const tabs = section.querySelector('.tabs');
+      const buttons = tabs.querySelectorAll('button[role="tab"]');
+      const badge = buttons[2].querySelector('.tab-badge');
+
+      badge.click();
+
+      expect(buttons[2].getAttribute('aria-selected')).to.equal('true');
+      expect(buttons[0].getAttribute('aria-selected')).to.equal('false');
+    });
+  });
 });
