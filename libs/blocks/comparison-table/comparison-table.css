@@ -298,10 +298,6 @@
   color: var(--color-black);
 }
 
-.comparison-table .price.price-strikethrough {
-  display: flex;
-}
-
 .comparison-table .sub-header-item-container em {
   font-size: var(--type-body-xxs-size);
   font-weight: 400;
@@ -313,6 +309,7 @@
 }
 
 .comparison-table .price.price-strikethrough {
+  display: flex;
   font-size: var(--type-body-xxs-size);
 }
 
