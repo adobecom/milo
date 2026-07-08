@@ -26,7 +26,7 @@
 .language-banner-text {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: 12px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
@@ -35,7 +35,7 @@
 .language-banner-link {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: 12px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 700;
   line-height: 18px;
@@ -102,7 +102,7 @@ html:has(meta[name="foundation"][content="c2"]) {
 
   .language-banner-text {
     color: var(--s2a-color-gray-25);
-    font-size: var(--s2a-font-size-12);
+    font-size: var(--s2a-font-size-sm);
     font-weight: 400;
     line-height: var(--s2a-font-line-height-18);
     flex: 0 1 auto;
@@ -115,7 +115,7 @@ html:has(meta[name="foundation"][content="c2"]) {
 
   .language-banner-link {
     color: var(--s2a-color-gray-25);
-    font-size: var(--s2a-font-size-12);
+    font-size: var(--s2a-font-size-sm);
     font-weight: 700;
     line-height: var(--s2a-font-line-height-18);
     text-decoration: underline;
@@ -154,8 +154,9 @@ html:has(meta[name="foundation"][content="c2"]) {
       gap: 0;
     }
 
-    .language-banner-content {
-      flex: 0 0 auto;
+    .language-banner-text,
+    .language-banner-link {
+      font-size: var(--s2a-font-size-md);
     }
 
     .language-banner-close {
