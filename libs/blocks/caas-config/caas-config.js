@@ -423,6 +423,12 @@ const UiPanel = () => {
     </div>
   `;
 
+  const buttonStyleOptions = html`
+    <div class="nested">
+      <p class="note">Uses <i>URL2Text</i> for the button label</p>
+    </div>
+  `;
+
   const flexCardOptions = html`
     <div class="nested">
       <${Select} label="Font Size" prop="flexCardTextSize" options=${defaultOptions.flexCardTextSize} />

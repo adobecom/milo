@@ -1396,7 +1396,6 @@ export const defaultState = {
   flexCardHideTitle: false,
   flexCardHideDescription: false,
   flexCardHideFooter: false,
-  flexCardImageOptions: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useCenterVideoPlay: false,

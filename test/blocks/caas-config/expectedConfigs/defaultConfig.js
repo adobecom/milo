@@ -216,7 +216,7 @@ const defaultConfig = {
   },
   linkTransformer: {},
   customCard: ['card', 'return ``'],
-  products: [],
+  products: {},
 };
 
 export default defaultConfig;

@@ -151,35 +151,38 @@ dd.content .sort-options > .field {
   margin: 0;
 }
 
-/* Indented fields for flex card options */
-dd.content .blade-card-options,
-dd.content .flex-card-options,
+/* Indented fields for card style options */
 dd.content .nested {
   background: #333;
   width: calc(100% - 36px);
   margin-top: -6px;
-  padding: 1px 0 8px 0;
+  padding: 1px 0 2px 0;
   border: solid #666 1px;
   border-top: 0;
   border-radius: 0 0 20px 20px;
-
-  .field {
-    padding-left: 16px;
-    max-width: calc(var(--field-max-size) - 16px);
-    color: #bababa;
-
-    label {
-      margin: 0;
-    }
-
-    select {
-      width: calc(100% - 20px);
-    }
-
-    input[type="text"] {
-      width: calc(100% - 40px);
-      font-family: monospace;
-      font-size: 12px !important;
-    }
-  }
 }
+
+dd.content .nested .field {
+  padding-left: 16px;
+  max-width: calc(var(--field-max-size) - 16px);
+  color: #bababa;
+}
+
+dd.content .nested .field label {
+  margin: 0;
+}
+
+dd.content .nested .field select {
+  width: calc(100% - 20px);
+}
+
+dd.content .nested .field input[type="text"] {
+  width: calc(100% - 40px);
+  font-family: monospace;
+  font-size: 12px !important;
+}
+
+dd.content .nested .note {
+  padding-left: 16px;
+}
+
