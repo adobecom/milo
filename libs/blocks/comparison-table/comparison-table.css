@@ -296,6 +296,9 @@
   font-weight: var(--type-detail-all-weight);
   line-height: 1.25;
   color: var(--color-black);
+}
+
+.comparison-table .price.price-strikethrough {
   display: flex;
 }
 
