@@ -1,11 +1,12 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import experiments from '../../personalization/mocks/preview.js';
+// experiments: only used by the dead 'builds with multiple manifests' test (commented below)
+// import experiments from '../../personalization/mocks/preview.js';
 
 document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
-  default: decoratePreviewMode,
+  // default: decoratePreviewMode, // dead: removed, superseded by mep-overlay.js
   escapeHtml,
   parsePageAndUrl,
 } = await import('../../../../libs/features/mep/mep-next/mep-next.js');
@@ -20,10 +21,12 @@ const {
   watchForMasContent,
   MAS_RESTAMP_DEBOUNCE_MS,
 } = await import('../../../../libs/features/mep/mep-next/mep-mas.js');
-const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
+// MILO_EVENTS, updateConfig: only used by the dead decoratePreviewMode tests (commented below)
+const { setConfig, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
 const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
 const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
-const { mepCaasConfigUrls } = await import('../../../../libs/blocks/caas/utils.js');
+// mepCaasConfigUrls: only used by the dead CaaS highlight badge tests (commented below)
+// const { mepCaasConfigUrls } = await import('../../../../libs/blocks/caas/utils.js');
 
 const config = {
   miloLibs: 'https://main--milo--adobecom.aem.live/libs',
@@ -118,6 +121,9 @@ describe('preview feature', () => {
   afterEach(() => {
     delete window.lenis;
   });
+  // dead: the following tests exercised decoratePreviewMode / createPreviewPill /
+  // addPillEventListeners / addHighlightData, all removed (superseded by mep-overlay.js).
+  /*
   it('builds with 0 manifests', async () => {
     await decoratePreviewMode();
     const event = new Event(MILO_EVENTS.DEFERRED);
@@ -179,33 +185,51 @@ describe('preview feature', () => {
     expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
   });
   it('adds highlights', () => {
-    expect(document.querySelector('[data-path="/fragments/fragmentreplaced"]').getAttribute('data-manifest-id')).to.equal('selected-example.json');
-    expect(document.querySelector('.marquee').getAttribute('data-code-manifest-id')).to.equal('selected-example.json');
-    expect(document.querySelector('header').getAttribute('data-manifest-id')).to.equal('selected-example.json');
+    const replacedFragment = document.querySelector('[data-path="/fragments/fragmentreplaced"]');
+    expect(replacedFragment.getAttribute('data-manifest-id')).to.equal('selected-example.json');
+    expect(document.querySelector('.marquee').getAttribute('data-code-manifest-id'))
+      .to.equal('selected-example.json');
+    expect(document.querySelector('header').getAttribute('data-manifest-id'))
+      .to.equal('selected-example.json');
   });
   it('adjusts highlights for merch cards', () => {
     const card = document.querySelector('merch-card');
     expect(card.getAttribute('data-manifest-id')).to.equal('selected-example.json');
     expect(card.getAttribute('data-fragment-path')).to.equal('/fragments/replaced-merch-card');
-    expect(card.getAttribute('data-manifest-display')).to.equal('selected-example.json: /fragments/replaced-merch-card');
+    expect(card.getAttribute('data-manifest-display'))
+      .to.equal('selected-example.json: /fragments/replaced-merch-card');
   });
   it('preselects form inputs', () => {
-    expect(document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('selected')).to.equal('');
-    expect(document.querySelector('option[name*="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('selected')).to.equal('');
-    expect(document.querySelector('input#mepHighlightCheckbox').getAttribute('checked')).to.equal('checked');
+    const targetSmbOption = document.querySelector(
+      'option[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]',
+    );
+    expect(targetSmbOption.getAttribute('selected')).to.equal('');
+    const defaultOption = document.querySelector(
+      'option[name*="/homepage/fragments/mep/default-selected.json"][value="default"]',
+    );
+    expect(defaultOption.getAttribute('selected')).to.equal('');
+    const highlightCheckbox = document.querySelector('input#mepHighlightCheckbox');
+    expect(highlightCheckbox.getAttribute('checked')).to.equal('checked');
   });
   it('updates preview button', () => {
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/new-manifest.json';
-    document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="default"]').closest('select').dispatchEvent(new Event('change'));
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--target-smb');
+    const previewLink = () => document.querySelector('a[title="Preview above choices"]');
+    expect(previewLink().getAttribute('href')).to.contain('---');
+    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.aem.live'
+      + '/homepage/fragments/mep/new-manifest.json';
+    const selectedExampleSelector = 'option[name*="/homepage/fragments/mep/selected-example.json"]'
+      + '[value="default"]';
+    document.querySelector(selectedExampleSelector).closest('select')
+      .dispatchEvent(new Event('change'));
+    expect(previewLink().getAttribute('href')).to.contain('new-manifest.json');
+    expect(previewLink().getAttribute('href'))
+      .to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--target-smb');
     document.querySelector('input#mepHighlightCheckbox').click();
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.not.contain('mepHighlight');
+    expect(previewLink().getAttribute('href')).to.not.contain('mepHighlight');
     document.querySelector('input#mepPreviewButtonCheckbox').click();
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('mepButton=off');
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
+    expect(previewLink().getAttribute('href')).to.contain('mepButton=off');
+    expect(previewLink().getAttribute('href')).to.contain('---');
   });
+  */
   it('parse url and page for stage', () => {
     const { url, page } = parsePageAndUrl(config, new URL('https://www.stage.adobe.com/fr/products/photoshop.html'), 'fr');
     expect(url).to.equal('https://www.adobe.com/fr/products/photoshop.html');
@@ -245,11 +269,16 @@ describe('preview feature', () => {
     expect(url).to.equal('https://www.adobe.com/events/2024-10-31.html');
     expect(page).to.equal('/events/2024-10-31.html');
   });
-  it('opens manifest', () => {
-    document.querySelector('a.mep-edit-manifest').click();
-  });
+  // dead: depended on the manifest list built by decoratePreviewMode (removed above).
+  // it('opens manifest', () => {
+  //   document.querySelector('a.mep-edit-manifest').click();
+  // });
 });
 
+// dead: the following two describe blocks exercised decoratePreviewMode's Lingo
+// dropdown rendering and addFragmentBadgeClickHandlers, both removed (superseded
+// by mep-overlay.js / mep-overlay-highlight.js).
+/*
 describe('MEP Lingo region select with lingo param', () => {
   let fetchStub;
   let lingoMeta;
@@ -414,7 +443,8 @@ describe('Lingo fragment click handlers', () => {
     windowOpenStub = sinon.stub(window, 'open');
     // Mock getComputedStyle to return badge styles
     const originalGetComputedStyle = window.getComputedStyle;
-    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((element, pseudoElt) => {
+    getComputedStyleStub = sinon.stub(window, 'getComputedStyle')
+      .callsFake((element, pseudoElt) => {
       if (pseudoElt === '::before') {
         return {
           display: 'block',
@@ -572,6 +602,7 @@ describe('Lingo fragment click handlers', () => {
     expect(windowOpenStub.called).to.be.false;
   });
 });
+*/
 
 describe('M@S highlight badges', () => {
   // Each surface gets its own wrapper element + WeakMap entry. Reset between tests.
@@ -1361,6 +1392,9 @@ describe('M@S card action stack', () => {
   });
 });
 
+// dead: this describe block exercised decoratePreviewMode's cold-cache
+// defer-populate warm-up, removed (superseded by mep-overlay.js).
+/*
 describe('M@S markets dropdown defer-populate (cold-cache race)', () => {
   // Covers the non-Lingo-page case (e.g., /products/photoshop) where the
   // markets cache is cold at popup-build time. The defer-populate block in
@@ -1390,7 +1424,8 @@ describe('M@S markets dropdown defer-populate (cold-cache race)', () => {
     document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
   });
 
-  it('renders the placeholder while cold, then re-renders with markets after the fetch resolves', async () => {
+  it('renders the placeholder while cold, then re-renders with markets after the fetch '
+    + 'resolves', async () => {
     await decoratePreviewMode();
 
     const popups = document.querySelectorAll('.mep-popup');
@@ -1428,6 +1463,7 @@ describe('M@S markets dropdown defer-populate (cold-cache race)', () => {
     expect(values).to.include('fr');
   });
 });
+*/
 
 describe('M@S highlight click-driven re-stamp (tabs / accordions / filters)', () => {
   // watchForMasContent installs a debounced document click listener that
@@ -1551,6 +1587,10 @@ describe('M@S highlight MutationObserver — late <aem-fragment> injection', () 
   });
 });
 
+// dead: this describe block built its DOM via decoratePreviewMode, removed
+// (superseded by mep-overlay.js). buildSummaryMas's logic itself lives on in
+// mep-overlay-logic.js's getMasSummary, covered separately.
+/*
 describe('M@S summary counts (highlight-independent)', () => {
   // The M@S section in the MEP summary tab used to count [data-mas-block="card"]
   // and [data-mas-block="offer"] — both stamps that only get applied while
@@ -1561,12 +1601,14 @@ describe('M@S summary counts (highlight-independent)', () => {
   // either mode.
 
   beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, '
+      + 'merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
     delete document.body.dataset.mepMasHighlight;
   });
 
   afterEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, '
+      + 'merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
     delete document.body.dataset.mepMasHighlight;
   });
 
@@ -1628,10 +1670,12 @@ describe('M@S summary counts (highlight-independent)', () => {
 
     const rows = getMasSummaryRows();
     expect(rows.Collections).to.equal('1');
-    expect(rows.Cards, 'Cards counts both standalone and in-collection (highlight-independent)').to.equal('3');
+    expect(rows.Cards, 'Cards counts both standalone and in-collection (highlight-independent)')
+      .to.equal('3');
     expect(
       rows['Standalone Offers'],
-      'Standalone Offers excludes card-internal offers — only the marquee/notification-style one is counted',
+      'Standalone Offers excludes card-internal offers — only the marquee/notification-style '
+        + 'one is counted',
     ).to.equal('1');
     // Surfaces Detected = Collections + Cards + Inline Fields + Standalone
     // Offers = 1 + 3 + 0 + 1 = 5. Sub-collections are NOT in the total
@@ -1639,7 +1683,8 @@ describe('M@S summary counts (highlight-independent)', () => {
     expect(rows['Surfaces Detected']).to.equal('5');
   });
 
-  it('reports captured sub-collections as a sub-row outside the Surfaces Detected total', async () => {
+  it('reports captured sub-collections as a sub-row outside the Surfaces Detected total',
+    async () => {
     // Two collection containers: one with 3 captured sub-collections, one
     // with 0. The summary should show "Sub-collections: 3" but leave the
     // headline Surfaces Detected unchanged (sub-collections aren't a
@@ -1666,14 +1711,21 @@ describe('M@S summary counts (highlight-independent)', () => {
 
     const rows = getMasSummaryRows();
     expect(rows.Collections, 'two collection containers seeded').to.equal('2');
-    expect(rows['Sub-collections'], 'sums every container\'s captured sub-collection list').to.equal('3');
+    expect(rows['Sub-collections'], 'sums every container\'s captured sub-collection list')
+      .to.equal('3');
     // Surfaces total stays at 2 (just the two collections) — sub-collections
     // are explicitly excluded from the headline so we don't double-count
     // the same on-screen content area.
     expect(rows['Surfaces Detected']).to.equal('2');
   });
 });
+*/
 
+// dead: this describe block built its popup via decoratePreviewMode, removed
+// (superseded by mep-overlay.js). The visibility matrix it tested lived in
+// getMepPopup's buildOptionsMasMarketSelect, still exercised via mmm.js's
+// isMmm=true call path but no longer via this in-page harness.
+/*
 describe('M@S markets UI visibility', () => {
   // The "Use M@S markets instead" checkbox and the "Supported M@S Markets"
   // dropdown render conditionally based on whether the page exposes Lingo
@@ -1711,7 +1763,8 @@ describe('M@S markets UI visibility', () => {
   }
 
   beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, [data-wcs-osi]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, '
+      + '[data-wcs-osi]').forEach((el) => el.remove());
     delete document.body.dataset.mepHighlight;
     delete document.body.dataset.mepMasHighlight;
     // Reset to baseline (non-Lingo) config first so leftover regions from
@@ -1722,7 +1775,9 @@ describe('M@S markets UI visibility', () => {
     // path covered separately by 'M@S markets dropdown defer-populate'.
     setConfig(config);
     prevMarketsConfig = getConfig().marketsConfig;
-    getConfig().marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,fr' }] } };
+    getConfig().marketsConfig = {
+      languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,fr' }] },
+    };
   });
 
   afterEach(() => {
@@ -1730,7 +1785,8 @@ describe('M@S markets UI visibility', () => {
       lingoMeta.remove();
       lingoMeta = null;
     }
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, [data-wcs-osi]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, '
+      + '[data-wcs-osi]').forEach((el) => el.remove());
     delete document.body.dataset.mepHighlight;
     delete document.body.dataset.mepMasHighlight;
     getConfig().marketsConfig = prevMarketsConfig;
@@ -1767,7 +1823,8 @@ describe('M@S markets UI visibility', () => {
     ).to.be.null;
   });
 
-  it('Lingo + M@S, highlight OFF → checkbox shown unchecked, dropdown hidden until checkbox flips', async () => {
+  it('Lingo + M@S, highlight OFF → checkbox shown unchecked, dropdown hidden until checkbox '
+    + 'flips', async () => {
     activateLingo();
     seedMasSurface();
     await decoratePreviewMode();
@@ -1778,34 +1835,43 @@ describe('M@S markets UI visibility', () => {
     expect(checkbox.checked, 'unchecked by default until user flips it').to.be.false;
     const dropdown = popup.querySelector('.mep-mas-market-dropdown');
     expect(dropdown, 'dropdown is rendered but hidden').to.exist;
-    expect(dropdown.hasAttribute('hidden'), 'dropdown stays hidden behind the checkbox').to.be.true;
+    expect(dropdown.hasAttribute('hidden'), 'dropdown stays hidden behind the checkbox')
+      .to.be.true;
     expect(
       dropdown.classList.contains('standalone'),
       'Lingo+M@S keeps the green-bordered companion variant',
     ).to.be.false;
   });
 
-  it('Lingo + M@S → user toggles Highlight M@S ON: M@S checkbox auto-checks, dropdown unhides, Lingo dropdown disables', async () => {
+  it('Lingo + M@S → user toggles Highlight M@S ON: M@S checkbox auto-checks, dropdown unhides, '
+    + 'Lingo dropdown disables', async () => {
     activateLingo();
     seedMasSurface();
     await decoratePreviewMode();
 
     const popup = getActivePopup();
-    const masHighlight = popup.querySelector('input[type="checkbox"][id^="mepMasHighlightCheckbox"]');
-    const masMarketCheckbox = popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
+    const masHighlight = popup
+      .querySelector('input[type="checkbox"][id^="mepMasHighlightCheckbox"]');
+    const masMarketCheckbox = popup
+      .querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
     const dropdown = popup.querySelector('.mep-mas-market-dropdown');
     const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
-    expect(masMarketCheckbox.checked, 'baseline: M@S markets checkbox starts unchecked').to.be.false;
+    expect(masMarketCheckbox.checked, 'baseline: M@S markets checkbox starts unchecked')
+      .to.be.false;
 
     masHighlight.checked = true;
     masHighlight.dispatchEvent(new Event('change'));
 
-    expect(masMarketCheckbox.checked, 'flipping Highlight M@S auto-checks the markets checkbox').to.be.true;
-    expect(dropdown.hasAttribute('hidden'), 'dropdown unhides as a side-effect of the checkbox flip').to.be.false;
-    expect(lingoSelect.disabled, 'Lingo dropdown disables so the user knows M@S is now driving akamaiLocale').to.be.true;
+    expect(masMarketCheckbox.checked, 'flipping Highlight M@S auto-checks the markets checkbox')
+      .to.be.true;
+    expect(dropdown.hasAttribute('hidden'), 'dropdown unhides as a side-effect of the checkbox '
+      + 'flip').to.be.false;
+    expect(lingoSelect.disabled, 'Lingo dropdown disables so the user knows M@S is now driving '
+      + 'akamaiLocale').to.be.true;
   });
 
-  it('Lingo + M@S → ?mepMasHighlight=true URL load: highlight is on but checkbox is NOT auto-checked', async () => {
+  it('Lingo + M@S → ?mepMasHighlight=true URL load: highlight is on but checkbox is NOT '
+    + 'auto-checked', async () => {
     // Simulate the URL-driven entry path: the highlight is already considered
     // "on" at popup-build time via the URL param. The auto-check is wired to
     // a runtime change event, so it should NOT fire here — the user's prior
@@ -1817,14 +1883,17 @@ describe('M@S markets UI visibility', () => {
     try {
       await decoratePreviewMode();
       const popup = getActivePopup();
-      const masMarketCheckbox = popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
-      expect(masMarketCheckbox.checked, 'URL-driven highlight does not auto-check the markets checkbox').to.be.false;
+      const masMarketCheckbox = popup
+        .querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
+      expect(masMarketCheckbox.checked, 'URL-driven highlight does not auto-check the markets '
+        + 'checkbox').to.be.false;
     } finally {
       window.history.replaceState(original, '', window.location.pathname);
     }
   });
 
-  it('non-Lingo + M@S → no checkbox, dropdown shown standalone (no hidden, .standalone class set)', async () => {
+  it('non-Lingo + M@S → no checkbox, dropdown shown standalone (no hidden, .standalone class '
+    + 'set)', async () => {
     seedMasSurface();
     await decoratePreviewMode();
 
@@ -1842,7 +1911,8 @@ describe('M@S markets UI visibility', () => {
     ).to.be.true;
   });
 
-  it('non-Lingo + M@S → selecting a market writes akamaiLocale and mepMasMarket to the preview URL', async () => {
+  it('non-Lingo + M@S → selecting a market writes akamaiLocale and mepMasMarket to the '
+    + 'preview URL', async () => {
     seedMasSurface();
     await decoratePreviewMode();
 
@@ -1855,7 +1925,8 @@ describe('M@S markets UI visibility', () => {
 
     const previewLink = popup.querySelector('a[title="Preview above choices"]');
     const href = previewLink.getAttribute('href');
-    expect(href, 'akamaiLocale gets set from the standalone dropdown').to.include('akamaiLocale=fr');
+    expect(href, 'akamaiLocale gets set from the standalone dropdown')
+      .to.include('akamaiLocale=fr');
     expect(
       href,
       'mepMasMarket=true persists across reload so the next popup pre-selects the same value',
@@ -1870,7 +1941,12 @@ describe('M@S markets UI visibility', () => {
     expect(popup.querySelector('.mep-mas-market-dropdown')).to.be.null;
   });
 });
+*/
 
+// dead: the following two describe blocks built their DOM via decoratePreviewMode
+// and exercised addFragmentBadgeClickHandlers, both removed (superseded by
+// mep-overlay.js / mep-overlay-highlight.js).
+/*
 describe('CaaS highlight badges', () => {
   function getCaasPopup() {
     const popups = document.querySelectorAll('.mep-popup');
@@ -1878,13 +1954,15 @@ describe('CaaS highlight badges', () => {
   }
 
   beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, '
+      + '[data-card-url]').forEach((el) => el.remove());
     delete document.body.dataset.mepCaasHighlight;
     setConfig(config);
   });
 
   afterEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
+    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, '
+      + '[data-card-url]').forEach((el) => el.remove());
     delete document.body.dataset.mepCaasHighlight;
   });
 
@@ -1901,7 +1979,8 @@ describe('CaaS highlight badges', () => {
     checkbox.dispatchEvent(new Event('change'));
 
     const badge = block.previousElementSibling;
-    expect(badge?.classList?.contains('mep-caas-edit-badge'), 'badge injected before the block').to.be.true;
+    expect(badge?.classList?.contains('mep-caas-edit-badge'), 'badge injected before the block')
+      .to.be.true;
     expect(badge?.getAttribute('href')).to.equal('https://caas-config.adobe.com/config-1');
     expect(badge?.getAttribute('target')).to.equal('_blank');
     expect(badge?.textContent).to.equal('Edit in CaaS Configurator');
@@ -1919,7 +1998,8 @@ describe('CaaS highlight badges', () => {
 
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event('change'));
-    expect(block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'), 'badge present after on').to.be.true;
+    expect(block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'),
+      'badge present after on').to.be.true;
 
     checkbox.checked = false;
     checkbox.dispatchEvent(new Event('change'));
@@ -1954,7 +2034,8 @@ describe('CaaS highlight badges', () => {
     checkbox.checked = true;
     checkbox.dispatchEvent(new Event('change'));
 
-    expect(document.querySelector('a.mep-caas-edit-badge'), 'no badge without WeakMap entry').to.be.null;
+    expect(document.querySelector('a.mep-caas-edit-badge'), 'no badge without WeakMap entry')
+      .to.be.null;
   });
 
   it('derives data-card-path from data-card-url after badge injection', async () => {
@@ -1999,7 +2080,8 @@ describe('CaaS highlight badges', () => {
     expect(card.dataset.cardPath, 'path cleared after remove').to.be.undefined;
   });
 
-  it('auto-injects badges on decoratePreviewMode when ?mepCaasHighlight=true is in the URL', async () => {
+  it('auto-injects badges on decoratePreviewMode when ?mepCaasHighlight=true is in the URL',
+    async () => {
     const block = document.createElement('div');
     block.dataset.caasBlock = 'true';
     mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-6');
@@ -2068,7 +2150,9 @@ describe('data-card-url click handling', () => {
     document.body.append(card);
     card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
 
-    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+    card.dispatchEvent(new MouseEvent('click', {
+      bubbles: true, cancelable: true, clientX: 50, clientY: 10,
+    }));
 
     expect(windowOpenStub.called, 'window.open called for card-url element').to.be.true;
   });
@@ -2081,7 +2165,9 @@ describe('data-card-url click handling', () => {
       document.body.append(card);
       card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
 
-      card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+      card.dispatchEvent(new MouseEvent('click', {
+      bubbles: true, cancelable: true, clientX: 50, clientY: 10,
+    }));
 
       expect(windowOpenStub.called).to.be.true;
       const openedUrl = windowOpenStub.firstCall?.args[0] ?? '';
@@ -2101,11 +2187,14 @@ describe('data-card-url click handling', () => {
     document.body.append(card);
     card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
 
-    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
+    card.dispatchEvent(new MouseEvent('click', {
+      bubbles: true, cancelable: true, clientX: 50, clientY: 10,
+    }));
 
     expect(windowOpenStub.called, 'no open when all highlights off').to.be.false;
   });
 });
+*/
 
 describe('handleChildCardBadgeClick — nested ost/offer inside inline', () => {
   let windowOpenStub;
