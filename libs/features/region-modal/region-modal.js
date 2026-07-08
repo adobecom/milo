@@ -12,6 +12,18 @@ let isC2Path;
 
 const COUNTRY_PLACEHOLDER = /\{country\}/g;
 
+const loadC2TabsBlock = async (tabs) => {
+  const { miloLibs, codeRoot } = config;
+  const results = await Promise.all([
+    import('../../blocks/tabs/tabs.js'),
+    new Promise((resolve) => {
+      loadStyleFn(`${miloLibs || codeRoot}/blocks/tabs/tabs.css`, resolve);
+    }),
+  ]);
+  const { default: initTabs } = results[0];
+  return initTabs(tabs);
+};
+
 /** Normalizes market entries to the shape expected by the modal UI. */
 function mapLangRoutingMarketsForModal(markets) {
   return markets.map((market) => ({
@@ -480,7 +492,7 @@ async function showModal(details) {
   const modalPath = `${miloLibs || codeRoot}${isC2Path}/blocks/modal/modal.css`;
 
   const promises = [
-    hasTabs ? loadBlockFn(details.querySelector('.tabs')) : null,
+    hasTabs && (isC2Page ? loadC2TabsBlock(details.querySelector('.tabs')) : loadBlockFn(details.querySelector('.tabs'))),
     hasTabs ? new Promise((resolve) => { loadStyleFn(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyleFn(regionModalPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(modalPath, resolve); }),
