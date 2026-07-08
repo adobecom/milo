@@ -1,13 +1,8 @@
 import {
   createTag,
-  getCookie,
   getConfig,
   getMetadata,
-  getGeoLocalePrefix,
-  loadStyle,
   lingoActive,
-  normCountryCode,
-  resolveDetectedMarketCountry,
 } from '../../../utils/utils.js';
 import { getMarketConfig, marketsLangForLocale } from '../../../utils/market.js';
 import { getMiloLocaleSettings, isMasGeoDetectionEnabled } from '../../../blocks/merch/merch.js';
@@ -26,8 +21,6 @@ import {
   removeCaasBadges,
   watchForCaasBlocks,
   unwatchForCaasBlocks,
-  rewriteForPreviewHost,
-  rewriteBlogPreviewHost,
 } from './mep-caas.js';
 
 export function escapeHtml(str) {
@@ -101,8 +94,8 @@ function updatePreviewButton(popup, pageId) {
     manifestParameter.push(value);
   });
 
-  const isMmm = pageId.length;
-  const page = isMmm ? popup.closest('[data-url]').dataset.url : window.location.href;
+  // MMM always renders a data-url on the popup (see getMepPopup); no other caller remains.
+  const page = popup.closest('[data-url]').dataset.url;
   const simulateHref = new URL(page);
   simulateHref.searchParams.set('mep', manifestParameter.join('---'));
 
@@ -247,19 +240,6 @@ function addDividers(node, selector) {
     if (index === node.querySelectorAll(selector).length - 1) return;
     const mepDivider = createTag('div', { class: 'mep-divider' });
     section.insertAdjacentElement('afterend', mepDivider);
-  });
-}
-
-function addPillEventListeners(div, overlay, onClose) {
-  div.querySelector('.mep-manifest.mep-badge').addEventListener('click', () => {
-    const isHidden = div.classList.toggle('mep-hidden');
-    if (!isHidden) overlay?.showPopover?.();
-  });
-  div.querySelector('.mep-close').addEventListener('click', () => {
-    const overlayEl = document.querySelector('.mep-preview-overlay');
-    overlayEl?.hidePopover?.();
-    overlayEl?.remove();
-    onClose?.();
   });
 }
 
@@ -425,72 +405,6 @@ function getManifestListDomAndParameter(mepConfig) {
 
   return { manifestList, manifestParameter };
 }
-function formatManifestText(count) {
-  return count > 1 ? 'Manifests' : 'Manifest';
-}
-function getPillText(manifestCount) {
-  return `
-    <span class="mep-open"></span>
-    <div class="mep-manifest-count">${manifestCount || 0} ${formatManifestText(manifestCount)} found</div>
-  `;
-}
-let sevenDayPageData;
-async function mmmToggleManifests(event, popup, pageId) {
-  const mepConfig = parseMepConfig();
-  if (!mepConfig) return;
-  const mmmManifestsElement = document.querySelector('.mep-manifest-list.mmm-list');
-
-  if (!sevenDayPageData) {
-    try {
-      const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
-
-      const response = await fetch(pageDataUrl);
-
-      if (!response.ok) throw new Error('Network error');
-
-      const data = await response.json();
-      if (data) {
-        sevenDayPageData = data;
-        sevenDayPageData.activities = sevenDayPageData.activities.filter(
-          (activity) => !mepConfig.activities.some(
-            (existingActivity) => normalizePath(existingActivity.url)
-            === normalizePath(activity.url),
-          ),
-        ).map((activity) => {
-          activity.source = 'MMM';
-          return activity;
-        });
-        mmmManifestsElement.innerHTML = `<h6>MMM data for last 7 days</h6> ${getManifestListDomAndParameter(data).manifestList}`;
-        mmmManifestsElement.querySelectorAll('select').forEach((input) => {
-          input.querySelector('option[title="none"]').selected = true;
-          input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
-        });
-        addDividers(mmmManifestsElement, '.mep-section');
-        mmmManifestsElement.querySelectorAll('.mep-manifest-title .mep-manifest-toggle').forEach((input) => {
-          input.addEventListener('click', (e) => expandManifest.bind(null, e)());
-        });
-      }
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Error fetching 7-day page data:', error);
-    }
-  }
-
-  const pill = document.querySelector('.mep-manifest.mep-badge');
-  if (event.target.checked && sevenDayPageData) {
-    mmmManifestsElement.classList.add('mep-show');
-    mmmManifestsElement.querySelectorAll('select').forEach((select) => {
-      select.disabled = false;
-    });
-    pill.innerHTML = getPillText(sevenDayPageData.activities.length + mepConfig.activities.length);
-  } else {
-    mmmManifestsElement.classList.remove('mep-show');
-    mmmManifestsElement.querySelectorAll('select').forEach((select) => {
-      select.disabled = true;
-    });
-    pill.innerHTML = getPillText(mepConfig.activities?.length);
-  }
-}
 function addMepPopupListeners(popup, pageId) {
   // One-way auto-check: flipping Highlight M@S ON also pre-toggles "Use M@S markets instead"
   // so the dropdown unhides in the same click. Never auto-unchecks. Must run BEFORE the
@@ -515,10 +429,6 @@ function addMepPopupListeners(popup, pageId) {
     input.addEventListener('keyup', updatePreviewButton.bind(null, popup, pageId));
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
-  popup.querySelectorAll('#mepManifestsCheckbox').forEach((input) => {
-    input.addEventListener('change', (event) => mmmToggleManifests.bind(null, event, popup, pageId)());
-    input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
-  });
   popup.querySelectorAll('.mep-popup-tabs .mep-tab').forEach((input) => {
     input.addEventListener('click', (event) => changeTab.bind(null, event)());
     input.addEventListener('click', updatePreviewButton.bind(null, popup, pageId));
@@ -531,7 +441,9 @@ function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
   return target === 'postlcp' ? 'on post LCP' : target;
 }
-export async function getMepPopup(mepConfig, isMmm = false) {
+// getMepPopup now only serves MMM (libs/blocks/mmm/mmm.js) — the in-page preview
+// popup it used to render is replaced by mep-overlay/mep-overlay.js.
+export async function getMepPopup(mepConfig) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
 
@@ -566,10 +478,9 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   const masMarketChecked = masMarketParam === 'true';
   const mepMasMarketCheckedAttr = masMarketChecked ? 'checked="checked"' : '';
   const PREVIEW_BUTTON_ID = 'preview-button';
-  const pageUrl = isMmm ? page.url : new URL(window.location.href).href;
   const mepPopup = createTag('div', {
-    class: `mep-popup${isMmm ? '' : ' in-page'}`,
-    'data-url': pageUrl,
+    class: 'mep-popup',
+    'data-url': page.url,
   });
 
   const config = getConfig();
@@ -582,8 +493,7 @@ export async function getMepPopup(mepConfig, isMmm = false) {
       <path d="M22.8359 20.9998H18.0635C17.8561 21.0036 17.6523 20.9458 17.478 20.8338C17.3037 20.7219 17.1669 20.5607 17.0849 20.371L11.9039 8.30626C11.8958 8.27747 11.8821 8.25055 11.8636 8.22704C11.845 8.20353 11.822 8.18389 11.7958 8.16924C11.7696 8.1546 11.7408 8.14523 11.711 8.14167C11.6812 8.13812 11.651 8.14044 11.6221 8.14852L11.617 8.15001C11.5806 8.1604 11.5475 8.17958 11.5204 8.20585C11.4934 8.23212 11.4733 8.26466 11.462 8.30055L8.23347 15.9607C8.20525 16.0273 8.20475 16.1023 8.23207 16.1692C8.25939 16.2362 8.31229 16.2896 8.37914 16.3177L8.37983 16.318C8.41348 16.3319 8.44957 16.339 8.486 16.3389H12.035C12.1425 16.3389 12.2477 16.3704 12.3373 16.4295C12.427 16.4887 12.4972 16.5728 12.5391 16.6715L14.0926 20.1157C14.1588 20.2708 14.1603 20.4457 14.097 20.602C14.0336 20.7583 13.9105 20.8831 13.7548 20.949L13.754 20.9493C13.6753 20.9826 13.5907 20.9998 13.5053 20.9998H0.58545C0.488275 20.9993 0.392732 20.9749 0.307356 20.9287C0.22198 20.8824 0.149429 20.8159 0.0961835 20.7349C0.0429379 20.6539 0.0106559 20.5611 0.00222085 20.4647C-0.00621415 20.3683 0.00946049 20.2713 0.0478448 20.1824L8.26598 0.690892C8.35033 0.483823 8.49562 0.307024 8.68274 0.183739C8.86987 0.0604533 9.09007 -0.00354744 9.31441 0.000151769H14.0543C14.2779 -0.0028459 14.4972 0.0615004 14.6834 0.184758C14.8697 0.308015 15.0142 0.484433 15.098 0.690892L23.3726 20.1824C23.4107 20.2712 23.4263 20.3681 23.4178 20.4644C23.4094 20.5606 23.3771 20.6533 23.324 20.7342C23.2709 20.8151 23.1986 20.8817 23.1134 20.928C23.0283 20.9744 22.933 20.999 22.8359 20.9998Z" fill="white"/>
       <path d="M27.6434 20.9998H32.4159C32.5129 20.999 32.6082 20.9744 32.6934 20.928C32.7785 20.8817 32.8509 20.8151 32.904 20.7342C32.9571 20.6533 32.9893 20.5606 32.9978 20.4644C33.0062 20.3681 32.9907 20.2712 32.9525 20.1824L24.6779 0.690892C24.5941 0.484433 24.4496 0.308015 24.2634 0.184758C24.0771 0.0615004 23.8579 -0.0028459 23.6343 0.000151769H18.8943C18.67 -0.00354743 18.4498 0.0604533 18.2627 0.183739C18.0756 0.307024 17.38 1.16222 17.2956 1.36928L20.4916 8.97894C20.503 8.94305 21.0733 8.23212 21.1004 8.20585C21.1274 8.17958 21.1606 8.1604 21.1969 8.15001L21.202 8.14852C21.2309 8.14044 21.2611 8.13812 21.2909 8.14167C21.3207 8.14523 21.3496 8.1546 21.3757 8.16924C21.4019 8.18389 21.4249 8.20353 21.4435 8.22704C21.462 8.25055 21.4758 8.27747 21.4839 8.30626L26.6648 20.371C26.7468 20.5607 26.8837 20.7219 27.058 20.8338C27.2322 20.9458 27.436 21.0036 27.6434 20.9998Z" fill="white"/>
       </svg>`;
-    const mmmLink = isMmm ? mmmSVG : `<a href="https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/" title="Open Mep Manifest Manager" target="_blank">${mmmSVG}</a>`;
-    mepPopupHeader.innerHTML = `${mmmLink}<span class="mep-close"></span>`;
+    mepPopupHeader.innerHTML = `${mmmSVG}<span class="mep-close"></span>`;
     return mepPopupHeader;
   }
   const mepPopupHeader = buildHeader();
@@ -613,13 +523,6 @@ export async function getMepPopup(mepConfig, isMmm = false) {
     mepPopupBody[0].append(manifestTag);
   }
   BuildOptionsManifestList();
-
-  function BuildOptionsManifestLisMMM() {
-    if (config.env?.name !== 'prod') return;
-    const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
-    mepPopupBody[0].append(mepManifestListMMM);
-  }
-  BuildOptionsManifestLisMMM();
 
   // Visibility gates for the market spoofers. Computed once per popup-build:
   //   - lingoOk: page exposes Lingo regions, so the existing Lingo dropdown
@@ -713,38 +616,10 @@ export async function getMepPopup(mepConfig, isMmm = false) {
 
   function buildOptionsToggles() {
     const mepToggleOptions = createTag('div', { class: 'mep-section' });
-    const infoSVG = `
-    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffff" class="mep-info-icon">
-    <path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/>
-    </svg>`;
-    const mepToggleInfo = `
-    ${infoSVG}
-    <div class="mep-info-tooltip">
-      <h6 class="mep-section-header">Fragment Color Key</h6>
-      <div class="mep-section-data">
-        <span class="D1ECF1 color-swatch"></span>
-        <span class="mep-manifest-label">MEP Manifest</span>
-        <span class="D4EDDA color-swatch"></span> 
-        <span class="regional-label">Lingo Regional</span>
-        <span class="FFF3CD color-swatch"></span>
-        <span class="fallback-label">Lingo Fallback</span>
-        <span class="E9ECEF color-swatch"></span>
-        <span class="manifest-label">Other</span>
-      </div>
-    </div>
-    `;
 
-    const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
-      ? `<div>
-        <input type="checkbox" name="mepHighlight${pageId}"
-        id="mepManifestsCheckbox" value="false">
-        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
-      </div>`
-      : '';
     mepToggleOptions.innerHTML = `
     <h6 class="mep-section-header">
       Toggles
-      ${mepToggleInfo}
     </h6>
     <div class="mep-manifest-variants">
       <div>
@@ -768,7 +643,6 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <label for="mepMasHighlightCheckbox${pageId}">Highlight M@S</label>
         <div class="mep-mas-no-content" hidden>No M@S content found on this page.</div>
       </div>
-      ${showManifestsCheckbox}
       <div>
         <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
         id="mepPreviewButtonCheckbox${pageId}" value="off">
@@ -788,17 +662,17 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   // Build Options : Footer
   function buildOptionsFooter() {
     const mepFooterHTML = `
-      <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" ${isMmm ? ' target="_blank"' : ''} active>
+      <a class="con-button outline button-l" data-id="${PREVIEW_BUTTON_ID}" title="Preview above choices" target="_blank" active>
         Preview
       </a>`;
 
-    mepPopupBody[0].append(createTag('div', { class: `mep-popup-footer${isMmm ? '' : ' dark'}` }, mepFooterHTML));
+    mepPopupBody[0].append(createTag('div', { class: 'mep-popup-footer' }, mepFooterHTML));
   }
   buildOptionsFooter();
 
   // Build Summary : Page
   function buildSummaryPage() {
-    const mepTarget = isMmm ? page.target : ({ postlcp: 'postlcp', true: 'on', false: 'off' }[config.mep?.targetEnabled]);
+    const mepTarget = page.target;
 
     const foundation = (getMetadata('foundation') || 'c1').toUpperCase();
     const pageData = {
@@ -832,84 +706,36 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   }
   buildSummaryPage();
 
-  // Build Summary : Consent
-  function buildSummaryConsent() {
-    if (isMmm) return;
-    const { consentState } = config.mep;
-
-    const consentData = {
-      performance: consentState?.performance ? 'on' : 'off',
-      advertising: consentState?.advertising ? 'on' : 'off',
-    };
-
-    const consentHTML = `
-    <h6 class="mep-section-header">Consent</h6>
-    <div class="mep-section-data">
-        <span>Performance</span>
-        <span>${consentData.performance}</span>
-        <span>Advertising</span>
-        <span>${consentData.advertising}</span>
-    </div>
-  `;
-    mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, consentHTML));
-  }
-
-  buildSummaryConsent();
-
   // Build Summary : Lingo
-  async function buildSummaryLingo() {
-    async function getGeoUserSupport() {
-      if (regionKeys?.length === 0 || !lingoActive()) return 'Not Applicable';
-      if (await getGeoLocalePrefix()) return 'Supported';
-      return 'Not Supported';
-    }
-
+  // MMM always takes the isMmm=true branch: shows Total instead of Mep Lingo
+  // Updates, and never shows Country cookie / User Country / Geo + User (those
+  // depend on the CURRENT page/session, which doesn't apply to an arbitrary
+  // page being managed in MMM). getGeoUserSupport/countryCookie/userCountry/
+  // updates were only used by the removed in-page (isMmm=false) branch.
+  function buildSummaryLingo() {
     const regionalFragments = document.querySelectorAll('[data-mep-lingo-roc]');
     const fallbackFragments = document.querySelectorAll('[data-mep-lingo-fallback]');
-
-    const searchParams = new URLSearchParams(window.location.search);
-    const countryParam = normCountryCode(searchParams.get('country'));
-    const countryCookie = countryParam
-      || normCountryCode(getCookie('country'))
-      || 'None';
 
     const lingoData = {
       langFirst: lingoActive() ? 'on' : 'off',
       geoFolder: page.geo || 'Us (None)',
-      countryCookie: escapeHtml(countryCookie) ?? '',
-      userCountry: escapeHtml(await resolveDetectedMarketCountry()) ?? '',
-      geoUser: await getGeoUserSupport(),
-      updates: `${regionalFragments.length} of ${regionalFragments.length + fallbackFragments.length}`,
       total: regionalFragments.length + fallbackFragments.length,
     };
 
     const lingoHTML = `
     <h6 class="mep-section-header">Lingo</h6>
     <div class="mep-section-data">
-      ${isMmm ? `
         <span>Total</span>
         <span>${lingoData.total}</span>
-      ` : `
-        <span>Mep Lingo Updates</span>
-        <span>${lingoData.updates}</span>
-      `}
         <span>Lang First / Lingo</span>
         <span>${lingoData.langFirst}</span>
         <span>Geo Folder</span>
         <span>${lingoData.geoFolder}</span>
-      ${isMmm ? '' : `
-        <span>Country cookie</span>
-        <span>${lingoData.countryCookie}</span>
-        <span>User Country</span>
-        <span>${lingoData.userCountry}</span>
-        <span>Geo + User</span>
-        <span>${lingoData.geoUser}</span>
-      `}
     </div>
   `;
     mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
   }
-  await buildSummaryLingo();
+  buildSummaryLingo();
 
   // M@S summary. Surfaces Detected = Collections + Cards + Inline Fields + Standalone Offers.
   // Sub-collections are a sub-row (live inside the parent collection payload, not a separate
@@ -1009,210 +835,6 @@ export async function getMepPopup(mepConfig, isMmm = false) {
   return mepPopup;
 }
 
-async function createPreviewPill() {
-  const mepConfig = parseMepConfig();
-  if (!mepConfig) return;
-  const { activities } = mepConfig;
-  const overlay = createTag('div', { class: 'mep-preview-overlay static-links', popover: 'manual', 'data-lenis-prevent': '' });
-  const pill = document.createElement('div');
-  pill.classList.add('mep-hidden');
-  const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
-  mepBadge.innerHTML = getPillText(activities?.length);
-  pill.append(mepBadge);
-  pill.append(await getMepPopup(mepConfig));
-  overlay.append(pill);
-  document.body.append(overlay);
-  let onClose;
-  if (window.lenis?.options) {
-    const originalPrevent = window.lenis.options.prevent;
-    window.lenis.options.prevent = (node) => {
-      if (node.closest('.mep-preview-overlay')) return true;
-      return originalPrevent?.(node);
-    };
-    onClose = () => { window.lenis.options.prevent = originalPrevent; };
-  }
-  addPillEventListeners(pill, overlay, onClose);
-}
-function addHighlightData(manifests) {
-  manifests.forEach(({ selectedVariant, manifest }) => {
-    const manifestName = getFileName(manifest);
-
-    const updateManifestId = (selector, prop = 'manifestId') => {
-      document.querySelectorAll(selector).forEach((el) => {
-        el.dataset[prop] = manifestName;
-        if (prop === 'manifestId') {
-          el.dataset.manifestDisplay = `${manifestName}: html`;
-        }
-      });
-    };
-
-    selectedVariant?.replacefragment?.forEach(
-      ({ val }) => {
-        document.querySelectorAll(`[data-path*="${val}"]`).forEach((el) => {
-          el.dataset.manifestId = manifestName;
-          el.dataset.fragmentPath = val;
-          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path || val}`;
-        });
-      },
-    );
-
-    selectedVariant?.useblockcode?.forEach(({ selector }) => {
-      if (selector) updateManifestId(`.${selector}`, 'codeManifestId');
-    });
-
-    selectedVariant?.updatemetadata?.forEach(({ selector }) => {
-      if (selector === 'gnav-source') updateManifestId('header, footer');
-    });
-
-    document.querySelectorAll(`.section[class*="merch-cards"] .fragment[data-manifest-id="${manifestName}"]`)
-      .forEach((parentFrag) => {
-        const parentPath = parentFrag.dataset.path;
-        parentFrag.querySelectorAll('merch-card').forEach((card) => {
-          card.dataset.manifestId = manifestName;
-          if (parentPath) {
-            card.dataset.fragmentPath = parentPath;
-            card.dataset.manifestDisplay = `${manifestName}: ${parentPath}`;
-          }
-        });
-      });
-
-    document.querySelectorAll(`[data-manifest-id="${manifestName}"]`).forEach((el) => {
-      if (!el.dataset.manifestDisplay) {
-        if (el.dataset.path) {
-          el.dataset.manifestDisplay = `${manifestName}: ${el.dataset.path}`;
-          el.dataset.fragmentPath = el.dataset.path;
-        } else {
-          el.dataset.manifestDisplay = `${manifestName}: html`;
-          el.dataset.mepHtmlBadge = 'true'; // Mark as non-clickable HTML badge - gnav workaround
-        }
-      }
-    });
-  });
-}
-
-function markDefaultFragments() {
-  document.querySelectorAll('[data-path]').forEach((fragment) => {
-    const hasManifest = fragment.dataset.manifestId;
-    const hasRoc = fragment.dataset.mepLingoRoc;
-    const hasFallback = fragment.dataset.mepLingoFallback;
-    if (!hasManifest && !hasRoc && !hasFallback && fragment.dataset.path) {
-      fragment.dataset.fragmentDefault = '';
-      fragment.dataset.fragmentDisplay = fragment.dataset.path;
-    }
-  });
-}
-
-function adjustBadgesForZeroHeightSections() {
-  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
-  document.querySelectorAll(badgeSelectors).forEach((el) => {
-    const section = el.closest('.section');
-    const elementHeight = el.offsetHeight;
-    const sectionHeight = section ? section.offsetHeight : elementHeight;
-    if (sectionHeight < 10) {
-      const badgeHeight = 35;
-      const spacing = 5;
-      el.style.setProperty('--badge-top-offset', `-${badgeHeight + spacing}px`);
-    }
-  });
-}
-
-function adjustStackedBadges() {
-  const badgeSelectors = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
-  const badgeHeight = 35;
-  const spacing = 5;
-  document.querySelectorAll('.section').forEach((section) => {
-    const allBadges = section.querySelectorAll(badgeSelectors);
-    const directBadges = [...allBadges].filter((el) => {
-      if (el.closest('.section') !== section) return false;
-      return window.getComputedStyle(el).display === 'contents';
-    });
-    if (directBadges.length <= 1) return;
-    let offset = 0;
-    directBadges.forEach((el) => {
-      if (offset > 0) el.style.setProperty('--badge-top-offset', `${offset}px`);
-      offset += badgeHeight + spacing;
-    });
-  });
-}
-
-function addFragmentBadgeClickHandlers() {
-  document.body.addEventListener('click', (e) => {
-    const isHighlightEnabled = document.body.dataset.mepHighlight === 'true';
-    const isFragmentsEnabled = document.body.dataset.mepFragments === 'true';
-    const isCaasHighlightEnabled = document.body.dataset.mepCaasHighlight === 'true';
-    if (!isHighlightEnabled && !isFragmentsEnabled && !isCaasHighlightEnabled) return;
-
-    // Ignore clicks from within the MEP popup
-    if (e.target.closest('.mep-preview-overlay')) return;
-
-    // Find the badged element that was clicked (includes non-fragment badges)
-    const fragment = e.target.closest('[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]');
-    if (!fragment) return;
-
-    const elementStyle = window.getComputedStyle(fragment);
-    const beforeStyles = window.getComputedStyle(fragment, '::before');
-    const badgeIsVisible = beforeStyles.display !== 'none' && beforeStyles.content !== 'none';
-    if (!badgeIsVisible) return;
-
-    const badgeWidth = Math.max(parseFloat(beforeStyles.width) + 30, 200);
-    const badgeHeight = parseFloat(beforeStyles.height)
-      || parseFloat(beforeStyles.minHeight)
-      || 35;
-    let fragmentPath = fragment.dataset.path
-      || fragment.dataset.fragmentPath
-      || fragment.dataset.cardUrl;
-    if (fragment.dataset.cardUrl) {
-      fragmentPath = rewriteBlogPreviewHost(fragmentPath) || rewriteForPreviewHost(fragmentPath);
-    }
-    const handleBadgeClick = () => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (fragmentPath) window.open(fragmentPath, '_blank');
-    };
-
-    if (elementStyle.display === 'contents') {
-      const badgeTopOffset = parseFloat(fragment.style.getPropertyValue('--badge-top-offset')) || 0;
-      const visibleChildren = Array.from(fragment.children).filter((c) => c.offsetHeight > 0);
-      if (visibleChildren.length === 0) {
-        if (e.clientX >= 0 && e.clientX < badgeWidth) handleBadgeClick();
-        return;
-      }
-      for (const child of visibleChildren) {
-        const childRect = child.getBoundingClientRect();
-        const relativeY = e.clientY - childRect.top;
-        const relativeX = e.clientX - childRect.left;
-        const inBadgeY = relativeY >= (badgeTopOffset - badgeHeight)
-          && relativeY < badgeTopOffset;
-        const inBadgeX = relativeX >= 0 && relativeX < badgeWidth;
-        if (inBadgeY && inBadgeX) {
-          handleBadgeClick();
-          return;
-        }
-      }
-      return;
-    }
-
-    // ::before badges are position:absolute, anchored to the host's nearest
-    // positioned ancestor — usually the host, but not always (gnav promos
-    // resolve up to header.global-navigation). Hit area = container rect + badge top/left.
-    let containerRect;
-    if (elementStyle.position !== 'static') {
-      containerRect = fragment.getBoundingClientRect();
-    } else {
-      let ancestor = fragment.parentElement;
-      while (ancestor && window.getComputedStyle(ancestor).position === 'static') {
-        ancestor = ancestor.parentElement;
-      }
-      containerRect = (ancestor || document.documentElement).getBoundingClientRect();
-    }
-    const badgeAbsTop = containerRect.top + (parseFloat(beforeStyles.top) || 0);
-    const badgeAbsLeft = containerRect.left + (parseFloat(beforeStyles.left) || 0);
-    const inBadgeY = e.clientY >= badgeAbsTop && e.clientY < (badgeAbsTop + badgeHeight);
-    const inBadgeX = e.clientX >= badgeAbsLeft && e.clientX < (badgeAbsLeft + badgeWidth);
-    if (inBadgeY && inBadgeX) handleBadgeClick();
-  });
-}
-
 export async function saveToMmm() {
   const data = parseMepConfig();
   if (!data) return false;
@@ -1243,34 +865,4 @@ export async function saveToMmm() {
       /* c8 ignore next 1 */
       throw new Error(res.message || 'Network response failed');
     });
-}
-export default async function decoratePreviewMode() {
-  const { miloLibs, codeRoot, mep } = getConfig();
-  loadStyle(`${miloLibs || codeRoot}/features/mep/mep-next/mep-next.css`);
-  // Warm the M@S supported-markets cache so the spoofer dropdown is ready by popup open.
-  // Critical on non-Lingo pages (e.g., /products/photoshop) — no other consumer fetches
-  // this config before the popup builds. Fire-and-forget; getMarketConfig swallows errors.
-  getMarketConfig();
-  await createPreviewPill();
-  if (mep?.experiments) addHighlightData(mep.experiments);
-  markDefaultFragments();
-  addFragmentBadgeClickHandlers();
-
-  // Needs to check at all times for update counts
-  watchForCaasBlocks();
-  watchForMasContent();
-
-  if (document.body.dataset.mepCaasHighlight === 'true') {
-    watchForCaasBlocks();
-    injectCaasBadges();
-  }
-  if (document.body.dataset.mepMasHighlight === 'true') {
-    watchForMasContent();
-    injectMasBadges();
-  }
-  // Adjust badge positions after a short delay to allow rendering
-  setTimeout(() => {
-    adjustBadgesForZeroHeightSections();
-    adjustStackedBadges();
-  }, 100);
 }
