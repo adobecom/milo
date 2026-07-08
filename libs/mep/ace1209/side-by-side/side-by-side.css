@@ -1,7 +1,11 @@
 .side-by-side {
+  --card-overlay-gradient-bottom: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
+  --card-overlay-gradient-top: linear-gradient(140deg, var(--s2a-color-transparent-black-48) -1.92%, var(--s2a-color-transparent-black-00) 38.8%);
+  --card-gap: var(--s2a-spacing-xs);
+
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--s2a-spacing-xs);
+  gap: var(--card-gap);
 
   &.dark {
     background-color: unset;
@@ -10,6 +14,14 @@
   .card {
     border-radius: var(--s2a-border-radius-md);
     position: relative;
+  }
+
+  > .card:first-child {
+    --parallax-stagger-index: 0.5;
+  }
+
+  > .card:last-child {
+    --parallax-stagger-index: 1.5;
   }
 
   .media {
@@ -24,20 +36,18 @@
       border-radius: inherit;
     }
 
+    .video-container {
+      border-radius: inherit;
+      width: 100%;
+    }
+
     video, img {
       object-fit: cover;
     }
   }
 
-  > div:first-child {
-    --parallax-stagger-index: 0.5;
-  }
-
-  > div:last-child {
-    --parallax-stagger-index: 1.5;
-  }
-
   .card-overlay {
+    --card-overlay-gradient: var(--card-overlay-gradient-bottom);
     overflow: hidden;
     aspect-ratio: 33/37;
     border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
@@ -57,19 +67,17 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
+      background: var(--card-overlay-gradient);
       filter: blur(0px);
       pointer-events: none;
     }
 
-    .video-container {
-      border-radius: inherit;
-      width: 100%;
-    }
-
     .foreground {
+      --card-overlay-padding: var(--s2a-spacing-lg);
+      /* Play/pause button size + current padding */
+      --card-overlay-padding-bottom: calc(var(--play-pause-size, 0px) + var(--card-overlay-padding));
       position: relative;
-      padding: var(--s2a-spacing-lg);
+      padding: var(--card-overlay-padding) var(--card-overlay-padding) var(--card-overlay-padding-bottom);
       z-index: 1;
       display: flex;
       flex-direction: column;
@@ -78,33 +86,17 @@
     }
 
     &:has(video) .foreground {
-      /* Play/pause button size + spacing */
-      padding-block-end: calc(32px + var(--s2a-spacing-lg));
-    }
-  }
-
-  &.featured {
-    .card-overlay {
-      display: flex;
-      align-items: flex-end;
-      aspect-ratio: 72 / 113;
-
-      .media::after {
-        background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 71.64%, var(--s2a-color-transparent-black-72) 100%);
-      }
-    }
-
-    &:has(+ .side-by-side.equal) {
-      margin-block-end: var(--s2a-spacing-xs);
+      --play-pause-size: 32px;
     }
   }
 
   .card-stacked {
     --parallax-stagger-index: 1.5;
+    --card-stack-padding: 15%;
 
     display: flex;
     flex-direction: column;
-    padding-inline: 15% 0;
+    padding-inline: var(--card-stack-padding) 0;
 
     .foreground {
       padding: var(--s2a-spacing-md);
@@ -118,30 +110,26 @@
       }
     }
 
-    .equal & {
-      padding-inline: 0 15%;
+    .media {
+      aspect-ratio: 32/39;
+    }
+
+  }
+
+  &.featured {
+    .card-overlay {
+      display: flex;
+      align-items: flex-end;
+      aspect-ratio: 72 / 113;
+    }
+
+    &:has(+ .side-by-side.equal) {
+      margin-block-end: var(--card-gap);
     }
   }
 
-  &.mobile-horizontal {
-    overflow-x: hidden;
-    view-timeline: --lol block;
-
-    > div {
-      animation: horizontal cubic-bezier(0.42, 0, 0, 1);
-      animation-timeline: --lol;
-      animation-range: entry 95% cover 70%;
-      animation-fill-mode: both;
-
-      display: flex;
-      width: 100%;
-      gap: var(--s2a-spacing-xs);
-    }
-
-    .card-stacked {
-      flex: 1 0 calc(100% - var(--s2a-spacing-xs) - var(--grid-padding));
-      padding-inline: unset;
-    }
+  &.left-small .card-stacked {
+    padding-inline: 0 var(--card-stack-padding);;
   }
 }
 
@@ -151,6 +139,27 @@
   .side-by-side {
     grid-template-columns: 1.81fr 1fr;
     align-items: start;
+
+    .card-overlay {
+      --card-overlay-gradient: var(--card-overlay-gradient-top);
+      align-items: flex-start;
+      .foreground {
+        --card-overlay-padding-bottom: var(--card-overlay-padding);
+        max-width: 480px;
+      }
+    }
+
+    .card-stacked {
+      --card-stack-padding: 0;
+
+      .media {
+        min-height: 306px;
+      }
+
+      .foreground {
+        max-width: 480px;
+      }
+    }
 
     &.reverse {
       grid-template-columns: 1fr 1.81fr;
@@ -162,63 +171,13 @@
       > :first-child {
         grid-column: 2;
       }
-
-      .card-stacked {
-        padding-inline: unset;
-
-        .media {
-          min-height: unset;
-        }
-      }
     }
 
     &.featured {
       grid-template-columns: 1fr;
       .card-overlay {
+        --card-overlay-gradient: var(--card-overlay-gradient-bottom);
         aspect-ratio: 41 / 35;
-      }
-    }
-
-    &.mobile-horizontal {
-      overflow-x: clip;
-
-      > div {
-        animation: none;
-      }
-
-      .card-stacked {
-        flex: 1 0 100%;
-
-        &:last-child {
-          padding-inline-end: unset
-        }
-      }
-    }
-
-    .card-overlay {
-      align-items: flex-start;
-      .foreground {
-        max-width: 480px;
-      }
-
-      .media::after {
-        background: linear-gradient(144deg, var(--s2a-color-transparent-black-88) 6.95%, var(--s2a-color-transparent-black-00) 27.98%);
-      }
-
-      &:has(video) .foreground {
-        padding-block-end: var(--s2a-spacing-lg);
-      }
-    }
-
-    .card-stacked {
-      padding-inline: unset;
-
-      .media {
-        min-height: 306px;
-      }
-
-      .foreground {
-        max-width: 480px;
       }
     }
   }
@@ -227,19 +186,16 @@
 @media (width >= 1280px) {
   .side-by-side {
     .card-overlay .foreground {
+      --card-overlay-padding: var(--s2a-spacing-xl);
+    }
+
+    .card-stacked .foreground {
       padding: var(--s2a-spacing-xl);
-
-      .featured & {
-        padding: var(--s2a-spacing-2xl);
-      }
     }
+  }
 
-    .card-stacked {
-      padding-left: 0;
-      .foreground {
-        padding: var(--s2a-spacing-xl);
-      }
-    }
+  &.featured .card-overlay .foreground {
+    --card-overlay-padding: var(--s2a-spacing-2xl);
   }
 }
 
@@ -248,9 +204,4 @@
     height: 1200px;
     aspect-ratio: unset;
   }
-}
-
-@keyframes horizontal {
-  from { translate: 0% }
-  to { translate: calc((100% - var(--s2a-spacing-xs) - 2 * var(--grid-padding)) * -1); };
 }
