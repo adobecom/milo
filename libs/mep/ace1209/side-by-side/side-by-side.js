@@ -79,12 +79,6 @@ function decorate(block) {
 
   block.replaceChildren(...cards);
 
-  if (block.classList.contains('mobile-horizontal')) {
-    const cardContainer = createTag('div');
-    cardContainer.append(...cards);
-    block.replaceChildren(cardContainer);
-  }
-
   if (!block.classList.contains('dark')) {
     block.querySelector('.card-overlay')?.classList.add('dark');
   }
