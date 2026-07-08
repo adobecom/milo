@@ -120,6 +120,16 @@ describe('MEP Utils', () => {
       console.log(promises);
       expect(promises.lob).to.be.a('promise');
     });
+    it('loads event from event-code metadata', async () => {
+      document.head.innerHTML = '<meta name="event-code" content="max2025">';
+      const promises = loadMepAddons();
+      expect(promises.event).to.be.a('promise');
+    });
+    it('does not load event from the legacy event-id metadata', async () => {
+      document.head.innerHTML = '<meta name="event-id" content="max2025">';
+      const promises = loadMepAddons();
+      expect(promises.event).to.be.undefined;
+    });
     afterEach(() => {
       document.head.innerHTML = '';
     });
