@@ -1,111 +1,92 @@
 .quote {
-  /* fine corner + marks and frame border — dark lines by default, light in the dark variant */
-  --quote-line-rgb: 19 19 19;
-  --quote-greeble-color: rgb(var(--quote-line-rgb) / 50%);
-  --quote-frame-color: rgb(var(--quote-line-rgb) / 10%);
-  --quote-greeble-size: 36px;
+  --quote-frame-color: var(--s2a-color-gray-800);
+  --quote-dot-color: var(--s2a-color-gray-25);
   --quote-frame-width: 1px;
-  --quote-crop-overshoot: 64px; /* how far the vertical frame lines extend past the text box */
-  --quote-min-height: 540px;
+  --quote-dash-size: 3px;
+  --quote-pad: var(--s2a-spacing-lg);
+  --quote-gap: var(--s2a-layout-lg);
+  --quote-content-min-height: calc(600px - 2 * var(--quote-pad));
+  --quote-copy-max-width: 1312px; /* per Figma spec */
 
+  position: relative;
   box-sizing: border-box;
+  padding: var(--quote-pad);
   color: var(--s2a-color-content-default);
-
-  .dark &,
-  &.dark {
-    --quote-line-rgb: 229 229 229;
-  }
 
   .foreground {
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: var(--s2a-spacing-lg);
-    min-height: var(--quote-min-height);
+    gap: var(--quote-gap);
+    min-height: var(--quote-content-min-height);
     margin: 0;
-    padding: var(--s2a-spacing-lg) 0;
 
-    /* horizontal crop lines (text-box top & bottom) extended to the page width */
+    /* Horizontal guide lines */
     &::before {
       content: "";
       position: absolute;
       inset-block: 0;
       left: 50%;
-      width: 100vw;
+      width: calc(100% + 2 * var(--quote-pad));
       transform: translateX(-50%);
       border-block: var(--quote-frame-width) solid var(--quote-frame-color);
       pointer-events: none;
     }
 
-    /* vertical crop lines (text-box left & right) extended past top & bottom */
+    /* Vertical guide lines + centered dashed line */
     &::after {
       content: "";
       position: absolute;
       inset-inline: 0;
-      inset-block: calc(-1 * var(--quote-crop-overshoot));
+      inset-block: calc(-1 * var(--quote-pad));
       border-inline: var(--quote-frame-width) solid var(--quote-frame-color);
+      background: repeating-linear-gradient(
+          var(--quote-frame-color) 0 var(--quote-dash-size),
+          transparent var(--quote-dash-size) calc(2 * var(--quote-dash-size))
+        ) 50% 0 / var(--quote-frame-width) 100% no-repeat;
       pointer-events: none;
     }
   }
 
-  /* Tight box border + corner greebles, hugging the text. */
+  /* Corner dots */
   .quote-frame {
     position: absolute;
     inset: 0;
-    border: var(--quote-frame-width) solid var(--quote-frame-color);
+    background-image:
+      linear-gradient(var(--quote-dot-color), var(--quote-dot-color)),
+      linear-gradient(var(--quote-dot-color), var(--quote-dot-color)),
+      linear-gradient(var(--quote-dot-color), var(--quote-dot-color)),
+      linear-gradient(var(--quote-dot-color), var(--quote-dot-color));
+    background-repeat: no-repeat;
+    background-size: var(--quote-frame-width) var(--quote-frame-width);
+    background-position: 0 0, 100% 0, 0 100%, 100% 100%;
     pointer-events: none;
-
-    /* Two rails straddling the left/right edges, each drawing a + at the top and
-       bottom corner via four 1px gradient lines, centered on the border lines. */
-    &::before,
-    &::after {
-      content: "";
-      position: absolute;
-      inset-block: calc(var(--quote-greeble-size) / -2 - var(--quote-frame-width) / 2);
-      width: var(--quote-greeble-size);
-      background-image:
-        linear-gradient(var(--quote-greeble-color), var(--quote-greeble-color)),
-        linear-gradient(var(--quote-greeble-color), var(--quote-greeble-color)),
-        linear-gradient(var(--quote-greeble-color), var(--quote-greeble-color)),
-        linear-gradient(var(--quote-greeble-color), var(--quote-greeble-color));
-      background-repeat: no-repeat;
-      background-size:
-        100% 1px, 1px var(--quote-greeble-size),
-        100% 1px, 1px var(--quote-greeble-size);
-      background-position:
-        center calc(var(--quote-greeble-size) / 2 - var(--quote-frame-width) / 2), center top,
-        center calc(100% - var(--quote-greeble-size) / 2 + var(--quote-frame-width) / 2), center bottom;
-    }
-
-    /* Center each rail on its border line via a logical inset (no physical
-       translate) so the + stay on the corners in both LTR and RTL. */
-    &::before {
-      inset-inline-start: calc(var(--quote-frame-width) / -2 - var(--quote-greeble-size) / 2);
-    }
-
-    &::after {
-      inset-inline-end: calc(var(--quote-frame-width) / -2 - var(--quote-greeble-size) / 2);
-    }
+    z-index: 1;
   }
 }
 
 .quote-copy {
+  position: relative;
+  z-index: 1;
+  max-width: var(--quote-copy-max-width);
   margin: 0;
-
-  [class*="heading-"] {
-    position: relative;
-    margin: 0;
-  }
 }
 
 .quote-attribution {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
 
   .quote.center-footer & {
     align-items: center;
     text-align: center;
+  }
+
+  .quote.right-footer & {
+    align-items: flex-end;
+    text-align: end;
   }
 }
 
@@ -118,14 +99,21 @@
   color: var(--s2a-color-content-subtle);
 }
 
-@media (width >= 1280px) {
+@media (width >= 768px) {
   .quote {
-    --quote-min-height: 650px;
+    --quote-pad: var(--s2a-spacing-3xl);
+    --quote-gap: var(--s2a-layout-xl);
+    --quote-content-min-height: 0;
+
+    .foreground {
+      justify-content: flex-start;
+    }
   }
 }
 
-@media (width >= 2560px) {
-  .quote .foreground::before {
-    width: calc(100% + var(--quote-crop-overshoot) * 2);
+@media (width >= 1280px) {
+  .quote {
+    --quote-pad: var(--s2a-spacing-4xl);
+    --quote-gap: var(--s2a-layout-2xl);
   }
 }
