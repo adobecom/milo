@@ -1026,22 +1026,17 @@ const getXLGListURL = (config) => {
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
+  const entitlementUrl = getXLGListURL(config);
+  const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
+  if (!fetchedData) return config.consumerEntitlements || {};
+  const entitlements = {};
+  fetchedData?.data?.forEach((ent) => {
+    const { id, tagname } = ent;
+    entitlements[id] = tagname;
+  });
   config.mep ??= {};
-  if (config.mep.entitlementMapFetch) return config.mep.entitlementMapFetch;
-  config.mep.entitlementMapFetch = (async () => {
-    const entitlementUrl = getXLGListURL(config);
-    const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
-    if (!fetchedData) return config.consumerEntitlements || {};
-    const entitlements = {};
-    fetchedData?.data?.forEach((ent) => {
-      const { id, tagname } = ent;
-      entitlements[id] = tagname;
-    });
-    config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
-    config.mep.entitlementMapFetch = null;
-    return config.mep.entitlementMap;
-  })();
-  return config.mep.entitlementMapFetch;
+  config.mep.entitlementMap = { ...config.consumerEntitlements, ...entitlements };
+  return config.mep.entitlementMap;
 };
 
 export const getEntitlements = async (data) => {
@@ -1440,19 +1435,22 @@ export async function applyPers({ manifests }) {
   let experiments = manifests;
   const config = getConfig();
 
-  experiments = await Promise.all(
-    experiments.map((exp) => getManifestConfig(exp, config.mep?.variantOverride)),
-  );
+  for (let i = 0; i < experiments.length; i += 1) {
+    experiments[i] = await getManifestConfig(
+      experiments[i],
+      config.mep?.variantOverride,
+    );
+  }
   experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
   let results = [];
 
-  // Safe to parallelize only because categorizeActions has no internal awaits —
-  // adding one would break last-write-wins order for replacepage/updateframework.
-  results = (await Promise.all(
-    experiments.map((exp) => categorizeActions(exp, config)),
-  )).filter(Boolean);
+  for (const experiment of experiments) {
+    const result = await categorizeActions(experiment, config);
+    if (result) results.push(result);
+  }
+  results = results.filter(Boolean);
 
   config.mep.experiments = [...config.mep.experiments, ...experiments];
   config.mep.blocks = consolidateObjects(results, 'blocks', config.mep.blocks);
@@ -1717,7 +1715,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(normalizePath(getXLGListURL(config)), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
@@ -1733,16 +1731,7 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) {
-      loadLink(`${config.base}/utils/market.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
-      loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
-        log(`MEP save error: ${e.toString()}`);
-        window.lana?.log(`MEP save error: ${e.toString()}`);
-      });
-    }
+    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
