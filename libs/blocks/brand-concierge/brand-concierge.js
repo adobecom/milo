@@ -402,7 +402,7 @@ async function openChatModal(initialMessage, el) {
     }
 
     if (!bcToken) {
-      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+      bcToken = window.adobeIMS?.getAccessToken()?.token;
     }
 
     if (bcToken) {
