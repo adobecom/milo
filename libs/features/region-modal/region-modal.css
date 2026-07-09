@@ -145,10 +145,6 @@ body:has(.dialog-modal:not(.region-modal, .curtain-off)) #region-modal + .modal-
   display: none;
 }
 
-/* ============================================================
-  C2 (foundation: c2) 
-  ============================================================ */
-
 html:has(meta[name="foundation"][content="c2"]) {
   .dialog-modal.region-modal {
     .georouting-wrapper {
@@ -224,7 +220,6 @@ html:has(meta[name="foundation"][content="c2"]) {
         padding-top: var(--s2a-spacing-lg);
       }
     }
-    /* c2 styles for tabs */
 
     .locale-text {
       font-size: var(--s2a-typography-font-size-body-md);
