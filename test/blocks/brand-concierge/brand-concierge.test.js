@@ -285,6 +285,77 @@ describe('Brand Concierge', () => {
     delete window.adobe;
   });
 
+  describe('Marquee variant', () => {
+    it('decorates the header with eyebrow (h3), title (h2) and subtitle (p) in order', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const header = block.querySelector('.bc-header');
+      expect(header).to.exist;
+      expect(header.querySelector('.bc-header-eyebrow').textContent.trim()).to.equal('Adobe for business');
+      expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('Grow your business with Adobe.');
+      expect(header.querySelector('.bc-header-subtitle').textContent.trim()).to.equal('Unify data, content, and workflows.');
+
+      const kids = [...header.children];
+      expect(kids[0].classList.contains('bc-header-eyebrow')).to.be.true;
+      expect(kids[1].classList.contains('bc-header-title')).to.be.true;
+      expect(kids[2].classList.contains('bc-header-subtitle')).to.be.true;
+    });
+
+    it('builds a .background layer with per-breakpoint image wrappers in authored order', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const background = block.querySelector('.background');
+      expect(background).to.exist;
+      const wrappers = background.querySelectorAll(':scope > div');
+      expect(wrappers.length).to.equal(3);
+      expect(wrappers[0].classList.contains('desktop-only')).to.be.true;
+      expect(wrappers[1].classList.contains('tablet-only')).to.be.true;
+      expect(wrappers[2].classList.contains('mobile-only')).to.be.true;
+      wrappers.forEach((wrapper) => expect(wrapper.querySelector('picture')).to.exist);
+    });
+
+    it('wraps the content in a grid-constrained .foreground.container', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const foreground = block.querySelector('.foreground.container');
+      expect(foreground).to.exist;
+      expect(foreground.querySelector('.bc-header')).to.exist;
+      expect(foreground.querySelector('.bc-input-field')).to.exist;
+      expect(foreground.querySelectorAll('.bc-prompt-cards .prompt-card-button').length).to.equal(3);
+      expect(foreground.querySelector('.bc-legal').textContent).to.contain('Terms');
+
+      // the background stays outside the constrained container
+      expect(foreground.querySelector('.background')).to.be.null;
+    });
+
+    it('applies a single authored image without per-breakpoint wrappers', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/marquee-single-image.html' });
+      const block = document.querySelector('.brand-concierge.marquee');
+      await init(block);
+
+      const background = block.querySelector('.background');
+      expect(background).to.exist;
+      expect(background.querySelectorAll('picture').length).to.equal(1);
+      expect(background.querySelector('.desktop-only, .tablet-only, .mobile-only')).to.be.null;
+    });
+  });
+
+  it('does not render an eyebrow when a single heading is authored', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const block = document.querySelector('.brand-concierge');
+    await init(block);
+
+    const header = block.querySelector('.bc-header');
+    expect(header.querySelector('.bc-header-eyebrow')).to.be.null;
+    expect(header.querySelector('.bc-header-title').textContent.trim()).to.equal('AI Assistant');
+  });
+
   it('createSusiComponentForModal creates SUSI component with correct properties and event listeners', () => {
     const onCloseRedirect = sinon.spy();
     const onSuccessfulToken = sinon.spy();
