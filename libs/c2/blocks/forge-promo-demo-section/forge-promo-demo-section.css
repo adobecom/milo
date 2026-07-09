@@ -1,0 +1,162 @@
+/* forge-promo-demo-section — scoped toward the Figma promo-bar-on-frame target.
+   Every selector is keyed on the classes init() stamps on the reconstructed DOM
+   (.promo-frame/.promo-bar/.promo-copy/.promo-body/.promo-cta/.see-offers-btn/
+   .ic-cta/.promo-close/.ic-close/.promo-screenshot) — NOT on the Figma classes
+   that DA strips at runtime. Frame width is responsive (max-width, not a pinned
+   design pixel); the frame reserves its box via aspect-ratio to avoid CLS. */
+
+.forge-promo-demo-section {
+  --promo-bar-bg: var(--s2a-color-neutral-900, #000);
+  --promo-fg: var(--s2a-color-white, #fff);
+  --promo-canvas: var(--s2a-color-white, #fff);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  /* Vertical section rhythm consistent with C2 siblings (~124px / ~80px). */
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 64px) var(--s2a-layout-section-bottom, 80px);
+}
+
+.forge-promo-demo-section * { box-sizing: border-box; }
+
+.forge-promo-demo-section img,
+.forge-promo-demo-section picture {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.forge-promo-demo-section .promo-frame {
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  /* Reserve the frame box before content paints; reflows to container width. */
+  aspect-ratio: 1920 / 840;
+  min-height: 420px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--promo-canvas);
+  border-radius: var(--s2a-corner-radius-md, 8px);
+  box-shadow: 0 0 24px 0 rgba(0, 0, 0, 0.12);
+}
+
+.forge-promo-demo-section .promo-bar {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s2a-space-md, 16px) var(--s2a-space-lg, 24px);
+  background: var(--promo-bar-bg);
+}
+
+.forge-promo-demo-section .promo-copy {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-space-lg, 24px);
+  width: 100%;
+  max-width: 1200px;
+}
+
+.forge-promo-demo-section .promo-body {
+  margin: 0;
+  max-width: 1000px;
+  text-align: left;
+  color: var(--promo-fg);
+  font-weight: 700;
+  font-size: var(--s2a-font-size-100, 20px);
+  line-height: 1.25;
+}
+
+.forge-promo-demo-section .promo-cta {
+  flex-shrink: 0;
+}
+
+/* Outlined pill CTA — color set explicitly (never inherit the global dark a{}). */
+.forge-promo-demo-section .see-offers-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-space-xs, 8px);
+  padding: 9px 18px 10px;
+  border: 2px solid var(--promo-fg);
+  border-radius: 100px;
+  background: transparent;
+  color: var(--promo-fg);
+  font-weight: 700;
+  font-size: var(--s2a-font-size-75, 17px);
+  line-height: 1.24;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+
+.forge-promo-demo-section .see-offers-btn:hover,
+.forge-promo-demo-section .see-offers-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.forge-promo-demo-section .see-offers-label { color: inherit; }
+
+.forge-promo-demo-section .ic-cta,
+.forge-promo-demo-section .ic-cta img {
+  height: 16px;
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.forge-promo-demo-section .promo-close {
+  position: absolute;
+  right: var(--s2a-space-lg, 24px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.forge-promo-demo-section .ic-close,
+.forge-promo-demo-section .ic-close img {
+  height: 20px;
+  width: auto;
+}
+
+.forge-promo-demo-section .promo-screenshot {
+  flex: 1 1 auto;
+  width: 100%;
+  background: var(--promo-canvas);
+}
+
+@media (max-width: 1023px) {
+  .forge-promo-demo-section { padding: 64px 24px 48px; }
+
+  .forge-promo-demo-section .promo-frame {
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+
+  .forge-promo-demo-section .promo-copy {
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 32px;
+  }
+
+  .forge-promo-demo-section .promo-body { text-align: center; }
+
+  .forge-promo-demo-section .promo-close {
+    top: 16px;
+    transform: none;
+  }
+
+  .forge-promo-demo-section .promo-screenshot { min-height: 320px; }
+}
+
+@media (max-width: 767px) {
+  .forge-promo-demo-section .promo-body { font-size: 14px; line-height: 1.3; }
+}
