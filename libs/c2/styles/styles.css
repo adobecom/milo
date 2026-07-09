@@ -1203,23 +1203,23 @@ span.hang-opening-quote {
     &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
     &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
     &.two-up   > :nth-child(2n of :not([class*="section-"])),
     &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 3.25; }
 
     &.three-up > :nth-child(3n of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
     &.four-up  > :nth-child(4n of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 7.75; }
 
-    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 10; }
 
-    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 12.25; }
 
     /* Row stagger indices per -up class */
     /* Row 1 */
@@ -1319,28 +1319,30 @@ span.hang-opening-quote {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
 
-    overflow: clip;
     transform-origin: top center;
     animation: garage-door-grow ease-out both;
     animation-timeline: view();
-    animation-range: entry 0% cover 40%;
+    animation-range: entry 0% cover 36%;
 
     @media (width >= 1280px) {
-      --gd-grow-from: -110vh;
-      --gd-reveal-from: 50vh;
-      animation-range: entry 0% cover 50%;
+      --gd-grow-from: -90vh;
+      --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 48%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
-      --gd-reveal-from: 30vh;
       animation-range: entry 0% cover 36%;
     }
 
-    .section-background img {
-      animation: garage-door-bg-scale ease-out both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 70%;
+    .section-background {
+      overflow: hidden;
+
+      img {
+        animation: garage-door-bg-scale ease-out both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 70%;
+      }
     }
 
     .foreground {
@@ -1433,19 +1435,6 @@ span.hang-opening-quote {
   @keyframes dg-exit {
     from { transform: translateY(0); }
     to { transform: translateY(20vh); }
-  }
-
-  /* Line height parallax declarations */
-  /* TODO: Adapt authoring to move and rename class */
-  .parallax-line-height * {
-    animation: text-reveal-up var(--parallax-easing) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-    will-change: line-height;
-  }
-
-  @keyframes text-reveal-up {
-    from { line-height: 300%; }
   }
 }
 
