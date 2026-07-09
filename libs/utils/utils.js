@@ -993,11 +993,12 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo, imsCountry = null) {
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo, imsCountry) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  return countryParam || cookieCountry || imsCountry || akamaiParam || normCountryCode(countryFromGeo);
+  const geoCountry = normCountryCode(countryFromGeo);
+  return countryParam || cookieCountry || imsCountry || akamaiParam || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {
