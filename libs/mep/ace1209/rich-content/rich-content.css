@@ -414,7 +414,7 @@
     margin-top: 0;
   }
 
-  > img {
+  img {
     border-radius: var(--s2a-border-radius-24);
     max-width: 214px;
   }
@@ -510,7 +510,7 @@
 
 @media (width >= 768px) {
   .rich-content.video {
-    > img {
+    img {
       max-width: unset;
     }
 
