@@ -73,9 +73,19 @@ export function getParameters() {
 }
 
 function getBadgeDimensions(beforeStyles) {
+  const paddingX = (parseFloat(beforeStyles.paddingLeft) || 0)
+    + (parseFloat(beforeStyles.paddingRight) || 0);
+  const paddingY = (parseFloat(beforeStyles.paddingTop) || 0)
+    + (parseFloat(beforeStyles.paddingBottom) || 0);
+  const borderX = (parseFloat(beforeStyles.borderLeftWidth) || 0)
+    + (parseFloat(beforeStyles.borderRightWidth) || 0);
+  const borderY = (parseFloat(beforeStyles.borderTopWidth) || 0)
+    + (parseFloat(beforeStyles.borderBottomWidth) || 0);
+  const contentWidth = parseFloat(beforeStyles.width) || 0;
+  const contentHeight = parseFloat(beforeStyles.height) || parseFloat(beforeStyles.minHeight) || 0;
   return {
-    width: Math.max(parseFloat(beforeStyles.width) + 30, 200),
-    height: parseFloat(beforeStyles.height) || parseFloat(beforeStyles.minHeight) || 35,
+    width: contentWidth + paddingX + borderX,
+    height: (contentHeight + paddingY + borderY) || 35,
   };
 }
 
@@ -135,18 +145,25 @@ export function setBadgeEventListeners() {
     // ::before badges anchor to the host's nearest positioned ancestor — usually
     // the host, but not for gnav promos (host is position:static, badge resolves
     // up to header.global-navigation). Walk up to find the real containing block.
-    let containerRect;
-    if (elementStyle.position !== 'static') {
-      containerRect = fragment.getBoundingClientRect();
-    } else {
+    let containerEl = fragment;
+    if (elementStyle.position === 'static') {
       let ancestor = fragment.parentElement;
       while (ancestor && window.getComputedStyle(ancestor).position === 'static') {
         ancestor = ancestor.parentElement;
       }
-      containerRect = (ancestor || document.documentElement).getBoundingClientRect();
+      containerEl = ancestor || document.documentElement;
     }
-    const badgeAbsTop = containerRect.top + (parseFloat(beforeStyles.top) || 0);
-    const badgeAbsLeft = containerRect.left + (parseFloat(beforeStyles.left) || 0);
+    const containerRect = containerEl.getBoundingClientRect();
+    const containerStyle = window.getComputedStyle(containerEl);
+    // top/left position the badge relative to the containing block's padding
+    // edge, but getBoundingClientRect() returns the border edge — offset by
+    // the container's own border (e.g. the highlight-mode dashed outline).
+    const containerBorderTop = parseFloat(containerStyle.borderTopWidth) || 0;
+    const containerBorderLeft = parseFloat(containerStyle.borderLeftWidth) || 0;
+    const badgeAbsTop = containerRect.top + containerBorderTop
+      + (parseFloat(beforeStyles.top) || 0);
+    const badgeAbsLeft = containerRect.left + containerBorderLeft
+      + (parseFloat(beforeStyles.left) || 0);
     const inBadgeY = e.clientY >= badgeAbsTop && e.clientY < (badgeAbsTop + badgeHeight);
     const inBadgeX = e.clientX >= badgeAbsLeft && e.clientX < (badgeAbsLeft + badgeWidth);
     if (inBadgeY && inBadgeX) handleBadgeClick();
@@ -194,11 +211,7 @@ export function refreshPageUpdateCounts() {
 }
 
 function getBadgeHeight(el) {
-  const s = window.getComputedStyle(el, '::before');
-  const content = parseFloat(s.height) || parseFloat(s.minHeight) || 0;
-  const padding = (parseFloat(s.paddingTop) || 0) + (parseFloat(s.paddingBottom) || 0);
-  const border = (parseFloat(s.borderTopWidth) || 0) + (parseFloat(s.borderBottomWidth) || 0);
-  return content + padding + border || 35;
+  return getBadgeDimensions(window.getComputedStyle(el, '::before')).height;
 }
 
 const BADGE_SELECTORS = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
