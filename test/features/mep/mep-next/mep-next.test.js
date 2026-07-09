@@ -6,6 +6,9 @@ document.body.innerHTML = await readFile({ path: '../../personalization/mocks/po
 const {
   escapeHtml,
   parsePageAndUrl,
+  getMepPopup,
+  saveToMmm,
+  API_URLS,
 } = await import('../../../../libs/features/mep/mep-next/mep-next.js');
 const {
   injectMasBadges,
@@ -1222,5 +1225,605 @@ describe('masAemLoadHandler — aem:load event handler', () => {
 
     await new Promise((resolve) => { setTimeout(resolve, MAS_RESTAMP_DEBOUNCE_MS + 100); });
     expect(document.querySelector('a.mep-mas-edit-badge'), 'collection badge injected after debounced re-stamp').to.exist;
+  });
+});
+
+describe('saveToMmm', () => {
+  let fetchStub;
+  const baseExperiment = {
+    name: 'Test Activity',
+    event: { start: '2024-01-01T00:00:00.000Z', end: '2024-01-02T00:00:00.000Z' },
+    manifest: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/test.json',
+    variantNames: ['default', 'target-smb'],
+    selectedVariantName: 'target-smb',
+    disabled: false,
+    analyticsTitle: 'Test Activity',
+    source: ['mep param', 'target'],
+    geoRestriction: 'us',
+    mktgAction: 'test-action',
+  };
+
+  beforeEach(() => {
+    config.mep.experiments = [];
+    setConfig(config);
+  });
+
+  afterEach(() => {
+    fetchStub?.restore();
+    fetchStub = undefined;
+    config.mep.experiments = [];
+    setConfig(config);
+  });
+
+  it('returns false when there is no mep config', async () => {
+    const originalMep = config.mep;
+    delete config.mep;
+    setConfig(config);
+    const result = await saveToMmm();
+    expect(result).to.be.false;
+    config.mep = originalMep;
+  });
+
+  it('returns false for excluded page URL patterns (e.g. drafts)', async () => {
+    const originalPath = window.location.pathname;
+    window.history.pushState({}, '', '/drafts/some-page');
+    config.mep.experiments = [baseExperiment];
+    setConfig(config);
+    try {
+      const result = await saveToMmm();
+      expect(result).to.be.false;
+    } finally {
+      window.history.pushState({}, '', originalPath);
+    }
+  });
+
+  it('filters activities, transforms fields, and posts the payload on success', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      json: async () => ({ result: 'ok' }),
+    });
+    config.mep.experiments = [
+      baseExperiment,
+      { // source becomes empty after removing "mep param" -> filtered out entirely
+        ...baseExperiment,
+        manifest: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/only-param.json',
+        source: ['mep param'],
+      },
+      { // excluded because its own manifest path is a draft
+        ...baseExperiment,
+        manifest: 'https://main--homepage--adobecom.aem.live/homepage/drafts/mep/draft.json',
+        source: ['target'],
+      },
+      { // invalid manifest URL -> exercises toActivity's catch branch, still survives filtering
+        ...baseExperiment,
+        manifest: 'not-a-valid-url',
+        source: ['promo'],
+      },
+    ];
+    setConfig(config);
+
+    const result = await saveToMmm();
+
+    expect(fetchStub.calledOnce).to.be.true;
+    const [url, options] = fetchStub.firstCall.args;
+    expect(url).to.equal(API_URLS.save);
+    expect(options.method).to.equal('POST');
+    const body = JSON.parse(options.body);
+    expect(body.activities.length, 'only non-draft activities with surviving sources remain').to.equal(2);
+    expect(body.activities[0].variantNames).to.equal('default||target-smb');
+    expect(body.activities[0].source).to.equal('target');
+    expect(body.activities[0]).to.not.have.property('selectedVariantName');
+    expect(body.activities[1].url).to.equal('not-a-valid-url');
+    expect(body.page).to.not.have.property('highlight');
+    expect(result).to.deep.equal({ result: 'ok' });
+  });
+
+  it('throws with the response message when the save request is not ok', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: false,
+      json: async () => ({ message: 'save failed' }),
+    });
+    config.mep.experiments = [baseExperiment];
+    setConfig(config);
+
+    let error;
+    try {
+      await saveToMmm();
+    } catch (e) {
+      error = e;
+    }
+    expect(error?.message).to.equal('save failed');
+  });
+});
+
+describe('getMepPopup', () => {
+  const popups = [];
+  let originalMarketsConfig;
+
+  function buildActivity(overrides = {}) {
+    return {
+      targetActivityName: 'Test Activity',
+      variantNames: ['variant-a', 'variant-b'],
+      selectedVariantName: 'variant-a',
+      url: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/a.json',
+      disabled: false,
+      source: 'target',
+      analyticsTitle: 'Test',
+      eventStart: null,
+      eventEnd: null,
+      mktgAction: 'test',
+      ...overrides,
+    };
+  }
+
+  async function renderPopup(mepConfig) {
+    const popup = await getMepPopup(mepConfig);
+    document.body.append(popup);
+    popups.push(popup);
+    return popup;
+  }
+
+  beforeEach(() => {
+    originalMarketsConfig = config.marketsConfig;
+  });
+
+  afterEach(() => {
+    popups.splice(0).forEach((popup) => popup.remove());
+    document.querySelectorAll('[data-mas-block]').forEach((el) => el.remove());
+    document.querySelectorAll('meta[name="langfirst"]').forEach((el) => el.remove());
+    delete getConfig().locale.regions;
+    delete config.locale.regions;
+    if (originalMarketsConfig === undefined) {
+      delete config.marketsConfig;
+    } else {
+      config.marketsConfig = originalMarketsConfig;
+    }
+    setConfig(config);
+    window.history.replaceState({}, '', `${window.location.pathname}`);
+  });
+
+  it('renders a manifest list entry with a mismatched selectedVariantName at pageId 0, and a matching variant with a geo restriction', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [
+        buildActivity({ selectedVariantName: 'not-in-list', geoRestriction: 'us' }),
+        buildActivity({ selectedVariantName: 'variant-b' }),
+        buildActivity({ disabled: true, eventStart: null, eventEnd: null }),
+        buildActivity({ disabled: false, eventStart: '2024-01-01T00:00:00.000Z', eventEnd: null }),
+      ],
+    });
+
+    const sections = popup.querySelectorAll('.mep-section-data');
+    expect([...sections].some((data) => data.textContent.includes('Geo')), 'geo restriction row rendered').to.be.true;
+    expect([...sections].some((data) => data.textContent.includes('inactive')), 'disabled activity shows inactive').to.be.true;
+    const defaultSelectedOptions = popup.querySelectorAll('option[value="not-in-list"]');
+    // selectedVariantName not in variantNames -> falls back to default
+    expect(defaultSelectedOptions.length).to.equal(0);
+    const matchedOption = popup.querySelector('option[value="variant-b"][selected]');
+    expect(matchedOption, 'matching variant option is pre-selected').to.exist;
+  });
+
+  it('renders "0 manifests found" and a manifests-found count of 0 when there are no activities', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-empty.html', pageId: 508, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [],
+    });
+
+    expect(popup.textContent).to.include('0 manifests found');
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    expect(popup.querySelector('.mep-popup-body[active] .mep-section-data').textContent).to.include('0');
+  });
+
+  function findPageSummarySection(popup) {
+    popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+    return [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'Page',
+    );
+  }
+
+  it('setTargetOnText: falls back to page.target when target is undefined, and formats postlcp', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const undefinedTargetPopup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-target-undefined.html', pageId: 509, target: undefined, personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+    expect(findPageSummarySection(undefinedTargetPopup), 'Page summary section renders').to.exist;
+
+    const postlcpPopup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-target-postlcp.html', pageId: 510, target: 'postlcp', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+    expect(findPageSummarySection(postlcpPopup).textContent).to.include('on post LCP');
+  });
+
+  it('switches tabs via changeTab and toggles a manifest section via expandManifest', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-2.html', pageId: 501, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const [optionsTab, summaryTab] = popup.querySelectorAll('.mep-popup-tabs .mep-tab');
+    const [optionsBody, summaryBody] = popup.querySelectorAll('.mep-popup-body');
+    expect(optionsTab.hasAttribute('active')).to.be.true;
+    summaryTab.click();
+    expect(summaryTab.hasAttribute('active')).to.be.true;
+    expect(optionsTab.hasAttribute('active')).to.be.false;
+    expect(summaryBody.hasAttribute('active')).to.be.true;
+    expect(optionsBody.hasAttribute('active')).to.be.false;
+
+    const manifestToggle = popup.querySelector('.mep-manifest-title .mep-manifest-toggle');
+    const manifestInfo = popup.querySelector('.mep-manifest-info');
+    expect(manifestToggle.hasAttribute('active')).to.be.false;
+    manifestToggle.click();
+    expect(manifestToggle.hasAttribute('active')).to.be.true;
+    expect(manifestInfo.hasAttribute('active')).to.be.true;
+  });
+
+  it('checks the fragments/CaaS/M@S highlight checkboxes and selects a manifest variant', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-3.html', pageId: 502, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    popup.querySelector('#mepFragmentsCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepFragments=true');
+
+    popup.querySelector('#mepCaasHighlightCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepCaasHighlight=true');
+
+    popup.querySelector('#mepMasHighlightCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepMasHighlight=true');
+
+    const variantSelect = popup.querySelector('option[value="variant-b"]').closest('select');
+    variantSelect.value = 'variant-b';
+    variantSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('variant-b');
+  });
+
+  it('renders highlight checkboxes pre-checked from page/URL params, and reports geo-detection + sub-collections in the M@S summary', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    window.history.pushState({}, '', `${window.location.pathname}?mepCaasHighlight=true&mepMasHighlight=true&mas-geo-detection=on`);
+    const collection = document.createElement('div');
+    collection.dataset.masBlock = 'collection';
+    document.body.append(collection);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-4.html', pageId: 503, target: 'on', personalization: 'on', locale: 'en-US', geo: '', highlight: true, fragments: true,
+      },
+      activities: [buildActivity()],
+    });
+
+    expect(popup.querySelector('#mepHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepFragmentsCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepCaasHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepMasHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    const masSection = [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+    );
+    expect(masSection.textContent).to.include('Mas Geo Detection');
+    expect(masSection.textContent).to.include('on');
+    expect(masSection.textContent).to.include('Collections');
+  });
+
+  it('reports geo-detection source from URL param when detection is off', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    window.history.pushState({}, '', `${window.location.pathname}?mas-geo-detection=off`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-5.html', pageId: 504, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    const masSection = [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+    );
+    expect(masSection.textContent).to.include('Geo Source');
+    expect(masSection.textContent).to.include('URL param (off)');
+  });
+
+  it('reports geo-detection source from metadata when on, and from metadata when off with no URL param', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'mas-geo-detection');
+    meta.setAttribute('content', 'on');
+    document.head.append(meta);
+
+    try {
+      const popupOn = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5b.html', pageId: 513, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popupOn.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      let masSection = [...popupOn.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Metadata');
+
+      meta.setAttribute('content', 'off');
+      const popupOff = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5c.html', pageId: 514, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popupOff.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      masSection = [...popupOff.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Metadata (off)');
+    } finally {
+      meta.remove();
+    }
+  });
+
+  it('reports the page market from <mas-commerce-service country> when present', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const svc = document.createElement('mas-commerce-service');
+    svc.setAttribute('country', 'CA');
+    document.head.append(svc);
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5d.html', pageId: 515, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      const masSection = [...popup.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Page Market');
+      expect(masSection.textContent).to.include('CA');
+      expect(masSection.textContent).to.include('mas-commerce-service');
+    } finally {
+      svc.remove();
+    }
+  });
+
+  it('Lingo + M@S: auto-checks the market checkbox, toggles the market dropdown, and drives the market select', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb' }] } };
+    setConfig(config);
+    // setConfig recomputes .locale from scratch, discarding any custom fields — mutate the
+    // live config's locale directly, after setConfig (same pattern used by the
+    // getResolvedPageMarket tests above).
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' }, at_de: { prefix: '/at_de' } };
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6.html', pageId: 505, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(lingoSelect, 'Lingo region dropdown renders when lingo is active').to.exist;
+    const masMarketCheckbox = popup.querySelector('input[id^="mepMasMarketCheckbox"]');
+    expect(masMarketCheckbox, 'M@S market checkbox renders when Lingo + M@S are both present').to.exist;
+    const masMarketSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+    expect(masMarketSelect.querySelectorAll('option[value="us"], option[value="gb"]').length).to.equal(2);
+
+    const masHighlightCheckbox = popup.querySelector('input[id^="mepMasHighlightCheckbox"]');
+    expect(masMarketCheckbox.checked).to.be.false;
+    masHighlightCheckbox.checked = true;
+    masHighlightCheckbox.dispatchEvent(new Event('change'));
+    expect(masMarketCheckbox.checked, 'flipping Highlight M@S auto-checks the markets checkbox').to.be.true;
+
+    masMarketSelect.value = 'gb';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=gb');
+
+    masMarketSelect.value = '';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+
+    masMarketCheckbox.checked = false;
+    masMarketCheckbox.dispatchEvent(new Event('change'));
+    lingoSelect.value = 'ch';
+    lingoSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=ch');
+
+    lingoSelect.value = '';
+    lingoSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+  });
+
+  it('Lingo + M@S: pre-checks the market checkbox and pre-selects the Lingo region from URL params', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb' }] } };
+    setConfig(config);
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' }, at_de: { prefix: '/at_de' } };
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+    window.history.pushState({}, '', `${window.location.pathname}?mepMasMarket=true&akamaiLocale=ch`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6b.html', pageId: 511, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const masMarketCheckbox = popup.querySelector('input[id^="mepMasMarketCheckbox"]');
+    expect(masMarketCheckbox.getAttribute('checked')).to.equal('checked');
+    const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(lingoSelect.disabled, 'Lingo dropdown disabled while M@S markets drive akamaiLocale').to.be.true;
+  });
+
+  it('Lingo: pre-selects the Lingo region option matching ?akamaiLocale on initial render', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' } };
+    window.history.pushState({}, '', `${window.location.pathname}?akamaiLocale=ch`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6c.html', pageId: 512, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const preselected = popup.querySelector('select[id^="mepLingoRegionSelect"] option[value="ch"][selected]');
+    expect(preselected, 'region matching ?akamaiLocale is pre-selected').to.exist;
+  });
+
+  it('M@S only (non-Lingo): renders the standalone market dropdown and drives it directly', async () => {
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,fr' }] } };
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-7.html', pageId: 506, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    expect(popup.querySelector('input[id^="mepMasMarketCheckbox"]'), 'no toggle without Lingo').to.be.null;
+    const masMarketSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+    expect(masMarketSelect.closest('.mep-mas-market-dropdown').classList.contains('standalone')).to.be.true;
+
+    masMarketSelect.value = 'fr';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=fr');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepMasMarket=true');
+
+    masMarketSelect.value = '';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('mepMasMarket');
+  });
+
+  it('cold market cache: renders a disabled placeholder, then re-renders with fetched markets in place', async () => {
+    delete config.marketsConfig;
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      status: 200,
+      json: async () => ({ languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,de' }] } }),
+    });
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-8.html', pageId: 507, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+
+      const initialSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(initialSelect.disabled, 'cold cache renders a disabled placeholder select').to.be.true;
+
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const updatedSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(updatedSelect.disabled, 'select is enabled once markets resolve').to.be.false;
+      const values = [...updatedSelect.querySelectorAll('option')].map((o) => o.value);
+      expect(values).to.include('us');
+      expect(values).to.include('de');
+    } finally {
+      fetchStub.restore();
+    }
+  });
+
+  it('cold market cache: does not clobber a value the user already picked before the fetch resolves', async () => {
+    delete config.marketsConfig;
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    let resolveMarketsFetch;
+    const marketsPromise = new Promise((resolve) => { resolveMarketsFetch = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch').returns(marketsPromise);
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-9.html', pageId: 516, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+
+      const initialSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      // Simulate the user picking a value on the placeholder before the fetch resolves.
+      const userOption = document.createElement('option');
+      userOption.value = 'us';
+      userOption.selected = true;
+      initialSelect.append(userOption);
+      initialSelect.value = 'us';
+
+      resolveMarketsFetch({
+        ok: true,
+        status: 200,
+        json: async () => ({ languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,de' }] } }),
+      });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const selectAfter = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(selectAfter, 'wrapper is not replaced when the user already made a selection').to.equal(initialSelect);
+      expect(selectAfter.value).to.equal('us');
+    } finally {
+      fetchStub.restore();
+    }
   });
 });

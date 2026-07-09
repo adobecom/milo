@@ -83,6 +83,9 @@ function updatePreviewButton(popup, pageId) {
     if (selected.classList.contains('new-manifest') && value) {
       try {
         const newManifest = new URL(value);
+        // A parsed URL's pathname is never empty (at minimum '/'), so this fallback
+        // to the original value is defensive only.
+        /* c8 ignore next */
         value = newManifest.pathname || value;
       } catch {
         // Ignore invalid URL
@@ -298,6 +301,8 @@ function parseMepConfig() {
   };
 }
 function formatDate(dateTime, format = 'local') {
+  // Every call site already guards with a truthy check before calling formatDate.
+  /* c8 ignore next */
   if (!dateTime) return '';
   let dateObj = dateTime;
   if (typeof dateObj === 'string') dateObj = new Date(dateObj);
@@ -381,10 +386,10 @@ function getManifestListDomAndParameter(mepConfig) {
                   <span>${mktgAction}</span>
                 ${geoRestriction ? `
                   <span>Geo</span>
-                  <span>${geoRestriction ? `${geoRestriction?.toUpperCase()}` : ''}</span>` : ''}
+                  <span>${geoRestriction.toUpperCase()}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
-                  <span>${(eventStart && eventEnd) || disabled ? `${disabled ? 'inactive' : 'active'}` : ''}` : ''}</span>
+                  <span>${disabled ? 'inactive' : 'active'}</span>` : ''}
                 ${manifest.lastSeen ? `
                   <span>Last Seen</span>
                   <span>${formatDate(new Date(manifest.lastSeen))}</span>` : ''}  
@@ -774,6 +779,9 @@ export async function getMepPopup(mepConfig) {
     const svc = document.head.querySelector('mas-commerce-service');
     const liveCountry = svc?.getAttribute('country');
     const localeCountry = getMiloLocaleSettings(config.locale)?.country;
+    // getMiloLocaleSettings always resolves a country (defaults to 'US'), so the
+    // empty-string and 'unknown' fallbacks below are defensive only.
+    /* c8 ignore next */
     const pageMarket = (liveCountry || localeCountry || '').toUpperCase() || 'unknown';
     const pageMarketSource = liveCountry ? 'mas-commerce-service' : 'page locale';
 
