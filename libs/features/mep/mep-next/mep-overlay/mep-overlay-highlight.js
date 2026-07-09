@@ -6,6 +6,7 @@ import {
   unwatchForMasContent,
   injectMasBadges,
   removeMasBadges,
+  MAS_OSI_SELECTOR,
 } from '../mep-mas.js';
 import {
   injectCaasBadges,
@@ -142,9 +143,6 @@ export function setBadgeEventListeners() {
       return;
     }
 
-    // ::before badges anchor to the host's nearest positioned ancestor — usually
-    // the host, but not for gnav promos (host is position:static, badge resolves
-    // up to header.global-navigation). Walk up to find the real containing block.
     let containerEl = fragment;
     if (elementStyle.position === 'static') {
       let ancestor = fragment.parentElement;
@@ -155,9 +153,6 @@ export function setBadgeEventListeners() {
     }
     const containerRect = containerEl.getBoundingClientRect();
     const containerStyle = window.getComputedStyle(containerEl);
-    // top/left position the badge relative to the containing block's padding
-    // edge, but getBoundingClientRect() returns the border edge — offset by
-    // the container's own border (e.g. the highlight-mode dashed outline).
     const containerBorderTop = parseFloat(containerStyle.borderTopWidth) || 0;
     const containerBorderLeft = parseFloat(containerStyle.borderLeftWidth) || 0;
     const badgeAbsTop = containerRect.top + containerBorderTop
@@ -187,10 +182,10 @@ const PAGE_UPDATE_SELECTORS = {
   'M@S': `
     [data-mas-block='card'],
     [data-mas-block='collection'],
-    [data-mas-block='collection'] [data-mas-block='card'],
+    [data-mas-block='collection'] merch-card,
     [data-mas-block='inline'],
-    [data-mas-block='offer'],
-    [data-mas-block='ost']
+    [data-mas-block='ost'],
+    ${MAS_OSI_SELECTOR}
   `,
   'Other Fragments': '[data-fragment-default]',
 };
@@ -324,7 +319,7 @@ function setHighlightData() {
         el.dataset.fragmentPath = el.dataset.path;
       } else {
         el.dataset.manifestDisplay = `${manifestName}: html`;
-        el.dataset.mepHtmlBadge = 'true'; // gnav workaround: non-clickable badge
+        el.dataset.mepHtmlBadge = 'true';
       }
     });
   });
