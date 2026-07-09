@@ -414,8 +414,7 @@
     margin-top: 0;
   }
 
-  > img,
-  .cta-area img {
+  > img {
     border-radius: var(--s2a-border-radius-24);
     max-width: 214px;
   }
@@ -435,7 +434,7 @@
       box-sizing: border-box;
       margin-inline: auto;
       aspect-ratio: 9 / 16;
-      border-radius: var(--s2a-border-radius-16);
+      border-radius: var(--s2a-border-radius-24);
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
       backdrop-filter: blur(var(--s2a-blur-md));
@@ -511,8 +510,7 @@
 
 @media (width >= 768px) {
   .rich-content.video {
-    > img,
-    .cta-area img {
+    > img {
       max-width: unset;
     }
 
@@ -611,8 +609,7 @@
     gap: var(--s2a-spacing-xl);
   }
 
-  .rich-content.video > img,
-  .rich-content.video .cta-area img {
+  .rich-content.video > img {
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -687,7 +684,6 @@
     }
 
     .section.parallax-video-garage-door .rich-content.video > img,
-    .section.parallax-video-garage-door .rich-content.video .cta-area img,
     .section.parallax-video-garage-door .rich-content.video .media :is(.video-container, picture) {
       view-timeline-name: --rc-video-enter;
       view-timeline-axis: block;
