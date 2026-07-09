@@ -1029,9 +1029,6 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  // Under Lingo the `international` cookie holds only the language (not a region),
-  // so it is not consulted here. On the geo path the region/country comes from the
-  // user's physical location; the default path keeps the selected-market cookie.
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
     : (await resolveDetectedMarketCountry())?.toLowerCase();
@@ -2010,9 +2007,6 @@ let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
-    // Geo country for the Adobe Home redirect (`acomCountry`). Resolved from the
-    // user's physical location only; sessionStorage `akamai` is already set by
-    // loadArea, so this reuses it rather than re-fetching geo.
     const acomCountry = lingoActive() ? normCountryCode(await getCountry())?.toUpperCase() : null;
     return new Promise((resolve, reject) => {
       const {
@@ -2034,8 +2028,6 @@ export async function loadIms() {
             const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
             const acomLocale = locale.prefix.slice(1);
             if (acomLocale === 'cn' || acomLocale === 'sea') return `${baseUrl}${locale.prefix}`;
-            // Language in `acomLocale`, geo country in `acomCountry` (Lingo pages
-            // only). Matches the Akamai/CCH redirect shape, e.g. ?acomLocale=fr&acomCountry=CA.
             const query = [
               acomLocale && `acomLocale=${acomLocale}`,
               acomCountry && `acomCountry=${acomCountry}`,
