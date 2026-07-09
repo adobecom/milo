@@ -1001,15 +1001,21 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
   return countryParam || cookieCountry || imsCountry || akamaiParam || geoCountry;
 }
 
+let imsLoaded;
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   let imsCountry = null;
-  if (!cookieMarket && window.adobeIMS?.isSignedInUser()) {
-    try {
-      const profile = await window.adobeIMS.getProfile();
-      imsCountry = normCountryCode(profile?.countryCode);
-    } catch { /* ignore */ }
+  if (!cookieMarket) {
+    if (imsLoaded) {
+      try { await imsLoaded; } catch { /* ignore */ }
+    }
+    if (window.adobeIMS?.isSignedInUser()) {
+      try {
+        const profile = await window.adobeIMS.getProfile();
+        imsCountry = normCountryCode(profile?.countryCode);
+      } catch { /* ignore */ }
+    }
   }
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
@@ -2016,7 +2022,6 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
-let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
