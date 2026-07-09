@@ -48,6 +48,8 @@ function replaceVideoIntersectionObserver(medias) {
 function getCardType(block) {
   const CARD_TYPE = ['card-overlay', 'card-stacked'];
   if (block.classList.contains('reverse')) return CARD_TYPE.reverse();
+  if (block.classList.contains('equal')) return [CARD_TYPE[1], CARD_TYPE[1]];
+  if (block.classList.contains('featured')) return [CARD_TYPE[0]];
 
   return CARD_TYPE;
 }
@@ -62,7 +64,7 @@ function decorate(block) {
   const texts = [...textRow.children];
 
   const cards = [];
-  for (let i = 0; i < 2; i += 1) {
+  for (let i = 0; i < medias.length; i += 1) {
     const media = medias[i];
     const foreground = texts[i];
     media.classList.add('media');
@@ -76,6 +78,7 @@ function decorate(block) {
   }
 
   block.replaceChildren(...cards);
+
   if (!block.classList.contains('dark')) {
     block.querySelector('.card-overlay')?.classList.add('dark');
   }
