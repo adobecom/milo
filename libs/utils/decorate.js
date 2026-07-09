@@ -709,8 +709,7 @@ function resolveInheritance(rows, previousContent) {
   });
 }
 
-function parseViewportContent(el, metadataHooks) {
-  const shouldParseMetadata = metadataHooks?.shouldParse?.(el) ?? false;
+function parseViewportContent(el) {
   const children = [...el.children];
   const content = {};
   const delimiterEls = [];
@@ -743,13 +742,7 @@ function parseViewportContent(el, metadataHooks) {
     const variants = parseVariants(delimiterEl.textContent);
     delimiterEls.push(delimiterEl);
 
-    content[keyword] = {
-      container,
-      variants,
-      metadata: shouldParseMetadata
-        ? metadataHooks.parseRows([...container.children])
-        : undefined,
-    };
+    content[keyword] = { container, variants };
   });
 
   delimiterEls.forEach((d) => d.remove());
@@ -765,16 +758,7 @@ function parseViewportContent(el, metadataHooks) {
   return { hasViewportVariations: true, content, allVariants };
 }
 
-function resolveViewportMetadata(content, vpKeys, activeIndex, globalMetadata, inherit) {
-  if (inherit) return inherit(content, vpKeys, activeIndex, globalMetadata);
-  for (let i = activeIndex; i >= 0; i -= 1) {
-    const metadata = content[vpKeys[i]]?.metadata;
-    if (metadata !== undefined) return metadata;
-  }
-  return globalMetadata;
-}
-
-function applyViewportContent(el, viewports, globalMetadata, metadataHooks) {
+function applyViewportContent(el, viewports) {
   if (!viewports.hasViewportVariations) return;
 
   const { content, allVariants } = viewports;
@@ -794,17 +778,6 @@ function applyViewportContent(el, viewports, globalMetadata, metadataHooks) {
       el.classList.remove(...allVariants);
       if (variants.length) el.classList.add(...variants);
       el.replaceChildren(...children);
-      if (metadataHooks?.apply) {
-        const activeIndex = vpKeys.indexOf(viewport);
-        const metadata = resolveViewportMetadata(
-          content,
-          vpKeys,
-          activeIndex,
-          globalMetadata,
-          metadataHooks.inherit,
-        );
-        metadataHooks.apply(metadata, el);
-      }
       decorateTextOverrides(el);
     };
 
@@ -813,24 +786,18 @@ function applyViewportContent(el, viewports, globalMetadata, metadataHooks) {
   });
 }
 
-export function decorateViewportContent(el, decorateFn, metadataHooks) {
-  const shouldParseMetadata = metadataHooks?.shouldParse?.(el) ?? false;
-  let globalMetadata;
-  if (shouldParseMetadata) {
-    const children = [...el.children];
-    const firstDelimiterIdx = children.findIndex((child) => getDelimiterKeyword(child));
-    const preRows = firstDelimiterIdx < 0 ? children : children.slice(0, firstDelimiterIdx);
-    globalMetadata = metadataHooks.parseRows(preRows);
-  }
-  const viewports = parseViewportContent(el, metadataHooks);
+/* decorateFn receives:
+ * - block — the element to decorate (viewport container or el itself)
+ * - root  — for checking base classes on detached containers */
+export function decorateViewportContent(el, decorateFn) {
+  const viewports = parseViewportContent(el);
   if (viewports.hasViewportVariations) {
     Object.values(viewports.content).forEach(({ container }) => {
       decorateFn(container, el);
     });
-    applyViewportContent(el, viewports, globalMetadata, metadataHooks);
+    applyViewportContent(el, viewports);
   } else {
     decorateFn(el, el);
-    if (metadataHooks?.apply) metadataHooks.apply(globalMetadata, el);
     decorateTextOverrides(el);
   }
   return viewports;
