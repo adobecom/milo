@@ -477,9 +477,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const deviceBySize = defineDeviceByScreenSize();
 
   const setRowStyle = () => {
-    if (table.classList.contains('preserve-columns')) {
-      return;
-    }
+    if (table.classList.contains('preserve-columns')) return;
     if (isMerch) return;
     const sectionRow = Array.from(table.getElementsByClassName('section-row'));
     if (sectionRow.length) {
@@ -676,12 +674,9 @@ export default function init(el) {
     expandSection = handleSection(sectionParams);
   });
 
-  const firstRow = el.querySelector('.row-1');
-  const columnCount = firstRow?.children.length || 0;
+  const columnCount = el.querySelector('.row-1')?.children.length || 0;
 
-  if (columnCount <= 2) {
-    el.classList.add('preserve-columns');
-  }
+  if (columnCount <= 2) el.classList.add('preserve-columns');
 
   handleHighlight(el);
   handleStickyHeader(el);

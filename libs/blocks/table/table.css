@@ -692,8 +692,8 @@
     margin: 0;
   }
 
-  .table.preserve-columns .section-row-title {
-    grid-column: auto !important;
+  .table.preserve-columns .row .section-row-title {
+    grid-column: auto;
   }
 
   .table:not(.merch) .row .section-head-title,
@@ -705,9 +705,9 @@
     display: block;
   }
 
-  .table.preserve-columns .col-heading.col-1,
-  .table.preserve-columns .row-highlight .col-highlight.col-1 {
-    display: flex !important;
+  .table.preserve-columns .row-heading .col-heading.col-1,
+  .table.preserve-columns .row.row-highlight .col-highlight.col-1 {
+    display: flex;
   }
 
   .table .section-head .col:not(.section-head-title),
