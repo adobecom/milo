@@ -609,7 +609,7 @@
     gap: var(--s2a-spacing-xl);
   }
 
-  .rich-content.video > img {
+  .rich-content.video img {
     max-width: 1200px;
     margin: 0 auto;
   }
@@ -683,7 +683,7 @@
       timeline-scope: --rc-video-enter;
     }
 
-    .section.parallax-video-garage-door .rich-content.video > img,
+    .section.parallax-video-garage-door .rich-content.video img,
     .section.parallax-video-garage-door .rich-content.video .media :is(.video-container, picture) {
       view-timeline-name: --rc-video-enter;
       view-timeline-axis: block;
