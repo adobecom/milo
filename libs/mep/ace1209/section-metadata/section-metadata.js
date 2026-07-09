@@ -204,4 +204,7 @@ export default async function init(el) {
   if (metadata.layout) handleStyle(metadata.layout.text, section);
   if (metadata.images) handleImages(metadata.images?.text[0], section);
   handleStickyFocus(section);
+  if (section?.matches('.bento.stack-mobile')) {
+    import('../../../deps/bento-stack.js').then(({ default: initBentoStack }) => initBentoStack(section));
+  }
 }
