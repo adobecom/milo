@@ -946,6 +946,16 @@ export const getGrayboxExperienceId = (
   return null;
 };
 
+export const getProducts = async (state) => {
+  try {
+    const { tags } = await getTags(state.tagsUrl);
+    return tags?.mnemonics?.tags || {};
+  } catch (e) {
+    window.lana?.log(`Failed to fetch CaaS products: ${e.message}`, { tags: 'caas' });
+    return {};
+  }
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1008,6 +1018,8 @@ export const getConfig = async (originalState, strs = {}) => {
   } else {
     excludedCardsWithCurrent = excludedCards;
   }
+
+  const products = state.detailsTextOption === 'productName' ? await getProducts(state) : {};
 
   const config = {
     collection: {
@@ -1250,6 +1262,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
+    products,
   };
   return config;
 };
@@ -1375,14 +1388,14 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
-  flexCardImageOptions: 'default',
-  detailsTextOption: 'default',
   flexCardTextSize: 'default',
+  flexCardImageOptions: 'default',
   flexCardTextAlign: 'text-left',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
   flexCardHideFooter: false,
+  detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
   useCenterVideoPlay: false,
