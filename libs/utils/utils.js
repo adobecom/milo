@@ -2308,7 +2308,6 @@ async function loadPostLCP(config) {
     const lenisPreventSelectors = [
       '.dialog-modal',
       '.ot-sdk-container',
-      '.global-navigation',
       'div[data-testid="main-content-area"]',
     ];
     window.lenis = new window.Lenis({
