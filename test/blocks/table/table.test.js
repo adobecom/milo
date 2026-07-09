@@ -29,6 +29,22 @@ describe('table and tablemetadata', () => {
       expect(table.querySelector('.row-heading')).to.exist;
     });
 
+    it('does not add preserve-columns class to tables with more than two columns', () => {
+      expect(table.classList.contains('preserve-columns')).to.be.false;
+    });
+
+    it('adds preserve-columns class to a table with two or fewer columns', async () => {
+      const html = await readFile({ path: './mocks/two-column-table.html' });
+      const container = document.createElement('div');
+      container.innerHTML = html;
+      document.body.appendChild(container);
+
+      const twoColTable = container.querySelector('.table');
+      init(twoColTable);
+      expect(twoColTable.classList.contains('preserve-columns')).to.be.true;
+      container.remove();
+    });
+
     it('expand icon event by mouse click', () => {
       const expandIcon = table.querySelector('.icon.expand');
       expect(expandIcon.ariaExpanded).to.be.equal('true');

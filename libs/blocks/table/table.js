@@ -477,6 +477,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const deviceBySize = defineDeviceByScreenSize();
 
   const setRowStyle = () => {
+    if (table.classList.contains('preserve-columns')) {
+      return;
+    }
     if (isMerch) return;
     const sectionRow = Array.from(table.getElementsByClassName('section-row'));
     if (sectionRow.length) {
@@ -614,7 +617,10 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   }
 
   removeClones();
-  if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
+  if (
+    !table.classList.contains('preserve-columns')
+    && (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET'))
+  ) {
     mobileRenderer();
   } else {
     table.querySelectorAll('.hide-mobile, .left-round, .right-round').forEach((col) => { col.classList.remove('hide-mobile', 'left-round', 'right-round'); });
@@ -669,6 +675,13 @@ export default function init(el) {
 
     expandSection = handleSection(sectionParams);
   });
+
+  const firstRow = el.querySelector('.row-1');
+  const columnCount = firstRow?.children.length || 0;
+
+  if (columnCount <= 2) {
+    el.classList.add('preserve-columns');
+  }
 
   handleHighlight(el);
   handleStickyHeader(el);
