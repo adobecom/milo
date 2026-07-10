@@ -36,6 +36,19 @@ import { useSessions } from '../sessions/SessionsProvider';
 // entry. The Figma door's dial offers only conformance/fidelity.
 type View = 'doors' | 'figma' | 'url';
 
+// ── Generation effort (Figma door only) ───────────────────────────────────────
+// A single "quick pass ↔ refine harder" control (MWPW-200016). It maps to the
+// server's convergence round budget (sourceInput.effort → resolveMaxRounds):
+// quick=1 (the fast, passable first pass — the default), balanced=3, thorough=5.
+// Effort ONLY affects the Figma → convergence path; the URL/Reimagine door runs
+// Stardust, which has no round budget, so the control is not shown there.
+type Effort = 'quick' | 'balanced' | 'thorough';
+const EFFORT_OPTIONS: ReadonlyArray<{ id: Effort; label: string; hint: string }> = [
+  { id: 'quick', label: 'Quick pass', hint: 'Fastest first pass' },
+  { id: 'balanced', label: 'Balanced', hint: 'A few refine rounds' },
+  { id: 'thorough', label: 'Refine harder', hint: 'Chase the frame closely' },
+];
+
 // ── Inline glyphs (kept local; the app has no icon for the Figma mark) ────────
 function FigmaMark() {
   return (
@@ -135,6 +148,9 @@ export function InputPanel() {
   const [sourceInput, setSourceInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Fast-passable default (MWPW-200016): the machine produces a quick first pass;
+  // the designer chooses to push harder. Figma door only (see Effort above).
+  const [effort, setEffort] = useState<Effort>('quick');
 
   // The DOOR fixes the intent now (no dial — see the simplification note below):
   //   Figma frame → build on the Adobe design system (conformance).
@@ -177,6 +193,10 @@ export function InputPanel() {
     // matcher pass-through).
     body.intentPolicy = intentPolicy;
     if (intentPolicy === 'reimagine') body.mode = 'reimagine';
+
+    // Generation effort → convergence round budget, Figma path only (MWPW-200016).
+    // The URL/Reimagine door runs Stardust (no round budget), so it sends none.
+    if (isFigma) body.effort = effort;
 
     setIsSubmitting(true);
     try {
@@ -303,6 +323,29 @@ export function InputPanel() {
           />
 
           {error && <div className="pf-form-error">{error}</div>}
+
+          {/* Generation effort — Figma door only (MWPW-200016). A single
+              quick↔harder control, not a fine dial. Maps to the convergence
+              round budget on the server; the URL/Reimagine door has none. */}
+          {isFigma && (
+            <div className="pf-effort" role="group" aria-label="How hard to refine the first pass">
+              <span className="pf-effort-label">Effort</span>
+              <div className="pf-effort-seg">
+                {EFFORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`pf-effort-opt${effort === opt.id ? ' is-active' : ''}`}
+                    aria-pressed={effort === opt.id}
+                    title={opt.hint}
+                    onClick={() => setEffort(opt.id)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* The proven custom filled button — the S2 <Button> chrome gets stripped
               by the app's global button reset. Reimagine gets the gradient. */}
