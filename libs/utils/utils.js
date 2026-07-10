@@ -1051,32 +1051,14 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   return regionKey ? regions[regionKey] : null;
 }
 
-// The set of valid regions for the current page's base. A base locale (no `base`
-// key, e.g. /fr) carries its hydrated `regions` map; a regional variant (/ch_de)
-// has none of its own, so reconstruct its base's region set from the siblings
-// that point at the same base.
-function getBaseRegions(config) {
-  const { locale, locales } = config || {};
-  if (!locale) return {};
-  if (locale.base === undefined) return locale.regions || {};
-  if (!locales) return {};
-  return Object.fromEntries(
-    Object.entries(locales).filter(([, l]) => l.base === locale.base),
-  );
-}
-
-// acomCountry is the user's geo country, but only passed when that country maps
-// to a valid region of the current base (e.g. on /fr only ch/ca/be/lu qualify).
-// Otherwise the language alone (acomLocale) is sent.
 async function resolveAcomCountry(config) {
   const geoCountry = normCountryCode(await getCountry());
-  if (!geoCountry) return null;
-  const { locale } = config || {};
-  if (!locale) return null;
-  const regions = getBaseRegions(config);
-  if (!Object.keys(regions).length) return null;
-  const baseKey = locale.base !== undefined ? locale.base : (locale.prefix?.slice(1) || '');
-  const localeKey = baseKey === '' ? 'en' : baseKey;
+  const { locale, locales } = config || {};
+  if (!geoCountry || !locale) return null;
+  const regions = locale.base === undefined
+    ? (locale.regions || {})
+    : Object.fromEntries(Object.entries(locales || {}).filter(([, l]) => l.base === locale.base));
+  const localeKey = (locale.base ?? locale.prefix?.slice(1)) || 'en';
   const mepMap = config.mepLingoCountryToRegion;
   const fits = resolveLingoRegionKey(regions, geoCountry, localeKey, mepMap);
   return fits ? geoCountry.toUpperCase() : null;
