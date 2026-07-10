@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { getCountry, setMarket, pageExist, getCookie, getMetadata } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { marketsLangForLocale, norm } from '../../utils/market.js';
@@ -11,6 +12,25 @@ let isC2Page;
 let isC2Path;
 
 const COUNTRY_PLACEHOLDER = /\{country\}/g;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalyticsFallback(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
 
 const loadC2TabsBlock = async (tabs) => {
   const { miloLibs, codeRoot } = config;
@@ -500,7 +520,7 @@ async function showModal(details) {
   ];
   const result = await Promise.all(promises);
   const { getModal, sendAnalytics } = result[4];
-  sendAnalyticsFunc = sendAnalytics;
+  sendAnalyticsFunc = sendAnalytics ?? sendAnalyticsFallback;
   return getModal(null, {
     class: 'region-modal',
     id: 'region-modal',
