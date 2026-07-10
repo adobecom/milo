@@ -1211,7 +1211,6 @@
   padding: 0;
 }
 
-/* full-bleed background layer, independent of the grid-constrained content */
 .brand-concierge.marquee .background {
   position: absolute;
   inset: 0;
@@ -1239,7 +1238,6 @@
   object-position: 65%;
 }
 
-/* legibility scrim over the background image */
 .brand-concierge.marquee .background::after {
   content: '';
   position: absolute;
@@ -1255,7 +1253,6 @@
   background: linear-gradient(270deg, rgba(255 255 255 / 0%) 0%, #FFF 100%);
 }
 
-/* per-breakpoint image visibility (mobile first) */
 .brand-concierge.marquee .background .tablet-only,
 .brand-concierge.marquee .background .desktop-only {
   display: none;
@@ -1265,7 +1262,6 @@
   display: block;
 }
 
-/* grid-constrained content column above the background */
 .brand-concierge.marquee .foreground.container {
   position: relative;
   z-index: 1;
