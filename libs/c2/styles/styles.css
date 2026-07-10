@@ -596,8 +596,13 @@ a {
   &.standalone-link {
     &::after {
       display: inline-block;
+      width: 5px;
+      height: 8px;
       margin-inline-start: var(--s2a-spacing-8);
-      content: url('../assets/img/arrow-right.svg');
+      content: '';
+      background-color: currentcolor;
+      mask: url('../assets/img/arrow-right.svg') no-repeat center;
+      mask-size: contain;
       transition: transform 0.5s var(--parallax-easing);
     }
 
@@ -1015,12 +1020,6 @@ p {
 }
 
 .dark {
-  a.standalone-link {
-    &::after {
-      filter: invert(1);
-    }
-  }
-
   .con-button {
     &.outline {
       background-color: var(--s2a-color-transparent-white-00);
