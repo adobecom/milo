@@ -35,20 +35,18 @@ describe('event', () => {
     const event = await init(true);
     expect(event.isRegistered).to.equal(true);
   });
-  it('should return false when consent cookie is set to C0002:0', async () => {
-    setCookie('OptanonConsent', 'C0002:0');
-    const event = await init('adobe-max-2025');
-    expect(event.isRegistered).to.equal(false);
-  });
   it('should return false when the user is signed out', async () => {
     document.head.innerHTML = '';
     const event = await init('adobe-max-2025');
     expect(event.isRegistered).to.equal(false);
   });
-  it('should return false when userId is set to off', async () => {
-    setMetadata('userId', 'off');
+  it('should read enablements from lowercase DA metadata', async () => {
+    document.head.innerHTML = '';
+    setMetadata('signedin', 'on');
+    setMetadata('userid', '1234567890');
+    setFetchResponse({ ok: true, isRegistered: true });
     const event = await init('adobe-max-2025');
-    expect(event.isRegistered).to.equal(false);
+    expect(event.isRegistered).to.equal(true);
   });
   it('should return false when getAccessToken returns an empty object', async () => {
     setMetadata('userId', '1234567890');

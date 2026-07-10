@@ -2,12 +2,19 @@ import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../util
 
 const defaultReturn = { isRegistered: false };
 async function getUserId() {
-  if (isSignedOut() && !getMepEnablement('signedIn')) return false;
-  if (getMepEnablement('userId') !== 'undefined') return getMepEnablement('userId');
-  /* c8 ignore next 3 */
-  await loadIms();
-  const { userId } = await window.adobeIMS.getProfile();
-  return userId;
+  const signedInEnable = getMepEnablement('signedIn') || getMepEnablement('signedin');
+  if (isSignedOut() && !signedInEnable) return false;
+  const userIdEnable = getMepEnablement('userId') || getMepEnablement('userid');
+  if (userIdEnable && userIdEnable !== 'undefined') return userIdEnable;
+  /* c8 ignore start */
+  try {
+    await loadIms();
+    const { userId } = await window.adobeIMS.getProfile();
+    return userId;
+  } catch {
+    return false;
+  }
+  /* c8 ignore stop */
 }
 async function fetchFromRainfocus(eventId) {
   const userId = await getUserId();
