@@ -169,8 +169,9 @@ export default function init(el) {
     // Active zone Y relative to stage top — where a product becomes "active"
     let activeZoneY;
     if (bp === 'L') {
-      // Desktop: first product aligns with the bottom of the image
-      activeZoneY = mediaRect.bottom - stageRect.top;
+      // Desktop: active item near bottom of stage, 2 item-heights from stage bottom
+      // Figma: active item center ≈ stageHeight − 195px @ 1090px; ITEM_H[L]=92 → 2×92=184 ≈ 195
+      activeZoneY = stageRect.height - ITEM_H[bp] * 2;
     } else if (bp === 'M') {
       // Tablet: first product aligns with the top of the image
       activeZoneY = mediaRect.top - stageRect.top;

@@ -248,16 +248,18 @@
   .roller-item[data-dist="4"] { opacity: 0.16; }
 
   /*
-   * L (1440px): image right column, 24px from right edge
-   *   right-edge = viewport - 24px (same as original calc(50%+46px) + calc(50%-70px) = 100%-24px)
-   *   width: calc(50% - 70px)  →  650px @ 1440
-   *   top: 160px | height: 70lvh  →  ~763px @ 1090px viewport
+   * L (1440px): image right column, bottom-anchored
+   *   Figma right-wrapper: items-end pb-[24px], outer frame pb-[32px]
+   *   → image bottom = stage-bottom − 56px (24+32); max-height: 766px; width: 650px @ 1440
+   *   image top @ 1090px = 1090 − 56 − 766 = 268px (Figma: 268px ✓)
    */
   .roller-media-wrapper {
     inset-inline-start: auto;
     inset-inline-end: var(--s2a-spacing-24);
-    inset-block-start: var(--s2a-spacing-160);
+    inset-block-start: auto;
+    inset-block-end: 56px;
     width: calc(50% - 70px);
-    height: 70lvh;
+    max-height: 766px;
+    height: calc(100lvh - var(--s2a-spacing-160) - 56px);
   }
 }
