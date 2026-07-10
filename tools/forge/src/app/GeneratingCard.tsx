@@ -97,12 +97,12 @@ function BuildSkeleton({ step }: { step: number }) {
 // all media as data: URIs. sandbox="allow-scripts" WITHOUT allow-same-origin: the
 // body is single-agent LLM output assembled from externally-supplied Figma text,
 // so it's treated as untrusted and denied DOM/same-origin access to the parent.
-function LiveFrame({ html }: { html: string }) {
+function LiveFrame({ html, label }: { html: string; label: string }) {
   return (
     <div className="pf-live">
       <div className="pf-live-bar">
         <span className="pf-live-dot" aria-hidden />
-        Live preview — sharpening as Forge refines your page
+        {label}
       </div>
       <div className="pf-live-scroll">
         <iframe
@@ -170,6 +170,13 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
   const rl = session.progress?.rateLimited || null;
   const waiting = session.status === 'waiting' || Boolean(rl);
   const showLive = previewReady && Boolean(previewHtml);
+  // During a Stardust redesign the preview pointer is frozen at the faithful v1
+  // (the redesign builds a separate version and does not re-snapshot), so label the
+  // frame honestly instead of implying it's the live redesign "sharpening".
+  const redesigning = session.phase === 'redesign' || session.status === 'refining';
+  const liveLabel = redesigning
+    ? 'Faithful baseline — redesigning on top…'
+    : 'Live preview — sharpening as Forge refines your page';
 
   return (
     <div className="pf-gen2">
@@ -207,7 +214,7 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
         </div>
       </div>
 
-      {showLive ? <LiveFrame html={previewHtml as string} /> : <BuildSkeleton step={stepIdx} />}
+      {showLive ? <LiveFrame html={previewHtml as string} label={liveLabel} /> : <BuildSkeleton step={stepIdx} />}
     </div>
   );
 }
