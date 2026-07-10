@@ -245,6 +245,11 @@ const parseContent = async (el, merchCard) => {
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
+      // H5+em authored in DA signals a sparkle subtitle; route it to heading-xs slot
+      const isSubtitle = tagName === 'H5' && element.querySelector('em');
+      if (isSubtitle) {
+        slotName = 'heading-xs';
+      }
       if (!slotName) return;
       if (tagName === 'H3') headingXsCount += 1;
       element.classList.add('card-heading');
@@ -274,6 +279,10 @@ const parseContent = async (el, merchCard) => {
         newElement.setAttribute(attr.name, attr.value);
       });
       newElement.innerHTML = element.innerHTML;
+      // marker for shadow DOM subtitle injection
+      if (isSubtitle) {
+        newElement.classList.add('card-subtitle');
+      }
       merchCard.append(newElement);
     }
     if (tagName === 'H6') {
@@ -695,14 +704,19 @@ export default async function init(el) {
     if (badgeMetadata !== null) {
       const badge = getBadgeStyle(badgeMetadata.children);
       if (badge !== null) {
-        merchCard.setAttribute(
-          'badge-background-color',
-          badge.badgeBackgroundColor,
-        );
-        merchCard.setAttribute('badge-color', badge.badgeColor);
-        merchCard.setAttribute('badge-text', badge.badgeText);
-        if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
-        merchCard.classList.add('badge-card');
+        // mini-compare-chart uses a custom banner div instead of the MAS badge attribute
+        if (cardType === MINI_COMPARE_CHART) {
+          merchCard.dataset.bannerText = badge.badgeText;
+        } else {
+          merchCard.setAttribute(
+            'badge-background-color',
+            badge.badgeBackgroundColor,
+          );
+          merchCard.setAttribute('badge-color', badge.badgeColor);
+          merchCard.setAttribute('badge-text', badge.badgeText);
+          if (badge.borderColor) merchCard.setAttribute('border-color', badge.borderColor);
+          merchCard.classList.add('badge-card');
+        }
       } else if (badgeMetadata.children.length === 1) {
         const borderColor = badgeMetadata.children[0].innerText.trim();
         if (borderColor.startsWith('#')) merchCard.setAttribute('border-color', borderColor);
@@ -715,6 +729,17 @@ export default async function init(el) {
   }
   if (cardType === MINI_COMPARE_CHART) {
     footerRows = getMiniCompareChartFooterRows(el);
+    // UI: sparkle icon — extracted before pictures loop to prevent it landing in the image slot.
+    const subtitleH5 = el.querySelector('h5:has(em)');
+    if (subtitleH5) {
+      const cell = subtitleH5.closest('div');
+      const subtitleIconImg = cell?.querySelector('img');
+      if (subtitleIconImg) {
+        merchCard.dataset.subtitleIconUrl = subtitleIconImg.src;
+        (subtitleIconImg.closest('picture') || subtitleIconImg).remove();
+        merchCard.classList.add('has-sparkle');
+      }
+    }
   }
   const allPictures = el.querySelectorAll('picture');
   const pictures = Array.from(allPictures).filter((picture) => !picture.closest('.mnemonic-list'));
@@ -846,5 +871,114 @@ export default async function init(el) {
   }
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
+
+  if (merchCard.variant === MINI_COMPARE_CHART) {
+    // UI: quantity selector (− / + stepper) — shadow DOM injected; external CSS can't reach :host.
+    customElements.whenDefined('merch-quantity-select').then(() => {
+      const qs = merchCard.querySelector('merch-quantity-select');
+      const qsSr = qs?.shadowRoot;
+      if (!qsSr) return;
+      const style = document.createElement('style');
+      style.textContent = `:host {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: var(--consonant-merch-spacing-xxs, 8px) !important;
+        padding-block: var(--consonant-merch-spacing-xxs, 8px) !important;
+      }`;
+      qsSr.appendChild(style);
+    });
+    // UI: subtitle (sparkle pink or plain gray) above price — polls shadow DOM until ready.
+    customElements.whenDefined('merch-card').then(() => {
+      const sr = merchCard.shadowRoot;
+      const trySetupWrapper = () => {
+        // price slot is the anchor — absent means MAS hasn't rendered yet
+        const priceAnchor = sr?.querySelector('slot[name="heading-m-price"]');
+        if (!priceAnchor) return false;
+
+        // Shadow DOM overrides: footer spacing, promo-text min-height, subtitle color via :host.
+        const style = document.createElement('style');
+        style.textContent = `
+          footer { padding-top: var(--consonant-merch-spacing-xxs, 8px) !important; }
+          slot[name="offers"] { padding-top: 0 !important; }
+          @media (min-width: 768px) {
+            slot[name="promo-text"] { min-height: 48px !important; }
+          }
+          .card-subtitle-injected {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: var(--consonant-merch-card-body-xs-font-size, 14px);
+            font-weight: var(--consonant-merch-card-detail-m-font-weight, 700);
+            font-style: normal;
+            line-height: 1.5;
+            min-height: 42px;
+            padding: 0 var(--consonant-merch-spacing-s, 24px) var(--consonant-merch-spacing-xxs, 8px) 12px;
+          }
+          :host(.has-sparkle) .card-subtitle-injected { color: #c12f84; }
+          :host(:not(.has-sparkle)) .card-subtitle-injected { color: #4b4b4b; }
+          .card-subtitle-injected em { font-style: normal; }
+        `;
+
+        const subtitleEl = merchCard.querySelector('.card-subtitle');
+        if (subtitleEl) {
+          // UI: subtitle cloned into shadow DOM above price; picture stripped (icon in dataset).
+          const subtitleDiv = document.createElement('div');
+          subtitleDiv.className = 'card-subtitle-injected';
+          subtitleDiv.innerHTML = subtitleEl.innerHTML;
+          subtitleDiv.querySelector('picture')?.remove();
+          priceAnchor.insertAdjacentElement('beforebegin', subtitleDiv);
+          subtitleEl.style.display = 'none';
+
+          // UI: sparkle icon rendered as ::before so it stays inline with the subtitle text.
+          const iconUrl = merchCard.dataset.subtitleIconUrl;
+          if (iconUrl) {
+            style.textContent += `
+              .card-subtitle-injected::before {
+                content: "";
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+                background: url("${iconUrl}") center / contain no-repeat;
+              }
+            `;
+          }
+        }
+
+        sr.appendChild(style);
+
+        // UI: "Most popular" banner + flex wrapper; banner always present as spacer for alignment.
+        const bannerEl = document.createElement('div');
+        bannerEl.className = 'merch-card-combo-top';
+        if (merchCard.dataset.bannerText) {
+          bannerEl.classList.add('merch-card-combo-banner');
+          bannerEl.textContent = merchCard.dataset.bannerText;
+        }
+        const wrapper = document.createElement('div');
+        wrapper.className = 'merch-card-combo-wrapper';
+        merchCard.insertAdjacentElement('beforebegin', wrapper);
+        wrapper.append(bannerEl, merchCard);
+        wrapper.parentElement.classList.add('merch-card-combo-flex-container');
+
+        return true;
+      };
+
+      // MAS renders async; MutationObserver retries until the price slot appears
+      if (!trySetupWrapper() && sr) {
+        let timeoutId;
+        const observer = new MutationObserver(() => {
+          if (trySetupWrapper()) {
+            observer.disconnect();
+            clearTimeout(timeoutId);
+          }
+        });
+        observer.observe(sr, { childList: true, subtree: true });
+        // disconnect after 10s if MAS never renders the price slot
+        timeoutId = setTimeout(() => observer.disconnect(), 10000);
+      }
+    });
+  }
+
   return merchCard;
 }
