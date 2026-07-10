@@ -174,9 +174,16 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
   // (the redesign builds a separate version and does not re-snapshot), so label the
   // frame honestly instead of implying it's the live redesign "sharpening".
   const redesigning = session.phase === 'redesign' || session.status === 'refining';
+  // Early frames come from the extract agent's progressive drafts (rough by design —
+  // MWPW-199520): the page paints top-down while Forge is still READING the Figma
+  // (step 1). Only in that reading step do we set the "rough at first" expectation;
+  // by step 2 (matching) the preview is the full bespoke, and convergence "sharpens".
+  const buildingEarly = !redesigning && stepIdx <= 1;
   const liveLabel = redesigning
     ? 'Faithful baseline — redesigning on top…'
-    : 'Live preview — sharpening as Forge refines your page';
+    : buildingEarly
+      ? 'Building live — rough at first, sharpens as Forge works'
+      : 'Live preview — sharpening as Forge refines your page';
 
   return (
     <div className="pf-gen2">
