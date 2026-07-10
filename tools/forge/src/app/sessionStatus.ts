@@ -13,6 +13,7 @@ const STATE_WORDS: Record<SessionStatus, string> = {
 	pending: 'Queued',
 	queued: 'Queued',
 	generating: 'Building',
+	waiting: 'Waiting on Figma',
 	refining: 'Building',
 	running: 'Building',
 	deploying: 'Going live',
@@ -71,8 +72,8 @@ export function statusKind(status: SessionStatus, phase?: string, shipped?: Ship
 	// A cancelled run is idle (gray dot), not an error (red dot).
 	if (isCancelled(status, phase)) return 'idle';
 	if (status === 'generating' || status === 'refining' || status === 'running'
-		|| status === 'deploying' || status === 'shipping' || status === 'queued'
-		|| status === 'pending') {
+		|| status === 'waiting' || status === 'deploying' || status === 'shipping'
+		|| status === 'queued' || status === 'pending') {
 		// queued/pending also read as "not yet settled" but should not breathe; the
 		// caller distinguishes by checking `isLive` below. Default the working set
 		// to 'gen' and let pending/paused/cancelled fall to idle via isLive.
@@ -89,5 +90,5 @@ export function statusKind(status: SessionStatus, phase?: string, shipped?: Ship
 // header should show the breathing ring + phase word.
 export function isLive(status: SessionStatus): boolean {
 	return status === 'generating' || status === 'refining' || status === 'running'
-		|| status === 'deploying' || status === 'shipping';
+		|| status === 'waiting' || status === 'deploying' || status === 'shipping';
 }

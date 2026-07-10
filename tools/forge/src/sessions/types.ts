@@ -37,6 +37,10 @@ export type SessionStatus =
   | 'pending'
   | 'queued'
   | 'generating'
+  // Actively working, but waiting out a Figma rate-limit (MWPW-199520). Distinct
+  // from 'paused' (a user-action gate): the run resumes itself, and the UI shows a
+  // live countdown from progress.rateLimited instead of a silent stall.
+  | 'waiting'
   | 'refining'
   | 'running'
   | 'deploying'
@@ -136,6 +140,42 @@ export interface RenderFidelity {
   presenceMeasured?: boolean | null;
 }
 
+// ── Structured progress (MWPW-199520 AC-C + visible waiting) ──────────────────
+// Mirrors the server's progress object (page-forge/server/server.js makeProgress).
+// All fields tolerant/optional — a pre-AC-C session omits it entirely. `rateLimited`
+// is non-null ONLY while a Figma rate-limit wait is in flight; `until` is an epoch
+// ms the UI counts down to.
+export interface ForgeRateLimited {
+  endpoint?: string;
+  attempt?: number | null;
+  waitMs?: number | null;
+  retryAfterS?: number | null;
+  until?: number | null;
+}
+export interface ForgeProgress {
+  phase?: string;
+  step?: string | null;
+  currentItem?: string | null;
+  itemsDone?: number | null;
+  itemsTotal?: number | null;
+  turn?: number | null;
+  maxTurns?: number | null;
+  rateLimited?: ForgeRateLimited | null;
+  updatedAt?: number;
+}
+
+// ── Live graphical preview pointer (MWPW-199520) ──────────────────────────────
+// The server overwrites a preview snapshot at each safe checkpoint (extract done,
+// each kept convergence round, final version push) and bumps `version`. The client
+// re-fetches GET /sessions/:id/preview whenever `version`/`updatedAt` changes and
+// renders it in an <iframe srcdoc>. Absent/ready=false until the first draft exists.
+export interface ForgePreview {
+  ready?: boolean;
+  version?: number;
+  url?: string | null;
+  updatedAt?: number | null;
+}
+
 export interface Session {
   // Server uses 'sessionId' as the primary key
   sessionId: string;
@@ -155,6 +195,12 @@ export interface Session {
   matchReport?: unknown;
   deployReport?: unknown;
   figmaFilePath?: string | null;
+  // Structured progress signal (incl. rateLimited countdown). Optional — a
+  // pre-AC-C session omits it and the UI degrades to status/phase.
+  progress?: ForgeProgress;
+  // Live graphical preview pointer (MWPW-199520). Absent/ready=false until the
+  // first draft exists; the UI shows a skeleton until then.
+  preview?: ForgePreview;
   // Render-diff fidelity — optional; absent until the server wires it through.
   fidelity?: RenderFidelity | null;
   // A finished-page screenshot for the result preview. Demo-only today (the stub

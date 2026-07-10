@@ -320,6 +320,22 @@ const realApi = {
     return apiFetch(`/sessions/${sessionId}/match-report`, {}, serverUrl);
   },
 
+  // Fetch the live-preview page as raw HTML (MWPW-199520). NOT apiFetch — that
+  // forces JSON; this returns text/html for <iframe srcdoc>. Bearer-authenticated
+  // like every /forge call, so the token never touches a URL or a subresource
+  // (the server inlines media as data: URIs). Throws (with .status) on non-2xx so
+  // the caller can distinguish 404 "not ready yet" from a real error.
+  async getSessionPreviewHtml(sessionId: string, serverUrl: string): Promise<string> {
+    const url = `${serverUrl}${API_PREFIX}/sessions/${sessionId}/preview`;
+    const res = await fetch(url, { headers: { authorization: `Bearer ${currentAuthToken()}` } });
+    if (!res.ok) {
+      const err = new Error(`HTTP ${res.status}`) as Error & { status: number };
+      err.status = res.status;
+      throw err;
+    }
+    return res.text();
+  },
+
   getSessionsHistory(serverUrl: string): Promise<unknown> {
     return apiFetch('/sessions/history', {}, serverUrl);
   },

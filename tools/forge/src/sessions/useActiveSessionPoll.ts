@@ -12,7 +12,7 @@ import { ToastQueue } from '@react-spectrum/s2';
 
 // Statuses that are considered "busy" (mid-run)
 function isBusy(s: Session): boolean {
-  return ['queued', 'generating', 'refining', 'shipping', 'deploying', 'running'].includes(s.status);
+  return ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(s.status);
 }
 
 export function useActiveSessionPoll(sessionId: string | null): void {

@@ -46,6 +46,11 @@ const PHASE_TO_STEP: Record<string, number> = {
 // Minimum step implied by session.status when the phase is unrecognised
 const STATUS_MIN_STEP: Record<string, number> = {
   queued: 0, generating: 1, refining: 1, running: 1,
+  // 'waiting' (MWPW-199520) is a rate-limit pause — its phase is usually a
+  // recognised one (converge → 2) that wins, but the extract-phase wait has no
+  // PHASE_TO_STEP entry, so anchor its minimum at 'reading' rather than regressing
+  // the timeline to Queued mid-run.
+  waiting: 1,
   shipping: 4, deploying: 3,
 };
 

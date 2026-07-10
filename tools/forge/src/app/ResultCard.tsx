@@ -38,7 +38,7 @@ import { resolveIntentPolicy, isReimagine, INTENT_CHIP, INTENT_SUMMARY_VERB } fr
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isBusy(s: Session): boolean {
-  return ['queued', 'generating', 'refining', 'shipping', 'deploying', 'running'].includes(
+  return ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(
     s.status,
   );
 }
@@ -407,7 +407,7 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
         {figmaAuthUrl && (
           <FigmaReauthCard figmaAuthUrl={figmaAuthUrl} busy={true} onRetry={onRetry} />
         )}
-        <GeneratingCard session={session} onCancel={onCancel} />
+        <GeneratingCard session={session} onCancel={onCancel} serverUrl={serverUrl} />
       </div>
     );
   }
