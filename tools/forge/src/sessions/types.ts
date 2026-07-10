@@ -272,6 +272,10 @@ export const TOKEN_REFRESH_EVERY_N_TICKS = 30;
 export const DEFAULT_SERVER_URL = 'http://localhost:8080';
 export const STORAGE_KEY_HISTORY = 'page-forge:history';
 export const STORAGE_KEY_RUNS = 'page-forge:runs';
+// The active session id, so a browser RELOAD re-attaches to a live run. Kept in
+// sessionStorage (not localStorage): it must survive a reload but stay per-tab,
+// so two tabs never clobber each other's active session (a fresh tab starts clean).
+export const STORAGE_KEY_ACTIVE = 'page-forge:activeSessionId';
 
 export const DEFAULT_BREAKPOINTS: BreakpointDef[] = [
   { label: 'Desktop', width: 1440, figmaUrl: '' },

@@ -15,6 +15,7 @@ import {
   MAX_HTML_IN_HISTORY_BYTES,
   STORAGE_KEY_HISTORY,
   STORAGE_KEY_RUNS,
+  STORAGE_KEY_ACTIVE,
 } from './types';
 import { api } from './api';
 import { useConfig } from '../config';
@@ -70,6 +71,28 @@ function saveRuns(runStart: Map<string, number>, runEnd: Map<string, number>): v
     localStorage.setItem(STORAGE_KEY_RUNS, JSON.stringify(data));
   } catch {
     // quota etc.
+  }
+}
+
+// ── Active session id — persisted so a reload re-attaches to a live run ───────
+// sessionStorage: survives reload, per-tab (no cross-tab clobbering). Every access
+// is guarded — a throwing/absent Storage (private mode, embedded iframe) must
+// degrade to "persistence off", never white-screen the tool.
+
+function loadActiveId(): string | null {
+  try {
+    return sessionStorage.getItem(STORAGE_KEY_ACTIVE) || null;
+  } catch {
+    return null;
+  }
+}
+
+function saveActiveId(id: string | null): void {
+  try {
+    if (id) sessionStorage.setItem(STORAGE_KEY_ACTIVE, id);
+    else sessionStorage.removeItem(STORAGE_KEY_ACTIVE);
+  } catch {
+    // private mode / quota — persistence simply off this session.
   }
 }
 
@@ -207,6 +230,7 @@ function reducer(state: SessionsState, action: SessionsAction): SessionsState {
       return { ...state, history: next };
     }
     case 'setActiveSessionId':
+      saveActiveId(action.sessionId);
       return { ...state, activeSessionId: action.sessionId };
     case 'remapSessionId': {
       const nextSessions = new Map(state.sessions);
@@ -216,11 +240,14 @@ function reducer(state: SessionsState, action: SessionsAction): SessionsState {
         e.sessionId === action.oldId ? { ...e, sessionId: action.newId } : e,
       );
       saveHistory(nextHistory);
+      const nextActiveRemap =
+        state.activeSessionId === action.oldId ? action.newId : state.activeSessionId;
+      if (nextActiveRemap !== state.activeSessionId) saveActiveId(nextActiveRemap);
       return {
         ...state,
         sessions: nextSessions,
         history: nextHistory,
-        activeSessionId: state.activeSessionId === action.oldId ? action.newId : state.activeSessionId,
+        activeSessionId: nextActiveRemap,
       };
     }
     case 'markRunStart': {
@@ -254,7 +281,19 @@ function reducer(state: SessionsState, action: SessionsAction): SessionsState {
       nextRunStart.delete(action.sessionId);
       nextRunEnd.delete(action.sessionId);
       saveRuns(nextRunStart, nextRunEnd);
-      return { ...state, sessions: nextSessions, history: nextHistory, runStart: nextRunStart, runEnd: nextRunEnd };
+      // Deleting the active session drops the persisted id too, else a reload
+      // would re-attach to a session the user just removed.
+      const nextActiveRemove =
+        state.activeSessionId === action.sessionId ? null : state.activeSessionId;
+      if (nextActiveRemove !== state.activeSessionId) saveActiveId(nextActiveRemove);
+      return {
+        ...state,
+        sessions: nextSessions,
+        history: nextHistory,
+        runStart: nextRunStart,
+        runEnd: nextRunEnd,
+        activeSessionId: nextActiveRemove,
+      };
     }
     default:
       return state;
@@ -263,13 +302,30 @@ function reducer(state: SessionsState, action: SessionsAction): SessionsState {
 
 function getInitialState(): SessionsState {
   const { runStart, runEnd } = loadRuns();
-  return {
-    sessions: new Map(),
-    history: loadHistory(),
-    activeSessionId: null,
-    runStart,
-    runEnd,
-  };
+  const history = loadHistory();
+  const sessions = new Map<string, Session>();
+
+  // Re-attach to the persisted active session on reload. The sessions Map is
+  // never persisted, so without this the id would mount <ActiveSession> on an
+  // empty Map → a permanent "Loading session…" spinner (the poll's cache-restore
+  // path reads the Map, not history, so it can't self-heal). Seed a synthetic
+  // session from the matching history entry so: (a) the last-known state paints
+  // immediately (no Loading flash), and (b) the poll's 404 restore-from-cache
+  // path has the versions[].html it needs. If no history entry backs the id,
+  // drop it rather than spin — the poll will fall the UI back to InputPanel, but
+  // this avoids mounting a dead session at all.
+  let activeSessionId = loadActiveId();
+  if (activeSessionId) {
+    const entry = history.find((e) => e.sessionId === activeSessionId);
+    if (entry) {
+      sessions.set(entry.sessionId, historyEntryToSession(entry));
+    } else {
+      activeSessionId = null;
+      saveActiveId(null);
+    }
+  }
+
+  return { sessions, history, activeSessionId, runStart, runEnd };
 }
 
 // ── Context ───────────────────────────────────────────────────────────────────
