@@ -1409,6 +1409,13 @@ span.hang-opening-quote {
     to { transform: translateY(-35vh); }
   }
 
+  @media (width >= 1280px) and (width < 1440px) {
+    @keyframes parallax-move-up-fast {
+      from { transform: translateY(0); }
+      to { transform: translateY(-50vh); }
+    }
+  }
+
   @keyframes parallax-fade-to-dark {
     from { opacity: 0; }
     to { opacity: 0.75; }
