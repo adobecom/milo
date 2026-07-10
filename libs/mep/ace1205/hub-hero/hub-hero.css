@@ -870,7 +870,7 @@
 }
 
 /** prefers-reduced-motion + extra small screens (320px = 640px at 200% zoom) */
-@media (prefers-reduced-motion: reduce), (width <= 480px) {
+@media (prefers-reduced-motion: reduce), (width <= 320px) {
 
   .hub-hero,
   .hub-hero-header,
@@ -1004,7 +1004,7 @@
 }
 
 /** mobile layout overrides for reduced-motion and extra small screens */
-@media (prefers-reduced-motion: reduce) and (width < 768px), (width <= 480px) {
+@media (prefers-reduced-motion: reduce) and (width < 768px), (width <= 320px) {
 
   .hub-hero-carousel-item-container .hub-hero-carousel-item-footer,
   .hub-hero-carousel-item-container .hub-hero-carousel-item-header {
