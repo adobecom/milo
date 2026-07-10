@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  // 'tabs-parent',
 ];
 
 const AUTO_BLOCKS = [
