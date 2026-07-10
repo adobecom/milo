@@ -10,7 +10,6 @@ const innerHTML = await readFile({ path: './mocks/body.html' });
 const options = JSON.parse(await readFile({ path: './mocks/options.json' }));
 const config = { codeRoot: '/libs' };
 const ogFetch = window.fetch;
-// comment to prevent PR from being automatically closed //
 
 setConfig(config);
 
