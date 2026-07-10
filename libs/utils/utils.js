@@ -2030,7 +2030,7 @@ export async function loadIms() {
             const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
             const localePrefix = locale.prefix.slice(1);
             if (localePrefix === 'cn' || localePrefix === 'sea') return `${baseUrl}${locale.prefix}`;
-            const acomLocale = isLingo ? (locale.ietf || 'en').split('-')[0] : localePrefix;
+            const acomLocale = isLingo ? (locale.ietf || 'en').split(/[-_]/)[0] : localePrefix;
             const query = [
               acomLocale && `acomLocale=${acomLocale}`,
               acomCountry && `acomCountry=${acomCountry}`,

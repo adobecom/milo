@@ -3014,6 +3014,26 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=de&acomCountry=CH');
     });
 
+    it('splits acomLocale on an underscore ietf (getLanguage fallback fr_FR -> fr)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/fr/',
+        locales: { '': { ietf: 'en-US' }, fr: { ietf: 'fr_FR' } },
+      });
+      sessionStorage.setItem('akamai', 'fr');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=FR');
+    });
+
     it('keeps the combined prefix and no acomCountry for a pre-lingo regional locale (lu_de)', async () => {
       const ahomeMeta = document.createElement('meta');
       ahomeMeta.setAttribute('name', 'adobe-home-redirect');
