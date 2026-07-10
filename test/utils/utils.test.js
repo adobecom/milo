@@ -3026,12 +3026,12 @@ describe('Utils', () => {
       lingoModule.setConfig({
         ...imsLingoConfig,
         pathname: '/fr/',
-        locales: { '': { ietf: 'en-US' }, fr: { ietf: 'fr_FR' } },
+        locales: { '': { ietf: 'en-US' }, fr: { ietf: 'fr_FR' }, ch_fr: { ietf: 'fr-CH', base: 'fr' } },
       });
-      sessionStorage.setItem('akamai', 'fr');
+      sessionStorage.setItem('akamai', 'ch');
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
-      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=FR');
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=CH');
     });
 
     it('keeps the combined prefix and no acomCountry for a pre-lingo regional locale (lu_de)', async () => {
@@ -3090,9 +3090,28 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=CA');
     });
 
-    // AC#2: acomCountry is always the geo country, even when it maps to no Lingo
-    // region (a user physically in France still gets acomCountry=FR).
-    it('sets acomCountry to the geo country even when it maps to no region', async () => {
+    // acomCountry is only sent when the geo country maps to a valid region of the
+    // base. On /fr the base regions are ca/ch, so a German IP (no fr-DE) gets the
+    // language alone.
+    it('omits acomCountry when the geo country is not a region of the base', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'de');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr');
+    });
+
+    // The base country itself is not a region variant: France on /fr gets no
+    // acomCountry (there is no fr-FR variant, /fr already is France).
+    it('omits acomCountry when the geo country is the base country (fr on /fr)', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
@@ -3105,7 +3124,89 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'fr');
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
-      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=FR');
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr');
+    });
+
+    // Regional-variant page: acomCountry follows geo only when it fits the base.
+    // A Canadian on /ch_de does not fit base 'de' (regions at/ch/lu), so no country.
+    it('omits acomCountry on a regional page when geo does not fit the base (ca on /ch_de)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/ch_de/',
+        locales: {
+          '': { ietf: 'en-US' },
+          de: { ietf: 'de-DE' },
+          at: { ietf: 'de-AT', base: 'de' },
+          ch_de: { ietf: 'de-CH', base: 'de' },
+          lu_de: { ietf: 'de-LU', base: 'de' },
+        },
+      });
+      sessionStorage.setItem('akamai', 'ca');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=de');
+    });
+
+    // Regional-variant page: a geo that does fit the base (Austria on /ch_de)
+    // sends that geo country.
+    it('sends geo acomCountry on a regional page when geo fits the base (at on /ch_de)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/ch_de/',
+        locales: {
+          '': { ietf: 'en-US' },
+          de: { ietf: 'de-DE' },
+          at: { ietf: 'de-AT', base: 'de' },
+          ch_de: { ietf: 'de-CH', base: 'de' },
+          lu_de: { ietf: 'de-LU', base: 'de' },
+        },
+      });
+      sessionStorage.setItem('akamai', 'at');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=de&acomCountry=AT');
+    });
+
+    // Aggregate region via mepLingoCountryToRegion: a Kenyan on the root maps to
+    // the africa region, so acomCountry=KE is sent.
+    it('sends acomCountry for a mepLingoCountryToRegion aggregate region (ke -> africa)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/',
+        locales: {
+          '': { ietf: 'en-US' },
+          africa: { ietf: 'en', base: '' },
+        },
+        mepLingoCountryToRegion: { africa: ['ke', 'mu', 'ng', 'za'] },
+      });
+      sessionStorage.setItem('akamai', 'ke');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=en&acomCountry=KE');
     });
 
     // AC#4: sign-in uses geo (akamai 'ca'), not the selected-market cookie
@@ -3176,7 +3277,7 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home');
     });
 
-    it('sends acomLocale=en (ietf language) + geo acomCountry on the post-lingo international site', async () => {
+    it('sends acomLocale=en with no acomCountry on the international root (us is the base country)', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
@@ -3189,7 +3290,7 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'us');
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
-      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=en&acomCountry=US');
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=en');
     });
 
     // AC#3 guard: pages without adobe-home-redirect must not get a /home redirect_uri.

@@ -1021,6 +1021,17 @@ export async function resolveDetectedMarketCountry() {
   );
 }
 
+function resolveLingoRegionKey(regions, country, localeKey, mepMap) {
+  const directKey = Object.entries(regions).find(
+    ([key]) => key === country || key === `${country}_${localeKey}`,
+  )?.[0];
+  if (directKey) return directKey;
+  if (!mepMap) return undefined;
+  return Object.entries(mepMap).find(
+    ([key, countries]) => Array.isArray(countries) && countries.includes(country) && regions[key],
+  )?.[0];
+}
+
 export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
@@ -1035,18 +1046,40 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
-
-  let regionKey = Object.entries(regions).find(
-    ([key]) => key === country || key === `${country}_${localeKey}`,
-  )?.[0];
-
-  if (!regionKey && config.mepLingoCountryToRegion) {
-    regionKey = Object.entries(config.mepLingoCountryToRegion).find(
-      ([key, countries]) => Array.isArray(countries) && countries.includes(country) && regions[key],
-    )?.[0];
-  }
-
+  const mepMap = config.mepLingoCountryToRegion;
+  const regionKey = resolveLingoRegionKey(regions, country, localeKey, mepMap);
   return regionKey ? regions[regionKey] : null;
+}
+
+// The set of valid regions for the current page's base. A base locale (no `base`
+// key, e.g. /fr) carries its hydrated `regions` map; a regional variant (/ch_de)
+// has none of its own, so reconstruct its base's region set from the siblings
+// that point at the same base.
+function getBaseRegions(config) {
+  const { locale, locales } = config || {};
+  if (!locale) return {};
+  if (locale.base === undefined) return locale.regions || {};
+  if (!locales) return {};
+  return Object.fromEntries(
+    Object.entries(locales).filter(([, l]) => l.base === locale.base),
+  );
+}
+
+// acomCountry is the user's geo country, but only passed when that country maps
+// to a valid region of the current base (e.g. on /fr only ch/ca/be/lu qualify).
+// Otherwise the language alone (acomLocale) is sent.
+async function resolveAcomCountry(config) {
+  const geoCountry = normCountryCode(await getCountry());
+  if (!geoCountry) return null;
+  const { locale } = config || {};
+  if (!locale) return null;
+  const regions = getBaseRegions(config);
+  if (!Object.keys(regions).length) return null;
+  const baseKey = locale.base !== undefined ? locale.base : (locale.prefix?.slice(1) || '');
+  const localeKey = baseKey === '' ? 'en' : baseKey;
+  const mepMap = config.mepLingoCountryToRegion;
+  const fits = resolveLingoRegionKey(regions, geoCountry, localeKey, mepMap);
+  return fits ? geoCountry.toUpperCase() : null;
 }
 
 export async function getGeoLocalePrefix() {
@@ -2009,7 +2042,7 @@ export async function loadIms() {
     const isLingo = lingoActive();
     const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
     const acomCountry = isLingo && getMetadata('adobe-home-redirect') === 'on'
-      ? normCountryCode(await getCountry())?.toUpperCase() : null;
+      ? await resolveAcomCountry(getConfig()) : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
