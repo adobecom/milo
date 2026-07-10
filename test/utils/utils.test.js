@@ -2978,7 +2978,7 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr&acomCountry=CH');
     });
 
-    it('builds Adobe Home redirect_uri with locale-prefix acomLocale when lingo is not active', async () => {
+    it('keeps the prefix acomLocale and sends no acomCountry when lingo is not active', async () => {
       const ahomeMeta = document.createElement('meta');
       ahomeMeta.setAttribute('name', 'adobe-home-redirect');
       ahomeMeta.setAttribute('content', 'on');
@@ -2988,6 +2988,46 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr');
+    });
+
+    it('derives acomLocale from the ietf language for a regional prefix (ch_de -> de)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/ch_de/',
+        locales: {
+          '': { ietf: 'en-US' },
+          de: { ietf: 'de-DE' },
+          ch_de: { ietf: 'de-CH', base: 'de' },
+        },
+      });
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=de&acomCountry=CH');
+    });
+
+    it('keeps the combined prefix and no acomCountry for a pre-lingo regional locale (lu_de)', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({
+        ...imsLingoConfig,
+        pathname: '/lu_de/',
+        locales: { '': { ietf: 'en-US' }, lu_de: { ietf: 'de-LU' } },
+      });
+      sessionStorage.setItem('akamai', 'lu');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=lu_de');
     });
 
     it('keeps cn and sea on their locale homepage instead of /home for Adobe Home redirect_uri', async () => {
@@ -3114,6 +3154,22 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home');
+    });
+
+    it('sends acomLocale=en (ietf language) + geo acomCountry on the post-lingo international site', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/' });
+      sessionStorage.setItem('akamai', 'us');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=en&acomCountry=US');
     });
 
     // AC#3 guard: pages without adobe-home-redirect must not get a /home redirect_uri.

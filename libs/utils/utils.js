@@ -2006,8 +2006,10 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
-    const acomCountry = lingoActive() ? normCountryCode(await getCountry())?.toUpperCase() : null;
+    const isLingo = lingoActive();
+    const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
+    const acomCountry = isLingo && getMetadata('adobe-home-redirect') === 'on'
+      ? normCountryCode(await getCountry())?.toUpperCase() : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
@@ -2026,8 +2028,9 @@ export async function loadIms() {
         redirect_uri: ahomeMeta === 'on'
           ? (() => {
             const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
-            const acomLocale = locale.prefix.slice(1);
-            if (acomLocale === 'cn' || acomLocale === 'sea') return `${baseUrl}${locale.prefix}`;
+            const localePrefix = locale.prefix.slice(1);
+            if (localePrefix === 'cn' || localePrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            const acomLocale = isLingo ? (locale.ietf || 'en').split('-')[0] : localePrefix;
             const query = [
               acomLocale && `acomLocale=${acomLocale}`,
               acomCountry && `acomCountry=${acomCountry}`,
