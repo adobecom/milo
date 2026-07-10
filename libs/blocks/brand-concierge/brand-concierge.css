@@ -1322,8 +1322,6 @@
   max-width: 480px;
 }
 
-/* the container's default bottom margin would inflate the ::before border box;
-   spacing to the pills is handled by the foreground gap instead */
 .brand-concierge.marquee .bc-input-field-container {
   margin-bottom: 0;
 }
