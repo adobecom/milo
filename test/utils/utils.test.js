@@ -3170,12 +3170,14 @@ describe('Utils', () => {
     beforeEach(() => {
       sessionStorage.removeItem('akamai');
       document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'acomsis=1; path=/';
     });
 
     afterEach(() => {
       delete window.adobeIMS;
       sessionStorage.removeItem('akamai');
       document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'acomsis=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     });
 
     it('uses IMS country code for signed-in users when no cookie', async () => {
@@ -3216,6 +3218,19 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'de');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('de');
+    });
+
+    it('skips IMS lookup when acomsis cookie is absent', async () => {
+      document.cookie = 'acomsis=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      let profileCalled = false;
+      window.adobeIMS = {
+        isSignedInUser: () => true,
+        getProfile: () => { profileCalled = true; return Promise.resolve({ countryCode: 'CA' }); },
+      };
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('fr');
+      expect(profileCalled).to.be.false;
     });
   });
 });

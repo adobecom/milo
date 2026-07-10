@@ -1006,7 +1006,7 @@ export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   let imsCountry = null;
-  if (!cookieMarket) {
+  if (!cookieMarket && getCookie('acomsis')) {
     // eslint-disable-next-line no-use-before-define
     if (!imsLoaded && getConfig().imsClientId) imsLoaded = loadIms();
     if (imsLoaded) {
