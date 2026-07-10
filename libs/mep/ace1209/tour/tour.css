@@ -1,6 +1,6 @@
 /* Tour Content Styles */
 .tour {
-  max-width: 696px;
+  max-width: var(--tour-modal-max-width);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -200,8 +200,9 @@
     border-radius: 6px;
     background-color: var(--s2a-color-gray-75);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-200);
-    top: var(--s2a-spacing-md);
-    right: var(--s2a-spacing-md);
+    /* If top spacing changes then update in JS as well */
+    top: calc(var(--tour-section-gap) + var(--s2a-spacing-md));
+    right: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
 
     &:hover {
       background-color: var(--s2a-color-gray-300);
@@ -222,12 +223,6 @@
     background: var(--s2a-color-transparent-black-64);
     backdrop-filter: blur(var(--s2a-blur-32));
     will-change: backdrop-filter;
-  }
-
-  .dialog-close {
-    /* If top spacing changes then update in JS as well */
-    top: calc(var(--tour-section-gap) + var(--s2a-spacing-md));
-    right: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
   }
 }
 

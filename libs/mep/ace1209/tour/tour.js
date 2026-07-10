@@ -1,5 +1,6 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import icons from '../../../c2/assets/icons.js';
+import { closeModal } from '../../../c2/blocks/modal/modal.js';
 
 const SWIPE_CLOSE_THRESHOLD = 100;
 
@@ -13,13 +14,12 @@ function addScrollCloseSync(el) {
     const closeBtn = modal.querySelector('.dialog-close');
     if (!fragment || !closeBtn) return;
 
-    const style = getComputedStyle(modal);
-    const cardGap = parseFloat(style.getPropertyValue('--tour-card-gap'));
-    const spacingMd = parseFloat(style.getPropertyValue('--s2a-spacing-md'));
-    const initialTop = cardGap + spacingMd;
+    const style = getComputedStyle(el);
+    const sectionGap = parseFloat(style.getPropertyValue('--tour-section-gap'));
+    const initialTop = parseFloat(getComputedStyle(closeBtn).top);
 
     fragment.addEventListener('scroll', () => {
-      const offset = Math.min(fragment.scrollTop, cardGap);
+      const offset = Math.min(fragment.scrollTop, sectionGap);
       closeBtn.style.top = `${initialTop - offset}px`;
     }, { passive: true });
   });
@@ -31,7 +31,7 @@ function addOutsideClickClose(el) {
 
   modal.addEventListener('click', (e) => {
     if (!el.contains(e.target) && !e.target.closest('.dialog-close')) {
-      modal.querySelector('.dialog-close')?.click();
+      closeModal(modal);
     }
   });
 }
