@@ -33,17 +33,6 @@ function buildMedia(apps) {
   return wrapper;
 }
 
-// Active item sits at the bottom border of the media image.
-// activeY = media.bottom - listWrapper.top (both in viewport coords).
-function shiftList(list, listWrapper, media, index, items) {
-  const wrapRect = listWrapper.getBoundingClientRect();
-  const mediaRect = media.getBoundingClientRect();
-  if (!wrapRect.height) return;
-  const itemH = items[0]?.offsetHeight || 32;
-  const activeY = mediaRect.bottom - wrapRect.top;
-  list.style.transform = `translateY(${activeY - index * itemH}px)`;
-}
-
 function decorate(block) {
   const rows = [...block.children];
   if (rows.length < 2) return;
@@ -130,13 +119,13 @@ function decorate(block) {
   scrollWrapper.append(sticky);
   block.replaceChildren(scrollWrapper);
 
-  // --- Scroll-driven active state ---
-  // requestAnimationFrame ensures layout is computed before the first shiftList call
+  // --- Scroll-driven state ---
   const items = [...list.querySelectorAll('.rcc-item')];
   const mediaSlides = [...media.querySelectorAll('.rcc-media-slide')];
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
   let activeIdx = 0;
 
+  // Swap active classes + category label — no position logic here
   const activate = (newIdx) => {
     if (newIdx === activeIdx) return;
     items[activeIdx].classList.remove('rcc-item--active');
@@ -147,21 +136,34 @@ function decorate(block) {
     mediaSlides[activeIdx].classList.add('rcc-media-slide--active');
     bgSlides[activeIdx].classList.add('rcc-bg-slide--active');
     categoryLabel.textContent = apps[activeIdx].category;
-    shiftList(list, listWrapper, media, activeIdx, items);
   };
 
-  window.addEventListener('scroll', () => {
+  // Single update function: moves list continuously with scroll,
+  // then activates whichever item is at the media's bottom border.
+  const updatePosition = () => {
     const rect = scrollWrapper.getBoundingClientRect();
     const usable = rect.height - window.innerHeight;
     if (usable <= 0) return;
-    const p = Math.max(0, Math.min(1, -rect.top / usable));
-    activate(Math.min(Math.floor(p * apps.length), apps.length - 1));
-  }, { passive: true });
 
-  // Recompute list offset on layout and any resize
-  window.requestAnimationFrame(() => shiftList(list, listWrapper, media, activeIdx, items));
+    const wrapRect = listWrapper.getBoundingClientRect();
+    if (!wrapRect.height) return;
 
-  const ro = new ResizeObserver(() => shiftList(list, listWrapper, media, activeIdx, items));
+    const mediaRect = media.getBoundingClientRect();
+    const itemH = items[0]?.offsetHeight || 32;
+    // Activation zone: bottom of media image in list-wrapper coords
+    const activateY = mediaRect.bottom - wrapRect.top;
+    // Continuous scroll progress: each SCROLL_PER_APP px moves list by one itemH
+    const scrolled = Math.max(0, Math.min(usable, -rect.top));
+    const progress = scrolled / SCROLL_PER_APP;
+
+    list.style.transform = `translateY(${activateY - progress * itemH}px)`;
+    activate(Math.min(Math.floor(progress), apps.length - 1));
+  };
+
+  window.addEventListener('scroll', updatePosition, { passive: true });
+  window.requestAnimationFrame(updatePosition);
+
+  const ro = new ResizeObserver(updatePosition);
   ro.observe(listWrapper);
 }
 
