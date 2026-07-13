@@ -657,6 +657,46 @@ a:hover { text-decoration: underline; }
   margin-top: 16px;
 }
 
+/* Generation-effort segmented control (Figma door only, MWPW-200016) — a single
+   quick↔harder choice, deliberately not a fine dial. */
+.pf-effort {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pf-effort-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pf-dim, #565650);
+}
+.pf-effort-seg {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 999px;
+}
+.pf-effort-opt {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pf-dim, #565650);
+  cursor: pointer;
+  transition: background 0.15s cubic-bezier(.45, 0, .4, 1), color 0.15s;
+}
+.pf-effort-opt:hover:not(.is-active) { color: var(--pf-ink, #131313); }
+.pf-effort-opt.is-active {
+  background: #3b63fb;
+  color: #fff;
+}
+
 .pf-btn-primary {
   display: inline-flex;
   align-items: center;
