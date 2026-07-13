@@ -21,7 +21,7 @@ export function SessionUsage({ session }: SessionUsageProps) {
     (shipped.deployUsage as Record<string, unknown> | null) ||
     null;
 
-  const isBusy = ['queued', 'generating', 'refining', 'running', 'shipping', 'deploying'].includes(
+  const isBusy = ['queued', 'generating', 'waiting', 'refining', 'running', 'shipping', 'deploying'].includes(
     session.status,
   );
 

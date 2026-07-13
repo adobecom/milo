@@ -10,9 +10,15 @@ import { POLL_INTERVAL_MS, TOKEN_REFRESH_EVERY_N_TICKS } from './types';
 import type { Session } from './types';
 import { ToastQueue } from '@react-spectrum/s2';
 
+// A server restart returns 404 for this session id for a beat before it is
+// auto-recovered server-side. The poll rides across that window (see the 404
+// branch) instead of killing the loop; this caps how many ticks it waits
+// (~30s at POLL_INTERVAL_MS) before concluding the session is really gone.
+const MAX_NOT_FOUND_TICKS = 15;
+
 // Statuses that are considered "busy" (mid-run)
 function isBusy(s: Session): boolean {
-  return ['queued', 'generating', 'refining', 'shipping', 'deploying', 'running'].includes(s.status);
+  return ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(s.status);
 }
 
 export function useActiveSessionPoll(sessionId: string | null): void {
@@ -23,6 +29,8 @@ export function useActiveSessionPoll(sessionId: string | null): void {
   // Refs — do not cause re-renders
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const failureCountRef = useRef(0);
+  // Consecutive 404s while riding across a server-restart recovery window.
+  const notFoundCountRef = useRef(0);
   const tokenTickRef = useRef(0);
   // Track whether we're using the slow interval (post-settle)
   const slowPollRef = useRef(false);
@@ -48,6 +56,7 @@ export function useActiveSessionPoll(sessionId: string | null): void {
       intervalRef.current = null;
     }
     failureCountRef.current = 0;
+    notFoundCountRef.current = 0;
     tokenTickRef.current = 0;
     slowPollRef.current = false;
 
@@ -63,6 +72,7 @@ export function useActiveSessionPoll(sessionId: string | null): void {
       try {
         const fresh = await api.getSession(id, serverUrl);
         failureCountRef.current = 0;
+        notFoundCountRef.current = 0;
 
         const prev = sessionsRef.current.get(id);
         dispatch({ type: 'upsertSession', session: fresh });
@@ -143,58 +153,80 @@ export function useActiveSessionPoll(sessionId: string | null): void {
       } catch (err: unknown) {
         const apiErr = err as Error & { status?: number };
 
-        // 404 = server restart wiped the in-memory session. Try to restore from cache.
+        // 404 = the server has no in-memory session for this id. Two very
+        // different cases, which must NOT be treated the same:
+        //
+        //  (a) Client has cached HTML versions → a *finished* session the server
+        //      forgot across a restart. Restore it under a new id from cache
+        //      (one-shot; stop polling the dead id).
+        //
+        //  (b) No cached versions → an *in-flight* run (e.g. mid-extract, before
+        //      any HTML exists) whose server just restarted and is auto-recovering
+        //      / re-dispatching it. The old code killed the poll here and never
+        //      came back, so the UI went permanently deaf while the backend kept
+        //      working. Instead KEEP polling across the blip so we reconnect the
+        //      moment the server serves it again (as 'generating' after auto-resume,
+        //      or 'error' awaiting Retry) — bounded so a truly-gone session stops.
         if (apiErr.status === 404) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          intervalRef.current = null;
-
           const cached = sessionsRef.current.get(id);
-          if (cached) {
-            // Attempt to restore from cached versions
-            const versions = (cached.versions || [])
-              .filter((v) => v?.html)
-              .map((v) => ({
-                html: v.html as string,
-                intent: v.intent ?? null,
-                basedOnV: v.basedOnV ?? null,
-              }));
+          const versions = (cached?.versions || [])
+            .filter((v) => v?.html)
+            .map((v) => ({
+              html: v.html as string,
+              intent: v.intent ?? null,
+              basedOnV: v.basedOnV ?? null,
+            }));
 
-            if (versions.length > 0) {
-              try {
-                const restored = await api.restoreSession(
-                  {
-                    source: cached.source || 'figma',
-                    sourceInput: cached.sourceInput || {},
-                    versions,
-                  },
-                  configRef.current.serverUrl,
-                  daRef.current.context,
-                  configRef.current,
+          // (a) Restore a finished session from cache, then stop polling the old id.
+          if (cached && versions.length > 0) {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            try {
+              const restored = await api.restoreSession(
+                {
+                  source: cached.source || 'figma',
+                  sourceInput: cached.sourceInput || {},
+                  versions,
+                },
+                configRef.current.serverUrl,
+                daRef.current.context,
+                configRef.current,
+              );
+              // Remap old id → new id
+              dispatch({
+                type: 'remapSessionId',
+                oldId: id,
+                newId: restored.sessionId,
+                session: restored,
+              });
+              // Infra-speak ("server restart") — engineer-only.
+              if (configRef.current.debugMode === true) {
+                ToastQueue.info(
+                  'Session restored after server restart — generate a new one to keep iterating.',
                 );
-                // Remap old id → new id
-                dispatch({
-                  type: 'remapSessionId',
-                  oldId: id,
-                  newId: restored.sessionId,
-                  session: restored,
-                });
-                // Infra-speak ("server restart") — engineer-only.
-                if (configRef.current.debugMode === true) {
-                  ToastQueue.info(
-                    'Session restored after server restart — generate a new one to keep iterating.',
-                  );
-                }
-              } catch (restoreErr) {
-                console.warn('Session restore failed', restoreErr);
-                if (configRef.current.debugMode === true) {
-                  ToastQueue.info('Session not found on server — start a new one.');
-                }
               }
-            } else if (configRef.current.debugMode === true) {
-              ToastQueue.info('Session not on server — try starting a new one.');
+            } catch (restoreErr) {
+              console.warn('Session restore failed', restoreErr);
+              // Couldn't restore the forgotten session — clear the active id so
+              // the UI falls back to InputPanel rather than a dead spinner.
+              dispatch({ type: 'setActiveSessionId', sessionId: null });
+              ToastQueue.info('That session is no longer available — start a new one.');
             }
-          } else if (configRef.current.debugMode === true) {
-            ToastQueue.info('Session not on server — try starting a new one.');
+            return;
+          }
+
+          // (b) In-flight run, nothing to restore: keep polling so we reconnect
+          // when the server recovers it. Give up only after a generous budget.
+          notFoundCountRef.current++;
+          if (notFoundCountRef.current >= MAX_NOT_FOUND_TICKS) {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            // Confirmed gone. Clear the active id (the reducer also drops the
+            // persisted sessionStorage key) so the UI falls back to InputPanel
+            // instead of stranding on "Loading session…". NOT debug-gated — this
+            // is the normal creator's only signal that the session vanished.
+            dispatch({ type: 'setActiveSessionId', sessionId: null });
+            ToastQueue.info('That session is no longer available — start a new one.');
           }
           return;
         }

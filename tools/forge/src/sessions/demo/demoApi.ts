@@ -120,6 +120,34 @@ function messagesForProgress(lines: string[], frac: number): { text: string }[] 
   return lines.slice(0, n).map((text) => ({ text }));
 }
 
+// A self-contained demo page for the live-preview iframe. `frac` fades it in from a
+// rough early draft to a settled page, mirroring how convergence sharpens the real
+// preview round by round. Media-free (like the captured d02bd5fb fixture) so it
+// renders identically with no inlined assets.
+function demoPreviewHtml(frac: number): string {
+  const settled = frac >= 0.6;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>
+  body{margin:0;font-family:"Adobe Clean",system-ui,-apple-system,sans-serif;color:#1d1d1f;background:#fff}
+  .hero{padding:64px 48px;background:linear-gradient(135deg,#1473e6,#0d66d0);color:#fff}
+  .hero h1{font-size:44px;margin:0 0 12px;font-weight:700;letter-spacing:-.02em}
+  .hero p{font-size:20px;opacity:.92;margin:0;max-width:32ch}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;padding:48px}
+  .card{border:1px solid #e6e6e6;border-radius:12px;padding:24px}
+  .card h3{margin:0 0 8px;font-size:18px} .card p{color:#6e6e73;margin:0;font-size:14px;line-height:1.5}
+  .cta{margin:0 48px 64px;padding:36px;background:#f5f5f7;border-radius:14px;text-align:center}
+  .cta a{display:inline-block;margin-top:14px;padding:12px 28px;background:#1473e6;color:#fff;border-radius:24px;text-decoration:none;font-weight:600}
+  ${settled ? '' : '.cards,.cta{opacity:.5;filter:saturate(.6)}'}
+  </style></head><body>
+  <section class="hero"><h1>Create with Adobe</h1><p>Everything you need to design, collaborate, and ship — on the Adobe brand.</p></section>
+  <section class="cards">
+    <div class="card"><h3>Design</h3><p>Bring ideas to life with powerful, intuitive tools.</p></div>
+    <div class="card"><h3>Collaborate</h3><p>Work together in real time, wherever your team is.</p></div>
+    <div class="card"><h3>Ship</h3><p>Publish to the web in a click, faithfully on brand.</p></div>
+  </section>
+  <section class="cta"><h2>Ready to start?</h2><a href="#">Get started</a></section>
+  </body></html>`;
+}
+
 // ── Build a Session snapshot for the current moment ─────────────────────────────
 
 function snapshot(run: DemoRun): Session {
@@ -211,10 +239,44 @@ function snapshot(run: DemoRun): Session {
       : gFrac < 0.6 ? 'matching'
         : 'composing';
 
+  // Live preview (MWPW-199520): once past the initial read, expose a preview that
+  // "sharpens" — version bumps with progress so the pane re-fetches each poll and
+  // GeneratingCard swaps the skeleton for the <iframe srcdoc>.
+  const previewReady = gFrac >= 0.22;
+  const preview = previewReady
+    ? { ready: true, version: Math.floor((gFrac - 0.22) * 14) + 1, url: `/sessions/${sessionId}/preview`, updatedAt: now() }
+    : { ready: false, version: 0, url: null, updatedAt: null };
+
+  // Synthetic Figma-throttle window (finding [19]): gFrac in [0.30, 0.40) → the run
+  // reads as 'waiting' with a live countdown, so the waiting UI is exercised in mock
+  // mode without a backend. Figma-source only (the tree 429 is a Figma-path event).
+  const genMs = fixture.genDurationMs * SPEED;
+  if (fixture.source === 'figma' && gFrac >= 0.30 && gFrac < 0.40) {
+    const until = run.startedAt + Math.round(genMs * 0.40);
+    return {
+      ...base,
+      status: 'waiting',
+      phase,
+      preview,
+      progress: {
+        phase,
+        rateLimited: {
+          endpoint: 'design-tree',
+          attempt: 1,
+          waitMs: null,
+          retryAfterS: Math.max(1, Math.ceil((until - now()) / 1000)),
+          until,
+        },
+      },
+      messages: messagesForProgress(fixture.genMessages, gFrac),
+    };
+  }
+
   return {
     ...base,
     status: 'generating',
     phase,
+    preview,
     messages: messagesForProgress(fixture.genMessages, gFrac),
   };
 }
@@ -250,6 +312,14 @@ export const demoApi = {
       return Promise.reject(err);
     }
     return Promise.resolve(snapshot(run));
+  },
+
+  // Live-preview HTML for the iframe (MWPW-199520). Varies with progress so a
+  // re-fetch on version bump visibly "sharpens" — same contract as the real route.
+  getSessionPreviewHtml(sessionId: string): Promise<string> {
+    const run = runs.get(sessionId);
+    const frac = run ? Math.min(1, (now() - run.startedAt) / (run.fixture.genDurationMs * SPEED)) : 1;
+    return Promise.resolve(demoPreviewHtml(frac));
   },
 
   deployPrototype(sessionId: string): Promise<{ sessionId: string; currentV: number }> {

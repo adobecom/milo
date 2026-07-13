@@ -184,7 +184,7 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
   // Activity log: use messages array as log lines
   const logLines = (s.messages || []).map((m) => m.text || String(m));
 
-  const isBusy = ['queued', 'generating', 'refining', 'shipping', 'deploying', 'running'].includes(
+  const isBusy = ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(
     s.status,
   );
 

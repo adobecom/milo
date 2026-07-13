@@ -38,7 +38,7 @@ import { resolveIntentPolicy, isReimagine, INTENT_CHIP, INTENT_SUMMARY_VERB } fr
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isBusy(s: Session): boolean {
-  return ['queued', 'generating', 'refining', 'shipping', 'deploying', 'running'].includes(
+  return ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(
     s.status,
   );
 }
@@ -407,7 +407,10 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
         {figmaAuthUrl && (
           <FigmaReauthCard figmaAuthUrl={figmaAuthUrl} busy={true} onRetry={onRetry} />
         )}
-        <GeneratingCard session={session} onCancel={onCancel} />
+        {/* key by session id so switching between two busy sessions remounts the card
+            (resets the cached preview HTML) instead of briefly showing the other
+            session's page; a preview.version bump on the SAME session does NOT remount. */}
+        <GeneratingCard key={session.sessionId} session={session} onCancel={onCancel} serverUrl={serverUrl} />
       </div>
     );
   }
