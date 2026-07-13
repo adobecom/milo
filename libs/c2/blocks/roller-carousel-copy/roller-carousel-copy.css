@@ -1,9 +1,8 @@
 /* ============================================================
-   roller-carousel-copy
+   roller-carousel-copy — S (mobile-first)
    ============================================================ */
 
 .roller-carousel-copy {
-  position: relative;
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
 }
@@ -21,7 +20,7 @@
   overflow: hidden;
 }
 
-/* ---------- Background layer ---------- */
+/* ---------- Background blur layer ---------- */
 .rcc-bg {
   position: absolute;
   inset: 0;
@@ -41,6 +40,7 @@
   opacity: 1;
 }
 
+/* Extend picture beyond bounds to avoid dark blur edges */
 .rcc-bg-slide picture {
   position: absolute;
   inset: -150px;
@@ -67,33 +67,36 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: var(--s2a-spacing-40) var(--s2a-spacing-24);
+  /* S: pt-80 (layout-sm), sides+bottom 24px (spacing-lg) */
+  padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-lg);
   box-sizing: border-box;
 }
 
-/* ---------- Left column ---------- */
+/* ---------- Left column (single column on S/M) ---------- */
 .rcc-left {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  /* S: 48px (spacing-3xl) gap between header and carousel */
+  gap: var(--s2a-spacing-3xl);
 }
 
 /* ---------- Header ---------- */
 .rcc-header {
   display: flex;
   flex-direction: column;
-  gap: var(--s2a-spacing-8);
-  margin-bottom: var(--s2a-spacing-32);
+  gap: var(--s2a-spacing-xs);
+  flex-shrink: 0;
 }
 
 .rcc-eyebrow {
   font-family: var(--body-font-family);
   font-size: var(--s2a-typography-font-size-eyebrow);
+  line-height: var(--s2a-typography-line-height-eyebrow);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--s2a-color-transparent-white-72);
+  letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
+  color: var(--s2a-color-content-knockout);
   margin: 0;
   padding: 0;
 }
@@ -108,48 +111,52 @@
   padding: 0;
 }
 
-/* ---------- Carousel ---------- */
+/* ---------- Carousel (category + list) ---------- */
 .rcc-carousel {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  position: relative;
 }
 
+/* ---------- Category label + divider ---------- */
 .rcc-category-wrapper {
   display: flex;
   align-items: center;
-  gap: var(--s2a-spacing-12);
-  margin-bottom: var(--s2a-spacing-16);
+  gap: var(--s2a-spacing-xs);
+  padding-bottom: var(--s2a-spacing-xs);
+  flex-shrink: 0;
 }
 
 .rcc-category {
-  font-family: var(--body-font-family);
-  font-size: var(--s2a-typography-font-size-label);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--s2a-color-transparent-white-72);
+  font-family: var(--heading-font-family);
+  font-size: var(--s2a-typography-font-size-heading-6);
+  line-height: 18px;
+  font-weight: 900;
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
+  color: var(--s2a-color-content-knockout);
   white-space: nowrap;
 }
 
 .rcc-divider {
   flex: 1;
   height: 1px;
-  background: var(--s2a-color-transparent-white-24);
+  background: rgba(255 255 255 / 10%);
 }
 
 /* ---------- App name list ---------- */
 .rcc-list-wrapper {
-  position: relative;
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  position: relative;
 }
 
 .rcc-list {
   position: absolute;
-  width: 100%;
+  left: 0;
+  right: 0;
   will-change: transform;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -169,11 +176,11 @@
   color: var(--s2a-color-content-knockout);
 }
 
-/* ---------- Media panel ---------- */
+/* ---------- Media panel (absolute on S/M, right-column on L+) ---------- */
 .rcc-media-wrapper {
   position: absolute;
-  right: var(--s2a-spacing-24);
-  bottom: var(--s2a-spacing-40);
+  right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
+  bottom: var(--s2a-spacing-lg);  /* 24px — matches content pb */
   z-index: 2;
   width: 275px;
   height: 360px;
@@ -205,85 +212,85 @@
   object-fit: cover;
 }
 
-/* ==============================================
+/* ============================================================
    M — 768px
-   ============================================== */
+   ============================================================ */
 @media (width >= 768px) {
-  .rcc-content {
-    padding: var(--s2a-layout-sm) var(--s2a-spacing-32);
-  }
-
-  .rcc-header {
-    margin-bottom: var(--s2a-spacing-40);
-  }
-
-  .rcc-category-wrapper {
-    margin-bottom: var(--s2a-spacing-12);
-  }
-
   .rcc-media-wrapper {
     width: 397px;
     height: 560px;
     border-radius: var(--s2a-spacing-16);
-    right: var(--s2a-spacing-32);
-    bottom: var(--s2a-layout-sm);
   }
 }
 
-/* ==============================================
-   L — 1280px
-   ============================================== */
+/* ============================================================
+   L — 1280px  (two-column layout)
+   ============================================================ */
 @media (width >= 1280px) {
   .rcc-content {
     flex-direction: row;
-    align-items: flex-start;
-    gap: var(--s2a-spacing-80);
-    padding: var(--s2a-layout-md) var(--s2a-spacing-64);
+    align-items: stretch;
+    /* pt-160 (layout-xl), pb-32 (spacing-xl), px-24 (spacing-lg) */
+    padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) var(--s2a-spacing-xl);
+    padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md)); /* +16px for inner content offset */
+    gap: 0;
   }
 
   .rcc-left {
     flex: 1;
-    max-width: 640px;
+    /* 96px (layout-md) gap between header and carousel */
+    gap: var(--s2a-layout-md);
   }
 
   .rcc-header {
-    margin-bottom: var(--s2a-spacing-64);
+    gap: var(--s2a-spacing-xs);
   }
 
+  .rcc-carousel {
+    flex: 1;
+  }
+
+  .rcc-category-wrapper {
+    padding-bottom: var(--s2a-spacing-md); /* 16px at L */
+  }
+
+  /* Switch app names to super size at L */
   .rcc-item {
     font-size: var(--s2a-typography-font-size-super);
     line-height: var(--s2a-typography-line-height-super);
     letter-spacing: var(--s2a-typography-letter-spacing-super);
   }
 
+  /* Media becomes a flex child on the right column */
   .rcc-media-wrapper {
     position: relative;
     right: auto;
     bottom: auto;
     z-index: auto;
     flex: 1;
-    width: auto;
+    width: 100%;
+    height: 100%;
     max-width: 650px;
-    height: 766px;
-    border-radius: var(--s2a-spacing-24);
-    align-self: flex-end;
+    max-height: 766px;
+    border-radius: 16px; /* --s2a-border-radius-md */
+    align-self: flex-start;
+    flex-shrink: 0;
   }
 }
 
-/* ==============================================
+/* ============================================================
    XL — 1440px
-   ============================================== */
+   ============================================================ */
 @media (width >= 1440px) {
   .rcc-content {
-    max-width: var(--grid-max-width);
+    max-width: 1920px;
     margin-inline: auto;
-    padding-inline: var(--s2a-spacing-96);
   }
 }
 
-/* ==============================================
+/* ============================================================
    Reduced motion
-   ============================================== */
+   ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   .rcc-bg-slide,
   .rcc-media-slide {

@@ -33,11 +33,14 @@ function buildMedia(apps) {
   return wrapper;
 }
 
-function shiftList(list, listWrapper, index, items) {
-  const wrapH = listWrapper.offsetHeight;
-  if (!wrapH) return;
+// Active item sits at the bottom border of the media image.
+// activeY = media.bottom - listWrapper.top (both in viewport coords).
+function shiftList(list, listWrapper, media, index, items) {
+  const wrapRect = listWrapper.getBoundingClientRect();
+  const mediaRect = media.getBoundingClientRect();
+  if (!wrapRect.height) return;
   const itemH = items[0]?.offsetHeight || 32;
-  const activeY = wrapH / 3;
+  const activeY = mediaRect.bottom - wrapRect.top;
   list.style.transform = `translateY(${activeY - index * itemH}px)`;
 }
 
@@ -58,7 +61,7 @@ function decorate(block) {
 
   if (!apps.length) return;
 
-  // --- Build scroll wrapper (gives the sticky element room to scroll) ---
+  // --- Scroll wrapper gives the sticky element room to scroll ---
   const scrollWrapper = createTag('div', { class: 'rcc-scroll-wrapper' });
   scrollWrapper.style.height = `calc(100dvh + ${apps.length * SCROLL_PER_APP}px)`;
 
@@ -131,7 +134,7 @@ function decorate(block) {
     mediaSlides[activeIdx].classList.add('rcc-media-slide--active');
     bgSlides[activeIdx].classList.add('rcc-bg-slide--active');
     categoryLabel.textContent = apps[activeIdx].category;
-    shiftList(list, listWrapper, activeIdx, items);
+    shiftList(list, listWrapper, media, activeIdx, items);
   };
 
   window.addEventListener('scroll', () => {
@@ -142,8 +145,8 @@ function decorate(block) {
     activate(Math.min(Math.floor(p * apps.length), apps.length - 1));
   }, { passive: true });
 
-  // Recompute list offset on first layout and any resize
-  const ro = new ResizeObserver(() => shiftList(list, listWrapper, activeIdx, items));
+  // Recompute list offset on layout and any resize
+  const ro = new ResizeObserver(() => shiftList(list, listWrapper, media, activeIdx, items));
   ro.observe(listWrapper);
 }
 
