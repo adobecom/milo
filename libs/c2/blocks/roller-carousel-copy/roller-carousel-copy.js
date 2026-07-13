@@ -119,6 +119,7 @@ function decorate(block) {
   block.replaceChildren(scrollWrapper);
 
   // --- Scroll-driven active state ---
+  // requestAnimationFrame ensures layout is computed before the first shiftList call
   const items = [...list.querySelectorAll('.rcc-item')];
   const mediaSlides = [...media.querySelectorAll('.rcc-media-slide')];
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
@@ -146,6 +147,8 @@ function decorate(block) {
   }, { passive: true });
 
   // Recompute list offset on layout and any resize
+  window.requestAnimationFrame(() => shiftList(list, listWrapper, media, activeIdx, items));
+
   const ro = new ResizeObserver(() => shiftList(list, listWrapper, media, activeIdx, items));
   ro.observe(listWrapper);
 }
