@@ -1,6 +1,5 @@
 /* Tour Content Styles */
 .tour {
-  max-width: var(--tour-modal-max-width);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -181,6 +180,11 @@
   border-radius: 0;
   transform: translateY(var(--tour-drag-y));
   will-change: transform;
+
+  .tour {
+    max-width: var(--tour-modal-max-width);
+  }
+
   & > .fragment {
     max-height: 100%;
     pointer-events: none;
