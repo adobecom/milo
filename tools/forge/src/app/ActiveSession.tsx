@@ -195,6 +195,9 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
   // competing with the visual. Shown to everyone (not debug-gated) — it's honest
   // progress, not engineering telemetry — but stays folded by default.
   if (isBusy) {
+    // "Progress details" now lives INSIDE GeneratingCard's left column (compact,
+    // left-aligned) instead of a full-width strip below the card — it read as out
+    // of place spanning the whole width under the two-column layout.
     return (
       <div className="pf-active-session">
         <ResultCard
@@ -203,11 +206,6 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
           onCancel={handleCancel}
           onRetry={handleRetry}
         />
-        {logLines.length > 0 && (
-          <div className="pf-foot-discs">
-            <ActivityLog sessionId={sessionId} logLines={logLines} title="Progress details" key={`gen-${sessionId}`} />
-          </div>
-        )}
       </div>
     );
   }

@@ -2212,6 +2212,35 @@ a:hover { text-decoration: underline; }
 .pf-live-scroll { flex: 1 1 auto; overflow: hidden; background: #fff; }
 .pf-live-frame { display: block; width: 100%; height: 100%; min-height: 410px; border: 0; background: #fff; }
 
+/* Expand-to-fullscreen control + overlay. The in-grid preview is only half-width;
+   this pops the same page into a near-fullscreen modal so it can be read at size. */
+.pf-live-expand {
+  margin-left: auto; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; padding: 0; border: 0; border-radius: 6px;
+  background: transparent; color: var(--pf-text-muted); cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.pf-live-expand:hover { background: rgba(0,0,0,0.07); color: var(--pf-text); }
+.pf-live-expand svg { width: 15px; height: 15px; }
+.pf-live-overlay {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  padding: 3vh 3vw; background: rgba(22,22,26,0.55); backdrop-filter: blur(3px);
+  animation: pf-overlay-in 0.18s ease both;
+}
+@keyframes pf-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+.pf-live-overlay-card {
+  display: flex; flex-direction: column; width: 100%; max-width: 1400px; height: 94vh;
+  background: #fff; border-radius: var(--pf-radius-lg); overflow: hidden;
+  box-shadow: 0 30px 90px rgba(0,0,0,0.45);
+  animation: pf-overlay-rise 0.2s var(--ease, cubic-bezier(0.16,1,0.3,1)) both;
+}
+@keyframes pf-overlay-rise { from { transform: translateY(10px) scale(0.99); opacity: 0.6; } to { transform: none; opacity: 1; } }
+.pf-live-overlay-card .pf-live-frame { min-height: 0; }
+
+/* "Progress details" folded into the left column (was a full-width strip below). */
+.pf-gen2-log { margin-top: 20px; }
+.pf-gen2-log .pf-log-container { margin: 0; }
+
 /* the generic monochrome page that assembles on the right */
 .pf-build { border-radius: var(--pf-radius-lg); border: 1px solid var(--pf-border); overflow: hidden; background: #fff; box-shadow: var(--pf-shadow); position: relative; }
 .pf-build-chrome { height: 30px; background: var(--pf-surface-3); border-bottom: 1px solid var(--pf-border); display: flex; align-items: center; gap: 6px; padding: 0 12px; }
@@ -2240,6 +2269,29 @@ a:hover { text-decoration: underline; }
 /* the section being built right now: gently accented + labeled with its name */
 .pf-wire-tile--current { box-shadow: inset 0 0 0 1.5px var(--pf-accent); }
 .pf-wire-label { font-size: 12.5px; font-weight: 600; color: var(--pf-text-muted); padding: 0 12px; text-align: center; }
+
+/* Reading scan (pre-count liveness): the read pane is alive from second one while
+   the agent drills metadata to find the page frame (no SECTION_COUNT yet). A soft
+   accent beam sweeps top→bottom over neutral tiles that breathe = "reading your
+   design". Reuses the .pf-wire tile stack so the frame is stable across the handoff
+   to the real N-tile wireframe (only the interior recounts). Loops forever — never
+   implies done. The single top→bottom beam is the ONLY directional cue: suppress the
+   inherited diagonal .pf-build ambient sheen so the motion stays calm, not cluttered. */
+.pf-scan::after { animation: none; opacity: 0; }
+.pf-scan .pf-wire-tile { background: var(--pf-surface-3); }
+.pf-scan-tile { animation: pf-scan-breathe 2.4s var(--ease, cubic-bezier(0.16,1,0.3,1)) infinite; }
+@keyframes pf-scan-breathe { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+.pf-scan-beam {
+  position: absolute; left: 12px; right: 12px; top: 34px; height: 92px; z-index: 4;
+  pointer-events: none; border-radius: 9px;
+  background: linear-gradient(180deg, transparent 0%, rgba(38,128,235,0.05) 38%, rgba(38,128,235,0.13) 50%, rgba(38,128,235,0.05) 62%, transparent 100%);
+  animation: pf-scan-sweep 2.9s cubic-bezier(0.55,0,0.45,1) infinite;
+}
+.pf-scan-beam::after {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px;
+  border-radius: 2px; background: rgba(38,128,235,0.42);
+}
+@keyframes pf-scan-sweep { 0% { top: 30px; } 100% { top: calc(100% - 122px); } }
 
 /* V5 — rough partial shown on a failed run: a bounded, honest window (not the full
    440px live pane) so it reads as a salvaged draft, not a finished result. */
@@ -2623,7 +2675,10 @@ a:hover { text-decoration: underline; }
   .pf-gen2 { grid-template-columns: 1fr; gap: 28px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pf-gen2-orb::after, .pf-gen2-prog-sweep, .pf-build::after { animation: none !important; }
+  .pf-gen2-orb::after, .pf-gen2-prog-sweep, .pf-build::after,
+  .pf-scan-tile, .pf-scan-beam,
+  .pf-live-overlay, .pf-live-overlay-card { animation: none !important; }
+  .pf-scan-beam { opacity: 0.6; }
   .pf-blk { transition: none !important; }
 }
 

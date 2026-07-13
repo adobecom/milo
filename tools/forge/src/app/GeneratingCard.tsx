@@ -6,10 +6,12 @@
 // (No big 6-step stepper — it was decoration and not a Spectrum standard.)
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Session } from '../sessions/types';
 import { deriveTimeline } from './ProgressTimeline';
 import { isReimagine } from './intent';
 import { pickActivityDetail } from './activityText';
+import { ActivityLog } from './ActivityLog';
 import api from '../sessions/api';
 
 // ── Phase → calm copy ─────────────────────────────────────────────────────────
@@ -123,18 +125,75 @@ function SectionWireframe({ count, done, currentItem }: { count: number; done: n
   );
 }
 
+// ── Reading scan (pre-count liveness) ─────────────────────────────────────────
+// The gap Track V's wireframe/live preview don't cover: the FIRST ~1–2 min of a
+// read, where the agent is drilling metadata to find the real page frame — no
+// SECTION_COUNT yet, no first paint yet. Before this, that window fell through to
+// the static BuildSkeleton (one dark rectangle that never moves — read as "stuck",
+// the exact "nothing is happening" complaint). This makes the read pane ALIVE from
+// second one: a scanning beam sweeps top→bottom over neutral tiles that breathe,
+// conveying "reading your design". It is deliberately count-AGNOSTIC (a generic
+// tile stack styled EXACTLY like the wireframe) so the handoff when SECTION_COUNT
+// lands is calm: the OUTER frame stays put (identical chrome + 440px min-height),
+// only the interior recounts from these 5 generic tiles into the real N (the beam
+// pops out, the tiles resize) — a settle, not a layout jump. Honest: it loops
+// forever and never implies completion or fabricates specific sections. Zero Figma calls.
+function ReadingScan() {
+  return (
+    <div className="pf-build pf-wire pf-scan">
+      <div className="pf-build-chrome"><i /><i /><i /><span className="pf-build-bar" /></div>
+      <div className="pf-wire-page">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="pf-wire-tile pf-scan-tile" style={{ animationDelay: `${i * 0.16}s` }} />
+        ))}
+      </div>
+      <span className="pf-scan-beam" aria-hidden />
+    </div>
+  );
+}
+
 // ── Live preview (MWPW-199520) ────────────────────────────────────────────────
 // The in-progress page rendered in a SANDBOXED iframe. srcdoc (not src) so the
 // Bearer-authenticated HTML never needs a subresource fetch — the server inlines
 // all media as data: URIs. sandbox="allow-scripts" WITHOUT allow-same-origin: the
 // body is single-agent LLM output assembled from externally-supplied Figma text,
 // so it's treated as untrusted and denied DOM/same-origin access to the parent.
+// Expand-to-fullscreen: the in-grid pane is only ~half the width, so the live page
+// is cramped. An expand control pops the SAME srcDoc into a near-fullscreen overlay
+// (portal on document.body) so the design can be inspected large; Esc or a
+// backdrop click closes it. Ban-safe: still srcDoc, no network fetch — just a
+// second iframe over the same in-memory HTML, mounted only while expanded.
+function ExpandIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" />
+    </svg>
+  );
+}
+
 function LiveFrame({ html, label }: { html: string; label: string }) {
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (!expanded) return undefined;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setExpanded(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [expanded]);
+
   return (
     <div className="pf-live">
       <div className="pf-live-bar">
         <span className="pf-live-dot" aria-hidden />
         {label}
+        <button
+          type="button"
+          className="pf-live-expand"
+          onClick={() => setExpanded(true)}
+          aria-label="Expand preview to fullscreen"
+          title="Expand preview"
+        >
+          <ExpandIcon />
+        </button>
       </div>
       <div className="pf-live-scroll">
         <iframe
@@ -145,6 +204,42 @@ function LiveFrame({ html, label }: { html: string; label: string }) {
           loading="lazy"
         />
       </div>
+      {expanded && createPortal(
+        <div
+          className="pf-live-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Expanded live preview"
+          onClick={() => setExpanded(false)}
+        >
+          <div className="pf-live-overlay-card" onClick={(e) => e.stopPropagation()}>
+            <div className="pf-live-bar">
+              <span className="pf-live-dot" aria-hidden />
+              {label}
+              <button
+                type="button"
+                className="pf-live-expand"
+                onClick={() => setExpanded(false)}
+                aria-label="Close expanded preview"
+                title="Close (Esc)"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                  <path d="M6 6l12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+            <div className="pf-live-scroll">
+              <iframe
+                className="pf-live-frame"
+                title="Expanded live preview of your page"
+                srcDoc={html}
+                sandbox="allow-scripts"
+              />
+            </div>
+          </div>
+        </div>,
+        document.body,
+      )}
     </div>
   );
 }
@@ -282,6 +377,11 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
   const stalled = !waiting && stallSeconds >= STALL_NUDGE_S;
   // V3: the live, friendly reading line shown on the MAIN view (visual stays primary).
   const detail = readingDetail(session);
+  // The raw per-line read log lives here as SECONDARY info, folded into a compact
+  // "Progress details" disclosure in the LEFT column (under the copy/actions) —
+  // where the textual detail belongs — rather than a full-width strip below the
+  // card that competes with the preview.
+  const logLines = (session.messages || []).map((m) => m.text || String(m));
   // V1: require a NON-TRIVIAL VISIBLE body before the iframe replaces the grey
   // skeleton, so a comment-only / near-empty early draft can never blank the screen.
   const showLive = previewReady && Boolean(previewHtml) && hasVisibleBody(previewHtml);
@@ -299,6 +399,14 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
   // to the reading step so later phases keep the familiar skeleton fallback.
   const sectionCount = session.progress?.itemsTotal ?? 0;
   const showWireframe = !showLive && !redesigning && stepIdx <= 1 && sectionCount > 0;
+  // Before the count is known (the metadata drill-down that opens every read), keep
+  // the read pane ALIVE with the scanning visual instead of the static skeleton, so
+  // "reading your design" never looks stuck. Covers the queued + reading steps
+  // (stepIdx<=1); matching/building keep the familiar BuildSkeleton. Suppressed while
+  // waiting: during a rate-limit pause a sweeping "reading" beam would contradict the
+  // paused copy, so we fall back to the static skeleton. Hands off to the wireframe
+  // the instant SECTION_COUNT lands.
+  const showScanning = !showLive && !showWireframe && !redesigning && !waiting && stepIdx <= 1;
   const liveLabel = redesigning
     ? 'Faithful baseline — redesigning on top…'
     : buildingEarly
@@ -347,6 +455,17 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
           <button type="button" className="pf-btn-cancel2" onClick={onCancel}>Cancel</button>
           <span className="pf-gen2-leave">Leave this open and come back. We&apos;ll keep working.</span>
         </div>
+
+        {logLines.length > 0 && (
+          <div className="pf-gen2-log">
+            <ActivityLog
+              sessionId={session.sessionId}
+              logLines={logLines}
+              title="Progress details"
+              key={`gen-${session.sessionId}`}
+            />
+          </div>
+        )}
       </div>
 
       {showLive ? (
@@ -357,6 +476,8 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
           done={session.progress?.itemsDone ?? 0}
           currentItem={session.progress?.currentItem ?? null}
         />
+      ) : showScanning ? (
+        <ReadingScan />
       ) : (
         <BuildSkeleton step={stepIdx} />
       )}
