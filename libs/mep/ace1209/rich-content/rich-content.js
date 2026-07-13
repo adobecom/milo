@@ -110,9 +110,11 @@ function decorate(block, root = block) {
   foreground?.classList.add('foreground');
   decorateText(content);
 
-  const bgCell = foreground?.children[1];
-  if (bgCell && !bgCell.querySelector('picture, img') && bgCell.textContent.trim()) {
-    bgCell.classList.add('hero-overlay-source');
+  if (root.classList.contains('hero')) {
+    const bgCell = foreground?.children[1];
+    if (bgCell && !bgCell.querySelector('picture, img') && bgCell.textContent.trim()) {
+      bgCell.classList.add('hero-overlay-source');
+    }
   }
 
   const isJumpLink = root.classList.contains('jump-link');
@@ -138,6 +140,9 @@ function applyHeroOverlay(el) {
 
 export default function init(el) {
   const viewports = decorateViewportContent(el, decorate);
+
+  if (!el.classList.contains('hero')) return;
+
   applyHeroOverlay(el);
   if (viewports.hasViewportVariations) {
     const observer = new MutationObserver(() => applyHeroOverlay(el));

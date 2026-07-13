@@ -246,7 +246,7 @@
   height: 584px;
 }
 
-.rich-content .hero-overlay-source {
+.rich-content.hero .hero-overlay-source {
   display: none;
 }
 
