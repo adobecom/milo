@@ -2184,6 +2184,13 @@ a:hover { text-decoration: underline; }
 @keyframes pf-gen-sweep { 0% { left: -40%; } 100% { left: 100%; } }
 .pf-gen2-prog-label { margin-top: 8px; font-size: 12px; color: var(--pf-text-faint); }
 
+/* V3 — live reading detail: a friendly, updating one-liner ("Building section 3
+   of 9…") with a pulsing dot so the screen reads as ALIVE during the long read.
+   min-height reserves the row so it doesn't jump when the text first appears. */
+.pf-gen2-detail { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--pf-text-muted); margin: 0 0 18px; min-height: 20px; }
+.pf-gen2-detail::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--pf-accent); flex: 0 0 auto; animation: pf-gen2-pulse 1.4s ease-in-out infinite; }
+@keyframes pf-gen2-pulse { 0%, 100% { opacity: 0.3; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1); } }
+
 .pf-gen2-time { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--pf-text-faint); margin: 0 0 24px; }
 .pf-gen2-time svg { width: 14px; height: 14px; flex: 0 0 auto; }
 .pf-gen2-actions { display: flex; align-items: center; gap: 14px; }
@@ -2192,6 +2199,9 @@ a:hover { text-decoration: underline; }
 .pf-gen2-leave { font-size: 12.5px; color: var(--pf-text-faint); }
 /* Rate-limit countdown reuses the .pf-gen2-time row but accents it (a known, live wait). */
 .pf-gen2-wait { color: var(--pf-accent); font-weight: 600; }
+/* V5 stall nudge: a calm amber (honest "still working, no new progress"), never an
+   alarming red — the run isn't failing, it's just slow on a large design. */
+.pf-gen2-stall { color: #8a6d1f; }
 
 /* Live graphical preview (MWPW-199520): fills the right grid column where the
    build skeleton sits, so the page appears in place the moment a draft exists. */
@@ -2211,6 +2221,31 @@ a:hover { text-decoration: underline; }
 .pf-build::after { content: ''; position: absolute; left: 0; right: 0; top: 30px; bottom: 0; z-index: 3; pointer-events: none; background: linear-gradient(105deg, transparent 38%, rgba(255,255,255,0.40) 50%, transparent 62%); transform: translateX(-120%); animation: pf-sheen 3.8s ease-in-out infinite; }
 @keyframes pf-sheen { 0% { transform: translateX(-120%); } 60%, 100% { transform: translateX(120%); } }
 .pf-build-page { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+/* V4 — Tier-1 section wireframe: one equal-height tile per top-level section, laid
+   out as a full-bleed vertical stack (top-level sections are full-width, so no x/w).
+   Reuses the .pf-build frame + ambient sheen. Tiles settle top-down as sections
+   fill; the current one is labeled. min-height matches .pf-live so the read pane
+   doesn't resize when the iframe takes over. */
+.pf-wire { min-height: 440px; display: flex; flex-direction: column; }
+.pf-wire-page { flex: 1 1 auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.pf-wire-tile {
+  flex: 1 1 0; min-height: 30px; border-radius: 7px; background: var(--pf-surface-3);
+  position: relative; display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1)), box-shadow 0.8s var(--ease, cubic-bezier(0.16,1,0.3,1));
+}
+/* a filled section "settles" — turns from grey placeholder to a finished surface */
+.pf-wire-tile--settled { background: #fff; box-shadow: inset 0 0 0 1px var(--pf-border); }
+/* the section being built right now: gently accented + labeled with its name */
+.pf-wire-tile--current { box-shadow: inset 0 0 0 1.5px var(--pf-accent); }
+.pf-wire-label { font-size: 12.5px; font-weight: 600; color: var(--pf-text-muted); padding: 0 12px; text-align: center; }
+
+/* V5 — rough partial shown on a failed run: a bounded, honest window (not the full
+   440px live pane) so it reads as a salvaged draft, not a finished result. */
+.pf-live--partial { min-height: 0; width: 100%; max-width: 640px; margin: 20px auto 4px; }
+.pf-live--partial .pf-live-scroll { max-height: 320px; overflow: auto; }
+.pf-live--partial .pf-live-frame { min-height: 320px; }
 
 /* Blocks "grow" into place: start a touch lower, smaller, and slightly squashed
    vertically, then ease up to full size. A little more life than a plain fade,

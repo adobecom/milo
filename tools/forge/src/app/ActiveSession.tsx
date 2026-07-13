@@ -189,7 +189,11 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
   );
 
   // While a run is in progress, the calm GeneratingCard (inside ResultCard) is the
-  // whole story — no source header, no report, no telemetry competing with it.
+  // whole story — no source header, no report, no telemetry competing with it. The
+  // raw read log is SECONDARY (V3): tucked into a closed "Progress details"
+  // disclosure below the card, for anyone who wants the play-by-play, without
+  // competing with the visual. Shown to everyone (not debug-gated) — it's honest
+  // progress, not engineering telemetry — but stays folded by default.
   if (isBusy) {
     return (
       <div className="pf-active-session">
@@ -199,6 +203,11 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
           onCancel={handleCancel}
           onRetry={handleRetry}
         />
+        {logLines.length > 0 && (
+          <div className="pf-foot-discs">
+            <ActivityLog sessionId={sessionId} logLines={logLines} title="Progress details" key={`gen-${sessionId}`} />
+          </div>
+        )}
       </div>
     );
   }

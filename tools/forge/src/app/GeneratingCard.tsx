@@ -5,10 +5,11 @@
 // reassuring copy, and a generic monochrome page that assembles on the right.
 // (No big 6-step stepper — it was decoration and not a Spectrum standard.)
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Session } from '../sessions/types';
 import { deriveTimeline } from './ProgressTimeline';
 import { isReimagine } from './intent';
+import { pickActivityDetail } from './activityText';
 import api from '../sessions/api';
 
 // ── Phase → calm copy ─────────────────────────────────────────────────────────
@@ -91,6 +92,37 @@ function BuildSkeleton({ step }: { step: number }) {
   );
 }
 
+// ── Section wireframe (V4 — Tier-1) ───────────────────────────────────────────
+// The moment the server reads SECTION_COUNT (long before the first draft paints —
+// minutes, on a pathological design), we can show REAL structure: one equal-height
+// tile per top-level section. Every top-level section is full-bleed (x=0,
+// w=CANVAS_WIDTH), so we deliberately drop x/width and lay them out as a vertical
+// stack. As sections fill (progress.itemsDone) the tiles settle top-down and the
+// current one is labeled — so the wireframe itself conveys "the screen is filling"
+// before the iframe takes over with the named skeleton (a seamless N-tile → N-tile
+// handoff). Independent of the read completing — this worked even on the run that
+// stalled. Absurd counts are capped so the pane never degenerates into slivers.
+function SectionWireframe({ count, done, currentItem }: { count: number; done: number; currentItem: string | null }) {
+  const n = Math.min(Math.max(count, 1), 24);
+  return (
+    <div className="pf-build pf-wire">
+      <div className="pf-build-chrome"><i /><i /><i /><span className="pf-build-bar" /></div>
+      <div className="pf-wire-page">
+        {Array.from({ length: n }).map((_, i) => {
+          const settled = i < done;
+          const current = i === done && i < count;
+          const cls = `pf-wire-tile${settled ? ' pf-wire-tile--settled' : ''}${current ? ' pf-wire-tile--current' : ''}`;
+          return (
+            <div key={i} className={cls}>
+              {current && currentItem ? <span className="pf-wire-label">{currentItem}</span> : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── Live preview (MWPW-199520) ────────────────────────────────────────────────
 // The in-progress page rendered in a SANDBOXED iframe. srcdoc (not src) so the
 // Bearer-authenticated HTML never needs a subresource fetch — the server inlines
@@ -142,6 +174,82 @@ function WaitingNote({ rl }: { rl: NonNullable<Session['progress']>['rateLimited
   );
 }
 
+// ── Visible-body gate (V1) ────────────────────────────────────────────────────
+// Belt-and-suspenders against a BLANK white iframe. The extract agent's very first
+// progressive draft used to be a comment-only skeleton (<section><!-- Hero:
+// building… --></section> ×N) → a white frame = the "nothing for 20 minutes"
+// complaint. The server now refuses to flip preview.ready on such a draft
+// (hasVisiblePreviewBody in extract.js), and V2 makes the first paint a NAMED
+// skeleton; this is the last line of defense so the iframe never replaces the grey
+// BuildSkeleton until there is something a human can actually see. Mirrors the
+// server-side helper — keep the two in sync.
+export function hasVisibleBody(html: string | null | undefined): boolean {
+  if (!html) return false;
+  const stripped = html
+    .replace(/<head[\s\S]*?<\/head>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<(script|style)\b[\s\S]*?<\/\1>/gi, ' ');
+  if (/<img\b|<svg\b/i.test(stripped)) return true;
+  const visibleText = stripped.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return visibleText.length >= 8;
+}
+
+// ── Live reading detail (V3) ──────────────────────────────────────────────────
+// A friendly, updating one-liner that makes the long read feel ALIVE. Prefers the
+// DETERMINISTIC section-fill signal the server derives from the draft ("Building
+// section 3 of 9…"); before any section count is known it falls back to the newest
+// non-noise agent line (pickActivityDetail — previously dead code). Returns null
+// when there's nothing honest to say, so the caller can hide the row.
+export function readingDetail(session: Session): string | null {
+  const p = session.progress;
+  const total = p?.itemsTotal ?? null;
+  if (total && total > 0) {
+    const done = p?.itemsDone ?? 0;
+    if (done <= 0) return `Found ${total} section${total === 1 ? '' : 's'} — laying out the page…`;
+    if (done >= total) return `All ${total} sections drafted — sharpening…`;
+    const cur = p?.currentItem ? `: ${p.currentItem}` : '';
+    return `Building section ${Math.min(done + 1, total)} of ${total}${cur}…`;
+  }
+  return pickActivityDetail(session.messages);
+}
+
+// ── Stall heartbeat (V5) ──────────────────────────────────────────────────────
+// A stuck tool loop looks identical to steady work — the indeterminate sweep keeps
+// sweeping. So we watch every meaningful progress signal and measure how long since
+// ANY of them last changed. When nothing has advanced for a while we swap the calm
+// "usually takes a few minutes" copy for an honest nudge, so the UI never implies
+// forward motion the agent isn't making. Elapsed is measured on the CLIENT clock
+// relative to the last observed change, so server/client clock skew is irrelevant
+// (server timestamps are used only to detect that a change happened, never subtracted).
+function useStallSeconds(session: Session): number {
+  const signature = [
+    session.status,
+    session.phase,
+    session.progress?.updatedAt ?? 0,
+    session.progress?.itemsDone ?? -1,
+    session.progress?.turn ?? -1,
+    session.preview?.version ?? 0,
+    session.messages?.length ?? 0,
+  ].join('|');
+  const lastChange = useRef<{ sig: string; at: number }>({ sig: signature, at: Date.now() });
+  const [now, setNow] = useState(() => Date.now());
+  if (lastChange.current.sig !== signature) {
+    lastChange.current = { sig: signature, at: Date.now() };
+  }
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return Math.max(0, Math.floor((now - lastChange.current.at) / 1000));
+}
+
+// Gentle nudge past ~60s of no progress; a firmer (still calm) line past ~3min.
+// 60s (not 45s) because a single legitimate get_design_context on a large design
+// can run ~30–60s with no intermediate signal — we don't want to cry "stalled"
+// during honest slow work, only when it's genuinely gone quiet.
+const STALL_NUDGE_S = 60;
+const STALL_LONG_S = 180;
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardProps) {
@@ -169,7 +277,14 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
 
   const rl = session.progress?.rateLimited || null;
   const waiting = session.status === 'waiting' || Boolean(rl);
-  const showLive = previewReady && Boolean(previewHtml);
+  // V5: seconds since any meaningful progress signal last advanced.
+  const stallSeconds = useStallSeconds(session);
+  const stalled = !waiting && stallSeconds >= STALL_NUDGE_S;
+  // V3: the live, friendly reading line shown on the MAIN view (visual stays primary).
+  const detail = readingDetail(session);
+  // V1: require a NON-TRIVIAL VISIBLE body before the iframe replaces the grey
+  // skeleton, so a comment-only / near-empty early draft can never blank the screen.
+  const showLive = previewReady && Boolean(previewHtml) && hasVisibleBody(previewHtml);
   // During a Stardust redesign the preview pointer is frozen at the faithful v1
   // (the redesign builds a separate version and does not re-snapshot), so label the
   // frame honestly instead of implying it's the live redesign "sharpening".
@@ -179,6 +294,11 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
   // (step 1). Only in that reading step do we set the "rough at first" expectation;
   // by step 2 (matching) the preview is the full bespoke, and convergence "sharpens".
   const buildingEarly = !redesigning && stepIdx <= 1;
+  // V4: once SECTION_COUNT is known (during the read, before the first draft paints),
+  // show a real N-tile wireframe instead of the generic monochrome skeleton. Confined
+  // to the reading step so later phases keep the familiar skeleton fallback.
+  const sectionCount = session.progress?.itemsTotal ?? 0;
+  const showWireframe = !showLive && !redesigning && stepIdx <= 1 && sectionCount > 0;
   const liveLabel = redesigning
     ? 'Faithful baseline — redesigning on top…'
     : buildingEarly
@@ -204,14 +324,22 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
           <div className="pf-gen2-prog-label">{copy.label}</div>
         </div>
 
+        {!waiting && detail && (
+          <div className="pf-gen2-detail" role="status" aria-live="polite">{detail}</div>
+        )}
+
         {waiting ? (
           <WaitingNote rl={rl} />
         ) : (
-          <div className="pf-gen2-time">
+          <div className={`pf-gen2-time${stalled ? ' pf-gen2-stall' : ''}`} role="status" aria-live="polite">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
               <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
             </svg>
-            This usually takes a few minutes. A full redesign can take longer.
+            {!stalled
+              ? 'This usually takes a few minutes. A full redesign can take longer.'
+              : stallSeconds >= STALL_LONG_S
+                ? 'This design is taking unusually long to read. Your session is safe — you can keep waiting, or cancel and try a smaller frame.'
+                : 'Still reading a large design — this one is taking a while. Your work is safe and we’re still on it.'}
           </div>
         )}
 
@@ -221,7 +349,17 @@ export function GeneratingCard({ session, onCancel, serverUrl }: GeneratingCardP
         </div>
       </div>
 
-      {showLive ? <LiveFrame html={previewHtml as string} label={liveLabel} /> : <BuildSkeleton step={stepIdx} />}
+      {showLive ? (
+        <LiveFrame html={previewHtml as string} label={liveLabel} />
+      ) : showWireframe ? (
+        <SectionWireframe
+          count={sectionCount}
+          done={session.progress?.itemsDone ?? 0}
+          currentItem={session.progress?.currentItem ?? null}
+        />
+      ) : (
+        <BuildSkeleton step={stepIdx} />
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@
 //   5. done + versions, not yet published → preview-first + Publish step
 //   6. pending/undefined → empty
 
-import { useState, useRef, type ReactNode } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import { Button, Link } from '@react-spectrum/s2';
 import OpenIn from '@react-spectrum/s2/icons/OpenIn';
 import Edit from '@react-spectrum/s2/icons/Edit';
@@ -22,7 +22,7 @@ import Copy from '@react-spectrum/s2/icons/Copy';
 import Checkmark from '@react-spectrum/s2/icons/Checkmark';
 import Add from '@react-spectrum/s2/icons/Add';
 import type { Session } from '../sessions/types';
-import { GeneratingCard } from './GeneratingCard';
+import { GeneratingCard, hasVisibleBody } from './GeneratingCard';
 import { FigmaReauthCard } from './FigmaReauthCard';
 import { fidelityLevel } from './FidelityMeter';
 import { useConfig } from '../config';
@@ -347,6 +347,43 @@ interface ResultCardProps {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+// ── Partial preview on failure (V5 — graceful terminal) ───────────────────────
+// If a run failed BUT a preview was already painted (the server keeps
+// session.preview on error), show it instead of a bare "something went wrong" —
+// a long run shouldn't be a total loss. The banner copy is deliberately NEUTRAL:
+// this preview may be a rough mid-read draft (cancel/timeout during extract) OR a
+// fully-converged page that failed a LATER stage (budget ceiling, publish), so we
+// don't claim "rough" or "unfinished" — just "the latest before the run stopped."
+// Degrades to null (→ the plain error card) if the draft is gone or never visible.
+function PartialPreview({ sessionId, serverUrl }: { sessionId: string; serverUrl: string }) {
+  const [html, setHtml] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    api.getSessionPreviewHtml(sessionId, serverUrl)
+      .then((h) => { if (!cancelled) setHtml(h); })
+      .catch(() => { /* gone / 404 → render nothing, fall back to the error card */ });
+    return () => { cancelled = true; };
+  }, [sessionId, serverUrl]);
+  if (!html || !hasVisibleBody(html)) return null;
+  return (
+    <div className="pf-live pf-live--partial">
+      <div className="pf-live-bar">
+        <span className="pf-live-dot" aria-hidden />
+        Latest preview before the run stopped — may be incomplete
+      </div>
+      <div className="pf-live-scroll">
+        <iframe
+          className="pf-live-frame"
+          title="Latest preview before the run stopped"
+          srcDoc={html}
+          sandbox="allow-scripts"
+          loading="lazy"
+        />
+      </div>
+    </div>
+  );
+}
+
 export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onNewPage }: ResultCardProps) {
   const { config } = useConfig();
   const debug = config.debugMode === true;
@@ -446,6 +483,8 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
     const errMsg = /already running/i.test(rawErr)
       ? 'One generation at a time — another run is still in progress. Wait for it to finish, then try again.'
       : rawErr;
+    // V5: surface a rough partial draft when the interrupted run left one behind.
+    const showPartial = Boolean(session.preview?.ready) && Boolean(serverUrl);
     return (
       <div className="pf-state2 pf-state2--error">
         <span className="pf-state2-glyph" aria-hidden>
@@ -453,6 +492,7 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
         </span>
         <h2 className="pf-state2-title">Something went wrong</h2>
         <p className="pf-state2-msg">{errMsg}</p>
+        {showPartial && <PartialPreview sessionId={session.sessionId} serverUrl={serverUrl} />}
         <div className="pf-state2-actions">
           <Button variant="primary" onPress={onRetry}>Try again</Button>
         </div>

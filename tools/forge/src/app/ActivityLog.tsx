@@ -29,6 +29,9 @@ interface ActivityLogProps {
   sessionId: string;
   logLines: string[];
   defaultExpanded?: boolean;
+  // Disclosure heading. Defaults to "Activity log"; the in-generation mount passes
+  // "Progress details" (V3) so the raw per-line read log stays SECONDARY, folded away.
+  title?: string;
 }
 
 // ── Inner list — memoized to avoid re-mounting ─────────────────────────────────
@@ -86,12 +89,13 @@ export const ActivityLog = memo(function ActivityLog({
   sessionId,
   logLines,
   defaultExpanded = false,
+  title = 'Activity log',
 }: ActivityLogProps) {
   if (!logLines.length) return null;
 
   return (
     <div className="pf-log-container" key={sessionId}>
-      <FootDisclosure title={`Activity log (${logLines.length})`} defaultOpen={defaultExpanded}>
+      <FootDisclosure title={`${title} (${logLines.length})`} defaultOpen={defaultExpanded}>
         <LogList logLines={logLines} />
       </FootDisclosure>
     </div>
