@@ -281,8 +281,12 @@ const init = async (block) => {
   block.setAttribute('id', config.id);
   delete config.id;
 
-  Object.keys(config).forEach((key) => {
-    const childTabGroup = document.querySelector(`#${config[key]}`);
+  // Object.keys(config).forEach((key) => {
+  //   const childTabGroup = document.querySelector(`#${config[key]}`);
+  //   childTabGroup.classList.toggle('hidden');
+  // });
+  const childTabGroups = parentSection.querySelectorAll('.tabs');
+  childTabGroups.forEach((childTabGroup) => {
     childTabGroup.classList.toggle('hidden');
   });
   console.log(config);
