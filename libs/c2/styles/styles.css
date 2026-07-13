@@ -1392,7 +1392,8 @@ span.hang-opening-quote {
     animation-range: 0 80vh;
     animation-timing-function: ease-out;
 
-    @media (width >= 1280px) and (width < 1440px) {
+    /* Shorter viewports in the common laptop width band need more travel */
+    @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
       --parallax-move-up-to: -50vh;
     }
 
