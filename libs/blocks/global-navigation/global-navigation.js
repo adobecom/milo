@@ -265,6 +265,9 @@ const getSignInCtaStyle = () => {
   return isPrimary ? 'primary' : 'secondary';
 };
 
+const enableBE = new URLSearchParams(window.location.search).has('enableBE');
+const enableManagePeople = getConfig().unav?.profile?.enableManagePeople ?? true;
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -290,7 +293,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
-                enableManagePeople: getConfig().unav?.profile?.enableManagePeople ?? true,
+                ...(enableBE && { enableManagePeople }),
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -299,11 +302,13 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
-              managePeopleConfig: {
-                enableWorkflow: true,
-                params: { enableinlineoverlay: 's2-compat' },
-                ...getConfig().unav?.profile?.managePeopleConfig,
-              },
+              ...(enableBE && {
+                managePeopleConfig: {
+                  enableWorkflow: true,
+                  params: { enableinlineoverlay: 's2-compat' },
+                  ...getConfig().unav?.profile?.managePeopleConfig,
+                },
+              }),
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
@@ -1009,32 +1014,36 @@ class Gnav {
       appName: 'adobecom',
       appVersion: '1.0',
       colorScheme: isDarkMode() ? 'dark' : 'light',
-      showDialog: async (element, _, closeCallback) => {
-        document.getElementById('feds-manage-people-dialog')?.remove();
-        const dialog = document.createElement('dialog');
-        dialog.id = 'feds-manage-people-dialog';
-        dialog.appendChild(element);
-        document.body.appendChild(dialog);
-        dialog.addEventListener('cancel', () => {
-          closeCallback({ type: 'close' });
-          dialog.close();
-          dialog.remove();
-          document.documentElement.classList.remove('disable-scroll');
-        });
-        dialog.addEventListener('click', (e) => {
-          if (e.target === dialog) {
+      ...(enableBE && {
+        showDialog: async (element, _, closeCallback) => {
+          document.getElementById('feds-manage-people-dialog')?.remove();
+          const dialog = document.createElement('dialog');
+          dialog.id = 'feds-manage-people-dialog';
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          dialog.addEventListener('cancel', () => {
             closeCallback({ type: 'close' });
             dialog.close();
             dialog.remove();
             document.documentElement.classList.remove('disable-scroll');
-          }
-        });
-        document.documentElement.classList.add('disable-scroll');
-        dialog.showModal();
-      },
+          });
+          dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+              closeCallback({ type: 'close' });
+              dialog.close();
+              dialog.remove();
+              document.documentElement.classList.remove('disable-scroll');
+            }
+          });
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+        },
+      }),
     });
 
-    await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    if (enableBE) {
+      await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    }
     return window.aupsdk;
   };
 
