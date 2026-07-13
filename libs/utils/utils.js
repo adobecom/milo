@@ -2310,6 +2310,7 @@ async function loadPostLCP(config) {
       '.ot-sdk-container',
       'div[data-testid="main-content-area"]',
     ];
+    if (window.matchMedia('(hover: none) and (pointer: coarse)').matches) return;
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
