@@ -53,11 +53,23 @@ function decorate(block) {
   const headingText = rows[0].querySelector('h1,h2,h3,h4,h5')?.textContent?.trim() ?? '';
 
   // --- Parse app rows (all rows after first) ---
-  const apps = rows.slice(1).map((row) => ({
-    category: row.children[0]?.querySelector('h6')?.textContent?.trim() ?? '',
-    name: row.children[0]?.querySelector('p')?.textContent?.trim() ?? '',
-    picture: row.children[1]?.querySelector('picture') ?? null,
-  })).filter((a) => a.name);
+  // Authored structure: category rows have 1 col with <h6>; app rows have 2 cols:
+  // col-0 = app name as plain text, col-1 = <picture>.
+  const apps = [];
+  let currentCategory = '';
+  rows.slice(1).forEach((row) => {
+    const cols = row.children;
+    if (cols.length === 1) {
+      // Category separator row
+      currentCategory = cols[0].querySelector('h6')?.textContent?.trim()
+        || cols[0].textContent?.trim()
+        || currentCategory;
+      return;
+    }
+    const name = cols[0]?.textContent?.trim() ?? '';
+    const picture = cols[1]?.querySelector('picture') ?? null;
+    if (name) apps.push({ category: currentCategory, name, picture });
+  });
 
   if (!apps.length) return;
 
