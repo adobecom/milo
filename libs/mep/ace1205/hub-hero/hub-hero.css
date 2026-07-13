@@ -1,4 +1,6 @@
 .hub-hero {
+  --slides: 4;
+  --slide-max-viewport: calc(100vw/var(--slides));
   --hub-hero-top-spacing: 237px;
   --hub-hero-height: 4000px;
   --slide-header-h: 64px;
@@ -10,7 +12,7 @@
   --hub-hero-carousel-container-height-tablet: 562px;
   --grid-img-width: min(20vw, 302px);
   --grid-img-width-min: 164px;
-  --hub-hero-carousel-item-max-width: min(329px, calc(25vw - var(--s2a-spacing-md)));
+  --hub-hero-carousel-item-max-width: min(329px, calc(var(--slide-max-viewport) - var(--s2a-spacing-md)));
   --hub-hero-carousel-item-min-width: 292px;
   --hub-hero-carousel-item-hover-grow-index: 1.5;
   --header-animation-range: contain 30% contain 50%;
@@ -21,7 +23,7 @@
   --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
   --carousel-item-media-height: 394px;
   --slide-from-card-slide-range: contain 0% contain 30%;
-  --slides: 4;
+
   --start-gap: 6rem;
   --end-gap: .5rem;
   --hub-hero-mobile-bottom-margin: 80px;
@@ -171,6 +173,7 @@
   min-width: var(--grid-img-width-min);
   width: var(--grid-img-width);
   display: block;
+  box-sizing: border-box;
 }
 
 .hub-hero-carousel-header {
@@ -314,6 +317,138 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/** dark variant */
+.hub-hero.dark {
+  background-color: var(--s2a-color-background-knockout);
+  .promo-cta {
+    background-color: white;
+    color: black;
+    span {
+      border-radius: var(--s2a-border-radius-4);
+      border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
+      background-color: var(--s2a-color-transparent-black-04);
+      svg {
+        filter: invert(1);
+      }
+    }
+  }
+}
+
+.hub-hero.dark .hub-hero-carousel-item,
+.hub-hero.dark .hub-hero-carousel-item-footer,
+.hub-hero.dark .hub-hero-carousel-item-header,
+.hub-hero.dark .hub-hero-carousel-item-media {
+  background-color: var(--s2a-color-gray-900);
+  color: var(--s2a-color-content-subheading);
+
+  * {
+    color: var(--s2a-color-content-subheading);
+  }
+}
+
+/** slides-3 variant */
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div {
+  position: relative;
+
+  img {
+    border-radius: var(--s2a-border-radius-sm);
+  }
+}
+
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) {
+  position: absolute;
+  top: var(--s2a-spacing-sm);
+  left: var(--s2a-spacing-sm);
+  width: auto;
+  min-width: unset;
+  max-width: unset;
+  z-index: 1;
+}
+
+.hub-hero.slides-3 .hub-hero-image-grid-container-col div p:nth-child(2) img {
+  width: 24px;
+  height: 24px;
+  min-width: unset;
+  max-width: unset;
+  border-radius: 0;
+}
+
+.hub-hero.slides-3 {
+
+  --grid-gap-animation-range: contain 35% contain 50%;
+
+  .hub-hero-carousel-item-footer * {
+    white-space: wrap;
+  }
+
+  .hub-hero-carousel-container {
+    width: 100%;
+  }
+
+  .hub-hero-image-grid-container-col:nth-child(2) {
+    --col2OffsetAdjuster: -55%;
+  }
+  .hub-hero-image-grid-container-col:nth-child(4) {
+    --col4OffsetAdjuster: -55%;
+  }
+
+  .hub-hero-carousel-item-media {
+    position: relative;
+  }
+
+  .hub-hero-carousel-item-media > p:nth-child(2) {
+    position: absolute;
+    top: var(--s2a-spacing-sm);
+    left: var(--s2a-spacing-sm);
+    animation: hubHeroGridIconFade ease both;
+    animation-timeline: --hub-hero;
+    animation-range: contain 20% contain 21%;
+  }
+
+  .hub-hero-carousel-item, .hub-hero-image-grid-container-col img {
+    border: 1px solid white;
+  }
+  .hub-hero-carousel-item:nth-child(1) {
+    animation: carouselSlidesThreeSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
+    animation-fill-mode: forwards, backwards, forwards;
+  }
+
+  .hub-hero-carousel-item:nth-child(2) {
+    animation: carouselSlidesThreeSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
+    animation-fill-mode: forwards, backwards, forwards;
+  }
+
+  .hub-hero-carousel-item:nth-child(3) {
+    animation: carouselSlidesThreeSlideOffset3 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
+    animation-timeline: --hub-hero, --hub-hero, --hub-hero;
+    animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
+    animation-fill-mode: forwards, backwards, forwards;
+    z-index: auto;
+    visibility: visible;
+    min-width: var(--hub-hero-carousel-item-min-width);
+    flex-basis: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
+    display: revert;
+    max-width: var(--grid-img-width);
+    min-width: var(--grid-img-width-min);
+    visibility: visible;
+  }
+}
+
+@supports (not (animation-timeline: view())) or (-moz-appearance: none) {
+  .hub-hero.slides-3 .hub-hero-carousel-item:nth-child(3) {
+    display: revert;
+  }
 }
 
 /** mobile only */
@@ -611,7 +746,7 @@
     --header-animation-range: contain 30% contain 42%;
     animation: hubHeroDesktopShrink ease both;
     animation-timeline: --hub-hero;
-    animation-range: contain 45% contain 55%;
+    animation-range: contain 60% contain 65%;
   }
 
   .hub-hero-carousel-header>div>* {
@@ -647,6 +782,7 @@
   }
 
   .hub-hero-image-grid-container-col:nth-child(2) {
+    --col2OffsetAdjuster: -5%;
     will-change: transform, opacity;
     animation: hubHeroGridCol2 ease both, hubHeroGridColFadeOut ease both;
     animation-timeline: --hub-hero, view();
@@ -661,6 +797,7 @@
   }
 
   .hub-hero-image-grid-container-col:nth-child(4) {
+    --col4OffsetAdjuster: -52%;
     will-change: transform, opacity;
     animation: hubHeroGridCol4 ease both, hubHeroGridColFadeOut ease both;
     animation-timeline: --hub-hero, view();
@@ -846,7 +983,7 @@
 /* below large */
 @media (1380px > width) {
   .hub-hero {
-    --hub-hero-carousel-item-max-width: max(292px, calc(25vw - 16px));
+    --hub-hero-carousel-item-max-width: max(292px, calc(var(--slide-max-viewport) - 16px));
     --hub-hero-carousel-item-min-width: 146px;
   }
 }
@@ -1141,6 +1278,38 @@
   }
 }
 
+
+@keyframes carouselSlidesThreeSlideOffset1 {
+  0% {
+    transform: translate(0px, calc(var(--grid-col-two-offset) + var(--start-gap)));
+    animation-timing-function: var(--slide-offset-timing);
+  }
+
+  50% {
+    transform: translate(0px, 0%);
+  }
+}
+@keyframes carouselSlidesThreeSlideOffset2 {
+  0% {
+    transform: translate(0px, calc(var(--grid-col-three-offset) + var(--start-gap) ));
+    animation-timing-function: var(--slide-offset-timing);
+  }
+
+  50% {
+    transform: translate(0px, 0%);
+  }
+}
+@keyframes carouselSlidesThreeSlideOffset3 {
+  0% {
+    transform: translate(0px, calc(var(--grid-col-four-offset) + var(--start-gap)));
+    animation-timing-function: var(--slide-offset-timing);
+  }
+
+  50% {
+    transform: translate(0px, 0%);
+  }
+}
+
 @keyframes carouselSlideOffset1 {
   0% {
     transform: translate(0px, calc(var(--grid-col-one-offset) + var(--carousel-slide-1-correction, 0px)));
@@ -1165,7 +1334,6 @@
   50% {
     transform: translate(0px, 0%);
   }
-
 }
 
 @keyframes carouselSlideOffset4 {
@@ -1272,6 +1440,11 @@
 }
 
 
+@keyframes hubHeroGridIconFade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 @keyframes hubHeroGridColFadeOut {
   0% {
     opacity: 1;
@@ -1343,7 +1516,7 @@
 
 @keyframes hubHeroGridCol2 {
   0% { transform: translate(0, var(--grid-col-two-offset)); }
-  100% { transform: translate(calc(1 * (var(--start-gap) - var(--end-gap))), -5%); }
+  100% { transform: translate(calc(1 * (var(--start-gap) - var(--end-gap))), var(--col2OffsetAdjuster)); }
 }
 
 @keyframes hubHeroGridCol3 {
@@ -1353,7 +1526,7 @@
 
 @keyframes hubHeroGridCol4 {
   0% { transform: translate(0, var(--grid-col-four-offset)); }
-  100% { transform: translate(calc(-1 * (var(--start-gap) - var(--end-gap))), -52%); }
+  100% { transform: translate(calc(-1 * (var(--start-gap) - var(--end-gap))), var(--col4OffsetAdjuster)); }
 }
 
 @keyframes hubHeroGridCol5 {
@@ -1365,17 +1538,17 @@
   0% {
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
-    max-height: calc(min(329px, 25vw) * 1.25);
+    max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
   }
 
   30% {
     max-width: var(--grid-img-width);
     min-width: var(--grid-img-width-min);
-    max-height: calc(min(329px, 25vw) * 1.25);
+    max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
   }
 
   45% {
-    max-height: calc(min(329px, 25vw) * 1.25);
+    max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
   }
 
   100% {

@@ -8,6 +8,7 @@ const leaveTimeouts = new WeakMap();
 let hoverTracked = false;
 const rewindIntervals = new WeakMap();
 const slideLeaveTimeouts = new WeakMap();
+let isThreeSlides;
 
 const isSvgUrl = (url) => /\.svg(\?.*)?$/i.test(url || '');
 const isRtl = () => document.documentElement.getAttribute('dir') === 'rtl';
@@ -149,8 +150,9 @@ const onHover = (event) => {
   slideEl.classList.add(isFocus ? 'focused' : 'hovered');
 
   const rtl = isRtl();
-  container.classList.toggle('stick-left', rtl ? slideIndex === 5 : slideIndex === 1);
-  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === 5);
+  const maxIndex = isThreeSlides ? 3 : 5;
+  container.classList.toggle('stick-left', rtl ? slideIndex === maxIndex : slideIndex === 1);
+  container.classList.toggle('stick-right', rtl ? slideIndex === 1 : slideIndex === maxIndex);
 
   if (hoverTracked) return;
 
@@ -166,10 +168,11 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
   if (!slide?.children) return createTag('a', { class: 'hub-hero-carousel-item' });
   const children = [...slide.children];
   const left = children[0];
-  const right = children[1];
+  const right = children[1] ?? children[0];
 
   const [eyebrow, heading] = left.children;
   const asset = right.children[0];
+  const icon = right.children[1];
   const link = left.lastElementChild?.querySelector('a');
 
   if (asset?.dataset.videoSource) {
@@ -191,6 +194,7 @@ const buildSlide = ({ slide, index, slidesTotal }) => {
       </div>
       <div class='hub-hero-carousel-item-media'>
         ${asset?.outerHTML}
+        ${icon?.outerHTML}
       </div>
       <div class='hub-hero-carousel-item-footer'>
         ${heading?.outerHTML}
@@ -257,7 +261,7 @@ const upgradeVideoPreload = (carousel) => {
 };
 
 const handleCarousel = (slds) => {
-  const slides = [...slds.slice(0, 2), {}, ...slds.slice(2)];
+  const slides = isThreeSlides ? slds : [...slds.slice(0, 2), {}, ...slds.slice(2)];
   const decoratedCarousel = decorateCarousel(slides);
   upgradeVideoPreload(decoratedCarousel);
   decoratedCarousel.querySelector('.hub-hero-carousel-container')?.addEventListener('mouseleave', onCarouselLeave);
@@ -304,11 +308,13 @@ const handleGridImages = (imageContainers, slides) => {
     container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
   });
 
-  const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
-  const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
+  if (!isThreeSlides) {
+    const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
+    const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
 
-  col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
-  col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
+    col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
+    col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
+  }
 
   return container;
 };
@@ -342,6 +348,8 @@ const findSize = (classes, key) => classes.find((item) => item.match(key))?.spli
 export default async function init(el) {
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
+  isThreeSlides = classes.includes('slides-3');
+  if (isThreeSlides) el.style.setProperty('--slides', '3');
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
@@ -354,7 +362,8 @@ export default async function init(el) {
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
   carouselHeader.classList.add('hub-hero-carousel-header');
   const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
-  const carouselImages = [...el.querySelectorAll('.hub-hero > div:nth-last-of-type(-n+4)')];
+  const carouselImages = [...el.querySelectorAll(`.hub-hero > div:nth-last-of-type(-n+${isThreeSlides ? 3 : 4})`)];
+
   const grid = handleGridImages(gridImages, carouselImages);
   const elasticCarousel = handleCarousel(carouselImages);
   elasticCarousel.prepend(carouselHeader);
