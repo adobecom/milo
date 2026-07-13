@@ -247,14 +247,12 @@ const parseContent = async (el, merchCard) => {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       // H5+em authored in DA signals a sparkle subtitle; route it to heading-xs slot
       const isSubtitle = tagName === 'H5' && element.querySelector('em');
-      if (isSubtitle) {
-        slotName = 'heading-xs';
-      }
+      if (isSubtitle) slotName = 'heading-xs';
       if (!slotName) return;
       if (tagName === 'H3') headingXsCount += 1;
       element.classList.add('card-heading');
       if (merchCard.badgeText) {
-        element.closest('div[role="tabpanel"')?.classList.add('badge-merch-cards');
+        element.closest('div[role="tabpanel"]')?.classList.add('badge-merch-cards');
       }
       if (HEADING_MAP[merchCard.variant]?.[tagName]) {
         tagName = HEADING_MAP[merchCard.variant][tagName];
@@ -280,9 +278,7 @@ const parseContent = async (el, merchCard) => {
       });
       newElement.innerHTML = element.innerHTML;
       // marker for shadow DOM subtitle injection
-      if (isSubtitle) {
-        newElement.classList.add('card-subtitle');
-      }
+      if (isSubtitle) newElement.classList.add('card-subtitle');
       merchCard.append(newElement);
     }
     if (tagName === 'H6') {
