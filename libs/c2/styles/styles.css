@@ -425,6 +425,7 @@
   --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  --feds-language-banner-height: 44px;
 
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -1457,6 +1458,11 @@ span.hang-opening-quote {
       color: var(--color-white); /* TODO: Replace with an S2A variable */
     }
   }
+}
+
+.language-banner {
+  height: var(--feds-language-banner-height);
+  visibility: hidden;
 }
 
 @media (width >= 768px) {
