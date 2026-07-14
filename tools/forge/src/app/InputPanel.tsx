@@ -1,39 +1,42 @@
 // ── InputPanel ────────────────────────────────────────────────────────────────
-// The "New session" entry point: two SOURCE doors, intent chosen inside each.
+// The "New session" entry point: two SOURCE doors, intent FIXED BY THE DOOR (no
+// dial — see MWPW-200668; the old IntentDial was retired because it rendered
+// nowhere).
 //   1. An outcome PREVIEW per door (the kind of page Forge builds) — the only
 //      place brand-red appears, because it depicts real page output.
 //   2. Two SOURCE doors as compact rows (answer: what do you have?):
-//        • Build my design (Figma frame)
-//        • Rebuild a page  (live URL)
-//      Each door carries the INTENT DIAL (IntentDial). The Figma dial offers
-//      conformance/fidelity; the URL dial adds a third stop — "Reimagine" — which
-//      runs Stardust (a separate, heavier redesign engine). Reimagine lives on the
-//      URL dial, NOT a third door, because Stardust crawls a live URL — it has
-//      nothing to act on for a Figma frame, and a separate "paste a URL" entry
-//      would just duplicate the URL door's input.
+//        • Figma frame → intent 'conformance' (build on the Adobe design system)
+//        • Live URL    → intent 'reimagine'   (Stardust redesign, a heavier engine)
+//      The open door ALONE determines the policy (doorIntentPolicy / buildEntryIntent
+//      in ./intent) — the user does not pick it. There is no third "Reimagine" door:
+//      Reimagine is simply what the URL door does, because Stardust crawls a live
+//      URL and has nothing to act on for a Figma frame.
+//   3. The Figma door additionally shows the EFFORT control (quick ↔ refine harder)
+//      → the server's convergence round budget. The URL/Reimagine door runs
+//      Stardust (no round budget), so effort is not shown or sent there.
 //
 // HONESTY NOTES (verified against the server):
 //   • Figma OAuth is entirely server-side (milo-logs-deploy) — the door opens
 //     straight to the frame input. If a run's OAuth session expires mid-run, the
 //     server attaches figmaAuthUrl and ResultCard renders the reactive
 //     FigmaReauthCard to send the user to sign in.
-//   • The conformance/fidelity split is PROMPT-ONLY today: the dial writes a
-//     structured `intentPolicy` + a bridged legacy `intent`, but the matcher does
-//     NOT yet read the policy (see IntentDial.departureIntent). Reimagine DOES route
-//     to a real, different pipeline (Stardust) via the bridge's `mode:'reimagine'`.
-//     Wiring conformance/fidelity into the matcher is a named backend milestone.
+//   • intentPolicy is PROMPT-ONLY today: the matcher does NOT read it. Only
+//     'reimagine' actually switches engines, via the legacy `mode:'reimagine'` the
+//     server reads (→ Stardust). 'conformance' is a display label over the default
+//     matcher pass-through. Wiring the policy into the matcher is a backend milestone.
 
 import { useState } from 'react';
 import { TextField } from '@react-spectrum/s2';
 import { SOURCES } from '../sessions/types';
 import type { IntentPolicy } from '../sessions/types';
+import { buildEntryIntent, doorIntentPolicy } from './intent';
 import { useSessions } from '../sessions/SessionsProvider';
 
 // ── Door view state ─────────────────────────────────────────────────────────
-// Two SOURCE doors: 'figma' (a frame) and 'url' (a live page). Intent (including
-// Reimagine-with-Stardust) is a stop on the dial INSIDE the URL door, not a third
-// door — Stardust crawls a live URL, so it belongs to the URL path, not its own
-// entry. The Figma door's dial offers only conformance/fidelity.
+// Two SOURCE doors: 'figma' (a frame) and 'url' (a live page). The open door FIXES
+// the intent (Figma → conformance, URL → reimagine-with-Stardust) — there is no
+// dial and no third door. Reimagine belongs to the URL path because Stardust
+// crawls a live URL and has nothing to act on for a Figma frame.
 type View = 'doors' | 'figma' | 'url';
 
 // ── Generation effort (Figma door only) ───────────────────────────────────────
@@ -155,12 +158,12 @@ export function InputPanel() {
   // the designer chooses to push harder. Figma door only (see Effort above).
   const [effort, setEffort] = useState<Effort>('quick');
 
-  // The DOOR fixes the intent now (no dial — see the simplification note below):
+  // The DOOR fixes the intent (no dial — MWPW-200668):
   //   Figma frame → build on the Adobe design system (conformance).
   //   Live URL    → Reimagine with Stardust (reimagine).
   // So the policy is derived from the open door, not chosen by the user.
   const isFigma = view === 'figma';
-  const intentPolicy: IntentPolicy = isFigma ? 'conformance' : 'reimagine';
+  const intentPolicy: IntentPolicy = doorIntentPolicy(isFigma ? 'figma' : 'url');
 
   // SOURCES: figma → inputKey 'figmaUrl'; eds-url → inputKey 'url'.
   const src = SOURCES.find((s) => s.id === (isFigma ? 'figma' : 'eds-url'))!;
@@ -190,16 +193,10 @@ export function InputPanel() {
     const body: Record<string, unknown> = {};
     body[src.inputKey] = val;
 
-    // The DOOR fixes the intent: Figma → conformance (design system), URL →
-    // reimagine (Stardust). Forward the structured policy + the legacy `mode` the
-    // server reads today (reimagine routes to Stardust; conformance is the default
-    // matcher pass-through).
-    body.intentPolicy = intentPolicy;
-    if (intentPolicy === 'reimagine') body.mode = 'reimagine';
-
-    // Generation effort → convergence round budget, Figma path only (MWPW-200016).
-    // The URL/Reimagine door runs Stardust (no round budget), so it sends none.
-    if (isFigma) body.effort = effort;
+    // The DOOR fixes the intent — Figma → conformance, URL → reimagine (Stardust).
+    // buildEntryIntent returns the structured policy, the legacy `mode` the server
+    // reads today (reimagine only), and the Figma-only effort budget. (MWPW-200668)
+    Object.assign(body, buildEntryIntent(isFigma ? 'figma' : 'url', effort));
 
     setIsSubmitting(true);
     try {
