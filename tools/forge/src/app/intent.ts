@@ -1,7 +1,8 @@
 // ── intent.ts — one place to read "what did this run ask for" ─────────────────
 // resolveIntentPolicy() derives the intent LABEL for a session. It is a label for
 // display ONLY — never wired into the matcher (the matcher doesn't read intent
-// today; see IntentDial). It bridges all three ways a policy can reach us so the
+// today; only 'reimagine' actually switches engines). It bridges all three ways a
+// policy can reach us so the
 // result/report can render before OR after the entry change ships:
 //   1. the explicit field (sourceInput.intentPolicy or session.intentPolicy),
 //   2. the engine/mode signal (engine 'stardust' / mode 'reimagine' → reimagine),
@@ -62,3 +63,39 @@ export const INTENT_REQUEST_LINE: Record<IntentPolicy, string> = {
   fidelity: 'Built to match your design.',
   reimagine: 'Reimagined on Stardust.',
 };
+
+// ── Entry-side intent (the WRITE side) — MWPW-200668 ──────────────────────────
+// The New-session doors FIX the intent; there is no dial (the old IntentDial was
+// retired — it rendered nowhere). The open door ALONE determines the policy the
+// run is asked for:
+//   • Figma frame → 'conformance' (build on the Adobe design system)
+//   • Live URL    → 'reimagine'   (Stardust redesign — a separate, heavier engine)
+// PROMPT-ONLY caveat (unchanged): the matcher does NOT read intentPolicy. Only
+// 'reimagine' actually switches engines, via the legacy `mode:'reimagine'` the
+// server reads today; 'conformance' is a display label over the default matcher
+// pass-through.
+export type EntryDoor = 'figma' | 'url';
+
+export function doorIntentPolicy(door: EntryDoor): IntentPolicy {
+  return door === 'figma' ? 'conformance' : 'reimagine';
+}
+
+// The intent-related fields the entry form submits for a door. Pure so the
+// per-door contract (policy + the legacy `mode` the server reads + the Figma-only
+// effort budget) is unit-testable without rendering the S2 form.
+export interface EntryIntentFields {
+  intentPolicy: IntentPolicy;
+  // Only set for reimagine — routes the run to Stardust on the server.
+  mode?: 'reimagine';
+  // Convergence round budget, Figma path only (the URL/Reimagine door runs
+  // Stardust, which has no round budget, so effort is never forwarded there).
+  effort?: string;
+}
+
+export function buildEntryIntent(door: EntryDoor, effort?: string): EntryIntentFields {
+  const intentPolicy = doorIntentPolicy(door);
+  const fields: EntryIntentFields = { intentPolicy };
+  if (intentPolicy === 'reimagine') fields.mode = 'reimagine';
+  if (door === 'figma' && effort) fields.effort = effort;
+  return fields;
+}
