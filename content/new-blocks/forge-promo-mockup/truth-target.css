@@ -1,0 +1,71 @@
+.forge-promo-mockup img, .forge-promo-mockup video, .forge-promo-mockup svg, .forge-promo-mockup picture {max-width:100%;height:auto}
+
+.forge-promo-mockup main {width:100%}
+
+.forge-promo-mockup .section-inner {max-width:2160px;margin:0 auto}
+
+.forge-promo-mockup .type-body-17 {font-family:var(--font-family-adobe-clean),sans-serif;font-size:var(--tokens-font-size-17);line-height:var(--tokens-line-height-21);font-weight:700}
+
+.forge-promo-mockup .type-body-20 {font-family:var(--font-family-adobe-clean),sans-serif;font-size:var(--tokens-font-size-20);line-height:var(--tokens-line-height-25);font-weight:700}
+
+.forge-promo-mockup .annotation .section-inner {text-align:center}
+
+.forge-promo-mockup {min-height:878px;padding-top:38px}
+
+.forge-promo-mockup .mockup {max-width:1920px;width:100%;height:840px;margin:0 auto;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 24px 0 rgba(0,0,0,.12)}
+
+.forge-promo-mockup .promobar {position:relative;flex:none;background:var(--web-gray-scale-black);display:flex;align-items:center;justify-content:center;padding:0 24px;min-height:72px}
+
+.forge-promo-mockup .promobar-copy {display:flex;align-items:center;justify-content:center;width:100%;max-width:1200px;padding:16px 0}
+
+.forge-promo-mockup .promo-body {margin:0;color:#ffffff;max-width:1000px;text-align:left}
+
+.forge-promo-mockup .promobar-cta {padding-left:24px;flex:none}
+
+.forge-promo-mockup .see-offers {display:inline-flex;align-items:center;justify-content:center;border:2px solid #ffffff;border-radius:100px;padding:9px 18px 10px;color:#ffffff;text-decoration:none;white-space:nowrap}
+
+.forge-promo-mockup .promobar-close {position:absolute;right:24px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;background:none;border:0;padding:6px;cursor:pointer}
+
+.forge-promo-mockup .ps-page {flex:1;min-height:0;background:#ffffff;display:flex;flex-direction:column;overflow:hidden}
+
+.forge-promo-mockup .ps-nav {display:flex;align-items:center;gap:26px;padding:0 26px;border-bottom:1px solid #eaeaea;font-size:15px;color:var(--color-2c2c2c)}
+
+.forge-promo-mockup .ps-brand {display:flex;align-items:center;gap:8px;font-weight:800;font-size:19px;color:#000000}
+
+.forge-promo-mockup .ps-actions {margin-left:auto;display:flex;align-items:center;gap:18px}
+
+.forge-promo-mockup .ps-avatar {width:26px;height:26px;border-radius:50%;background:conic-gradient(from 210deg,#ffd24a,#ff5ea2,#7a5cff,#37d0c4,#ffd24a)}
+
+.forge-promo-mockup .ps-hero {flex:1;min-height:0;display:flex}
+
+.forge-promo-mockup .ps-hero-left {width:46%;background:#a9efe9;padding:52px 64px;display:flex;flex-direction:column;align-items:flex-start}
+
+.forge-promo-mockup .ps-logo {width:64px;height:64px;border-radius:14px;background:#001e36;color:#31a8ff;font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center}
+
+.forge-promo-mockup .ps-eyebrow {margin:26px 0 0;font-size:13px;font-weight:700;letter-spacing:1.5px;color:#2c2c2c}
+
+.forge-promo-mockup .ps-title {margin:8px 0 0;font-size:40px;line-height:1.12;font-weight:700;color:#2c2c2c}
+
+.forge-promo-mockup .ps-lead {margin:16px 0 0;font-size:17px;line-height:1.4;color:#2c2c2c;max-width:360px}
+
+.forge-promo-mockup .ps-buy {margin-top:26px;background:#4b4bf5;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;border-radius:100px;padding:11px 22px}
+
+.forge-promo-mockup .ps-hero-right {flex:1;position:relative;overflow:hidden;background:radial-gradient(58% 62% at 60% 42%,rgba(70,190,225,.85) 0%,rgba(24,86,168,.8) 46%,rgba(8,32,84,.9) 82%),linear-gradient(120deg,#ff5ea2 0%,#ff8a3d 22%,#ffd24a 37%,#37d0c4 58%,#1f6fd0 78%,#0c2a6b 100%)}
+
+.forge-promo-mockup .ps-tooltip {position:absolute;display:inline-flex;align-items:center;gap:8px;background:#1f1f1f;color:#ffffff;border-radius:22px;padding:9px 15px;font-size:15px;font-weight:500;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+
+.forge-promo-mockup .ps-tooltip.t1 {top:41%;left:2.5%}
+
+.forge-promo-mockup .ps-tooltip.t2 {top:52%;left:2.5%}
+
+@media (max-width:1023px) {
+.forge-promo-mockup .ps-hero {flex-direction:column}
+.forge-promo-mockup .ps-hero-left {width:100%}
+.forge-promo-mockup .ps-hero-right {min-height:260px}
+}
+
+@media (max-width:767px) {
+.forge-promo-mockup .ps-title {font-size:28px}
+.forge-promo-mockup .promobar-copy {flex-direction:column;gap:12px}
+.forge-promo-mockup .promo-body {text-align:center}
+}

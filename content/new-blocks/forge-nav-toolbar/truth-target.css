@@ -1,0 +1,35 @@
+.forge-nav-toolbar img, .forge-nav-toolbar video, .forge-nav-toolbar svg, .forge-nav-toolbar picture {max-width:100%;height:auto}
+
+.forge-nav-toolbar main {width:100%}
+
+.forge-nav-toolbar .section-inner {max-width:2160px;margin:0 auto}
+
+.forge-nav-toolbar .type-heading-28 {font-family:var(--font-family-adobe-clean),sans-serif;font-size:var(--tokens-font-size-28);line-height:var(--tokens-line-height-35);font-weight:700}
+
+.forge-nav-toolbar .type-label-14 {font-family:var(--font-family-adobe-clean),sans-serif;font-size:var(--tokens-font-size-14);line-height:var(--tokens-line-height-18);font-weight:500}
+
+.forge-nav-toolbar {min-height:80px}
+
+.forge-nav-toolbar .nav-bar {display:flex;align-items:center;justify-content:center;gap:64px;height:80px;background:var(--palette-gray-50);border-radius:16px}
+
+.forge-nav-toolbar .nav-title {margin:0;color:var(--color-2c2c2c);text-align:center}
+
+.forge-nav-toolbar .nav-buttons {display:flex;align-items:center;gap:16px}
+
+.forge-nav-toolbar .nav-btn {border-radius:8px;padding:6px 12px 8px;background:var(--color-e9e9e9);color:var(--color-292929);white-space:nowrap;text-align:left}
+
+.forge-nav-toolbar .nav-btn.is-active {background:var(--color-292929);color:#ffffff}
+
+.forge-nav-toolbar .annotation .section-inner {text-align:center}
+
+.forge-nav-toolbar .ps-link.is-active {box-shadow:inset 0 -2px 0 #2c2c2c}
+
+@media (max-width:1023px) {
+.forge-nav-toolbar .nav-bar {flex-direction:column;height:auto;gap:14px;padding:16px}
+.forge-nav-toolbar .nav-buttons {flex-wrap:wrap;justify-content:center}
+.forge-nav-toolbar {min-height:0}
+}
+
+@media (max-width:767px) {
+.forge-nav-toolbar .type-heading-28 {font-size:20px;line-height:26px}
+}
