@@ -972,10 +972,8 @@ p {
     transition: fill 0.2s ease;
     will-change: fill;
   }
-}
 
-.dark {
-  .icon-button {
+  .dark & {
     background-color: var(--s2a-color-transparent-black-04);
     border-color: var(--s2a-color-transparent-black-08);
     path {
@@ -1028,10 +1026,8 @@ p {
       }
     }
   }
-}
 
-.dark {
-  .promo-cta {
+  .dark & {
     color: var(--s2a-color-content-inverse);
 
     &:hover,
