@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { TextField } from '@react-spectrum/s2';
 import Close from '@react-spectrum/s2/icons/Close';
-import { useConfig } from '../config';
-import type { ForgeConfig } from '../config';
+import { useConfig, validateForgeConfig, isForgeConfigValid } from '../config';
+import type { ForgeConfig, ForgeConfigErrors } from '../config';
 import styles from './SettingsSlideover.module.css';
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -22,12 +22,25 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
   // Local draft — committed only on Save. Re-synced from config each time the
   // panel opens, so a Cancel-then-reopen always shows the saved values.
   const [draft, setDraft] = useState<ForgeConfig>(config);
+  // Per-field format errors from the last Save attempt. Cleared when the panel
+  // re-opens (fresh draft) and when the offending field is edited.
+  const [errors, setErrors] = useState<ForgeConfigErrors>({});
   useEffect(() => {
-    if (isOpen) setDraft(config);
+    if (isOpen) {
+      setDraft(config);
+      setErrors({});
+    }
   }, [isOpen, config]);
 
   function update<K extends keyof ForgeConfig>(key: K, value: ForgeConfig[K]) {
     setDraft((d) => ({ ...d, [key]: value }));
+    // Drop this field's error as soon as the user edits it — don't nag mid-fix.
+    setErrors((e) => {
+      if (!(key in e)) return e;
+      const next = { ...e };
+      delete (next as Record<string, unknown>)[key as string];
+      return next;
+    });
   }
 
   function updateExport<K extends keyof ForgeConfig['export']>(
@@ -38,6 +51,13 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
   }
 
   function handleSave() {
+    // Pre-run format validation — a mistyped value fails inline HERE instead of
+    // cryptically minutes into a run (MWPW-199254).
+    const found = validateForgeConfig(draft);
+    if (!isForgeConfigValid(found)) {
+      setErrors(found);
+      return;
+    }
     setConfig(draft);
     try {
       localStorage.setItem('forge.config', JSON.stringify(draft));
@@ -84,6 +104,8 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                 value={draft.serverUrl}
                 onChange={(v) => update('serverUrl', v)}
                 description="Where the page-forge server is running. Default: http://localhost:8080"
+                isInvalid={Boolean(errors.serverUrl)}
+                errorMessage={errors.serverUrl}
                 UNSAFE_style={{ width: '100%' }}
               />
             </div>
@@ -101,6 +123,8 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                 onChange={(v) => update('repoPath', v)}
                 placeholder="/Users/you/path/to/your-consumer-site"
                 description="Local clone of your consumer site, for example adobecom/da-playground."
+                isInvalid={Boolean(errors.repoPath)}
+                errorMessage={errors.repoPath}
                 UNSAFE_style={{ width: '100%' }}
               />
             </div>
@@ -111,6 +135,8 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                 onChange={(v) => update('consumerPreviewUrl', v)}
                 placeholder="http://localhost:3000"
                 description="Where your consumer's local dev server is reachable."
+                isInvalid={Boolean(errors.consumerPreviewUrl)}
+                errorMessage={errors.consumerPreviewUrl}
                 UNSAFE_style={{ width: '100%' }}
               />
             </div>
@@ -125,6 +151,8 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                 onChange={(v) => update('miloPath', v)}
                 placeholder="/Users/you/path/to/milo"
                 description="Local clone of adobecom/milo. Required when new blocks go to Milo."
+                isInvalid={Boolean(errors.miloPath)}
+                errorMessage={errors.miloPath}
                 UNSAFE_style={{ width: '100%' }}
               />
             </div>
@@ -139,6 +167,8 @@ export function SettingsSlideover({ isOpen, onClose }: SettingsSlideoverProps) {
                 onChange={(v) => update('daUsername', v)}
                 placeholder="your-ldap, for example jdoe"
                 description="Required to send to Authoring. Sets the folder: /drafts/<username>/forge/<slug>."
+                isInvalid={Boolean(errors.daUsername)}
+                errorMessage={errors.daUsername}
                 UNSAFE_style={{ width: '100%' }}
               />
             </div>
