@@ -304,16 +304,18 @@ const handleGridImages = (imageContainers, slides) => {
   [...imageContainers[0].children]?.forEach((img) => {
     container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, img));
   });
-  [...imageContainers[1].children]?.forEach((img, index) => {
-    container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
+
+  [1, 2].forEach((i) => {
+    [...(imageContainers[i]?.children ?? [])].forEach((img, index) => {
+      container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
+    });
   });
 
-  if (!isThreeSlides) {
-    const col2 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(2)');
-    const col4 = container.querySelector('.hub-hero-image-grid-container-col:nth-child(4)');
+  const gridColumns = [...container.querySelectorAll('.hub-hero-image-grid-container-col')];
 
-    col2.append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
-    col4.append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
+  if (!isThreeSlides) {
+    gridColumns[1].append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
+    gridColumns[3].append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
   }
 
   return container;
@@ -361,7 +363,7 @@ export default async function init(el) {
   decorateHubHeroCTA(heroHeader);
   const carouselHeader = el.querySelector('.hub-hero > div:not(:first-child):not(:has(img))');
   carouselHeader.classList.add('hub-hero-carousel-header');
-  const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3)')];
+  const gridImages = [...el.querySelectorAll('.hub-hero > div:nth-child(2), .hub-hero > div:nth-child(3), .hub-hero > div:nth-child(4)')];
   const carouselImages = [...el.querySelectorAll(`.hub-hero > div:nth-last-of-type(-n+${isThreeSlides ? 3 : 4})`)];
 
   const grid = handleGridImages(gridImages, carouselImages);

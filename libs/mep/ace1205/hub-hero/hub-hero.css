@@ -375,16 +375,27 @@
   border-radius: 0;
 }
 
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3) p:nth-child(1) picture,
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) p:nth-child(1) picture {
+  position: absolute;
+}
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(1) div:nth-child(3),
+.hub-hero.slides-3 .hub-hero-image-grid-container-col:nth-child(5) div:nth-child(3) {
+  overflow: visible;
+}
+
 .hub-hero.slides-3 {
 
-  --grid-gap-animation-range: contain 35% contain 50%;
-
+  --grid-gap-animation-range: contain 0% contain 50%;
+  --slide-from-card-slide-range: contain 15% contain 40%;
+  --slide-animation-range: contain 0% contain 80%;
   .hub-hero-carousel-item-footer * {
     white-space: wrap;
   }
 
   .hub-hero-carousel-container {
     width: 100%;
+    animation-range: contain 0%, contain 100%;
   }
 
   .hub-hero-image-grid-container-col:nth-child(2) {
@@ -1281,7 +1292,7 @@
 
 @keyframes carouselSlidesThreeSlideOffset1 {
   0% {
-    transform: translate(0px, calc(var(--grid-col-two-offset) + var(--start-gap)));
+    transform: translate(0px, var(--grid-col-two-offset));
     animation-timing-function: var(--slide-offset-timing);
   }
 
@@ -1291,7 +1302,7 @@
 }
 @keyframes carouselSlidesThreeSlideOffset2 {
   0% {
-    transform: translate(0px, calc(var(--grid-col-three-offset) + var(--start-gap) ));
+    transform: translate(0px, var(--grid-col-three-offset) );
     animation-timing-function: var(--slide-offset-timing);
   }
 
@@ -1301,7 +1312,7 @@
 }
 @keyframes carouselSlidesThreeSlideOffset3 {
   0% {
-    transform: translate(0px, calc(var(--grid-col-four-offset) + var(--start-gap)));
+    transform: translate(0px, var(--grid-col-four-offset) );
     animation-timing-function: var(--slide-offset-timing);
   }
 
