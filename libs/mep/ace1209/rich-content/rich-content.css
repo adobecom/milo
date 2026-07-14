@@ -285,7 +285,7 @@
 
   .section.bento .rich-content.grid-full-width,
   .rich-content.indent {
-    margin-inline-start: var(--s2a-spacing-xs);
+    margin-inline-start: var(--s2a-spacing-md);
     margin-block-end: calc(var(--s2a-spacing-lg) - var(--grid-gutter));
   }
 

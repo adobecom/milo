@@ -21,9 +21,7 @@ function setIndices(section, cards) {
 
 function measure(section, cards) {
   // Clear the imposed height first so offsetHeight reads each card's NATURAL height.
-  // Without this, the slot-locked content would report the previously-set --card-height,
-  // so the value could only grow and never shrink on widen/reflow. The offsetHeight read
-  // below forces a synchronous reflow, so the natural value is current.
+  // The offsetHeight read below forces a synchronous reflow, so the natural value is current.
   section.style.removeProperty('--card-height');
   const max = maxCardHeight(cards);
   if (max) section.style.setProperty('--card-height', `${Math.round(max)}px`);
@@ -46,8 +44,8 @@ export default function initBentoStack(section) {
   const cards = getCards(section);
   if (!cards.length) return;
   setIndices(section, cards);
-  // Gate the stacking CSS on JS readiness: if this module fails to load/run,
-  // the class is never added and the bento degrades to its normal static layout
+  // If this module fails to load/run, the class is never added and the
+  // bento degrades to its normal static layout
   section.classList.add('bento-stack-ready');
 
   const mq = window.matchMedia(MOBILE);

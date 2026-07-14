@@ -288,18 +288,8 @@ body:has(header.local-nav) .section.bento.stack-mobile {
   &.bento .explore-card.light {background-color: transparent;} 
 
   &.bento .explore-card {
-    /* border-radius: var(--s2a-border-radius-md);
-    border: var(--s2a-border-width-md) inset var(--s2a-color-transparent-white-12); */
+    border-radius: var(--s2a-border-radius-md);
     z-index: inherit;
-
-    .explore-card-container::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: var(--s2a-border-radius-md);
-      border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
-      z-index: 2;
-    }
 
     .explore-card-container:hover [class*='body-'] {
       opacity: initial;
