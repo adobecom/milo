@@ -1,0 +1,20 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "feds-nav"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "fw-note"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "promo-mock"
+  }
+]
