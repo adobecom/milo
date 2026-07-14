@@ -17,7 +17,7 @@
     justify-content: flex-start;
   }
 
-  .tab-indicator {
+  .tab-parent-indicator {
     position: absolute;
     top: var(--s2a-spacing-2xs);
     bottom: var(--s2a-spacing-2xs);
@@ -29,7 +29,7 @@
     z-index: 0;
   }
 
-  [role='tablist'] {
+  .tabs-parent-wrapper [role='tablist'] {
     position: relative;
     display: flex;
     z-index: 2;
@@ -46,7 +46,7 @@
       display: none; /* Safari and Chrome */
     }
 
-    .tab-list-container {
+    .tab-parent-list-container {
       display: flex;
       width: auto;
       min-width: 300px;
@@ -56,7 +56,7 @@
       position: relative; /* for slider */
     }
 
-    .btn-wrapper {
+    .tab-parent-btn-wrapper {
       display: flex;
       padding: var(--s2a-spacing-2xs);
       flex-direction: column;
@@ -64,7 +64,7 @@
       align-self: stretch;
     }
 
-    button.tab-button {
+    button.tab-parent-button {
       color: var(--s2a-color-transparent-black-64);
       cursor: pointer;
       font-family: var(--body-font-family);
@@ -120,7 +120,7 @@
       }
     }
 
-    [role='tablist'] {
+    .tabs-parent-wrapper [role='tablist'] {
       overflow: visible;
       margin: 0 var(--s2a-spacing-20);
     }
@@ -137,7 +137,7 @@
   }
 }
 
-.tabs-parent .tab-content [role='tabpanel'] {
+.tabs-parent .tab-parent-content [role='tabpanel'] {
   .section {
     position: relative;
 
@@ -148,6 +148,7 @@
     > .content {
       z-index: 1;
       position: relative;
+      width: var(--grid-container-width);
       margin: 0 auto;
     }
 
@@ -160,8 +161,8 @@
 /* Section Metadata - keep for testing ace1205 when merch is available */
 .tabs-parent-background-transparent {
   .tabs-parent,
-  .tabs-parent [role='tablist'],
-  .tabs-parent [role='tablist'] button.tab-button[aria-selected="true"] {
+  .tabs-parent .tabs-parent-wrapper [role='tablist'],
+  .tabs-parent .tabs-parent-wrapper [role='tablist'] button.tab-parent-button[aria-selected="true"] {
     background: transparent;
   }
 }
@@ -179,7 +180,7 @@
   }
 }
 
-.tabs-parent.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+.tabs-parent.staggered-intro-merch-cards .tab-parent-content-container [role='tabpanel'].tab-entering .section merch-card {
   animation: tab-content-in 0.5s ease both;
   
   &:nth-child(2) { animation-delay: 0.1s; }
@@ -193,14 +194,14 @@
 
 
 @media (prefers-reduced-motion: reduce) {
-  .tabs-parent.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+  .tabs-parent.staggered-intro-merch-cards .tab-parent-content-container [role='tabpanel'].tab-entering .section merch-card {
     animation: none;
   }
 }
 
 @media (width >= 1920px) {
-  .tabs-parent [role='tabpanel'] > .section[class*='-up'] > .content,
-  .tabs-parent [role='tabpanel'] > .section[class*='grid-width-'] > .content {
+  .tabs-parent .tab-parent-content-container [role='tabpanel'] > .section[class*='-up'] > .content,
+  .tabs-parent .tab-parent-content-container [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
   }
 }

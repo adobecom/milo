@@ -7,7 +7,7 @@ import { processTrackingLabels } from '../../../martech/attributes.js';
 
 const tabColor = {};
 const linkedTabs = {};
-const tabChangeEvent = new Event('milo:tab:changed');
+const tabChangeEvent = new Event('milo:tab-parent:changed');
 
 const getScrollContainer = (tab) => {
   const tabList = tab.closest('[role="tablist"]');
@@ -38,9 +38,9 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
   if (!targetId || !linkedTabsList[targetId] || window.location.pathname === linkedTabsList[targetId]) return '';
   const currentUrl = new URL(window.location.href);
   /* c8 ignore next 4 */
-  const tabParam = currentUrl.searchParams.get('tab');
+  const tabParam = currentUrl.searchParams.get('tab-parent');
   if (tabParam) {
-    currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
+    currentUrl.searchParams.set('tab-parent', `${tabParam.split('-')[0]}-${targetId.split('-')[3]}`);
   }
   currentUrl.pathname = linkedTabsList[targetId];
   return currentUrl;
@@ -48,7 +48,7 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
 
 const generateStorageName = (tabId) => {
   const { pathname } = window.location;
-  return `${pathname}/${tabId}-tab-state`;
+  return `${pathname}/${tabId}-tab-parent-state`;
 };
 
 const loadActiveTab = (config) => {
@@ -102,8 +102,8 @@ function changeTabs(e, config) {
     window.location.assign(redirectionUrl);
     return;
   }
-  const parent = target.closest('.tab-list-container');
-  const tabsBlock = target.closest('.tabs');
+  const parent = target.closest('.tab-parent-list-container');
+  const tabsBlock = target.closest('.tabs-parent');
   const content = tabsBlock.lastElementChild;
   const blockId = tabsBlock.id;
 
@@ -121,14 +121,14 @@ function changeTabs(e, config) {
   target.setAttribute('aria-selected', 'true');
   target.setAttribute('tabindex', '0');
 
-  const indicator = parent.querySelector('.tab-indicator');
+  const indicator = parent.querySelector('.tab-parent-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
   scrollTabIntoView(target);
   content
-    .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
+    .querySelectorAll(`.tab-parent-panel[data-block-id="${blockId}"]`)
     .forEach((p) => {
       p.setAttribute('hidden', true);
       p.classList.remove('tab-entering');
@@ -148,7 +148,7 @@ function getStringKeyName(str) {
 }
 
 function getUniqueId(el, rootElem) {
-  const tabs = rootElem.querySelectorAll('.tabs');
+  const tabs = rootElem.querySelectorAll('.tabs-parent');
   return [...tabs].indexOf(el) + 1;
 }
 
@@ -168,13 +168,13 @@ function configTabs(config, rootElem) {
       return;
     }
   }
-  // Deeplink with tab parameter, e.g. ?tab=plans-2
-  const tabParam = params.get('tab');
+  // Deeplink with tab parameter, e.g. ?tab-parent=plans-2
+  const tabParam = params.get('tab-parent');
   if (tabParam) {
     const dashIndex = tabParam.lastIndexOf('-');
     const [tabsId, tabIdx] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
     if (tabsId === config.id) {
-      const tabBtn = rootElem.querySelector(`#tab-${config.id}-${tabIdx}`);
+      const tabBtn = rootElem.querySelector(`#tab-parent-${config.id}-${tabIdx}`);
       if (tabBtn) {
         tabBtn.click();
         return;
@@ -183,7 +183,7 @@ function configTabs(config, rootElem) {
   }
 
   if (!config['active-tab']) return;
-  const id = `#tab-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
+  const id = `#tab-parent-${CSS.escape(config['tab-id'])}-${CSS.escape(getStringKeyName(config['active-tab']))}`;
   const sel = rootElem.querySelector(id);
   if (!sel) return;
   sel.addEventListener('click', (e) => e.stopPropagation(), { once: true });
@@ -228,12 +228,12 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
 
   try {
     const url = new URL(link);
-    linkedTabsList[`tab-${id}-${val}`] = await localizeLinkAsync(link, url.hostname);
+    linkedTabsList[`tab-parent-${id}-${val}`] = await localizeLinkAsync(link, url.hostname);
   } catch {
     // @see https://jira.corp.adobe.com/browse/MWPW-170787
     // TODO support for relative links to be removed after authoring makes full switch
     if (!/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) return;
-    linkedTabsList[`tab-${id}-${val}`] = link;
+    linkedTabsList[`tab-parent-${id}-${val}`] = link;
   }
 }
 
@@ -260,20 +260,20 @@ const init = async (block) => {
   const activeTabIndex = loadActiveTab(config);
   if (activeTabIndex) config['active-tab'] = activeTabIndex;
 
-  block.id = `tabs-${tabId}`;
-  parentSection?.classList.add(`tablist-${tabId}-section`);
+  block.id = `tabs-parent-${tabId}`;
+  parentSection?.classList.add(`tablist-parent-${tabId}-section`);
 
   // Tab Content
-  const tabContentContainer = createTag('div', { class: 'tab-content-container' });
-  const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
+  const tabContentContainer = createTag('div', { class: 'tab-parent-content-container' });
+  const tabContent = createTag('div', { class: 'tab-parent-content' }, tabContentContainer);
   block.append(tabContent);
 
   // Tab List
   const tabList = rows[0];
-  tabList.classList.add('tab-list');
+  tabList.classList.add('tab-parent-list');
   tabList.setAttribute('role', 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
-  tabListContainer.classList.add('tab-list-container');
+  tabListContainer.classList.add('tab-parent-list-container');
   const tabListLabel = config.pretext;
   if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
 
@@ -282,29 +282,29 @@ const init = async (block) => {
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
-      const controlId = `tab-panel-${tabId}-${tabName}`;
+      const controlId = `tab-parent-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: 'tab',
-        class: 'tab-button label',
-        id: `tab-${tabId}-${tabName}`,
+        class: 'tab-parent-button label',
+        id: `tab-parent-${tabId}-${tabName}`,
         tabindex: (i === 0) ? '0' : '-1',
         'aria-selected': (i === 0) ? 'true' : 'false',
-        'data-block-id': `tabs-${tabId}`,
+        'data-block-id': `tabs-parent-${tabId}`,
         'daa-state': 'true',
-        'daa-ll': `tab-${tabId}-${tabName}`,
+        'daa-ll': `tab-parent-${tabId}-${tabName}`,
         'aria-controls': controlId,
       };
       const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
-      const btnWrapper = createTag('div', { class: 'btn-wrapper' });
+      const btnWrapper = createTag('div', { class: 'tab-parent-btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
 
       const tabContentAttributes = {
-        id: `tab-panel-${tabId}-${tabName}`,
+        id: `tab-parent-panel-${tabId}-${tabName}`,
         role: 'tabpanel',
-        class: 'tabpanel',
-        'aria-labelledby': `tab-${tabId}-${tabName}`,
-        'data-block-id': `tabs-${tabId}`,
+        class: 'tab-parent-panel',
+        'aria-labelledby': `tab-parent-${tabId}-${tabName}`,
+        'data-block-id': `tabs-parent-${tabId}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
       if (i > 0) tabListContent.setAttribute('hidden', '');
@@ -313,12 +313,12 @@ const init = async (block) => {
     tabListItems[0].parentElement.remove();
   }
 
-  const tabsWrapper = createTag('div', { class: 'tabs-wrapper' });
+  const tabsWrapper = createTag('div', { class: 'tabs-parent-wrapper' });
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
   // Tab indicator
-  const indicator = createTag('div', { class: 'tab-indicator' });
+  const indicator = createTag('div', { class: 'tab-parent-indicator' });
   tabListContainer.prepend(indicator);
 
   // Tab Sections
@@ -329,32 +329,32 @@ const init = async (block) => {
     const metaSettings = {};
     sectionMetadata.querySelectorAll(':scope > div').forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
-      if (!['tab', 'tab-background', 'link', 'deeplink'].includes(key)) return;
+      if (!['tab-parent', 'tab-background', 'link', 'deeplink'].includes(key)) return;
       const val = row.children[1].textContent;
       if (!val) return;
       metaSettings[key] = val;
     });
-    if (!metaSettings.tab) return;
+    if (!metaSettings['tab-parent']) return;
     let id = tabId;
-    let val = getStringKeyName(metaSettings.tab);
+    let val = getStringKeyName(metaSettings['tab-parent']);
     if (config.id) {
-      const values = metaSettings.tab.split(',');
+      const values = metaSettings['tab-parent'].split(',');
       [id] = values;
       val = getStringKeyName(String(values[1]));
     }
-    const associatedTabButton = rootElem.querySelector(`#tab-${id}-${val}`);
+    const associatedTabButton = rootElem.querySelector(`#tab-parent-${id}-${val}`);
     if (associatedTabButton && metaSettings.deeplink) {
       associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
     }
-    const assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
+    const assocTabItem = rootElem.querySelector(`#tab-parent-panel-${id}-${val}`);
     if (assocTabItem) {
       if (metaSettings['tab-background']) {
-        tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
+        tabColor[`tab-parent-${id}-${val}`] = metaSettings['tab-background'];
       }
       await assignLinkedTabs(linkedTabs, metaSettings, id, val);
       const tabLabel = tabListItems[val - 1]?.innerText;
       if (tabLabel) {
-        assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
+        assocTabItem.setAttribute('data-nested-lh', `tp${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
       }
       const section = sectionMetadata.closest('.section');
       assocTabItem.append(section);
