@@ -1,0 +1,25 @@
+{
+  "blockName": "forge-topbar",
+  "sectionIndex": 0,
+  "decision": "ambiguous",
+  "score": 0.74,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/wwVFJz6WUzjO3MpeKmpi1Q/my-figma-tester?node-id=0-1&p=f&t=Hgxutv9wkmLNNpmN-0",
+  "figmaNodeId": "1:650",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo/.forge-worktrees/session-b8e816dd",
+  "miloTargetPath": "/Users/osahin/repos/milo/.forge-worktrees/session-b8e816dd/libs/c2/blocks/forge-topbar",
+  "miloBranch": "forge/session-b8e816dd-664",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/anonymous/forge/figma-b8e816?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

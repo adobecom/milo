@@ -1,0 +1,85 @@
+.forge-promo-sec img, .forge-promo-sec video, .forge-promo-sec svg, .forge-promo-sec picture {max-width:100%;height:auto}
+
+.forge-promo-sec main {width:100%;display:flex;flex-direction:column}
+
+.forge-promo-sec .section-inner {max-width:2160px;margin:0 auto;width:100%}
+
+.forge-promo-sec .t-promo-20 {font-family:"Adobe Clean",sans-serif;font-weight:700;font-size:20px;line-height:25px}
+
+.forge-promo-sec .t-body-17 {font-family:"Adobe Clean",sans-serif;font-weight:700;font-size:17px;line-height:21px}
+
+.forge-promo-sec {margin-top:38px;min-height:840px}
+
+.forge-promo-sec .promo-frame {display:flex;flex-direction:column;width:1920px;max-width:100%;height:840px;margin:0 auto;
+  overflow:hidden;background:#fff;box-shadow:0 0 24px 0 rgba(0,0,0,.12)}
+
+.forge-promo-sec .promobar {position:relative;flex:0 0 72px;display:flex;justify-content:center;align-items:center;
+  width:100%;height:72px;padding:0 24px;background:var(--web-gray-scale-black)}
+
+.forge-promo-sec .promo-copy {display:flex;justify-content:center;align-items:center;width:100%;max-width:1200px;margin:0 auto;padding:16px 0}
+
+.forge-promo-sec .promo-body {max-width:1000px;margin:0;color:#fff;text-align:left}
+
+.forge-promo-sec .promo-cta {padding-left:24px;flex:0 0 auto}
+
+.forge-promo-sec .see-offers {display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:9px 18px 10px;
+  border:2px solid #fff;border-radius:100px;background:transparent;color:#fff;white-space:nowrap;cursor:pointer}
+
+.forge-promo-sec .promo-close {position:absolute;right:24px;top:50%;transform:translateY(-50%);display:flex;align-items:center;
+  justify-content:center;padding:8px;background:transparent;border:0;cursor:pointer}
+
+.forge-promo-sec .backdrop {flex:1 1 auto;min-height:0;overflow:hidden;background:#9ce9f0;
+  font-family:"Adobe Clean",sans-serif;color:var(--color-2c2c2c)}
+
+.forge-promo-sec .bd-crumb {display:flex;align-items:center;height:28px;padding:0 40px;background:#fff;font-size:12px;color:#707070}
+
+.forge-promo-sec .bd-crumb span {color:#707070}
+
+.forge-promo-sec .bd-crumb .sep {margin:0 8px;color:#b0b0b0}
+
+.forge-promo-sec .bd-hero {position:relative;display:flex;height:100%}
+
+.forge-promo-sec .bd-hero-left {flex:0 0 54%;background:#9ce9f0;padding:88px 60px 40px 130px}
+
+.forge-promo-sec .bd-ps-icon {width:52px;height:52px;border-radius:12px;background:#001e36;display:flex;align-items:center;
+  justify-content:center;color:#31a8ff;font-weight:700;font-size:22px;letter-spacing:.5px}
+
+.forge-promo-sec .bd-eyebrow {margin:22px 0 12px;font-size:13px;font-weight:700;letter-spacing:1.2px;color:#2c2c2c}
+
+.forge-promo-sec .bd-h2 {margin:0;font-size:44px;line-height:1.12;font-weight:700;color:#2c2c2c;letter-spacing:-.5px}
+
+.forge-promo-sec .bd-body {margin:22px 0 0;max-width:430px;font-size:19px;line-height:1.4;color:#4b4b4b;font-weight:400}
+
+.forge-promo-sec .bd-buy {display:inline-flex;align-items:center;justify-content:center;margin-top:30px;height:44px;padding:0 22px;
+  border:0;border-radius:24px;background:#1473e6;color:#fff;font-size:16px;font-weight:700;cursor:pointer}
+
+.forge-promo-sec .bd-hero-right {flex:1 1 auto;background:
+  radial-gradient(38% 30% at 55% 40%, rgba(196,232,241,.95), rgba(42,111,143,.55) 62%, transparent 66%),
+  radial-gradient(55% 45% at 82% 15%, rgba(233,62,154,.92), transparent 60%),
+  radial-gradient(45% 42% at 97% 55%, rgba(242,107,42,.9), transparent 60%),
+  radial-gradient(40% 45% at 12% 26%, rgba(233,62,154,.72), transparent 60%),
+  radial-gradient(52% 44% at 10% 78%, rgba(18,176,196,.82), transparent 65%),
+  radial-gradient(48% 40% at 88% 90%, rgba(120,40,150,.7), transparent 62%),
+  linear-gradient(180deg,#12617e 0%, #123a63 55%, #0a2340 100%)}
+
+.forge-promo-sec .bd-chips {position:absolute;left:50%;top:40%;display:flex;flex-direction:column;gap:12px}
+
+.forge-promo-sec .bd-chip {display:inline-flex;align-items:center;gap:8px;align-self:flex-start;padding:9px 16px;border-radius:8px;
+  background:rgba(18,18,18,.86);color:#fff;font-size:15px;font-weight:600}
+
+.forge-promo-sec .bd-chip .spin {width:15px;height:15px;border:2px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;display:block}
+
+@media (max-width:1023px) {
+.forge-promo-sec .bd-hero-left {padding:60px 32px}
+.forge-promo-sec .bd-h2 {font-size:34px}
+}
+
+@media (max-width:767px) {
+.forge-promo-sec .promo-copy {flex-direction:column;gap:12px;text-align:center}
+.forge-promo-sec .promo-body {text-align:center}
+.forge-promo-sec .promo-cta {padding-left:0}
+.forge-promo-sec .bd-hero {flex-direction:column}
+.forge-promo-sec .bd-hero-left {flex:0 0 auto}
+.forge-promo-sec .bd-hero-right {min-height:260px}
+.forge-promo-sec .bd-h2 {font-size:28px}
+}
