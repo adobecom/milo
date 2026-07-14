@@ -436,8 +436,13 @@ export function SessionsProvider({ children }: { children: ReactNode }) {
 
   const retrySessionFn = useCallback(
     async (sessionId: string): Promise<void> => {
-      const session = await api.retrySession(sessionId, serverUrl, da.context, da.token, config);
-      dispatch({ type: 'upsertSession', session });
+      await api.retrySession(sessionId, serverUrl, da.context, da.token, config);
+      // The retry endpoint returns only { sessionId } (202) — do NOT upsert that thin
+      // object over the full session (that replaced status/versions/messages/progress
+      // with an empty shell until the next poll, flashing a broken card). Optimistically
+      // MERGE a busy status so the card flips from the error view to the generating view
+      // immediately; the poll then brings the live extract/convergence state.
+      dispatch({ type: 'mergeSession', sessionId, patch: { status: 'queued', phase: 'queued', error: undefined } });
       dispatch({ type: 'markRunStart', sessionId });
     },
     [serverUrl, da.context, da.token, config],

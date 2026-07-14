@@ -43,8 +43,11 @@ type View = 'doors' | 'figma' | 'url';
 // Effort ONLY affects the Figma → convergence path; the URL/Reimagine door runs
 // Stardust, which has no round budget, so the control is not shown there.
 type Effort = 'quick' | 'balanced' | 'thorough';
+// V6: the hints describe how much REFINEMENT happens after the read — NOT overall
+// speed. Effort only trims convergence rounds; the (long) Figma read takes the same
+// time at every setting, so "Quick" must not read as "faster to first result".
 const EFFORT_OPTIONS: ReadonlyArray<{ id: Effort; label: string; hint: string }> = [
-  { id: 'quick', label: 'Quick pass', hint: 'Fastest first pass' },
+  { id: 'quick', label: 'Quick pass', hint: 'Fewer refine rounds' },
   { id: 'balanced', label: 'Balanced', hint: 'A few refine rounds' },
   { id: 'thorough', label: 'Refine harder', hint: 'Chase the frame closely' },
 ];
