@@ -14,7 +14,6 @@ const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12
   <path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="currentColor"/></svg>`;
 const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
 let videoObserver = null;
-let resizeObserver = null;
 const isRTL = document.documentElement.dir === 'rtl';
 const negateSwipe = isRTL ? -1 : 1;
 
@@ -126,6 +125,7 @@ function setupBlock(el) {
   let flying = false;
   let drag = null;
   let target = null;
+  let resizeObserver = null;
 
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
@@ -159,12 +159,26 @@ function setupBlock(el) {
     });
   }
 
+  function setInline(element, properties = {}) {
+    if (!element) return;
+    Object.entries(properties).forEach(([key, value]) => {
+      element.style.setProperty(`--split-aside-grid-${key}`, value);
+    });
+  }
+
+  function clearInline(element, properties = ['transform', 'transition', 'opacity']) {
+    if (!element) return;
+    properties.forEach((property) => element.style.removeProperty(`--split-aside-grid-${property}`));
+  }
+
   function applyRotation(updateRotation, isSetup) {
     rotation += updateRotation;
     medias.forEach((m, idx) => {
       const slot = slotOf(idx);
-      m.style.setProperty('--split-aside-grid-stack-index', slot);
-      m.style.setProperty('--split-aside-grid-stack-slot', slot);
+      setInline(m, {
+        'stack-index': slot,
+        'stack-slot': slot,
+      });
       m.dataset.slot = String(slot);
       const isActive = slot === 0;
       const video = m.querySelector('video');
@@ -202,19 +216,14 @@ function setupBlock(el) {
       if (slide === ignore) return;
       const slot = parseInt(slide.getAttribute('data-slot'), 10);
       const indexUpdate = dir === 'prev' ? slot + progress : slot - progress;
-      slide.style.transition = 'none';
-      slide.style.transform = '';
-      slide.style.setProperty('--split-aside-grid-stack-index', indexUpdate);
+      setInline(slide, {
+        transition: 'none',
+        'stack-index': indexUpdate,
+      });
+      clearInline(slide, ['transform']);
       if (dir === 'next') return;
-      slide.style.setProperty('--split-aside-grid-stack-slot', slot + 1);
+      setInline(slide, { 'stack-slot': slot + 1 });
     });
-  }
-
-  function clearInline(m) {
-    if (!m) return;
-    m.style.transition = '';
-    m.style.transform = '';
-    m.style.opacity = '';
   }
 
   function stackWidth() {
@@ -229,38 +238,36 @@ function setupBlock(el) {
     const preSlots = medias.map((_, idx) => slotOf(idx));
 
     /* 1. Old front: fly off-screen left — no opacity change. */
-    oldFront.style.transition = `transform ${FLY_MS}ms ease-out`;
-    oldFront.style.transform = `translateX(${negateSwipe * -width}px) rotate(${negateSwipe * -25}deg)`;
+    setInline(oldFront, {
+      transform: `translateX(${negateSwipe * -width}px) rotate(${negateSwipe * -25}deg)`,
+      transition: `transform ${FLY_MS}ms ease-out`,
+    });
 
     /* 2. Rotate state — new front + new mid transition smoothly into their new slots. */
     applyRotation(1);
+    oldFront.dataset.slot = '0';
     /* Freeze z-index at pre-rotation values until the fly-off ends. */
     medias.forEach((slide, idx) => {
-      slide.style.setProperty('--split-aside-grid-stack-slot', String(preSlots[idx]));
+      setInline(slide, { 'stack-slot': String(preSlots[idx]) });
       if (slide === oldFront) return;
       clearInline(slide);
     });
     /* Keep old front at slot 0 size and visible during fly-off. */
-    oldFront.style.setProperty('--split-aside-grid-stack-index', '0');
-    oldFront.dataset.slot = '0';
 
     /* 3. After the fly-off ends, settle old front into its real slot,
           update z-indexes, and fade the new back card in at slot 2. */
     setTimeout(() => {
-      oldFront.style.transition = 'none';
-      oldFront.style.transform = '';
-      const oldFrontSlot = slotOf(medias.indexOf(oldFront));
-      oldFront.style.setProperty('--split-aside-grid-stack-index', String(oldFrontSlot));
+      setInline(oldFront, { opacity: '0' });
       oldFront.dataset.slot = `${medias.length - 1}`;
-      oldFront.style.opacity = '0';
       medias.forEach((m, idx) => {
-        m.style.setProperty('--split-aside-grid-stack-slot', String(slotOf(idx)));
-        m.classList.remove('show-image');
+        m.classList.remove('show-image', 'incoming');
+        setInline(m, { 'stack-slot': String(slotOf(idx)) });
       });
+      clearInline(oldFront, ['transform']);
 
       setTimeout(() => {
-        oldFront.style.transition = `opacity ${FADE_IN_MS}ms ease-out`;
-        oldFront.style.opacity = '';
+        setInline(oldFront, { transition: `opacity ${FADE_IN_MS}ms ease-out` });
+        requestAnimationFrame(() => clearInline(oldFront, ['opacity']));
         flying = false;
       }, 10);
     }, FLY_MS * (1 - progress) + (isNavigation ? 0 : 150));
@@ -273,8 +280,10 @@ function setupBlock(el) {
     const progress = Math.min((negateSwipe * -drag.dx) / RIGHT_DRAG_DENOM, 1);
     drag.progress = progress;
     const rot = drag.dx * 0.07;
-    front.style.transition = 'none';
-    front.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
+    setInline(front, {
+      transform: `translateX(${drag.dx}px) rotate(${rot}deg)`,
+      transition: 'none',
+    });
   }
 
   function animatePrev(progress, incoming) {
@@ -284,10 +293,12 @@ function setupBlock(el) {
     const front = slideAt(0);
     incoming.classList.add('show-image', 'incoming');
     front.classList.add('show-image');
-    incoming.style.transition = 'none';
-    incoming.style.setProperty('--split-aside-grid-stack-index', '0');
-    incoming.style.setProperty('--split-aside-grid-stack-slot', '0');
-    incoming.style.transform = `translateX(${negateSwipe * -width * (1 - progress)}px) rotate(${rot}deg)`;
+    setInline(incoming, {
+      transition: 'none',
+      transform: `translateX(${negateSwipe * -width * (1 - progress)}px) rotate(${rot}deg)`,
+      'stack-index': '0',
+      'stack-slot': '0',
+    });
   }
 
   function commitPrev(progress, isNavigation) {
@@ -298,27 +309,15 @@ function setupBlock(el) {
 
     if (isNavigation) {
       animatePrev(progress, incoming);
-      setTimeout(() => {
-        incoming.style.transform = '';
-        medias.forEach((slide) => {
-          slide.classList.remove('show-image');
-          slide.classList.remove('incoming');
-          clearInline(slide);
-          flying = false;
-        });
-      });
-      return;
+      setTimeout(() => medias.forEach((slide) => clearInline(slide)));
+    } else {
+      medias.forEach((slide) => clearInline(slide));
     }
-    medias.forEach((slide) => {
-      slide.style.transition = '';
-    });
-    incoming.style.transform = '';
 
     setTimeout(() => {
       medias.forEach((slide) => {
         slide.classList.remove('show-image');
         slide.classList.remove('incoming');
-        clearInline(slide);
       });
       flying = false;
     }, FLY_MS * (1 - progress) + 20);
@@ -328,15 +327,14 @@ function setupBlock(el) {
     const incoming = slideAt(-1);
     medias.forEach((m) => {
       if (!m) return;
-      m.style.transition = '';
-      m.style.transform = '';
       m.classList.remove('show-image', 'incoming');
+      clearInline(m);
     });
-    if (direction === 'prev') incoming.style.display = 'none';
     applyRotation(0);
+    if (direction !== 'prev') return;
+    incoming.style.display = 'none';
     setTimeout(() => {
-      medias.forEach((m) => clearInline(m));
-      if (direction === 'prev') incoming.style.display = 'block';
+      incoming.style.display = 'block';
     }, SNAP_MS + 40);
   }
 
@@ -372,7 +370,7 @@ function setupBlock(el) {
     const dir = getDirection(drag.dx);
     if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
-      medias.forEach((m) => { m.style.transform = ''; });
+      medias.forEach((m) => clearInline(m, ['transform']));
       applyRotation(0);
     }
 
@@ -399,7 +397,7 @@ function setupBlock(el) {
     if (!commit) { snapBack(direction); return; }
     if (reducedMotion()) {
       applyRotation(direction === 'next' ? 1 : -1);
-      medias.forEach(clearInline);
+      medias.forEach((slide) => clearInline(slide));
       return;
     }
     if (direction === 'next') commitNext(progress);
@@ -407,6 +405,8 @@ function setupBlock(el) {
   }
 
   function handleNavigation(e) {
+    if (flying) return;
+
     const triggers = new Map([
       ['ArrowLeft', isRTL ? 'next' : 'prev'],
       ['ArrowRight', isRTL ? 'prev' : 'next'],
@@ -495,7 +495,7 @@ function setupBlock(el) {
       if (!entry) return;
       const { scrollWidth } = el;
       const width = document.documentElement.clientWidth;
-      stack.style.setProperty('--grid-stack-cutoff', `${scrollWidth - width}px`);
+      setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
     });
     resizeObserver.observe(stack);
   }
