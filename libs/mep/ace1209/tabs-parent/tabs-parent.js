@@ -237,86 +237,14 @@ export async function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
   }
 }
 
-const addParentTabListener = () => {
-  // const tabsContainers = document.querySelectorAll('.tabs');
-  //console.log(tabsContainers);
-  // const parentTab = document.querySelector('.tabs-parent');
-  // if (!parentTab) return;
-  // parentTab.addEventListener('milo:tab:changed', (e) => {
-  //   console.log(e);
-  // });
-};
-
 const init = async (block) => {
   const rootElem = block.closest('.fragment') || document;
   const rows = block.querySelectorAll(':scope > div');
   const parentSection = block.closest('.section');
-  console.log(rows);
   /* c8 ignore next */
   if (!rows.length) return;
 
-  // Tab Config
-  const config = {};
-  const configRows = [...rows];
-  const ParentTabLabels = configRows[0].querySelectorAll(':scope li');
-  ParentTabLabels.forEach((label) => {
-    const labelText = label.textContent;
-    const labelId = `tab-parent-btn-${labelText}`;
-    const labelButton = createTag('button', {
-      id: labelId,
-      class: 'tab-parent-button label',
-    }, labelText);
-    block.append(labelButton);
-  });
-  configRows[0].remove();
-
-  configRows.splice(0, 1);
-
-  configRows.forEach((row) => {
-    const rowKey = getStringKeyName(row.children[0].textContent);
-    const rowVal = row.children[1].textContent.trim();
-    config[rowKey] = rowVal;
-    row.remove();
-  });
-  block.setAttribute('id', config.id);
-  delete config.id;
-
-  // Object.keys(config).forEach((key) => {
-  //   const childTabGroup = document.querySelector(`#${config[key]}`);
-  //   childTabGroup.classList.toggle('hidden');
-  // });
-  const childTabGroups = parentSection.querySelectorAll('.tabs');
-  childTabGroups.forEach((childTabGroup) => {
-    childTabGroup.classList.toggle('hidden');
-  });
-  console.log(config);
-
-  // const tabButtons = configRows[0].querySelectorAll(':scope li');
-  // tabButtons.forEach((tabButtonItem, index) => {
-  //   const tabButtonText = tabButtonItem.textContent;
-  //   const tabButtonId = `tab-parent-btn-${tabButtonText}`;
-  //   const tabButton = createTag('button', {
-  //     id: tabButtonId,
-  //     class: 'tab-parent-button label',
-  //     tabindex: `${index + 1}`,
-  //     'aria-controls': `tab-parent-panel-${tabButtonText}`,
-  //   }, tabButtonText);
-  //   block.append(tabButton);
-  // });
-
-  // configRows.splice(0, 1);
-  // block.setAttribute('id', `tabs-parent-${configRows[0].textContent.trim()}`);
-  // configRows.splice(0, 1);
-};
-
-const initold = async (block) => {
-  const rootElem = block.closest('.fragment') || document;
-  const rows = block.querySelectorAll(':scope > div');
-  const parentSection = block.closest('.section');
-  /* c8 ignore next */
-  if (!rows.length) return;
-
-  // Tab Config
+  // Tab parent config
   const config = {};
   const configRows = [...rows];
   configRows.splice(0, 1);
@@ -448,8 +376,6 @@ const initold = async (block) => {
       if (activePanel) triggerTabEnterAnimation(activePanel);
     }
   });
-
-  addParentTabListener();
 };
 
 export default init;

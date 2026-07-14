@@ -1,9 +1,7 @@
-:root {
+.tabs-parent {
   --pill-bg-color-selected: var(--s2a-color-background-knockout);
   --pill-rounded-corners-setting: 50px;
-}
 
-.tabs {
   position: relative;
   margin: 0;
   background-color: var(--s2a-color-gray-25);
@@ -13,7 +11,7 @@
     background: transparent;
   }
 
-  .tabs-wrapper {
+  .tabs-parent-wrapper {
     display: flex;
     width: 100%;
     justify-content: flex-start;
@@ -108,7 +106,7 @@
   @media (width < 768px) {
     overflow-x: clip;
     
-    .tabs-wrapper {
+    .tabs-parent-wrapper {
       width: 100vw;
       position: relative;
       left: 50%;
@@ -129,17 +127,17 @@
   }
 
   @media (width >= 768px) {
-    &.center .tabs-wrapper {
+    &.center .tabs-parent-wrapper {
       justify-content: center;
     }
 
-    &.right .tabs-wrapper {
+    &.right .tabs-parent-wrapper {
       justify-content: flex-end;
     }
   }
 }
 
-.tab-content [role='tabpanel'] {
+.tabs-parent .tab-content [role='tabpanel'] {
   .section {
     position: relative;
 
@@ -160,10 +158,10 @@
 }
 
 /* Section Metadata - keep for testing ace1205 when merch is available */
-.tabs-background-transparent {
-  .tabs,
-  .tabs [role='tablist'],
-  .tabs [role='tablist'] button.tab-button[aria-selected="true"] {
+.tabs-parent-background-transparent {
+  .tabs-parent,
+  .tabs-parent [role='tablist'],
+  .tabs-parent [role='tablist'] button.tab-button[aria-selected="true"] {
     background: transparent;
   }
 }
@@ -181,7 +179,7 @@
   }
 }
 
-.tabs.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+.tabs-parent.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
   animation: tab-content-in 0.5s ease both;
   
   &:nth-child(2) { animation-delay: 0.1s; }
@@ -195,18 +193,18 @@
 
 
 @media (prefers-reduced-motion: reduce) {
-  .tabs.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+  .tabs-parent.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
     animation: none;
   }
 }
 
 @media (width >= 1920px) {
-  [role='tabpanel'] > .section[class*='-up'] > .content,
-  [role='tabpanel'] > .section[class*='grid-width-'] > .content {
+  .tabs-parent [role='tabpanel'] > .section[class*='-up'] > .content,
+  .tabs-parent [role='tabpanel'] > .section[class*='grid-width-'] > .content {
     width: auto;
   }
 }
 
-.hidden {
+.tabs-parent .hidden {
   display: none;
 }
