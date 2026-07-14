@@ -123,7 +123,7 @@
 /* ---------- Category label + divider ---------- */
 .rcc-category-wrapper {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--s2a-spacing-xs);
   padding-bottom: var(--s2a-spacing-xs);
   flex-shrink: 0;
@@ -140,7 +140,6 @@
 }
 
 .rcc-divider {
-  flex: 1;
   height: 1px;
   background: rgba(255 255 255 / 10%);
 }
