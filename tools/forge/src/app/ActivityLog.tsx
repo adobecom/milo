@@ -8,11 +8,20 @@ import './ActivityLog.css';
 
 // ── mdLine — inline markdown → HTML (ported from vanilla line ~1931) ──────────
 
-function mdLine(text: string): string {
+// Escape ALL HTML-significant characters — including quotes. The quotes matter:
+// the linkifier below injects the matched URL into an href="" attribute, and log
+// lines carry UNSANITIZED agent stdout (server pushMsg), which echoes externally
+// supplied Figma/page text. Without escaping `"`/`'`, a crafted URL such as
+// `https://x/"onmouseover="alert(1)` would break out of the attribute and inject an
+// event handler that runs in the app origin (attribute-injection XSS). After
+// escaping, the URL class can never contain a raw quote, so the href stays inert.
+export function mdLine(text: string): string {
   const s = String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   return s
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.+?)\*/g, '<em>$1</em>')
