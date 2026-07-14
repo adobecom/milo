@@ -34,14 +34,13 @@ import { ReimagineVariants } from './ReimagineVariants';
 import { deriveSectionRows } from './SectionsDrawer';
 import type { SectionViewRow } from './SectionsDrawer';
 import { resolveIntentPolicy, isReimagine, INTENT_CHIP, INTENT_SUMMARY_VERB } from './intent';
+import { selectResultState } from './resultState';
+
+// The busy/cancelled/error/published/awaiting-publish/empty selection lives in the
+// pure, React-free ./resultState module (MWPW-199251) so it can be unit-tested
+// without the S2 icon chain. This card renders one block per state below.
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function isBusy(s: Session): boolean {
-  return ['queued', 'generating', 'waiting', 'refining', 'shipping', 'deploying', 'running'].includes(
-    s.status,
-  );
-}
 
 // A plain-language title for the page (jargon-free; no internal slugs/branches).
 // The intent MODE is now carried by the chip (IntentChip), so the title keeps a
@@ -431,14 +430,14 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
     }
   }
 
-  const busy = isBusy(session);
+  const state = selectResultState(session);
   const figmaAuthUrl = (session as Session & { figmaAuthUrl?: string }).figmaAuthUrl;
 
   // ── State 1: busy ───────────────────────────────────────────────────────────
   // GeneratingCard owns its full two-column layout — render it directly, NOT
   // inside the old .pf-result-card--gen (whose overflow:hidden + flex column
   // clipped the build skeleton and squeezed the copy).
-  if (busy) {
+  if (state === 'busy') {
     return (
       <div className="pf-gen2-wrap">
         {figmaAuthUrl && (
@@ -453,9 +452,7 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
   }
 
   // ── State 2: cancelled ──────────────────────────────────────────────────────
-  const isCancelled =
-    session.phase === 'cancelled' || /cancelled/i.test(session.error || '');
-  if (session.status === 'error' && isCancelled && (session.versions?.length ?? 0) === 0) {
+  if (state === 'cancelled') {
     return (
       <div className="pf-state2 pf-state2--stopped">
         <span className="pf-state2-glyph" aria-hidden>
@@ -471,7 +468,7 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
   }
 
   // ── State 3: error (no versions) ────────────────────────────────────────────
-  if (session.status === 'error' && (session.versions?.length ?? 0) === 0) {
+  if (state === 'error') {
     if (figmaAuthUrl) {
       return (
         <div className="pf-result-card pf-result-card--gen">
@@ -523,7 +520,9 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
     staticUrl || (shipped?.daPreviewUrl as string | undefined) || undefined;
 
   // ── State 4: published — live, shareable, with a "what now" loop ──────────────
-  if (shipped?.prototypeUrl) {
+  // (selectResultState returns 'published' only when shipped.prototypeUrl is set,
+  // so the `&& shipped` is a type guard, never a runtime gate.)
+  if (state === 'published' && shipped) {
     const milolibsHref =
       (shipped.milolibsUrl as string | undefined) ||
       (shipped.remotePreviewUrl as string | undefined) ||
@@ -629,7 +628,7 @@ export function ResultCard({ session, onDeploy, onCancel, onRetry, onRefine, onN
   }
 
   // ── State 5: generated, awaiting publish (the deliberate ship step) ───────────
-  if (session.versions && session.versions.length > 0) {
+  if (state === 'awaiting-publish') {
     async function handleDeploy() {
       setDeploying(true);
       try { await onDeploy(); } finally { setDeploying(false); }
