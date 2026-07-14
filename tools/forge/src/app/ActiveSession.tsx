@@ -14,6 +14,7 @@ import { CatalogCandidates } from './CatalogCandidates';
 import { resolveIntentPolicy } from './intent';
 import { LocalArtifacts } from './LocalArtifacts';
 import { ActivityLog } from './ActivityLog';
+import { SessionUsage } from './SessionUsage';
 import { FootDisclosure } from './FootDisclosure';
 import type { ConversionReportData } from './ConversionReport';
 
@@ -254,6 +255,11 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
             <CatalogCandidates session={s} />
           </FootDisclosure>
 
+          {/* Engineer-only telemetry: the dense 4-tile Time/Cost/Turns/Tokens
+              grid (MWPW-199266). Self-hides when a settled run has no usage data;
+              turns/tokens never reach the creator view (that gets only CostLine). */}
+          {debug && <SessionUsage session={s} />}
+
           {debug && logLines.length > 0 && (
             <ActivityLog sessionId={sessionId} logLines={logLines} key={sessionId} />
           )}
@@ -262,9 +268,12 @@ export function ActiveSession({ sessionId }: ActiveSessionProps) {
         </div>
       )}
 
-      {!hasBuildDetail && debug && logLines.length > 0 && (
+      {!hasBuildDetail && debug && (
         <div className="pf-foot-discs">
-          <ActivityLog sessionId={sessionId} logLines={logLines} key={sessionId} />
+          <SessionUsage session={s} />
+          {logLines.length > 0 && (
+            <ActivityLog sessionId={sessionId} logLines={logLines} key={sessionId} />
+          )}
           <LocalArtifacts session={s} />
         </div>
       )}
