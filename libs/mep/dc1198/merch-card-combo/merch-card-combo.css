@@ -1,0 +1,232 @@
+main > div.section[class*="-merch-card"]:not([data-status='decorated']),
+.fragment > div.section[class*="-merch-card"]:not([data-status='decorated']) {
+  display: grid;
+}
+
+div[class*="-merch-card"] > div,
+ div[class*="-merch-cards"] > div {
+   grid-column: 1 / -1;
+ }
+
+ merch-card .action-area, merch-card div[slot="footer"] > p {
+  display: contents;
+ }
+
+ merch-card .action-area br {
+  display: none;
+ }
+
+ merch-card .body-lower > hr {
+  width: 100%
+ }
+
+ .merch-card-price {
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.dark .merch-card-combo .con-button.outline {
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+}
+
+.merch-card-combo .merch-card-price {
+  font-weight: 700;
+  margin-top: 8px;
+  margin-bottom: 16px;
+  font-size: 18px;
+  line-height: 22.5px;
+}
+
+merch-card.special-offers del span[is="inline-price"] {
+  text-decoration: line-through;
+}
+
+.dark .merch-card-combo .con-button.outline:hover {
+  color: var(--color-white);
+  background-color: var(--color-black);
+  text-decoration: none;
+}
+
+/* UI: card title sizing and MAS slot height overrides */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list {
+  width: 338px;
+  max-width: 378px;
+
+  --consonant-merch-card-heading-xxs-font-size: 28px !important;
+  --consonant-merch-card-heading-xxs-line-height: 1.25 !important;
+  --consonant-merch-card-heading-l-font-size: 20px !important;
+  --consonant-merch-card-mini-compare-chart-top-section-height: 0;
+  --consonant-merch-card-mini-compare-chart-body-m-height: 0;
+}
+
+/* UI: promo text (e.g. "Save 40%") below the price — compact bold styling */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="promo-text"] {
+  padding-block: var(--consonant-merch-spacing-xxxs, 4px) !important;
+  font-size: var(--consonant-merch-card-body-xs-font-size, 14px) !important;
+  font-weight: var(--consonant-merch-card-detail-m-font-weight, 700) !important;
+  line-height: 1.5 !important;
+}
+
+/* em inside promo-text can be italic from user agent stylesheet; override it */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="promo-text"] em {
+  font-style: normal !important;
+}
+
+/* UI: sparkle subtitle (H5+em) — expands top section height to show it */
+merch-card.merch-card-combo.has-sparkle[variant="mini-compare-chart"].bullet-list {
+  --consonant-merch-card-mini-compare-chart-top-section-height: auto;
+}
+
+/* UI: eyebrow/detail text above the card title */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="body-xxs"] {
+  font-size: var(--consonant-merch-card-body-xxs-font-size, 12px) !important;
+  line-height: 1.5 !important;
+}
+
+/* UI: body-m slot used for feature list — remove MAS default padding */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
+  padding: 0 !important;
+}
+
+/* UI: quantity selector row — side padding to align with card content */
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="offers"] {
+  padding-inline: var(--consonant-merch-spacing-xs, 16px) !important;
+}
+
+/* UI: section wrapper that holds all cards side by side */
+.merch-card-combo-flex-container {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: var(--consonant-merch-spacing-xs, 16px) !important;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* UI: merch card stretches to fill its wrapper column */
+.merch-card-combo-wrapper merch-card.merch-card-combo {
+  flex: 1;
+}
+
+/* UI: column wrapper — banner div above the merch card */
+.merch-card-combo-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 338px;
+  max-width: 378px;
+}
+
+/* UI: banner spacer — keeps cards without a banner vertically aligned with those that have one */
+.merch-card-combo-top {
+  height: 37px;
+}
+
+/* UI: "Most popular" gradient banner above the highlighted card */
+.merch-card-combo-top.merch-card-combo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--consonant-merch-card-body-xs-font-size, 14px);
+  font-weight: var(--consonant-merch-card-detail-m-font-weight, 700);
+  color: var(--color-white);
+  background: linear-gradient(-66.25deg, #d73220 6.9%, #d92361 59.52%, #fb599f 109.71%);
+  border-radius: 8px 8px 0 0;
+}
+
+/* UI: card below banner — remove top radius so it flows into the banner */
+.merch-card-combo-top.merch-card-combo-banner + merch-card.merch-card-combo {
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.footer-row-icon-checkmark {
+  flex-shrink: 0;
+  width: 20px;
+  height: 24px !important;
+}
+
+.footer-row-cell-description {
+  flex: 1;
+  min-width: 0;
+}
+
+.footer-row-cell-checkmark:not(:has(.footer-row-icon-checkmark)) .footer-row-cell-description {
+  margin-left: calc(20px + var(--consonant-merch-spacing-xxs, 8px));
+}
+
+.footer-rows-title {
+  margin-bottom: var(--consonant-merch-spacing-xxxs, 4px) !important;
+}
+
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list .checkmark-copy-container.open {
+  padding-block-start: var(--consonant-merch-spacing-xxxs, 4px) !important;
+}
+
+.checkmark-copy-container .footer-row-cell-checkmark:has(.footer-row-icon-checkmark):not(:first-child) {
+  margin-top: 12px;
+}
+
+merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="footer"] a.con-button {
+  font-size: 15px !important;
+  padding: 5px 18px 6px !important;
+  line-height: 19px !important;
+}
+
+@media screen and (max-width: 1199px) {
+  merch-card[variant="mini-compare-chart"] [slot="footer"] a.con-button {
+    min-width: 66px;
+    padding: 4px 18px 5px 21px;
+    font-size: var(--consonant-merch-card-mini-compare-mobile-cta-font-size);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="footer"] a.con-button {
+    padding: 6px 18px 4px;
+  }
+
+  .merch-card-combo-flex-container {
+    gap: var(--consonant-merch-spacing-m, 32px) !important;
+    padding: 0 8.3% !important;
+  }
+
+  .merch-card-combo-wrapper {
+    width: calc(50% - 16px);
+    max-width: none;
+  }
+
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="footer"] a.con-button {
+    padding: 4px 18px 6px !important;
+    min-height: auto !important;
+    border-radius: 16px !important;
+  }
+
+  .merch-card-combo-flex-container {
+    padding: 40px 8.3% 0 !important;
+  }
+
+  .merch-card-combo-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .merch-card-combo-top:not(.merch-card-combo-banner) {
+    display: none;
+  }
+
+  merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list .footer-row-cell-checkmark {
+    gap: var(--consonant-merch-spacing-xxs, 8px) !important;
+  }
+}

@@ -494,7 +494,7 @@ const createIdForLabel = (label) => label
 
 const cancelActions = (() => {
   let cancelActionsDone = false;
-  return () => {
+  return async () => {
     if (cancelActionsDone) return;
     cancelActionsDone = true;
     const d = {
@@ -505,7 +505,7 @@ const cancelActions = (() => {
     const isNPSForm = !!document.querySelector('form#nps nps-picker.nps-picker');
     const surveyType = isNPSForm ? 'NPS' : 'CSAT 5pt';
     const dataObj = buildDataObject(d, surveyType, CancelSurvey);
-    window._satellite?.track?.('event', dataObj) // eslint-disable-line
+    await sendToMartech(dataObj);
   };
 })();
 
@@ -619,8 +619,7 @@ const initKeyboardAccessibility = (form, sendMessage) => {
 
     if (e.key === 'Escape' || e.key === 'Esc') {
       e.preventDefault();
-      cancelActions();
-      sendMessage(CANCEL);
+      cancelActions().then(() => sendMessage(CANCEL));
     }
   });
 
@@ -698,6 +697,14 @@ const buildDataObject = (formData, surveyType, eventType) => {
     },
     data,
   };
+};
+
+const sendToMartech = async (dataObj) => {
+  try {
+    await window.alloy('sendEvent', dataObj);
+  } catch (e) {
+    console.warn('Failed to send form data to AEP', e);
+  }
 };
 
 // ############################################
@@ -807,8 +814,8 @@ const initMessageClient = (registerCleanup = () => {}) => {
           state = STATE_BASE;
           clearAckTimeout();
         }
-        cancelActions();
-        sendMessage(ACK);
+        cancelActions().then(() => sendMessage(ACK));
+
         break;
       case Acknowledged: {
         if (state === STATE_EXPECT_ACK) {
@@ -1136,26 +1143,22 @@ export default async (block) => {
     };
     const surveyType = isNPSForm ? 'NPS' : 'CSAT 5pt';
     const dataObj = buildDataObject(d, surveyType, SubmitSurvey);
-    window._satellite?.track?.('event', dataObj) // eslint-disable-line
-    sendMessage(SUBMIT(d));
+    sendToMartech(dataObj).then(() => sendMessage(SUBMIT(d)));
   });
 
   const cancelButton = form.querySelector('button.nps-cancel');
   const closeButton = form.querySelector('button.nps-close');
   cancelButton?.addEventListener('click', () => {
-    cancelActions();
-    sendMessage(CANCEL);
+    cancelActions().then(() => sendMessage(CANCEL));
   }, { once: true });
   cancelButton?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      cancelActions();
-      sendMessage(CANCEL);
+      cancelActions().then(() => sendMessage(CANCEL));
     }
   }, { once: true });
   closeButton?.addEventListener('click', () => {
-    cancelActions();
-    sendMessage(CANCEL);
+    cancelActions().then(() => sendMessage(CANCEL));
   }, { once: true });
   const radioButtons = form.querySelectorAll('input[type="radio"]');
   radioButtons.forEach((r) => {
