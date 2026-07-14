@@ -17,6 +17,7 @@ function addScrollCloseSync(el) {
     const style = getComputedStyle(el);
     const sectionGap = parseFloat(style.getPropertyValue('--tour-section-gap'));
     const initialTop = parseFloat(getComputedStyle(closeBtn).top);
+    if (Number.isNaN(sectionGap) || Number.isNaN(initialTop)) return;
 
     fragment.addEventListener('scroll', () => {
       const offset = Math.min(fragment.scrollTop, sectionGap);
