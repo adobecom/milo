@@ -48,6 +48,79 @@ export interface ForgeConfig {
   };
 }
 
+// ── Pre-run validation (MWPW-199254) ──────────────────────────────────────────
+// Client-side FORMAT validation only. A browser cannot verify that a path exists
+// on disk, that a token is accepted, or that a URL is reachable — those need a
+// server round-trip (the page-forge server still does the missing-path check at
+// run time). What we CAN do synchronously is catch the malformed input that
+// otherwise fails cryptically minutes into a run: empty required fields and
+// obviously-wrong shapes. Fields are validated only when present (except the
+// always-required serverUrl), so an incomplete-but-valid config never blocks Save.
+
+export type ForgeConfigField =
+  | 'serverUrl'
+  | 'repoPath'
+  | 'consumerPreviewUrl'
+  | 'miloPath'
+  | 'daUsername';
+
+export type ForgeConfigErrors = Partial<Record<ForgeConfigField, string>>;
+
+function isHttpUrl(v: string): boolean {
+  try {
+    const u = new URL(v.trim());
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// Absolute POSIX path (or a ~-relative one). We don't touch the filesystem —
+// this only rejects a value that plainly isn't a path (e.g. a bare repo name).
+function isAbsolutePath(v: string): boolean {
+  const t = v.trim();
+  return t.startsWith('/') || t.startsWith('~/');
+}
+
+// A bare LDAP: letters/digits/dot/dash/underscore. Rejects spaces, '@' (an email),
+// and '/' (a path) — the common mistypes for this field.
+function isLdap(v: string): boolean {
+  return /^[a-zA-Z0-9._-]+$/.test(v.trim());
+}
+
+export function validateForgeConfig(cfg: ForgeConfig): ForgeConfigErrors {
+  const errors: ForgeConfigErrors = {};
+
+  if (!cfg.serverUrl?.trim()) {
+    errors.serverUrl = 'Server URL is required.';
+  } else if (!isHttpUrl(cfg.serverUrl)) {
+    errors.serverUrl = 'Enter a full URL, e.g. http://localhost:8080.';
+  }
+
+  if (cfg.consumerPreviewUrl?.trim() && !isHttpUrl(cfg.consumerPreviewUrl)) {
+    errors.consumerPreviewUrl = 'Enter a full URL, e.g. http://localhost:3000.';
+  }
+
+  if (cfg.repoPath?.trim() && !isAbsolutePath(cfg.repoPath)) {
+    errors.repoPath = 'Enter an absolute path, e.g. /Users/you/your-consumer-site.';
+  }
+
+  if (cfg.miloPath?.trim() && !isAbsolutePath(cfg.miloPath)) {
+    errors.miloPath = 'Enter an absolute path, e.g. /Users/you/milo.';
+  }
+
+  if (cfg.daUsername?.trim() && !isLdap(cfg.daUsername)) {
+    errors.daUsername = 'Use your bare LDAP, e.g. jdoe (no spaces, @ or /).';
+  }
+
+  return errors;
+}
+
+// True when a validation result has no field errors → safe to commit.
+export function isForgeConfigValid(errors: ForgeConfigErrors): boolean {
+  return Object.keys(errors).length === 0;
+}
+
 // ── Config helpers ────────────────────────────────────────────────────────────
 
 const DEFAULT_SERVER_URL = 'http://localhost:8080';
