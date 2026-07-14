@@ -1381,6 +1381,8 @@ span.hang-opening-quote {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    --parallax-move-up-to: -35vh;
+
     will-change: transform;
     position: sticky;
     top: 0;
@@ -1389,6 +1391,11 @@ span.hang-opening-quote {
     animation-timeline: scroll(root block);
     animation-range: 0 80vh;
     animation-timing-function: ease-out;
+
+    /* Shorter viewports in the common laptop width band need more travel */
+    @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+      --parallax-move-up-to: -50vh;
+    }
 
     &::after {
       content: '';
@@ -1406,7 +1413,7 @@ span.hang-opening-quote {
 
   @keyframes parallax-move-up-fast {
     from { transform: translateY(0); }
-    to { transform: translateY(-35vh); }
+    to { transform: translateY(var(--parallax-move-up-to)); }
   }
 
   @keyframes parallax-fade-to-dark {
