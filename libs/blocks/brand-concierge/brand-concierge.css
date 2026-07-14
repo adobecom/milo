@@ -659,12 +659,15 @@
   opacity: 0.4;
 }
 
-.floating-input .bc-floating-input .bc-textarea-grow-wrap {
+.floating-input .bc-floating-input .bc-textarea-grow-wrap,
+.brand-concierge.marquee .bc-textarea-grow-wrap {
   overflow: hidden;
 }
 
 .floating-input .bc-floating-input .bc-input-field-container textarea,
-.floating-input .bc-floating-input .bc-textarea-grow-wrap::after {
+.floating-input .bc-floating-input .bc-textarea-grow-wrap::after,
+.brand-concierge.marquee .bc-input-field-container textarea,
+.brand-concierge.marquee .bc-textarea-grow-wrap::after {
   max-height: 48px;
   min-height: 48px;
   overflow: hidden;
@@ -1454,14 +1457,6 @@
 
   .brand-concierge.marquee .bc-prompt-cards {
     margin: 8px 0 56px;
-  }
-
-  .brand-concierge.marquee .bc-textarea-grow-wrap {
-    max-height: 48px;
-  }
-
-  .brand-concierge.marquee .bc-input-field-container textarea {
-    padding: 12px 0;
   }
 
   .brand-concierge.marquee.dark .background::after {
