@@ -1,0 +1,28 @@
+.forge-feds-nav img, .forge-feds-nav video, .forge-feds-nav svg, .forge-feds-nav picture {max-width:100%;height:auto}
+
+.forge-feds-nav .t-heading-28 {font-family:var(--font-family-adobe-clean),sans-serif;font-weight:700;font-size:28px;line-height:35px}
+
+.forge-feds-nav main {width:100%}
+
+.forge-feds-nav .section-inner {max-width:2160px;margin:0 auto}
+
+.forge-feds-nav {min-height:80px}
+
+.forge-feds-nav .section-inner {display:flex;justify-content:center}
+
+.forge-feds-nav .feds-nav-bar {display:flex;flex-direction:row;justify-content:center;align-items:center;gap:64px;
+  width:100%;max-width:2160px;min-height:80px;border-radius:16px;background:var(--palette-gray-50)}
+
+.forge-feds-nav .feds-nav-title {margin:0;text-align:center;color:var(--color-2c2c2c)}
+
+.forge-feds-nav .fw-note .section-inner {display:flex;justify-content:center}
+
+.forge-feds-nav .promo-mock .section-inner {display:flex;justify-content:center}
+
+@media (max-width:1023px) {
+.forge-feds-nav .feds-nav-bar {flex-wrap:wrap;height:auto;gap:24px;padding:16px 24px}
+}
+
+@media (max-width:767px) {
+.forge-feds-nav .feds-nav-title {font-size:20px;line-height:26px}
+}
