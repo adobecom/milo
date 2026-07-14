@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-promo",
+  "sectionIndex": 2,
+  "decision": "ambiguous",
+  "score": 0.7,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "https://www.figma.com/design/wwVFJz6WUzjO3MpeKmpi1Q/my-figma-tester?node-id=0-1&p=f&t=Hgxutv9wkmLNNpmN-0",
+  "figmaNodeId": "1:658",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo/.forge-worktrees/session-7221a6ef",
+  "miloTargetPath": "/Users/osahin/repos/milo/.forge-worktrees/session-7221a6ef/libs/c2/blocks/forge-promo",
+  "miloBranch": "forge/session-7221a6ef-8ee",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/anonymous/forge/figma-7221a6?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css"
+  }
+}

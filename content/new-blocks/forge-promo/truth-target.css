@@ -1,0 +1,41 @@
+.forge-promo img, .forge-promo video, .forge-promo svg, .forge-promo picture {max-width:100%;height:auto}
+
+.forge-promo main {width:100%}
+
+.forge-promo .section-inner {max-width:2160px;margin:0 auto}
+
+.forge-promo .t-promo {font-family:var(--font-family-adobe-clean,"Adobe Clean"),sans-serif;font-size:20px;line-height:25px;font-weight:700;text-align:left;color:#ffffff;margin:0}
+
+.forge-promo .t-cta {font-family:var(--font-family-adobe-clean,"Adobe Clean"),sans-serif;font-size:17px;line-height:21px;font-weight:700;text-align:center;color:#ffffff}
+
+.forge-promo {padding:0}
+
+.forge-promo {min-height:840px}
+
+.forge-promo .promo-frame {position:relative;width:1920px;max-width:100%;height:840px;margin:0 auto;box-shadow:0 0 24px 0 rgba(0,0,0,0.12);overflow:hidden;background:var(--background-white,#ffffff)}
+
+.forge-promo .promo-bar {position:relative;display:flex;justify-content:center;align-items:center;height:72px;background:var(--web-gray-scale-black,#000000);padding:0 24px}
+
+.forge-promo .promo-copy {display:flex;justify-content:center;align-items:center;gap:24px;width:100%;max-width:1200px;margin:0 auto;padding:16px 0}
+
+.forge-promo .promo-body {max-width:1000px}
+
+.forge-promo .cta-offers {display:inline-flex;align-items:center;gap:8px;height:40px;padding:9px 18px 10px 18px;border:2px solid #ffffff;border-radius:100px;background:transparent;text-decoration:none;white-space:nowrap}
+
+.forge-promo .cta-offers .ic {width:21px;height:21px;flex:0 0 auto}
+
+.forge-promo .promo-close {position:absolute;right:24px;top:50%;transform:translateY(-50%);display:inline-flex;align-items:center;justify-content:center;min-height:72px;background:none;border:0;padding:0;cursor:pointer;color:#ffffff}
+
+.forge-promo .promo-close .ic {width:18px;height:18px}
+
+.forge-promo .promo-screenshot {width:1920px;max-width:100%;height:768px;background:#f4f4f4}
+
+@media (max-width:767px) {
+.forge-promo .promo-copy {flex-direction:column;gap:12px;text-align:center}
+.forge-promo .promo-body {max-width:100%}
+.forge-promo .t-promo {font-size:15px;line-height:19px;text-align:center}
+.forge-promo .promo-bar {height:auto;padding:14px 48px 14px 24px}
+.forge-promo .promo-frame {height:auto}
+.forge-promo {min-height:0}
+.forge-promo .promo-screenshot {height:320px}
+}

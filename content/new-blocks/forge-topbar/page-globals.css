@@ -1,0 +1,30 @@
+:root {
+  --background-white:#ffffff;
+  --color-292929:#292929;
+  --color-2c2c2c:#2c2c2c;
+  --color-e9e9e9:#e9e9e9;
+  --color-f8f8f8:#f8f8f8;
+  --palette-gray-50:#f8f8f8;
+  --text-black:#000000;
+  --web-gray-scale-black:#000000;
+  --font-family-adobe-clean:"Adobe Clean";
+  --tokens-font-size-14:14px;
+  --tokens-font-size-17:17px;
+  --tokens-font-size-20:20px;
+  --tokens-font-size-28:28px;
+  --tokens-line-height-18:18px;
+  --tokens-line-height-21:21px;
+  --tokens-line-height-25:25px;
+  --tokens-line-height-35:35px;
+}
+
+*,*::before,*::after {box-sizing:border-box}
+
+html,body {margin:0;padding:0}
+
+body {
+  background:var(--background-white,#ffffff);
+  font-family:var(--font-family-adobe-clean,"Adobe Clean"),sans-serif;
+  color:var(--color-2c2c2c,#2c2c2c);
+  -webkit-font-smoothing:antialiased;
+}
