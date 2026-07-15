@@ -1,7 +1,41 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import icons from '../../../c2/assets/icons.js';
+import { closeModal } from '../../../c2/blocks/modal/modal.js';
 
 const SWIPE_CLOSE_THRESHOLD = 100;
+
+function addScrollCloseSync(el) {
+  if (CSS.supports('timeline-scope', 'none')) return;
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  requestAnimationFrame(() => {
+    const fragment = modal.querySelector('.fragment');
+    const closeBtn = modal.querySelector('.dialog-close');
+    if (!fragment || !closeBtn) return;
+
+    const style = getComputedStyle(el);
+    const sectionGap = parseFloat(style.getPropertyValue('--tour-section-gap'));
+    const initialTop = parseFloat(getComputedStyle(closeBtn).top);
+    if (Number.isNaN(sectionGap) || Number.isNaN(initialTop)) return;
+
+    fragment.addEventListener('scroll', () => {
+      const offset = Math.min(fragment.scrollTop, sectionGap);
+      closeBtn.style.top = `${initialTop - offset}px`;
+    }, { passive: true });
+  });
+}
+
+function addOutsideClickClose(el) {
+  const modal = el.closest('.dialog-modal');
+  if (!modal) return;
+
+  modal.addEventListener('click', (e) => {
+    if (!el.contains(e.target) && !e.target.closest('.dialog-close')) {
+      closeModal(modal);
+    }
+  });
+}
 
 function addCloseAnimation(el) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -152,4 +186,6 @@ export default function init(el) {
   el.replaceChildren(...[headerRow, ...multiColumns, footerRow].filter(Boolean));
   addGrabHandle(el);
   addCloseAnimation(el);
+  addScrollCloseSync(el);
+  addOutsideClickClose(el);
 }
