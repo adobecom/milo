@@ -2,15 +2,32 @@ import { ActionButton } from '@react-spectrum/s2';
 import Add from '@react-spectrum/s2/icons/Add';
 import Settings from '@react-spectrum/s2/icons/Settings';
 import AppsAll from '@react-spectrum/s2/icons/AppsAll';
+import BrightnessContrast from '@react-spectrum/s2/icons/BrightnessContrast';
 import { useUiState } from './UiStateContext';
 import { useSessions } from '../sessions/SessionsProvider';
+import { useConfig, saveForgeConfig, type ForgeConfig } from '../config';
 import { sourceLabel, stateWord, isLive } from './sessionStatus';
 import styles from './TopBar.module.css';
 
 export function TopBar() {
 	const { state, dispatch } = useUiState();
+	const { config, setConfig } = useConfig();
 	const { dispatch: sessionsDispatch, activeSession, activeSessionId, history } =
 		useSessions();
+
+	// Cycle System → Light → Dark → System. 'system' follows the OS (the default).
+	const scheme = config.colorScheme;
+	const nextScheme: ForgeConfig['colorScheme'] =
+		scheme === 'system' ? 'light' : scheme === 'light' ? 'dark' : 'system';
+	const schemeLabel =
+		scheme === 'system' ? 'System' : scheme === 'light' ? 'Light' : 'Dark';
+
+	function handleCycleTheme() {
+		// Persist alongside the rest of the config (setConfig alone doesn't write).
+		const next: ForgeConfig = { ...config, colorScheme: nextScheme };
+		setConfig(next);
+		saveForgeConfig(next);
+	}
 
 	function handleNewSession() {
 		// Leaving the design-system view too, so "+" always lands on a fresh entry.
@@ -94,6 +111,15 @@ export function TopBar() {
 					aria-label="Design system"
 				>
 					<AppsAll />
+				</ActionButton>
+				<ActionButton
+					onPress={handleCycleTheme}
+					isQuiet
+					aria-label={`Color theme: ${schemeLabel}. Switch to ${
+						nextScheme === 'system' ? 'System' : nextScheme === 'light' ? 'Light' : 'Dark'
+					}`}
+				>
+					<BrightnessContrast />
 				</ActionButton>
 				<ActionButton
 					onPress={handleSettings}

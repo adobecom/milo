@@ -47,6 +47,40 @@
   --pf-gradient: linear-gradient(135deg, #b539c8 0%, #7155fa 55%, #3b63fb 100%);
 }
 
+/* ── Dark theme ────────────────────────────────────────────────────────────────
+   Overrides the --pf-* tokens when <html data-color-scheme="dark"> is set (driven
+   by ForgeConfig.colorScheme, applied in ConfigProvider). Because the whole UI
+   reads through var(--pf-*), redefining the tokens here flips ~all of our custom
+   surfaces in one place; S2 components theme themselves via the Provider's
+   colorScheme. Surfaces climb from near-black; text descends from near-white.
+   Brand hues (accent azure, Stardust indigo) are brightened for AA on dark. */
+:root[data-color-scheme="dark"] {
+  --pf-bg: #1d1d1d;
+  --pf-surface: #262626;
+  --pf-surface-2: #2c2c2c;
+  --pf-surface-3: #323232;
+  --pf-border: #3a3a3a;
+  --pf-border-strong: #4a4a4a;
+  --pf-text: #f5f5f5;
+  --pf-text-muted: #b0b0aa;
+  --pf-text-faint: #8a8a84;
+  --pf-accent: #4a9eff;
+  --pf-accent-hover: #6cb0ff;
+  --pf-accent-soft: rgba(74, 158, 255, 0.16);
+  --pf-good: #4cbf6a;
+  --pf-warn: #e0a341;
+  --pf-ready: #e8c600;
+  --pf-ready-text: #f0e6b8;
+  --pf-bad: #ff5a67;
+  --pf-info: #9a9a92;
+  --pf-stardust: #8478ff;
+  --pf-stardust-text: #a99fff;
+  --pf-stardust-soft: rgba(132, 120, 255, 0.18);
+  --pf-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.30);
+  --pf-shadow: 0 1px 2px rgba(0, 0, 0, 0.30), 0 4px 12px rgba(0, 0, 0, 0.40);
+  --pf-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.40), 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
 * { box-sizing: border-box; }
 
 html, body {
@@ -669,13 +703,13 @@ a:hover { text-decoration: underline; }
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--pf-dim, #565650);
+  color: var(--pf-text-muted);
 }
 .pf-effort-seg {
   display: inline-flex;
   padding: 2px;
   gap: 2px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--pf-surface-3);
   border-radius: 999px;
 }
 .pf-effort-opt {
@@ -687,11 +721,11 @@ a:hover { text-decoration: underline; }
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  color: var(--pf-dim, #565650);
+  color: var(--pf-text-muted);
   cursor: pointer;
   transition: background 0.15s cubic-bezier(.45, 0, .4, 1), color 0.15s;
 }
-.pf-effort-opt:hover:not(.is-active) { color: var(--pf-ink, #131313); }
+.pf-effort-opt:hover:not(.is-active) { color: var(--pf-text); }
 .pf-effort-opt.is-active {
   background: #3b63fb;
   color: #fff;
@@ -2220,7 +2254,7 @@ a:hover { text-decoration: underline; }
   background: transparent; color: var(--pf-text-muted); cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.pf-live-expand:hover { background: rgba(0,0,0,0.07); color: var(--pf-text); }
+.pf-live-expand:hover { background: var(--pf-surface-2); color: var(--pf-text); }
 .pf-live-expand svg { width: 15px; height: 15px; }
 .pf-live-overlay {
   position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;

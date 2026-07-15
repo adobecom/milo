@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
 
@@ -36,6 +36,11 @@ export interface ForgeConfig {
   // (the "For engineering" handoff, the activity log, and local artifacts) that
   // is hidden from designers/PMs by default. Off unless an engineer turns it on.
   debugMode: boolean;
+  // UI color scheme preference. 'system' (default) follows the OS via
+  // prefers-color-scheme and tracks it live; 'light'/'dark' pin an explicit choice.
+  // Resolved to a concrete light|dark by useResolvedColorScheme(), which drives the
+  // S2 Provider + the --pf-* token block (forge.css) + <html data-color-scheme>.
+  colorScheme: 'system' | 'light' | 'dark';
   export: {
     // 'milo'    — DEFAULT. Develops + ships real forge-<kebab> Milo blocks to the
     //             Milo fork (fullcolorcoder/milo) on a feature branch; preview the
@@ -142,6 +147,8 @@ export function emptyForgeConfig(): ForgeConfig {
     stardustSkillPath: '', impeccableSkillPath: '',
     // Developer/debug mode — engineering detail hidden from creators by default.
     debugMode: false,
+    // UI color scheme — follow the OS by default; the header toggle can pin it.
+    colorScheme: 'system',
     // Export defaults — configurable in Settings.
     export: {
       mode: 'milo',   // DEFAULT 'milo' (ships real forge-* blocks to the fork); 'project' is secondary
@@ -212,14 +219,49 @@ export function saveForgeConfig(cfg: ForgeConfig): void {
 interface ConfigContextValue {
   config: ForgeConfig;
   setConfig: (c: ForgeConfig) => void;
+  // The colorScheme preference resolved to a concrete 'light' | 'dark' (i.e.
+  // 'system' mapped to the live OS scheme). Consumers that need the effective
+  // theme (the S2 Provider) read this rather than re-resolving.
+  resolvedColorScheme: 'light' | 'dark';
 }
 
 const ConfigContext = createContext<ConfigContextValue | null>(null);
 
+// Track the OS prefers-color-scheme, live (updates if the user flips their OS
+// theme while Forge is open).
+function useSystemColorScheme(): 'light' | 'dark' {
+  const getSystem = (): 'light' | 'dark' =>
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  const [systemScheme, setSystemScheme] = useState<'light' | 'dark'>(getSystem);
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!mq) return;
+    const onChange = () => setSystemScheme(mq.matches ? 'dark' : 'light');
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return systemScheme;
+}
+
 export function ConfigProvider({ children }: { children: ReactNode }) {
   const [config, setConfig] = useState<ForgeConfig>(loadForgeConfig);
+  const systemScheme = useSystemColorScheme();
+  // 'system' follows the OS; an explicit 'light'/'dark' pins the choice.
+  const resolvedColorScheme =
+    config.colorScheme === 'system' ? systemScheme : config.colorScheme;
+  // Reflect the RESOLVED scheme onto <html> so the --pf-* dark override in forge.css
+  // (keyed off [data-color-scheme="dark"]) applies globally, above the React root.
+  // Also set the CSS `color-scheme` property so S2's page.css light-dark() rules
+  // (which own the html/body background) flip, plus native form controls/scrollbars.
+  useEffect(() => {
+    document.documentElement.setAttribute('data-color-scheme', resolvedColorScheme);
+    document.documentElement.style.colorScheme = resolvedColorScheme;
+  }, [resolvedColorScheme]);
   return (
-    <ConfigContext.Provider value={{ config, setConfig }}>
+    <ConfigContext.Provider value={{ config, setConfig, resolvedColorScheme }}>
       {children}
     </ConfigContext.Provider>
   );
