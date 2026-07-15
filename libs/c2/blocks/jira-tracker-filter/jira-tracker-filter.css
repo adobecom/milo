@@ -1,0 +1,57 @@
+.jira-tracker-filter {
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  margin: 16px 0;
+  padding: 16px 20px;
+  background: var(--s2a-color-gray-100, #f5f5f5);
+  border: 1px solid var(--s2a-color-gray-300, #e1e1e1);
+  border-radius: 10px;
+}
+
+.jira-tracker-filter .jtf-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jira-tracker-filter .jtf-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.jira-tracker-filter .jtf-label {
+  font-weight: 700;
+  min-width: 76px;
+}
+
+.jira-tracker-filter .jtf-chip {
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid var(--s2a-color-gray-400, #cacaca);
+  background: var(--s2a-color-gray-50, #fff);
+  color: var(--s2a-color-gray-900, #2c2c2c);
+  border-radius: 14px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
+
+.jira-tracker-filter .jtf-chip:hover {
+  background: var(--s2a-color-gray-100, #f5f5f5);
+}
+
+.jira-tracker-filter .jtf-chip.is-active {
+  background: var(--s2a-color-blue-900, #1473e6);
+  border-color: var(--s2a-color-blue-900, #1473e6);
+  color: var(--s2a-color-gray-50, #fff);
+}
+
+/* Filtering state. Rows are hidden by the filter block; sections that end up
+   with no visible tracker rows are hidden purely via CSS. */
+.jt-hidden { display: none; }
+
+.section:has(.jira-tracker table):not(:has(.jira-tracker table tbody tr:not(.jt-hidden))) {
+  display: none;
+}

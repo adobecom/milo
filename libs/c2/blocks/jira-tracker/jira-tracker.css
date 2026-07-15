@@ -1,0 +1,162 @@
+.jira-tracker {
+  --jt-border: var(--s2a-color-gray-300, #e1e1e1);
+  --jt-head: var(--s2a-color-gray-700, #6e6e6e);
+  --jt-muted: var(--s2a-color-gray-500, #949494);
+  --jt-key: var(--s2a-color-blue-900, #1473e6);
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  letter-spacing: var(--s2a-typography-letter-spacing-body-md);
+  margin: 24px 0;
+}
+
+.jira-tracker .jt-scroll { overflow-x: auto; }
+
+.jira-tracker .jt-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.jira-tracker .jt-table th {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--jt-head);
+  padding: 8px 12px;
+  border-bottom: 2px solid var(--jt-border);
+  white-space: nowrap;
+}
+
+.jira-tracker .jt-table td {
+  box-sizing: border-box;
+  padding: 12px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--jt-border);
+  overflow-wrap: anywhere;
+}
+
+.jira-tracker tbody tr:hover { background: var(--s2a-color-gray-100, #fafafa); }
+
+/* Column min-widths only make sense in the wide table layout. */
+@media (min-width: 701px) {
+  .jira-tracker .jt-col-block { min-width: 150px; }
+  .jira-tracker .jt-col-notes { min-width: 240px; }
+  .jira-tracker .jt-col-status { min-width: 240px; }
+}
+.jira-tracker .jt-block-name { font-weight: 700; display: block; }
+
+.jira-tracker .jt-keys { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+
+.jira-tracker .jt-key,
+.jira-tracker .jt-key-sm {
+  font-size: 11px;
+  color: var(--jt-key);
+  text-decoration: none;
+  border: 1px solid var(--s2a-color-blue-400, #c3ddff);
+  background: var(--s2a-color-blue-100, #f0f6ff);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
+.jira-tracker .jt-key:hover,
+.jira-tracker .jt-key-sm:hover { text-decoration: underline; }
+
+.jira-tracker .jt-assignee {
+  display: inline-block;
+  font-size: 12px;
+  background: var(--s2a-color-gray-200, #f0f0f0);
+  border-radius: 12px;
+  padding: 2px 8px;
+  margin: 0 4px 4px 0;
+  white-space: nowrap;
+}
+
+.jira-tracker .jt-muted { color: var(--jt-muted); }
+
+.jira-tracker .jt-notes p,
+.jira-tracker .jt-jira p { margin: 0 0 6px; }
+.jira-tracker .jt-notes ul { margin: 0 0 6px; padding-left: 18px; }
+.jira-tracker .jt-notes li { margin: 2px 0; }
+
+.jira-tracker .jt-status-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.jira-tracker .jt-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 2px 10px;
+  white-space: nowrap;
+}
+
+/* Not being worked on (Draft / backlog / blocked / unknown) */
+.jira-tracker .jt-pill.is-todo {
+  background: var(--s2a-color-red-200, #ffe0e0);
+  color: var(--s2a-color-red-1300, #b3261e);
+}
+
+/* In development / analyzing / code review */
+.jira-tracker .jt-pill.is-active {
+  background: var(--s2a-color-blue-200, #e0efff);
+  color: var(--s2a-color-blue-1300, #0d66d0);
+}
+
+/* Done */
+.jira-tracker .jt-pill.is-done {
+  background: var(--s2a-color-green-200, #dcf5e4);
+  color: var(--s2a-color-green-1300, #10723a);
+}
+
+.jira-tracker .jt-pr { color: var(--jt-key); text-decoration: none; font-weight: 600; }
+.jira-tracker .jt-pr:hover { text-decoration: underline; }
+
+.jira-tracker .jt-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 4px;
+}
+
+.jira-tracker .jt-badge.is-merged { background: var(--s2a-color-green-200, #dcf5e4); color: var(--s2a-color-green-1300, #10723a); }
+.jira-tracker .jt-badge.is-open { background: var(--s2a-color-blue-200, #e0efff); color: var(--s2a-color-blue-1300, #0d66d0); }
+.jira-tracker .jt-badge.is-closed { background: var(--s2a-color-red-200, #ffe0e0); color: var(--s2a-color-red-1300, #b3261e); }
+.jira-tracker .jt-badge.is-prdraft { background: var(--s2a-color-gray-200, #eaeaea); color: var(--s2a-color-gray-800, #4b4b4b); }
+
+@media (max-width: 700px) {
+  .jira-tracker .jt-scroll { overflow-x: visible; }
+  .jira-tracker .jt-table thead { display: none; }
+  .jira-tracker .jt-table,
+  .jira-tracker .jt-table tbody,
+  .jira-tracker .jt-table tr,
+  .jira-tracker .jt-table td { display: block; width: 100%; box-sizing: border-box; }
+
+  .jira-tracker .jt-table tr {
+    border: 1px solid var(--jt-border);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 4px 0;
+  }
+
+  .jira-tracker .jt-table td { border-bottom: 1px solid var(--s2a-color-gray-200, #f0f0f0); }
+  .jira-tracker .jt-table tr td:last-child { border-bottom: none; }
+
+  .jira-tracker .jt-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--jt-head);
+    margin-bottom: 4px;
+  }
+}
