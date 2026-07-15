@@ -124,6 +124,9 @@ const C2_BLOCKS = [
   'hover-list',
   'hub-hero',
   'iframe',
+  'jira-tracker',
+  'jira-tracker-filter',
+  'jira-tracker-changelog',
   'logo-ticker',
   'martech-metadata',
   'modal-metadata',
@@ -1946,6 +1949,12 @@ async function decorateSection(section, idx) {
   }
 
   section.className = `${section.classList.contains('section') ? section.className : 'section'}`;
+  if (section.dataset.background && !section.querySelector(':scope > .section-background')) {
+    section.classList.add('has-background');
+    const bgContainer = createTag('div', { class: 'section-background' });
+    bgContainer.append(createTag('div', { style: `background: ${section.dataset.background}` }));
+    section.insertAdjacentElement('afterbegin', bgContainer);
+  }
   section.dataset.status = 'decorated';
   return {
     blocks: [...links, ...blocks],

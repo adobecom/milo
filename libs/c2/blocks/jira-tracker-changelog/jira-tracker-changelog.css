@@ -1,0 +1,27 @@
+.jira-tracker-changelog {
+  font-size: var(--s2a-typography-font-size-body-md);
+  line-height: var(--s2a-typography-line-height-body-md);
+  margin: 24px 0;
+}
+
+.jira-tracker-changelog .jtc-entry {
+  display: flex;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--s2a-color-gray-300, #e1e1e1);
+}
+
+.jira-tracker-changelog .jtc-when {
+  flex: 0 0 132px;
+  color: var(--s2a-color-gray-700, #6e6e6e);
+  white-space: nowrap;
+}
+
+.jira-tracker-changelog .jtc-changes ul { margin: 0; padding-left: 18px; }
+.jira-tracker-changelog .jtc-changes li { margin: 2px 0; }
+.jira-tracker-changelog .jtc-changes p { margin: 0; color: var(--s2a-color-gray-700, #6e6e6e); }
+
+@media (max-width: 700px) {
+  .jira-tracker-changelog .jtc-entry { flex-direction: column; gap: 4px; }
+  .jira-tracker-changelog .jtc-when { flex-basis: auto; }
+}

@@ -95,11 +95,20 @@ function loadStyles() {
   });
 }
 
-(async function loadPage() {
+// eslint-disable-next-line import/prefer-default-export
+export async function loadPage() {
   loadStyles();
   if (getMetadata('template') === '404') window.SAMPLE_PAGEVIEWS_AT_RATE = 'high';
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
   await loadArea();
-}());
+}
+
+loadPage();
+
+(() => {
+  const hasQE = new URL(window.location.href).searchParams.has('quick-edit');
+  // eslint-disable-next-line import/no-cycle
+  if (hasQE) import('../tools/quick-edit/quick-edit.js').then((mod) => mod.default());
+})();
