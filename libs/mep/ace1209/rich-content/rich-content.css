@@ -218,7 +218,7 @@
 
   &:has(.rich-content.hero-asset) {
     --hero-asset-content-offset: 343px;
-    --hero-asset-image-width: min(375px, 96vw);
+    --hero-asset-image-width: min(300px, 96vw);
     --hero-asset-image-height: calc(var(--hero-asset-image-width) * 434 / 375);
 
     box-sizing: border-box;
@@ -241,6 +241,7 @@
 
       img {
         width: var(--hero-asset-image-width);
+        margin-inline: auto;
         height: 100%;
         object-fit: contain;
         object-position: top center;
