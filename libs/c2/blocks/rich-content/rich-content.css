@@ -234,7 +234,6 @@
   position: absolute;
   background: var(--rc-hero-overlay);
   inset: 0;
-  z-index: 1;
 }
 
 .section:not(.has-background):has(.rich-content.hero) {

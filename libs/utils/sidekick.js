@@ -33,6 +33,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     await loadScript(scriptUrl);
   };
 
+  const quickEditListener = async (e) => {
+    // eslint-disable-next-line import/no-cycle
+    const { default: initQuickEdit } = await import('../tools/quick-edit/quick-edit.js');
+    initQuickEdit(e);
+  };
+
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
 
   // Add plugin listeners here
@@ -40,6 +46,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   sk.addEventListener('custom:check-schema', checkSchemaListener);
   sk.addEventListener('custom:preflight', debounce(() => preflightListener(), 500));
   sk.addEventListener('custom:annotations', annotationsListener);
+  sk.addEventListener('custom:quick-edit', quickEditListener);
 
   // Auto-open annotations panel when ?pcThread= is in the URL (e.g. from a
   // Slack deep-link to a specific thread).
