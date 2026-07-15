@@ -1977,7 +1977,10 @@ a:hover { text-decoration: underline; }
 }
 .pf-src-glyph svg { width: 24px; height: 24px; }
 .pf-src-glyph--figma { background: #f3f0ff; }
-.pf-src-glyph--url { background: var(--pf-surface-3); }
+/* LinkMark strokes currentColor, so anchor it to the muted-text token here — this
+   resolves to the right gray in BOTH themes (#565650 light / #b0b0aa dark) instead
+   of inheriting the button's near-black default text. */
+.pf-src-glyph--url { background: var(--pf-surface-3); color: var(--pf-text-muted); }
 
 .pf-flow-arrow { color: var(--pf-text-muted); display: grid; place-items: center; }
 .pf-flow-arrow svg { width: 24px; height: 24px; }
@@ -2869,4 +2872,122 @@ a:hover { text-decoration: underline; }
 @media (max-width: 760px) {
   .pf-fw-stage-wrap { flex-basis: 100%; }
   .pf-fw-arrow { transform: rotate(90deg); }
+}
+
+/* Splash specimens — live CSS mocks for SplashModal. Global (not the scoped
+   module) because splashContent.tsx references them by plain class name. */
+
+.pf-splash-spec-brand { display: grid; place-items: center; }
+.pf-splash-spec-brandmark {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--pf-accent) 0%, #6c5ce7 100%);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  box-shadow: var(--pf-shadow);
+}
+
+.pf-splash-spec-doors { display: flex; gap: 16px; }
+.pf-splash-spec-door {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 92px;
+  padding: 14px 0;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius-lg);
+  box-shadow: var(--pf-shadow-sm);
+}
+.pf-splash-spec-doorlabel { font-size: 12px; font-weight: 600; color: var(--pf-text-muted); }
+/* The Figma/URL marks reuse the entry doors' .pf-src-glyph classes. */
+
+.pf-splash-spec-page {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 150px;
+  padding: 12px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border);
+  border-radius: var(--pf-radius);
+  box-shadow: var(--pf-shadow-sm);
+}
+.pf-splash-spec-page-hero {
+  height: 30px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--pf-accent) 0%, #6c5ce7 100%);
+  opacity: 0.85;
+}
+.pf-splash-spec-page-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.pf-splash-spec-page-row span {
+  height: 22px;
+  border-radius: 3px;
+  background: var(--pf-surface-3);
+  border: 1px solid var(--pf-border);
+}
+.pf-splash-spec-page-cta {
+  height: 10px;
+  width: 46px;
+  border-radius: 5px;
+  background: var(--pf-accent);
+  margin: 2px auto 0;
+}
+
+.pf-splash-spec-download { display: flex; align-items: center; gap: 14px; }
+.pf-splash-spec-file {
+  position: relative;
+  width: 46px;
+  height: 58px;
+  background: var(--pf-surface);
+  border: 1px solid var(--pf-border-strong);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+}
+.pf-splash-spec-file-corner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--pf-surface-3);
+  border-left: 1px solid var(--pf-border-strong);
+  border-bottom: 1px solid var(--pf-border-strong);
+  border-bottom-left-radius: 3px;
+}
+.pf-splash-spec-file-line { height: 4px; border-radius: 2px; background: var(--pf-surface-3); }
+.pf-splash-spec-file-line:first-of-type { width: 70%; }
+.pf-splash-spec-arrow { width: 20px; height: 20px; position: relative; }
+.pf-splash-spec-arrow::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: var(--pf-accent);
+}
+.pf-splash-spec-arrow::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%) rotate(45deg);
+  width: 8px;
+  height: 8px;
+  border-right: 3px solid var(--pf-accent);
+  border-bottom: 3px solid var(--pf-accent);
+  border-radius: 0 0 2px 0;
 }

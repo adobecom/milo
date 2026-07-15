@@ -1,0 +1,152 @@
+/* Splash / welcome-tour modal. House FocusedModal pattern; --pf-* tokens so it
+   themes. Specimen visuals live in the global forge.css (see note at foot). */
+
+.backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(20, 20, 20, 0.32);
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	z-index: 500;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	animation: pf-splash-scrim 0.18s ease both;
+}
+
+.modal {
+	position: relative;
+	width: 460px;
+	max-width: 100%;
+	background: var(--pf-surface);
+	border-radius: var(--pf-radius-xl);
+	box-shadow: var(--pf-shadow-lg);
+	overflow: hidden;
+	color: var(--pf-text);
+	animation: pf-splash-rise 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes pf-splash-scrim {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes pf-splash-rise {
+	from { transform: translateY(10px) scale(0.99); opacity: 0.6; }
+	to { transform: none; opacity: 1; }
+}
+
+.close {
+	all: unset;
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 1;
+	width: 30px;
+	height: 30px;
+	border-radius: 6px;
+	color: var(--pf-text-faint);
+	cursor: pointer;
+	display: grid;
+	place-items: center;
+}
+
+.close:hover {
+	background: var(--pf-surface-2);
+	color: var(--pf-text);
+}
+
+.close svg,
+.close [class*="spectrum-Icon"] {
+	width: 16px;
+	height: 16px;
+}
+
+.stage {
+	display: grid;
+	place-items: center;
+	height: 168px;
+	background: var(--pf-surface-2);
+	border-bottom: 1px solid var(--pf-border);
+}
+
+.slide {
+	animation: pf-splash-slide 0.22s ease both;
+}
+
+@keyframes pf-splash-slide {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+.body {
+	padding: 20px 26px 6px;
+	/* Tallest slide's copy height, so the modal doesn't resize between slides. */
+	min-height: 132px;
+	box-sizing: border-box;
+}
+
+.title {
+	margin: 0 0 8px;
+	font-size: 20px;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+	color: var(--pf-text);
+}
+
+.copy {
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.55;
+	color: var(--pf-text-muted);
+}
+
+.foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 18px 26px 22px;
+}
+
+.dots {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+}
+
+.dot {
+	all: unset;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--pf-border-strong);
+	cursor: pointer;
+	transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.dot:hover {
+	background: var(--pf-text-faint);
+}
+
+.dotActive {
+	background: var(--pf-accent);
+	transform: scale(1.15);
+}
+
+.actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* NOTE: the specimen visuals (.pf-splash-spec-*) live in the GLOBAL forge.css,
+   not here — splashContent.tsx references them as plain (unhashed) class names,
+   so they must not be CSS-Modules-scoped. */
+
+@media (prefers-reduced-motion: reduce) {
+	.dot { transition: none; }
+	.backdrop,
+	.modal,
+	.slide { animation: none; }
+}

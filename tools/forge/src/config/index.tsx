@@ -36,6 +36,9 @@ export interface ForgeConfig {
   // (the "For engineering" handoff, the activity log, and local artifacts) that
   // is hidden from designers/PMs by default. Off unless an engineer turns it on.
   debugMode: boolean;
+  // Whether the M1 welcome tour (SplashModal) has been seen. Auto-shows once on
+  // first run; after that it's re-openable on demand (TopBar) but never auto-pops.
+  splashSeen: boolean;
   export: {
     // 'milo'    — DEFAULT. Develops + ships real forge-<kebab> Milo blocks to the
     //             Milo fork (fullcolorcoder/milo) on a feature branch; preview the
@@ -142,6 +145,8 @@ export function emptyForgeConfig(): ForgeConfig {
     stardustSkillPath: '', impeccableSkillPath: '',
     // Developer/debug mode — engineering detail hidden from creators by default.
     debugMode: false,
+    // Welcome tour — unseen by default so a first-time user gets it once.
+    splashSeen: false,
     // Export defaults — configurable in Settings.
     export: {
       mode: 'milo',   // DEFAULT 'milo' (ships real forge-* blocks to the fork); 'project' is secondary

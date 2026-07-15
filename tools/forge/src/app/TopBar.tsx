@@ -2,6 +2,7 @@ import { ActionButton } from '@react-spectrum/s2';
 import Add from '@react-spectrum/s2/icons/Add';
 import Settings from '@react-spectrum/s2/icons/Settings';
 import AppsAll from '@react-spectrum/s2/icons/AppsAll';
+import HelpCircle from '@react-spectrum/s2/icons/HelpCircle';
 import { useUiState } from './UiStateContext';
 import { useSessions } from '../sessions/SessionsProvider';
 import { sourceLabel, stateWord, isLive } from './sessionStatus';
@@ -24,6 +25,10 @@ export function TopBar() {
 
 	function handleDesignSystem() {
 		dispatch({ type: state.view === 'designSystem' ? 'closeDesignSystem' : 'openDesignSystem' });
+	}
+
+	function handleHelp() {
+		dispatch({ type: 'openSplash' });
 	}
 
 	// The crumb title mirrors the sidebar row exactly — derive it from the same
@@ -94,6 +99,13 @@ export function TopBar() {
 					aria-label="Design system"
 				>
 					<AppsAll />
+				</ActionButton>
+				<ActionButton
+					onPress={handleHelp}
+					isQuiet
+					aria-label="What is Forge? (welcome tour)"
+				>
+					<HelpCircle />
 				</ActionButton>
 				<ActionButton
 					onPress={handleSettings}

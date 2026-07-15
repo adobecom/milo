@@ -23,7 +23,7 @@ export interface ConfirmPayload {
 
 export interface UiState {
   sidebarCollapsed: boolean;
-  modal: 'settings' | 'confirm' | 'connectConsumer' | null;
+  modal: 'settings' | 'confirm' | 'connectConsumer' | 'splash' | null;
   confirmPayload: ConfirmPayload | null;
   // A continuation to run after the "connect to publish" modal connects — lets the
   // deploy gate resume the publish the user just asked for. Cleared on close.
@@ -39,6 +39,7 @@ export interface UiState {
 export type UiAction =
   | { type: 'toggleSidebar' }
   | { type: 'openSettings' }
+  | { type: 'openSplash' }
   | { type: 'openConnectConsumer'; onConnected?: () => void }
   | { type: 'openConfirm'; payload: ConfirmPayload }
   | { type: 'closeModal' }
@@ -53,6 +54,8 @@ function reducer(state: UiState, action: UiAction): UiState {
       return { ...state, sidebarCollapsed: !state.sidebarCollapsed };
     case 'openSettings':
       return { ...state, modal: 'settings' };
+    case 'openSplash':
+      return { ...state, modal: 'splash' };
     case 'openConnectConsumer':
       return { ...state, modal: 'connectConsumer', pendingPublish: action.onConnected ?? null };
     case 'openConfirm':
