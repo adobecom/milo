@@ -217,32 +217,42 @@
   }
 
   &:has(.rich-content.hero-asset) {
-    --hero-asset-section-height: 777px;
-    --hero-asset-image-position: 85%;
+    --hero-asset-content-offset: 343px;
+    --hero-asset-image-width: min(375px, 96vw);
+    --hero-asset-image-height: calc(var(--hero-asset-image-width) * 434 / 375);
 
     box-sizing: border-box;
-    height: var(--hero-asset-section-height);
+    height: calc(var(--hero-asset-content-offset) + var(--hero-asset-image-height));
 
     &.has-background .section-background {
       max-width: 100vw;
       margin: 0 auto;
       z-index: 0;
 
+      picture {
+        inset: auto 0;
+        top: var(--hero-asset-content-offset);
+        bottom: auto;
+        height: var(--hero-asset-image-height);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
       img {
-        display: block;
-        margin-inline: auto;
-        max-width: var(--hero-asset-image-max-width);
+        width: var(--hero-asset-image-width);
+        height: 100%;
         object-fit: contain;
-        object-position: center var(--hero-asset-image-position);
+        object-position: top center;
       }
     }
   }
 
   &.dark:has(.rich-content.hero-asset) {
+    background: var(--s2a-color-gray-1000);
+
     .section-background {
       picture {
-        background: var(--s2a-color-gray-1000);
-
         &::after {
           background: unset !important;
         }
@@ -303,7 +313,9 @@
 
 @media (width >= 768px) {
   .section:has(.rich-content.hero-asset) {
-    --hero-asset-section-height: 1329px;
+    --hero-asset-content-offset: 367px;
+    --hero-asset-image-width: min(100vw, 2560px);
+    --hero-asset-image-height: calc(var(--hero-asset-image-width) * 1216 / 2560);
   }
 
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
@@ -430,21 +442,18 @@
 }
 
 @media (width >= 1280px) {
+  .section:has(.rich-content.hero-asset) {
+    --hero-asset-content-offset: 391px;
+  }
+
   .rich-content.jump-link.hero {
     padding-block-start: var(--s2a-layout-xl);
   }
 }
 
-@media (width >= 1280px) {
-  .section:has(.rich-content.hero-asset) {
-    --hero-asset-section-height: 1607px;
-    --hero-asset-image-max-width: 63vw;
-  }
-}
-
 @media (width >= 1440px) {
   .section:has(.rich-content.hero-asset) {
-    --hero-asset-section-height: 1500px;
+    --hero-asset-content-offset: 407px;
   }
 
   .section.bento {
