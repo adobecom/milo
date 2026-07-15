@@ -218,7 +218,7 @@
 
   &:has(.rich-content.hero-asset) {
     --hero-asset-section-height: 777px;
-    --hero-asset-image-height: 434px;
+    --hero-asset-image-position: 85%;
 
     box-sizing: border-box;
     height: var(--hero-asset-section-height);
@@ -229,8 +229,11 @@
       z-index: 0;
 
       img {
-        height: var(--hero-asset-image-height);
+        display: block;
+        margin-inline: auto;
+        max-width: var(--hero-asset-image-max-width);
         object-fit: contain;
+        object-position: center var(--hero-asset-image-position);
       }
     }
   }
@@ -240,8 +243,8 @@
       picture {
         background: var(--s2a-color-gray-1000);
 
-        img {
-          object-position: bottom;
+        &::after {
+          background: unset !important;
         }
       }
     }
@@ -282,7 +285,6 @@
 }
 
 .rich-content.hero-asset {
-  height: var(--hero-asset-section-height, 777px);
   position: relative;
   z-index: 2;
 }
@@ -302,7 +304,6 @@
 @media (width >= 768px) {
   .section:has(.rich-content.hero-asset) {
     --hero-asset-section-height: 1329px;
-    --hero-asset-image-height: 962px;
   }
 
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
@@ -437,14 +438,13 @@
 @media (width >= 1280px) {
   .section:has(.rich-content.hero-asset) {
     --hero-asset-section-height: 1607px;
-    --hero-asset-image-height: 1216px;
+    --hero-asset-image-max-width: 63vw;
   }
 }
 
 @media (width >= 1440px) {
   .section:has(.rich-content.hero-asset) {
-    --hero-asset-section-height: 1768px;
-    --hero-asset-image-height: 1361px;
+    --hero-asset-section-height: 1500px;
   }
 
   .section.bento {
