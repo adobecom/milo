@@ -323,7 +323,11 @@
 
 @media (width >= 768px) {
   .section:has(.rich-content.hero-asset).has-background .section-background img {
-    aspect-ratio: 768 / 962;
+    width: 100%;
+    max-width: 1006px;
+    margin-inline: auto;
+    aspect-ratio: unset;
+    display: block;
   }
 
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
@@ -451,7 +455,8 @@
 
 @media (width >= 1280px) {
   .section:has(.rich-content.hero-asset).has-background .section-background img {
-    aspect-ratio: 1280 / 1216;
+    width: 100%;
+    height: auto;
   }
 
   .rich-content.jump-link.hero {
