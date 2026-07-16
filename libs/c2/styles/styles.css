@@ -1385,7 +1385,7 @@ span.hang-opening-quote {
     z-index: 0;
     animation-name: parallax-move-up-fast;
     animation-timeline: scroll(root block);
-    animation-range: 0 80vh;
+    animation-range: var(--feds-promo-bar-height, 0px) calc(var(--feds-promo-bar-height, 0px) + 80vh);
     animation-timing-function: ease-out;
 
     &::after {
@@ -1397,7 +1397,7 @@ span.hang-opening-quote {
       pointer-events: none;
       animation: parallax-fade-to-dark linear both;
       animation-timeline: scroll(root block);
-      animation-range: 0 80vh;
+      animation-range: var(--feds-promo-bar-height, 0px) calc(var(--feds-promo-bar-height, 0px) + 80vh);
       z-index: 2;
     }
   }
