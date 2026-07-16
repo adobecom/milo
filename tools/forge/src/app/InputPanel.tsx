@@ -51,9 +51,9 @@ type Effort = 'quick' | 'balanced' | 'thorough';
 // speed. Effort only trims convergence rounds; the (long) Figma read takes the same
 // time at every setting, so "Quick" must not read as "faster to first result".
 const EFFORT_OPTIONS: ReadonlyArray<{ id: Effort; label: string; hint: string }> = [
-  { id: 'quick', label: 'Quick pass', hint: 'Fewer refine rounds' },
-  { id: 'balanced', label: 'Balanced', hint: 'A few refine rounds' },
-  { id: 'thorough', label: 'Refine harder', hint: 'Chase the frame closely' },
+  { id: 'quick', label: 'Quick pass', hint: 'Fewer refinement passes' },
+  { id: 'balanced', label: 'Balanced', hint: 'A few refinement passes' },
+  { id: 'thorough', label: 'Refine harder', hint: 'Match your design closely' },
 ];
 
 // FigmaMark/LinkMark moved to ./glyphs (shared with the welcome tour).
@@ -100,26 +100,26 @@ function ResultThumb() {
 
 
 // ── Per-door copy ─────────────────────────────────────────────────────────────
-// Two doors, each with ONE fixed outcome (no dial). Copy stays terse and
-// frictionless: title + one input, nothing else. The demo prefills a real URL so
-// the presenter just clicks the CTA.
+// Two doors, each with ONE fixed outcome (no dial). Copy stays terse: title + one
+// input, nothing else. `prefill` seeds the input on open (empty = the user pastes
+// their own); set a URL here only for a demo where the presenter just clicks the CTA.
 const DOORS = {
-  // Stardust door first (top). Generic workflow name; the input is the whole UI.
+  // Live-URL door first (top). The input is the whole UI.
   url: {
-    title: 'Stardust',
+    title: 'Live page',
     blurb: 'Point at any live page.',
     label: 'Page URL',
-    placeholder: 'https://example.com/page',
-    prefill: 'https://inside.adobe.com',
-    cta: 'Adobify this page',
+    placeholder: '',
+    prefill: '',
+    cta: 'Redesign this page',
   },
   // Figma door second.
   figma: {
     title: 'Figma',
     blurb: 'Paste a frame to start.',
     label: 'Figma frame URL',
-    placeholder: 'https://figma.com/design/…?node-id=…',
-    prefill: 'https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=1-11&p=f&m=dev',
+    placeholder: '',
+    prefill: '',
     cta: 'Build my page',
   },
 } as const;
@@ -191,7 +191,7 @@ export function InputPanel() {
   if (view === 'doors') {
     return (
       <div className="pf-entry">
-        <h2 className="pf-entry-title">You get a real Adobe page, ready to edit.</h2>
+        <h2 className="pf-entry-title">You get a real, on-brand Adobe page.</h2>
         <p className="pf-entry-sub">
           Start from a Figma frame or a live page. You choose how closely to follow it next.
         </p>
@@ -264,7 +264,7 @@ export function InputPanel() {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
             <path d="M20 6L9 17l-5-5" />
           </svg>
-          Both land on the same thing: a real, on-brand Milo page you can edit and ship.
+          Both land on the same thing: a real, on-brand Adobe page.
         </div>
       </div>
     );
@@ -281,7 +281,7 @@ export function InputPanel() {
 
         {/* Frictionless: header, one input, one button — a single consistent
             vertical rhythm (the .pf-focus-body gap), nothing else. The door fixed
-            the outcome and the URL is prefilled, so the only move is the CTA. */}
+            the outcome; the user pastes their source and hits the CTA. */}
         <div className="pf-focus-body">
           <div className="pf-focus-head">
             <span className={`pf-src-glyph pf-src-glyph--${view}`}>
@@ -335,7 +335,7 @@ export function InputPanel() {
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Starting…' : intentPolicy === 'reimagine' ? 'Reimagine this page' : door.cta}
+              {isSubmitting ? 'Starting…' : intentPolicy === 'reimagine' ? 'Redesign this page' : door.cta}
             </button>
           </div>
         </div>
