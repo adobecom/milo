@@ -156,7 +156,10 @@ function decorate(block) {
     const scrolled = Math.max(0, Math.min(usable, -rect.top));
     const progress = scrolled / SCROLL_PER_APP;
 
-    list.style.transform = `translateY(${activateY - progress * itemH}px)`;
+    // Active item sits ABOVE the line (bottom edge on activateY); upcoming
+    // items roll in below. Offset by one itemH so the active name isn't
+    // pushed below the media's bottom edge and clipped.
+    list.style.transform = `translateY(${activateY - (progress + 1) * itemH}px)`;
     activate(Math.min(Math.floor(progress), apps.length - 1));
   };
 
