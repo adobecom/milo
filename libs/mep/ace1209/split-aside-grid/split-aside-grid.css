@@ -410,6 +410,7 @@
     border: none;
 
     .grid-item-toggle-icon {
+      flex-shrink: 0;
       display: inline-flex;
       width: var(--grid-item-icon-size);
       height: var(--grid-item-icon-size);
@@ -429,6 +430,10 @@
       width: 12px;
       height: 12px;
       transition: transform var(--dropdown-transition);
+    }
+
+    .grid-item-toggle-text {
+      text-align: start;
     }
   }
 
