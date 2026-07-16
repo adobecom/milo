@@ -216,6 +216,12 @@
     }
   }
 
+  &.parallax-garage-door-reveal:has(.rich-content.hero-asset) {
+    .foreground {
+      animation-range: cover -10% cover 90%;
+    }
+  }
+
   &:has(.rich-content.hero-asset) {
     display: grid;
     grid-template-rows: auto auto;
