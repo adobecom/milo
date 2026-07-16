@@ -67,8 +67,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* S: pt-80 (layout-sm), sides+bottom 24px (spacing-lg) */
-  padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-lg);
+  /* S: pt-80 (layout-sm), sides 24px (spacing-lg), no bottom padding so the
+     active app name isn't clipped by the list-wrapper's overflow edge */
+  padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) 0;
   box-sizing: border-box;
 }
 
@@ -229,8 +230,9 @@
   .rcc-content {
     flex-direction: row;
     align-items: stretch;
-    /* pt-160 (layout-xl), pb-32 (spacing-xl), px-24 (spacing-lg) */
-    padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) var(--s2a-spacing-xl);
+    /* pt-160 (layout-xl), px-24 (spacing-lg), no bottom padding so the active
+       app name clears the list-wrapper's overflow edge */
+    padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
     padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md)); /* +16px for inner content offset */
     gap: 0;
   }
