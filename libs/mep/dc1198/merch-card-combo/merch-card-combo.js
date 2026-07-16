@@ -896,24 +896,24 @@ export default async function init(el) {
         const style = document.createElement('style');
         style.textContent = `
           footer { padding-top: var(--consonant-merch-spacing-xxs, 8px) !important; }
-          slot[name="offers"] { padding-top: 0 !important; }
           @media (min-width: 768px) {
-            slot[name="promo-text"] { min-height: 48px !important; }
+            slot[name="promo-text"] { min-height: 8px !important; }
           }
           .card-subtitle-injected {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 6px;
             font-size: var(--consonant-merch-card-body-xs-font-size, 14px);
             font-weight: var(--consonant-merch-card-detail-m-font-weight, 700);
             font-style: normal;
             line-height: 1.5;
             min-height: 42px;
-            padding: 0 var(--consonant-merch-spacing-s, 24px) var(--consonant-merch-spacing-xxs, 8px) 12px;
+            padding: 0 var(--consonant-merch-spacing-s, 24px) 0 var(--consonant-merch-spacing-xs, 16px);
           }
           :host(.has-sparkle) .card-subtitle-injected { color: #c12f84; }
           :host(:not(.has-sparkle)) .card-subtitle-injected { color: #4b4b4b; }
           .card-subtitle-injected em { font-style: normal; }
+          .card-subtitle-injected::before { padding-top: 3px; }
         `;
 
         const subtitleEl = merchCard.querySelector('.card-subtitle');
