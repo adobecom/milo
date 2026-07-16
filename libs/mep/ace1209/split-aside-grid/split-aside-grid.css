@@ -80,15 +80,61 @@
       -webkit-user-drag: none;
       border-radius: 20px;
     }
+  }
+}
 
-    &:not([data-slot="0"], .incoming) {
-      background-color: #E3E2E2;
-      box-shadow: 0 68.507px 54.806px 0 rgba(0, 0, 0, 0.14), 0 28.621px 22.897px 0 rgba(0, 0, 0, 0.10), 0 15.302px 12.242px 0 rgba(0, 0, 0, 0.08), 0 8.578px 6.863px 0 rgba(0, 0, 0, 0.07), 0 4.556px 3.645px 0 rgba(0, 0, 0, 0.06), 0 1.896px 1.517px 0 rgba(0, 0, 0, 0.04);
+.split-aside-grid:not(.mobile-carousel) .split-aside-grid-stack .media {
+  &:not([data-slot="0"], .incoming) {
+    background-color: #E3E2E2;
+    box-shadow: 0 68.507px 54.806px 0 rgba(0, 0, 0, 0.14), 0 28.621px 22.897px 0 rgba(0, 0, 0, 0.10), 0 15.302px 12.242px 0 rgba(0, 0, 0, 0.08), 0 8.578px 6.863px 0 rgba(0, 0, 0, 0.07), 0 4.556px 3.645px 0 rgba(0, 0, 0, 0.06), 0 1.896px 1.517px 0 rgba(0, 0, 0, 0.04);
+  }
+
+  &:not([data-slot="0"], .show-image) :is(video, img) {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+  }
+}
+
+.split-aside-grid.mobile-carousel {
+  overflow-x: clip;
+  @media (width < 768px) {
+    --split-aside-grid-gap: 24px;
+
+    .split-aside-grid-stack {
+      height: 100%;
+      width: 100%;
+      justify-content: flex-start;
+      gap: var(--split-aside-grid-gap);
+      translate: var(--split-aside-grid-stack-translate, 0);
+      transition: var(--split-aside-grid-container-transition, 'none');
+
+      .media {
+        position: static;
+        height: auto;
+        min-width: 200%;
+        transform: none;
+        aspect-ratio: 16 / 9;
+      }
     }
 
-    &:not([data-slot="0"], .show-image) :is(video, img) {
-      opacity: 0;
-      transition: opacity 0.5s ease-out;
+    .split-aside-grid-items {
+      display: flex;
+      gap: calc(100% + var(--split-aside-grid-gap));
+      translate: var(--split-aside-grid-items-translate, 0);
+      transition: var(--split-aside-grid-container-transition, 'none');
+
+      .split-aside-grid-item {
+        min-width: 100%;
+        grid-column: unset;
+        grid-row: unset;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        &:not(.split-aside-grid-active) {
+          visibility: visible;
+        }
+      }
     }
   }
 }
@@ -480,5 +526,11 @@
     .split-aside-grid-active .split-aside-grid-toggle svg {
       transform: rotate(90deg);
     }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .split-aside-grid * {
+    transition: none !important;
   }
 }

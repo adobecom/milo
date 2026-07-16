@@ -7,7 +7,7 @@ const SNAP_MS = 300;
 const FADE_IN_MS = 160;
 const RIGHT_DRAG_DENOM = 160;
 
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -115,7 +115,7 @@ function setupBlock(el) {
   let dotEls;
   let ariaLive;
   let slideNum;
-  let isCarousel;
+  let isMobile;
   let itemsWrap;
   let controlsWrap;
   let nextBtn;
@@ -127,6 +127,7 @@ function setupBlock(el) {
   let target = null;
   let resizeObserver = null;
 
+  const isMobileCarousel = el.classList.contains('mobile-carousel');
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
   const slideAt = (off) => medias[mod(rotation + off)];
@@ -142,18 +143,9 @@ function setupBlock(el) {
 
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
-      if (!isCarousel) {
-        const toHide = item.querySelectorAll('p[class*="body"]');
-        toHide.forEach((hide) => {
-          hide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-          hide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
-            focusable.setAttribute('tabindex', isActive ? '0' : '-1');
-          });
-        });
-        return;
-      }
-      item.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      item.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+      const toHide = isMobile ? item : item.querySelector('.foreground');
+      toHide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      toHide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
         focusable.setAttribute('tabindex', isActive ? '0' : '-1');
       });
     });
@@ -208,7 +200,7 @@ function setupBlock(el) {
     });
 
     setAriaHiddenAndTabIndex();
-    if (!isSetup && isCarousel) updateAriaLive(ariaLive, items);
+    if (!isSetup && isMobile) updateAriaLive(ariaLive, items);
   }
 
   function updateStack(dir, progress, ignore) {
@@ -231,6 +223,11 @@ function setupBlock(el) {
   }
 
   function commitNext(progress, isNavigation) {
+    if (isReducedMotion) {
+      applyRotation(1);
+      return;
+    }
+
     flying = true;
     const oldFront = slideAt(0);
     const width = stackWidth();
@@ -302,10 +299,12 @@ function setupBlock(el) {
   }
 
   function commitPrev(progress, isNavigation) {
-    flying = true;
     const incoming = slideAt(-1);
-
     applyRotation(-1);
+
+    if (isReducedMotion) return;
+
+    flying = true;
 
     if (isNavigation) {
       animatePrev(progress, incoming);
@@ -355,6 +354,95 @@ function setupBlock(el) {
     return 'prev';
   }
 
+  function getSlideTranslateValue({ index = 1, width, gap = 0 }) {
+    const gridPadding = parseInt(getComputedStyle(el).getPropertyValue('--split-aside-grid-gap'), 10) || 0;
+    return (index * width + index * (gap + gridPadding)) * (isRTL ? 1 : -1);
+  }
+
+  function goToMobileCarouselActive() {
+    const activeMedia = stack.querySelector('[data-slot="0"]');
+    const { width: mediaWidth } = activeMedia.getBoundingClientRect();
+    const indexOfActiveSlide = [...stack.children].indexOf(activeMedia);
+    const translateValueStack = getSlideTranslateValue({
+      index: indexOfActiveSlide,
+      width: mediaWidth,
+    });
+
+    const activeMediaIndex = activeMedia.getAttribute('data-slide-index');
+    const activeItem = itemsWrap.querySelector(`[data-slide-index="${activeMediaIndex}"]`);
+    const { width: itemWidth } = activeItem.getBoundingClientRect();
+    const translateValueItems = getSlideTranslateValue({
+      index: indexOfActiveSlide,
+      width: itemWidth,
+      gap: itemWidth,
+    });
+
+    [stack, itemsWrap].forEach((container) => clearInline(container, ['container-transition']));
+    setInline(stack, { 'stack-translate': `${translateValueStack}px` });
+    setInline(itemsWrap, { 'items-translate': `${translateValueItems}px` });
+  }
+
+  function eagerLoadMobileCarouselImages() {
+    stack.querySelectorAll('img').forEach((img) => {
+      img.setAttribute('loading', 'eager');
+    });
+  }
+
+  function cloneMobileCarouselSlides() {
+    if (stack.getAttribute('data-slides-cloned') === 'true'
+      || itemsWrap.getAttribute('data-slides-cloned') === 'true') return;
+
+    [[stack, medias], [itemsWrap, items]].forEach(([container, elements]) => {
+      const cloneBack = elements[0].cloneNode(true);
+      const cloneFront = elements[elements.length - 1].cloneNode(true);
+      [cloneBack, cloneFront].forEach((clone) => {
+        clone.setAttribute('data-cloned', 'true');
+        clone.setAttribute('aria-hidden', 'true');
+        clone.removeAttribute('data-slide-index');
+        clone.removeAttribute('data-slot');
+      });
+      container.replaceChildren(...[cloneFront, ...elements, cloneBack]);
+      container.setAttribute('data-slides-cloned', 'true');
+    });
+
+    goToMobileCarouselActive();
+  }
+
+  function moveMobileCarousel(direction) {
+    flying = true;
+    const dir = direction === 'next' ? 1 : -1;
+    applyRotation(dir);
+
+    const { width: mediaWidth } = medias[0].getBoundingClientRect();
+    const { width: itemWidth } = items[0].getBoundingClientRect();
+    const alreadyTranslatedStack = parseFloat(stack.style.getPropertyValue('--split-aside-grid-stack-translate')) || 0;
+    const alreadyTranslatedItem = parseFloat(itemsWrap.style.getPropertyValue('--split-aside-grid-items-translate')) || 0;
+
+    const translateValueStack = getSlideTranslateValue({ width: mediaWidth });
+    const translateValueItems = getSlideTranslateValue({ width: itemWidth, gap: itemWidth });
+
+    const translateStack = alreadyTranslatedStack + translateValueStack * dir;
+    const translateItems = alreadyTranslatedItem + translateValueItems * dir;
+
+    const transitionCurve = 'cubic-bezier(0.42, 0, 0, 1)';
+    const stackTransitionDuration = 600;
+    const itemsTransitionDuration = stackTransitionDuration / 1.2;
+
+    setInline(stack, {
+      'stack-translate': `${translateStack}px`,
+      'container-transition': `translate ${stackTransitionDuration}ms ${transitionCurve}`,
+    });
+    setInline(itemsWrap, {
+      'items-translate': `${translateItems}px`,
+      'container-transition': `translate ${itemsTransitionDuration}ms ${transitionCurve}`,
+    });
+
+    setTimeout(() => {
+      flying = false;
+      goToMobileCarouselActive();
+    }, !isReducedMotion ? stackTransitionDuration + 20 : 0);
+  }
+
   function onPointerMove(e) {
     if (!drag || e.pointerId !== drag.id || !target) return;
 
@@ -368,6 +456,11 @@ function setupBlock(el) {
     drag.animation = true;
 
     const dir = getDirection(drag.dx);
+    drag.direction = dir;
+
+    // If mobile-carousel variant, skip flying animation
+    if (isMobileCarousel || isReducedMotion) return;
+
     if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
       medias.forEach((m) => clearInline(m, ['transform']));
@@ -382,7 +475,6 @@ function setupBlock(el) {
       drag.progress = progress;
       animatePrev(progress, incoming);
     }
-    drag.direction = dir;
   }
 
   function onPointerUp(e) {
@@ -394,12 +486,14 @@ function setupBlock(el) {
 
     const commit = Math.abs(dx) >= SWIPE_THRESHOLD;
 
-    if (!commit) { snapBack(direction); return; }
-    if (reducedMotion()) {
-      applyRotation(direction === 'next' ? 1 : -1);
-      medias.forEach((slide) => clearInline(slide));
+    // If is mobile-carousel variant move carousel and skip commit flow
+    if (!commit && isMobileCarousel) return;
+    if (commit && isMobileCarousel) {
+      moveMobileCarousel(direction);
       return;
     }
+
+    if (!commit) { snapBack(direction); return; }
     if (direction === 'next') commitNext(progress);
     else commitPrev(progress);
   }
@@ -418,7 +512,10 @@ function setupBlock(el) {
     const actionTrigger = key ? triggers.get(key) : triggers.get(btn);
     if (!actionTrigger) return;
     const [commit, toFocus] = actions[actionTrigger];
-    commit(0.25, true);
+
+    if (isMobileCarousel) moveMobileCarousel(actionTrigger);
+    else commit(0.25, true);
+
     toFocus?.focus();
   }
 
@@ -468,6 +565,43 @@ function setupBlock(el) {
     el.removeEventListener('keydown', handleNavigation);
   }
 
+  let mobileCarouselIntersection = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        eagerLoadMobileCarouselImages();
+        mobileCarouselIntersection.disconnect(el);
+        mobileCarouselIntersection = null;
+      }
+    });
+  });
+
+  function addMobileCarouselIntersection() {
+    if (!isMobileCarousel || !mobileCarouselIntersection) return;
+    mobileCarouselIntersection.observe(el);
+  }
+
+  function handleResizeDesktop() {
+    const { scrollWidth } = el;
+    const width = document.documentElement.clientWidth;
+    setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
+  }
+
+  function addResizeObserver() {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      if (isMobileCarousel && isMobile) goToMobileCarouselActive();
+      else handleResizeDesktop();
+    });
+    resizeObserver.observe(stack);
+  }
+
+  function removeResizeObserver() {
+    if (!resizeObserver) return;
+    resizeObserver.disconnect();
+    resizeObserver = null;
+  }
+
   function bindMobile() {
     if (mobileBound) return;
     mobileBound = true;
@@ -477,6 +611,11 @@ function setupBlock(el) {
     stack.addEventListener('pointercancel', onPointerUp);
     enableMobileNavigation();
     swapStackItems();
+
+    if (!isMobileCarousel) return;
+
+    addMobileCarouselIntersection();
+    addResizeObserver();
   }
 
   function unbindMobile() {
@@ -487,23 +626,7 @@ function setupBlock(el) {
     stack.removeEventListener('pointerup', onPointerUp);
     stack.removeEventListener('pointercancel', onPointerUp);
     disableMobileNavigation();
-  }
-
-  function addResizeObserver() {
-    resizeObserver = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      const { scrollWidth } = el;
-      const width = document.documentElement.clientWidth;
-      setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
-    });
-    resizeObserver.observe(stack);
-  }
-
-  function removeResizeObserver() {
-    if (!resizeObserver) return;
-    resizeObserver.disconnect();
-    resizeObserver = null;
+    removeResizeObserver();
   }
 
   function bindDesktop() {
@@ -523,9 +646,9 @@ function setupBlock(el) {
 
   function syncBindings() {
     stack = el.querySelector('.split-aside-grid-stack');
-    medias = [...el.querySelectorAll('.media')];
+    medias = [...el.querySelectorAll('.media:not([data-cloned="true"])')];
     itemsWrap = el.querySelector('.split-aside-grid-items');
-    items = [...itemsWrap.children];
+    items = [...el.querySelectorAll('.split-aside-grid-item:not([data-cloned="true"])')];
     dotEls = [...el.querySelector('.split-aside-grid-dots').children];
     ariaLive = el.querySelector('.aria-live-container');
     slideNum = medias.length;
@@ -534,15 +657,17 @@ function setupBlock(el) {
     prevBtn = controlsWrap.querySelector('button.prev');
 
     if (desktopMQ.matches) {
-      isCarousel = false;
+      isMobile = false;
       unbindMobile();
       bindDesktop();
     } else {
-      isCarousel = true;
+      isMobile = true;
       unbindDesktop();
       bindMobile();
     }
+
     applyRotation(0, true);
+    if (isMobile && isMobileCarousel) cloneMobileCarouselSlides();
   }
 
   desktopMQ.addEventListener('change', syncBindings);
