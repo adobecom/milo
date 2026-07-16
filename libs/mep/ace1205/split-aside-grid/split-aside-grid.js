@@ -231,6 +231,11 @@ function setupBlock(el) {
   }
 
   function commitNext(progress, isNavigation) {
+    if (reducedMotion()) {
+      applyRotation(1);
+      return;
+    }
+
     flying = true;
     const oldFront = slideAt(0);
     const width = stackWidth();
@@ -302,10 +307,12 @@ function setupBlock(el) {
   }
 
   function commitPrev(progress, isNavigation) {
-    flying = true;
     const incoming = slideAt(-1);
-
     applyRotation(-1);
+
+    if (reducedMotion()) return;
+
+    flying = true;
 
     if (isNavigation) {
       animatePrev(progress, incoming);
@@ -368,6 +375,10 @@ function setupBlock(el) {
     drag.animation = true;
 
     const dir = getDirection(drag.dx);
+    drag.direction = dir;
+
+    if (reducedMotion()) return;
+
     if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
       medias.forEach((m) => clearInline(m, ['transform']));
@@ -382,7 +393,6 @@ function setupBlock(el) {
       drag.progress = progress;
       animatePrev(progress, incoming);
     }
-    drag.direction = dir;
   }
 
   function onPointerUp(e) {
@@ -395,11 +405,6 @@ function setupBlock(el) {
     const commit = Math.abs(dx) >= SWIPE_THRESHOLD;
 
     if (!commit) { snapBack(direction); return; }
-    if (reducedMotion()) {
-      applyRotation(direction === 'next' ? 1 : -1);
-      medias.forEach((slide) => clearInline(slide));
-      return;
-    }
     if (direction === 'next') commitNext(progress);
     else commitPrev(progress);
   }
