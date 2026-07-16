@@ -281,6 +281,15 @@ describe('merch-card-autoblock autoblock', () => {
       a.textContent = '[[cta-test:ctas]]';
       strong.append(a);
       p.append(strong);
+
+      const em = document.createElement('em');
+      const a2 = document.createElement('a');
+      a2.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=ctas-inherit-2&field=ctas';
+      a2.textContent = '[[cta-test:ctas]]';
+      a2.classList.add('some-class', 'merch-card-autoblock', 'link-block');
+      em.append(a2);
+      p.append(em);
+
       section.append(p);
       document.body.append(section);
 
@@ -292,6 +301,10 @@ describe('merch-card-autoblock autoblock', () => {
       expect(link.classList.contains('blue')).to.be.true;
       expect(link.classList.contains('button-l')).to.be.true;
       expect(link.classList.contains('button-justified-mobile')).to.be.true;
+
+      const linkNotDecorated = p.querySelector('a.some-class');
+      expect(linkNotDecorated).to.exist;
+      expect(linkNotDecorated.className).to.equal('some-class merch-card-autoblock link-block');
     });
 
     it('upgrades plain commerce links and decorates using block context', async () => {

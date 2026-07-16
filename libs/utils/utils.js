@@ -2309,7 +2309,6 @@ async function loadPostLCP(config) {
     const lenisPreventSelectors = [
       '.dialog-modal',
       '.ot-sdk-container',
-      '.global-navigation',
       'div[data-testid="main-content-area"]',
     ];
     window.lenis = new window.Lenis({
@@ -2318,6 +2317,9 @@ async function loadPostLCP(config) {
       wheelMultiplier: 0.7,
       prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
+    }
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {

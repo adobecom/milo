@@ -425,6 +425,7 @@
   --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  --feds-language-banner-height: 44px;
 
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -1381,6 +1382,8 @@ span.hang-opening-quote {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    --parallax-move-up-to: -35vh;
+
     will-change: transform;
     position: sticky;
     top: 0;
@@ -1389,6 +1392,11 @@ span.hang-opening-quote {
     animation-timeline: scroll(root block);
     animation-range: 0 80vh;
     animation-timing-function: ease-out;
+
+    /* Shorter viewports in the common laptop width band need more travel */
+    @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+      --parallax-move-up-to: -50vh;
+    }
 
     &::after {
       content: '';
@@ -1406,7 +1414,7 @@ span.hang-opening-quote {
 
   @keyframes parallax-move-up-fast {
     from { transform: translateY(0); }
-    to { transform: translateY(-35vh); }
+    to { transform: translateY(var(--parallax-move-up-to)); }
   }
 
   @keyframes parallax-fade-to-dark {
@@ -1450,6 +1458,11 @@ span.hang-opening-quote {
       color: var(--color-white); /* TODO: Replace with an S2A variable */
     }
   }
+}
+
+.language-banner {
+  height: var(--feds-language-banner-height);
+  visibility: hidden;
 }
 
 @media (width >= 768px) {
