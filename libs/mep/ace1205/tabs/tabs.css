@@ -1,0 +1,208 @@
+:root {
+  --pill-bg-color-selected: var(--s2a-color-background-knockout);
+  --pill-rounded-corners-setting: 50px;
+}
+
+.tabs {
+  position: relative;
+  margin: 0;
+  background-color: var(--s2a-color-gray-25);
+  z-index: 1;
+
+  &.background-transparent {
+    background: transparent;
+  }
+
+  .tabs-wrapper {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .tab-indicator {
+    position: absolute;
+    top: var(--s2a-spacing-2xs);
+    bottom: var(--s2a-spacing-2xs);
+    left: 0;
+    background: var(--pill-bg-color-selected);
+    border-radius: var(--pill-rounded-corners-setting);
+    transition: transform 0.25s ease, width 0.35s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  [role='tablist'] {
+    position: relative;
+    display: flex;
+    z-index: 2;
+
+    /* ScrollProps - If content exceeds height of container, overflow! */
+    overflow: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Use alongside -webkit-scrollbar */
+    background: var(--s2a-color-transparent-black-04);
+    border-radius: var(--pill-rounded-corners-setting);
+
+    &::-webkit-scrollbar {
+      display: none; /* Safari and Chrome */
+    }
+
+    .tab-list-container {
+      display: flex;
+      width: auto;
+      min-width: 300px;
+      box-sizing: content-box;
+      align-items: center;
+      align-self: stretch;
+      position: relative; /* for slider */
+    }
+
+    .btn-wrapper {
+      display: flex;
+      padding: var(--s2a-spacing-2xs);
+      flex-direction: column;
+      align-items: flex-start;
+      align-self: stretch;
+    }
+
+    button.tab-button {
+      color: var(--s2a-color-transparent-black-64);
+      cursor: pointer;
+      font-family: var(--body-font-family);
+      text-align: center;
+      font-style: normal;
+      margin: 0;
+      border-radius: var(--pill-rounded-corners-setting);
+      border: var(--s2a-border-width-md) solid transparent;
+      padding: 0 var(--s2a-spacing-lg);
+      text-decoration: none;
+      transition: color 0.1s ease-in-out;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+      width: auto;
+      position: relative;
+      z-index: 1;
+      flex: 1 0 auto;
+      background: transparent;
+      height: 32px;
+
+      &:hover {
+        color: #2c2c2c;
+      }
+
+      &[aria-selected="true"] {
+        color: var(--s2a-color-content-knockout);
+        background: var(--pill-bg-color-selected);
+        transition: background 0s 0.25s, color 0.2s 0s ease-out;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--s2a-color-blue-800);
+        outline-offset: -2px;
+      }
+    }
+  }
+
+  @media (width < 768px) {
+    overflow-x: clip;
+    
+    .tabs-wrapper {
+      width: 100vw;
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      justify-content: flex-start;
+      overflow-x: auto;
+      scrollbar-width: none; /* Use alongside -webkit-scrollbar */
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    [role='tablist'] {
+      overflow: visible;
+      margin: 0 var(--s2a-spacing-20);
+    }
+  }
+
+  @media (width >= 768px) {
+    &.center .tabs-wrapper {
+      justify-content: center;
+    }
+
+    &.right .tabs-wrapper {
+      justify-content: flex-end;
+    }
+  }
+}
+
+.tab-content [role='tabpanel'] {
+  .section {
+    position: relative;
+
+    picture.section-background {
+      z-index: 0;
+    }
+
+    > .content {
+      z-index: 1;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    &[class*='-up'] > .content {
+      width: 100%;
+    }
+  }
+}
+
+/* Section Metadata - keep for testing ace1205 when merch is available */
+.tabs-background-transparent {
+  .tabs,
+  .tabs [role='tablist'],
+  .tabs [role='tablist'] button.tab-button[aria-selected="true"] {
+    background: transparent;
+  }
+}
+
+/* Animation for tab content entrance */
+@keyframes tab-content-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tabs.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+  animation: tab-content-in 0.5s ease both;
+  
+  &:nth-child(2) { animation-delay: 0.1s; }
+  &:nth-child(3) { animation-delay: 0.2s; }
+  &:nth-child(4) { animation-delay: 0.3s; }
+  &:nth-child(5) { animation-delay: 0.4s; }
+  &:nth-child(6) { animation-delay: 0.5s; }
+  &:nth-child(7) { animation-delay: 0.6s; }
+  &:nth-child(8) { animation-delay: 0.7s; }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .tabs.staggered-intro-merch-cards .tab-content-container [role='tabpanel'].tab-entering .section merch-card {
+    animation: none;
+  }
+}
+
+@media (width >= 1920px) {
+  [role='tabpanel'] > .section[class*='-up'] > .content,
+  [role='tabpanel'] > .section[class*='grid-width-'] > .content {
+    width: auto;
+  }
+}

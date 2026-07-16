@@ -409,11 +409,65 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
 
       if (!activeLink) return null;
 
+      activeLink.dataset.activeLinkHref = activeLink.href;
       setActiveLink(true);
       return activeLink;
     },
   ];
 })();
+
+const ACTIVE_LINK_ATTRS = ['role', 'aria-disabled', 'aria-current', 'tabindex'];
+
+export function updateGnavActiveLink() {
+  const activeNavItemClass = selectors.activeNavItem.slice(1);
+  const deferredActiveNavItemClass = selectors.deferredActiveNavItem.slice(1);
+
+  document.querySelectorAll('a[data-active-link-href]').forEach((link) => {
+    const savedHref = link.getAttribute('data-active-link-href');
+    if (savedHref) link.setAttribute('href', savedHref);
+    link.removeAttribute('data-active-link-href');
+    ACTIVE_LINK_ATTRS.forEach((attr) => link.removeAttribute(attr));
+  });
+  document
+    .querySelectorAll(`${selectors.activeNavItem}, ${selectors.navItem}[data-active-link-href]`)
+    .forEach((navItem) => {
+      navItem.removeAttribute('data-active-link-href');
+      navItem.classList.remove(activeNavItemClass, deferredActiveNavItemClass);
+      navItem.style.removeProperty('width');
+    });
+
+  setActiveLink(false);
+
+  const nav = document.querySelector(`${selectors.globalNav}, ${selectors.localNav}`);
+  if (!nav) return;
+
+  const { origin, pathname } = window.location;
+  const currentUrl = `${origin}${pathname}`;
+  const matchesUrl = (el) => el.href === currentUrl
+    || el.href.startsWith(`${currentUrl}?`)
+    || el.href.startsWith(`${currentUrl}#`);
+
+  const newActiveLink = [...nav.querySelectorAll('a:not([data-modal-hash])[href]')]
+    .find(matchesUrl);
+
+  if (!newActiveLink) return;
+
+  const navItem = newActiveLink.closest(selectors.navItem);
+  if (!navItem) return;
+
+  navItem.classList.add(activeNavItemClass);
+  newActiveLink.dataset.activeLinkHref = newActiveLink.href;
+
+  if (!newActiveLink.nextElementSibling?.classList.contains('feds-popup')) {
+    newActiveLink.removeAttribute('href');
+    newActiveLink.setAttribute('role', 'link');
+    newActiveLink.setAttribute('aria-disabled', 'true');
+    newActiveLink.setAttribute('aria-current', 'page');
+    newActiveLink.setAttribute('tabindex', '0');
+  }
+
+  setActiveLink(true);
+}
 
 export const setAriaAtributes = (dropdownTrigger) => {
   const popup = dropdownTrigger.nextElementSibling;
@@ -567,7 +621,12 @@ export async function fetchAndProcessPlainHtml({
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
-      link.href = await localizeLinkAsync(getFederatedUrl(link.href));
+      link.href = await localizeLinkAsync(
+        getFederatedUrl(link.href),
+        window.location.hostname,
+        false,
+        link,
+      );
       // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
       if (link.dataset.manifestId) {
         link.dataset.skipLoadArea = 'true';

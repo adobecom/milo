@@ -42,7 +42,7 @@ function getStandaloneNavOrigin(env) {
 async function loadFederalLocales(env) {
   const origin = getStandaloneNavOrigin(env);
   const url = `${origin}/federal/utils/locales.js`;
-  const mod = await import(url);
+  const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ url);
   return mod.default;
 }
 
@@ -113,6 +113,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     stageDomainsMap = {},
     allowedOrigins = [],
+    promoSource = '',
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -195,6 +196,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
+            promoSource,
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -202,11 +204,13 @@ export default async function loadBlock(configs, customLib) {
             { key: 'redirect', name: 'adobe-home-redirect' },
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
+            { key: 'promoSource', name: 'gnav-promo-source' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, gnavConfigs);
           window.closeGnav = closeGnavOptions;
+          window.updateGnavActiveLink = updateGnavActiveLink;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);

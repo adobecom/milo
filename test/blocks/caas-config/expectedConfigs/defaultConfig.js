@@ -30,6 +30,7 @@ const defaultConfig = {
       titleHeadingLevel: 'h3',
       nextCards: 'Next Cards',
       prevCards: 'Previous Cards',
+      sortBy: 'Sort by',
     },
     detailsTextOption: 'default',
     setCardBorders: false,
@@ -215,6 +216,7 @@ const defaultConfig = {
   },
   linkTransformer: {},
   customCard: ['card', 'return ``'],
+  products: {},
 };
 
 export default defaultConfig;

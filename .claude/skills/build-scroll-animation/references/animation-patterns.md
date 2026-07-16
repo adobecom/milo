@@ -195,7 +195,6 @@ Before finalizing any animation, answer these questions:
 | Zoom out + blur clear | `parallax-scale-down parallax-blur` |
 | Card grid stagger (LTR) | `parallax-stagger-ltr` on section |
 | Card grid stagger (RTL) | `parallax-stagger-rtl` on section |
-| Text line-height reveal | `parallax-line-height` |
 | Sticky section with darkening | `parallax-move-up-fast` |
 | Section growing from below | `parallax-garage-door-reveal` |
 | Custom slide distance | Override `--parallax-translate-y` in new class |

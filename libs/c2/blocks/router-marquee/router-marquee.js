@@ -1,19 +1,16 @@
 import { sendAnalytics } from '../../../martech/helpers.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
-import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig } from '../../../utils/utils.js';
+import { createTag, getFederatedUrl, getFederatedContentRoot, getConfig, shouldBlockFreeTrialLinks } from '../../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 
 let USER_ACTION = false;
 const SLIDE_ANALYTICS = [];
 
 const getViewport = (el) => el.closest('.rm-viewport')?.dataset.viewport;
-const getIndex = (el) => [...el.parentNode.children].indexOf(el);
-
-const fireAnalytic = (card) => {
+const fireAnalytic = (card, index) => {
   const section = card.parentNode.closest('.section');
 
   const fireSendAnalytics = () => {
-    const index = getIndex(card);
     const viewport = getViewport(card);
     const { label, seen, visible } = SLIDE_ANALYTICS[viewport][index] || {};
 
@@ -39,16 +36,15 @@ const fireAnalytic = (card) => {
 };
 
 const setSlideObserver = (slides) => {
-  slides.forEach((slide) => {
+  slides.forEach((slide, index) => {
     const titleEl = slide.querySelector('.rm-title');
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         const viewport = getViewport(entry.target);
-        const index = getIndex(slide);
         SLIDE_ANALYTICS[viewport][index].visible = entry.isIntersecting;
         if (entry.isIntersecting && slide.classList.contains('is-active')) {
           const card = slide.closest('.rm-viewport').querySelector('.rm-card.is-active');
-          fireAnalytic(card);
+          fireAnalytic(card, index);
         }
       });
     }, { threshold: 1.0 });
@@ -167,9 +163,10 @@ const decorateCtas = (textCol) => {
   cta.classList.add('rm-ctas', 'dark', 'action-area');
   const primary = cta.querySelector('em > strong a');
   const secondary = cta.querySelector('em > a');
-  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'button-lg', 'outline');
-  secondary?.classList.add('con-button', 'button-lg', 'outline');
-  cta.replaceChildren(...[primary, secondary].filter(Boolean));
+  primary?.classList.add('con-button', 'rm-cta-primary', 'fill', 'outline');
+  secondary?.classList.add('con-button', 'outline');
+  cta.replaceChildren(...[primary, secondary]
+    .filter((btn) => btn && !shouldBlockFreeTrialLinks(btn)));
 };
 
 const prepareVideo = (imageCol) => {

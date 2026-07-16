@@ -202,6 +202,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -404,6 +405,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -476,6 +478,7 @@ describe('getConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -678,6 +681,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -1082,6 +1086,7 @@ describe('getFloodgateCaasConfig', () => {
           titleHeadingLevel: 'h3',
           nextCards: 'Next Cards',
           prevCards: 'Previous Cards',
+          sortBy: 'Sort by',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -1284,6 +1289,7 @@ describe('getFloodgateCaasConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],

@@ -946,6 +946,16 @@ export const getGrayboxExperienceId = (
   return null;
 };
 
+export const getProducts = async (state) => {
+  try {
+    const { tags } = await getTags(state.tagsUrl);
+    return tags?.mnemonics?.tags || {};
+  } catch (e) {
+    window.lana?.log(`Failed to fetch CaaS products: ${e.message}`, { tags: 'caas' });
+    return {};
+  }
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -1009,6 +1019,8 @@ export const getConfig = async (originalState, strs = {}) => {
     excludedCardsWithCurrent = excludedCards;
   }
 
+  const products = state.detailsTextOption === 'productName' ? await getProducts(state) : {};
+
   const config = {
     collection: {
       mode: state.theme,
@@ -1059,6 +1071,7 @@ export const getConfig = async (originalState, strs = {}) => {
         playVideo: strs.playVideo || 'Play, {cardTitle}',
         nextCards: strs.nextCards || 'Next Cards',
         prevCards: strs.prevCards || 'Previous Cards',
+        sortBy: strs.sortBy || 'Sort by',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
@@ -1104,6 +1117,28 @@ export const getConfig = async (originalState, strs = {}) => {
       // Include editorialOpenVariant if necessary
       ...((state.cardStyle === 'editorial-card' && state.editorialCardOpenVariant)
         && { editorialOpenVariant: !!state.editorialCardOpenVariant }),
+
+      // Include flexCardOptions when configured
+      ...((state.cardStyle === 'flex-card'
+        && (state.flexCardImageOptions !== 'default'
+          || state.flexCardTextAlign !== 'text-left'
+          || state.flexCardTextSize !== 'default'
+          || state.flexCardHideDetails
+          || state.flexCardHideTitle
+          || state.flexCardHideDescription
+          || state.flexCardHideFooter))
+        && {
+          flexCard: {
+            imageOption: state.flexCardImageOptions,
+            textAlign: state.flexCardTextAlign,
+            textSize: state.flexCardTextSize,
+            hideDetails: !!state.flexCardHideDetails,
+            hideTitle: !!state.flexCardHideTitle,
+            hideDescription: !!state.flexCardHideDescription,
+            hideFooter: !!state.flexCardHideFooter,
+          },
+        }
+      ),
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,
@@ -1227,6 +1262,7 @@ export const getConfig = async (originalState, strs = {}) => {
     customCard: ['card', `return \`${state.customCard}\``],
     linkTransformer: pageConfig.caasLinkTransformer || stageMapToCaasTransforms(pageConfig),
     headers: caasRequestHeaders,
+    products,
   };
   return config;
 };
@@ -1352,6 +1388,13 @@ export const defaultState = {
   targetActivity: '',
   targetEnabled: false,
   theme: 'lightest',
+  flexCardTextSize: 'default',
+  flexCardImageOptions: 'default',
+  flexCardTextAlign: 'text-left',
+  flexCardHideDetails: false,
+  flexCardHideTitle: false,
+  flexCardHideDescription: false,
+  flexCardHideFooter: false,
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,

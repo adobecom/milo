@@ -239,14 +239,10 @@ export async function getModal(details, custom) {
 
   const focusVisible = { focusVisible: true };
   const focusablesOnLoad = [...dialog.querySelectorAll(FOCUSABLES)];
-  const titleOnLoad = dialog.querySelector('h1, h2, h3, h4, h5');
   let firstFocusable;
 
   if (focusablesOnLoad.length && isElementInView(focusablesOnLoad[0])) {
     firstFocusable = focusablesOnLoad[0]; // eslint-disable-line prefer-destructuring
-  } else if (titleOnLoad) {
-    titleOnLoad.setAttribute('tabIndex', 0);
-    firstFocusable = titleOnLoad;
   } else {
     firstFocusable = close;
   }
@@ -392,8 +388,9 @@ export function delayedModal(el) {
 export default async function init(el) {
   const { modalHash, modalPath } = el.dataset;
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
-  if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
-  if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
+  const normalizedHash = modalHash?.replace(/#_button-[a-zA-Z-]+/g, '');
+  if (delayedModal(el) || window.location.hash !== normalizedHash || document.querySelector(`div.dialog-modal${normalizedHash}`)) return null;
+  if (dialogLoadingSet.has(normalizedHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = await findDetails(window.location.hash, el);
   details.deepLink = true;
   return details ? getModal(details) : null;

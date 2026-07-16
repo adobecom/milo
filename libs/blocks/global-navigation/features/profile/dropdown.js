@@ -164,7 +164,7 @@ class ProfileDropdown {
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
       window.dispatchEvent(new Event('feds:signOut'));
-      window.adobeIMS.signOut();
+      window.adobeIMS.signOut({ redirect_uri: window.location.href });
     });
 
     return signOutLink;
