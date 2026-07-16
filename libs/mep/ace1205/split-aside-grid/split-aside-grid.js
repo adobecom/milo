@@ -7,7 +7,7 @@ const SNAP_MS = 300;
 const FADE_IN_MS = 160;
 const RIGHT_DRAG_DENOM = 160;
 
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -231,6 +231,11 @@ function setupBlock(el) {
   }
 
   function commitNext(progress, isNavigation) {
+    if (isReducedMotion) {
+      applyRotation(1);
+      return;
+    }
+
     flying = true;
     const oldFront = slideAt(0);
     const width = stackWidth();
@@ -302,10 +307,12 @@ function setupBlock(el) {
   }
 
   function commitPrev(progress, isNavigation) {
-    flying = true;
     const incoming = slideAt(-1);
-
     applyRotation(-1);
+
+    if (isReducedMotion) return;
+
+    flying = true;
 
     if (isNavigation) {
       animatePrev(progress, incoming);
@@ -368,6 +375,10 @@ function setupBlock(el) {
     drag.animation = true;
 
     const dir = getDirection(drag.dx);
+    drag.direction = dir;
+
+    if (isReducedMotion) return;
+
     if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
       medias.forEach((m) => clearInline(m, ['transform']));
@@ -382,7 +393,6 @@ function setupBlock(el) {
       drag.progress = progress;
       animatePrev(progress, incoming);
     }
-    drag.direction = dir;
   }
 
   function onPointerUp(e) {
@@ -395,11 +405,6 @@ function setupBlock(el) {
     const commit = Math.abs(dx) >= SWIPE_THRESHOLD;
 
     if (!commit) { snapBack(direction); return; }
-    if (reducedMotion()) {
-      applyRotation(direction === 'next' ? 1 : -1);
-      medias.forEach((slide) => clearInline(slide));
-      return;
-    }
     if (direction === 'next') commitNext(progress);
     else commitPrev(progress);
   }
