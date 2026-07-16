@@ -897,7 +897,7 @@ export default async function init(el) {
         style.textContent = `
           footer { padding-top: var(--consonant-merch-spacing-xxs, 8px) !important; }
           @media (min-width: 768px) {
-            slot[name="promo-text"] { min-height: 8px !important; }
+            slot[name="promo-text"] { min-height: var(--consonant-merch-spacing-xxxs, 4px) !important; }
           }
           .card-subtitle-injected {
             display: flex;
@@ -907,13 +907,14 @@ export default async function init(el) {
             font-weight: var(--consonant-merch-card-detail-m-font-weight, 700);
             font-style: normal;
             line-height: 1.5;
-            min-height: 42px;
+            min-height: 28px;
             padding: 0 var(--consonant-merch-spacing-s, 24px) 0 var(--consonant-merch-spacing-xs, 16px);
           }
           :host(.has-sparkle) .card-subtitle-injected { color: #c12f84; }
           :host(:not(.has-sparkle)) .card-subtitle-injected { color: #4b4b4b; }
           .card-subtitle-injected em { font-style: normal; }
           .card-subtitle-injected::before { padding-top: 3px; }
+          :host(.two-line-subtitle) .card-subtitle-injected { min-height: 42px; }
         `;
 
         const subtitleEl = merchCard.querySelector('.card-subtitle');
