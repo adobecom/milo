@@ -226,6 +226,10 @@
       grid-row: 1;
     }
 
+    p:has(span[is="inline-price"]) {
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    }
+
     &.has-background .section-background {
       position: relative;
       inset: unset;
