@@ -126,7 +126,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-xs);
-  padding-bottom: var(--s2a-spacing-xs);
+  /* padding-bottom: var(--s2a-spacing-xs); */
   flex-shrink: 0;
 }
 
@@ -252,7 +252,7 @@
   }
 
   .rcc-category-wrapper {
-    padding-bottom: var(--s2a-spacing-md); /* 16px at L */
+    /* padding-bottom: var(--s2a-spacing-md);  */
   }
 
   /* Switch app names to super size at L */
