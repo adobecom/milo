@@ -509,16 +509,16 @@
     border: var(--glass-stroke) solid var(--glass-fill);
     padding: var(--glass-frame);
     background: var(--glass-fill);
-    outline: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-48);
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
+    outline-offset: 0;
     border-radius: var(--s2a-border-radius-24);
     backdrop-filter: blur(var(--s2a-blur-md));
     overflow: hidden;
 
-    &:is(img, video) {
+    :is(img, video) {
       border-radius: calc(var(--s2a-border-radius-24) - var(--glass-frame));
     }
   }
-
 }
 
 @media (width >= 768px) {
