@@ -501,8 +501,11 @@
     background-color: unset;
   }
 
-  &.glass-border .media picture {
-    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-04);
+  &.glass-border .media :is(picture, .video-container) {
+    border: 9px solid var(--s2a-color-transparent-white-08);
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-48);
+    outline-offset: 0;
+    border-radius: var(--s2a-border-radius-24);
     background: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(var(--s2a-blur-md));
   }
