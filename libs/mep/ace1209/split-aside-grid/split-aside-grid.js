@@ -561,11 +561,10 @@ function setupBlock(el) {
 
   let mobileCarouselIntersection = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        eagerLoadMobileCarouselImages();
-        mobileCarouselIntersection.disconnect();
-        mobileCarouselIntersection = null;
-      }
+      if (!entry.isIntersecting) return;
+      eagerLoadMobileCarouselImages();
+      mobileCarouselIntersection.disconnect();
+      mobileCarouselIntersection = null;
     });
   });
 
