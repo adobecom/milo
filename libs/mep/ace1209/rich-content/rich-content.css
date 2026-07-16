@@ -502,13 +502,23 @@
   }
 
   &.glass-border .media :is(picture, .video-container) {
-    border: 9px solid var(--s2a-color-transparent-white-08);
+    --glass-frame: 9px;
+    --glass-stroke: 1.622px;
+    --glass-fill: rgb(255 255 255 / 5%);
+    box-sizing: border-box;
+    border: var(--glass-stroke) solid var(--glass-fill);
+    padding: var(--glass-frame);
+    background: var(--glass-fill);
     outline: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-48);
-    outline-offset: 0;
     border-radius: var(--s2a-border-radius-24);
-    background: var(--s2a-color-transparent-white-04);
     backdrop-filter: blur(var(--s2a-blur-md));
+    overflow: hidden;
+
+    &:is(img, video) {
+      border-radius: calc(var(--s2a-border-radius-24) - var(--glass-frame));
+    }
   }
+
 }
 
 @media (width >= 768px) {
