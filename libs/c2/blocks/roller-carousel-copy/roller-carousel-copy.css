@@ -217,8 +217,8 @@
    ============================================================ */
 @media (width >= 768px) {
   .rcc-media-wrapper {
-    width: 397px;
-    height: 560px;
+    width: 475px;
+    height: 336px;
     border-radius: var(--s2a-border-radius-md);
   }
 }
