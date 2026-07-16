@@ -7,7 +7,7 @@ const SNAP_MS = 300;
 const FADE_IN_MS = 160;
 const RIGHT_DRAG_DENOM = 160;
 
-const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -131,6 +131,7 @@ function setupBlock(el) {
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
   const slideAt = (off) => medias[mod(rotation + off)];
+  const mobileCarouselCurve = getComputedStyle(document.documentElement).getPropertyValue('--parallax-easing');
 
   function setAriaHiddenAndTabIndex() {
     medias.forEach((media, idx) => {
@@ -223,7 +224,7 @@ function setupBlock(el) {
   }
 
   function commitNext(progress, isNavigation) {
-    if (isReducedMotion) {
+    if (reducedMotion()) {
       applyRotation(1);
       return;
     }
@@ -302,7 +303,7 @@ function setupBlock(el) {
     const incoming = slideAt(-1);
     applyRotation(-1);
 
-    if (isReducedMotion) return;
+    if (reducedMotion()) return;
 
     flying = true;
 
@@ -424,23 +425,22 @@ function setupBlock(el) {
     const translateStack = alreadyTranslatedStack + translateValueStack * dir;
     const translateItems = alreadyTranslatedItem + translateValueItems * dir;
 
-    const transitionCurve = 'cubic-bezier(0.42, 0, 0, 1)';
     const stackTransitionDuration = 600;
     const itemsTransitionDuration = stackTransitionDuration / 1.2;
 
     setInline(stack, {
       'stack-translate': `${translateStack}px`,
-      'container-transition': `translate ${stackTransitionDuration}ms ${transitionCurve}`,
+      'container-transition': `translate ${stackTransitionDuration}ms ${mobileCarouselCurve}`,
     });
     setInline(itemsWrap, {
       'items-translate': `${translateItems}px`,
-      'container-transition': `translate ${itemsTransitionDuration}ms ${transitionCurve}`,
+      'container-transition': `translate ${itemsTransitionDuration}ms ${mobileCarouselCurve}`,
     });
 
     setTimeout(() => {
       flying = false;
       goToMobileCarouselActive();
-    }, !isReducedMotion ? stackTransitionDuration + 20 : 0);
+    }, !reducedMotion() ? stackTransitionDuration + 20 : 0);
   }
 
   function onPointerMove(e) {
@@ -459,13 +459,7 @@ function setupBlock(el) {
     drag.direction = dir;
 
     // If mobile-carousel variant, skip flying animation
-    if (isMobileCarousel || isReducedMotion) return;
-
-    if (drag.direction && drag.direction !== dir) {
-      /* Direction reversed — reset every drag-touched property back to the original slots */
-      medias.forEach((m) => clearInline(m, ['transform']));
-      applyRotation(0);
-    }
+    if (isMobileCarousel || reducedMotion()) return;
 
     if (dir === 'next') {
       animateNext();
@@ -569,7 +563,7 @@ function setupBlock(el) {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         eagerLoadMobileCarouselImages();
-        mobileCarouselIntersection.disconnect(el);
+        mobileCarouselIntersection.disconnect();
         mobileCarouselIntersection = null;
       }
     });

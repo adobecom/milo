@@ -98,7 +98,7 @@
 .split-aside-grid.mobile-carousel {
   overflow-x: clip;
   @media (width < 768px) {
-    --split-aside-grid-gap: 24px;
+    --split-aside-grid-gap: var(--s2a-spacing-lg);
 
     .split-aside-grid-stack {
       height: 100%;
@@ -106,7 +106,7 @@
       justify-content: flex-start;
       gap: var(--split-aside-grid-gap);
       translate: var(--split-aside-grid-stack-translate, 0);
-      transition: var(--split-aside-grid-container-transition, 'none');
+      transition: var(--split-aside-grid-container-transition, none);
 
       .media {
         position: static;
@@ -121,7 +121,7 @@
       display: flex;
       gap: calc(100% + var(--split-aside-grid-gap));
       translate: var(--split-aside-grid-items-translate, 0);
-      transition: var(--split-aside-grid-container-transition, 'none');
+      transition: var(--split-aside-grid-container-transition, none);
 
       .split-aside-grid-item {
         min-width: 100%;
