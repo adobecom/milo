@@ -216,19 +216,19 @@
     }
   }
 
-  &.parallax-garage-door-reveal:has(.rich-content.hero-asset) {
+  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
     .foreground {
       animation-range: cover -10% cover 90%;
     }
   }
 
-  &:has(.rich-content.hero-asset) {
+  &:has(.rich-content.merch-moment) {
     display: grid;
     grid-template-rows: auto auto;
     box-sizing: border-box;
     height: auto;
 
-    .rich-content.hero-asset {
+    .rich-content.merch-moment {
       grid-row: 1;
     }
 
@@ -268,7 +268,7 @@
     }
   }
 
-  &.dark:has(.rich-content.hero-asset) {
+  &.dark:has(.rich-content.merch-moment) {
     background: var(--s2a-color-gray-1000);
   }
 }
@@ -307,7 +307,7 @@
 }
 
 @media (width >= 768px) {
-  .section:has(.rich-content.hero-asset).has-background .section-background img {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     max-width: 1006px;
     margin-inline: auto;
@@ -439,7 +439,7 @@
 }
 
 @media (width >= 1280px) {
-  .section:has(.rich-content.hero-asset).has-background .section-background img {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     height: auto;
   }
@@ -450,7 +450,7 @@
 }
 
 @media (width >= 1440px) {
-  .section:has(.rich-content.hero-asset).has-background .section-background img {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
     max-width: 1612px;
     margin-inline: auto;
