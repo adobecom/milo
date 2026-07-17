@@ -529,6 +529,11 @@
       --glass-frame: 9.4px;
       --glass-stroke: 1.6px;
     }
+
+    :is(img, video) {
+      max-width: 100%;
+      border-radius: var(--s2a-border-radius-24);
+    }
   }
 }
 
