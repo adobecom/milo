@@ -215,6 +215,49 @@
       }
     }
   }
+
+  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    .foreground {
+      animation-range: cover -10% cover 90%;
+    }
+  }
+
+  &:has(.rich-content.merch-moment) {
+    display: grid;
+    grid-template-rows: auto auto;
+    box-sizing: border-box;
+    height: auto;
+
+    .rich-content.merch-moment {
+      grid-row: 1;
+    }
+
+    p:has(span[is="inline-price"]) {
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    }
+
+    &.has-background .section-background {
+
+      &,
+      & > * {
+        position: relative;
+        inset: unset;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 375 / 434;
+        object-fit: cover;
+        object-position: center top;
+        animation: unset;
+      }
+    }
+  }
+
+  &.dark:has(.rich-content.merch-moment) {
+    background: var(--s2a-color-gray-1000);
+  }
 }
 
 .section.bento .rich-content.grid-full-width {
@@ -251,6 +294,14 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    width: 100%;
+    max-width: 1006px;
+    margin-inline: auto;
+    aspect-ratio: unset;
+    display: block;
+  }
+
   .section.has-background:has(.rich-content.jump-link.hero) .section-background picture::after {
     background: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
   }
@@ -375,12 +426,21 @@
 }
 
 @media (width >= 1280px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    width: 100%;
+    height: auto;
+  }
+
   .rich-content.jump-link.hero {
     padding-block-start: var(--s2a-layout-xl);
   }
 }
 
 @media (width >= 1440px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    max-width: 1612px;
+  }
+
   .section.bento {
     .rich-content.grid-full-width {
       margin-inline-start: var(--s2a-spacing-md);
