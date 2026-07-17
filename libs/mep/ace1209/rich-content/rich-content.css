@@ -433,7 +433,7 @@
       position: relative;
       box-sizing: border-box;
       margin-inline: auto;
-      aspect-ratio: 9 / 16;
+      height: 342px;
       border-radius: var(--s2a-border-radius-24);
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
@@ -456,6 +456,7 @@
       position: relative;
       box-sizing: border-box;
       margin-inline: auto;
+      height: 342px;
       border-radius: var(--s2a-border-radius-16);
       overflow: hidden;
       transform-origin: center bottom;
@@ -469,6 +470,7 @@
         border: none;
         border-radius: inherit;
         margin: 0;
+        object-fit: cover;
       }
     }
 
@@ -554,11 +556,13 @@
       }
 
       .video-container {
+        height: auto;
         margin-inline: unset;
         aspect-ratio: 16 / 9;
       }
 
       picture {
+        height: auto;
         max-width: unset;
         margin-inline: unset;
       }
