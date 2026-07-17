@@ -1,4 +1,4 @@
-const MOBILE = '(max-width: 767px)';
+const MOBILE = '(width < 768px)';
 
 export function getCards(section) {
   return [...section.querySelectorAll(':scope > .explore-card')];
@@ -51,7 +51,16 @@ export default function initBentoStack(section) {
   const mq = window.matchMedia(MOBILE);
   let frame = 0;
   let measuring = false;
+  let ro;
   const update = () => {
+    // Self-heal: an MEP replaceInner() can detach this section and re-init on a
+    // fresh one. Drop the orphaned observer + listener so they neither pin the
+    // detached nodes nor keep firing on a dead section.
+    if (!section.isConnected) {
+      ro?.disconnect();
+      mq.removeEventListener('change', update);
+      return;
+    }
     // (clearing/setting --card-height resizes the observed content).
     if (measuring) return;
     cancelAnimationFrame(frame);
@@ -65,7 +74,7 @@ export default function initBentoStack(section) {
 
   update();
 
-  const ro = new ResizeObserver(update);
+  ro = new ResizeObserver(update);
   cards.forEach((card) => ro.observe(naturalEl(card)));
   const title = section.querySelector(':scope > .rich-content');
   if (title) ro.observe(title);

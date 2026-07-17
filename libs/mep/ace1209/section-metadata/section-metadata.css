@@ -77,7 +77,7 @@
   --gnav-offset: 72px;
 
   /* Single knob for design fine-tuning — everything pins at --stack-pin-top. */
-  --bento-stack-top-gap: 20px;
+  --bento-stack-top-gap: 40px;
   --stack-pin-top: calc(var(--gnav-offset) + var(--bento-stack-top-gap));
   --title-height: 24px;
   --title-card-gap: var(--s2a-spacing-24, 24px);
@@ -104,7 +104,7 @@
 }
 
 body:has(header.has-breadcrumbs) .section.bento.stack-mobile {
-  --stack-pin-top: calc(var(--gnav-offset) + var(--feds-breadcrumbs-height, 52px) + var(--bento-stack-top-gap));
+  --stack-pin-top: calc(var(--gnav-offset) + var(--feds-height-breadcrumbs, 33px) + var(--bento-stack-top-gap));
 }
 
 body:has(header.local-nav) .section.bento.stack-mobile {
@@ -336,6 +336,7 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 
   &.bento .explore-card-background {
     transition: filter 0.3s ease-in-out, transform 0.3s ease-out;
+    border-radius: inherit;
 
     img,
     .video-container {
@@ -580,6 +581,31 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 }
 
 @supports not (animation-timeline: view()) {
+  @media (width < 768px) {
+    .section.bento.stack-mobile {
+      display: flex;
+      flex-direction: column;
+      gap: var(--title-card-gap, 24px);
+    }
+
+    .section.bento.stack-mobile > .explore-card {
+      position: static;
+      height: auto;
+      transform: none;
+      opacity: 1;
+      animation: none;
+    }
+
+    .section.bento.stack-mobile > .explore-card .explore-card-container {
+      transform: none;
+      animation: none;
+    }
+
+    .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (width < 768px) {
   .section.bento.stack-mobile {
     display: flex;
     flex-direction: column;
@@ -599,22 +625,5 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     animation: none;
   }
 
-  .section.bento.stack-mobile > .explore-card .explore-card-container::after { content: none; }
-}
-
-@media (prefers-reduced-motion: reduce) and (width < 768px) {
-  .section.bento.stack-mobile > .explore-card {
-    position: static;
-    height: auto;
-    transform: none;
-    opacity: 1;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile > .explore-card .explore-card-container {
-    transform: none;
-    animation: none;
-  }
-
-  .section.bento.stack-mobile > .explore-card .explore-card-container::after { content: none; }
+  .section.bento.stack-mobile > .explore-card .explore-card-content::after { content: none; }
 }

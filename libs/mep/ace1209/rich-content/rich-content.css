@@ -362,7 +362,7 @@
 
 @media (width >= 1440px) {
   .rich-content.indent {
-    margin-block-end: none;
+    margin-block-end: 0;
   }
 
   .section.bento {
@@ -637,11 +637,13 @@
 }
 
 @supports not (animation-timeline: view()) {
-  .section.bento.stack-mobile > .rich-content {
-    position: static;
-    transform: none;
-    opacity: 1;
-    animation: none;
+  @media (width < 768px) {
+    .section.bento.stack-mobile > .rich-content {
+      position: static;
+      transform: none;
+      opacity: 1;
+      animation: none;
+    }
   }
 }
 

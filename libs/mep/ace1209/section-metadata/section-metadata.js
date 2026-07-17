@@ -205,6 +205,8 @@ export default async function init(el) {
   if (metadata.images) handleImages(metadata.images?.text[0], section);
   handleStickyFocus(section);
   if (section?.matches('.bento.stack-mobile')) {
-    import('../../../deps/bento-stack.js').then(({ default: initBentoStack }) => initBentoStack(section));
+    import('../../../features/bento-stack.js')
+      .then(({ default: initBentoStack }) => initBentoStack(section))
+      .catch((e) => window.lana?.log(`bento-stack init failed: ${e}`, { tags: 'bento-stack', severity: 'info' }));
   }
 }
