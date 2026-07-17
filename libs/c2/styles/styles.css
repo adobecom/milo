@@ -480,6 +480,11 @@
     --body-font-family: adobe-clean-thai, var(--body-font-family-base);
     --heading-font-family: var(--body-font-family);
   }
+
+  &:lang(vi-VN),
+  &:lang(vi) {
+    --heading-font-family: var(--body-font-family);
+  }
 }
 
 .dark {

@@ -2,13 +2,28 @@ import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import init, { setPreferences, decorateURL, formSuccess, FORM_PARAM, handleIframeTimeout } from '../../../libs/blocks/marketo/marketo.js';
+import init, {
+  setDataLayer,
+  setDataLayerObj,
+  getDataLayer,
+  decorateURL,
+  formSuccess,
+  formSubmit,
+  loadMarketo,
+  logFailure,
+  formTimeout,
+  LANA_MESSAGE,
+  FORM_PARAM,
+} from '../../../libs/blocks/marketo/marketo.js';
+import { waitForElement } from '../../helpers/waitfor.js';
 
-const ogFetch = window.fetch;
+const FAILURE_TIMEOUT = 10000;
+
 const blockHTML = await readFile({ path: './mocks/block.html' });
 const onePage = await readFile({ path: './mocks/one-page-experience.html' });
 const config = {
   codeRoot: '/test/blocks/marketo/mocks',
+  placeholders: { 'marketo-load-error': 'marketo load error', 'marketo-try-again': 'try again' },
   marketo: {
     iframeTimeout: 3000,
     showError: true,
@@ -51,15 +66,24 @@ describe('marketo', () => {
       'second.key': 'value2',
     };
 
-    setPreferences(formData);
+    setDataLayerObj(formData);
 
-    expect(window.mcz_marketoForm_pref.form.status).to.equal('pending');
     expect(window.mcz_marketoForm_pref).to.have.property('first');
     expect(window.mcz_marketoForm_pref.first).to.have.property('key');
     expect(window.mcz_marketoForm_pref.first.key).to.equal('value1');
     expect(window.mcz_marketoForm_pref).to.have.property('second');
     expect(window.mcz_marketoForm_pref.second).to.have.property('key');
     expect(window.mcz_marketoForm_pref.second.key).to.equal('value2');
+  });
+
+  it('gets a nested value from the data layer', () => {
+    setDataLayer('form.status', 'ready');
+    expect(getDataLayer('form.status')).to.equal('ready');
+  });
+
+  it('returns undefined for a key that has not been set', () => {
+    expect(getDataLayer('form.status')).to.be.undefined;
+    expect(getDataLayer('nothing.here')).to.be.undefined;
   });
 });
 
@@ -208,78 +232,173 @@ describe('Marketo ungated one page experience', () => {
   });
 });
 
-describe('Marketo Iframe Timeout Handler', () => {
+describe('Marketo failure logging', () => {
   let clock;
-  let marketoBlock;
+  let el;
 
-  beforeEach(() => {
-    clock = sinon.useFakeTimers();
-    window.fetch = sinon.stub();
-    setConfig(config);
-    document.body.innerHTML = blockHTML;
-    marketoBlock = document.querySelector('.marketo');
-    if (!marketoBlock.parentNode) document.body.appendChild(marketoBlock);
-    const iframe = document.createElement('iframe');
-    iframe.src = '/index.php/form/XDFrame';
-    marketoBlock.appendChild(iframe);
-  });
+  const formData = {
+    'form id': '1723',
+    'marketo host': 'engage.adobe.com',
+    'marketo munckin': '360-KCI-804',
+  };
 
-  afterEach(() => {
-    sinon.restore();
-    clock.restore();
-    window.fetch = ogFetch;
-  });
+  const buildBlock = ({ visibleForm = true } = {}) => {
+    el = document.createElement('div');
+    el.className = 'marketo';
+    const form = document.createElement('form');
+    if (!visibleForm) form.style.visibility = 'hidden';
+    el.appendChild(form);
+    document.body.appendChild(el);
+    return el;
+  };
 
   const tick = async (ms) => {
     clock.tick(ms);
     await clock.nextAsync();
   };
 
-  it('shows overlay on timeout', async () => {
-    handleIframeTimeout(marketoBlock);
-    await tick(5000);
-
-    const overlay = marketoBlock.querySelector('.marketo-overlay');
-    const errorMsg = marketoBlock.querySelector('.error');
-
-    expect(overlay).to.exist;
-    expect(errorMsg.textContent).to.equal('marketo load error');
-    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    window.lana = { log: sinon.spy() };
+    setConfig(config);
+    document.body.innerHTML = '';
   });
 
-  it('removes overlay when iframe is ready', async () => {
-    handleIframeTimeout(marketoBlock);
-    await tick(5000);
-
-    expect(marketoBlock.querySelector('.marketo-overlay')).to.exist;
-
-    window.dispatchEvent(new MessageEvent('message', {
-      origin: 'https://engage.adobe.com',
-      data: JSON.stringify({ mktoReady: true }),
-    }));
-    await tick(200);
-
-    expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
-    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
+  afterEach(() => {
+    clock.restore();
+    sinon.restore();
+    window.mcz_marketoForm_pref = undefined;
+    document.body.innerHTML = '';
   });
 
-  it('retry with success', async () => {
-    handleIframeTimeout(marketoBlock);
-    await tick(5000);
+  describe('logFailure', () => {
+    it('logs once, sets error status, and shows an overlay', async () => {
+      buildBlock();
+      logFailure(el, LANA_MESSAGE.RENDER_FAILED);
 
-    const overlay = marketoBlock.querySelector('.marketo-overlay');
-    expect(overlay).to.exist;
-    expect(window.mcz_marketoForm_pref.form.status).to.equal('error');
-    overlay.querySelector('button').click();
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(window.lana.log.firstCall.args[0]).to.equal(LANA_MESSAGE.RENDER_FAILED);
+      expect(window.lana.log.firstCall.args[1]).to.include({ severity: 'e', sampleRate: 100 });
+      expect(window.mcz_marketoForm_pref.form.status).to.equal('init');
+      expect(el.dataset.mktoFailed).to.equal('true');
+      expect(await waitForElement('.marketo-overlay', { rootEl: el })).to.exist;
+    });
 
-    window.dispatchEvent(new MessageEvent('message', {
-      origin: 'https://engage.adobe.com',
-      data: JSON.stringify({ mktoReady: true }),
-    }));
+    it('does not log or duplicate the overlay on a repeat failure', async () => {
+      buildBlock();
+      logFailure(el, LANA_MESSAGE.RENDER_FAILED);
+      await waitForElement('.marketo-overlay', { rootEl: el });
+      logFailure(el, LANA_MESSAGE.HANDSHAKE_FAILED);
 
-    await tick(500);
-    expect(marketoBlock.querySelector('.marketo-overlay')).to.not.exist;
-    expect(window.mcz_marketoForm_pref.form.status).to.equal('ready');
+      expect(window.lana.log.calledOnce).to.be.true;
+      expect(el.querySelectorAll('.marketo-overlay').length).to.equal(1);
+    });
+  });
+
+  describe('formTimeout', () => {
+    it('logs the failure when the condition is still true after the timeout', async () => {
+      buildBlock();
+      formTimeout(el, () => true, LANA_MESSAGE.RENDER_FAILED);
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledOnceWith(LANA_MESSAGE.RENDER_FAILED)).to.be.true;
+    });
+
+    it('does not log when the condition resolves before the timeout', async () => {
+      buildBlock();
+      formTimeout(el, () => false, LANA_MESSAGE.RENDER_FAILED);
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.called).to.be.false;
+    });
+  });
+
+  describe('loadMarketo', () => {
+    it('logs handshake failure when the iframe never signals ready', async () => {
+      buildBlock();
+      await loadMarketo(el, formData);
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.HANDSHAKE_FAILED,
+        sinon.match({ severity: 'e', sampleRate: 100 }),
+      )).to.be.true;
+      expect(window.mcz_marketoForm_pref.form.status).to.equal('loaded');
+      expect(el.dataset.mktoFailed).to.equal('true');
+      expect(await waitForElement('.marketo-overlay', { rootEl: el })).to.exist;
+    });
+
+    it('logs recovery and removes the overlay when the iframe signals ready after a failure', async () => {
+      buildBlock();
+      await loadMarketo(el, formData);
+      await tick(FAILURE_TIMEOUT);
+      expect(await waitForElement('.marketo-overlay', { rootEl: el })).to.exist;
+
+      window.dispatchEvent(new MessageEvent('message', {
+        origin: 'https://engage.adobe.com',
+        data: JSON.stringify({ mktoReady: true }),
+      }));
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.RENDER_RECOVERED,
+        sinon.match({ severity: 'i', sampleRate: 100 }),
+      )).to.be.true;
+      expect(window.mcz_marketoForm_pref.form.xdframe).to.equal('ready');
+      expect(el.querySelector('.marketo-overlay')).to.not.exist;
+    });
+
+    it('logs render failure when the form never becomes visible', async () => {
+      buildBlock({ visibleForm: false });
+      window.MktoForms2 = {
+        getFormElem: () => ({ get: () => el.querySelector('form') }),
+        onValidate: () => {},
+        onSubmit: () => {},
+        onSuccess: () => {},
+        loadForm: (host, munchkin, formID, callback) => callback?.(),
+        whenReady: () => {},
+      };
+      await loadMarketo(el, formData);
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.RENDER_FAILED,
+        sinon.match({ severity: 'e' }),
+      )).to.be.true;
+    });
+
+    it('logs a forms2 load failure and hides the block when the script fails to load', async () => {
+      buildBlock();
+      setConfig({ ...config, codeRoot: '/test/blocks/marketo/mocks/missing' });
+      await loadMarketo(el, formData);
+
+      expect(el.style.display).to.equal('none');
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.MARKETO_FORMS_JS,
+        sinon.match({ severity: 'e' }),
+      )).to.be.true;
+    });
+  });
+
+  describe('formSubmit', () => {
+    it('logs submit failure when the form is not marked success in time', async () => {
+      buildBlock();
+      formSubmit(el.querySelector('form'));
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.calledWith(
+        LANA_MESSAGE.SUBMIT_FAILED,
+        sinon.match({ severity: 'e' }),
+      )).to.be.true;
+    });
+
+    it('does not log submit failure once the form is marked success', async () => {
+      buildBlock();
+      el.classList.add('success');
+      formSubmit(el.querySelector('form'));
+      await tick(FAILURE_TIMEOUT);
+
+      expect(window.lana.log.called).to.be.false;
+    });
   });
 });
 

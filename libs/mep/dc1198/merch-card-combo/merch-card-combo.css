@@ -92,6 +92,7 @@ merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="bod
 /* UI: quantity selector row — side padding to align with card content */
 merch-card.merch-card-combo[variant="mini-compare-chart"].bullet-list [slot="offers"] {
   padding-inline: var(--consonant-merch-spacing-xs, 16px) !important;
+  padding-block: 0 !important;
 }
 
 /* UI: section wrapper that holds all cards side by side */
