@@ -2,6 +2,9 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200; // px of scroll travel allocated per app
+const M_BREAKPOINT = 768; // media grows / absolute-positioned panel
+const L_BREAKPOINT = 1280; // two-column layout kicks in here
+const M_TOP_INSET = 48; // M: image top margin (app-icon area) the names start below
 
 function prepPic(picture) {
   if (!picture) return null;
@@ -150,16 +153,34 @@ function decorate(block) {
 
     const mediaRect = media.getBoundingClientRect();
     const itemH = items[0]?.offsetHeight || 32;
-    // Activation zone: bottom of media image in list-wrapper coords
-    const activateY = mediaRect.bottom - wrapRect.top;
+    const w = window.innerWidth;
+    // The highlight lock line — where the active app name sits — differs by grid:
+    //  - L/XL: line at the image BOTTOM; active name is bottom-aligned to it, so
+    //    it sits just above the image bottom and the list scrolls up through it.
+    //  - M:    line just below the image's TOP margin (app-icon area); active
+    //    name is top-aligned there and the list flows downward.
+    //  - S:    line at the image TOP; active name is bottom-aligned so it sits a
+    //    little above the image top, and the list flows downward.
+    let lineY;
+    let bottomAlign;
+    if (w >= L_BREAKPOINT) {
+      lineY = mediaRect.bottom - wrapRect.top;
+      bottomAlign = true;
+    } else if (w >= M_BREAKPOINT) {
+      lineY = mediaRect.top - wrapRect.top + M_TOP_INSET;
+      bottomAlign = false;
+    } else {
+      lineY = mediaRect.top - wrapRect.top;
+      bottomAlign = true;
+    }
     // Continuous scroll progress: each SCROLL_PER_APP px moves list by one itemH
     const scrolled = Math.max(0, Math.min(usable, -rect.top));
     const progress = scrolled / SCROLL_PER_APP;
+    // bottom-aligned lines add one itemH so the active name's BOTTOM lands on the
+    // line; top-aligned lines put the active name's TOP directly on the line.
+    const offset = bottomAlign ? progress + 1 : progress;
 
-    // Active item sits ABOVE the line (bottom edge on activateY); upcoming
-    // items roll in below. Offset by one itemH so the active name isn't
-    // pushed below the media's bottom edge and clipped.
-    list.style.transform = `translateY(${activateY - (progress + 1) * itemH}px)`;
+    list.style.transform = `translateY(${lineY - offset * itemH}px)`;
     activate(Math.min(Math.floor(progress), apps.length - 1));
   };
 
