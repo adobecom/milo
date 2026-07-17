@@ -641,7 +641,6 @@
 
   .rich-content.video .media .video-container,
   .rich-content.video .media picture {
-    max-width: 1200px;
     margin: 0 auto;
   }
 
