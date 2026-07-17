@@ -2670,15 +2670,34 @@ export function partition(arr, fn) {
   );
 }
 
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs')?.trim().toLowerCase();
+  if (masLibs) {
+    let baseUrl;
+    if (masLibs === 'local') baseUrl = 'http://localhost:3000';
+    else if (masLibs === 'main') baseUrl = 'https://main--mas--adobecom.aem.live';
+    else {
+      const branch = masLibs.includes('--') ? masLibs : `${masLibs}--mas--adobecom`;
+      baseUrl = `https://${branch}.aem.live`;
+    }
+    return `${baseUrl}/web-components/dist/${component}`;
+  }
+
+  return `https://main--mas--adobecom.aem.live/web-components/dist/${component}`;
+}
+
 const STATIC_BLOCK_DEPS = {
   'merch-card-autoblock': [
-    '/mas/libs/lit-all.min.js',
-    '/mas/libs/merch-card.js',
-    '/mas/libs/merch-quantity-select.js',
-    '/mas/libs/mas-field.js',
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('mas-field.js'),
   ],
   merch: [
-    '/mas/libs/commerce.js',
+    getMasDepUrl('commerce.js'),
   ],
 };
 
