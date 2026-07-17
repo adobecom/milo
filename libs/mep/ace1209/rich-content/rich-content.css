@@ -502,8 +502,8 @@
   }
 
   &.glass-border .media :is(picture, .video-container) {
-    --glass-frame: 9px;
-    --glass-stroke: 1.622px;
+    --glass-frame: 4px;
+    --glass-stroke: 0.6px;
     --glass-fill: rgb(255 255 255 / 5%);
     box-sizing: border-box;
     border: var(--glass-stroke) solid var(--glass-fill);
@@ -514,6 +514,21 @@
     border-radius: var(--s2a-border-radius-24);
     backdrop-filter: blur(var(--s2a-blur-md));
     overflow: hidden;
+
+    @media (width >= 768px) {
+      --glass-frame: 6.5px;
+      --glass-stroke: 1px;
+    }
+
+    @media (width >= 1280px) {
+      --glass-frame: 7.4px;
+      --glass-stroke: 1.2px;
+    }
+
+    @media (width >= 1440px) {
+      --glass-frame: 9.4px;
+      --glass-stroke: 1.6px;
+    }
 
     :is(img, video) {
       border-radius: calc(var(--s2a-border-radius-24) - var(--glass-frame));
