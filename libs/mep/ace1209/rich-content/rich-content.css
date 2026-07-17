@@ -532,12 +532,6 @@
       padding-inline: unset;
       max-width: var(--grid-width-10);
 
-      > :is(p, div):has(picture, .video-container) {
-        display: contents;
-        max-width: none;
-        margin-inline: unset;
-      }
-
       .video-container {
         height: auto;
         margin-inline: unset;
