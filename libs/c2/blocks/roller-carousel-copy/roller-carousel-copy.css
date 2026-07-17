@@ -282,6 +282,10 @@
     /* L/XL: full 766px at >=950px tall; shrinks down to a 450px floor,
        keeping the 24px gap below (160px top padding + 24px). */
     height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
+    /* Cap the empty space below the image at 132px (the max shown in Figma):
+       once the natural gap would exceed 132px, push the image down so its
+       bottom stays 132px above the viewport bottom. 1058 = 160 top + 766 + 132. */
+    margin-top: max(0px, 100dvh - var(--s2a-layout-xl) - 766px - 132px);
     border-radius: var(--s2a-border-radius-md);
     overflow: hidden;
   }
