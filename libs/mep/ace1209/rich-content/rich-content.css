@@ -294,11 +294,6 @@
   background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%), var(--s2a-color-background-default);
 }
 
-.rich-content.hero-asset {
-  position: relative;
-  z-index: 2;
-}
-
 .section:has(.rich-content.jump-link.hero) {
   height: 584px;
 }
