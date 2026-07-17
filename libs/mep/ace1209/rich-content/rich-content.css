@@ -429,6 +429,11 @@
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
+  --grid-margin-width: 5px;
+
+  @media (width >= 768px) {
+    --grid-margin-width: var(--grid-margin-width-base);
+  }
 
   .action-area {
     margin-top: 0;
@@ -436,7 +441,6 @@
 
   img {
     border-radius: var(--s2a-border-radius-24);
-    border: 9px solid var(--s2a-color-transparent-white-04);
     max-width: 214px;
   }
 
@@ -450,11 +454,8 @@
     }
 
     .video-container {
-      position: relative;
-      box-sizing: border-box;
-      max-width: 214px;
-      margin-inline: auto;
-      aspect-ratio: 9 / 16;
+      display: block;
+      height: 342px;
       border-radius: var(--s2a-border-radius-24);
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
@@ -468,7 +469,22 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        outline: none;
+      }
+    }
+
+    picture {
+      display: block;
+      height: 342px;
+      border-radius: var(--s2a-border-radius-16);
+      transform-origin: center bottom;
+      width: 100%;
+
+      img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        object-fit: cover;
       }
     }
 
@@ -493,6 +509,41 @@
   .action-area.dark {
     background-color: unset;
   }
+
+  &.glass-border .media :is(picture, .video-container) {
+    --glass-frame: 4px;
+    --glass-stroke: 0.6px;
+    --glass-fill: rgb(255 255 255 / 5%);
+    box-sizing: border-box;
+    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
+    padding: var(--glass-frame);
+    background: var(--glass-fill);
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 var(--glass-stroke) var(--glass-fill);
+    border-radius: var(--s2a-border-radius-24);
+    backdrop-filter: blur(var(--s2a-blur-md));
+    overflow: hidden;
+
+    @media (width >= 768px) {
+      --glass-frame: 6.5px;
+      --glass-stroke: 1px;
+    }
+
+    @media (width >= 1280px) {
+      --glass-frame: 7.4px;
+      --glass-stroke: 1.2px;
+    }
+
+    @media (width >= 1440px) {
+      --glass-frame: 9.4px;
+      --glass-stroke: 1.6px;
+    }
+
+    :is(img, video) {
+      max-width: 100%;
+      border-radius: var(--s2a-border-radius-24);
+    }
+  }
 }
 
 @media (width >= 768px) {
@@ -506,13 +557,15 @@
       max-width: var(--grid-width-10);
 
       .video-container {
-        max-width: unset;
+        height: auto;
         margin-inline: unset;
         aspect-ratio: 16 / 9;
+      }
 
-        video {
-          height: auto;
-        }
+      picture {
+        height: auto;
+        max-width: unset;
+        margin-inline: unset;
       }
 
       .action-area {
@@ -587,12 +640,12 @@
   }
 
   .rich-content.video img {
-    max-width: 1200px; 
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .rich-content.video .media .video-container { 
-    max-width: 1200px; 
+  .rich-content.video .media .video-container,
+  .rich-content.video .media picture {
     margin: 0 auto;
   }
 
@@ -659,8 +712,7 @@
       timeline-scope: --rc-video-enter;
     }
 
-    .section.parallax-video-garage-door .rich-content.video img,
-    .section.parallax-video-garage-door .rich-content.video .video-container {
+    .section.parallax-video-garage-door .rich-content.video .media :is(.video-container, picture) {
       view-timeline-name: --rc-video-enter;
       view-timeline-axis: block;
       animation: rc-video-enter linear both;

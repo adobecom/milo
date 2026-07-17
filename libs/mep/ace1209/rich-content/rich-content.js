@@ -71,27 +71,47 @@ function decorateJumpLinks(content, foreground) {
   foreground.append(nav);
 }
 
+const MEDIA_SELECTOR = 'picture, video, .video-container, a[href*=".mp4"]';
+
+function isMediaCell(cell) {
+  if (!cell) return false;
+  if (cell.querySelector(MEDIA_SELECTOR)) return true;
+  return !!cell.querySelector('img')
+    && !cell.querySelector('.action-area, a.con-button, .con-button');
+}
+
+function hasCellContent(cell) {
+  return !!(cell?.textContent?.trim() || cell?.children.length);
+}
+
 function decorateVideoVariant(container) {
-  const row = container.children[0];
-  if (!row) return;
+  const rows = [...container.children];
+  if (!rows.length) return;
 
-  const [ctaCell, mediaCell] = [...row.children];
-  if (!ctaCell && !mediaCell) return;
+  const cells = rows.flatMap((row) => [...row.children]);
+  let mediaCell = cells.find(isMediaCell);
+  let ctaCell = cells.find((cell) => cell !== mediaCell && hasCellContent(cell)) || null;
 
-  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
+  if (!mediaCell) {
+    const [firstCell, secondCell] = [...(rows[0]?.children ?? [])];
+    ctaCell = firstCell ?? null;
+    mediaCell = secondCell ?? null;
+  }
+
+  if (hasCellContent(mediaCell)) {
     mediaCell.classList.add('media');
     container.append(mediaCell);
   } else {
     mediaCell?.remove();
   }
 
-  if (ctaCell) {
+  if (ctaCell && ctaCell !== mediaCell && hasCellContent(ctaCell)) {
     decorateBlockText(ctaCell);
     ctaCell.classList.add('cta-area');
     container.append(ctaCell);
   }
 
-  row.remove();
+  rows.forEach((row) => row.remove());
   container.querySelector('.action-area')?.classList.add('dark');
   container.querySelector('.con-button.blue')?.classList.replace('blue', 'fill');
 }
