@@ -253,6 +253,10 @@
 
   .rcc-carousel {
     flex: 1;
+    /* Design caps the carousel column (title + divider + list) at 759px, so the
+       divider reaches the image near 1440 but stops short as the viewport widens
+       instead of stretching all the way to the image. */
+    max-width: 759px;
   }
 
   .rcc-category-wrapper {
