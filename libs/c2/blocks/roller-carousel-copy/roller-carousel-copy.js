@@ -144,6 +144,18 @@ function decorate(block) {
   // Single update function: moves list continuously with scroll,
   // then activates whichever item is at the media's bottom border.
   const updatePosition = () => {
+    const w = window.innerWidth;
+    const mediaRect = media.getBoundingClientRect();
+
+    // S/M: the image is bottom-anchored and, once at its min-height, rises as the
+    // viewport shortens. When its top reaches the divider line above, hide it.
+    if (w < L_BREAKPOINT) {
+      const dividerBottom = divider.getBoundingClientRect().bottom;
+      media.style.visibility = mediaRect.top < dividerBottom ? 'hidden' : '';
+    } else {
+      media.style.visibility = '';
+    }
+
     const rect = scrollWrapper.getBoundingClientRect();
     const usable = rect.height - window.innerHeight;
     if (usable <= 0) return;
@@ -151,9 +163,7 @@ function decorate(block) {
     const wrapRect = listWrapper.getBoundingClientRect();
     if (!wrapRect.height) return;
 
-    const mediaRect = media.getBoundingClientRect();
     const itemH = items[0]?.offsetHeight || 32;
-    const w = window.innerWidth;
     // The highlight lock line — where the active app name sits — differs by grid:
     //  - L/XL: line at the image BOTTOM; active name is bottom-aligned to it, so
     //    it sits just above the image bottom and the list scrolls up through it.
