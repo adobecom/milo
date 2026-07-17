@@ -298,6 +298,27 @@
 }
 
 /* ============================================================
+   Reflow — very short viewports / ~400% zoom (WCAG 1.4.10)
+   Hero header is detached to normal flow (scrolls away); the sticky
+   carousel begins from the section title. Image is hidden by the JS
+   height/intersect logic at these heights.
+   ============================================================ */
+@media (height <= 500px) {
+  /* Detached header sits at the top of the section and scrolls away. */
+  .roller-carousel-copy.rcc-reflow > .rcc-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+    padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
+  }
+
+  /* Sticky content now starts with the category — pull it near the top. */
+  .rcc-reflow .rcc-content {
+    padding-top: var(--s2a-spacing-lg);
+  }
+}
+
+/* ============================================================
    Reduced motion
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {

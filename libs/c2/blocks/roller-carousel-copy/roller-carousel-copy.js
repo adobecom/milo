@@ -199,6 +199,30 @@ function decorate(block) {
 
   const ro = new ResizeObserver(updatePosition);
   ro.observe(listWrapper);
+
+  // --- Reflow (WCAG 1.4.10) for very short viewports / ~400% zoom ---
+  // Detach the hero header from the sticky container so it scrolls away in
+  // normal flow; the sticky then pins from the section title (category) down.
+  // The header moving before the scroll-wrapper means the roller only starts
+  // once the sticky engages — no extra math needed. The image is hidden by the
+  // existing height/intersect logic at these heights.
+  const shortVp = window.matchMedia('(max-height: 500px)');
+  const applyReflow = () => {
+    if (shortVp.matches) {
+      if (header.parentElement !== block) {
+        block.insertBefore(header, scrollWrapper);
+        block.classList.add('rcc-reflow');
+      }
+    } else if (header.parentElement === block) {
+      left.insertBefore(header, carousel);
+      block.classList.remove('rcc-reflow');
+    }
+  };
+  applyReflow();
+  shortVp.addEventListener('change', () => {
+    applyReflow();
+    window.requestAnimationFrame(updatePosition);
+  });
 }
 
 export default function init(el) {
