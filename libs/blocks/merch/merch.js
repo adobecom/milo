@@ -1119,6 +1119,7 @@ export async function initService(force = false, attributes = {}) {
 
       // Load all independent resources in parallel
       const fragmentClientUrl = getFragmentClientUrl();
+      const localeSettingsPromise = getLocaleSettings(miloLocale);
       const [, , { language, locale, country }, validatedMarket] = await Promise.all([
         loadMasComponent(COMMERCE_LIBRARY),
         fragmentClientUrl
@@ -1126,7 +1127,7 @@ export async function initService(force = false, attributes = {}) {
             log?.error('Failed to load fragment-client.js:', e);
           })
           : Promise.resolve(),
-        getLocaleSettings(miloLocale),
+        localeSettingsPromise,
         useGeoMarket
           ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
           : Promise.resolve(null),
