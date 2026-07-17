@@ -237,24 +237,11 @@
     }
 
     &.has-background .section-background {
-      position: relative;
-      inset: unset;
-      grid-row: 2;
-      width: 100%;
-      max-width: 100%;
-      margin: 0;
-      z-index: 0;
-      height: auto;
 
       &,
       & > * {
         position: relative;
         inset: unset;
-      }
-
-      picture {
-        width: 100%;
-        height: auto;
       }
 
       img {
@@ -451,11 +438,7 @@
 
 @media (width >= 1440px) {
   .section:has(.rich-content.merch-moment).has-background .section-background img {
-    width: 100%;
     max-width: 1612px;
-    margin-inline: auto;
-    aspect-ratio: 1612 / 1361;
-    display: block;
   }
 
   .section.bento {
