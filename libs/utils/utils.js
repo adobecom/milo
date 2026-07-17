@@ -2670,6 +2670,24 @@ export function partition(arr, fn) {
   );
 }
 
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    '/mas/libs/lit-all.min.js',
+    '/mas/libs/merch-card.js',
+    '/mas/libs/merch-quantity-select.js',
+    '/mas/libs/mas-field.js',
+  ],
+  merch: [
+    '/mas/libs/commerce.js',
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
@@ -2677,6 +2695,9 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
