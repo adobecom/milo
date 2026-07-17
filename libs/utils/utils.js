@@ -2045,7 +2045,7 @@ export async function loadIms() {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
-          guestBotDetection: true,
+          enableGuestBotDetection: true,
           guestBotDetectionProvider: 'bfp',
         }),
         ...adobeid,
