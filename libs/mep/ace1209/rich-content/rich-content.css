@@ -540,10 +540,6 @@
       .video-container {
         margin-inline: unset;
         aspect-ratio: 16 / 9;
-
-        video {
-          height: auto;
-        }
       }
 
       picture {
