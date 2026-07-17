@@ -6,7 +6,7 @@ import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
   init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
-  isTrustedUrl, fetchData, DATA_TYPE,
+  isTrustedUrl, fetchData, DATA_TYPE, categorizeActions,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -929,5 +929,43 @@ describe('analyticifseen', () => {
     expect(window._satellite.track.calledOnce).to.be.true;
     const [, payload] = window._satellite.track.firstCall.args;
     expect(payload.xdm.web.webInteraction.name).to.equal('my-marquee-tracking was seen');
+  });
+});
+
+describe('categorizeActions ordering (parallelization-safe)', () => {
+  const mkExp = (name, page, fw) => ({
+    manifestPath: `/m-${name}.json`,
+    selectedVariant: {
+      name,
+      replacepage: page ? [{ val: page }] : undefined,
+      updateframework: fw ? [fw] : undefined,
+    },
+  });
+
+  it('applies the later experiment replacepage/updateframework (last write wins)', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    delete config.mep.updateframework;
+
+    // applyPers runs categorizeActions via Promise.all(experiments.map(...)).
+    // categorizeActions has no internal awaits, so .map invokes each body
+    // synchronously in execution order and the last manifest's writes win —
+    // identical to the old sequential loop. Pin that observable contract.
+    const experiments = [mkExp('a', '/page-a', 'fw-a'), mkExp('b', '/page-b', 'fw-b')];
+    await Promise.all(experiments.map((exp) => categorizeActions(exp, config)));
+
+    expect(config.mep.replacepage).to.deep.equal({ val: '/page-b' });
+    expect(config.mep.updateframework).to.equal('fw-b');
+  });
+
+  it('returns { experiment } for a default variant without touching shared config', async () => {
+    const config = getConfig();
+    config.mep = { ...(config.mep || {}) };
+    delete config.mep.replacepage;
+    const experiment = { manifestPath: '/d.json', selectedVariant: 'default' };
+    const result = await categorizeActions(experiment, config);
+    expect(result).to.deep.equal({ experiment });
+    expect(config.mep.replacepage).to.be.undefined;
   });
 });
