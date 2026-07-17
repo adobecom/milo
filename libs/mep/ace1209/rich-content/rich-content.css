@@ -506,11 +506,11 @@
     --glass-stroke: 0.6px;
     --glass-fill: rgb(255 255 255 / 5%);
     box-sizing: border-box;
-    border: var(--glass-stroke) solid var(--glass-fill);
+    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
     padding: var(--glass-frame);
     background: var(--glass-fill);
-    outline: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
-    outline-offset: 0;
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 var(--glass-stroke) var(--glass-fill);
     border-radius: var(--s2a-border-radius-24);
     backdrop-filter: blur(var(--s2a-blur-md));
     overflow: hidden;
@@ -528,10 +528,6 @@
     @media (width >= 1440px) {
       --glass-frame: 9.4px;
       --glass-stroke: 1.6px;
-    }
-
-    :is(img, video) {
-      border-radius: calc(var(--s2a-border-radius-24) - var(--glass-frame));
     }
   }
 }
