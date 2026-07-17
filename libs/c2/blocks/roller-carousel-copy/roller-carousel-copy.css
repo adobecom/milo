@@ -180,10 +180,12 @@
 .rcc-media-wrapper {
   position: absolute;
   right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
-  bottom: var(--s2a-spacing-lg);  /* 24px — matches content pb */
+  bottom: var(--s2a-spacing-md);  /* S: 16px gap under the image */
   z-index: 2;
   width: 275px;
-  height: 360px;
+  /* S: full 360px at >=742px tall; shrinks on shorter viewports, keeping
+     the 16px bottom gap so the highlighted app stays in view. */
+  height: min(360px, 100dvh - 382px);
   border-radius: var(--s2a-border-radius-sm);
   overflow: hidden;
 }
@@ -217,8 +219,10 @@
    ============================================================ */
 @media (width >= 768px) {
   .rcc-media-wrapper {
-    width: 475px;
-    height: 336px;
+    bottom: var(--s2a-spacing-lg); /* M: 24px gap under the image */
+    width: 397px;
+    /* M: full 560px at >=944px tall; shrinks on shorter viewports. */
+    height: min(560px, 100dvh - 384px);
     border-radius: var(--s2a-border-radius-md);
   }
 }
@@ -269,8 +273,10 @@
     bottom: auto;
     z-index: auto;
     flex: 0 0 650px; /* fixed width — do not grow or shrink */
-    align-self: stretch; /* fill the row height; max-height caps it */
-    max-height: 766px;
+    align-self: flex-start; /* top-anchored at the 160px content padding */
+    /* L/XL: full 766px at >=950px tall; shrinks on shorter viewports,
+       keeping the 24px gap below (160px top padding + 24px). */
+    height: min(766px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg));
     border-radius: var(--s2a-border-radius-md);
     overflow: hidden;
   }
