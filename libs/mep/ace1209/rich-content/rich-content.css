@@ -464,13 +464,6 @@
       }
     }
 
-    > :is(p, div):has(picture, .video-container) {
-      margin: 0;
-      width: 100%;
-      max-width: 214px;
-      margin-inline: auto;
-    }
-
     .action-area {
       display: flex;
       justify-content: center;
