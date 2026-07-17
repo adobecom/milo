@@ -1031,12 +1031,7 @@ export const getEntitlementMap = async () => {
   config.mep.entitlementMapFetch = (async () => {
     const entitlementUrl = getXLGListURL(config);
     const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON, { redirect: 'error' });
-    if (!fetchedData) {
-      // Clear the in-flight handle so a transient fetch failure can be retried
-      // on a later call, instead of permanently memoizing the fallback.
-      config.mep.entitlementMapFetch = null;
-      return config.consumerEntitlements || {};
-    }
+    if (!fetchedData) return config.consumerEntitlements || {};
     const entitlements = {};
     fetchedData?.data?.forEach((ent) => {
       const { id, tagname } = ent;
