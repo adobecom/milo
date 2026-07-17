@@ -430,9 +430,11 @@
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
   --grid-margin-width: 5px;
+  --rc-media-aspect-ratio: 375 / 342;
 
   @media (width >= 768px) {
     --grid-margin-width: var(--grid-margin-width-base);
+    --rc-media-aspect-ratio: 16 / 9;
   }
 
   .action-area {
@@ -441,7 +443,6 @@
 
   img {
     border-radius: var(--s2a-border-radius-24);
-    max-width: 214px;
   }
 
   .media {
@@ -453,16 +454,19 @@
       margin: 0;
     }
 
-    .video-container {
+    :is(picture, .video-container) {
       display: block;
-      height: 342px;
+      width: 100%;
+      aspect-ratio: var(--rc-media-aspect-ratio);
       border-radius: var(--s2a-border-radius-24);
+      overflow: hidden;
+      transform-origin: center bottom;
+    }
+
+    .video-container {
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
       backdrop-filter: blur(var(--s2a-blur-md));
-      overflow: hidden;
-      transform-origin: center bottom;
-      width: 100%;
 
       video {
         display: block;
@@ -472,20 +476,11 @@
       }
     }
 
-    picture {
+    picture img {
       display: block;
-      height: 342px;
-      border-radius: var(--s2a-border-radius-16);
-      transform-origin: center bottom;
       width: 100%;
-
-      img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        border-radius: inherit;
-        object-fit: cover;
-      }
+      height: 100%;
+      object-fit: cover;
     }
 
     .action-area {
@@ -556,15 +551,7 @@
       padding-inline: unset;
       max-width: var(--grid-width-10);
 
-      .video-container {
-        height: auto;
-        margin-inline: unset;
-        aspect-ratio: 16 / 9;
-      }
-
-      picture {
-        height: auto;
-        max-width: unset;
+      :is(picture, .video-container) {
         margin-inline: unset;
       }
 
