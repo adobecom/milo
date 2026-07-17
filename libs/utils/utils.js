@@ -1174,7 +1174,10 @@ export function localizeLink(
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
+  const selector = rel === 'stylesheet'
+    ? `link[href="${href}"][rel="stylesheet"]`
+    : `link[href="${href}"]`;
+  let link = document.head.querySelector(selector);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -2689,6 +2692,8 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
     loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });

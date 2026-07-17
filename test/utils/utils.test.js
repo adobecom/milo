@@ -1542,6 +1542,35 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadLink stylesheet dedup', () => {
+    afterEach(() => {
+      document.head.querySelectorAll('link[data-milo-preload-test]').forEach((l) => l.remove());
+    });
+
+    it('loadStyle applies a stylesheet even when a preload for the same href exists', () => {
+      const href = 'data:text/css,x';
+      const preload = utils.loadLink(href, { rel: 'preload', as: 'style' });
+      preload.setAttribute('data-milo-preload-test', '');
+
+      let cbType;
+      const styleLink = utils.loadStyle(href, (type) => { cbType = type; });
+      styleLink.setAttribute('data-milo-preload-test', '');
+
+      // The preload must not shadow the stylesheet: a distinct rel=stylesheet
+      // link is created so the CSS actually applies (the #6210 icon regression).
+      expect(styleLink).to.not.equal(preload);
+      expect(styleLink.getAttribute('rel')).to.equal('stylesheet');
+      expect(preload.getAttribute('rel')).to.equal('preload');
+      expect(document.head.querySelectorAll(`link[href="${href}"]`).length).to.equal(2);
+
+      // A second loadStyle dedups against the stylesheet: no duplicate, noop callback.
+      const again = utils.loadStyle(href, (type) => { cbType = type; });
+      expect(again).to.equal(styleLink);
+      expect(cbType).to.equal('noop');
+      expect(document.head.querySelectorAll(`link[href="${href}"][rel="stylesheet"]`).length).to.equal(1);
+    });
+  });
+
   describe('Lingo Link Transformation', () => {
     let originalFetch;
     let fetchStub;
