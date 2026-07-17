@@ -451,7 +451,6 @@
       display: block;
       height: 342px;
       border-radius: var(--s2a-border-radius-16);
-      overflow: hidden;
       transform-origin: center bottom;
       width: 100%;
 
