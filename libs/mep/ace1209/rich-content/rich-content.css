@@ -270,14 +270,6 @@
 
   &.dark:has(.rich-content.hero-asset) {
     background: var(--s2a-color-gray-1000);
-
-    .section-background {
-      picture {
-        &::after {
-          background: unset !important;
-        }
-      }
-    }
   }
 }
 
@@ -308,10 +300,6 @@
   background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%);
   inset: 0;
   z-index: 1;
-}
-
-.section:not(.has-background):has(.rich-content.hero-asset) {
-  background: linear-gradient(180deg, #000 10.13%, var(--s2a-color-transparent-black-00) 70.89%, var(--s2a-color-transparent-black-00) 75.53%, #000 95%), var(--s2a-color-background-default);
 }
 
 .rich-content.hero-asset {
