@@ -430,11 +430,9 @@
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
   --grid-margin-width: 5px;
-  --rc-media-aspect-ratio: 365 / 350;
 
   @media (width >= 768px) {
     --grid-margin-width: var(--grid-margin-width-base);
-    --rc-media-aspect-ratio: 16 / 9;
   }
 
   .action-area {
@@ -456,11 +454,16 @@
 
     :is(picture, .video-container) {
       display: block;
-      width: 100%;
-      aspect-ratio: var(--rc-media-aspect-ratio);
       border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
+    }
+
+    @media (width < 768px) {
+      :is(picture, .video-container) {
+        width: 100%;
+        aspect-ratio: 365 / 350;
+      }
     }
 
     .video-container {
@@ -551,8 +554,18 @@
       padding-inline: unset;
       max-width: var(--grid-width-10);
 
-      :is(picture, .video-container) {
+      .video-container {
+        max-width: unset;
         margin-inline: unset;
+        aspect-ratio: 16 / 9;
+        width: 100%;
+      }
+
+      picture {
+        max-width: unset;
+        margin-inline: unset;
+        aspect-ratio: 16 / 9;
+        width: 100%;
       }
 
       .action-area {
@@ -633,6 +646,7 @@
 
   .rich-content.video .media .video-container,
   .rich-content.video .media picture {
+    max-width: 1200px;
     margin: 0 auto;
   }
 
@@ -645,10 +659,6 @@
 }
 
 @media (width >= 1920px) {
-  .rich-content.video .media {
-    max-width: unset;
-  }
-
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
