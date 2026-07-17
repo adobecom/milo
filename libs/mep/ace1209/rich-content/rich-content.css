@@ -452,17 +452,14 @@
       margin: 0;
     }
 
-    :is(picture, .video-container) {
+    .video-container,
+    picture {
       display: block;
       width: 100%;
+      aspect-ratio: 365 / 350;
       border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
-    }
-
-    .video-container,
-    picture {
-      aspect-ratio: 365 / 350;
     }
 
     .video-container {
