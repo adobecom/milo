@@ -2681,8 +2681,10 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (['marquee', 'hero-marquee'].includes(name)) {
     const { base } = getConfig();
     loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
-    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
-    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+    // Do NOT rel=preload iconography.css / breakpoint-theme.css here. They are
+    // applied later via loadStyle(), and loadLink() dedupes by href regardless
+    // of rel — a preload link shadows that loadStyle() so the stylesheet is
+    // fetched but never applied, breaking icons. (Caused the #6210 → #6267 revert.)
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
