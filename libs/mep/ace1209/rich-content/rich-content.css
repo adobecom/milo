@@ -430,7 +430,7 @@
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
   --grid-margin-width: 5px;
-  --rc-media-aspect-ratio: 375 / 342;
+  --rc-media-aspect-ratio: 365 / 350;
 
   @media (width >= 768px) {
     --grid-margin-width: var(--grid-margin-width-base);
@@ -645,6 +645,10 @@
 }
 
 @media (width >= 1920px) {
+  .rich-content.video .media {
+    max-width: unset;
+  }
+
   .section:has(+ .section.parallax-video-garage-door .rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video),
   .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
