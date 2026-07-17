@@ -760,7 +760,7 @@ async function loadQueryIndexes(prefix, links = []) {
 
   lingoSiteMapping = (async () => {
     try {
-      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`, { priority: 'low' });
+      const resp = await fetch(`${getFederatedContentRoot()}/federal/assets/data/lingo-site-mapping.json`);
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json = await resp.json();
       siteQueryIndexMapLingo = json['site-query-index-map']?.data ?? [];
@@ -775,29 +775,42 @@ async function loadQueryIndexes(prefix, links = []) {
         });
       }
 
-      // Wait for Wave 1 (primary + base) before firing cross-site indexes,
-      // so Wave 2 fetches don't compete for bandwidth during the LCP window.
-      await Promise.all(
-        [queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean),
-      );
-
-      siteQueryIndexMapLingo
+      const crossSiteEntries = siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
-          const hasRegional = localesData
-            .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
-          if (!hasRegional) return;
-          const prodDomain = getDomainLingo(queryIndexWebPath);
-          const { url, host: envHost } = resolveCrossSiteIndex(
-            { queryIndexWebPath, stageHost },
-            prefix,
-            suffix,
-            window.location.hostname,
-          );
-          queryIndexes[uid] = processQueryIndexMap(url, prodDomain, { priority: 'low' });
-          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
-        });
+        .filter(({ uniqueSiteId: uid }) => localesData
+          .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix)));
+
+      const startCrossSiteIndex = (entry, fetchOptions = {}) => {
+        const { uniqueSiteId: uid, queryIndexWebPath, stageHost } = entry;
+        const prodDomain = getDomainLingo(queryIndexWebPath);
+        const { url, host: envHost } = resolveCrossSiteIndex(
+          { queryIndexWebPath, stageHost },
+          prefix,
+          suffix,
+          window.location.hostname,
+        );
+        queryIndexes[uid] = processQueryIndexMap(url, prodDomain, fetchOptions);
+        if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
+      };
+
+      // Cross-site indexes flagged with fetchPriority are fetched first (at
+      // default priority) alongside Wave 1 (primary + base); the rest wait.
+      const priorityEntries = crossSiteEntries.filter((d) => d.fetchPriority === 'yes');
+      priorityEntries.forEach((d) => startCrossSiteIndex(d));
+
+      // Wait for the priority wave (Wave 1 + fetchPriority cross-site indexes)
+      // before firing the low-priority remainder, so those don't compete for
+      // bandwidth during the LCP window.
+      await Promise.all([
+        queryIndexes[siteId]?.pathsRequest,
+        baseQueryIndex?.pathsRequest,
+        ...priorityEntries.map((d) => queryIndexes[d.uniqueSiteId]?.pathsRequest),
+      ].filter(Boolean));
+
+      crossSiteEntries
+        .filter((d) => d.fetchPriority !== 'yes')
+        .forEach((d) => startCrossSiteIndex(d, { priority: 'low' }));
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
