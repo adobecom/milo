@@ -454,16 +454,15 @@
 
     :is(picture, .video-container) {
       display: block;
+      width: 100%;
       border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
     }
 
-    @media (width < 768px) {
-      :is(picture, .video-container) {
-        width: 100%;
-        aspect-ratio: 365 / 350;
-      }
+    .video-container,
+    picture {
+      aspect-ratio: 365 / 350;
     }
 
     .video-container {
@@ -555,16 +554,14 @@
       max-width: var(--grid-width-10);
 
       .video-container {
-        max-width: unset;
         margin-inline: unset;
         aspect-ratio: 16 / 9;
         width: 100%;
       }
 
       picture {
-        max-width: unset;
         margin-inline: unset;
-        aspect-ratio: 16 / 9;
+        aspect-ratio: unset;
         width: 100%;
       }
 
