@@ -778,6 +778,11 @@ body.modal-open { overflow: hidden; }
   }
 
   .globe-gallery-cursor--active .globe-gallery-cursor__text { opacity: 0.45; }
+
+  /* Once the user has dragged, the label dismisses for good (disc + chevrons stay),
+     mirroring the WebGL hint text. Placed after the --active rule (equal specificity)
+     so it wins. */
+  .globe-gallery-cursor--hint-dismissed .globe-gallery-cursor__text { opacity: 0; }
 }
 
 /* ── Reduced-motion flow overrides ───────────────────────────────────────────

@@ -217,6 +217,10 @@ const TEXT_CA_DIR_STRENGTH = 0.05; // uMotionDir strength for drag CA on the tex
 const TEXT_CA_WARP_MUL = 1.5; // warp-driven CA boost (lingers as warp decays)
 const TEXT_DRAG_WARP_MUL = 3.0; // text drag-warp vs sphere cards — more violent
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit — letterforms bleed off-screen
+// The custom-cursor label ("Click & Drag") rides the same textExitProgress signal as the
+// WebGL hint: it fades out for good once the user has dragged even a little (well before the
+// background text fully dissolves near 1). Resets with textExitProgress on scroll-out.
+const CURSOR_HINT_DISMISS_T = 0.12;
 
 // ── Modal-nav reactivity nudge ───────────────────────────────────────────────
 // A spring on sphereRotY/X toward the newly-shown card's slot so the sphere
@@ -752,6 +756,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getSphereInteractive: () => sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T,
     getModalOpen: () => modal.getModalIdx() >= 0,
     getReducedMotion: () => reducedMotion,
+    // Same one-way exit as the WebGL hint text — the cursor label dismisses once the
+    // user has dragged a little (see CURSOR_HINT_DISMISS_T). Resets on scroll-out.
+    getHintDismissed: () => textExitProgress > CURSOR_HINT_DISMISS_T,
     labelText: hintText || 'Click & Drag',
     drag,
   });

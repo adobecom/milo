@@ -39,7 +39,7 @@ per-card list.
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
-| `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`) and follows the pointer; `isActive()` lets interaction.js cede the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
+| `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`) and follows the pointer, and dismisses the label once `getHintDismissed()` flips (shared `textExitProgress` signal — fades out with the WebGL hint on first drag); `isActive()` lets interaction.js cede the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
@@ -394,14 +394,18 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
 - **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only,
   over the interactive sphere with no modal open: the system cursor is replaced by a 48px
   `mix-blend-mode: difference` disc (so it inverts whatever's beneath it) flanked by two
-  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. Two
+  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. The label
+  dismisses for good once the user has dragged a little — it rides the same `textExitProgress`
+  signal as the WebGL hint text (via the injected `getHintDismissed`, threshold
+  `CURSOR_HINT_DISMISS_T`), so cursor label and background text fade out together; the disc +
+  chevrons stay. Resets with `textExitProgress` on scroll-out. Two
   body-level DOM layers (NOT scoped to the block root): the disc **must** be a direct `<body>`
   child — `mix-blend-mode` only reaches page content from outside a `position: fixed`
   (GPU-isolated) container — while the chevrons + label live in a fixed container. The module
   sets `cursor: none` on the canvas while active; `interaction.js` cedes its own hover cursor
   via the injected `isActive()`. No-op on touch (nothing is created). With multiple globes per
   page each instance makes its own pair, but only the hovered one activates (one mouse) and
-  inactive discs are `visibility: hidden`. Label copy hardcoded (see Localization).
+  inactive discs are `visibility: hidden`. Label copy is the authored hint string (see Localization).
 - **Modal — single bottom-center nav group; desktop adds a screen-edge scrim.**
   The nav prev/counter/next are one centered flex row (`.globe-gallery-modal__navbar`,
   built in `authoring.js`); `positionModalChrome` positions only the container —

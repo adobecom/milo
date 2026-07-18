@@ -16,7 +16,10 @@
 
    The label text is the authored hint string (deps.labelText, shared with the
    WebGL hint text; falls back to "Click & Drag"). Decorative — not exposed to
-   assistive tech; the a11y widget covers the real affordance.
+   assistive tech; the a11y widget covers the real affordance. It rides the same
+   one-way dismissal as the WebGL hint: once deps.getHintDismissed() flips true
+   (the user has dragged a little), the label fades out for good — matching the
+   background text — while the disc + chevrons stay. Resets on scroll-out.
 
    Owns its DOM + listeners; teardown() removes them and clears the canvas cursor.
    isActive() lets the interaction module defer its hover cursor (pointer/default)
@@ -33,7 +36,8 @@ const RING_SVG = [
 
 export default function createCursor(deps) {
   const {
-    getCanvas, getSphereInteractive, getModalOpen, getReducedMotion, labelText, drag,
+    getCanvas, getSphereInteractive, getModalOpen, getReducedMotion,
+    getHintDismissed, labelText, drag,
   } = deps;
   let containerEl = null; // fixed container: chevrons + label (no blend mode)
   let discEl = null; // body-level disc (mix-blend-mode: difference)
@@ -42,6 +46,7 @@ export default function createCursor(deps) {
   let hasMouse = false; // device supports hover + fine pointer
   let onCanvas = false; // pointer currently over the globe canvas
   let active = false; // cursor currently shown
+  let hintDismissed = false; // label faded out after the user's first drag
   let mx = 0;
   let my = 0;
 
@@ -99,6 +104,14 @@ export default function createCursor(deps) {
       // guards its own hover cursor writes on isActive() so the two don't fight.
       if (canvas) canvas.style.cursor = active ? 'none' : '';
     }
+    // One-way label dismissal: once the user has dragged, the "Click & Drag" label
+    // fades out (the disc + chevrons stay). Tracks the shared textExitProgress signal,
+    // which resets on scroll-out, so the flag can flip back on re-entry.
+    const wantDismissed = typeof getHintDismissed === 'function' && getHintDismissed();
+    if (wantDismissed !== hintDismissed) {
+      hintDismissed = wantDismissed;
+      containerEl.classList.toggle('globe-gallery-cursor--hint-dismissed', hintDismissed);
+    }
     if (!active) return;
     const dragging = drag.isDragging;
     containerEl.classList.toggle('globe-gallery-cursor--dragging', dragging);
@@ -126,7 +139,7 @@ export default function createCursor(deps) {
     if (containerEl && containerEl.parentNode) containerEl.parentNode.removeChild(containerEl);
     if (discEl && discEl.parentNode) discEl.parentNode.removeChild(discEl);
     containerEl = null; discEl = null; ringWrap = null; textWrap = null;
-    onCanvas = false; active = false; mx = 0; my = 0;
+    onCanvas = false; active = false; hintDismissed = false; mx = 0; my = 0;
   }
 
   return { setup, update, teardown, isActive };
