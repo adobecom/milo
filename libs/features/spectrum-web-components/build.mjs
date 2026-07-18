@@ -15,7 +15,7 @@ const ICONS = [
   'corner-triangle',
 ];
 
-const THEMES = ['dark', 'light'];
+const THEMES = ['dark', 'light', 'spectrum-two'];
 
 /**
  * Mapping of modules that contain multiple components (e.g: sp-clear-button is included in button.js)
