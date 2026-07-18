@@ -189,13 +189,41 @@ per locale):
 | `next-card` | Next card | modal next-arrow `aria-label` |
 | `close` | Close | modal close-button `aria-label` |
 | `apps-used` | Apps used | modal badges list `aria-label` |
-| `image-gallery-instructions` | `Interactive image gallery, {{count}} images. Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.` | globe widget `aria-label` (the screen-reader "what is this" + controls) |
+| `image-gallery-label` | `Interactive image gallery, {{count}} images` | globe widget `aria-label` — the concise accessible **name** (screen-reader "what is this") |
+| `image-gallery-instructions` | `Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.` | globe widget `aria-describedby` — the operating **instructions**, announced once |
 | `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation (`{{index}} of {{count}}`) |
 
-`image-gallery-instructions` and `image-gallery-card-label` are **tokenized templates**
-(`{{count}}`, `{{name}}`, `{{index}}` substituted at runtime, so each locale controls word
-order). If a key is absent everywhere, the code falls back to the English template (the
-static keys de-hyphenate to readable English on their own).
+The globe widget's **name** (`image-gallery-label`) is kept separate from its **controls**
+(`image-gallery-instructions`, wired as a visually-hidden `aria-describedby` child) so a
+screen reader reads a terse name on every focus and the how-to-drive-it once. `image-gallery-label`
+and `image-gallery-card-label` are **tokenized templates** (`{{count}}`, `{{name}}`, `{{index}}`
+substituted at runtime, so each locale controls word order). If a key is absent everywhere the
+code falls back to the English text (the tokenized keys are detected by their missing `{{…}}`;
+`image-gallery-instructions` by its de-hyphenated key string).
+
+### Localization readiness
+
+Every user-facing string is **localizable** — it comes either from the placeholders sheet
+or from authored content, so a localized page can carry fully localized copy. Hardcoded
+literals in the code are only **fallbacks** for when a sheet key or authored field is
+missing; on a correctly-authored page they never show. Specifically:
+
+- **Sheet-backed:** all chrome `aria-label`s (modal nav/close, badges list), the arc-copy
+  region label, the globe widget **name** + **instructions**, and the carousel live-region
+  announcement — via the `image-gallery-*` / `previous-card` / `next-card` / `close` /
+  `apps-used` keys above. **Setup action for localized pages:** add these keys to the
+  `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
+  `resolveGlobeLabels`); the English values in the table are the fallbacks.
+- **Authored:** arc-copy, pull-quote, and card name/role/description come from the block
+  rows + fragment; the "Click & Drag" hint + cursor label come from **row 2** (the
+  `Click & Drag` literal is just the empty-row fallback). Badge app labels come from the
+  authored token (the `App`/`Ap` literal is only the empty-token fallback).
+
+The one string with **no** sheet/authoring path is the modal's `1/N` counter (generated in
+`populateModal`, marked `// TODO:`); it's `aria-hidden` (screen readers get the localized
+`image-gallery-card-label` live region), so it's a visual-only concern for locales that
+format numerals differently. Adobe brand names (`Photoshop`, …) in `APP_CATALOG` are left
+untranslated by design. There are no CSS `content:` text strings.
 
 ## Architecture notes
 
@@ -243,20 +271,50 @@ tab-return from re-snapping.
   item 1. In the modal, Prev/Next/Close are all tab stops with a focus trap (WAI-ARIA
   dialog); Left/Right also traverse; Esc / Enter-on-Close exit and restore focus to the
   globe widget.
-- **Screen reader:** the widget's `aria-label` (`image-gallery-instructions`) describes
-  the globe + controls. The dialog announces the first item on open via
+- **Screen reader:** the widget's `aria-label` (`image-gallery-label`) is a concise name;
+  its controls come from `image-gallery-instructions` via a visually-hidden
+  `aria-describedby` child, so the terse name reads on every focus and the how-to once. The
+  dialog announces the first item on open via
   `aria-labelledby`/`describedby`; each **subsequent** item is announced once by a polite
   live region (`.globe-gallery-modal__live`, updated only on navigation with `cardLabel`
   so it doesn't double the open announcement or read the badge list).
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive**
-globe instead of the scroll choreography: `computeFrame` pins the scroll input to
-`SPHERE_FORMED_PROGRESS` (formed sphere, no arc/grid/fold/zoom, `scrollVel` forced 0),
-auto-spin is disabled (drag + arrow-spin still work, arrow-spin steps yaw directly), and
-the modal open/close/nav snap with no fly/warp. The block collapses to `100vh`
-(`.globe-gallery--reduced`); canvas visibility uses **real** scroll vs the block bounds
-(the pinned `frame.lenisY` can't gate it). The no-cards / WebGL-unavailable fallback is
-the separate `.globe-gallery--empty` (collapse to nothing).
+globe instead of the scroll choreography, laid out as **plain document flow**:
+`computeFrame` pins the scroll input to `SPHERE_FORMED_PROGRESS` (formed sphere, no
+arc/grid/fold/zoom, `scrollVel` forced 0), auto-spin is disabled (drag + arrow-spin still
+work, arrow-spin steps yaw directly), and the modal open/close/nav snap with no fly/warp.
+
+Rather than a tall runway + fixed pinned canvas, `.globe-gallery--reduced` lays the block
+out as normal flow: the globe is a **static ~100vh section that scrolls away naturally**,
+then the **pull-quote follows below in normal flow** — no sticky, no pin, no scroll
+gating. The pieces:
+
+- **Canvas** — `initRuntime` sets `position:absolute` + `top:8vh` (instead of the default
+  `fixed`), so it lives inside the now-`position:relative` `.globe-gallery-world`, scrolls
+  with the page, clips naturally, and sits a touch below the section top (clear of the
+  section above). `updateCanvasVisibility` just reveals it once (no coverage math).
+- **`.globe-gallery-world`** — `position:relative` (was `sticky`); anchors the absolute
+  canvas + a11y widget. Height `108vh` = 8vh clearance + the 100vh canvas, no slack below.
+- **Globe size (desktop)** — the formed `md` sphere fills ~93% of viewport height by
+  design, so top/bottom cards bleed off screen. Under RM the ball is static, so
+  `buildCards` scales the `sphereGroup` by `RM_GLOBE_SCALE_MD` (0.9) on `md` to bring the
+  whole ball into view (rotation is per-card, so a group scale is safe). `sm` (~49%) is
+  left at 1.
+- **A11y widget** — `position:absolute` (was `fixed`) so it scrolls with the globe;
+  re-centred on the sphere with `top:58vh` (canvas `top` + half the canvas) since the base
+  `top:50%` would track the taller world. Focus still snaps to `blockDocTop`.
+- **Pull-quote** — the pin drops `position:absolute`/bottom-of-runway and the quote drops
+  `sticky`; both go `static`, the quote is forced `opacity:1` (no scroll-driven reveal),
+  and hugs the top of its box (`min-height:0`, `justify-content:flex-start`, modest
+  padding) so it sits close under the globe rather than a screen away. `updatePullQuote`
+  early-returns under RM (CSS owns it).
+- **Arc-copy** — `display:none` (no arc phase to introduce; a fixed pill would hang over
+  the scrolling page).
+
+The `--reduced` flow overrides are grouped at the **end of `globe-gallery.css`** (after the
+base rules they override — `no-descending-specificity`). The no-cards / WebGL-unavailable
+fallback is the separate `.globe-gallery--empty` (collapse to nothing).
 
 Phase constants (module scope):
 
@@ -310,8 +368,9 @@ independently of these JS profiles: the sm scale is the unscoped `.globe` base, 
 scales on top. The modal/arc-copy treatment is the same — sm (dark frosted panels,
 clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop card.
 
-**Reduced motion**: renders a static interactive globe (`.globe-gallery--reduced`,
-`100vh`) — see Accessibility. The no-cards / WebGL-unavailable case is the separate
+**Reduced motion**: renders a static interactive globe as plain document flow
+(`.globe-gallery--reduced` — globe section scrolls away, pull-quote follows) — see
+Accessibility. The no-cards / WebGL-unavailable case is the separate
 `.globe-gallery--empty` collapse.
 
 ## Behavior notes (intentional differences from the prototype)

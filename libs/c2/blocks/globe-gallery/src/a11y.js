@@ -21,9 +21,11 @@
    DI factory: every piece of runtime state it needs (count, the live sphereFormT /
    modalIdx) is injected as a getter, and the actions it triggers (spinGlobe, openModal,
    onFocus) are injected callbacks, so this module holds no globe state except its own
-   DOM node and imports neither the core nor the modal. The localized `galleryLabel`
-   describes the globe + its controls (screen-reader "what is this"). Multi-instance safe
-   — all lookups go through the injected root-scoped `q`. */
+   DOM node and imports neither the core nor the modal. The localized `galleryLabel` is the
+   widget's concise accessible NAME (announced on every focus); `galleryInstructions` is
+   the how-to-drive-it DESCRIPTION, wired via a visually-hidden `aria-describedby` child
+   (announced once) so the name stays terse. Multi-instance safe — all lookups go through
+   the injected root-scoped `q`, and the describedby id is suffixed with the instance `gid`. */
 
 export default function createGalleryA11y({
   q,
@@ -35,6 +37,8 @@ export default function createGalleryA11y({
   openModal,
   onFocus,
   galleryLabel,
+  galleryInstructions,
+  gid,
 }) {
   let widgetEl = null; // the single focusable globe widget (button)
   let tabbable = true; // current tab-order state (false only while modal traps focus)
@@ -58,6 +62,19 @@ export default function createGalleryA11y({
     widgetEl.className = 'globe-gallery-a11y';
     widgetEl.setAttribute('aria-label', galleryLabel(getCount()));
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
+
+    // Operating instructions as the widget's DESCRIPTION (announced once), kept out of
+    // the concise aria-label NAME (announced on every focus). A visually-hidden child so
+    // it's removed with the widget on teardown; the gid keeps the id unique per instance
+    // (aria-describedby resolves a descendant id fine). Skipped if no instructions given.
+    if (galleryInstructions) {
+      const descEl = document.createElement('span');
+      descEl.className = 'globe-gallery-sr-only';
+      descEl.id = `globe-gallery-a11y-desc-${gid}`;
+      descEl.textContent = galleryInstructions;
+      widgetEl.appendChild(descEl);
+      widgetEl.setAttribute('aria-describedby', descEl.id);
+    }
 
     // Focusing the globe snaps the page to its interactive (formed-sphere) scroll
     // position — like pdf-space, so tabbing INTO the block brings it to the globe state

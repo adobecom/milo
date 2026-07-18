@@ -413,7 +413,8 @@ export default function createGlobeModal({
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
     targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
-    // TODO: localize this
+    // TODO: localize — "1/N" format is hardcoded (not sheet/authored). aria-hidden, so
+    // visual-only; the SR path uses the localized cardLabel live region.
     if (counterEl) counterEl.textContent = `${i + 1}/${getCount()}`;
     const badgesEl = targetEl.querySelector('.globe-gallery-modal__badges');
     badgesEl.innerHTML = '';
@@ -1108,7 +1109,13 @@ export default function createGlobeModal({
         if (focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
+        // If focus has already escaped the dialog (e.g. a backdrop click blurred the
+        // active button to <body>), the first/last wrap below wouldn't fire and Tab
+        // would walk into the page behind. Pull it back to the first control instead.
+        if (!chromeRoot.contains(document.activeElement)) {
+          e.preventDefault();
+          try { first.focus(); } catch (err) { /* not focusable; ignore */ }
+        } else if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
           try { last.focus(); } catch (err) { /* not focusable; ignore */ }
         } else if (!e.shiftKey && document.activeElement === last) {

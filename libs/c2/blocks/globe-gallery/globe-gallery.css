@@ -16,15 +16,22 @@
    ───────────────────────────────────────────────────────────────────────── */
 /* stylelint-disable selector-class-pattern, property-no-vendor-prefix, value-no-vendor-prefix */
 
-/* Reduced motion: collapse the tall scroll runway to a single ~100vh section. The
-   globe still renders (fixed canvas) as a STATIC, interactive sphere — the runtime pins
-   the timeline to the formed sphere and disables auto-spin / fly-through (see
-   globe-gallery.js). The compound selector beats the .globe runway height regardless of
-   source order. (Cards failing to load falls back to this same collapse via JS.) */
+/* Reduced motion: no scroll choreography — lay the block out as normal document flow.
+   The globe renders as a STATIC, interactive sphere in a ~100vh section that scrolls
+   away naturally (the canvas is absolute inside the now-static .globe-gallery-world —
+   set in JS), then the pull-quote follows below in normal flow (no sticky pin, always
+   visible). The runtime still pins its timeline to the formed sphere and disables
+   auto-spin / fly-through (see globe-gallery.js). The compound selector beats the
+   .globe-gallery runway height regardless of source order. (Cards failing to load falls
+   back to the separate --empty collapse.) */
 .globe-gallery.globe-gallery--reduced {
-  height: 100vh;
-  min-height: 100vh;
+  height: auto;
+  min-height: 0;
 }
+
+/* The per-descendant --reduced overrides (world / arc-copy / a11y / pull-quote) are
+   grouped at the END of this file — they must follow the base rules they override
+   (descending-specificity / cascade). See "Reduced-motion flow overrides" below. */
 
 /* Nothing to render (no authored cards / WebGL unavailable): collapse the runway to
    nothing so the block takes no space. Distinct from --reduced, which still shows the
@@ -218,6 +225,13 @@
   letter-spacing: var(--type-title-1-ls);
   color: #fff;
   margin: 0;
+}
+
+/* Gap between the quote and the name/role. In the base (space-between) layout the two
+   are already pushed apart; this only bites when they cluster together — e.g. the RM
+   centred layout. */
+.globe-gallery-pullquote__attribution {
+  margin-top: 24px;
 }
 
 .globe-gallery-pullquote__name {
@@ -764,4 +778,67 @@ body.modal-open { overflow: hidden; }
   }
 
   .globe-gallery-cursor--active .globe-gallery-cursor__text { opacity: 0.45; }
+}
+
+/* ── Reduced-motion flow overrides ───────────────────────────────────────────
+   Placed at the end of the file (after the base rules they override) so the
+   descendant selectors don't precede their lower-specificity bases. Under
+   prefers-reduced-motion the block is plain document flow: the globe sits in a
+   static ~100vh section that scrolls away, then the pull-quote follows below. The
+   .globe-gallery--reduced class + JS canvas repositioning are set in globe-gallery.js. */
+
+/* Globe section: static (not sticky) so it scrolls away; position:relative anchors
+   the absolute canvas + a11y widget it contains. Height = 8vh clearance above the 100vh
+   canvas (mirrors the canvas `top:8vh` set in JS) — no extra slack below, so the
+   pull-quote follows close beneath the globe. */
+.globe-gallery--reduced .globe-gallery-world {
+  position: relative;
+  height: 108vh;
+}
+
+/* No arc phase under RM — the arc-copy pill has nothing to introduce and (being
+   fixed) would otherwise hang over the scrolling page. */
+.globe-gallery--reduced .globe-gallery-arc-copy {
+  display: none;
+}
+
+/* A11y widget scrolls with the globe (absolute in the relative world). Re-centre it on
+   the sphere — canvas top (8vh) + half the 100vh canvas — since the base top:50% would
+   track the taller world, not the sphere centre. */
+.globe-gallery--reduced .globe-gallery-a11y {
+  position: absolute;
+  top: 58vh;
+}
+
+/* Pull-quote flows normally after the globe: drop the runway-bottom pin + sticky, show
+   it statically (no scroll-driven opacity/scale reveal), and top-align it in its own box
+   (no full-viewport centring) with a padding gap above so it sits a comfortable distance
+   below the globe rather than a full screen away. */
+.globe-gallery--reduced .globe-gallery-pullquote-pin {
+  position: static;
+  height: auto;
+}
+
+.globe-gallery--reduced .globe-gallery-pullquote {
+  position: static;
+  top: auto;
+  height: auto;
+  min-height: 0;
+  justify-content: flex-start;
+  padding: 10vh 24px 8vh;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* ── Reduced-motion: interaction micro-animations ────────────────────────────
+   The scroll choreography is already replaced wholesale under RM (the flow overrides
+   above + globe-gallery.js), and the custom cursor is JS-gated off. This drops the
+   remaining CSS-only motion: the scale transforms on the modal nav buttons (the colour
+   change stays as the hover/active cue). */
+@media (prefers-reduced-motion: reduce) {
+  .globe-gallery-modal__nav:hover,
+  .globe-gallery-modal__nav:active {
+    transform: none;
+  }
 }

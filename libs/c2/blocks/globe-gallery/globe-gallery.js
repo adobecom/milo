@@ -126,6 +126,12 @@ const SPHERE_FORMED_PROGRESS = Math.max(
 const ENTRY_LEAD_VH = 0.4;
 const ENTRY_RAMP_VH = 1.05;
 
+// Reduced motion: the formed desktop globe is sized to ~93% of the viewport height
+// (immersive framing inherited from the scroll experience), so its top/bottom cards
+// bleed off screen. Under RM the globe is static, so shrink the sphere group on desktop
+// (md) to bring the whole ball into view. sm renders at ~49% height already — left at 1.
+const RM_GLOBE_SCALE_MD = 0.9;
+
 // ── Grid peel / fold ─────────────────────────────────────────────────────────
 const GRID_GAP_RATIO = 0.5; // gap between cards = 0.5× card width (computed per layout)
 // (GRID_PEEL_STAGGER + the FOLD_PEEL_OVERLAP fold-overlap knobs live in the phase-timeline
@@ -436,6 +442,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     } = bp;
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
+    // Reduced motion (desktop): shrink the whole sphere so the static ball fits the
+    // viewport instead of bleeding off top/bottom (see RM_GLOBE_SCALE_MD). Rotation is
+    // per-card via quaternion, so a uniform group scale doesn't affect drag/spin.
+    if (reducedMotion && bp.name !== 'sm') sphereGroup.scale.setScalar(RM_GLOBE_SCALE_MD);
     cards = [];
 
     for (let i = 0; i < N_TOTAL; i += 1) {
@@ -728,6 +738,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     openModal: () => modal.open(0, W / 2, H / 2),
     onFocus: snapToInteractive,
     galleryLabel: labels.galleryLabel,
+    galleryInstructions: labels.galleryInstructions,
+    gid,
   });
 
   // Pointer interaction (drag-to-spin, click → modal, hover). Owns its listeners +
@@ -994,14 +1006,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   function updateCanvasVisibility(frame) {
     const { lenisY, zoomT } = frame;
     const canvas = renderer.domElement;
-    // Reduced motion pins frame.lenisY to the formed-sphere position, so it can't gate
-    // visibility — use REAL scroll vs the block's bounds instead, so the fixed canvas
-    // hides when the (collapsed ~100vh) block is scrolled out of view.
+    // Reduced motion lays the block out as normal document flow: the canvas is
+    // absolute inside the (now static) .globe-gallery-world (set in initRuntime), so
+    // it scrolls away with the page and clips naturally instead of pinning to the
+    // viewport. No scroll-based gating is needed — just reveal it once.
     if (reducedMotion) {
-      const realY = window.scrollY;
-      const inView = realY + H > blockDocTop && realY < blockDocTop + blockHeight;
-      canvas.style.display = inView ? 'block' : 'none';
-      if (inView) canvas.style.opacity = '1';
+      canvas.style.display = 'block';
+      canvas.style.opacity = '1';
       return;
     }
     const showTrigger = blockDocTop - H * ENTRY_LEAD_VH; // matches entryStart in computeFrame
@@ -1021,6 +1032,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // downward. On scroll-up we use a fast 0.15s fade so it disappears before moving.
   function updatePullQuote(frame) {
     const { zoomT, scrollingDown } = frame;
+    // Reduced motion: the quote flows normally below the globe and is statically
+    // visible (CSS forces opacity:1, no sticky/scale reveal) — no JS toggling.
+    if (reducedMotion) return;
     if (pqEl) {
       if (zoomT >= 0.38 && !pqShown) {
         pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
@@ -1571,6 +1585,17 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const canvas = q('.globe-gallery-canvas');
     if (!canvas) return false;
 
+    // Reduced motion: take the canvas out of fixed viewport-pinning and into normal
+    // flow (absolute within the static .globe-gallery-world) so the static globe
+    // scrolls away naturally and the pull-quote follows below — see the --reduced CSS.
+    // The top nudge drops the globe a touch below the section's top edge so it isn't
+    // flush against the previous section; the world is grown symmetrically in CSS
+    // (+2× this offset) so the sphere and the centred a11y widget stay aligned.
+    if (reducedMotion) {
+      canvas.style.position = 'absolute';
+      canvas.style.top = '8vh';
+    }
+
     W = window.innerWidth;
     H = window.innerHeight;
 
@@ -1745,19 +1770,27 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 // TODO: finalize authoring these keys
 async function resolveGlobeLabels() {
   const [
-    arcRegion, prevCard, nextCard, closeBtn, appsUsed, galleryTplRaw, cardTplRaw,
+    arcRegion, prevCard, nextCard, closeBtn, appsUsed,
+    galleryTplRaw, galleryInstrRaw, cardTplRaw,
   ] = await replaceKeyArray(
-    ['image-gallery-intro', 'previous-card', 'next-card', 'close',
-      'apps-used', 'image-gallery-instructions', 'image-gallery-card-label'],
+    ['image-gallery-intro', 'previous-card', 'next-card', 'close', 'apps-used',
+      'image-gallery-label', 'image-gallery-instructions', 'image-gallery-card-label'],
     getConfig(),
   );
-  // replaceKey returns the de-hyphenated key when a placeholder is absent from every
-  // sheet; for the tokenized templates that leaves no {{…}} to fill, so fall back to
-  // the English template. (The static labels de-hyphenate to readable English.)
+  // replaceKey returns the de-hyphenated key (keyToStr: '-'→' ') when a placeholder is
+  // absent from every sheet, so fall back to English there. The globe widget's accessible
+  // NAME (image-gallery-label, tokenized with {{count}}) is kept separate from its
+  // operating INSTRUCTIONS (image-gallery-instructions, read via aria-describedby) so a
+  // screen reader announces a concise name on every focus and the how-to-drive-it once.
+  // TODO: localize — the English strings below are the hardcoded fallbacks that render
+  // until the image-gallery-* keys are finalized in the placeholders sheet (see TODO
+  // above); once the sheet supplies them per locale these branches are never hit.
   const galleryTpl = galleryTplRaw.includes('{{count}}')
     ? galleryTplRaw
-    : 'Interactive image gallery, {{count}} images. '
-      + 'Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.';
+    : 'Interactive image gallery, {{count}} images';
+  const galleryInstructions = galleryInstrRaw === 'image gallery instructions'
+    ? 'Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.'
+    : galleryInstrRaw;
   const cardTpl = cardTplRaw.includes('{{name}}')
     ? cardTplRaw
     : 'View photo by {{name}}, {{index}} of {{count}}';
@@ -1767,9 +1800,11 @@ async function resolveGlobeLabels() {
     nextCard,
     closeBtn,
     appsUsed,
-    // aria-label for the single globe widget — describes what the globe is + how to
-    // drive it (screen-reader "what is this"). count is the live card total.
+    // Concise aria-label for the single globe widget (the screen-reader "what is this").
+    // count is the live card total. The controls are described separately (below).
     galleryLabel: (count) => galleryTpl.replace('{{count}}', String(count)),
+    // Operating instructions, wired as the widget's aria-describedby target in a11y.js.
+    galleryInstructions,
     cardLabel: (name, index, count) => cardTpl
       .replace('{{name}}', name)
       .replace('{{index}}', String(index))
@@ -1779,13 +1814,13 @@ async function resolveGlobeLabels() {
 
 // ── Block entry point ────────────────────────────────────────────────────────
 export default async function init(el) {
-  // Reduced-motion: skip the WebGL experience entirely and collapse the block's
-  // tall scroll length. TODO (iterate): author a static poster fallback like pdf-space.
   // Reduced motion: render a STATIC, still-interactive globe instead of the scroll
-  // choreography. The runtime pins the timeline to the formed-sphere state (no arc/grid/
-  // fold/zoom), disables auto-spin, and snaps the modal open/close — drag, arrow-spin,
-  // and click→open all still work. The block collapses to ~100vh (see .globe-gallery--
-  // reduced in the CSS) so it's a normal-height section rather than a tall scroll runway.
+  // choreography, laid out as plain document flow. The runtime pins the timeline to the
+  // formed-sphere state (no arc/grid/fold/zoom), disables auto-spin, and snaps the modal
+  // open/close — drag, arrow-spin, and click→open all still work. Instead of pinning a
+  // fixed canvas, `--reduced` (see the CSS) makes the globe a static ~100vh section that
+  // scrolls away naturally (canvas absolute in the static world, set in initRuntime),
+  // followed by the pull-quote in normal flow — no runway, no sticky, no scroll gating.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) el.classList.add('globe-gallery--reduced');
 
