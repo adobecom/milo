@@ -406,16 +406,23 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   via the injected `isActive()`. No-op on touch (nothing is created). With multiple globes per
   page each instance makes its own pair, but only the hovered one activates (one mouse) and
   inactive discs are `visibility: hidden`. Label copy is the authored hint string (see Localization).
-- **Modal — single bottom-center nav group; desktop adds a screen-edge scrim.**
-  The nav prev/counter/next are one centered flex row (`.globe-gallery-modal__navbar`,
-  built in `authoring.js`); `positionModalChrome` positions only the container —
-  bottom-center of the viewport on mobile, bottom-center of the image on desktop
-  (anchored to the image's projected bounds). The close button sits in the viewport's
-  top-right margin at every breakpoint. On **desktop/tablet** (`@media min-width:768px`)
-  the image fills the viewport height (12px margins, `DT_IMG_VPAD`), centered, width
-  capped to the viewport; a fixed-width (`DT_SCRIM_W` = 316px) dark frosted readability
+- **Modal — edge-anchored nav arrows + bottom-center counter; desktop adds a screen-edge scrim.**
+  The prev/next arrows and the counter are independent chrome children (no shared wrapper),
+  each positioned per-frame by `positionModalChrome`. **Desktop/tablet**: arrows pin to the
+  viewport's left/right edges (24px gap, vertically centered); the counter sits at the image's
+  bottom-center. **Mobile** (deferred to its own pass): a bottom-center row — counter centered,
+  arrows flanking it. The three frosted controls (both arrows + close) share one style: 1px
+  `--s2a-color-transparent-white-24` border, `--s2a-border-radius-4` (6px) radius,
+  `--s2a-color-transparent-black-64` background, `blur(12px)`. The close button sits in the
+  viewport's top-right margin at every breakpoint. On **desktop/tablet** (`@media min-width:768px`)
+  the **visible** image is contain-fit to the viewport minus a symmetric `DT_IMG_MARGIN`
+  (12px) on every edge, centered: with its native aspect kept it fills whichever axis binds
+  first (up to the inner box) and gaps only the other (never both) — as big as that box
+  allows. The sizing math backs the geometry out of the SDF corner inset (`uRadius·cardHPx`
+  on all four sides) so the visible photo — not the geometry — reaches the margin (mirrors
+  the mobile branch). A fixed-width (`DT_SCRIM_W` = 316px) dark frosted readability
   scrim is attached to the **viewport's left edge, full viewport height** (independent
-  of the image — role/name/description hug the top, badges pinned to the bottom via
+  of the image — role/name/description hug the **top**, badges pinned to the bottom via
   `margin-top:auto`), and the counter renders as a frosted pill. Scrim/nav/counter are
   all dark frosted (`rgb(0 0 0 / 64%)` + `blur(12px)`). **Mobile** (<768px): dark
   frosted info panel + light text bottom-anchored above the nav row, asset top-left;

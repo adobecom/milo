@@ -308,16 +308,9 @@
 /* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
 .globe-gallery-modal__image { display: none; }
 
-/* Nav group (prev + counter + next) — a single centered flex row. JS positions
-   the container (.globe-gallery-modal__navbar); the children are static flow. */
-.globe-gallery-modal__navbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Nav arrows — flex children of the navbar; CSS handles visual style only.
-   Dark frosted treatment that sits over the photo at every breakpoint. */
+/* Nav arrows — position (edges on desktop, bottom row on mobile) is set per-frame
+   by JS (positionModalChrome); CSS handles visual style only. Dark frosted treatment
+   with a 1px 24%-white border that sits over the photo at every breakpoint. */
 .globe-gallery-modal__nav {
   width: 44px;
   height: 44px;
@@ -333,6 +326,10 @@
   justify-content: center;
   box-shadow: none;
   pointer-events: auto;
+
+  /* Above the info scrim (which is later in DOM) so the left/edge arrow stays
+     visible + clickable where it overlaps the scrim. */
+  z-index: 1;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -344,25 +341,26 @@
 .globe-gallery-modal__nav:active { transform: scale(0.98); }
 
 /* Close button — position set by JS; CSS handles visual style only.
-   Same dark frosted glass pattern as the nav arrows and info panel. */
+   Same 1px 24%-white border + 64%-black frosted glass as the nav arrows. */
 .globe-gallery-modal__close {
   position: absolute;
   width: 38px;
   height: 38px;
-  border-radius: 8px;
-  border: none;
-  background: rgb(0 0 0 / 30%);
-  -webkit-backdrop-filter: blur(64px);
-  backdrop-filter: blur(64px);
+  border-radius: var(--s2a-border-radius-4);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   color: #fff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   pointer-events: auto;
+  z-index: 1; /* above the info scrim (later in DOM) */
   transition: background 0.2s ease;
 }
-.globe-gallery-modal__close:hover { background: rgb(0 0 0 / 55%); }
+.globe-gallery-modal__close:hover { background: rgb(0 0 0 / 78%); }
 
 /* Info panel — position (top/left/right) set by JS.
    Base (sm): the panel overlays the asset, so it carries a dark frosted-glass
@@ -526,7 +524,7 @@
   color: #c6c6c6;
 }
 
-/* Counter ("1/N") — a flex child of the navbar (between the arrows). Base (sm)
+/* Counter ("1/N") — bottom-center progress indicator (positioned by JS). Base (sm)
    is plain text; the min-width:768 block turns it into a dark frosted pill. */
 .globe-gallery-modal__counter {
   height: 44px;
@@ -618,9 +616,9 @@ body.modal-open { overflow: hidden; }
   }
 
   /* Info scrim: dark frosted glass on the viewport's left edge, full height.
-     JS sets top/bottom/left/width; the flex column vertically centers the
-     role/name/description block (role-label margin-top:auto below) and pins the
-     badges to the bottom (badges margin-top:auto below). */
+     JS sets top/bottom/left/width; the flex column hugs the role/name/description
+     block to the TOP and pins the badges to the bottom (badges margin-top:auto
+     below). */
   .globe-gallery-modal__info {
     border: 1px solid rgb(255 255 255 / 0%);
     border-radius: 0;
@@ -629,11 +627,6 @@ body.modal-open { overflow: hidden; }
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
   }
-
-  /* Vertically center the role/name/description block in the space above the
-     badges (paired with the badges' margin-top:auto, the two auto margins split
-     the free space evenly above and below the text block). */
-  .globe-gallery-modal__role-label { margin-top: auto; }
 
   .globe-gallery-modal__name {
     font-size: 24px;

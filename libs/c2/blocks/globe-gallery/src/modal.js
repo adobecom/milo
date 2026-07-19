@@ -51,11 +51,11 @@ const MODAL_WARP_SWIPE = 0.25; // full mobile horizontal swipe
 // Desktop/tablet modal-nav cross-warp transition (old card warps out, new warps in).
 const DN_NAV_DUR = 500; // ms
 const DN_NAV_WARP = 0.40; // peak warp
-// Desktop/tablet modal layout — the image fills the viewport height minus a
-// symmetric 12px margin top + bottom (see computeModalTarget). The info scrim
-// (fixed width) overlays the image's left edge; chrome positions are derived
-// from the image's projected bounds (see positionModalChrome).
-const DT_IMG_VPAD = 12; // image top/bottom margin
+// Desktop/tablet modal layout — the VISIBLE image is contain-fit to the viewport minus
+// a symmetric margin (touches the inner box on one axis, gap on only the other; see
+// computeModalTarget). The info scrim (fixed width) overlays the image's left edge;
+// chrome positions are derived from the image's projected bounds (see positionModalChrome).
+const DT_IMG_MARGIN = 12; // gap between the visible image and every viewport edge
 const DT_SCRIM_W = 316; // info scrim fixed width
 
 export default function createGlobeModal({
@@ -188,9 +188,11 @@ export default function createGlobeModal({
   }
 
   // Compute target world position/quaternion/scale for the modal-active card.
-  // Card is always 75% of viewport height; width follows the image's native aspect
-  // ratio via sphereScaleX so portrait, square, and landscape assets all appear
-  // undistorted. Width is clamped so very wide landscape cards don't overflow.
+  // The VISIBLE photo (inside the SDF rounded-corner inset) is sized as large as
+  // possible with its native aspect kept (via sphereScaleX) — contain-fit to the
+  // viewport so it fills one axis edge-to-edge and gaps only the other (never both).
+  // Portrait, square, and landscape assets all appear undistorted. Mobile keeps its
+  // own top-left-locked sizing below; desktop/tablet is the full-bleed contain path.
   // Recomputed per-frame so it stays anchored even if the camera is still moving.
   function computeModalTarget(outPos, outQuat, outScale, cardOverride) {
     // cardOverride: if provided, compute target for THIS card (used by the
@@ -251,21 +253,25 @@ export default function createGlobeModal({
       const worldY = (H / 2 - centerScreenY) / pxPerWorld;
       outPos.set(worldX, worldY, camZ - dist);
     } else {
-      // Desktop / tablet — image fills the viewport height minus a 12px margin
-      // top + bottom, centered. Width follows the native aspect, capped to the
-      // viewport width so wide landscape assets don't overflow. The info scrim
-      // overlays the image's left edge and the nav group its bottom (positioned
-      // by the chrome logic), so the image no longer reserves horizontal room.
+      // Desktop / tablet — the VISIBLE photo is contain-fit to the viewport minus a
+      // symmetric DT_IMG_MARGIN on every edge, with its native aspect kept: it fills
+      // whichever axis binds first (up to the inner box) and leaves a gap on ONLY the
+      // other axis (never both), as big as that box allows. The SDF rounds + insets the
+      // rendered photo by uRadius·cardHPx on ALL four sides, so the visible photo is
+      //   visW = cardHPx·(uAspect − 2·uRadius),  visH = cardHPx·(1 − 2·uRadius).
+      // Solve each axis-fill (to the inner box) for the geometry height, take the
+      // smaller (= contain):
+      //   fill height → visH = H − 2·margin → cardHPx = (H − 2·margin) / (1 − 2·uRadius)
+      //   fill width  → visW = W − 2·margin → cardHPx = (W − 2·margin) / (uAspect − 2·uRadius)
+      // The info scrim overlays the image's left edge and the nav group its bottom
+      // (positioned by the chrome logic), so the image reserves no horizontal room.
       const uAspect = cardAspect * sScaleX;
-      let imgH = H - 2 * DT_IMG_VPAD;
-      let imgW = imgH * uAspect;
-      const maxW = W - 2 * DT_IMG_VPAD;
-      if (imgW > maxW) {
-        imgW = Math.max(1, maxW);
-        imgH = imgW / uAspect;
-      }
+      const SDF_RADIUS = SDF_CORNER_RADIUS;
+      const cardHPxFillH = (H - 2 * DT_IMG_MARGIN) / (1 - 2 * SDF_RADIUS);
+      const cardHPxFillW = (W - 2 * DT_IMG_MARGIN) / (uAspect - 2 * SDF_RADIUS);
+      const cardHPx = Math.min(cardHPxFillH, cardHPxFillW);
 
-      scaleY = imgH / (CARD_H_SPHERE * pxPerWorld);
+      scaleY = cardHPx / (CARD_H_SPHERE * pxPerWorld);
       scaleX = scaleY * sScaleX;
 
       // Image centered at viewport center, both axes → world (0, 0, camZ-dist).
@@ -286,7 +292,9 @@ export default function createGlobeModal({
     const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
     const infoEl = chromeEl.querySelector('.globe-gallery-modal__info');
     const closeEl = chromeEl.querySelector('.globe-gallery-modal__close');
-    const navbarEl = chromeEl.querySelector('.globe-gallery-modal__navbar');
+    const prevEl = chromeEl.querySelector('.globe-gallery-modal__nav--prev');
+    const nextEl = chromeEl.querySelector('.globe-gallery-modal__nav--next');
+    const counterEl = chromeEl.querySelector('.globe-gallery-modal__counter');
 
     const tgtPos = new THREE.Vector3();
     const tgtQuat = new THREE.Quaternion();
@@ -325,30 +333,63 @@ export default function createGlobeModal({
 
     const isMobile = (getBP() === 'sm');
 
-    // Close button → top-right of the viewport (16px inset) at every breakpoint.
+    // Close button → top-right of the viewport (24px inset) at every breakpoint.
     if (closeEl) {
       closeEl.style.position = 'absolute';
-      closeEl.style.top = '16px';
-      closeEl.style.right = '16px';
+      closeEl.style.top = '24px';
+      closeEl.style.right = '24px';
       closeEl.style.bottom = 'auto';
       closeEl.style.left = 'auto';
     }
 
-    // Nav group (prev + counter pill + next) — one centered flex row (CSS lays
-    // out the children; JS only positions the container). Centered via the
-    // translateX(-50%) applied in the fade step below.
-    //   Mobile  → bottom-center of the viewport (16px from the bottom edge).
-    //   Desktop → bottom-center of the image (anchored to its projected bounds).
-    if (navbarEl) {
-      navbarEl.style.position = 'absolute';
-      navbarEl.style.top = 'auto';
-      navbarEl.style.right = 'auto';
-      if (isMobile) {
-        navbarEl.style.left = '50%';
-        navbarEl.style.bottom = '16px';
-      } else {
-        navbarEl.style.left = `${(visLeft + visRight) / 2}px`;
-        navbarEl.style.bottom = `${H - visBot + INSET}px`;
+    // Nav arrows + progress counter — positioned individually (no shared wrapper,
+    // so each anchors to the viewport cleanly; the chrome root is a fixed inset:0
+    // box with no transform). Base transforms are tracked per element so the fade
+    // step below can re-apply them (the fade writes transform, clobbering centering).
+    //   Desktop → arrows pinned to the viewport's left/right edges (24px gap),
+    //     vertically centered; counter at the image's bottom-center.
+    //   Mobile  → a bottom-center row: counter centered, arrows flanking it (this
+    //     branch gets its own dedicated pass later; kept functional for now).
+    // Arrows carry NO base transform (their centering is baked into pixel top/left),
+    // so their :hover scale isn't clobbered by the per-frame inline transform the fade
+    // writes. The counter is centered on its left point via translateX(-50%) (it has no
+    // hover transform, so an inline transform there is harmless).
+    const NAV_SIZE = 44; // matches the .globe-gallery-modal__nav width/height in CSS
+    const counterBase = 'translateX(-50%)';
+    if (prevEl) prevEl.style.position = 'absolute';
+    if (nextEl) nextEl.style.position = 'absolute';
+    if (counterEl) counterEl.style.position = 'absolute';
+
+    if (isMobile) {
+      const GAP = 12;
+      const cW = counterEl ? counterEl.getBoundingClientRect().width : 0;
+      const flank = cW / 2 + GAP + NAV_SIZE / 2; // arrow-center distance from viewport center
+      if (counterEl) {
+        counterEl.style.left = '50%'; counterEl.style.right = 'auto';
+        counterEl.style.top = 'auto'; counterEl.style.bottom = '16px';
+      }
+      if (prevEl) {
+        prevEl.style.left = `${W / 2 - flank - NAV_SIZE / 2}px`; prevEl.style.right = 'auto';
+        prevEl.style.top = 'auto'; prevEl.style.bottom = '16px';
+      }
+      if (nextEl) {
+        nextEl.style.left = `${W / 2 + flank - NAV_SIZE / 2}px`; nextEl.style.right = 'auto';
+        nextEl.style.top = 'auto'; nextEl.style.bottom = '16px';
+      }
+    } else {
+      const EDGE = 24; // gap from the arrow to the viewport's left/right edge
+      const navTop = `${Math.round(H / 2 - NAV_SIZE / 2)}px`; // vertically centered
+      if (prevEl) {
+        prevEl.style.left = `${EDGE}px`; prevEl.style.right = 'auto';
+        prevEl.style.top = navTop; prevEl.style.bottom = 'auto';
+      }
+      if (nextEl) {
+        nextEl.style.left = 'auto'; nextEl.style.right = `${EDGE}px`;
+        nextEl.style.top = navTop; nextEl.style.bottom = 'auto';
+      }
+      if (counterEl) {
+        counterEl.style.left = `${(visLeft + visRight) / 2}px`; counterEl.style.right = 'auto';
+        counterEl.style.top = 'auto'; counterEl.style.bottom = `${H - visBot + INSET}px`;
       }
     }
 
@@ -380,7 +421,7 @@ export default function createGlobeModal({
 
     // Chrome fade + slide-up: driven by modalChromeFadeT (0→1 after card is 90% settled).
     // transition:none during the reveal so JS animation isn't fought by CSS hover transitions.
-    // The nav group is faded as a unit (the navbar), preserving its translateX(-50%) centering.
+    // Each nav element is faded individually, preserving its own base transform (centering).
     const cFade = easeOutCubic(modalChromeFadeT);
     const cShift = Math.round((1 - cFade) * 8);
     const settled = modalChromeFadeT >= 1;
@@ -393,7 +434,9 @@ export default function createGlobeModal({
     };
     applyFade(infoEl, '');
     applyFade(closeEl, '');
-    applyFade(navbarEl, 'translateX(-50%)');
+    applyFade(prevEl, '');
+    applyFade(nextEl, '');
+    applyFade(counterEl, counterBase);
   }
 
   // Write the authored metadata for card index i into the modal chrome DOM. When
@@ -413,9 +456,13 @@ export default function createGlobeModal({
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
     targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
-    // TODO: localize — "1/N" format is hardcoded (not sheet/authored). aria-hidden, so
-    // visual-only; the SR path uses the localized cardLabel live region.
-    if (counterEl) counterEl.textContent = `${i + 1}/${getCount()}`;
+    // TODO: localize — "NN / NN" format is hardcoded (not sheet/authored). aria-hidden, so
+    // visual-only; the SR path uses the localized cardLabel live region. Single digits are
+    // zero-padded ("2" → "02") and the slash is spaced ("02 / 45").
+    if (counterEl) {
+      const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
+      counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
+    }
     const badgesEl = targetEl.querySelector('.globe-gallery-modal__badges');
     badgesEl.innerHTML = '';
     meta.badges.forEach((b) => {

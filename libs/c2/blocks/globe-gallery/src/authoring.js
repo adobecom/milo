@@ -232,15 +232,13 @@ const buildMarkup = (gid, labels) => `
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
 
   <div class="globe-gallery-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}" aria-hidden="true">
-    <div class="globe-gallery-modal__navbar">
-      <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
-        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="globe-gallery-modal__counter" aria-hidden="true"></div>
-      <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${labels.nextCard}">
-        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="globe-gallery-modal__nav globe-gallery-modal__nav--next" type="button" aria-label="${labels.nextCard}">
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="globe-gallery-modal__counter" aria-hidden="true"></div>
     <button class="globe-gallery-modal__close" type="button" aria-label="${labels.closeBtn}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
