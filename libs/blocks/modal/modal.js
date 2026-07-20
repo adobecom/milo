@@ -205,17 +205,12 @@ export async function getModal(details, custom) {
   if (isConfirmedTrigger) {
     document.activeElement.dataset.isModalTrigger = 'true';
   }
-  // Default to a visible focus ring on the modal's initial focus target — the safe
-  // fallback for deep links, delayed/auto-shown modals, and any open with no confirmed
-  // trigger click, so keyboard/AT users never lose their focus indicator. Only suppress
-  // it when the confirmed trigger for this modal was itself reached by mouse/pointer
-  // (i.e. doesn't match :focus-visible), which is the reported bug.
   let openedViaKeyboard = true;
   if (isConfirmedTrigger) {
     try {
       openedViaKeyboard = document.activeElement.matches(':focus-visible');
     } catch (e) {
-      // :focus-visible unsupported in matches() — keep the safe default
+      openedViaKeyboard = true;
     }
   }
 
