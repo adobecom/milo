@@ -239,12 +239,6 @@ body[data-other-highlight='true'] [data-fragment-default]::before {
 
 
 /* CAAS */
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']),
-body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'] {
-  position: relative !important;
-  border: 2px dashed transparent;
-}
-
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]::before {
   overflow: hidden;
   pointer-events: auto !important;
@@ -264,6 +258,13 @@ body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-
   border: 2px solid var(--caas-primary);
   color: var(--caas-primary) !important;
   background-color: var(--caas-secondary) !important;
+}
+
+
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx'],
+body[data-mep-caas-highlight='true'] [data-caas-block] [data-country]:not([data-country='xx']) {
+  position: relative !important;
+  border: 2px dashed var(--caas-lang-first-primary);
 }
 
 body[data-mep-caas-highlight='true'] [data-caas-block] [data-country='xx']::before {
