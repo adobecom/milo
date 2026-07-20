@@ -244,6 +244,10 @@ function decorate(block) {
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
+  // Also re-evaluate on scroll: if the viewport was zoomed while this block was
+  // off-screen, scrolling to it must re-check and apply reflow (resize alone
+  // won't fire again). The measurement is scroll-independent, so it's stable.
+  window.addEventListener('scroll', evaluateReflow, { passive: true });
 }
 
 export default function init(el) {
