@@ -184,8 +184,8 @@
 /* ---------- Media panel (absolute on S/M, right-column on L+) ---------- */
 .rcc-media-wrapper {
   position: absolute;
-  /* S: image sticks to the bottom-left corner (per Figma). */
-  left: var(--s2a-spacing-lg);    /* 24px — matches content px padding */
+  /* S: image sticks to the bottom-right corner (per Figma). */
+  right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
   bottom: var(--s2a-spacing-md);  /* 16px gap under the image */
   z-index: 2;
   width: 275px;
@@ -225,8 +225,7 @@
    ============================================================ */
 @media (width >= 768px) {
   .rcc-media-wrapper {
-    /* M: image sticks to the bottom-left corner (per Figma), 24px gap.
-       (left is inherited from the base rule.) */
+    /* M: bottom-right (inherited), 24px gap under the image. */
     bottom: var(--s2a-spacing-lg);
     width: 397px;
     /* M: full 560px at >=944px tall; shrinks down to a 252px floor. */
