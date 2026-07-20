@@ -132,6 +132,10 @@
   width: 100%;
   padding-block: var(--s2a-spacing-lg);
   text-align: center;
+
+  .dark & {
+    background: linear-gradient(180deg, var(--s2a-color-transparent-black-00) 0%, var(--s2a-color-transparent-black-96) 100%);
+  }
 }
 
 .tour-grab-handle {
@@ -160,7 +164,7 @@
       height: 3px;
       border-radius: 3px;
       opacity: 0.2;
-      background-color: var(--s2a-color-gray-1000);
+      background-color: var(--s2a-color-background-inverse);
       pointer-events: none;
     }
   }
@@ -208,9 +212,15 @@
     top: calc(var(--tour-section-gap) + var(--s2a-spacing-md));
     right: calc(50% - calc(var(--tour-modal-max-width) / 2) + var(--s2a-spacing-md));
 
-    &:hover {
+    &:hover,
+    &:focus {
       background-color: var(--s2a-color-gray-300);
       border-color: var(--s2a-color-gray-400);
+    }
+
+    &:focus-visible {
+      outline-color: var(--s2a-color-focus-ring-default);
+      outline-offset: 1px;
     }
 
     &:active {
@@ -219,6 +229,31 @@
       &::before,
       &::after {
         background-color: var(--s2a-color-content-knockout);
+      }
+    }
+
+    :has(.tour.dark) & {
+      background-color: var(--s2a-color-gray-800);
+      border-color: var(--s2a-color-gray-700);
+
+      &::before,
+      &::after {
+        background-color: var(--s2a-color-content-knockout);
+      }
+
+      &:hover, 
+      &:focus {
+        background-color: var(--s2a-color-gray-700);
+        border-color: var(--s2a-color-gray-500);
+      }
+
+      &:active {
+        background-color: var(--s2a-color-background-default);
+        border-color: var(--s2a-color-border-inverse);
+        &::before,
+        &::after {
+          background-color: var(--s2a-color-content-default);
+        }
       }
     }
   }
