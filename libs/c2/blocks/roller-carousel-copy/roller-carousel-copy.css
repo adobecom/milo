@@ -354,8 +354,78 @@
 }
 
 /* ============================================================
-   Reduced motion
+   Reduced motion — static list view (built by JS as .rcc-reduced-motion)
+   No sticky, no height cap, no roller/images; all app names are focusable
+   buttons grouped under category headers, over the blurred background.
    ============================================================ */
+.roller-carousel-copy.rcc-reduced-motion {
+  position: relative;
+}
+
+/* Blur covers the whole (tall) block and scrolls with it — no sticky/parallax. */
+.rcc-reduced-motion .rcc-bg {
+  position: absolute;
+  inset: 0;
+  height: auto;
+  margin: 0;
+}
+
+.rcc-rm-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-3xl);
+  /* Single-column list stays left-aligned with a max-width on wide screens;
+     full-width below that (mobile). */
+  max-width: 759px;
+  padding: var(--s2a-layout-sm) var(--s2a-spacing-lg);
+  box-sizing: border-box;
+}
+
+.rcc-rm-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Category header (label + divider) above each group; gap above separates
+   groups, small gap below before the names. */
+.rcc-rm-category {
+  margin: var(--s2a-spacing-3xl) 0 var(--s2a-spacing-md);
+}
+
+.rcc-rm-category:first-child {
+  margin-top: 0;
+}
+
+/* App name as a focusable button (no action — keyboard/a11y only). Names are
+   tightly stacked, so no vertical padding — the line-height sets the height. */
+.rcc-rm-item {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0;
+  text-align: start;
+  cursor: pointer;
+  font-family: var(--heading-font-family);
+  font-size: var(--s2a-typography-font-size-heading-2);
+  line-height: var(--s2a-typography-line-height-heading-2);
+  letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+  color: var(--s2a-color-content-knockout);
+  transition: opacity 0.2s ease;
+}
+
+.rcc-rm-item:hover {
+  opacity: 0.7;
+}
+
+.rcc-rm-item:focus-visible {
+  outline: 2px solid var(--s2a-color-content-knockout);
+  outline-offset: 4px;
+}
+
+/* Roller-only crossfades still get disabled when reduced motion isn't handled
+   by the JS branch (defensive). */
 @media (prefers-reduced-motion: reduce) {
   .rcc-bg-slide,
   .rcc-media-slide {

@@ -42,6 +42,58 @@ function buildMedia(apps) {
   return wrapper;
 }
 
+function buildHeader(eyebrowText, headingText) {
+  const header = createTag('div', { class: 'rcc-header' });
+  if (eyebrowText) {
+    const eyebrow = createTag('p', { class: 'rcc-eyebrow' });
+    eyebrow.textContent = eyebrowText;
+    header.append(eyebrow);
+  }
+  if (headingText) {
+    const h = createTag('h2', { class: 'rcc-heading' });
+    h.textContent = headingText;
+    header.append(h);
+  }
+  return header;
+}
+
+// Reduced-motion: a static, normal-flow list view. No sticky, no height cap,
+// no roller, no product images — every app name is a focusable button grouped
+// under its category header, over the blurred background.
+function buildReducedMotion(block, eyebrowText, headingText, apps) {
+  block.classList.add('rcc-reduced-motion');
+
+  // Static blurred background (first app image) behind the whole list.
+  const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
+  const bgSlide = createTag('div', { class: 'rcc-bg-slide rcc-bg-slide--active' });
+  const bgPic = prepPic(apps[0].picture);
+  if (bgPic) bgSlide.append(bgPic);
+  bgSlide.append(createTag('div', { class: 'rcc-bg-overlay' }));
+  bg.append(bgSlide);
+
+  const content = createTag('div', { class: 'rcc-rm-content' });
+  content.append(buildHeader(eyebrowText, headingText));
+
+  const list = createTag('div', { class: 'rcc-rm-list' });
+  let currentCategory = null;
+  apps.forEach((app) => {
+    if (app.category && app.category !== currentCategory) {
+      currentCategory = app.category;
+      const catWrap = createTag('div', { class: 'rcc-category-wrapper rcc-rm-category' });
+      const catLabel = createTag('span', { class: 'rcc-category' });
+      catLabel.textContent = currentCategory;
+      catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' }));
+      list.append(catWrap);
+    }
+    const btn = createTag('button', { class: 'rcc-rm-item', type: 'button' });
+    btn.textContent = app.name;
+    list.append(btn);
+  });
+  content.append(list);
+
+  block.replaceChildren(bg, content);
+}
+
 function decorate(block) {
   const rows = [...block.children];
   if (rows.length < 2) return;
@@ -75,6 +127,12 @@ function decorate(block) {
 
   if (!apps.length) return;
 
+  // Reduced motion: render the static list view instead of the scroll roller.
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    buildReducedMotion(block, eyebrowText, headingText, apps);
+    return;
+  }
+
   // --- Scroll wrapper gives the sticky element room to scroll ---
   const scrollWrapper = createTag('div', { class: 'rcc-scroll-wrapper' });
   scrollWrapper.style.height = `calc(100dvh + ${apps.length * SCROLL_PER_APP}px)`;
@@ -90,17 +148,7 @@ function decorate(block) {
   const left = createTag('div', { class: 'rcc-left' });
 
   // Header (eyebrow + heading)
-  const header = createTag('div', { class: 'rcc-header' });
-  if (eyebrowText) {
-    const eyebrow = createTag('p', { class: 'rcc-eyebrow' });
-    eyebrow.textContent = eyebrowText;
-    header.append(eyebrow);
-  }
-  if (headingText) {
-    const h = createTag('h2', { class: 'rcc-heading' });
-    h.textContent = headingText;
-    header.append(h);
-  }
+  const header = buildHeader(eyebrowText, headingText);
 
   // Category label + divider
   const carousel = createTag('div', { class: 'rcc-carousel' });
