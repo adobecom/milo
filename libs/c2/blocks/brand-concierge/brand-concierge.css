@@ -444,6 +444,11 @@
   letter-spacing: -2%;
 }
 
+.dialog-modal.bc-susi-modal button.dialog-close {
+  right: 12px;
+  top: 12px;
+}
+
 /* hero */
 .brand-concierge.hero {
   padding: 40px 24px 12px;
