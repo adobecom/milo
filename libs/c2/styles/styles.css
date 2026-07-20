@@ -425,6 +425,7 @@
   --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
   --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
+  --feds-language-banner-height: 44px;
 
   /* Animation properties */
   --parallax-easing: cubic-bezier(0.42, 0, 0, 1);
@@ -477,6 +478,11 @@
 
   &:lang(th) {
     --body-font-family: adobe-clean-thai, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
+  }
+
+  &:lang(vi-VN),
+  &:lang(vi) {
     --heading-font-family: var(--body-font-family);
   }
 }
@@ -1203,23 +1209,23 @@ span.hang-opening-quote {
     &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
     &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
 
     &.two-up   > :nth-child(2n of :not([class*="section-"])),
     &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 3.25; }
 
     &.three-up > :nth-child(3n of :not([class*="section-"])),
     &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
     &.four-up  > :nth-child(4n of :not([class*="section-"])),
-    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 7.75; }
 
-    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 10; }
 
-    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 12.25; }
 
     /* Row stagger indices per -up class */
     /* Row 1 */
@@ -1319,28 +1325,30 @@ span.hang-opening-quote {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
 
-    overflow: clip;
     transform-origin: top center;
     animation: garage-door-grow ease-out both;
     animation-timeline: view();
-    animation-range: entry 0% cover 40%;
+    animation-range: entry 0% cover 36%;
 
     @media (width >= 1280px) {
-      --gd-grow-from: -110vh;
-      --gd-reveal-from: 50vh;
-      animation-range: entry 0% cover 50%;
+      --gd-grow-from: -90vh;
+      --gd-reveal-from: 30vh;
+      animation-range: entry 0% cover 48%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
-      --gd-reveal-from: 30vh;
       animation-range: entry 0% cover 36%;
     }
 
-    .section-background img {
-      animation: garage-door-bg-scale ease-out both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 70%;
+    .section-background {
+      overflow: hidden;
+
+      img {
+        animation: garage-door-bg-scale ease-out both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 70%;
+      }
     }
 
     .foreground {
@@ -1379,6 +1387,8 @@ span.hang-opening-quote {
   /* Section 1 to section 2 parallax declarations */
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
+    --parallax-move-up-to: -35vh;
+
     will-change: transform;
     position: sticky;
     top: 0;
@@ -1387,6 +1397,11 @@ span.hang-opening-quote {
     animation-timeline: scroll(root block);
     animation-range: 0 80vh;
     animation-timing-function: ease-out;
+
+    /* Shorter viewports in the common laptop width band need more travel */
+    @media (width >= 1280px) and (width < 1440px) and (height < 900px) {
+      --parallax-move-up-to: -50vh;
+    }
 
     &::after {
       content: '';
@@ -1404,7 +1419,7 @@ span.hang-opening-quote {
 
   @keyframes parallax-move-up-fast {
     from { transform: translateY(0); }
-    to { transform: translateY(-35vh); }
+    to { transform: translateY(var(--parallax-move-up-to)); }
   }
 
   @keyframes parallax-fade-to-dark {
@@ -1434,19 +1449,6 @@ span.hang-opening-quote {
     from { transform: translateY(0); }
     to { transform: translateY(20vh); }
   }
-
-  /* Line height parallax declarations */
-  /* TODO: Adapt authoring to move and rename class */
-  .parallax-line-height * {
-    animation: text-reveal-up var(--parallax-easing) both;
-    animation-timeline: view();
-    animation-range: entry 10% cover 40%;
-    will-change: line-height;
-  }
-
-  @keyframes text-reveal-up {
-    from { line-height: 300%; }
-  }
 }
 
 .dark {
@@ -1461,6 +1463,11 @@ span.hang-opening-quote {
       color: var(--color-white); /* TODO: Replace with an S2A variable */
     }
   }
+}
+
+.language-banner {
+  height: var(--feds-language-banner-height);
+  visibility: hidden;
 }
 
 @media (width >= 768px) {

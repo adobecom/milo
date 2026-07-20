@@ -1,4 +1,5 @@
-import { getCountry, setMarket, pageExist, getCookie } from '../../utils/utils.js';
+/* eslint-disable no-underscore-dangle */
+import { getCountry, setMarket, pageExist, getCookie, getMetadata } from '../../utils/utils.js';
 import loadMarketsData, { appendCountryParam, getMarketLabel } from '../../utils/marketHelper.js';
 import { marketsLangForLocale, norm } from '../../utils/market.js';
 
@@ -7,8 +8,41 @@ let createTag;
 let loadStyleFn;
 let loadBlockFn;
 let sendAnalyticsFunc;
+let isC2Page;
+let isC2Path;
 
 const COUNTRY_PLACEHOLDER = /\{country\}/g;
+
+function fireAnalyticsEvent(event) {
+  const data = {
+    xdm: {},
+    data: { web: { webInteraction: { name: event?.type } } },
+  };
+  if (event?.data) data.data._adobe_corpnew = { digitalData: event.data };
+  window._satellite?.track('event', data);
+}
+
+function sendAnalyticsFallback(event) {
+  if (window._satellite?.track) {
+    fireAnalyticsEvent(event);
+  } else {
+    window.addEventListener('alloy_sendEvent', () => {
+      fireAnalyticsEvent(event);
+    }, { once: true });
+  }
+}
+
+const loadC2TabsBlock = async (tabs) => {
+  const { miloLibs, codeRoot } = config;
+  const results = await Promise.all([
+    import('../../blocks/tabs/tabs.js'),
+    new Promise((resolve) => {
+      loadStyleFn(`${miloLibs || codeRoot}/blocks/tabs/tabs.css`, resolve);
+    }),
+  ]);
+  const { default: initTabs } = results[0];
+  return initTabs(tabs);
+};
 
 /** Normalizes market entries to the shape expected by the modal UI. */
 function mapLangRoutingMarketsForModal(markets) {
@@ -473,20 +507,20 @@ async function showModal(details) {
   const { miloLibs, codeRoot } = config;
   const hasTabs = details.querySelector('.tabs');
 
-  const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
+  const sectionMetaPath = `${miloLibs || codeRoot}${isC2Path}/blocks/section-metadata/section-metadata.css`;
   const regionModalPath = `${miloLibs || codeRoot}/features/region-modal/region-modal.css`;
-  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
+  const modalPath = `${miloLibs || codeRoot}${isC2Path}/blocks/modal/modal.css`;
 
   const promises = [
-    hasTabs ? loadBlockFn(details.querySelector('.tabs')) : null,
+    hasTabs && (isC2Page ? loadC2TabsBlock(details.querySelector('.tabs')) : loadBlockFn(details.querySelector('.tabs'))),
     hasTabs ? new Promise((resolve) => { loadStyleFn(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyleFn(regionModalPath, resolve); }),
     new Promise((resolve) => { loadStyleFn(modalPath, resolve); }),
-    import('../../blocks/modal/modal.js'),
+    import(`../..${isC2Path}/blocks/modal/modal.js`),
   ];
   const result = await Promise.all(promises);
   const { getModal, sendAnalytics } = result[4];
-  sendAnalyticsFunc = sendAnalytics;
+  sendAnalyticsFunc = sendAnalytics ?? sendAnalyticsFallback;
   return getModal(null, {
     class: 'region-modal',
     id: 'region-modal',
@@ -509,6 +543,8 @@ export default async function showRegionModal(
   createTag = createTagFunc;
   loadStyleFn = loadStyleFunc;
   loadBlockFn = loadBlockFunc ?? (() => Promise.resolve());
+  isC2Page = getMetadata('foundation')?.toLowerCase() === 'c2';
+  isC2Path = isC2Page ? '/c2' : '';
 
   const marketsForModal = mapLangRoutingMarketsForModal(suggestedMarkets);
   let availableMarkets = await getAvailableMarkets(marketsForModal);

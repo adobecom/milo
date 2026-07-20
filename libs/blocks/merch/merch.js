@@ -1497,15 +1497,32 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.removeAttribute('data-hide-kr-free-trial');
-      return;
+  const localePrefix = getConfig()?.locale?.prefix;
+  if (localePrefix === '/kr') {
+    const hasAllowKrTrial = shouldAllowKrTrial(el, localePrefix);
+    const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+    const elAlreadyHasAllow = el.getAttribute('data-allow-kr-free-trial') === 'true';
+
+    if (hasAllowKrTrial || hasAllowKrTrialMeta || elAlreadyHasAllow) {
+      cta.setAttribute('data-allow-kr-free-trial', 'true');
+      return cta;
     }
-    cta.remove();
-  });
+
+    cta.setAttribute('data-hide-kr-free-trial', crypto.randomUUID());
+    cta.onceSettled().then(() => {
+      const uuid = cta.getAttribute('data-hide-kr-free-trial');
+      const { offerType: ctaOfferType } = cta.value?.[0] || {};
+      if (ctaOfferType === OFFER_TYPE_TRIAL) cta.remove();
+      else cta.removeAttribute('data-hide-kr-free-trial');
+
+      const ctaClone = [...document.querySelectorAll(`[data-hide-kr-free-trial="${uuid}"]`)]
+        .find((clone) => clone !== cta);
+      if (!ctaClone) return;
+      const { offerType: cloneOfferType } = ctaClone.value?.[0] || {};
+      if (!cloneOfferType || cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
+      else ctaClone.removeAttribute('data-hide-kr-free-trial');
+    });
+  }
 
   return cta;
 }

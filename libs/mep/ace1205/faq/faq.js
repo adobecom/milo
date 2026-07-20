@@ -42,6 +42,10 @@ function buildItem(row, num, isFirst) {
   return { item: details, name: questionText, text: answerText };
 }
 
+function setupEntryAnimation(items) {
+  items.forEach((item) => item.classList.add('parallax-move-up', 'parallax-opacity'));
+}
+
 function setSEO(items) {
   SEO_SCHEMA.mainEntity = items.map(({ name, text }) => ({
     '@type': 'Question',
@@ -61,6 +65,7 @@ export default function init(el) {
   const list = createTag('div', { class: 'faq-list foreground' }, items.map((i) => i.item));
   el.replaceChildren(list);
   decorateTextOverrides(el);
+  setupEntryAnimation(items.map((i) => i.item));
 
   if (el.matches('.seo')) setSEO(items);
 }

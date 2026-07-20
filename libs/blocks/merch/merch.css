@@ -28,7 +28,7 @@ a[is='checkout-link'].con-button > span {
   min-width: 66px;
 }
 
-a[data-hide-kr-free-trial="true"] {
+a[data-hide-kr-free-trial] {
   display: none !important;
 }
 

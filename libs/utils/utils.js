@@ -566,6 +566,7 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
   const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
+    link.setAttribute('data-allow-kr-free-trial', 'true');
     link.href = link.href.replace(allowKrTrialHash, '');
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
@@ -581,15 +582,14 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
   const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
-  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
-      || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  if (link.dataset.wcsOsi) {
-    link.dataset.hideKrFreeTrial = 'true';
+  const hasAllowAttribute = link.getAttribute('data-allow-kr-free-trial') === 'true';
+  if (hasAllowKrTrialMeta
+    || hasAllowAttribute
+    || shouldAllowKrTrial(link, localePrefix)
+    || localePrefix !== '/kr'
+    || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
+        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
@@ -964,12 +964,13 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export async function getCountry(skipFallback = false) {
+export async function getCountry(skipFallback = false, searchParams = PAGE_URL.searchParams) {
   if (isBot()) return null;
 
-  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
-  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
-  const country = akamaiLocale || sessionStorage.getItem('akamai');
+  const validate = (v) => (typeof v === 'string' && /^[a-zA-Z]{2,6}$/.test(v) ? v : null);
+  const country = validate(searchParams.get('country'))
+    || validate(searchParams.get('akamaiLocale'))
+    || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
@@ -2301,16 +2302,24 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lerp = 0.06;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
-    const lenisPreventClasses = ['dialog-modal', 'ot-sdk-container', 'global-navigation'];
+    const lenisPreventSelectors = [
+      '.dialog-modal',
+      '.ot-sdk-container',
+      'div[data-testid="main-content-area"]',
+    ];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
-      prevent: (node) => lenisPreventClasses.some((cls) => node.classList?.contains(cls)),
+      wheelMultiplier: 0.7,
+      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
+    }
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {
@@ -2320,6 +2329,7 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
+
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());

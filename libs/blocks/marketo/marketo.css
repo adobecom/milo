@@ -550,6 +550,8 @@
 
 .marketo .marketo-overlay {
   position: absolute;
+  max-width: 600px;
+  margin: 0 auto;
   inset: 0;
   background: var(--marketo-form-overlay-background);
   display: flex;
@@ -576,6 +578,12 @@
   text-align: center;
   color: var(--marketo-form-text);
   margin-bottom: 12px;
+}
+
+.marketo .marketo-overlay .debug-info {
+  font-size: 14px;
+  text-align: center;
+  color: var(--marketo-form-text);
 }
 
 @media screen and (min-width: 600px) {
