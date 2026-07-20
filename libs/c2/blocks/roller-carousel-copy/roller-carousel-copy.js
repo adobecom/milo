@@ -208,7 +208,7 @@ function decorate(block) {
   // header (into block level, in front of the blur) so it scrolls away and the
   // sticky pins from the section title (category) down. Placing the header before
   // the scroll-wrapper means the roller only starts once the sticky engages.
-  const MIN_ROLLER_ROOM = 220; // px needed below the divider for the roller
+  const MIN_ROLLER_ROOM = 120; // px needed below the divider for the roller
   let reflowVpThreshold = 0; // viewport height below which reflow stays on
   const setReflow = (on) => {
     if (on === block.classList.contains('rcc-reflow')) return;
