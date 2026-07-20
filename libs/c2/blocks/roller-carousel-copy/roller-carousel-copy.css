@@ -208,16 +208,32 @@
   opacity: 1;
 }
 
-.rcc-media-slide picture {
+.rcc-media-slide > picture {
   display: block;
   width: 100%;
   height: 100%;
 }
 
-.rcc-media-slide img {
+.rcc-media-slide > picture img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* App icon badge, overlaid on the foreground image (same size in all viewports). */
+.rcc-media-icon {
+  position: absolute;
+  top: var(--s2a-spacing-md);   /* 16px */
+  left: var(--s2a-spacing-md);  /* 16px */
+  width: 32px;
+  height: 32px;
+  z-index: 1;
+}
+
+.rcc-media-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 /* ============================================================

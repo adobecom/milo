@@ -31,6 +31,12 @@ function buildMedia(apps) {
     const slide = createTag('div', { class: `rcc-media-slide${i === 0 ? ' rcc-media-slide--active' : ''}` });
     const pic = prepPic(app.picture);
     if (pic) slide.append(pic);
+    const iconPic = prepPic(app.icon);
+    if (iconPic) {
+      const iconWrap = createTag('div', { class: 'rcc-media-icon' });
+      iconWrap.append(iconPic);
+      slide.append(iconWrap);
+    }
     wrapper.append(slide);
   });
   return wrapper;
@@ -59,8 +65,12 @@ function decorate(block) {
       return;
     }
     const name = cols[0]?.textContent?.trim() ?? '';
-    const picture = cols[1]?.querySelector('picture') ?? null;
-    if (name) apps.push({ category: currentCategory, name, picture });
+    // App rows now carry two pictures: the app icon (badge) first, then the
+    // foreground image. Older rows with a single picture are just the image.
+    const pics = [...row.querySelectorAll('picture')];
+    const icon = pics.length > 1 ? pics[0] : null;
+    const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
+    if (name) apps.push({ category: currentCategory, name, picture, icon });
   });
 
   if (!apps.length) return;
