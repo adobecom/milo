@@ -444,10 +444,10 @@
   letter-spacing: -2%;
 }
 
-  .dialog-modal.bc-susi-modal button.dialog-close {
-    right: 12px;
-    top: 12px;
-  }
+.dialog-modal.bc-susi-modal button.dialog-close {
+  right: 12px;
+  top: 12px;
+}
 
 /* hero */
 .brand-concierge.hero {
