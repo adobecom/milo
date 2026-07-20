@@ -21,7 +21,7 @@ export const MODAL_VERT = [
 export const MODAL_FRAG = [
   'uniform sampler2D map;',
   'uniform float uAspect;',
-  'uniform float uRadius;',
+  'uniform float uRadius;', // corner radius (fraction of card height); 0 = square (mobile full-bleed)
   'uniform float uOpacity;',
   'uniform vec2 uMotionDir;', // card velocity in UV space — drives motion-trail CA; (0,0) = off
   'uniform float uWarp;', // fisheye intensity (0 = none, ~0.4 = strong bulge); used in open/close/drag

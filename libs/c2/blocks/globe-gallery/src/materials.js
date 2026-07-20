@@ -58,7 +58,7 @@ export function createModalMaterial(texture, aspect) {
     uniforms: {
       map: { value: texture },
       uAspect: { value: aspect },
-      uRadius: { value: 22.0 / 631.0 },
+      uRadius: { value: 22.0 / 631.0 }, // modal.js sets to 0 on mobile (square, full-bleed)
       uOpacity: { value: 1.0 },
       uMotionDir: { value: new THREE.Vector2(0, 0) },
       uWarp: { value: 0 },

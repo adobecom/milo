@@ -730,6 +730,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     else disarmFocusGuard();
   };
 
+  // Open a card + retire the "Click & Drag" hint. Opening a card is a stronger
+  // "I get it" signal than a spin, so we push textExitProgress past the dismiss
+  // threshold — the cursor label and background WebGL hint both stay gone after
+  // the modal closes (until the section scrolls out, which resets the signal).
+  const openModalAndDismissHint = (idx, x, y) => {
+    textExitProgress = 1;
+    modal.open(idx, x, y);
+  };
+
   a11y = createGalleryA11y({
     q,
     getCount: () => bp.N_TOTAL,
@@ -739,7 +748,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     spinGlobe,
     // Keyboard activation has no pointer target → open the first item (decision 3),
     // emanating the open-warp from screen center.
-    openModal: () => modal.open(0, W / 2, H / 2),
+    openModal: () => openModalAndDismissHint(0, W / 2, H / 2),
     onFocus: snapToInteractive,
     galleryLabel: labels.galleryLabel,
     galleryInstructions: labels.galleryInstructions,
@@ -768,7 +777,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getCamera: () => camera,
     getCards: () => cards,
     getModalIdx: () => modal.getModalIdx(),
-    openModal: (idx, x, y) => modal.open(idx, x, y),
+    openModal: (idx, x, y) => openModalAndDismissHint(idx, x, y),
     getSphereFormT: () => sphereFormTAtLastTick,
     interactiveThreshold: SPHERE_INTERACTIVE_T,
     maxVel: MAX_VEL,

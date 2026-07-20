@@ -122,6 +122,11 @@ export default function createGlobeModal({
   // keydown listener (on document) — stored so setup() can detach a prior one
   // before re-adding on a breakpoint re-init (avoids stacking → double-nav).
   let keydownHandler = null;
+  // The chrome/modal DOM persists across breakpoint re-inits (built once), so the
+  // click + touch listeners must be wired ONCE — re-adding them each setup() would
+  // stack, making one tap navigate 2/4/… cards. (keydown is exempt: destroy() removes
+  // it every re-init, so setup() re-adds it via the remove-before-add above.)
+  let listenersWired = false;
 
   // ── Modal warp state (drives fisheye uWarp/uWarpCenter on the SDF material) ──
   let modalWarp = 0;
@@ -149,6 +154,8 @@ export default function createGlobeModal({
     if (!card.modalMat) {
       card.modalMat = createModalMaterial(card.mesh.material.map, card.sphereScaleX * cardAspect);
     }
+    // Mobile: square, full-bleed corners. Set each call so a breakpoint change is honored.
+    card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
     return card.modalMat;
   }
 
@@ -208,50 +215,21 @@ export default function createGlobeModal({
     // How many CSS pixels = 1 world unit at 'dist' from the perspective camera (FOV 60°).
     const pxPerWorld = H / (2 * dist * Math.tan(Math.PI / 6));
 
-    // Mobile: top-left lock at (8,8). Asset height is COMPUTED so a 24px gap
-    //   sits between asset bottom and the nav-arrow row, and another 24px below
-    //   the nav arrows before the info panel (whose natural height was measured
-    //   in open()). Width is proportional via sphereScaleX (aspect kept).
-    // Desktop: centered horizontally, slight upward bias, width clamped to 92% W.
+    // Mobile: full-bleed width, top-aligned (height follows aspect). Desktop: contain-fit,
+    // centered (see the branches below). Width is proportional via sphereScaleX (aspect kept).
     const isMobile = (getBP() === 'sm');
     const sScaleX = (card && card.sphereScaleX) ? card.sphereScaleX : 1;
     let scaleY; let
       scaleX;
 
     if (isMobile) {
-      // Mobile: VISIBLE asset always fills width = (viewport - 16px), 8px margins each side.
-      // Height follows native aspect ratio (sphereScaleX × cardAspect).
-      //
-      // SDF math: the modal shader rounds the geometry by uRadius (= 22/631) in
-      // normalized units where height = 1. In screen pixels the inset is uniform
-      // = uRadius × cardHPx on ALL four sides. So:
-      //   visible_width  = cardWPx − 2·uRadius·cardHPx
-      //   visible_height = cardHPx − 2·uRadius·cardHPx = cardHPx · (1 − 2·uRadius)
-      // Substituting cardHPx = cardWPx / uAspect and solving for cardWPx:
-      //   visible_width = cardWPx · (1 − 2·uRadius / uAspect)
-      //   cardWPx = visible_width / (1 − 2·uRadius / uAspect)
-      const INSET = 8;
-      const SDF_RADIUS = SDF_CORNER_RADIUS;
+      // Mobile: full-bleed to the screen width, top-aligned, square corners (uRadius 0 →
+      // no inset). Height follows the native aspect; the image is centered horizontally.
       const uAspect = cardAspect * sScaleX;
-
-      const visibleWidthPx = W - 2 * INSET;
-      const cardWPx = visibleWidthPx / (1 - (2 * SDF_RADIUS) / uAspect);
-      const cardHPx = cardWPx / uAspect;
-
-      scaleX = cardWPx / (CARD_W_SPHERE * pxPerWorld);
+      const cardHPx = W / uAspect;
+      scaleX = W / (CARD_W_SPHERE * pxPerWorld);
       scaleY = scaleX / sScaleX;
-
-      // Position GEOMETRY corner offset by the SDF inset so the VISIBLE top-left
-      // corner of the rendered rounded rectangle lands at exactly (INSET, INSET).
-      // Asset height grows with portrait aspect — may overlap the info panel area
-      // for very tall sources; this is the accepted trade-off for symmetric margins.
-      const visibleInsetPx = SDF_RADIUS * cardHPx;
-      const centerScreenX = (INSET - visibleInsetPx) + cardWPx / 2;
-      const centerScreenY = (INSET - visibleInsetPx) + cardHPx / 2;
-      const worldX = (centerScreenX - W / 2) / pxPerWorld;
-      // screen Y is top→bottom; world Y is bottom→top
-      const worldY = (H / 2 - centerScreenY) / pxPerWorld;
-      outPos.set(worldX, worldY, camZ - dist);
+      outPos.set(0, (H / 2 - cardHPx / 2) / pxPerWorld, camZ - dist);
     } else {
       // Desktop / tablet — the VISIBLE photo is contain-fit to the viewport minus a
       // symmetric DT_IMG_MARGIN on every edge, with its native aspect kept: it fills
@@ -342,42 +320,35 @@ export default function createGlobeModal({
       closeEl.style.left = 'auto';
     }
 
-    // Nav arrows + progress counter — positioned individually (no shared wrapper,
-    // so each anchors to the viewport cleanly; the chrome root is a fixed inset:0
-    // box with no transform). Base transforms are tracked per element so the fade
-    // step below can re-apply them (the fade writes transform, clobbering centering).
-    //   Desktop → arrows pinned to the viewport's left/right edges (24px gap),
-    //     vertically centered; counter at the image's bottom-center.
-    //   Mobile  → a bottom-center row: counter centered, arrows flanking it (this
-    //     branch gets its own dedicated pass later; kept functional for now).
-    // Arrows carry NO base transform (their centering is baked into pixel top/left),
-    // so their :hover scale isn't clobbered by the per-frame inline transform the fade
-    // writes. The counter is centered on its left point via translateX(-50%) (it has no
-    // hover transform, so an inline transform there is harmless).
+    // Nav arrows + progress counter — positioned individually (no shared wrapper).
+    // Arrows carry NO base transform (centering baked into pixel top/left) so their
+    // :hover scale isn't clobbered by the fade's per-frame inline transform; the
+    // counter centers on its left point via translateX(-50%).
+    //   Mobile  → arrows in the bottom-left/right corners, counter bottom-center,
+    //     all inside the bottom scrim.
+    //   Desktop → arrows at the viewport's left/right edges (vertically centered),
+    //     counter at the image's bottom-center.
     const NAV_SIZE = 44; // matches the .globe-gallery-modal__nav width/height in CSS
+    const EDGE = 24;
     const counterBase = 'translateX(-50%)';
     if (prevEl) prevEl.style.position = 'absolute';
     if (nextEl) nextEl.style.position = 'absolute';
     if (counterEl) counterEl.style.position = 'absolute';
 
     if (isMobile) {
-      const GAP = 12;
-      const cW = counterEl ? counterEl.getBoundingClientRect().width : 0;
-      const flank = cW / 2 + GAP + NAV_SIZE / 2; // arrow-center distance from viewport center
-      if (counterEl) {
-        counterEl.style.left = '50%'; counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto'; counterEl.style.bottom = '16px';
-      }
       if (prevEl) {
-        prevEl.style.left = `${W / 2 - flank - NAV_SIZE / 2}px`; prevEl.style.right = 'auto';
-        prevEl.style.top = 'auto'; prevEl.style.bottom = '16px';
+        prevEl.style.left = `${EDGE}px`; prevEl.style.right = 'auto';
+        prevEl.style.top = 'auto'; prevEl.style.bottom = `${EDGE}px`;
       }
       if (nextEl) {
-        nextEl.style.left = `${W / 2 + flank - NAV_SIZE / 2}px`; nextEl.style.right = 'auto';
-        nextEl.style.top = 'auto'; nextEl.style.bottom = '16px';
+        nextEl.style.left = 'auto'; nextEl.style.right = `${EDGE}px`;
+        nextEl.style.top = 'auto'; nextEl.style.bottom = `${EDGE}px`;
+      }
+      if (counterEl) {
+        counterEl.style.left = '50%'; counterEl.style.right = 'auto';
+        counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
       }
     } else {
-      const EDGE = 24; // gap from the arrow to the viewport's left/right edge
       const navTop = `${Math.round(H / 2 - NAV_SIZE / 2)}px`; // vertically centered
       if (prevEl) {
         prevEl.style.left = `${EDGE}px`; prevEl.style.right = 'auto';
@@ -393,29 +364,27 @@ export default function createGlobeModal({
       }
     }
 
-    // Info panel.
-    //   Mobile  → bottom-anchored panel just above the nav row (nav bottom 16 +
-    //     nav height 44 + 16 gap = 76px), spanning the asset's visible width
-    //     (8px viewport margins each side).
-    //   Desktop → a readability scrim attached to the viewport's LEFT edge, full
-    //     viewport height (independent of the image bounds). CSS gives it the
-    //     dark frosted treatment; its flex column hugs the name block to the top
-    //     and the badges to the bottom.
+    // Info scrim.
+    //   Mobile  → a full-width chunk pinned to the bottom (fixed height set in CSS),
+    //     holding the description, badges, counter, and arrows.
+    //   Desktop → a scrim on the viewport's LEFT edge, full viewport height.
     if (infoEl) {
       infoEl.style.position = 'absolute';
       infoEl.style.minHeight = '';
       if (isMobile) {
         infoEl.style.top = 'auto';
-        infoEl.style.bottom = '76px';
-        infoEl.style.left = '8px';
-        infoEl.style.right = '8px';
+        infoEl.style.bottom = '0';
+        infoEl.style.left = '0';
+        infoEl.style.right = '0';
         infoEl.style.width = 'auto';
+        infoEl.style.height = '';
       } else {
         infoEl.style.top = '0';
         infoEl.style.bottom = '0';
         infoEl.style.left = '0';
         infoEl.style.right = 'auto';
         infoEl.style.width = `${DT_SCRIM_W}px`;
+        infoEl.style.height = '';
       }
     }
 
@@ -1123,10 +1092,16 @@ export default function createGlobeModal({
     // Chrome div hosts the interactive elements (close, nav, info) above the WebGL card canvas.
     const chromeEl = q('.globe-gallery-modal-chrome');
     const evtRoot = chromeEl || modalEl;
-    evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
-    evtRoot.querySelector('.globe-gallery-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
-    evtRoot.querySelector('.globe-gallery-modal__nav--next').addEventListener('click', () => { navigate(1); });
-    modalEl.querySelector('.globe-gallery-modal__backdrop').addEventListener('click', close);
+    // Wire the click + touch listeners once (see listenersWired) — the DOM persists
+    // across re-inits, so re-adding would stack and multiply each tap's navigation.
+    const alreadyWired = listenersWired;
+    listenersWired = true;
+    if (!alreadyWired) {
+      evtRoot.querySelector('.globe-gallery-modal__close').addEventListener('click', close);
+      evtRoot.querySelector('.globe-gallery-modal__nav--prev').addEventListener('click', () => { navigate(-1); });
+      evtRoot.querySelector('.globe-gallery-modal__nav--next').addEventListener('click', () => { navigate(1); });
+      modalEl.querySelector('.globe-gallery-modal__backdrop').addEventListener('click', close);
+    }
 
     // Detach any prior document keydown handler before re-adding (a breakpoint
     // re-init calls setup() again on the same instance — avoid stacking → double-nav).
@@ -1172,6 +1147,10 @@ export default function createGlobeModal({
       }
     };
     document.addEventListener('keydown', keydownHandler);
+
+    // Touch gestures are wired once too (see the click block above). Nothing runs
+    // after this in setup(), so an early return is the simplest guard.
+    if (alreadyWired) return;
 
     // ── Mobile modal touch gestures: live 1:1 drag with rubber-band release ──
     // Horizontal: asset translates with finger; commit on release if past 25%

@@ -69,6 +69,10 @@
   margin-top: 0;
   overflow-x: clip; /* prevent sticky descendants from creating a horizontal scrollbar */
 
+  /* Kill the mobile tap flash (inherited) — otherwise tapping a card to open, or the
+     synthetic tap-click landing on the full-screen backdrop, shows a blue-ish overlay. */
+  -webkit-tap-highlight-color: transparent;
+
   --font-display: "Adobe Clean Display Black", 'Adobe Clean Display', adobe-clean-display, "Arial Bold Adjusted", sans-serif;
   --font-body: 'Adobe Clean', 'Adobe Clean Display', system-ui, sans-serif;
 
@@ -108,6 +112,18 @@
     --type-body-l-lh: 1.2;
   }
 }
+
+/* ── z-index scheme (all in the page's root stacking context — the block root sets no
+   stacking context) ──────────────────────────────────────────────────────────────────
+   Two bands, one globe per page:
+   • Hero (2–5): world < canvas (JS, z:3) < a11y / arc-copy (4) < pull-quote (5). Small
+     values that intentionally sit BELOW the page's header/chrome.
+   • Modal (110–112): backdrop < modal-canvas (JS, z:111) < chrome (112). Above the page
+     header so the modal overlays the whole page.
+   Chrome children need no z-index — they're a stacking context and paint by DOM order
+   (info scrim first, controls after → controls on top).
+   • Cursor (113–114): body-level (appended to <body>, not the block), just above the modal
+     band so the custom cursor tops everything the block draws. */
 
 /* Sticky viewport — cards are absolutely positioned within this */
 .globe-gallery-world {
@@ -296,7 +312,7 @@
 .globe-gallery-modal-chrome {
   position: fixed;
   inset: 0;
-  z-index: 116;
+  z-index: 112;
   display: none;
   pointer-events: none;
   opacity: 0;
@@ -326,10 +342,6 @@
   justify-content: center;
   box-shadow: none;
   pointer-events: auto;
-
-  /* Above the info scrim (which is later in DOM) so the left/edge arrow stays
-     visible + clickable where it overlaps the scrim. */
-  z-index: 1;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
@@ -357,7 +369,6 @@
   align-items: center;
   justify-content: center;
   pointer-events: auto;
-  z-index: 1; /* above the info scrim (later in DOM) */
   transition: background 0.2s ease;
 }
 .globe-gallery-modal__close:hover { background: rgb(0 0 0 / 78%); }
@@ -365,31 +376,27 @@
 /* Info panel — position (top/left/right) set by JS.
    Base (sm): the panel overlays the asset, so it carries a dark frosted-glass
    background + light text for legibility, with tight vertical padding to fit the
-   ~230px below the card. The min-width:768 block turns it into a SOLID WHITE card
-   with dark text (matching the prototype) — there the panel lives lower over the
-   image and the dark backdrop already provides contrast.
-   Flex column layout pairs with `margin-top` on .globe-gallery-modal__badges so the
-   eyebrow/title/description hug the top of the panel and the product list hugs
-   the bottom — JS sets the panel's `top` to the asset's top-corner-radius point
-   and its `min-height` to the corner-to-corner interior span, so the badges land
-   on the asset's bottom-corner-radius point when there's room (and flow naturally
-   when content is too tall). */
+   Mobile (base): a full-width chunk pinned to the bottom (JS sets left/right/bottom,
+   CSS sets the height) holding the description, badges, counter, and arrows. The
+   min-width:768 block turns it into a full-height left-edge scrim. Flex column with
+   badges margin-top:auto keeps the eyebrow/title/description at the top and the
+   product list toward the bottom (padding-bottom reserves the arrow row). */
 .globe-gallery-modal__info {
   position: absolute;
+  height: 266px;
   margin: 0;
-  border-radius: 16px;
-  padding: 16px 16px 14px;
-  background: rgb(0 0 0 / 30%);
-  -webkit-backdrop-filter: blur(64px);
-  backdrop-filter: blur(64px);
+  padding: 24px 24px 84px;
+  border: var(--s2a-border-width-sm) solid rgb(255 255 255 / 0%);
+  border-radius: var(--s2a-border-radius-md);
+  background: var(--s2a-color-transparent-black-64);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   box-shadow: none;
   pointer-events: auto;
   display: flex;
   flex-direction: column;
 
-  /* JS sets width/left/bottom to the image's inner bounds; padding must count
-     toward that width (no global border-box reset in Milo), else the 40px
-     desktop padding pushes the card ~80px past the image's right/bottom edges. */
+  /* padding must count toward width (no global border-box reset in Milo). */
   box-sizing: border-box;
 }
 
@@ -402,12 +409,10 @@
   padding: 0;
 }
 
+/* Push the badges toward the bottom of the content area (above the reserved
+   arrow-row padding). 0,2,0 beats the 0,1,0 rule above. */
 .globe-gallery-modal__info > .globe-gallery-modal__badges {
-  /* Gap below the body copy. The panel overlays the lower image (rather than
-     living in a tall right-hand column), so the badges sit close under the
-     description. The 0,2,0 specificity here intentionally beats the 0,1,0
-     .globe-gallery-modal__badges rule above; the value is the same at every tier. */
-  margin-top: 20px;
+  margin-top: auto;
 }
 
 .globe-gallery-modal__role-label {
@@ -570,7 +575,7 @@ body.modal-open { overflow: hidden; }
   background: transparent;
   border-radius: 50%;
   pointer-events: none; /* never intercept canvas drag */
-  z-index: 4; /* above globe-gallery-canvas (z:3), below nav (z:10) */
+  z-index: 4; /* above the WebGL canvas (z:3) so the focus ring shows; the modal still covers it */
 }
 .globe-gallery-a11y:focus { outline: none; }
 
@@ -615,17 +620,12 @@ body.modal-open { overflow: hidden; }
     background: none;
   }
 
-  /* Info scrim: dark frosted glass on the viewport's left edge, full height.
-     JS sets top/bottom/left/width; the flex column hugs the role/name/description
-     block to the TOP and pins the badges to the bottom (badges margin-top:auto
-     below). */
+  /* Info scrim → full-height on the viewport's left edge (JS sets top/bottom/left/width).
+     Background/blur inherit from the base rule. */
   .globe-gallery-modal__info {
-    border: 1px solid rgb(255 255 255 / 0%);
+    height: auto;
     border-radius: 0;
     padding: 40px 32px;
-    background: rgb(0 0 0 / 64%);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
   }
 
   .globe-gallery-modal__name {
@@ -647,9 +647,6 @@ body.modal-open { overflow: hidden; }
   }
 
   .globe-gallery-modal__badges { gap: 10px; }
-
-  /* Pin the badges to the bottom of the full-height scrim column. */
-  .globe-gallery-modal__info > .globe-gallery-modal__badges { margin-top: auto; }
 
   .globe-gallery-modal__badge-icon {
     width: 28px;
@@ -682,7 +679,10 @@ body.modal-open { overflow: hidden; }
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 9999;
+
+    /* Body-level (can't use the block's local stacking), so it needs an explicit page
+       value: one above the modal band (≤112) is enough to top everything the block draws. */
+    z-index: 114;
   }
 
   /* Disc — direct body child so mix-blend-mode: difference blends against real page
@@ -693,7 +693,7 @@ body.modal-open { overflow: hidden; }
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 9998; /* just below the cursor container */
+    z-index: 113; /* just below the cursor container */
     width: 48px;
     height: 48px;
     margin: -24px; /* center on the pointer hot-point */

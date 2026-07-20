@@ -229,9 +229,17 @@ const buildMarkup = (gid, labels) => `
     <div class="globe-gallery-modal__backdrop"></div>
   </div>
 
-  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:115;display:none;pointer-events:none;"></canvas>
+  <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:111;display:none;pointer-events:none;"></canvas>
 
   <div class="globe-gallery-modal-chrome" role="dialog" aria-modal="true" aria-labelledby="globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}" aria-hidden="true">
+    <img class="globe-gallery-modal__image" alt="" />
+    <div class="globe-gallery-modal__info">
+      <p class="globe-gallery-modal__role-label"></p>
+      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
+      <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
+      <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
+    </div>
+    <!-- Controls come AFTER the info scrim so they paint on top of it (no z-index needed). -->
     <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
@@ -242,13 +250,6 @@ const buildMarkup = (gid, labels) => `
     <button class="globe-gallery-modal__close" type="button" aria-label="${labels.closeBtn}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <img class="globe-gallery-modal__image" alt="" />
-    <div class="globe-gallery-modal__info">
-      <p class="globe-gallery-modal__role-label"></p>
-      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
-      <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
-      <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
-    </div>
     <!-- Polite live region for carousel navigation. The dialog's aria-labelledby/
          describedby announce the FIRST item on open; this announces each SUBSEQUENT
          item once as the user navigates (focus stays on the Prev/Next button, so the
