@@ -296,7 +296,6 @@
 @media (width >= 768px) {
   .section:has(.rich-content.merch-moment).has-background .section-background img {
     width: 100%;
-    max-width: 1006px;
     margin-inline: auto;
     aspect-ratio: unset;
     display: block;
