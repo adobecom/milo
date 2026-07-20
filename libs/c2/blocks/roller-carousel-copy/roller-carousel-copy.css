@@ -324,9 +324,11 @@
   padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
 }
 
-/* Sticky content now starts with the category — pull it near the top. */
+/* Sticky content now starts with the category. Use the same top margin as the
+   header (layout-sm) so the stuck category clears the fixed navbar instead of
+   tucking behind it. */
 .rcc-reflow .rcc-content {
-  padding-top: var(--s2a-spacing-lg);
+  padding-top: var(--s2a-layout-sm);
 }
 
 /* ============================================================
