@@ -331,6 +331,7 @@ describe('merch-card-autoblock autoblock', () => {
     });
 
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
+      setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
       const siblingBtn = document.createElement('a');
       siblingBtn.classList.add('con-button', 'blue', 'button-l');
