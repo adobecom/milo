@@ -182,7 +182,9 @@ function decorate(block) {
       lineY = mediaRect.top - wrapRect.top + M_TOP_INSET;
       bottomAlign = false;
     } else {
-      lineY = mediaRect.top - wrapRect.top;
+      // S: lift the lock line one name-height above the image top so the active
+      // name starts higher and the next name is also visible above the image.
+      lineY = mediaRect.top - wrapRect.top - itemH;
       bottomAlign = true;
     }
     // Continuous scroll progress: each SCROLL_PER_APP px moves list by one itemH
