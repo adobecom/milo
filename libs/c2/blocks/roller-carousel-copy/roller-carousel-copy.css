@@ -308,26 +308,25 @@
 }
 
 /* ============================================================
-   Reflow — WCAG 1.4.10 at the 320px width target (≈400% zoom of 1280px)
-   Hero header is detached to normal flow (scrolls away) in front of the
-   block-level blur; the sticky carousel begins from the section title.
+   Reflow — toggled by JS (.rcc-reflow) when the divider/category sits too
+   close to the viewport bottom (little room for the roller, e.g. a tall header
+   at high zoom). The hero header is detached to normal flow (scrolls away) in
+   front of the block-level blur; the sticky carousel pins from the section title.
    ============================================================ */
-@media (width <= 320px) {
-  /* Detached header sits at the top of the section, over the blur, and
-     scrolls away. z-index keeps it above the block-level blur layer. */
-  .roller-carousel-copy.rcc-reflow > .rcc-header {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--s2a-spacing-xs);
-    padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
-  }
+/* Detached header sits at the top of the section, over the blur, and scrolls
+   away. z-index keeps it above the block-level blur layer. */
+.roller-carousel-copy.rcc-reflow > .rcc-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-xs);
+  padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
+}
 
-  /* Sticky content now starts with the category — pull it near the top. */
-  .rcc-reflow .rcc-content {
-    padding-top: var(--s2a-spacing-lg);
-  }
+/* Sticky content now starts with the category — pull it near the top. */
+.rcc-reflow .rcc-content {
+  padding-top: var(--s2a-spacing-lg);
 }
 
 /* ============================================================

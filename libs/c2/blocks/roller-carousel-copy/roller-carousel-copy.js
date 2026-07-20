@@ -202,28 +202,48 @@ function decorate(block) {
   const ro = new ResizeObserver(updatePosition);
   ro.observe(listWrapper);
 
-  // --- Reflow (WCAG 1.4.10) at the 320px width target (≈400% zoom of 1280px) ---
-  // Detach the hero header (into block level, in front of the blur) so it scrolls
-  // away in normal flow; the sticky then pins from the section title (category)
-  // down. Placing it before the scroll-wrapper means the roller only starts once
-  // the sticky engages — no extra math needed.
-  const reflowVp = window.matchMedia('(max-width: 320px)');
-  const applyReflow = () => {
-    if (reflowVp.matches) {
-      if (header.parentElement !== block) {
-        block.insertBefore(header, scrollWrapper);
-        block.classList.add('rcc-reflow');
-      }
-    } else if (header.parentElement === block) {
+  // --- Reflow: content-aware, based on the room below the divider ---
+  // When the divider/category sits too close to the viewport bottom (little room
+  // left for the roller — e.g. a tall header at high zoom), detach the hero
+  // header (into block level, in front of the blur) so it scrolls away and the
+  // sticky pins from the section title (category) down. Placing the header before
+  // the scroll-wrapper means the roller only starts once the sticky engages.
+  const MIN_ROLLER_ROOM = 220; // px needed below the divider for the roller
+  let reflowVpThreshold = 0; // viewport height below which reflow stays on
+  const setReflow = (on) => {
+    if (on === block.classList.contains('rcc-reflow')) return;
+    if (on) {
+      block.insertBefore(header, scrollWrapper);
+      block.classList.add('rcc-reflow');
+    } else {
       left.insertBefore(header, carousel);
       block.classList.remove('rcc-reflow');
     }
   };
-  applyReflow();
-  reflowVp.addEventListener('change', () => {
-    applyReflow();
+  const evaluateReflow = () => {
+    const vh = window.innerHeight;
+    if (!block.classList.contains('rcc-reflow')) {
+      // Header is in flow — measure the divider's offset within the content
+      // (scroll-independent) and the room that leaves below it when pinned.
+      const dividerOffset = divider.getBoundingClientRect().bottom
+        - content.getBoundingClientRect().top;
+      const roomBelow = vh - dividerOffset;
+      if (roomBelow < MIN_ROLLER_ROOM) {
+        // Remember the viewport height at which the room would meet the minimum,
+        // so we can turn reflow back off once it grows past that.
+        reflowVpThreshold = vh + (MIN_ROLLER_ROOM - roomBelow);
+        setReflow(true);
+      }
+    } else if (vh > reflowVpThreshold + 40) {
+      // Hysteresis so we don't flip-flop right at the threshold.
+      setReflow(false);
+    }
+  };
+  evaluateReflow();
+  window.addEventListener('resize', () => {
+    evaluateReflow();
     window.requestAnimationFrame(updatePosition);
-  });
+  }, { passive: true });
 }
 
 export default function init(el) {
