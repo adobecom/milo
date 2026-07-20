@@ -324,11 +324,20 @@
   padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
 }
 
-/* Sticky content now starts with the category. Use the same top margin as the
-   header (layout-sm) so the stuck category clears the fixed navbar instead of
-   tucking behind it. */
+/* Sticky content now starts with the category. No extra top padding — the
+   header's bottom padding provides the normal header→category gap, unchanged
+   from the pinned layout. */
 .rcc-reflow .rcc-content {
-  padding-top: var(--s2a-layout-sm);
+  padding-top: 0;
+}
+
+/* Pin the category BELOW the navbar (in the heading's old spot) via the sticky
+   offset, so only the stuck position shifts down — the pre-scroll gap between
+   the heading and category is unaffected. Height is trimmed by the same amount
+   so the stage still fits the viewport. */
+.rcc-reflow .rcc-sticky {
+  top: var(--s2a-layout-sm);
+  height: calc(100dvh - var(--s2a-layout-sm));
 }
 
 /* ============================================================
