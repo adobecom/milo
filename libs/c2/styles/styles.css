@@ -596,8 +596,13 @@ a {
   &.standalone-link {
     &::after {
       display: inline-block;
+      width: 5px;
+      height: 8px;
       margin-inline-start: var(--s2a-spacing-8);
-      content: url('../assets/img/arrow-right.svg');
+      content: '';
+      background-color: currentcolor;
+      mask: url('../assets/img/arrow-right.svg') no-repeat center;
+      mask-size: contain;
       transition: transform 0.5s var(--parallax-easing);
     }
 
@@ -967,6 +972,14 @@ p {
     transition: fill 0.2s ease;
     will-change: fill;
   }
+
+  .dark & {
+    background-color: var(--s2a-color-transparent-black-04);
+    border-color: var(--s2a-color-transparent-black-08);
+    path {
+      fill: var(--s2a-color-gray-1000);
+    }
+  }
 }
 
 /* Promo CTA Styles */
@@ -1009,6 +1022,29 @@ p {
       border-color: var(--s2a-color-content-knockout);
       path {
         fill: var(--s2a-color-background-knockout);
+      }
+    }
+  }
+
+  .dark & {
+    background: var(--s2a-color-background-inverse);
+    color: var(--s2a-color-content-inverse);
+
+    &:hover,
+    &:focus {
+      .icon-button {
+        background-color: var(--s2a-color-transparent-black-08);
+        border-color: var(--s2a-color-transparent-black-16);
+      }
+    }
+
+    &:active {
+      .icon-button {
+        background-color: var(--s2a-color-gray-1000);
+        border-color: var(--s2a-color-transparent-white-24);
+        path {
+          fill: var(--s2a-color-content-default);
+        }
       }
     }
   }

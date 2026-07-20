@@ -222,9 +222,11 @@ function initAnimation(block) {
       videoObserver?.disconnect();
       videoObserver = null;
       needsReset = true;
+      cards.forEach((card) => card.classList.remove('is-settled'));
       return;
     }
 
+    cards.forEach((card) => card.classList.add('is-settled'));
     fades.forEach((fade) => { fade.style.transition = 'none'; fade.style.opacity = '0'; });
     if (needsReset) {
       needsReset = false;

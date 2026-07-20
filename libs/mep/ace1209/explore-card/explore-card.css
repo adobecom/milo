@@ -109,6 +109,8 @@
   min-height: 240px;
 
   .icon {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
     flex-shrink: 0;
     margin-bottom: var(--s2a-spacing-2xl);
   }
