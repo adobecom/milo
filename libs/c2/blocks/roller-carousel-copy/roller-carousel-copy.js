@@ -118,9 +118,11 @@ function decorate(block) {
   // Media slides (crossfade panel)
   const media = buildMedia(apps);
   content.append(left, media);
-  sticky.append(bg, content);
+  sticky.append(content);
   scrollWrapper.append(sticky);
-  block.replaceChildren(scrollWrapper);
+  // Blur sits at block level, behind everything, so a detached (reflow) header
+  // still has the blur behind it instead of the block's solid background.
+  block.replaceChildren(bg, scrollWrapper);
 
   // --- Scroll-driven state ---
   const items = [...list.querySelectorAll('.rcc-item')];
@@ -200,15 +202,14 @@ function decorate(block) {
   const ro = new ResizeObserver(updatePosition);
   ro.observe(listWrapper);
 
-  // --- Reflow (WCAG 1.4.10) for very short viewports / ~400% zoom ---
-  // Detach the hero header from the sticky container so it scrolls away in
-  // normal flow; the sticky then pins from the section title (category) down.
-  // The header moving before the scroll-wrapper means the roller only starts
-  // once the sticky engages — no extra math needed. The image is hidden by the
-  // existing height/intersect logic at these heights.
-  const shortVp = window.matchMedia('(max-height: 500px)');
+  // --- Reflow (WCAG 1.4.10) at the 320px width target (≈400% zoom of 1280px) ---
+  // Detach the hero header (into block level, in front of the blur) so it scrolls
+  // away in normal flow; the sticky then pins from the section title (category)
+  // down. Placing it before the scroll-wrapper means the roller only starts once
+  // the sticky engages — no extra math needed.
+  const reflowVp = window.matchMedia('(max-width: 320px)');
   const applyReflow = () => {
-    if (shortVp.matches) {
+    if (reflowVp.matches) {
       if (header.parentElement !== block) {
         block.insertBefore(header, scrollWrapper);
         block.classList.add('rcc-reflow');
@@ -219,7 +220,7 @@ function decorate(block) {
     }
   };
   applyReflow();
-  shortVp.addEventListener('change', () => {
+  reflowVp.addEventListener('change', () => {
     applyReflow();
     window.requestAnimationFrame(updatePosition);
   });

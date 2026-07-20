@@ -10,6 +10,7 @@
 /* ---------- Scroll wrapper ---------- */
 .rcc-scroll-wrapper {
   position: relative;
+  z-index: 1; /* above the block-level blur layer */
 }
 
 /* ---------- Sticky container ---------- */
@@ -21,9 +22,13 @@
 }
 
 /* ---------- Background blur layer ---------- */
+/* Lives at block level, pinned behind everything (incl. a detached reflow
+   header), via a negative margin so it doesn't take flow space. */
 .rcc-bg {
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  margin-bottom: -100dvh;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
@@ -180,12 +185,15 @@
 .rcc-media-wrapper {
   position: absolute;
   right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
-  bottom: var(--s2a-spacing-md);  /* S: 16px gap under the image */
+  /* S: 16px gap under the image. On viewports taller than the ~742px design
+     band, raise the image (and its app-list anchor) so it stays near the top
+     instead of sinking to the bottom — the excess space falls below, filled by
+     the bg blur, so the mid-block gap doesn't grow. */
+  bottom: calc(max(0px, 100dvh - 742px) + var(--s2a-spacing-md));
   z-index: 2;
   width: 275px;
   /* S: full 360px at >=742px tall; shrinks on shorter viewports down to a
-     265px floor, keeping the 16px bottom gap. Below the floor the image rises
-     into the divider and JS hides it. */
+     265px floor. Below the floor the image rises into the divider and JS hides it. */
   height: clamp(265px, 100dvh - 382px, 360px);
   border-radius: var(--s2a-border-radius-sm);
   overflow: hidden;
@@ -220,7 +228,8 @@
    ============================================================ */
 @media (width >= 768px) {
   .rcc-media-wrapper {
-    bottom: var(--s2a-spacing-lg); /* M: 24px gap under the image */
+    /* M: 24px gap under the image; cap the band at 944px on tall viewports */
+    bottom: calc(max(0px, 100dvh - 944px) + var(--s2a-spacing-lg));
     width: 397px;
     /* M: full 560px at >=944px tall; shrinks down to a 252px floor. */
     height: clamp(252px, 100dvh - 384px, 560px);
@@ -280,12 +289,9 @@
     flex: 0 0 650px; /* fixed width — do not grow or shrink */
     align-self: flex-start; /* top-anchored at the 160px content padding */
     /* L/XL: full 766px at >=950px tall; shrinks down to a 450px floor,
-       keeping the 24px gap below (160px top padding + 24px). */
+       keeping the 24px gap below (160px top padding + 24px). Image stays
+       top-anchored near the top; excess height falls below, filled by the blur. */
     height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
-    /* Cap the empty space below the image at 132px (the max shown in Figma):
-       once the natural gap would exceed 132px, push the image down so its
-       bottom stays 132px above the viewport bottom. 1058 = 160 top + 766 + 132. */
-    margin-top: max(0px, 100dvh - var(--s2a-layout-xl) - 766px - 132px);
     border-radius: var(--s2a-border-radius-md);
     overflow: hidden;
   }
@@ -302,14 +308,16 @@
 }
 
 /* ============================================================
-   Reflow — very short viewports / ~400% zoom (WCAG 1.4.10)
-   Hero header is detached to normal flow (scrolls away); the sticky
-   carousel begins from the section title. Image is hidden by the JS
-   height/intersect logic at these heights.
+   Reflow — WCAG 1.4.10 at the 320px width target (≈400% zoom of 1280px)
+   Hero header is detached to normal flow (scrolls away) in front of the
+   block-level blur; the sticky carousel begins from the section title.
    ============================================================ */
-@media (height <= 500px) {
-  /* Detached header sits at the top of the section and scrolls away. */
+@media (width <= 320px) {
+  /* Detached header sits at the top of the section, over the blur, and
+     scrolls away. z-index keeps it above the block-level blur layer. */
   .roller-carousel-copy.rcc-reflow > .rcc-header {
+    position: relative;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: var(--s2a-spacing-xs);
