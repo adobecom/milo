@@ -84,7 +84,7 @@ function hasCellContent(cell) {
   return !!(cell?.textContent?.trim() || cell?.children.length);
 }
 
-function decorateVideoVariant(container) {
+function decorateMediaVariant(container) {
   const rows = [...container.children];
   if (!rows.length) return;
 
@@ -99,7 +99,7 @@ function decorateVideoVariant(container) {
   }
 
   if (hasCellContent(mediaCell)) {
-    mediaCell.classList.add('media');
+    mediaCell.classList.add('media-cell');
     container.append(mediaCell);
   } else {
     mediaCell?.remove();
@@ -117,8 +117,8 @@ function decorateVideoVariant(container) {
 }
 
 function decorate(block, root = block) {
-  if (root.classList.contains('video')) {
-    decorateVideoVariant(block);
+  if (root.classList.contains('media')) {
+    decorateMediaVariant(block);
     return;
   }
 
