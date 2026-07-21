@@ -260,6 +260,10 @@
   white-space: nowrap;
 }
 
+[dir="rtl"] .marketo .mktoForm select {
+  background-position: 3% 50%;
+}
+
 .marketo .mktoForm .mktoCheckboxList input,
 .marketo .mktoForm .mktoRadioList input {
   width: auto !important;
