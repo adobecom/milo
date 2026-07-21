@@ -9,6 +9,8 @@ const TTL_UNREGISTERED = 3 * 60 * 1000;
 const cacheKey = (eventCode, userId) => `mep-event:${eventCode}:${userId}`;
 
 // TODO(MWPW-199051): enable once VEAL confirms the redirect-cookie name/domain.
+// When enabling, clearRegisteredFlag must set domain= to match — a host-only
+// delete won't clear a .adobe.com cookie, leaving the flag stuck.
 const REDIRECT_INVALIDATION_ENABLED = false;
 const justRegistered = (eventCode) => REDIRECT_INVALIDATION_ENABLED
   && getCookie(`feds_${eventCode}_registeredByRedirect`) === 'true';
