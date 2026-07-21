@@ -59,43 +59,35 @@ describe('lob', () => {
     const lob = await init(true);
     expect(lob).to.be.false;
   });
-  it('should complete without errors when alloy_all is present', async () => {
+  it('should preserve an existing alloy_all get/set and push tracking values', async () => {
     setCookie(AMCV_COOKIE, 'MCMID|1234567890');
     setFetchResponse(API_RESPONSE);
     const customArray = [];
+    const existingGet = stub();
+    const existingSet = stub();
     window.alloy_all = {
-      get: stub(),
-      set: stub(),
+      get: existingGet,
+      set: existingSet,
       data: { _adobe_corpnew: { event: { custom: customArray } } },
     };
     const lob = await init(true);
-    await Promise.resolve();
     expect(lob).to.equal('smb');
-    expect(window.alloy_all.get.calledOnce).to.be.true;
-    expect(window.alloy_all.set.calledOnce).to.be.true;
+    expect(window.alloy_all.get).to.equal(existingGet);
+    expect(window.alloy_all.set).to.equal(existingSet);
     expect(customArray).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },
       { propertyName: 'spectraScore', propertyValue: 0.528565269468545 },
     ]);
   });
-  it('should push tracking values when alloy_all loads before timeout', async () => {
-    clock = useFakeTimers();
+  it('should create alloy_all and push tracking values when alloy_all does not exist yet', async () => {
     setCookie(AMCV_COOKIE, 'MCMID|1234567890');
     setFetchResponse(API_RESPONSE);
-    const customArray = [];
-    const alloyMock = {
-      get: stub(),
-      set: stub(),
-      data: { _adobe_corpnew: { event: { custom: customArray } } },
-    };
     const lob = await init(true);
-    window.alloy_all = alloyMock;
-    clock.tick(100);
-    await Promise.resolve();
     expect(lob).to.equal('smb');
-    expect(alloyMock.get.calledOnce).to.be.true;
-    expect(alloyMock.set.calledOnce).to.be.true;
-    expect(customArray).to.deep.equal([
+    expect(window.alloy_all.get).to.be.a('function');
+    expect(window.alloy_all.set).to.be.a('function');
+    // eslint-disable-next-line no-underscore-dangle
+    expect(window.alloy_all.data._adobe_corpnew.event.custom).to.deep.equal([
       { propertyName: 'spectraLob', propertyValue: 'smb' },
       { propertyName: 'spectraScore', propertyValue: 0.528565269468545 },
     ]);
