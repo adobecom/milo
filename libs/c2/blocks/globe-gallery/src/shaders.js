@@ -114,7 +114,7 @@ export const CARD_FRAG = [
   '  vec2 mdir = fUv - 0.5;',
   '  vec2 meltUv = warpedUv;',
   '  if (uDissolve > 0.0) {',
-  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 0.9) + 0.5;',
+  '    meltUv = (warpedUv - 0.5) / (1.0 + uDissolve * 1.8) + 0.5;',
   '  }',
   '  vec2 baseUv = meltUv * uRepeat + uOffset;',
   // Rounded-corner alpha: SDF of the card outline in raw geometry UV (the rect is
@@ -141,10 +141,15 @@ export const CARD_FRAG = [
   '  float g = texture2D(uMap, baseUv).g;',
   '  float b = texture2D(uMap, baseUv - radial + uMotionDir * 0.5).b;',
   // Then particle grain, eaten edge-first (edgeProx from the SDF distance),
-  // so the stretched/smeared card simultaneously breaks into a chromatic 2px-cell grain.
+  // so the stretched/smeared card simultaneously breaks into a chromatic grain.
+  // The cell is in the card's OWN uv space (× uAspect so cells stay square), NOT
+  // screen space: the grain is painted onto the card surface and travels with it, so
+  // a spinning/dragging card reads as "this card is disintegrating" rather than sliding
+  // behind a fixed dirty-glass speckle nailed to the camera. Cell count is constant per
+  // card, so dots grow as the card rushes the lens (chunks flying past).
   '  if (uDissolve > 0.0) {',
   '    float edgeProx = 1.0 - smoothstep(0.0, 0.28, -dsd);',
-  '    vec2 cell = floor(gl_FragCoord.xy * 0.5);',
+  '    vec2 cell = floor(fUv * vec2(uAspect, 1.0) * 160.0);',
   '    float nR = hash21(cell + vec2(0.00,  0.00));',
   '    float nG = hash21(cell + vec2(2.10,  1.30));',
   '    float nB = hash21(cell + vec2(1.70, -0.50));',

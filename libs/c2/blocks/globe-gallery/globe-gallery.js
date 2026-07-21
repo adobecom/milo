@@ -186,12 +186,15 @@ const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
 // out by its depth in front of the camera so it dissolves before it can cover the
 // frame, instead of hard-clipping at the near plane (which would slice + pop cards).
 // Thresholds are in card-heights (× bp.CARD_H_SPHERE) so they scale per breakpoint.
-// A 60° FOV card fills the viewport height at ~0.87 card-heights of depth, so the
-// fade completes above that. Both thresholds sit well inside the resting interactive
-// distance (nearest card depth ≈ CAM_Z_SPHERE − SPHERE_R ≈ 4–5 card-heights), so the
-// steady globe + the approach are untouched — the fade only engages mid zoom-through.
+// A 60° FOV card fills the viewport height at ~0.87 card-heights of depth. The fade
+// completes well above that (END = 1.6) so a near card vanishes while it's still
+// comfortably smaller than the frame — otherwise a large, faint, dispersing card reads
+// as background haze rather than a foreground card streaking past the lens. Both
+// thresholds sit well inside the resting interactive distance (nearest card depth ≈
+// CAM_Z_SPHERE − SPHERE_R ≈ 4–5 card-heights), so the steady globe + the approach are
+// untouched — the fade only engages mid zoom-through.
 const NEAR_FADE_START = 2.5; // begin fading when card depth < 2.5 card-heights
-const NEAR_FADE_END = 1.0; // fully transparent when card depth < 1.0 card-height
+const NEAR_FADE_END = 1.6; // fully transparent when card depth < 1.6 card-heights
 
 // ── Sphere-drag warp (all breakpoints) ───────────────────────────────────────
 // Hybrid intensity: a baseline while actively dragging, plus a velocity-driven
