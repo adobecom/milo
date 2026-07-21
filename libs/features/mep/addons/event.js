@@ -1,6 +1,47 @@
-import { isSignedOut, getConfig, getMepEnablement, loadIms } from '../../../utils/utils.js';
+import { isSignedOut, getConfig, getMepEnablement, loadIms, getCookie } from '../../../utils/utils.js';
 
 const defaultReturn = { isRegistered: false };
+
+// Persist only what personalization reads; never the RF authToken/userKey.
+const store = window.localStorage;
+const TTL_REGISTERED = 24 * 60 * 60 * 1000;
+const TTL_UNREGISTERED = 3 * 60 * 1000;
+const cacheKey = (eventCode, userId) => `mep-event:${eventCode}:${userId}`;
+
+// TODO(MWPW-199051): enable once VEAL confirms the redirect-cookie name/domain.
+const REDIRECT_INVALIDATION_ENABLED = false;
+const justRegistered = (eventCode) => REDIRECT_INVALIDATION_ENABLED
+  && getCookie(`feds_${eventCode}_registeredByRedirect`) === 'true';
+/* c8 ignore next 3 */
+const clearRegisteredFlag = (eventCode) => {
+  document.cookie = `feds_${eventCode}_registeredByRedirect=; Max-Age=0; path=/`;
+};
+
+function readCache(eventCode, userId) {
+  try {
+    const raw = store.getItem(cacheKey(eventCode, userId));
+    if (!raw) return null;
+    const { isRegistered, inPersonAttendee, exp } = JSON.parse(raw);
+    if (!exp || Date.now() > exp) return null;
+    return { isRegistered, inPersonAttendee };
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(eventCode, userId, data) {
+  try {
+    const ttl = data.isRegistered ? TTL_REGISTERED : TTL_UNREGISTERED;
+    store.setItem(cacheKey(eventCode, userId), JSON.stringify({
+      isRegistered: !!data.isRegistered,
+      inPersonAttendee: !!data.inPersonAttendee,
+      exp: Date.now() + ttl,
+    }));
+  } catch {
+    // storage unavailable — non-fatal
+  }
+}
+
 async function getUserId() {
   const signedInEnable = getMepEnablement('signedIn') || getMepEnablement('signedin');
   if (isSignedOut() && !signedInEnable) return false;
@@ -16,22 +57,37 @@ async function getUserId() {
   }
   /* c8 ignore stop */
 }
-async function fetchFromRainfocus(eventId) {
+
+async function fetchFromRainfocus(eventCode) {
   const userId = await getUserId();
   if (!userId) return defaultReturn;
+
+  /* c8 ignore next 3 */
+  if (justRegistered(eventCode)) {
+    store.removeItem(cacheKey(eventCode, userId));
+    clearRegisteredFlag(eventCode);
+  } else {
+    const cached = readCache(eventCode, userId);
+    if (cached) return cached;
+  }
 
   const accessToken = window.adobeIMS.getAccessToken()?.token;
   if (!accessToken) return defaultReturn;
 
   const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '.stage';
-  const url = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventId}?user_id=${encodeURIComponent(userId)}`;
+  const url = `https://www${domainSuffix}.adobe.com/events/api/rf-auth-seq-generic/${eventCode}?user_id=${encodeURIComponent(userId)}`;
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: { Authorization: `Bearer ${accessToken}` },
       credentials: 'same-origin',
     });
-    if (response.ok) return response.json();
+    if (response.ok) {
+      // RF returns {} (not { isRegistered: false }) when not registered.
+      const data = { isRegistered: false, ...(await response.json()) };
+      writeCache(eventCode, userId, data);
+      return data;
+    }
     window.lana?.log(`Unable to fetch from Rainfocus: ${response.statusText}`, {
       tags: 'mep-event',
       severity: 'error',
@@ -45,7 +101,8 @@ async function fetchFromRainfocus(eventId) {
     return defaultReturn;
   }
 }
-export default async function init(eventId) {
-  if (eventId === true) return { isRegistered: eventId };
-  return fetchFromRainfocus(eventId);
+
+export default async function init(eventCode) {
+  if (eventCode === true) return { isRegistered: eventCode };
+  return fetchFromRainfocus(eventCode);
 }

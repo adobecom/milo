@@ -27,9 +27,13 @@ const setMetadata = (name, content) => {
 describe('event', () => {
   beforeEach(() => {
     document.head.innerHTML = '';
+    localStorage.clear();
     setMetadata('signedIn', 'on');
     setCookie('OptanonConsent', 'C0002:1');
     window.adobeIMS = { getAccessToken: () => ({ token: '1234567890' }) };
+  });
+  afterEach(() => {
+    setCookie('feds_adobe-max-2025_registeredByRedirect', '; Max-Age=0');
   });
   it('should return true when sending true into init', async () => {
     const event = await init(true);
@@ -69,6 +73,32 @@ describe('event', () => {
       ok: true,
       isRegistered: true,
     });
+    const event = await init('adobe-max-2025');
+    expect(event.isRegistered).to.equal(true);
+  });
+  it('should serve a cached result without re-calling the API', async () => {
+    setMetadata('userId', '1234567890');
+    setFetchResponse({ ok: true, isRegistered: true });
+    const first = await init('adobe-max-2025');
+    expect(first.isRegistered).to.equal(true);
+    // A cache hit must ignore a now-changed API response.
+    setFetchResponse({ ok: true, isRegistered: false });
+    const second = await init('adobe-max-2025');
+    expect(second.isRegistered).to.equal(true);
+  });
+  it('should normalize an empty API response to isRegistered false', async () => {
+    setMetadata('userId', '1234567890');
+    setFetchResponse({});
+    const event = await init('adobe-max-2025');
+    expect(event.isRegistered).to.equal(false);
+  });
+  // Un-skip when REDIRECT_INVALIDATION_ENABLED flips on (MWPW-199051).
+  it.skip('should bypass the cache when the registration-redirect cookie is set', async () => {
+    setMetadata('userId', '1234567890');
+    setFetchResponse({ ok: true, isRegistered: false });
+    await init('adobe-max-2025');
+    setCookie('feds_adobe-max-2025_registeredByRedirect', 'true');
+    setFetchResponse({ ok: true, isRegistered: true });
     const event = await init('adobe-max-2025');
     expect(event.isRegistered).to.equal(true);
   });
