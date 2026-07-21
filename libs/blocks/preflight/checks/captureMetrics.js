@@ -47,14 +47,15 @@ const mapChecksWithColumn = (checks) => checks?.map((check) => ({
 async function capture(results) {
   const token = window.adobeIMS?.getAccessToken()?.token;
   const { imsClientId } = getConfig();
-  if (!token || !imsClientId) return null;
+  if (!imsClientId) return null;
 
-  let profile;
-  try {
-    profile = await window.adobeIMS.getProfile();
-  } catch {
-    window.lana?.log?.('IMS profile fetch failed, continuing without profile data', { tags: 'preflight', errorType: 'i' });
-    profile = { email: '' };
+  let profile = { email: '' };
+  if (token) {
+    try {
+      profile = await window.adobeIMS.getProfile();
+    } catch {
+      window.lana?.log?.('IMS profile fetch failed, continuing without profile data', { tags: 'preflight', errorType: 'i' });
+    }
   }
 
   const [
@@ -103,12 +104,11 @@ async function sendMetrics(metricsData) {
   const endpoint = getLogsEndpoint();
 
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.authorization = `Bearer ${token}`;
     const response = await fetch(`${endpoint}?clientId=${imsClientId}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: `Bearer ${token}`,
-      },
+      headers,
       body: JSON.stringify({ ...results, ...contextData }),
     });
 

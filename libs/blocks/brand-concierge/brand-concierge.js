@@ -1,6 +1,7 @@
 import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig, loadScript } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
+import bcAnalytics from './bc-analytics.js';
 
 const submitIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="send-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor"><path d="M18.6485 9.9735C18.6482 9.67899 18.4769 9.41106 18.2059 9.29056L4.05752 2.93282C3.80133 2.8175 3.50129 2.85583 3.28171 3.03122C3.06178 3.20765 2.95889 3.49146 3.01516 3.76733L4.28678 10.008L3.06488 16.2384C3.0162 16.4852 3.09492 16.738 3.27031 16.9134C3.29068 16.9337 3.31278 16.9531 3.33522 16.9714C3.55619 17.1454 3.85519 17.182 4.11069 17.066L18.2086 10.6578C18.4773 10.5356 18.6489 10.268 18.6485 9.9735ZM14.406 9.22716L5.66439 9.25379L4.77705 4.90084L14.406 9.22716ZM4.81711 15.0973L5.6694 10.7529L14.4323 10.7264L4.81711 15.0973Z"></path></svg>';
 const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="${svgClass}" ${svgTitle ? `title="${svgTitle}"` : ''} width="${svgSize}" height="${svgSize}" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,6 +33,108 @@ const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
+
+const getTargetHeight = (target) => {
+  const { marginBottom } = window.getComputedStyle(target);
+  return target.scrollHeight + (parseFloat(marginBottom) * 2);
+};
+
+function floatingElement(targetEl, el, focusableEl = null) {
+  const hideFloating = () => {
+    if (focusableEl) {
+      focusableEl.setAttribute('aria-hidden', 'true');
+      focusableEl.setAttribute('tabindex', '-1');
+      focusableEl.blur();
+    }
+    targetEl.classList.add('bc-floating-hidden');
+    targetEl.classList.remove('bc-floating-show');
+  };
+
+  const showFloating = () => {
+    if (focusableEl) {
+      focusableEl.removeAttribute('aria-hidden');
+      focusableEl.removeAttribute('tabindex');
+    }
+    targetEl.classList.remove('bc-floating-hidden');
+    targetEl.classList.add('bc-floating-show');
+  };
+
+  const mainElement = document.querySelector('main');
+  const mainTop = mainElement.offsetTop;
+  const hasDelay = variants.isHero || variants.floatingDelay || variants.floatingAnchorDelay;
+  const anchorDelay = variants.floatingAnchorDelay ? variants.floatingAnchorDelayAmount : 0;
+  let mainHeight = mainElement.scrollHeight;
+  let targetHeight = getTargetHeight(targetEl);
+  let elHeight = el.scrollHeight;
+
+  const floatingSpacer = createTag('div', { class: 'bc-spacer' });
+  floatingSpacer.style.cssText = 'height:0; pointer-events:none;';
+  mainElement.appendChild(floatingSpacer);
+
+  targetEl.classList.add('bc-floating-element');
+
+  const ro = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      const size = Math.floor(entry.borderBoxSize?.[0]?.blockSize);
+      switch (entry.target) {
+        case el: elHeight = size ?? el.scrollHeight; break;
+        case mainElement: mainHeight = size ?? mainElement.scrollHeight; break;
+        case targetEl: targetHeight = getTargetHeight(targetEl); break;
+        default: break;
+      }
+    }
+  });
+  ro.observe(el);
+  ro.observe(mainElement);
+  ro.observe(targetEl);
+
+  if (variants.isHero || variants.floatingDelay) {
+    hideFloating();
+  }
+
+  const handleScroll = (target) => {
+    // only values that need to be calculated on scroll are here, to optimize performance
+    const threshold = window.scrollY + window.innerHeight - mainTop;
+    const topDelay = variants.floatingDelay ? variants.floatingDelayAmount : elHeight;
+    const bottomValue = threshold - mainHeight;
+
+    // if the spacer is not the last element in main, move it to the end
+    if (mainElement.children[mainElement.children.length - 1] !== floatingSpacer) {
+      mainElement.appendChild(floatingSpacer);
+    }
+
+    if (threshold > mainHeight) {
+      target.style.bottom = `${bottomValue}px`;
+      if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
+        hideFloating();
+      } else {
+        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
+      }
+    } else {
+      showFloating();
+      target.style.bottom = '0';
+    }
+    if (hasDelay) {
+      if (window.scrollY > topDelay && threshold <= mainHeight) {
+        showFloating();
+      }
+      if (window.scrollY < topDelay
+        || (variants.floatingAnchorDelay && threshold > mainHeight - anchorDelay)) {
+        hideFloating();
+      }
+    }
+  };
+
+  let scrollPending = false;
+  window.addEventListener('scroll', () => {
+    if (scrollPending) return;
+    scrollPending = true;
+    requestAnimationFrame(() => {
+      handleScroll(targetEl);
+      scrollPending = false;
+    });
+  }, { passive: true });
+}
 
 function getBetaLabel() {
   return createTag('span', { class: 'bc-beta-label' }, 'Beta');
@@ -343,6 +446,9 @@ async function openChatModal(initialMessage, el) {
       stylingConfigurations: getUpdatedChatUIConfig(),
       selector: `#${mountId}`,
       onBeforeEventSend,
+      onEvent: (event) => {
+        bcAnalytics(event);
+      },
     });
   } else {
     window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
@@ -395,28 +501,58 @@ function decorateBackground(el, background) {
       el.style.setProperty('--brand-concierge-bg', `url(${rawImage})`);
     }
   }
-  el.removeChild(background);
+  if (el.contains(background)) el.removeChild(background);
 }
 
-function decorateHeader(el, header) {
-  const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
-  const subTitle = header.querySelector('p');
-  const headerSection = createTag('section', { class: 'bc-header' });
+function decorateMarqueeBackground(el, background) {
+  const pictures = [...background.querySelectorAll('picture')];
+  if (!pictures.length) {
+    decorateBackground(el, background);
+    return;
+  }
+  const backgroundLayer = createTag('div', { class: 'background' });
+  if (pictures.length === 1) {
+    backgroundLayer.append(pictures[0]);
+  } else {
+    const viewports = ['desktop-only', 'tablet-only', 'mobile-only'];
+    pictures.forEach((picture, index) => {
+      backgroundLayer.append(createTag('div', { class: viewports[index] || 'mobile-only' }, picture));
+    });
+  }
+  el.prepend(backgroundLayer);
+  if (el.contains(background)) el.removeChild(background);
+}
 
-  if (hTag) {
-    hTag.classList.add('bc-header-title');
-    headerSection.append(hTag);
+function decorateHeader(el, header, { eyebrow: withEyebrow = false } = {}) {
+  const headerSection = createTag('section', { class: 'bc-header' });
+  let title;
+  let eyebrow = null;
+
+  if (withEyebrow) {
+    [eyebrow, title] = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  } else {
+    title = header.querySelector('h1, h2, h3, h4, h5, h6');
+  }
+  const subTitle = header.querySelector('p');
+
+  if (eyebrow) {
+    eyebrow.classList.add('bc-header-eyebrow');
+    headerSection.append(eyebrow);
+  }
+  if (title) {
+    title.classList.add('bc-header-title');
+    headerSection.append(title);
   }
   if (subTitle) {
     subTitle.classList.add('bc-header-subtitle');
     headerSection.append(subTitle);
   }
-  if (!hTag && !subTitle) {
+  if (!eyebrow && !title && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
 
   el.append(headerSection);
-  el.removeChild(header);
+  if (el.contains(header)) el.removeChild(header);
 }
 
 function decorateCards(el, cards) {
@@ -427,7 +563,7 @@ function decorateCards(el, cards) {
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
-      'daa-ll': getAnalyticsLabel('1'),
+      'daa-ll': getAnalyticsLabel(`1|BC-suggested_prompt_clicked|inline|${cardText.textContent.trim()}`),
       'aria-label': cardText.textContent.trim(),
     });
     if (cardImage) {
@@ -446,7 +582,7 @@ function decorateCards(el, cards) {
   });
 
   el.append(cardSection);
-  el.removeChild(cards);
+  if (el.contains(cards)) el.removeChild(cards);
 }
 
 function decorateInput(el, input) {
@@ -477,7 +613,7 @@ function decorateInput(el, input) {
 
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
-  el.removeChild(input);
+  if (el.contains(input)) el.removeChild(input);
   updateReplicatedValue(textareaWrapper, fieldInput);
 
   fieldInput.addEventListener('input', () => {
@@ -491,7 +627,7 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value || fieldInput.value.trim() === '') e.preventDefault();
+      e.preventDefault();
       fieldButton.click();
     }
   });
@@ -507,7 +643,7 @@ function decorateLegal(el, legal) {
   const legalContent = createTag('p', {}, legal.querySelector('div').innerHTML);
   legalSection.append(legalContent);
   el.append(legalSection);
-  el.removeChild(legal);
+  if (el.contains(legal)) el.removeChild(legal);
 }
 
 function decorateFloatingButton(el) {
@@ -520,62 +656,51 @@ function decorateFloatingButton(el) {
   floatingButton.append(floatingContainer);
   el.append(floatingButton);
 
-  const mainElement = document.querySelector('main');
-
-  const hideFloatingButton = () => {
-    floatingContainer.setAttribute('aria-hidden', 'true');
-    floatingContainer.setAttribute('tabindex', '-1');
-    floatingContainer.blur();
-    floatingButton.classList.add('floating-hidden');
-    floatingButton.classList.remove('floating-show');
-  };
-
-  const showFloatingButton = () => {
-    floatingContainer.removeAttribute('aria-hidden');
-    floatingContainer.removeAttribute('tabindex');
-    floatingButton.classList.remove('floating-hidden');
-    floatingButton.classList.add('floating-show');
-  };
-
-  if (variants.isHero || variants.floatingDelay) {
-    hideFloatingButton();
-  }
-
-  const handleScroll = (target) => {
-    const mainHeight = mainElement.scrollHeight;
-    const threshold = window.scrollY + window.innerHeight - mainElement.offsetTop;
-    const targetStyle = window.getComputedStyle(target);
-    const targetHeight = target.scrollHeight + (parseFloat(targetStyle.marginBottom) * 2) - 2;
-    const scrollDelay = variants.floatingDelay ? variants.floatingDelayAmount : el.scrollHeight;
-
-    if (threshold > mainHeight) {
-      target.style.bottom = `${threshold - mainHeight}px`;
-      if (variants.isFloatingAnchorHide) {
-        hideFloatingButton();
-      } else {
-        mainElement.style.paddingBottom = `${targetHeight}px`;
-      }
-    } else {
-      showFloatingButton();
-      target.style.bottom = '0';
-    }
-    if (variants.isHero || variants.floatingDelay) {
-      if (window.scrollY > scrollDelay && threshold <= mainHeight) {
-        showFloatingButton();
-      }
-      if (window.scrollY < scrollDelay) {
-        hideFloatingButton();
-      }
-    }
-  };
-
   floatingButton.addEventListener('click', () => {
     if (floatingButtonClicked) return;
     floatingButtonClicked = true;
     openChatModal(null, el);
   });
 
-  window.addEventListener('scroll', () => handleScroll(floatingButton));
+  floatingElement(floatingButton, el, floatingContainer);
+}
+
+function decorateFloatingInput(el, cards, input) {
+  if (variants.isFloatingInputOnly) {
+    el.classList.add('floating-input');
+  }
+  function updatePillVisibility(target) {
+    const prompts = target.querySelector('.bc-prompt-cards');
+    if (!prompts) return;
+
+    const buttons = [...prompts.querySelectorAll('.prompt-card-button')];
+    buttons.forEach((btn) => { btn.style.display = ''; });
+
+    requestAnimationFrame(() => {
+      const { left: containerLeft, right: containerRight } = prompts.getBoundingClientRect();
+
+      buttons.forEach((btn) => {
+        const { left, right } = btn.getBoundingClientRect();
+
+        if (right > containerRight || left < containerLeft) {
+          btn.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  const floatingInput = createTag('section', { class: 'bc-floating-input' });
+  decorateInput(floatingInput, input);
+  decorateCards(floatingInput, cards);
+  el.append(floatingInput);
+
+  const updateLayout = () => {
+    updatePillVisibility(floatingInput);
+  };
+
+  window.addEventListener('resize', updateLayout);
+  requestAnimationFrame(updateLayout);
+  floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
 }
 
 function handleConsent(el) {
@@ -588,12 +713,16 @@ function handleConsent(el) {
 }
 
 export default async function init(el) {
+  // Reset variant flags so each block decorates independently of any prior init.
+  Object.keys(variants).forEach((key) => delete variants[key]);
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
   window.addEventListener('signIn:decorateNav', async () => {
     await window.adobeIMS?.refreshToken();
     window.UniversalNav?.reload();
+    window.feds?.nav?.reload();
   });
 
   const rows = el.querySelectorAll(':scope > div');
@@ -601,8 +730,11 @@ export default async function init(el) {
   setAuthoredContent(rows);
 
   // set variant
-  if (!el.classList.contains('hero')
-  && !el.classList.contains('floating-button-only')) {
+  if (el.classList.contains('marquee')) {
+    variants.isMarquee = true;
+  } else if (!el.classList.contains('hero')
+    && !el.classList.contains('floating-button-only')
+    && !el.classList.contains('floating-input-only')) {
     el.classList.add('inline');
     variants.isDefault = true;
   } else if (el.classList.contains('hero')) {
@@ -614,8 +746,10 @@ export default async function init(el) {
   }
   if (el.classList.contains('floating-button')) {
     variants.isFloatingButton = true;
-  } else if (el.classList.contains('floating-button-only')) {
+  }
+  if (el.classList.contains('floating-button-only')) {
     variants.isFloatingButtonOnly = true;
+    variants.isFloatingButton = false;
   }
 
   if (el.classList.contains('floating-anchor-hide')) {
@@ -627,7 +761,19 @@ export default async function init(el) {
       variants.floatingDelay = true;
       variants.floatingDelayAmount = parseFloat(classItem.match(/\w+/g)[2]);
     }
+    if (classItem.includes('floating-anchor-delay')) {
+      variants.floatingAnchorDelay = true;
+      variants.floatingAnchorDelayAmount = parseFloat(classItem.match(/\w+/g)[3]);
+    }
   });
+
+  if (el.classList.contains('floating-input')) {
+    variants.isFloatingInput = true;
+  }
+  if (el.classList.contains('floating-input-only')) {
+    variants.isFloatingInputOnly = true;
+    variants.isFloatingInput = false;
+  }
 
   if (variants.isFloatingButton) {
     decorateFloatingButton(el);
@@ -660,6 +806,36 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isMarquee) {
+    const [background, header, cards, input, legal] = rows;
+    decorateMarqueeBackground(el, background);
+    decorateHeader(el, header, { eyebrow: true });
+    decorateInput(el, input);
+    decorateCards(el, cards);
+    decorateLegal(el, legal);
+
+    const foreground = createTag('div', { class: 'foreground container' });
+    foreground.append(
+      el.querySelector('.bc-header'),
+      el.querySelector('.bc-input-field'),
+      el.querySelector('.bc-prompt-cards'),
+      el.querySelector('.bc-legal'),
+    );
+    el.append(foreground);
+  }
+
+  if (variants.isFloatingInput) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+  }
+  if (variants.isFloatingInputOnly) {
+    const [, , cards, input] = rows;
+    decorateFloatingInput(el, cards, input);
+    rows.forEach((row) => {
+      el.removeChild(row);
+    });
   }
 
   const loginTestButton = params.get('susi-test-btn');

@@ -110,7 +110,10 @@ const {
   setupKeyboardNav,
   KEYBOARD_DELAY,
   isSmallScreen,
+  updateGnavActiveLink,
 } = utilities;
+
+export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -187,7 +190,7 @@ const handleSignIn = async () => {
 
   // Map to SUSI authParams cleanly
   const { locale, imsClientId, imsScope } = getConfig();
-  const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   let redirectUri = SIGNIN_CONTEXT.redirect_uri || window.location.href;
   try {
@@ -262,6 +265,9 @@ const getSignInCtaStyle = () => {
   return isPrimary ? 'primary' : 'secondary';
 };
 
+const enableBE = new URLSearchParams(window.location.search).has('enableBE');
+const enableManagePeople = getConfig().unav?.profile?.enableManagePeople ?? true;
+
 export const CONFIG = {
   icons: isDarkMode() ? darkIcons : icons,
   delays: {
@@ -287,6 +293,7 @@ export const CONFIG = {
               enableLocalSection: true,
               enableProfileSwitcher: true,
               miniAppContext: {
+                ...(enableBE && { enableManagePeople }),
                 logger: {
                   trace: () => {},
                   debug: () => {},
@@ -295,6 +302,13 @@ export const CONFIG = {
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', severity: 'error' }),
                 },
               },
+              ...(enableBE && {
+                managePeopleConfig: {
+                  enableWorkflow: true,
+                  params: { enableinlineoverlay: 's2-compat' },
+                  ...getConfig().unav?.profile?.managePeopleConfig,
+                },
+              }),
               complexConfig: getConfig().unav?.profile?.complexConfig || null,
               ...getConfig().unav?.profile?.config,
             },
@@ -648,6 +662,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -865,6 +880,20 @@ class Gnav {
 
   imsReady = async () => {
     if (!window.adobeIMS.isSignedInUser() || !this.useUniversalNav) setUserProfile({});
+    if (this.useUniversalNav && window.adobeIMS.isSignedInUser()) {
+      this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+      this.aupsdkInstancePromise.catch((e) => {
+        this.aupsdkInstancePromise = null;
+        lanaLog({
+          message: 'GNAV: eager AUP SDK preload failed; falling back to lazy init',
+          e,
+          tags: 'universalnav',
+          errorType: 'i',
+          severity: 'info',
+        });
+      });
+    }
+
     const tasks = [
       this.useUniversalNav ? this.decorateUniversalNav : this.decorateProfile,
       this.setUpProductCTA,
@@ -934,11 +963,9 @@ class Gnav {
 
     // Decorate the profile dropdown
     // after user interacts with button or after 3s have passed
-    let decorationTimeout;
-
     const decorateDropdown = async (e) => {
       this.blocks.profile.buttonElem.removeEventListener('click', decorateDropdown);
-      clearTimeout(decorationTimeout);
+      clearTimeout(this.blocks.profile.decorationTimeout);
       await this.loadDelayed();
       this.blocks.profile.dropdownInstance = new this.ProfileDropdown({
         rawElem,
@@ -952,7 +979,72 @@ class Gnav {
     };
 
     this.blocks.profile.buttonElem.addEventListener('click', decorateDropdown);
-    decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+    this.blocks.profile.decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.loadDelayed);
+  };
+
+  reloadProfile = async () => {
+    clearTimeout(this.blocks.profile.decorationTimeout);
+    this.blocks.profile.decoratedElem.replaceChildren();
+    delete this.blocks.profile.buttonElem;
+    delete this.blocks.profile.dropdownInstance;
+    await this.decorateProfile();
+  };
+
+  static preloadAupSdk = async () => {
+    const config = getConfig();
+    const { imsClientId } = config;
+    const environment = config.env.name === 'prod' ? 'prod' : 'stage';
+    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const locale = lingoRegion?.ietf || config.locale?.ietf || 'en-US';
+
+    await loadScript(
+      `https://shared-components.${environment === 'prod' ? '' : `${environment}.`}adobe.com/aup-sdk/1.0.756/main.js`,
+      null,
+      { mode: 'async' },
+    );
+
+    window.aupsdk = window.aupsdk || await window.AUPSDK.preloadSDK('adobe-com-stable', {
+      appId: 'adobe_com',
+      apiKey: imsClientId,
+      getAccessToken: () => Promise.resolve(window.adobeIMS?.getAccessToken()?.token),
+      getProfile: () => Promise.resolve(window.adobeIMS?.getProfile()),
+      environment,
+      cdnEnvironment: environment,
+      locale,
+      appName: 'adobecom',
+      appVersion: '1.0',
+      colorScheme: isDarkMode() ? 'dark' : 'light',
+      ...(enableBE && {
+        showDialog: async (element, _, closeCallback) => {
+          document.getElementById('feds-manage-people-dialog')?.remove();
+          const dialog = document.createElement('dialog');
+          dialog.id = 'feds-manage-people-dialog';
+          dialog.appendChild(element);
+          document.body.appendChild(dialog);
+          dialog.addEventListener('cancel', () => {
+            closeCallback({ type: 'close' });
+            dialog.close();
+            dialog.remove();
+            document.documentElement.classList.remove('disable-scroll');
+          });
+          dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+              closeCallback({ type: 'close' });
+              dialog.close();
+              dialog.remove();
+              document.documentElement.classList.remove('disable-scroll');
+            }
+          });
+          document.documentElement.classList.add('disable-scroll');
+          dialog.showModal();
+        },
+      }),
+    });
+
+    if (enableBE) {
+      await window.aupsdk.updateConfig({ miniAppContext: { features: ['useToasts'] } });
+    }
+    return window.aupsdk;
   };
 
   decorateUniversalNav = async () => {
@@ -963,7 +1055,7 @@ class Gnav {
       this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     const locale = lingoRegion?.ietf
       ? lingoRegion.ietf.replace('-', '_')
       : getUniversalNavLocale(config.locale);
@@ -982,7 +1074,7 @@ class Gnav {
     let unavVersion = new URLSearchParams(window.location.search).get('unavVersion');
     // If versions follow a predictable format (digit.digit), validate using a regex
     if (!/^\d+(\.\d+)?$/.test(unavVersion)) {
-      unavVersion = '1.5';
+      unavVersion = '1.6';
     }
     await Promise.all([
       loadScript(`https://${environment}.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js`),
@@ -1014,6 +1106,19 @@ class Gnav {
       countryCode = (await getValidatedMarket() || countryCode).toUpperCase();
     }
 
+    const isArpEnabled = getConfig()?.unav?.isArpEnabled ?? true;
+
+    const addFetchAUPSDKInstance = () => {
+      if (!window.adobeIMS?.isSignedInUser()) return {};
+      return {
+        fetchAUPSDKInstance: async () => {
+          if (this.aupsdkInstancePromise) return this.aupsdkInstancePromise;
+          this.aupsdkInstancePromise = Gnav.preloadAupSdk();
+          return this.aupsdkInstancePromise;
+        },
+      };
+    };
+
     const getConfiguration = () => ({
       target: this.blocks.universalNav,
       env: environment,
@@ -1034,6 +1139,36 @@ class Gnav {
       children: getChildren(),
       isSectionDividerRequired: getConfig()?.unav?.showSectionDivider,
       showTrayExperience: (!isDesktop.matches),
+      isArpEnabled,
+      ...(isArpEnabled && {
+        arpConfig: Promise.resolve({
+          sessionId: visitorGuid,
+          tokenCallback: (token) => {
+            window.adobeArp = window.adobeArp || {};
+            window.adobeArp.sessionToken = token;
+            window.dispatchEvent(new CustomEvent('arp:tokenReady', { detail: { token } }));
+            /* eslint-disable no-underscore-dangle */
+            window.alloy_all ??= {};
+            window.alloy_all.data ??= {};
+            window.alloy_all.data._adobe_corpnew ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom ??= {};
+            window.alloy_all.data._adobe_corpnew.digitalData.custom.arp_token = token;
+            /* eslint-enable no-underscore-dangle */
+          },
+          successCallback: () => {},
+          errorCallback: (err) => {
+            lanaLog({ message: 'ARP error', err, tags: 'universalnav', severity: 'error' });
+          },
+          ...getConfig()?.unav?.arpConfig,
+          metadata: {
+            source: 'universal-navigation',
+            version: unavVersion,
+            ...getConfig()?.unav?.arpConfig?.metadata,
+          },
+        }),
+      }),
+      ...addFetchAUPSDKInstance(),
     });
 
     // Exposing UNAV config for consumers
@@ -1675,6 +1810,7 @@ class Gnav {
               const url = new URL(linkElem.href);
               linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
               if (isActiveLink(linkElem)) {
+                linkElem.dataset.activeLinkHref = linkElem.href;
                 linkElem.removeAttribute('href');
               }
               const linkHash = url.hash.slice(2);
@@ -1685,6 +1821,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.activeLinkHref = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');
@@ -1802,6 +1939,10 @@ export default async function init(block) {
   if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
+  if (!gnav.useUniversalNav && gnav.blocks?.profile?.rawElem) {
+    window.feds = window.feds || {};
+    window.feds.nav = { reload: () => gnav.reloadProfile() };
+  }
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';

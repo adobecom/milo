@@ -30,10 +30,31 @@ function createMasCommerceService(selectLocale, selectCountry) {
   registerCheckoutAction();
 }
 
-async function preview(divPreview, selectType, selectLocale, selectCountry, fragmentEl, deeplink) {
+const MODEL_IDS = {
+  L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24: MAS_MERCH_CARD_COLLECTION,
+  L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ: MAS_MERCH_CARD,
+};
+
+async function preview(divPreview, selectType, selectLoc, selectCo, fragmentEl, btn, deeplink) {
   divPreview.innerHTML = '';
 
   registerCheckoutAction();
+
+  fetch(`https://odinpreview.corp.adobe.com/adobe/contentFragments/${fragmentEl.value}`)
+    // eslint-disable-next-line consistent-return
+    .then((resp) => {
+      if (resp.ok) {
+        return resp.json();
+      }
+      divPreview.innerText = 'Cannot load fragment';
+      divPreview.classList.remove('hidden');
+    })
+    .then((fragment) => {
+      if (fragment?.model?.id && MODEL_IDS[fragment.model.id] !== selectType.value) {
+        selectType.value = MODEL_IDS[fragment.model.id];
+        btn.click();
+      }
+    });
 
   const href = `https://mas.adobe.com/studio.html#content-type=${selectType.value}&page=content&path=acom&query=${fragmentEl.value}`;
   const autoblock = createTag('a', { href });
@@ -43,6 +64,7 @@ async function preview(divPreview, selectType, selectLocale, selectCountry, frag
   const merchBlock = divPreview.querySelector(selectType.value);
   if (!merchBlock) return;
   await merchBlock.checkReady();
+  divPreview.classList.remove('hidden');
   if ((selectType.value === MAS_MERCH_CARD && !merchBlock.variant)
     || (selectType.value === MAS_MERCH_CARD_COLLECTION && !merchBlock.classList.length)) {
     divPreview.innerText = 'Cannot load fragment';
@@ -50,13 +72,17 @@ async function preview(divPreview, selectType, selectLocale, selectCountry, frag
     const urlDeeplink = new URL(window.location.href.split('#')[0]);
     urlDeeplink.searchParams.set(FRAGMENT_ID, fragmentEl.value);
     urlDeeplink.searchParams.set(CONTENT_TYPE, selectType.value);
-    urlDeeplink.searchParams.set(LOCALE, selectLocale.value);
-    if (selectCountry.value) {
-      urlDeeplink.searchParams.set(COUNTRY, selectCountry.value);
+    urlDeeplink.searchParams.set(LOCALE, selectLoc.value);
+    if (selectCo.value) {
+      urlDeeplink.searchParams.set(COUNTRY, selectCo.value);
     } else {
       urlDeeplink.searchParams.delete(COUNTRY);
     }
     window.history.replaceState(window.history.state, '', urlDeeplink.href);
+  }
+  if (selectType.value === MAS_MERCH_CARD_COLLECTION) {
+    const firstSidenavItem = divPreview.querySelector('sp-sidenav-item');
+    if (firstSidenavItem) firstSidenavItem.click();
   }
 }
 
@@ -99,7 +125,8 @@ export default async function init(el) {
   const btnPreview = createTag('button', { type: 'button' }, 'Preview');
   const divPreview = createTag('div', { class: 'fragment-preview hidden' });
   btnPreview.addEventListener('click', () => {
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, true);
+    divPreview.classList.add('hidden');
+    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview, true);
   });
   selectLocale.addEventListener('change', async () => {
     createMasCommerceService(selectLocale, selectCountry);
@@ -120,8 +147,8 @@ export default async function init(el) {
   el.appendChild(divMeta);
   el.appendChild(divPreview);
   if (fragmentIdEl.value) {
-    await preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl);
-    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl);
+    await preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
+    preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview);
     divPreview.classList.remove('hidden');
   }
 }

@@ -23,6 +23,33 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.aem.page',
 };
 
+/**
+ * Origin for federal content (locales, etc.) in standalone gnav.
+ * Matches adobe.com / federal, not Milo libs.
+ */
+function getStandaloneNavOrigin(env) {
+  switch (env) {
+    case 'prod': return 'https://www.adobe.com';
+    case 'stage': return 'https://www.stage.adobe.com';
+    default: return 'https://main--federal--adobecom.aem.page';
+  }
+}
+
+/**
+ * Load locale map from the federal project (same source as adobe.com consumers).
+ * Dynamic import avoids bundling federal URLs.
+ */
+async function loadFederalLocales(env) {
+  const origin = getStandaloneNavOrigin(env);
+  const url = `${origin}/federal/utils/locales.js`;
+  const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ url);
+  return mod.default;
+}
+
+async function resolveLocales(env, localesOverride) {
+  return localesOverride ?? loadFederalLocales(env);
+}
+
 const getStageDomainsMap = (stageDomainsMap, env) => {
   const defaultUrls = {
     'www.adobe.com': 'origin',
@@ -86,6 +113,7 @@ export default async function loadBlock(configs, customLib) {
     theme,
     stageDomainsMap = {},
     allowedOrigins = [],
+    promoSource = '',
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -117,23 +145,17 @@ export default async function loadBlock(configs, customLib) {
     loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
-  // Relative paths work just fine since they exist in the context of this file's origin
+  const origin = getStandaloneNavOrigin(env);
   const [
     { default: bootstrapBlock },
-    { default: locales },
-    { setConfig, getConfig, createTag }] = await Promise.all([
+    locales,
+    { setConfig, getConfig, createTag },
+  ] = await Promise.all([
     import('./bootstrapper.js'),
-    import('../utils/locales.js'),
+    resolveLocales(env, configs?.locales),
     import('../utils/utils.js'),
   ]);
   const paramConfigs = getParamsConfigs(configs);
-  const origin = (() => {
-    switch (env) {
-      case 'prod': return 'https://www.adobe.com';
-      case 'stage': return 'https://www.stage.adobe.com';
-      default: return 'https://main--federal--adobecom.aem.page';
-    }
-  })();
   const clientConfig = {
     theme,
     prodDomains,
@@ -141,7 +163,7 @@ export default async function loadBlock(configs, customLib) {
     standaloneGnav: true,
     pathname: `/${locale}`,
     miloLibs: `${miloLibs}/libs`,
-    locales: configs.locales || locales,
+    locales,
     contentRoot: authoringPath || footer?.authoringPath,
     stageDomainsMap: getStageDomainsMap(stageDomainsMap, env),
     origin,
@@ -174,6 +196,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
+            promoSource,
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -181,11 +204,13 @@ export default async function loadBlock(configs, customLib) {
             { key: 'redirect', name: 'adobe-home-redirect' },
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
+            { key: 'promoSource', name: 'gnav-promo-source' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, gnavConfigs);
           window.closeGnav = closeGnavOptions;
+          window.updateGnavActiveLink = updateGnavActiveLink;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);
