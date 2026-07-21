@@ -184,6 +184,12 @@ function handleImages(imageOptions, section) {
   decoratePictures(section, imageOptions);
 }
 
+function handleBentoStack(section) {
+  import('../../../features/bento-stack.js')
+    .then(({ default: initBentoStack }) => initBentoStack(section))
+    .catch((e) => window.lana?.log(`bento-stack init failed: ${e}`, { tags: 'bento-stack', severity: 'info' }));
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -204,9 +210,5 @@ export default async function init(el) {
   if (metadata.layout) handleStyle(metadata.layout.text, section);
   if (metadata.images) handleImages(metadata.images?.text[0], section);
   handleStickyFocus(section);
-  if (section?.matches('.bento.stack-mobile')) {
-    import('../../../features/bento-stack.js')
-      .then(({ default: initBentoStack }) => initBentoStack(section))
-      .catch((e) => window.lana?.log(`bento-stack init failed: ${e}`, { tags: 'bento-stack', severity: 'info' }));
-  }
+  if (section?.matches('.bento.stack-mobile')) handleBentoStack(section);
 }

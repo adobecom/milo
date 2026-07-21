@@ -40,43 +40,62 @@ function clearMeasurements(section) {
   section.style.removeProperty('--gnav-offset');
 }
 
+export function contentReady(cards) {
+  return cards.every((card) => card.querySelector('.explore-card-content'));
+}
+
+// Sibling blocks (e.g. explore-card) decorate in parallel with this module's own
+// (lazy-imported) load, so a card's content wrapper may not exist yet on first run —
+// wait for it (bounded, so a malformed card can't stall the feature forever) rather
+// than measuring the raw, undecorated card and locking that height in permanently.
+export function whenReady(cards, cb, deadline = performance.now() + 1000) {
+  if (contentReady(cards) || performance.now() >= deadline) {
+    cb();
+    return;
+  }
+  requestAnimationFrame(() => whenReady(cards, cb, deadline));
+}
+
 export default function initBentoStack(section) {
   const cards = getCards(section);
-  if (!cards.length) return;
-  setIndices(section, cards);
-  // If this module fails to load/run, the class is never added and the
-  // bento degrades to its normal static layout
-  section.classList.add('bento-stack-ready');
+  if (!cards.length || section.classList.contains('bento-stack-ready')) return;
 
-  const mq = window.matchMedia(MOBILE);
-  let frame = 0;
-  let measuring = false;
-  let ro;
-  const update = () => {
-    // Self-heal: an MEP replaceInner() can detach this section and re-init on a
-    // fresh one. Drop the orphaned observer + listener so they neither pin the
-    // detached nodes nor keep firing on a dead section.
-    if (!section.isConnected) {
-      ro?.disconnect();
-      mq.removeEventListener('change', update);
-      return;
-    }
-    // (clearing/setting --card-height resizes the observed content).
-    if (measuring) return;
-    cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      measuring = true;
-      if (mq.matches) measure(section, cards);
-      else clearMeasurements(section);
-      requestAnimationFrame(() => { measuring = false; });
-    });
-  };
+  whenReady(cards, () => {
+    setIndices(section, cards);
+    // If this module fails to load/run, the class is never added and the
+    // bento degrades to its normal static layout
+    section.classList.add('bento-stack-ready');
 
-  update();
+    const mq = window.matchMedia(MOBILE);
+    let frame = 0;
+    let measuring = false;
+    let ro;
+    const update = () => {
+      // Self-heal: an MEP replaceInner() can detach this section and re-init on a
+      // fresh one. Drop the orphaned observer + listener so they neither pin the
+      // detached nodes nor keep firing on a dead section.
+      if (!section.isConnected) {
+        ro?.disconnect();
+        mq.removeEventListener('change', update);
+        return;
+      }
+      // (clearing/setting --card-height resizes the observed content).
+      if (measuring) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        measuring = true;
+        if (mq.matches) measure(section, cards);
+        else clearMeasurements(section);
+        requestAnimationFrame(() => { measuring = false; });
+      });
+    };
 
-  ro = new ResizeObserver(update);
-  cards.forEach((card) => ro.observe(naturalEl(card)));
-  const title = section.querySelector(':scope > .rich-content');
-  if (title) ro.observe(title);
-  mq.addEventListener('change', update);
+    update();
+
+    ro = new ResizeObserver(update);
+    cards.forEach((card) => ro.observe(naturalEl(card)));
+    const title = section.querySelector(':scope > .rich-content');
+    if (title) ro.observe(title);
+    mq.addEventListener('change', update);
+  });
 }
