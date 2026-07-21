@@ -1394,7 +1394,7 @@ export const defaultState = {
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
-  flexCardHideFooter: false,
+  flexCardShowDateOnFooter: false,
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,
