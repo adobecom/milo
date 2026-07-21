@@ -10,7 +10,7 @@ const linkedTabs = {};
 const tabChangeEvent = new Event('milo:tab:changed');
 
 const getScrollContainer = (tab) => {
-  const tabList = tab.closest('[role="tablist"]');
+  const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
   return tabList.scrollWidth > tabList.clientWidth ? tabList : tabList.parentElement;
 };
 
@@ -92,9 +92,33 @@ function moveIndicator(indicator, target, container) {
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
 
+function buildTabDropdown(items) {
+  const select = createTag('select', { class: 'tab-dropdown', 'aria-label': 'Select tab' });
+  items.forEach(({ id, controlId, label }, i) => {
+    const option = createTag('option', { value: controlId }, label);
+    option.dataset.tabId = id;
+    if (i === 0) option.setAttribute('selected', '');
+    select.append(option);
+  });
+  select.addEventListener('change', (e) => {
+    const selectedOption = e.target.selectedOptions[0];
+    document.getElementById(selectedOption.dataset.tabId)?.click();
+  });
+  return select;
+}
+
+function syncTabDropdown(tabsBlock, targetId) {
+  const dropdown = tabsBlock.querySelector('.tab-dropdown');
+  if (!dropdown) return;
+  const option = [...dropdown.options].find((opt) => opt.dataset.tabId === targetId);
+  if (option) dropdown.value = option.value;
+}
+
 function changeTabs(e, config) {
   const { target } = e;
-  if (target.getAttribute('aria-selected') === 'true') return;
+  const isRadio = target.getAttribute('role') === 'radio';
+  const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
+  if (target.getAttribute(attributeName) === 'true') return;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
@@ -107,18 +131,20 @@ function changeTabs(e, config) {
   const content = tabsBlock.lastElementChild;
   const blockId = tabsBlock.id;
 
-  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
+  const targetContent = isRadio
+    ? content.querySelector(`#${target.getAttribute('data-control-id')}`)
+    : content.querySelector(`#${target.getAttribute('aria-controls')}`);
 
   parent
-    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
-      t.setAttribute('aria-selected', 'false');
+      t.setAttribute(attributeName, 'false');
       t.setAttribute('tabindex', '-1');
       if (Object.keys(tabColor).length) {
         t.style.backgroundColor = '';
       }
     });
-  target.setAttribute('aria-selected', 'true');
+  target.setAttribute(attributeName, 'true');
   target.setAttribute('tabindex', '0');
 
   const indicator = parent.querySelector('.tab-indicator');
@@ -127,6 +153,7 @@ function changeTabs(e, config) {
     target.style.backgroundColor = tabColor[targetId];
   }
   scrollTabIntoView(target);
+  syncTabDropdown(tabsBlock, targetId);
   content
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => {
@@ -191,8 +218,8 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"]');
+  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
+  const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
@@ -263,6 +290,16 @@ const init = async (block) => {
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
+  // Radio variant: the `radio` class opts in, but the top-level tabs block in a
+  // nested setup (multiple .tabs blocks in the same fragment) is never allowed
+  // to render as radio, even if it carries the class by mistake.
+  const allTabsBlocks = rootElem.querySelectorAll('.tabs');
+  const position = [...allTabsBlocks].indexOf(block) + 1;
+  const isNested = allTabsBlocks.length > 1;
+  const hasRadioVariant = block.classList.contains('radio');
+  const isRadio = hasRadioVariant && !(isNested && position === 1);
+  if (hasRadioVariant && !isRadio) block.classList.remove('radio');
+
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
@@ -271,39 +308,43 @@ const init = async (block) => {
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tab-list');
-  tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
   if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
+  tabListContainer.dataset.pretext = config.pretext;
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
+  const dropdownItems = [];
 
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const controlId = `tab-panel-${tabId}-${tabName}`;
+      const btnId = `tab-${tabId}-${tabName}`;
       const tabBtnAttributes = {
-        role: 'tab',
+        role: isRadio ? 'radio' : 'tab',
         class: 'tab-button label',
-        id: `tab-${tabId}-${tabName}`,
+        id: btnId,
         tabindex: (i === 0) ? '0' : '-1',
-        'aria-selected': (i === 0) ? 'true' : 'false',
+        [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
-        'daa-ll': `tab-${tabId}-${tabName}`,
-        'aria-controls': controlId,
+        'daa-ll': btnId,
+        ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
       };
       const tabBtn = createTag('button', tabBtnAttributes, item.textContent);
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
+      dropdownItems.push({ id: btnId, controlId, label: item.textContent });
 
       const tabContentAttributes = {
-        id: `tab-panel-${tabId}-${tabName}`,
-        role: 'tabpanel',
+        id: controlId,
+        ...(isRadio ? {} : { role: 'tabpanel' }),
         class: 'tabpanel',
-        'aria-labelledby': `tab-${tabId}-${tabName}`,
+        'aria-labelledby': btnId,
         'data-block-id': `tabs-${tabId}`,
       };
       const tabListContent = createTag('div', tabContentAttributes);
@@ -317,9 +358,15 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
-  // Tab indicator
-  const indicator = createTag('div', { class: 'tab-indicator' });
-  tabListContainer.prepend(indicator);
+  // Tab indicator (pill slider) only applies to the regular tabs UI; the radio
+  // variant renders its own selection state via CSS on the radio dot instead.
+  let indicator;
+  if (isRadio) {
+    tabsWrapper.append(buildTabDropdown(dropdownItems));
+  } else {
+    indicator = createTag('div', { class: 'tab-indicator' });
+    tabListContainer.prepend(indicator);
+  }
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
@@ -364,15 +411,17 @@ const init = async (block) => {
   initTabs(block, config, rootElem);
 
   requestAnimationFrame(() => {
-    const activeTab = tabListContainer.querySelector('[aria-selected="true"]');
+    const activeTab = tabListContainer.querySelector('[aria-selected="true"], [aria-checked="true"]');
     if (activeTab) {
-      indicator.style.transition = 'none';
-      moveIndicator(indicator, activeTab, tabListContainer);
+      if (indicator) {
+        indicator.style.transition = 'none';
+        moveIndicator(indicator, activeTab, tabListContainer);
+        requestAnimationFrame(() => { indicator.style.transition = ''; });
+      }
       scrollTabIntoView(activeTab);
-      requestAnimationFrame(() => { indicator.style.transition = ''; });
     }
     if (block.classList.contains('staggered-intro-merch-cards')) {
-      const activePanel = tabContentContainer.querySelector('[role="tabpanel"]:not([hidden])');
+      const activePanel = tabContentContainer.querySelector('.tabpanel:not([hidden])');
       if (activePanel) triggerTabEnterAnimation(activePanel);
     }
   });

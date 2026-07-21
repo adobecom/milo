@@ -1,3 +1,4 @@
+/* stylelint-disable no-descending-specificity */
 :root {
   --pill-bg-color-selected: var(--s2a-color-background-knockout);
   --pill-rounded-corners-setting: 50px;
@@ -11,6 +12,94 @@
 
   &.background-transparent {
     background: transparent;
+  }
+
+  &.radio {
+    background: transparent;
+
+    .tab-dropdown {
+      display: none;
+    }
+
+    [role='radiogroup'] {
+      display: flex;
+      align-items: center;
+      gap: var(--s2a-spacing-lg);
+      overflow: visible;
+      background: var(--s2a-color-transparent-black-04);
+      border-radius: var(--pill-rounded-corners-setting);
+    }
+
+    .tab-list-container {
+      min-width: 0;
+      gap: var(--s2a-spacing-lg);
+      padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
+    }
+
+    .tab-list-container::before {
+      content: attr(data-pretext);
+      color: var(--s2a-color-content-default);
+      white-space: nowrap;
+    }
+
+    button.tab-button {
+      display: flex;
+      align-items: center;
+      gap: var(--s2a-spacing-2xs);
+      height: auto;
+      flex: 0 0 auto;
+      padding: 0;
+      background: transparent;
+      border: none;
+      color: var(--s2a-color-content-default);
+      cursor: pointer;
+      font-family: var(--body-font-family);
+      text-decoration: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+      white-space: nowrap;
+
+      &::before {
+        content: '';
+        box-sizing: border-box;
+        width: 14px;
+        height: 14px;
+        min-width: 14px;
+        border: 2px solid var(--s2a-color-gray-400);
+        border-radius: 100%;
+        transition: border 150ms;
+      }
+
+      &:hover::before {
+        border-color: var(--pill-bg-color-selected);
+      }
+
+      &[aria-checked="true"]::before {
+        border-width: 5px;
+        border-color: var(--pill-bg-color-selected);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--s2a-color-blue-800);
+        outline-offset: 2px;
+      }
+    }
+
+    @media (width < 768px) {
+      [role='radiogroup'] {
+        display: none;
+      }
+
+      .tab-dropdown {
+        display: block;
+        width: 100%;
+        padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
+        border: 1px solid var(--s2a-color-gray-300);
+        border-radius: var(--pill-rounded-corners-setting);
+        background: var(--s2a-color-background-default);
+        color: var(--s2a-color-content-default);
+      }
+    }
   }
 
   .tabs-wrapper {
