@@ -306,10 +306,8 @@ function handleLightboxButtons(lightboxBtns, el, slideWrapper) {
   });
 }
 
-// Hinting layouts intentionally show a peek of the neighboring slide, so a
-// slide can still be clipping the wrapper's edge by a meaningful amount even
-// once it's no longer the one you care about. Require majority visibility
-// rather than any nonzero overlap before treating it as still "in view".
+// Hinting layouts intentionally peek the neighboring slide, so require
+// majority overlap (not just any overlap) to count a slide as still "in view".
 const VISIBILITY_THRESHOLD = 0.5;
 
 function getOverlapRatio(rect, wrapperRect) {
@@ -338,16 +336,12 @@ function pauseVideosOutOfView(slides, wrapper) {
   slides.forEach((slide) => checkSlideForVideo(slide, wrapperRect));
 }
 
-// Waits for the slide track's own transform transition to finish (with a
-// timed fallback, since edge cases may never fire a matching transitionend)
-// before running the visibility check, since positions aren't final until
-// the transition settles. Guarded to the track's own transform so a child
-// slide's opacity transition (carousel.css .carousel-slide) can't resolve
-// this early via event bubbling.
-// Margin above the CSS transition (25ms reflow delay + .6s transform,
-// see carousel.css .carousel-slides.is-ready) in case transitionend
-// never fires for this move.
-const TRANSITION_FALLBACK_MS = 700;
+// Waits for the slide track's transform transition to finish (falling back to
+// a timer in case transitionend never fires) before checking visibility,
+// since slide positions aren't final until the transition settles. Filtered
+// to the track's own transform so a child slide's opacity transition
+// (carousel.css .carousel-slide) can't resolve this early via bubbling.
+const TRANSITION_FALLBACK_MS = 700; // .6s CSS transition + 25ms reflow delay, plus margin
 
 function waitForSlideTransition(slideContainer, onDone) {
   let settled = false;
