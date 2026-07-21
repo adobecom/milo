@@ -27,81 +27,42 @@ export async function getSpectraLOB(lastVisitedPage) {
   }
 }
 
-function resolvePendingPromise(promise, resolve) {
-  const promiseTimeout = setTimeout(() => resolve(undefined), 5000);
-  promise.then((result) => {
-    clearTimeout(promiseTimeout);
-    resolve(result);
-  });
-}
-
-function awaitWindowProperty(property, timeout = 5000, interval = 100) {
-  const alloyObj = window[property];
-  if (window.location.href.includes('lobdebug')) {
-    console.log('FROM AWAIT WINDOW PROPERTY');
-    console.log(`alloyObj: ${alloyObj}`);
-    console.log(`alloyObj.then (promise?): ${alloyObj?.then}`);
-    console.log(`alloyObj.get: ${alloyObj?.get}`);
-    console.log(`alloyObj.set: ${alloyObj?.set}`);
-    console.log('tester claude');
-  }
-  if (alloyObj && !alloyObj.then && typeof alloyObj.get === 'function' && typeof alloyObj.set === 'function') return Promise.resolve(window[property]);
-  return new Promise((resolve) => {
-    let timeoutRef;
-    const intervalRef = setInterval(() => {
-      const val = window[property];
-      if (window.location.href.includes('lobdebug')) {
-        console.log('FROM INTERVAL');
-        console.log(`alloyObj: ${val}`);
-        console.log(`alloyObj.then (promise?): ${val}.${val?.then}`);
-        console.log(`alloyObj.get: ${val}.${val?.get}`);
-        console.log(`alloyObj.set: ${val}.${val?.set}`);
-      }
-      if (!val) return;
-      if (!val.then && (typeof val.get !== 'function' || typeof val.set !== 'function')) return;
-      clearTimeout(timeoutRef);
-      clearInterval(intervalRef);
-      if (val.then) resolvePendingPromise(val, resolve);
-      else resolve(val);
-    }, interval);
-
-    timeoutRef = setTimeout(() => {
-      clearInterval(intervalRef);
-      if (window[property]?.then) resolvePendingPromise(window[property], resolve);
-      else resolve(window[property]);
-    }, timeout);
-  });
-}
-
+/* eslint-disable no-underscore-dangle */
 function addAlloyTracking(lobObject) {
-  awaitWindowProperty('alloy_all').then((alloyAll) => {
-    if (window.location.href.includes('lobdebug')) {
-      console.log(`alloyAll: ${alloyAll} FOUND`);
-      const alloyObj = window['alloy_all']; // part of debug, remove when done
-      console.log('FROM addAlloyTracking FUNCTION');
-      console.log(`alloyObj: ${alloyObj}`);
-      console.log(`alloyObj.then (promise?): ${alloyObj?.then}`);
-      console.log(`alloyObj.get: ${alloyObj?.get}`);
-      console.log(`alloyObj.set: ${alloyObj?.set}`);
-    }
-    if (!alloyAll || !lobObject) return;
-    const spectraValues = {
-      modelLineOfBusiness: 'spectraLob',
-      modelScore: 'spectraScore',
-      experienceSelected: 'spectraExperience',
-    };
-    const dataObjString = 'data._adobe_corpnew.event.custom';
-    const existingCustomData = window.alloy_all?.get(window.alloy_all, dataObjString) || [];
-    window.alloy_all?.set(window.alloy_all, dataObjString, existingCustomData);
-    Object.entries(lobObject).forEach(([key, value]) => {
-      if (!spectraValues[key]) return;
-      // eslint-disable-next-line no-underscore-dangle
-      window.alloy_all?.data?._adobe_corpnew?.event?.custom
-        ?.push({ propertyName: spectraValues[key], propertyValue: value });
-    });
+  if (!lobObject) return;
+  const spectraValues = {
+    modelLineOfBusiness: 'spectraLob',
+    modelScore: 'spectraScore',
+  };
+
+  // Define helper functions for alloy_all if not already available
+  const get = (obj, path) => path.split('.').reduce((current, segment) => (current !== undefined && current !== null ? current[segment] : undefined), obj);
+  const set = (obj, path, val) => {
+    path.split('.').reduce((current, segment, index, segments) => {
+      if (index === segments.length - 1) current[segment] = val;
+      else current[segment] = current[segment] || {};
+      return current[segment];
+    }, obj);
+    return obj;
+  };
+
+  window.alloy_all = window.alloy_all || {};
+  window.alloy_all.get = window.alloy_all.get || get;
+  window.alloy_all.set = window.alloy_all.set || set;
+  const alloyAll = window.alloy_all;
+  alloyAll.data = alloyAll.data || {};
+  alloyAll.data._adobe_corpnew = alloyAll.data._adobe_corpnew || {};
+  alloyAll.data._adobe_corpnew.event = alloyAll.data._adobe_corpnew.event || {};
+  alloyAll.data._adobe_corpnew.event.custom = alloyAll.data._adobe_corpnew.event.custom || [];
+  const customEvents = alloyAll.data._adobe_corpnew.event.custom;
+  Object.entries(lobObject).forEach(([key, value]) => {
+    if (!spectraValues[key]) return;
+    customEvents.push({ propertyName: spectraValues[key], propertyValue: value });
   });
+  if (window.location.href.includes('lobdebug')) console.log('LOB raw:', customEvents, 'n', 'LOB window:', window.alloy_all.data._adobe_corpnew.event.custom);
 }
 
+/* eslint-enable no-underscore-dangle */
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
   if (window.location.hostname.includes('.aem.')) return 'cc';
