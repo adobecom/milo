@@ -92,28 +92,6 @@ function moveIndicator(indicator, target, container) {
   indicator.style.transform = `translateX(${btnRect.left - containerRect.left + container.scrollLeft}px)`;
 }
 
-function buildTabDropdown(items) {
-  const select = createTag('select', { class: 'tab-dropdown', 'aria-label': 'Select tab' });
-  items.forEach(({ id, controlId, label }, i) => {
-    const option = createTag('option', { value: controlId }, label);
-    option.dataset.tabId = id;
-    if (i === 0) option.setAttribute('selected', '');
-    select.append(option);
-  });
-  select.addEventListener('change', (e) => {
-    const selectedOption = e.target.selectedOptions[0];
-    document.getElementById(selectedOption.dataset.tabId)?.click();
-  });
-  return select;
-}
-
-function syncTabDropdown(tabsBlock, targetId) {
-  const dropdown = tabsBlock.querySelector('.tab-dropdown');
-  if (!dropdown) return;
-  const option = [...dropdown.options].find((opt) => opt.dataset.tabId === targetId);
-  if (option) dropdown.value = option.value;
-}
-
 function changeTabs(e, config) {
   const { target } = e;
   const isRadio = target.getAttribute('role') === 'radio';
@@ -153,7 +131,6 @@ function changeTabs(e, config) {
     target.style.backgroundColor = tabColor[targetId];
   }
   scrollTabIntoView(target);
-  syncTabDropdown(tabsBlock, targetId);
   content
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => {
@@ -315,7 +292,6 @@ const init = async (block) => {
   if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
-  const dropdownItems = [];
 
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
@@ -337,7 +313,6 @@ const init = async (block) => {
       const btnWrapper = createTag('div', { class: 'btn-wrapper' });
       btnWrapper.append(tabBtn);
       tabListContainer.append(btnWrapper);
-      dropdownItems.push({ id: btnId, controlId, label: item.textContent });
 
       const tabContentAttributes = {
         id: controlId,
@@ -360,9 +335,7 @@ const init = async (block) => {
   // Tab indicator (pill slider) only applies to the regular tabs UI; the radio
   // variant renders its own selection state via CSS on the radio dot instead.
   let indicator;
-  if (isRadio) {
-    tabsWrapper.append(buildTabDropdown(dropdownItems));
-  } else {
+  if (!isRadio) {
     indicator = createTag('div', { class: 'tab-indicator' });
     tabListContainer.prepend(indicator);
   }

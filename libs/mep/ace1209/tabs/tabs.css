@@ -17,10 +17,6 @@
   &.radio {
     background: transparent;
 
-    .tab-dropdown {
-      display: none;
-    }
-
     [role='radiogroup'] {
       overflow: visible;
     }
@@ -75,22 +71,6 @@
       &:focus-visible {
         outline: 2px solid var(--s2a-color-blue-800);
         outline-offset: 2px;
-      }
-    }
-
-    @media (width < 768px) {
-      [role='radiogroup'] {
-        display: none;
-      }
-
-      .tab-dropdown {
-        display: block;
-        width: 100%;
-        padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
-        border: 1px solid var(--s2a-color-gray-300);
-        border-radius: var(--pill-rounded-corners-setting);
-        background: var(--s2a-color-background-default);
-        color: var(--s2a-color-content-default);
       }
     }
   }
