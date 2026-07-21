@@ -1,0 +1,14 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "brand-concierge",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "features"
+  }
+]
