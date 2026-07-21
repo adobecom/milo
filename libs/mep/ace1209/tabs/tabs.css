@@ -22,17 +22,16 @@
     }
 
     [role='radiogroup'] {
-      display: flex;
-      align-items: center;
-      gap: var(--s2a-spacing-lg);
       overflow: visible;
-      background: var(--s2a-color-transparent-black-04);
-      border-radius: var(--pill-rounded-corners-setting);
     }
 
     .tab-list-container {
+      display: flex;
+      align-items: center;
       min-width: 0;
       gap: var(--s2a-spacing-lg);
+      background: var(--s2a-color-transparent-black-04);
+      border-radius: var(--pill-rounded-corners-setting);
       padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
     }
 
