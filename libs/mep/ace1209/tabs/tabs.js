@@ -313,7 +313,6 @@ const init = async (block) => {
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
   if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
-  tabListContainer.dataset.pretext = config.pretext;
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
   const dropdownItems = [];

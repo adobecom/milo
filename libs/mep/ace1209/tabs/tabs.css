@@ -35,12 +35,6 @@
       padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
     }
 
-    .tab-list-container::before {
-      content: attr(data-pretext);
-      color: var(--s2a-color-content-default);
-      white-space: nowrap;
-    }
-
     button.tab-button {
       display: flex;
       align-items: center;
