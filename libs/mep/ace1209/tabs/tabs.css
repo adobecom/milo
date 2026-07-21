@@ -19,58 +19,58 @@
 
     [role='radiogroup'] {
       overflow: visible;
-    }
 
-    .tab-list-container {
-      display: flex;
-      align-items: center;
-      min-width: 0;
-      gap: var(--s2a-spacing-lg);
-      background: var(--s2a-color-transparent-black-04);
-      border-radius: var(--pill-rounded-corners-setting);
-      padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
-    }
-
-    button.tab-button {
-      display: flex;
-      align-items: center;
-      gap: var(--s2a-spacing-2xs);
-      height: auto;
-      flex: 0 0 auto;
-      padding: 0;
-      background: transparent;
-      border: none;
-      color: var(--s2a-color-content-default);
-      cursor: pointer;
-      font-family: var(--body-font-family);
-      text-decoration: none;
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-      white-space: nowrap;
-
-      &::before {
-        content: '';
-        box-sizing: border-box;
-        width: 14px;
-        height: 14px;
-        min-width: 14px;
-        border: 2px solid var(--s2a-color-gray-400);
-        border-radius: 100%;
-        transition: border 150ms;
+      .tab-list-container {
+        display: flex;
+        align-items: center;
+        min-width: 0;
+        gap: var(--s2a-spacing-lg);
+        background: var(--s2a-color-transparent-black-04);
+        border-radius: var(--pill-rounded-corners-setting);
+        padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
       }
 
-      &:hover::before {
-        border-color: var(--pill-bg-color-selected);
-      }
+      button.tab-button {
+        display: flex;
+        align-items: center;
+        gap: var(--s2a-spacing-2xs);
+        height: auto;
+        flex: 0 0 auto;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: var(--s2a-color-content-default);
+        cursor: pointer;
+        font-family: var(--body-font-family);
+        text-decoration: none;
+        outline: none;
+        -webkit-tap-highlight-color: transparent;
+        white-space: nowrap;
 
-      &[aria-checked="true"]::before {
-        border-width: 5px;
-        border-color: var(--pill-bg-color-selected);
-      }
+        &::before {
+          content: '';
+          box-sizing: border-box;
+          width: 14px;
+          height: 14px;
+          min-width: 14px;
+          border: 2px solid var(--s2a-color-gray-400);
+          border-radius: 100%;
+          transition: border 150ms;
+        }
 
-      &:focus-visible {
-        outline: 2px solid var(--s2a-color-blue-800);
-        outline-offset: 2px;
+        &:hover::before {
+          border-color: var(--pill-bg-color-selected);
+        }
+
+        &[aria-checked="true"]::before {
+          border-width: 5px;
+          border-color: var(--pill-bg-color-selected);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--s2a-color-blue-800);
+          outline-offset: 2px;
+        }
       }
     }
   }

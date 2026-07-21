@@ -267,15 +267,7 @@ const init = async (block) => {
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
-  // Radio variant: the `radio` class opts in, but the top-level tabs block in a
-  // nested setup (multiple .tabs blocks in the same fragment) is never allowed
-  // to render as radio, even if it carries the class by mistake.
-  const allTabsBlocks = rootElem.querySelectorAll('.tabs');
-  const position = [...allTabsBlocks].indexOf(block) + 1;
-  const isNested = allTabsBlocks.length > 1;
-  const hasRadioVariant = block.classList.contains('radio');
-  const isRadio = hasRadioVariant && !(isNested && position === 1);
-  if (hasRadioVariant && !isRadio) block.classList.remove('radio');
+  const isRadio = block.classList.contains('radio');
 
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
