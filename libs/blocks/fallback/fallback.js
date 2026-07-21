@@ -23,6 +23,7 @@ const SYNTHETIC_BLOCKS = [
   'featured-card',
   'product-card',
   'links-card',
+  'promo-card',
   'promo-card-small',
 ];
 
