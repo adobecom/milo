@@ -482,7 +482,8 @@
   }
 
   &:lang(vi-VN),
-  &:lang(vi) {
+  &:lang(vi),
+  &:lang(he) {
     --heading-font-family: var(--body-font-family);
   }
 }
