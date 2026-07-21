@@ -21,6 +21,18 @@ function deepCopy(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+export const sanitizeConfigValue = (value) => {
+  if (typeof value !== 'string') return value;
+  return new DOMParser().parseFromString(value, 'text/html').body.textContent;
+};
+
+export const sanitizeHashConfig = (config) => {
+  if (!config || typeof config !== 'object') return config;
+  return Object.fromEntries(
+    Object.entries(config).map(([key, value]) => [key, sanitizeConfigValue(value)]),
+  );
+};
+
 /* c8 ignore next 7 */
 const getHashConfig = () => {
   const { hash } = window.location;
@@ -28,7 +40,7 @@ const getHashConfig = () => {
   window.location.hash = '';
 
   const encodedConfig = hash.startsWith('#') ? hash.substring(1) : hash;
-  return parseEncodedConfig(encodedConfig);
+  return sanitizeHashConfig(parseEncodedConfig(encodedConfig));
 };
 
 const getInitialState = (defaultState, lsKey) => {

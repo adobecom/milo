@@ -198,6 +198,7 @@ html:has(meta[name="foundation"][content="c2"]) {
 
       div[role="tablist"] {
         padding: calc(var(--s2a-spacing-xs) + var(--dialog-modal-close-size) + var(--s2a-spacing-lg)) 0 var(--s2a-spacing-xs);
+        border-radius: 0;
 
         .tab-list-container {
           margin: 0;
