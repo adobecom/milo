@@ -584,50 +584,46 @@ export function initBulkPublisherLingoMapping() {
  * data stream has not been onboarded yet and the caller should fall back to its manual setting.
  */
 export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
-  try {
-    const configJson = await fetchLingoSiteMapping(fqdn);
-    const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
-    const siteLocalesData = configJson['site-locales']?.data ?? [];
+  const configJson = await fetchLingoSiteMapping(fqdn);
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
 
-    const matched = siteQueryIndexMap.find(
-      ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
-    );
-    if (!matched) return null;
+  const matched = siteQueryIndexMap.find(
+    ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
+  );
+  if (!matched) return null;
 
-    const { uniqueSiteId } = matched;
+  const { uniqueSiteId } = matched;
 
-    let pathname = path;
-    if (!path.startsWith('/')) {
-      try {
-        pathname = new URL(path.startsWith('http') ? path : `https://${path}`).pathname;
-      } catch {
-        pathname = `/${path.split('/').slice(1).join('/')}`;
-      }
+  let pathname = path;
+  if (!path.startsWith('/')) {
+    try {
+      pathname = new URL(path.startsWith('http') ? path : `https://${path}`).pathname;
+    } catch {
+      pathname = `/${path.split('/').slice(1).join('/')}`;
     }
-    const localeStr = pathname.split('/')[1] || '';
-
-    let foundInMapping = false;
-    let isEnglishRegional = false;
-
-    for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
-      if (sid === uniqueSiteId) {
-        const baseLocale = baseSite.split('/')[1] || '';
-        if (localeStr !== '' && localeStr === baseLocale) {
-          foundInMapping = true;
-          break;
-        }
-        if (isLocaleInRegionalSites(regionalSites, localeStr)) {
-          foundInMapping = true;
-          if (baseSite === '/') isEnglishRegional = true;
-          break;
-        }
-      }
-    }
-
-    return foundInMapping && !isEnglishRegional;
-  } catch {
-    return false;
   }
+  const localeStr = pathname.split('/')[1] || '';
+
+  let foundInMapping = false;
+  let isEnglishRegional = false;
+
+  for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
+    if (sid === uniqueSiteId) {
+      const baseLocale = baseSite.split('/')[1] || '';
+      if (localeStr !== '' && localeStr === baseLocale) {
+        foundInMapping = true;
+        break;
+      }
+      if (isLocaleInRegionalSites(regionalSites, localeStr)) {
+        foundInMapping = true;
+        if (baseSite === '/') isEnglishRegional = true;
+        break;
+      }
+    }
+  }
+
+  return foundInMapping && !isEnglishRegional;
 }
 
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {

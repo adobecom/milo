@@ -1492,11 +1492,17 @@ describe('isLingoLangFirstPath', () => {
     expect(result).to.be.false;
   });
 
-  it('returns false when fetch fails', async () => {
+  it('throws when fetch fails so the caller can surface it as an error', async () => {
     window.fetch = stub().rejects(new Error('network error'));
     initBulkPublisherLingoMapping();
-    const result = await isLingoLangFirstPath('bacom', '/de/article', 'test');
-    expect(result).to.be.false;
+    let caught;
+    try {
+      await isLingoLangFirstPath('bacom', '/de/article', 'test');
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).to.be.instanceOf(Error);
+    expect(caught.message).to.equal('network error');
   });
 });
 

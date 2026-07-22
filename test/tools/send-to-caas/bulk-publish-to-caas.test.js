@@ -140,4 +140,19 @@ describe('getBulkPublishLangAttr — auto-detect Lingo matrix', () => {
     const result = await getBulkPublishLangAttr({ ...BASE, repo: 'other', autoDetectLingo: true, languageFirst: true });
     expect(result).to.equal('de-DE');
   });
+
+  it('auto-detect on, mapping fetch fails: throws so the row surfaces in the error report', async () => {
+    // A 404 or network error must not silently flip LFL to non-LFL; it should throw
+    // so bulk-publish-to-caas.js catches it and records the row as a failure.
+    window.fetch = stub().rejects(new Error('HTTP 404'));
+    initBulkPublisherLingoMapping();
+    let caught;
+    try {
+      await getBulkPublishLangAttr({ ...BASE, repo: 'bacom', autoDetectLingo: true, languageFirst: true });
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).to.be.instanceOf(Error);
+    expect(caught.message).to.equal('HTTP 404');
+  });
 });
