@@ -1390,7 +1390,7 @@ export const defaultState = {
   theme: 'lightest',
   flexCardTextSize: 'default',
   flexCardImageOptions: 'default',
-  flexCardTextAlign: 'text-left',
+  flexCardTextAlign: 'default',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
