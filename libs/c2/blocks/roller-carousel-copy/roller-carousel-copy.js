@@ -6,22 +6,66 @@ const M_BREAKPOINT = 768; // media grows / absolute-positioned panel
 const L_BREAKPOINT = 1280; // two-column layout kicks in here
 const M_TOP_INSET = 48; // M: image top margin (app-icon area) the names start below
 
-function prepPic(picture) {
+// Stash srcset/src into data-* so a stacked (on-screen) slide doesn't fetch
+// until it's hydrated. Plain loading="lazy" can't defer these — they all sit
+// in the viewport, so the browser would load every slide up front.
+function deferPic(clone) {
+  clone.querySelectorAll('source[srcset]').forEach((s) => {
+    s.dataset.srcset = s.getAttribute('srcset');
+    s.removeAttribute('srcset');
+  });
+  clone.querySelectorAll('img').forEach((img) => {
+    if (img.getAttribute('srcset')) {
+      img.dataset.srcset = img.getAttribute('srcset');
+      img.removeAttribute('srcset');
+    }
+    if (img.getAttribute('src')) {
+      img.dataset.src = img.getAttribute('src');
+      img.removeAttribute('src');
+    }
+  });
+}
+
+// Restore the stashed srcset/src, triggering the fetch.
+function hydratePic(root) {
+  if (!root) return;
+  root.querySelectorAll('source[data-srcset]').forEach((s) => {
+    s.setAttribute('srcset', s.dataset.srcset);
+    delete s.dataset.srcset;
+  });
+  root.querySelectorAll('img[data-srcset]').forEach((img) => {
+    img.setAttribute('srcset', img.dataset.srcset);
+    delete img.dataset.srcset;
+  });
+  root.querySelectorAll('img[data-src]').forEach((img) => {
+    img.setAttribute('src', img.dataset.src);
+    delete img.dataset.src;
+  });
+}
+
+function prepPic(picture, eager = false) {
   if (!picture) return null;
   const clone = picture.cloneNode(true);
-  clone.querySelectorAll('img').forEach((img) => img.removeAttribute('loading'));
+  clone.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('decoding', 'async');
+    img.setAttribute('loading', eager ? 'eager' : 'lazy');
+    if (eager) img.setAttribute('fetchpriority', 'high');
+  });
+  if (!eager) deferPic(clone);
   return clone;
+}
+
+function buildBgSlide(app, active, eager) {
+  const slide = createTag('div', { class: `rcc-bg-slide${active ? ' rcc-bg-slide--active' : ''}` });
+  const pic = prepPic(app.picture, eager);
+  if (pic) slide.append(pic);
+  slide.append(createTag('div', { class: 'rcc-bg-overlay' }));
+  return slide;
 }
 
 function buildBg(apps) {
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
-  apps.forEach((app, i) => {
-    const slide = createTag('div', { class: `rcc-bg-slide${i === 0 ? ' rcc-bg-slide--active' : ''}` });
-    const pic = prepPic(app.picture);
-    if (pic) slide.append(pic);
-    slide.append(createTag('div', { class: 'rcc-bg-overlay' }));
-    bg.append(slide);
-  });
+  apps.forEach((app, i) => bg.append(buildBgSlide(app, i === 0, i === 0)));
   return bg;
 }
 
@@ -29,9 +73,9 @@ function buildMedia(apps) {
   const wrapper = createTag('div', { class: 'rcc-media-wrapper' });
   apps.forEach((app, i) => {
     const slide = createTag('div', { class: `rcc-media-slide${i === 0 ? ' rcc-media-slide--active' : ''}` });
-    const pic = prepPic(app.picture);
+    const pic = prepPic(app.picture, i === 0);
     if (pic) slide.append(pic);
-    const iconPic = prepPic(app.icon);
+    const iconPic = prepPic(app.icon, i === 0);
     if (iconPic) {
       const iconWrap = createTag('div', { class: 'rcc-media-icon' });
       iconWrap.append(iconPic);
@@ -65,11 +109,7 @@ function buildReducedMotion(block, eyebrowText, headingText, apps) {
 
   // Static blurred background (first app image) behind the whole list.
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
-  const bgSlide = createTag('div', { class: 'rcc-bg-slide rcc-bg-slide--active' });
-  const bgPic = prepPic(apps[0].picture);
-  if (bgPic) bgSlide.append(bgPic);
-  bgSlide.append(createTag('div', { class: 'rcc-bg-overlay' }));
-  bg.append(bgSlide);
+  bg.append(buildBgSlide(apps[0], true, true));
 
   const content = createTag('div', { class: 'rcc-rm-content' });
   content.append(buildHeader(eyebrowText, headingText));
@@ -188,6 +228,40 @@ function decorate(block) {
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
   let activeIdx = 0;
 
+  // Hydrate one slide's deferred media + background images.
+  const hydrate = (idx) => {
+    if (idx < 0 || idx >= apps.length) return;
+    hydratePic(mediaSlides[idx]);
+    hydratePic(bgSlides[idx]);
+  };
+  // Only the first app loads eagerly (its media + background render the block).
+  // Every other slide stays deferred until THIS block's first images have
+  // loaded — then hydrate them ALL at once in the background so a later scroll
+  // never waits on a fetch. We key off the first app's own images (not the
+  // whole document) so it fires as soon as the block itself has rendered —
+  // neither too late for an above-fold block nor premature for a lazy one.
+  const preloadRest = () => {
+    for (let i = 1; i < apps.length; i += 1) hydrate(i);
+  };
+  const firstImgs = [
+    ...mediaSlides[0].querySelectorAll('img'),
+    ...bgSlides[0].querySelectorAll('img'),
+  ];
+  let pending = firstImgs.filter((img) => !img.complete).length;
+  if (!pending) {
+    preloadRest();
+  } else {
+    const onFirstDone = () => {
+      pending -= 1;
+      if (pending === 0) preloadRest();
+    };
+    firstImgs.forEach((img) => {
+      if (img.complete) return;
+      img.addEventListener('load', onFirstDone, { once: true });
+      img.addEventListener('error', onFirstDone, { once: true });
+    });
+  }
+
   // Swap active classes + category label — no position logic here
   const activate = (newIdx) => {
     if (newIdx === activeIdx) return;
@@ -256,7 +330,6 @@ function decorate(block) {
     activate(Math.min(Math.floor(progress), apps.length - 1));
   };
 
-  window.addEventListener('scroll', updatePosition, { passive: true });
   window.requestAnimationFrame(updatePosition);
 
   const ro = new ResizeObserver(updatePosition);
@@ -304,10 +377,13 @@ function decorate(block) {
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
-  // Also re-evaluate on scroll: if the viewport was zoomed while this block was
-  // off-screen, scrolling to it must re-check and apply reflow (resize alone
-  // won't fire again). The measurement is scroll-independent, so it's stable.
-  window.addEventListener('scroll', evaluateReflow, { passive: true });
+  // One scroll handler: reposition the roller, then re-evaluate reflow. Reflow
+  // must be re-checked on scroll too — if the viewport was zoomed while this
+  // block was off-screen, resize alone won't fire again when you reach it.
+  window.addEventListener('scroll', () => {
+    updatePosition();
+    evaluateReflow();
+  }, { passive: true });
 }
 
 export default function init(el) {
