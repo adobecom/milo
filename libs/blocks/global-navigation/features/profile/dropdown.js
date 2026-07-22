@@ -37,15 +37,14 @@ const decorateProfileLink = (service, path = '') => {
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
-// The ims_country_code cookie is set at the edge (Home EdgeWorker, MWPW-200862) from the
-// signed-in user's IMS profile country and read for pricing. The Universal Nav already
-// clears it on sign-out (nest doPreLogOutProcessing); the feds gnav renders on surfaces
-// the unav does not (e.g. business.adobe.com, news.adobe.com), so clear it here too.
-// Domain=adobe.com so one clear removes it browser-wide; also clear the host-only variant.
 const clearImsCountryCookie = () => {
-  const expired = 'Thu, 01 Jan 1970 00:00:00 GMT';
-  document.cookie = `ims_country_code=;path=/;expires=${expired};`;
-  document.cookie = `ims_country_code=;path=/;expires=${expired};domain=adobe.com;`;
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const base = 'ims_country_code=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+  const labels = host.split('.');
+  for (let i = 0; i < labels.length - 1; i += 1) {
+    document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+  }
 };
 
 class ProfileDropdown {
