@@ -195,6 +195,7 @@ const defaultOptions = {
     'contentArea.detailText': 'Card Details',
     'overlays.label.description': 'Card Labels',
     'overlays.banner.description': 'Banner Descriptions',
+    'search.search': 'Search Terms',
   },
   sort: {
     featured: 'Featured',
