@@ -45,6 +45,12 @@ export default {
         tabletLandscape: 1199,
       },
     },
+    chatTranscript: {
+      enabled: true,
+      maxSessions: 10,
+      maxMessagesPerSession: 100,
+      cleanupInterval: 24,
+    },
     meetingForm: {
       fieldsPerRow: 2,
       fieldLayoutRules: {
