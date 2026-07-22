@@ -1194,8 +1194,9 @@ class Gnav {
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+    this.reloadUnav = () => window.UniversalNav?.reload(getConfiguration());
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      this.reloadUnav();
     });
   };
 
@@ -1939,9 +1940,11 @@ export default async function init(block) {
   if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
+  window.feds = window.feds || {};
   if (!gnav.useUniversalNav && gnav.blocks?.profile?.rawElem) {
-    window.feds = window.feds || {};
     window.feds.nav = { reload: () => gnav.reloadProfile() };
+  } else if (gnav.useUniversalNav) {
+    window.feds.nav = { reloadUnav: gnav.reloadUnav };
   }
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
