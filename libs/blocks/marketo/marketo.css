@@ -256,7 +256,6 @@
   background-size: 1em 1em;
 }
 
-/* scoped to .mktoField to outrank its padding shorthand and reserve space for the arrow icon */
 .marketo .mktoForm select.mktoField {
   padding-inline-end: calc(var(--spacing-xs) + 20px);
   overflow: hidden;
@@ -268,8 +267,6 @@
   background-position: 3% 50%;
 }
 
-/* browsers default input[type="tel"] to direction:ltr regardless of page dir;
-   inherit here so it aligns the same way every other field already does */
 [dir="rtl"] .marketo .mktoForm input[type="tel"] {
   direction: inherit;
 }
