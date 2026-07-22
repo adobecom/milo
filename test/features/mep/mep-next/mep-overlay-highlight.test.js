@@ -24,6 +24,7 @@ const {
   setBadgeEventListeners,
   getPageUpdates,
 } = await import('../../../../libs/features/mep/mep-next/mep-overlay/mep-overlay-highlight.js');
+const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
 
 after(() => fetchStub.restore());
 
@@ -469,6 +470,36 @@ describe('setBadgeEventListeners', () => {
     child.getBoundingClientRect = () => ({ top: 100, left: 0 });
     testEl.append(child);
     click(testEl, 50, 200);
+    expect(windowOpenStub.called).to.be.false;
+  });
+
+  it('opens the OST URL from mepMasStudioUrls when clicking a [data-mas-block="offer"] badge', () => {
+    testEl = makeFragment({ 'data-mas-block': 'offer' });
+    mepMasStudioUrls.set(testEl, 'https://milo.adobe.com/tools/ost?osi=OSI-1&type=price');
+    click(testEl, 10, 10);
+    expect(windowOpenStub.calledOnce).to.be.true;
+    expect(windowOpenStub.firstCall.args[0]).to.equal('https://milo.adobe.com/tools/ost?osi=OSI-1&type=price');
+  });
+
+  it('opens the OST URL from mepMasStudioUrls when clicking a [data-mas-block="ost"] badge', () => {
+    testEl = makeFragment({ 'data-mas-block': 'ost' });
+    mepMasStudioUrls.set(testEl, 'https://milo.adobe.com/tools/ost?osi=OSI-2');
+    click(testEl, 10, 10);
+    expect(windowOpenStub.calledOnce).to.be.true;
+    expect(windowOpenStub.firstCall.args[0]).to.equal('https://milo.adobe.com/tools/ost?osi=OSI-2');
+  });
+
+  it('opens the Studio URL from mepMasStudioUrls when clicking a [data-mas-block="inline"] badge', () => {
+    testEl = makeFragment({ 'data-mas-block': 'inline' });
+    mepMasStudioUrls.set(testEl, 'https://mas.adobe.com/studio.html#content-type=mas-field&query=field-1');
+    click(testEl, 10, 10);
+    expect(windowOpenStub.calledOnce).to.be.true;
+    expect(windowOpenStub.firstCall.args[0]).to.include('content-type=mas-field');
+  });
+
+  it('does NOT open window for a [data-mas-block="offer"] host with no captured URL', () => {
+    testEl = makeFragment({ 'data-mas-block': 'offer' });
+    click(testEl, 10, 10);
     expect(windowOpenStub.called).to.be.false;
   });
 });

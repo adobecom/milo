@@ -1,6 +1,7 @@
 import { getConfig } from '../../../../utils/utils.js';
 import { getMarketConfig } from '../../../../utils/market.js';
 import { getFileName } from '../../../personalization/personalization.js';
+import { mepMasStudioUrls } from '../../../../blocks/merch/mas-mep-utils.js';
 import {
   watchForMasContent,
   unwatchForMasContent,
@@ -16,6 +17,8 @@ import {
   rewriteForPreviewHost,
   rewriteBlogPreviewHost,
 } from '../mep-caas.js';
+
+const MAS_PSEUDO_BADGE_SELECTOR = "[data-mas-block='offer'], [data-mas-block='inline'], [data-mas-block='ost']";
 
 export const HIGHLIGHT_KEYS = {
   mep: 'mepHighlight',
@@ -91,19 +94,20 @@ function getBadgeDimensions(beforeStyles) {
 }
 
 function getFragmentPath(fragment) {
-  const path = fragment.dataset.path || fragment.dataset.fragmentPath || fragment.dataset.cardUrl;
+  const path = fragment.dataset.path || fragment.dataset.fragmentPath || fragment.dataset.cardUrl
+    || mepMasStudioUrls.get(fragment);
   if (!fragment.dataset.cardUrl) return path;
   return rewriteBlogPreviewHost(path) || rewriteForPreviewHost(path);
 }
 
 export function setBadgeEventListeners() {
-  const FRAGMENT_SELECTOR = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url]';
+  const FRAGMENT_SELECTOR = `[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id], [data-fragment-default], [data-card-url], ${MAS_PSEUDO_BADGE_SELECTOR}`;
 
   function isInBadgeArea(x, y, topOffset, width, height) {
     return x >= 0 && x < width && y >= topOffset && y < topOffset + height;
   }
 
-  document.body.addEventListener('click', (e) => {
+  document.addEventListener('click', (e) => {
     if (e.target.closest('.mep-preview-overlay')) return;
 
     const fragment = e.target.closest(FRAGMENT_SELECTOR);
@@ -118,7 +122,7 @@ export function setBadgeEventListeners() {
 
     const handleBadgeClick = () => {
       e.preventDefault();
-      e.stopPropagation();
+      e.stopImmediatePropagation();
       if (fragmentPath) window.open(fragmentPath, '_blank');
     };
 
@@ -162,7 +166,7 @@ export function setBadgeEventListeners() {
     const inBadgeY = e.clientY >= badgeAbsTop && e.clientY < (badgeAbsTop + badgeHeight);
     const inBadgeX = e.clientX >= badgeAbsLeft && e.clientX < (badgeAbsLeft + badgeWidth);
     if (inBadgeY && inBadgeX) handleBadgeClick();
-  });
+  }, true);
 }
 
 const PAGE_UPDATE_SELECTORS = {
