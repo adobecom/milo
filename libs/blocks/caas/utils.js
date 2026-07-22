@@ -577,6 +577,56 @@ export function initBulkPublisherLingoMapping() {
   });
 }
 
+/**
+ * Returns true when the path's locale is known to require Language First Localization,
+ * false when it is known NOT to (e.g. English regional sites like gb, au, in, jp, kr),
+ * null when the origin is not present in the lingo-site-mapping at all (unboarded data
+ * stream — caller should default to non-LFL), or throws when the mapping fetch fails
+ * (caller should surface the error rather than silently misclassifying the page).
+ */
+export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
+  const configJson = await fetchLingoSiteMapping(fqdn);
+  const siteQueryIndexMap = configJson['site-query-index-map']?.data ?? [];
+  const siteLocalesData = configJson['site-locales']?.data ?? [];
+
+  const matched = siteQueryIndexMap.find(
+    ({ caasOrigin }) => caasOrigin?.toLowerCase() === origin.toLowerCase(),
+  );
+  if (!matched) return null;
+
+  const { uniqueSiteId } = matched;
+
+  let pathname = path;
+  if (!path.startsWith('/')) {
+    try {
+      pathname = new URL(path.startsWith('http') ? path : `https://${path}`).pathname;
+    } catch {
+      pathname = `/${path.split('/').slice(1).join('/')}`;
+    }
+  }
+  const localeStr = pathname.split('/')[1] || '';
+
+  let foundInMapping = false;
+  let isEnglishRegional = false;
+
+  for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
+    if (sid === uniqueSiteId) {
+      const baseLocale = baseSite.split('/')[1] || '';
+      if (localeStr !== '' && localeStr === baseLocale) {
+        foundInMapping = true;
+        break;
+      }
+      if (isLocaleInRegionalSites(regionalSites, localeStr)) {
+        foundInMapping = true;
+        if (baseSite === '/') isEnglishRegional = true;
+        break;
+      }
+    }
+  }
+
+  return foundInMapping && !isEnglishRegional;
+}
+
 async function getIsLingoLocale(origin, country, language, fqdn = 'www.adobe.com') {
   if (origin === 'news') return true;
   const configJson = await fetchLingoSiteMapping(fqdn);
