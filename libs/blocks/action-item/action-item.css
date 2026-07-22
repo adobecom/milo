@@ -6,6 +6,10 @@
   width: 100%;
 }
 
+.action-item.static-links a.static {
+  text-decoration: none;
+}
+
 .action-item img {
   display: block;
   max-height: 240px;
