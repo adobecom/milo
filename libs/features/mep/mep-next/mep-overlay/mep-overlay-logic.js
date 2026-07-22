@@ -474,7 +474,7 @@ export async function getMasRegions() {
   return lang?.supportedRegions?.split(',').map((r) => r.trim().toLowerCase()).filter(Boolean) ?? [];
 }
 
-export const TOP_MARKETS = ['', 'jp', 'us', 'ca', 'au', 'kr', 'in', 'mx', 'br', 'de', 'uk', 'fr'];
+export const TOP_MARKETS = ['', 'jp', 'us', 'ca', 'au', 'kr', 'in', 'mx', 'br', 'de', 'gb', 'fr'];
 
 export function getTopMarketsAvailability() {
   return true;
