@@ -14,9 +14,15 @@
     background: transparent;
   }
 
-  &.radio {
-    background: transparent;
-
+  /*
+   * Every variant below scopes through `> .tabs-wrapper` first. A
+   * `.tabs-wrapper` only ever contains this block's own tab list — nested
+   * tabs blocks live under `.tab-content-container` instead — so this single
+   * direct-child step guarantees a variant's rules can never bleed into a
+   * differently-classed tabs block nested inside one of this block's panels,
+   * regardless of shared class/role names further down the tree.
+   */
+  &.radio > .tabs-wrapper {
     [role='radiogroup'] {
       overflow: visible;
 
@@ -83,6 +89,50 @@
         }
       }
     }
+  }
+
+  &.radio {
+    background: transparent;
+  }
+
+  &.quiet > .tabs-wrapper {
+    [role='tablist'] {
+      background: transparent;
+      border-radius: 0;
+      padding-bottom: 20px;
+      padding-top: 20px;
+
+      .tab-list-container {
+        min-width: 0;
+        gap: var(--s2a-spacing-lg);
+      }
+
+      .btn-wrapper {
+        padding: 0;
+        align-items: center;
+        align-self: auto;
+      }
+
+      button.tab-button {
+        border-radius: 0;
+        border-width: 0;
+        border-bottom: var(--s2a-border-width-md) solid transparent;
+        padding: var(--s2a-spacing-3xs) 0;
+        height: auto;
+        flex: 0 0 auto;
+        color: var(--s2a-color-content-subtle);
+
+        &[aria-selected="true"] {
+          background: transparent;
+          color: var(--s2a-color-content-default);
+          border-bottom-color: var(--s2a-color-blue-800);
+        }
+      }
+    }
+  }
+
+  &.quiet {
+    background: transparent;
   }
 
   .tabs-wrapper {

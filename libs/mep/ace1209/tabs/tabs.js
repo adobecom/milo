@@ -268,6 +268,7 @@ const init = async (block) => {
   parentSection?.classList.add(`tablist-${tabId}-section`);
 
   const isRadio = block.classList.contains('radio');
+  const isQuiet = block.classList.contains('quiet');
 
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
@@ -304,7 +305,7 @@ const init = async (block) => {
       const btnId = `tab-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: isRadio ? 'radio' : 'tab',
-        class: 'tab-button label',
+        class: isQuiet ? 'tab-button heading-4' : 'tab-button label',
         id: btnId,
         tabindex: (i === 0) ? '0' : '-1',
         [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
@@ -336,10 +337,11 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
-  // Tab indicator (pill slider) only applies to the regular tabs UI; the radio
-  // variant renders its own selection state via CSS on the radio dot instead.
+  // Tab indicator (pill slider) only applies to the default pill tabs UI; the
+  // radio variant shows selection via the radio dot, and the quiet variant
+  // shows it via a static underline on the button itself.
   let indicator;
-  if (!isRadio) {
+  if (!isRadio && !isQuiet) {
     indicator = createTag('div', { class: 'tab-indicator' });
     tabListContainer.prepend(indicator);
   }
