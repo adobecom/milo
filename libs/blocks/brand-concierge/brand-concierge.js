@@ -504,20 +504,50 @@ function decorateBackground(el, background) {
   if (el.contains(background)) el.removeChild(background);
 }
 
-function decorateHeader(el, header) {
-  const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
-  const subTitle = header.querySelector('p');
-  const headerSection = createTag('section', { class: 'bc-header' });
+function decorateMarqueeBackground(el, background) {
+  const pictures = [...background.querySelectorAll('picture')];
+  if (!pictures.length) {
+    decorateBackground(el, background);
+    return;
+  }
+  const backgroundLayer = createTag('div', { class: 'background' });
+  if (pictures.length === 1) {
+    backgroundLayer.append(pictures[0]);
+  } else {
+    const viewports = ['desktop-only', 'tablet-only', 'mobile-only'];
+    pictures.forEach((picture, index) => {
+      backgroundLayer.append(createTag('div', { class: viewports[index] || 'mobile-only' }, picture));
+    });
+  }
+  el.prepend(backgroundLayer);
+  if (el.contains(background)) el.removeChild(background);
+}
 
-  if (hTag) {
-    hTag.classList.add('bc-header-title');
-    headerSection.append(hTag);
+function decorateHeader(el, header, { eyebrow: withEyebrow = false } = {}) {
+  const headerSection = createTag('section', { class: 'bc-header' });
+  let title;
+  let eyebrow = null;
+
+  if (withEyebrow) {
+    [eyebrow, title] = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  } else {
+    title = header.querySelector('h1, h2, h3, h4, h5, h6');
+  }
+  const subTitle = header.querySelector('p');
+
+  if (eyebrow) {
+    eyebrow.classList.add('bc-header-eyebrow');
+    headerSection.append(eyebrow);
+  }
+  if (title) {
+    title.classList.add('bc-header-title');
+    headerSection.append(title);
   }
   if (subTitle) {
     subTitle.classList.add('bc-header-subtitle');
     headerSection.append(subTitle);
   }
-  if (!hTag && !subTitle) {
+  if (!eyebrow && !title && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
 
@@ -683,6 +713,9 @@ function handleConsent(el) {
 }
 
 export default async function init(el) {
+  // Reset variant flags so each block decorates independently of any prior init.
+  Object.keys(variants).forEach((key) => delete variants[key]);
+
   handleConsent(el);
   window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
   window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
@@ -697,7 +730,9 @@ export default async function init(el) {
   setAuthoredContent(rows);
 
   // set variant
-  if (!el.classList.contains('hero')
+  if (el.classList.contains('marquee')) {
+    variants.isMarquee = true;
+  } else if (!el.classList.contains('hero')
     && !el.classList.contains('floating-button-only')
     && !el.classList.contains('floating-input-only')) {
     el.classList.add('inline');
@@ -771,6 +806,24 @@ export default async function init(el) {
     decorateInput(el, input);
     decorateCards(el, cards);
     decorateLegal(el, legal);
+  }
+
+  if (variants.isMarquee) {
+    const [background, header, cards, input, legal] = rows;
+    decorateMarqueeBackground(el, background);
+    decorateHeader(el, header, { eyebrow: true });
+    decorateInput(el, input);
+    decorateCards(el, cards);
+    decorateLegal(el, legal);
+
+    const foreground = createTag('div', { class: 'foreground container' });
+    foreground.append(
+      el.querySelector('.bc-header'),
+      el.querySelector('.bc-input-field'),
+      el.querySelector('.bc-prompt-cards'),
+      el.querySelector('.bc-legal'),
+    );
+    el.append(foreground);
   }
 
   if (variants.isFloatingInput) {
