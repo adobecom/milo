@@ -212,6 +212,15 @@ describe('Comparison Table', () => {
       const accessibilityHeaders = comparisonTable.querySelectorAll('.accessibility-header-cell[data-column-index]');
       expect(accessibilityHeaders.length).to.be.greaterThan(0);
     });
+
+    it('close icon has an accessible name distinguishing it from an empty cell', async () => {
+      await delay(100);
+      const closeIcon = comparisonTable.querySelector('.icon-close');
+      expect(closeIcon).to.exist;
+      expect(closeIcon.getAttribute('role')).to.equal('img');
+      expect(closeIcon.getAttribute('aria-label')).to.equal('not a feature');
+      expect(closeIcon.closest('.table-cell').querySelector('.sr-only')).to.not.exist;
+    });
   });
 
   describe('Mobile Filter Select', () => {

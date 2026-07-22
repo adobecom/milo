@@ -472,18 +472,25 @@ function setupResponsiveHiding(el) {
 
 function setAccessibilityLabels(el) {
   import('../../features/placeholders.js').then(({ replaceKeyArray }) => {
-    replaceKeyArray(['choose-table-column', 'empty-table-cell'], getConfig()).then(([ariaLabel, emptyText]) => {
-      [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
+    replaceKeyArray(['choose-table-column', 'empty-table-cell', 'not-a-feature'], getConfig())
+      .then(([ariaLabel, emptyText, notAFeatureText]) => {
+        [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
 
-      [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
-        const content = cellDiv.textContent.trim();
-        const hasEmptyContent = /^-+$/.test(content);
-        if (content && !hasEmptyContent) return;
-        const srOnly = createTag('span', { class: 'sr-only' }, emptyText);
-        cellDiv.appendChild(srOnly);
-        if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
+        [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
+          const closeIcon = cellDiv.querySelector('.icon-close');
+          if (closeIcon) {
+            closeIcon.setAttribute('role', 'img');
+            closeIcon.setAttribute('aria-label', notAFeatureText);
+            return;
+          }
+          const content = cellDiv.textContent.trim();
+          const hasEmptyContent = /^-+$/.test(content);
+          if (content && !hasEmptyContent) return;
+          const srOnly = createTag('span', { class: 'sr-only' }, emptyText);
+          cellDiv.appendChild(srOnly);
+          if (hasEmptyContent) cellDiv.children[0].setAttribute('aria-hidden', 'true');
+        });
       });
-    });
   });
 }
 
