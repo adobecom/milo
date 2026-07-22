@@ -268,6 +268,12 @@
   background-position: 3% 50%;
 }
 
+/* browsers default input[type="tel"] to direction:ltr regardless of page dir;
+   inherit here so it aligns the same way every other field already does */
+[dir="rtl"] .marketo .mktoForm input[type="tel"] {
+  direction: inherit;
+}
+
 .marketo .mktoForm .mktoCheckboxList input,
 .marketo .mktoForm .mktoRadioList input {
   width: auto !important;
