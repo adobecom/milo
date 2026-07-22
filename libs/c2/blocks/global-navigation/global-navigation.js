@@ -3,6 +3,7 @@ import {
   getConfig,
   getMetadata,
   localizeLink,
+  decorateLinksAsync,
   convertStageLinks,
   lingoActive,
   getLingoRegion,
@@ -63,6 +64,7 @@ export default async function init(el) {
 
   const gnavPromise = main({
     localizeLink,
+    decorateBody: (body) => decorateLinksAsync(body),
     gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
