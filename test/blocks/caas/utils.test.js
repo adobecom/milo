@@ -1018,14 +1018,14 @@ describe('getCountryAndLang', () => {
     });
   });
 
-  it('should NOT include flexCard in the config when flexCardShowDateOnFooter is disabled and all other flexCard options are default', async () => {
+  it('shoold not show date on footer when flexCardShowDateOnFooter is disabled', async () => {
     const state = {
       ...defaultState,
       cardStyle: 'flex-card',
       flexCardShowDateOnFooter: false,
     };
     const config = await getConfig(state, strings);
-    expect(config.collection).to.not.have.property('flexCard');
+    expect(config.collection.flexCard.showDateOnFooter).to.be.false;
   });
 
   it('should populate products from getProducts when detailsTextOption is productName', async () => {
