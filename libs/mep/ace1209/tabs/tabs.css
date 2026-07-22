@@ -24,22 +24,28 @@
         display: flex;
         align-items: center;
         min-width: 0;
-        gap: var(--s2a-spacing-lg);
-        background: var(--s2a-color-transparent-black-04);
+        gap: var(--s2a-spacing-md);
+        background: var(--s2a-color-background-subtle);
         border-radius: var(--pill-rounded-corners-setting);
-        padding: var(--s2a-spacing-2xs) var(--s2a-spacing-lg);
+        padding: var(--s2a-spacing-sm) var(--s2a-spacing-md);
+      }
+
+      .tab-list-label {
+        color: var(--s2a-color-content-subtle);
+        white-space: nowrap;
+        margin: 0;
       }
 
       button.tab-button {
         display: flex;
         align-items: center;
-        gap: var(--s2a-spacing-2xs);
+        gap: var(--s2a-spacing-xs);
         height: auto;
         flex: 0 0 auto;
         padding: 0;
         background: transparent;
         border: none;
-        color: var(--s2a-color-content-default);
+        color: var(--s2a-color-content-subtle);
         cursor: pointer;
         font-family: var(--body-font-family);
         text-decoration: none;
@@ -50,9 +56,9 @@
         &::before {
           content: '';
           box-sizing: border-box;
-          width: 14px;
-          height: 14px;
-          min-width: 14px;
+          width: 20px;
+          height: 20px;
+          min-width: 20px;
           border: 2px solid var(--s2a-color-gray-400);
           border-radius: 100%;
           transition: border 150ms;
@@ -62,9 +68,13 @@
           border-color: var(--pill-bg-color-selected);
         }
 
-        &[aria-checked="true"]::before {
-          border-width: 5px;
-          border-color: var(--pill-bg-color-selected);
+        &[aria-checked="true"] {
+          color: var(--s2a-color-content-default);
+
+          &::before {
+            border-width: 6px;
+            border-color: var(--pill-bg-color-selected);
+          }
         }
 
         &:focus-visible {

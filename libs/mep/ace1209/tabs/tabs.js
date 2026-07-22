@@ -280,8 +280,20 @@ const init = async (block) => {
   tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
-  const tabListLabel = config.pretext;
-  if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
+
+  // Authors can lead the tab-list cell with a <p> before the <ol> to give the
+  // radio variant a visible inline label (e.g. "Plans for:"). Non-radio tabs
+  // don't use this pattern, so a stray leading <p> there is simply dropped.
+  const tabListLabelEl = tabListContainer.querySelector(':scope > p');
+  if (tabListLabelEl && isRadio) {
+    tabListLabelEl.classList.add('tab-list-label', 'label');
+    tabListLabelEl.id = `tab-list-label-${tabId}`;
+    tabList.setAttribute('aria-labelledby', tabListLabelEl.id);
+  } else {
+    tabListLabelEl?.remove();
+    const tabListLabel = config.pretext;
+    if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
+  }
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
 
