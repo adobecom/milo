@@ -581,7 +581,7 @@ nav.feds-topnav .feds-bc-wrapper {
 @media screen and (min-width: 960px) {
   #brand-concierge-modal.dialog-modal,
   #brand-concierge-side.dialog-modal {
-    max-width: 1200px;
+    max-width: 960px;
   }
 
   body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal,
@@ -621,7 +621,8 @@ nav.feds-topnav .feds-bc-wrapper {
       margin-right: auto;
       height: calc(100vh - 48px);
       top: unset;
-      width: 100%
+      width: 100%;
+      max-width: 80vw;
     }
 
     #brand-concierge-side.dialog-modal.closing.expanded {
