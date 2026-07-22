@@ -92,7 +92,8 @@ const defaultOptions = {
     'image-small-left': 'Small Left',
   },
   flexCardTextAlign: {
-    'text-left': 'Default',
+    default: 'Default',
+    'text-left': 'Left',
     'text-center': 'Center',
     'text-justify': 'Justify',
     'text-right': 'Right',
@@ -240,6 +241,7 @@ const defaultOptions = {
   },
   detailsTextOption: {
     default: 'Default',
+    hidden: 'Hidden',
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
     staticDate: 'Static Date',
@@ -437,7 +439,7 @@ const UiPanel = () => {
       <${Input} label="Hide Details Text" prop="flexCardHideDetails" type="checkbox" />
       <${Input} label="Hide Title" prop="flexCardHideTitle" type="checkbox" />
       <${Input} label="Hide Description" prop="flexCardHideDescription" type="checkbox" />
-      <${Input} label="Hide Footer (CTA)" prop="flexCardHideFooter" type="checkbox" />
+      <${Input} label="Show Date on Footer" prop="flexCardShowDateOnFooter" type="checkbox" />
     </div>
   `;
 
