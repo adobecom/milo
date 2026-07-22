@@ -993,24 +993,25 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo, imsCountry) {
+export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo, coFromIMS) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
   const geoCountry = normCountryCode(countryFromGeo);
+  const imsCountry = normCountryCode(coFromIMS);
   return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
-  const imsCountry = normCountryCode(getCookie('ims_country_code'));
+  const coFromIMS = getCookie('ims_country_code');
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
-    imsCountry,
+    coFromIMS,
   );
   if (!detectedMarket) {
     try {
