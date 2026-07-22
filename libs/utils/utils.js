@@ -998,27 +998,13 @@ export function computeDetectedMarketCountry(search, cookieCountry, countryFromG
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
   const geoCountry = normCountryCode(countryFromGeo);
-  return countryParam || cookieCountry || imsCountry || akamaiParam || geoCountry;
+  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
-let imsLoaded;
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
-  let imsCountry = null;
-  if (!cookieMarket && getCookie('acomsis')) {
-    // eslint-disable-next-line no-use-before-define
-    if (!imsLoaded && getConfig().imsClientId) imsLoaded = loadIms();
-    if (imsLoaded) {
-      try { await imsLoaded; } catch { /* ignore */ }
-    }
-    if (window.adobeIMS?.isSignedInUser()) {
-      try {
-        const profile = await window.adobeIMS.getProfile();
-        imsCountry = normCountryCode(profile?.countryCode);
-      } catch { /* ignore */ }
-    }
-  }
+  const imsCountry = normCountryCode(getCookie('ims_country_code'));
   const countryFromGeo = await getCountry();
   let detectedMarket = computeDetectedMarketCountry(
     window.location.search,
@@ -2024,6 +2010,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
   return getMdValue(mdKey);
 };
 
+let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;

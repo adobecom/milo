@@ -2720,16 +2720,16 @@ describe('Utils', () => {
       expect(utils.computeDetectedMarketCountry('?country=lu', 'be', null)).to.equal('lu');
     });
 
-    it('prefers country cookie over akamaiLocale query param when country param absent', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', 'be', null)).to.equal('be');
+    it('prefers akamaiLocale query param over country cookie when country param absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', 'be', null)).to.equal('fr');
     });
 
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
 
-    it('prefers IMS country over akamaiLocale when no cookie', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca')).to.equal('ca');
+    it('prefers akamaiLocale over IMS country when no country cookie', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca')).to.equal('fr');
     });
 
     it('prefers country cookie over IMS country', () => {
@@ -3166,71 +3166,26 @@ describe('Utils', () => {
     });
   });
 
-  describe('resolveDetectedMarketCountry with IMS', () => {
-    beforeEach(() => {
-      sessionStorage.removeItem('akamai');
-      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      document.cookie = 'acomsis=1; path=/';
-    });
-
+  describe('resolveDetectedMarketCountry with ims_country_code cookie', () => {
     afterEach(() => {
-      delete window.adobeIMS;
       sessionStorage.removeItem('akamai');
       document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      document.cookie = 'acomsis=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'ims_country_code=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     });
 
-    it('uses IMS country code for signed-in users when no cookie', async () => {
-      window.adobeIMS = {
-        isSignedInUser: () => true,
-        getProfile: () => Promise.resolve({ countryCode: 'CA' }),
-      };
+    it('uses ims_country_code cookie when no country cookie', async () => {
+      document.cookie = 'ims_country_code=CA; path=/';
       sessionStorage.setItem('akamai', 'fr');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('ca');
     });
 
-    it('prefers country cookie over IMS country and skips getProfile', async () => {
+    it('prefers country cookie over ims_country_code cookie', async () => {
       document.cookie = 'country=be; path=/';
+      document.cookie = 'ims_country_code=CA; path=/';
       sessionStorage.setItem('akamai', 'fr');
-      let profileCalled = false;
-      window.adobeIMS = {
-        isSignedInUser: () => true,
-        getProfile: () => { profileCalled = true; return Promise.resolve({ countryCode: 'CA' }); },
-      };
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.equal('be');
-      expect(profileCalled).to.be.false;
-    });
-
-    it('ignores IMS country when user is not signed in', async () => {
-      window.adobeIMS = { isSignedInUser: () => false };
-      sessionStorage.setItem('akamai', 'fr');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('fr');
-    });
-
-    it('falls back gracefully when getProfile rejects', async () => {
-      window.adobeIMS = {
-        isSignedInUser: () => true,
-        getProfile: () => Promise.reject(new Error('IMS error')),
-      };
-      sessionStorage.setItem('akamai', 'de');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('de');
-    });
-
-    it('skips IMS lookup when acomsis cookie is absent', async () => {
-      document.cookie = 'acomsis=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
-      let profileCalled = false;
-      window.adobeIMS = {
-        isSignedInUser: () => true,
-        getProfile: () => { profileCalled = true; return Promise.resolve({ countryCode: 'CA' }); },
-      };
-      sessionStorage.setItem('akamai', 'fr');
-      const result = await utils.resolveDetectedMarketCountry();
-      expect(result).to.equal('fr');
-      expect(profileCalled).to.be.false;
     });
   });
 });
