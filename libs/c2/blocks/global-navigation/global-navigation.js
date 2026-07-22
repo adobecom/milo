@@ -39,9 +39,17 @@ export default async function init(el) {
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
   const placeholdersPromise = (async () => {
-    const { fetchPlaceholders } = await import('../../../features/placeholders.js');
+    const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
     const placeholders = await fetchPlaceholders({ config });
-    return new Map(Object.entries(placeholders));
+    const map = new Map(Object.entries(placeholders));
+    // Federal replaces {{key}} tokens against this map with a flat string swap
+    // and never runs milo's geo-aware decoration, so merge geo-IP overrides in
+    // here — otherwise {{…-geo-ip}} tokens in the gnav resolve to the base value.
+    if (lingoActive()) {
+      const geoIp = await getGeoIpPlaceholders(config);
+      geoIp?.forEach((value, key) => map.set(key, value));
+    }
+    return map;
   })();
   // for now we only support inBlock commands.
   // Since MEP on gnav is relatively rare we'll
