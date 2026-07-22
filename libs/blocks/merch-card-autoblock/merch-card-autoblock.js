@@ -1,7 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
-import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
   createAemFragment,
@@ -152,6 +151,7 @@ export async function createCard(el, options) {
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   // For the "Edit Card" mep preview badge.
   if (getConfig()?.mep?.preview) {
+    const { mepMasStudioUrls } = await import('../merch/mas-mep-utils.js');
     mepMasStudioUrls.set(merchCard, el.href);
     merchCard.dataset.masBlock = 'card';
   }
@@ -176,6 +176,7 @@ async function createInline(el, options) {
   const aemFragment = createAemFragment(options, seenFragments);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   if (getConfig()?.mep?.preview) {
+    const { mepMasStudioUrls } = await import('../merch/mas-mep-utils.js');
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
