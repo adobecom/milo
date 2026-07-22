@@ -60,6 +60,7 @@ module.exports = {
   ignorePatterns: [
     '/libs/deps/*',
     '/tools/loc/*',
+    '/tools/send-to-caas/caas-payload-builder.js',
     '/libs/features/spectrum-web-components/*',
     '/libs/navigation/dist/*',
   ],
