@@ -11,6 +11,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   createTag,
+  loadBlock,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
@@ -577,6 +578,13 @@ export function trigger({
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
+export async function resolveMerchCardFields(content, loader = loadBlock) {
+  const fields = content.querySelectorAll(
+    'a.merch-card-autoblock.link-block[href*="field="]',
+  );
+  await Promise.all([...fields].map((field) => loader(field)));
+}
+
 export async function fetchAndProcessPlainHtml({
   url,
   plainHTMLPromise = null,
@@ -657,6 +665,7 @@ export async function fetchAndProcessPlainHtml({
   }
 
   body.innerHTML = await replaceText(body.innerHTML, getFedsPlaceholderConfig());
+  if (shouldDecorateLinks) await resolveMerchCardFields(body);
   return body;
 }
 
