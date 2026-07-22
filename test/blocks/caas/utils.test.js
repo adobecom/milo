@@ -1009,7 +1009,7 @@ describe('getCountryAndLang', () => {
     const config = await getConfig(state, strings);
     expect(config.collection.flexCard).to.deep.equal({
       imageOption: 'default',
-      textAlign: 'text-left',
+      textAlign: 'default',
       textSize: 'default',
       hideDetails: false,
       hideTitle: false,
