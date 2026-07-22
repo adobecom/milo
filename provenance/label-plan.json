@@ -1,0 +1,38 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "news",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "light"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "light"
+  },
+  {
+    "idx": 3,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "dark"
+  },
+  {
+    "idx": 4,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "dark"
+  },
+  {
+    "idx": 5,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  }
+]
