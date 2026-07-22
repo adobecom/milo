@@ -189,6 +189,7 @@ export default function init(el) {
   addCloseAnimation(el);
   addScrollCloseSync(el);
   addOutsideClickClose(el);
+  el.closest('.fragment')?.setAttribute('tabindex', '-1'); // prevent Firefox scroll-focus
   window.addEventListener('milo:modal:loaded', () => {
     el.querySelector('.tour-header .eyebrow')?.focus();
   }, { once: true });
