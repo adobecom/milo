@@ -2686,6 +2686,43 @@ export function partition(arr, fn) {
   );
 }
 
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs')?.trim().toLowerCase();
+  if (masLibs) {
+    let baseUrl;
+    if (masLibs === 'local') baseUrl = 'http://localhost:3000';
+    else if (masLibs === 'main') baseUrl = 'https://main--mas--adobecom.aem.live';
+    else {
+      const branch = masLibs.includes('--') ? masLibs : `${masLibs}--mas--adobecom`;
+      baseUrl = `https://${branch}.aem.live`;
+    }
+    return `${baseUrl}/web-components/dist/${component}`;
+  }
+
+  return `https://main--mas--adobecom.aem.live/web-components/dist/${component}`;
+}
+
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('mas-field.js'),
+  ],
+  merch: [
+    getMasDepUrl('commerce.js'),
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
@@ -2696,6 +2733,9 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
     loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 

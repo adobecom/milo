@@ -3,7 +3,6 @@ import {
   shouldAllowKrTrial, getCountry,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { mepMasStudioUrls } from './mas-mep-utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -1116,27 +1115,26 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(COMMERCE_LIBRARY);
-
-      // Load fragment-client.js when maslibs is present
-      const fragmentClientUrl = getFragmentClientUrl();
-      if (fragmentClientUrl) {
-        const { loadScript: loadScriptUtil } = await import('../../utils/utils.js');
-        try {
-          await loadScriptUtil(fragmentClientUrl, 'module');
-        } catch (e) {
-          log?.error('Failed to load fragment-client.js:', e);
-        }
-      }
-
-      const { language, locale, country } = await getLocaleSettings(miloLocale);
       const useGeoMarket = isMasGeoDetectionEnabled();
+
+      // Load all independent resources in parallel
+      const fragmentClientUrl = getFragmentClientUrl();
+      const localeSettingsPromise = getLocaleSettings(miloLocale);
+      const [, , { language, locale, country }, validatedMarket] = await Promise.all([
+        loadMasComponent(COMMERCE_LIBRARY),
+        fragmentClientUrl
+          ? loadScript(fragmentClientUrl, 'module').catch((e) => {
+            log?.error('Failed to load fragment-client.js:', e);
+          })
+          : Promise.resolve(),
+        localeSettingsPromise,
+        useGeoMarket
+          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          : Promise.resolve(null),
+      ]);
+
       let countryFromMarket = country;
-      if (useGeoMarket) {
-        const { getValidatedMarket } = await import('../../utils/market.js');
-        const validatedMarket = await getValidatedMarket();
-        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
-      }
+      if (useGeoMarket && validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
@@ -1623,6 +1621,7 @@ export default async function init(el) {
     // Rebuilt merch href keeps only the OSI; stash the original for
     // the "Edit OSI" badge.
     if (getConfig()?.mep?.preview) {
+      const { mepMasStudioUrls } = await import('./mas-mep-utils.js');
       mepMasStudioUrls.set(merch, el.href);
       merch.dataset.masBlock = 'ost';
     }
