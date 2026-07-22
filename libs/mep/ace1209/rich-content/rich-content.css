@@ -574,8 +574,8 @@
     line-height: 1;
     will-change: opacity, transform, translate;
     animation:
-      stack-title-stagger var(--paralax-easing) both,
-      stack-title-card-match var(--paralax-easing) both;
+      stack-title-stagger var(--parallax-easing) both,
+      stack-title-card-match var(--parallax-easing) both;
     animation-timeline: --stack-title-vt, --section-vt;
     animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
   }
