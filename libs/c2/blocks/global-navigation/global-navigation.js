@@ -37,6 +37,9 @@ export default async function init(el) {
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
+  const isGnavOverrideOnC1 = getMetadata('foundation') !== 'c2' && getMetadata('gnav-foundation') === 'c2';
+  if (isGnavOverrideOnC1) el.classList.add('gnav-c1-host');
+
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders } = await import('../../../features/placeholders.js');
     const placeholders = await fetchPlaceholders({ config });
