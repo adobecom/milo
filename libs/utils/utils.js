@@ -677,14 +677,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain) {
+function processQueryIndexMap(link, domain, fetchOptions = {}) {
   const result = {
     pathsRequest: null,
     requestResolved: false,
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(`${link}?limit=30000`)
+  result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -744,12 +744,16 @@ async function loadQueryIndexes(prefix, links = []) {
   const host = window.location.hostname;
   const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
-  queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
+  const primaryUrl = indexUrl(prefix);
+  queryIndexes[siteId] = processQueryIndexMap(primaryUrl, host);
 
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
+  const baseUrl = indexUrl(basePfx, '');
+  baseQueryIndex = primaryUrl === baseUrl
+    ? queryIndexes[siteId]
+    : processQueryIndexMap(baseUrl, host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
@@ -771,23 +775,37 @@ async function loadQueryIndexes(prefix, links = []) {
         });
       }
 
-      siteQueryIndexMapLingo
+      const crossSiteEntries = siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
-          const hasRegional = localesData
-            .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
-          if (!hasRegional) return;
-          const prodDomain = getDomainLingo(queryIndexWebPath);
-          const { url, host: envHost } = resolveCrossSiteIndex(
-            { queryIndexWebPath, stageHost },
-            prefix,
-            suffix,
-            window.location.hostname,
-          );
-          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
-          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
-        });
+        .filter(({ uniqueSiteId: uid }) => localesData
+          .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix)));
+
+      const startCrossSiteIndex = (entry, fetchOptions = {}) => {
+        const { uniqueSiteId: uid, queryIndexWebPath, stageHost } = entry;
+        const prodDomain = getDomainLingo(queryIndexWebPath);
+        const { url, host: envHost } = resolveCrossSiteIndex(
+          { queryIndexWebPath, stageHost },
+          prefix,
+          suffix,
+          window.location.hostname,
+        );
+        queryIndexes[uid] = processQueryIndexMap(url, prodDomain, fetchOptions);
+        if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
+      };
+
+      const priorityEntries = crossSiteEntries.filter((d) => d.fetchPriority === 'yes');
+      priorityEntries.forEach((d) => startCrossSiteIndex(d));
+
+      await Promise.all([
+        queryIndexes[siteId]?.pathsRequest,
+        baseQueryIndex?.pathsRequest,
+        ...priorityEntries.map((d) => queryIndexes[d.uniqueSiteId]?.pathsRequest),
+      ].filter(Boolean));
+
+      crossSiteEntries
+        .filter((d) => d.fetchPriority !== 'yes')
+        .forEach((d) => startCrossSiteIndex(d, { priority: 'low' }));
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
@@ -1004,20 +1022,11 @@ export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
-  let detectedMarket = computeDetectedMarketCountry(
+  return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
   );
-  if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = normCountryCode(await getAkamaiCode());
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-    }
-  }
-  return detectedMarket;
 }
 
 export async function getLingoRegion({ useGeoLocation = false } = {}) {
@@ -1165,7 +1174,10 @@ export function localizeLink(
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
+  const selector = rel === 'stylesheet'
+    ? `link[href="${href}"][rel="stylesheet"]`
+    : `link[href="${href}"]`;
+  let link = document.head.querySelector(selector);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -2157,7 +2169,11 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
-  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  const { base } = getConfig();
+  loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
@@ -2674,7 +2690,10 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
-    loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
@@ -2768,15 +2787,19 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
+  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
+  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
+
+  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
+    loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  }
+
+  if (isLingoActive) loadLingoIndexes(area);
+
   if (isDoc) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-
-  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
-  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
-
-  if (isLingoActive) loadLingoIndexes(area);
 
   const areaBlocks = [];
   let lcpSectionId = null;
