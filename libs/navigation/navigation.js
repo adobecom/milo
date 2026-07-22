@@ -126,6 +126,7 @@ export default async function loadBlock(configs, customLib) {
   if (useLocal) {
     miloLibs = 'http://localhost:6456';
   }
+  const isC2Gnav = header?.foundation === 'c2';
   // The below css imports will fail when using the non-bundled standalone gnav
   // and fallback to using loadStyle. On the other hand, the bundler will rewrite
   // the css imports to attach the styles to the head (and point to the dist folder
@@ -135,14 +136,18 @@ export default async function loadBlock(configs, customLib) {
     if (theme === 'dark') {
       await import('./dark-nav.css');
     }
-    await import('./navigation.css');
+    if (isC2Gnav) {
+      await import('./navigation-c2.css');
+    } else {
+      await import('./navigation.css');
+    }
   } catch (e) {
     if (theme === 'dark') {
       loadStyle(`${miloLibs}/libs/navigation/base.css`, () => loadStyle(`${miloLibs}/libs/navigation/dark-nav.css`));
     } else {
       loadStyle(`${miloLibs}/libs/navigation/base.css`);
     }
-    loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
+    loadStyle(`${miloLibs}/libs/navigation/${isC2Gnav ? 'navigation-c2.css' : 'navigation.css'}`);
   }
 
   const origin = getStandaloneNavOrigin(env);
@@ -197,6 +202,7 @@ export default async function loadBlock(configs, customLib) {
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
             promoSource,
+            gnavFoundation: isC2Gnav ? 'c2' : undefined,
           };
           const metaTags = [
             { key: 'gnavSource', name: 'gnav-source' },
@@ -205,12 +211,20 @@ export default async function loadBlock(configs, customLib) {
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
             { key: 'promoSource', name: 'gnav-promo-source' },
+            { key: 'gnavFoundation', name: 'gnav-foundation' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
-          const { default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js');
+          let init;
+          let closeGnavOptions;
+          let updateGnavActiveLink;
+          if (isC2Gnav) {
+            ({ default: init } = await import('../c2/blocks/global-navigation/global-navigation.js'));
+          } else {
+            ({ default: init, closeGnavOptions, updateGnavActiveLink } = await import('../blocks/global-navigation/global-navigation.js'));
+          }
           await bootstrapBlock(init, gnavConfigs);
-          window.closeGnav = closeGnavOptions;
-          window.updateGnavActiveLink = updateGnavActiveLink;
+          if (closeGnavOptions) window.closeGnav = closeGnavOptions;
+          if (updateGnavActiveLink) window.updateGnavActiveLink = updateGnavActiveLink;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);
