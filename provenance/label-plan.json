@@ -1,0 +1,38 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "marquee"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "rich-content"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "rich-content"
+  },
+  {
+    "idx": 3,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "rich-content"
+  },
+  {
+    "idx": 4,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "rich-content"
+  },
+  {
+    "idx": 5,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "rich-content"
+  }
+]
