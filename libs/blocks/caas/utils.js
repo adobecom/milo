@@ -580,8 +580,9 @@ export function initBulkPublisherLingoMapping() {
 /**
  * Returns true when the path's locale is known to require Language First Localization,
  * false when it is known NOT to (e.g. English regional sites like gb, au, in, jp, kr),
- * and null when the origin is not present in the lingo-site-mapping at all — meaning the
- * data stream has not been onboarded yet and the caller should fall back to its manual setting.
+ * null when the origin is not present in the lingo-site-mapping at all (unboarded data
+ * stream — caller should default to non-LFL), or throws when the mapping fetch fails
+ * (caller should surface the error rather than silently misclassifying the page).
  */
 export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com') {
   const configJson = await fetchLingoSiteMapping(fqdn);
