@@ -1,13 +1,16 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import experiments from './mocks/preview.js';
 
-document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
+document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
-  default: decoratePreviewMode,
   escapeHtml,
   parsePageAndUrl,
+  getMepPopup,
+  saveToMmm,
+  API_URLS,
+} = await import('../../../../libs/features/mep/mep-next/mep-next.js');
+const {
   injectMasBadges,
   removeMasBadges,
   updateMasNoContentMessage,
@@ -17,11 +20,10 @@ const {
   toFragmentEditorUrl,
   watchForMasContent,
   MAS_RESTAMP_DEBOUNCE_MS,
-} = await import('../../../libs/features/personalization/preview.js');
-const { setConfig, updateConfig, MILO_EVENTS, createTag, getConfig } = await import('../../../libs/utils/utils.js');
-const { mepMasStudioUrls } = await import('../../../libs/blocks/merch/mas-mep-utils.js');
-const { mepMasSubCollections } = await import('../../../libs/features/personalization/preview-mas-subcollection.js');
-const { mepCaasConfigUrls } = await import('../../../libs/blocks/caas/utils.js');
+} = await import('../../../../libs/features/mep/mep-next/mep-mas.js');
+const { setConfig, createTag, getConfig } = await import('../../../../libs/utils/utils.js');
+const { mepMasStudioUrls } = await import('../../../../libs/blocks/merch/mas-mep-utils.js');
+const { mepMasSubCollections } = await import('../../../../libs/features/mep/mep-next/mep-mas-subcollection.js');
 
 const config = {
   miloLibs: 'https://main--milo--adobecom.aem.live/libs',
@@ -116,94 +118,6 @@ describe('preview feature', () => {
   afterEach(() => {
     delete window.lenis;
   });
-  it('builds with 0 manifests', async () => {
-    await decoratePreviewMode();
-    const event = new Event(MILO_EVENTS.DEFERRED);
-    document.dispatchEvent(event);
-    expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-  });
-  it('expand and close panel, expand and close advance, remove button', () => {
-    expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
-    document.querySelector('.mep-badge').click();
-    expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('');
-    document.querySelector('.mep-badge').click();
-    expect(document.querySelector('.mep-preview-overlay > div').className).to.equal('mep-hidden');
-    document.querySelector('.mep-close').click();
-    expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(0);
-  });
-  it('showPopover is deferred until badge click, not called on init', async () => {
-    await decoratePreviewMode();
-    const overlay = document.querySelector('.mep-preview-overlay');
-    const showPopover = sinon.stub();
-    overlay.showPopover = showPopover;
-    expect(showPopover.called).to.be.false;
-    document.querySelector('.mep-badge').click();
-    expect(showPopover.calledOnce).to.be.true;
-    document.querySelector('.mep-badge').click();
-    expect(showPopover.calledOnce).to.be.true;
-  });
-  it('close button does not throw when overlay is already removed', async () => {
-    await decoratePreviewMode();
-    const closeBtn = document.querySelector('.mep-close');
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-    expect(() => closeBtn.click()).to.not.throw();
-  });
-  it('Lenis prevent callback is restored after close', async () => {
-    const originalPrevent = sinon.stub().returns(false);
-    window.lenis = { options: { prevent: originalPrevent } };
-    await decoratePreviewMode();
-    const patchedPrevent = window.lenis.options.prevent;
-    expect(patchedPrevent).to.not.equal(originalPrevent);
-    document.querySelector('.mep-close').click();
-    expect(window.lenis.options.prevent).to.equal(originalPrevent);
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-  });
-  it('Lenis prevent returns true for nodes inside the overlay, delegates otherwise', async () => {
-    const originalPrevent = sinon.stub().returns(false);
-    window.lenis = { options: { prevent: originalPrevent } };
-    await decoratePreviewMode();
-    const { prevent } = window.lenis.options;
-    const insideNode = document.querySelector('.mep-preview-overlay');
-    expect(prevent(insideNode)).to.be.true;
-    const outsideNode = document.body;
-    prevent(outsideNode);
-    expect(originalPrevent.calledWith(outsideNode)).to.be.true;
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-  });
-  it('builds with multiple manifests', async () => {
-    config.mep.experiments = experiments;
-    setConfig(config);
-    await decoratePreviewMode();
-    expect(document.querySelectorAll('.mep-preview-overlay').length).to.equal(1);
-  });
-  it('adds highlights', () => {
-    expect(document.querySelector('[data-path="/fragments/fragmentreplaced"]').getAttribute('data-manifest-id')).to.equal('selected-example.json');
-    expect(document.querySelector('.marquee').getAttribute('data-code-manifest-id')).to.equal('selected-example.json');
-    expect(document.querySelector('header').getAttribute('data-manifest-id')).to.equal('selected-example.json');
-  });
-  it('adjusts highlights for merch cards', () => {
-    const card = document.querySelector('merch-card');
-    expect(card.getAttribute('data-manifest-id')).to.equal('selected-example.json');
-    expect(card.getAttribute('data-fragment-path')).to.equal('/fragments/replaced-merch-card');
-    expect(card.getAttribute('data-manifest-display')).to.equal('selected-example.json: /fragments/replaced-merch-card');
-  });
-  it('preselects form inputs', () => {
-    expect(document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="target-smb"]').getAttribute('selected')).to.equal('');
-    expect(document.querySelector('option[name*="/homepage/fragments/mep/default-selected.json"][value="default"]').getAttribute('selected')).to.equal('');
-    expect(document.querySelector('input#mepHighlightCheckbox').getAttribute('checked')).to.equal('checked');
-  });
-  it('updates preview button', () => {
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-    document.querySelector('.new-manifest').value = 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/new-manifest.json';
-    document.querySelector('option[name*="/homepage/fragments/mep/selected-example.json"][value="default"]').closest('select').dispatchEvent(new Event('change'));
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('new-manifest.json');
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('%2Fhomepage%2Ffragments%2Fmep%2Fselected-example.json--target-smb');
-    document.querySelector('input#mepHighlightCheckbox').click();
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.not.contain('mepHighlight');
-    document.querySelector('input#mepPreviewButtonCheckbox').click();
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('mepButton=off');
-    expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-  });
   it('parse url and page for stage', () => {
     const { url, page } = parsePageAndUrl(config, new URL('https://www.stage.adobe.com/fr/products/photoshop.html'), 'fr');
     expect(url).to.equal('https://www.adobe.com/fr/products/photoshop.html');
@@ -242,332 +156,6 @@ describe('preview feature', () => {
     const { url, page } = parsePageAndUrl(config, new URL('https://www.stage.adobe.com/events/2024-10-31.html'), '');
     expect(url).to.equal('https://www.adobe.com/events/2024-10-31.html');
     expect(page).to.equal('/events/2024-10-31.html');
-  });
-  it('opens manifest', () => {
-    document.querySelector('a.mep-edit-manifest').click();
-  });
-});
-
-describe('MEP Lingo region select with lingo param', () => {
-  let fetchStub;
-  let lingoMeta;
-
-  beforeEach(() => {
-    // Use meta tag instead of URL param because PAGE_URL is captured at module load time
-    lingoMeta = document.createElement('meta');
-    lingoMeta.setAttribute('name', 'langfirst');
-    lingoMeta.setAttribute('content', 'on');
-    document.head.appendChild(lingoMeta);
-
-    fetchStub = sinon.stub(window, 'fetch').resolves({ ok: true, status: 200 });
-  });
-
-  afterEach(() => {
-    if (lingoMeta) lingoMeta.remove();
-    if (fetchStub) fetchStub.restore();
-
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-  });
-
-  it('creates MEP Lingo section with region dropdown when lingo is active', async () => {
-    const lingoConfig = {
-      ...config,
-      mep: {
-        ...config.mep,
-        akamaiCode: 'de',
-        consentState: { performance: true, advertising: true },
-      },
-      locale: {
-        ...config.locale,
-        prefix: '/de',
-        base: '',
-        regions: {
-          ch_de: { prefix: '/ch_de' },
-          at_de: { prefix: '/at_de' },
-        },
-      },
-    };
-    updateConfig(lingoConfig);
-    await decoratePreviewMode();
-
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    expect(popup).to.exist;
-
-    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
-    expect(regionSelect).to.exist;
-  });
-
-  it('sets akamaiLocale param when region is selected', async () => {
-    const lingoConfig = {
-      ...config,
-      mep: {
-        ...config.mep,
-        akamaiCode: 'de',
-        consentState: { performance: true, advertising: true },
-      },
-      locale: {
-        ...config.locale,
-        prefix: '/de',
-        base: '',
-        regions: {
-          ch_de: { prefix: '/ch_de' },
-          at_de: { prefix: '/at_de' },
-        },
-      },
-    };
-    updateConfig(lingoConfig);
-    await decoratePreviewMode();
-
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
-    expect(regionSelect).to.exist;
-
-    regionSelect.value = 'ch';
-    regionSelect.dispatchEvent(new Event('change'));
-
-    const previewLink = popup.querySelector('a[title="Preview above choices"]');
-    expect(previewLink.getAttribute('href')).to.include('akamaiLocale=ch');
-  });
-
-  it('removes akamaiLocale param when no region is selected', async () => {
-    const lingoConfig = {
-      ...config,
-      mep: {
-        ...config.mep,
-        akamaiCode: 'de',
-        consentState: { performance: true, advertising: true },
-      },
-      locale: {
-        ...config.locale,
-        prefix: '/de',
-        base: '',
-        regions: { ch_de: { prefix: '/ch_de' } },
-      },
-    };
-    updateConfig(lingoConfig);
-    await decoratePreviewMode();
-
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    const regionSelect = popup?.querySelector('select[id^="mepLingoRegionSelect"]');
-    expect(regionSelect).to.exist;
-
-    regionSelect.value = 'ch';
-    regionSelect.dispatchEvent(new Event('change'));
-
-    regionSelect.value = '';
-    regionSelect.dispatchEvent(new Event('change'));
-
-    const previewLink = popup.querySelector('a[title="Preview above choices"]');
-    expect(previewLink.getAttribute('href')).to.not.include('akamaiLocale');
-  });
-
-  it('escapes userCountry in Lingo summary so markup is not parsed (XSS)', async () => {
-    sessionStorage.setItem('akamai', '<img src=x onerror=alert(1)>');
-    const lingoConfig = {
-      ...config,
-      mep: {
-        ...config.mep,
-        akamaiCode: 'de',
-        consentState: { performance: true, advertising: true },
-      },
-      locale: {
-        ...config.locale,
-        prefix: '/de',
-        base: '',
-        regions: { ch_de: { prefix: '/ch_de' } },
-      },
-    };
-    updateConfig(lingoConfig);
-    await decoratePreviewMode();
-
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    const lingoSection = [...popup?.querySelectorAll('.mep-section') || []].find(
-      (sec) => sec.querySelector('h6.mep-section-header')?.textContent.trim() === 'Lingo',
-    );
-    const spans = lingoSection?.querySelectorAll('.mep-section-data span');
-    let userCountrySpan = null;
-    spans?.forEach((span, i) => {
-      if (span.textContent.trim() === 'User Country' && spans[i + 1]) {
-        userCountrySpan = spans[i + 1];
-      }
-    });
-    expect(userCountrySpan).to.exist;
-    expect(userCountrySpan.querySelector('img')).to.be.null;
-    expect(userCountrySpan.children.length).to.equal(0);
-    expect(userCountrySpan.innerHTML).to.match(/&lt;|&#60;|&#x3c;/i);
-    sessionStorage.removeItem('akamai');
-  });
-});
-
-describe('Lingo fragment click handlers', () => {
-  let windowOpenStub;
-  let testFragment;
-  let getComputedStyleStub;
-
-  beforeEach(async () => {
-    windowOpenStub = sinon.stub(window, 'open');
-    // Mock getComputedStyle to return badge styles
-    const originalGetComputedStyle = window.getComputedStyle;
-    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((element, pseudoElt) => {
-      if (pseudoElt === '::before') {
-        return {
-          display: 'block',
-          content: '"test badge"',
-          width: '400px',
-        };
-      }
-      return originalGetComputedStyle(element, pseudoElt);
-    });
-    setConfig(config);
-    await decoratePreviewMode();
-  });
-
-  afterEach(() => {
-    windowOpenStub.restore();
-    getComputedStyleStub.restore();
-    delete document.body.dataset.mepHighlight;
-    if (testFragment) {
-      testFragment.remove();
-      testFragment = null;
-    }
-  });
-
-  it('opens fragment path when clicking in badge area of mep-lingo-roc element', async () => {
-    testFragment = createTag('div', {
-      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
-      'data-path': '/fr/fragments/test',
-    });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 50,
-      clientY: 10,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
-  });
-
-  it('opens fragment path when clicking in badge area of mep-lingo-fallback element', async () => {
-    testFragment = createTag('div', {
-      'data-mep-lingo-fallback': 'fallback: /fr/fragments/test',
-      'data-path': '/fr/fragments/fallback',
-    });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 200,
-      clientY: 20,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
-  });
-
-  it('opens fragment path when clicking on data-manifest-id element with data-path', async () => {
-    testFragment = createTag('div', {
-      'data-manifest-id': 'test-manifest',
-      'data-path': '/fragments/manifest-test',
-    });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 100,
-      clientY: 15,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called, 'window.open should have been called').to.be.true;
-  });
-
-  it('does not open when click is outside badge area (too far right)', async () => {
-    testFragment = createTag('div', {
-      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
-      'data-path': '/fr/fragments/test',
-    });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 450,
-      clientY: 10,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called).to.be.false;
-  });
-
-  it('does not open when click is outside badge area (too far down)', async () => {
-    testFragment = createTag('div', {
-      'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test',
-      'data-path': '/fr/fragments/test',
-    });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 50,
-      clientY: 50,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called).to.be.false;
-  });
-
-  it('does not open when element has no data-path', async () => {
-    testFragment = createTag('div', { 'data-mep-lingo-roc': 'roc: /lu_fr/fragments/test' });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 50,
-      clientY: 10,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called).to.be.false;
-  });
-
-  it('does not trigger for elements without lingo attributes', async () => {
-    testFragment = createTag('div', { 'data-path': '/fr/fragments/test' });
-    document.body.appendChild(testFragment);
-
-    testFragment.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    const clickEvent = new MouseEvent('click', {
-      bubbles: true,
-      cancelable: true,
-      clientX: 50,
-      clientY: 10,
-    });
-    testFragment.dispatchEvent(clickEvent);
-
-    expect(windowOpenStub.called).to.be.false;
   });
 });
 
@@ -1359,74 +947,6 @@ describe('M@S card action stack', () => {
   });
 });
 
-describe('M@S markets dropdown defer-populate (cold-cache race)', () => {
-  // Covers the non-Lingo-page case (e.g., /products/photoshop) where the
-  // markets cache is cold at popup-build time. The defer-populate block in
-  // getMepPopup awaits the in-flight fetch (kicked off by decoratePreviewMode's
-  // pre-warm) and re-renders the .mep-mas-market-dropdown wrapper in place.
-  let fetchStub;
-  let resolveMarketsFetch;
-
-  beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-    // Force a cold cache so the defer-populate path actually fires.
-    delete getConfig().marketsConfig;
-
-    // Hold the markets fetch open so the popup is built BEFORE the cache
-    // resolves — this is the race we're guarding against in real pages.
-    const marketsPromise = new Promise((resolve) => { resolveMarketsFetch = resolve; });
-    fetchStub = sinon.stub(window, 'fetch').callsFake((url) => {
-      const href = typeof url === 'string' ? url : url?.url || '';
-      if (href.includes('supported-markets')) return marketsPromise;
-      return Promise.resolve({ ok: true, status: 200 });
-    });
-  });
-
-  afterEach(() => {
-    fetchStub?.restore();
-    delete getConfig().marketsConfig;
-    document.querySelectorAll('.mep-preview-overlay').forEach((el) => el.remove());
-  });
-
-  it('renders the placeholder while cold, then re-renders with markets after the fetch resolves', async () => {
-    await decoratePreviewMode();
-
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    expect(popup, 'popup should exist').to.exist;
-
-    // Pre-resolve state: no markets known, dropdown is the disabled placeholder.
-    const initialSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
-    expect(initialSelect, 'placeholder <select> should exist').to.exist;
-    expect(initialSelect.disabled, 'cold-cache select is disabled').to.be.true;
-    expect(initialSelect.querySelectorAll('option').length).to.equal(1);
-
-    // Now resolve the markets fetch with a minimal supported-markets payload.
-    resolveMarketsFetch({
-      ok: true,
-      status: 200,
-      json: async () => ({
-        languages: {
-          data: [
-            { prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,fr' },
-          ],
-        },
-      }),
-    });
-    // Flush microtasks so the .then in the defer-populate block fires.
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
-
-    // Post-resolve state: dropdown re-rendered with the supported regions.
-    const updatedSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
-    expect(updatedSelect, 'updated <select> should exist').to.exist;
-    expect(updatedSelect.disabled, 'populated select is enabled').to.be.false;
-    const values = [...updatedSelect.querySelectorAll('option')].map((o) => o.value);
-    expect(values).to.include('us');
-    expect(values).to.include('gb');
-    expect(values).to.include('fr');
-  });
-});
-
 describe('M@S highlight click-driven re-stamp (tabs / accordions / filters)', () => {
   // watchForMasContent installs a debounced document click listener that
   // re-runs injectMasBadges() so card action stacks reappear when the user
@@ -1546,562 +1066,6 @@ describe('M@S highlight MutationObserver — late <aem-fragment> injection', () 
     // Parent url uses query= for the id, so the derived child url substitutes
     // child-late into the same query= slot.
     expect(mepMasStudioUrls.get(card)).to.include('query=child-late');
-  });
-});
-
-describe('M@S summary counts (highlight-independent)', () => {
-  // The M@S section in the MEP summary tab used to count [data-mas-block="card"]
-  // and [data-mas-block="offer"] — both stamps that only get applied while
-  // highlight mode is on (annotateCollectionChildren and annotateOffers run
-  // inside injectMasBadges). Authors who opened the popup before toggling
-  // highlight saw zero offers and missing collection-child cards. The summary
-  // now counts native M@S elements directly so the numbers are honest in
-  // either mode.
-
-  beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
-    delete document.body.dataset.mepMasHighlight;
-  });
-
-  afterEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, merch-card-collection, [data-wcs-osi]').forEach((el) => el.remove());
-    delete document.body.dataset.mepMasHighlight;
-  });
-
-  // Reads the {label: count} pairs out of the M@S section of the (most recent)
-  // preview popup so each test can assert by row name.
-  function getMasSummaryRows() {
-    const popups = document.querySelectorAll('.mep-popup');
-    const popup = popups[popups.length - 1];
-    const masSection = [...popup?.querySelectorAll('.mep-section') || []].find(
-      (sec) => sec.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
-    );
-    const spans = [...(masSection?.querySelectorAll('.mep-section-data > span') || [])];
-    const rows = {};
-    for (let i = 0; i < spans.length; i += 2) {
-      rows[spans[i].textContent.trim()] = spans[i + 1]?.textContent.trim();
-    }
-    return rows;
-  }
-
-  it('counts cards and standalone offers regardless of highlight mode', async () => {
-    // Highlight is OFF — annotateCollectionChildren and annotateOffers don't
-    // run, so the previous summary (which counted [data-mas-block="card"]
-    // and [data-mas-block="offer"]) would have missed the collection-child
-    // cards and reported 0 offers. Native-element queries fix both.
-    const collectionWrap = document.createElement('div');
-    collectionWrap.dataset.masBlock = 'collection';
-    const collEl = document.createElement('merch-card-collection');
-    const childCard1 = document.createElement('merch-card');
-    const childCard2 = document.createElement('merch-card');
-    // Card-internal offers should NOT be counted in "Standalone Offers" — the
-    // per-card "View in OST" action stack already exposes them, and counting
-    // them here would inflate the row by ~5x cards. Add one to each child
-    // to prove the filter excludes them.
-    const childOffer1 = document.createElement('span');
-    childOffer1.setAttribute('is', 'inline-price');
-    childOffer1.setAttribute('data-wcs-osi', 'OSI-CHILD-1');
-    childCard1.append(childOffer1);
-    const childOffer2 = document.createElement('span');
-    childOffer2.setAttribute('is', 'inline-price');
-    childOffer2.setAttribute('data-wcs-osi', 'OSI-CHILD-2');
-    childCard2.append(childOffer2);
-    collEl.append(childCard1, childCard2);
-    collectionWrap.append(collEl);
-    document.body.append(collectionWrap);
-
-    // Standalone authored card (lives outside any collection).
-    const standaloneCard = document.createElement('merch-card');
-    document.body.append(standaloneCard);
-
-    // A standalone offer — the kind of element a notifications block or a
-    // marquee CTA exposes. Lives outside any <merch-card>, so it counts.
-    const standaloneOffer = document.createElement('span');
-    standaloneOffer.setAttribute('is', 'inline-price');
-    standaloneOffer.setAttribute('data-wcs-osi', 'OSI-STANDALONE');
-    document.body.append(standaloneOffer);
-
-    setConfig(config);
-    await decoratePreviewMode();
-
-    const rows = getMasSummaryRows();
-    expect(rows.Collections).to.equal('1');
-    expect(rows.Cards, 'Cards counts both standalone and in-collection (highlight-independent)').to.equal('3');
-    expect(
-      rows['Standalone Offers'],
-      'Standalone Offers excludes card-internal offers — only the marquee/notification-style one is counted',
-    ).to.equal('1');
-    // Surfaces Detected = Collections + Cards + Inline Fields + Standalone
-    // Offers = 1 + 3 + 0 + 1 = 5. Sub-collections are NOT in the total
-    // (see comments in buildSummaryMas).
-    expect(rows['Surfaces Detected']).to.equal('5');
-  });
-
-  it('reports captured sub-collections as a sub-row outside the Surfaces Detected total', async () => {
-    // Two collection containers: one with 3 captured sub-collections, one
-    // with 0. The summary should show "Sub-collections: 3" but leave the
-    // headline Surfaces Detected unchanged (sub-collections aren't a
-    // separate DOM surface — they live inside their parent collection).
-    const colWithSubs = document.createElement('div');
-    colWithSubs.dataset.masBlock = 'collection';
-    colWithSubs.append(document.createElement('merch-card-collection'));
-    document.body.append(colWithSubs);
-
-    const colNoSubs = document.createElement('div');
-    colNoSubs.dataset.masBlock = 'collection';
-    colNoSubs.append(document.createElement('merch-card-collection'));
-    document.body.append(colNoSubs);
-
-    // Seed the WeakMap directly — same shape attachAemLoadListener stores.
-    mepMasSubCollections.set(colWithSubs, [
-      { id: 'sub-a', label: 'Photo', queryLabel: 'photo' },
-      { id: 'sub-b', label: 'Video', queryLabel: 'video' },
-      { id: 'sub-c', label: 'Design', queryLabel: 'design' },
-    ]);
-
-    setConfig(config);
-    await decoratePreviewMode();
-
-    const rows = getMasSummaryRows();
-    expect(rows.Collections, 'two collection containers seeded').to.equal('2');
-    expect(rows['Sub-collections'], 'sums every container\'s captured sub-collection list').to.equal('3');
-    // Surfaces total stays at 2 (just the two collections) — sub-collections
-    // are explicitly excluded from the headline so we don't double-count
-    // the same on-screen content area.
-    expect(rows['Surfaces Detected']).to.equal('2');
-  });
-});
-
-describe('M@S markets UI visibility', () => {
-  // The "Use M@S markets instead" checkbox and the "Supported M@S Markets"
-  // dropdown render conditionally based on whether the page exposes Lingo
-  // regions and whether any M@S surface is on the page. This block locks in
-  // the matrix from getMepPopup's buildOptionsMasMarketSelect / toggle gate.
-
-  let lingoMeta;
-  let prevMarketsConfig;
-
-  // Common helper: seed any kind of M@S surface so hasMasSurfaces() returns
-  // true. We use a bare [data-mas-block="ost"] node because it's the cheapest
-  // surface (no custom-element registration / DOM construction needed).
-  function seedMasSurface() {
-    const el = document.createElement('div');
-    el.dataset.masBlock = 'ost';
-    document.body.append(el);
-    return el;
-  }
-
-  function lingoConfig() {
-    return {
-      ...config,
-      mep: {
-        ...config.mep,
-        akamaiCode: 'de',
-        consentState: { performance: true, advertising: true },
-      },
-      locale: {
-        ...config.locale,
-        prefix: '/de',
-        base: '',
-        regions: { ch_de: { prefix: '/ch_de' }, at_de: { prefix: '/at_de' } },
-      },
-    };
-  }
-
-  beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, [data-wcs-osi]').forEach((el) => el.remove());
-    delete document.body.dataset.mepHighlight;
-    delete document.body.dataset.mepMasHighlight;
-    // Reset to baseline (non-Lingo) config first so leftover regions from
-    // earlier tests don't make lingoActive() flip true here. setConfig
-    // REPLACES the live config, which wipes marketsConfig — so we re-seed
-    // marketsConfig AFTER. Pre-seeding lets the dropdown render with real
-    // options synchronously, avoiding the cold-cache deferred-populate
-    // path covered separately by 'M@S markets dropdown defer-populate'.
-    setConfig(config);
-    prevMarketsConfig = getConfig().marketsConfig;
-    getConfig().marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb,fr' }] } };
-  });
-
-  afterEach(() => {
-    if (lingoMeta) {
-      lingoMeta.remove();
-      lingoMeta = null;
-    }
-    document.querySelectorAll('.mep-preview-overlay, [data-mas-block], merch-card, [data-wcs-osi]').forEach((el) => el.remove());
-    delete document.body.dataset.mepHighlight;
-    delete document.body.dataset.mepMasHighlight;
-    getConfig().marketsConfig = prevMarketsConfig;
-    // Restore the baseline non-Lingo config so subsequent describes start clean.
-    setConfig(config);
-  });
-
-  function activateLingo() {
-    lingoMeta = document.createElement('meta');
-    lingoMeta.setAttribute('name', 'langfirst');
-    lingoMeta.setAttribute('content', 'on');
-    document.head.appendChild(lingoMeta);
-    updateConfig(lingoConfig());
-  }
-
-  function getActivePopup() {
-    const popups = document.querySelectorAll('.mep-popup');
-    return popups[popups.length - 1];
-  }
-
-  it('Lingo + no M@S → suppresses both the checkbox and the dropdown', async () => {
-    activateLingo();
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    expect(popup, 'popup should exist').to.exist;
-    expect(
-      popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]'),
-      'no Lingo+M@S means no toggle to switch between',
-    ).to.be.null;
-    expect(
-      popup.querySelector('.mep-mas-market-dropdown'),
-      'no M@S surface to spoof, so no dropdown either',
-    ).to.be.null;
-  });
-
-  it('Lingo + M@S, highlight OFF → checkbox shown unchecked, dropdown hidden until checkbox flips', async () => {
-    activateLingo();
-    seedMasSurface();
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
-    expect(checkbox, 'checkbox renders so user can opt into M@S spoofing').to.exist;
-    expect(checkbox.checked, 'unchecked by default until user flips it').to.be.false;
-    const dropdown = popup.querySelector('.mep-mas-market-dropdown');
-    expect(dropdown, 'dropdown is rendered but hidden').to.exist;
-    expect(dropdown.hasAttribute('hidden'), 'dropdown stays hidden behind the checkbox').to.be.true;
-    expect(
-      dropdown.classList.contains('standalone'),
-      'Lingo+M@S keeps the green-bordered companion variant',
-    ).to.be.false;
-  });
-
-  it('Lingo + M@S → user toggles Highlight M@S ON: M@S checkbox auto-checks, dropdown unhides, Lingo dropdown disables', async () => {
-    activateLingo();
-    seedMasSurface();
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    const masHighlight = popup.querySelector('input[type="checkbox"][id^="mepMasHighlightCheckbox"]');
-    const masMarketCheckbox = popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
-    const dropdown = popup.querySelector('.mep-mas-market-dropdown');
-    const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
-    expect(masMarketCheckbox.checked, 'baseline: M@S markets checkbox starts unchecked').to.be.false;
-
-    masHighlight.checked = true;
-    masHighlight.dispatchEvent(new Event('change'));
-
-    expect(masMarketCheckbox.checked, 'flipping Highlight M@S auto-checks the markets checkbox').to.be.true;
-    expect(dropdown.hasAttribute('hidden'), 'dropdown unhides as a side-effect of the checkbox flip').to.be.false;
-    expect(lingoSelect.disabled, 'Lingo dropdown disables so the user knows M@S is now driving akamaiLocale').to.be.true;
-  });
-
-  it('Lingo + M@S → ?mepMasHighlight=true URL load: highlight is on but checkbox is NOT auto-checked', async () => {
-    // Simulate the URL-driven entry path: the highlight is already considered
-    // "on" at popup-build time via the URL param. The auto-check is wired to
-    // a runtime change event, so it should NOT fire here — the user's prior
-    // Lingo dropdown choice survives.
-    const original = window.history.state;
-    window.history.replaceState(null, '', `${window.location.pathname}?mepMasHighlight=true`);
-    activateLingo();
-    seedMasSurface();
-    try {
-      await decoratePreviewMode();
-      const popup = getActivePopup();
-      const masMarketCheckbox = popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]');
-      expect(masMarketCheckbox.checked, 'URL-driven highlight does not auto-check the markets checkbox').to.be.false;
-    } finally {
-      window.history.replaceState(original, '', window.location.pathname);
-    }
-  });
-
-  it('non-Lingo + M@S → no checkbox, dropdown shown standalone (no hidden, .standalone class set)', async () => {
-    seedMasSurface();
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    expect(
-      popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]'),
-      'non-Lingo means no toggle — dropdown is the only spoofer',
-    ).to.be.null;
-    const dropdown = popup.querySelector('.mep-mas-market-dropdown');
-    expect(dropdown, 'dropdown renders unconditionally when M@S is on a non-Lingo page').to.exist;
-    expect(dropdown.hasAttribute('hidden'), 'standalone variant is always visible').to.be.false;
-    expect(
-      dropdown.classList.contains('standalone'),
-      'standalone class lets CSS drop the green-border decoration',
-    ).to.be.true;
-  });
-
-  it('non-Lingo + M@S → selecting a market writes akamaiLocale and mepMasMarket to the preview URL', async () => {
-    seedMasSurface();
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    const dropdown = popup.querySelector('select[id^="mepMasMarketSelect"]');
-    expect(dropdown, 'dropdown should exist').to.exist;
-
-    dropdown.value = 'fr';
-    dropdown.dispatchEvent(new Event('change'));
-
-    const previewLink = popup.querySelector('a[title="Preview above choices"]');
-    const href = previewLink.getAttribute('href');
-    expect(href, 'akamaiLocale gets set from the standalone dropdown').to.include('akamaiLocale=fr');
-    expect(
-      href,
-      'mepMasMarket=true persists across reload so the next popup pre-selects the same value',
-    ).to.include('mepMasMarket=true');
-  });
-
-  it('non-Lingo + no M@S → no checkbox, no dropdown', async () => {
-    await decoratePreviewMode();
-
-    const popup = getActivePopup();
-    expect(popup.querySelector('input[type="checkbox"][id^="mepMasMarketCheckbox"]')).to.be.null;
-    expect(popup.querySelector('.mep-mas-market-dropdown')).to.be.null;
-  });
-});
-
-describe('CaaS highlight badges', () => {
-  function getCaasPopup() {
-    const popups = document.querySelectorAll('.mep-popup');
-    return popups[popups.length - 1];
-  }
-
-  beforeEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
-    delete document.body.dataset.mepCaasHighlight;
-    setConfig(config);
-  });
-
-  afterEach(() => {
-    document.querySelectorAll('.mep-preview-overlay, [data-caas-block], a.mep-caas-edit-badge, [data-card-url]').forEach((el) => el.remove());
-    delete document.body.dataset.mepCaasHighlight;
-  });
-
-  it('injects an Edit in CaaS Configurator badge when the checkbox is toggled on', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-1');
-    document.body.append(block);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-
-    const badge = block.previousElementSibling;
-    expect(badge?.classList?.contains('mep-caas-edit-badge'), 'badge injected before the block').to.be.true;
-    expect(badge?.getAttribute('href')).to.equal('https://caas-config.adobe.com/config-1');
-    expect(badge?.getAttribute('target')).to.equal('_blank');
-    expect(badge?.textContent).to.equal('Edit in CaaS Configurator');
-  });
-
-  it('removes badges when the checkbox is toggled off', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-2');
-    document.body.append(block);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-    expect(block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'), 'badge present after on').to.be.true;
-
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new Event('change'));
-    expect(document.querySelector('a.mep-caas-edit-badge'), 'badge gone after off').to.be.null;
-  });
-
-  it('is idempotent — toggling on twice does not duplicate the badge', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-3');
-    document.body.append(block);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-    checkbox.dispatchEvent(new Event('change'));
-
-    expect(document.querySelectorAll('a.mep-caas-edit-badge').length).to.equal(1);
-  });
-
-  it('skips [data-caas-block] elements with no mepCaasConfigUrls entry', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    document.body.append(block);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-
-    expect(document.querySelector('a.mep-caas-edit-badge'), 'no badge without WeakMap entry').to.be.null;
-  });
-
-  it('derives data-card-path from data-card-url after badge injection', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-4');
-    document.body.append(block);
-
-    const card = document.createElement('div');
-    card.dataset.cardUrl = 'https://www.adobe.com/cards/photoshop.html';
-    document.body.append(card);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-
-    expect(card.dataset.cardPath).to.equal('/cards/photoshop.html');
-  });
-
-  it('clears data-card-path when badges are removed', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-5');
-    document.body.append(block);
-
-    const card = document.createElement('div');
-    card.dataset.cardUrl = 'https://www.adobe.com/cards/photoshop.html';
-    document.body.append(card);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-    expect(card.dataset.cardPath, 'path set after inject').to.equal('/cards/photoshop.html');
-
-    checkbox.checked = false;
-    checkbox.dispatchEvent(new Event('change'));
-    expect(card.dataset.cardPath, 'path cleared after remove').to.be.undefined;
-  });
-
-  it('auto-injects badges on decoratePreviewMode when ?mepCaasHighlight=true is in the URL', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-6');
-    document.body.append(block);
-
-    window.history.replaceState(null, '', `${window.location.pathname}?mepCaasHighlight=true`);
-    try {
-      await decoratePreviewMode();
-      expect(
-        block.previousElementSibling?.classList?.contains('mep-caas-edit-badge'),
-        'badge auto-injected from URL param on init',
-      ).to.be.true;
-    } finally {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  });
-
-  it('sets data-card-path to empty string when data-card-url is not a parseable URL', async () => {
-    const block = document.createElement('div');
-    block.dataset.caasBlock = 'true';
-    mepCaasConfigUrls.set(block, 'https://caas-config.adobe.com/config-7');
-    document.body.append(block);
-
-    const card = document.createElement('div');
-    card.dataset.cardUrl = 'just-a-bare-word-no-scheme';
-    document.body.append(card);
-
-    await decoratePreviewMode();
-    const popup = getCaasPopup();
-    const checkbox = popup.querySelector('input[type="checkbox"][id^="mepCaasHighlightCheckbox"]');
-    checkbox.checked = true;
-    checkbox.dispatchEvent(new Event('change'));
-
-    expect(card.dataset.cardPath).to.equal('');
-  });
-});
-
-describe('data-card-url click handling', () => {
-  let windowOpenStub;
-  let getComputedStyleStub;
-
-  beforeEach(async () => {
-    document.querySelectorAll('.mep-preview-overlay, [data-card-url]').forEach((el) => el.remove());
-    delete document.body.dataset.mepCaasHighlight;
-    windowOpenStub = sinon.stub(window, 'open');
-    const originalGetComputedStyle = window.getComputedStyle;
-    getComputedStyleStub = sinon.stub(window, 'getComputedStyle').callsFake((el, pseudo) => {
-      if (pseudo === '::before') return { display: 'block', content: '"badge"', width: '400px' };
-      return originalGetComputedStyle(el, pseudo);
-    });
-    setConfig(config);
-    await decoratePreviewMode();
-    document.body.dataset.mepCaasHighlight = 'true';
-  });
-
-  afterEach(() => {
-    windowOpenStub.restore();
-    getComputedStyleStub.restore();
-    delete document.body.dataset.mepCaasHighlight;
-    document.querySelectorAll('.mep-preview-overlay, [data-card-url]').forEach((el) => el.remove());
-  });
-
-  it('opens data-card-url when clicked in the badge area', () => {
-    const card = document.createElement('div');
-    card.dataset.cardUrl = 'https://business.adobe.com/foo.html';
-    document.body.append(card);
-    card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
-
-    expect(windowOpenStub.called, 'window.open called for card-url element').to.be.true;
-  });
-
-  it('rewrites a prod-domain card URL to the current host when ?milolibs= is in the URL', () => {
-    window.history.replaceState(null, '', `${window.location.pathname}?milolibs=some-branch`);
-    try {
-      const card = document.createElement('div');
-      card.dataset.cardUrl = 'https://www.adobe.com/products/photoshop.html';
-      document.body.append(card);
-      card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-      card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
-
-      expect(windowOpenStub.called).to.be.true;
-      const openedUrl = windowOpenStub.firstCall?.args[0] ?? '';
-      expect(openedUrl, 'prod domain rewritten to current host').to.include(window.location.host);
-      expect(openedUrl, 'pathname preserved').to.include('/products/photoshop.html');
-    } finally {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  });
-
-  it('does not open when all highlight modes are off', () => {
-    delete document.body.dataset.mepCaasHighlight;
-    delete document.body.dataset.mepHighlight;
-    delete document.body.dataset.mepFragments;
-    const card = document.createElement('div');
-    card.dataset.cardUrl = 'https://business.adobe.com/foo.html';
-    document.body.append(card);
-    card.getBoundingClientRect = () => ({ top: 0, left: 0, width: 500, height: 100 });
-
-    card.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 50, clientY: 10 }));
-
-    expect(windowOpenStub.called, 'no open when all highlights off').to.be.false;
   });
 });
 
@@ -2261,5 +1225,605 @@ describe('masAemLoadHandler — aem:load event handler', () => {
 
     await new Promise((resolve) => { setTimeout(resolve, MAS_RESTAMP_DEBOUNCE_MS + 100); });
     expect(document.querySelector('a.mep-mas-edit-badge'), 'collection badge injected after debounced re-stamp').to.exist;
+  });
+});
+
+describe('saveToMmm', () => {
+  let fetchStub;
+  const baseExperiment = {
+    name: 'Test Activity',
+    event: { start: '2024-01-01T00:00:00.000Z', end: '2024-01-02T00:00:00.000Z' },
+    manifest: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/test.json',
+    variantNames: ['default', 'target-smb'],
+    selectedVariantName: 'target-smb',
+    disabled: false,
+    analyticsTitle: 'Test Activity',
+    source: ['mep param', 'target'],
+    geoRestriction: 'us',
+    mktgAction: 'test-action',
+  };
+
+  beforeEach(() => {
+    config.mep.experiments = [];
+    setConfig(config);
+  });
+
+  afterEach(() => {
+    fetchStub?.restore();
+    fetchStub = undefined;
+    config.mep.experiments = [];
+    setConfig(config);
+  });
+
+  it('returns false when there is no mep config', async () => {
+    const originalMep = config.mep;
+    delete config.mep;
+    setConfig(config);
+    const result = await saveToMmm();
+    expect(result).to.be.false;
+    config.mep = originalMep;
+  });
+
+  it('returns false for excluded page URL patterns (e.g. drafts)', async () => {
+    const originalPath = window.location.pathname;
+    window.history.pushState({}, '', '/drafts/some-page');
+    config.mep.experiments = [baseExperiment];
+    setConfig(config);
+    try {
+      const result = await saveToMmm();
+      expect(result).to.be.false;
+    } finally {
+      window.history.pushState({}, '', originalPath);
+    }
+  });
+
+  it('filters activities, transforms fields, and posts the payload on success', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      json: async () => ({ result: 'ok' }),
+    });
+    config.mep.experiments = [
+      baseExperiment,
+      { // source becomes empty after removing "mep param" -> filtered out entirely
+        ...baseExperiment,
+        manifest: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/only-param.json',
+        source: ['mep param'],
+      },
+      { // excluded because its own manifest path is a draft
+        ...baseExperiment,
+        manifest: 'https://main--homepage--adobecom.aem.live/homepage/drafts/mep/draft.json',
+        source: ['target'],
+      },
+      { // invalid manifest URL -> exercises toActivity's catch branch, still survives filtering
+        ...baseExperiment,
+        manifest: 'not-a-valid-url',
+        source: ['promo'],
+      },
+    ];
+    setConfig(config);
+
+    const result = await saveToMmm();
+
+    expect(fetchStub.calledOnce).to.be.true;
+    const [url, options] = fetchStub.firstCall.args;
+    expect(url).to.equal(API_URLS.save);
+    expect(options.method).to.equal('POST');
+    const body = JSON.parse(options.body);
+    expect(body.activities.length, 'only non-draft activities with surviving sources remain').to.equal(2);
+    expect(body.activities[0].variantNames).to.equal('default||target-smb');
+    expect(body.activities[0].source).to.equal('target');
+    expect(body.activities[0]).to.not.have.property('selectedVariantName');
+    expect(body.activities[1].url).to.equal('not-a-valid-url');
+    expect(body.page).to.not.have.property('highlight');
+    expect(result).to.deep.equal({ result: 'ok' });
+  });
+
+  it('throws with the response message when the save request is not ok', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: false,
+      json: async () => ({ message: 'save failed' }),
+    });
+    config.mep.experiments = [baseExperiment];
+    setConfig(config);
+
+    let error;
+    try {
+      await saveToMmm();
+    } catch (e) {
+      error = e;
+    }
+    expect(error?.message).to.equal('save failed');
+  });
+});
+
+describe('getMepPopup', () => {
+  const popups = [];
+  let originalMarketsConfig;
+
+  function buildActivity(overrides = {}) {
+    return {
+      targetActivityName: 'Test Activity',
+      variantNames: ['variant-a', 'variant-b'],
+      selectedVariantName: 'variant-a',
+      url: 'https://main--homepage--adobecom.aem.live/homepage/fragments/mep/a.json',
+      disabled: false,
+      source: 'target',
+      analyticsTitle: 'Test',
+      eventStart: null,
+      eventEnd: null,
+      mktgAction: 'test',
+      ...overrides,
+    };
+  }
+
+  async function renderPopup(mepConfig) {
+    const popup = await getMepPopup(mepConfig);
+    document.body.append(popup);
+    popups.push(popup);
+    return popup;
+  }
+
+  beforeEach(() => {
+    originalMarketsConfig = config.marketsConfig;
+  });
+
+  afterEach(() => {
+    popups.splice(0).forEach((popup) => popup.remove());
+    document.querySelectorAll('[data-mas-block]').forEach((el) => el.remove());
+    document.querySelectorAll('meta[name="langfirst"]').forEach((el) => el.remove());
+    delete getConfig().locale.regions;
+    delete config.locale.regions;
+    if (originalMarketsConfig === undefined) {
+      delete config.marketsConfig;
+    } else {
+      config.marketsConfig = originalMarketsConfig;
+    }
+    setConfig(config);
+    window.history.replaceState({}, '', `${window.location.pathname}`);
+  });
+
+  it('renders a manifest list entry with a mismatched selectedVariantName at pageId 0, and a matching variant with a geo restriction', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [
+        buildActivity({ selectedVariantName: 'not-in-list', geoRestriction: 'us' }),
+        buildActivity({ selectedVariantName: 'variant-b' }),
+        buildActivity({ disabled: true, eventStart: null, eventEnd: null }),
+        buildActivity({ disabled: false, eventStart: '2024-01-01T00:00:00.000Z', eventEnd: null }),
+      ],
+    });
+
+    const sections = popup.querySelectorAll('.mep-section-data');
+    expect([...sections].some((data) => data.textContent.includes('Geo')), 'geo restriction row rendered').to.be.true;
+    expect([...sections].some((data) => data.textContent.includes('inactive')), 'disabled activity shows inactive').to.be.true;
+    const defaultSelectedOptions = popup.querySelectorAll('option[value="not-in-list"]');
+    // selectedVariantName not in variantNames -> falls back to default
+    expect(defaultSelectedOptions.length).to.equal(0);
+    const matchedOption = popup.querySelector('option[value="variant-b"][selected]');
+    expect(matchedOption, 'matching variant option is pre-selected').to.exist;
+  });
+
+  it('renders "0 manifests found" and a manifests-found count of 0 when there are no activities', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-empty.html', pageId: 508, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [],
+    });
+
+    expect(popup.textContent).to.include('0 manifests found');
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    expect(popup.querySelector('.mep-popup-body[active] .mep-section-data').textContent).to.include('0');
+  });
+
+  function findPageSummarySection(popup) {
+    popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+    return [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'Page',
+    );
+  }
+
+  it('setTargetOnText: falls back to page.target when target is undefined, and formats postlcp', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const undefinedTargetPopup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-target-undefined.html', pageId: 509, target: undefined, personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+    expect(findPageSummarySection(undefinedTargetPopup), 'Page summary section renders').to.exist;
+
+    const postlcpPopup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-target-postlcp.html', pageId: 510, target: 'postlcp', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+    expect(findPageSummarySection(postlcpPopup).textContent).to.include('on post LCP');
+  });
+
+  it('switches tabs via changeTab and toggles a manifest section via expandManifest', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-2.html', pageId: 501, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const [optionsTab, summaryTab] = popup.querySelectorAll('.mep-popup-tabs .mep-tab');
+    const [optionsBody, summaryBody] = popup.querySelectorAll('.mep-popup-body');
+    expect(optionsTab.hasAttribute('active')).to.be.true;
+    summaryTab.click();
+    expect(summaryTab.hasAttribute('active')).to.be.true;
+    expect(optionsTab.hasAttribute('active')).to.be.false;
+    expect(summaryBody.hasAttribute('active')).to.be.true;
+    expect(optionsBody.hasAttribute('active')).to.be.false;
+
+    const manifestToggle = popup.querySelector('.mep-manifest-title .mep-manifest-toggle');
+    const manifestInfo = popup.querySelector('.mep-manifest-info');
+    expect(manifestToggle.hasAttribute('active')).to.be.false;
+    manifestToggle.click();
+    expect(manifestToggle.hasAttribute('active')).to.be.true;
+    expect(manifestInfo.hasAttribute('active')).to.be.true;
+  });
+
+  it('checks the fragments/CaaS/M@S highlight checkboxes and selects a manifest variant', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-3.html', pageId: 502, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    popup.querySelector('#mepFragmentsCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepFragments=true');
+
+    popup.querySelector('#mepCaasHighlightCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepCaasHighlight=true');
+
+    popup.querySelector('#mepMasHighlightCheckbox-502').click();
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepMasHighlight=true');
+
+    const variantSelect = popup.querySelector('option[value="variant-b"]').closest('select');
+    variantSelect.value = 'variant-b';
+    variantSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('variant-b');
+  });
+
+  it('renders highlight checkboxes pre-checked from page/URL params, and reports geo-detection + sub-collections in the M@S summary', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    window.history.pushState({}, '', `${window.location.pathname}?mepCaasHighlight=true&mepMasHighlight=true&mas-geo-detection=on`);
+    const collection = document.createElement('div');
+    collection.dataset.masBlock = 'collection';
+    document.body.append(collection);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-4.html', pageId: 503, target: 'on', personalization: 'on', locale: 'en-US', geo: '', highlight: true, fragments: true,
+      },
+      activities: [buildActivity()],
+    });
+
+    expect(popup.querySelector('#mepHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepFragmentsCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepCaasHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+    expect(popup.querySelector('#mepMasHighlightCheckbox-503').getAttribute('checked')).to.equal('checked');
+
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    const masSection = [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+    );
+    expect(masSection.textContent).to.include('Mas Geo Detection');
+    expect(masSection.textContent).to.include('on');
+    expect(masSection.textContent).to.include('Collections');
+  });
+
+  it('reports geo-detection source from URL param when detection is off', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    window.history.pushState({}, '', `${window.location.pathname}?mas-geo-detection=off`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-5.html', pageId: 504, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const summaryTab = popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1];
+    summaryTab.click();
+    const masSection = [...popup.querySelectorAll('.mep-section')].find(
+      (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+    );
+    expect(masSection.textContent).to.include('Geo Source');
+    expect(masSection.textContent).to.include('URL param (off)');
+  });
+
+  it('reports geo-detection source from metadata when on, and from metadata when off with no URL param', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const meta = document.createElement('meta');
+    meta.setAttribute('name', 'mas-geo-detection');
+    meta.setAttribute('content', 'on');
+    document.head.append(meta);
+
+    try {
+      const popupOn = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5b.html', pageId: 513, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popupOn.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      let masSection = [...popupOn.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Metadata');
+
+      meta.setAttribute('content', 'off');
+      const popupOff = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5c.html', pageId: 514, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popupOff.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      masSection = [...popupOff.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Metadata (off)');
+    } finally {
+      meta.remove();
+    }
+  });
+
+  it('reports the page market from <mas-commerce-service country> when present', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const svc = document.createElement('mas-commerce-service');
+    svc.setAttribute('country', 'CA');
+    document.head.append(svc);
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-5d.html', pageId: 515, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+      popup.querySelectorAll('.mep-popup-tabs .mep-tab')[1].click();
+      const masSection = [...popup.querySelectorAll('.mep-section')].find(
+        (section) => section.querySelector('h6.mep-section-header')?.textContent.trim() === 'M@S',
+      );
+      expect(masSection.textContent).to.include('Page Market');
+      expect(masSection.textContent).to.include('CA');
+      expect(masSection.textContent).to.include('mas-commerce-service');
+    } finally {
+      svc.remove();
+    }
+  });
+
+  it('Lingo + M@S: auto-checks the market checkbox, toggles the market dropdown, and drives the market select', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb' }] } };
+    setConfig(config);
+    // setConfig recomputes .locale from scratch, discarding any custom fields — mutate the
+    // live config's locale directly, after setConfig (same pattern used by the
+    // getResolvedPageMarket tests above).
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' }, at_de: { prefix: '/at_de' } };
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6.html', pageId: 505, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(lingoSelect, 'Lingo region dropdown renders when lingo is active').to.exist;
+    const masMarketCheckbox = popup.querySelector('input[id^="mepMasMarketCheckbox"]');
+    expect(masMarketCheckbox, 'M@S market checkbox renders when Lingo + M@S are both present').to.exist;
+    const masMarketSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+    expect(masMarketSelect.querySelectorAll('option[value="us"], option[value="gb"]').length).to.equal(2);
+
+    const masHighlightCheckbox = popup.querySelector('input[id^="mepMasHighlightCheckbox"]');
+    expect(masMarketCheckbox.checked).to.be.false;
+    masHighlightCheckbox.checked = true;
+    masHighlightCheckbox.dispatchEvent(new Event('change'));
+    expect(masMarketCheckbox.checked, 'flipping Highlight M@S auto-checks the markets checkbox').to.be.true;
+
+    masMarketSelect.value = 'gb';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=gb');
+
+    masMarketSelect.value = '';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+
+    masMarketCheckbox.checked = false;
+    masMarketCheckbox.dispatchEvent(new Event('change'));
+    lingoSelect.value = 'ch';
+    lingoSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=ch');
+
+    lingoSelect.value = '';
+    lingoSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+  });
+
+  it('Lingo + M@S: pre-checks the market checkbox and pre-selects the Lingo region from URL params', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,gb' }] } };
+    setConfig(config);
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' }, at_de: { prefix: '/at_de' } };
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+    window.history.pushState({}, '', `${window.location.pathname}?mepMasMarket=true&akamaiLocale=ch`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6b.html', pageId: 511, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const masMarketCheckbox = popup.querySelector('input[id^="mepMasMarketCheckbox"]');
+    expect(masMarketCheckbox.getAttribute('checked')).to.equal('checked');
+    const lingoSelect = popup.querySelector('select[id^="mepLingoRegionSelect"]');
+    expect(lingoSelect.disabled, 'Lingo dropdown disabled while M@S markets drive akamaiLocale').to.be.true;
+  });
+
+  it('Lingo: pre-selects the Lingo region option matching ?akamaiLocale on initial render', async () => {
+    const langfirstMeta = document.createElement('meta');
+    langfirstMeta.setAttribute('name', 'langfirst');
+    langfirstMeta.setAttribute('content', 'on');
+    document.head.append(langfirstMeta);
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    getConfig().locale.regions = { ch_de: { prefix: '/ch_de' } };
+    window.history.pushState({}, '', `${window.location.pathname}?akamaiLocale=ch`);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-6c.html', pageId: 512, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    const preselected = popup.querySelector('select[id^="mepLingoRegionSelect"] option[value="ch"][selected]');
+    expect(preselected, 'region matching ?akamaiLocale is pre-selected').to.exist;
+  });
+
+  it('M@S only (non-Lingo): renders the standalone market dropdown and drives it directly', async () => {
+    config.marketsConfig = { languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,fr' }] } };
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const popup = await renderPopup({
+      page: {
+        url: 'https://www.adobe.com/test-page-7.html', pageId: 506, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+      },
+      activities: [buildActivity()],
+    });
+
+    expect(popup.querySelector('input[id^="mepMasMarketCheckbox"]'), 'no toggle without Lingo').to.be.null;
+    const masMarketSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+    expect(masMarketSelect.closest('.mep-mas-market-dropdown').classList.contains('standalone')).to.be.true;
+
+    masMarketSelect.value = 'fr';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('akamaiLocale=fr');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.include('mepMasMarket=true');
+
+    masMarketSelect.value = '';
+    masMarketSelect.dispatchEvent(new Event('change'));
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('akamaiLocale');
+    expect(popup.querySelector('a.con-button').getAttribute('href')).to.not.include('mepMasMarket');
+  });
+
+  it('cold market cache: renders a disabled placeholder, then re-renders with fetched markets in place', async () => {
+    delete config.marketsConfig;
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    const fetchStub = sinon.stub(window, 'fetch').resolves({
+      ok: true,
+      status: 200,
+      json: async () => ({ languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,de' }] } }),
+    });
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-8.html', pageId: 507, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+
+      const initialSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(initialSelect.disabled, 'cold cache renders a disabled placeholder select').to.be.true;
+
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const updatedSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(updatedSelect.disabled, 'select is enabled once markets resolve').to.be.false;
+      const values = [...updatedSelect.querySelectorAll('option')].map((o) => o.value);
+      expect(values).to.include('us');
+      expect(values).to.include('de');
+    } finally {
+      fetchStub.restore();
+    }
+  });
+
+  it('cold market cache: does not clobber a value the user already picked before the fetch resolves', async () => {
+    delete config.marketsConfig;
+    setConfig(config);
+    const masEl = document.createElement('div');
+    masEl.dataset.masBlock = 'ost';
+    document.body.append(masEl);
+
+    let resolveMarketsFetch;
+    const marketsPromise = new Promise((resolve) => { resolveMarketsFetch = resolve; });
+    const fetchStub = sinon.stub(window, 'fetch').returns(marketsPromise);
+
+    try {
+      const popup = await renderPopup({
+        page: {
+          url: 'https://www.adobe.com/test-page-9.html', pageId: 516, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+        },
+        activities: [buildActivity()],
+      });
+
+      const initialSelect = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      // Simulate the user picking a value on the placeholder before the fetch resolves.
+      const userOption = document.createElement('option');
+      userOption.value = 'us';
+      userOption.selected = true;
+      initialSelect.append(userOption);
+      initialSelect.value = 'us';
+
+      resolveMarketsFetch({
+        ok: true,
+        status: 200,
+        json: async () => ({ languages: { data: [{ prefix: '', defaultMarket: 'us', supportedRegions: 'us,de' }] } }),
+      });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+      const selectAfter = popup.querySelector('select[id^="mepMasMarketSelect"]');
+      expect(selectAfter, 'wrapper is not replaced when the user already made a selection').to.equal(initialSelect);
+      expect(selectAfter.value).to.equal('us');
+    } finally {
+      fetchStub.restore();
+    }
   });
 });
