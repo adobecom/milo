@@ -353,7 +353,11 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 .section-background {
   z-index: 0;
 
-  &,
+  /* Bleed -0.5px into the section background top/bottom to remove hairline gap created by
+     sub-pixel compositor (from parallax/view-timeline animations during smooth-scroll) */
+  position: absolute;
+  inset: -0.5px 0;
+
   & > * {
     position: absolute;
     inset: 0;
