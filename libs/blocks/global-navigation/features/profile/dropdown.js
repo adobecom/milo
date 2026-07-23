@@ -37,7 +37,7 @@ const decorateProfileLink = (service, path = '') => {
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
-// Account cookies set at the edge / by the unav (Domain=adobe.com) that must not outlive sign-out.
+// Domain-scoped account cookies set at the edge / by the unav that must not outlive sign-out.
 const SIGN_OUT_COOKIES = ['ims_country_code', 'acomsis', 'acomsis_stage'];
 
 const clearSignOutCookies = () => {
