@@ -207,9 +207,11 @@ function decorate(block) {
 
     // S/M: the image is bottom-anchored and, once at its min-height, rises as the
     // viewport shortens. When its top reaches the divider line above, hide it.
+    let mediaHidden = false;
     if (w < L_BREAKPOINT) {
       const dividerBottom = divider.getBoundingClientRect().bottom;
-      media.style.visibility = mediaRect.top < dividerBottom ? 'hidden' : '';
+      mediaHidden = mediaRect.top < dividerBottom;
+      media.style.visibility = mediaHidden ? 'hidden' : '';
     } else {
       media.style.visibility = '';
     }
@@ -231,10 +233,11 @@ function decorate(block) {
     //    little above the image top, and the list flows downward.
     let lineY;
     let bottomAlign;
-    if (block.classList.contains('rcc-reflow')) {
-      // Reflow (image hidden): highlight the name just below the sticky category
-      // heading — offset down ~half a name-height so it highlights a little
-      // before reaching the divider (and isn't clipped at the top).
+    if (block.classList.contains('rcc-reflow') || mediaHidden) {
+      // No visible image (reflow, or the image has scrolled up into the
+      // divider): highlight the name just below the category heading — offset
+      // down ~half a name-height so it highlights a little before the divider
+      // line and isn't clipped at the top.
       lineY = itemH * 0.5;
       bottomAlign = false;
     } else if (w >= L_BREAKPOINT) {
