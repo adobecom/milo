@@ -137,9 +137,10 @@ export default function init(el) {
     const headerInner = headerRow.querySelector(':scope > div');
     if (headerInner) {
       headerRow.replaceChildren(...headerInner.children);
-      headerRow.querySelector('p')?.classList.add('eyebrow');
+      const eyebrow = headerRow.querySelector('p');
+      eyebrow?.classList.add('eyebrow');
+      eyebrow?.setAttribute('tabindex', '-1');
       headerRow.querySelector('h3')?.classList.add('heading-6');
-      headerRow.querySelector('h3')?.setAttribute('tabindex', '0');
     }
   }
 
@@ -188,4 +189,8 @@ export default function init(el) {
   addCloseAnimation(el);
   addScrollCloseSync(el);
   addOutsideClickClose(el);
+  el.closest('.fragment')?.setAttribute('tabindex', '-1'); // prevent Firefox scroll-focus
+  window.addEventListener('milo:modal:loaded', () => {
+    el.querySelector('.tour-header .eyebrow')?.focus();
+  }, { once: true });
 }
