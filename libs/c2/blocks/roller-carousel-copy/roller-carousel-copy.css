@@ -186,7 +186,7 @@
   position: absolute;
   /* S: image sticks to the bottom-right corner (per Figma). */
   right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
-  bottom: var(--s2a-spacing-md);  /* 16px gap under the image */
+  bottom: var(--s2a-spacing-lg);  /* 24px gap under the image */
   z-index: 2;
   width: 275px;
   /* S: full 360px at >=742px tall; shrinks on shorter viewports down to a
@@ -220,13 +220,14 @@
   object-fit: cover;
 }
 
-/* App icon badge, overlaid on the foreground image (same size in all viewports). */
+/* App icon badge overlaid on the foreground image. Mobile (S) base: 24x24 @ 16px;
+   overridden per breakpoint below — M: 32x32 @ 24px, L: 32x32 @ 16px. */
 .rcc-media-icon {
   position: absolute;
   top: var(--s2a-spacing-md);   /* 16px */
   left: var(--s2a-spacing-md);  /* 16px */
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   z-index: 1;
 }
 
@@ -247,6 +248,14 @@
     /* M: full 560px at >=944px tall; shrinks down to a 252px floor. */
     height: clamp(252px, 100dvh - 384px, 560px);
     border-radius: var(--s2a-border-radius-md);
+  }
+
+  /* M: icon 32x32 @ 24px */
+  .rcc-media-icon {
+    top: var(--s2a-spacing-lg);
+    left: var(--s2a-spacing-lg);
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -307,6 +316,14 @@
     height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
     border-radius: var(--s2a-border-radius-md);
     overflow: hidden;
+  }
+
+  /* L: icon 32x32 @ 16px (reset M's 24px offset, which also matches here) */
+  .rcc-media-icon {
+    top: var(--s2a-spacing-md);
+    left: var(--s2a-spacing-md);
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -412,11 +429,6 @@
   line-height: var(--s2a-typography-line-height-heading-2);
   letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
   color: var(--s2a-color-content-knockout);
-  transition: opacity 0.2s ease;
-}
-
-.rcc-rm-item:hover {
-  opacity: 0.7;
 }
 
 .rcc-rm-item:focus-visible {
