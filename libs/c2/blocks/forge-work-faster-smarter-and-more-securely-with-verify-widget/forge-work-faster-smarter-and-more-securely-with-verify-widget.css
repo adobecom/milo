@@ -1,0 +1,107 @@
+/* forge-work-faster-smarter-and-more-securely-with-verify-widget
+ * Two-column hero: content column + hero media. All rules scoped to the block
+ * root (L10/L19). Layout is expressed in responsive units (grid/fr/%/clamp/
+ * aspect-ratio) — no pinned Figma-frame pixels (L27). */
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget {
+  --fw-accent: var(--s2a-color-accent, #1473e6);
+  --fw-text: var(--s2a-color-text, #1b1b1b);
+  --fw-gap: var(--s2a-space-l, 32px);
+  box-sizing: border-box;
+  padding: 124px 24px 80px; /* C21: C2 section vertical rhythm */
+  color: var(--fw-text);
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--fw-gap);
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .forge-work-faster-smarter-and-more-securely-with-verify-widget .hero {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s2a-space-xl, 48px);
+  }
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-space-m, 16px);
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .content .eyebrow {
+  margin: 0;
+  font-weight: 700;
+  font-size: 0.875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fw-accent);
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1.1;
+  font-weight: 800;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .content p {
+  margin: 0;
+  font-size: var(--s2a-font-size-body, 1.125rem);
+  line-height: 1.5;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .action-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .con-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 26px;
+  border: 2px solid transparent;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .con-button.blue {
+  background: var(--fw-accent);
+  color: #fff;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .con-button.outline {
+  background: transparent;
+  border-color: currentcolor;
+  color: inherit; /* C20: never inherit the global a{color:#000} silently */
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .media {
+  width: 100%;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .media picture,
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .media img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.forge-work-faster-smarter-and-more-securely-with-verify-widget .media img {
+  aspect-ratio: 1600 / 800; /* C19: reserve the box before the hero image loads */
+  object-fit: cover;
+  border-radius: 12px;
+}
