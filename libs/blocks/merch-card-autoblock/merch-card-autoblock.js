@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
@@ -237,6 +237,17 @@ async function createInline(el, options) {
     }
     copyMasFieldIdToParent(masField, 'fragment-id');
     copyMasFieldIdToParent(masField, 'variation-id');
+    // Prices lose their mas-field ancestor on unwrap, and with it both the promo code the
+    // price options provider reads from it and the mas-field-scoped strikethrough styling —
+    // stamp the code on each price and load the page-level merch price styles first.
+    const promotionCode = masField.getAttribute('data-promotion-code');
+    if (promotionCode) {
+      content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code])')
+        .forEach((price) => price.setAttribute('data-promotion-code', promotionCode));
+    }
+    if (content.querySelector('span[is="inline-price"]')) {
+      loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+    }
     masField.replaceWith(...[...content.childNodes]);
 
     // Defer decorateButtons until the last CTA mas-field in this container has been

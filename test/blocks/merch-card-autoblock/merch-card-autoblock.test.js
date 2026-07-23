@@ -22,6 +22,12 @@ if (!customElements.get('mas-field')) {
         } else if (field === 'ctas-checkout') {
           // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
           content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
+        } else if (field === 'prices-promo') {
+          // Simulates a prices field from a fragment with an applied promo project:
+          // inline-only content (prices + terms link, no block elements) so the unwrap
+          // branch fires, with the promo code carried on the mas-field element.
+          this.setAttribute('data-promotion-code', 'PROMO26');
+          content.innerHTML = '<span is="inline-price" data-template="price" data-wcs-osi="OSI-X"></span> <a href="https://www.adobe.com/">See terms</a>';
         } else {
           content.textContent = 'Resolved inline value';
         }
@@ -305,6 +311,39 @@ describe('merch-card-autoblock autoblock', () => {
       const linkNotDecorated = p.querySelector('a.some-class');
       expect(linkNotDecorated).to.exist;
       expect(linkNotDecorated.className).to.equal('some-class merch-card-autoblock link-block');
+    });
+
+    it('stamps the mas-field promo code onto inline prices before unwrapping', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-1&field=prices-promo';
+      a.textContent = '[[promo-test:prices-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const price = p.querySelector('span[is="inline-price"]');
+      expect(price).to.exist;
+      expect(price.getAttribute('data-promotion-code')).to.equal('PROMO26');
+    });
+
+    it('loads merch.css when unwrapping price content', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-2&field=prices-promo';
+      a.textContent = '[[promo-css-test:prices-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.head.querySelector('link[href*="blocks/merch/merch.css"]')).to.exist;
     });
 
     it('upgrades plain commerce links and decorates using block context', async () => {
