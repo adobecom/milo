@@ -37,14 +37,19 @@ const decorateProfileLink = (service, path = '') => {
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
-const clearImsCountryCookie = () => {
+// Account cookies set at the edge / by the unav (Domain=adobe.com) that must not outlive sign-out.
+const SIGN_OUT_COOKIES = ['ims_country_code', 'acomsis', 'acomsis_stage'];
+
+const clearSignOutCookies = () => {
   const { host } = window.location;
   if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
-  const base = 'ims_country_code=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;';
   const labels = host.split('.');
-  for (let i = 0; i < labels.length - 1; i += 1) {
-    document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
-  }
+  SIGN_OUT_COOKIES.forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
 };
 
 class ProfileDropdown {
@@ -173,7 +178,7 @@ class ProfileDropdown {
 
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
-      clearImsCountryCookie();
+      clearSignOutCookies();
       window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut({ redirect_uri: window.location.href });
     });
