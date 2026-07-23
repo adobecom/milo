@@ -8,15 +8,10 @@ const TTL_REGISTERED = 24 * 60 * 60 * 1000;
 const TTL_UNREGISTERED = 3 * 60 * 1000;
 const cacheKey = (eventCode, userId) => `mep-event:${eventCode}:${userId}`;
 
-// TODO(MWPW-199051): enable once VEAL confirms the redirect-cookie name/domain.
-// When enabling, clearRegisteredFlag must set domain= to match — a host-only
-// delete won't clear a .adobe.com cookie, leaving the flag stuck.
-const REDIRECT_INVALIDATION_ENABLED = false;
-const justRegistered = (eventCode) => REDIRECT_INVALIDATION_ENABLED
-  && getCookie(`feds_${eventCode}_registeredByRedirect`) === 'true';
-/* c8 ignore next 3 */
+const justRegistered = (eventCode) => getCookie(`feds_${eventCode}_registeredByRedirect`) === 'true';
 const clearRegisteredFlag = (eventCode) => {
-  document.cookie = `feds_${eventCode}_registeredByRedirect=; Max-Age=0; path=/`;
+  // VEAL sets this cookie Domain=.adobe.com; a host-only delete won't clear it.
+  document.cookie = `feds_${eventCode}_registeredByRedirect=; Max-Age=0; path=/; domain=.adobe.com`;
 };
 
 function readCache(eventCode, userId) {
@@ -64,14 +59,16 @@ async function fetchFromRainfocus(eventCode) {
   const userId = await getUserId();
   if (!userId) return defaultReturn;
 
-  /* c8 ignore next 3 */
+  // The redirect flag means the user just registered — trust it for the pre-LCP
+  // paint instead of blocking on RF, then clear the one-shot signal.
   if (justRegistered(eventCode)) {
-    store.removeItem(cacheKey(eventCode, userId));
     clearRegisteredFlag(eventCode);
-  } else {
-    const cached = readCache(eventCode, userId);
-    if (cached) return cached;
+    const data = { isRegistered: true };
+    writeCache(eventCode, userId, data);
+    return data;
   }
+  const cached = readCache(eventCode, userId);
+  if (cached) return cached;
 
   const accessToken = window.adobeIMS.getAccessToken()?.token;
   if (!accessToken) return defaultReturn;

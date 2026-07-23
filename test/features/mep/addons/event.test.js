@@ -92,14 +92,15 @@ describe('event', () => {
     const event = await init('adobe-max-2025');
     expect(event.isRegistered).to.equal(false);
   });
-  // Un-skip when REDIRECT_INVALIDATION_ENABLED flips on (MWPW-199051).
-  it.skip('should bypass the cache when the registration-redirect cookie is set', async () => {
+  it('should register from the redirect cookie, overriding a stale cache without calling the API', async () => {
     setMetadata('userId', '1234567890');
     setFetchResponse({ ok: true, isRegistered: false });
-    await init('adobe-max-2025');
+    const stale = await init('adobe-max-2025');
+    expect(stale.isRegistered).to.equal(false);
     setCookie('feds_adobe-max-2025_registeredByRedirect', 'true');
-    setFetchResponse({ ok: true, isRegistered: true });
+    window.fetch = stub();
     const event = await init('adobe-max-2025');
     expect(event.isRegistered).to.equal(true);
+    expect(window.fetch.called).to.equal(false);
   });
 });
