@@ -79,16 +79,21 @@
           transition: border 150ms;
         }
 
-        &:hover::before {
-          border-color: var(--pill-bg-color-selected);
+        &:hover {
+          color: var(--s2a-color-content-default);
+
+          &::before {
+            border-color: var(--pill-bg-color-selected);
+          }
         }
 
         &[aria-checked="true"] {
           color: var(--s2a-color-content-default);
 
           &::before {
-            border-width: 6px;
             border-color: var(--pill-bg-color-selected);
+            background: var(--pill-bg-color-selected);
+            box-shadow: inset 0 0 0 4px var(--s2a-color-background-subtle);
           }
         }
 
@@ -102,6 +107,31 @@
 
   &.radio {
     background: transparent;
+  }
+
+  /*
+   * Confirmed against Figma: radio-dark's container is #131313
+   * (--s2a-color-gray-900, i.e. --s2a-color-background-default), not
+   * --s2a-color-background-subtle (--s2a-color-gray-700, lighter). The
+   * selected dot's gap must match this same value so it keeps blending
+   * seamlessly with the container instead of showing as a visible ring.
+   */
+  &.radio.dark > .tabs-wrapper {
+    [role='radiogroup'] {
+      .tab-list-container {
+        background: var(--s2a-color-background-default);
+      }
+
+      button.tab-button[aria-checked="true"]::before {
+        border-color: var(--s2a-color-background-inverse);
+        background: var(--s2a-color-background-inverse);
+        box-shadow: inset 0 0 0 4px var(--s2a-color-background-default);
+      }
+
+      button.tab-button:hover::before {
+        border-color: var(--s2a-color-background-inverse);
+      }
+    }
   }
 
   &.quiet > .tabs-wrapper {
