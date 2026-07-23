@@ -130,6 +130,9 @@ body:has(header.local-nav) .section.bento.stack-mobile {
     overflow: clip;
     z-index: 3;
     margin-block: calc(-1 * var(--s2a-border-radius-lg));
+    /* Bleed 1px into the section top/bottom to remove hairline gap created by
+     sub-pixel compositor */
+    inset: 1px 0;
   }
 
   &.rounded-corners-top {
@@ -353,10 +356,10 @@ body:has(header.local-nav) .section.bento.stack-mobile {
 .section-background {
   z-index: 0;
 
-  /* Bleed -0.5px into the section background top/bottom to remove hairline gap created by
+  /* Bleed -1px into the section background top/bottom to remove hairline gap created by
      sub-pixel compositor (from parallax/view-timeline animations during smooth-scroll) */
   position: absolute;
-  inset: -0.5px 0;
+  inset: -1px 0;
 
   & > * {
     position: absolute;
