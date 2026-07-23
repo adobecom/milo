@@ -1,0 +1,20 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 1,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  }
+]
