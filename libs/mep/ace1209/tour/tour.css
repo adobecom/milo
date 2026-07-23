@@ -16,6 +16,9 @@
   /* 5px aligns eyebrow and heading with the close button */
   p {
     padding-block-start: 5px;
+    &:focus-visible {
+      outline: none;
+    }
   }
   h3 {
     padding-block-end: 5px;

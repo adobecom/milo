@@ -215,6 +215,49 @@
       }
     }
   }
+
+  &.parallax-garage-door-reveal:has(.rich-content.merch-moment) {
+    .foreground {
+      animation-range: cover -10% cover 90%;
+    }
+  }
+
+  &:has(.rich-content.merch-moment) {
+    display: grid;
+    grid-template-rows: auto auto;
+    box-sizing: border-box;
+    height: auto;
+
+    .rich-content.merch-moment {
+      grid-row: 1;
+    }
+
+    p:has(span[is="inline-price"]) {
+      font-weight: var(--s2a-font-weight-adobe-clean-bold);
+    }
+
+    &.has-background .section-background {
+
+      &,
+      & > * {
+        position: relative;
+        inset: unset;
+      }
+
+      img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 375 / 434;
+        object-fit: cover;
+        object-position: center top;
+        animation: unset;
+      }
+    }
+  }
+
+  &.dark:has(.rich-content.merch-moment) {
+    background: var(--s2a-color-gray-1000);
+  }
 }
 
 .section.bento .rich-content.grid-full-width {
@@ -251,13 +294,20 @@
 }
 
 @media (width >= 768px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    width: 100%;
+    margin-inline: auto;
+    aspect-ratio: unset;
+    display: block;
+  }
+
   .section:has(.rich-content.jump-link.hero) {
     --rc-hero-overlay: linear-gradient(180deg, var(--s2a-color-transparent-black-80) -0.02%, var(--s2a-color-transparent-black-00) 39.45%, var(--s2a-color-transparent-black-00) 74.49%, var(--s2a-color-transparent-black-80) 100%);
   }
 
-  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-sweep-offset: 230px;
   }
 
@@ -308,9 +358,14 @@
     }
   }
 
-  .section.bento .rich-content.grid-full-width {
-    margin-inline-start: var(--s2a-spacing-xs);
+  .section.bento .rich-content.grid-full-width,
+  .rich-content.indent {
+    margin-inline-start: var(--s2a-spacing-md);
     margin-block-end: calc(var(--s2a-spacing-lg) - var(--grid-gutter));
+  }
+
+  .rich-content.indent {
+    margin-block-end: 0;
   }
 }
 
@@ -375,14 +430,24 @@
 }
 
 @media (width >= 1280px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    width: 100%;
+    height: auto;
+  }
+
   .rich-content.jump-link.hero {
     padding-block-start: var(--s2a-layout-xl);
   }
 }
 
 @media (width >= 1440px) {
+  .section:has(.rich-content.merch-moment).has-background .section-background img {
+    max-width: 1612px;
+  }
+
   .section.bento {
-    .rich-content.grid-full-width {
+    .rich-content.grid-full-width,
+    .rich-content.indent {
       margin-inline-start: var(--s2a-spacing-md);
       margin-block-end: calc(var(--s2a-spacing-2xl) - var(--grid-gutter));
     }
@@ -420,7 +485,7 @@
   }
 }
 
-.rich-content.video {
+.rich-content.media {
   background: var(--s2a-color-background-inverse);
   display: flex;
   flex-direction: column;
@@ -429,6 +494,11 @@
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
+  --grid-margin-width: 5px;
+
+  @media (width >= 768px) {
+    --grid-margin-width: var(--grid-margin-width-base);
+  }
 
   .action-area {
     margin-top: 0;
@@ -436,11 +506,9 @@
 
   img {
     border-radius: var(--s2a-border-radius-24);
-    border: 9px solid var(--s2a-color-transparent-white-04);
-    max-width: 214px;
   }
 
-  .media {
+  .media-cell {
     position: relative;
     z-index: 1;
     width: 100%;
@@ -449,27 +517,34 @@
       margin: 0;
     }
 
-    .video-container {
-      position: relative;
-      box-sizing: border-box;
-      max-width: 214px;
-      margin-inline: auto;
-      aspect-ratio: 9 / 16;
+    .video-container,
+    picture {
+      display: block;
+      width: 100%;
+      aspect-ratio: 365 / 350;
       border-radius: var(--s2a-border-radius-24);
+      overflow: hidden;
+      transform-origin: center bottom;
+    }
+
+    .video-container {
       border: 9px solid var(--s2a-color-transparent-white-04);
       background: var(--s2a-color-transparent-white-04);
       backdrop-filter: blur(var(--s2a-blur-md));
-      overflow: hidden;
-      transform-origin: center bottom;
-      width: 100%;
 
       video {
         display: block;
         width: 100%;
         height: 100%;
         object-fit: cover;
-        outline: none;
       }
+    }
+
+    picture img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .action-area {
@@ -493,26 +568,58 @@
   .action-area.dark {
     background-color: unset;
   }
+
+  &.glass-border .media-cell :is(picture, .video-container) {
+    --glass-frame-width: 4px;
+    --glass-stroke: 0.6px;
+    --glass-fill: rgb(255 255 255 / 5%);
+    box-sizing: border-box;
+    border: var(--s2a-border-width-2) solid var(--s2a-color-transparent-white-24);
+    padding: var(--glass-frame-width);
+    background: var(--glass-fill);
+    background-clip: padding-box;
+    box-shadow: inset 0 0 0 var(--glass-stroke) var(--glass-fill);
+    border-radius: var(--s2a-border-radius-24);
+    backdrop-filter: blur(var(--s2a-blur-md));
+    overflow: hidden;
+
+    @media (width >= 768px) {
+      --glass-frame-width: 6.5px;
+      --glass-stroke: 1px;
+    }
+
+    @media (width >= 1280px) {
+      --glass-frame-width: 7.4px;
+      --glass-stroke: 1.2px;
+    }
+
+    @media (width >= 1440px) {
+      --glass-frame-width: 9.4px;
+      --glass-stroke: 1.6px;
+    }
+
+    :is(img, video) {
+      max-width: 100%;
+      border-radius: var(--s2a-border-radius-24);
+    }
+  }
 }
 
 @media (width >= 768px) {
-  .rich-content.video {
+  .rich-content.media {
     img {
       max-width: unset;
     }
 
-    .media {
+    .media-cell {
       padding-inline: unset;
       max-width: var(--grid-width-10);
 
-      .video-container {
-        max-width: unset;
+      .video-container,
+      picture {
         margin-inline: unset;
         aspect-ratio: 16 / 9;
-
-        video {
-          height: auto;
-        }
+        width: 100%;
       }
 
       .action-area {
@@ -522,14 +629,14 @@
   }
 }
 
-.section:has(.rich-content.video) {
+.section:has(.rich-content.media) {
   background: var(--s2a-color-background-inverse);
 
   &.has-background {
     .section-background {
       overflow: hidden;
 
-      &:not(:has(~ .rich-content.video.no-overlay)) {
+      &:not(:has(~ .rich-content.media.no-overlay)) {
         img {
           filter: blur(var(--s2a-blur-md));
           transform: scale(1.08);
@@ -544,7 +651,7 @@
       }
     }
 
-    .rich-content.video {
+    .rich-content.media {
       background: transparent;
     }
   }
@@ -562,10 +669,48 @@
   initial-value: 200px;
 }
 
+@keyframes stack-title-stagger {
+  0% {
+    opacity: 0;
+    transform: translate(0, var(--parallax-translate-y));
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes stack-title-card-match {
+  100% { translate: 0 calc(-1 * var(--title-catchup)); }
+}
+
+@media (width < 768px) {
+  .section.bento.stack-mobile:where(.bento-stack-ready) > .rich-content {
+    --parallax-translate-y: -60px;
+    --scrollport-h: min(var(--phone-h), 100svh);
+    --cards-release-offset: max(0px, calc(var(--scrollport-h) - var(--card-front-y) - var(--card-height)));
+    --title-release-offset: max(0px, calc(var(--scrollport-h) - var(--stack-pin-top) - var(--title-height)));
+    --title-catchup: calc(var(--card-front-y) + var(--card-height) - var(--stack-pin-top) - var(--title-height));
+
+    position: sticky;
+    top: var(--stack-pin-top);
+    z-index: 1;
+    margin: 0;
+    line-height: 1;
+    will-change: opacity, transform, translate;
+    animation:
+      stack-title-stagger var(--parallax-easing) both,
+      stack-title-card-match var(--parallax-easing) both;
+    animation-timeline: --stack-title-vt, --section-vt;
+    animation-range: cover 0% cover 30%, exit var(--cards-release-offset) exit var(--title-release-offset);
+  }
+}
+
 /* mobile */
-.section:has(+ .section.parallax-video-garage-door .rich-content.video),
-.section.parallax-video-garage-door:has(.rich-content.video),
-.section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+.section:has(+ .section.parallax-video-garage-door .rich-content.media),
+.section.parallax-video-garage-door:has(.rich-content.media),
+.section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
   --rc-pull-offset: 80px;
   --rc-sweep-offset: 200px;
   --rc-sweep-peek: var(--s2a-border-radius-lg);
@@ -574,42 +719,63 @@
 }
 
 @media (width >= 768px) {
-  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-video-enter-y: 15vh;
   }
 }
 
 @media (width >= 1024px) {
-  .rich-content.video {
+  .rich-content.media {
     gap: var(--s2a-spacing-xl);
   }
 
-  .rich-content.video img {
-    max-width: 1200px; 
+  .rich-content.media img {
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .rich-content.video .media .video-container { 
-    max-width: 1200px; 
+  .rich-content.media .media-cell .video-container,
+  .rich-content.media .media-cell picture {
+    max-width: 1200px;
     margin: 0 auto;
   }
 
-  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-pull-offset: 120px;
     --rc-sweep-offset: 200px;
   }
 }
 
 @media (width >= 1920px) {
-  .section:has(+ .section.parallax-video-garage-door .rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video),
-  .section.parallax-video-garage-door:has(.rich-content.video) ~ .section {
+  .section:has(+ .section.parallax-video-garage-door .rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media),
+  .section.parallax-video-garage-door:has(.rich-content.media) ~ .section {
     --rc-pull-offset: 70px;
     --rc-sweep-offset: 280px;
+  }
+}
+
+@supports not (animation-timeline: view()) {
+  @media (width < 768px) {
+    .section.bento.stack-mobile > .rich-content {
+      position: static;
+      transform: none;
+      opacity: 1;
+      animation: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) and (width < 768px) {
+  .section.bento.stack-mobile > .rich-content {
+    position: static;
+    transform: none;
+    opacity: 1;
+    animation: none;
   }
 }
 
@@ -635,11 +801,11 @@
       to { transform: translateY(0); }
     }
 
-    .section:has(+ .section.parallax-video-garage-door .rich-content.video) {
+    .section:has(+ .section.parallax-video-garage-door .rich-content.media) {
       z-index: 2;
     }
 
-    .section.parallax-video-garage-door:has(.rich-content.video) {
+    .section.parallax-video-garage-door:has(.rich-content.media) {
       overflow: clip;
       animation: rc-video-top-door ease-out both, rc-video-exit ease-out both;
       animation-timeline: view(), view();
@@ -647,7 +813,7 @@
       animation-composition: replace, add;
     }
 
-    .section.parallax-video-garage-door .rich-content.video :is(.cta-area, .media .action-area) :is(a, button) {
+    .section.parallax-video-garage-door .rich-content.media :is(.cta-area, .media-cell .action-area) :is(a, button) {
       animation: rc-video-cta-follow-mobile linear both;
       animation-duration: auto;
       animation-timeline: --rc-video-enter;
@@ -655,12 +821,11 @@
       scroll-margin-top: calc(100vh - 200px);
     }
 
-    .section.parallax-video-garage-door .rich-content.video {
+    .section.parallax-video-garage-door .rich-content.media {
       timeline-scope: --rc-video-enter;
     }
 
-    .section.parallax-video-garage-door .rich-content.video img,
-    .section.parallax-video-garage-door .rich-content.video .video-container {
+    .section.parallax-video-garage-door .rich-content.media .media-cell :is(.video-container, picture) {
       view-timeline-name: --rc-video-enter;
       view-timeline-axis: block;
       animation: rc-video-enter linear both;
@@ -670,7 +835,7 @@
     }
 
     @media (width >= 1440px) {
-      .section.parallax-video-garage-door:has(.rich-content.video) {
+      .section.parallax-video-garage-door:has(.rich-content.media) {
         animation-range: entry 0% entry 70%, exit 50% exit 90%;
       }
     }
