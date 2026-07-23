@@ -301,22 +301,23 @@ const setCarouselSlideOffsets = (grid, carousel) => {
 
 const handleGridImages = (imageContainers, slides) => {
   const container = createTag('div', { class: 'hub-hero-image-grid-container' });
-  [...imageContainers[0].children]?.forEach((img) => {
-    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, img));
+  [...imageContainers[0].children]?.forEach((cntr) => {
+    container.appendChild(createTag('div', { class: 'hub-hero-image-grid-container-col' }, cntr));
   });
 
   [1, 2].forEach((i) => {
     [...(imageContainers[i]?.children ?? [])].forEach((img, index) => {
-      container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
+      if (img.children?.length) container.querySelector(`.hub-hero-image-grid-container-col:nth-child(${index + 1}`)?.appendChild(img);
     });
   });
 
   const gridColumns = [...container.querySelectorAll('.hub-hero-image-grid-container-col')];
 
-  if (!isThreeSlides) {
-    gridColumns[1].append(slides[1]?.querySelector('div:has(img)')?.cloneNode(true));
-    gridColumns[3].append(slides[3]?.querySelector('div:has(img)')?.cloneNode(true));
-  }
+  const leftSlideIndex = isThreeSlides ? 0 : 1;
+  const rightSlideIndex = isThreeSlides ? 2 : 3;
+
+  gridColumns[1].append(slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true));
+  gridColumns[3].append(slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true));
 
   return container;
 };
