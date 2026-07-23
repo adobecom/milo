@@ -80,6 +80,7 @@ export default async function init(el) {
     unavEnabled: getMetadata('unav') === 'on',
     placeholders: placeholdersPromise,
     miloConfig: config,
+    mepMartech: config.mep?.martech || '',
     lingoRegion,
     personalization: {
       commands: [...commands, ...gnavMepCommands],
