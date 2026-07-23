@@ -516,16 +516,24 @@ export async function getSpoofGeoOptions(id) {
     return { ...opt, label: region ? region.toUpperCase() : "None (Don't spoof)" };
   };
 
+  const sortOptions = (options) => {
+    const noneOption = options.find((opt) => !opt.value);
+    const rest = options
+      .filter((opt) => opt.value)
+      .sort((a, b) => a.label.localeCompare(b.label));
+    return noneOption ? [noneOption, ...rest] : rest;
+  };
+
   if (id === 'spoof-geo-top-markets' && getTopMarketsAvailability()) {
-    return TOP_MARKETS.map(toOption);
+    return sortOptions(TOP_MARKETS.map(toOption));
   }
 
   if (id === 'spoof-geo-mep-lingo' && getLingoAvailability()) {
-    return getLingoRegions().map(toOption);
+    return sortOptions(getLingoRegions().map(toOption));
   }
 
   if (id === 'spoof-geo-lingo-mas' && await getMasAvailability()) {
-    return (await getMasRegions()).map(toOption);
+    return sortOptions((await getMasRegions()).map(toOption));
   }
 
   return [];
