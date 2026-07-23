@@ -2836,6 +2836,18 @@ describe('Utils', () => {
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
+
+    it('prefers akamaiLocale over IMS country when no country cookie', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca')).to.equal('fr');
+    });
+
+    it('prefers country cookie over IMS country', () => {
+      expect(utils.computeDetectedMarketCountry('', 'be', null, 'ca')).to.equal('be');
+    });
+
+    it('falls through to akamaiLocale when cookie and IMS country are absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, null)).to.equal('fr');
+    });
   });
 
   describe('getCountry query params', () => {
@@ -3260,6 +3272,29 @@ describe('Utils', () => {
       sessionStorage.setItem('akamai', 'ch');
       const result = await utils.resolveDetectedMarketCountry();
       expect(result).to.be.null;
+    });
+  });
+
+  describe('resolveDetectedMarketCountry with ims_country_code cookie', () => {
+    afterEach(() => {
+      sessionStorage.removeItem('akamai');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'ims_country_code=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+
+    it('uses ims_country_code cookie when no country cookie', async () => {
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('ca');
+    });
+
+    it('prefers country cookie over ims_country_code cookie', async () => {
+      document.cookie = 'country=be; path=/';
+      document.cookie = 'ims_country_code=CA; path=/';
+      sessionStorage.setItem('akamai', 'fr');
+      const result = await utils.resolveDetectedMarketCountry();
+      expect(result).to.equal('be');
     });
   });
 });
