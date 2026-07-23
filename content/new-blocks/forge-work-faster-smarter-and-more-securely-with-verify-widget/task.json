@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-work-faster-smarter-and-more-securely-with-verify-widget",
+  "sectionIndex": 0,
+  "decision": "ambiguous",
+  "score": 0.49,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-57777101-mrxldkif",
+  "miloTargetPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-57777101-mrxldkif/libs/c2/blocks/forge-work-faster-smarter-and-more-securely-with-verify-widget",
+  "miloBranch": "forge/session-57777101-18b",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/anonymous/forge/verify-widget-features-grid-demo-577771?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

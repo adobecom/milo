@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-work-faster-smarter-and-more-securely-with-verify-widget',
 ];
 
 const AUTO_BLOCKS = [
