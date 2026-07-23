@@ -472,15 +472,22 @@ function setupResponsiveHiding(el) {
 
 function setAccessibilityLabels(el) {
   import('../../features/placeholders.js').then(({ replaceKeyArray }) => {
-    replaceKeyArray(['choose-table-column', 'empty-table-cell', 'not-a-feature'], getConfig())
-      .then(([ariaLabel, emptyText, notAFeatureText]) => {
+    replaceKeyArray(['choose-table-column', 'empty-table-cell', 'not-a-feature', 'primary-feature'], getConfig())
+      .then(([ariaLabel, emptyText, notAFeatureText, primaryFeatureText]) => {
         [...el.querySelectorAll('.mobile-filter-select')].forEach((element) => element.setAttribute('aria-label', ariaLabel));
 
         [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
           const closeIcon = cellDiv.querySelector('.icon-close');
           if (closeIcon) {
-            closeIcon.setAttribute('role', 'img');
-            closeIcon.setAttribute('aria-label', notAFeatureText);
+            closeIcon.setAttribute('aria-hidden', 'true');
+            cellDiv.appendChild(createTag('span', { class: 'sr-only' }, notAFeatureText));
+            return;
+          }
+          const checkmarkIcon = cellDiv.querySelector('.icon-checkmark');
+          if (checkmarkIcon) {
+            checkmarkIcon.querySelector('title')?.remove();
+            checkmarkIcon.setAttribute('aria-hidden', 'true');
+            cellDiv.appendChild(createTag('span', { class: 'sr-only' }, primaryFeatureText));
             return;
           }
           const content = cellDiv.textContent.trim();
