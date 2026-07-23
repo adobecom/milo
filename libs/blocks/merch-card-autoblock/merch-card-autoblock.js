@@ -237,6 +237,13 @@ async function createInline(el, options) {
     }
     copyMasFieldIdToParent(masField, 'fragment-id');
     copyMasFieldIdToParent(masField, 'variation-id');
+    // Prices lose their mas-field ancestor on unwrap, and with it the promo code the
+    // price options provider reads from it — stamp the code on each price first.
+    const promotionCode = masField.getAttribute('data-promotion-code');
+    if (promotionCode) {
+      content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code])')
+        .forEach((price) => price.setAttribute('data-promotion-code', promotionCode));
+    }
     masField.replaceWith(...[...content.childNodes]);
 
     // Defer decorateButtons until the last CTA mas-field in this container has been
