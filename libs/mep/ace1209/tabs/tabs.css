@@ -190,7 +190,25 @@
         background: var(--s2a-color-background-inverse);
         color: var(--s2a-color-content-inverse);
       }
+
+      button.tab-button:hover:not([aria-selected="true"]) {
+        color: var(--s2a-color-gray-100);
+      }
+
+      .tab-indicator {
+        background: var(--s2a-color-background-inverse);
+      }
     }
+  }
+
+  /*
+   * Plain pill is the only variant that keeps a solid block-level background
+   * in light mode (radio/quiet already force it transparent unconditionally
+   * above). Nothing overrode it for dark, so it stayed at the light value —
+   * matching radio/quiet's transparent treatment for now.
+   */
+  &.dark:not(.radio):not(.quiet) {
+    background: transparent;
   }
 
   .tabs-wrapper {
