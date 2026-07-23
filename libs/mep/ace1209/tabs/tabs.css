@@ -1,6 +1,15 @@
 /* stylelint-disable no-descending-specificity */
 :root {
-  --pill-bg-color-selected: var(--s2a-color-background-knockout);
+  /*
+   * background-inverse (not background-knockout) is the correct token here:
+   * knockout resolves to the same fixed near-black value in both the light
+   * and dark semantic token sets, while inverse actually flips (near-black in
+   * light, white in dark) — required for the selected pill/radio-dot to stay
+   * visible once a `.dark` block renders on a dark surface. This produces the
+   * exact same value as before in light mode (both resolve to gray-1000), so
+   * it's a no-op visually today.
+   */
+  --pill-bg-color-selected: var(--s2a-color-background-inverse);
   --pill-rounded-corners-setting: 50px;
 }
 
@@ -135,6 +144,24 @@
     background: transparent;
   }
 
+  /*
+   * `.dark` is an opt-in variant class (like radio/quiet), not inherited from
+   * an ancestor section. It relies on Milo's global `.dark { ... }` rule
+   * (libs/c2/styles/styles.css) to redefine every --s2a-color-* semantic
+   * token on this exact element, which is why content-subtle/content-default
+   * /content-inverse/background-inverse/background-subtle usages elsewhere
+   * in this file (radio, quiet) already adapt automatically with no extra
+   * rules needed. The only gap is the plain pill variant's container
+   * background, which uses a raw black-tinted primitive with no dark
+   * equivalent — excluded here from radio/quiet since those already have
+   * their own correct, theme-aware background.
+   */
+  &.dark:not(.radio):not(.quiet) > .tabs-wrapper {
+    [role='tablist'] {
+      background: var(--s2a-color-background-subtle);
+    }
+  }
+
   .tabs-wrapper {
     display: flex;
     width: 100%;
@@ -189,7 +216,7 @@
     }
 
     button.tab-button {
-      color: var(--s2a-color-transparent-black-64);
+      color: var(--s2a-color-content-subtle);
       cursor: pointer;
       font-family: var(--body-font-family);
       text-align: center;
@@ -215,7 +242,7 @@
       }
 
       &[aria-selected="true"] {
-        color: var(--s2a-color-content-knockout);
+        color: var(--s2a-color-content-inverse);
         background: var(--pill-bg-color-selected);
         transition: background 0s 0.25s, color 0.2s 0s ease-out;
       }
