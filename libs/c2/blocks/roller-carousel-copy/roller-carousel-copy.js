@@ -232,9 +232,10 @@ function decorate(block) {
     let lineY;
     let bottomAlign;
     if (block.classList.contains('rcc-reflow')) {
-      // Reflow (image hidden): highlight the name at the TOP of the list, right
-      // under the sticky category heading — not at the off-screen image line.
-      lineY = 0;
+      // Reflow (image hidden): highlight the name just below the sticky category
+      // heading — offset down ~half a name-height so it highlights a little
+      // before reaching the divider (and isn't clipped at the top).
+      lineY = itemH * 0.5;
       bottomAlign = false;
     } else if (w >= L_BREAKPOINT) {
       lineY = mediaRect.bottom - wrapRect.top;
