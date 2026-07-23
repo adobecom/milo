@@ -1675,7 +1675,7 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    target, ajo, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP, promises, mepMarketingDecrease, akamaiCode,
   } = enablements;
   const config = getConfig();
@@ -1695,7 +1695,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       promises,

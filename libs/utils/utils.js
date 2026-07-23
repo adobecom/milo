@@ -2141,7 +2141,6 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  let countryIPPromise = null;
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
@@ -2161,9 +2160,6 @@ async function checkForPageMods() {
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
-  if (mepgeolocation && !akamaiCode) {
-    countryIPPromise = getCountry();
-  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -2205,7 +2201,6 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    countryIPPromise,
     mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
