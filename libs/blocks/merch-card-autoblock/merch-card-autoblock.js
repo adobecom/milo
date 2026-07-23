@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
+import { postProcessAutoblock, localizePreviewLinks } from '../merch/autoblock.js';
 import {
   initService,
   createAemFragment,
@@ -183,6 +183,7 @@ async function createInline(el, options) {
   el.replaceWith(masField);
   await checkReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);
+  await localizePreviewLinks(masField);
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return;
