@@ -331,6 +331,21 @@ describe('merch-card-autoblock autoblock', () => {
       expect(price.getAttribute('data-promotion-code')).to.equal('PROMO26');
     });
 
+    it('loads merch.css when unwrapping price content', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-2&field=prices-promo';
+      a.textContent = '[[promo-css-test:prices-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.head.querySelector('link[href*="blocks/merch/merch.css"]')).to.exist;
+    });
+
     it('upgrades plain commerce links and decorates using block context', async () => {
       const section = document.createElement('div');
       const siblingBtn = document.createElement('a');
