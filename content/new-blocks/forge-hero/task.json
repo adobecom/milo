@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-hero",
+  "sectionIndex": 0,
+  "decision": "loose-variant",
+  "score": 0.8,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-cb7a575c-mrxc3lfs",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-cb7a575c-mrxc3lfs/libs/c2/blocks/forge-hero",
+  "miloBranch": "forge/session-cb7a575c-8db",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/anonymous/forge/skyline-reach-new-heights-cb7a57?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

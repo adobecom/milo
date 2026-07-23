@@ -1,0 +1,64 @@
+:root {
+    --s2a-color-gray-25:#fff;
+    --s2a-color-gray-50:#f8f8f8;
+    --s2a-color-gray-100:#e9e9e9;
+    --s2a-color-gray-500:#8f8f8f;
+    --s2a-color-gray-800:#292929;
+    --s2a-color-gray-900:#131313;
+    --s2a-color-gray-1000:#000;
+    --s2a-color-red-700:#ff513d;
+    --s2a-color-brand-adobe-red:#eb1000;
+
+    --s2a-spacing-8:8px;
+    --s2a-spacing-16:16px;
+    --s2a-spacing-24:24px;
+    --s2a-spacing-32:32px;
+    --s2a-spacing-48:48px;
+    --s2a-spacing-64:64px;
+    --s2a-spacing-80:80px;
+
+    --s2a-layout-sm:80px;
+    --s2a-layout-md:96px;
+    --s2a-layout-lg:124px;
+
+    --s2a-border-radius-md:16px;
+    --s2a-border-radius-round:999px;
+
+    --s2a-font-family-heading:'Adobe Clean Display','Segoe UI',Helvetica,Arial,sans-serif;
+    --s2a-font-family-body:'Adobe Clean','Segoe UI',Helvetica,Arial,sans-serif;
+
+    --s2a-font-size-80:80px;
+    --s2a-font-size-64:64px;
+    --s2a-font-size-48:48px;
+    --s2a-font-size-32:32px;
+    --s2a-font-size-20:20px;
+    --s2a-font-size-16:16px;
+
+    --text-color:var(--s2a-color-gray-1000);
+  }
+
+* {box-sizing:border-box;margin:0;padding:0}
+
+html {scroll-behavior:smooth}
+
+body {
+    font-family:var(--s2a-font-family-body);
+    color:var(--s2a-color-gray-1000);
+    background:var(--s2a-color-gray-25);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+
+@media(min-width:1000px) {
+    .rich-content.hero h1{font-size:var(--s2a-font-size-80)}
+  }
+
+@media(max-width:860px) {
+    .columns .inner{grid-template-columns:1fr}
+    .rich-content.hero h1,.rich-content h1{font-size:var(--s2a-font-size-48)}
+    .band-head h2,.rich-content h2{font-size:var(--s2a-font-size-32)}
+  }
+
+@media(max-width:800px) {.nav-links{display:none}}
+
+@media(max-width:860px) {.foot-grid{grid-template-columns:1fr 1fr}}
