@@ -1,0 +1,26 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "compact"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 3,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "dark"
+  }
+]
