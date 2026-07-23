@@ -176,19 +176,20 @@
 
   /*
    * `.dark` is an opt-in variant class (like radio/quiet), not inherited from
-   * an ancestor section. It relies on Milo's global `.dark { ... }` rule
-   * (libs/c2/styles/styles.css) to redefine every --s2a-color-* semantic
-   * token on this exact element, which is why content-subtle/content-default
-   * /content-inverse/background-inverse/background-subtle usages elsewhere
-   * in this file (radio, quiet) already adapt automatically with no extra
-   * rules needed. The only gap is the plain pill variant's container
-   * background, which uses a raw black-tinted primitive with no dark
-   * equivalent — excluded here from radio/quiet since those already have
-   * their own correct, theme-aware background.
+   * an ancestor section. Matches radio-dark's confirmed container value
+   * (#131313 / --s2a-color-background-default) for consistency. The selected
+   * pill's background/text are set explicitly here rather than relying on
+   * --pill-bg-color-selected / --s2a-color-content-inverse to flip on their
+   * own — same fix that was needed for radio-dark's selected dot.
    */
   &.dark:not(.radio):not(.quiet) > .tabs-wrapper {
     [role='tablist'] {
-      background: var(--s2a-color-background-subtle);
+      background: var(--s2a-color-background-default);
+
+      button.tab-button[aria-selected="true"] {
+        background: var(--s2a-color-background-inverse);
+        color: var(--s2a-color-content-inverse);
+      }
     }
   }
 
