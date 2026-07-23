@@ -11,6 +11,13 @@ import {
 
 let config;
 
+// Commerce geo-expansion markets: no adobe.com site; picker only sets the country
+// cookie and routes to US site
+const GEO_EXPANSION_MARKETS = new Set([
+  'mu', 'ke', 'gh', 'tz', 'am', 'az', 'ge', 'md', 'kz', 'kg', 'tj',
+  'tm', 'uz', 'tn', 'om', 'ma', 'lb', 'jo', 'iq', 'dz', 'bh',
+]);
+
 const queriedPages = [];
 
 function handleEvent({ prefix, link, callback } = {}) {
@@ -52,10 +59,15 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
     ? getLanguage(languages, mergedLocales, pathname) : getLocale(mergedLocales, pathname);
   const prefix = currentLocaleObj.prefix.replace('/', '');
 
+  const geoSegment = pathname.split('/')[1]?.toLowerCase();
+  const geoMarket = GEO_EXPANSION_MARKETS.has(geoSegment) ? geoSegment : null;
+
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
 
-  if (languageMap && !locales[prefix] && (languages && !languages[prefix])) {
+  if (geoMarket) {
+    href = href.replace(`/${geoMarket}`, '');
+  } else if (languageMap && !locales[prefix] && (languages && !languages[prefix])) {
     const valueInMap = languageMap[prefix];
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
@@ -79,7 +91,7 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
 
   link.addEventListener('click', (e) => {
     setInternational(prefix === '' ? 'us' : prefix);
-    const resolved = normCountryCode(prefix) || 'us';
+    const resolved = geoMarket || normCountryCode(prefix) || 'us';
     const market = resolved === 'la' ? 'latam' : resolved;
     if (market) setMarket(market);
     if (hrefAdapted) return;

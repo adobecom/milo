@@ -1126,7 +1126,7 @@ export const getConfig = async (originalState, strs = {}) => {
           || state.flexCardHideDetails
           || state.flexCardHideTitle
           || state.flexCardHideDescription
-          || state.flexCardHideFooter))
+          || state.flexCardShowDateOnFooter))
         && {
           flexCard: {
             imageOption: state.flexCardImageOptions,
@@ -1135,7 +1135,7 @@ export const getConfig = async (originalState, strs = {}) => {
             hideDetails: !!state.flexCardHideDetails,
             hideTitle: !!state.flexCardHideTitle,
             hideDescription: !!state.flexCardHideDescription,
-            hideFooter: !!state.flexCardHideFooter,
+            showDateOnFooter: !!state.flexCardShowDateOnFooter,
           },
         }
       ),
@@ -1390,11 +1390,11 @@ export const defaultState = {
   theme: 'lightest',
   flexCardTextSize: 'default',
   flexCardImageOptions: 'default',
-  flexCardTextAlign: 'text-left',
+  flexCardTextAlign: 'default',
   flexCardHideDetails: false,
   flexCardHideTitle: false,
   flexCardHideDescription: false,
-  flexCardHideFooter: false,
+  flexCardShowDateOnFooter: false,
   detailsTextOption: 'default',
   titleHeadingLevel: 'h3',
   totalCardsToShow: 10,

@@ -256,6 +256,21 @@
   background-size: 1em 1em;
 }
 
+.marketo .mktoForm select.mktoField {
+  padding-inline-end: calc(var(--spacing-xs) + 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[dir="rtl"] .marketo .mktoForm select {
+  background-position: 3% 50%;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="tel"] {
+  direction: inherit;
+}
+
 .marketo .mktoForm .mktoCheckboxList input,
 .marketo .mktoForm .mktoRadioList input {
   width: auto !important;

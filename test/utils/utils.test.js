@@ -1542,6 +1542,35 @@ describe('Utils', () => {
     });
   });
 
+  describe('loadLink stylesheet dedup', () => {
+    afterEach(() => {
+      document.head.querySelectorAll('link[data-milo-preload-test]').forEach((l) => l.remove());
+    });
+
+    it('loadStyle applies a stylesheet even when a preload for the same href exists', () => {
+      const href = 'data:text/css,x';
+      const preload = utils.loadLink(href, { rel: 'preload', as: 'style' });
+      preload.setAttribute('data-milo-preload-test', '');
+
+      let cbType;
+      const styleLink = utils.loadStyle(href, (type) => { cbType = type; });
+      styleLink.setAttribute('data-milo-preload-test', '');
+
+      // The preload must not shadow the stylesheet: a distinct rel=stylesheet
+      // link is created so the CSS actually applies (the #6210 icon regression).
+      expect(styleLink).to.not.equal(preload);
+      expect(styleLink.getAttribute('rel')).to.equal('stylesheet');
+      expect(preload.getAttribute('rel')).to.equal('preload');
+      expect(document.head.querySelectorAll(`link[href="${href}"]`).length).to.equal(2);
+
+      // A second loadStyle dedups against the stylesheet: no duplicate, noop callback.
+      const again = utils.loadStyle(href, (type) => { cbType = type; });
+      expect(again).to.equal(styleLink);
+      expect(cbType).to.equal('noop');
+      expect(document.head.querySelectorAll(`link[href="${href}"][rel="stylesheet"]`).length).to.equal(1);
+    });
+  });
+
   describe('Lingo Link Transformation', () => {
     let originalFetch;
     let fetchStub;
@@ -2029,6 +2058,86 @@ describe('Utils', () => {
       expect(anchors[1].href).to.include('/de/creativecloud/pricing');
       expect(anchors[2].href).to.include('/ch_de/creativecloud/features');
       anchors.forEach((a) => a.remove());
+    });
+
+    it('fetches fetchPriority-flagged cross-site indexes before the low-priority remainder', async () => {
+      // `dc` is flagged fetchPriority: 'yes'; `da-bacom` is not. The flagged
+      // entry must be fetched in the priority wave (before the barrier, at
+      // default priority), while the rest are deferred at { priority: 'low' }.
+      const priorityMapping = {
+        'site-locales': lingoSiteMapping['site-locales'],
+        'site-query-index-map': {
+          data: [
+            {
+              uniqueSiteId: 'cc',
+              queryIndexWebPath: 'www.adobe.com/*/cc-shared/assets/lingo/query-index.json',
+            },
+            {
+              uniqueSiteId: 'dc',
+              queryIndexWebPath: 'www.adobe.com/*/dc-shared/assets/lingo/query-index.json',
+              fetchPriority: 'yes',
+            },
+            {
+              uniqueSiteId: 'da-bacom',
+              queryIndexWebPath: 'business.adobe.com/*/assets/lingo/query-index.json',
+            },
+          ],
+        },
+      };
+
+      fetchStub.callsFake((url) => {
+        if (url.includes('lingo-site-mapping')) {
+          return mockRes({ payload: priorityMapping });
+        }
+        if (url.includes('cc-shared') && url.includes('/ch_de/')) {
+          return mockRes({ payload: createQueryIndexData(['/ch_de/creativecloud/product']) });
+        }
+        if (url.includes('cc-shared') && url.includes('/de/')) {
+          return mockRes({ payload: ccBaseQueryIndex });
+        }
+        if (url.includes('dc-shared')) {
+          return mockRes({ payload: dcRegionalQueryIndex });
+        }
+        if (url.includes('business.adobe.com')) {
+          return mockRes({ payload: daBacomRegionalQueryIndex });
+        }
+        return mockRes({ payload: { data: [] } });
+      });
+
+      const allLoaded = new Promise((resolve) => {
+        const evt = lingoUtils.MILO_EVENTS.QUERY_INDEX_ALL_LOADED;
+        window.addEventListener(evt, resolve, { once: true });
+      });
+      const a = document.createElement('a');
+      a.href = 'https://www.adobe.com/creativecloud/product';
+      document.body.appendChild(a);
+      a.href = await lingoUtils.localizeLinkAsync(
+        'https://www.adobe.com/creativecloud/product',
+        'www.adobe.com',
+        false,
+        a,
+      );
+      await allLoaded;
+      await new Promise((resolve) => { setTimeout(resolve, 50); });
+
+      const calls = fetchStub.getCalls();
+      const dcIdx = calls.findIndex((c) => c.args[0].includes('dc-shared'));
+      const daBacomIdx = calls.findIndex(
+        (c) => c.args[0].includes('business.adobe.com') && c.args[0].includes('/ch_de/'),
+      );
+
+      // Both cross-site indexes were fetched.
+      expect(dcIdx).to.be.greaterThan(-1);
+      expect(daBacomIdx).to.be.greaterThan(-1);
+      // The flagged (`dc`) index is issued before the barrier resolves — i.e.
+      // before the low-priority remainder (`da-bacom`) is even requested.
+      expect(dcIdx).to.be.lessThan(daBacomIdx);
+      // Flagged entry fetched with no explicit priority hint (default);
+      // the remainder is deferred at low priority.
+      expect(calls[dcIdx].args[1]?.priority).to.be.undefined;
+      expect(calls[daBacomIdx].args[1]?.priority).to.equal('low');
+
+      a.remove();
     });
   });
 
