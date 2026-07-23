@@ -1037,11 +1037,6 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  if (useGeoLocation) {
-    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
-    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
-  }
-
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
     : (await resolveDetectedMarketCountry())?.toLowerCase();
