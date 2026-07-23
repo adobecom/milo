@@ -18,7 +18,7 @@ if (!customElements.get('mas-field')) {
         if (field === 'description') {
           content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
         } else if (field === 'ctas') {
-          content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong>';
+          content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong><em><a href="https://main--milo--adobecom.aem.page/some/test/page">Go</a></em>';
         } else if (field === 'ctas-checkout') {
           // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
           content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
@@ -388,6 +388,17 @@ describe('merch-card-autoblock autoblock', () => {
       const frag = document.querySelector('mas-field aem-fragment');
       expect(frag.getAttribute('mask')).to.equal('baz');
       expect(frag.getAttribute('pzn')).to.equal('qux');
+    });
+
+    it('make preview links relative in createInline', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=mask-pzn-inline-1&field=ctas';
+      const div = document.createElement('div');
+      div.appendChild(a);
+      document.body.append(div);
+      await init(a);
+      expect(document.querySelector('.con-button.outline').getAttribute('href')).to.equal('/some/test/page');
     });
 
     it('does not set mask or pzn when absent from URL', async () => {
