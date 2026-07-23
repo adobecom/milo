@@ -192,11 +192,15 @@
       }
 
       button.tab-button:hover:not([aria-selected="true"]) {
-        color: var(--s2a-color-gray-100);
+        color: var(--s2a-color-content-default);
       }
 
       .tab-indicator {
         background: var(--s2a-color-background-inverse);
+      }
+
+      button.tab-button:focus-visible {
+        outline: var(--s2a-border-width-sm) solid var(--s2a-color-focus-ring-default);
       }
     }
   }
@@ -287,7 +291,7 @@
       height: 32px;
 
       &:hover {
-        color: #2c2c2c;
+        color: var(--s2a-color-content-default);
       }
 
       &[aria-selected="true"] {
@@ -297,7 +301,7 @@
       }
 
       &:focus-visible {
-        outline: 2px solid var(--s2a-color-blue-800);
+        outline: var(--s2a-border-width-sm) solid var(--s2a-color-focus-ring-default);
         outline-offset: -2px;
       }
     }
