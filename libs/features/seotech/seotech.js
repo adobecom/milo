@@ -201,13 +201,18 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag }) {
     document.head.append(script);
   };
 
+  // Prefer canonical URL for structured-data lookup so AEM preview/live
+  // hostnames resolve correctly against the production origin map.
+  const canonicalHref = document.head?.querySelector('link[rel="canonical"]')?.href;
+  const canonicalUrl = canonicalHref ? new URL(canonicalHref) : url;
+
   const promises = [];
   if (isStructuredDataEnabled(locationUrl, getMetadata)) {
-    promises.push(getStructuredData(url.pathname, url.hostname, { originMapUrl })
+    promises.push(getStructuredData(canonicalUrl.pathname, canonicalUrl.hostname, { originMapUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
       .catch(() => logError('Structured data operation failed', {
-        hostname: url.hostname,
-        pathname: url.pathname,
+        hostname: canonicalUrl.hostname,
+        pathname: canonicalUrl.pathname,
       })));
   }
   const videoUrl = getMetadata('seotech-video-url');

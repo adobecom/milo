@@ -188,6 +188,30 @@ describe('seotech', () => {
       expect(lanaStub.called).to.be.false;
     });
 
+    it('should use canonical link for hostname on AEM preview URLs', async () => {
+      const locationUrl = 'https://main--cc--adobecom.aem.live/in/creativecloud/example'
+        + '?seotech-structured-data=on';
+      const canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      canonical.href = 'https://www.adobe.com/in/creativecloud/example.html';
+      document.head.appendChild(canonical);
+      const lanaStub = stub(window.lana, 'log');
+      const fetchStub = stub(window, 'fetch');
+      const getMetadata = stub().returns(null);
+      const expectedObject = { '@context': 'http://schema.org', '@type': 'WebPage', name: 'fake' };
+      fetchStub.onFirstCall().returns(
+        Promise.resolve(Response.json({ ...originMap }, { status: 200 })),
+      );
+      fetchStub.onSecondCall().returns(
+        Promise.resolve(Response.json({ ...expectedObject }, { status: 200 })),
+      );
+      await appendScriptTag({ locationUrl, getMetadata, createTag });
+      const expectedApiCall = 'https://edge.example.net/public/structured-data/da-cc/in/creativecloud/example.json';
+      expect(fetchStub.getCall(1)?.firstArg).to.equal(expectedApiCall);
+      expect(lanaStub.called).to.be.false;
+      document.head.removeChild(canonical);
+    });
+
     it('should append JSON-LD when enabled by query param', async () => {
       const locationUrl = 'https://www.adobe.com/in/creativecloud/example?seotech-structured-data=on';
       const lanaStub = stub(window.lana, 'log');
