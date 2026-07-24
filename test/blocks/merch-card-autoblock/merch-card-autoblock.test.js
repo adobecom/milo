@@ -358,9 +358,10 @@ describe('merch-card-autoblock autoblock', () => {
       expect(link.classList.contains('button-justified-mobile')).to.be.true;
     });
 
-    it('sizes late self-styled CTAs even when a sibling is an unsized con-button (mas-field self-styling)', async () => {
-      // Real mas-field self-styles indexed CTAs with con-button (no size class).
-      // The other CTA's self-styled anchor must NOT be treated as a sized sibling.
+    it('keeps button-xl on late CTAs when a sibling con-button has no size class', async () => {
+      // A pre-existing unsized con-button (e.g. a mas-field footer CTA, self-styled with
+      // con-button but no size) must NOT be used as the size reference, or button-xl is
+      // dropped. Two unsized con-buttons resolving late stand in for that case.
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
       section.classList.add('section');
