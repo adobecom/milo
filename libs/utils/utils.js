@@ -2812,6 +2812,20 @@ function loadLingoIndexes(area = document) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  let jsonLdOptions;
+  let jsonLdInitScheduled = false;
+  const scheduleJsonLdInit = () => {
+    if (!jsonLdOptions || jsonLdInitScheduled) return;
+    jsonLdInitScheduled = true;
+    window.setTimeout(() => {
+      import('../features/jsonld-graph-manager/jsonld-graph-manager.js')
+        .then(({ default: initJsonLd }) => initJsonLd(jsonLdOptions))
+        .catch((e) => window.lana?.log(`Failed to initialize JSON-LD graph manager: ${e}`, {
+          tags: 'jsonld-graph-manager',
+          severity: 'error',
+        }));
+    }, 0);
+  };
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
@@ -2819,6 +2833,13 @@ export async function loadArea(area = document) {
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
+    const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
+    if (jsonLdFlag === 'true') {
+      jsonLdOptions = {
+        bootScripts: [...document.querySelectorAll('script[type="application/ld+json"]')]
+          .map((scriptEl) => ({ scriptEl, textContent: scriptEl.textContent })),
+      };
+    }
   }
   const config = getConfig();
   const isLingoActive = lingoActive();
@@ -2852,12 +2873,14 @@ export async function loadArea(area = document) {
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
+    if (isDoc && section.idx === lcpSectionId) scheduleJsonLdInit();
 
     areaBlocks.forEach((block) => {
       if (!block.className.includes('metadata')) block.dataset.block = '';
     });
   }
 
+  if (isDoc) scheduleJsonLdInit();
   const currentHash = window.location.hash;
   if (currentHash) {
     scrollToHashedElement(currentHash);
