@@ -330,6 +330,62 @@ describe('merch-card-autoblock autoblock', () => {
       expect(link).to.exist;
     });
 
+    it('adds button-justified-mobile to a hero-marquee CTA with no decorated sibling', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+
+      // Single headless CTA, no already-decorated sibling button in the block.
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=hero-solo-cta-1&field=ctas';
+      a.textContent = '[[hero-cta:ctas]]';
+      strong.append(a);
+      p.append(strong);
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button');
+      expect(link).to.exist;
+      expect(link.classList.contains('button-xl')).to.be.true;
+      expect(link.classList.contains('button-justified-mobile')).to.be.true;
+    });
+
+    it('sizes late self-styled CTAs even when a sibling is an unsized con-button (mas-field self-styling)', async () => {
+      // Real mas-field self-styles indexed CTAs with con-button (no size class).
+      // The other CTA's self-styled anchor must NOT be treated as a sized sibling.
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+      const p = document.createElement('p');
+      p.innerHTML = `
+        <em><mas-field field="ctas[0]"><span data-role="mas-field-content"><a class="button con-button outline" is="checkout-link" href="https://commerce.adobe.com/">Free trial</a></span></mas-field></em>
+        <strong><mas-field field="ctas[1]"><span data-role="mas-field-content"><a class="button con-button blue" is="checkout-link" href="https://commerce.adobe.com/">Buy now</a></span></mas-field></strong>`;
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      // watchMasFieldCtas is registered on first init (module-level); prior tests did that.
+      // Dispatch the late mas:ready from each mas-field, as the real component does.
+      [...p.querySelectorAll('mas-field')].forEach((mf) => {
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+      });
+
+      expect(p.querySelectorAll('mas-field').length).to.equal(0);
+      const links = [...p.querySelectorAll('a.con-button')];
+      expect(links.length).to.equal(2);
+      links.forEach((link) => expect(link.classList.contains('button-xl')).to.be.true);
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');

@@ -189,15 +189,19 @@ function decorateInlineCtas(masField, content) {
     blockEl = blockEl.parentElement;
   }
 
-  // Match an already-decorated sibling button in the same block, else derive from the block.
+  // Match a fully-decorated sibling button in the same block, else derive from the block.
+  // Only a button that carries a size class counts: mas-field self-styles its CTAs with
+  // con-button but no size, so an unsized (self-styled, not-yet-Milo-decorated) sibling must
+  // not be used as the size reference — doing so would drop button-xl on every CTA.
+  const SIZE_CLASS = /^button-(s|m|l|xl)$/;
   const siblingBtn = [...(blockEl?.querySelectorAll('.con-button') ?? [])]
-    .find((b) => !masField.contains(b));
+    .find((b) => !masField.contains(b) && [...b.classList].some((c) => SIZE_CLASS.test(c)));
   let size;
   let utilClasses = [];
 
   if (siblingBtn) {
-    // Inherit the sibling's exact size and utility classes (null size honoured).
-    size = [...siblingBtn.classList].find((c) => /^button-(s|m|l|xl)$/.test(c)) ?? null;
+    // Inherit the sibling's exact size and utility classes.
+    size = [...siblingBtn.classList].find((c) => SIZE_CLASS.test(c));
     utilClasses = [...siblingBtn.classList].filter((c) => c.startsWith('button-') && c !== size);
   } else {
     // No decorated sibling yet — derive size from the block, mirroring its decorateButtons call.
@@ -205,7 +209,11 @@ function decorateInlineCtas(masField, content) {
     if (btnVariant) {
       size = `button-${btnVariant.split('-')[0]}`;
     } else if (blockEl?.classList.contains('hero-marquee')) {
+      // Mirror hero-marquee's extendButtonsClass, which adds button-xl AND
+      // button-justified-mobile to every .con-button. Without the util class an
+      // all-headless-CTA marquee renders inline instead of full-width on mobile.
       size = 'button-xl';
+      utilClasses = ['button-justified-mobile'];
     } else if (blockEl?.classList.contains('accordion') || blockEl?.classList.contains('media')) {
       size = null;
     } else {
