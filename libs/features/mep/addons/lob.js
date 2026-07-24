@@ -59,6 +59,7 @@ function addAlloyTracking(lobObject) {
     if (!spectraValues[key]) return;
     customEvents.push({ propertyName: spectraValues[key], propertyValue: value });
   });
+  if (window.location.href.includes('lobdebug')) console.log('Alloy tracking events:', customEvents);
 }
 
 /* eslint-enable no-underscore-dangle */
