@@ -1465,7 +1465,14 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
+    const mainNavItemsSelector = [
+      'h2',
+      'p:only-child > strong > a',
+      'p:only-child > em > a',
+      'p:only-child > a.merch',
+      'p:only-child > a.con-button',
+    ].join(', ');
+    const items = [...this.content.querySelectorAll(mainNavItemsSelector)]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1495,9 +1502,11 @@ class Gnav {
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
-    const isPrimaryCta = item.closest('strong') instanceof HTMLElement;
+    const isPrimaryCta = item.closest('strong') instanceof HTMLElement
+      || item.matches('a.con-button.blue');
     if (isPrimaryCta) return 'primaryCta';
-    const isSecondaryCta = item.closest('em') instanceof HTMLElement;
+    const isSecondaryCta = item.closest('em') instanceof HTMLElement
+      || item.matches('a.con-button.outline');
     if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
