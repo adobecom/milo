@@ -153,16 +153,6 @@
       color: var(--s2a-color-content-knockout);
       transition: color 0.2s ease;
 
-      &:hover .jump-link-badge {
-        background: var(--s2a-color-transparent-white-16);
-        backdrop-filter: blur(4px);
-      }
-
-      &:focus-visible .jump-link-badge {
-        backdrop-filter: blur(4px);
-        background: var(--s2a-color-transparent-white-32);
-      }
-
       &:active .jump-link-badge {
         background: var(--s2a-color-background-default);
 
