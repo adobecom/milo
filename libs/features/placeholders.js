@@ -107,6 +107,22 @@ async function getGeoPlaceholders(config, sheet) {
   });
 }
 
+// Returns a Map of geo-IP placeholder overrides (keys ending in `-geo-ip`,
+// resolved for the visitor's geo) or null when geo/lingo is inactive or none
+// apply. Exposed for surfaces that do their own token replacement outside
+// milo's decorateArea pipeline — e.g. the C2 federal gnav, which merges these
+// into the placeholder Map it hands federal so `{{…-geo-ip}}` tokens resolve to
+// the geo value instead of the base value.
+export async function getGeoIpPlaceholders(config = getConfig(), sheet = 'default') {
+  const geo = await getGeoPlaceholders(config, sheet);
+  if (!geo) return null;
+  const overrides = new Map();
+  Object.entries(geo).forEach(([key, value]) => {
+    if (isGeoIpKey(key) && typeof value === 'string') overrides.set(key, value);
+  });
+  return overrides.size ? overrides : null;
+}
+
 async function getPlaceholder(key, config, sheet) {
   let defaultFetched = false;
   const defaultLocale = 'en-US';
