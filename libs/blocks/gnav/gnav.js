@@ -477,11 +477,28 @@ class Gnav {
     const accessToken = window.adobeIMS.getAccessToken();
     if (accessToken) {
       const { env } = getConfig();
-      const ioResp = await fetch(`https://${env.adobeIO}/profile`, { headers: new Headers({ Authorization: `Bearer ${accessToken.token}` }) });
+      let accountId = '';
+      let hasOrgs = false;
+      try {
+        const [imsProfile, organizations] = await Promise.all([
+          window.adobeIMS.getProfile(),
+          window.adobeIMS.getOrganizations(),
+        ]);
+        accountId = imsProfile?.userId || '';
+        hasOrgs = organizations?.count > 0;
+      } catch (e) { /* noop */ }
 
-      if (ioResp.status === 200) {
+      const ioResp = await fetch(`https://${env.adobeIO}/api/profile`, {
+        headers: new Headers({
+          Authorization: `Bearer ${accessToken.token}`,
+          'x-account-id': accountId,
+          'x-api-key': window.adobeid?.client_id,
+        }),
+      });
+
+      if (ioResp.ok) {
         const profile = await import('./gnav-profile.js');
-        profile.default(blockEl, profileEl, this.toggleMenu, ioResp);
+        profile.default(blockEl, profileEl, this.toggleMenu, ioResp, hasOrgs);
         this.getAppLauncher(profileEl);
       } else {
         await this.decorateSignIn(blockEl, profileEl);
