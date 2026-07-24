@@ -1,4 +1,6 @@
 export const PROD_BASE_URL = 'https://www.adobe.com/seotech/api';
+// TODO: move to a CSP-allowed endpoint once firefly.azureedge.net is proxied
+// through www.adobe.com/seotech/public (MWPW-201818)
 export const STRUCTURED_DATA_ORIGIN_MAP_URL = 'https://firefly.azureedge.net/c4dbffdc97a2c4f65073a222e967ea7c-public/public/aem-origin-map/public.json';
 
 export const REGEX_ADOBETV = /(?:https?:\/\/)?(?:stage-)?video.tv.adobe.com\/v\/([\d]+)/;
