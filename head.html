@@ -1,4 +1,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="preload" href="/libs/styles/styles.css" as="style"/>
+<link rel="modulepreload" href="/libs/utils/utils.js"/>
+<link rel="modulepreload" href="/libs/utils/locales.js"/>
+<link rel="modulepreload" href="/libs/utils/fonts.js"/>
+<link rel="preconnect" href="https://use.typekit.net" crossorigin/>
+<script type="module">
+/* Early LCP image hint: runs at parse end, before the scripts.js module graph is
+   fetched. Keep in sync with loadLCPImage in /libs/scripts/scripts.js. */
+try {
+  const eager = (img) => { img?.setAttribute('loading', 'eager'); img?.setAttribute('fetchpriority', 'high'); };
+  const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
+  if (firstDiv?.classList.contains('marquee') || firstDiv?.classList.contains('hero-marquee')) {
+    const rows = firstDiv.querySelectorAll(':scope > div');
+    const bgRow = rows.length > 1 ? rows[0] : null;
+    if (bgRow) {
+      const cells = [...bgRow.children];
+      let idx = 0;
+      if (cells.length === 2 && window.matchMedia('(min-width: 600px)').matches) idx = 1;
+      if (cells.length >= 3) {
+        if (window.matchMedia('(min-width: 1200px)').matches) idx = 2;
+        else if (window.matchMedia('(min-width: 600px)').matches) idx = 1;
+      }
+      eager(cells[idx]?.querySelector('img'));
+    }
+    firstDiv.querySelectorAll(bgRow ? ':scope > div:not(:first-child) img' : 'img').forEach(eager);
+  } else {
+    eager(document.querySelector('img'));
+  }
+} catch (e) { /* best effort only */ }
+</script>
 <script src="/libs/scripts/scripts.js" type="module"></script>
 <link rel="icon" href="data:," size="any"/>
 <style>body { display: none; }</style>

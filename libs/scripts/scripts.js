@@ -71,14 +71,32 @@ const eagerLoad = (img) => {
   img?.setAttribute('fetchpriority', 'high');
 };
 
-(async function loadLCPImage() {
-  const firstDiv = document.querySelector('body > main > div:nth-child(1) > div');
-  if (firstDiv?.classList.contains('marquee')) {
-    firstDiv.querySelectorAll('img').forEach(eagerLoad);
-  } else {
-    eagerLoad(document.querySelector('img'));
+/* Keep in sync with the inline early-hint script in head.html. */
+export default function loadLCPImage(doc = document) {
+  const firstDiv = doc.querySelector('body > main > div:nth-child(1) > div');
+  const isMarquee = firstDiv?.classList.contains('marquee') || firstDiv?.classList.contains('hero-marquee');
+  if (!isMarquee) {
+    eagerLoad(doc.querySelector('img'));
+    return;
   }
-}());
+  const rows = firstDiv.querySelectorAll(':scope > div');
+  const bgRow = rows.length > 1 ? rows[0] : null;
+  if (bgRow) {
+    // Background cells are authored [all], [mobile, tablet+desktop] or [mobile, tablet, desktop].
+    const cells = [...bgRow.children];
+    let idx = 0;
+    if (cells.length === 2 && window.matchMedia('(min-width: 600px)').matches) idx = 1;
+    if (cells.length >= 3) {
+      if (window.matchMedia('(min-width: 1200px)').matches) idx = 2;
+      else if (window.matchMedia('(min-width: 600px)').matches) idx = 1;
+    }
+    eagerLoad(cells[idx]?.querySelector('img'));
+  }
+  const contentImgs = bgRow ? ':scope > div:not(:first-child) img' : 'img';
+  firstDiv.querySelectorAll(contentImgs).forEach(eagerLoad);
+}
+
+loadLCPImage();
 
 function loadStyles() {
   const paths = [];
