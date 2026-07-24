@@ -1,14 +1,6 @@
 /* stylelint-disable no-descending-specificity */
 :root {
-  /*
-   * background-inverse (not background-knockout) is the correct token here:
-   * knockout resolves to the same fixed near-black value in both the light
-   * and dark semantic token sets, while inverse actually flips (near-black in
-   * light, white in dark) — required for the selected pill/radio-dot to stay
-   * visible once a `.dark` block renders on a dark surface. This produces the
-   * exact same value as before in light mode (both resolve to gray-1000), so
-   * it's a no-op visually today.
-   */
+  /* using inverse to support dark and light variants  */
   --pill-bg-color-selected: var(--s2a-color-background-inverse);
   --pill-rounded-corners-setting: 50px;
 }
@@ -23,14 +15,6 @@
     background: transparent;
   }
 
-  /*
-   * Every variant below scopes through `> .tabs-wrapper` first. A
-   * `.tabs-wrapper` only ever contains this block's own tab list — nested
-   * tabs blocks live under `.tab-content-container` instead — so this single
-   * direct-child step guarantees a variant's rules can never bleed into a
-   * differently-classed tabs block nested inside one of this block's panels,
-   * regardless of shared class/role names further down the tree.
-   */
   &.radio > .tabs-wrapper {
     [role='radiogroup'] {
       overflow: visible;
@@ -105,17 +89,6 @@
     }
   }
 
-  &.radio {
-    background: transparent;
-  }
-
-  /*
-   * Confirmed against Figma: radio-dark's container is #131313
-   * (--s2a-color-gray-900, i.e. --s2a-color-background-default), not
-   * --s2a-color-background-subtle (--s2a-color-gray-700, lighter). The
-   * selected dot's gap must match this same value so it keeps blending
-   * seamlessly with the container instead of showing as a visible ring.
-   */
   &.radio.dark > .tabs-wrapper {
     [role='radiogroup'] {
       .tab-list-container {
@@ -168,18 +141,6 @@
     }
   }
 
-  &.quiet {
-    background: transparent;
-  }
-
-  /*
-   * `.dark` is an opt-in variant class (like radio/quiet), not inherited from
-   * an ancestor section. Matches radio-dark's confirmed container value
-   * (#131313 / --s2a-color-background-default) for consistency. The selected
-   * pill's background/text are set explicitly here rather than relying on
-   * --pill-bg-color-selected / --s2a-color-content-inverse to flip on their
-   * own — same fix that was needed for radio-dark's selected dot.
-   */
   &.dark:not(.radio):not(.quiet) > .tabs-wrapper {
     [role='tablist'] {
       background: var(--s2a-color-background-default);
@@ -196,19 +157,11 @@
       .tab-indicator {
         background: var(--s2a-color-background-inverse);
       }
-
-      button.tab-button:focus-visible {
-        outline: var(--s2a-border-width-sm) solid var(--s2a-color-focus-ring-default);
-      }
     }
   }
 
-  /*
-   * Plain pill is the only variant that keeps a solid block-level background
-   * in light mode (radio/quiet already force it transparent unconditionally
-   * above). Nothing overrode it for dark, so it stayed at the light value —
-   * matching radio/quiet's transparent treatment for now.
-   */
+  &.radio,
+  &.quiet,
   &.dark:not(.radio):not(.quiet) {
     background: transparent;
   }

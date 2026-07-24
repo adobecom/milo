@@ -195,8 +195,8 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
+  const tabs = elm.querySelectorAll(':scope > .tabs-wrapper [role="tab"], :scope > .tabs-wrapper [role="radio"]');
+  const tabLists = elm.querySelectorAll(':scope > .tabs-wrapper [role="tablist"], :scope > .tabs-wrapper [role="radiogroup"]');
   let tabFocus = 0;
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
