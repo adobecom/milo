@@ -1,0 +1,228 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="below-threshold" data-figma-node-id="9848:39844" data-block="news">
+  <style>
+    .jtbd-root {
+      width: 100%;
+      background-color: #f6f6f6;
+      padding-top: 124px;
+      padding-bottom: 24px;
+      box-sizing: border-box;
+    }
+    .jtbd-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 40px;
+    }
+    .jtbd-copy {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .jtbd-heading {
+      width: 540px;
+      max-width: 100%;
+      font-family: 'Adobe Clean Display', sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      color: #000000;
+    }
+    .jtbd-heading p,
+    .jtbd-body p,
+    .jtbd-card-heading p,
+    .jtbd-card-body p {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+    .jtbd-body {
+      width: 616px;
+      max-width: 100%;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 24px;
+      text-align: center;
+      color: #131313;
+    }
+    .jtbd-cards {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 24px;
+      width: 100%;
+      height: 1000px;
+      box-sizing: border-box;
+    }
+    .jtbd-large-img {
+      width: 892px;
+      max-width: 64%;
+      height: 1000px;
+      border-radius: 16px;
+      object-fit: cover;
+      background-color: #d4d4d4;
+      flex-shrink: 0;
+      display: block;
+    }
+    .jtbd-right-card {
+      display: flex;
+      flex-direction: column;
+      width: 492px;
+      max-width: 34%;
+      flex-shrink: 0;
+    }
+    .jtbd-right-img {
+      width: 100%;
+      height: 600px;
+      border-radius: 16px;
+      background-color: #ffffff;
+      object-fit: cover;
+      box-shadow: 0px 4px 100px 0px rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
+      display: block;
+    }
+    .jtbd-card-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px 24px 0 24px;
+      width: 391px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .jtbd-card-headline-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+    .jtbd-card-heading {
+      font-family: 'Adobe Clean Display', sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 18px;
+      letter-spacing: -0.48px;
+      text-align: left;
+      color: #000000;
+    }
+    .jtbd-card-body {
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 20px;
+      text-align: left;
+      color: rgba(0, 0, 0, 0.64);
+    }
+    .jtbd-cta {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .jtbd-cta-label {
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #000000;
+    }
+    @media (max-width: 1024px) {
+      .jtbd-cards {
+        flex-direction: column;
+        height: auto;
+        align-items: stretch;
+      }
+      .jtbd-large-img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        aspect-ratio: 892 / 600;
+        max-height: 600px;
+      }
+      .jtbd-right-card {
+        width: 100%;
+        max-width: 100%;
+      }
+      .jtbd-right-img {
+        height: auto;
+        aspect-ratio: 492 / 600;
+      }
+      .jtbd-card-copy {
+        width: 100%;
+      }
+    }
+    @media (max-width: 768px) {
+      .jtbd-root {
+        padding-top: 64px;
+      }
+      .jtbd-heading {
+        font-size: 36px;
+        line-height: 40px;
+        letter-spacing: -1px;
+      }
+      .jtbd-body {
+        font-size: 17px;
+        line-height: 22px;
+      }
+      .jtbd-large-img {
+        aspect-ratio: 4 / 3;
+        max-height: 400px;
+      }
+      .jtbd-right-img {
+        aspect-ratio: 4 / 3;
+      }
+      .jtbd-card-copy {
+        padding: 20px 0 0 0;
+      }
+    }
+  </style>
+  <div class="jtbd-root">
+    <div class="jtbd-inner">
+      <!-- Copy block -->
+      <div class="jtbd-copy">
+        <div class="jtbd-heading">
+          <p>There’s more to Acrobat than Acrobat.</p>
+        </div>
+        <div class="jtbd-body">
+          <p>Create, edit, sign, and more with 70+ professional tools. Use AI to generate a whole presentation from your PDF. And that’s just the beginning.</p>
+        </div>
+      </div>
+      <!-- Cards row -->
+      <div class="jtbd-cards">
+        <!-- Large left asset -->
+        <img src="media_bizpro-hub-assetFrame.png" alt="_ASSET FRAME" class="jtbd-large-img" />
+        <!-- Right card -->
+        <div class="jtbd-right-card">
+          <img src="media_bizpro-hub-frame2147230324.png" alt="Frame 2147230324" class="jtbd-right-img" />
+          <div class="jtbd-card-copy">
+            <div class="jtbd-card-headline-body">
+              <div class="jtbd-card-heading">
+                <p>Collaborate effortlessly.</p>
+              </div>
+              <div class="jtbd-card-body">
+                <p>Share a secure PDF Space with teammates, where everyone can ask AI Assistant to help with research, strategy, planning, or quick learning.</p>
+              </div>
+            </div>
+            <a href="#" class="jtbd-cta">
+              <span class="jtbd-cta-label">Learn more</span>
+              <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M1.5 1.5L5.5 5.5L1.5 9.5" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

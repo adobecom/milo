@@ -1,0 +1,183 @@
+<section data-binding-score="0.00" data-binding="new-block" data-figma-node-id="9848:40070" data-block="unknown" class="offer-sec">
+
+<style>
+  .offer-sec {
+    width: 100%;
+    min-height: 1470px;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+  }
+  .offer-sec__bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #ffffff 30%, #f6f6f6 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .offer-sec__inner {
+    position: relative;
+    max-width: 1440px;
+    margin: 0 auto;
+    min-height: 1470px;
+    z-index: 1;
+  }
+  .offer-sec__rect-bg {
+    position: absolute;
+    top: 118px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-0.254deg);
+    width: 1064px;
+    height: 972px;
+    background: #f0f0f0;
+    border-radius: 16px;
+    z-index: 1;
+  }
+  .offer-sec__rect-shadow {
+    position: absolute;
+    top: 166px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 904px;
+    height: 26px;
+    background: #e6e6e6;
+    border-radius: 16px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    z-index: 2;
+  }
+  .offer-sec__cards {
+    position: absolute;
+    top: 154px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 30px;
+    z-index: 3;
+    width: 1220px;
+  }
+  .offer-sec__card {
+    flex-shrink: 0;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .offer-sec__card img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .offer-sec__card--1 {
+    width: 370px;
+    height: 734px;
+    background: #e2e2e2;
+    transform: rotate(0.619deg);
+  }
+  .offer-sec__card--1 img { height: 734px; }
+  .offer-sec__card--2 {
+    width: 420px;
+    height: 792px;
+    background: #d4d4d4;
+    transform: rotate(0.318deg);
+    margin-top: -28px;
+  }
+  .offer-sec__card--2 img { height: 792px; }
+  .offer-sec__card--3 {
+    width: 370px;
+    height: 734px;
+    background: #e2e2e2;
+    transform: rotate(-0.478deg);
+  }
+  .offer-sec__card--3 img { height: 734px; }
+  .offer-sec__gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 480px;
+    background: linear-gradient(0deg, #f6f6f6 0%, rgba(246, 246, 246, 0) 100%);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* ── 1024 px breakpoint ── */
+  @media (max-width: 1024px) {
+    .offer-sec { min-height: auto; padding: 72px 0 56px; }
+    .offer-sec__inner { min-height: auto; padding: 0 24px; box-sizing: border-box; }
+    .offer-sec__rect-bg,
+    .offer-sec__rect-shadow { display: none; }
+    .offer-sec__cards {
+      position: relative;
+      top: auto; left: auto;
+      transform: none;
+      width: 100%;
+      gap: 16px;
+    }
+    .offer-sec__card--1,
+    .offer-sec__card--2,
+    .offer-sec__card--3 {
+      width: calc(33.33% - 11px);
+      height: auto;
+      aspect-ratio: 3 / 5;
+      margin-top: 0;
+    }
+    .offer-sec__card--1 img,
+    .offer-sec__card--2 img,
+    .offer-sec__card--3 img { height: 100%; }
+    .offer-sec__gradient { height: 120px; }
+  }
+
+  /* ── 768 px breakpoint ── */
+  @media (max-width: 768px) {
+    .offer-sec { padding: 52px 0 72px; }
+    .offer-sec__inner { padding: 0 20px; }
+    .offer-sec__cards {
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .offer-sec__card--1,
+    .offer-sec__card--2,
+    .offer-sec__card--3 {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      aspect-ratio: 4 / 5;
+      transform: none;
+    }
+  }
+</style>
+
+  <div class="offer-sec__bg"></div>
+
+  <div class="offer-sec__inner">
+
+    <!-- Rectangle 2147231596 — decorative background card -->
+    <div class="offer-sec__rect-bg"></div>
+
+    <!-- Rectangle 2147231600 — shadow accent -->
+    <div class="offer-sec__rect-shadow"></div>
+
+    <!-- Three rotated image cards -->
+    <div class="offer-sec__cards">
+
+      <div class="offer-sec__card offer-sec__card--1">
+        <img src="media_bizpro-hub-rectangle2147231599.png" alt="Rectangle 2147231599" />
+      </div>
+
+      <div class="offer-sec__card offer-sec__card--2">
+        <img src="media_bizpro-hub-rectangle2147231598.png" alt="Rectangle 2147231598" />
+      </div>
+
+      <div class="offer-sec__card offer-sec__card--3">
+        <img src="media_bizpro-hub-rectangle2147231597.png" alt="Rectangle 2147231597" />
+      </div>
+
+    </div>
+
+    <!-- Flow → Grid to UI: gradient transition zone -->
+    <div class="offer-sec__gradient"></div>
+
+  </div>
+
+</section>

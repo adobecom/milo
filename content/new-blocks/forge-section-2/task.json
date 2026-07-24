@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-section-2",
+  "sectionIndex": 2,
+  "decision": "below-threshold",
+  "score": 0.57,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=9848-39672&focus-id=9848-39669&view=focus&m=dev",
+  "figmaNodeId": "9848:39844",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-1eb6381f-mrz68idb",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-1eb6381f-mrz68idb/libs/c2/blocks/forge-section-2",
+  "miloBranch": "forge/session-1eb6381f-27d",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/figma-1eb638?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

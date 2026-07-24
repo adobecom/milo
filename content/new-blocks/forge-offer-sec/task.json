@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-offer-sec",
+  "sectionIndex": 4,
+  "decision": "new-block",
+  "score": 0,
+  "topCandidate": null,
+  "sectionClass": "sf-sec-4",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=9848-39672&focus-id=9848-39669&view=focus&m=dev",
+  "figmaNodeId": "9848:40070",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-1eb6381f-mrz68idb",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-1eb6381f-mrz68idb/libs/c2/blocks/forge-offer-sec",
+  "miloBranch": "forge/session-1eb6381f-27d",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/figma-1eb638?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}
