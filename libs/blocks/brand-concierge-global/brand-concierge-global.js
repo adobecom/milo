@@ -39,17 +39,15 @@ function handleInput(text, gnavInput) {
   openSideModal(text, bcBootstrap);
 }
 
-function handlePrompt(text, gnavCards, event) {
-  const textArea = document.querySelector('.feds-bc-wrapper textarea');
+function handleSuggestedPrompt(text, gnavCards, event) {
   const gnavInput = document.querySelector('.feds-bc-wrapper .bc-input-field');
-  textArea.value = '';
   event.target.blur();
   gnavDeactivate(gnavInput, gnavCards);
   openSideModal(text, bcBootstrap);
 }
 
 function handleGnavButton(event) {
-  const isOpen = document.body.classList.contains('bc-chat-open');
+  const isOpen = document.body.classList.contains('bc-side-open');
   const close = document.querySelector('#brand-concierge-side button.dialog-close');
   if (!isOpen) openSideModal(null, bcBootstrap);
   else close.click();
@@ -77,7 +75,8 @@ function decorateGnav(cards, input, topNav, el) {
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handlePrompt, down: promptDown, up: promptUp }, 'bcg-', 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'bcg-', 'gnav');
+    const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');
     textarea.addEventListener('focus', () => {
@@ -102,6 +101,14 @@ function decorateGnav(cards, input, topNav, el) {
         closeButton.click();
       } else handleGnavButton(event);
     });
+    if (window?.milo) {
+      window.milo.brandConcierge = brandConcierge;
+    } else {
+      const milo = {};
+      window.milo = milo;
+      window.milo.brandConcierge = brandConcierge;
+    }
+
     if (localStorage.getItem('bc-side-overlay') === 'open') openSideModal(null, bcBootstrap);
   }
 }

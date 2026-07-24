@@ -603,7 +603,6 @@ nav.feds-topnav .feds-bc-wrapper {
       height: calc(100vh - 48px - 63px);
       margin: 24px 24px 24px auto;
       bottom: 0;
-      top: 63px;
       right: 0;
       width: 400px;
       animation: var(--bc-modal-animation-time) ease-in-out slide-in;

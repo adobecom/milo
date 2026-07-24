@@ -4,8 +4,8 @@ import { getBetaLabel, waitForCondition, expandIcon } from './bc-utils.js';
 import { bcAnalytics, getAnalyticsLabel } from './bc-analytics.js';
 import chatUIConfig from './chat-ui-config.js';
 
+export const mountId = 'brand-concierge-mount';
 const chatLabelText = 'Ask';
-const mountId = 'brand-concierge-mount';
 const animationMs = 500;
 
 const authoredContent = {};
@@ -184,7 +184,8 @@ function getUpdatedChatUIConfig() {
   return chatUIConfig;
 }
 
-export async function bcBootstrap(mountEl) {
+export async function bcBootstrap(initialMessage, mountIdentifier) {
+  const mountEl = document.querySelector(`#${mountIdentifier}`);
   const logWebClient = (text, src) => {
     // eslint-disable-next-line no-console
     console.log(text, src);
@@ -222,6 +223,8 @@ export async function bcBootstrap(mountEl) {
   }
 
   loadScript(src);
+
+  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
 
   const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
   const surfaceURL = window.location.href;
@@ -306,7 +309,6 @@ export async function openModal(initialMessage, bootstrap) {
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel()]);
   const mountEl = createTag('div', { id: mountId });
 
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
@@ -321,7 +323,7 @@ export async function openModal(initialMessage, bootstrap) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
-  bootstrap(mountEl);
+  bootstrap(initialMessage, mountId);
 }
 
 export async function openSideModal(initialMessage, bootstrap) {
@@ -331,7 +333,6 @@ export async function openSideModal(initialMessage, bootstrap) {
   const header = createTag('div', { class: 'bc-modal-header' }, [title, getBetaLabel(), expandButton]);
   const mountEl = createTag('div', { id: mountId });
 
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     id: 'brand-concierge-side',
@@ -361,5 +362,5 @@ export async function openSideModal(initialMessage, bootstrap) {
     }
   });
 
-  bootstrap(mountEl);
+  bootstrap(initialMessage, mountId);
 }

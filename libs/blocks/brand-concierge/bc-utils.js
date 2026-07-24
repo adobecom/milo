@@ -21,7 +21,6 @@ export const aiIcon = (svgId, svgClass, svgTitle, svgSize = 16) => `<svg class="
 export const expandIcon = '<svg xmlns="http://www.w3.org/2000/svg" class="expand-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M7.22432 8.77579C6.98995 8.54141 6.61026 8.54141 6.37588 8.77579L2.8001 12.3516V10.4059C2.8001 10.0746 2.53135 9.80587 2.2001 9.80587C1.86885 9.80587 1.6001 10.0746 1.6001 10.4059V13.8C1.6001 14.1313 1.86885 14.4 2.2001 14.4H5.59424C5.92549 14.4 6.19424 14.1313 6.19424 13.8C6.19424 13.4688 5.92549 13.2 5.59424 13.2H3.64854L7.22432 9.62423C7.4587 9.38985 7.4587 9.01016 7.22432 8.77579Z" fill="#292929"/>  <path d="M14.4001 2.20001V5.59415C14.4001 5.9254 14.1313 6.19415 13.8001 6.19415C13.4688 6.19415 13.2001 5.9254 13.2001 5.59415V3.64845L9.62431 7.22423C9.50713 7.34141 9.35361 7.40001 9.2001 7.40001C9.04658 7.40001 8.89306 7.34142 8.77588 7.22423C8.5415 6.98985 8.5415 6.61017 8.77588 6.37579L12.3517 2.80001H10.406C10.0747 2.80001 9.80596 2.53125 9.80596 2.20001C9.80596 1.86876 10.0747 1.60001 10.406 1.60001H13.8001C14.1314 1.60001 14.4001 1.86876 14.4001 2.20001Z" fill="#292929"/></svg>';
 
 const chatLabelText = 'Ask';
-const variants = {};
 
 const getTargetHeight = (target) => {
   const { marginBottom } = window.getComputedStyle(target);
@@ -49,7 +48,7 @@ export function waitForCondition(checkFn, timeout = 5000, interval = 100) {
   });
 }
 
-export function floatingElement(targetEl, el, focusableEl = null) {
+export function floatingElement(targetEl, el, variants, focusableEl = null) {
   const hideFloating = () => {
     if (focusableEl) {
       focusableEl.setAttribute('aria-hidden', 'true');
@@ -118,7 +117,7 @@ export function floatingElement(targetEl, el, focusableEl = null) {
       if (variants.isFloatingAnchorHide || variants.floatingAnchorDelay) {
         hideFloating();
       } else {
-        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none;`;
+        floatingSpacer.style.cssText = `height: ${targetHeight}px; pointer-events: none; display: block;`;
       }
     } else {
       showFloating();
@@ -144,8 +143,6 @@ export function floatingElement(targetEl, el, focusableEl = null) {
       scrollPending = false;
     });
   }, { passive: true });
-
-  return floatingSpacer;
 }
 
 export function getBetaLabel() {
@@ -168,26 +165,53 @@ export function decorateBackground(el, background) {
   }
 }
 
-export function decorateHeader(el, header) {
-  const hTag = header.querySelector('h1, h2, h3, h4, h5, h6');
-  const subTitle = header.querySelector('p');
-  const headerSection = createTag('section', { class: 'bc-header' });
+export function decorateMarqueeBackground(el, background) {
+  const pictures = [...background.querySelectorAll('picture')];
+  if (!pictures.length) {
+    decorateBackground(el, background);
+    return;
+  }
+  const backgroundLayer = createTag('div', { class: 'background' });
+  if (pictures.length === 1) {
+    backgroundLayer.append(pictures[0]);
+  } else {
+    const viewports = ['desktop-only', 'tablet-only', 'mobile-only'];
+    pictures.forEach((picture, index) => {
+      backgroundLayer.append(createTag('div', { class: viewports[index] || 'mobile-only' }, picture));
+    });
+  }
+  el.prepend(backgroundLayer);
+}
 
-  if (hTag) {
-    hTag.classList.add('bc-header-title');
-    headerSection.append(hTag);
+export function decorateHeader(el, header, { eyebrow: withEyebrow = false } = {}) {
+  const headerSection = createTag('section', { class: 'bc-header' });
+  let title;
+  let eyebrow = null;
+
+  if (withEyebrow) {
+    [eyebrow, title] = header.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  } else {
+    title = header.querySelector('h1, h2, h3, h4, h5, h6');
+  }
+  const subTitle = header.querySelector('p');
+
+  if (eyebrow) {
+    eyebrow.classList.add('bc-header-eyebrow');
+    headerSection.append(eyebrow);
+  }
+  if (title) {
+    title.classList.add('bc-header-title');
+    headerSection.append(title);
   }
   if (subTitle) {
     subTitle.classList.add('bc-header-subtitle');
     headerSection.append(subTitle);
   }
-  if (!hTag && !subTitle) {
+  if (!eyebrow && !title && !subTitle) {
     headerSection.append(createTag('p', { class: 'bc-header-subtitle' }, header.textContent.trim()));
   }
 
   el.append(headerSection);
-
-  return headerSection;
 }
 
 export function decorateCards(
@@ -215,18 +239,14 @@ export function decorateCards(
     cardSection.append(cardButton);
 
     cardButton.addEventListener('click', (event) => {
-      const input = el.querySelector('.bc-input-field textarea');
-
-      input.value = cardText.textContent.trim();
-      // openChatModal(input.value, el);
-      promptEvents.handle(input.value, cardSection, event);
+      promptEvents.handle(card.textContent.trim(), cardSection, event);
     });
-    if (promptEvents.down) {
+    if (promptEvents?.down) {
       cardButton.addEventListener('mousedown', () => {
         promptEvents.down();
       });
     }
-    if (promptEvents.up) {
+    if (promptEvents?.up) {
       cardButton.addEventListener('mouseup', () => {
         promptEvents.up();
       });
@@ -286,7 +306,6 @@ export function decorateInput(el, input, inputEvents, iconPrefix = '') {
 
   fieldButton.addEventListener('click', (event) => {
     if (!fieldInput.value || fieldInput.value.trim() === '') return;
-    // openChatModal(fieldInput.value, el);
     inputEvents.handle(fieldInput.value, fieldSection, event);
   });
 
@@ -302,9 +321,9 @@ export function decorateLegal(el, legal) {
   return legalSection;
 }
 
-export function decorateFloatingButton(el, input, handleFloatingButton, iconPrefix = '') {
+export function decorateFloatingButton(el, input, handleFloatingButton, variants) {
   const floatingButton = createTag('section', { class: 'bc-floating-button' });
-  const floatingIcon = createTag('div', { class: 'bc-floating-icon' }, aiIcon(`${iconPrefix}ai-icon-floating`, 'floating-icon', chatLabelText, 20));
+  const floatingIcon = createTag('div', { class: 'bc-floating-icon' }, aiIcon('ai-icon-floating', 'floating-icon', chatLabelText, 20));
   const floatingInput = createTag('div', { class: 'bc-floating-input' }, input.textContent);
   const floatingSubmit = createTag('div', { class: 'bc-floating-submit' }, submitIcon);
   const floatingContainer = createTag('button', { class: 'bc-floating-button-container no-track', 'daa-ll': getAnalyticsLabel('floating-bc') }, [floatingIcon, floatingInput, floatingSubmit]);
@@ -319,16 +338,13 @@ export function decorateFloatingButton(el, input, handleFloatingButton, iconPref
       floatingButton.classList.remove('active');
       clearTimeout(cleanup);
     }, 500);
-    // openChatModal(null, el);
     handleFloatingButton(el);
   });
 
-  const floater = floatingElement(floatingButton, el, floatingContainer);
-
-  return { float: floatingButton, spacer: floater };
+  floatingElement(floatingButton, el, variants, floatingContainer);
 }
 
-export function decorateFloatingInput(el, cards, input) {
+export function decorateFloatingInput(el, cards, input, floatingInputEvents, variants) {
   if (variants.isFloatingInputOnly) {
     el.classList.add('floating-input');
   }
@@ -353,8 +369,8 @@ export function decorateFloatingInput(el, cards, input) {
   }
 
   const floatingInput = createTag('section', { class: 'bc-floating-input' });
-  decorateInput(floatingInput, input);
-  decorateCards(floatingInput, cards);
+  decorateInput(floatingInput, input, { handle: floatingInputEvents.inputHandle });
+  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle });
   el.append(floatingInput);
 
   const updateLayout = () => {
@@ -363,7 +379,7 @@ export function decorateFloatingInput(el, cards, input) {
 
   window.addEventListener('resize', updateLayout);
   requestAnimationFrame(updateLayout);
-  floatingElement(floatingInput, el, el.querySelector('.bc-input-field'));
+  floatingElement(floatingInput, el, variants, el.querySelector('.bc-input-field'));
 
   return floatingInput;
 }
