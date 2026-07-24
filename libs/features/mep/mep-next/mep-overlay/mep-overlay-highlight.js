@@ -216,6 +216,34 @@ function getBadgeHeight(el) {
 const BADGE_SELECTORS = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
 const BADGE_SPACING = 4;
 
+const BADGE_MAX_WIDTH_SELECTORS = `
+  [data-manifest-id],
+  [data-code-manifest-id],
+  [data-removed-manifest-id],
+  [data-mep-lingo-roc],
+  [data-mep-lingo-fallback],
+  [data-fragment-default],
+  [data-caas-block] [data-country],
+  ${MAS_PSEUDO_BADGE_SELECTOR}
+`;
+
+function getBadgeLeft(el) {
+  if (window.getComputedStyle(el).display === 'contents') {
+    const visibleChild = Array.from(el.children).find((c) => c.offsetHeight > 0);
+    return visibleChild ? visibleChild.getBoundingClientRect().left : null;
+  }
+  return el.getBoundingClientRect().left;
+}
+
+function adjustBadgeMaxWidths() {
+  const badges = [...document.querySelectorAll(BADGE_MAX_WIDTH_SELECTORS)];
+  const lefts = badges.map(getBadgeLeft);
+  badges.forEach((el, i) => {
+    if (lefts[i] === null) return;
+    el.style.setProperty('--badge-max-width', `${Math.max(window.innerWidth - lefts[i], 0)}px`);
+  });
+}
+
 function getBadgeEntry(el) {
   const beforeStyles = window.getComputedStyle(el, '::before');
   if (beforeStyles.content === 'none' || beforeStyles.display === 'none') return null;
@@ -261,13 +289,36 @@ function adjustBadgePositions() {
   });
 }
 
+function refreshBadges() {
+  adjustBadgePositions();
+  adjustBadgeMaxWidths();
+}
+
 let badgeAdjustTimer;
 const highlightObserver = new MutationObserver(() => {
   refreshPageUpdateCounts();
   clearTimeout(badgeAdjustTimer);
-  badgeAdjustTimer = setTimeout(adjustBadgePositions, 50);
+  badgeAdjustTimer = setTimeout(refreshBadges, 50);
 });
 highlightObserver.observe(document.body, { childList: true, subtree: true });
+
+let resizeRaf;
+window.addEventListener('resize', () => {
+  if (resizeRaf) return;
+  resizeRaf = requestAnimationFrame(() => {
+    resizeRaf = null;
+    refreshBadges();
+  });
+});
+
+let scrollRaf;
+window.addEventListener('scroll', () => {
+  if (scrollRaf) return;
+  scrollRaf = requestAnimationFrame(() => {
+    scrollRaf = null;
+    refreshBadges();
+  });
+}, { passive: true, capture: true });
 
 export function getPageUpdates(label) {
   return `${getPageUpdateCount(label)} Page Updates`;
@@ -343,5 +394,5 @@ export default async function init() {
   setHighlightData();
   setDefaultFragments();
   setBadgeEventListeners();
-  requestAnimationFrame(adjustBadgePositions);
+  requestAnimationFrame(refreshBadges);
 }
