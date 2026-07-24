@@ -692,6 +692,10 @@
     margin: 0;
   }
 
+  .table.preserve-columns .row .section-row-title {
+    grid-column: auto;
+  }
+
   .table:not(.merch) .row .section-head-title,
   .table:not(.merch) .row .section-row-title {
     border-right: 1px solid var(--border-color);
@@ -701,10 +705,23 @@
     display: block;
   }
 
+  .table.preserve-columns .row-heading .col-heading.col-1,
+  .table.preserve-columns .row.row-highlight .col-highlight.col-1 {
+    display: flex;
+  }
+
   .table .section-head .col:not(.section-head-title),
   .table:not(.merch) .col-heading.col-1,
   .table:not(.merch) .row-highlight .col-highlight.col-1:not(:only-child) {
     display: none;
+  }
+
+  .table.preserve-columns .row-heading .col-heading:first-child {
+    border-top-left-radius: var(--border-radius);
+  }
+
+  .table.preserve-columns .row-heading .col-heading:last-child {
+    border-top-left-radius: 0;
   }
 
   .table:not(.merch) .row-highlight:has(> :only-child) {
