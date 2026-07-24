@@ -61,6 +61,23 @@
   status: active
   last_updated: "2026-05-29"
 
+- name: transactional-rebuild
+  section: Output shape
+  severity: error
+  requirement: >
+    A rebuild MUST create a complete replacement graph before removing any
+    producer scripts or changing committed manager state. If structural
+    processing fails, the previous managed graph and all scripts in that batch
+    MUST remain unchanged. Malformed JSON-LD scripts MUST remain in the DOM
+    while valid siblings may still be processed.
+  applies_to: [managed-graph]
+  implements: [JsonLdGraphManager.rebuild]
+  tested_by: [manager.test.js]
+  interacts_with: [single-script-tag, managed-script-marker]
+  notes: Fail-open behavior prevents the manager from erasing valid authored metadata.
+  status: active
+  last_updated: "2026-07-23"
+
 - name: managed-script-metadata
   section: Output shape
   severity: info
@@ -154,6 +171,7 @@
     Page-scoped node @id values MUST follow the format
     {canonicalPageURL}#{role} where {role} is the lowercase entity role on
     the page (e.g. #webpage, #article, #breadcrumb, #howto, #faq).
+    Repeatable entities MAY append a stable identity suffix to that fragment.
   applies_to: [WebPage, Article, NewsArticle, SoftwareApplication, BreadcrumbList,
                HowTo, FAQPage, VideoObject, Event, Offer, AggregateRating]
   implements: [pageScopedId, canonicalUrl, RULES]
@@ -181,8 +199,10 @@
   section: Identity
   severity: info
   requirement: >
-    Site root is https://www.adobe.com unless window.location.hostname
-    contains "business" or "bacom", in which case https://business.adobe.com.
+    Site root is selected from the canonical page hostname using explicit
+    mappings. business.adobe.com and bacom.adobe.com map to
+    https://business.adobe.com; www.adobe.com maps to
+    https://www.adobe.com; unrecognized hosts use the www fallback.
   applies_to: [Organization]
   implements: [siteRoot]
   tested_by: []
@@ -333,23 +353,22 @@
   section: Graph composition
   severity: info
   requirement: >
-    The graph MAY contain multiple instances of VideoObject and Offer.
+    The graph MAY contain multiple instances of VideoObject, Event, and Offer.
     These types are NOT deduplicated as singletons.
-  applies_to: [VideoObject, Offer]
+  applies_to: [VideoObject, Event, Offer]
   implements:
     - "RULES.VideoObject"
+    - "RULES.Event"
     - "RULES.Offer (rule.repeatable)"
     - normalizeNode
-  tested_by: []
+  tested_by: [manager.test.js, event-rich-results.test.js]
   interacts_with: [page-scoped-id-format]
   notes: >
-    v1 limitation: when multiple repeatable nodes are emitted without
-    distinct producer-supplied @id values, they collapse to a single node
-    at the canonical id (e.g. #videoobject, #offer). Distinct @id values
-    from producers are required to materialize multiple instances.
-    Sequential @id assignment by the manager is planned.
-  status: partial
-  last_updated: "2026-05-29"
+    Producer fragments are preserved when present. Otherwise the manager
+    derives a stable suffix from type-specific identity fields such as URL,
+    name, date, SKU, and price.
+  status: active
+  last_updated: "2026-07-23"
 
 - name: webpage-publisher-link
   section: Linking
@@ -510,8 +529,8 @@
   section: Defaults and precedence
   severity: error
   requirement: >
-    Organization.name MUST be present; manager default is "Adobe" (or
-    "Adobe for Business" when site root is https://business.adobe.com).
+    Organization.name MUST be present. When a producer omits it, the manager
+    fallback is "Adobe" (or "Adobe for Business" for the business site root).
   applies_to: [Organization]
   implements: [defaultOrg]
   tested_by: []
@@ -524,9 +543,9 @@
   section: Defaults and precedence
   severity: error
   requirement: >
-    Organization.url MUST be the site root homepage URL (e.g.,
-    https://www.adobe.com/ or https://business.adobe.com/), not a
-    page-scoped URL.
+    Organization.url MUST be present. When a producer omits it, the manager
+    uses the site root homepage URL (e.g., https://www.adobe.com/ or
+    https://business.adobe.com/), not a page-scoped URL.
   applies_to: [Organization]
   implements: [defaultOrg]
   tested_by: []
@@ -559,10 +578,8 @@
   section: Defaults and precedence
   severity: info
   requirement: >
-    Manager-synthesized Organization fields (name, url, logo) take
-    graph-manager-generated priority — they win over any producer-supplied
-    values for those three fields. Producer-supplied fields not in the
-    default set (sameAs, address, description, etc.) are preserved.
+    Manager-synthesized Organization fields (name, url, logo) are fallbacks.
+    Producer-supplied values win, and defaults fill only missing fields.
   applies_to: [Organization]
   implements: [JsonLdGraphManager.rewrite, mergeNodes, priorityWeight]
   tested_by: []
@@ -679,7 +696,7 @@
   requirement: >
     When the same node is contributed by multiple sources, scalar conflicts
     are resolved by source priority: graph-manager-generated > runtime >
-    initial page DOM (bootDom). Object fields merge by key with the same
+    initial page DOM (bootDom) > manager defaults. Object fields merge by key with the same
     precedence; relationship arrays are unioned by @id. The recorded source
     for a node is ratcheted to the maximum-priority source that has
     contributed to it.
@@ -728,7 +745,8 @@
   notes: >
     Each Offer MAY include a potentialAction property to express usage
     actions, e.g. BuyAction, TryAction. softwareapplication-default-offer
-    synthesizes a default Offer when this property is absent.
+    can synthesize a default Offer when this property is absent and the
+    explicit default-offer option is enabled.
   status: active
   last_updated: "2026-05-29"
 
@@ -786,9 +804,10 @@
   section: "Type-specific: Offer"
   severity: error
   requirement: |
-    When a SoftwareApplication (or subtype) is the primary entity of the
-    page and has no offers property (or an empty array), the manager
-    synthesizes a default free Offer:
+    When jsonld-graph-manager-default-offer=true is explicitly enabled and a
+    SoftwareApplication (or subtype) is the primary entity of the page with no
+    offers property (or an empty array), the manager synthesizes a default
+    free Offer:
 
       { "@type": "Offer",
         "@id": "{canonicalPageURL}#offer",
@@ -803,20 +822,22 @@
   tested_by: []
   interacts_with: [softwareapplication-offers, offer-price]
   notes: >
-    Source for the synthesized Offer is generated. The category: "Free
+    This behavior is disabled by default so the manager does not invent
+    commercial terms or currency on localized pages. Source for an opted-in
+    synthesized Offer is generated. The category: "Free
     Trial" label reflects the Adobe.com norm — primary entry to a product
     is a free trial of the paid tier — and disambiguates the synthesized
     Offer from any future producer-supplied paid Offers. Producers that
     need a non-free Offer supply their own; the default is only synthesized
     when offers is entirely absent.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-07-23"
 
 - name: aggregaterating-min-rating-value
   section: "Type-specific: AggregateRating"
   severity: error
   requirement: >
-    An AggregateRating node MUST have ratingValue >= 3.2 (on the default
+    An AggregateRating node MUST have ratingValue >= 4.0 (on the default
     1-5 scale). When the threshold is not met, the manager omits the
     AggregateRating node from the graph AND removes any aggregateRating
     reference from host entities so consumers do not see a dangling @id.

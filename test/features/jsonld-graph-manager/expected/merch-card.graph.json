@@ -25,7 +25,7 @@
       "name": "Photoshop",
       "brand": { "@type": "Brand", "name": "Adobe" },
       "offers": [
-        { "@id": "https://www.adobe.com/products/photoshop.html#offer" }
+        { "@id": "https://www.adobe.com/products/photoshop.html#offer-https-main-cc-adobecom-aem-page-drafts-axel-document5-662-9-usd--1zmjfy" }
       ],
       "image": [
         "https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg?format=png&width=800&height=800",
@@ -37,7 +37,7 @@
     },
     {
       "@type": "Offer",
-      "@id": "https://www.adobe.com/products/photoshop.html#offer",
+      "@id": "https://www.adobe.com/products/photoshop.html#offer-https-main-cc-adobecom-aem-page-drafts-axel-document5-662-9-usd--1zmjfy",
       "url": "https://main--cc--adobecom.aem.page/drafts/axel/document5",
       "priceCurrency": "USD",
       "price": "662.9",

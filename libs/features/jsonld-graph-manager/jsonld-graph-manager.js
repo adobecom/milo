@@ -32,7 +32,7 @@ const RULES = {
   HowTo: { idFragment: '#howto', linksBack: { isPartOf: 'WebPage' } },
   FAQPage: { idFragment: '#faq', linksBack: { isPartOf: 'WebPage' } },
   VideoObject: { idFragment: '#videoobject', repeatable: true },
-  Event: { idFragment: '#event' },
+  Event: { idFragment: '#event', repeatable: true },
   Offer: { idFragment: '#offer', repeatable: true },
   AggregateRating: { idFragment: '#aggregaterating', singleton: true },
 };
@@ -43,15 +43,20 @@ const SOFTWARE_APP_SUBTYPES = new Set(['WebApplication', 'MobileApplication', 'V
 
 const ORG_ID_ALIASES = new Set(['#org', '#publisher', '#adobe']);
 
-export function siteRoot(hostname = window.location.hostname) {
-  return /business|bacom/i.test(hostname)
-    ? 'https://business.adobe.com'
-    : 'https://www.adobe.com';
+const SITE_ROOTS = new Map([
+  ['business.adobe.com', 'https://business.adobe.com'],
+  ['bacom.adobe.com', 'https://business.adobe.com'],
+  ['news.adobe.com', 'https://www.adobe.com'],
+  ['www.adobe.com', 'https://www.adobe.com'],
+]);
+
+export function siteRoot(hostname = new URL(canonicalUrl()).hostname) {
+  return SITE_ROOTS.get(hostname.toLowerCase()) ?? 'https://www.adobe.com';
 }
 
 const ADOBE_CORPORATE_LOGO = 'https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg';
 
-const AGGREGATE_RATING_MIN_VALUE = 3.2;
+const AGGREGATE_RATING_MIN_VALUE = 4.0;
 const AGGREGATE_RATING_MIN_COUNT = 100;
 
 export function aggregateRatingMeetsThresholds(node) {
@@ -81,11 +86,7 @@ export function defaultOrg(hostname) {
 
 export function canonicalUrl() {
   const link = document.head.querySelector('link[rel="canonical"]');
-  if (link?.href) {
-    const u = new URL(link.href);
-    return `${u.origin}${u.pathname}`;
-  }
-  const u = new URL(window.location.href);
+  const u = new URL(link?.href || window.location.href);
   return `${u.origin}${u.pathname}`;
 }
 
@@ -113,12 +114,15 @@ export function flattenPayload(data) {
 
 export function parsePayload(scriptEl) {
   try {
-    const data = JSON.parse(scriptEl.textContent);
-    return flattenPayload(data);
+    return parsePayloadText(scriptEl.textContent);
   } catch (e) {
     lanaLog(`Failed to parse JSON-LD: ${e.message}`, 'warn');
     return [];
   }
+}
+
+function parsePayloadText(textContent) {
+  return flattenPayload(JSON.parse(textContent));
 }
 
 export function normalizeNode(node) {
@@ -133,16 +137,38 @@ export function normalizeNode(node) {
   }
   const rule = RULES[type];
   if (!rule) return out;
-  if (rule.repeatable && typeof out['@id'] === 'string') {
-    const hashIdx = out['@id'].lastIndexOf('#');
-    const producerFragment = hashIdx >= 0 ? out['@id'].slice(hashIdx) : null;
-    if (producerFragment && producerFragment !== rule.idFragment) {
-      out['@id'] = `${canonicalUrl()}${producerFragment}`;
-      return out;
-    }
+  if (rule.repeatable) {
+    out['@id'] = repeatableNodeId(out, type, rule);
+    return out;
   }
   out['@id'] = pageScopedId(type);
   return out;
+}
+
+function repeatableNodeId(node, type, rule) {
+  if (typeof node['@id'] === 'string') {
+    const hashIdx = node['@id'].lastIndexOf('#');
+    const producerFragment = hashIdx >= 0 ? node['@id'].slice(hashIdx) : null;
+    if (producerFragment && producerFragment !== rule.idFragment) {
+      return `${canonicalUrl()}${producerFragment}`;
+    }
+  }
+  const identityKeys = {
+    Event: ['url', 'name', 'startDate'],
+    Offer: ['url', 'sku', 'price', 'priceCurrency', 'category'],
+    VideoObject: ['contentUrl', 'embedUrl', 'url', 'name', 'uploadDate'],
+  };
+  const identity = (identityKeys[type] ?? [])
+    .map((key) => node[key])
+    .filter((value) => value != null && value !== '');
+  if (identity.length === 0) return pageScopedId(type);
+  const identityText = identity.join('|');
+  const slug = identityText.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 64);
+  let hash = 0;
+  for (let i = 0; i < identityText.length; i += 1) {
+    hash = (hash * 31 + identityText.charCodeAt(i)) % 2147483647;
+  }
+  return `${canonicalUrl()}${rule.idFragment}-${slug}-${hash.toString(36)}`;
 }
 
 export function canonicalizeOrgId(id) {
@@ -239,16 +265,20 @@ function asArray(v) {
 export function unionByRef(a, b) {
   const arrA = asArray(a);
   const arrB = asArray(b);
-  const seen = new Set(arrA.map((n) => n['@id'] ?? JSON.stringify(n)));
+  const itemKey = (item) => (
+    item && typeof item === 'object' ? item['@id'] ?? JSON.stringify(item) : JSON.stringify(item)
+  );
+  const seen = new Set(arrA.map(itemKey));
   const result = [...arrA];
   for (const item of arrB) {
-    const key = item['@id'] ?? JSON.stringify(item);
+    const key = itemKey(item);
     if (!seen.has(key)) { seen.add(key); result.push(item); }
   }
   return result;
 }
 
 function priorityWeight(src) {
+  if (src === 'default') return -1;
   if (src === 'generated') return 2;
   if (src === 'runtime') return 1;
   return 0;
@@ -257,8 +287,7 @@ function priorityWeight(src) {
 export function mergeNodes(a, b, srcA, srcB) {
   const aWins = priorityWeight(srcA) >= priorityWeight(srcB);
   const [winner, loser] = aWins ? [a, b] : [b, a];
-  const winnerSrc = aWins ? srcA : srcB;
-  const loserSrc = aWins ? srcB : srcA;
+  const [winnerSrc, loserSrc] = aWins ? [srcA, srcB] : [srcB, srcA];
   const out = { ...loser, ...winner };
   for (const key of Object.keys(loser)) {
     if (['@type', '@id', '@context'].includes(key)) continue;
@@ -300,15 +329,14 @@ export function injectLinks(nodes) {
     }
   }
   const webpage = byType.WebPage;
-  if (webpage) {
-    for (const [prop, targetType] of Object.entries(RULES.WebPage.links ?? {})) {
-      const target = byType[targetType];
-      if (target?.['@id'] && !webpage[prop]) webpage[prop] = { '@id': target['@id'] };
-    }
-    if (!webpage.mainEntity) {
-      const primary = byType.Article ?? byType.NewsArticle ?? byType.SoftwareApplication;
-      if (primary?.['@id']) webpage.mainEntity = { '@id': primary['@id'] };
-    }
+  if (!webpage) return;
+  for (const [prop, targetType] of Object.entries(RULES.WebPage.links ?? {})) {
+    const target = byType[targetType];
+    if (target?.['@id'] && !webpage[prop]) webpage[prop] = { '@id': target['@id'] };
+  }
+  if (!webpage.mainEntity) {
+    const primary = byType.Article ?? byType.NewsArticle ?? byType.SoftwareApplication;
+    if (primary?.['@id']) webpage.mainEntity = { '@id': primary['@id'] };
   }
 }
 
@@ -380,13 +408,13 @@ export function parseIgnoreParam(search = window.location.search) {
 
 const IGNORE_TYPES = parseIgnoreParam();
 
-export function shouldIgnoreScript(scriptEl, ignoreTypes) {
+export function shouldIgnoreScript(scriptEl, ignoreTypes, textContent = scriptEl.textContent) {
   if (!ignoreTypes || ignoreTypes.size === 0) return false;
   let data;
-  try { data = JSON.parse(scriptEl.textContent); } catch { return false; }
+  try { data = JSON.parse(textContent); } catch { return false; }
   if (!data || typeof data !== 'object') return false;
 
-  const items = Array.isArray(data) ? data : [data];
+  const items = asArray(data);
   const hasWrapper = items.some((item) => (
     item && typeof item === 'object' && !Array.isArray(item) && '@graph' in item
   ));
@@ -417,20 +445,38 @@ export class JsonLdGraphManager {
     this.observer = null;
     this.isProcessing = false;
     this.ignoreTypes = options.ignoreTypes ?? IGNORE_TYPES;
+    this.generateDefaultOffer = options.generateDefaultOffer ?? false;
+    this.bootScripts = options.bootScripts;
     this.debouncedRebuild = debounce(() => this.rebuild(), DEBOUNCE_MS);
   }
 
-  init() {
-    document.querySelectorAll(UNMANAGED_SEL).forEach((el) => this.enqueue(el, 'bootDom'));
-
+  init(bootScripts = this.bootScripts) {
+    const bootElements = new Set();
+    if (bootScripts) {
+      for (const { scriptEl, textContent } of bootScripts) {
+        bootElements.add(scriptEl);
+        this.enqueue(scriptEl, 'bootDom', textContent);
+      }
+    } else {
+      document.querySelectorAll(UNMANAGED_SEL).forEach((el) => this.enqueue(el, 'bootDom'));
+    }
     this.observer = new MutationObserver((mutations) => {
       for (const { addedNodes } of mutations) {
         for (const node of addedNodes) this.collect(node);
       }
     });
     this.observer.observe(document.documentElement, { childList: true, subtree: true });
-
-    this.rebuild();
+    if (bootScripts) {
+      document.querySelectorAll(UNMANAGED_SEL).forEach((el) => {
+        if (!bootElements.has(el)) this.enqueue(el, 'runtime', el.textContent, false);
+      });
+    }
+    try {
+      this.rebuild({ throwOnError: true });
+    } catch (e) {
+      this.destroy();
+      throw e;
+    }
   }
 
   destroy() {
@@ -448,41 +494,52 @@ export class JsonLdGraphManager {
     node.querySelectorAll?.(UNMANAGED_SEL).forEach((el) => this.enqueue(el, 'runtime'));
   }
 
-  enqueue(scriptEl, source = 'runtime') {
-    if (shouldIgnoreScript(scriptEl, this.ignoreTypes)) {
+  enqueue(scriptEl, source = 'runtime', textContent = scriptEl.textContent, scheduleRebuild = true) {
+    if (shouldIgnoreScript(scriptEl, this.ignoreTypes, textContent)) {
       debugLog('ignored', () => ({
         source,
         location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,
-        payload: scriptEl.textContent.trim().slice(0, 200),
+        payload: textContent.trim().slice(0, 200),
       }));
       return;
     }
     debugLog('enqueue', () => ({
       source,
       location: `${scriptEl.parentElement?.tagName ?? 'detached'} > script`,
-      payload: scriptEl.textContent.trim(),
+      payload: textContent.trim(),
     }));
-    this.queue.push({ scriptEl, source });
-    if (source === 'runtime') this.debouncedRebuild();
+    this.queue.push({ scriptEl, source, textContent });
+    if (source === 'runtime' && scheduleRebuild) this.debouncedRebuild();
   }
 
-  rebuild() {
-    if (this.isProcessing) return;
+  rebuild({ throwOnError = false } = {}) {
+    if (this.isProcessing) return false;
     this.isProcessing = true;
+    const batch = this.queue.splice(0);
     try {
-      const batch = this.queue.splice(0);
       debugLog('rebuild', () => ({ batchSize: batch.length, graphSize: this.graph.size }));
-      for (const { scriptEl, source } of batch) {
-        const nodes = parsePayload(scriptEl);
+      const graph = new Map(
+        [...this.graph].map(([id, node]) => [id, JSON.parse(JSON.stringify(node))]),
+      );
+      const sources = new Map(this.sources);
+      const idRemap = new Map(this.idRemap);
+      const processedEntries = [];
+      for (const entry of batch) {
+        const { source, textContent } = entry;
+        let nodes;
+        try {
+          nodes = parsePayloadText(textContent);
+        } catch (e) {
+          lanaLog(`Failed to parse JSON-LD: ${e.message}`, 'warn');
+          continue;
+        }
+        processedEntries.push(entry);
         debugLog('parsed', () => ({ source, types: nodes.map((n) => n['@type']), nodeCount: nodes.length }));
-        const parentTagName = scriptEl.parentElement?.tagName ?? 'already detached';
-        scriptEl.remove();
-        debugLog('removed from DOM', () => parentTagName);
         for (const raw of nodes) {
           const node = normalizeNode(raw);
           const rawId = raw['@id'];
           if (typeof rawId === 'string' && typeof node['@id'] === 'string' && rawId !== node['@id']) {
-            this.idRemap.set(rawId, node['@id']);
+            idRemap.set(rawId, node['@id']);
           }
           const inlined = extractInlineEntities(node);
           const toMerge = [node, ...inlined];
@@ -493,57 +550,79 @@ export class JsonLdGraphManager {
           }
           for (const n of toMerge) {
             const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
-            const prevSrc = this.sources.get(id) ?? 'bootDom';
-            if (this.graph.has(id)) {
-              this.graph.set(id, mergeNodes(this.graph.get(id), n, prevSrc, source));
+            const prevSrc = sources.get(id) ?? 'bootDom';
+            if (graph.has(id)) {
+              graph.set(id, mergeNodes(graph.get(id), n, prevSrc, source));
             } else {
-              this.graph.set(id, n);
+              graph.set(id, n);
             }
             if (priorityWeight(source) >= priorityWeight(prevSrc)) {
-              this.sources.set(id, source);
+              sources.set(id, source);
             }
           }
         }
       }
-      this.rewrite();
+      const { nodes, payload } = this.rewrite(graph, sources, idRemap);
+      const replacement = document.createElement('script');
+      replacement.type = 'application/ld+json';
+      replacement.setAttribute(MANAGED_ATTR, MANAGED_VAL);
+      replacement.textContent = payload;
+      const managed = document.head.querySelector(MANAGED_SEL);
+      if (managed) managed.replaceWith(replacement);
+      else document.head.appendChild(replacement);
+      for (const { scriptEl } of processedEntries) {
+        const parentTagName = scriptEl.parentElement?.tagName ?? 'already detached';
+        scriptEl.remove();
+        debugLog('removed from DOM', () => parentTagName);
+      }
+      this.graph = graph;
+      this.sources = sources;
+      this.idRemap = idRemap;
+      debugLog('rewrite', () => ({ nodeCount: nodes.length, graph: nodes }));
+      return true;
+    } catch (e) {
+      lanaLog(`Failed to rebuild JSON-LD graph: ${e.message}`, 'error');
+      if (throwOnError) throw e;
+      return false;
     } finally {
       this.isProcessing = false;
     }
   }
 
-  rewrite() {
+  rewrite(graph = this.graph, sources = this.sources, idRemap = this.idRemap) {
     const webpageId = pageScopedId('WebPage');
-    if (!this.graph.has(webpageId)) {
+    if (!graph.has(webpageId)) {
       const url = canonicalUrl();
-      this.graph.set(webpageId, { '@type': 'WebPage', '@id': webpageId, url });
+      graph.set(webpageId, { '@type': 'WebPage', '@id': webpageId, url });
+      sources.set(webpageId, 'default');
     }
     const org = defaultOrg();
     const orgId = org['@id'];
-    if (!this.graph.has(orgId)) {
-      this.graph.set(orgId, org);
-      this.sources.set(orgId, 'generated');
+    if (!graph.has(orgId)) {
+      graph.set(orgId, org);
+      sources.set(orgId, 'default');
     } else {
-      const prevSrc = this.sources.get(orgId) ?? 'bootDom';
-      this.graph.set(orgId, mergeNodes(org, this.graph.get(orgId), 'generated', prevSrc));
-      this.sources.set(orgId, 'generated');
+      const prevSrc = sources.get(orgId) ?? 'bootDom';
+      graph.set(orgId, mergeNodes(org, graph.get(orgId), 'default', prevSrc));
+      sources.set(orgId, prevSrc);
     }
     const ratingId = pageScopedId('AggregateRating');
-    const rating = this.graph.get(ratingId);
+    const rating = graph.get(ratingId);
     if (rating && !aggregateRatingMeetsThresholds(rating)) {
-      this.graph.delete(ratingId);
-      this.sources.delete(ratingId);
-      for (const n of this.graph.values()) {
+      graph.delete(ratingId);
+      sources.delete(ratingId);
+      for (const n of graph.values()) {
         if (n.aggregateRating?.['@id'] === ratingId) delete n.aggregateRating;
       }
     }
     const saId = pageScopedId('SoftwareApplication');
-    const sa = this.graph.get(saId);
-    if (sa) {
+    const sa = graph.get(saId);
+    if (sa && this.generateDefaultOffer) {
       const hasOffers = sa.offers != null && !(Array.isArray(sa.offers) && sa.offers.length === 0);
       if (!hasOffers) {
         const offerId = pageScopedId('Offer');
-        if (!this.graph.has(offerId)) {
-          this.graph.set(offerId, {
+        if (!graph.has(offerId)) {
+          graph.set(offerId, {
             '@type': 'Offer',
             '@id': offerId,
             price: '0',
@@ -551,38 +630,30 @@ export class JsonLdGraphManager {
             availability: 'https://schema.org/InStock',
             category: 'Free Trial',
           });
-          this.sources.set(offerId, 'generated');
+          sources.set(offerId, 'generated');
         }
         sa.offers = [{ '@id': offerId }];
       }
     }
-    const nodes = sortNodes([...this.graph.values()]);
-    if (this.idRemap.size) {
+    const nodes = sortNodes([...graph.values()]);
+    if (idRemap.size) {
       for (const node of nodes) {
         for (const [key, val] of Object.entries(node)) {
           if (key === '@id') continue;
-          remapReferences(val, this.idRemap);
+          remapReferences(val, idRemap);
         }
       }
     }
     injectLinks(nodes);
     const payload = JSON.stringify({ '@context': 'https://schema.org', '@graph': nodes }, null, 2);
-    let managed = document.head.querySelector(MANAGED_SEL);
-    if (!managed) {
-      managed = document.createElement('script');
-      managed.type = 'application/ld+json';
-      managed.setAttribute(MANAGED_ATTR, MANAGED_VAL);
-      document.head.appendChild(managed);
-    }
-    managed.textContent = payload;
-    debugLog('rewrite', () => ({ nodeCount: nodes.length, graph: nodes }));
+    return { nodes, payload };
   }
 }
 
-export default async function init() {
+export default async function init(options = {}) {
   window.miloJsonLd = window.miloJsonLd ?? {};
   if (window.miloJsonLd.manager) return;
-  const manager = new JsonLdGraphManager();
+  const manager = new JsonLdGraphManager(options);
+  manager.init(options.bootScripts);
   window.miloJsonLd.manager = manager;
-  manager.init();
 }

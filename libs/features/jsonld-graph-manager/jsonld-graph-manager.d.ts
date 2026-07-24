@@ -13,10 +13,16 @@ export interface JsonLdNode {
 
 /**
  * Where a node entered the graph.
- * Priority order (highest to lowest): generated > runtime > bootDom.
+ * Priority order (highest to lowest): generated > runtime > bootDom > default.
  * `mergeNodes` uses this to decide which side wins scalar conflicts.
  */
-export type NodeSource = 'bootDom' | 'runtime' | 'generated';
+export type NodeSource = 'default' | 'bootDom' | 'runtime' | 'generated';
+
+/** Immutable boot-time copy of a producer script and its captured payload. */
+export interface BootScriptSnapshot {
+  scriptEl: HTMLScriptElement;
+  textContent: string;
+}
 
 /** Options accepted by `JsonLdGraphManager`. */
 export interface GraphManagerOptions {
@@ -25,10 +31,15 @@ export interface GraphManagerOptions {
    * Defaults to the value of `parseIgnoreParam()` at module load time.
    */
   ignoreTypes?: Set<string>;
+  /** Boot producer scripts captured before deferred manager initialization. */
+  bootScripts?: BootScriptSnapshot[];
+  /** Opts into a generated free-trial Offer when an application has no offers. */
+  generateDefaultOffer?: boolean;
 }
 
 /**
- * Returns the canonical site root for the current hostname.
+ * Returns the canonical site root for the supplied hostname, or for the
+ * canonical page hostname when omitted.
  * Business/bacom hostnames resolve to `https://business.adobe.com`;
  * everything else resolves to `https://www.adobe.com`.
  */
@@ -36,7 +47,7 @@ export function siteRoot(hostname?: string): string;
 
 /**
  * Returns `true` when an `AggregateRating` node clears the minimum
- * thresholds (ratingValue ≥ 3.2, ratingCount ≥ 100).
+ * thresholds (ratingValue ≥ 4.0, ratingCount ≥ 100).
  * Nodes that fail are pruned from the graph during `rewrite()`.
  */
 export function aggregateRatingMeetsThresholds(node: JsonLdNode | null | undefined): boolean;
@@ -82,7 +93,7 @@ export function parsePayload(scriptEl: HTMLScriptElement): JsonLdNode[];
  * - strips `@context`
  * - applies `TYPE_TRANSFORMS` (e.g. `Product` → `SoftwareApplication`)
  * - rewrites `@id` to the canonical page-scoped value for registered types
- * - preserves producer-specific fragments on `repeatable` types (e.g. `Offer`)
+ * - preserves producer fragments or derives stable IDs on repeatable types
  */
 export function normalizeNode(node: JsonLdNode): JsonLdNode;
 
@@ -135,11 +146,11 @@ export function rewriteCrossPageRefs(node: JsonLdNode): void;
  * to `JSON.stringify` for anonymous nodes).
  * Items already present in `a` are deduplicated; new items from `b` are appended.
  */
-export function unionByRef(a: unknown, b: unknown): JsonLdNode[];
+export function unionByRef(a: unknown, b: unknown): unknown[];
 
 /**
  * Merges two nodes that share the same `@id` into one, using `srcA`/`srcB`
- * priority to resolve scalar conflicts (generated > runtime > bootDom).
+ * priority to resolve scalar conflicts (generated > runtime > bootDom > default).
  * Array-valued properties and `REF_ARRAY_KEYS` are merged via `unionByRef`.
  * Nested object values are merged recursively.
  * When both types include a `SoftwareApplication` subtype, the more specific
@@ -189,12 +200,17 @@ export function parseIgnoreParam(search?: string): Set<string>;
  *   `lana` warn rather than partially processed, so the caller can split the
  *   producer into separate scripts or use `"graph"` to bypass intentionally.
  */
-export function shouldIgnoreScript(scriptEl: HTMLScriptElement, ignoreTypes: Set<string>): boolean;
+export function shouldIgnoreScript(
+  scriptEl: HTMLScriptElement,
+  ignoreTypes: Set<string>,
+  textContent?: string,
+): boolean;
 
 /** Single entry in the processing queue. */
 interface QueueEntry {
   scriptEl: HTMLScriptElement;
   source: NodeSource;
+  textContent: string;
 }
 
 /**
@@ -223,15 +239,19 @@ export class JsonLdGraphManager {
   isProcessing: boolean;
   /** Type names (lowercase) whose scripts are silently skipped */
   ignoreTypes: Set<string>;
+  /** Whether a missing application Offer should be synthesized. */
+  generateDefaultOffer: boolean;
+  /** Immutable producer snapshots captured before deferred initialization. */
+  bootScripts?: BootScriptSnapshot[];
 
   constructor(options?: GraphManagerOptions);
 
   /**
    * Bootstraps the manager: enqueues all pre-existing unmanaged JSON-LD
-   * scripts from the DOM, attaches the `MutationObserver`, and triggers
-   * the first `rebuild()`.
+   * scripts from a supplied boot snapshot (or the DOM), attaches the
+   * `MutationObserver`, and triggers the first transactional `rebuild()`.
    */
-  init(): void;
+  init(bootScripts?: BootScriptSnapshot[]): void;
 
   /** Disconnects the `MutationObserver`. Safe to call multiple times. */
   destroy(): void;
@@ -245,29 +265,39 @@ export class JsonLdGraphManager {
 
   /**
    * Adds a script element to the queue.
-   * Runtime additions trigger a debounced `rebuild()`; boot-time additions
-   * rely on the explicit `rebuild()` call at the end of `init()`.
+   * Observed runtime additions trigger a debounced `rebuild()`; initialization
+   * entries disable scheduling and use the explicit `rebuild()` at the end of `init()`.
    */
-  enqueue(scriptEl: HTMLScriptElement, source?: NodeSource): void;
+  enqueue(
+    scriptEl: HTMLScriptElement,
+    source?: NodeSource,
+    textContent?: string,
+    scheduleRebuild?: boolean,
+  ): void;
 
   /**
-   * Drains the queue, normalises each node, merges duplicates, and calls
-   * `rewrite()` to emit the updated graph script.
+   * Drains the queue into temporary state, normalises and merges its nodes,
+   * then atomically replaces the managed script and commits state. Source
+   * scripts and the previous graph are preserved when processing fails.
    * Re-entrant calls are dropped via `isProcessing`.
    */
-  rebuild(): void;
+  rebuild(options?: { throwOnError?: boolean }): boolean;
 
   /**
    * Finalises the graph and serialises it into the single managed
    * `<script type="application/ld+json" data-milo-jsonld="graph">` tag:
    * - ensures `WebPage` and `Organization` are always present
    * - prunes `AggregateRating` nodes that fail quality thresholds
-   * - injects a free-tier `Offer` when `SoftwareApplication` has none
+   * - optionally injects a free-tier `Offer` when explicitly enabled
    * - applies `idRemap` to fix dangling back-references
    * - calls `injectLinks` to wire cross-entity relationships
    * - sorts output nodes into a stable canonical order
    */
-  rewrite(): void;
+  rewrite(
+    graph?: Map<string, JsonLdNode>,
+    sources?: Map<string, NodeSource>,
+    idRemap?: Map<string, string>,
+  ): { nodes: JsonLdNode[]; payload: string };
 }
 
 /**
@@ -275,4 +305,4 @@ export class JsonLdGraphManager {
  * Creates a `JsonLdGraphManager`, stores it at `window.miloJsonLd.manager`,
  * and calls `manager.init()`. No-ops on repeat calls (idempotent).
  */
-export default function init(): Promise<void>;
+export default function init(options?: GraphManagerOptions): Promise<void>;

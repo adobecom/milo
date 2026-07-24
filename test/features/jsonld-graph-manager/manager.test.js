@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { readFile } from '@web/test-runner-commands';
 
-import {
+import initJsonLd, {
   aggregateRatingMeetsThresholds,
   shouldIgnoreScript,
   parseIgnoreParam,
@@ -18,6 +18,7 @@ import {
   makeScript,
   trackedManager,
   resetManager,
+  setCanonical,
 } from './helpers.js';
 
 setupSuite();
@@ -79,6 +80,32 @@ describe('JsonLdGraphManager boot scan', () => {
     expect(org.url).to.equal('https://www.adobe.com/');
     expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
+
+  it('uses the captured boot text when the source changes before initialization', () => {
+    const script = makeScript({ '@type': 'Article', headline: 'Captured' });
+    document.head.appendChild(script);
+    const bootScripts = [{ scriptEl: script, textContent: script.textContent }];
+    script.textContent = JSON.stringify({ '@type': 'Article', headline: 'Changed' });
+
+    const manager = trackedManager({ bootScripts });
+    manager.init();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((node) => node['@type'] === 'Article').headline).to.equal('Captured');
+  });
+
+  it('treats scripts added after the boot snapshot as runtime producers', () => {
+    const bootScript = makeScript({ '@type': 'Article', headline: 'Boot' });
+    document.head.appendChild(bootScript);
+    const bootScripts = [{ scriptEl: bootScript, textContent: bootScript.textContent }];
+    document.head.appendChild(makeScript({ '@type': 'Article', headline: 'Runtime' }));
+
+    const manager = trackedManager({ bootScripts });
+    manager.init();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    expect(graph.find((node) => node['@type'] === 'Article').headline).to.equal('Runtime');
+  });
 });
 
 describe('JsonLdGraphManager singleton enforcement', () => {
@@ -95,8 +122,7 @@ describe('JsonLdGraphManager singleton enforcement', () => {
     const orgs = graph.filter((n) => n['@type'] === 'Organization');
     expect(orgs).to.have.length(1);
     expect(orgs[0]['@id']).to.equal(ORG_ID);
-    // generated baseline wins — logo is the manager default, not the producer-supplied value
-    expect(orgs[0].logo).to.deep.equal(ADOBE_LOGO_OBJECT);
+    expect(orgs[0].logo).to.equal('logo.png');
   });
 });
 
@@ -157,6 +183,98 @@ describe('JsonLdGraphManager mutation observer', () => {
   });
 });
 
+describe('JsonLdGraphManager failure handling', () => {
+  it('keeps malformed JSON-LD while processing valid sibling scripts', () => {
+    const malformed = makeScript('{not-json');
+    const valid = makeScript({ '@type': 'Article', headline: 'Valid' });
+    document.head.append(malformed, valid);
+    const consoleStub = sinon.stub(console, 'error');
+    try {
+      const manager = trackedManager();
+      manager.init();
+
+      expect(document.head.contains(malformed)).to.be.true;
+      expect(document.head.contains(valid)).to.be.false;
+      const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+      expect(graph.find((node) => node['@type'] === 'Article').headline).to.equal('Valid');
+    } finally {
+      consoleStub.restore();
+    }
+  });
+
+  it('preserves the previous graph and source script when a rebuild fails', () => {
+    document.head.appendChild(makeScript({ '@type': 'Article', headline: 'Stable' }));
+    const manager = trackedManager();
+    manager.init();
+    const managed = document.head.querySelector('script[data-milo-jsonld="graph"]');
+    const previousGraph = managed.textContent;
+    const next = makeScript({ '@type': 'Article', headline: 'Next' });
+    document.head.appendChild(next);
+    manager.enqueue(next, 'runtime');
+    const replaceStub = sinon.stub(managed, 'replaceWith').throws(new Error('write failed'));
+    const consoleStub = sinon.stub(console, 'error');
+    try {
+      expect(manager.rebuild()).to.be.false;
+      expect(managed.textContent).to.equal(previousGraph);
+      expect(document.head.contains(next)).to.be.true;
+      expect(manager.graph.get(`${PAGE_URL}#article`).headline).to.equal('Stable');
+    } finally {
+      replaceStub.restore();
+      consoleStub.restore();
+    }
+  });
+
+  it('does not publish the global manager after a failed initial rebuild', async () => {
+    const script = makeScript({ '@type': 'Article', headline: 'Initial' });
+    document.head.appendChild(script);
+    const appendStub = sinon.stub(document.head, 'appendChild').throws(new Error('write failed'));
+    const consoleStub = sinon.stub(console, 'error');
+    let error;
+    try {
+      await initJsonLd({ bootScripts: [{ scriptEl: script, textContent: script.textContent }] });
+    } catch (caught) {
+      error = caught;
+    } finally {
+      appendStub.restore();
+      consoleStub.restore();
+    }
+    expect(error).to.be.an('error');
+    expect(window.miloJsonLd.manager).to.not.exist;
+    expect(document.head.contains(script)).to.be.true;
+    expect(document.head.querySelector('script[data-milo-jsonld="graph"]')).to.not.exist;
+  });
+});
+
+describe('repeatable producer entities', () => {
+  it('preserves multiple anonymous Events and their Offers with distinct stable IDs', () => {
+    document.head.append(
+      makeScript({
+        '@type': 'Event',
+        name: 'Event One',
+        startDate: '2026-01-01',
+        offers: { '@type': 'Offer', url: 'https://example.com/events/one', price: '10', priceCurrency: 'USD' },
+      }),
+      makeScript({
+        '@type': 'Event',
+        name: 'Event Two',
+        startDate: '2026-02-01',
+        offers: { '@type': 'Offer', url: 'https://example.com/events/two', price: '20', priceCurrency: 'USD' },
+      }),
+    );
+    const manager = trackedManager();
+    manager.init();
+
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const events = graph.filter((node) => node['@type'] === 'Event');
+    const offers = graph.filter((node) => node['@type'] === 'Offer');
+    expect(events).to.have.length(2);
+    expect(offers).to.have.length(2);
+    expect(new Set(events.map((node) => node['@id'])).size).to.equal(2);
+    expect(new Set(offers.map((node) => node['@id'])).size).to.equal(2);
+    expect(new Set(events.map((node) => node.offers['@id'])).size).to.equal(2);
+  });
+});
+
 describe('end-to-end: multi-producer conflict', () => {
   beforeEach(async () => {
     resetManager();
@@ -188,10 +306,8 @@ describe('end-to-end: multi-producer conflict', () => {
     const orgs = graph.filter((n) => n['@type'] === 'Organization');
     expect(orgs).to.have.length(1);
     expect(orgs[0]['@id']).to.equal(ORG_ID);
-    // generated baseline wins over all producer sources
-    expect(orgs[0].name).to.equal('Adobe');
+    expect(orgs[0].name).to.equal('Adobe Inc.');
     expect(orgs[0].logo).to.deep.equal(ADOBE_LOGO_OBJECT);
-    // producer-only field (sameAs) is preserved
     expect(orgs[0].sameAs).to.equal('https://en.wikipedia.org/wiki/Adobe_Inc.');
   });
 });
@@ -213,7 +329,7 @@ describe('Organization synthesis', () => {
     expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
   });
 
-  it('generated baseline fields win over producer-supplied values', () => {
+  it('uses generated baseline fields only when producers omit them', () => {
     document.head.appendChild(makeScript({ '@type': 'Organization', name: 'Acme', url: 'https://acme.com/', sameAs: 'https://example.com' }));
     const manager = trackedManager();
     manager.init();
@@ -222,9 +338,9 @@ describe('Organization synthesis', () => {
       document.head.querySelector('script[data-milo-jsonld="graph"]').textContent,
     );
     const org = graph.find((n) => n['@type'] === 'Organization');
-    expect(org.name).to.equal('Adobe');
-    expect(org.url).to.equal('https://www.adobe.com/');
-    // producer-only field preserved
+    expect(org.name).to.equal('Acme');
+    expect(org.url).to.equal('https://acme.com/');
+    expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
     expect(org.sameAs).to.equal('https://example.com');
   });
 
@@ -241,6 +357,21 @@ describe('Organization synthesis', () => {
     expect(org['@id']).to.equal('https://business.adobe.com/#organization');
     expect(org.url).to.equal('https://business.adobe.com/');
     expect(org.logo).to.deep.equal(ADOBE_LOGO_OBJECT);
+  });
+
+  it('uses the canonical hostname for the generated Organization identity', () => {
+    setCanonical('https://business.adobe.com/products.html');
+    try {
+      const manager = trackedManager();
+      manager.init();
+      const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+      const org = graph.find((node) => node['@type'] === 'Organization');
+      expect(org['@id']).to.equal('https://business.adobe.com/#organization');
+      expect(org.url).to.equal('https://business.adobe.com/');
+      expect(org.name).to.equal('Adobe for Business');
+    } finally {
+      setCanonical();
+    }
   });
 });
 
@@ -266,14 +397,14 @@ describe('graph without BreadcrumbList', () => {
 });
 
 describe('AggregateRating quality thresholds', () => {
-  it('aggregateRatingMeetsThresholds passes when both ratingValue >= 3.2 and ratingCount >= 100', () => {
+  it('aggregateRatingMeetsThresholds passes when both ratingValue >= 4.0 and ratingCount >= 100', () => {
     expect(aggregateRatingMeetsThresholds({ ratingValue: '4.5', ratingCount: '100' })).to.be.true;
-    expect(aggregateRatingMeetsThresholds({ ratingValue: '3.2', ratingCount: '100' })).to.be.true;
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '4.0', ratingCount: '100' })).to.be.true;
     expect(aggregateRatingMeetsThresholds({ ratingValue: 4.5, ratingCount: 100 })).to.be.true;
   });
 
-  it('aggregateRatingMeetsThresholds fails when ratingValue is below 3.2', () => {
-    expect(aggregateRatingMeetsThresholds({ ratingValue: '3.1', ratingCount: '500' })).to.be.false;
+  it('aggregateRatingMeetsThresholds fails when ratingValue is below 4.0', () => {
+    expect(aggregateRatingMeetsThresholds({ ratingValue: '3.9', ratingCount: '500' })).to.be.false;
     expect(aggregateRatingMeetsThresholds({ ratingValue: '1.0', ratingCount: '10000' })).to.be.false;
   });
 
@@ -325,7 +456,7 @@ describe('AggregateRating quality thresholds', () => {
     document.head.appendChild(makeScript({
       '@type': 'SoftwareApplication',
       name: 'Healthy app',
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: '3.2', ratingCount: '100' },
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: '4.0', ratingCount: '100' },
     }));
     const manager = trackedManager();
     manager.init();
@@ -339,12 +470,25 @@ describe('AggregateRating quality thresholds', () => {
 });
 
 describe('SoftwareApplication default Offer synthesis', () => {
-  it('synthesizes a free Offer when SoftwareApplication is present without offers', () => {
+  it('does not synthesize an Offer unless explicitly enabled', () => {
     document.head.appendChild(makeScript({
       '@type': 'SoftwareApplication',
       name: 'Photoshop',
     }));
     const manager = trackedManager();
+    manager.init();
+    const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
+    const app = graph.find((n) => n['@id'] === `${PAGE_URL}#softwareapplication`);
+    expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
+    expect(app.offers).to.be.undefined;
+  });
+
+  it('synthesizes a free Offer when SoftwareApplication is present without offers', () => {
+    document.head.appendChild(makeScript({
+      '@type': 'SoftwareApplication',
+      name: 'Photoshop',
+    }));
+    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offer = graph.find((n) => n['@type'] === 'Offer');
@@ -364,7 +508,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       '@id': `${PAGE_URL}#webapplication`,
       name: 'Compress PDF',
     }));
-    const manager = trackedManager();
+    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offer = graph.find((n) => n['@type'] === 'Offer');
@@ -388,7 +532,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
         },
       ],
     }));
-    const manager = trackedManager();
+    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offers = graph.filter((n) => n['@type'] === 'Offer');
@@ -405,7 +549,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       '@type': 'Article',
       headline: 'Hello',
     }));
-    const manager = trackedManager();
+    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     expect(graph.find((n) => n['@type'] === 'Offer')).to.not.exist;
@@ -417,7 +561,7 @@ describe('SoftwareApplication default Offer synthesis', () => {
       name: 'Photoshop',
       offers: [],
     }));
-    const manager = trackedManager();
+    const manager = trackedManager({ generateDefaultOffer: true });
     manager.init();
     const graph = JSON.parse(document.head.querySelector('script[data-milo-jsonld="graph"]').textContent)['@graph'];
     const offer = graph.find((n) => n['@type'] === 'Offer');

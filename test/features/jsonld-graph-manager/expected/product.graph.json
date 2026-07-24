@@ -25,9 +25,6 @@
       "name": "Adobe Photoshop",
       "applicationCategory": "DesignApplication",
       "@id": "https://www.adobe.com/products/photoshop.html#softwareapplication",
-      "offers": [
-        { "@id": "https://www.adobe.com/products/photoshop.html#offer" }
-      ],
       "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "mainEntityOfPage": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" },
       "provider": { "@id": "https://www.adobe.com/#organization" }
@@ -39,14 +36,6 @@
       ],
       "@id": "https://www.adobe.com/products/photoshop.html#breadcrumb",
       "isPartOf": { "@id": "https://www.adobe.com/products/photoshop.html#webpage" }
-    },
-    {
-      "@type": "Offer",
-      "@id": "https://www.adobe.com/products/photoshop.html#offer",
-      "price": "0",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock",
-      "category": "Free Trial"
     }
   ]
 }

@@ -23,7 +23,7 @@ const PRIMARY_TYPES = new Set([
 ]);
 
 // Mirrors aggregaterating-min-rating-* in rules.yaml.
-const AGGREGATE_RATING_MIN_VALUE = 3.2;
+const AGGREGATE_RATING_MIN_VALUE = 4.0;
 const AGGREGATE_RATING_MIN_COUNT = 100;
 
 const isObject = (v) => v != null && typeof v === 'object' && !Array.isArray(v);

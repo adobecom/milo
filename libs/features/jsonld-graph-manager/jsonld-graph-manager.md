@@ -14,6 +14,8 @@ Use AEM [Page Metadata](https://www.aem.live/docs/metadata) or [Bulk Metadata](h
 
 **Ignore-types flag:** `jsonld-graph-manager-ignore`. Comma-separated string, default empty. Ignore existing JSON-LD by case-insenstive `@type`. Producer scripts whose top-level content matches any entry on the list are bypassed entirely — the manager does not parse, normalize, merge, or remove them from the DOM. The pseudo-type `graph` matches any script whose top-level content is a `{ "@graph": [...] }` container, regardless of the types nested inside.
 
+**Default-offer flag:** `jsonld-graph-manager-default-offer`. Boolean, default: `false`. When `true`, applications without authored offers receive the legacy generated `$0 USD` free-trial Offer. Also available as a URL query parameter. Keep this disabled unless product and localization owners have confirmed that those commercial terms are accurate for the page.
+
 ## Testing & verification
 
 The manager is spec-driven, and the spec is executable. [`rules.yaml`](./rules.yaml) is the single source of truth for what a correct managed graph looks like — every rule carries a severity (`error` / `warn` / `info`), the code symbol that implements it, and the test that covers it. The fastest way to understand the system is to read `rules.yaml` next to the golden fixtures; the tests exist to prove the implementation conforms to that spec.
@@ -189,7 +191,7 @@ The `JsonLdGraphManager` is a document-level runtime object initialized from the
 
 There are three main stages:
 
-1. **Observe** — scan the DOM at boot, and watch for later appends via `MutationObserver`. Ingest and remove unmanaged JSON-LD scripts.
+1. **Observe** — capture boot JSON-LD before deferred initialization, and watch for later appends via `MutationObserver`.
 1. **Normalize** — apply canonical page-scoped identity to known entity types; merge conflicts by producer priority; dedupe singletons.
 1. **Rewrite** — serialize one `@graph` into a single managed `<script>` in `<head>`.
 
@@ -199,11 +201,11 @@ There are three main stages:
 
 Unmanaged JSON-LD reaches the manager through two entry points — a one-time boot scan and an ongoing `MutationObserver` — that both feed the same rebuild pipeline.
 
-**At boot**, during document-level `loadArea()`, the manager initializes a singleton instance, scans the full document for `script[type="application/ld+json"]`, ignoring its own managed graph if one already exists, and attaches a `MutationObserver` for future additions.
+**At boot**, document-level `loadArea()` captures immutable copies of every existing producer script after page modifications and canonical URL finalization. It does not import the manager on the LCP path. Once the LCP section has been processed and unhidden, `loadArea()` schedules manager import and initialization in a zero-delay task. The manager ingests the captured text, treats scripts added after capture as runtime sources, and attaches a `MutationObserver` for future additions.
 
 **At runtime**, when a block, feature, experiment, or third-party script appends JSON-LD anywhere in the document subtree, the observer detects it and enqueues the event for sequential processing.
 
-Both entry points converge on the same pipeline: for each unmanaged payload, the manager parses it, normalizes discovered entities, removes the unmanaged script from the DOM, updates the in-memory graph, reruns graph transforms, and rewrites the managed script in `document.head`.
+Both entry points converge on the same transactional pipeline. The manager parses and normalizes a batch into cloned temporary state, reruns graph transforms, creates the replacement managed script, and only then commits state and removes successfully processed producer scripts. A structural failure leaves the previous managed graph and the full batch untouched. A malformed JSON script is logged and retained while valid siblings can still be committed.
 
 ```mermaid
 sequenceDiagram
@@ -213,18 +215,20 @@ sequenceDiagram
     participant O as MutationObserver
     participant Q as Queue
     participant M as JsonLdGraphManager
-    L->>M: init() (boot)
-    M->>D: scan script[type=application/ld+json]
-    D-->>M: unmanaged scripts
-    M->>Q: enqueue initial batch
+    L->>D: capture boot scripts and text
+    L->>L: process and unhide LCP section
+    L->>M: deferred import + init(snapshot)
+    M->>Q: enqueue captured boot batch
+    M->>D: scan scripts added since capture
+    D-->>M: runtime scripts
     M->>O: attach to documentElement<br/>(childList, subtree)
     P->>D: append script[type=application/ld+json]
     D->>O: mutation event
     O->>Q: enqueue (if matches filter)
     Q->>M: process (immediate at boot, debounced after)
-    M->>M: parse, normalize,<br/>update graph, rerun transforms
-    M->>D: remove unmanaged scripts
-    M->>D: write managed script to head
+    M->>M: parse, normalize,<br/>transform temporary graph
+    M->>D: atomically replace managed script
+    M->>D: remove processed producer scripts
 ```
 
 The observer target is `document.documentElement` with `childList` and `subtree` enabled. Only added nodes that are, or contain, `script[type="application/ld+json"]` are enqueued. Managed output is excluded by filtering on the manager-owned selector `script[type="application/ld+json"][data-milo-jsonld="graph"]`.
@@ -257,9 +261,9 @@ The canonical `@id` values the manager assigns to each recognized entity type ar
 When multiple sources describe the same entity, the default source priority is:
 
 1. graph-manager-generated transforms
-1. Milo feature or block sources
-1. third-party runtime sources
-1. initial page DOM
+1. runtime scripts observed after the boot snapshot
+1. initial page DOM captured in the boot snapshot
+1. manager defaults, which only fill missing values
 
 #### Default merge rules
 
@@ -268,6 +272,7 @@ Unless a type-specific rule overrides them, the manager applies the following de
 - scalar field conflicts are resolved by source priority
 - object fields are merged by key, with conflicting child fields resolved by source priority
 - relationship arrays are unioned by canonical `@id`
+- repeatable Event, Offer, and VideoObject nodes without producer `@id` values receive stable IDs derived from their identity fields
 - anonymous array members are deduplicated by normalized content hash when no stable `@id` exists
 - unknown anonymous top-level nodes are retained provisionally until they can be normalized or deduplicated
 
