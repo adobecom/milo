@@ -13,10 +13,10 @@ export interface JsonLdNode {
 
 /**
  * Where a node entered the graph.
- * Priority order (highest to lowest): generated > runtime > bootDom > default.
+ * Priority order (highest to lowest): runtime > bootDom > default.
  * `mergeNodes` uses this to decide which side wins scalar conflicts.
  */
-export type NodeSource = 'default' | 'bootDom' | 'runtime' | 'generated';
+export type NodeSource = 'default' | 'bootDom' | 'runtime';
 
 /** Immutable boot-time copy of a producer script and its captured payload. */
 export interface BootScriptSnapshot {
@@ -33,8 +33,6 @@ export interface GraphManagerOptions {
   ignoreTypes?: Set<string>;
   /** Boot producer scripts captured before deferred manager initialization. */
   bootScripts?: BootScriptSnapshot[];
-  /** Opts into a generated free-trial Offer when an application has no offers. */
-  generateDefaultOffer?: boolean;
 }
 
 /**
@@ -150,7 +148,7 @@ export function unionByRef(a: unknown, b: unknown): unknown[];
 
 /**
  * Merges two nodes that share the same `@id` into one, using `srcA`/`srcB`
- * priority to resolve scalar conflicts (generated > runtime > bootDom > default).
+ * priority to resolve scalar conflicts (runtime > bootDom > default).
  * Array-valued properties and `REF_ARRAY_KEYS` are merged via `unionByRef`.
  * Nested object values are merged recursively.
  * When both types include a `SoftwareApplication` subtype, the more specific
@@ -239,8 +237,6 @@ export class JsonLdGraphManager {
   isProcessing: boolean;
   /** Type names (lowercase) whose scripts are silently skipped */
   ignoreTypes: Set<string>;
-  /** Whether a missing application Offer should be synthesized. */
-  generateDefaultOffer: boolean;
   /** Immutable producer snapshots captured before deferred initialization. */
   bootScripts?: BootScriptSnapshot[];
 
@@ -288,7 +284,7 @@ export class JsonLdGraphManager {
    * `<script type="application/ld+json" data-milo-jsonld="graph">` tag:
    * - ensures `WebPage` and `Organization` are always present
    * - prunes `AggregateRating` nodes that fail quality thresholds
-   * - optionally injects a free-tier `Offer` when explicitly enabled
+   * - preserves producer Offers without synthesizing commercial data
    * - applies `idRemap` to fix dangling back-references
    * - calls `injectLinks` to wire cross-entity relationships
    * - sorts output nodes into a stable canonical order

@@ -2766,15 +2766,9 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
     const jsonLdFlag = (PAGE_URL.searchParams.get('jsonld-graph-manager') || getMetadata('jsonld-graph-manager') || '').toLowerCase();
     if (jsonLdFlag === 'true') {
-      const defaultOfferFlag = (
-        PAGE_URL.searchParams.get('jsonld-graph-manager-default-offer')
-        || getMetadata('jsonld-graph-manager-default-offer')
-        || ''
-      ).toLowerCase();
       jsonLdOptions = {
         bootScripts: [...document.querySelectorAll('script[type="application/ld+json"]')]
           .map((scriptEl) => ({ scriptEl, textContent: scriptEl.textContent })),
-        generateDefaultOffer: defaultOfferFlag === 'true',
       };
     }
   }

@@ -695,8 +695,8 @@
   severity: error
   requirement: >
     When the same node is contributed by multiple sources, scalar conflicts
-    are resolved by source priority: graph-manager-generated > runtime >
-    initial page DOM (bootDom) > manager defaults. Object fields merge by key with the same
+    are resolved by source priority: runtime > initial page DOM (bootDom) >
+    manager defaults. Object fields merge by key with the same
     precedence; relationship arrays are unioned by @id. The recorded source
     for a node is ratcheted to the maximum-priority source that has
     contributed to it.
@@ -739,16 +739,15 @@
     one or more Offer nodes by @id. Multiple offers (e.g., paid
     subscription and free trial) are encoded as separate Offer nodes.
   applies_to: [SoftwareApplication, WebApplication, MobileApplication, VideoGame]
-  implements: [extractInlineEntities, JsonLdGraphManager.rewrite]
-  tested_by: []
-  interacts_with: [offer-price, softwareapplication-default-offer]
+  implements: [extractInlineEntities]
+  tested_by: [manager.test.js]
+  interacts_with: [offer-price, softwareapplication-offer-provenance]
   notes: >
     Each Offer MAY include a potentialAction property to express usage
-    actions, e.g. BuyAction, TryAction. softwareapplication-default-offer
-    can synthesize a default Offer when this property is absent and the
-    explicit default-offer option is enabled.
+    actions, e.g. BuyAction, TryAction. When offers are absent, the manager
+    leaves them absent rather than inventing commercial data.
   status: active
-  last_updated: "2026-05-29"
+  last_updated: "2026-07-23"
 
 - name: softwareapplication-rating-or-review
   section: "Type-specific: SoftwareApplication"
@@ -791,7 +790,7 @@
   applies_to: [Offer]
   implements: []
   tested_by: []
-  interacts_with: [softwareapplication-offers, softwareapplication-default-offer]
+  interacts_with: [softwareapplication-offers, softwareapplication-offer-provenance]
   notes: >
     Required for the Google Software App rich result. Evaluated for any
     Offer node referenced by SoftwareApplication.offers. Not validated at
@@ -800,36 +799,23 @@
   status: unimplemented
   last_updated: "2026-05-29"
 
-- name: softwareapplication-default-offer
+- name: softwareapplication-offer-provenance
   section: "Type-specific: Offer"
   severity: error
-  requirement: |
-    When jsonld-graph-manager-default-offer=true is explicitly enabled and a
-    SoftwareApplication (or subtype) is the primary entity of the page with no
-    offers property (or an empty array), the manager synthesizes a default
-    free Offer:
-
-      { "@type": "Offer",
-        "@id": "{canonicalPageURL}#offer",
-        "price": "0",
-        "priceCurrency": "USD",
-        "availability": "https://schema.org/InStock",
-        "category": "Free Trial" }
-
-    and sets SoftwareApplication.offers to [{ "@id": "<canonical-offer-id>" }].
+  requirement: >
+    The graph manager MUST NOT synthesize Offer price, currency, availability,
+    category, or trial terms. Every Offer MUST originate from producer data.
+    When no producer supplies an Offer, SoftwareApplication.offers remains
+    absent or empty.
   applies_to: [Offer, SoftwareApplication, WebApplication, MobileApplication, VideoGame]
   implements: [JsonLdGraphManager.rewrite]
-  tested_by: []
+  tested_by: [manager.test.js]
   interacts_with: [softwareapplication-offers, offer-price]
   notes: >
-    This behavior is disabled by default so the manager does not invent
-    commercial terms or currency on localized pages. Source for an opted-in
-    synthesized Offer is generated. The category: "Free
-    Trial" label reflects the Adobe.com norm — primary entry to a product
-    is a free trial of the paid tier — and disambiguates the synthesized
-    Offer from any future producer-supplied paid Offers. Producers that
-    need a non-free Offer supply their own; the default is only synthesized
-    when offers is entirely absent.
+    Commercial facts are owned by product and commerce producers, which can
+    supply market-appropriate pricing and terms. Missing data may prevent a
+    Software App rich result, but is preferable to publishing an unsupported
+    claim.
   status: active
   last_updated: "2026-07-23"
 

@@ -279,7 +279,6 @@ export function unionByRef(a, b) {
 
 function priorityWeight(src) {
   if (src === 'default') return -1;
-  if (src === 'generated') return 2;
   if (src === 'runtime') return 1;
   return 0;
 }
@@ -445,7 +444,6 @@ export class JsonLdGraphManager {
     this.observer = null;
     this.isProcessing = false;
     this.ignoreTypes = options.ignoreTypes ?? IGNORE_TYPES;
-    this.generateDefaultOffer = options.generateDefaultOffer ?? false;
     this.bootScripts = options.bootScripts;
     this.debouncedRebuild = debounce(() => this.rebuild(), DEBOUNCE_MS);
   }
@@ -611,26 +609,6 @@ export class JsonLdGraphManager {
       sources.delete(ratingId);
       for (const n of graph.values()) {
         if (n.aggregateRating?.['@id'] === ratingId) delete n.aggregateRating;
-      }
-    }
-    const saId = pageScopedId('SoftwareApplication');
-    const sa = graph.get(saId);
-    if (sa && this.generateDefaultOffer) {
-      const hasOffers = sa.offers != null && !(Array.isArray(sa.offers) && sa.offers.length === 0);
-      if (!hasOffers) {
-        const offerId = pageScopedId('Offer');
-        if (!graph.has(offerId)) {
-          graph.set(offerId, {
-            '@type': 'Offer',
-            '@id': offerId,
-            price: '0',
-            priceCurrency: 'USD',
-            availability: 'https://schema.org/InStock',
-            category: 'Free Trial',
-          });
-          sources.set(offerId, 'generated');
-        }
-        sa.offers = [{ '@id': offerId }];
       }
     }
     const nodes = sortNodes([...graph.values()]);
