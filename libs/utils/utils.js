@@ -144,6 +144,8 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-section-4',
+  'forge-with-great-power-comes-great-productivity',
 ];
 
 const AUTO_BLOCKS = [

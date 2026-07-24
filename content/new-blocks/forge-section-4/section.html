@@ -1,0 +1,104 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="ambiguous" data-figma-node-id="9848:40070" data-block="base-card" style="width:100%;position:relative;overflow:hidden;min-height:1470px;background:linear-gradient(0deg,#f6f6f6 0%,rgba(246,246,246,0) 100%);">
+  <div style="max-width:1440px;margin:0 auto;position:relative;height:1470px;">
+
+    <!-- Stacked, slightly-rotated card images (depth / fan effect) -->
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:960px;height:620px;">
+
+      <!-- Back card – most negative rotation -->
+      <img src="media_bizpro-hub-rectangle2147231597.png" alt="Rectangle 2147231597" style="
+          position:absolute;
+          inset:0;
+          width:100%;height:100%;
+          border-radius:16px;
+          object-fit:cover;
+          background-color:#d4d4d4;
+          transform:rotate(-0.478deg) translate(-18px, 12px);
+          box-shadow:0 12px 48px rgba(0,0,0,0.14);
+        " />
+
+      <!-- Middle card -->
+      <img src="media_bizpro-hub-rectangle2147231598.png" alt="Rectangle 2147231598" style="
+          position:absolute;
+          inset:0;
+          width:100%;height:100%;
+          border-radius:16px;
+          object-fit:cover;
+          background-color:#dcdcdc;
+          transform:rotate(0.318deg) translate(-6px, 4px);
+          box-shadow:0 12px 48px rgba(0,0,0,0.16);
+        " />
+
+      <!-- Front card – most positive rotation -->
+      <img src="media_bizpro-hub-rectangle2147231599.png" alt="Rectangle 2147231599" style="
+          position:absolute;
+          inset:0;
+          width:100%;height:100%;
+          border-radius:16px;
+          object-fit:cover;
+          background-color:#e8e8e8;
+          transform:rotate(0.619deg);
+          box-shadow:0 12px 56px rgba(0,0,0,0.18);
+        " />
+    </div>
+
+    <!-- Decorative Rectangle 2147231596 (subtle rotated plane) -->
+    <div data-name="Rectangle 2147231596" style="
+        position:absolute;
+        bottom:120px;left:50%;
+        transform:translateX(-50%) rotate(-0.254deg);
+        width:960px;height:32px;
+        border-radius:16px;
+        background:rgba(255,255,255,0.45);
+      "></div>
+
+    <!-- Decorative Rectangle 2147231600 (drop-shadow accent) -->
+    <div data-name="Rectangle 2147231600" style="
+        position:absolute;
+        bottom:80px;left:50%;
+        transform:translateX(-50%);
+        width:880px;height:16px;
+        border-radius:16px;
+        background:rgba(255,255,255,0.7);
+        box-shadow:0px 4px 4px 0px rgba(0,0,0,0.25);
+      "></div>
+
+    <!-- Flow – Grid to UI: gradient veil that fades cards into the background -->
+    <div data-name="Flow - Grid to UI" style="
+        position:absolute;
+        bottom:0;left:0;right:0;
+        height:380px;
+        background:linear-gradient(0deg,#f6f6f6 0%,rgba(246,246,246,0) 100%);
+        pointer-events:none;
+      "></div>
+
+  </div>
+
+  <style>
+    @media (max-width:1024px) {
+      [data-figma-node-id="9848:40070"] > div {
+        height:900px !important;
+        min-height:unset;
+      }
+      [data-figma-node-id="9848:40070"] > div > div:first-child {
+        width:90% !important;
+        height:auto !important;
+        aspect-ratio:960/620;
+        top:50% !important;
+        left:50% !important;
+      }
+    }
+    @media (max-width:768px) {
+      [data-figma-node-id="9848:40070"] {
+        min-height:600px !important;
+      }
+      [data-figma-node-id="9848:40070"] > div {
+        height:600px !important;
+      }
+      [data-figma-node-id="9848:40070"] > div > div:first-child {
+        width:92% !important;
+        height:auto !important;
+        aspect-ratio:960/620;
+      }
+    }
+  </style>
+</section>
