@@ -57,14 +57,6 @@ const HIGHLIGHT_HANDLERS = {
   },
 };
 
-export function toggleHighlight(event) {
-  const { checked, id } = event.target;
-  const handler = HIGHLIGHT_HANDLERS[id];
-  if (!handler) return;
-  document.body.dataset[handler.dataKey] = checked;
-  (checked ? handler.on : handler.off).forEach((fn) => fn());
-}
-
 export function getParameters() {
   const urlParams = new URLSearchParams(window.location.search);
   return {
@@ -209,11 +201,19 @@ export function refreshPageUpdateCounts() {
   });
 }
 
-function getBadgeHeight(el) {
-  return getBadgeDimensions(window.getComputedStyle(el, '::before')).height;
+// Collection/sub-collection/CaaS badges are real anchors (see mep-mas.js, mep-caas.js), not
+// ::before pseudo-content — they must be measured on the element itself, not `el, '::before'`.
+const REAL_DOM_BADGE_SELECTOR = '.mep-caas-edit-badge, .mep-mas-edit-badge, .mep-mas-sub-collection-badge';
+
+function getBadgeStyles(el) {
+  return el.matches(REAL_DOM_BADGE_SELECTOR) ? window.getComputedStyle(el) : window.getComputedStyle(el, '::before');
 }
 
-const BADGE_SELECTORS = '[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default]';
+function getBadgeHeight(el) {
+  return getBadgeDimensions(getBadgeStyles(el)).height;
+}
+
+const BADGE_SELECTORS = `[data-mep-lingo-roc], [data-mep-lingo-fallback], [data-manifest-id][data-path], [data-fragment-default], ${REAL_DOM_BADGE_SELECTOR}`;
 const BADGE_SPACING = 4;
 
 const BADGE_MAX_WIDTH_SELECTORS = `
@@ -224,11 +224,12 @@ const BADGE_MAX_WIDTH_SELECTORS = `
   [data-mep-lingo-fallback],
   [data-fragment-default],
   [data-caas-block] [data-country],
-  ${MAS_PSEUDO_BADGE_SELECTOR}
+  ${MAS_PSEUDO_BADGE_SELECTOR},
+  ${REAL_DOM_BADGE_SELECTOR}
 `;
 
 function getBadgeLeft(el) {
-  if (window.getComputedStyle(el).display === 'contents') {
+  if (!el.matches(REAL_DOM_BADGE_SELECTOR) && window.getComputedStyle(el).display === 'contents') {
     const visibleChild = Array.from(el.children).find((c) => c.offsetHeight > 0);
     return visibleChild ? visibleChild.getBoundingClientRect().left : null;
   }
@@ -245,23 +246,31 @@ function adjustBadgeMaxWidths() {
 }
 
 function getBadgeEntry(el) {
-  const beforeStyles = window.getComputedStyle(el, '::before');
+  const isRealDomBadge = el.matches(REAL_DOM_BADGE_SELECTOR);
+  const beforeStyles = getBadgeStyles(el);
   if (beforeStyles.content === 'none' || beforeStyles.display === 'none') return null;
 
-  const badgeHeight = getBadgeHeight(el);
+  const { width: badgeWidth, height: badgeHeight } = getBadgeDimensions(beforeStyles);
   const topOffset = parseFloat(el.style.getPropertyValue('--badge-top-offset')) || 0;
+  const left = getBadgeLeft(el);
+  if (left === null) return null;
+  const right = left + badgeWidth;
 
-  if (window.getComputedStyle(el).display === 'contents') {
+  if (!isRealDomBadge && window.getComputedStyle(el).display === 'contents') {
     const visibleChild = Array.from(el.children).find((c) => c.offsetHeight > 0);
     if (!visibleChild) return null;
     const anchor = visibleChild.getBoundingClientRect().top;
     const top = anchor - badgeHeight + topOffset;
     const toOffset = (t) => t - anchor + badgeHeight;
-    return { el, badgeHeight, top, toOffset };
+    return {
+      el, badgeHeight, top, toOffset, left, right,
+    };
   }
 
   const anchor = el.getBoundingClientRect().top;
-  return { el, badgeHeight, top: anchor + topOffset, toOffset: (t) => t - anchor };
+  return {
+    el, badgeHeight, top: anchor + topOffset, toOffset: (t) => t - anchor, left, right,
+  };
 }
 
 function adjustBadgePositions() {
@@ -276,22 +285,52 @@ function adjustBadgePositions() {
     if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + BADGE_SPACING}px`);
   });
 
-  const positioned = allBadges.map(getBadgeEntry).filter(Boolean);
+  // Elements with no client rects at all (e.g. inside a display:none inactive tab panel)
+  // always report a bounding rect of {top:0, left:0, ...} no matter where the page is
+  // scrolled to, unlike real rendered elements whose top is viewport-relative and shifts
+  // with scroll. Left in, they'd sort before/after real badges inconsistently depending on
+  // scroll position and drag unrelated badges down with them — so they're excluded here
+  // rather than just pushed off-screen like the section.offsetHeight < 10 case above.
+  const positioned = allBadges
+    .filter((el) => el.getClientRects().length > 0)
+    .map(getBadgeEntry)
+    .filter(Boolean);
   positioned.sort((a, b) => a.top - b.top);
 
-  let prevBottom = -Infinity;
+  // Only push a badge down for others it actually overlaps on both axes — comparing against
+  // every already-placed badge, not just a single running cursor, since with badges spread
+  // across multiple columns/sections the nearest conflict isn't always the previous one in
+  // top-sorted order.
+  const placed = [];
   positioned.forEach((badge) => {
-    if (badge.top < prevBottom + BADGE_SPACING) {
-      badge.top = prevBottom + BADGE_SPACING;
+    const requiredBottom = placed.reduce((max, p) => {
+      const overlapsX = badge.left < p.right && p.left < badge.right;
+      const overlapsY = badge.top < p.bottom + BADGE_SPACING;
+      return (overlapsX && overlapsY) ? Math.max(max, p.bottom + BADGE_SPACING) : max;
+    }, -Infinity);
+
+    if (requiredBottom > badge.top) {
+      badge.top = requiredBottom;
       badge.el.style.setProperty('--badge-top-offset', `${badge.toOffset(badge.top)}px`);
     }
-    prevBottom = badge.top + badge.badgeHeight;
+    placed.push({ left: badge.left, right: badge.right, bottom: badge.top + badge.badgeHeight });
   });
 }
 
 function refreshBadges() {
-  adjustBadgePositions();
+  // Max-width must be applied first: adjustBadgePositions() measures each badge's rendered
+  // height to stack them, and that height depends on how many lines the text wraps to.
   adjustBadgeMaxWidths();
+  adjustBadgePositions();
+}
+
+export function toggleHighlight(event) {
+  const { checked, id } = event.target;
+  const handler = HIGHLIGHT_HANDLERS[id];
+  if (!handler) return;
+  document.body.dataset[handler.dataKey] = checked;
+  (checked ? handler.on : handler.off).forEach((fn) => fn());
+  refreshBadges();
 }
 
 let badgeAdjustTimer;
@@ -311,12 +350,15 @@ window.addEventListener('resize', () => {
   });
 });
 
+// Scrolling never changes badges' position relative to one another, so only max-width
+// (which can change if a badge sits in a horizontally-scrolling container) needs to rerun here —
+// vertical stacking must stay untouched or it'll recompute against mid-scroll measurements.
 let scrollRaf;
 window.addEventListener('scroll', () => {
   if (scrollRaf) return;
   scrollRaf = requestAnimationFrame(() => {
     scrollRaf = null;
-    refreshBadges();
+    adjustBadgeMaxWidths();
   });
 }, { passive: true, capture: true });
 

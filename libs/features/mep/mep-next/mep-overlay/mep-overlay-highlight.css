@@ -343,8 +343,8 @@ a.mep-mas-edit-badge-collection {
 a.mep-mas-sub-collection-badge,
 body a.mep-mas-sub-collection-badge {
   display: inline-block;
-  outline: 2px dashed var(--mas-sub-collection-primary);
   text-decoration: none;
+  border: 2px solid var(--mas-sub-collection-primary);
   color: var(--mas-sub-collection-primary);
   background-color: var(--mas-sub-collection-accent);
 }
@@ -433,10 +433,6 @@ body[data-mep-mas-highlight='true'] [data-mas-block='inline'][data-mas-market-mi
   border-color: var(--caas-lang-first-primary);
   color: var(--caas-lang-first-primary);
   background-color: var(--caas-lang-first-accent);
-}
-
-body[data-mep-mas-highlight='true'] [data-mas-block='inline'] :is([data-mas-block='ost'], [data-mas-block='offer'])::before {
-  top: calc(100% + 4px);
 }
 
 body[data-mep-mas-highlight='true'] [data-mas-block='ost']::before {
