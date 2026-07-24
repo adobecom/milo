@@ -82,7 +82,10 @@ export async function checkReady(masElement, fragment) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success === 'timeout') {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
+    // log.error already forwards to LANA (tags: acom, clientId: merch-at-scale); include the
+    // fragment id + timeout so slow/failed hydration (3G, cache miss) is actionable there.
+    const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
+    log.error(`${masElement.tagName} did not initialize within ${CARD_AUTOBLOCK_TIMEOUT}ms: ${uuid}`);
   } else if (!success) {
     log.error(`${masElement.tagName} failed to initialize`);
   }
