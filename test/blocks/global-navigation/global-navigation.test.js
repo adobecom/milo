@@ -842,6 +842,21 @@ describe('global navigation', () => {
       expect(!!localNav).to.be.true;
     });
 
+    it('renders a MAS field CTA after button decoration unwraps its authoring element', async () => {
+      const resolvedField = `
+        <div>
+          <p class="action-area">
+            <a is="checkout-link" class="con-button blue button-l" href="#free-trial">Free trial</a>
+          </p>
+        </div>`;
+      await createFullGlobalNavigation({ globalNavigation: `${gnavWithlocalNav}${resolvedField}` });
+
+      const freeTrial = [...document.querySelectorAll('.feds-nav .feds-cta--primary')]
+        .find((cta) => cta.textContent === 'Free trial');
+      expect(freeTrial).to.exist;
+      expect(freeTrial.href.endsWith('#free-trial')).to.be.true;
+    });
+
     it('should open local nav on click of localnav title', async () => {
       await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav });
       const localNavTitle = document.querySelector(selectors.localNavTitle);
