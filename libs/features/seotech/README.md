@@ -32,6 +32,7 @@ structured-data URL template in that document.
 Metadata Properties:
 
 - `seotech-structured-data`: `on` to enable SEOTECH lookup
+- `?seotech-structured-data=on`: test-only query param override to force SEOTECH lookup on a page
 
 See [Structured Data for Milo](https://wiki.corp.adobe.com/x/YpPwwg) (Corp Only) for complete documentation.
 

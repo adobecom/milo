@@ -2650,7 +2650,11 @@ async function documentPostSectionLoading(config) {
   import('../scripts/accessibility.js').then((accessibility) => {
     accessibility.default();
   });
-  if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
+  const seotechStructuredDataParam = new URL(window.location.href).searchParams
+    .get('seotech-structured-data') === 'on';
+  if (getMetadata('seotech-structured-data') === 'on'
+    || seotechStructuredDataParam
+    || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
     ));

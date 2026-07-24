@@ -9,6 +9,7 @@ import {
   REGEX_ADOBETV,
   REGEX_YOUTUBE,
   canonicalizePathname,
+  isStructuredDataEnabled,
   STRUCTURED_DATA_ORIGIN_MAP_URL,
 } from '../../../libs/features/seotech/seotech.js';
 
@@ -98,6 +99,20 @@ describe('canonicalizePathname', () => {
   });
 });
 
+describe('isStructuredDataEnabled', () => {
+  it('should enable structured data via metadata', () => {
+    const getMetadata = stub().returns(null);
+    getMetadata.withArgs('seotech-structured-data').returns('on');
+    expect(isStructuredDataEnabled('https://www.adobe.com/foo', getMetadata)).to.be.true;
+  });
+
+  it('should enable structured data via query param', () => {
+    const getMetadata = stub().returns(null);
+    expect(isStructuredDataEnabled('https://www.adobe.com/foo?seotech-structured-data=on', getMetadata))
+      .to.be.true;
+  });
+});
+
 describe('seotech', () => {
   describe('appendScriptTag + seotech-structured-data', () => {
     const originMap = {
@@ -148,6 +163,36 @@ describe('seotech', () => {
       const fetchStub = stub(window, 'fetch');
       const getMetadata = stub().returns(null);
       getMetadata.withArgs('seotech-structured-data').returns('on');
+      const expectedObject = {
+        '@context': 'http://schema.org',
+        '@type': 'VideoObject',
+        name: 'fake',
+      };
+      fetchStub.onFirstCall().returns(Promise.resolve(Response.json(
+        { ...originMap },
+        { status: 200 },
+      )));
+      fetchStub.onSecondCall().returns(Promise.resolve(Response.json(
+        { ...expectedObject },
+        { status: 200 },
+      )));
+      await appendScriptTag(
+        { locationUrl, getMetadata, createTag },
+      );
+      const expectedApiCall = 'https://edge.example.net/public/structured-data/da-cc/in/creativecloud/example.json';
+      expect(fetchStub.getCall(0)?.firstArg).to.equal(STRUCTURED_DATA_ORIGIN_MAP_URL);
+      expect(fetchStub.getCall(1)?.firstArg).to.equal(expectedApiCall);
+      const el = await waitForElement('script[type="application/ld+json"]');
+      const obj = JSON.parse(el.text);
+      expect(obj).to.deep.equal(expectedObject);
+      expect(lanaStub.called).to.be.false;
+    });
+
+    it('should append JSON-LD when enabled by query param', async () => {
+      const locationUrl = 'https://www.adobe.com/in/creativecloud/example?seotech-structured-data=on';
+      const lanaStub = stub(window.lana, 'log');
+      const fetchStub = stub(window, 'fetch');
+      const getMetadata = stub().returns(null);
       const expectedObject = {
         '@context': 'http://schema.org',
         '@type': 'VideoObject',

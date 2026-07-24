@@ -182,6 +182,12 @@ export async function getStructuredData(pathname, hostname, options = {}) {
   return body;
 }
 
+export function isStructuredDataEnabled(locationUrl, getMetadata) {
+  const url = new URL(locationUrl);
+  return getMetadata('seotech-structured-data') === 'on'
+    || url.searchParams.get('seotech-structured-data') === 'on';
+}
+
 export async function appendScriptTag({ locationUrl, getMetadata, createTag }) {
   const url = new URL(locationUrl);
   const params = new URLSearchParams(url.search);
@@ -196,7 +202,7 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag }) {
   };
 
   const promises = [];
-  if (getMetadata('seotech-structured-data') === 'on') {
+  if (isStructuredDataEnabled(locationUrl, getMetadata)) {
     promises.push(getStructuredData(url.pathname, url.hostname, { originMapUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
       .catch(() => logError('Structured data operation failed', {
