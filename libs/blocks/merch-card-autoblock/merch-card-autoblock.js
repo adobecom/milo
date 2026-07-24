@@ -217,7 +217,7 @@ function decorateInlineCtas(masField, content) {
   }
   copyMasFieldIdToParent(masField, 'fragment-id');
   copyMasFieldIdToParent(masField, 'variation-id');
-  masField.replaceWith(...[...content.childNodes]);
+  masField.replaceWith(...content.childNodes);
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
   if (container && !pendingCTAs?.length) {
