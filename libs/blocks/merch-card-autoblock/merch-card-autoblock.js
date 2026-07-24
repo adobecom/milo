@@ -82,10 +82,7 @@ export async function checkReady(masElement, fragment) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success === 'timeout') {
-    // log.error already forwards to LANA (tags: acom, clientId: merch-at-scale); include the
-    // fragment id + timeout so slow/failed hydration (3G, cache miss) is actionable there.
-    const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
-    log.error(`${masElement.tagName} did not initialize within ${CARD_AUTOBLOCK_TIMEOUT}ms: ${uuid}`);
+    log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
     log.error(`${masElement.tagName} failed to initialize`);
   }
@@ -175,11 +172,9 @@ function copyMasFieldIdToParent(masField, name) {
 }
 
 /**
- * Hoists a resolved inline CTA out of its mas-field into the authored em/strong,
- * then runs decorateButtons. Size and utility classes come from an already-decorated
- * sibling button, else from the block's own classes. Deferred until every CTA
- * mas-field in the container has been hoisted, so a still-wrapped sibling isn't
- * matched by 'em a'/'strong a' with the wrong parent (its content span).
+ * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
+ * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
+ * sibling isn't matched by 'em a'/'strong a' with the wrong parent (its content span).
  */
 function decorateInlineCtas(masField, content) {
   const container = masField.closest('p, div');
@@ -192,10 +187,8 @@ function decorateInlineCtas(masField, content) {
     blockEl = blockEl.parentElement;
   }
 
-  // Match a fully-decorated sibling button in the same block, else derive from the block.
-  // Only a button that carries a size class counts: mas-field self-styles its CTAs with
-  // con-button but no size, so an unsized (self-styled, not-yet-Milo-decorated) sibling must
-  // not be used as the size reference — doing so would drop button-xl on every CTA.
+  // Only a sized sibling counts: mas-field self-styles CTAs with con-button but no size,
+  // and using an unsized one as reference would drop button-xl on every CTA.
   const SIZE_CLASS = /^button-(s|m|l|xl)$/;
   const siblingBtn = [...(blockEl?.querySelectorAll('.con-button') ?? [])]
     .find((b) => !masField.contains(b) && [...b.classList].some((c) => SIZE_CLASS.test(c)));
@@ -212,9 +205,7 @@ function decorateInlineCtas(masField, content) {
     if (btnVariant) {
       size = `button-${btnVariant.split('-')[0]}`;
     } else if (blockEl?.classList.contains('hero-marquee')) {
-      // Mirror hero-marquee's extendButtonsClass, which adds button-xl AND
-      // button-justified-mobile to every .con-button. Without the util class an
-      // all-headless-CTA marquee renders inline instead of full-width on mobile.
+      // Mirror hero-marquee's extendButtonsClass; the util class keeps CTAs full-width on mobile.
       size = 'button-xl';
       utilClasses = ['button-justified-mobile'];
     } else if (blockEl?.classList.contains('accordion') || blockEl?.classList.contains('media')) {
@@ -238,10 +229,8 @@ function decorateInlineCtas(masField, content) {
 }
 
 /**
- * A headless mas-field CTA can resolve after its block decorated (slow network),
- * firing 'mas:ready' too late for decorateButtons. One document-level listener
- * hoists + decorates it regardless of block, so no per-block wiring is needed.
- * Registered once, on the first merch init.
+ * A headless mas-field CTA can fire 'mas:ready' after its block decorated (slow network),
+ * too late for decorateButtons. One document listener hoists + decorates it, no per-block wiring.
  */
 let masReadyWatched = false;
 function watchMasFieldCtas() {
