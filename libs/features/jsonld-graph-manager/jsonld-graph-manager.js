@@ -101,7 +101,7 @@ export function flattenPayload(data) {
   if (!data || typeof data !== 'object') return [];
   if (Array.isArray(data)) return data.flatMap(flattenPayload);
   if (data['@graph'] != null) {
-    const innerArr = Array.isArray(data['@graph']) ? data['@graph'] : [data['@graph']];
+    const innerArr = asArray(data['@graph']);
     const innerFlat = innerArr.flatMap(flattenPayload);
     const rest = { ...data };
     delete rest['@graph'];
@@ -547,8 +547,6 @@ export class JsonLdGraphManager {
             rewriteCrossPageRefs(n);
             canonicalizeBreadcrumbItems(n);
             canonicalizeReferences(n);
-          }
-          for (const n of toMerge) {
             const id = n['@id'] ?? n['@type'] ?? JSON.stringify(n);
             const prevSrc = sources.get(id) ?? 'bootDom';
             if (graph.has(id)) {
