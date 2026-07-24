@@ -1731,7 +1731,12 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) await import('../mep/mep-next/mep-next.js').then(({ saveToMmm }) => saveToMmm());
+    if (config.mep?.preview) {
+      // TEMP: ?mepnext loads the new mep-next preview; default falls back to legacy preview.js.
+      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).has('mepnext')
+        ? '../mep/mep-next/mep-next.js' : './preview.js';
+      await import(previewSrc).then(({ saveToMmm }) => saveToMmm());
+    }
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);
