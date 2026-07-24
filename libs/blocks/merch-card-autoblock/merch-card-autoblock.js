@@ -241,9 +241,7 @@ function watchMasFieldCtas() {
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     // Same gate createInline uses: an inline CTA anchor, not block-level content.
     if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
-      // Mirror createInline: upgrade plain commerce anchors (missing `is`) to their
-      // customized built-in before hoisting, or the late-resolved CTA never hydrates
-      // (no href, no modal). upgradeCommerceLinks is idempotent (skips [is]).
+      // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
       decorateInlineCtas(mf, content);
     }
