@@ -1,4 +1,5 @@
 export const PROD_BASE_URL = 'https://www.adobe.com/seotech/api';
+export const STRUCTURED_DATA_ORIGIN_MAP_URL = 'https://firefly.azureedge.net/c4dbffdc97a2c4f65073a222e967ea7c-public/public/aem-origin-map/public.json';
 
 export const REGEX_ADOBETV = /(?:https?:\/\/)?(?:stage-)?video.tv.adobe.com\/v\/([\d]+)/;
 export const REGEX_YOUTUBE = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?([a-zA-Z0-9_-]+)/;
@@ -15,8 +16,16 @@ export function logError(msg, context = {}) {
     additionalInfo.push(`bucket:${context.bucket}`);
   }
 
+  if (context.repo) {
+    additionalInfo.push(`repo:${context.repo}`);
+  }
+
   if (context.id) {
     additionalInfo.push(`id:${context.id}`);
+  }
+
+  if (context.hostname) {
+    additionalInfo.push(`hostname:${context.hostname}`);
   }
 
   if (context.videoUrl) {
@@ -87,12 +96,78 @@ export async function sha256(message) {
   return hashHex;
 }
 
-export async function getStructuredData(bucket, id, { baseUrl = PROD_BASE_URL } = {}) {
-  if (!bucket || !id) {
-    throw new Error(`bucket and id are required. Received: bucket=${bucket}, id=${id}`);
+export function canonicalizePathname(pathname = '') {
+  let path = pathname || '/';
+  path = path.replace(/\.html$/, '');
+  path = path.replace(/\/+$/, '');
+  if (!path || path === '/') return '/index';
+  return path;
+}
+
+export function getOriginMapHostKey(hostname = '') {
+  const [subdomain] = hostname.toLowerCase().split('.');
+  return subdomain;
+}
+
+export function matchesOriginPrefix(canonicalPathname, prefix) {
+  if (!prefix || !canonicalPathname) return false;
+
+  if (prefix.includes('*')) {
+    const escaped = prefix.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+    return new RegExp(`^${escaped}$`).test(canonicalPathname);
   }
 
-  const url = `${baseUrl}/structured-data/${bucket}/${id}`;
+  return canonicalPathname === prefix
+    || canonicalPathname.startsWith(`${prefix}/`)
+    || canonicalPathname.startsWith(`${prefix}.`);
+}
+
+export function resolveRepoFromOriginMap(originMap, hostname, pathname) {
+  const hostKey = getOriginMapHostKey(hostname);
+  const origins = originMap?.properties?.[hostKey]?.origins || [];
+  const canonicalPathname = canonicalizePathname(pathname);
+
+  for (const origin of origins) {
+    const matched = (origin.prefixes || [])
+      .some((prefix) => matchesOriginPrefix(canonicalPathname, prefix));
+    if (matched) {
+      return origin.repo;
+    }
+  }
+
+  if (canonicalPathname === '/index') {
+    const homepageOrigin = origins.find((origin) => origin.homepage);
+    if (homepageOrigin?.repo) {
+      return homepageOrigin.repo;
+    }
+  }
+
+  return origins.find((origin) => origin.default)?.repo || null;
+}
+
+export async function getStructuredData(pathname, hostname, options = {}) {
+  const { originMapUrl = STRUCTURED_DATA_ORIGIN_MAP_URL } = options;
+  const originMapResp = await fetch(originMapUrl);
+  if (!originMapResp?.ok) {
+    throw new Error(`Failed to fetch origin map: ${originMapResp?.status} ${originMapResp?.statusText}`);
+  }
+  const originMap = await originMapResp.json();
+
+  const repo = resolveRepoFromOriginMap(originMap, hostname, pathname);
+  if (!repo) {
+    throw new Error(`Unable to resolve repo for ${hostname}${pathname}`);
+  }
+
+  const template = originMap?.structuredDataUrlTemplate;
+  if (!template) {
+    throw new Error('Missing structuredDataUrlTemplate in origin map');
+  }
+
+  const canonicalPath = canonicalizePathname(pathname);
+  const url = template
+    .replace('{repo}', repo)
+    .replace('{path}', canonicalPath);
+
   const resp = await fetch(url);
 
   if (!resp) {
@@ -107,10 +182,11 @@ export async function getStructuredData(bucket, id, { baseUrl = PROD_BASE_URL } 
   return body;
 }
 
-export async function appendScriptTag({ locationUrl, getMetadata, createTag, getConfig }) {
+export async function appendScriptTag({ locationUrl, getMetadata, createTag }) {
   const url = new URL(locationUrl);
   const params = new URLSearchParams(url.search);
   const baseUrl = params.get('seotech-api-base-url') || undefined;
+  const originMapUrl = params.get('seotech-origin-map-url') || undefined;
   const append = (obj, className) => {
     if (!obj) return;
     const attributes = { type: 'application/ld+json' };
@@ -121,13 +197,10 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
 
   const promises = [];
   if (getMetadata('seotech-structured-data') === 'on') {
-    const bucket = getRepoByImsClientId(getConfig()?.imsClientId);
-    const id = await sha256(url.pathname?.replace('.html', ''));
-    promises.push(getStructuredData(bucket, id, { baseUrl })
+    promises.push(getStructuredData(url.pathname, url.hostname, { originMapUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
       .catch(() => logError('Structured data operation failed', {
-        bucket,
-        id,
+        hostname: url.hostname,
         pathname: url.pathname,
       })));
   }

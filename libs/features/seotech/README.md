@@ -26,6 +26,8 @@ See [video-metadata](../../blocks/video-metadata/) if you need to define a speci
 ### Structured Data
 
 This feature queries the SEOTECH service for adhoc structured data that should be added to the page.
+Repo resolution now comes from the public origin map (`aem-origin-map/public.json`) and the
+structured-data URL template in that document.
 
 Metadata Properties:
 

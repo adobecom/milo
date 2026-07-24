@@ -8,6 +8,8 @@ import {
   sha256,
   REGEX_ADOBETV,
   REGEX_YOUTUBE,
+  canonicalizePathname,
+  STRUCTURED_DATA_ORIGIN_MAP_URL,
 } from '../../../libs/features/seotech/seotech.js';
 
 describe('REGEX_ADOBETV', () => {
@@ -80,8 +82,36 @@ describe('sha256', () => {
   });
 });
 
+describe('canonicalizePathname', () => {
+  const testCases = [
+    { pathname: '/foo', expected: '/foo' },
+    { pathname: '/foo/', expected: '/foo' },
+    { pathname: '/foo.html', expected: '/foo' },
+    { pathname: '/foo/bar.html', expected: '/foo/bar' },
+    { pathname: '/', expected: '/index' },
+  ];
+
+  testCases.forEach(({ pathname, expected }) => {
+    it(`should canonicalize ${pathname} to ${expected}`, () => {
+      expect(canonicalizePathname(pathname)).to.equal(expected);
+    });
+  });
+});
+
 describe('seotech', () => {
   describe('appendScriptTag + seotech-structured-data', () => {
+    const originMap = {
+      properties: {
+        www: {
+          origins: [{
+            repo: 'da-cc',
+            prefixes: ['/in/creativecloud'],
+          }],
+        },
+      },
+      structuredDataUrlTemplate: 'https://edge.example.net/public/structured-data/{repo}{path}.json',
+    };
+
     beforeEach(async () => {
       window.lana = { log: (s) => console.log(`LANA NOT STUBBED! ${s}`) };
     });
@@ -91,28 +121,31 @@ describe('seotech', () => {
     });
 
     it('should not append JSON-LD', async () => {
-      const locationUrl = 'https://main--cc--adobecom.aem.page/in/creativecloud/example2?foo=bar&seotech-env=stage';
+      const locationUrl = 'https://www.adobe.com/in/creativecloud/example2?foo=bar';
       stub(window.lana, 'log');
       const getMetadata = stub().returns(null);
       getMetadata.withArgs('seotech-structured-data').returns('on');
-      const getConfigStub = stub().returns({ imsClientId: 'adobedotcom-cc' });
       const fetchStub = stub(window, 'fetch');
-      fetchStub.returns(Promise.resolve(Response.json(
+      fetchStub.onFirstCall().returns(Promise.resolve(Response.json(
+        { ...originMap },
+        { status: 200 },
+      )));
+      fetchStub.onSecondCall().returns(Promise.resolve(Response.json(
         { error: 'ERROR!' },
         { status: 400 },
       )));
       await appendScriptTag(
-        { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
+        { locationUrl, getMetadata, createTag },
       );
-      const expectedApiCall = 'https://www.adobe.com/seotech/api/structured-data/cc/3e2d1ce8ccf0e45d42d33e0f190fc306ab1ee0f2890c8ff5da27414f8014ceb2';
-      expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
+      const expectedApiCall = 'https://edge.example.net/public/structured-data/da-cc/in/creativecloud/example2.json';
+      expect(fetchStub.getCall(0)?.firstArg).to.equal(STRUCTURED_DATA_ORIGIN_MAP_URL);
+      expect(fetchStub.getCall(1)?.firstArg).to.equal(expectedApiCall);
     });
 
     it('should append JSON-LD', async () => {
-      const locationUrl = 'https://main--cc--adobecom.aem.page/in/creativecloud/example?foo=bar';
+      const locationUrl = 'https://www.adobe.com/in/creativecloud/example?foo=bar';
       const lanaStub = stub(window.lana, 'log');
       const fetchStub = stub(window, 'fetch');
-      const getConfigStub = stub().returns({ imsClientId: 'adobedotcom-cc' });
       const getMetadata = stub().returns(null);
       getMetadata.withArgs('seotech-structured-data').returns('on');
       const expectedObject = {
@@ -120,15 +153,20 @@ describe('seotech', () => {
         '@type': 'VideoObject',
         name: 'fake',
       };
-      fetchStub.returns(Promise.resolve(Response.json(
+      fetchStub.onFirstCall().returns(Promise.resolve(Response.json(
+        { ...originMap },
+        { status: 200 },
+      )));
+      fetchStub.onSecondCall().returns(Promise.resolve(Response.json(
         { ...expectedObject },
         { status: 200 },
       )));
       await appendScriptTag(
-        { locationUrl, getMetadata, getConfig: getConfigStub, createTag },
+        { locationUrl, getMetadata, createTag },
       );
-      const expectedApiCall = 'https://www.adobe.com/seotech/api/structured-data/cc/f0f5cec5d8b70cf798b602c3586da39e93b9638d9b8001b3a4298605dc5f6ebe';
-      expect(fetchStub.getCall(0)?.firstArg).to.equal(expectedApiCall);
+      const expectedApiCall = 'https://edge.example.net/public/structured-data/da-cc/in/creativecloud/example.json';
+      expect(fetchStub.getCall(0)?.firstArg).to.equal(STRUCTURED_DATA_ORIGIN_MAP_URL);
+      expect(fetchStub.getCall(1)?.firstArg).to.equal(expectedApiCall);
       const el = await waitForElement('script[type="application/ld+json"]');
       const obj = JSON.parse(el.text);
       expect(obj).to.deep.equal(expectedObject);
