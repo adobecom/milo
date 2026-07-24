@@ -1577,3 +1577,9 @@ main > .section[class*='-up'] > .content {
   .section.masonry-layout .grid-span-10 {grid-column: span 10; }
   .section.masonry-layout .grid-span-11 {grid-column: span 11; }
 }
+
+@media screen and (min-width: 1200px) {
+  .marquee .background .responsive-background img {
+    object-position: 32% center;
+  }
+}

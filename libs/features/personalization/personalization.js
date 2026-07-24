@@ -10,43 +10,16 @@ import {
   loadScript,
   localizeLinkAsync,
   getFederatedUrl,
-  isSignedOut,
   resolveDetectedMarketCountry,
 } from '../../utils/utils.js';
 import { getMepConsentConfig, sendAnalytics } from '../../martech/helpers.js';
 import { sanitizeHtmlBody } from '../../utils/sanitizeHtml.js';
+import { FLAGS, PERSONALIZATION_TAGS } from './constants.js';
 
-/* c8 ignore start */
-const getUA = () => navigator.userAgent;
-const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
-const safariIpad = getUA().includes('Macintosh') && navigator.maxTouchPoints > 1;
-const isGalaxyTab = getUA().includes('Linux') && navigator.maxTouchPoints > 1;
-const isChromeIOS = getUA().includes('CriOS');
-const isEdgeIOS = getUA().includes('EdgiOS');
-const isFirefoxIOS = getUA().includes('FxiOS');
+export { FLAGS, PERSONALIZATION_TAGS };
 
 export const US_GEO = 'en-us';
-export const PERSONALIZATION_TAGS = {
-  all: () => true,
-  chrome: () => (getUA().includes('Chrome') && !getUA().includes('Edg')) || isChromeIOS,
-  firefox: () => getUA().includes('Firefox') || isFirefoxIOS,
-  safari: () => getUA().includes('Safari') && !getUA().includes('Chrome') && !isChromeIOS && !isEdgeIOS && !isFirefoxIOS,
-  edge: () => getUA().includes('Edg'),
-  android: () => getUA().includes('Android') || isGalaxyTab,
-  ios: () => /iPad|iPhone|iPod/.test(getUA()) || safariIpad,
-  windows: () => getUA().includes('Windows'),
-  mac: () => getUA().includes('Macintosh') && !safariIpad,
-  'mobile-device': () => safariIpad
-    || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(getUA()) || isGalaxyTab,
-  phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
-  tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
-  desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
-  loggedout: () => isSignedOut(),
-  loggedin: () => !isSignedOut(),
-};
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
-/* c8 ignore stop */
 
 const CLASS_EL_DELETE = 'p13n-deleted';
 const CLASS_EL_REPLACE = 'p13n-replaced';
@@ -55,11 +28,6 @@ const TARGET_EXP_PREFIX = 'target-';
 const INLINE_HASH = '_inline';
 const MARTECH_RETURNED_EVENT = 'martechReturned';
 const PAGE_URL = new URL(window.location.href);
-export const FLAGS = {
-  all: 'all',
-  includeFragments: 'include-fragments',
-  includeGnav: 'include-gnav',
-};
 let isPostLCP = false;
 const SELECTOR_TYPES = {
   fragment: 'fragment',

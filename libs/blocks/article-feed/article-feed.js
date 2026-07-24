@@ -14,6 +14,7 @@ import { updateLinkWithLangRoot } from '../../utils/helpers.js';
 const ROOT_MARGIN = 50;
 
 const replacePlaceholder = async (key) => replaceKey(key, getConfig());
+export const shouldLoadArticleImageEager = (offset, index) => offset === 0 && index === 0;
 
 const blogIndex = {
   data: [],
@@ -635,7 +636,7 @@ async function decorateArticleFeed(
   const max = pageEnd > articles.length ? articles.length : pageEnd;
   for (let i = offset; i < max; i += 1) {
     const article = articles[i];
-    const card = buildArticleCard(article);
+    const card = buildArticleCard(article, 'article', shouldLoadArticleImageEager(offset, i));
     articleCards.append(card);
   }
   if (articles.length > pageEnd || !feed.complete) {

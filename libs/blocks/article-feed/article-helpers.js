@@ -207,13 +207,50 @@ export function formatCardLocaleDate(date) {
  * @param {string} src The image URL
  * @param {boolean} eager load image eager
  * @param {Array} breakpoints breakpoints and corresponding params (eg. width)
+ * @param {Object} attributes responsive image attributes
  */
 
-export function createOptimizedPicture(src, alt = '', eager = false, breakpoints = [{ media: '(min-width: 400px)', width: '2000' }, { width: '750' }]) {
+export function createOptimizedPicture(
+  src,
+  alt = '',
+  eager = false,
+  breakpoints = [{ media: '(min-width: 400px)', width: '2000' }, { width: '750' }],
+  attributes = {},
+) {
   const url = new URL(src, window.location.href);
   const picture = document.createElement('picture');
   const { pathname } = url;
   const ext = pathname.substring(pathname.lastIndexOf('.') + 1);
+  const responsiveWidths = breakpoints.length > 1 && breakpoints.every((br) => !br.media);
+  const getSrc = (width, format) => `${pathname}?width=${width}&format=${format}&optimize=medium`;
+  const getSrcset = (format) => breakpoints
+    .map((br) => `${getSrc(br.width, format)} ${br.width}w`)
+    .join(', ');
+  const setImageAttributes = (img) => {
+    img.setAttribute('loading', eager ? 'eager' : 'lazy');
+    img.setAttribute('decoding', 'async');
+    img.setAttribute('alt', alt);
+    if (eager) img.setAttribute('fetchpriority', 'high');
+    if (attributes.sizes) img.setAttribute('sizes', attributes.sizes);
+    if (attributes.width) img.setAttribute('width', attributes.width);
+    if (attributes.height) img.setAttribute('height', attributes.height);
+  };
+
+  if (responsiveWidths) {
+    const source = document.createElement('source');
+    source.setAttribute('type', 'image/webp');
+    source.setAttribute('srcset', getSrcset('webply'));
+    if (attributes.sizes) source.setAttribute('sizes', attributes.sizes);
+    picture.appendChild(source);
+
+    const largest = breakpoints[breakpoints.length - 1];
+    const img = document.createElement('img');
+    img.setAttribute('src', getSrc(largest.width, ext));
+    img.setAttribute('srcset', getSrcset(ext));
+    setImageAttributes(img);
+    picture.appendChild(img);
+    return picture;
+  }
 
   // webp
   breakpoints.forEach((br) => {
@@ -234,8 +271,7 @@ export function createOptimizedPicture(src, alt = '', eager = false, breakpoints
     } else {
       const img = document.createElement('img');
       img.setAttribute('src', `${pathname}?width=${br.width}&format=${ext}&optimize=medium`);
-      img.setAttribute('loading', eager ? 'eager' : 'lazy');
-      img.setAttribute('alt', alt);
+      setImageAttributes(img);
       picture.appendChild(img);
     }
   });
@@ -296,7 +332,17 @@ export function buildArticleCard(article, type = 'article', eager = false) {
 
   const path = article.path.split('.')[0];
 
-  const picture = createOptimizedPicture(image, imageAlt || title, eager, [{ width: '750' }]);
+  const picture = createOptimizedPicture(
+    image,
+    imageAlt || title,
+    eager,
+    [{ width: '320' }, { width: '480' }, { width: '750' }],
+    {
+      sizes: '(min-width: 1200px) 378px, (min-width: 600px) min(378px, calc((100vw - 96px) / 2)), clamp(268px, calc(100vw - 64px), 378px)',
+      width: '378',
+      height: '250',
+    },
+  );
   const pictureTag = picture.outerHTML;
   const card = document.createElement('a');
   card.className = `${type}-card`;

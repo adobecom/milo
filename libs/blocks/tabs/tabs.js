@@ -87,6 +87,12 @@ function getContentElement(parent, traversalDepth) {
   return element.lastElementChild;
 }
 
+const loadPanelImages = (panel) => {
+  panel?.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+    img.setAttribute('loading', 'eager');
+  });
+};
+
 function changeTabs(e, config) {
   const target = e.currentTarget;
   const targetId = target.getAttribute('id');
@@ -130,6 +136,7 @@ function changeTabs(e, config) {
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent?.removeAttribute('hidden');
+  loadPanelImages(targetContent);
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
@@ -289,12 +296,8 @@ function initPaddles(tabList, left, right, isRadio) {
 }
 
 const handleDeferredImages = (block) => {
-  /* c8 ignore next 6 */
   const loadLazyImages = () => {
-    const images = block.querySelectorAll('img[loading="lazy"]');
-    images.forEach((img) => {
-      img.removeAttribute('loading');
-    });
+    block.querySelectorAll('.tabpanel:not([hidden])').forEach(loadPanelImages);
   };
   document.addEventListener(MILO_EVENTS.DEFERRED, loadLazyImages, { once: true, capture: true });
 };

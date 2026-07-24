@@ -626,3 +626,39 @@ describe('carousel disable-buttons deferred heights on desktop', () => {
     });
   });
 });
+
+describe('carousel image loading', () => {
+  let fixtureRoot;
+
+  beforeEach(() => {
+    const html = multiSectionCarouselFixture({
+      carouselClass: 'loading-test',
+      blockTitle: 'Loading test',
+      companions: [
+        { h2: 'First', body: `<img loading="lazy" src="${DATA_URL_GIF}" alt="">` },
+        { h2: 'Second', body: `<img loading="lazy" src="${DATA_URL_GIF}" alt="">` },
+        { h2: 'Third', body: `<img loading="lazy" src="${DATA_URL_GIF}" alt="">` },
+      ],
+    });
+    fixtureRoot = appendCarouselFixture(html);
+    init(fixtureRoot.querySelector('.carousel'));
+  });
+
+  afterEach(() => {
+    fixtureRoot.remove();
+  });
+
+  it('promotes only the active image on deferred load and navigation', () => {
+    const carousel = fixtureRoot.querySelector('.carousel');
+    const images = carousel.querySelectorAll('.carousel-slide img');
+
+    document.dispatchEvent(new Event('milo:deferred'));
+    expect(images[0].loading).to.equal('eager');
+    expect(images[1].loading).to.equal('lazy');
+    expect(images[2].loading).to.equal('lazy');
+
+    carousel.querySelector('.carousel-next').click();
+    expect(images[1].loading).to.equal('eager');
+    expect(images[2].loading).to.equal('lazy');
+  });
+});

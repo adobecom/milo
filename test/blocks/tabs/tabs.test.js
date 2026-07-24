@@ -24,6 +24,20 @@ describe('tabs', () => {
     });
   });
 
+  it('promotes images only in the active tab panel', () => {
+    const tabs = document.querySelector('#tabs-demo');
+    const panels = tabs.querySelectorAll('.tabpanel');
+    const firstImage = panels[0].querySelector('img');
+    const secondImage = panels[1].querySelector('img');
+
+    document.dispatchEvent(new Event('milo:deferred'));
+    expect(firstImage.loading).to.equal('eager');
+    expect(secondImage.loading).to.equal('lazy');
+
+    tabs.querySelector('[aria-controls="tab-panel-demo-2"]').click();
+    expect(secondImage.loading).to.equal('eager');
+  });
+
   it('clicks on a tabList button', async () => {
     const selectedButton = allTabs[0].querySelector('div[role="tablist"] button[aria-selected="true"]');
     const unselectedButton = allTabs[0].querySelectorAll('div[role="tablist"] button[aria-selected="false"]');

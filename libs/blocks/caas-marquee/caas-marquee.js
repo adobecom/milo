@@ -519,7 +519,22 @@ function getImageHtml(src, screen, belowFold, style = '', width = '', height = '
         <source type="image/webp" srcset="${src}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
         <source type="image/webp" srcset="${src}?width=750&amp;format=webply&amp;optimize=medium">
         <source type="image/${format}" srcset="${src}?width=2000&amp;format=${format}&amp;optimize=medium" media="(min-width: 600px)">
-        <img loading="${loadingType}" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} style="${style}">
+        <img loading="${loadingType}" decoding="async" alt src="${src}?width=750&amp;format=${format}&amp;optimize=medium" width="${width}" height="${height}" ${fetchPriority} style="${style}">
+  </picture>`;
+}
+
+export function getResponsiveImageHtml({
+  mobile,
+  tablet = mobile,
+  desktop = tablet,
+}) {
+  return `<picture class="responsive-background">
+        <source type="image/webp" srcset="${desktop}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 1200px)">
+        <source type="image/png" srcset="${desktop}?width=2000&amp;format=png&amp;optimize=medium" media="(min-width: 1200px)">
+        <source type="image/webp" srcset="${tablet}?width=2000&amp;format=webply&amp;optimize=medium" media="(min-width: 600px)">
+        <source type="image/jpeg" srcset="${tablet}?width=2000&amp;format=jpeg&amp;optimize=medium" media="(min-width: 600px)">
+        <source type="image/webp" srcset="${mobile}?width=750&amp;format=webply&amp;optimize=medium">
+        <img loading="eager" decoding="async" fetchpriority="high" alt src="${mobile}?width=750&amp;format=jpeg&amp;optimize=medium" width="${WIDTHS.mobile}" height="${HEIGHTS.mobile}">
   </picture>`;
 }
 
@@ -537,6 +552,13 @@ function getContent(src, screen, style = '') {
     return `<div data-valign="middle" class="asset image bleed">${inner}</div>`;
   }
   return `<div class=${screen}-only>${inner}</div>`;
+}
+
+export function getBackgroundContent(imageSources) {
+  const hasResponsiveImages = Object.values(imageSources).every((src) => IMAGE_EXTENSIONS.test(src));
+  return hasResponsiveImages
+    ? getResponsiveImageHtml(imageSources)
+    : `${getContent(imageSources.mobile, 'mobile')}${getContent(imageSources.tablet, 'tablet')}${getContent(imageSources.desktop, 'desktop', 'object-position: 32% center;')}`;
 }
 
 function addLoadingSpinner(marquee) {
@@ -748,13 +770,15 @@ export function renderMarquee(marquee, marquees, id, fallback) {
     return;
   }
 
-  const mobileBgContent = getContent(metadata.image, 'mobile');
-  const tabletBgContent = getContent(metadata.imagetablet, 'tablet');
-  const desktopBgContent = getContent(metadata.imagedesktop, 'desktop', 'object-position: 32% center;');
   const splitImage = metadata.imageDesktop || metadata.imageTablet || metadata.image;
   const splitContent = getContent(splitImage, 'split');
 
-  const bgContent = `${mobileBgContent}${tabletBgContent}${desktopBgContent}`;
+  const imageSources = {
+    mobile: metadata.image,
+    tablet: metadata.imagetablet || metadata.image,
+    desktop: metadata.imagedesktop || metadata.imagetablet || metadata.image,
+  };
+  const bgContent = getBackgroundContent(imageSources);
   let background = createTag('div', { class: 'background' }, '');
   if (isSplit) {
     background = createBackground(splitContent);

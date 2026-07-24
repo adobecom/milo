@@ -1,5 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
+import { shouldLoadArticleImageEager } from '../../../libs/blocks/article-feed/article-feed.js';
 
 describe('article-feed accessibility', () => {
   beforeEach(async () => {
@@ -37,5 +38,11 @@ describe('article-feed accessibility', () => {
     filterButton.click();
     const expandedAfter = filterButton.getAttribute('aria-expanded');
     expect(expandedAfter).to.not.equal(expandedBefore);
+  });
+
+  it('prioritizes only the first card in the initial result set', () => {
+    expect(shouldLoadArticleImageEager(0, 0)).to.be.true;
+    expect(shouldLoadArticleImageEager(0, 1)).to.be.false;
+    expect(shouldLoadArticleImageEager(10, 10)).to.be.false;
   });
 });

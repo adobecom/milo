@@ -316,6 +316,12 @@ function checkSlideForVideo(activeSlide) {
   /* c8 ignore end */
 }
 
+function loadSlideImages(activeSlide) {
+  activeSlide?.querySelectorAll('img[loading="lazy"]').forEach((img) => {
+    img.setAttribute('loading', 'eager');
+  });
+}
+
 // Sets a multiplier variable, used by CSS, to move the indicator dots.
 function setIndicatorMultiplier(carouselElements, activeSlideIndicator, event) {
   const { slides, direction } = carouselElements;
@@ -484,6 +490,7 @@ function moveSlides(event, carouselElements) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
+  loadSlideImages(activeSlide);
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
 
   if ((isHintingTablet(el) || isHintingMobile) && !prefersReducedMotion()) {
@@ -780,10 +787,7 @@ export default function init(el) {
   window.addEventListener('resize', debounce(() => { if (el.classList.contains('align-height')) normalizeVideoHeights(); }));
 
   function handleDeferredImages() {
-    const images = el.querySelectorAll('img[loading="lazy"]');
-    images.forEach((img) => {
-      img.removeAttribute('loading');
-    });
+    loadSlideImages(el.querySelector('.carousel-slide.active'));
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);

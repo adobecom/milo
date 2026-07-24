@@ -57,15 +57,15 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, merchLocale, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
-  import('../merch/merch.js'),
+  import('../merch/locale.js'),
   import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
-const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
+const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merchLocale;
 
 const {
   closeAllDropdowns,

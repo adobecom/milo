@@ -13,7 +13,7 @@ import {
   createTag,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
-import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
+import { PERSONALIZATION_TAGS, FLAGS } from '../../../features/personalization/constants.js';
 
 loadLana();
 
@@ -614,7 +614,8 @@ export async function fetchAndProcessPlainHtml({
   commands = commands.concat(gnavMepCommands);
 
   if (commands?.length) {
-    /* c8 ignore next 3 */
+    /* c8 ignore next 4 */
+    const { handleCommands } = await import('../../../features/personalization/personalization.js');
     await handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
