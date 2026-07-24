@@ -47,7 +47,18 @@ async function loadFederalLocales(env) {
 }
 
 async function resolveLocales(env, localesOverride) {
-  return localesOverride ?? loadFederalLocales(env);
+  if (localesOverride) return localesOverride;
+  try {
+    return await loadFederalLocales(env);
+  } catch (e) {
+    window.lana?.log(`Failed to load federal locales, falling back to defaults | ${e.message}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    });
+    const { default: fallbackLocales } = await import('./federal-locales-fallback.js');
+    return fallbackLocales;
+  }
 }
 
 const getStageDomainsMap = (stageDomainsMap, env) => {
@@ -146,15 +157,29 @@ export default async function loadBlock(configs, customLib) {
   }
 
   const origin = getStandaloneNavOrigin(env);
-  const [
-    { default: bootstrapBlock },
-    locales,
-    { setConfig, getConfig, createTag },
-  ] = await Promise.all([
-    import('./bootstrapper.js'),
-    resolveLocales(env, configs?.locales),
-    import('../utils/utils.js'),
-  ]);
+  let core;
+  try {
+    const [
+      { default: bootstrapBlock },
+      locales,
+      { setConfig, getConfig, createTag },
+    ] = await Promise.all([
+      import('./bootstrapper.js'),
+      resolveLocales(env, configs?.locales),
+      import('../utils/utils.js'),
+    ]);
+    core = { bootstrapBlock, locales, setConfig, getConfig, createTag };
+  } catch (e) {
+    window.lana?.log(`Global navigation Error: failed to load core navigation dependencies | ${e.message} | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    });
+    header?.onError?.(e);
+    footer?.onError?.(e);
+    return;
+  }
+  const { bootstrapBlock, locales, setConfig, getConfig, createTag } = core;
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     theme,
