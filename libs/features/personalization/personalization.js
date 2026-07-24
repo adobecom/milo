@@ -1732,8 +1732,8 @@ export async function init(enablements = {}) {
   try {
     if (manifests?.length) await applyPers({ manifests });
     if (config.mep?.preview) {
-      // TEMP: ?mepnext loads the new mep-next preview; default falls back to legacy preview.js.
-      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).has('mepnext')
+      // TEMP: ?mepnext=on loads the new mep-next preview; default falls back to legacy preview.js.
+      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on'
         ? '../mep/mep-next/mep-next.js' : './preview.js';
       await import(previewSrc).then(({ saveToMmm }) => saveToMmm());
     }

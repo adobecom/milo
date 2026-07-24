@@ -2394,8 +2394,8 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext loads the new mep-next preview; default falls back to legacy preview.js.
-    if (new URLSearchParams(window.location.search.toLowerCase()).has('mepnext')) {
+    // TEMP: ?mepnext=on loads the new mep-next preview; default falls back to legacy preview.js.
+    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
         .then(({ default: init }) => init());
       import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
