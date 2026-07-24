@@ -251,6 +251,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   color: var(--mep-white-60);
 }
 
+.mep-drawer .mep-card.center .mep-signin {
+  margin-block-start: 16px;
+}
+
 .mep-drawer .mep-body h1 svg {
   fill: var(--mep-white-100);
   transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);

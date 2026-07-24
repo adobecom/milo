@@ -77,6 +77,22 @@ function cleanup(mainEl, headerEl, ...extras) {
 
 const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
 
+// Prod enforces the MEP employee gate. Stub a signed-in NON-employee so
+// resolveSilent settles to unauthed synchronously (Tier 1 page-session read),
+// avoiding the real iframe/imslib and keeping the prod "reset" groups fast.
+let imsBackup;
+function stubNonEmployeeIms() {
+  imsBackup = window.adobeIMS;
+  window.adobeIMS = {
+    isSignedInUser: () => true,
+    getProfile: async () => ({ email: 'shopper@example.com' }),
+  };
+}
+function restoreIms() {
+  window.adobeIMS = imsBackup;
+  try { window.sessionStorage.removeItem('mepAuthEmployee'); } catch (e) { /* noop */ }
+}
+
 // ============================================================
 // GROUP 1: Stage env — first init() call
 // auth state: false → true
@@ -1064,6 +1080,7 @@ describe('init: prod env → unauthenticated (login card + footer removal)', () 
 
   before(async () => {
     setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+    stubNonEmployeeIms();
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
@@ -1072,6 +1089,7 @@ describe('init: prod env → unauthenticated (login card + footer removal)', () 
   });
 
   after(() => {
+    restoreIms();
     cleanup(mainEl, headerEl);
     setConfig(BASE_CONFIG);
   });
@@ -1086,9 +1104,16 @@ describe('init: prod env → unauthenticated (login card + footer removal)', () 
     expect(content.textContent).to.include('Content Unavailable');
   });
 
-  it('login card text contains "Sign into AEM Sidekick"', () => {
+  it('login card prompts sign-in with an Adobe account', () => {
     const content = mainEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
-    expect(content.textContent).to.include('Sign into AEM Sidekick');
+    expect(content.textContent).to.include('Adobe account');
+  });
+
+  it('login card has a "Sign in to MEP" button', () => {
+    const content = mainEl.querySelector('#mep-drawer .mep-tab-content[data-tab="0"]');
+    const btn = content.querySelector('button.mep-signin');
+    expect(btn).to.exist;
+    expect(btn.textContent).to.include('Sign in to MEP');
   });
 
   it('footer is absent after becoming unauthenticated', () => {
@@ -1155,6 +1180,7 @@ describe('init: prod env block 2 (auth reset for next setDefaultValues test)', (
 
   before(async () => {
     setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+    stubNonEmployeeIms();
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
@@ -1163,6 +1189,7 @@ describe('init: prod env block 2 (auth reset for next setDefaultValues test)', (
   });
 
   after(() => {
+    restoreIms();
     cleanup(mainEl, headerEl);
     setConfig(BASE_CONFIG);
   });
@@ -1218,6 +1245,7 @@ describe('init: prod env block 3 (auth reset for lingo test)', () => {
 
   before(async () => {
     setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+    stubNonEmployeeIms();
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
@@ -1226,6 +1254,7 @@ describe('init: prod env block 3 (auth reset for lingo test)', () => {
   });
 
   after(() => {
+    restoreIms();
     cleanup(mainEl, headerEl);
     setConfig(BASE_CONFIG);
   });
@@ -1320,6 +1349,7 @@ describe('init: prod env block 4 (auth reset for unknown-locale test)', () => {
 
   before(async () => {
     setConfig({ ...BASE_CONFIG, env: { name: 'prod' } });
+    stubNonEmployeeIms();
     mainEl = makeMain();
     headerEl = makeHeader();
     await init();
@@ -1328,6 +1358,7 @@ describe('init: prod env block 4 (auth reset for unknown-locale test)', () => {
   });
 
   after(() => {
+    restoreIms();
     cleanup(mainEl, headerEl);
     setConfig(BASE_CONFIG);
   });

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MEP IMS Probe</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 14px/1.5 -apple-system, system-ui, sans-serif; margin: 0; padding: 24px; max-width: 960px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .sub { color: #888; margin: 0 0 20px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    button { font: inherit; padding: 8px 16px; border-radius: 20px; border: 1px solid currentColor; background: none; cursor: pointer; }
+    button.primary { background: #1473e6; color: #fff; border-color: #1473e6; }
+    .verdict { padding: 16px; border-radius: 8px; border: 2px solid; margin-bottom: 20px; }
+    .verdict.pass { border-color: #2d9d78; }
+    .verdict.fail { border-color: #d7373f; }
+    .verdict.unknown { border-color: #e68619; }
+    .verdict h2 { margin: 0 0 8px; font-size: 16px; }
+    .signal { display: grid; grid-template-columns: 220px 1fr; gap: 4px 12px; }
+    .signal code { word-break: break-all; }
+    pre { background: rgba(128,128,128,.12); padding: 16px; border-radius: 8px; overflow: auto; }
+    section { margin-bottom: 20px; }
+    section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #888; margin: 0 0 6px; }
+    .env-tag { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>MEP IMS Probe</h1>
+  <p class="sub">Settles: does the reused IMS client return an employee-distinguishing claim under the default scope? Standalone, out-of-band, no Milo build required.</p>
+
+  <div class="row">
+    <button id="signin" class="primary">Sign in (interactive)</button>
+    <button id="signout">Sign out</button>
+    <button id="reload">Reload</button>
+    <span>client_id=<span class="env-tag" id="cfg-client"></span> · env=<span class="env-tag" id="cfg-env"></span> · scope=<code id="cfg-scope"></code></span>
+  </div>
+
+  <div id="verdict" class="verdict unknown">
+    <h2 id="verdict-title">Loading imslib…</h2>
+    <div class="signal" id="signals"></div>
+  </div>
+
+  <section>
+    <h3>Signed in?</h3>
+    <pre id="signedin">—</pre>
+  </section>
+
+  <section>
+    <h3>getProfile()</h3>
+    <pre id="profile">—</pre>
+  </section>
+
+  <section>
+    <h3>Access token claims (decoded)</h3>
+    <pre id="token">—</pre>
+  </section>
+
+  <script type="module" src="./ims-probe.js"></script>
+</body>
+</html>

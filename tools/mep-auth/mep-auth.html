@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MEP Sign-in</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 15px/1.5 -apple-system, system-ui, sans-serif; margin: 0; display: grid; place-items: center; min-height: 100vh; text-align: center; }
+    .wrap { padding: 32px; max-width: 320px; }
+    h1 { font-size: 18px; margin: 0 0 8px; }
+    p { color: #888; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="status">Signing you in…</h1>
+    <p id="detail">Verifying your Adobe account.</p>
+  </div>
+  <script type="module" src="./mep-auth.js"></script>
+</body>
+</html>

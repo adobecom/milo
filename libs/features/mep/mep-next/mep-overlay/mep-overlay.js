@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { onSidekickAuth } from '../../sidekick-auth.js';
+import { onMepAuth, signInToMep } from '../../mep-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -309,9 +309,12 @@ function buildFAB(gnavOffset) {
 }
 
 function buildLoginCard() {
+  const signInBtn = createTag('button', { class: 'con-button button-l fill mep-signin' }, 'Sign in to MEP');
+  signInBtn.addEventListener('click', () => { signInToMep(); });
   return createTag('div', { class: 'mep-card expanded center' }, [
     createTag('h1', {}, 'Content Unavailable'),
-    createTag('p', { class: 'mep-card-body' }, 'Sign into AEM Sidekick for options.'),
+    createTag('p', { class: 'mep-card-body' }, 'Sign in with your Adobe account for options.'),
+    signInBtn,
   ]);
 }
 
@@ -396,7 +399,7 @@ async function setDefaultValues() {
 }
 
 function checkAuthAndBuild(pageId) {
-  onSidekickAuth(async (isAuthed) => {
+  onMepAuth(async (isAuthed) => {
     if (isAuthed === authenticated) return;
     authenticated = isAuthed;
 
