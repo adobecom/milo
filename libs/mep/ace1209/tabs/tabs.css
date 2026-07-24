@@ -138,8 +138,6 @@
     [role='tablist'] {
       background: transparent;
       border-radius: 0;
-      padding-bottom: 20px;
-      padding-top: 20px;
 
       .tab-list-container {
         min-width: 0;
