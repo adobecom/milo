@@ -1,0 +1,32 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "subtle"
+  },
+  {
+    "idx": 3,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 4,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "surface"
+  }
+]

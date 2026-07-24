@@ -1,0 +1,4 @@
+/* forge loose-variant overlays — per-session aggregate. */
+/* Each delta is scoped under .<block>.<intent> so it out-ranks stock C2 CSS. */
+@import './rich-content--forge-loose.css';
+@import './rich-content--forge-loose.css';
