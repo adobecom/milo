@@ -108,7 +108,7 @@ describe('inline Offer hoisting', () => {
     const extracted = extractInlineEntities(node);
     expect(extracted).to.have.length(1);
     expect(extracted[0]['@type']).to.equal('Offer');
-    expect(extracted[0]['@id']).to.match(new RegExp(`^${PAGE_URL}#offer-`));
+    expect(extracted[0]['@id'].startsWith(`${PAGE_URL}#offer-`)).to.be.true;
     expect(extracted[0].price).to.equal('19.99');
     expect(node.offers).to.deep.equal([{ '@id': extracted[0]['@id'] }]);
   });
