@@ -70,6 +70,9 @@ describe('Region modal feature', () => {
     document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     sessionStorage.removeItem('akamai');
     sessionStorage.removeItem('market');
+    Object.keys(sessionStorage)
+      .filter((key) => key.startsWith('pageExist:'))
+      .forEach((key) => sessionStorage.removeItem(key));
   });
 
   it('returns without rendering when suggestedMarkets is missing or empty', async () => {

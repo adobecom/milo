@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import loadFonts from './fonts.js';
+
 const BOT_REGEX = /GoogleBot|Google-InspectionTool|BingBot|PerplexityBot|Perplexity-User|ClaudeBot|Claude-User|Claude-SearchBot|Tokowaka-AI|ChatGPT-User|GPTBot|OAI-SearchBot|AdobeEdgeOptimize-AI/i;
 export const isBot = () => BOT_REGEX.test(navigator.userAgent);
 
@@ -206,7 +208,7 @@ export const MILO_EVENTS = {
   QUERY_INDEX_PRIMARY_LOADED: 'milo:query-index:primary-loaded',
   QUERY_INDEX_ALL_LOADED: 'milo:query-index:all-loaded',
 };
-const TARGET_TIMEOUT_MS = 4000;
+const TARGET_TIMEOUT_MS = 2500;
 
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
@@ -2022,10 +2024,19 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
+    const { base } = getConfig();
+    const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
+      ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
+      : `${base}/deps/imslib.min.js`;
+    let lingoRegion = null;
+    if (lingoActive()) {
+      // Warm the imslib fetch while the region lookup (potentially a geo call) resolves.
+      loadLink(path, { rel: 'preload', as: 'script' });
+      lingoRegion = await getLingoRegion({ useGeoLocation: true });
+    }
     return new Promise((resolve, reject) => {
       const {
-        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+        locale, imsClientId, imsScope, env, adobeid, imsTimeout,
       } = getConfig();
       if (!imsClientId) {
         reject(new Error('Missing IMS Client ID'));
@@ -2060,9 +2071,6 @@ export async function loadIms() {
         }),
         ...adobeid,
       };
-      const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
-        ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
-        : `${base}/deps/imslib.min.js`;
       loadScript(path);
     });
   })().then(() => {
@@ -2265,6 +2273,7 @@ function initModalEventListener() {
 
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
+  loadFonts(config.locale, loadStyle);
 
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -2281,6 +2290,7 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve(), enabled: config.geoRouting };
 
   if (languageBanner === 'on') {
+    await langBannerPromise;
     const routingConfig = getLangRoutingConfig();
     if (routingConfig?.showBanner && routingConfig.markets?.length) {
       const { default: init } = await import('../features/language-banner/language-banner.js');
@@ -2306,45 +2316,46 @@ async function loadPostLCP(config) {
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
-  const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadStyle);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
   if (getMetadata('foundation') === 'c2') {
-    await Promise.all([
+    Promise.all([
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
-    ]);
-    const lerp = 0.06;
-    const fsThreshold = 110;
-    const fsFactor = 0.11;
-    const fsDelay = 700;
-    const lenisPreventSelectors = [
-      '.dialog-modal',
-      '.ot-sdk-container',
-      'div[data-testid="main-content-area"]',
-    ];
-    window.lenis = new window.Lenis({
-      autoRaf: true,
-      lerp,
-      wheelMultiplier: 0.7,
-      prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
-    });
-    if (document.querySelector('.modal-curtain.is-open')) {
-      window.lenis.stop();
-    }
-    // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
-    let fsScrollTimer;
-    window.addEventListener('wheel', (e) => {
-      if (Math.abs(e.deltaY) > fsThreshold) {
-        window.lenis.options.lerp = fsFactor;
-        clearTimeout(fsScrollTimer);
-        fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+    ]).then(() => {
+      const lerp = 0.06;
+      const fsThreshold = 110;
+      const fsFactor = 0.11;
+      const fsDelay = 700;
+      const lenisPreventSelectors = [
+        '.dialog-modal',
+        '.ot-sdk-container',
+        'div[data-testid="main-content-area"]',
+      ];
+      window.lenis = new window.Lenis({
+        autoRaf: true,
+        lerp,
+        wheelMultiplier: 0.7,
+        prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
+      });
+      if (document.querySelector('.modal-curtain.is-open')) {
+        window.lenis.stop();
       }
-    }, { passive: true });
+      // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
+      let fsScrollTimer;
+      window.addEventListener('wheel', (e) => {
+        if (Math.abs(e.deltaY) > fsThreshold) {
+          window.lenis.options.lerp = fsFactor;
+          clearTimeout(fsScrollTimer);
+          fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
+        }
+      }, { passive: true });
+    }).catch((e) => {
+      window.lana?.log(`Failed to load lenis: ${e.toString()}`, { tags: 'utils', severity: 'error' });
+    });
 
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -2485,7 +2496,11 @@ function getMarketsByRegionPriority(markets, geoIp) {
 }
 
 function reserveBannerSpace() {
+  if (document.body.querySelector(':scope > .language-banner')) return;
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
+}
+
+function removeGnavPromoForBanner() {
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
   if (existingWrapper) {
     existingWrapper.remove();
@@ -2494,19 +2509,29 @@ function reserveBannerSpace() {
 }
 
 export async function pageExist(url) {
+  let cached;
+  try {
+    cached = sessionStorage.getItem(`pageExist:${url}`);
+  } catch (e) { /* sessionStorage unavailable */ }
+  if (cached === 'true' || cached === 'false') return cached === 'true';
+  let exists;
   const headResp = await fetch(url, { method: 'HEAD', cache: 'no-store' }).catch(() => null);
-  if (headResp?.status !== 401) return headResp?.ok ?? false;
-  if (!(url.includes('.aem.page') || url.includes('.aem.live'))) return false;
-  return (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
+  if (headResp?.status !== 401) {
+    exists = headResp?.ok ?? false;
+  } else if (!(url.includes('.aem.page') || url.includes('.aem.live'))) {
+    exists = false;
+  } else {
+    exists = (await fetch(url, { method: 'GET', cache: 'no-store' }).catch(() => null))?.ok ?? false;
+  }
+  try {
+    sessionStorage.setItem(`pageExist:${url}`, String(exists));
+  } catch (e) { /* sessionStorage unavailable */ }
+  return exists;
 }
 
-export async function decorateLanguageBanner() {
-  const { locale, locales, languageBanner } = getConfig();
-  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
-  if (languageBannerEnabled !== 'on') return;
-  const internationalCookie = getCookie('international');
+async function resolveLanguageBanner(internationalCookie) {
+  const { locale, locales } = getConfig();
   let showBanner = false;
-  if (internationalCookie === (locale.prefix?.replace('/', '') || 'us')) return;
   const pageLang = locale.ietf.split('-')[0];
   const prefLang = internationalCookie
     ? (locales[internationalCookie === 'us' ? '' : internationalCookie]?.ietf?.split('-')[0] || internationalCookie.split('_').pop())
@@ -2612,14 +2637,31 @@ export async function decorateLanguageBanner() {
     }
     if (!targetMarket) return;
     setLangRoutingConfig({ showBanner: true, showModal: false, markets: [targetMarket] });
-    reserveBannerSpace();
+    removeGnavPromoForBanner();
   } else {
     // ACOM : supported market, show banner
     const results = await Promise.all(fetchPromises);
     const validatedMarkets = results.filter((r) => r.ok).map((r) => r.market);
     if (!validatedMarkets.length) return;
     setLangRoutingConfig({ showBanner: true, showModal: false, markets: validatedMarkets });
-    reserveBannerSpace();
+    removeGnavPromoForBanner();
+  }
+}
+
+export async function decorateLanguageBanner() {
+  const { locale, languageBanner } = getConfig();
+  const languageBannerEnabled = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || languageBanner);
+  if (languageBannerEnabled !== 'on') return;
+  const internationalCookie = getCookie('international');
+  if (internationalCookie === (locale.prefix?.replace('/', '') || 'us')) return;
+  // Reserve space before first paint; the LCP section reveal no longer waits on the decision.
+  reserveBannerSpace();
+  try {
+    await resolveLanguageBanner(internationalCookie);
+  } finally {
+    if (!getLangRoutingConfig()?.showBanner) {
+      document.body.querySelector(':scope > .language-banner')?.remove();
+    }
   }
 }
 
@@ -2635,7 +2677,7 @@ export function preloadMarketsConfig(callback) {
 }
 
 async function decorateDocumentExtras() {
-  await decorateMeta();
+  decorateMeta();
   await decorateHeader();
   langBannerPromise = decorateLanguageBanner();
 }
@@ -2655,12 +2697,12 @@ async function documentPostSectionLoading(config) {
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
     ));
   }
+  loadFooter();
   const richResults = getMetadata('richresults');
   if (richResults) {
     const { default: addRichResults } = await import('../features/richresults.js');
     addRichResults(richResults, { createTag, getMetadata });
   }
-  loadFooter();
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
@@ -2739,6 +2781,44 @@ const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
+// Preload-only variant of preloadBlockResources: warms the HTTP cache without inserting
+// stylesheets, so loadBlock still gates section reveal on the actual CSS load.
+const hintBlockResources = (blocks = []) => blocks.forEach((block) => {
+  if (block.classList.contains('hide-block')) return;
+  const { blockPath, hasStyles, name, isInvalid } = getBlockData(block);
+  if (isInvalid || !name) return;
+  if (['marquee', 'hero-marquee'].includes(name)) {
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
+  }
+  loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
+  if (hasStyles) loadLink(`${blockPath}.css`, { rel: 'preload', as: 'style' });
+});
+
+// Speculative resource hints from the raw DOM, issued before MEP so the LCP section's
+// assets fetch during the personalization wait. Wrong guesses only cost a cached fetch.
+function preloadLCPResources() {
+  const sections = [...document.querySelectorAll('body > main > div')];
+  const lcpSection = sections.find((section) => section.querySelector(':scope > div[class]'));
+  if (lcpSection) hintBlockResources([...lcpSection.querySelectorAll(':scope > div[class]')]);
+  if (lingoActive()) return;
+  sections[0]?.querySelectorAll('a[href*="/fragments/"]').forEach((a) => {
+    const [rawHref, hash] = a.href.split('#');
+    if (hash && !hash.startsWith('_')) return; // modal-style fragment links load on demand
+    try {
+      const href = a.href.includes('#_dnt') ? rawHref : localizeLink(rawHref);
+      const url = new URL(href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+      loadLink(`${url.pathname}.plain.html`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
+    } catch (e) { /* speculative only */ }
+  });
+}
+
 async function loadFragments(section, selector) {
   const anchors = [...section.querySelectorAll(selector)];
   if (!anchors.length) return false;
@@ -2785,8 +2865,6 @@ async function processSection(section, config, isDoc, lcpSectionId) {
 
   section.blocks.forEach((block) => loadBlocks.push(loadBlock(block)));
 
-  if (isLcpSection && langBannerPromise) await langBannerPromise;
-
   // Only move on to the next section when all blocks are loaded.
   await Promise.all(loadBlocks);
 
@@ -2810,12 +2888,32 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+function preconnectGeoService() {
+  try {
+    if (sessionStorage.getItem('akamai')) return;
+  } catch (e) { /* sessionStorage unavailable */ }
+  const config = getConfig();
+  const banner = PAGE_URL.searchParams.get('languageBanner') ?? (getMetadata('languagebanner') || config.languageBanner);
+  const georouting = getMetadata('georouting') || config.geoRouting;
+  if (banner === 'on' || georouting === 'on' || lingoActive() || getMepEnablement('mepgeolocation')) {
+    loadLink('https://geo2.adobe.com', { rel: 'preconnect', crossorigin: 'anonymous' });
+  }
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
+  if (isDoc && document.getElementById('page-load-ok-milo')) return;
+
+  let languageConfigPromise;
+  if (!langConfig && (getConfig().languages || hasLanguageLinks(area))) {
+    languageConfigPromise = loadLanguageConfig();
+  }
+
   if (isDoc) {
-    if (document.getElementById('page-load-ok-milo')) return;
     setCountry();
+    preconnectGeoService();
     preloadMarketsConfig();
+    preloadLCPResources();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
@@ -2824,7 +2922,7 @@ export async function loadArea(area = document) {
   const isLingoActive = lingoActive();
 
   if (!langConfig && (config.languages || hasLanguageLinks(area))) {
-    await loadLanguageConfig();
+    await (languageConfigPromise || loadLanguageConfig());
   }
 
   const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
@@ -2842,14 +2940,24 @@ export async function loadArea(area = document) {
   }
 
   const areaBlocks = [];
-  let lcpSectionId = null;
-
+  const sections = [];
   for (const htmlSection of htmlSections) {
     const section = await decorateSection(htmlSection, htmlSections.indexOf(htmlSection));
+    sections.push(section);
+  }
+
+  let lcpSectionId = null;
+  sections.forEach((section) => {
     const isLastSection = section.idx === htmlSections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
     }
+    // Warm every section's block resources now; the serial loop below only gates reveal.
+    hintBlockResources(section.blocks);
+    hintBlockResources(section.preloadLinks);
+  });
+
+  for (const section of sections) {
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
