@@ -122,27 +122,42 @@ export function matchesOriginPrefix(canonicalPathname, prefix) {
     || canonicalPathname.startsWith(`${prefix}.`);
 }
 
-export function resolveRepoFromOriginMap(originMap, hostname, pathname) {
-  const hostKey = getOriginMapHostKey(hostname);
-  const origins = originMap?.properties?.[hostKey]?.origins || [];
-  const canonicalPathname = canonicalizePathname(pathname);
-
+function findRepoFromOrigins(origins, canonicalPathname) {
   for (const origin of origins) {
     const matched = (origin.prefixes || [])
       .some((prefix) => matchesOriginPrefix(canonicalPathname, prefix));
-    if (matched) {
-      return origin.repo;
+    if (matched) return origin.repo;
+  }
+  return null;
+}
+
+export function resolveRepoFromOriginMap(originMap, hostname, pathname) {
+  const hostKey = getOriginMapHostKey(hostname);
+  const properties = originMap?.properties || {};
+  const hostOrigins = properties[hostKey]?.origins || [];
+  const canonicalPathname = canonicalizePathname(pathname);
+
+  // Try host-specific prefix match first
+  const repo = findRepoFromOrigins(hostOrigins, canonicalPathname);
+  if (repo) return repo;
+
+  if (hostOrigins.length) {
+    // Homepage and default fallbacks for a known host
+    if (canonicalPathname === '/index') {
+      const homepageOrigin = hostOrigins.find((origin) => origin.homepage);
+      if (homepageOrigin?.repo) return homepageOrigin.repo;
     }
+    return hostOrigins.find((origin) => origin.default)?.repo || null;
   }
 
-  if (canonicalPathname === '/index') {
-    const homepageOrigin = origins.find((origin) => origin.homepage);
-    if (homepageOrigin?.repo) {
-      return homepageOrigin.repo;
-    }
+  // Unknown host (e.g. AEM preview/live URL): search all subdomains by path.
+  // Path prefixes are unique across the whole origin map so this is unambiguous.
+  for (const prop of Object.values(properties)) {
+    const fallback = findRepoFromOrigins(prop.origins || [], canonicalPathname);
+    if (fallback) return fallback;
   }
 
-  return origins.find((origin) => origin.default)?.repo || null;
+  return null;
 }
 
 export async function getStructuredData(pathname, hostname, options = {}) {
@@ -201,18 +216,13 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag }) {
     document.head.append(script);
   };
 
-  // Prefer canonical URL for structured-data lookup so AEM preview/live
-  // hostnames resolve correctly against the production origin map.
-  const canonicalHref = document.head?.querySelector('link[rel="canonical"]')?.href;
-  const canonicalUrl = canonicalHref ? new URL(canonicalHref) : url;
-
   const promises = [];
   if (isStructuredDataEnabled(locationUrl, getMetadata)) {
-    promises.push(getStructuredData(canonicalUrl.pathname, canonicalUrl.hostname, { originMapUrl })
+    promises.push(getStructuredData(url.pathname, url.hostname, { originMapUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
       .catch(() => logError('Structured data operation failed', {
-        hostname: canonicalUrl.hostname,
-        pathname: canonicalUrl.pathname,
+        hostname: url.hostname,
+        pathname: url.pathname,
       })));
   }
   const videoUrl = getMetadata('seotech-video-url');
