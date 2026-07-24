@@ -53,14 +53,12 @@ const generateStorageName = (tabId) => {
 
 const loadActiveTab = (config) => {
   if (config.remember !== 'on') return 0;
-
   const tabId = config['tab-id'];
   return sessionStorage.getItem(generateStorageName(tabId));
 };
 
 const saveActiveTabInStorage = (targetId, config) => {
   if (config.remember !== 'on') return;
-
   const delimiterIndex = targetId.lastIndexOf('-');
   const activeTabIndex = targetId.substring(delimiterIndex + 1);
   const storageName = generateStorageName(config['tab-id']);
@@ -113,34 +111,24 @@ function changeTabs(e, config) {
     ? content.querySelector(`#${target.getAttribute('data-control-id')}`)
     : content.querySelector(`#${target.getAttribute('aria-controls')}`);
 
-  parent
-    .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
-    .forEach((t) => {
-      t.setAttribute(attributeName, 'false');
-      t.setAttribute('tabindex', '-1');
-      if (Object.keys(tabColor).length) {
-        t.style.backgroundColor = '';
-      }
-    });
+  parent.querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`).forEach((t) => {
+    t.setAttribute(attributeName, 'false');
+    t.setAttribute('tabindex', '-1');
+    if (Object.keys(tabColor).length) t.style.backgroundColor = '';
+  });
   target.setAttribute(attributeName, 'true');
   target.setAttribute('tabindex', '0');
 
   const indicator = parent.querySelector('.tab-indicator');
   if (indicator) moveIndicator(indicator, target, parent);
-  if (tabColor[targetId]) {
-    target.style.backgroundColor = tabColor[targetId];
-  }
+  if (tabColor[targetId]) target.style.backgroundColor = tabColor[targetId];
   scrollTabIntoView(target);
-  content
-    .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
-    .forEach((p) => {
-      p.setAttribute('hidden', true);
-      p.classList.remove('tab-entering');
-    });
+  content.querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`).forEach((p) => {
+    p.setAttribute('hidden', true);
+    p.classList.remove('tab-entering');
+  });
   targetContent?.removeAttribute('hidden');
-  if (tabsBlock.classList.contains('staggered-intro-merch-cards') && targetContent) {
-    triggerTabEnterAnimation(targetContent);
-  }
+  if (tabsBlock.classList.contains('staggered-intro-merch-cards') && targetContent) triggerTabEnterAnimation(targetContent);
   window.dispatchEvent(tabChangeEvent);
   saveActiveTabInStorage(targetId, config);
 }
@@ -282,9 +270,6 @@ const init = async (block) => {
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
 
-  // Authors can lead the tab-list cell with a <p> before the <ol> to give the
-  // radio variant a visible inline label (e.g. "Plans for:"). Non-radio tabs
-  // don't use this pattern, so a stray leading <p> there is simply dropped.
   const tabListLabelEl = tabListContainer.querySelector(':scope > p');
   if (tabListLabelEl && isRadio) {
     tabListLabelEl.classList.add('tab-list-label', 'label');
@@ -297,7 +282,6 @@ const init = async (block) => {
   }
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
-
   if (tabListItems.length) {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
@@ -337,9 +321,6 @@ const init = async (block) => {
   tabList.insertAdjacentElement('beforebegin', tabsWrapper);
   tabsWrapper.append(tabList);
 
-  // Tab indicator (pill slider) only applies to the default pill tabs UI; the
-  // radio variant shows selection via the radio dot, and the quiet variant
-  // shows it via a static underline on the button itself.
   let indicator;
   if (!isRadio && !isQuiet) {
     indicator = createTag('div', { class: 'tab-indicator' });
@@ -368,19 +349,13 @@ const init = async (block) => {
       val = getStringKeyName(String(values[1]));
     }
     const associatedTabButton = rootElem.querySelector(`#tab-${id}-${val}`);
-    if (associatedTabButton && metaSettings.deeplink) {
-      associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
-    }
+    if (associatedTabButton && metaSettings.deeplink) associatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
     const assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (assocTabItem) {
-      if (metaSettings['tab-background']) {
-        tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
-      }
+      if (metaSettings['tab-background']) tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
       await assignLinkedTabs(linkedTabs, metaSettings, id, val);
       const tabLabel = tabListItems[val - 1]?.innerText;
-      if (tabLabel) {
-        assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
-      }
+      if (tabLabel) assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
       const section = sectionMetadata.closest('.section');
       assocTabItem.append(section);
     }
