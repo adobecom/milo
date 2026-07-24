@@ -237,13 +237,14 @@ async function createInline(el, options) {
     }
     copyMasFieldIdToParent(masField, 'fragment-id');
     copyMasFieldIdToParent(masField, 'variation-id');
-    // Prices lose their mas-field ancestor on unwrap, and with it both the promo code the
-    // price options provider reads from it and the mas-field-scoped strikethrough styling —
-    // stamp the code on each price and load the page-level merch price styles first.
+    // Commerce elements lose their mas-field ancestor on unwrap, and with it both the promo
+    // code the options providers read from it and the mas-field-scoped strikethrough styling —
+    // stamp the code on each price and checkout element and load the page-level merch price
+    // styles first.
     const promotionCode = masField.getAttribute('data-promotion-code');
     if (promotionCode) {
-      content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code])')
-        .forEach((price) => price.setAttribute('data-promotion-code', promotionCode));
+      content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code]), a[is="checkout-link"]:not([data-promotion-code]), button[is="checkout-button"]:not([data-promotion-code])')
+        .forEach((commerceEl) => commerceEl.setAttribute('data-promotion-code', promotionCode));
     }
     if (content.querySelector('span[is="inline-price"]')) {
       loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
