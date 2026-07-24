@@ -387,6 +387,35 @@ describe('merch-card-autoblock autoblock', () => {
       links.forEach((link) => expect(link.classList.contains('button-xl')).to.be.true);
     });
 
+    it('upgrades a late plain commerce CTA to checkout-link on mas:ready (MWPW-201497)', async () => {
+      // Regression: a CTA that resolves after its block decorated fires mas:ready and is
+      // hoisted, but the late path skipped upgradeCommerceLinks — so the anchor got button
+      // classes yet no is="checkout-link", leaving it unhydrated (no href, no modal).
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+      const p = document.createElement('p');
+      p.innerHTML = '<em><mas-field field="ctas[0]"><span data-role="mas-field-content">'
+        + '<a data-wcs-osi="abc" data-checkout-workflow="UCv3" data-modal="twp">Free trial</a>'
+        + '</span></mas-field></em>';
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      // Late resolution: the component fires mas:ready after the block already decorated.
+      p.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+
+      expect(p.querySelectorAll('mas-field').length).to.equal(0);
+      const link = p.querySelector('a[data-wcs-osi]');
+      expect(link, 'CTA anchor should be hoisted').to.exist;
+      expect(link.outerHTML).to.include('is="checkout-link"');
+      expect(link.classList.contains('con-button')).to.be.true;
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
       setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');

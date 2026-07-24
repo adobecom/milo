@@ -236,16 +236,15 @@ let masReadyWatched = false;
 function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
-  // Hide an inline CTA while it's still wrapped in a mas-field (rendered but not yet
-  // hoisted/decorated) so its half-styled state doesn't flash on slow loads. Removing
-  // the mas-field on decoration reveals the finished button.
-  const style = createTag('style', undefined, 'em > mas-field:has(a), strong > mas-field:has(a) { visibility: hidden; }');
-  document.head.append(style);
   document.addEventListener('mas:ready', ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     // Same gate createInline uses: an inline CTA anchor, not block-level content.
     if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
+      // Mirror createInline: upgrade plain commerce anchors (missing `is`) to their
+      // customized built-in before hoisting, or the late-resolved CTA never hydrates
+      // (no href, no modal). upgradeCommerceLinks is idempotent (skips [is]).
+      upgradeCommerceLinks(content);
       decorateInlineCtas(mf, content);
     }
   });
