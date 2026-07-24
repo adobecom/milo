@@ -854,6 +854,11 @@ const reducer = (state, action) => {
   }
 };
 
+const STORAGE_DEBOUNCE_DELAY = 250;
+let storageTimer;
+let pendingSerialization;
+let persistedSerialization;
+
 const getInitialState = async () => {
   let state = await getHashConfig();
   // /* c8 ignore next 2 */
@@ -875,8 +880,27 @@ const getInitialState = async () => {
   return updateObj(state, defaultState);
 };
 
-const saveStateToLocalStorage = (state) => {
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
+export const saveStateToLocalStorage = (state) => {
+  const serialized = JSON.stringify(state);
+  if (serialized === pendingSerialization) return;
+  if (serialized === persistedSerialization
+    && localStorage.getItem(LS_KEY) === persistedSerialization) {
+    clearTimeout(storageTimer);
+    storageTimer = undefined;
+    pendingSerialization = undefined;
+    return;
+  }
+
+  pendingSerialization = serialized;
+  clearTimeout(storageTimer);
+  storageTimer = setTimeout(() => {
+    if (localStorage.getItem(LS_KEY) !== pendingSerialization) {
+      localStorage.setItem(LS_KEY, pendingSerialization);
+    }
+    persistedSerialization = pendingSerialization;
+    pendingSerialization = undefined;
+    storageTimer = undefined;
+  }, STORAGE_DEBOUNCE_DELAY);
 };
 
 /**

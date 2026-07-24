@@ -1,7 +1,21 @@
 import { getConfig, getFederatedContentRoot } from '../../utils/utils.js';
 
 const iconCache = new Map();
-let miloIconsPromise;
+const iconRequests = new Map();
+
+function getIconRequest(path, request) {
+  const key = new URL(path, window.location.href).href;
+  if (!iconRequests.has(key)) {
+    const pending = Promise.resolve()
+      .then(request)
+      .catch((error) => {
+        iconRequests.delete(key);
+        throw error;
+      });
+    iconRequests.set(key, pending);
+  }
+  return iconRequests.get(key);
+}
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
@@ -30,24 +44,26 @@ function decorateToolTip(icon, iconName) {
 
 async function getSVGsfromFile(path) {
   if (!path) return null;
-  const resp = await fetch(path);
-  if (!resp.ok) return null;
+  return getIconRequest(path, async () => {
+    const resp = await fetch(path);
+    if (!resp.ok) return null;
 
-  const miloIcons = {};
-  const text = await resp.text();
-  const parser = new DOMParser();
-  const parsedText = parser.parseFromString(text, 'image/svg+xml');
-  const symbols = parsedText.querySelectorAll('symbol');
+    const miloIcons = {};
+    const text = await resp.text();
+    const parser = new DOMParser();
+    const parsedText = parser.parseFromString(text, 'image/svg+xml');
+    const symbols = parsedText.querySelectorAll('symbol');
 
-  symbols.forEach((symbol) => {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    while (symbol.firstChild) svg.appendChild(symbol.firstChild);
-    [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
-    svg.classList.add('icon-milo', `icon-milo-${svg.id}`);
-    miloIcons[svg.id] = svg;
+    symbols.forEach((symbol) => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      while (symbol.firstChild) svg.appendChild(symbol.firstChild);
+      [...symbol.attributes].forEach((attr) => svg.attributes.setNamedItem(attr.cloneNode()));
+      svg.classList.add('icon-milo', `icon-milo-${svg.id}`);
+      miloIcons[svg.id] = svg;
+    });
+
+    return miloIcons;
   });
-
-  return miloIcons;
 }
 
 async function fetchAndParseSVG(url, iconName) {
@@ -69,7 +85,7 @@ async function fetchFederalIcon(iconName) {
   const url = `${fedRoot}/federal/assets/icons/svgs/${iconName}.svg`;
 
   try {
-    const svgElement = await fetchAndParseSVG(url, iconName);
+    const svgElement = await getIconRequest(url, () => fetchAndParseSVG(url, iconName));
     iconCache.set(iconName, svgElement);
     return svgElement;
   } catch (error) {
@@ -79,15 +95,11 @@ async function fetchFederalIcon(iconName) {
 }
 
 async function fetchMiloIcon(iconName) {
-  if (!miloIconsPromise) {
-    const { miloLibs, codeRoot } = getConfig();
-    const base = miloLibs || codeRoot;
-    miloIconsPromise = getSVGsfromFile(`${base}/img/icons/icons.svg`);
-  }
-
-  const miloIcons = await miloIconsPromise;
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  const miloIcons = await getSVGsfromFile(`${base}/img/icons/icons.svg`);
   if (miloIcons?.[iconName]) {
-    const icon = miloIcons[iconName].cloneNode(true);
+    const icon = miloIcons[iconName];
     iconCache.set(iconName, icon);
     return icon;
   }
@@ -97,10 +109,11 @@ async function fetchMiloIcon(iconName) {
 }
 
 async function getIcon(iconName) {
-  if (iconCache.has(iconName)) return iconCache.get(iconName);
+  if (iconCache.has(iconName)) return iconCache.get(iconName).cloneNode(true);
   const federalIcon = await fetchFederalIcon(iconName);
-  if (federalIcon) return federalIcon;
-  return fetchMiloIcon(iconName);
+  if (federalIcon) return federalIcon.cloneNode(true);
+  const miloIcon = await fetchMiloIcon(iconName);
+  return miloIcon?.cloneNode(true);
 }
 
 export default async function loadIcons(icons) {
@@ -113,8 +126,7 @@ export default async function loadIcons(icons) {
 
     const svgElement = await getIcon(iconName);
     if (svgElement && !icon.dataset.svgInjected) {
-      const svgClone = svgElement.cloneNode(true);
-      icon.appendChild(svgClone);
+      icon.appendChild(svgElement);
       icon.dataset.svgInjected = 'true';
 
       const parent = icon.parentElement;
@@ -137,7 +149,11 @@ export default async function loadIcons(icons) {
 export const fetchIcons = (config) => {
   const { miloLibs, codeRoot } = config;
   const base = miloLibs || codeRoot;
-  return getSVGsfromFile(`${base}/img/icons/icons.svg`);
+  return getSVGsfromFile(`${base}/img/icons/icons.svg`).then((icons) => (
+    icons && Object.fromEntries(
+      Object.entries(icons).map(([name, svg]) => [name, svg.cloneNode(true)]),
+    )
+  ));
 };
 
 export function fetchIconList(url) {

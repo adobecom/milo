@@ -3,7 +3,10 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig, getConfig, createTag } from '../../../libs/utils/utils.js';
 
-const { default: loadIcons } = await import('../../../libs/features/icons/icons.js');
+const {
+  default: loadIcons,
+  fetchIcons,
+} = await import('../../../libs/features/icons/icons.js');
 
 setConfig({ codeRoot: '/libs' });
 const config = getConfig();
@@ -103,6 +106,44 @@ describe('Icon Support', () => {
     await loadIcons(icons, config);
     const svgs = icons[0].querySelectorAll(':scope svg');
     expect(svgs.length).to.equal(1);
+  });
+
+  it('deduplicates in-flight icon requests and clones the resolved SVG', async () => {
+    const first = createTag('span', { class: 'icon icon-concurrent' });
+    const second = createTag('span', { class: 'icon icon-concurrent' });
+    document.body.append(first, second);
+
+    await Promise.all([loadIcons([first], config), loadIcons([second], config)]);
+
+    const firstSvg = first.querySelector('svg');
+    const secondSvg = second.querySelector('svg');
+    expect(fetchStub.calledOnce).to.be.true;
+    expect(firstSvg).to.exist;
+    expect(secondSvg).to.exist;
+    expect(firstSvg).to.not.equal(secondSvg);
+    firstSvg.classList.add('consumer-only');
+    expect(secondSvg.classList.contains('consumer-only')).to.be.false;
+  });
+
+  it('deduplicates icon sprite requests and returns clones to each consumer', async () => {
+    fetchStub.resolves({
+      ok: true,
+      text: () => Promise.resolve(`
+        <svg xmlns="http://www.w3.org/2000/svg">
+          <symbol id="play"><path d="M0 0h1v1z"/></symbol>
+        </svg>
+      `),
+    });
+
+    const [first, second] = await Promise.all([
+      fetchIcons({ codeRoot: '/clone-test' }),
+      fetchIcons({ codeRoot: '/clone-test' }),
+    ]);
+
+    expect(fetchStub.calledOnce).to.be.true;
+    expect(first.play).to.exist;
+    expect(second.play).to.exist;
+    expect(first.play).to.not.equal(second.play);
   });
 
   it('Creates default tooltip (right-aligned)', async () => {

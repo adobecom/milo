@@ -8,6 +8,7 @@ import {
 } from '../utils/utils.js';
 
 const fetchedPlaceholders = {};
+const geoPlaceholderRequests = new Map();
 window.mph = {};
 
 const getPlaceholdersPath = (config, sheet) => {
@@ -91,20 +92,29 @@ async function getGeoPlaceholders(config, sheet) {
   const geoContentRoot = `${geoOrigin}${geoPrefix}${pathSuffix}`;
   const geoConfig = { locale: { contentRoot: geoContentRoot }, env: siteConfig.env || {} };
   const paths = getPlaceholderPaths(geoConfig);
+  const normalizedPaths = paths.map((path) => new URL(path, window.location.href).href);
+  const key = `${normalizedPaths.join('|')}|${sheet || 'default'}`;
 
-  const placeholderRequest = Promise.all(
-    paths.map((path) => customFetch({ resource: path, withCacheRules: true }).catch(() => ({}))),
-  );
-
-  return fetchPlaceholders({
-    config: geoConfig,
-    sheet,
-    placeholderRequest,
-    placeholderPath: paths[0],
-  }).catch((e) => {
-    window.lana?.log(`Error fetching geo placeholders: ${e?.message}`, { tags: 'placeholders', severity: 'warn' });
-    return {};
-  });
+  if (!geoPlaceholderRequests.has(key)) {
+    const pending = Promise.resolve()
+      .then(() => Promise.all(
+        paths.map((path) => customFetch(
+          { resource: path, withCacheRules: true },
+        ).catch(() => ({}))),
+      ))
+      .then((placeholderRequest) => fetchPlaceholders({
+        config: geoConfig,
+        sheet,
+        placeholderRequest,
+        placeholderPath: paths[0],
+      }))
+      .catch((e) => {
+        window.lana?.log(`Error fetching geo placeholders: ${e?.message}`, { tags: 'placeholders', severity: 'warn' });
+        return {};
+      });
+    geoPlaceholderRequests.set(key, pending);
+  }
+  return geoPlaceholderRequests.get(key);
 }
 
 async function getPlaceholder(key, config, sheet) {

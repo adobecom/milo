@@ -30,7 +30,14 @@
     import { runTests } from '@web/test-runner-mocha';
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
-    import { default as init, cloneObj, updateObj, getHashConfig, addIdOverlays } from '../../../libs/blocks/caas-config/caas-config.js';
+    import {
+      default as init,
+      cloneObj,
+      updateObj,
+      getHashConfig,
+      addIdOverlays,
+      saveStateToLocalStorage,
+    } from '../../../libs/blocks/caas-config/caas-config.js';
     import {
       findByLabel,
       tagSelectorDropdownChoose,
@@ -372,6 +379,29 @@
 
         // Clean up after the test
         document.body.removeChild(cardElement);
+      });
+
+      it('debounces localStorage writes and skips unchanged state', async () => {
+        await delay(300);
+        const setItemStub = stub(Storage.prototype, 'setItem').callThrough();
+
+        saveStateToLocalStorage({ test: 'first' });
+        saveStateToLocalStorage({ test: 'first' });
+        saveStateToLocalStorage({ test: 'second' });
+        await delay(300);
+
+        const stateWrites = setItemStub.getCalls().filter(
+          ({ args }) => args[0] === 'caasConfiguratorState',
+        );
+        expect(stateWrites.length).to.equal(1);
+        expect(JSON.parse(stateWrites[0].args[1])).to.eql({ test: 'second' });
+
+        saveStateToLocalStorage({ test: 'second' });
+        await delay(300);
+        expect(setItemStub.getCalls().filter(
+          ({ args }) => args[0] === 'caasConfiguratorState',
+        ).length).to.equal(1);
+        setItemStub.restore();
       });
 
     });

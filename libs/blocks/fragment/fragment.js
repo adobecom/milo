@@ -4,6 +4,21 @@ import {
 } from '../../utils/utils.js';
 
 const fragMap = {};
+const fragmentRequests = new Map();
+
+function fetchPlainHtml(resource) {
+  const key = new URL(resource, window.location.href).href;
+  if (!fragmentRequests.has(key)) {
+    const pending = Promise.resolve()
+      .then(() => customFetch({ resource: key, withCacheRules: true }))
+      .catch(() => ({}));
+    fragmentRequests.set(key, pending);
+    pending.finally(() => {
+      if (fragmentRequests.get(key) === pending) fragmentRequests.delete(key);
+    });
+  }
+  return fragmentRequests.get(key).then((resp) => resp?.clone?.() ?? resp);
+}
 
 const removeHash = (url) => {
   const urlNoHash = url.split('#')[0];
@@ -212,8 +227,7 @@ export default async function init(a) {
       try { relHref = new URL(fallbackPath).pathname; } catch { relHref = fallbackPath; }
     }
   } else {
-    resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
+    resp = await fetchPlainHtml(`${resourcePath}.plain.html`);
   }
 
   const mepLingoPrefix = await getGeoLocalePrefix();

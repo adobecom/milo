@@ -88,6 +88,25 @@ describe('Fragments', () => {
     expect(h1).to.exist;
   });
 
+  it('deduplicates concurrent plain HTML fragment requests', async () => {
+    const fetchStub = stub(window, 'fetch').callsFake((...args) => originalFetch(...args));
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = `
+      <a href="/test/blocks/fragment/mocks/fragments/dedupe">First</a>
+      <a href="/test/blocks/fragment/mocks/fragments/dedupe">Second</a>
+    `;
+    document.body.append(wrapper);
+
+    await Promise.all([...wrapper.querySelectorAll('a')].map(getFragment));
+
+    const fragmentCalls = fetchStub.getCalls().filter(
+      ({ args }) => String(args[0]?.resource || args[0]).includes('/dedupe.plain.html'),
+    );
+    fetchStub.restore();
+    expect(fragmentCalls.length).to.equal(1);
+    expect(wrapper.querySelectorAll(':scope > .fragment').length).to.equal(2);
+  });
+
   it('Doesnt load a fragment', async () => {
     const a = document.querySelector('a.bad');
     await getFragment(a);

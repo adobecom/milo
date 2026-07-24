@@ -140,6 +140,26 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     disableLingo();
   });
 
+  it('deduplicates concurrent geo placeholder fetches', async () => {
+    const originalFetch = window.fetch;
+    const fetchStub = stub(window, 'fetch').callsFake((...args) => originalFetch(...args));
+    const cfg = enableLingo();
+    cfg.locale.contentRoot = '/test/features/placeholders';
+
+    const [first, second] = await Promise.all([
+      replaceText('{{phone-number-geo-ip}}', cfg),
+      replaceText('{{buy-now-geo-ip}}', cfg),
+    ]);
+
+    const geoCalls = fetchStub.getCalls()
+      .map(({ args }) => String(args[0]?.resource || args[0]))
+      .filter((url) => url.includes(`${geoFixturePath}/placeholders.json`));
+    expect(first).to.equal('+352 800 99999');
+    expect(second).to.equal('Acheter maintenant');
+    expect(geoCalls.length).to.equal(1);
+    fetchStub.restore();
+  });
+
   it('replaceText resolves geo value for -geo-ip keys (default, non-deferred)', async () => {
     const cfg = enableLingo();
     cfg.locale.contentRoot = '/test/features/placeholders';

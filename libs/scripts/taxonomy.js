@@ -32,6 +32,7 @@ const CATEGORIES = Object.freeze('categories');
 const PRODUCTS = Object.freeze('products');
 const INDUSTRIES = Object.freeze('industries');
 const INTERNALS = Object.freeze('internals');
+const taxonomyRequests = new Map();
 
 /**
  * Filters a string to become a filename of a url
@@ -64,7 +65,14 @@ const findItem = (topic, category, taxonomy) => [topic].map((t) => {
 })[0];
 
 async function fetchTaxonomy(target) {
-  return fetch(target).then((response) => response.json());
+  const key = new URL(target, window.location.href).href;
+  if (!taxonomyRequests.has(key)) {
+    const pending = Promise.resolve()
+      .then(() => fetch(target))
+      .then((response) => response.json());
+    taxonomyRequests.set(key, pending);
+  }
+  return taxonomyRequests.get(key);
 }
 
 function parseTaxonomyJson(data, root, route) {
