@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 
 const { setConfig } = await import('../../../libs/utils/utils.js');
-const { onMepAuth, signInToMep } = await import('../../../libs/features/mep/mep-auth.js');
+const { onMepAuth, signInToMep, signOutOfMep } = await import('../../../libs/features/mep/mep-auth.js');
 
 const ORIGIN = window.location.origin;
 const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
@@ -40,7 +40,10 @@ describe('mep-auth', () => {
     sinon.restore();
     window.adobeIMS = imsBackup;
     imsBackup = undefined;
-    try { window.sessionStorage.removeItem('mepAuthEmployee'); } catch (e) { /* noop */ }
+    try {
+      window.sessionStorage.removeItem('mepAuthEmployee');
+      window.sessionStorage.removeItem('mepAuthOptOut');
+    } catch (e) { /* noop */ }
     document.querySelectorAll('iframe').forEach((el) => el.remove());
   });
 
@@ -121,6 +124,41 @@ describe('mep-auth', () => {
 
       expect(await signedIn).to.be.true;
       expect(subscriber.calledWith(true)).to.be.true;
+    });
+  });
+
+  describe('signOutOfMep', () => {
+    it('notifies subscribers with false and sets the opt-out sentinel', () => {
+      setEnv('prod');
+      window.sessionStorage.setItem('mepAuthEmployee', 'true');
+      const subscriber = sinon.spy();
+      onMepAuth(subscriber); // authed via cache
+      subscriber.resetHistory();
+
+      signOutOfMep();
+
+      expect(subscriber.calledWith(false)).to.be.true;
+      expect(window.sessionStorage.getItem('mepAuthOptOut')).to.equal('true');
+      expect(window.sessionStorage.getItem('mepAuthEmployee')).to.be.null;
+    });
+
+    it('keeps the gate locked after opt-out, even with an employee page session', async () => {
+      setEnv('prod');
+      window.sessionStorage.setItem('mepAuthOptOut', 'true');
+      setPageIms({ isSignedInUser: () => true, getProfile: async () => ({ email: 'dev@adobe.com' }) });
+      const result = await new Promise((res) => { onMepAuth(res); });
+      expect(result).to.be.false;
+    });
+
+    it('interactive sign-in clears the opt-out', async () => {
+      setEnv('prod');
+      window.sessionStorage.setItem('mepAuthOptOut', 'true');
+      sinon.stub(window, 'open').returns({});
+      const signedIn = signInToMep();
+      await wait(0);
+      postAuth(true);
+      expect(await signedIn).to.be.true;
+      expect(window.sessionStorage.getItem('mepAuthOptOut')).to.be.null;
     });
   });
 });

@@ -1,5 +1,5 @@
 import { createTag, loadStyle, getConfig } from '../../../../utils/utils.js';
-import { onMepAuth, signInToMep } from '../../mep-auth.js';
+import { onMepAuth, signInToMep, signOutOfMep } from '../../mep-auth.js';
 import {
   CARD_STORAGE_KEY,
   getExpandedCards,
@@ -407,6 +407,9 @@ function checkAuthAndBuild(pageId) {
     const contentEl = drawerEl?.querySelector('.mep-tab-content[data-tab="0"]');
     if (!contentEl) return;
 
+    const signOutBtn = drawerEl.querySelector('.mep-signout');
+    if (signOutBtn) signOutBtn.hidden = !authenticated;
+
     if (!authenticated) {
       contentEl.replaceChildren(buildLoginCard());
       drawerEl.querySelector('.mep-footer')?.remove();
@@ -429,7 +432,11 @@ function buildDrawer(gnavOffset, pageId) {
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });
   closeBtn.appendChild(svgIcon('icon-close'));
 
-  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, closeBtn]);
+  const signOutBtn = createTag('button', { class: 'mep-signout', type: 'button' }, 'Sign out');
+  signOutBtn.hidden = !authenticated;
+  signOutBtn.addEventListener('click', () => { signOutOfMep(); });
+
+  const navEl = createTag('div', { class: 'mep-navigation' }, [logoLink, signOutBtn, closeBtn]);
   const { tabsEl, bodyEl } = buildTabsAndBody(pageId);
   const headerEl = createTag('div', { class: 'mep-header' }, [navEl, tabsEl]);
   const children = [headerEl, bodyEl];

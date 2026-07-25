@@ -1,6 +1,34 @@
 import { getConfig } from '../../utils/utils.js';
 
 /*
+ * ============================================================================
+ * PoC STATUS — read before extending. (branch: mep-next-v1-ims-auth-poc)
+ * ============================================================================
+ *
+ * WHAT WORKS (validated):
+ * - Reusing Milo's existing `milo` IMS client returns an @adobe.com employee
+ *   signal under the DEFAULT scope in BOTH stg1 and prod — no IMS ticket, no
+ *   backend, no author-group provisioning needed.
+ * - Full interactive gate works end-to-end on localhost: "Sign in to MEP" →
+ *   popup → Okta → popup self-closes → drawer rebuilds in place. Unauthed gate
+ *   confirmed on a real aem.page origin. Sign-out (MEP-scoped opt-out) works.
+ *
+ * THE BLOCKING ISSUE (why this approach may not ship):
+ * - MEP must be usable while previewing LOGGED-OUT pages. This gate can't give
+ *   true logged-out preview: authenticating the tool via IMS establishes the
+ *   browser-wide adobe.com session, and `isSignedOut()` (utils.js) reads the
+ *   edge `sis` header from that session's cookie — so the page renders
+ *   SIGNED-IN on the next load. Tool-auth and page-audience-auth are the same
+ *   session; you can't be MEP-authed AND view the page as a real logged-out
+ *   visitor. `?xlg=loggedout` only spoofs the MEP/personalization variant
+ *   layer, not gnav chrome / entitlements / pricing.
+ * - The AEM Sidekick avoids this because it's an EXTENSION: it authenticates
+ *   against admin.hlx.page and injects its token via declarativeNetRequest,
+ *   never touching the adobe.com session. That orthogonality is an
+ *   extension-only capability a web page cannot reproduce. See the
+ *   sidekick-status PoC for the alternative that keeps that orthogonality.
+ * ============================================================================
+ *
  * MEP employee-auth gate. Replaces the AEM-Sidekick shadow-DOM probe
  * (sidekick-auth.js) with a MEP-owned IMS login that is independent of the
  * page's own login state — MEP preview must work on logged-in AND logged-out
@@ -23,6 +51,7 @@ import { getConfig } from '../../utils/utils.js';
 const AUTH_MESSAGE_TYPE = 'mep-auth';
 const SILENT_TIMEOUT_MS = 8000;
 const SESSION_KEY = 'mepAuthEmployee';
+const OPT_OUT_KEY = 'mepAuthOptOut';
 
 const MILO_ORIGINS = {
   prod: 'https://milo.adobe.com',
@@ -75,6 +104,29 @@ function isCachedEmployee() {
   } catch (e) {
     return false;
   }
+}
+
+// MEP-scoped sign-out sentinel. Because the gate derives from the ambient Adobe
+// session, clearing the employee cache alone would re-unlock on the next silent
+// check. This sentinel suppresses the silent tiers until an explicit sign-in,
+// giving a sign-out that sticks for the session without touching IMS.
+function isOptedOut() {
+  try {
+    return window.sessionStorage.getItem(OPT_OUT_KEY) === 'true';
+  } catch (e) {
+    return false;
+  }
+}
+
+function setOptedOut(value) {
+  try {
+    if (value) window.sessionStorage.setItem(OPT_OUT_KEY, 'true');
+    else window.sessionStorage.removeItem(OPT_OUT_KEY);
+  } catch (e) { /* sessionStorage unavailable — non-fatal */ }
+}
+
+function clearEmployeeCache() {
+  try { window.sessionStorage.removeItem(SESSION_KEY); } catch (e) { /* non-fatal */ }
 }
 
 // Resolves once with the route's authed verdict. Only accepts a message from
@@ -149,11 +201,15 @@ export function onMepAuth(callback, { envs = ['prod'] } = {}) {
     callback(true);
     return;
   }
+  subscribers.push(callback);
+  if (isOptedOut()) {
+    callback(false);
+    return;
+  }
   if (isCachedEmployee()) {
     callback(true);
     return;
   }
-  subscribers.push(callback);
   resolveSilent().then((authed) => {
     cacheEmployee(authed);
     callback(authed);
@@ -171,8 +227,21 @@ export async function signInToMep() {
   if (!popup) return false;
   const authed = await awaitAuthMessage(origin);
   if (authed) {
+    setOptedOut(false);
     cacheEmployee(true);
     subscribers.forEach((cb) => cb(true));
   }
   return authed;
+}
+
+/*
+ * MEP-scoped sign-out. Re-locks the drawer in place and stays locked for the
+ * session (survives reload) via the opt-out sentinel. Deliberately does NOT
+ * call window.adobeIMS.signOut() — that would end the browser-wide Adobe
+ * session. An explicit signInToMep() clears the opt-out.
+ */
+export function signOutOfMep() {
+  clearEmployeeCache();
+  setOptedOut(true);
+  subscribers.forEach((cb) => cb(false));
 }

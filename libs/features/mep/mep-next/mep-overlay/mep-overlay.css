@@ -150,6 +150,22 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   cursor: pointer;
 }
 
+.mep-drawer .mep-header .mep-navigation .mep-signout {
+  margin-inline-start: auto;
+  margin-inline-end: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--mep-white-60);
+  font-size: var(--type-body-xs-size, 12px);
+  cursor: pointer;
+}
+
+.mep-drawer .mep-header .mep-navigation .mep-signout:hover {
+  color: var(--mep-white-100);
+  text-decoration: underline;
+}
+
 .mep-drawer .mep-header .mep-tabs {
   display: flex;
 }
