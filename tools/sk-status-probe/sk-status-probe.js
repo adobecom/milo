@@ -92,6 +92,7 @@ function renderVerdict({ httpStatus, body, threw }) {
 }
 
 async function runProbe() {
+  renderSidekick(); // re-check now — the element mounts async after page load
   const url = statusUrl();
   setText('request', `GET ${url}\ncredentials: ${CREDS}`);
   setText('response', '(loading…)');
