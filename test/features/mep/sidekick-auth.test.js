@@ -4,221 +4,117 @@ import sinon from 'sinon';
 const { setConfig } = await import('../../../libs/utils/utils.js');
 const {
   isSidekickAuthed,
-  createSidekickAuthWatcher,
+  onSidekickAuth,
 } = await import('../../../libs/features/mep/sidekick-auth.js');
 
-function tick() {
-  return new Promise((r) => { setTimeout(r, 0); });
+const wait = (ms = 0) => new Promise((r) => { setTimeout(r, ms); });
+
+// Test host (localhost) isn't an aem host, so the project comes from the
+// Sidekick element's public config — mirrors the adobe.com path.
+function mountSidekick({ owner = 'adobecom', repo = 'milo', ref = 'main' } = {}) {
+  const sk = document.createElement('aem-sidekick');
+  sk.config = { owner, repo, ref };
+  document.body.appendChild(sk);
+  return sk;
 }
 
-function mountSidekick({ withPluginBar = true, withEnvSwitcher = false } = {}) {
-  const sidekick = document.createElement('aem-sidekick');
-  sidekick.attachShadow({ mode: 'open' });
-  if (withPluginBar) {
-    const pluginBar = document.createElement('plugin-action-bar');
-    pluginBar.attachShadow({ mode: 'open' });
-    sidekick.shadowRoot.appendChild(pluginBar);
-    if (withEnvSwitcher) {
-      pluginBar.shadowRoot.appendChild(document.createElement('env-switcher'));
+function stubStatus({ authed }) {
+  return sinon.stub(window, 'fetch').callsFake(async (url) => {
+    if (String(url).includes('/status/')) {
+      if (authed) return { ok: true, json: async () => ({ profile: { email: 'author@adobe.com' } }) };
+      return { ok: false, status: 401, json: async () => ({}) };
     }
-  }
-  document.body.appendChild(sidekick);
-  return sidekick;
-}
-
-function addPluginBarTo(sidekick, { withEnvSwitcher = false } = {}) {
-  const pluginBar = document.createElement('plugin-action-bar');
-  pluginBar.attachShadow({ mode: 'open' });
-  sidekick.shadowRoot.appendChild(pluginBar);
-  if (withEnvSwitcher) {
-    pluginBar.shadowRoot.appendChild(document.createElement('env-switcher'));
-  }
-  return pluginBar;
-}
-
-describe('sidekick-auth', () => {
-  let clock;
-  let onSidekickAuth;
-
-  beforeEach(() => {
-    onSidekickAuth = createSidekickAuthWatcher();
+    return { ok: false, status: 404, json: async () => ({}) };
   });
+}
 
+describe('sidekick-auth (/status)', () => {
   afterEach(() => {
-    document.querySelectorAll('aem-sidekick').forEach((el) => el.remove());
-    if (clock) {
-      clock.restore();
-      clock = null;
-    }
     sinon.restore();
+    document.querySelectorAll('aem-sidekick, helix-sidekick').forEach((el) => el.remove());
+    setConfig({ env: { name: 'stage' } });
   });
 
   describe('isSidekickAuthed', () => {
-    it('returns false with no aem-sidekick in DOM', () => {
-      expect(isSidekickAuthed()).to.equal(false);
+    it('returns false when there is no project (no sidekick, non-aem host)', async () => {
+      stubStatus({ authed: true });
+      expect(await isSidekickAuthed()).to.equal(false);
     });
 
-    it('returns false when env-switcher is missing', () => {
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: false });
-      expect(isSidekickAuthed()).to.equal(false);
+    it('returns true when /status returns a profile', async () => {
+      mountSidekick();
+      stubStatus({ authed: true });
+      expect(await isSidekickAuthed()).to.equal(true);
     });
 
-    it('returns true when env-switcher is present in nested shadow', () => {
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: true });
-      expect(isSidekickAuthed()).to.equal(true);
+    it('returns false when /status is 401', async () => {
+      mountSidekick();
+      stubStatus({ authed: false });
+      expect(await isSidekickAuthed()).to.equal(false);
+    });
+
+    it('returns false when the fetch throws (CORS/network)', async () => {
+      mountSidekick();
+      sinon.stub(window, 'fetch').rejects(new Error('CORS'));
+      expect(await isSidekickAuthed()).to.equal(false);
     });
   });
 
-  describe('onSidekickAuth — non-prod short-circuit', () => {
-    it('fires cb(true) synchronously on stage and does not touch shared state', () => {
+  describe('onSidekickAuth', () => {
+    it('bypasses the gate in non-prod envs', () => {
       setConfig({ env: { name: 'stage' } });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(true)).to.equal(true);
+      expect(cb.calledOnceWith(true)).to.be.true;
     });
 
-    it('fires cb(true) synchronously when env is undefined', () => {
-      setConfig({});
-      const cb = sinon.spy();
-      onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(true)).to.equal(true);
-    });
-
-    it('respects custom envs opt', () => {
-      setConfig({ env: { name: 'stage' } });
-      const cb = sinon.spy();
-      onSidekickAuth(cb, { envs: ['prod', 'stage'] });
-      // env is in opts.envs → still treated as gated, sync check, no sidekick → cb(false)
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
-    });
-  });
-
-  describe('onSidekickAuth — prod, sync paths', () => {
-    beforeEach(() => {
+    it('calls back true in prod when the Sidekick is authed', async () => {
       setConfig({ env: { name: 'prod' } });
-    });
-
-    it('fires cb(false) once when no sidekick is present', () => {
+      mountSidekick();
+      stubStatus({ authed: true });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
+      await wait(0);
+      expect(cb.calledWith(true)).to.be.true;
     });
 
-    it('fires cb(true) once when sidekick is already authed', () => {
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: true });
-      const cb = sinon.spy();
-      onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(true)).to.equal(true);
-    });
-
-    it('subscriber added after auth resolves short-circuits to cb(true) sync', async () => {
-      const sidekick = mountSidekick({ withPluginBar: true, withEnvSwitcher: false });
-      const cb1 = sinon.spy();
-      onSidekickAuth(cb1);
-      expect(cb1.calledWithExactly(false)).to.equal(true);
-
-      const pluginBar = sidekick.shadowRoot.querySelector('plugin-action-bar');
-      pluginBar.shadowRoot.appendChild(document.createElement('env-switcher'));
-      await tick();
-      expect(cb1.callCount).to.equal(2);
-      expect(cb1.secondCall.args[0]).to.equal(true);
-
-      const cb2 = sinon.spy();
-      onSidekickAuth(cb2);
-      expect(cb2.calledOnceWithExactly(true)).to.equal(true);
-    });
-  });
-
-  describe('onSidekickAuth — prod, async transitions', () => {
-    beforeEach(() => {
+    it('calls back false in prod when not authed', async () => {
       setConfig({ env: { name: 'prod' } });
-    });
-
-    it('re-fires cb(true) when sidekick mounts and authes after subscribe', async () => {
+      mountSidekick();
+      stubStatus({ authed: false });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
-
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: true });
-      await tick();
-      await tick();
-
-      expect(cb.callCount).to.equal(2);
-      expect(cb.secondCall.args[0]).to.equal(true);
+      await wait(0);
+      expect(cb.calledWith(false)).to.be.true;
     });
 
-    it('re-fires cb(true) when plugin-action-bar gets env-switcher after subscribe', async () => {
-      const sidekick = mountSidekick({ withPluginBar: false });
-      const cb = sinon.spy();
-      onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
-
-      const pluginBar = addPluginBarTo(sidekick, { withEnvSwitcher: false });
-      await tick();
-      pluginBar.shadowRoot.appendChild(document.createElement('env-switcher'));
-      await tick();
-
-      expect(cb.callCount).to.equal(2);
-      expect(cb.secondCall.args[0]).to.equal(true);
-    });
-
-    it('two subscribers share one observer chain and both fire on resolution', async () => {
-      const cb1 = sinon.spy();
-      const cb2 = sinon.spy();
-      onSidekickAuth(cb1);
-      onSidekickAuth(cb2);
-
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: true });
-      await tick();
-      await tick();
-
-      expect(cb1.callCount).to.equal(2);
-      expect(cb2.callCount).to.equal(2);
-      expect(cb1.secondCall.args[0]).to.equal(true);
-      expect(cb2.secondCall.args[0]).to.equal(true);
-    });
-
-    it('one throwing subscriber does not prevent others from being notified', async () => {
-      const cb1 = sinon.stub().throws(new Error('boom'));
-      const cb2 = sinon.spy();
-      onSidekickAuth(cb1);
-      onSidekickAuth(cb2);
-
-      mountSidekick({ withPluginBar: true, withEnvSwitcher: true });
-      await tick();
-      await tick();
-
-      expect(cb1.callCount).to.equal(2);
-      expect(cb2.callCount).to.equal(2);
-      expect(cb2.secondCall.args[0]).to.equal(true);
-    });
-  });
-
-  describe('onSidekickAuth — safety timeout', () => {
-    beforeEach(() => {
+    it('re-checks and flips to true when the Sidekick logs in after load', async () => {
       setConfig({ env: { name: 'prod' } });
-      clock = sinon.useFakeTimers({
-        toFake: ['setTimeout', 'clearTimeout'],
-        shouldAdvanceTime: true,
-      });
-    });
-
-    it('does not re-invoke subscribers when timeout fires', () => {
+      const sk = mountSidekick();
+      const fetchStub = stubStatus({ authed: false });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
+      await wait(0);
+      expect(cb.calledWith(false)).to.be.true;
 
-      clock.tick(5 * 60 * 1000 + 1);
+      // user logs into the Sidekick — /status now returns a profile
+      fetchStub.restore();
+      stubStatus({ authed: true });
+      sk.dispatchEvent(new CustomEvent('logged-in'));
+      await wait(0);
+      expect(cb.calledWith(true)).to.be.true;
+    });
+
+    it('does not emit the same verdict twice', async () => {
+      setConfig({ env: { name: 'prod' } });
+      const sk = mountSidekick();
+      stubStatus({ authed: true });
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await wait(0);
+      sk.dispatchEvent(new CustomEvent('status-fetched'));
+      await wait(0);
       expect(cb.callCount).to.equal(1);
-    });
-
-    it('subscribers added after timeout fall through to sync check, no re-attach', () => {
-      onSidekickAuth(sinon.spy());
-      clock.tick(5 * 60 * 1000 + 1);
-
-      const cb = sinon.spy();
-      onSidekickAuth(cb);
-      expect(cb.calledOnceWithExactly(false)).to.equal(true);
     });
   });
 });
