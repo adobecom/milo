@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-explore-trending-gradients",
+  "sectionIndex": 3,
+  "decision": "new-block",
+  "score": 0.93,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-3",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-3531b320-mrzvpztc",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-3531b320-mrzvpztc/libs/c2/blocks/forge-explore-trending-gradients",
+  "miloBranch": "forge/session-3531b320-c79",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/bradjohn/forge/extract-gradients-from-images-adobe-colo?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

@@ -1,0 +1,52 @@
+.forge-explore-trending-gradients {max-width:1440px;margin:0 auto}
+
+.forge-explore-trending-gradients .content {max-width:720px}
+
+.forge-explore-trending-gradients .content {margin:0 auto;text-align:center}
+
+.forge-explore-trending-gradients .eyebrow {
+    display:inline-block;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.08em;
+    margin-bottom:var(--s2a-spacing-16);color:var(--s2a-color-brand-adobe-red);
+  }
+
+.forge-explore-trending-gradients .eyebrow {color:var(--s2a-color-red-700)}
+
+.forge-explore-trending-gradients h1 {font-size:clamp(48px,6vw,var(--s2a-font-size-80));margin-bottom:var(--s2a-spacing-24)}
+
+.forge-explore-trending-gradients h2 {font-size:clamp(32px,4vw,var(--s2a-font-size-48));margin-bottom:var(--s2a-spacing-16)}
+
+.forge-explore-trending-gradients p {font-size:var(--s2a-font-size-20);color:var(--s2a-color-gray-800);margin-bottom:var(--s2a-spacing-24);line-height:1.6}
+
+.forge-explore-trending-gradients .content > p:last-child {margin-bottom:0}
+
+.forge-explore-trending-gradients {color:var(--s2a-color-gray-25)}
+
+.forge-explore-trending-gradients section.dark .rich-content p {color:var(--s2a-color-gray-100)}
+
+.forge-explore-trending-gradients {display:flex;gap:var(--s2a-spacing-24);overflow-x:auto;padding:var(--s2a-spacing-8) 4px var(--s2a-spacing-24);scroll-snap-type:x mandatory;max-width:1440px;margin:0 auto}
+
+.forge-explore-trending-gradients::-webkit-scrollbar {height:8px}
+
+.forge-explore-trending-gradients::-webkit-scrollbar-thumb {background:var(--s2a-color-gray-100);border-radius:99px}
+
+.forge-explore-trending-gradients {
+    flex:0 0 260px;scroll-snap-align:start;border-radius:var(--s2a-border-radius-md);
+    overflow:hidden;border:1px solid var(--s2a-color-gray-100);background:var(--s2a-color-gray-25);
+  }
+
+.forge-explore-trending-gradients .swatch {height:150px}
+
+.forge-explore-trending-gradients .meta {padding:var(--s2a-spacing-16)}
+
+.forge-explore-trending-gradients .meta h4 {font-size:16px;margin-bottom:4px;font-family:var(--s2a-font-family-heading)}
+
+.forge-explore-trending-gradients .meta p {font-size:13px;color:var(--s2a-color-gray-500);margin:0}
+
+.forge-explore-trending-gradients section.cta-close .rich-content {position:relative;z-index:1}
+
+.forge-explore-trending-gradients {text-align:center;max-width:60ch;margin:0 auto var(--s2a-spacing-48)}
+
+.forge-explore-trending-gradients h2 {margin-bottom:var(--s2a-spacing-16)}
+
+.forge-explore-trending-gradients p {margin-bottom:0}

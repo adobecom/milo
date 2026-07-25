@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-explore-trending-gradients',
 ];
 
 const AUTO_BLOCKS = [
