@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sidekick /status Probe</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font: 14px/1.5 -apple-system, system-ui, sans-serif; margin: 0; padding: 24px; max-width: 960px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .sub { color: #888; margin: 0 0 20px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+    button { font: inherit; padding: 8px 16px; border-radius: 20px; border: 1px solid currentColor; background: none; cursor: pointer; }
+    button.primary { background: #1473e6; color: #fff; border-color: #1473e6; }
+    code { word-break: break-all; }
+    .verdict { padding: 16px; border-radius: 8px; border: 2px solid; margin-bottom: 20px; }
+    .verdict.pass { border-color: #2d9d78; }
+    .verdict.fail { border-color: #d7373f; }
+    .verdict.unknown { border-color: #e68619; }
+    .verdict h2 { margin: 0 0 8px; font-size: 16px; }
+    .signal { display: grid; grid-template-columns: 200px 1fr; gap: 4px 12px; }
+    pre { background: rgba(128,128,128,.12); padding: 16px; border-radius: 8px; overflow: auto; }
+    section { margin-bottom: 20px; }
+    section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: #888; margin: 0 0 6px; }
+    .tag { font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>Sidekick /status Probe</h1>
+  <p class="sub">Settles: does a <b>page-initiated</b> GET to admin.hlx.page/status receive the Sidekick's injected token and a readable <code>profile</code>? Must run with the AEM Sidekick installed + logged in, on a project it recognizes (this milo origin).</p>
+
+  <div class="row">
+    <button id="probe" class="primary">Run /status GET</button>
+    <button id="reload">Reload</button>
+    <span>owner=<span class="tag" id="cfg-owner"></span> · repo=<span class="tag" id="cfg-repo"></span> · ref=<span class="tag" id="cfg-ref"></span> · creds=<span class="tag" id="cfg-creds"></span></span>
+  </div>
+
+  <div id="verdict" class="verdict unknown">
+    <h2 id="verdict-title">Click “Run /status GET”.</h2>
+    <div class="signal" id="signals"></div>
+  </div>
+
+  <section>
+    <h3>&lt;aem-sidekick&gt; present?</h3>
+    <pre id="sk">—</pre>
+  </section>
+
+  <section>
+    <h3>Request</h3>
+    <pre id="request">—</pre>
+  </section>
+
+  <section>
+    <h3>Response</h3>
+    <pre id="response">—</pre>
+  </section>
+
+  <script type="module" src="./sk-status-probe.js"></script>
+</body>
+</html>
