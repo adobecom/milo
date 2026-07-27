@@ -2041,6 +2041,7 @@ export async function loadIms() {
           clearTimeout(timeout);
         },
         onError: reject,
+        ...adobeid,
         ...(imsGuest === 'on' && {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
@@ -2048,7 +2049,6 @@ export async function loadIms() {
           enableGuestBotDetection: true,
           guestBotDetectionProvider: 'bfp',
         }),
-        ...adobeid,
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
