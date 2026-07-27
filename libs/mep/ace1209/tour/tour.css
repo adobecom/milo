@@ -29,7 +29,6 @@
 }
 
 .tour-row-body {
-  padding-block-start: var(--s2a-spacing-md);
   > p {
     padding-block-start: var(--s2a-spacing-md);
     &:first-child {

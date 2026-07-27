@@ -165,14 +165,12 @@ export default function init(el) {
   }
 
   multiColumns.forEach((row, index) => {
-    const rowIndex = index + 1;
-    row.classList.add('tour-row', `row-${rowIndex}`);
+    row.classList.add('tour-row', `row-${index + 1}`);
     row.firstElementChild.classList.add('tour-row-body', 'body-sm');
     row.lastElementChild.classList.add('tour-row-image');
-    const rowIndexEl = createTag('div', { class: 'label tour-row-index' }, `( ${rowIndex}/${multiColumns.length} )`);
 
     const wrapper = createTag('div', { class: 'tour-row-content' });
-    wrapper.append(rowIndexEl, ...row.children);
+    wrapper.append(...row.children);
     row.append(wrapper);
 
     const tourRowImage = wrapper.querySelector('.tour-row-image');
