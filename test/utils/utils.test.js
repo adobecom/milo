@@ -2945,31 +2945,31 @@ describe('Utils', () => {
       expect(region.prefix).to.equal('/ch_de');
     });
 
-    it('with useGeoLocation honors the international cookie (explicit pick) over geo', async () => {
+    it('with useGeoLocation ignores the international cookie and resolves from geo', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       lingoModule.setConfig(lingoRegionConfig);
-      // Explicit CH region pick; geo says US (no region) — the pick wins.
+      // The `international` cookie is no longer consulted; geo (US, no region) wins.
       document.cookie = 'international=ch_de; path=/';
       sessionStorage.setItem('akamai', 'us');
       const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
-      expect(region).to.not.be.null;
-      expect(region.prefix).to.equal('/ch_de');
+      expect(region).to.be.null;
     });
 
-    it('with useGeoLocation, an explicit base/root pick is not overridden by geo', async () => {
+    it('with useGeoLocation, geo picks the region even when the international cookie diverges', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
       document.head.append(lingoMeta);
       lingoModule.setConfig(lingoRegionConfig);
-      // User explicitly chose the root (us) — geo CH must NOT pull them to ch_de.
+      // `international=us` is ignored; geo (CH) resolves to ch_de.
       document.cookie = 'international=us; path=/';
       sessionStorage.setItem('akamai', 'ch');
       const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
-      expect(region).to.be.null;
+      expect(region).to.not.be.null;
+      expect(region.prefix).to.equal('/ch_de');
     });
 
     it('by default honors the market cookie over geo (mep/content callers)', async () => {
@@ -3156,8 +3156,8 @@ describe('Utils', () => {
       expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
     });
 
-    // Explicit region pick (international cookie) wins over a divergent geo.
-    it('uses the international cookie over geo for the Adobe Home redirect_uri', async () => {
+    // The international cookie is no longer consulted; geo picks the region.
+    it('ignores the international cookie and uses geo for the Adobe Home redirect_uri', async () => {
       const lingoMeta = document.createElement('meta');
       lingoMeta.setAttribute('name', 'langfirst');
       lingoMeta.setAttribute('content', 'on');
@@ -3167,12 +3167,12 @@ describe('Utils', () => {
       ahomeMeta.setAttribute('content', 'on');
       document.head.append(ahomeMeta);
       lingoModule.setConfig(imsLingoConfig);
-      // Explicitly picked CA French; physically in CH — the pick wins over geo.
+      // international=ca_fr is ignored; geo (CH) resolves to ch_fr.
       document.cookie = 'international=ca_fr; path=/';
       sessionStorage.setItem('akamai', 'ch');
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
-      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ch_fr');
     });
 
     it('builds a bare /home redirect_uri (no acomLocale) on the root locale', async () => {
