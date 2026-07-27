@@ -22,6 +22,16 @@ if (!customElements.get('mas-field')) {
         } else if (field === 'ctas-checkout') {
           // Simulates a plain commerce link (no em/strong from MAS — e.g. checkout-link)
           content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
+        } else if (field === 'ctas-promo') {
+          // Simulates a CTA field from a fragment with an applied promo project.
+          this.setAttribute('data-promotion-code', 'PROMO26');
+          content.innerHTML = '<a is="checkout-link" href="https://commerce.adobe.com/">Buy now</a>';
+        } else if (field === 'prices-promo') {
+          // Simulates a prices field from a fragment with an applied promo project:
+          // inline-only content (prices + terms link, no block elements) so the unwrap
+          // branch fires, with the promo code carried on the mas-field element.
+          this.setAttribute('data-promotion-code', 'PROMO26');
+          content.innerHTML = '<span is="inline-price" data-template="price" data-wcs-osi="OSI-X"></span> <a href="https://www.adobe.com/">See terms</a>';
         } else {
           content.textContent = 'Resolved inline value';
         }
@@ -307,6 +317,57 @@ describe('merch-card-autoblock autoblock', () => {
       expect(linkNotDecorated.className).to.equal('some-class merch-card-autoblock link-block');
     });
 
+    it('stamps the mas-field promo code onto inline prices before unwrapping', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-1&field=prices-promo';
+      a.textContent = '[[promo-test:prices-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const price = p.querySelector('span[is="inline-price"]');
+      expect(price).to.exist;
+      expect(price.getAttribute('data-promotion-code')).to.equal('PROMO26');
+    });
+
+    it('stamps the mas-field promo code onto checkout links before unwrapping', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-3&field=ctas-promo';
+      a.textContent = '[[promo-cta-test:ctas-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const cta = section.querySelector('a[is="checkout-link"]');
+      expect(cta).to.exist;
+      expect(cta.getAttribute('data-promotion-code')).to.equal('PROMO26');
+    });
+
+    it('loads merch.css when unwrapping price content', async () => {
+      const section = document.createElement('div');
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=promo-2&field=prices-promo';
+      a.textContent = '[[promo-css-test:prices-promo]]';
+      p.append(a);
+      section.append(p);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.head.querySelector('link[href*="blocks/merch/merch.css"]')).to.exist;
+    });
+
     it('upgrades plain commerce links and decorates using block context', async () => {
       const section = document.createElement('div');
       const siblingBtn = document.createElement('a');
@@ -330,7 +391,94 @@ describe('merch-card-autoblock autoblock', () => {
       expect(link).to.exist;
     });
 
+    it('adds button-justified-mobile to a hero-marquee CTA with no decorated sibling', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+
+      // Single headless CTA, no already-decorated sibling button in the block.
+      const p = document.createElement('p');
+      const strong = document.createElement('strong');
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=hero-solo-cta-1&field=ctas';
+      a.textContent = '[[hero-cta:ctas]]';
+      strong.append(a);
+      p.append(strong);
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      await init(a);
+
+      expect(document.querySelector('mas-field')).to.not.exist;
+      const link = p.querySelector('a.con-button');
+      expect(link).to.exist;
+      expect(link.classList.contains('button-xl')).to.be.true;
+      expect(link.classList.contains('button-justified-mobile')).to.be.true;
+    });
+
+    it('keeps button-xl on late CTAs when a sibling con-button has no size class', async () => {
+      // A pre-existing unsized con-button (e.g. a mas-field footer CTA, self-styled with
+      // con-button but no size) must NOT be used as the size reference, or button-xl is
+      // dropped. Two unsized con-buttons resolving late stand in for that case.
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+      const p = document.createElement('p');
+      p.innerHTML = `
+        <em><mas-field field="ctas[0]"><span data-role="mas-field-content"><a class="button con-button outline" is="checkout-link" href="https://commerce.adobe.com/">Free trial</a></span></mas-field></em>
+        <strong><mas-field field="ctas[1]"><span data-role="mas-field-content"><a class="button con-button blue" is="checkout-link" href="https://commerce.adobe.com/">Buy now</a></span></mas-field></strong>`;
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      // watchMasFieldCtas is registered on first init (module-level); prior tests did that.
+      // Dispatch the late mas:ready from each mas-field, as the real component does.
+      [...p.querySelectorAll('mas-field')].forEach((mf) => {
+        mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
+      });
+
+      expect(p.querySelectorAll('mas-field').length).to.equal(0);
+      const links = [...p.querySelectorAll('a.con-button')];
+      expect(links.length).to.equal(2);
+      links.forEach((link) => expect(link.classList.contains('button-xl')).to.be.true);
+    });
+
+    it('upgrades a late plain commerce CTA to checkout-link on mas:ready (MWPW-201497)', async () => {
+      // Regression: a CTA that resolves after its block decorated fires mas:ready and is
+      // hoisted, but the late path skipped upgradeCommerceLinks — so the anchor got button
+      // classes yet no is="checkout-link", leaving it unhydrated (no href, no modal).
+      setConfig({ codeRoot: '/libs' });
+      const section = document.createElement('div');
+      section.classList.add('section');
+      const block = document.createElement('div');
+      block.classList.add('hero-marquee');
+      const p = document.createElement('p');
+      p.innerHTML = '<em><mas-field field="ctas[0]"><span data-role="mas-field-content">'
+        + '<a data-wcs-osi="abc" data-checkout-workflow="UCv3" data-modal="twp">Free trial</a>'
+        + '</span></mas-field></em>';
+      block.append(p);
+      section.append(block);
+      document.body.append(section);
+
+      // Late resolution: the component fires mas:ready after the block already decorated.
+      p.querySelector('mas-field').dispatchEvent(
+        new CustomEvent('mas:ready', { bubbles: true, composed: true }),
+      );
+
+      expect(p.querySelectorAll('mas-field').length).to.equal(0);
+      const link = p.querySelector('a[data-wcs-osi]');
+      expect(link, 'CTA anchor should be hoisted').to.exist;
+      expect(link.outerHTML).to.include('is="checkout-link"');
+      expect(link.classList.contains('con-button')).to.be.true;
+    });
+
     it('decorates two CTAs in the same paragraph correctly when processed concurrently', async () => {
+      setConfig({ codeRoot: '/libs' });
       const section = document.createElement('div');
       const siblingBtn = document.createElement('a');
       siblingBtn.classList.add('con-button', 'blue', 'button-l');
