@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-get-acrobat-studio-today",
+  "sectionIndex": 1,
+  "decision": "tight-variant",
+  "score": 0.85,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-1",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/x?node-id=10559-113821",
+  "figmaNodeId": "10559:113781",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-678eaf0f-ms36w7ar",
+  "miloTargetPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-678eaf0f-ms36w7ar/libs/c2/blocks/forge-get-acrobat-studio-today",
+  "miloBranch": "forge/session-678eaf0f-fa2",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/figma-678eaf?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}
