@@ -1,0 +1,75 @@
+<section data-binding-source="judge" data-binding-variants="hero" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="10559:113745" data-block="rich-content" style="width:100%;background:linear-gradient(180deg,rgba(0,0,0,0.20) 0%,#000000 100%);overflow:hidden;">
+  <style>
+    .rch-root{width:100%;background:linear-gradient(180deg,rgba(0,0,0,0.20) 0%,#000000 100%);overflow:hidden;}
+    .rch-wrap{max-width:1440px;margin:0 auto;padding:0 120px;box-sizing:border-box;}
+    .rch-inner{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:160px;padding-bottom:120px;}
+    .rch-copy{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+    .rch-eyebrow{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:14px;line-height:18px;color:#ffffff;text-align:center;margin:0;padding:0;}
+    .rch-heading{font-family:'Adobe Clean Display','Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;color:#ffffff;text-align:center;margin:0;padding:0;width:100%;}
+    .rch-body{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;color:#ffffff;text-align:center;margin:0;padding:0;width:100%;max-width:900px;}
+    .rch-cta-group{display:flex;flex-direction:column;gap:16px;width:100%;align-items:center;}
+    .rch-price{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:16px;line-height:19px;letter-spacing:-0.16px;color:#ffffff;text-align:center;margin:0;padding:0;}
+    .rch-btn-row{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;}
+    .rch-btn-primary{display:inline-flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;background:#ffffff;border:none;cursor:pointer;text-decoration:none;min-width:117px;}
+    .rch-btn-primary span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000000;white-space:nowrap;}
+    .rch-btn-outline{display:inline-flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;padding:14px 24px;border-radius:999px;background:transparent;border:1px solid #ffffff;cursor:pointer;text-decoration:none;}
+    .rch-btn-outline span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#ffffff;white-space:nowrap;}
+    .rch-icon{width:12px;height:12px;object-fit:contain;display:inline-block;flex-shrink:0;}
+    .rch-icon-placeholder{width:12px;height:12px;display:inline-block;flex-shrink:0;background:rgba(255,255,255,0.3);border-radius:50%;}
+
+    @media (max-width:1280px){
+      .rch-wrap{padding:0 80px;}
+      .rch-inner{padding-top:124px;padding-bottom:100px;}
+      .rch-heading{font-size:48px;line-height:52px;}
+    }
+    @media (max-width:1024px){
+      .rch-wrap{padding:0 48px;}
+      .rch-inner{padding-top:80px;padding-bottom:80px;}
+      .rch-heading{font-size:40px;line-height:44px;}
+      .rch-body{font-size:18px;}
+    }
+    @media (max-width:768px){
+      .rch-wrap{padding:0 24px;}
+      .rch-inner{padding-top:64px;padding-bottom:64px;gap:20px;}
+      .rch-heading{font-size:32px;line-height:36px;letter-spacing:-0.96px;}
+      .rch-body{font-size:16px;line-height:22px;}
+      .rch-btn-row{flex-direction:column;align-items:center;}
+      .rch-btn-primary,.rch-btn-outline{width:100%;max-width:320px;justify-content:center;}
+    }
+  </style>
+
+  <div class="rch-wrap">
+    <div class="rch-inner">
+
+      <!-- Copy Lockup -->
+      <div class="rch-copy">
+        <p class="rch-eyebrow">Acrobat Studio</p>
+        <h1 class="rch-heading">Get Acrobat Studio today.</h1>
+        <p class="rch-body">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- Pricing + Buttons -->
+      <div class="rch-cta-group">
+        <p class="rch-price">US$24.99/mo annual, billed monthly</p>
+        <div class="rch-btn-row">
+
+          <!-- Free Trial — Primary / Solid / On Dark -->
+          <a href="#" class="rch-btn-primary" data-node-id="10559:113763">
+            <img src="media_section-3-s2iconcircle20n.png" alt="Icon Start" class="rch-icon" style="background:rgba(0,0,0,0.15);border-radius:50%;" onerror="this.style.visibility='hidden'" />
+            <span>Free Trial</span>
+            <img src="media_section-3-s2arrow.png" alt="Icon End" class="rch-icon" style="background:rgba(0,0,0,0.15);border-radius:2px;" onerror="this.style.visibility='hidden'" />
+          </a>
+
+          <!-- Compare Plans — Outlined / On Dark -->
+          <a href="#" class="rch-btn-outline" data-node-id="10559:113765">
+            <img src="media_section-3-s2icondownload20n.png" alt="start-icon" class="rch-icon" style="background:rgba(255,255,255,0.15);border-radius:2px;" onerror="this.style.visibility='hidden'" />
+            <span>Compare Plans</span>
+            <img src="media_section-3-functional.png" alt="end-icon" class="rch-icon" style="background:rgba(255,255,255,0.15);border-radius:2px;" onerror="this.style.visibility='hidden'" />
+          </a>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
