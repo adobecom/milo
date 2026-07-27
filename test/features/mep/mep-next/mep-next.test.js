@@ -180,9 +180,8 @@ describe('M@S highlight badges', () => {
   }
 
   it('injectMasBadges adds a sibling <a> badge for the collection surface (only)', () => {
-    // Cards render an in-host action stack now (see "M@S card action stack"
-    // describe block). inline (mas-field) and ost render via CSS ::before
-    // pseudo on the host. Only collection still uses a sibling <a> badge.
+    // Cards render a CSS outline only; inline (mas-field), ost, and offer render
+    // via CSS ::before pseudo on the host. Only collection uses a sibling <a> badge.
     const collection = seedSurface(
       'collection',
       'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-1',
@@ -206,22 +205,14 @@ describe('M@S highlight badges', () => {
 
     injectMasBadges();
 
-    // No sibling <a> badge for any of these — they render via overlay (card)
-    // or pseudo (inline / ost).
+    // No sibling <a> badge for any of these — card renders a CSS outline,
+    // inline/ost render via ::before pseudo.
     expect(cardHost.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
     expect(inlineHost.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
     expect(ostHost.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
     // WeakMap entries remain so handlers can open the captured URL.
     expect(mepMasStudioUrls.get(inlineHost)).to.equal('https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1&field=cardTitle');
     expect(mepMasStudioUrls.get(ostHost)).to.equal('/tools/ost?osi=03&type=price&term=false');
-  });
-
-  it('injectMasBadges is idempotent — re-running does not duplicate the card action stack', () => {
-    seedSurface('card', 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1');
-    injectMasBadges();
-    injectMasBadges();
-    injectMasBadges();
-    expect(document.querySelectorAll('.mep-mas-card-actions').length).to.equal(1);
   });
 
   it('injectMasBadges does NOT duplicate the parent collection badge when a sub-collection badge sits between it and the container', () => {
@@ -254,24 +245,38 @@ describe('M@S highlight badges', () => {
     expect(document.querySelectorAll('a.mep-mas-edit-badge-collection').length).to.equal(1);
   });
 
-  it('injectMasBadges skips card hosts with no WeakMap entry (no Studio URL to render)', () => {
-    const orphan = document.createElement('div');
-    orphan.dataset.masBlock = 'card';
-    document.body.append(orphan);
+  it('injectMasBadges does not add a stack or sibling badge for a STANDALONE card (per-element OST instead)', () => {
+    // Standalone = card NOT inside a [data-mas-block="collection"]. Even with a
+    // captured Studio URL it gets no stack — the gating is on collection membership.
+    const cardHost = document.createElement('div');
+    cardHost.dataset.masBlock = 'card';
+    document.body.append(cardHost);
+    mepMasStudioUrls.set(cardHost, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=solo');
     injectMasBadges();
-    // No overlay should attach when there's no captured Studio URL.
-    expect(orphan.querySelector('.mep-mas-card-actions')).to.be.null;
+    expect(cardHost.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
+    expect(document.querySelectorAll('.mep-mas-card-actions').length, 'standalone card gets no stack').to.equal(0);
+    cardHost.remove();
   });
 
-  it('removeMasBadges clears sibling badges AND card action stacks from the document', () => {
-    seedSurface('collection', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-1');
-    seedSurface('card', 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-2');
+  it('removeMasBadges clears sibling collection badges AND collection card stacks', () => {
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-1');
+    const child = document.createElement('merch-card');
+    const aem = document.createElement('aem-fragment');
+    aem.setAttribute('fragment', 'child-x');
+    child.append(aem);
+    container.append(child);
+
     injectMasBadges();
     expect(document.querySelectorAll('a.mep-mas-edit-badge').length).to.equal(1);
     expect(document.querySelectorAll('.mep-mas-card-actions').length).to.equal(1);
+
     removeMasBadges();
     expect(document.querySelectorAll('a.mep-mas-edit-badge').length).to.equal(0);
     expect(document.querySelectorAll('.mep-mas-card-actions').length).to.equal(0);
+    container.remove();
   });
 
   it('updateMasNoContentMessage toggles every .mep-mas-no-content placeholder', () => {
@@ -305,8 +310,8 @@ describe('M@S highlight badges', () => {
 
   it('injectMasBadges appends the page-level market (Case A) to the collection sibling badge as a chip', () => {
     // Test config has locale.ietf = 'en-US' so getResolvedPageMarket() returns 'us'.
-    // Cards no longer use sibling <a> badges; they have an in-host action stack
-    // instead — its market suffix is covered by the card-action-stack tests.
+    // Cards use a CSS outline (no sibling <a>); the market chip is a
+    // collection-only affordance.
     const collection = seedSurface(
       'collection',
       'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-1',
@@ -423,11 +428,11 @@ describe('M@S badge market resolution', () => {
     });
   });
 
-  describe('injectMasBadges market suffix (integration)', () => {
-    it('upgrades a card surface from page-market to per-card-market and marks the action stack mismatch when they differ', () => {
+  describe('injectMasBadges market stamping for card surfaces (integration)', () => {
+    it('upgrades a card surface from page-market to per-card-market and flags the mismatch on the host when they differ', () => {
       // Page market is "us" (default test locale) but this card's checkout link
-      // resolves to GB — Edit Card label should end with "· GB" and the
-      // mismatch class should land on the Edit Card / View in OST buttons.
+      // resolves to GB — the host is stamped data-mas-market=GB and flagged
+      // data-mas-market-mismatch so per-element badges can render the warning.
       const wrap = document.createElement('div');
       wrap.dataset.masBlock = 'card';
       wrap.append(createTag('a', {
@@ -440,15 +445,13 @@ describe('M@S badge market resolution', () => {
       injectMasBadges();
 
       expect(wrap.dataset.masMarket).to.equal('GB');
+      // GB on a US page → mismatch flagged on the host; per-element offer badges
+      // read this via CSS (data-mas-market-mismatch), no card-level stack.
       expect(wrap.dataset.masMarketMismatch).to.equal('true');
-      const editBtn = wrap.querySelector('.mep-mas-card-action-edit');
-      expect(editBtn, 'Edit Card action should exist').to.exist;
-      expect(editBtn.textContent).to.equal('Edit Card · GB');
-      expect(editBtn.classList.contains('mep-mas-card-actions-mismatch'), 'GB on a US page should set the mismatch class').to.be.true;
       wrap.remove();
     });
 
-    it('marks the card action stack as match (no mismatch class) when the per-card market equals the page market', () => {
+    it('does not flag mismatch on the host when the per-card market equals the page market', () => {
       const wrap = document.createElement('div');
       wrap.dataset.masBlock = 'card';
       wrap.append(createTag('a', {
@@ -462,9 +465,6 @@ describe('M@S badge market resolution', () => {
 
       expect(wrap.dataset.masMarket).to.equal('US');
       expect(wrap.dataset.masMarketMismatch).to.be.undefined;
-      const editBtn = wrap.querySelector('.mep-mas-card-action-edit');
-      expect(editBtn?.textContent).to.equal('Edit Card · US');
-      expect(editBtn?.classList.contains('mep-mas-card-actions-mismatch')).to.be.false;
       wrap.remove();
     });
   });
@@ -548,6 +548,50 @@ describe('M@S badge market resolution', () => {
       expect(host.dataset.masMarketMismatch).to.equal('true');
       host.remove();
     });
+  });
+});
+
+describe('annotateOffers OSI dedupe (same-parent duplicate offers)', () => {
+  beforeEach(() => {
+    document.querySelectorAll('[data-mas-block], a.mep-mas-edit-badge').forEach((el) => el.remove());
+  });
+
+  it('stamps only the first of two same-OSI offer spans under one parent', () => {
+    // price + legal inline-price share an OSI in one <p slot="heading-m-price">.
+    const parent = createTag('p', { slot: 'heading-m-price' });
+    const price = createTag('span', { is: 'inline-price', 'data-template': 'price', 'data-wcs-osi': 'DUP-OSI' });
+    const legal = createTag('span', { is: 'inline-price', 'data-template': 'legal', 'data-wcs-osi': 'DUP-OSI' });
+    parent.append(price, legal);
+    document.body.append(parent);
+
+    injectMasBadges();
+
+    expect(price.dataset.masBlock, 'first same-OSI offer is stamped').to.equal('offer');
+    expect(legal.dataset.masBlock, 'second same-OSI offer under the same parent is skipped').to.be.undefined;
+    expect(mepMasStudioUrls.has(price)).to.be.true;
+    expect(mepMasStudioUrls.has(legal)).to.be.false;
+
+    // Idempotent — a second pass must keep the duplicate suppressed.
+    injectMasBadges();
+    expect(legal.dataset.masBlock).to.be.undefined;
+    parent.remove();
+  });
+
+  it('stamps same-OSI offers that live under different parents (price vs footer CTA)', () => {
+    const priceParent = createTag('p', { slot: 'heading-m-price' });
+    const price = createTag('span', { is: 'inline-price', 'data-wcs-osi': 'SHARED-OSI' });
+    priceParent.append(price);
+    const footer = createTag('div', { slot: 'footer' });
+    const cta = createTag('a', { is: 'checkout-link', 'data-wcs-osi': 'SHARED-OSI', href: 'https://commerce.adobe.com/store/?items=03' }, 'Buy');
+    footer.append(cta);
+    document.body.append(priceParent, footer);
+
+    injectMasBadges();
+
+    expect(price.dataset.masBlock).to.equal('offer');
+    expect(cta.dataset.masBlock).to.equal('offer');
+    priceParent.remove();
+    footer.remove();
   });
 });
 
@@ -680,33 +724,22 @@ describe('M@S per-child-card badges (Tier 3b — collection children)', () => {
       expect(mepMasStudioUrls.get(children[2])).to.include('query=child-c');
     });
 
-    it('renders the per-child badge as an in-host action stack (.mep-mas-card-actions)', () => {
-      // Per-child-card badges are now a real DOM overlay (.mep-mas-card-actions)
-      // injected into each <merch-card> host. Replaces the old ::before pseudo
-      // because we needed three stacked, individually-clickable actions
-      // including a clipboard-write button. Verify the overlay exists and the
-      // Edit Card link uses the captured Studio URL.
+    it('injects a body-level action stack for each collection child card', () => {
+      // Collection cards get the consolidated stack (body-level overlay). These
+      // test cards carry no [data-wcs-osi], so the stack is Edit + Copy only.
       const parentUrl = 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-1';
-      const container = buildCollection(parentUrl, ['child-a', 'child-b']);
+      buildCollection(parentUrl, ['child-a', 'child-b']);
 
       injectMasBadges();
 
-      // No legacy overlay anchors from prior implementations.
-      expect(document.querySelectorAll('a.mep-mas-edit-badge-overlay').length).to.equal(0);
-      container.querySelectorAll('merch-card').forEach((card) => {
-        expect(card.dataset.masBlock).to.equal('card');
-        const stack = card.querySelector(':scope > .mep-mas-card-actions');
-        expect(stack, 'card should host an action stack overlay').to.exist;
-        const editBtn = stack.querySelector('.mep-mas-card-action-edit');
-        expect(editBtn).to.exist;
-        // Edit Card href is the captured Studio URL transformed to land on
-        // the fragment-editor view (query=<id> -> fragmentId=<id>,
-        // page=fragment-editor) so the author skips the search/content step.
-        const href = editBtn.getAttribute('href');
-        expect(href).to.include('page=fragment-editor');
-        expect(href).to.include('fragmentId=');
-        expect(href).to.not.include('query=');
-        expect(editBtn.getAttribute('target')).to.equal('_blank');
+      const stacks = document.querySelectorAll('.mep-mas-card-actions');
+      expect(stacks.length, 'one stack per child card').to.equal(2);
+      stacks.forEach((stack) => {
+        const edit = stack.querySelector('.mep-mas-card-action-edit');
+        expect(edit, 'Edit Card action should exist').to.exist;
+        expect(edit.getAttribute('href')).to.include('page=fragment-editor');
+        expect(edit.getAttribute('href')).to.include('fragmentId=');
+        expect(stack.querySelector('.mep-mas-card-action-copy'), 'Copy action should exist').to.exist;
       });
     });
 
@@ -725,7 +758,7 @@ describe('M@S per-child-card badges (Tier 3b — collection children)', () => {
       expect(card.dataset.masBlock, 'unattributed child card stays unmarked').to.be.undefined;
     });
 
-    it('is idempotent — re-running keeps each child stamped exactly once and the overlay rebuilds in place', () => {
+    it('is idempotent — re-running keeps each child stamped exactly once', () => {
       const parentUrl = 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=col-1';
       const container = buildCollection(parentUrl, ['child-a']);
 
@@ -737,9 +770,8 @@ describe('M@S per-child-card badges (Tier 3b — collection children)', () => {
       expect(document.querySelectorAll('a.mep-mas-edit-badge-overlay').length).to.equal(0);
       const child = container.querySelector('merch-card');
       expect(child.dataset.masBlock).to.equal('card');
+      // Stamped exactly once with a stable derived Studio URL after multiple passes.
       expect(mepMasStudioUrls.get(child)).to.include('query=child-a');
-      // Exactly one action stack on the child after multiple passes.
-      expect(child.querySelectorAll(':scope > .mep-mas-card-actions').length).to.equal(1);
     });
 
     it('does not annotate children when the collection has no captured parent URL', () => {
@@ -760,200 +792,12 @@ describe('M@S per-child-card badges (Tier 3b — collection children)', () => {
   });
 });
 
-describe('M@S card action stack', () => {
-  // Real DOM overlay (Edit Card / View in OST / Copy Fragment ID) injected into
-  // every <merch-card data-mas-block='card'> by injectMasCardActionStack.
-  beforeEach(() => {
-    document.querySelectorAll('[data-mas-block], a.mep-mas-edit-badge, .mep-mas-card-actions').forEach((el) => el.remove());
-  });
-
-  function seedCard({ studioUrl, withFragment = 'frag-1', osiAttrs = [] } = {}) {
-    const card = document.createElement('merch-card');
-    card.dataset.masBlock = 'card';
-    if (withFragment) {
-      const aem = document.createElement('aem-fragment');
-      aem.setAttribute('fragment', withFragment);
-      card.append(aem);
-    }
-    osiAttrs.forEach((spec) => {
-      // spec: { tag, is, osi }
-      const el = document.createElement(spec.tag || 'span');
-      if (spec.is) el.setAttribute('is', spec.is);
-      el.setAttribute('data-wcs-osi', spec.osi);
-      card.append(el);
-    });
-    document.body.append(card);
-    if (studioUrl) mepMasStudioUrls.set(card, studioUrl);
-    return card;
-  }
-
-  it('builds Edit Card / View in OST / Copy Fragment ID actions when the card has a Studio URL, an OSI, and a fragment id', () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
-      withFragment: 'frag-1',
-      osiAttrs: [{ tag: 'span', is: 'inline-price', osi: 'OSI-FIRST' }],
-    });
-    injectMasBadges();
-
-    const stack = card.querySelector(':scope > .mep-mas-card-actions');
-    expect(stack, 'action stack should be appended to the card').to.exist;
-    expect(stack.children.length).to.equal(3);
-    // Edit Card href is the captured Studio URL transformed to land on the
-    // fragment-editor view (`page=fragment-editor` + `fragmentId=` instead
-    // of `query=`).
-    const editHref = stack.querySelector('.mep-mas-card-action-edit')?.getAttribute('href');
-    expect(editHref).to.include('content-type=merch-card');
-    expect(editHref).to.include('fragmentId=card-1');
-    expect(editHref).to.include('page=fragment-editor');
-    expect(editHref).to.not.include('query=');
-    const ostHref = stack.querySelector('.mep-mas-card-action-ost')?.getAttribute('href');
-    expect(ostHref).to.include('/tools/ost?osi=OSI-FIRST&country=US');
-    const copyBtn = stack.querySelector('.mep-mas-card-action-copy');
-    expect(copyBtn).to.exist;
-    expect(copyBtn.getAttribute('data-fragment-id')).to.equal('frag-1');
-  });
-
-  it('uses the FIRST [data-wcs-osi] in DOM order when the card has multiple offers', () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
-      osiAttrs: [
-        { tag: 'span', is: 'inline-price', osi: 'OSI-A' },
-        { tag: 'span', is: 'inline-price', osi: 'OSI-B' },
-        { tag: 'a', is: 'checkout-link', osi: 'OSI-C' },
-      ],
-    });
-    injectMasBadges();
-
-    const ost = card.querySelector('.mep-mas-card-action-ost');
-    expect(ost?.getAttribute('href')).to.include('/tools/ost?osi=OSI-A&country=US');
-  });
-
-  it('omits the View in OST button when no [data-wcs-osi] exists on or inside the card (display-only card)', () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
-      osiAttrs: [],
-    });
-    injectMasBadges();
-
-    const stack = card.querySelector(':scope > .mep-mas-card-actions');
-    expect(stack?.querySelector('.mep-mas-card-action-edit')).to.exist;
-    expect(stack?.querySelector('.mep-mas-card-action-ost')).to.be.null;
-    expect(stack?.querySelector('.mep-mas-card-action-copy')).to.exist;
-  });
-
-  it('omits the Copy Fragment ID button when the card has no <aem-fragment fragment="…">', () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
-      withFragment: '',
-      osiAttrs: [{ tag: 'span', is: 'inline-price', osi: 'OSI-A' }],
-    });
-    injectMasBadges();
-
-    const stack = card.querySelector(':scope > .mep-mas-card-actions');
-    expect(stack?.querySelector('.mep-mas-card-action-edit')).to.exist;
-    expect(stack?.querySelector('.mep-mas-card-action-ost')).to.exist;
-    expect(stack?.querySelector('.mep-mas-card-action-copy')).to.be.null;
-  });
-
-  it('Copy Fragment ID button writes to clipboard and toggles label to "Copied!" then back', async () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1',
-      withFragment: 'frag-xyz',
-    });
-    const writeStub = sinon.stub().resolves();
-    const original = navigator.clipboard;
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText: writeStub },
-    });
-
-    try {
-      injectMasBadges();
-      const copyBtn = card.querySelector('.mep-mas-card-action-copy');
-      expect(copyBtn).to.exist;
-
-      copyBtn.click();
-      // Wait one microtask for the writeText promise to resolve.
-      await Promise.resolve();
-      await Promise.resolve();
-      expect(writeStub.calledOnceWithExactly('frag-xyz')).to.be.true;
-      expect(copyBtn.textContent).to.equal('Copied!');
-      expect(copyBtn.classList.contains('mep-mas-card-action-copy-copied')).to.be.true;
-
-      // Wait for the 1500ms restore timer.
-      await new Promise((resolve) => { setTimeout(resolve, 1600); });
-      expect(copyBtn.textContent).to.equal('Copy Fragment ID');
-      expect(copyBtn.classList.contains('mep-mas-card-action-copy-copied')).to.be.false;
-    } finally {
-      if (original === undefined) {
-        delete navigator.clipboard;
-      } else {
-        Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original });
-      }
-    }
-  });
-
-  it('appends the action stack to standalone cards (not inside a collection) the same way as collection children', () => {
-    // Standalone <merch-card data-mas-block='card'> — outside any collection.
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=standalone-1',
-      withFragment: 'frag-standalone',
-      osiAttrs: [{ tag: 'span', is: 'inline-price', osi: 'OSI-S' }],
-    });
-    injectMasBadges();
-
-    const stack = card.querySelector(':scope > .mep-mas-card-actions');
-    expect(stack, 'standalone card should also get an action stack').to.exist;
-    expect(stack.children.length).to.equal(3);
-    // No sibling <a> badge for standalone cards anymore (replaced by the stack).
-    expect(card.previousElementSibling?.classList?.contains('mep-mas-edit-badge')).to.not.equal(true);
-  });
-
-  it('Copy Fragment ID shows "Copy failed" when clipboard.writeText rejects', async () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-fail',
-      withFragment: 'frag-fail',
-    });
-    const writeStub = sinon.stub().rejects(new Error('denied'));
-    const original = navigator.clipboard;
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: writeStub } });
-    try {
-      injectMasBadges();
-      const copyBtn = card.querySelector('.mep-mas-card-action-copy');
-      copyBtn.click();
-      await Promise.resolve();
-      await Promise.resolve();
-      expect(copyBtn.textContent).to.equal('Copy failed');
-    } finally {
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original });
-    }
-  });
-
-  it('Copy Fragment ID flashes "Copied!" immediately when clipboard API is absent', async () => {
-    const card = seedCard({
-      studioUrl: 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-noclip',
-      withFragment: 'frag-noclip',
-    });
-    const original = navigator.clipboard;
-    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
-    try {
-      injectMasBadges();
-      const copyBtn = card.querySelector('.mep-mas-card-action-copy');
-      copyBtn.click();
-      expect(copyBtn.textContent).to.equal('Copied!');
-    } finally {
-      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: original });
-    }
-  });
-});
-
 describe('M@S highlight click-driven re-stamp (tabs / accordions / filters)', () => {
   // watchForMasContent installs a debounced document click listener that
-  // re-runs injectMasBadges() so card action stacks reappear when the user
-  // navigates UI patterns that don't mutate the DOM (tab toggles, accordion
-  // expands, filter chips). These tests use the side-effect of injectMasBadges
-  // (a previously-empty merch-card host gains its action stack) to verify the
-  // listener fires.
+  // re-runs injectMasBadges() so badges reappear when the user navigates UI
+  // patterns that don't mutate the DOM (tab toggles, accordion expands, filter
+  // chips). These tests use the side-effect of injectMasBadges (a collection
+  // surface gains its sibling edit badge) to verify the listener fires.
 
   // Wait long enough for the debounce timer + a microtask flush. We add a
   // generous margin so timer slop on busy CI machines doesn't cause flake.
@@ -972,49 +816,48 @@ describe('M@S highlight click-driven re-stamp (tabs / accordions / filters)', ()
     delete document.body.dataset.mepMasHighlight;
   });
 
-  it('re-runs injectMasBadges after a click (debounced) so newly-visible cards get their action stack', async () => {
-    // Seed an unstamped card AFTER watchForMasContent — the click listener
-    // is the only path that should stamp it (we avoid calling injectMasBadges
-    // directly so we can be sure the click is what triggered the pass).
-    const card = document.createElement('merch-card');
-    card.dataset.masBlock = 'card';
-    document.body.append(card);
-    mepMasStudioUrls.set(card, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-1');
-    expect(card.querySelector(':scope > .mep-mas-card-actions'), 'no overlay before click').to.be.null;
+  it('re-runs injectMasBadges after a click (debounced) so newly-visible surfaces get their badge', async () => {
+    // Seed an unstamped collection AFTER watchForMasContent — the click listener
+    // is the path under test (we avoid calling injectMasBadges directly).
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-1');
+    expect(container.previousElementSibling?.classList?.contains('mep-mas-edit-badge'), 'no badge before click').to.not.equal(true);
 
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await waitForRestamp();
 
-    expect(card.querySelector(':scope > .mep-mas-card-actions'), 'overlay should exist after debounced re-stamp').to.exist;
+    expect(container.previousElementSibling?.classList.contains('mep-mas-edit-badge'), 'badge should exist after debounced re-stamp').to.be.true;
   });
 
   it('coalesces rapid clicks into a single re-stamp pass', async () => {
-    const card = document.createElement('merch-card');
-    card.dataset.masBlock = 'card';
-    document.body.append(card);
-    mepMasStudioUrls.set(card, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-2');
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-2');
 
-    // Fire 3 clicks within the debounce window — should result in exactly
-    // one overlay after the timer fires (never two).
+    // Fire 3 clicks within the debounce window — exactly one badge after the
+    // timer fires (never two).
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await waitForRestamp();
 
-    expect(card.querySelectorAll(':scope > .mep-mas-card-actions').length).to.equal(1);
+    expect(document.querySelectorAll('a.mep-mas-edit-badge').length).to.equal(1);
   });
 
   it('does NOT re-run when highlight mode is off', async () => {
     delete document.body.dataset.mepMasHighlight;
-    const card = document.createElement('merch-card');
-    card.dataset.masBlock = 'card';
-    document.body.append(card);
-    mepMasStudioUrls.set(card, 'https://mas.adobe.com/studio.html#content-type=merch-card&query=card-3');
+    const container = document.createElement('div');
+    container.dataset.masBlock = 'collection';
+    document.body.append(container);
+    mepMasStudioUrls.set(container, 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&query=col-3');
 
     document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await waitForRestamp();
 
-    expect(card.querySelector(':scope > .mep-mas-card-actions'), 'no overlay when highlight is off').to.be.null;
+    expect(container.previousElementSibling?.classList?.contains('mep-mas-edit-badge'), 'no badge when highlight is off').to.not.equal(true);
   });
 });
 

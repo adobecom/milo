@@ -298,10 +298,18 @@ const OST_BASE_URL = 'https://milo.adobe.com/tools/ost';
 
 // type=price/checkoutUrl pre-selects the correct OST tab. Idempotent.
 function annotateOffers() {
+  // One badge per OSI per parent — a price + legal inline-price share an OSI in
+  // one <p> and would otherwise stack two identical "View in OST" badges.
+  const seenByParent = new Map();
   document.querySelectorAll(MAS_OSI_SELECTOR).forEach((el) => {
-    if (mepMasStudioUrls.has(el)) return;
     const osi = el.getAttribute('data-wcs-osi');
     if (!osi) return;
+    let seen = seenByParent.get(el.parentElement);
+    if (!seen) { seen = new Set(); seenByParent.set(el.parentElement, seen); }
+    // Already-stamped sibling still claims its OSI so the dup stays suppressed.
+    if (mepMasStudioUrls.has(el)) { seen.add(osi); return; }
+    if (seen.has(osi)) return;
+    seen.add(osi);
     const isPrice = el.matches('span[is="inline-price"]');
     const type = isPrice ? 'price' : 'checkoutUrl';
     const pageMarket = getResolvedPageMarket();
@@ -311,17 +319,42 @@ function annotateOffers() {
   });
 }
 
-// Real DOM (not ::before) — three independent click targets + Copy needs a clipboard handler.
+// Consolidated action stack for COLLECTION cards only (Edit / View in OST /
+// Copy). Standalone cards use per-element ::before OST badges instead.
 const CARD_ACTIONS_CLASS = 'mep-mas-card-actions';
 const CARD_ACTION_EDIT_CLASS = 'mep-mas-card-action-edit';
 const CARD_ACTION_OST_CLASS = 'mep-mas-card-action-ost';
 const CARD_ACTION_COPY_CLASS = 'mep-mas-card-action-copy';
 
+// aem-fragment merch-cards are shadow-DOM hosts that only render slotted
+// children, so a stack appended inside the card is never projected. It lives on
+// <body> and is positioned over the card's box via getBoundingClientRect.
+const CARD_STACK_Z_INDEX = '999';
+const cardActionStacks = new WeakMap(); // card -> stack
+const cardStackOwners = new WeakMap(); // stack -> card
+const liveCardActionStacks = new Set();
+
+function positionCardActionStack(card, stack) {
+  const rect = card.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) { stack.style.display = 'none'; return; }
+  stack.style.display = '';
+  stack.style.top = `${rect.top + window.scrollY + 4}px`;
+  stack.style.left = `${rect.right + window.scrollX - stack.offsetWidth - 4}px`;
+}
+
+export function repositionCardActionStacks() {
+  liveCardActionStacks.forEach((stack) => {
+    const card = cardStackOwners.get(stack);
+    if (!card?.isConnected) { stack.remove(); liveCardActionStacks.delete(stack); return; }
+    positionCardActionStack(card, stack);
+  });
+}
+
 function getCardFragmentId(card) {
   return card.querySelector('aem-fragment[fragment]')?.getAttribute('fragment') || null;
 }
 
-// View in OST uses the first OSI — M@S confirmed all OSIs in a card are equivalent.
+// All OSIs in a collection card open the same Studio; the first is representative.
 function getCardFirstOsi(card) {
   return card.querySelector('[data-wcs-osi]')?.getAttribute('data-wcs-osi') || null;
 }
@@ -330,53 +363,48 @@ function getCardFirstOsi(card) {
 function injectMasCardActionStack(card) {
   const studioUrl = mepMasStudioUrls.get(card);
   if (!studioUrl) return;
-  card.querySelectorAll(`:scope > .${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+  const existing = cardActionStacks.get(card);
+  if (existing) {
+    existing.remove();
+    liveCardActionStacks.delete(existing);
+    cardActionStacks.delete(card);
+  }
 
   const stack = createTag('div', { class: CARD_ACTIONS_CLASS });
   const market = card.dataset.masMarket;
   const mismatch = card.dataset.masMarketMismatch === 'true';
-  const marketSuffix = market ? ` \u00b7 ${market}` : '';
+  const marketSuffix = market ? ` · ${market}` : '';
   const mismatchClass = mismatch ? ` ${CARD_ACTIONS_CLASS}-mismatch` : '';
 
-  const editLink = createTag(
-    'a',
-    {
-      class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
-      href: toFragmentEditorUrl(studioUrl),
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    },
-  );
+  const editLink = createTag('a', {
+    class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
+    href: toFragmentEditorUrl(studioUrl),
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  });
   editLink.textContent = `Edit Card${marketSuffix}`;
   stack.append(editLink);
 
   const osi = getCardFirstOsi(card);
   if (osi) {
-    const ostLink = createTag(
-      'a',
-      {
-        class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
-        href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-      },
-    );
+    const ostLink = createTag('a', {
+      class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
+      href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
     ostLink.textContent = `View in OST${marketSuffix}`;
     stack.append(ostLink);
   }
 
   const fragmentId = getCardFragmentId(card);
   if (fragmentId) {
-    const copyBtn = createTag(
-      'button',
-      {
-        type: 'button',
-        class: CARD_ACTION_COPY_CLASS,
-        'data-fragment-id': fragmentId,
-        title: `Copy fragment id: ${fragmentId}`,
-      },
-      'Copy Fragment ID',
-    );
+    const copyBtn = createTag('button', {
+      type: 'button',
+      class: CARD_ACTION_COPY_CLASS,
+      'data-fragment-id': fragmentId,
+      title: `Copy fragment id: ${fragmentId}`,
+    }, 'Copy Fragment ID');
     copyBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -399,11 +427,18 @@ function injectMasCardActionStack(card) {
     stack.append(copyBtn);
   }
 
-  card.append(stack);
+  stack.style.position = 'absolute';
+  stack.style.right = 'auto';
+  stack.style.zIndex = CARD_STACK_Z_INDEX;
+  document.body.append(stack);
+  cardActionStacks.set(card, stack);
+  cardStackOwners.set(stack, card);
+  liveCardActionStacks.add(stack);
+  positionCardActionStack(card, stack);
 }
 
-// Collection surfaces use this sibling-placed badge. Cards: real-DOM action
-// stack (injectMasCardActionStack). Inline/ost/offer: ::before pseudos.
+// Collection surfaces use this sibling-placed badge. Cards render a CSS outline;
+// inline/ost/offer render per element via ::before pseudos.
 function buildMasBadge(url, surface, market, pageMarket) {
   const a = createTag(
     'a',
@@ -436,12 +471,13 @@ export function injectMasBadges() {
   let visibleCount = 0;
   document.querySelectorAll('[data-mas-block]').forEach((el) => {
     const surface = el.dataset.masBlock;
+    // Collection cards get the consolidated action stack; standalone cards use
+    // per-element ::before OST. offer/inline/ost are ::before pseudos too.
     if (surface === 'card') {
-      injectMasCardActionStack(el);
+      if (el.closest('[data-mas-block="collection"]')) injectMasCardActionStack(el);
       visibleCount += 1;
       return;
     }
-    // offer/inline/ost use ::before pseudos — sibling <a> shifted layout in paragraphs/headings.
     if (surface === 'offer' || surface === 'inline' || surface === 'ost') {
       visibleCount += 1;
       return;
@@ -477,8 +513,10 @@ export function injectMasBadges() {
 
 export function removeMasBadges() {
   document.querySelectorAll(`a.${MAS_BADGE_CLASS}`).forEach((el) => el.remove());
-  // Cards: real DOM, must strip. Pseudos (offer/inline/ost) hide via body[data-mep-mas-highlight].
+  // Collection card stacks live on <body> — strip them. Standalone/offer/inline/ost
+  // are CSS-only (outline + ::before).
   document.querySelectorAll(`.${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+  liveCardActionStacks.clear();
   removeSubCollectionBadges();
   updateMasNoContentMessage(false);
 }
@@ -530,6 +568,8 @@ let masRestampTimer;
 let masChildCardClickHandler;
 let masAemLoadHandler;
 let masRestampClickHandler;
+let masResizeHandler;
+let masResizeRaf;
 // Exported for tests. Long enough for M@S hydration after a tab/accordion
 // switch, short enough to feel responsive.
 export const MAS_RESTAMP_DEBOUNCE_MS = 300;
@@ -566,6 +606,18 @@ export function watchForMasContent() {
   };
   document.addEventListener('click', masRestampClickHandler, true);
 
+  // Body-level collection-card stacks are positioned from getBoundingClientRect,
+  // so a resize can move the cards out from under them. Scroll needs no handler —
+  // the overlays use document coordinates.
+  masResizeHandler = () => {
+    if (masResizeRaf) return;
+    masResizeRaf = requestAnimationFrame(() => {
+      masResizeRaf = 0;
+      repositionCardActionStacks();
+    });
+  };
+  window.addEventListener('resize', masResizeHandler);
+
   // Re-injection triggers:
   //   - new [data-mas-block] / <merch-card> nodes (collection children)
   //   - aem-fragment[fragment] insertion (M@S sometimes appends post-mount; miss permanently)
@@ -595,11 +647,14 @@ function unwatchForMasContent() {
   document.removeEventListener('click', masChildCardClickHandler, true);
   document.removeEventListener('aem:load', masAemLoadHandler, true);
   document.removeEventListener('click', masRestampClickHandler, true);
+  window.removeEventListener('resize', masResizeHandler);
   masObserver.disconnect();
   masObserver = null;
   masChildCardClickHandler = null;
   masAemLoadHandler = null;
   masRestampClickHandler = null;
+  masResizeHandler = null;
+  if (masResizeRaf) { cancelAnimationFrame(masResizeRaf); masResizeRaf = 0; }
   clearTimeout(masRestampTimer);
 }
 

@@ -415,7 +415,9 @@ body[data-mep-mas-highlight='true'] [data-mas-block='offer'][data-mas-market-mis
   background-color: var(--caas-lang-first-accent);
 }
 
-body[data-mep-mas-highlight='true'] [data-mas-block='card'] [data-mas-block='offer']::before {
+/* Collection cards use the consolidated action stack, so suppress the per-offer
+   pseudo inside them. Standalone cards keep per-element "View in OST". */
+body[data-mep-mas-highlight='true'] [data-mas-block='collection'] [data-mas-block='card'] [data-mas-block='offer']::before {
   content: none;
 }
 
