@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-keep-the-momentum-going",
+  "sectionIndex": 0,
+  "decision": "ambiguous",
+  "score": 0.52,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/w2VbLPROC36BO0DA0wBgyY/Doodlebug?node-id=13805-73490&m=dev",
+  "figmaNodeId": "13805:73491",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-fd400633-ms3tari3",
+  "miloTargetPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-fd400633-ms3tari3/libs/c2/blocks/forge-keep-the-momentum-going",
+  "miloBranch": "forge/session-fd400633-333",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/figma-fd4006?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}
