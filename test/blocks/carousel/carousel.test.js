@@ -626,3 +626,164 @@ describe('carousel disable-buttons deferred heights on desktop', () => {
     });
   });
 });
+
+/**
+ * carousel.js doesn't load carousel.css, so slides have no real flex/order
+ * layout in this environment. getBoundingClientRect and video playback state
+ * are stubbed directly to exercise the visibility-ratio pause logic
+ * deterministically, the same way img dimensions are stubbed above.
+ */
+function stubPlayingVideo(video, { playedLength = 1, paused = false } = {}) {
+  let isPaused = paused;
+  Object.defineProperty(video, 'played', { configurable: true, get: () => ({ length: playedLength }) });
+  Object.defineProperty(video, 'paused', { configurable: true, get: () => isPaused });
+  video.pause = () => { isPaused = true; };
+  return video;
+}
+
+function stubRect(el, { left = 0, right = 0, top = 0, bottom = 0 }) {
+  el.getBoundingClientRect = () => ({
+    left, right, top, bottom, width: right - left, height: bottom - top,
+  });
+}
+
+const WRAPPER_RECT = { left: 0, right: 100, top: 0, bottom: 100 };
+
+// Waits past moveSlides' TRANSITION_FALLBACK_MS (700ms); no carousel.css means
+// the slide track's transitionend never fires, so every move settles via the
+// fallback timer rather than the real transition.
+async function waitForMoveSettle() {
+  await new Promise((resolve) => { setTimeout(resolve, 800); });
+}
+
+describe('carousel video pause on navigation (visibility ratio)', () => {
+  let fixtureRoot;
+
+  beforeEach(() => {
+    const html = multiSectionCarouselFixture({
+      carouselClass: 'visibility-isolated',
+      blockTitle: 'Visibility isolated',
+      companions: [
+        { h2: 'V1', body: '<video></video>' },
+        { h2: 'V2', body: '<video></video>' },
+      ],
+    });
+    fixtureRoot = appendCarouselFixture(html);
+    init(fixtureRoot.querySelector('.carousel'));
+  });
+
+  afterEach(() => {
+    fixtureRoot?.remove();
+  });
+
+  it('pauses a playing video once it drops below the visibility threshold after navigating away', async () => {
+    const el = fixtureRoot.querySelector('.visibility-isolated');
+    const wrapper = el.querySelector('.carousel-wrapper');
+    const slides = el.querySelectorAll('.carousel-slide');
+    const outgoingVideo = stubPlayingVideo(slides[0].querySelector('video'));
+
+    stubRect(wrapper, WRAPPER_RECT);
+    // Fully outside the wrapper's [0, 100] bounds: 0% overlap.
+    stubRect(outgoingVideo, { left: 200, right: 300, top: 0, bottom: 100 });
+
+    el.querySelector('.carousel-next').click();
+    await waitForMoveSettle();
+
+    expect(outgoingVideo.paused).to.be.true;
+  });
+
+  it('keeps a playing video unpaused when it still meets the visibility threshold', async () => {
+    const el = fixtureRoot.querySelector('.visibility-isolated');
+    const wrapper = el.querySelector('.carousel-wrapper');
+    const slides = el.querySelectorAll('.carousel-slide');
+    const outgoingVideo = stubPlayingVideo(slides[0].querySelector('video'));
+
+    stubRect(wrapper, WRAPPER_RECT);
+    // 70% of the video's own 100x100 area overlaps the wrapper.
+    stubRect(outgoingVideo, { left: 30, right: 130, top: 0, bottom: 100 });
+
+    el.querySelector('.carousel-next').click();
+    await waitForMoveSettle();
+
+    expect(outgoingVideo.paused).to.be.false;
+  });
+
+  it('pauses a video sitting just under the majority-visibility threshold', async () => {
+    const el = fixtureRoot.querySelector('.visibility-isolated');
+    const wrapper = el.querySelector('.carousel-wrapper');
+    const slides = el.querySelectorAll('.carousel-slide');
+    const outgoingVideo = stubPlayingVideo(slides[0].querySelector('video'));
+
+    stubRect(wrapper, WRAPPER_RECT);
+    // 40% overlap: below the 0.5 threshold, should pause.
+    stubRect(outgoingVideo, { left: 60, right: 160, top: 0, bottom: 100 });
+
+    el.querySelector('.carousel-next').click();
+    await waitForMoveSettle();
+
+    expect(outgoingVideo.paused).to.be.true;
+  });
+
+  it('does not touch a video that was never played', async () => {
+    const el = fixtureRoot.querySelector('.visibility-isolated');
+    const wrapper = el.querySelector('.carousel-wrapper');
+    const slides = el.querySelectorAll('.carousel-slide');
+    const outgoingVideo = stubPlayingVideo(slides[0].querySelector('video'), { playedLength: 0 });
+    let pauseCalled = false;
+    outgoingVideo.pause = () => { pauseCalled = true; };
+
+    stubRect(wrapper, WRAPPER_RECT);
+    stubRect(outgoingVideo, { left: 200, right: 300, top: 0, bottom: 100 });
+
+    el.querySelector('.carousel-next').click();
+    await waitForMoveSettle();
+
+    expect(pauseCalled).to.be.false;
+  });
+});
+
+describe('carousel video pause at disable-circular-nav boundary', () => {
+  let fixtureRoot;
+
+  beforeEach(() => {
+    const html = multiSectionCarouselFixture({
+      carouselClass: 'disable-circular-nav boundary-video-isolated',
+      blockTitle: 'Boundary video isolated',
+      companions: [
+        { h2: 'B1' },
+        { h2: 'B2', body: '<video></video>' },
+      ],
+    });
+    fixtureRoot = appendCarouselFixture(html);
+    init(fixtureRoot.querySelector('.carousel'));
+  });
+
+  afterEach(() => {
+    fixtureRoot?.remove();
+  });
+
+  it('pauses an out-of-view playing video even when next is a blocked no-op at the boundary', () => {
+    const el = fixtureRoot.querySelector('.boundary-video-isolated');
+    const wrapper = el.querySelector('.carousel-wrapper');
+    const slides = el.querySelectorAll('.carousel-slide');
+    const next = el.querySelector('.carousel-next');
+
+    // Move to the last slide first; this is a real move, not the blocked boundary case.
+    next.click();
+    expect(slides[1].classList.contains('active')).to.be.true;
+    expect(next.disabled).to.be.true;
+
+    const video = stubPlayingVideo(slides[1].querySelector('video'));
+    stubRect(wrapper, WRAPPER_RECT);
+    stubRect(video, { left: 200, right: 300, top: 0, bottom: 100 });
+
+    // next is disabled, so a real .click() is suppressed by the browser
+    // before it ever reaches the listener. dispatchEvent bypasses that,
+    // invoking moveSlides directly so it takes the early-return boundary
+    // path - this is what carousel.js's disable-circular-nav check calls
+    // pauseVideosOutOfView from, with no transition to wait for.
+    next.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    expect(video.paused).to.be.true;
+  });
+});
