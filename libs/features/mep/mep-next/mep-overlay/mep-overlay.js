@@ -416,7 +416,7 @@ function checkAuthAndBuild(pageId) {
     await Promise.all(cards.map((c) => c.ready).filter(Boolean));
     setDefaultValues();
     setPreviewButton();
-  }, { envs: ['prod'] });
+  });
 }
 
 function buildDrawer(gnavOffset, pageId) {

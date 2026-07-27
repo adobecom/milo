@@ -1,11 +1,10 @@
 import { getConfig } from '../../utils/utils.js';
 
 /*
- * Detects Sidekick login via the admin API (GET admin.hlx.page/status/…; the
- * extension injects the auth token and a `profile` in the response means
- * authed) rather than scraping the extension's shadow DOM, which broke on
- * Sidekick UI changes. Auth stays orthogonal to the adobe.com session, so
- * logged-out pages can still be previewed.
+ * Detects Sidekick login via the admin API: GET admin.hlx.page/status/… — the
+ * extension injects the auth token, and a `profile` in the response means
+ * authed. Auth stays orthogonal to the adobe.com session, so logged-out pages
+ * can still be previewed.
  */
 
 const ADMIN = 'https://admin.hlx.page';
@@ -81,13 +80,20 @@ function watchSidekick(onChange) {
   timeoutId = setTimeout(() => observer.disconnect(), WATCH_TIMEOUT_MS);
 }
 
+// Gate on real prod hosts (host-keyed via prodDomains, so ?env=stage can't turn
+// it off on prod) or when the resolved env is prod (covers ?env=prod for testing
+// on preview hosts). Off these, the drawer is ungated.
+function shouldGate() {
+  const { prodDomains, env } = getConfig();
+  return !!prodDomains?.includes(window.location.hostname) || env?.name === 'prod';
+}
+
 /*
- * Drop-in for the old shadow-DOM watcher. Non-prod envs bypass the gate. The
- * callback fires with the initial verdict and again on any auth-state change.
+ * Off the gated hosts the callback fires true (ungated). Otherwise it fires with
+ * the initial verdict and again on any Sidekick auth-state change.
  */
-export function onSidekickAuth(callback, { envs = ['prod'] } = {}) {
-  const envName = getConfig().env?.name;
-  if (!envs.includes(envName)) {
+export function onSidekickAuth(callback) {
+  if (!shouldGate()) {
     callback(true);
     return;
   }

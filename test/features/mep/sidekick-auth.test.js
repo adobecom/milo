@@ -64,11 +64,21 @@ describe('sidekick-auth (/status)', () => {
     // > sum of RETRY_DELAYS_MS (300 + 900) — long enough for the retry to exhaust.
     const RETRY_WINDOW = 1500;
 
-    it('bypasses the gate in non-prod envs', () => {
+    it('bypasses the gate off prod hosts / non-prod env', () => {
       setConfig({ env: { name: 'stage' } });
       const cb = sinon.spy();
       onSidekickAuth(cb);
       expect(cb.calledOnceWith(true)).to.be.true;
+    });
+
+    it('gates on a prod host even when env is overridden to stage (no bypass)', async () => {
+      // host-keyed: ?env=stage on a real prod host must NOT disable the gate
+      setConfig({ env: { name: 'stage' }, prodDomains: [window.location.hostname] });
+      const cb = sinon.spy();
+      onSidekickAuth(cb); // no Sidekick mounted → resolves unauthed, i.e. gated
+      await wait(50);
+      expect(cb.calledWith(false)).to.be.true;
+      expect(cb.calledWith(true)).to.be.false;
     });
 
     it('calls back true on the first attempt when the Sidekick is authed', async () => {
