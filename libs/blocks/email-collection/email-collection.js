@@ -16,7 +16,7 @@ import {
   isUserGuest,
   validateImsToken,
   FORM_FIELDS,
-  removePhoneNumberFormat,
+  normalizePhoneNumber,
   getPhoneFieldConfig,
   validatePhoneNumber,
 } from './utils.js';
@@ -100,8 +100,7 @@ async function formatPhoneNumber(input) {
   if (!input) return;
   const config = getPhoneFieldConfig();
   if (!config) return;
-  const { code, format: formatNumber } = config;
-  input.value = input.value.replace(code, '');
+  const { format: formatNumber } = config;
   const form = input.closest('form');
   const { placeholders } = await getFormData('config');
   const isInvalid = showInputError(form, input, placeholders);
@@ -356,7 +355,7 @@ async function submitForm(form) {
     const { country: profileCountry, userId: guid } = await getIMSProfile();
 
     const phoneNumberObject = phoneNumberField && phoneNumber ? {
-      phoneNumber: removePhoneNumberFormat(phoneNumber),
+      phoneNumber: normalizePhoneNumber(phoneNumber),
       phoneCountryCode: getPhoneFieldConfig().code.replace('+', ''),
     } : {};
 
