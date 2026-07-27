@@ -1,0 +1,251 @@
+<section data-binding-source="judge" data-binding-variants="hero" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="10559:113745" data-block="rich-content">
+  <style>
+    [data-figma-node-id="10559:113745"] {
+      width: 100%;
+      min-height: 1176px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, #000000 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .rch-wrap {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 120px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+    .rch-lockup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .rch-top-pad {
+      height: 160px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .rch-text-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .rch-label {
+      font-family: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .rch-heading {
+      font-family: 'Adobe Clean Display', 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      color: #ffffff;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .rch-desc {
+      font-family: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 24px;
+      text-align: center;
+      color: #ffffff;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .rch-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .rch-price {
+      font-family: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 19px;
+      letter-spacing: -0.16px;
+      text-align: center;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    .rch-btn-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      flex-wrap: wrap;
+    }
+    .rch-btn-primary {
+      display: inline-flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      outline: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity 0.15s ease;
+    }
+    .rch-btn-primary:hover { opacity: 0.88; }
+    .rch-btn-primary-label {
+      font-family: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      color: #000000;
+      white-space: nowrap;
+    }
+    .rch-btn-outline {
+      display: inline-flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      border: 1px solid #ffffff;
+      box-sizing: border-box;
+      cursor: pointer;
+      text-decoration: none;
+      background: transparent;
+      outline: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background-color 0.15s ease;
+    }
+    .rch-btn-outline:hover { background-color: rgba(255,255,255,0.08); }
+    .rch-btn-outline-label {
+      font-family: 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      color: #ffffff;
+      white-space: nowrap;
+    }
+    .rch-btn-icon {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      display: block;
+      object-fit: contain;
+      background-color: transparent;
+    }
+    @media (max-width: 1024px) {
+      .rch-wrap {
+        padding: 0 48px;
+      }
+      .rch-top-pad {
+        height: 100px;
+      }
+      .rch-heading {
+        font-size: 44px;
+        line-height: 48px;
+        letter-spacing: -1.2px;
+      }
+      .rch-desc {
+        font-size: 18px;
+        line-height: 22px;
+      }
+    }
+    @media (max-width: 768px) {
+      .rch-wrap {
+        padding: 0 24px;
+      }
+      .rch-top-pad {
+        height: 64px;
+      }
+      .rch-heading {
+        font-size: 32px;
+        line-height: 36px;
+        letter-spacing: -0.8px;
+      }
+      .rch-desc {
+        font-size: 16px;
+        line-height: 20px;
+      }
+      .rch-price {
+        font-size: 15px;
+      }
+      .rch-btn-row {
+        flex-direction: column;
+        align-items: center;
+      }
+      .rch-btn-primary,
+      .rch-btn-outline {
+        width: auto;
+        min-width: 180px;
+        justify-content: center;
+      }
+    }
+  </style>
+
+  <div class="rch-wrap">
+    <div class="rch-lockup">
+      <!-- top spacing (xl = 160px) -->
+      <div class="rch-top-pad" aria-hidden="true"></div>
+
+      <!-- headline copy -->
+      <div class="rch-text-group">
+        <p class="rch-label">Acrobat Studio</p>
+        <h1 class="rch-heading">Get Acrobat Studio today.</h1>
+        <p class="rch-desc">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- pricing + CTAs -->
+      <div class="rch-cta-group">
+        <p class="rch-price">US$24.99/mo annual, billed monthly</p>
+
+        <div class="rch-btn-row">
+          <!-- Free Trial — primary, white fill -->
+          <a href="#" class="rch-btn-primary" data-figma-node-id="10559:113764" role="button">
+            <img src="media_section-3-s2iconcircle20n.png" alt="" class="rch-btn-icon" loading="lazy" aria-hidden="true" />
+            <span class="rch-btn-primary-label">Free Trial</span>
+            <img src="media_section-3-s2arrow.png" alt="" class="rch-btn-icon" loading="lazy" aria-hidden="true" />
+          </a>
+
+          <!-- Compare Plans — ghost / outline -->
+          <a href="#" class="rch-btn-outline" data-figma-node-id="10559:113765" role="button">
+            <img src="media_section-3-s2icondownload20n.png" alt="" class="rch-btn-icon" loading="lazy" aria-hidden="true" />
+            <span class="rch-btn-outline-label">Compare Plans</span>
+            <img src="media_section-3-functional.png" alt="" class="rch-btn-icon" loading="lazy" aria-hidden="true" />
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
