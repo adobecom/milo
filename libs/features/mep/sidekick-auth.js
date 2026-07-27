@@ -1,32 +1,22 @@
 import { getConfig } from '../../utils/utils.js';
 
 /*
- * Detects whether the AEM Sidekick is present and logged in — WITHOUT scraping
- * the extension's internal shadow DOM (the old approach probed nested
- * `plugin-action-bar` → `env-switcher` shadow roots, which silently broke on
- * every Sidekick UI refactor).
- *
- * Instead we ask the AEM admin API directly:
- *   GET admin.hlx.page/status/{owner}/{repo}/{ref}{path}
- * The Sidekick extension injects its auth token onto that request via
- * declarativeNetRequest; the response carries a `profile` when authed. This is
- * a documented endpoint, and the call is re-queryable (unlike the one-shot
- * `status-fetched` event, which you miss if you subscribe too late).
- *
- * Verified page-initiated GETs receive the injected token + a readable profile
- * (tools/sk-status-probe). Auth stays orthogonal to the adobe.com session — the
- * token lives in the extension, never touching the page's IMS/gnav state, so
- * logged-out preview still works.
- *
- * Sidekick auth events are used only as a re-check TRIGGER (we re-derive truth
- * from the GET), so login-after-load and logout are handled without depending
- * on catching a one-shot event payload.
+ * Detects Sidekick login via the admin API (GET admin.hlx.page/status/…; the
+ * extension injects the auth token and a `profile` in the response means
+ * authed) rather than scraping the extension's shadow DOM, which broke on
+ * Sidekick UI changes. Auth stays orthogonal to the adobe.com session, so
+ * logged-out pages can still be previewed.
  */
 
 const ADMIN = 'https://admin.hlx.page';
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';
 const AUTH_EVENTS = ['logged-in', 'logged-out', 'status-fetched'];
 const WATCH_TIMEOUT_MS = 5 * 60 * 1000;
+// Bounded backoff for extra checks while unauthed (never polls) — rides out the
+// extension not having registered its request rules yet.
+const RETRY_DELAYS_MS = [300, 900];
+
+const wait = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
 
 function getSidekick() {
   return document.querySelector(SIDEKICK_SELECTOR);
@@ -43,8 +33,7 @@ function projectFromHost() {
   return { owner, repo, ref };
 }
 
-// Off aem hosts (e.g. adobe.com) read the project from the Sidekick's public
-// config — NOT its internal shadow DOM.
+// Off aem hosts (adobe.com), the project comes from the Sidekick's public config.
 function projectFromSidekick() {
   const sk = getSidekick();
   const cfg = sk?.config || sk?.appStore?.siteStore || sk?.appStore?.status?.config;
@@ -93,9 +82,8 @@ function watchSidekick(onChange) {
 }
 
 /*
- * Drop-in replacement for the old shadow-DOM watcher. Non-prod envs bypass the
- * gate (dev convenience). The callback fires with the initial verdict and again
- * whenever the Sidekick auth state changes.
+ * Drop-in for the old shadow-DOM watcher. Non-prod envs bypass the gate. The
+ * callback fires with the initial verdict and again on any auth-state change.
  */
 export function onSidekickAuth(callback, { envs = ['prod'] } = {}) {
   const envName = getConfig().env?.name;
@@ -104,15 +92,26 @@ export function onSidekickAuth(callback, { envs = ['prod'] } = {}) {
     return;
   }
 
-  let last;
-  const emit = (authed) => {
-    if (authed === last) return;
-    last = authed;
-    callback(authed);
+  let authed;
+  const set = (value) => {
+    if (value === authed) return;
+    authed = value;
+    callback(value);
   };
 
-  const check = async () => { emit(await isSidekickAuthed()); };
+  (async () => {
+    if (await isSidekickAuthed()) { set(true); return; }
+    // No project → nothing to wait for; watchSidekick still catches a late mount.
+    if (!getProject()) { set(false); return; }
+    for (let i = 0; i < RETRY_DELAYS_MS.length; i += 1) {
+      if (authed === true) return; // an auth event already resolved us
+      // eslint-disable-next-line no-await-in-loop
+      await wait(RETRY_DELAYS_MS[i]);
+      // eslint-disable-next-line no-await-in-loop
+      if (await isSidekickAuthed()) { set(true); return; }
+    }
+    if (authed !== true) set(false);
+  })();
 
-  check();
-  watchSidekick(check);
+  watchSidekick(async () => { set(await isSidekickAuthed()); });
 }

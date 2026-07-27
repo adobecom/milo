@@ -61,6 +61,9 @@ describe('sidekick-auth (/status)', () => {
   });
 
   describe('onSidekickAuth', () => {
+    // > sum of RETRY_DELAYS_MS (300 + 900) — long enough for the retry to exhaust.
+    const RETRY_WINDOW = 1500;
+
     it('bypasses the gate in non-prod envs', () => {
       setConfig({ env: { name: 'stage' } });
       const cb = sinon.spy();
@@ -68,40 +71,62 @@ describe('sidekick-auth (/status)', () => {
       expect(cb.calledOnceWith(true)).to.be.true;
     });
 
-    it('calls back true in prod when the Sidekick is authed', async () => {
+    it('calls back true on the first attempt when the Sidekick is authed', async () => {
       setConfig({ env: { name: 'prod' } });
       mountSidekick();
       stubStatus({ authed: true });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      await wait(0);
+      await wait(50);
       expect(cb.calledWith(true)).to.be.true;
+      // authed on attempt 1 → no false ever emitted
+      expect(cb.calledWith(false)).to.be.false;
     });
 
-    it('calls back false in prod when not authed', async () => {
+    it('emits false only after the bounded retry is exhausted', async () => {
       setConfig({ env: { name: 'prod' } });
       mountSidekick();
       stubStatus({ authed: false });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      await wait(0);
+      // retry window still open — no verdict yet
+      await wait(50);
+      expect(cb.calledWith(false)).to.be.false;
+      // after the window elapses, resolves false
+      await wait(RETRY_WINDOW);
       expect(cb.calledWith(false)).to.be.true;
     });
 
-    it('re-checks and flips to true when the Sidekick logs in after load', async () => {
+    it('retries and resolves true when a later attempt authes (no false flash)', async () => {
+      setConfig({ env: { name: 'prod' } });
+      mountSidekick();
+      let calls = 0;
+      sinon.stub(window, 'fetch').callsFake(async (url) => {
+        if (!String(url).includes('/status/')) return { ok: false, status: 404, json: async () => ({}) };
+        calls += 1;
+        if (calls >= 2) return { ok: true, json: async () => ({ profile: { email: 'author@adobe.com' } }) };
+        return { ok: false, status: 401, json: async () => ({}) };
+      });
+      const cb = sinon.spy();
+      onSidekickAuth(cb);
+      await wait(RETRY_WINDOW);
+      expect(cb.calledWith(true)).to.be.true;
+      expect(cb.calledWith(false)).to.be.false;
+    });
+
+    it('flips to true when the Sidekick logs in after an unauthed load', async () => {
       setConfig({ env: { name: 'prod' } });
       const sk = mountSidekick();
       const fetchStub = stubStatus({ authed: false });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      await wait(0);
-      expect(cb.calledWith(false)).to.be.true;
+      await wait(50);
 
       // user logs into the Sidekick — /status now returns a profile
       fetchStub.restore();
       stubStatus({ authed: true });
       sk.dispatchEvent(new CustomEvent('logged-in'));
-      await wait(0);
+      await wait(50);
       expect(cb.calledWith(true)).to.be.true;
     });
 
@@ -111,9 +136,9 @@ describe('sidekick-auth (/status)', () => {
       stubStatus({ authed: true });
       const cb = sinon.spy();
       onSidekickAuth(cb);
-      await wait(0);
+      await wait(50);
       sk.dispatchEvent(new CustomEvent('status-fetched'));
-      await wait(0);
+      await wait(50);
       expect(cb.callCount).to.equal(1);
     });
   });
