@@ -566,6 +566,7 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
   const allowKrTrialHash = '#_allow-kr-trial';
   const hasAllowKrTrial = link.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
+    link.setAttribute('data-allow-kr-free-trial', 'true');
     link.href = link.href.replace(allowKrTrialHash, '');
     const modalHash = link.getAttribute('data-modal-hash');
     if (modalHash) link.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
@@ -581,15 +582,14 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
   const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
-  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
-      || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
-         .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  if (link.dataset.wcsOsi) {
-    link.dataset.hideKrFreeTrial = 'true';
+  const hasAllowAttribute = link.getAttribute('data-allow-kr-free-trial') === 'true';
+  if (hasAllowKrTrialMeta
+    || hasAllowAttribute
+    || shouldAllowKrTrial(link, localePrefix)
+    || localePrefix !== '/kr'
+    || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
+        .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
@@ -677,14 +677,14 @@ function isLocalizedPath(path, locales) {
     || legacyLocalePath;
 }
 
-function processQueryIndexMap(link, domain) {
+function processQueryIndexMap(link, domain, fetchOptions = {}) {
   const result = {
     pathsRequest: null,
     requestResolved: false,
     domains: [domain],
   };
 
-  result.pathsRequest = fetch(`${link}?limit=30000`)
+  result.pathsRequest = fetch(`${link}?limit=30000`, fetchOptions)
     .then((response) => response.json())
     .then((json) => json.data?.map((d) => (d.path ?? d.Path)?.replace(/\.html$/, '')) ?? [])
     .catch((error) => {
@@ -744,12 +744,16 @@ async function loadQueryIndexes(prefix, links = []) {
   const host = window.location.hostname;
   const indexUrl = (pfx, sfx = suffix) => `${origin}${pfx}${contentRoot}/assets/lingo/query-index${sfx}.json`;
 
-  queryIndexes[siteId] = processQueryIndexMap(indexUrl(prefix), host);
+  const primaryUrl = indexUrl(prefix);
+  queryIndexes[siteId] = processQueryIndexMap(primaryUrl, host);
 
   const { base: localeBase, prefix: localePrefix } = config.locale;
   let basePfx = localePrefix ?? '';
   if (localeBase !== undefined) basePfx = localeBase ? `/${localeBase}` : '';
-  baseQueryIndex = processQueryIndexMap(indexUrl(basePfx, ''), host);
+  const baseUrl = indexUrl(basePfx, '');
+  baseQueryIndex = primaryUrl === baseUrl
+    ? queryIndexes[siteId]
+    : processQueryIndexMap(baseUrl, host);
 
   Promise.all([queryIndexes[siteId]?.pathsRequest, baseQueryIndex?.pathsRequest].filter(Boolean))
     .then(() => window.dispatchEvent(new CustomEvent(MILO_EVENTS.QUERY_INDEX_PRIMARY_LOADED)));
@@ -771,23 +775,37 @@ async function loadQueryIndexes(prefix, links = []) {
         });
       }
 
-      siteQueryIndexMapLingo
+      const crossSiteEntries = siteQueryIndexMapLingo
         .filter((d) => d.uniqueSiteId !== siteId
           && config.prodDomains?.includes(getDomainLingo(d.queryIndexWebPath)))
-        .forEach(({ uniqueSiteId: uid, queryIndexWebPath, stageHost }) => {
-          const hasRegional = localesData
-            .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix));
-          if (!hasRegional) return;
-          const prodDomain = getDomainLingo(queryIndexWebPath);
-          const { url, host: envHost } = resolveCrossSiteIndex(
-            { queryIndexWebPath, stageHost },
-            prefix,
-            suffix,
-            window.location.hostname,
-          );
-          queryIndexes[uid] = processQueryIndexMap(url, prodDomain);
-          if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
-        });
+        .filter(({ uniqueSiteId: uid }) => localesData
+          .some((s) => s.uniqueSiteId === uid && parseList(s.regionalSites).includes(prefix)));
+
+      const startCrossSiteIndex = (entry, fetchOptions = {}) => {
+        const { uniqueSiteId: uid, queryIndexWebPath, stageHost } = entry;
+        const prodDomain = getDomainLingo(queryIndexWebPath);
+        const { url, host: envHost } = resolveCrossSiteIndex(
+          { queryIndexWebPath, stageHost },
+          prefix,
+          suffix,
+          window.location.hostname,
+        );
+        queryIndexes[uid] = processQueryIndexMap(url, prodDomain, fetchOptions);
+        if (envHost !== prodDomain) queryIndexes[uid].domains.push(envHost);
+      };
+
+      const priorityEntries = crossSiteEntries.filter((d) => d.fetchPriority === 'yes');
+      priorityEntries.forEach((d) => startCrossSiteIndex(d));
+
+      await Promise.all([
+        queryIndexes[siteId]?.pathsRequest,
+        baseQueryIndex?.pathsRequest,
+        ...priorityEntries.map((d) => queryIndexes[d.uniqueSiteId]?.pathsRequest),
+      ].filter(Boolean));
+
+      crossSiteEntries
+        .filter((d) => d.fetchPriority !== 'yes')
+        .forEach((d) => startCrossSiteIndex(d, { priority: 'low' }));
     } catch (e) {
       window.lana?.log(`Failed to load lingo-site-mapping.json: ${e}`, { tags: 'utils', severity: 'error' });
     } finally {
@@ -964,12 +982,13 @@ function setCountry() {
   sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
-export async function getCountry(skipFallback = false) {
+export async function getCountry(skipFallback = false, searchParams = PAGE_URL.searchParams) {
   if (isBot()) return null;
 
-  const rawAkamai = PAGE_URL.searchParams.get('akamaiLocale');
-  const akamaiLocale = /^[a-zA-Z]{2,6}$/.test(rawAkamai) ? rawAkamai : null;
-  const country = akamaiLocale || sessionStorage.getItem('akamai');
+  const validate = (v) => (typeof v === 'string' && /^[a-zA-Z]{2,6}$/.test(v) ? v : null);
+  const country = validate(searchParams.get('country'))
+    || validate(searchParams.get('akamaiLocale'))
+    || sessionStorage.getItem('akamai');
   if (country || skipFallback) return country?.toLowerCase();
 
   try {
@@ -1003,20 +1022,11 @@ export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
   const countryFromGeo = await getCountry();
-  let detectedMarket = computeDetectedMarketCountry(
+  return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
   );
-  if (!detectedMarket) {
-    try {
-      const { default: getAkamaiCode } = await import('./geo.js');
-      detectedMarket = normCountryCode(await getAkamaiCode());
-    } catch (error) {
-      window.lana?.log(`Error getting Akamai code: ${error}`, { severity: 'error' });
-    }
-  }
-  return detectedMarket;
 }
 
 export async function getLingoRegion({ useGeoLocation = false } = {}) {
@@ -1026,11 +1036,6 @@ export async function getLingoRegion({ useGeoLocation = false } = {}) {
   const { regions } = locale || {};
 
   if (!regions || !Object.keys(regions).length) return null;
-
-  if (useGeoLocation) {
-    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
-    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
-  }
 
   const country = useGeoLocation
     ? normCountryCode(await getCountry())
@@ -1164,7 +1169,10 @@ export function localizeLink(
 export function loadLink(href, {
   id, as, callback, crossorigin, rel, fetchpriority,
 } = {}) {
-  let link = document.head.querySelector(`link[href="${href}"]`);
+  const selector = rel === 'stylesheet'
+    ? `link[href="${href}"][rel="stylesheet"]`
+    : `link[href="${href}"]`;
+  let link = document.head.querySelector(selector);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
@@ -2156,7 +2164,11 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo || mepMarketingDecrease)) return;
 
-  loadLink(`${getConfig().base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  const { base } = getConfig();
+  loadLink(`${base}/martech/helpers.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  loadLink(`${base}/features/personalization/personalization.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  loadLink(`${base}/utils/sanitizeHtml.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  if (promo) loadLink(`${base}/features/personalization/promo-utils.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
 
   const promises = loadMepAddons();
   const akamaiCode = getMepEnablement('akamaiLocale') || await getCountry(true);
@@ -2301,21 +2313,24 @@ async function loadPostLCP(config) {
       new Promise((resolve) => { loadStyle(`${config.base}/deps/lenis.min.css`, resolve); }),
       loadScript(`${config.base}/deps/lenis.min.js`),
     ]);
-    const lerp = parseFloat(PAGE_URL.searchParams.get('inertialFactor')) || 0.08;
+    const lerp = 0.06;
     const fsThreshold = 110;
     const fsFactor = 0.11;
     const fsDelay = 700;
     const lenisPreventSelectors = [
       '.dialog-modal',
       '.ot-sdk-container',
-      '.global-navigation',
       'div[data-testid="main-content-area"]',
     ];
     window.lenis = new window.Lenis({
       autoRaf: true,
       lerp,
+      wheelMultiplier: 0.7,
       prevent: (node) => node.matches?.(lenisPreventSelectors.join(', ')),
     });
+    if (document.querySelector('.modal-curtain.is-open')) {
+      window.lenis.stop();
+    }
     // Reduce inertia during fast scrolling to avoid sustained RAF CPU usage
     let fsScrollTimer;
     window.addEventListener('wheel', (e) => {
@@ -2325,6 +2340,7 @@ async function loadPostLCP(config) {
         fsScrollTimer = setTimeout(() => { window.lenis.options.lerp = lerp; }, fsDelay);
       }
     }, { passive: true });
+
     if (!CSS.supports('animation-timeline: view()')
       && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       import('../c2/scroll-animations.js').then(({ default: initScrollAnimations }) => initScrollAnimations());
@@ -2673,13 +2689,56 @@ export function partition(arr, fn) {
   );
 }
 
+function getMasDepUrl(component) {
+  const { hostname } = window.location;
+  if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
+
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs')?.trim().toLowerCase();
+  if (masLibs) {
+    let baseUrl;
+    if (masLibs === 'local') baseUrl = 'http://localhost:3000';
+    else if (masLibs === 'main') baseUrl = 'https://main--mas--adobecom.aem.live';
+    else {
+      const branch = masLibs.includes('--') ? masLibs : `${masLibs}--mas--adobecom`;
+      baseUrl = `https://${branch}.aem.live`;
+    }
+    return `${baseUrl}/web-components/dist/${component}`;
+  }
+
+  return `https://main--mas--adobecom.aem.live/web-components/dist/${component}`;
+}
+
+const STATIC_BLOCK_DEPS = {
+  'merch-card-autoblock': [
+    getMasDepUrl('lit-all.min.js'),
+    getMasDepUrl('merch-card.js'),
+    getMasDepUrl('merch-quantity-select.js'),
+    getMasDepUrl('mas-field.js'),
+  ],
+  merch: [
+    getMasDepUrl('commerce.js'),
+  ],
+};
+
+const blockDeps = new Map(Object.entries(STATIC_BLOCK_DEPS));
+
+export function registerBlockDeps(blockName, ...deps) {
+  blockDeps.set(blockName, deps);
+}
+
 const preloadBlockResources = (blocks = []) => blocks.map((block) => {
   if (block.classList.contains('hide-block')) return null;
   const { blockPath, hasStyles, name } = getBlockData(block);
   if (['marquee', 'hero-marquee'].includes(name)) {
-    loadLink(`${getConfig().base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    const { base } = getConfig();
+    loadLink(`${base}/utils/decorate.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+    loadLink(`${base}/styles/iconography.css`, { rel: 'preload', as: 'style' });
+    loadLink(`${base}/styles/breakpoint-theme.css`, { rel: 'preload', as: 'style' });
   }
   loadLink(`${blockPath}.js`, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  (blockDeps.get(name) ?? []).forEach((dep) => {
+    if (typeof dep === 'string') loadLink(dep, { rel: 'preload', as: 'script', crossorigin: 'anonymous' });
+  });
   return hasStyles && new Promise((resolve) => { loadStyle(`${blockPath}.css`, resolve); });
 }).filter(Boolean);
 
@@ -2771,15 +2830,19 @@ export async function loadArea(area = document) {
     await loadLanguageConfig();
   }
 
+  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
+  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
+
+  if (area.querySelector('a[href*="/fragments/"], a[data-mep-lingo-section-swap], a[data-mep-lingo-block-swap], a[href*="#_inline"]')) {
+    loadLink(`${config.base}/blocks/fragment/fragment.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
+  }
+
+  if (isLingoActive) loadLingoIndexes(area);
+
   if (isDoc) {
     await decorateDocumentExtras();
     initModalEventListener();
   }
-
-  const htmlSections = [...area.querySelectorAll(isDoc ? 'body > main > div' : ':scope > div')];
-  htmlSections.forEach((section) => { section.className = 'section'; section.dataset.status = 'pending'; });
-
-  if (isLingoActive) loadLingoIndexes(area);
 
   const areaBlocks = [];
   let lcpSectionId = null;

@@ -1,4 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { createTag } from '../../../utils/utils.js';
 import { STATUS } from '../checks/constants.js';
 import { getPreflightResults } from '../checks/preflightApi.js';
 import { isViewportTooSmall } from '../checks/assets.js';
@@ -64,48 +65,95 @@ function AssetsItem({ title, description }) {
 /**
  * Component to display a group of assets.
  */
+function clearAssetHighlight() {
+  document.querySelectorAll('.preflight-asset-highlight')
+    .forEach((n) => n.classList.remove('preflight-asset-highlight'));
+}
+
+// Fixed popover at the top-left of the screen, so the user can hop straight
+// back to preflight (which reopens on the same tab) or dismiss it.
+function showReturnPopover() {
+  document.querySelector('.preflight-return-popover')?.remove();
+
+  const label = createTag('span', { class: 'preflight-return-label' }, 'Reviewing asset on page');
+  const reopen = createTag('button', { class: 'preflight-return-reopen' }, 'Back to Preflight');
+  const dismiss = createTag('button', { class: 'preflight-return-dismiss' }, 'Dismiss');
+  const popover = createTag('div', { class: 'preflight-return-popover', role: 'dialog', 'aria-label': 'Asset review' }, [label, reopen, dismiss]);
+
+  const cleanup = () => { popover.remove(); clearAssetHighlight(); };
+  dismiss.addEventListener('click', cleanup);
+  reopen.addEventListener('click', () => {
+    cleanup();
+    document.querySelector('aem-sidekick, helix-sidekick')
+      ?.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
+  });
+
+  document.body.append(popover);
+}
+
+// Close the preflight modal and jump to the asset on the page.
+function goToAsset(el) {
+  if (!el) return;
+  document.getElementById('preflight')?.dispatchEvent(new CustomEvent('closeModal'));
+  requestAnimationFrame(() => {
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    clearAssetHighlight();
+    el.classList.add('preflight-asset-highlight');
+    showReturnPopover();
+  });
+}
+
+function AssetMetric({ label, value, recommended }) {
+  return html`
+    <div class="asset-metric${recommended ? ' is-recommended' : ''}">
+      <span class="asset-metric-label">${label}</span>
+      <span class="asset-metric-value">${value}</span>
+    </div>`;
+}
+
 function AssetGroup({ group }) {
-  const { title, assetArray } = group;
+  const { title, assetArray, empty } = group;
   const isCriticalGroup = title.includes('Critical');
+  const isWarningGroup = title.includes('Warning');
+  const headingClass = `grid-heading${isCriticalGroup ? ' is-critical' : ''}${isWarningGroup ? ' is-warning' : ''}`;
 
   return html`
-    <div class="grid-heading">
+    <div class="${headingClass}">
       <div class="grid-toggle">${title}</div>
     </div>
 
-    ${viewportTooSmall.value && html`
-      <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
-      </div>
-    `}
-
-    ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
+    ${assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
       ${assetArray.value.map((asset) => {
-    const isAboveFoldWithMismatch = isCriticalGroup;
-    const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
+    const itemClass = isCriticalGroup ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`
-      <div class='${itemClass}' title='${isAboveFoldWithMismatch ? 'Above-the-fold asset with critical dimension issues' : ''}'>
+      <div
+        class='${itemClass}'
+        role="button"
+        tabindex="0"
+        title='Go to this asset on the page'
+        onClick=${() => goToAsset(asset.asset)}
+        onKeyDown=${(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToAsset(asset.asset); } }}>
         ${asset.type === 'image' && html`<img src='${asset.src}' />`}
         ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
         ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
         <div class='assets-image-grid-item-text'>
-          <span>Factor: ${asset.roundedFactor}</span>
-          <span>Upload size: ${asset.naturalDimensions}</span>
-          <span>Display size: ${asset.displayDimensions}</span>
-          ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
-          <span>Type: ${asset.typeLabel}</span>
-          ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
-          ${isAboveFoldWithMismatch && html`<span class="above-fold-notice"><strong>⚠️ CRITICAL:</strong></span>`}
+          <${AssetMetric} label="Factor" value=${asset.roundedFactor} />
+          <${AssetMetric} label="Upload" value=${asset.naturalDimensions} />
+          <${AssetMetric} label="Display" value=${asset.displayDimensions} />
+          ${asset.hasMismatch && html`<${AssetMetric} label="Recommended" value=${asset.recommendedDimensions} recommended=${true} />`}
+          <${AssetMetric} label="Type" value=${asset.typeLabel} />
+          ${asset.notes && html`<p class="asset-note"><strong>Notes:</strong> ${asset.notes}</p>`}
+          ${isCriticalGroup && html`<span class="asset-critical-pill">⚠️ Critical</span>`}
         </div>
       </div>`;
   })}
     </div>`}
 
-    ${!viewportTooSmall.value && assetArray.value.length === 0 && html`
+    ${assetArray.value.length === 0 && html`
       <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>No assets found</div>
+        <div class='assets-image-grid-item full-width'>${empty || 'No assets found'}</div>
       </div>
     `}
   `;
@@ -139,10 +187,21 @@ export default function Assets() {
   }, []);
 
   const groups = [
-    { title: 'Critical Asset Issues (Above-the-fold)', assetArray: criticalAssetFailures },
-    { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures },
-    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch },
+    { title: 'Critical Asset Issues (Above-the-fold)', assetArray: criticalAssetFailures, empty: 'No critical asset issues.' },
+    { title: 'Warning Asset Issues (Below-the-fold)', assetArray: warningAssetFailures, empty: 'No warnings.' },
+    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch, empty: 'No matching assets found.' },
   ];
+
+  if (viewportTooSmall.value) {
+    return html`
+      <div class="assets-columns">
+        <${AssetsItem} ...${assetDimensionsResult.value} />
+        <div class='assets-image-grid'>
+          <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
+        </div>
+      </div>
+    `;
+  }
 
   return html`
     <div class="assets-columns">

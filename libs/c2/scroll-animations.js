@@ -395,50 +395,6 @@ function initCarouselC2() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-function initLineHeight() {
-  const initialized = new WeakSet();
-
-  const setup = (el) => {
-    if (initialized.has(el)) return;
-    initialized.add(el);
-    let childData = null;
-    let docTop = null;
-    let cachedHeight = el.offsetHeight;
-    new ResizeObserver(([entry]) => {
-      cachedHeight = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
-      docTop = null;
-    }).observe(el);
-
-    scrollTasks.push((scroll) => {
-      if (!cachedHeight) return;
-      if (docTop === null) docTop = getDocTop(el);
-      if (!childData || !el.contains(childData[0]?.child)) {
-        const nodes = [...el.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, span, a')];
-        if (!nodes.length) return;
-        childData = nodes.map((c) => {
-          const cs = getComputedStyle(c);
-          const fontSize = parseFloat(cs.fontSize) || 16;
-          const natural = parseFloat(cs.lineHeight) || fontSize * 1.5;
-          return { child: c, from: 3 * fontSize, to: natural };
-        });
-      }
-      const m = getScrollMetrics(scroll, cachedHeight, docTop);
-      const t = viewRange(m, 'entry', 0.1, 'cover', 0.4);
-      childData.forEach(({ child, from, to }) => {
-        child.style.setProperty('line-height', t < 1 ? `${lerp(from, to, t)}px` : null);
-      });
-    });
-    cleanupTasks.push(() => {
-      if (!childData) return;
-      childData.forEach(({ child }) => { child.style.setProperty('line-height', null); });
-    });
-  };
-
-  document.querySelectorAll('.parallax-line-height').forEach(setup);
-
-  observeForNew('.parallax-line-height', setup);
-}
-
 function initGarageDoorReveal() {
   const sections = findSectionsByStyle('parallax-garage-door-reveal');
   if (!sections.length) return;
@@ -561,7 +517,6 @@ function initGarageDoorReveal() {
 
 export default function init() {
   initMoveUpFast();
-  initLineHeight();
   initScaleDownGrid();
   initStagger();
   initElasticCarousel();

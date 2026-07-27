@@ -2,6 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { getLingoActive } from '../../../libs/utils/lingo-active.js';
+import caasTags from '../../../libs/blocks/caas-config/caas-tags.js';
 import {
   defaultState,
   getConfig,
@@ -405,6 +406,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -680,6 +682,7 @@ describe('getConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],
@@ -997,6 +1000,47 @@ describe('getCountryAndLang', () => {
     expect(config.collection).to.not.have.property('editorialOpenVariant');
   });
 
+  it('should include flexCard.showDateOnFooter in the config when enabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'flex-card',
+      flexCardShowDateOnFooter: true,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.flexCard).to.deep.equal({
+      imageOption: 'default',
+      textAlign: 'default',
+      textSize: 'default',
+      hideDetails: false,
+      hideTitle: false,
+      hideDescription: false,
+      showDateOnFooter: true,
+    });
+  });
+
+  it('shoold not show date on footer when flexCardShowDateOnFooter is disabled', async () => {
+    const state = {
+      ...defaultState,
+      cardStyle: 'flex-card',
+      flexCardShowDateOnFooter: false,
+    };
+    const config = await getConfig(state, strings);
+    expect(config.collection.flexCard.showDateOnFooter).to.be.false;
+  });
+
+  it('should populate products from getProducts when detailsTextOption is productName', async () => {
+    const state = { ...defaultState, detailsTextOption: 'productName' };
+    const config = await getConfig(state, strings);
+    expect(config.products).to.deep.equal(caasTags.namespaces.caas.tags.mnemonics.tags);
+    expect(config.products).to.not.be.empty;
+  });
+
+  it('should NOT call getProducts when detailsTextOption is not productName', async () => {
+    const state = { ...defaultState, detailsTextOption: 'default' };
+    const config = await getConfig(state, strings);
+    expect(config.products).to.deep.equal({});
+  });
+
   it('should include localFirst sort option when sortLocalFirst is enabled', async () => {
     const state = { ...defaultState, sortLocalFirst: true };
     const config = await getConfig(state, strings);
@@ -1287,6 +1331,7 @@ describe('getFloodgateCaasConfig', () => {
           card: { saveText: 'Save Card', unsaveText: 'Unsave Card' },
         },
       },
+      products: {},
       search: {
         enabled: false,
         searchFields: [],

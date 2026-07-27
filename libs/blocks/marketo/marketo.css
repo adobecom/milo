@@ -256,6 +256,21 @@
   background-size: 1em 1em;
 }
 
+.marketo .mktoForm select.mktoField {
+  padding-inline-end: calc(var(--spacing-xs) + 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[dir="rtl"] .marketo .mktoForm select {
+  background-position: 3% 50%;
+}
+
+[dir="rtl"] .marketo .mktoForm input[type="tel"] {
+  direction: inherit;
+}
+
 .marketo .mktoForm .mktoCheckboxList input,
 .marketo .mktoForm .mktoRadioList input {
   width: auto !important;
@@ -550,6 +565,8 @@
 
 .marketo .marketo-overlay {
   position: absolute;
+  max-width: 600px;
+  margin: 0 auto;
   inset: 0;
   background: var(--marketo-form-overlay-background);
   display: flex;
@@ -576,6 +593,12 @@
   text-align: center;
   color: var(--marketo-form-text);
   margin-bottom: 12px;
+}
+
+.marketo .marketo-overlay .debug-info {
+  font-size: 14px;
+  text-align: center;
+  color: var(--marketo-form-text);
 }
 
 @media screen and (min-width: 600px) {
