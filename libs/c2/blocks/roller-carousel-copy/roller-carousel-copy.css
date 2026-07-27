@@ -175,6 +175,10 @@
   transition: color 0.3s ease;
   cursor: default;
   user-select: none;
+  /* Keep every name on one line — long names run off to the right (behind the
+     image) and are clipped by the list-wrapper, rather than wrapping. Wrapping
+     would also break the roller, which assumes a uniform item height. */
+  white-space: nowrap;
 }
 
 .rcc-item--active {
