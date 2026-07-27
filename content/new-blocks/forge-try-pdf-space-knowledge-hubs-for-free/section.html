@@ -1,0 +1,1559 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.52" data-binding="ambiguous" data-figma-node-id="9848:40453" data-block="news" style="width:100%;background:#f6f6f6;overflow:hidden;">
+  <style>
+    .fgtui-root {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      padding: 124px 226px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+    .fgtui-heading {
+      width: 100%;
+      max-width: 1026px;
+      font-family: 'Adobe Clean Display', 'Adobe Clean', sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      color: #000000;
+    }
+    .fgtui-ui-frame {
+      width: 100%;
+      max-width: 988px;
+      position: relative;
+    }
+    .fgtui-ui-shell {
+      width: 100%;
+      border-radius: 12.29px;
+      border: 4.1px solid #ffffff;
+      overflow: hidden;
+      box-shadow:
+        0px 2.83px 2.27px 0px rgba(0,0,0,0.04),
+        0px 6.81px 5.45px 0px rgba(0,0,0,0.06),
+        0px 12.82px 10.26px 0px rgba(0,0,0,0.07),
+        0px 22.87px 18.30px 0px rgba(0,0,0,0.08),
+        0px 42.78px 34.22px 0px rgba(0,0,0,0.10),
+        0px 102.39px 81.91px 0px rgba(0,0,0,0.14);
+      background: #252525;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Top Bar */
+    .fgtui-topbar {
+      background: #323232;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .fgtui-tabbar {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 5.85px 0 11.69px;
+      background: #323232;
+      overflow: hidden;
+      min-height: 35px;
+    }
+    .fgtui-tabs-left {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 11.69px;
+    }
+    .fgtui-add-btn {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 5.85px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 2.92px;
+      padding: 4.38px 8.77px 4.38px 7.31px;
+      cursor: pointer;
+    }
+    .fgtui-add-btn-icon {
+      width: 13px;
+      height: 13px;
+      background: #888;
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fgtui-add-btn-icon img {
+      width: 13px;
+      height: 13px;
+      object-fit: contain;
+    }
+    .fgtui-add-btn-text {
+      color: #ebebeb;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      white-space: nowrap;
+    }
+    .fgtui-tab-divider {
+      width: 1px;
+      height: 12px;
+      background: #545454;
+      flex-shrink: 0;
+    }
+    .fgtui-tabs-row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .fgtui-tab {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding-top: 10.23px;
+      cursor: pointer;
+    }
+    .fgtui-tab-label {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #ebebeb;
+      padding: 0 6px;
+      white-space: nowrap;
+    }
+    .fgtui-tab-label.active {
+      color: #ffffff;
+    }
+    .fgtui-tab-indicator {
+      height: 1px;
+      background: #ffffff;
+      border-radius: 0.73px;
+      width: 100%;
+    }
+    .fgtui-tab-indicator.inactive {
+      background: transparent;
+    }
+    .fgtui-undo-redo {
+      width: 60px;
+      height: 18px;
+      background: #444;
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .fgtui-undo-redo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .fgtui-tabs-right {
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 5.85px;
+    }
+    .fgtui-search-text {
+      color: #ebebeb;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 15px;
+      white-space: nowrap;
+      opacity: 0.7;
+    }
+    .fgtui-action-btn {
+      width: 23px;
+      height: 23px;
+      border-radius: 2.92px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .fgtui-action-btn img {
+      width: 13px;
+      height: 13px;
+      object-fit: contain;
+    }
+    .fgtui-save-btn {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 2.92px;
+      padding: 2px 6px;
+      cursor: pointer;
+      height: 23px;
+    }
+    .fgtui-save-btn img {
+      height: 20px;
+      width: auto;
+      object-fit: contain;
+    }
+    .fgtui-share-btn {
+      background: #707070;
+      border-radius: 11.69px;
+      padding: 4.38px 11.69px;
+      color: #ffffff;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 10.23px;
+      line-height: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .fgtui-ai-btn {
+      background: linear-gradient(-58deg, #676dfc 45%, #ff6a54 80%);
+      border-radius: 11.69px;
+      padding: 4.38px 11.69px 5.85px 10.23px;
+      color: #ffffff;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 10.23px;
+      line-height: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .fgtui-ai-btn-icon {
+      width: 13px;
+      height: 13px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .fgtui-ai-btn-icon img {
+      width: 13px;
+      height: 13px;
+      object-fit: contain;
+    }
+    .fgtui-topbar-divider {
+      width: 100%;
+      height: 1px;
+      background: #545454;
+      flex-shrink: 0;
+    }
+    /* Main content area */
+    .fgtui-content-area {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 530px;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Left panel - All Tools */
+    .fgtui-lhp {
+      display: flex;
+      flex-direction: row;
+      flex-shrink: 0;
+      height: 530px;
+    }
+    .fgtui-lhp-inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 210px;
+      height: 100%;
+      background: #323232;
+      overflow: hidden;
+    }
+    .fgtui-lhp-header {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      height: 35px;
+      overflow: hidden;
+    }
+    .fgtui-lhp-header-btn {
+      width: 23px;
+      height: 23px;
+      border-radius: 2.92px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .fgtui-lhp-title {
+      color: #ffffff;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 13.15px;
+      line-height: 17px;
+    }
+    .fgtui-tools-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5.85px;
+      padding: 8.77px 23.38px 8.77px 17.54px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .fgtui-tool-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 7.31px;
+      border-radius: 2.92px;
+      padding: 3.65px 5.85px;
+      cursor: pointer;
+    }
+    .fgtui-tool-item:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .fgtui-tool-icon {
+      width: 13px;
+      height: 13px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .fgtui-tool-label {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #ebebeb;
+    }
+    .fgtui-view-more {
+      color: #72b7f9;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      padding: 3px 5.85px;
+      cursor: pointer;
+    }
+    .fgtui-lhp-banner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8.77px;
+      padding: 0 17.54px 14.61px;
+    }
+    .fgtui-lhp-banner-div {
+      width: 100%;
+      height: 1px;
+      background: #545454;
+      margin-bottom: 4px;
+    }
+    .fgtui-lhp-banner-text {
+      color: #ebebeb;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 8.77px;
+      line-height: 13px;
+      text-align: center;
+    }
+    .fgtui-lhp-banner-btn {
+      background: #3f3f3f;
+      border-radius: 11.69px;
+      padding: 4.38px 11.69px;
+      color: #ebebeb;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 10.23px;
+      line-height: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .fgtui-lhp-divider {
+      width: 1px;
+      height: 100%;
+      background: #545454;
+      flex-shrink: 0;
+    }
+    /* Scrollbar */
+    .fgtui-scrollbar {
+      width: 10px;
+      height: 530px;
+      background: #323232;
+      flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .fgtui-scrollbar-thumb {
+      position: absolute;
+      top: 20px;
+      left: 2px;
+      width: 6px;
+      height: 60px;
+      border-radius: 6px;
+      background: #5a5a5a;
+    }
+    /* RHP Comments */
+    .fgtui-rhp-comments {
+      width: 230px;
+      height: 464px;
+      background: #ffffff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: row;
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+    .fgtui-rhp-comments-divider {
+      width: 1px;
+      height: 100%;
+      background: #d5d5d5;
+      flex-shrink: 0;
+    }
+    .fgtui-rhp-drag {
+      display: flex;
+      align-items: center;
+      padding: 0 2.92px;
+    }
+    .fgtui-rhp-drag-handle {
+      width: 3px;
+      height: 32px;
+      border-radius: 2.92px;
+      background: #b1b1b1;
+    }
+    .fgtui-rhp-comments-inner {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+    .fgtui-comments-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5.85px;
+      background: #ffffff;
+      overflow: hidden;
+      border-bottom: 1px solid #e5e5e5;
+    }
+    .fgtui-comments-title-area {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 5.85px;
+    }
+    .fgtui-comments-close-btn {
+      width: 23px;
+      height: 23px;
+      border-radius: 2.92px;
+      background: #f0f0f0;
+      flex-shrink: 0;
+    }
+    .fgtui-comments-title {
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 11.69px;
+      line-height: 15px;
+      color: #000000;
+    }
+    .fgtui-comments-count {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 11.69px;
+      line-height: 15px;
+      color: #222222;
+    }
+    .fgtui-comments-actions {
+      display: flex;
+      flex-direction: row;
+      gap: 2.92px;
+    }
+    .fgtui-comments-action-btn {
+      width: 23px;
+      height: 23px;
+      border-radius: 2.92px;
+      background: #f0f0f0;
+      flex-shrink: 0;
+    }
+    .fgtui-comment-filter-btn {
+      height: 23px;
+      border-radius: 2.92px;
+      background: #f0f0f0;
+      padding: 4.38px 8.77px;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #222222;
+    }
+    .fgtui-comments-scroll {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      flex: 1;
+      overflow: hidden;
+      background: #f8f8f8;
+    }
+    .fgtui-new-comment-area {
+      display: flex;
+      flex-direction: column;
+      gap: 5.85px;
+      padding: 5.85px 11.69px;
+      background: #f8f8f8;
+    }
+    .fgtui-new-comment-label {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #000000;
+    }
+    .fgtui-new-comment-input {
+      display: flex;
+      flex-direction: row;
+      border: 0.73px solid #b1b1b1;
+      border-radius: 2.92px;
+      background: #ffffff;
+      padding: 3.65px 5.11px;
+      min-height: 23px;
+      align-items: center;
+    }
+    .fgtui-input-placeholder {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 15px;
+      color: #6d6d6d;
+      flex: 1;
+    }
+    .fgtui-comment-thread {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      background: #f0f0f0;
+    }
+    .fgtui-comment-thread-bar {
+      width: 3px;
+      background: #0265dc;
+      flex-shrink: 0;
+    }
+    .fgtui-comment-thread-content {
+      display: flex;
+      flex-direction: column;
+      gap: 5.85px;
+      padding: 11.69px 11.69px 11.69px 8.77px;
+      flex: 1;
+    }
+    .fgtui-comment-author-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8.77px;
+    }
+    .fgtui-avatar {
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      background: #e8c600;
+      flex-shrink: 0;
+    }
+    .fgtui-author-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .fgtui-author-name {
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #000000;
+    }
+    .fgtui-author-date {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 8.77px;
+      line-height: 13px;
+      color: #6d6d6d;
+    }
+    .fgtui-comment-text {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 15px;
+      color: #222222;
+      padding-left: 32px;
+    }
+    .fgtui-reply-input {
+      border: 0.73px solid #0265dc;
+      border-radius: 2.92px;
+      background: #f8f8f8;
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      padding: 4px 6px;
+      position: relative;
+      overflow: hidden;
+    }
+    .fgtui-reply-placeholder {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 15px;
+      color: #6d6d6d;
+    }
+    .fgtui-reply-post-btn {
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      line-height: 13px;
+      color: #b1b1b1;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    /* RHP Basic (right rail) */
+    .fgtui-rhp-basic {
+      display: flex;
+      flex-direction: row;
+      flex-shrink: 0;
+    }
+    .fgtui-rhp-basic-scrollbar {
+      width: 10px;
+      height: 100%;
+      background: #f8f8f8;
+      position: relative;
+      overflow: hidden;
+    }
+    .fgtui-rhp-basic-thumb {
+      position: absolute;
+      top: 10px;
+      left: 2px;
+      width: 6px;
+      height: 40px;
+      border-radius: 6px;
+      background: #b1b1b1;
+    }
+    .fgtui-rhp-basic-divider {
+      width: 1px;
+      height: 100%;
+      background: #d5d5d5;
+      flex-shrink: 0;
+    }
+    .fgtui-rhp-basic-actions {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5.85px;
+      background: #ffffff;
+      overflow: hidden;
+      width: 35px;
+      height: 100%;
+    }
+    .fgtui-rhp-top-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5.85px;
+    }
+    .fgtui-rhp-icon-btn {
+      width: 23px;
+      height: 23px;
+      border-radius: 2.92px;
+      background: #f0f0f0;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fgtui-rhp-bottom-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5.85px;
+    }
+    .fgtui-page-field {
+      width: 23px;
+      height: 23px;
+      border: 0.73px solid #909090;
+      border-radius: 2.92px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 10.23px;
+      color: #222222;
+    }
+    /* PDF Grid area */
+    .fgtui-pdf-grid-area {
+      flex: 1;
+      background: #252525;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    .fgtui-pdf-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 15.95px;
+      padding: 16px 20px;
+    }
+    .fgtui-pdf-row {
+      display: flex;
+      flex-direction: row;
+      gap: 15.95px;
+    }
+    .fgtui-pdf-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4.23px;
+      width: 154px;
+      flex-shrink: 0;
+    }
+    .fgtui-pdf-thumb {
+      border-radius: 6.42px;
+      overflow: hidden;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .fgtui-pdf-thumb-event {
+      width: 154px;
+      height: 212px;
+      background: #000000;
+    }
+    .fgtui-pdf-thumb-event-inner {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #efadf8 0%, #fdad84 60%, #000 100%);
+      border-radius: 6.42px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 12px;
+    }
+    .fgtui-pdf-thumb-event-title {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 14px;
+      color: #000000;
+      margin-bottom: 4px;
+    }
+    .fgtui-pdf-thumb-event-details {
+      font-family: 'Georgia', serif;
+      font-size: 9px;
+      line-height: 11px;
+      color: #000000;
+    }
+    .fgtui-pdf-thumb-invoice {
+      width: 155px;
+      height: 200px;
+      background: #efeff1;
+      border-radius: 6.42px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 4px;
+    }
+    .fgtui-invoice-title {
+      font-family: 'Helvetica Neue', Helvetica, sans-serif;
+      font-weight: 700;
+      font-size: 10px;
+      line-height: 12px;
+      color: #2254bd;
+      letter-spacing: -0.1px;
+    }
+    .fgtui-invoice-row {
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+    }
+    .fgtui-invoice-label {
+      font-family: 'Helvetica Neue', Helvetica, sans-serif;
+      font-weight: 700;
+      font-size: 2.28px;
+      line-height: 2px;
+      color: #2254bd;
+    }
+    .fgtui-invoice-line {
+      width: 100%;
+      height: 0.5px;
+      background: #2254bd;
+      margin: 3px 0;
+    }
+    .fgtui-pdf-thumb-chart {
+      width: 155px;
+      height: 200px;
+      background: #abdde8;
+      border-radius: 6.42px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 6px;
+    }
+    .fgtui-chart-title {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 9px;
+      line-height: 10px;
+      color: #000000;
+    }
+    .fgtui-chart-visual {
+      display: flex;
+      flex-direction: row;
+      gap: 4px;
+      align-items: flex-end;
+      height: 80px;
+    }
+    .fgtui-chart-bar {
+      border-radius: 2px;
+      flex: 1;
+    }
+    .fgtui-chart-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .fgtui-chart-legend-item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 3px;
+    }
+    .fgtui-chart-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .fgtui-chart-legend-text {
+      font-family: sans-serif;
+      font-size: 4.6px;
+      color: #000000;
+    }
+    .fgtui-pdf-thumb-whitepaper {
+      width: 154px;
+      height: 189px;
+      background: #f0f0f0;
+      border-radius: 6.42px;
+      display: flex;
+      flex-direction: column;
+      padding: 12px;
+      gap: 6px;
+    }
+    .fgtui-whitepaper-title {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 12px;
+      line-height: 11px;
+      color: #000000;
+    }
+    .fgtui-whitepaper-subtitle {
+      font-family: 'Georgia', serif;
+      font-size: 3.4px;
+      line-height: 3px;
+      color: #000000;
+    }
+    .fgtui-whitepaper-rect {
+      background: #d9d9d9;
+      border-radius: 4.82px;
+      height: 40px;
+      margin-top: 8px;
+    }
+    .fgtui-pdf-thumb-infographic {
+      width: 154px;
+      height: 212px;
+      background: #682c41;
+      border-radius: 6.42px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 6px;
+    }
+    .fgtui-infographic-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 6px;
+      background: #f08478;
+      border-radius: 2px;
+      font-family: sans-serif;
+      font-size: 5px;
+      color: #682c41;
+      font-weight: 700;
+      width: fit-content;
+    }
+    .fgtui-infographic-title {
+      font-family: sans-serif;
+      font-weight: 600;
+      font-size: 9px;
+      line-height: 11px;
+      color: #f0877b;
+    }
+    .fgtui-chart-line-area {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+    }
+    .fgtui-chart-line-svg {
+      width: 100%;
+      height: 60px;
+    }
+    .fgtui-chart-growth-badge {
+      background: #020202;
+      border-radius: 1.32px;
+      padding: 1.32px;
+      color: #f08478;
+      font-family: sans-serif;
+      font-size: 3.2px;
+      position: absolute;
+      right: 20px;
+      top: 0;
+    }
+    .fgtui-pdf-thumb-report {
+      width: 155px;
+      height: 214px;
+      background: #dadae7;
+      border-radius: 6.42px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      gap: 4px;
+    }
+    .fgtui-report-main-title {
+      font-family: sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      line-height: 12px;
+      color: #29293e;
+      letter-spacing: -0.47px;
+    }
+    .fgtui-report-industry {
+      font-family: sans-serif;
+      font-weight: 700;
+      font-size: 3.7px;
+      line-height: 4px;
+      color: #5a5a87;
+    }
+    .fgtui-report-publisher {
+      font-family: sans-serif;
+      font-weight: 700;
+      font-size: 2.8px;
+      line-height: 3px;
+      color: #08080b;
+    }
+    .fgtui-report-chart-area {
+      flex: 1;
+      background: #c8c8d8;
+      border-radius: 4px;
+      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      padding: 4px;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .fgtui-report-chart-bars {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 2px;
+      height: 40px;
+      padding: 0 4px;
+    }
+    .fgtui-report-bar {
+      flex: 1;
+      background: #49496f;
+      border-radius: 1px 1px 0 0;
+    }
+    .fgtui-pdf-thumb-wp2 {
+      width: 155px;
+      height: 193px;
+      background: #f0f0f0;
+      border-radius: 6.42px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      position: relative;
+    }
+    .fgtui-wp2-top {
+      background: #000000;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      border-radius: 8.26px;
+      margin: 4px;
+    }
+    .fgtui-wp2-title {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 11px;
+      line-height: 11px;
+      color: #f0f0f0;
+    }
+    .fgtui-wp2-subtitle {
+      font-family: sans-serif;
+      font-size: 3.5px;
+      color: #f0f0f0;
+      margin-top: 3px;
+    }
+    .fgtui-pdf-thumb-blank {
+      width: 152px;
+      height: 190px;
+      background: #ffffff;
+      border-radius: 8.26px;
+    }
+    .fgtui-pdf-label {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 2.66px;
+      padding: 3.99px 5.05px;
+      background: #e1e1f1;
+      border-radius: 1.61px;
+      width: fit-content;
+    }
+    .fgtui-pdf-label-text {
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 9.63px;
+      line-height: 10px;
+      letter-spacing: -0.19px;
+      color: #000000;
+      white-space: nowrap;
+    }
+    /* CTAs below */
+    .fgtui-cta-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .fgtui-cta-primary {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      padding: 0 24px;
+      height: 40px;
+      border-radius: 75px;
+      background: #000000;
+      border: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer;
+    }
+    .fgtui-cta-primary-text {
+      color: #ffffff;
+      font-family: 'Adobe Clean', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      white-space: nowrap;
+    }
+    .fgtui-cta-search {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      width: auto;
+      height: 40px;
+      border-radius: 75px;
+      background: #ffffff;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .fgtui-cta-search-icon {
+      width: 14px;
+      height: 14px;
+      border-radius: 80px;
+      background: linear-gradient(180deg, #8d88f2 0%, #eb1000 100%);
+      flex-shrink: 0;
+    }
+    .fgtui-cta-search-text {
+      color: rgba(0,0,0,0.7);
+      font-family: 'Adobe Clean', sans-serif;
+      font-size: 14px;
+      line-height: 13px;
+      letter-spacing: 0.14px;
+      white-space: nowrap;
+    }
+    .fgtui-cta-ask {
+      color: #000000;
+      font-family: 'Adobe Clean Display', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 13px;
+      letter-spacing: 0.14px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1024px) {
+      .fgtui-root {
+        padding: 80px 40px;
+      }
+      .fgtui-heading {
+        font-size: 40px;
+        line-height: 44px;
+      }
+      .fgtui-content-area {
+        height: auto;
+        flex-direction: column;
+      }
+      .fgtui-lhp {
+        display: none;
+      }
+      .fgtui-rhp-comments {
+        display: none;
+      }
+      .fgtui-rhp-basic {
+        display: none;
+      }
+      .fgtui-scrollbar {
+        display: none;
+      }
+      .fgtui-pdf-grid-area {
+        min-height: 320px;
+      }
+      .fgtui-pdf-row {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+    }
+    @media (max-width: 768px) {
+      .fgtui-root {
+        padding: 60px 16px;
+      }
+      .fgtui-heading {
+        font-size: 32px;
+        line-height: 36px;
+      }
+      .fgtui-ui-shell {
+        border-radius: 8px;
+      }
+      .fgtui-pdf-item {
+        width: 120px;
+      }
+      .fgtui-pdf-thumb-event, .fgtui-pdf-thumb-event-inner {
+        width: 120px;
+        height: 165px;
+      }
+      .fgtui-tabbar {
+        flex-wrap: wrap;
+        gap: 4px;
+        min-height: auto;
+        padding: 4px;
+      }
+      .fgtui-tabs-right {
+        display: none;
+      }
+    }
+  </style>
+
+  <div class="fgtui-root">
+    <!-- Heading -->
+    <h2 class="fgtui-heading">Try PDF Space knowledge hubs for free.</h2>
+
+    <!-- UI Frame -->
+    <div class="fgtui-ui-frame">
+      <div class="fgtui-ui-shell">
+
+        <!-- Top Bar -->
+        <div class="fgtui-topbar">
+          <div class="fgtui-tabbar">
+            <!-- Left: Add to PDF Space + Tabs -->
+            <div class="fgtui-tabs-left">
+              <!-- Add to PDF Space button -->
+              <div style="display:flex;flex-direction:row;align-items:center;gap:5.85px;">
+                <div class="fgtui-add-btn">
+                  <div class="fgtui-add-btn-icon">
+                    <img src="media_bizpro-hub-icon3.png" alt="Icon" style="width:13px;height:13px;object-fit:contain;background:#666;border-radius:2px;" loading="lazy" />
+                  </div>
+                  <span class="fgtui-add-btn-text">Add to PDF Space</span>
+                </div>
+                <div class="fgtui-tab-divider"></div>
+              </div>
+              <!-- Tabs -->
+              <div class="fgtui-tabs-row">
+                <!-- Active tab: All tools -->
+                <div class="fgtui-tab">
+                  <div style="display:flex;flex-direction:row;align-items:center;gap:7px;padding:0 6px;">
+                    <span class="fgtui-tab-label active">All tools</span>
+                  </div>
+                  <div class="fgtui-tab-indicator"></div>
+                </div>
+                <!-- Inactive tabs -->
+                <div class="fgtui-tab"><div style="padding:0 6px;"><span class="fgtui-tab-label">Edit</span></div><div class="fgtui-tab-indicator inactive"></div></div>
+                <div class="fgtui-tab"><div style="padding:0 6px;"><span class="fgtui-tab-label">Comment</span></div><div class="fgtui-tab-indicator inactive"></div></div>
+                <div class="fgtui-tab"><div style="padding:0 6px;"><span class="fgtui-tab-label">Fill &amp; Sign</span></div><div class="fgtui-tab-indicator inactive"></div></div>
+                <div class="fgtui-tab"><div style="padding:0 6px;"><span class="fgtui-tab-label">Protect</span></div><div class="fgtui-tab-indicator inactive"></div></div>
+              </div>
+              <!-- Undo/Redo -->
+              <div class="fgtui-undo-redo">
+                <img src="media_bizpro-hub-actionsundoRedo.png" alt="Actions Undo Redo" style="width:100%;height:100%;object-fit:contain;background:#444;" loading="lazy" />
+              </div>
+            </div>
+            <!-- Right: Search, Save, Share, AI -->
+            <div class="fgtui-tabs-right">
+              <span class="fgtui-search-text">Find text or tools</span>
+              <div class="fgtui-action-btn">
+                <img src="media_bizpro-hub-actionButtonM.png" alt="Search" style="width:13px;height:13px;object-fit:contain;background:#555;" loading="lazy" />
+              </div>
+              <div class="fgtui-tab-divider"></div>
+              <div class="fgtui-save-btn">
+                <img src="media_bizpro-hub-save.png" alt="Save" style="height:20px;width:auto;object-fit:contain;background:#555;min-width:40px;" loading="lazy" />
+              </div>
+              <div class="fgtui-tab-divider"></div>
+              <span class="fgtui-share-btn">Share</span>
+              <div class="fgtui-ai-btn">
+                <div class="fgtui-ai-btn-icon">
+                  <img src="media_bizpro-hub-icon5.png" alt="AI Icon" style="width:13px;height:13px;object-fit:contain;background:rgba(255,255,255,0.2);" loading="lazy" />
+                </div>
+                AI Assistant
+              </div>
+            </div>
+          </div>
+          <div class="fgtui-topbar-divider"></div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="fgtui-content-area">
+
+          <!-- Left Panel: All Tools -->
+          <div class="fgtui-lhp">
+            <div class="fgtui-lhp-inner">
+              <!-- Header -->
+              <div>
+                <div class="fgtui-lhp-header">
+                  <div class="fgtui-lhp-header-btn"></div>
+                  <span class="fgtui-lhp-title">All tools</span>
+                </div>
+                <!-- Tools List -->
+                <div class="fgtui-tools-list">
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Edit PDF</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Create PDF</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Export PDF</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Combine Files</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Organize Pages</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Comment</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Fill &amp; Sign</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Request Signatures</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Protect</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Compress PDF</span>
+                  </div>
+                  <div class="fgtui-tool-item">
+                    <div class="fgtui-tool-icon"></div>
+                    <span class="fgtui-tool-label">Accessibility</span>
+                  </div>
+                  <span class="fgtui-view-more">View more</span>
+                </div>
+              </div>
+              <!-- Banner -->
+              <div class="fgtui-lhp-banner">
+                <div class="fgtui-lhp-banner-div"></div>
+                <p class="fgtui-lhp-banner-text">Get PDFs e-signed. Recipients sign<br/>online for free.</p>
+                <span class="fgtui-lhp-banner-btn">Request e-signatures</span>
+              </div>
+            </div>
+            <div class="fgtui-lhp-divider"></div>
+          </div>
+
+          <!-- Scrollbar (left) -->
+          <div class="fgtui-scrollbar">
+            <div class="fgtui-scrollbar-thumb"></div>
+          </div>
+
+          <!-- Main PDF Grid -->
+          <div class="fgtui-pdf-grid-area">
+            <div class="fgtui-pdf-grid">
+              <!-- Row 1 -->
+              <div class="fgtui-pdf-row">
+                <!-- Event Flyer -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:154px;height:212px;background:#000;">
+                    <div class="fgtui-pdf-thumb-event-inner" style="width:154px;height:212px;background:linear-gradient(135deg,#efadf8 0%,#fdad84 60%,#2a2a2a 100%);border-radius:6.42px;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;box-sizing:border-box;">
+                      <div class="fgtui-pdf-thumb-event-title">Monobloc<br/>The Conference</div>
+                      <div class="fgtui-pdf-thumb-event-details">July 23–26, 2026<br/>Grand Palais<br/>Register Now</div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Event Flyer.pdf</span></div>
+                </div>
+                <!-- Invoice -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:155px;height:200px;">
+                    <div class="fgtui-pdf-thumb-invoice" style="width:155px;height:200px;box-sizing:border-box;">
+                      <div class="fgtui-invoice-title">INVOICE</div>
+                      <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:4.55px;line-height:5px;color:#2254bd;">MURPHY DESIGN CO.</div>
+                      <div class="fgtui-invoice-line"></div>
+                      <div style="display:flex;flex-direction:column;gap:2px;flex:1;overflow:hidden;">
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">INFO</div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">FROM: RYAN MURPHY</div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">123 STATE STREET, BROOKLYN NY 12345</div>
+                        <div class="fgtui-invoice-line" style="margin:2px 0;"></div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">PARENT REBRAND — $12,450</div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">SS26 CAMPAIGN — $52,000</div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">QUARTERLY SOCIAL — $5,150</div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:2.28px;color:#2254bd;">TAXES — $550</div>
+                        <div class="fgtui-invoice-line" style="margin:2px 0;"></div>
+                        <div style="font-family:'Helvetica Neue',Helvetica,sans-serif;font-weight:700;font-size:4.55px;color:#2254bd;">TOTAL: $70,150</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Invoice.pdf</span></div>
+                </div>
+                <!-- Charts/Graphs -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:155px;height:200px;">
+                    <div class="fgtui-pdf-thumb-chart" style="width:155px;height:200px;box-sizing:border-box;">
+                      <div class="fgtui-chart-title">MEDIA MIX<br/>BY PLATFORM</div>
+                      <!-- Donut chart placeholder -->
+                      <div style="display:flex;flex-direction:row;gap:6px;align-items:center;flex:1;">
+                        <div style="width:60px;height:60px;border-radius:50%;background:conic-gradient(#20586e 0% 55%,#71a9bf 55% 91%,#d9f1fb 91% 100%);flex-shrink:0;"></div>
+                        <div style="display:flex;flex-direction:column;gap:2px;">
+                          <div style="display:flex;align-items:center;gap:2px;"><div style="width:5px;height:5px;border-radius:50%;background:#20586e;"></div><span style="font-size:4px;color:#000;">Meta 55%</span></div>
+                          <div style="display:flex;align-items:center;gap:2px;"><div style="width:5px;height:5px;border-radius:50%;background:#71a9bf;"></div><span style="font-size:4px;color:#000;">Prog 36%</span></div>
+                          <div style="display:flex;align-items:center;gap:2px;"><div style="width:5px;height:5px;border-radius:50%;background:#d9f1fb;"></div><span style="font-size:4px;color:#000;">CTV 9%</span></div>
+                        </div>
+                      </div>
+                      <!-- Bar chart placeholder -->
+                      <div style="display:flex;flex-direction:row;gap:2px;align-items:flex-end;height:30px;margin-top:4px;">
+                        <div style="flex:1;background:#3d5572;border-radius:1px 1px 0 0;height:80%;"></div>
+                        <div style="flex:1;background:#40739b;border-radius:1px 1px 0 0;height:60%;"></div>
+                        <div style="flex:1;background:#588cb4;border-radius:1px 1px 0 0;height:45%;"></div>
+                        <div style="flex:1;background:#a5bdcf;border-radius:1px 1px 0 0;height:30%;"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Graphs.pdf</span></div>
+                </div>
+                <!-- White Paper -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:154px;height:189px;">
+                    <div class="fgtui-pdf-thumb-whitepaper" style="width:154px;height:189px;box-sizing:border-box;">
+                      <div class="fgtui-whitepaper-title">Monobloc Research</div>
+                      <div class="fgtui-whitepaper-subtitle">Financial roadmaps during peaks and valleys</div>
+                      <div class="fgtui-whitepaper-rect"></div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">White Paper.pdf</span></div>
+                </div>
+              </div>
+
+              <!-- Row 2 -->
+              <div class="fgtui-pdf-row">
+                <!-- Infographic -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:154px;height:212px;">
+                    <div class="fgtui-pdf-thumb-infographic" style="width:154px;height:212px;box-sizing:border-box;">
+                      <div class="fgtui-infographic-badge">GROWTH</div>
+                      <div class="fgtui-infographic-title">Monthly User<br/>Acquisition</div>
+                      <div class="fgtui-chart-line-area">
+                        <svg class="fgtui-chart-line-svg" viewBox="0 0 130 60" xmlns="http://www.w3.org/2000/svg">
+                          <polyline points="0,55 20,45 40,35 60,30 80,20 100,12 120,5" fill="none" stroke="#f08478" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></polyline>
+                          <circle cx="120" cy="5" r="3" fill="#f08478" stroke="#682c41" stroke-width="0.7" ></circle>
+                        </svg>
+                        <span class="fgtui-chart-growth-badge">+67.8%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Infographic.pdf</span></div>
+                </div>
+                <!-- Research Report -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:155px;height:214px;">
+                    <div class="fgtui-pdf-thumb-report" style="width:155px;height:214px;box-sizing:border-box;">
+                      <div class="fgtui-report-industry">INDUSTRY REPORT</div>
+                      <div class="fgtui-report-main-title">Global Fintech<br/>Adoption:<br/>Opportunities<br/>and Risks</div>
+                      <div class="fgtui-report-publisher">THE BUSINESS TIMES</div>
+                      <div class="fgtui-report-chart-area">
+                        <div class="fgtui-report-chart-bars">
+                          <div class="fgtui-report-bar" style="height:80%;"></div>
+                          <div class="fgtui-report-bar" style="height:55%;"></div>
+                          <div class="fgtui-report-bar" style="height:70%;background:#5a5a87;"></div>
+                          <div class="fgtui-report-bar" style="height:40%;"></div>
+                          <div class="fgtui-report-bar" style="height:90%;"></div>
+                          <div class="fgtui-report-bar" style="height:65%;background:#5a5a87;"></div>
+                          <div class="fgtui-report-bar" style="height:50%;"></div>
+                          <div class="fgtui-report-bar" style="height:75%;"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Research.pdf</span></div>
+                </div>
+                <!-- White Paper 2 -->
+                <div class="fgtui-pdf-item" style="width:155px;">
+                  <div class="fgtui-pdf-thumb" style="width:155px;height:193px;">
+                    <div class="fgtui-pdf-thumb-wp2" style="width:155px;height:193px;">
+                      <div style="height:50%;background:#f0f0f0;display:flex;flex-direction:column;padding:10px;box-sizing:border-box;">
+                        <div style="font-family:'Georgia',serif;font-weight:700;font-size:11px;color:#000;">White Paper</div>
+                        <div style="font-family:sans-serif;font-size:3.4px;color:#000;margin-top:3px;">research@bct.global<br/>242 101 9931<br/>bct.global</div>
+                      </div>
+                      <div class="fgtui-wp2-top" style="flex:1;">
+                        <div class="fgtui-wp2-title">White Paper</div>
+                        <div class="fgtui-wp2-subtitle">Think Tank<br/>info@monobloc.com<br/>monobloc.com</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">White Paper.pdf</span></div>
+                </div>
+                <!-- Social Post (blank) -->
+                <div class="fgtui-pdf-item">
+                  <div class="fgtui-pdf-thumb" style="width:154px;height:190px;">
+                    <div class="fgtui-pdf-thumb-blank" style="width:154px;height:190px;"></div>
+                  </div>
+                  <div class="fgtui-pdf-label"><span class="fgtui-pdf-label-text">Social Post.pdf</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RHP Comments Panel -->
+          <div class="fgtui-rhp-comments">
+            <div class="fgtui-rhp-comments-divider"></div>
+            <div class="fgtui-rhp-drag">
+              <div class="fgtui-rhp-drag-handle">
+                <img src="media_bizpro-hub-dragHandle.png" alt="Drag handle" style="width:3px;height:32px;object-fit:contain;background:#b1b1b1;border-radius:2.92px;" loading="lazy" />
+              </div>
+            </div>
+            <div class="fgtui-rhp-comments-inner">
+              <!-- Header -->
+              <div class="fgtui-comments-header">
+                <div class="fgtui-comments-title-area">
+                  <div class="fgtui-comments-close-btn"></div>
+                  <span class="fgtui-comments-title">Comments</span>
+                  <span class="fgtui-comments-count">3</span>
+                </div>
+                <div class="fgtui-comments-actions">
+                  <div class="fgtui-comments-action-btn"></div>
+                  <div class="fgtui-comment-filter-btn">Label</div>
+                  <div class="fgtui-comments-action-btn"></div>
+                </div>
+              </div>
+              <!-- Comments scroll -->
+              <div class="fgtui-comments-scroll">
+                <!-- New comment input -->
+                <div class="fgtui-new-comment-area">
+                  <span class="fgtui-new-comment-label">Add comments or use @ invite</span>
+                  <div class="fgtui-new-comment-input">
+                    <span class="fgtui-input-placeholder">Comment or use @ to invite</span>
+                  </div>
+                </div>
+                <!-- Comment thread active -->
+                <div class="fgtui-comment-thread">
+                  <div class="fgtui-comment-thread-bar"></div>
+                  <div class="fgtui-comment-thread-content">
+                    <div class="fgtui-comment-author-row">
+                      <div class="fgtui-avatar"></div>
+                      <div class="fgtui-author-info">
+                        <span class="fgtui-author-name">Username</span>
+                        <span class="fgtui-author-date">26 Feb</span>
+                      </div>
+                    </div>
+                    <p class="fgtui-comment-text">Comment_comes_here_lorem_ipsum_dolar_sit_ames.</p>
+                    <div class="fgtui-reply-input">
+                      <span class="fgtui-reply-placeholder">Reply or use @ to invite</span>
+                      <span class="fgtui-reply-post-btn">Post</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Second comment -->
+                <div style="width:100%;height:1px;background:#e5e5e5;"></div>
+                <div class="fgtui-comment-thread" style="background:#ffffff;">
+                  <div style="width:3px;background:transparent;flex-shrink:0;"></div>
+                  <div class="fgtui-comment-thread-content">
+                    <div class="fgtui-comment-author-row">
+                      <div class="fgtui-avatar" style="background:#a0b4d0;"></div>
+                      <div class="fgtui-author-info">
+                        <span class="fgtui-author-name">Username</span>
+                        <span class="fgtui-author-date">Just now</span>
+                      </div>
+                    </div>
+                    <p class="fgtui-comment-text">Comment_comes_here_lorem_ipsum_dolar_sit_ames.</p>
+                    <div style="padding-left:23px;">
+                      <span style="font-family:'Adobe Clean',sans-serif;font-weight:700;font-size:10.23px;color:#222;cursor:pointer;">Reply</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- RHP Basic rail -->
+            <div class="fgtui-rhp-basic">
+              <div class="fgtui-rhp-basic-scrollbar">
+                <div class="fgtui-rhp-basic-thumb"></div>
+              </div>
+              <div class="fgtui-rhp-basic-divider"></div>
+              <div class="fgtui-rhp-basic-actions">
+                <div class="fgtui-rhp-top-actions">
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                </div>
+                <div class="fgtui-rhp-bottom-actions">
+                  <div class="fgtui-page-field">1</div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div style="width:23px;height:1px;background:#d5d5d5;"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                  <div class="fgtui-rhp-icon-btn"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- end content-area -->
+      </div>
+      <!-- end ui-shell -->
+    </div>
+    <!-- end ui-frame -->
+
+    <!-- CTA Row -->
+    <div class="fgtui-cta-row">
+      <button class="fgtui-cta-primary">
+        <span class="fgtui-cta-primary-text">Try PDF Spaces now</span>
+      </button>
+      <div class="fgtui-cta-search">
+        <div class="fgtui-cta-search-icon"></div>
+        <span class="fgtui-cta-search-text">What's the best plan for me?</span>
+        <span class="fgtui-cta-ask">Ask</span>
+      </div>
+    </div>
+
+  </div>
+</section>

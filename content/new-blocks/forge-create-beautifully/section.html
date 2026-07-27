@@ -1,0 +1,322 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="ambiguous" data-figma-node-id="9848:40076" data-block="news">
+<style>
+/* ── Flow – Grid to UI ─────────────────────────────────── */
+[data-figma-node-id="9848:40076"]{
+  width:100%;
+  background:linear-gradient(0deg,#f6f6f6 0%,rgba(246,246,246,0) 100%);
+  font-family:'Adobe Clean',-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+}
+.fgtu-inner{max-width:1440px;margin:0 auto}
+.fgtu-panel{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:124px 24px 80px;
+  overflow:hidden;
+}
+.fgtu-gridbg{
+  position:absolute;
+  width:792px;height:713px;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  border:1px solid #e1e1ef;
+  background:#f8f8f8;
+  object-fit:cover;
+  pointer-events:none;
+  user-select:none;
+  display:block;
+}
+.fgtu-layout{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:flex-end;gap:24px;
+}
+.fgtu-rows{display:flex;flex-direction:column;gap:141px}
+.fgtu-row{display:flex;flex-direction:row;align-items:flex-start;gap:141px}
+.fgtu-card{display:flex;flex-direction:column;gap:8px;width:192px;flex-shrink:0}
+.fgtu-thumb{
+  width:100%;border-radius:8px;overflow:hidden;
+  display:block;position:relative;flex-shrink:0;
+}
+.fgtu-thumb>img{width:100%;height:100%;object-fit:cover;display:block}
+.fgtu-badge{
+  display:inline-flex;align-items:center;
+  padding:5px 6px;border-radius:2px;
+  background:#e1e1f1;
+  font-weight:700;font-size:12px;line-height:1;
+  letter-spacing:-.24px;color:#000;
+  white-space:nowrap;width:fit-content;
+}
+.fgtu-copy{
+  display:flex;flex-direction:column;gap:24px;
+  padding:24px;width:392px;box-sizing:border-box;flex-shrink:0;
+}
+.fgtu-copy-txt{display:flex;flex-direction:column;gap:8px;max-width:367px}
+.fgtu-copy-txt h2{
+  font-family:'Adobe Clean Display','Arial Black',Georgia,sans-serif;
+  font-weight:900;font-size:20px;line-height:24px;
+  letter-spacing:-.48px;color:#000;margin:0;
+}
+.fgtu-copy-txt p{font-size:16px;line-height:20px;color:rgba(0,0,0,.64);margin:0}
+.fgtu-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  font-weight:700;font-size:14px;line-height:18px;
+  color:#000;text-decoration:none;width:fit-content;
+}
+.fgtu-cta:hover{text-decoration:underline}
+.fgtu-arr{
+  display:inline-block;width:6px;height:6px;
+  border-right:1.5px solid #000;border-top:1.5px solid #000;
+  transform:rotate(45deg);flex-shrink:0;
+}
+/* ── responsive ─── */
+@media(max-width:1300px){
+  .fgtu-row{gap:60px}
+  .fgtu-rows{gap:60px}
+}
+@media(max-width:1024px){
+  .fgtu-panel{padding:80px 32px 60px}
+  .fgtu-gridbg{width:560px;height:504px}
+  .fgtu-rows{gap:28px}
+  .fgtu-row{flex-wrap:wrap;gap:20px;justify-content:center}
+  .fgtu-card{width:155px}
+  .fgtu-layout{align-items:center}
+  .fgtu-copy{width:100%;max-width:640px}
+  .fgtu-copy-txt{max-width:100%}
+}
+@media(max-width:768px){
+  .fgtu-panel{padding:60px 20px 40px}
+  .fgtu-gridbg{width:320px;height:288px}
+  .fgtu-card{width:140px}
+  .fgtu-copy-txt h2{font-size:18px}
+  .fgtu-copy{padding:16px}
+}
+@media(max-width:500px){
+  .fgtu-row{gap:10px}
+  .fgtu-card{width:calc(50% - 5px)}
+  .fgtu-gridbg{width:260px;height:234px}
+}
+</style>
+
+<div class="fgtu-inner">
+
+  <!-- ═══ Panel 1: Core PDF grid (Flyer · Invoice · Report · Poster / Infographic · Invitation · Presentation · SocialPost) ═══ -->
+  <div class="fgtu-panel">
+    <img class="fgtu-gridbg" src="media_bizpro-hub-256.png" alt="" aria-hidden="true" />
+    <div class="fgtu-layout">
+      <div class="fgtu-rows">
+
+        <!-- Row 1 -->
+        <div class="fgtu-row">
+          <!-- Flyer.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:230px;background:#f0e8e0">
+              <img src="media_bizpro-hub-rectangle2147231588.png" alt="Flyer PDF preview" />
+            </div>
+            <span class="fgtu-badge">Flyer.pdf</span>
+          </div>
+          <!-- Invoice.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:192px;background:#ebebef"></div>
+            <span class="fgtu-badge">Invoice.pdf</span>
+          </div>
+          <!-- Report.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:231px;background:#b4e4f8">
+              <img src="media_bizpro-hub-rectangle2147231590.png" alt="Report PDF preview" />
+            </div>
+            <span class="fgtu-badge">Report.pdf</span>
+          </div>
+          <!-- Poster.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:192px;background:#e4e4e8">
+              <img src="media_bizpro-hub-rectangle2147231591.png" alt="Poster PDF preview" />
+            </div>
+            <span class="fgtu-badge">Poster.pdf</span>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="fgtu-row">
+          <!-- Infographic.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:192px;background:#d9d9d9"></div>
+            <span class="fgtu-badge">Infographic.pdf</span>
+          </div>
+          <!-- Invitation.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:230px;background:#e0d8f0">
+              <img src="media_bizpro-hub-rectangle2147231594.png" alt="Invitation PDF preview" />
+            </div>
+            <span class="fgtu-badge">Invitation.pdf</span>
+          </div>
+          <!-- Presentation.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:192px;background:#ebebeb"></div>
+            <span class="fgtu-badge">Presentation.pdf</span>
+          </div>
+          <!-- SocialPost.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:230px;background:#d4e8f0">
+              <img src="media_bizpro-hub-frame2147230308.png" alt="Social Post PDF preview" />
+            </div>
+            <span class="fgtu-badge">SocialPost.pdf</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copy block -->
+      <div class="fgtu-copy">
+        <div class="fgtu-copy-txt">
+          <h2>Create beautifully.</h2>
+          <p>Empower your whole team to create polished on-brand presentations, social content, and more using AI Assistant, 100,000+ professional templates, and custom images in Acrobat Express.</p>
+        </div>
+        <a class="fgtu-cta" href="#">Learn more<span class="fgtu-arr" aria-hidden="true"></span></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Panel 2: Styled PDF examples (Event Flyer · Invoice · Graphs · White Paper / Infographic · Research · White Paper · Social Post) ═══ -->
+  <div class="fgtu-panel">
+    <img class="fgtu-gridbg" src="media_bizpro-hub-2561.png" alt="" aria-hidden="true" />
+    <div class="fgtu-layout">
+      <div class="fgtu-rows">
+
+        <!-- Row 1 -->
+        <div class="fgtu-row">
+          <!-- Event Flyer.pdf (black poster with pink/coral organic shapes) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:264px;background:#000000;position:relative">
+              <div style="position:absolute;width:145px;height:145px;background:#efadf8;border-radius:50%;top:-38px;left:-32px;z-index:0"></div>
+              <div style="position:absolute;width:92px;height:80px;background:#fdad84;bottom:8px;right:-22px;border-bottom-left-radius:80%;border-top-left-radius:30%;z-index:0"></div>
+              <div style="position:relative;z-index:1;padding:16px 14px;margin-top:60px">
+                <div style="font-weight:900;font-size:14px;line-height:1.15;color:#000000;font-family:Georgia,'Times New Roman',serif;letter-spacing:-.3px">Monobloc<br/>The Conference</div>
+                <div style="font-size:8.5px;color:#000;margin-top:8px;line-height:1.65;font-family:Georgia,serif">July 23–26, 2026<br/>Grand Palais<br/>Register Now</div>
+              </div>
+            </div>
+            <span class="fgtu-badge">Event Flyer.pdf</span>
+          </div>
+
+          <!-- Invoice.pdf (blue/white professional invoice) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:249px;background:#efeff1;padding:14px;box-sizing:border-box">
+              <div style="color:#2254bd;font-weight:900;font-size:12px;letter-spacing:.5px;margin-bottom:2px">INVOICE</div>
+              <div style="color:#2254bd;font-weight:700;font-size:7px;margin-bottom:10px">MURPHY DESIGN CO.</div>
+              <div style="border-top:.5px solid #2254bd;padding-top:5px;margin-bottom:5px;display:flex;justify-content:space-between;color:#2254bd;font-size:6.5px;font-weight:700">
+                <span>Description</span><span>Subtotal</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:4px">
+                <div style="display:flex;justify-content:space-between;color:#2254bd;font-size:6px;border-bottom:.5px solid #2254bd;padding-bottom:3px"><span>PARENT REBRAND</span><span>$12,450</span></div>
+                <div style="display:flex;justify-content:space-between;color:#2254bd;font-size:6px;border-bottom:.5px solid #2254bd;padding-bottom:3px"><span>SS26 CAMPAIGN</span><span>$52,000</span></div>
+                <div style="display:flex;justify-content:space-between;color:#2254bd;font-size:6px;border-bottom:.5px solid #2254bd;padding-bottom:3px"><span>QUARTERLY SOCIAL</span><span>$5,150</span></div>
+                <div style="display:flex;justify-content:space-between;color:#2254bd;font-size:6px;padding-bottom:3px"><span>TAXES</span><span>$550</span></div>
+              </div>
+              <div style="border-top:.5px solid #2254bd;margin-top:6px;padding-top:5px;display:flex;justify-content:space-between;color:#2254bd;font-weight:700;font-size:8px"><span>TOTAL</span><span>$70,150</span></div>
+            </div>
+            <span class="fgtu-badge">Invoice.pdf</span>
+          </div>
+
+          <!-- Graphs.pdf (teal media-mix donut chart) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:249px;background:#abdde8;padding:14px;box-sizing:border-box">
+              <div style="color:#000;font-weight:700;font-size:10px;line-height:1.3;margin-bottom:12px">MEDIA MIX<br/>BY PLATFORM</div>
+              <div style="width:72px;height:72px;border-radius:50%;background:conic-gradient(#103a4b 0% 25%,#20586e 25% 61%,#71a9bf 61% 97%,#d9f1fb 97% 100%);margin:0 auto 14px;display:block;flex-shrink:0"></div>
+              <div style="font-size:7px;line-height:2;color:#000">
+                <div style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#71a9bf;border-radius:50%;display:inline-block;flex-shrink:0"></span>Meta 55%</div>
+                <div style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#20586e;border-radius:50%;display:inline-block;flex-shrink:0"></span>Programmatic 36%</div>
+                <div style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#d9f1fb;border-radius:50%;display:inline-block;flex-shrink:0"></span>CTV 36%</div>
+                <div style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;background:#103a4b;border-radius:50%;display:inline-block;flex-shrink:0"></span>Events 25%</div>
+              </div>
+            </div>
+            <span class="fgtu-badge">Graphs.pdf</span>
+          </div>
+
+          <!-- White Paper.pdf (research document) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:249px;background:#f0f0f0;border-radius:10px">
+              <img src="media_bizpro-hub-frame2147230479.png" alt="White Paper PDF preview" />
+            </div>
+            <span class="fgtu-badge">White Paper.pdf</span>
+          </div>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="fgtu-row">
+          <!-- Infographic.pdf (dark maroon with rising line chart) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:264px;background:#682c41;padding:14px;box-sizing:border-box">
+              <div style="display:inline-flex;background:#f08478;border-radius:4px;padding:3px 8px;margin-bottom:6px">
+                <span style="color:#682c41;font-size:7px;font-weight:700;letter-spacing:.5px">GROWTH</span>
+              </div>
+              <div style="color:#f0877b;font-weight:600;font-size:9.5px;line-height:1.3;margin-bottom:12px">Monthly User<br/>Acquisition</div>
+              <svg viewBox="0 0 160 80" style="width:100%;height:80px;flex-shrink:0;display:block" xmlns="http://www.w3.org/2000/svg">
+                <polyline points="5,75 25,66 45,54 65,42 85,30 105,18 125,8 150,4" fill="none" stroke="#f08478" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" ></polyline>
+                <circle cx="150" cy="4" r="4.5" fill="#f08478" ></circle>
+              </svg>
+              <div style="display:inline-flex;background:#020202;border-radius:3px;padding:3px 8px;margin-top:10px">
+                <span style="color:#f08478;font-size:8px;font-weight:700">+67.8%</span>
+              </div>
+            </div>
+            <span class="fgtu-badge">Infographic.pdf</span>
+          </div>
+
+          <!-- Research.pdf (purple industry report with scatter plot) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:267px;background:#dadae7;padding:14px;box-sizing:border-box">
+              <div style="color:#29293e;font-weight:700;font-size:9px;line-height:1.35;margin-bottom:4px">Global Fintech Adoption:<br/>Opportunities and Risks</div>
+              <div style="color:#5a5a87;font-size:6px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:7px">Industry Report</div>
+              <div style="color:#29293e;font-size:5.5px;line-height:1.55;margin-bottom:10px">Global fintech adoption has accelerated rapidly over the past decade, driven by widespread smartphone use and demand for faster financial services.</div>
+              <svg viewBox="0 0 160 65" style="width:100%;height:65px;background:#c8c8d8;border-radius:4px;flex-shrink:0;display:block" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="50" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="32" cy="40" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="48" cy="26" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="62" cy="44" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="78" cy="18" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="94" cy="32" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="110" cy="12" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="126" cy="22" r="3.5" fill="#332c6c" ></circle>
+                <circle cx="142" cy="8" r="3.5" fill="#332c6c" ></circle>
+              </svg>
+            </div>
+            <span class="fgtu-badge">Research.pdf</span>
+          </div>
+
+          <!-- White Paper.pdf 2 (light grey think-tank doc) -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:241px;background:#f0f0f0;border-radius:10px;padding:14px;box-sizing:border-box">
+              <div style="color:#000;font-weight:900;font-size:13px;font-family:Georgia,'Times New Roman',serif;margin-bottom:3px">White Paper</div>
+              <div style="color:#444;font-size:6px;margin-bottom:14px;line-height:1.6">research@bct.global<br/>242 101 9931 · bct.global</div>
+              <div style="background:#000;border-radius:8px;padding:12px;color:#f0f0f0">
+                <div style="font-weight:900;font-size:12px;font-family:Georgia,serif;margin-bottom:4px">White Paper</div>
+                <div style="font-size:6.5px;line-height:1.65">Think Tank<br/>info@monobloc.com<br/>monobloc.com</div>
+              </div>
+            </div>
+            <span class="fgtu-badge">White Paper.pdf</span>
+          </div>
+
+          <!-- Social Post.pdf -->
+          <div class="fgtu-card">
+            <div class="fgtu-thumb" style="height:237px;background:#ffffff;border-radius:10px">
+              <img src="media_bizpro-hub-frame2147230442.png" alt="Social Post PDF preview" />
+            </div>
+            <span class="fgtu-badge">Social Post.pdf</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copy block -->
+      <div class="fgtu-copy">
+        <div class="fgtu-copy-txt">
+          <h2 style="font-size:18px">Create beautifully.</h2>
+          <p>Empower your whole team to create polished on-brand presentations, social content, and more using AI Assistant, 100,000+ professional templates, and custom images in Acrobat Express.</p>
+        </div>
+        <a class="fgtu-cta" href="#">Learn more<span class="fgtu-arr" aria-hidden="true"></span></a>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>

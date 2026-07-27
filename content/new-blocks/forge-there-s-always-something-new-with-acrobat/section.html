@@ -1,0 +1,350 @@
+<section data-binding-source="judge" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="9848:40724" data-block="news">
+  <style>
+    [data-figma-node-id="9848:40724"] {
+      width: 100%;
+      background-color: #f6f6f6;
+      box-sizing: border-box;
+    }
+    .wn-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 124px 124px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      box-sizing: border-box;
+    }
+    .wn-heading-group {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+    }
+    .wn-copy-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .wn-eyebrow {
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 20px;
+      text-align: center;
+      color: rgba(0, 0, 0, 0.64);
+      margin: 0;
+    }
+    .wn-main-heading {
+      font-family: 'Adobe Clean Display', 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      color: #000000;
+      max-width: 664px;
+      margin: 0;
+    }
+    .wn-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .wn-btn-primary {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px 24px;
+      border-radius: 75px;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 17px;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      white-space: nowrap;
+    }
+    .wn-btn-secondary {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px 24px;
+      border-radius: 75px;
+      background-color: transparent;
+      color: #000000;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 17px;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid #000000;
+      white-space: nowrap;
+    }
+    .wn-grid {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      width: 100%;
+      max-width: 1192px;
+    }
+    .wn-col {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .wn-card-img {
+      width: 100%;
+      height: 294px;
+      border-radius: 16px;
+      object-fit: cover;
+      background-color: #e2e2e2;
+      display: block;
+      flex-shrink: 0;
+    }
+    .wn-card-placeholder {
+      width: 100%;
+      height: 294px;
+      border-radius: 16px;
+      background-color: #c4c4c4;
+      flex-shrink: 0;
+    }
+    .wn-card-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px 24px 0;
+    }
+    .wn-card-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .wn-card-heading {
+      font-family: 'Adobe Clean Display', 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 18px;
+      letter-spacing: -0.48px;
+      color: #000000;
+      margin: 0;
+    }
+    .wn-card-body {
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 20px;
+      color: rgba(0, 0, 0, 0.64);
+      margin: 0;
+    }
+    .wn-card-cta {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .wn-card-cta-label {
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #000000;
+    }
+    .wn-card-cta-arrow {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-right: 1.5px solid #000000;
+      border-top: 1.5px solid #000000;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .wn-skeleton-copy-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .wn-skeleton-bar {
+      background-color: #d4d4d4;
+      border-radius: 4px;
+      flex-shrink: 0;
+      max-width: 100%;
+    }
+    .wn-skeleton-cta-bar {
+      width: 90px;
+      height: 18px;
+      background-color: #d4d4d4;
+      border-radius: 4px;
+    }
+    @media (max-width: 1024px) {
+      .wn-inner {
+        padding: 60px 40px 80px;
+      }
+      .wn-main-heading {
+        font-size: 40px;
+        line-height: 44px;
+        letter-spacing: -1px;
+        max-width: 520px;
+      }
+      .wn-grid {
+        flex-wrap: wrap;
+      }
+      .wn-col {
+        flex: 1 1 calc(50% - 4px);
+        min-width: calc(50% - 4px);
+      }
+    }
+    @media (max-width: 768px) {
+      .wn-inner {
+        padding: 48px 20px 60px;
+      }
+      .wn-main-heading {
+        font-size: 30px;
+        line-height: 34px;
+        letter-spacing: -0.5px;
+        max-width: 100%;
+      }
+      .wn-eyebrow {
+        font-size: 14px;
+      }
+      .wn-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        max-width: 320px;
+      }
+      .wn-grid {
+        flex-direction: column;
+      }
+      .wn-col {
+        flex: 1 1 100%;
+        min-width: 100%;
+      }
+      .wn-card-copy {
+        padding: 20px 16px 0;
+      }
+      .wn-skeleton-bar {
+        max-width: 100%;
+      }
+    }
+  </style>
+
+  <div class="wn-inner">
+
+    <!-- Section Heading -->
+    <div class="wn-heading-group">
+      <div class="wn-copy-group">
+        <p class="wn-eyebrow">Features and Releases</p>
+        <h2 class="wn-main-heading">There's always something new with Acrobat.</h2>
+      </div>
+      <div class="wn-buttons">
+        <button class="wn-btn-primary">Label</button>
+        <button class="wn-btn-secondary">Label</button>
+      </div>
+    </div>
+
+    <!-- Grid Row 1: Featured Content Cards -->
+    <div class="wn-grid">
+
+      <!-- PDF to Podcast -->
+      <article class="wn-col">
+        <img src="media_bizpro-hub-asset.png" alt="PDF to Podcast" class="wn-card-img" width="387" height="294" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-group">
+            <h3 class="wn-card-heading">PDF to Podcast</h3>
+            <p class="wn-card-body">Convert any PDF into audio playback, with options to hear a quick overview or a complete narration.</p>
+          </div>
+          <a href="#" class="wn-card-cta">
+            <span class="wn-card-cta-label">Learn more</span>
+            <span class="wn-card-cta-arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+      </article>
+
+      <!-- One-click Brand Kit Setup -->
+      <article class="wn-col">
+        <img src="media_bizpro-hub-asset1.png" alt="One-click Brand Kit Setup" class="wn-card-img" width="387" height="294" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-group">
+            <h3 class="wn-card-heading">One-click Brand Kit Setup</h3>
+            <p class="wn-card-body">Set up a complete brand kit in a single click by automatically extracting logos, colors, and fonts from existing content.</p>
+          </div>
+          <a href="#" class="wn-card-cta">
+            <span class="wn-card-cta-label">Learn more</span>
+            <span class="wn-card-cta-arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+      </article>
+
+      <!-- AI-Powered Video Highlights -->
+      <article class="wn-col">
+        <img src="media_bizpro-hub-asset2.png" alt="AI-Powered Video Highlights" class="wn-card-img" width="387" height="294" />
+        <div class="wn-card-copy">
+          <div class="wn-card-text-group">
+            <h3 class="wn-card-heading">AI-Powered Video Highlights</h3>
+            <p class="wn-card-body">Upload any video and let Adobe Express automatically find the highlights, add captions, and export in any aspect ratio.</p>
+          </div>
+          <a href="#" class="wn-card-cta">
+            <span class="wn-card-cta-label">Learn more</span>
+            <span class="wn-card-cta-arrow" aria-hidden="true"></span>
+          </a>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- Grid Row 2: Placeholder / Upcoming Cards -->
+    <div class="wn-grid">
+
+      <!-- Placeholder Card 1 -->
+      <article class="wn-col" aria-hidden="true">
+        <div class="wn-card-placeholder"></div>
+        <div class="wn-card-copy">
+          <div class="wn-skeleton-copy-group">
+            <div class="wn-skeleton-bar" style="width:286px; height:41px;"></div>
+            <div class="wn-skeleton-bar" style="width:336px; height:32px;"></div>
+          </div>
+          <div class="wn-skeleton-cta-bar"></div>
+        </div>
+      </article>
+
+      <!-- Placeholder Card 2 -->
+      <article class="wn-col" aria-hidden="true">
+        <div class="wn-card-placeholder"></div>
+        <div class="wn-card-copy">
+          <div class="wn-skeleton-copy-group">
+            <div class="wn-skeleton-bar" style="width:311px; height:45px;"></div>
+            <div class="wn-skeleton-bar" style="width:329px; height:36px;"></div>
+          </div>
+          <div class="wn-skeleton-cta-bar"></div>
+        </div>
+      </article>
+
+      <!-- Placeholder Card 3 -->
+      <article class="wn-col" aria-hidden="true">
+        <div class="wn-card-placeholder"></div>
+        <div class="wn-card-copy">
+          <div class="wn-skeleton-copy-group">
+            <div class="wn-skeleton-bar" style="width:302px; height:41px;"></div>
+            <div class="wn-skeleton-bar" style="width:247px; height:35px;"></div>
+          </div>
+          <div class="wn-skeleton-cta-bar"></div>
+        </div>
+      </article>
+
+    </div>
+
+  </div>
+</section>

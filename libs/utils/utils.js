@@ -144,6 +144,10 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-create-beautifully',
+  'forge-there-s-always-something-new-with-acrobat',
+  'forge-try-pdf-space-knowledge-hubs-for-free',
+  'forge-with-great-power-comes-great-productivity',
 ];
 
 const AUTO_BLOCKS = [
