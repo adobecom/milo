@@ -188,7 +188,9 @@
   right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
   bottom: var(--s2a-spacing-lg);  /* 24px gap under the image */
   z-index: 2;
-  width: 275px;
+  /* Match the desktop image ratio (650:766). Width derives from the height, so
+     the aspect stays consistent with desktop at every size (S/M). */
+  aspect-ratio: 650 / 766;
   /* S: full 360px at >=742px tall; shrinks on shorter viewports down to a
      265px floor. Below the floor the image rises into the divider and JS hides it. */
   height: clamp(265px, 100dvh - 382px, 360px);
@@ -244,8 +246,7 @@
   .rcc-media-wrapper {
     /* M: bottom-right (inherited), 24px gap under the image. */
     bottom: var(--s2a-spacing-lg);
-    width: 397px;
-    /* M: full 560px at >=944px tall; shrinks down to a 252px floor. */
+    /* M: width derives from height via the base aspect-ratio (475:560 at full). */
     height: clamp(252px, 100dvh - 384px, 560px);
     border-radius: var(--s2a-border-radius-md);
   }
@@ -308,6 +309,7 @@
     right: auto;
     bottom: auto;
     z-index: auto;
+    aspect-ratio: auto; /* width is the fixed column here, not derived from ratio */
     flex: 0 0 650px; /* fixed width — do not grow or shrink */
     align-self: flex-start; /* top-anchored at the 160px content padding */
     /* L/XL: full 766px at >=950px tall; shrinks down to a 450px floor,
