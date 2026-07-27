@@ -331,7 +331,6 @@ body[data-mep-mas-highlight='true'] [data-mas-block='ost'] {
 a.mep-mas-edit-badge,
 body a.mep-mas-edit-badge {
   top: 0;
-  transform: translateY(-100%);
   display: inline-block;
   text-decoration: none;
 }
