@@ -2,9 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200; // px of scroll travel allocated per app
-const M_BREAKPOINT = 768; // media grows / absolute-positioned panel
 const L_BREAKPOINT = 1280; // two-column layout kicks in here
-const M_TOP_INSET = 48; // M: image top margin (app-icon area) the names start below
 
 function prepPic(picture) {
   if (!picture) return null;
@@ -227,10 +225,8 @@ function decorate(block) {
     // The highlight lock line — where the active app name sits — differs by grid:
     //  - L/XL: line at the image BOTTOM; active name is bottom-aligned to it, so
     //    it sits just above the image bottom and the list scrolls up through it.
-    //  - M:    line just below the image's TOP margin (app-icon area); active
-    //    name is top-aligned there and the list flows downward.
-    //  - S:    line at the image TOP; active name is bottom-aligned so it sits a
-    //    little above the image top, and the list flows downward.
+    //  - S/M:  line one name-height ABOVE the image TOP; active name is
+    //    bottom-aligned so it sits a little above the image, list flows downward.
     let lineY;
     let bottomAlign;
     if (block.classList.contains('rcc-reflow') || mediaHidden) {
@@ -243,12 +239,9 @@ function decorate(block) {
     } else if (w >= L_BREAKPOINT) {
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
-    } else if (w >= M_BREAKPOINT) {
-      lineY = mediaRect.top - wrapRect.top + M_TOP_INSET;
-      bottomAlign = false;
     } else {
-      // S: lift the lock line one name-height above the image top so the active
-      // name starts higher and the next name is also visible above the image.
+      // S/M: lift the lock line one name-height above the image top so the
+      // active name sits a little above the image and the next name is visible.
       lineY = mediaRect.top - wrapRect.top - itemH;
       bottomAlign = true;
     }
