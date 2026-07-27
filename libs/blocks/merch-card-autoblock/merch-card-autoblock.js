@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
@@ -171,6 +171,17 @@ function copyMasFieldIdToParent(masField, name) {
   }
 }
 
+function preserveInlineCommerceContext(masField, content) {
+  const promotionCode = masField.getAttribute('data-promotion-code');
+  if (promotionCode) {
+    content.querySelectorAll('span[is="inline-price"]:not([data-promotion-code]), a[is="checkout-link"]:not([data-promotion-code]), button[is="checkout-button"]:not([data-promotion-code])')
+      .forEach((commerceEl) => commerceEl.setAttribute('data-promotion-code', promotionCode));
+  }
+  if (content.querySelector('span[is="inline-price"]')) {
+    loadStyle(`${getConfig().base}/blocks/merch/merch.css`);
+  }
+}
+
 /**
  * Hoists a resolved inline CTA into the authored em/strong and runs decorateButtons.
  * Deferred until every CTA mas-field in the container is hoisted, so a still-wrapped
@@ -217,6 +228,7 @@ function decorateInlineCtas(masField, content) {
   }
   copyMasFieldIdToParent(masField, 'fragment-id');
   copyMasFieldIdToParent(masField, 'variation-id');
+  preserveInlineCommerceContext(masField, content);
   masField.replaceWith(...content.childNodes);
 
   const pendingCTAs = container?.querySelectorAll('em > mas-field, strong > mas-field');
