@@ -1,19 +1,15 @@
-/* ============================================================
-   roller-carousel-copy — S (mobile-first)
-   ============================================================ */
+
 
 .roller-carousel-copy {
   background: var(--s2a-color-background-knockout);
   color: var(--s2a-color-content-knockout);
 }
 
-/* ---------- Scroll wrapper ---------- */
 .rcc-scroll-wrapper {
   position: relative;
-  z-index: 1; /* above the block-level blur layer */
+  z-index: 1;
 }
 
-/* ---------- Sticky container ---------- */
 .rcc-sticky {
   position: sticky;
   top: 0;
@@ -21,9 +17,6 @@
   overflow: hidden;
 }
 
-/* ---------- Background blur layer ---------- */
-/* Lives at block level, pinned behind everything (incl. a detached reflow
-   header), via a negative margin so it doesn't take flow space. */
 .rcc-bg {
   position: sticky;
   top: 0;
@@ -41,11 +34,10 @@
   transition: opacity 0.7s ease;
 }
 
-.rcc-bg-slide--active {
+.rcc-bg-slide.is-active {
   opacity: 1;
 }
 
-/* Extend picture beyond bounds to avoid dark blur edges */
 .rcc-bg-slide picture {
   position: absolute;
   inset: -150px;
@@ -65,30 +57,24 @@
   background: var(--s2a-color-transparent-black-64);
 }
 
-/* ---------- Content layer ---------- */
 .rcc-content {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* S: pt-80 (layout-sm), sides 24px (spacing-lg), no bottom padding so the
-     active app name isn't clipped by the list-wrapper's overflow edge */
   padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) 0;
   box-sizing: border-box;
 }
 
-/* ---------- Left column (single column on S/M) ---------- */
 .rcc-left {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  /* S: 48px (spacing-3xl) gap between header and carousel */
   gap: var(--s2a-spacing-3xl);
 }
 
-/* ---------- Header ---------- */
 .rcc-header {
   display: flex;
   flex-direction: column;
@@ -117,7 +103,6 @@
   padding: 0;
 }
 
-/* ---------- Carousel (category + list) ---------- */
 .rcc-carousel {
   display: flex;
   flex-direction: column;
@@ -126,12 +111,10 @@
   position: relative;
 }
 
-/* ---------- Category label + divider ---------- */
 .rcc-category-wrapper {
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-xs);
-  /* padding-bottom: var(--s2a-spacing-xs); */
   flex-shrink: 0;
 }
 
@@ -143,7 +126,7 @@
   letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
   color: var(--s2a-color-content-knockout);
   white-space: nowrap;
-  margin: 0; /* reset default <h3> margin (used as a heading in reduced motion) */
+  margin: 0;
 }
 
 .rcc-divider {
@@ -151,7 +134,6 @@
   background: rgba(255 255 255 / 10%);
 }
 
-/* ---------- App name list ---------- */
 .rcc-list-wrapper {
   flex: 1;
   overflow: hidden;
@@ -167,7 +149,7 @@
   padding: 0;
   list-style: none;
   will-change: transform;
-  /* No CSS transition — translateY is driven directly by scroll position */
+
 }
 
 .rcc-item {
@@ -179,33 +161,23 @@
   transition: color 0.3s ease;
   cursor: default;
   user-select: none;
-  /* Keep every name on one line — long names run off to the right (behind the
-     image) and are clipped by the list-wrapper, rather than wrapping. Wrapping
-     would also break the roller, which assumes a uniform item height. */
   white-space: nowrap;
 }
 
-.rcc-item--active {
+.rcc-item.is-active {
   color: var(--s2a-color-content-knockout);
 }
 
-/* ---------- Media panel (absolute on S/M, right-column on L+) ---------- */
 .rcc-media-wrapper {
   position: absolute;
-  /* S: image sticks to the bottom-right corner (per Figma). */
-  right: var(--s2a-spacing-lg);   /* 24px — matches content px padding */
-  bottom: var(--s2a-spacing-lg);  /* 24px gap under the image */
+  right: var(--s2a-spacing-lg);
+  bottom: var(--s2a-spacing-lg);
   z-index: 2;
-  /* Match the desktop image ratio (650:766). Width derives from the height, so
-     the aspect stays consistent with desktop at every size (S/M). */
   aspect-ratio: 650 / 766;
-  /* S: full 360px at >=742px tall; shrinks on shorter viewports down to a
-     265px floor. Below the floor the image rises into the divider and JS hides it. */
   height: clamp(265px, 100dvh - 382px, 360px);
   border-radius: var(--s2a-border-radius-sm);
   overflow: hidden;
 }
-
 
 .rcc-media-slide {
   position: absolute;
@@ -214,8 +186,23 @@
   transition: opacity 0.7s ease;
 }
 
-.rcc-media-slide--active {
+.rcc-media-slide.is-active {
   opacity: 1;
+}
+
+.rcc-media-icon {
+  position: absolute;
+  top: var(--s2a-spacing-md);
+  left: var(--s2a-spacing-md);
+  width: 24px;
+  height: 24px;
+  z-index: 1;
+}
+
+.rcc-media-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .rcc-media-slide > picture {
@@ -230,36 +217,13 @@
   object-fit: cover;
 }
 
-/* App icon badge overlaid on the foreground image. Mobile (S) base: 24x24 @ 16px;
-   overridden per breakpoint below — M: 32x32 @ 24px, L: 32x32 @ 16px. */
-.rcc-media-icon {
-  position: absolute;
-  top: var(--s2a-spacing-md);   /* 16px */
-  left: var(--s2a-spacing-md);  /* 16px */
-  width: 24px;
-  height: 24px;
-  z-index: 1;
-}
-
-.rcc-media-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* ============================================================
-   M — 768px
-   ============================================================ */
 @media (width >= 768px) {
   .rcc-media-wrapper {
-    /* M: bottom-right (inherited), 24px gap under the image. */
     bottom: var(--s2a-spacing-lg);
-    /* M: width derives from height via the base aspect-ratio (475:560 at full). */
     height: clamp(252px, 100dvh - 384px, 560px);
     border-radius: var(--s2a-border-radius-md);
   }
 
-  /* M: icon 32x32 @ 24px */
   .rcc-media-icon {
     top: var(--s2a-spacing-lg);
     left: var(--s2a-spacing-lg);
@@ -268,23 +232,17 @@
   }
 }
 
-/* ============================================================
-   L — 1280px  (two-column layout)
-   ============================================================ */
 @media (width >= 1280px) {
   .rcc-content {
     flex-direction: row;
     align-items: stretch;
-    /* pt-160 (layout-xl), px-24 (spacing-lg), no bottom padding so the active
-       app name clears the list-wrapper's overflow edge */
     padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
-    padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md)); /* +16px for inner content offset */
+    padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
     gap: 0;
   }
 
   .rcc-left {
     flex: 1;
-    /* 96px (layout-md) gap between header and carousel */
     gap: var(--s2a-layout-md);
   }
 
@@ -294,41 +252,28 @@
 
   .rcc-carousel {
     flex: 1;
-    /* Design caps the carousel column (title + divider + list) at 759px, so the
-       divider reaches the image near 1440 but stops short as the viewport widens
-       instead of stretching all the way to the image. */
     max-width: 759px;
   }
 
-  .rcc-category-wrapper {
-    /* padding-bottom: var(--s2a-spacing-md);  */
-  }
-
-  /* Switch app names to super size at L */
   .rcc-item {
     font-size: var(--s2a-typography-font-size-super);
     line-height: var(--s2a-typography-line-height-super);
     letter-spacing: var(--s2a-typography-letter-spacing-super);
   }
 
-  /* Media becomes a flex child on the right column */
   .rcc-media-wrapper {
     position: relative;
     right: auto;
     bottom: auto;
     z-index: auto;
-    aspect-ratio: auto; /* width is the fixed column here, not derived from ratio */
-    flex: 0 0 650px; /* fixed width — do not grow or shrink */
-    align-self: flex-start; /* top-anchored at the 160px content padding */
-    /* L/XL: full 766px at >=950px tall; shrinks down to a 450px floor,
-       keeping the 24px gap below (160px top padding + 24px). Image stays
-       top-anchored near the top; excess height falls below, filled by the blur. */
+    aspect-ratio: auto;
+    flex: 0 0 650px;
+    align-self: flex-start;
     height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
     border-radius: var(--s2a-border-radius-md);
     overflow: hidden;
   }
 
-  /* L: icon 32x32 @ 16px (reset M's 24px offset, which also matches here) */
   .rcc-media-icon {
     top: var(--s2a-spacing-md);
     left: var(--s2a-spacing-md);
@@ -337,9 +282,6 @@
   }
 }
 
-/* ============================================================
-   XL — 1440px
-   ============================================================ */
 @media (width >= 1440px) {
   .rcc-content {
     max-width: 1920px;
@@ -347,14 +289,6 @@
   }
 }
 
-/* ============================================================
-   Reflow — toggled by JS (.rcc-reflow) when the divider/category sits too
-   close to the viewport bottom (little room for the roller, e.g. a tall header
-   at high zoom). The hero header is detached to normal flow (scrolls away) in
-   front of the block-level blur; the sticky carousel pins from the section title.
-   ============================================================ */
-/* Detached header sits at the top of the section, over the blur, and scrolls
-   away. z-index keeps it above the block-level blur layer. */
 .roller-carousel-copy.rcc-reflow > .rcc-header {
   position: relative;
   z-index: 1;
@@ -364,32 +298,19 @@
   padding: var(--s2a-layout-sm) var(--s2a-spacing-lg) var(--s2a-spacing-3xl);
 }
 
-/* Sticky content now starts with the category. No extra top padding — the
-   header's bottom padding provides the normal header→category gap, unchanged
-   from the pinned layout. */
 .rcc-reflow .rcc-content {
   padding-top: 0;
 }
 
-/* Pin the category BELOW the navbar (in the heading's old spot) via the sticky
-   offset, so only the stuck position shifts down — the pre-scroll gap between
-   the heading and category is unaffected. Height is trimmed by the same amount
-   so the stage still fits the viewport. */
 .rcc-reflow .rcc-sticky {
   top: var(--s2a-layout-sm);
   height: calc(100dvh - var(--s2a-layout-sm));
 }
 
-/* ============================================================
-   Reduced motion — static list view (built by JS as .rcc-reduced-motion)
-   No sticky, no height cap, no roller/images; all app names are focusable
-   buttons grouped under category headers, over the blurred background.
-   ============================================================ */
 .roller-carousel-copy.rcc-reduced-motion {
   position: relative;
 }
 
-/* Blur covers the whole (tall) block and scrolls with it — no sticky/parallax. */
 .rcc-reduced-motion .rcc-bg {
   position: absolute;
   inset: 0;
@@ -403,8 +324,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--s2a-spacing-3xl);
-  /* Single-column list stays left-aligned with a max-width on wide screens;
-     full-width below that (mobile). */
   max-width: 759px;
   padding: var(--s2a-layout-sm) var(--s2a-spacing-lg);
   box-sizing: border-box;
@@ -415,7 +334,6 @@
   flex-direction: column;
 }
 
-/* One <ul> of app names per category (semantic list; reset default styling). */
 .rcc-rm-group {
   display: flex;
   flex-direction: column;
@@ -424,8 +342,6 @@
   list-style: none;
 }
 
-/* Category header (label + divider) above each group; gap above separates
-   groups, small gap below before the names. */
 .rcc-rm-category {
   margin: var(--s2a-spacing-3xl) 0 var(--s2a-spacing-md);
 }
@@ -434,8 +350,6 @@
   margin-top: 0;
 }
 
-/* App name as a focusable button (no action — keyboard/a11y only). Names are
-   tightly stacked, so no vertical padding — the line-height sets the height. */
 .rcc-rm-item {
   appearance: none;
   border: 0;
@@ -455,8 +369,6 @@
   outline-offset: 4px;
 }
 
-/* Roller-only crossfades still get disabled when reduced motion isn't handled
-   by the JS branch (defensive). */
 @media (prefers-reduced-motion: reduce) {
   .rcc-bg-slide,
   .rcc-media-slide {

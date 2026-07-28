@@ -1,8 +1,8 @@
 import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
-const SCROLL_PER_APP = 200; // px of scroll travel allocated per app
-const L_BREAKPOINT = 1280; // two-column layout kicks in here
+const SCROLL_PER_APP = 200;
+const L_BREAKPOINT = 1280;
 
 function prepPic(picture) {
   if (!picture) return null;
@@ -12,7 +12,7 @@ function prepPic(picture) {
 }
 
 function buildBgSlide(app, active) {
-  const slide = createTag('div', { class: `rcc-bg-slide${active ? ' rcc-bg-slide--active' : ''}` });
+  const slide = createTag('div', { class: `rcc-bg-slide${active ? ' is-active' : ''}` });
   const pic = prepPic(app.picture);
   if (pic) slide.append(pic);
   slide.append(createTag('div', { class: 'rcc-bg-overlay' }));
@@ -28,7 +28,7 @@ function buildBg(apps) {
 function buildMedia(apps) {
   const wrapper = createTag('div', { class: 'rcc-media-wrapper' });
   apps.forEach((app, i) => {
-    const slide = createTag('div', { class: `rcc-media-slide${i === 0 ? ' rcc-media-slide--active' : ''}` });
+    const slide = createTag('div', { class: `rcc-media-slide${i === 0 ? ' is-active' : ''}` });
     const pic = prepPic(app.picture);
     if (pic) slide.append(pic);
     const iconPic = prepPic(app.icon);
@@ -57,13 +57,9 @@ function buildHeader(eyebrowText, headingText) {
   return header;
 }
 
-// Reduced-motion: a static, normal-flow list view. No sticky, no height cap,
-// no roller, no product images — every app name is a focusable button grouped
-// under its category header, over the blurred background.
 function buildReducedMotion(block, eyebrowText, headingText, apps) {
   block.classList.add('rcc-reduced-motion');
 
-  // Static blurred background (first app image) behind the whole list.
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
   bg.append(buildBgSlide(apps[0], true));
 
@@ -76,13 +72,11 @@ function buildReducedMotion(block, eyebrowText, headingText, apps) {
   apps.forEach((app) => {
     if (app.category && app.category !== currentCategory) {
       currentCategory = app.category;
-      // Category heading (screen readers can navigate by heading) + divider.
       const catWrap = createTag('div', { class: 'rcc-category-wrapper rcc-rm-category' });
       const catLabel = createTag('h3', { class: 'rcc-category' });
       catLabel.textContent = currentCategory;
       catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' }));
       list.append(catWrap);
-      // A list of this category's apps, labelled by its heading.
       group = createTag('ul', { class: 'rcc-rm-group', 'aria-label': currentCategory });
       list.append(group);
     }
@@ -101,27 +95,20 @@ function decorate(block) {
   const rows = [...block.children];
   if (rows.length < 2) return;
 
-  // --- Parse heading row (first row) ---
   const eyebrowText = rows[0].querySelector('p')?.textContent?.trim() ?? '';
   const headingText = rows[0].querySelector('h1,h2,h3,h4,h5')?.textContent?.trim() ?? '';
 
-  // --- Parse app rows (all rows after first) ---
-  // Authored structure: category rows have 1 col with <h6>; app rows have 2 cols:
-  // col-0 = app name as plain text, col-1 = <picture>.
   const apps = [];
   let currentCategory = '';
   rows.slice(1).forEach((row) => {
     const cols = row.children;
     if (cols.length === 1) {
-      // Category separator row
       currentCategory = cols[0].querySelector('h6')?.textContent?.trim()
         || cols[0].textContent?.trim()
         || currentCategory;
       return;
     }
     const name = cols[0]?.textContent?.trim() ?? '';
-    // App rows now carry two pictures: the app icon (badge) first, then the
-    // foreground image. Older rows with a single picture are just the image.
     const pics = [...row.querySelectorAll('picture')];
     const icon = pics.length > 1 ? pics[0] : null;
     const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
@@ -130,30 +117,23 @@ function decorate(block) {
 
   if (!apps.length) return;
 
-  // Reduced motion: render the static list view instead of the scroll roller.
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     buildReducedMotion(block, eyebrowText, headingText, apps);
     return;
   }
 
-  // --- Scroll wrapper gives the sticky element room to scroll ---
   const scrollWrapper = createTag('div', { class: 'rcc-scroll-wrapper' });
   scrollWrapper.style.height = `calc(100dvh + ${apps.length * SCROLL_PER_APP}px)`;
 
-  // --- Sticky visual container ---
   const sticky = createTag('div', { class: 'rcc-sticky' });
 
-  // Background blur layer
   const bg = buildBg(apps);
 
-  // Content layer
   const content = createTag('div', { class: 'rcc-content' });
   const left = createTag('div', { class: 'rcc-left' });
 
-  // Header (eyebrow + heading)
   const header = buildHeader(eyebrowText, headingText);
 
-  // Category label + divider
   const carousel = createTag('div', { class: 'rcc-carousel' });
   const categoryWrapper = createTag('div', { class: 'rcc-category-wrapper' });
   const categoryLabel = createTag('span', { class: 'rcc-category' });
@@ -161,14 +141,10 @@ function decorate(block) {
   const divider = createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' });
   categoryWrapper.append(categoryLabel, divider);
 
-  // App name list (semantic list for screen readers)
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
   const list = createTag('ul', { class: 'rcc-list', 'aria-label': 'Included apps' });
   apps.forEach((app, i) => {
-    const item = createTag('li', {
-      class: `rcc-item${i === 0 ? ' rcc-item--active' : ''}`,
-      'data-index': String(i),
-    });
+    const item = createTag('li', { class: `rcc-item${i === 0 ? ' is-active' : ''}` });
     item.textContent = app.name;
     list.append(item);
   });
@@ -176,42 +152,33 @@ function decorate(block) {
   carousel.append(categoryWrapper, listWrapper);
   left.append(header, carousel);
 
-  // Media slides (crossfade panel)
   const media = buildMedia(apps);
   content.append(left, media);
   sticky.append(content);
   scrollWrapper.append(sticky);
-  // Blur sits at block level, behind everything, so a detached (reflow) header
-  // still has the blur behind it instead of the block's solid background.
   block.replaceChildren(bg, scrollWrapper);
 
-  // --- Scroll-driven state ---
   const items = [...list.querySelectorAll('.rcc-item')];
   const mediaSlides = [...media.querySelectorAll('.rcc-media-slide')];
   const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
   let activeIdx = 0;
 
-  // Swap active classes + category label — no position logic here
   const activate = (newIdx) => {
     if (newIdx === activeIdx) return;
-    items[activeIdx].classList.remove('rcc-item--active');
-    mediaSlides[activeIdx].classList.remove('rcc-media-slide--active');
-    bgSlides[activeIdx].classList.remove('rcc-bg-slide--active');
+    items[activeIdx].classList.remove('is-active');
+    mediaSlides[activeIdx].classList.remove('is-active');
+    bgSlides[activeIdx].classList.remove('is-active');
     activeIdx = newIdx;
-    items[activeIdx].classList.add('rcc-item--active');
-    mediaSlides[activeIdx].classList.add('rcc-media-slide--active');
-    bgSlides[activeIdx].classList.add('rcc-bg-slide--active');
+    items[activeIdx].classList.add('is-active');
+    mediaSlides[activeIdx].classList.add('is-active');
+    bgSlides[activeIdx].classList.add('is-active');
     categoryLabel.textContent = apps[activeIdx].category;
   };
 
-  // Single update function: moves list continuously with scroll,
-  // then activates whichever item is at the media's bottom border.
   const updatePosition = () => {
     const w = window.innerWidth;
     const mediaRect = media.getBoundingClientRect();
 
-    // S/M: the image is bottom-anchored and, once at its min-height, rises as the
-    // viewport shortens. When its top reaches the divider line above, hide it.
     let mediaHidden = false;
     if (w < L_BREAKPOINT) {
       const dividerBottom = divider.getBoundingClientRect().bottom;
@@ -229,34 +196,20 @@ function decorate(block) {
     if (!wrapRect.height) return;
 
     const itemH = items[0]?.offsetHeight || 32;
-    // The highlight lock line — where the active app name sits — differs by grid:
-    //  - L/XL: line at the image BOTTOM; active name is bottom-aligned to it, so
-    //    it sits just above the image bottom and the list scrolls up through it.
-    //  - S/M:  line one name-height ABOVE the image TOP; active name is
-    //    bottom-aligned so it sits a little above the image, list flows downward.
     let lineY;
     let bottomAlign;
     if (block.classList.contains('rcc-reflow') || mediaHidden) {
-      // No visible image (reflow, or the image has scrolled up into the
-      // divider): highlight the name just below the category heading — offset
-      // down ~half a name-height so it highlights a little before the divider
-      // line and isn't clipped at the top.
       lineY = itemH * 0.5;
       bottomAlign = false;
     } else if (w >= L_BREAKPOINT) {
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
     } else {
-      // S/M: lift the lock line one name-height above the image top so the
-      // active name sits a little above the image and the next name is visible.
       lineY = mediaRect.top - wrapRect.top - itemH;
       bottomAlign = true;
     }
-    // Continuous scroll progress: each SCROLL_PER_APP px moves list by one itemH
     const scrolled = Math.max(0, Math.min(usable, -rect.top));
     const progress = scrolled / SCROLL_PER_APP;
-    // bottom-aligned lines add one itemH so the active name's BOTTOM lands on the
-    // line; top-aligned lines put the active name's TOP directly on the line.
     const offset = bottomAlign ? progress + 1 : progress;
 
     list.style.transform = `translateY(${lineY - offset * itemH}px)`;
@@ -268,14 +221,8 @@ function decorate(block) {
   const ro = new ResizeObserver(updatePosition);
   ro.observe(listWrapper);
 
-  // --- Reflow: content-aware, based on the room below the divider ---
-  // When the divider/category sits too close to the viewport bottom (little room
-  // left for the roller — e.g. a tall header at high zoom), detach the hero
-  // header (into block level, in front of the blur) so it scrolls away and the
-  // sticky pins from the section title (category) down. Placing the header before
-  // the scroll-wrapper means the roller only starts once the sticky engages.
-  const MIN_ROLLER_ROOM = 120; // px needed below the divider for the roller
-  let reflowVpThreshold = 0; // viewport height below which reflow stays on
+  const MIN_ROLLER_ROOM = 120;
+  let reflowVpThreshold = 0;
   const setReflow = (on) => {
     if (on === block.classList.contains('rcc-reflow')) return;
     if (on) {
@@ -289,19 +236,14 @@ function decorate(block) {
   const evaluateReflow = () => {
     const vh = window.innerHeight;
     if (!block.classList.contains('rcc-reflow')) {
-      // Header is in flow — measure the divider's offset within the content
-      // (scroll-independent) and the room that leaves below it when pinned.
       const dividerOffset = divider.getBoundingClientRect().bottom
         - content.getBoundingClientRect().top;
       const roomBelow = vh - dividerOffset;
       if (roomBelow < MIN_ROLLER_ROOM) {
-        // Remember the viewport height at which the room would meet the minimum,
-        // so we can turn reflow back off once it grows past that.
         reflowVpThreshold = vh + (MIN_ROLLER_ROOM - roomBelow);
         setReflow(true);
       }
     } else if (vh > reflowVpThreshold + 40) {
-      // Hysteresis so we don't flip-flop right at the threshold.
       setReflow(false);
     }
   };
@@ -310,9 +252,6 @@ function decorate(block) {
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
-  // One scroll handler: reposition the roller, then re-evaluate reflow. Reflow
-  // must be re-checked on scroll too — if the viewport was zoomed while this
-  // block was off-screen, resize alone won't fire again when you reach it.
   window.addEventListener('scroll', () => {
     updatePosition();
     evaluateReflow();
