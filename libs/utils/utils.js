@@ -2025,7 +2025,7 @@ export async function loadIms() {
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
-        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+        locale, imsClientId, imsScope, imsAdditionalScopes, env, base, adobeid, imsTimeout,
       } = getConfig();
       if (!imsClientId) {
         reject(new Error('Missing IMS Client ID'));
@@ -2036,7 +2036,7 @@ export async function loadIms() {
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
-        scope: imsScope || defaultScope,
+        scope: imsScope || (imsAdditionalScopes?.length ? `${defaultScope},${imsAdditionalScopes.join(',')}` : defaultScope),
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
           ? (() => {
