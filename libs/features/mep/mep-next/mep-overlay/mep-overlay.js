@@ -99,9 +99,23 @@ function updateGnavOffset() {
   }
 }
 
+// Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
+function safeUrl(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    const { protocol } = new URL(url, window.location.origin);
+    return protocol === 'http:' || protocol === 'https:' ? url : '';
+  } catch (e) {
+    return '';
+  }
+}
+
+// Manifest-derived values are set as text, never as createTag's string content
+// arg (which routes through insertAdjacentHTML and would parse markup).
 function buildRow(label, value) {
   const cls = value === 'on' ? 'mep-row-value emphasis' : 'mep-row-value';
-  const row = createTag('div', { class: cls }, value);
+  const row = createTag('div', { class: cls });
+  if (value) row.textContent = String(value);
   return createTag('div', { class: 'mep-row' }, [createTag('h2', {}, label), row]);
 }
 
@@ -119,9 +133,11 @@ function toggleExpandedCard(cardEl) {
 }
 
 function buildManifestCard(manifest) {
-  const link = createTag('a', { href: manifest.editUrl, target: '_blank' }, [
+  const filename = createTag('span', { class: 'mep-manifest-filename' });
+  filename.textContent = manifest.fileName ?? '';
+  const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
     createTag('span', {}, `${manifest.index}. `),
-    createTag('span', { class: 'mep-manifest-filename' }, manifest.fileName),
+    filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
     createTag('span', { class: 'mep-overline' }, 'Manifest'),
@@ -139,7 +155,7 @@ function buildManifestCard(manifest) {
 
   if (manifest.eventStart && manifest.eventEnd) {
     const onRow = buildRow('On', manifest.eventStart);
-    onRow.querySelector('h2').append(createTag('a', { href: `?instant=${manifest.eventStartIso}`, target: '_blank' }, 'Instant'));
+    onRow.querySelector('h2').append(createTag('a', { href: `?instant=${encodeURIComponent(manifest.eventStartIso ?? '')}`, target: '_blank', rel: 'noopener' }, 'Instant'));
     rows.push(onRow, buildRow('Off', manifest.eventEnd));
   }
 
@@ -152,7 +168,8 @@ function buildManifestCard(manifest) {
       ...(option.id && { id: option.id }),
       ...(option.dataManifest && { 'data-manifest': option.dataManifest }),
     };
-    const optEl = createTag('option', attrs, option.label);
+    const optEl = createTag('option', attrs);
+    optEl.textContent = option.label ?? '';
     if (option.selected) optEl.selected = true;
     select.append(optEl);
   });
@@ -259,10 +276,14 @@ async function buildSpoofGeo(card, pageId) {
 }
 
 function buildNestedSection(label, subPairs) {
-  const rows = subPairs.map(([subLabel, subValue]) => createTag('div', { class: 'mep-surfaces-row' }, [
-    createTag('div', { class: 'mep-row-value' }, subLabel),
-    createTag('div', {}, String(subValue ?? '')),
-  ]));
+  const rows = subPairs.map(([subLabel, subValue]) => {
+    const valEl = createTag('div', {});
+    valEl.textContent = subValue == null ? '' : String(subValue);
+    return createTag('div', { class: 'mep-surfaces-row' }, [
+      createTag('div', { class: 'mep-row-value' }, subLabel),
+      valEl,
+    ]);
+  });
   return createTag('div', { class: 'mep-row-section' }, [createTag('h2', {}, label), ...rows]);
 }
 
@@ -420,7 +441,7 @@ function checkAuthAndBuild(pageId) {
 }
 
 function buildDrawer(gnavOffset, pageId) {
-  const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank' });
+  const logoLink = createTag('a', { class: 'logo-mep', href: 'https://main--milo--adobecom.aem.page/docs/authoring/features/mmm/', target: '_blank', rel: 'noopener' });
   logoLink.appendChild(svgIcon('logo-mep'));
 
   const closeBtn = createTag('button', { class: 'icon-close', popovertarget: 'mep-drawer', popovertargetaction: 'hide' });

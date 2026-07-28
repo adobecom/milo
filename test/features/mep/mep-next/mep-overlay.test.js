@@ -395,6 +395,65 @@ describe('init: buildManifestCard — all branches via experiment config', () =>
 });
 
 // ============================================================
+// XSS (review #1): manifest-derived values must render as inert text, not be
+// parsed as HTML. Feeds an <img onerror> payload through name/variant/source
+// and asserts no element is injected and the raw string renders as text.
+// ============================================================
+describe('init: buildManifestCard — XSS payload renders as inert text', () => {
+  let mainEl;
+  let headerEl;
+
+  const XSS = 'x"><img src=x onerror="window.mepXssFired = true">';
+  const xssConfig = {
+    ...BASE_CONFIG,
+    mep: {
+      ...BASE_CONFIG.mep,
+      experiments: [
+        {
+          name: XSS, // → Campaign row (buildRow)
+          manifest: '/frags/mep/xss.json',
+          variantNames: [XSS], // → <option> label
+          selectedVariantName: XSS, // → Experience row (buildRow)
+          source: XSS, // → Source row (buildRow)
+          geoRestriction: null,
+          mktgAction: null,
+          disabled: false,
+        },
+      ],
+    },
+  };
+
+  before(async () => {
+    window.mepXssFired = undefined;
+    setConfig(xssConfig);
+    mainEl = makeMain();
+    headerEl = makeHeader();
+    await init();
+    await wait(150);
+    setConfig(BASE_CONFIG);
+  });
+
+  after(() => {
+    cleanup(mainEl, headerEl);
+    delete window.mepXssFired;
+  });
+
+  it('does not parse injected markup into the DOM (no <img>, onerror never fires)', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card, 'manifest card rendered').to.exist;
+    expect(card.querySelectorAll('img').length).to.equal(0);
+    expect(window.mepXssFired).to.not.equal(true);
+  });
+
+  it('renders the payload as literal text in rows and the option label', () => {
+    const card = mainEl.querySelector('.mep-manifest-card');
+    expect(card.textContent).to.include(XSS);
+    const option = [...card.querySelectorAll('option')].find((o) => o.textContent === XSS);
+    expect(option, 'variant option label rendered as text').to.exist;
+  });
+});
+
+// ============================================================
 // GROUP 3: buildAdditionalManifests — with activities returned
 // Config includes one experiment so the drawer has a base manifest card.
 // auth state: true → true (early return)

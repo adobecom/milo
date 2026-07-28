@@ -115,7 +115,11 @@ export function setBadgeEventListeners() {
     const handleBadgeClick = () => {
       e.preventDefault();
       e.stopImmediatePropagation();
-      if (fragmentPath) window.open(fragmentPath, '_blank');
+      if (!fragmentPath) return;
+      try {
+        const { protocol } = new URL(fragmentPath, window.location.origin);
+        if (protocol === 'http:' || protocol === 'https:') window.open(fragmentPath, '_blank', 'noopener');
+      } catch (err) { /* invalid URL — ignore */ }
     };
 
     const elementStyle = window.getComputedStyle(fragment);
@@ -276,10 +280,14 @@ function adjustBadgePositions() {
 
   allBadges.forEach((el) => el.style.removeProperty('--badge-top-offset'));
 
-  allBadges.forEach((el) => {
-    const badgeHeight = getBadgeHeight(el);
+  // Batch reads then writes: measure every badge first, then apply the
+  // zero-height offsets, so we don't force a layout recalc per element.
+  const measured = allBadges.map((el) => {
     const section = el.closest('.section');
     const height = section ? section.offsetHeight : el.offsetHeight;
+    return { el, badgeHeight: getBadgeHeight(el), height };
+  });
+  measured.forEach(({ el, badgeHeight, height }) => {
     if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + BADGE_SPACING}px`);
   });
 

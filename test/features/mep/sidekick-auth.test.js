@@ -4,6 +4,7 @@ import sinon from 'sinon';
 const { setConfig } = await import('../../../libs/utils/utils.js');
 const {
   isSidekickAuthed,
+  isUngatedHost,
   onSidekickAuth,
 } = await import('../../../libs/features/mep/sidekick-auth.js');
 
@@ -33,6 +34,29 @@ describe('sidekick-auth (/status)', () => {
     sinon.restore();
     document.querySelectorAll('aem-sidekick, helix-sidekick').forEach((el) => el.remove());
     setConfig({ env: { name: 'stage' } });
+  });
+
+  describe('isUngatedHost (gate defaults to on for anything not a preview/dev host)', () => {
+    it('ungates genuine preview/dev surfaces', () => {
+      [
+        'main--milo--adobecom.aem.page',
+        'mep-next-v1--milo--adobecom.hlx.page',
+        'branch--repo--owner.aem.reviews',
+        'localhost',
+        '127.0.0.1',
+      ].forEach((host) => expect(isUngatedHost(host), host).to.be.true);
+    });
+
+    it('gates the public live edge and prod/unknown hosts by default', () => {
+      [
+        'main--milo--adobecom.aem.live', // public live edge — must be gated
+        'mep-next-v1--milo--adobecom.hlx.live',
+        'www.adobe.com',
+        'business.adobe.com',
+        'evil-aem.page.attacker.com', // not a real *.aem.page host
+        'example.com',
+      ].forEach((host) => expect(isUngatedHost(host), host).to.be.false);
+    });
   });
 
   describe('isSidekickAuthed', () => {

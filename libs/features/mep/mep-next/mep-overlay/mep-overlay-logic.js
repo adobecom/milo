@@ -138,6 +138,7 @@ const TARGET_MAP = { postlcp: 'postlcp', true: 'on', false: 'off' };
 
 export function getManifestList() {
   const mepConfig = parseMepConfig();
+  if (!mepConfig) return { manifests: [], manifestParameter: [] };
   const { activities, page } = mepConfig;
   const { pageId = 0 } = page;
   const manifestParameter = [];
@@ -158,8 +159,8 @@ export function getManifestList() {
     } = manifest;
 
     const editPath = normalizePath(url);
-    const variants = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
-    const isDefaultSelected = !variantNames.includes(selectedVariantName) && pageId === 0;
+    const variants = typeof variantNames === 'string' ? variantNames.split('||') : (variantNames ?? []);
+    const isDefaultSelected = !variants.includes(selectedVariantName) && pageId === 0;
 
     if (isDefaultSelected) manifestParameter.push(`${url}--default`);
 

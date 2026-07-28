@@ -14,14 +14,14 @@ test.beforeEach(async ({ page }) => {
 });
 
 // Test 0: highlight options should show correct fragment paths, caas/mas badges
-test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page }) => {
   // The caas/mas highlight badges render instantly once toggled, but under CI
   // contention (shared preview origin) their arrival can exceed the default
   // budget on slower firefox/webkit workers. Widen the ceilings — timeouts are
   // ceilings, not sleeps, so fast runs are unaffected.
   test.setTimeout(60000);
   const BADGE_TIMEOUT = 20000;
-  const URL = `${baseURL}${features[0].path}${miloLibs}`;
+  const URL = `${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -75,8 +75,8 @@ test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, 
 */
 
 // Test 2: the close button should hide the drawer
-test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[2].path}${miloLibs}`;
+test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page }) => {
+  const URL = `${features[2].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -92,8 +92,8 @@ test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, 
 });
 
 // Test 3: the Actions and Summary tabs should switch content
-test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[3].path}${miloLibs}`;
+test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page }) => {
+  const URL = `${features[3].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -116,8 +116,8 @@ test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, 
 });
 
 // Test 4: toggling MEP highlight should set the highlight data attribute on the body
-test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[4].path}${miloLibs}`;
+test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page }) => {
+  const URL = `${features[4].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -136,8 +136,8 @@ test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, 
 });
 
 // Test 5: clicking a card header should expand and collapse the card
-test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[5].path}${miloLibs}`;
+test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page }) => {
+  const URL = `${features[5].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -157,8 +157,8 @@ test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, 
 });
 
 // Test 6: enabling MEP highlight should add the mepHighlight param to the Preview button
-test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[6].path}${miloLibs}`;
+test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page }) => {
+  const URL = `${features[6].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -174,8 +174,8 @@ test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, 
 });
 
 // Test 7: enabling the Preview Link toggle should add mepButton=off to the Preview button
-test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[7].path}${miloLibs}`;
+test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({ page }) => {
+  const URL = `${features[7].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -191,8 +191,8 @@ test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, 
 });
 
 // Test 8: the Summary tab should render the summary cards
-test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[8].path}${miloLibs}`;
+test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({ page }) => {
+  const URL = `${features[8].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 
@@ -207,8 +207,8 @@ test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, 
 });
 
 // Test 9: loading a manifest via the Load Manifest field should apply it to the previewed page
-test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
-  const URL = `${baseURL}${features[9].path}${miloLibs}`;
+test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page }) => {
+  const URL = `${features[9].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
 

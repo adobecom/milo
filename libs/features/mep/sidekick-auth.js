@@ -11,6 +11,7 @@ const ADMIN = 'https://admin.hlx.page';
 const SIDEKICK_SELECTOR = 'aem-sidekick, helix-sidekick';
 const AUTH_EVENTS = ['logged-in', 'logged-out', 'status-fetched'];
 const WATCH_TIMEOUT_MS = 5 * 60 * 1000;
+const AUTH_FETCH_TIMEOUT_MS = 5000;
 // Bounded backoff for extra checks while unauthed (never polls) — rides out the
 // extension not having registered its request rules yet.
 const RETRY_DELAYS_MS = [300, 900];
@@ -49,13 +50,26 @@ export async function isSidekickAuthed() {
   if (!project) return false;
   const { owner, repo, ref } = project;
   const path = window.location.pathname || '/';
+  // owner/repo/ref can come from the DOM (Sidekick config) — encode every
+  // segment; the path keeps its slashes but each segment is encoded.
+  const enc = encodeURIComponent;
+  const encPath = path.split('/').map(enc).join('/');
+  const url = `${ADMIN}/status/${enc(owner)}/${enc(repo)}/${enc(ref)}${encPath}?editUrl=auto`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), AUTH_FETCH_TIMEOUT_MS);
   try {
-    const res = await fetch(`${ADMIN}/status/${owner}/${repo}/${ref}${path}?editUrl=auto`);
+    const res = await fetch(url, { signal: controller.signal });
     if (!res.ok) return false;
     const data = await res.json();
+    // NOTE: a truthy `profile` means the response carried an authenticated
+    // Sidekick session; it does not by itself prove *edit* permission on the
+    // resolved owner/repo. Tightening to a per-repo role check is a tracked
+    // follow-up (review #9), pending confirmation of what /status exposes.
     return !!data?.profile;
   } catch (e) {
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -80,12 +94,21 @@ function watchSidekick(onChange) {
   timeoutId = setTimeout(() => observer.disconnect(), WATCH_TIMEOUT_MS);
 }
 
-// Gate on real prod hosts (host-keyed via prodDomains, so ?env=stage can't turn
-// it off on prod) or when the resolved env is prod (covers ?env=prod for testing
-// on preview hosts). Off these, the drawer is ungated.
+// Only genuine non-prod preview/dev surfaces run ungated: *.aem.page /
+// *.hlx.page (preview), *.aem.reviews, and localhost. Everything else —
+// adobe.com, listed prodDomains, unknown hosts, and the public *.aem.live /
+// *.hlx.live edge — defaults to GATED. The env signal is query-spoofable
+// (?env=stage), so it may only tighten the gate (force prod), never re-open it.
+const UNGATED_HOST = /(^|\.)(aem|hlx)\.(page|reviews)$/;
+export function isUngatedHost(hostname) {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || UNGATED_HOST.test(hostname);
+}
+
 function shouldGate() {
   const { prodDomains, env } = getConfig();
-  return !!prodDomains?.includes(window.location.hostname) || env?.name === 'prod';
+  if (prodDomains?.includes(window.location.hostname)) return true;
+  if (env?.name === 'prod') return true;
+  return !isUngatedHost(window.location.hostname);
 }
 
 /*
