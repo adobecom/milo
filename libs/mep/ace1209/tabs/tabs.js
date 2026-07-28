@@ -257,6 +257,7 @@ const init = async (block) => {
 
   const isRadio = block.classList.contains('radio');
   const isQuiet = block.classList.contains('quiet');
+  block.classList.toggle('pill', !isRadio && !isQuiet);
 
   // Tab Content
   const tabContentContainer = createTag('div', { class: 'tab-content-container' });
