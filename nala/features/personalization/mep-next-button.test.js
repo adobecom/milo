@@ -55,7 +55,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   await expect(mepButtonLoc.masCardActionStack).toHaveCount(0);
 });
 
-/* only works with a real domain (when code is live):
+/* I am leaving this commented out because there is no way to use milolibs on the fully-qualified domain milo.adobe.com. This test will only pass when using the fully-qualified domain milo.adobe.com, so it is not possible ro run this meaningfully. - jp
 
 // Test 1: the mep button only appears with the mep URL parameter
 test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
@@ -206,6 +206,9 @@ test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, 
   await expect(mepButtonLoc.summaryCards).toHaveCount(5);
 });
 
+/*
+Per Drew, we should not run tests against stage that involve m@s per https://adobe-mwp.slack.com/archives/C0442CQHJ69/p1785264610101819?thread_ts=1785261235.160639&cid=C0442CQHJ69
+
 // Test 9: loading a manifest via the Load Manifest field should apply it to the previewed page
 test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL.replace('.aem.live', '.aem.page')}${features[9].path}${miloLibs}`;
@@ -228,3 +231,5 @@ test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, 
   // the manifest should have inserted the accordion onto the page
   await expect(mepButtonLoc.accordion).toBeVisible();
 });
+
+*/
