@@ -148,9 +148,9 @@ function stampMarket(host, pageMarket) {
   }
 }
 
-function annotateCollectionChildren() {
+function annotateCollectionChildren(collectionContainers) {
   const pageMarket = getResolvedPageMarket();
-  document.querySelectorAll('[data-mas-block="collection"]').forEach((container) => {
+  collectionContainers.forEach((container) => {
     const parentUrl = mepMasStudioUrls.get(container);
     if (!parentUrl) return;
     // Re-stamp every pass — data-ims-country arrives async post-WCS.
@@ -340,7 +340,8 @@ function buildMasBadge(url, surface, market, pageMarket) {
 }
 
 export function injectMasBadges() {
-  annotateCollectionChildren();
+  const collectionContainers = document.querySelectorAll('[data-mas-block="collection"]');
+  annotateCollectionChildren(collectionContainers);
   annotateOffers();
   const pageMarket = getResolvedPageMarket();
   // Re-stamp every pass — chips upgrade from pageMarket fallback to data-ims-country post-WCS.
@@ -383,7 +384,7 @@ export function injectMasBadges() {
     el.insertAdjacentElement('beforebegin', a);
     visibleCount += 1;
   });
-  document.querySelectorAll('[data-mas-block="collection"]').forEach((container) => {
+  collectionContainers.forEach((container) => {
     injectSubCollectionBadge(container, pageMarket);
   });
   updateMasNoContentMessage(visibleCount === 0);

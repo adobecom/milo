@@ -221,7 +221,57 @@ describe('getPageUpdates', () => {
     expect(getPageUpdates('Other Fragments')).to.equal('1 Page Updates');
   });
 
-  it('updates the associated .mep-toggle-text value element via MutationObserver', async () => {
+  describe('with a highlight toggle active', () => {
+    before(() => toggleHighlight({ target: { id: TOGGLE_KEYS.mep, checked: true } }));
+    after(() => toggleHighlight({ target: { id: TOGGLE_KEYS.mep, checked: false } }));
+
+    it('updates the associated .mep-toggle-text value element via MutationObserver', async () => {
+      const container = document.createElement('div');
+      container.className = 'mep-toggle-text';
+      const h2 = document.createElement('h2');
+      h2.textContent = 'MEP';
+      const valueEl = document.createElement('p');
+      valueEl.className = 'mep-row-value';
+      valueEl.textContent = '0 Page Updates';
+      container.append(h2, valueEl);
+      document.body.append(container);
+
+      getPageUpdates('MEP');
+
+      const manifestEl = document.createElement('div');
+      manifestEl.setAttribute('data-manifest-id', 'observer-test');
+      document.body.append(manifestEl);
+
+      await new Promise((r) => { setTimeout(r, 100); });
+
+      expect(valueEl.textContent).to.equal('1 Page Updates');
+      manifestEl.remove();
+    });
+
+    it('does not update value element when text already matches the new count', async () => {
+      const container = document.createElement('div');
+      container.className = 'mep-toggle-text';
+      const h2 = document.createElement('h2');
+      h2.textContent = 'MEP';
+      const valueEl = document.createElement('p');
+      valueEl.className = 'mep-row-value';
+      valueEl.textContent = '0 Page Updates';
+      container.append(h2, valueEl);
+      document.body.append(container);
+
+      getPageUpdates('MEP');
+
+      const unrelated = document.createElement('span');
+      document.body.append(unrelated);
+
+      await new Promise((r) => { setTimeout(r, 100); });
+
+      expect(valueEl.textContent).to.equal('0 Page Updates');
+      unrelated.remove();
+    });
+  });
+
+  it('does not update value element when no highlight toggle is active (observer disconnected)', async () => {
     const container = document.createElement('div');
     container.className = 'mep-toggle-text';
     const h2 = document.createElement('h2');
@@ -235,35 +285,13 @@ describe('getPageUpdates', () => {
     getPageUpdates('MEP');
 
     const manifestEl = document.createElement('div');
-    manifestEl.setAttribute('data-manifest-id', 'observer-test');
+    manifestEl.setAttribute('data-manifest-id', 'observer-disconnected-test');
     document.body.append(manifestEl);
 
     await new Promise((r) => { setTimeout(r, 50); });
 
-    expect(valueEl.textContent).to.equal('1 Page Updates');
-    manifestEl.remove();
-  });
-
-  it('does not update value element when text already matches the new count', async () => {
-    const container = document.createElement('div');
-    container.className = 'mep-toggle-text';
-    const h2 = document.createElement('h2');
-    h2.textContent = 'MEP';
-    const valueEl = document.createElement('p');
-    valueEl.className = 'mep-row-value';
-    valueEl.textContent = '0 Page Updates';
-    container.append(h2, valueEl);
-    document.body.append(container);
-
-    getPageUpdates('MEP');
-
-    const unrelated = document.createElement('span');
-    document.body.append(unrelated);
-
-    await new Promise((r) => { setTimeout(r, 50); });
-
     expect(valueEl.textContent).to.equal('0 Page Updates');
-    unrelated.remove();
+    manifestEl.remove();
   });
 });
 

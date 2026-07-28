@@ -458,9 +458,18 @@ async function buildAdditionalManifests() {
   }
 }
 
+let gnavOffsetRaf;
+function scheduleGnavOffsetUpdate() {
+  if (gnavOffsetRaf) return;
+  gnavOffsetRaf = requestAnimationFrame(() => {
+    gnavOffsetRaf = null;
+    updateGnavOffset();
+  });
+}
+
 function setEventListeners() {
-  window.addEventListener('scroll', updateGnavOffset, { passive: true });
-  window.addEventListener('resize', updateGnavOffset, { passive: true });
+  window.addEventListener('scroll', scheduleGnavOffsetUpdate, { passive: true });
+  window.addEventListener('resize', scheduleGnavOffsetUpdate, { passive: true });
 
   const drawerEl = document.querySelector('#mep-drawer');
 
@@ -521,17 +530,27 @@ function setMasObserver() {
     }
   };
 
+  const runRefreshes = () => {
+    refreshPageUpdateCounts();
+    refreshMasSummary();
+    refreshSpoofGeoMas();
+  };
+
   let debounceTimer;
   const masObserver = new MutationObserver(() => {
-    if (!document.querySelector('#mep-drawer')?.matches(':popover-open')) return;
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      refreshPageUpdateCounts();
-      refreshMasSummary();
-      refreshSpoofGeoMas();
-    }, 200);
+    debounceTimer = setTimeout(runRefreshes, 200);
   });
-  masObserver.observe(document.body, { childList: true, subtree: true });
+
+  const drawerEl = document.querySelector('#mep-drawer');
+  drawerEl?.addEventListener('toggle', (event) => {
+    if (event.newState === 'open') {
+      runRefreshes();
+      masObserver.observe(document.body, { childList: true, subtree: true });
+    } else {
+      masObserver.disconnect();
+    }
+  });
 }
 
 async function buildOverlay() {

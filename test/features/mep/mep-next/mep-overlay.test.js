@@ -780,27 +780,29 @@ describe('setEventListeners: scroll and resize → updateGnavOffset', () => {
     setConfig(BASE_CONFIG);
   });
 
-  it('scroll event updates FAB top to gnav bottom + 16', () => {
+  it('scroll event updates FAB top to gnav bottom + 16', async () => {
     window.dispatchEvent(new Event('scroll'));
+    await wait(50);
     expect(parseFloat(mainEl.querySelector('.mep-fab').style.top)).to.equal(76);
   });
 
-  it('scroll event updates drawer top to gnav bottom', () => {
+  it('scroll event updates drawer top to gnav bottom', async () => {
     window.dispatchEvent(new Event('scroll'));
+    await wait(50);
     expect(mainEl.querySelector('#mep-drawer').style.top).to.equal('60px');
   });
 
-  it('resize event updates FAB without throwing', () => {
+  it('resize event updates FAB without throwing', async () => {
     expect(() => window.dispatchEvent(new Event('resize'))).to.not.throw();
+    await wait(50);
   });
 
-  it('calcGnavOffset returns 0 when no header: FAB top = 0 + 16', () => {
-    // Remove header to trigger the !header early-return branch in calcGnavOffset
+  it('calcGnavOffset returns 0 when no header: FAB top = 0 + 16', async () => {
     headerEl.remove();
     window.dispatchEvent(new Event('scroll'));
+    await wait(50);
     const top = parseFloat(mainEl.querySelector('.mep-fab').style.top);
     expect(top).to.equal(16); // 0 (no header) + 16
-    // Restore header for subsequent tests
     document.body.prepend(headerEl);
   });
 });

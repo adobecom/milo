@@ -201,8 +201,6 @@ export function refreshPageUpdateCounts() {
   });
 }
 
-// Collection/sub-collection/CaaS badges are real anchors (see mep-mas.js, mep-caas.js), not
-// ::before pseudo-content — they must be measured on the element itself, not `el, '::before'`.
 const REAL_DOM_BADGE_SELECTOR = '.mep-caas-edit-badge, .mep-mas-edit-badge, .mep-mas-sub-collection-badge';
 
 function getBadgeStyles(el) {
@@ -285,22 +283,12 @@ function adjustBadgePositions() {
     if (height < 10) el.style.setProperty('--badge-top-offset', `-${badgeHeight + BADGE_SPACING}px`);
   });
 
-  // Elements with no client rects at all (e.g. inside a display:none inactive tab panel)
-  // always report a bounding rect of {top:0, left:0, ...} no matter where the page is
-  // scrolled to, unlike real rendered elements whose top is viewport-relative and shifts
-  // with scroll. Left in, they'd sort before/after real badges inconsistently depending on
-  // scroll position and drag unrelated badges down with them — so they're excluded here
-  // rather than just pushed off-screen like the section.offsetHeight < 10 case above.
   const positioned = allBadges
     .filter((el) => el.getClientRects().length > 0)
     .map(getBadgeEntry)
     .filter(Boolean);
   positioned.sort((a, b) => a.top - b.top);
 
-  // Only push a badge down for others it actually overlaps on both axes — comparing against
-  // every already-placed badge, not just a single running cursor, since with badges spread
-  // across multiple columns/sections the nearest conflict isn't always the previous one in
-  // top-sorted order.
   const placed = [];
   positioned.forEach((badge) => {
     const requiredBottom = placed.reduce((max, p) => {
@@ -318,10 +306,29 @@ function adjustBadgePositions() {
 }
 
 function refreshBadges() {
-  // Max-width must be applied first: adjustBadgePositions() measures each badge's rendered
-  // height to stack them, and that height depends on how many lines the text wraps to.
   adjustBadgeMaxWidths();
   adjustBadgePositions();
+}
+
+let badgeAdjustTimer;
+const highlightObserver = new MutationObserver(() => {
+  clearTimeout(badgeAdjustTimer);
+  badgeAdjustTimer = setTimeout(() => {
+    refreshPageUpdateCounts();
+    refreshBadges();
+  }, 50);
+});
+
+function isAnyHighlightActive() {
+  return Object.values(HIGHLIGHT_KEYS).some((key) => document.body.dataset[key] === 'true');
+}
+
+function syncHighlightObserver() {
+  if (isAnyHighlightActive()) {
+    highlightObserver.observe(document.body, { childList: true, subtree: true });
+  } else {
+    highlightObserver.disconnect();
+  }
 }
 
 export function toggleHighlight(event) {
@@ -330,32 +337,23 @@ export function toggleHighlight(event) {
   if (!handler) return;
   document.body.dataset[handler.dataKey] = checked;
   (checked ? handler.on : handler.off).forEach((fn) => fn());
+  syncHighlightObserver();
+  refreshPageUpdateCounts();
   refreshBadges();
 }
 
-let badgeAdjustTimer;
-const highlightObserver = new MutationObserver(() => {
-  refreshPageUpdateCounts();
-  clearTimeout(badgeAdjustTimer);
-  badgeAdjustTimer = setTimeout(refreshBadges, 50);
-});
-highlightObserver.observe(document.body, { childList: true, subtree: true });
-
 let resizeRaf;
 window.addEventListener('resize', () => {
-  if (resizeRaf) return;
+  if (resizeRaf || !isAnyHighlightActive()) return;
   resizeRaf = requestAnimationFrame(() => {
     resizeRaf = null;
     refreshBadges();
   });
 });
 
-// Scrolling never changes badges' position relative to one another, so only max-width
-// (which can change if a badge sits in a horizontally-scrolling container) needs to rerun here —
-// vertical stacking must stay untouched or it'll recompute against mid-scroll measurements.
 let scrollRaf;
 window.addEventListener('scroll', () => {
-  if (scrollRaf) return;
+  if (scrollRaf || !isAnyHighlightActive()) return;
   scrollRaf = requestAnimationFrame(() => {
     scrollRaf = null;
     adjustBadgeMaxWidths();
