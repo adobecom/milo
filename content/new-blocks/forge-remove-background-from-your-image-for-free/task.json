@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-remove-background-from-your-image-for-free",
+  "sectionIndex": 5,
+  "decision": "ambiguous",
+  "score": 0.57,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-5",
+  "figmaUrl": "https://www.figma.com/design/w2VbLPROC36BO0DA0wBgyY/Doodlebug?node-id=11239-129040&m=dev",
+  "figmaNodeId": "11239:129054",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-80ca0d70-ms3yjr74",
+  "miloTargetPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-80ca0d70-ms3yjr74/libs/c2/blocks/forge-remove-background-from-your-image-for-free",
+  "miloBranch": "forge/session-80ca0d70-1f6",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/figma-80ca0d?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

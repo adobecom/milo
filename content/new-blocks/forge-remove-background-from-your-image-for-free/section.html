@@ -1,0 +1,301 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="ambiguous" data-figma-node-id="11239:129054" data-block="news">
+<style>
+  .dbrb-root{width:100%;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;margin:0;padding:0;}
+  .dbrb-root *{box-sizing:border-box;}
+
+  /* ── Nav ── */
+  .dbrb-nav{width:100%;background:#f8f8f8;box-shadow:0 0.6px 0 0 #eaeaea;}
+  .dbrb-nav-con{max-width:889px;margin:0 auto;display:flex;flex-direction:row;justify-content:space-between;align-items:center;padding:0 12px;height:38px;}
+  .dbrb-nav-left{display:flex;flex-direction:row;align-items:center;}
+  .dbrb-logo{height:22px;object-fit:contain;background:#ddd;min-width:56px;border-radius:2px;}
+  .dbrb-nav-menu{display:flex;flex-direction:row;}
+  .dbrb-nav-link{padding:0 7.2px;font-size:8.4px;color:#2c2c2c;text-decoration:none;display:flex;align-items:center;height:38px;white-space:nowrap;}
+  .dbrb-nav-link-b{font-weight:700;}
+  .dbrb-nav-right{display:flex;flex-direction:row;align-items:center;gap:7px;height:38px;}
+  .dbrb-btn-ff{display:flex;align-items:center;gap:4px;background:#3b63fb;border-radius:9px;padding:3px 11px;border:1.2px solid #3b63fb;cursor:pointer;text-decoration:none;}
+  .dbrb-btn-ff-t{font-size:9px;font-weight:700;color:#fff;line-height:11px;}
+  .dbrb-phone{font-size:8.4px;color:#2c2c2c;padding:0 7px;white-space:nowrap;}
+  .dbrb-apps{width:14px;height:14px;object-fit:contain;background:#ccc;border-radius:2px;}
+  .dbrb-btn-si{display:flex;align-items:center;justify-content:center;gap:4px;border:1.2px solid #d4d4d4;border-radius:12px;padding:3px 11px;cursor:pointer;background:transparent;text-decoration:none;}
+  .dbrb-btn-si-t{font-size:9px;font-weight:700;color:#2c2c2c;line-height:11px;}
+
+  /* ── Breadcrumbs ── */
+  .dbrb-bc{width:100%;background:#f8f8f8;box-shadow:0 1.8px 1.8px 0 rgba(142,142,142,.30);}
+  .dbrb-bc-in{max-width:889px;margin:0 auto;display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;min-height:26px;}
+  .dbrb-crumb{font-size:7.2px;color:#707070;line-height:11px;text-decoration:none;}
+  .dbrb-crumb-a{font-size:7.2px;color:#2c2c2c;line-height:11px;}
+
+  /* ── Hero ── */
+  .dbrb-hero{width:100%;background:#111111;position:relative;overflow:hidden;}
+  .dbrb-hero-in{max-width:1153px;margin:0 auto;display:flex;flex-direction:column;align-items:center;}
+  .dbrb-hero-hd{display:flex;flex-direction:column;align-items:center;gap:9.6px;padding:64px 20px 45px;width:100%;}
+  .dbrb-lockup{display:flex;flex-direction:row;align-items:center;gap:6.4px;}
+  .dbrb-app-icon{width:26px;height:26px;border-radius:5px;background:#555;object-fit:contain;}
+  .dbrb-prod-name{font-size:17.6px;font-weight:700;color:#fff;letter-spacing:-0.35px;line-height:22px;}
+  .dbrb-hl-grp{display:flex;flex-direction:column;align-items:center;gap:9.6px;max-width:836px;width:100%;}
+  .dbrb-h1{font-size:51px;font-weight:900;color:#fff;letter-spacing:-1.54px;line-height:51px;text-align:center;margin:0;max-width:641px;}
+  .dbrb-hero-p{font-size:14.4px;color:#fff;line-height:20px;text-align:center;margin:0;max-width:536px;}
+
+  /* ── Demo card ── */
+  .dbrb-demo-wrap{display:flex;flex-direction:column;align-items:center;padding:0 20px 64px;width:100%;}
+  .dbrb-demo-out{width:100%;max-width:801px;border-radius:16px;background:rgba(255,255,255,.2);padding:10px;}
+  .dbrb-demo-in{background:#292929;border-radius:8px;display:flex;flex-direction:row;gap:12.8px;overflow:hidden;min-height:296px;}
+  .dbrb-img-col{position:relative;width:400px;min-width:220px;min-height:296px;flex-shrink:0;overflow:hidden;border-radius:8px;background:#f2f2f2;}
+  .dbrb-img-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;}
+  .dbrb-img-ov{position:absolute;top:0;left:0;width:50%;height:100%;object-fit:cover;}
+  .dbrb-act-frame{position:absolute;bottom:8px;left:8px;right:8px;border-radius:8px;background:#fff;overflow:hidden;min-height:80px;}
+  .dbrb-sp14{width:100%;display:block;min-height:80px;object-fit:cover;border-radius:8px;background:#ccc;}
+  .dbrb-screenshot{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .dbrb-pill{position:absolute;bottom:8px;left:8px;display:flex;flex-direction:row;align-items:center;gap:6.5px;padding:11px 13px 11px 11px;border-radius:7.2px;background:rgba(255,255,255,.15);border:.72px solid rgba(255,255,255,.25);}
+  .dbrb-pill-icon{width:19px;height:19px;border-radius:3px;background:rgba(255,255,255,.3);object-fit:contain;flex-shrink:0;}
+  .dbrb-pill-t{font-size:14.6px;color:#dbdbdb;line-height:18px;letter-spacing:-0.15px;white-space:nowrap;}
+  .dbrb-up-col{flex:1;display:flex;flex-direction:column;gap:19.2px;padding:12.8px;min-width:0;}
+  .dbrb-up-grp{display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;}
+  .dbrb-dz{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:27px 19px;width:100%;border-radius:6.4px;border:.8px solid rgba(255,255,255,.8);overflow:hidden;min-height:226px;cursor:pointer;}
+  .dbrb-dz-icon{width:32px;height:32px;border-radius:4px;background:rgba(255,255,255,.2);object-fit:contain;flex-shrink:0;}
+  .dbrb-up-btn{position:relative;display:flex;justify-content:center;align-items:center;min-width:186px;height:42px;cursor:pointer;}
+  .dbrb-up-btn-bg{position:absolute;inset:0;background:#3b63fb;border-radius:80px;}
+  .dbrb-up-btn-ct{position:relative;display:flex;align-items:center;gap:6.4px;padding:9.6px 19.2px 11.2px;}
+  .dbrb-up-btn-icon{width:19px;height:19px;border-radius:3px;background:rgba(255,255,255,.4);object-fit:contain;flex-shrink:0;}
+  .dbrb-up-btn-t{font-size:15.2px;font-weight:700;color:#fff;line-height:21px;white-space:nowrap;}
+  .dbrb-dz-txt-grp{display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;}
+  .dbrb-dz-p1{font-size:16.8px;font-weight:700;color:#f2f2f2;line-height:16px;text-align:center;margin:0;}
+  .dbrb-dz-p2{font-size:12.8px;color:rgba(255,255,255,.85);line-height:19px;text-align:center;margin:0;font-family:'Adobe Clean Spectrum VF','Adobe Clean',sans-serif;}
+  .dbrb-terms{font-size:11.2px;color:rgba(255,255,255,.7);line-height:14px;text-align:center;margin:0;max-width:278px;}
+
+  /* ── White section ── */
+  .dbrb-white{width:100%;background:#fff;}
+  .dbrb-title-blk{display:flex;flex-direction:column;align-items:center;gap:19.2px;padding:64px 144px 0;max-width:1153px;margin:0 auto;}
+  .dbrb-title-wr{display:flex;flex-direction:column;align-items:center;gap:19.2px;max-width:806px;width:100%;}
+  .dbrb-h2{font-size:35.2px;font-weight:900;color:#000;letter-spacing:-1.41px;line-height:35px;text-align:center;margin:0;}
+  .dbrb-sec-p{font-size:16px;color:#2c2c2c;line-height:21px;text-align:center;margin:0;}
+  .dbrb-cta-row{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:12.8px;flex-wrap:wrap;}
+  .dbrb-cta{display:flex;flex-direction:row;align-items:center;gap:4.8px;padding:11px 19.2px;border-radius:80px;border:.8px solid #000;text-decoration:none;cursor:pointer;background:transparent;}
+  .dbrb-cta-sec{border-color:rgba(209,209,251,.2);}
+  .dbrb-cta-t{font-size:11.2px;font-weight:600;color:#000;line-height:11px;letter-spacing:.11px;white-space:nowrap;}
+  .dbrb-cta-ic{width:10px;height:10px;background:#000;border-radius:2px;object-fit:contain;flex-shrink:0;}
+
+  /* ── Feature rows ── */
+  .dbrb-feats{max-width:1153px;margin:0 auto;display:flex;flex-direction:column;gap:80px;padding:64px 0 128px;}
+  .dbrb-frow{display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 144px;}
+  .dbrb-frow-wide{padding:0;}
+  .dbrb-ftxt{display:flex;flex-direction:column;gap:32px;max-width:335px;flex-shrink:0;}
+  .dbrb-ftxt-w{max-width:416px;}
+  .dbrb-eyebrow{font-size:12.8px;font-weight:700;color:#000;line-height:16px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6.4px;}
+  .dbrb-fh3{font-size:28.8px;font-weight:900;color:#000;letter-spacing:-0.86px;line-height:28px;margin:0;}
+  .dbrb-fbody{font-size:16px;color:#5d5d5d;line-height:21px;letter-spacing:.16px;margin:0;}
+  .dbrb-fcard{width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,.3);overflow:hidden;flex-shrink:0;display:flex;flex-direction:row;justify-content:flex-end;align-items:flex-end;}
+  .dbrb-fcard img{width:57px;height:46px;padding:6.4px;object-fit:contain;}
+
+  /* ── Responsive 1024px ── */
+  @media(max-width:1024px){
+    .dbrb-nav-menu{display:none;}
+    .dbrb-title-blk{padding:48px 32px 0;}
+    .dbrb-frow,.dbrb-frow-wide{flex-direction:column;padding:0 32px;align-items:stretch;gap:32px;}
+    .dbrb-ftxt,.dbrb-ftxt-w{max-width:100%;}
+    .dbrb-fcard{width:100%;height:auto;min-height:280px;aspect-ratio:520/535;}
+    .dbrb-demo-in{flex-direction:column;}
+    .dbrb-img-col{width:100%;height:220px;min-height:220px;min-width:unset;}
+    .dbrb-feats{gap:48px;padding:48px 0 80px;}
+    .dbrb-h1{font-size:38px;line-height:40px;}
+  }
+
+  /* ── Responsive 768px ── */
+  @media(max-width:768px){
+    .dbrb-h1{font-size:28px;line-height:30px;letter-spacing:-0.7px;}
+    .dbrb-h2{font-size:24px;line-height:26px;}
+    .dbrb-fh3{font-size:22px;line-height:24px;}
+    .dbrb-hero-hd{padding:40px 16px 28px;}
+    .dbrb-demo-wrap{padding:0 12px 48px;}
+    .dbrb-title-blk{padding:32px 16px 0;}
+    .dbrb-frow,.dbrb-frow-wide{padding:0 16px;}
+    .dbrb-feats{gap:40px;padding:36px 0 64px;}
+    .dbrb-phone{display:none;}
+    .dbrb-fcard{min-height:200px;}
+    .dbrb-up-btn{min-width:160px;}
+    .dbrb-up-btn-t{font-size:13px;}
+  }
+</style>
+
+<div class="dbrb-root">
+
+  <!-- ── Nav bar (Frame 2147230403 / 11239:129133) ── -->
+  <div class="dbrb-nav" data-node-id="11239:129133">
+    <div class="dbrb-nav-con">
+      <div class="dbrb-nav-left" data-node-id="11239:129135">
+        <img src="media_db-remove-background-logo.png" alt="Adobe" class="dbrb-logo" data-node-id="11239:129142" />
+        
+      </div>
+      <div class="dbrb-nav-right" data-node-id="11239:129153">
+        <a href="#" class="dbrb-btn-ff" data-node-id="11239:129156">
+          <span class="dbrb-btn-ff-t">Go to Firefly</span>
+        </a>
+        <span class="dbrb-phone" data-node-id="11239:129158">1-800-685-4193</span>
+        <img src="media_db-remove-background-applications.png" alt="Applications" class="dbrb-apps" data-node-id="11239:129159" />
+        <a href="#" class="dbrb-btn-si" data-node-id="11239:129171">
+          <span class="dbrb-btn-si-t">Sign in</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Breadcrumbs (11239:129172) ── -->
+  <div class="dbrb-bc" data-node-id="11239:129172">
+    <div class="dbrb-bc-in">
+      <a href="#" class="dbrb-crumb">Home</a>
+      <span class="dbrb-crumb">/</span>
+      <a href="#" class="dbrb-crumb">Adobe Creative Cloud</a>
+      <span class="dbrb-crumb">/</span>
+      <a href="#" class="dbrb-crumb">Adobe Firefly</a>
+      <span class="dbrb-crumb">/</span>
+      <a href="#" class="dbrb-crumb">Features</a>
+      <span class="dbrb-crumb">/</span>
+      <span class="dbrb-crumb-a">AI Image Upscaler</span>
+    </div>
+  </div>
+
+  <!-- ── Dark hero section (11239:129055) ── -->
+  <div class="dbrb-hero" data-node-id="11239:129055">
+    <div class="dbrb-hero-in">
+
+      <!-- Hero header -->
+      <div class="dbrb-hero-hd" data-node-id="11239:129060">
+        <!-- Product lockup -->
+        <div class="dbrb-lockup" data-node-id="11239:129063">
+          <img src="media_db-remove-background-appIcon.png" alt="App icon" class="dbrb-app-icon" data-node-id="I11239:129063;22826:46725" />
+          <span class="dbrb-prod-name">Adobe Firefly</span>
+        </div>
+        <!-- Headline + description -->
+        <div class="dbrb-hl-grp" data-node-id="11239:129064">
+          <h1 class="dbrb-h1" data-node-id="11239:129065">Remove background from your image for free.</h1>
+          <p class="dbrb-hero-p" data-node-id="11239:129067">Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.</p>
+        </div>
+      </div>
+
+      <!-- Demo card -->
+      <div class="dbrb-demo-wrap" data-node-id="11239:129068">
+        <div class="dbrb-demo-out" data-node-id="11239:129070">
+          <div class="dbrb-demo-in" data-node-id="11239:129073">
+
+            <!-- Left: before/after images -->
+            <div class="dbrb-img-col" data-node-id="11239:129074">
+              <img src="media_db-remove-background-image50.png" alt="image 50" class="dbrb-img-bg" data-node-id="11239:129075" />
+              <img src="media_db-remove-background-image51.png" alt="image 51" class="dbrb-img-ov" data-node-id="11239:129076" />
+              <!-- Firefly action card -->
+              <div class="dbrb-act-frame" data-node-id="11239:129078">
+                <img src="media_db-remove-background-sp14.png" alt="SP_14" class="dbrb-sp14" data-node-id="11239:129079" />
+                <img src="media_db-remove-background-screenshot20260426At92754Pm1.png" alt="Screenshot 2026-04-26 at 9.27.54 PM" class="dbrb-screenshot" data-node-id="11239:129080" />
+                <div class="dbrb-pill" data-node-id="11239:129081">
+                  <img src="media_db-remove-background-s2iconimagebackgroundremove20n.png" alt="Remove background" class="dbrb-pill-icon" data-node-id="11239:129084" />
+                  <span class="dbrb-pill-t">Remove background</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: upload drop zone -->
+            <div class="dbrb-up-col" data-node-id="11239:129086">
+              <div class="dbrb-up-grp" data-node-id="11239:129087">
+                <div class="dbrb-dz" data-node-id="11239:129088">
+                  <img src="media_db-remove-background-s2iconimage20n.png" alt="Image" class="dbrb-dz-icon" data-node-id="11239:129089" />
+                  <div class="dbrb-up-btn" data-node-id="11239:129091">
+                    <div class="dbrb-up-btn-bg"></div>
+                    <div class="dbrb-up-btn-ct">
+                      <img src="media_db-remove-background-leadingIcon.png" alt="" class="dbrb-up-btn-icon" data-node-id="I11239:129091;16337:2243" />
+                      <span class="dbrb-up-btn-t">Upload your image</span>
+                    </div>
+                  </div>
+                  <div class="dbrb-dz-txt-grp" data-node-id="11239:129092">
+                    <p class="dbrb-dz-p1" data-node-id="11239:129093">Or drag and drop here</p>
+                    <p class="dbrb-dz-p2" data-node-id="11239:129094">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</p>
+                  </div>
+                </div>
+                <p class="dbrb-terms" data-node-id="11239:129095">By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /hero -->
+
+  <!-- ── White content section (11239:129096) ── -->
+  <div class="dbrb-white" data-node-id="11239:129096">
+
+    <!-- Title + CTAs (11239:129097) -->
+    <div class="dbrb-title-blk" data-node-id="11239:129097">
+      <div class="dbrb-title-wr" data-node-id="11239:129098">
+        <h2 class="dbrb-h2" data-node-id="11239:129100">Lorem ipsum dolor sit amet consectetur.</h2>
+        <p class="dbrb-sec-p" data-node-id="11239:129101">Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.</p>
+      </div>
+      <div class="dbrb-cta-row" data-node-id="11239:129102">
+        <a href="#" class="dbrb-cta" data-node-id="I11239:129102;10401:77785">
+          <span class="dbrb-cta-t">Customer Stories</span>
+          <img src="media_db-remove-background-iconForButton.png" alt="" class="dbrb-cta-ic" />
+        </a>
+        <a href="#" class="dbrb-cta dbrb-cta-sec" data-node-id="I11239:129102;10401:77786">
+          <span class="dbrb-cta-t">Customer Stories</span>
+          <img src="media_db-remove-background-iconForButton.png" alt="" class="dbrb-cta-ic" />
+        </a>
+      </div>
+    </div>
+
+    <!-- Feature card rows (11239:129103) -->
+    <div class="dbrb-feats" data-node-id="11239:129103">
+
+      <!-- Row 1 — text left, card right (11239:129104) -->
+      <div class="dbrb-frow" data-node-id="11239:129104">
+        <div class="dbrb-ftxt" data-node-id="11239:129105">
+          <div>
+            <span class="dbrb-eyebrow" data-node-id="11239:129107">Eyebrow</span>
+            <h3 class="dbrb-fh3" data-node-id="11239:129108">Lorem ipsum dolor sit amet consectetur.</h3>
+          </div>
+          <p class="dbrb-fbody" data-node-id="11239:129109">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+        </div>
+        <div class="dbrb-fcard" data-node-id="11239:129110">
+          <img src="media_db-remove-background-accessibilityMotionControls.png" alt="Accessibility Motion Controls" data-node-id="11239:129111" />
+        </div>
+      </div>
+
+      <!-- Row 2 — card left, text right (11239:129112) -->
+      <div class="dbrb-frow dbrb-frow-wide" data-node-id="11239:129112">
+        <div class="dbrb-fcard" data-node-id="11239:129113">
+          <img src="media_db-remove-background-accessibilityMotionControls.png" alt="Accessibility Motion Controls" data-node-id="11239:129114" />
+        </div>
+        <div class="dbrb-ftxt dbrb-ftxt-w" data-node-id="11239:129115">
+          <h3 class="dbrb-fh3" data-node-id="11239:129116">Lorem ipsum dolor sit amet consectetur.</h3>
+          <p class="dbrb-fbody" data-node-id="11239:129117">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+        </div>
+      </div>
+
+      <!-- Row 3 — text left, card right (11239:129118) -->
+      <div class="dbrb-frow" data-node-id="11239:129118">
+        <div class="dbrb-ftxt" data-node-id="11239:129119">
+          <div>
+            <span class="dbrb-eyebrow" data-node-id="11239:129121">Eyebrow</span>
+            <h3 class="dbrb-fh3" data-node-id="11239:129122">Lorem ipsum dolor sit amet consectetur.</h3>
+          </div>
+          <p class="dbrb-fbody" data-node-id="11239:129123">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+        </div>
+        <div class="dbrb-fcard" data-node-id="11239:129124">
+          <img src="media_db-remove-background-accessibilityMotionControls.png" alt="Accessibility Motion Controls" data-node-id="11239:129125" />
+        </div>
+      </div>
+
+      <!-- Row 4 — card left, text right (11239:129126) -->
+      <div class="dbrb-frow dbrb-frow-wide" data-node-id="11239:129126">
+        <div class="dbrb-fcard" data-node-id="11239:129127">
+          <img src="media_db-remove-background-accessibilityMotionControls.png" alt="Accessibility Motion Controls" data-node-id="11239:129128" />
+        </div>
+        <div class="dbrb-ftxt dbrb-ftxt-w" data-node-id="11239:129129">
+          <h3 class="dbrb-fh3" data-node-id="11239:129130">Lorem ipsum dolor sit amet consectetur.</h3>
+          <p class="dbrb-fbody" data-node-id="11239:129131">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+        </div>
+      </div>
+
+    </div><!-- /dbrb-feats -->
+  </div><!-- /dbrb-white -->
+
+</div><!-- /dbrb-root -->
+</section>
