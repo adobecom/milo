@@ -1,0 +1,23 @@
+.rich-content.forge-loose { max-width: 1440px; margin: 0 auto; }
+
+.rich-content.forge-loose { text-align: center; }
+
+.rich-content.forge-loose .rc-head { max-width: 720px; margin: 0 auto var(--s2a-spacing-48); }
+
+.rich-content.forge-loose h2 {
+    font-size: clamp(var(--s2a-font-size-32), 4.4vw, var(--s2a-font-size-48));
+    letter-spacing: var(--s2a-font-letter-spacing-neg-3_2);
+    font-weight: 800; margin-bottom: var(--s2a-spacing-16); line-height: 1.05;
+  }
+
+.rich-content.forge-loose .rc-head p { font-size: var(--s2a-font-size-20); color: var(--s2a-color-gray-500); }
+
+.rich-content.forge-loose .dark .rich-content .rc-head p { color: var(--s2a-color-gray-500); }
+
+.rich-content.forge-loose { text-align:center; }
+
+.rich-content.forge-loose h2 { font-size: clamp(36px,4.6vw,var(--s2a-font-size-64)); margin-bottom: var(--s2a-spacing-16); }
+
+.rich-content.forge-loose p { font-size:var(--s2a-font-size-20); max-width:600px; margin:0 auto; color:var(--s2a-color-gray-500); }
+
+.rich-content.forge-loose .cta-row { justify-content:center; }
