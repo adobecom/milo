@@ -1115,8 +1115,7 @@
   }
 
   .prompt-card-text {
-    display: flex;
-    flex-wrap: wrap;
+    grid-template-columns: auto;
   }
 
   .prompt-card-text .card-icon {
