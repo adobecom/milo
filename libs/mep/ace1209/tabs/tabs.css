@@ -277,7 +277,12 @@
 
     [role='tablist'] {
       overflow: visible;
-      margin: 0 var(--s2a-spacing-20);
+      margin: 0 var(--s2a-spacing-24);
+    }
+
+    &.quiet > .tabs-wrapper {
+      width: auto;
+      margin: 0;
     }
   }
 
