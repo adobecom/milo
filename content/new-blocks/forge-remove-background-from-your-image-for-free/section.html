@@ -1,0 +1,194 @@
+<section data-binding-source="judge" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="11239:129055" data-block="news" style="width:100%;overflow:hidden;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;">
+  <style>
+    [data-figma-node-id="11239:129055"] .ff-hero-h1{font-size:51.2px;line-height:51px;letter-spacing:-1.54px}
+    [data-figma-node-id="11239:129055"] .ff-tool-row{display:flex;flex-direction:row;gap:12.8px}
+    [data-figma-node-id="11239:129055"] .ff-tool-left{position:relative;width:400px;height:296px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#f2f2f2}
+    [data-figma-node-id="11239:129055"] .ff-tool-right{display:flex;flex-direction:column;gap:19.2px;padding:12.8px;width:369px;min-height:296px;border-radius:8px;flex-shrink:0;box-sizing:border-box}
+    [data-figma-node-id="11239:129055"] .ff-editorial-row{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:40px;padding:0 144px;box-sizing:border-box}
+    [data-figma-node-id="11239:129055"] .ff-card{width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,0.3);overflow:hidden;flex-shrink:0;display:flex;justify-content:flex-end;align-items:flex-end}
+    [data-figma-node-id="11239:129055"] .ff-section-h2{font-size:35.2px;line-height:35px;letter-spacing:-1.41px}
+    @media(max-width:1024px){
+      [data-figma-node-id="11239:129055"] .ff-hero-h1{font-size:36px!important;line-height:40px!important}
+      [data-figma-node-id="11239:129055"] .ff-tool-row{flex-direction:column}
+      [data-figma-node-id="11239:129055"] .ff-tool-left{width:100%!important;height:240px!important}
+      [data-figma-node-id="11239:129055"] .ff-tool-right{width:100%!important}
+      [data-figma-node-id="11239:129055"] .ff-editorial-row{flex-direction:column;padding:0 40px}
+      [data-figma-node-id="11239:129055"] .ff-editorial-row.ff-rev{flex-direction:column-reverse}
+      [data-figma-node-id="11239:129055"] .ff-card{width:100%!important;height:300px!important}
+      [data-figma-node-id="11239:129055"] .ff-section-h2{font-size:28px!important;line-height:32px!important}
+    }
+    @media(max-width:768px){
+      [data-figma-node-id="11239:129055"] .ff-hero-h1{font-size:26px!important;line-height:30px!important}
+      [data-figma-node-id="11239:129055"] .ff-editorial-row{padding:0 20px}
+      [data-figma-node-id="11239:129055"] .ff-cta-row{flex-direction:column;align-items:center}
+      [data-figma-node-id="11239:129055"] .ff-title-pad{padding:40px 20px 0!important}
+      [data-figma-node-id="11239:129055"] .ff-ed-gap{gap:60px!important}
+      [data-figma-node-id="11239:129055"] .ff-card{height:220px!important}
+    }
+  </style>
+
+  <!-- ── DARK HERO + TOOL ── -->
+  <div style="width:100%;background:#111111;">
+    <div style="max-width:1154px;margin:0 auto;box-sizing:border-box;padding:64px 20px 0;">
+
+      <!-- Product lockup + headline -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:9.6px;padding-bottom:44px;">
+
+        <!-- Adobe Firefly wordmark -->
+        <div style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:6.4px;">
+          <img src="media_frame-2147230404-appIcon.png" alt="App icon" width="26" height="26" style="width:26px;height:26px;border-radius:4px;background:#444;flex-shrink:0;object-fit:contain;" />
+          <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:17.6px;line-height:22px;letter-spacing:-0.35px;color:#ffffff;">Adobe Firefly</span>
+        </div>
+
+        <!-- Headline + subhead -->
+        <div style="display:flex;flex-direction:column;align-items:center;gap:9.6px;max-width:836px;width:100%;">
+          <h1 class="ff-hero-h1" style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;color:#ffffff;text-align:center;margin:0;max-width:641px;">Remove background from your image for free.</h1>
+          <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:14.4px;line-height:20px;color:#ffffff;text-align:center;max-width:536px;margin:0;">Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tool card -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 20px 64px;box-sizing:border-box;">
+      <div style="width:801px;max-width:100%;border-radius:16px;background:rgba(255,255,255,0.2);padding:10px;box-sizing:border-box;">
+        <div style="border-radius:8px;background:#292929;overflow:hidden;">
+          <div class="ff-tool-row">
+
+            <!-- LEFT: image comparison panel -->
+            <div class="ff-tool-left">
+              <!-- Base photo (with background) -->
+              <img src="media_frame-2147230404-image50.png" alt="Original image with background" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;border:0.8px solid rgba(255,255,255,0.1);" />
+              <!-- Background-removed overlay -->
+              <img src="media_frame-2147230404-image51.png" alt="Image with background removed" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0.8px solid rgba(255,255,255,0.1);" />
+              <!-- Firefly UI screenshot card -->
+              <div style="position:absolute;bottom:10px;left:10px;right:10px;border-radius:8px;background:#ffffff;overflow:hidden;">
+                <img src="media_frame-2147230404-sp14.png" alt="Adobe Firefly screenshot" style="width:100%;display:block;border-radius:8px;border:1.6px solid rgba(255,255,255,0.15);" />
+                <img src="media_frame-2147230404-screenshot20260426At92754Pm1.png" alt="Firefly UI" style="width:100%;display:block;" />
+                <!-- "Remove background" action pill -->
+                <div style="display:inline-flex;flex-direction:row;align-items:center;gap:6.5px;padding:11px 13px;border-radius:7px;background:rgba(255,255,255,0.15);border:0.72px solid rgba(255,255,255,0.25);margin:8px;">
+                  <img src="media_frame-2147230404-s2iconimagebackgroundremove20n.png" alt="" style="width:19px;height:19px;flex-shrink:0;background:#555;border-radius:2px;" />
+                  <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:14.5px;line-height:18px;letter-spacing:-0.15px;color:#dbdbdb;white-space:nowrap;">Remove background</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: drop zone -->
+            <div class="ff-tool-right">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;height:100%;">
+
+                <!-- Drop zone box -->
+                <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:27px 19px;width:100%;flex:1;border-radius:6.4px;border:0.8px solid rgba(255,255,255,0.9);box-sizing:border-box;overflow:hidden;">
+                  <img src="media_frame-2147230404-s2iconimage20n.png" alt="Image placeholder icon" style="width:32px;height:32px;flex-shrink:0;background:#555;border-radius:2px;object-fit:contain;" />
+
+                  <!-- Upload button -->
+                  <div style="display:flex;justify-content:center;align-items:center;width:100%;">
+                    <button style="display:inline-flex;flex-direction:row;align-items:center;gap:6.4px;padding:9.6px 19.2px 11.2px;border-radius:80px;background:#3b63fb;border:none;cursor:pointer;">
+                      <img src="media_frame-2147230404-leadingIcon.png" alt="" style="width:19px;height:19px;flex-shrink:0;background:rgba(255,255,255,0.3);border-radius:2px;object-fit:contain;" />
+                      <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:15.2px;line-height:21px;color:#ffffff;white-space:nowrap;">Upload your image</span>
+                    </button>
+                  </div>
+
+                  <!-- Hint text -->
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;">
+                    <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:16.8px;line-height:16px;color:#f2f2f2;text-align:center;margin:0;">Or drag and drop here</p>
+                    <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:12.8px;line-height:19px;color:#ffffff;text-align:center;margin:0;">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</p>
+                  </div>
+                </div>
+
+                <!-- Terms -->
+                <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:11.2px;line-height:14px;color:#ffffff;text-align:center;margin:0;max-width:278px;">By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.</p>
+              </div>
+            </div>
+
+          </div><!-- /.ff-tool-row -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ── /DARK HERO ── -->
+
+  <!-- ── WHITE CONTENT SECTION ── -->
+  <div style="width:100%;background:#ffffff;overflow:hidden;">
+    <div style="max-width:1154px;margin:0 auto;padding-bottom:128px;box-sizing:border-box;">
+
+      <!-- Title + CTA block -->
+      <div class="ff-title-pad" style="display:flex;flex-direction:column;align-items:center;gap:19.2px;padding:64px 144px 0;box-sizing:border-box;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:19.2px;max-width:806px;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+            <h2 class="ff-section-h2" style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;color:#000000;text-align:center;margin:0;">Lorem ipsum dolor sit amet consectetur.</h2>
+          </div>
+          <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;color:#2c2c2c;text-align:center;margin:0;">Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.</p>
+        </div>
+
+        <!-- CTAs -->
+        <div class="ff-cta-row" style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:12.8px;">
+          <button style="display:inline-flex;flex-direction:row;align-items:center;gap:4.8px;padding:11px 19.2px;border-radius:80px;border:0.8px solid #000000;background:transparent;cursor:pointer;white-space:nowrap;">
+            <span style="font-family:'Frame Gothic','Adobe Clean',Helvetica,Arial,sans-serif;font-weight:600;font-size:11.2px;line-height:11px;letter-spacing:0.11px;color:#000000;">Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px;height:10px;flex-shrink:0;background:#333;border-radius:1px;object-fit:contain;" />
+          </button>
+          <button style="display:inline-flex;flex-direction:row;align-items:center;gap:4.8px;padding:11px 19.2px;border-radius:80px;border:0.8px solid rgba(209,209,251,0.2);background:transparent;cursor:pointer;white-space:nowrap;">
+            <span style="font-family:'Frame Gothic','Adobe Clean',Helvetica,Arial,sans-serif;font-weight:600;font-size:11.2px;line-height:11px;letter-spacing:0.11px;color:#000000;">Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px;height:10px;flex-shrink:0;background:#333;border-radius:1px;object-fit:contain;" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Editorial card alternating rows -->
+      <div class="ff-ed-gap" style="display:flex;flex-direction:column;gap:120px;margin-top:120px;">
+
+        <!-- ROW 1: text left / card right -->
+        <div class="ff-editorial-row">
+          <div style="display:flex;flex-direction:column;gap:32px;max-width:335px;flex-shrink:0;">
+            <div style="display:flex;flex-direction:column;gap:6.4px;">
+              <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:12.8px;line-height:16px;color:#000000;text-transform:uppercase;letter-spacing:0.5px;">Eyebrow</span>
+              <h3 style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;color:#000000;margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;color:#5d5d5d;margin:0;">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px;height:46px;padding:6.4px;object-fit:contain;" />
+          </div>
+        </div>
+
+        <!-- ROW 2: card left / text right -->
+        <div class="ff-editorial-row ff-rev">
+          <div class="ff-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px;height:46px;padding:6.4px;object-fit:contain;" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:32px;max-width:416px;flex-shrink:0;">
+            <h3 style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;color:#000000;margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;color:#5d5d5d;margin:0;">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+        <!-- ROW 3: text left / card right -->
+        <div class="ff-editorial-row">
+          <div style="display:flex;flex-direction:column;gap:32px;max-width:335px;flex-shrink:0;">
+            <div style="display:flex;flex-direction:column;gap:6.4px;">
+              <span style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:12.8px;line-height:16px;color:#000000;text-transform:uppercase;letter-spacing:0.5px;">Eyebrow</span>
+              <h3 style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;color:#000000;margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;color:#5d5d5d;margin:0;">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px;height:46px;padding:6.4px;object-fit:contain;" />
+          </div>
+        </div>
+
+        <!-- ROW 4: card left / text right -->
+        <div class="ff-editorial-row ff-rev">
+          <div class="ff-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px;height:46px;padding:6.4px;object-fit:contain;" />
+          </div>
+          <div style="display:flex;flex-direction:column;gap:32px;max-width:416px;flex-shrink:0;">
+            <h3 style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;color:#000000;margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p style="font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;color:#5d5d5d;margin:0;">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+      </div><!-- /.ff-ed-gap -->
+    </div>
+  </div>
+  <!-- ── /WHITE CONTENT ── -->
+
+</section>
