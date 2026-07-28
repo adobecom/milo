@@ -743,10 +743,6 @@
   white-space: nowrap;
 }
 
-.floating-input .bc-floating-input .prompt-card-text .card-icon {
-  display: none;
-}
-
 .floating-input .bc-floating-input .prompt-card-text p {
   color: var(--bc-fi-pill-text);
   margin: 0;
@@ -1464,10 +1460,6 @@
 .brand-concierge.marquee .prompt-card-text {
   grid-template-columns: auto;
   padding: 6px 16px;
-}
-
-.brand-concierge.marquee .card-icon {
-  display: none;
 }
 
 .brand-concierge.marquee.dark .prompt-card-button {

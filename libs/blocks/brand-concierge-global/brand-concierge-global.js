@@ -76,7 +76,7 @@ function decorateGnav(cards, input, topNav, el) {
 
     bcWrapper.appendChild(bcGnav);
     const gnavInput = decorateInput(bcGnav, input, { handle: handleInput }, 'bcg-');
-    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, 'bcg-', 'gnav');
+    const gnavCards = decorateCards(bcGnav, cards, { handle: handleSuggestedPrompt, down: promptDown, up: promptUp }, false, 'gnav');
     const brandConcierge = { brandConciergeGlobal: true };
 
     const textarea = document.querySelector('.feds-bc-wrapper textarea');

@@ -227,14 +227,14 @@ export function decorateCards(
   el,
   cards,
   promptEvents,
-  iconPrefix = '',
+  hasIcon = true,
   analyticsType = 'inline',
 ) {
   const cardSection = createTag('section', { class: 'bc-prompt-cards' });
   const cardRows = cards.querySelectorAll(':scope > div');
   cardRows.forEach((card, index) => {
     const cardImage = card.querySelector('picture');
-    const cardText = createTag('div', { class: 'prompt-card-text' }, `${aiIcon(`${iconPrefix}card-icon-${index + 1}`, 'card-icon', null, 16)} <p>${card.textContent.trim()}</p>`);
+    const cardText = createTag('div', { class: 'prompt-card-text' }, `${hasIcon ? aiIcon(`$card-icon-${index + 1}`, 'card-icon', null, 16) : ''} <p>${card.textContent.trim()}</p>`);
     const cardButton = createTag('button', {
       class: 'prompt-card-button no-track',
       'daa-ll': getAnalyticsLabel(`1|BC-suggested_prompt_clicked|${analyticsType}|${cardText.textContent.trim()}`),
@@ -379,7 +379,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
 
   const floatingInput = createTag('section', { class: 'bc-floating-input' });
   decorateInput(floatingInput, input, { handle: floatingInputEvents.inputHandle });
-  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, 'fi-');
+  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, false);
   el.append(floatingInput);
 
   const updateLayout = () => {
