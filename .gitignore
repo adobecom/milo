@@ -28,3 +28,4 @@ mcp-server.log
 *.woff
 *.woff2
 *.eot
+/blocks/
