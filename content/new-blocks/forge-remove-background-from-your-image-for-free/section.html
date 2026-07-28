@@ -1,0 +1,167 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.59" data-binding="below-threshold" data-figma-node-id="11239:129055" data-block="news" style="font-family:'Adobe Clean',sans-serif; width:100%;">
+  <style>
+    .ff129-hero-card { display:flex; flex-direction:row; gap:12.8px; }
+    .ff129-hero-img { width:400px; min-height:296px; position:relative; flex-shrink:0; border-radius:8px; overflow:hidden; background:#1a1a1a; }
+    .ff129-editorial-row { display:flex; flex-direction:row; align-items:center; }
+    .ff129-card { width:520px; height:535px; border-radius:16px; background:#c4c4c4; border:2.4px solid rgba(255,255,255,0.3); overflow:hidden; flex-shrink:0; display:flex; justify-content:flex-end; align-items:flex-end; }
+    @media (max-width:1024px) {
+      .ff129-hero-card { flex-direction:column !important; }
+      .ff129-hero-img { width:100% !important; height:220px !important; min-height:220px !important; }
+      .ff129-editorial-row { flex-direction:column !important; padding:0 24px !important; gap:32px !important; }
+      .ff129-card { width:100% !important; height:300px !important; }
+      .ff129-row-padded { padding:0 24px !important; }
+    }
+    @media (max-width:768px) {
+      .ff129-headline { font-size:32px !important; line-height:36px !important; }
+      .ff129-section-title { font-size:26px !important; line-height:30px !important; }
+      .ff129-title-block { padding-left:24px !important; padding-right:24px !important; }
+    }
+  </style>
+
+  <!-- ── Dark hero: Remove Background ── -->
+  <div style="width:100%; background:#111111;">
+    <div style="max-width:1154px; margin:0 auto; padding:64px 20px 64px;">
+
+      <!-- Product lockup -->
+      <div style="display:flex; justify-content:center; align-items:center; gap:6.4px; margin-bottom:9.6px;">
+        <img src="media_frame-2147230404-appIcon.png" alt="App icon" style="width:26px; height:26px; border-radius:4px; background:#555; flex-shrink:0;" />
+        <span style="font-weight:700; font-size:17.6px; line-height:22px; letter-spacing:-0.35px; color:#ffffff;">Adobe Firefly</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="ff129-headline" style="font-weight:800; font-size:51px; line-height:1; letter-spacing:-1.54px; color:#ffffff; max-width:641px; margin:0 auto 9.6px; text-align:center;">
+        Remove background from your image for free.
+      </h1>
+
+      <!-- Subtext -->
+      <p style="font-size:14.4px; line-height:20px; color:rgba(255,255,255,0.9); max-width:536px; margin:0 auto; text-align:center;">
+        Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.
+      </p>
+
+      <!-- Upload card widget -->
+      <div style="display:flex; justify-content:center; margin-top:64px;">
+        <div style="width:100%; max-width:801px; background:rgba(255,255,255,0.2); border-radius:16px; padding:10px;">
+          <div style="background:#292929; border-radius:8px; overflow:hidden;">
+            <div class="ff129-hero-card">
+
+              <!-- Left: image preview with action chip -->
+              <div class="ff129-hero-img" style="height:296px;">
+                <img src="media_frame-2147230404-image50.png" alt="Original photo" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; border-radius:8px; background:#3a3a3a; border:1px solid rgba(255,255,255,0.1);" />
+                <!-- Remove background chip -->
+                <div style="position:absolute; bottom:12px; left:12px; background:rgba(255,255,255,0.15); backdrop-filter:blur(4px); border:0.72px solid rgba(255,255,255,0.25); border-radius:7.2px; padding:11px 13px;">
+                  <div style="display:flex; align-items:center; gap:6.5px; height:16px;">
+                    <img src="media_frame-2147230404-s2iconimagebackgroundremove20n.png" alt="" style="width:19px; height:19px; background:rgba(255,255,255,0.15); border-radius:3px; flex-shrink:0;" />
+                    <span style="font-size:14.6px; line-height:18px; letter-spacing:-0.15px; color:#dbdbdb; white-space:nowrap;">Remove background</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: drop zone -->
+              <div style="flex:1; min-width:0; padding:12.8px; display:flex; flex-direction:column; gap:12.8px;">
+                <!-- Drop area border box -->
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; padding:27px 19px; border-radius:6.4px; border:0.8px solid rgba(255,255,255,0.65); min-height:200px;">
+                  <img src="media_frame-2147230404-s2iconimage20n.png" alt="" style="width:32px; height:32px; background:rgba(255,255,255,0.2); border-radius:4px;" />
+                  <!-- Upload button -->
+                  <button style="display:inline-flex; align-items:center; gap:6.4px; padding:10px 19px; background:#3b63fb; border-radius:80px; border:none; cursor:pointer; font-family:'Adobe Clean',sans-serif; font-weight:700; font-size:15.2px; line-height:1.4; color:#ffffff; white-space:nowrap;">
+                    <img src="media_frame-2147230404-leadingIcon.png" alt="" style="width:19px; height:19px; background:rgba(255,255,255,0.25); border-radius:3px; flex-shrink:0;" />
+                    Upload your image
+                  </button>
+                  <p style="font-weight:700; font-size:16.8px; line-height:16px; color:#f2f2f2; text-align:center; margin:0;">Or drag and drop here</p>
+                  <p style="font-size:12.8px; line-height:19px; color:rgba(255,255,255,0.85); text-align:center; margin:0;">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</p>
+                </div>
+                <!-- Legal text -->
+                <p style="font-size:11.2px; line-height:14px; color:rgba(255,255,255,0.7); text-align:center; margin:0; max-width:278px; align-self:center;">
+                  By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.
+                </p>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── White content section ── -->
+  <div style="width:100%; background:#ffffff; padding-bottom:128px; overflow:hidden;">
+    <div style="max-width:1154px; margin:0 auto;">
+
+      <!-- Title block + CTAs -->
+      <div class="ff129-title-block" style="display:flex; flex-direction:column; align-items:center; gap:19.2px; padding:64px 98px 0 98px; text-align:center;">
+        <h2 class="ff129-section-title" style="font-weight:800; font-size:35.2px; line-height:1.02; letter-spacing:-1.41px; color:#000000; max-width:700px; margin:0;">
+          Lorem ipsum dolor sit amet consectetur.
+        </h2>
+        <p style="font-size:16px; line-height:21px; color:#2c2c2c; max-width:806px; margin:0;">
+          Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.
+        </p>
+        <!-- CTA buttons -->
+        <div style="display:flex; justify-content:center; gap:12.8px; flex-wrap:wrap;">
+          <button style="display:inline-flex; align-items:center; gap:4.8px; padding:11px 19.2px; border-radius:80px; border:0.8px solid #000000; background:transparent; cursor:pointer; font-family:'Adobe Clean',sans-serif; font-weight:600; font-size:11.2px; line-height:11px; letter-spacing:0.11px; color:#000000;">
+            Customer Stories
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px; height:10px; background:rgba(0,0,0,0.15); border-radius:2px;" />
+          </button>
+          <button style="display:inline-flex; align-items:center; gap:4.8px; padding:11px 19.2px; border-radius:80px; border:0.8px solid rgba(209,209,251,0.2); background:transparent; cursor:pointer; font-family:'Adobe Clean',sans-serif; font-weight:600; font-size:11.2px; line-height:11px; letter-spacing:0.11px; color:#000000;">
+            Customer Stories
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px; height:10px; background:rgba(0,0,0,0.15); border-radius:2px;" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Alternating editorial rows -->
+      <div style="display:flex; flex-direction:column; gap:120px; margin-top:120px;">
+
+        <!-- Row 1: Text (padded left) + Card (right) -->
+        <div class="ff129-editorial-row ff129-row-padded" style="justify-content:space-between; padding:0 144px; gap:32px;">
+          <div style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <div style="display:flex; flex-direction:column; gap:6.4px;">
+              <span style="font-weight:700; font-size:12.8px; line-height:16px; color:#000000; text-transform:uppercase; letter-spacing:0.4px; display:block;">Eyebrow</span>
+              <h3 style="font-weight:800; font-size:28.8px; line-height:1.05; letter-spacing:-0.86px; color:#000000; margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p style="font-size:16px; line-height:21px; letter-spacing:0.16px; color:#5d5d5d; margin:0;">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff129-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; object-fit:contain;" />
+          </div>
+        </div>
+
+        <!-- Row 2: Card (flush left) + Text (centre-right) -->
+        <div class="ff129-editorial-row" style="justify-content:flex-start; padding:0; gap:80px; padding-right:144px;">
+          <div class="ff129-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; object-fit:contain;" />
+          </div>
+          <div style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <h3 style="font-weight:800; font-size:28.8px; line-height:1.05; letter-spacing:-0.86px; color:#000000; margin:0; max-width:416px;">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p style="font-size:16px; line-height:21px; letter-spacing:0.16px; color:#5d5d5d; margin:0;">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+        <!-- Row 3: Text (padded left) + Card (right) -->
+        <div class="ff129-editorial-row ff129-row-padded" style="justify-content:space-between; padding:0 144px; gap:32px;">
+          <div style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <div style="display:flex; flex-direction:column; gap:6.4px;">
+              <span style="font-weight:700; font-size:12.8px; line-height:16px; color:#000000; text-transform:uppercase; letter-spacing:0.4px; display:block;">Eyebrow</span>
+              <h3 style="font-weight:800; font-size:28.8px; line-height:1.05; letter-spacing:-0.86px; color:#000000; margin:0;">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p style="font-size:16px; line-height:21px; letter-spacing:0.16px; color:#5d5d5d; margin:0;">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff129-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; object-fit:contain;" />
+          </div>
+        </div>
+
+        <!-- Row 4: Card (flush left) + Text (centre-right) -->
+        <div class="ff129-editorial-row" style="justify-content:flex-start; padding:0; gap:80px; padding-right:144px;">
+          <div class="ff129-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; object-fit:contain;" />
+          </div>
+          <div style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <h3 style="font-weight:800; font-size:28.8px; line-height:1.05; letter-spacing:-0.86px; color:#000000; margin:0; max-width:416px;">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p style="font-size:16px; line-height:21px; letter-spacing:0.16px; color:#5d5d5d; margin:0;">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</section>
