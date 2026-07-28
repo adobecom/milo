@@ -23,7 +23,7 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   // test 4 will test the negative case for a MEP fragment
 
   await expect(mepButtonLoc.caasBadge).not.toBeVisible();
-  await expect(mepButtonLoc.masCopyIDBadge).not.toBeVisible();
+  await expect(mepButtonLoc.masHighlightActive).toHaveCount(0);
 
   // highlight options
   await mepButtonLoc.mepButton.click();
@@ -41,7 +41,12 @@ test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, 
   await expect(mepButtonLoc.fragment2).toHaveAttribute('data-fragment-display', '/drafts/nala/features/personalization/mep-next-button/fragments/fragment-in-base-page');
 
   await expect(mepButtonLoc.caasBadge).toBeVisible();
-  await expect(mepButtonLoc.masCopyIDBadge).toBeVisible();
+  // Standalone card: mas highlight is engaged and the card is recognized, but it
+  // gets no action stack (Edit/OST/Copy is collection-only). TODO: cover the
+  // collection stack on a dedicated collection test page.
+  await expect(mepButtonLoc.masHighlightActive).toHaveCount(1);
+  await expect(mepButtonLoc.masCardHost.first()).toBeVisible();
+  await expect(mepButtonLoc.masCardActionStack).toHaveCount(0);
 });
 
 /* only works with a real domain (when code is live):

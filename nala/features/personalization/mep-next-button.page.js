@@ -10,7 +10,15 @@ export default class MepButton {
     this.fragment1 = page.locator('.fragment').nth(0);
     this.fragment2 = page.locator('.fragment').nth(1);
     this.caasBadge = page.locator('div:has(#content-as-a-service) .mep-caas-edit-badge');
-    this.masCopyIDBadge = page.locator('div:has(#merch-card) .mep-mas-card-action-copy');
+    // Standalone merch-card (not inside a collection): current contract is a
+    // highlight outline + per-element OST and NO Edit/OST/Copy action stack —
+    // that stack is collection-only (mep-mas.js injectMasBadges).
+    this.masHighlightActive = page.locator('body[data-mep-mas-highlight="true"]');
+    this.masCardHost = page.locator('[data-mas-block="card"]');
+    this.masCardActionStack = page.locator('.mep-mas-card-actions');
+    // TODO: add a collection test page and assert the .mep-mas-card-actions
+    // stack (Edit Card / View in OST / Copy Fragment ID) renders on collection
+    // cards — that surface currently has no NALA coverage.
 
     // tabs
     this.actionsTab = page.locator('.mep-tab').nth(0);
