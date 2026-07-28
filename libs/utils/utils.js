@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-remove-background-from-your-image-for-free',
 ];
 
 const AUTO_BLOCKS = [
