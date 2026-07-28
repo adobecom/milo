@@ -1,0 +1,213 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.59" data-binding="below-threshold" data-figma-node-id="11239:129055" data-block="news" style="width:100%; display:block;">
+  <style>
+    .ffs * { box-sizing: border-box; }
+    @media (max-width: 1024px) {
+      .ffs-hero-pad { padding-top: 40px !important; }
+      .ffs-demo-card { width: 100% !important; }
+      .ffs-demo-inner { flex-direction: column !important; }
+      .ffs-demo-left { width: 100% !important; min-width: unset !important; height: 220px !important; }
+      .ffs-feat-row { flex-direction: column !important; padding-left: 32px !important; padding-right: 32px !important; }
+      .ffs-feat-row-rev { flex-direction: column !important; padding-left: 32px !important; padding-right: 32px !important; }
+      .ffs-feat-card { width: 100% !important; height: 300px !important; max-width: 100% !important; }
+      .ffs-feat-text { width: 100% !important; max-width: 100% !important; }
+    }
+    @media (max-width: 768px) {
+      .ffs-h1 { font-size: 32px !important; line-height: 34px !important; max-width: 100% !important; }
+      .ffs-sub { max-width: 100% !important; }
+      .ffs-h2 { font-size: 26px !important; line-height: 28px !important; }
+      .ffs-h3 { font-size: 22px !important; line-height: 24px !important; }
+      .ffs-white-title { padding-left: 16px !important; padding-right: 16px !important; }
+      .ffs-demo-area { padding: 32px 0 !important; }
+    }
+  </style>
+
+  <!-- ═══ DARK HERO ═══ -->
+  <div class="ffs" style="width:100%; background-color:#111111; overflow:hidden;">
+    <div style="max-width:1154px; margin:0 auto; padding:0 24px; box-sizing:border-box;">
+
+      <!-- Brand + headline block -->
+      <div class="ffs-hero-pad" style="display:flex; flex-direction:column; align-items:center; gap:9.6px; padding-top:64px;">
+
+        <!-- Adobe Firefly product lockup -->
+        <div style="display:flex; flex-direction:row; justify-content:center; align-items:center; width:100%;">
+          <div style="display:flex; flex-direction:row; align-items:center; gap:6.4px;">
+            <img src="media_frame-2147230404-appIcon.png" alt="App icon" style="width:26px; height:26px; flex-shrink:0; display:block; background:#2d2d2d; border-radius:5px;" />
+            <span style="color:#ffffff; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:700; font-size:17.6px; line-height:22px; letter-spacing:-0.35px;">Adobe Firefly</span>
+          </div>
+        </div>
+
+        <!-- Headline + subtitle -->
+        <div style="display:flex; flex-direction:column; align-items:center; gap:9.6px; width:100%; max-width:836px;">
+          <h1 class="ffs-h1" style="color:#ffffff; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:51.24px; line-height:51px; letter-spacing:-1.54px; text-align:center; margin:0; max-width:641px; width:100%;">
+            Remove background from your image for free.
+          </h1>
+          <p class="ffs-sub" style="color:#ffffff; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:14.41px; line-height:20px; text-align:center; margin:0; max-width:536px; width:100%;">
+            Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.
+          </p>
+        </div>
+      </div>
+
+      <!-- Demo card -->
+      <div class="ffs-demo-area" style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; padding:64px 0; box-sizing:border-box;">
+        <!-- Outer translucent card -->
+        <div class="ffs-demo-card" style="width:801px; max-width:100%; border-radius:16px; background:rgba(255,255,255,0.2); padding:10px;">
+          <!-- Inner dark container -->
+          <div style="width:100%; border-radius:8px; background:#292929; overflow:hidden;">
+            <!-- Two-column layout -->
+            <div class="ffs-demo-inner" style="display:flex; flex-direction:row; gap:12.8px; width:100%;">
+
+              <!-- Left: before/after image demo -->
+              <div class="ffs-demo-left" style="width:400px; min-width:400px; height:296px; position:relative; flex-shrink:0; border-radius:8px; overflow:hidden; background:#f2f2f2;">
+                <!-- Base: original photo with background -->
+                <img src="media_frame-2147230404-image50.png" alt="Original photo with background" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:8px; display:block; border:0.8px solid rgba(255,255,255,0.1);" />
+                <!-- Transparent bg version overlay -->
+                <img src="media_frame-2147230404-image51.png" alt="Background removed version" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; border:0.8px solid rgba(255,255,255,0.1);" />
+                <!-- Firefly UI frame overlay -->
+                <div style="position:absolute; inset:0; border-radius:8px; background:#ffffff; overflow:hidden;">
+                  <img src="media_frame-2147230404-sp14.png" alt="SP_14 background" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; border-radius:8px; border:1.6px solid rgba(255,255,255,0.15);" />
+                  <img src="media_frame-2147230404-screenshot20260426At92754Pm1.png" alt="Firefly remove background result" style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block;" />
+                  <!-- Remove background action chip -->
+                  <div style="position:absolute; bottom:11px; left:11px; display:inline-flex; flex-direction:column; justify-content:center; padding:11.3px 12.9px 11.3px 11.3px; border-radius:7.2px; background:rgba(255,255,255,0.15); border:0.72px solid rgba(255,255,255,0.25); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);">
+                    <div style="display:flex; flex-direction:row; align-items:center; gap:6.5px; height:16px;">
+                      <img src="media_frame-2147230404-s2iconimagebackgroundremove20n.png" alt="" style="width:19px; height:19px; flex-shrink:0; display:block; background:#555; border-radius:2px;" />
+                      <span style="color:#dbdbdb; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:14.55px; line-height:18px; letter-spacing:-0.15px; white-space:nowrap;">Remove background</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: upload drop zone -->
+              <div style="flex:1; display:flex; flex-direction:column; gap:19.2px; padding:12.8px 12.8px 12.8px 0; min-width:0;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:12.8px; height:100%;">
+                  <!-- Drop zone box -->
+                  <div style="display:flex; flex-direction:column; justify-content:center; align-items:center; gap:8px; padding:27.2px 19.2px; width:100%; flex:1; min-height:226px; border-radius:6.4px; border:0.8px solid rgba(255,255,255,0.85); overflow:hidden; box-sizing:border-box;">
+                    <img src="media_frame-2147230404-s2iconimage20n.png" alt="Image icon" style="width:32px; height:32px; flex-shrink:0; display:block; background:#444; border-radius:4px;" />
+                    <!-- Upload button -->
+                    <div style="position:relative; width:186px; height:42px; border-radius:80px; background:#3b63fb; flex-shrink:0; cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                      <div style="display:flex; flex-direction:row; align-items:center; gap:6.4px; padding:0 19.2px;">
+                        <img src="media_frame-2147230404-leadingIcon.png" alt="" style="width:19px; height:19px; flex-shrink:0; display:block; background:#6a8fff; border-radius:2px;" />
+                        <span style="color:#ffffff; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:700; font-size:15.2px; line-height:21px; text-align:center; white-space:nowrap;">Upload your image</span>
+                      </div>
+                    </div>
+                    <!-- Drag & drop hint -->
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12.8px; width:100%;">
+                      <p style="color:#f2f2f2; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:700; font-size:16.8px; line-height:16px; text-align:center; margin:0; width:100%;">Or drag and drop here</p>
+                      <p style="color:rgba(255,255,255,0.75); font-family:'Adobe Clean Spectrum VF','Adobe Clean',Arial,sans-serif; font-weight:400; font-size:12.8px; line-height:19px; text-align:center; margin:0; width:100%;">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</p>
+                    </div>
+                  </div>
+                  <!-- Terms -->
+                  <p style="max-width:278px; width:100%; color:rgba(255,255,255,0.8); font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:11.2px; line-height:14px; text-align:center; margin:0;">
+                    By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ WHITE CONTENT SECTION ═══ -->
+  <div class="ffs" style="width:100%; background-color:#ffffff; overflow:hidden; padding-bottom:128px;">
+    <div style="max-width:1154px; margin:0 auto; padding:0 24px; box-sizing:border-box;">
+
+      <!-- Title + subtitle + CTAs -->
+      <div class="ffs-white-title" style="display:flex; flex-direction:column; align-items:center; gap:19.2px; padding:64px 120px 0; box-sizing:border-box;">
+        <div style="display:flex; flex-direction:column; align-items:center; gap:19.2px; max-width:806px; width:100%;">
+          <h2 class="ffs-h2" style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:35.2px; line-height:35px; letter-spacing:-1.41px; text-align:center; margin:0; width:100%;">
+            Lorem ipsum dolor sit amet consectetur.
+          </h2>
+          <p style="color:#2c2c2c; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:16px; line-height:21px; text-align:center; margin:0; width:100%;">
+            Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.
+          </p>
+        </div>
+        <!-- CTA buttons -->
+        <div style="display:flex; flex-direction:row; justify-content:center; align-items:center; gap:12.8px; flex-wrap:wrap;">
+          <button style="display:inline-flex; flex-direction:row; align-items:center; gap:4.8px; padding:11px 19.2px; border-radius:80px; border:0.8px solid #000000; background:transparent; cursor:pointer; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; white-space:nowrap;">
+            <span style="color:#000000; font-weight:600; font-size:11.2px; line-height:11px; letter-spacing:0.11px;">Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px; height:10px; flex-shrink:0; display:block; background:#333; border-radius:1px;" />
+          </button>
+          <button style="display:inline-flex; flex-direction:row; align-items:center; gap:4.8px; padding:11px 19.2px; border-radius:80px; border:0.8px solid rgba(209,209,251,0.3); background:transparent; cursor:pointer; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; white-space:nowrap;">
+            <span style="color:#000000; font-weight:600; font-size:11.2px; line-height:11px; letter-spacing:0.11px;">Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px; height:10px; flex-shrink:0; display:block; background:#333; border-radius:1px;" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Alternating feature blocks -->
+      <div style="display:flex; flex-direction:column; gap:96px; margin-top:80px;">
+
+        <!-- Feature 1: Text LEFT · Card RIGHT -->
+        <div class="ffs-feat-row" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:24px; padding:0 144px; box-sizing:border-box;">
+          <div class="ffs-feat-text" style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <div style="display:flex; flex-direction:column; gap:6.4px;">
+              <span style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:700; font-size:12.8px; line-height:16px; text-transform:uppercase; display:block;">Eyebrow</span>
+              <h3 class="ffs-h3" style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:28.8px; line-height:28px; letter-spacing:-0.86px; text-align:left; margin:0;">
+                Lorem ipsum dolor sit amet consectetur.
+              </h3>
+            </div>
+            <p style="color:#5d5d5d; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:16px; line-height:21px; letter-spacing:0.16px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.
+            </p>
+          </div>
+          <div class="ffs-feat-card" style="width:520px; height:535px; border-radius:16px; background:#c4c4c4; border:2.4px solid rgba(255,255,255,0.3); overflow:hidden; flex-shrink:0; display:flex; flex-direction:row; justify-content:flex-end; align-items:flex-end;">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; padding:6.4px; display:block;" />
+          </div>
+        </div>
+
+        <!-- Feature 2: Card LEFT · Text RIGHT -->
+        <div class="ffs-feat-row-rev" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:24px; padding:0 144px; box-sizing:border-box;">
+          <div class="ffs-feat-card" style="width:520px; height:535px; border-radius:16px; background:#c4c4c4; border:2.4px solid rgba(255,255,255,0.3); overflow:hidden; flex-shrink:0; display:flex; flex-direction:row; justify-content:flex-end; align-items:flex-end;">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; padding:6.4px; display:block;" />
+          </div>
+          <div class="ffs-feat-text" style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <h3 class="ffs-h3" style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:28.8px; line-height:28px; letter-spacing:-0.86px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur.
+            </h3>
+            <p style="color:#5d5d5d; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:16px; line-height:21px; letter-spacing:0.16px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.
+            </p>
+          </div>
+        </div>
+
+        <!-- Feature 3: Text LEFT · Card RIGHT -->
+        <div class="ffs-feat-row" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:24px; padding:0 144px; box-sizing:border-box;">
+          <div class="ffs-feat-text" style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <div style="display:flex; flex-direction:column; gap:6.4px;">
+              <span style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:700; font-size:12.8px; line-height:16px; text-transform:uppercase; display:block;">Eyebrow</span>
+              <h3 class="ffs-h3" style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:28.8px; line-height:28px; letter-spacing:-0.86px; text-align:left; margin:0;">
+                Lorem ipsum dolor sit amet consectetur.
+              </h3>
+            </div>
+            <p style="color:#5d5d5d; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:16px; line-height:21px; letter-spacing:0.16px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.
+            </p>
+          </div>
+          <div class="ffs-feat-card" style="width:520px; height:535px; border-radius:16px; background:#c4c4c4; border:2.4px solid rgba(255,255,255,0.3); overflow:hidden; flex-shrink:0; display:flex; flex-direction:row; justify-content:flex-end; align-items:flex-end;">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; padding:6.4px; display:block;" />
+          </div>
+        </div>
+
+        <!-- Feature 4: Card LEFT · Text RIGHT -->
+        <div class="ffs-feat-row-rev" style="display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:24px; padding:0 144px; box-sizing:border-box;">
+          <div class="ffs-feat-card" style="width:520px; height:535px; border-radius:16px; background:#c4c4c4; border:2.4px solid rgba(255,255,255,0.3); overflow:hidden; flex-shrink:0; display:flex; flex-direction:row; justify-content:flex-end; align-items:flex-end;">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="width:57px; height:46px; padding:6.4px; display:block;" />
+          </div>
+          <div class="ffs-feat-text" style="display:flex; flex-direction:column; gap:32px; width:335px; flex-shrink:0;">
+            <h3 class="ffs-h3" style="color:#000000; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:800; font-size:28.8px; line-height:28px; letter-spacing:-0.86px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur.
+            </h3>
+            <p style="color:#5d5d5d; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-weight:400; font-size:16px; line-height:21px; letter-spacing:0.16px; text-align:left; margin:0;">
+              Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</section>
