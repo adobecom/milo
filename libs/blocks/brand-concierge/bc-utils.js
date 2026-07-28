@@ -27,6 +27,15 @@ const getTargetHeight = (target) => {
   return target.scrollHeight + (parseFloat(marginBottom) * 2);
 };
 
+export function handleConsent(el) {
+  if (!window.adobePrivacy) return;
+  const cookieGrp = window.adobePrivacy.activeCookieGroups();
+  if (!cookieGrp?.includes('C0002')) {
+    el.classList.add('hide-block');
+    window.lana?.log('Block hidden because user has not consented to cookies', { tags: 'brand-concierge' });
+  }
+}
+
 export function updateReplicatedValue(textareaWrapper, textarea) {
   if (!textareaWrapper || !textarea) return;
   textareaWrapper.dataset.replicatedValue = textarea.value || textarea.placeholder;

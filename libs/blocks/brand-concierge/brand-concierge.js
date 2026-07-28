@@ -9,6 +9,7 @@ import {
   decorateFloatingButton,
   decorateFloatingInput,
   updateReplicatedValue,
+  handleConsent,
 } from './bc-utils.js';
 import {
   bcBootstrap,
@@ -59,15 +60,6 @@ function handleSuggestedPrompt(text, cards, event) {
 
 function handleFloatingButton() {
   routeInput(null);
-}
-
-function handleConsent(el) {
-  if (!window.adobePrivacy) return;
-  const cookieGrp = window.adobePrivacy.activeCookieGroups();
-  if (!cookieGrp?.includes('C0002')) {
-    el.classList.add('hide-block');
-    window.lana?.log('Block hidden because user has not consented to cookies', { tags: 'brand-concierge' });
-  }
 }
 
 export default async function init(el) {

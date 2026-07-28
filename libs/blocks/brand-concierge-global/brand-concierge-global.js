@@ -4,6 +4,7 @@ import {
   decorateInput,
   decorateCards,
   updateReplicatedValue,
+  handleConsent,
 } from '../brand-concierge/bc-utils.js';
 import {
   bcBootstrap,
@@ -114,6 +115,13 @@ function decorateGnav(cards, input, topNav, el) {
 }
 
 export default function init(el) {
+  handleConsent(el);
+  window.addEventListener('adobePrivacy:PrivacyReject', () => handleConsent(el));
+  window.addEventListener('adobePrivacy:PrivacyCustom', () => handleConsent(el));
+  window.addEventListener('signIn:decorateNav', async () => {
+    await window.adobeIMS?.refreshToken();
+    (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
+  });
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
