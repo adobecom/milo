@@ -206,10 +206,8 @@ test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, 
   await expect(mepButtonLoc.summaryCards).toHaveCount(5);
 });
 
-/*
-Per Drew, we should not run tests against stage that involve m@s per https://adobe-mwp.slack.com/archives/C0442CQHJ69/p1785264610101819?thread_ts=1785261235.160639&cid=C0442CQHJ69
-
 // Test 9: loading a manifest via the Load Manifest field should apply it to the previewed page
+
 test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL.replace('.aem.live', '.aem.page')}${features[9].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
@@ -231,5 +229,3 @@ test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, 
   // the manifest should have inserted the accordion onto the page
   await expect(mepButtonLoc.accordion).toBeVisible();
 });
-
-*/
