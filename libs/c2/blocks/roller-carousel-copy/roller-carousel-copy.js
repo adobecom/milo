@@ -72,18 +72,25 @@ function buildReducedMotion(block, eyebrowText, headingText, apps) {
 
   const list = createTag('div', { class: 'rcc-rm-list' });
   let currentCategory = null;
+  let group = null;
   apps.forEach((app) => {
     if (app.category && app.category !== currentCategory) {
       currentCategory = app.category;
+      // Category heading (screen readers can navigate by heading) + divider.
       const catWrap = createTag('div', { class: 'rcc-category-wrapper rcc-rm-category' });
-      const catLabel = createTag('span', { class: 'rcc-category' });
+      const catLabel = createTag('h3', { class: 'rcc-category' });
       catLabel.textContent = currentCategory;
-      catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' }));
+      catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' }));
       list.append(catWrap);
+      // A list of this category's apps, labelled by its heading.
+      group = createTag('ul', { class: 'rcc-rm-group', 'aria-label': currentCategory });
+      list.append(group);
     }
+    const li = createTag('li');
     const btn = createTag('button', { class: 'rcc-rm-item', type: 'button' });
     btn.textContent = app.name;
-    list.append(btn);
+    li.append(btn);
+    group.append(li);
   });
   content.append(list);
 
@@ -154,11 +161,11 @@ function decorate(block) {
   const divider = createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' });
   categoryWrapper.append(categoryLabel, divider);
 
-  // App name list
+  // App name list (semantic list for screen readers)
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
-  const list = createTag('div', { class: 'rcc-list' });
+  const list = createTag('ul', { class: 'rcc-list', 'aria-label': 'Included apps' });
   apps.forEach((app, i) => {
-    const item = createTag('div', {
+    const item = createTag('li', {
       class: `rcc-item${i === 0 ? ' rcc-item--active' : ''}`,
       'data-index': String(i),
     });

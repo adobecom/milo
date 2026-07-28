@@ -143,6 +143,7 @@
   letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
   color: var(--s2a-color-content-knockout);
   white-space: nowrap;
+  margin: 0; /* reset default <h3> margin (used as a heading in reduced motion) */
 }
 
 .rcc-divider {
@@ -162,6 +163,9 @@
   position: absolute;
   left: 0;
   right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   will-change: transform;
   /* No CSS transition — translateY is driven directly by scroll position */
 }
@@ -409,6 +413,15 @@
 .rcc-rm-list {
   display: flex;
   flex-direction: column;
+}
+
+/* One <ul> of app names per category (semantic list; reset default styling). */
+.rcc-rm-group {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 /* Category header (label + divider) above each group; gap above separates
