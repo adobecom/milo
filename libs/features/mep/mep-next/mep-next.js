@@ -269,6 +269,12 @@ function addDividers(node, selector) {
   });
 }
 
+// PRUNE — decide when the ?mepnext gate is removed (see preview.js header):
+// parsePageAndUrl, toActivity and parseMepConfig are duplicated in
+// mep-overlay-logic.js (a refactored variant). At prune time, choose the dedup —
+// e.g. extract them into a shared, UI-free config module that both this file and
+// mep-overlay-logic.js import. saveToMmm should stay here alongside getMepPopup
+// (the MMM read/write pair) and pull parseMepConfig from that shared module.
 export function parsePageAndUrl(config, windowLocation, prefix) {
   const { stageDomainsMap, env } = config;
   const { pathname, origin } = windowLocation;

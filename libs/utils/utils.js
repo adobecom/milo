@@ -2410,7 +2410,7 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    // TEMP: ?mepnext=on loads the new mep-next preview; default falls back to legacy preview.js.
+    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
     if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
       import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
         .then(({ default: init }) => init());
