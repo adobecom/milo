@@ -1,0 +1,208 @@
+<section data-binding-source="judge" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="11239:129055" data-block="news" style="width:100%;font-family:'Adobe Clean','Adobe Clean VF',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+<style>
+[data-figma-node-id="11239:129055"] *{box-sizing:border-box;}
+[data-figma-node-id="11239:129055"] .ff-wrap{max-width:1154px;margin:0 auto;padding:0 20px;}
+[data-figma-node-id="11239:129055"] .ff-panel-row{display:flex;flex-direction:row;}
+[data-figma-node-id="11239:129055"] .ff-editorial{display:flex;flex-direction:row;align-items:center;gap:40px;padding:0 124px;}
+@media(max-width:1024px){
+  [data-figma-node-id="11239:129055"] .ff-panel-row{flex-direction:column;}
+  [data-figma-node-id="11239:129055"] .ff-panel-img-col{width:100%!important;min-width:unset!important;height:220px!important;}
+  [data-figma-node-id="11239:129055"] .ff-editorial{flex-direction:column;gap:32px;padding:0 24px;}
+  [data-figma-node-id="11239:129055"] .ff-ed-card{width:100%!important;max-width:100%!important;height:300px!important;flex:unset!important;}
+  [data-figma-node-id="11239:129055"] .ff-ed-text-fixed{max-width:100%!important;flex:0 1 auto!important;}
+}
+@media(max-width:768px){
+  [data-figma-node-id="11239:129055"] .ff-hero-h1{font-size:32px!important;line-height:1.15!important;letter-spacing:-0.5px!important;}
+  [data-figma-node-id="11239:129055"] .ff-section-h2{font-size:26px!important;line-height:1.15!important;}
+  [data-figma-node-id="11239:129055"] .ff-ed-h3{font-size:22px!important;line-height:1.2!important;}
+  [data-figma-node-id="11239:129055"] .ff-editorial{padding:0 12px;gap:24px;}
+  [data-figma-node-id="11239:129055"] .ff-wrap{padding:0 16px;}
+}
+</style>
+
+<!-- ═══════════════════════════════════════
+     DARK HERO — Remove Background Tool
+     ═══════════════════════════════════════ -->
+<div style="background:#111111;width:100%;overflow:hidden;">
+  <div class="ff-wrap">
+
+    <!-- Headline area -->
+    <div style="padding:64px 0 0;display:flex;flex-direction:column;align-items:center;gap:9.6px;">
+
+      <!-- Product lockup -->
+      <div style="display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6.4px;margin-bottom:4px;">
+        <img src="media_frame-2147230404-appIcon.png" alt="App icon" width="26" height="26" style="width:26px;height:26px;border-radius:4px;background:#3a3a3a;flex-shrink:0;object-fit:contain;" />
+        <span style="color:#ffffff;font-weight:700;font-size:17.6px;line-height:22px;letter-spacing:-0.35px;">Adobe Firefly</span>
+      </div>
+
+      <!-- H1 headline -->
+      <h1 class="ff-hero-h1" style="color:#ffffff;font-weight:800;font-size:51px;line-height:1;letter-spacing:-1.54px;text-align:center;margin:0 0 0;max-width:641px;">
+        Remove background from your image for free.
+      </h1>
+
+      <!-- Description -->
+      <p style="color:rgba(255,255,255,0.9);font-weight:400;font-size:14.4px;line-height:20px;text-align:center;margin:9.6px 0 0;max-width:536px;">
+        Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.
+      </p>
+    </div><!-- /headline area -->
+
+    <!-- Remove Background Interactive Panel -->
+    <div style="display:flex;justify-content:center;padding:64px 0 64px;">
+      <!-- Outer frosted glass ring -->
+      <div style="width:100%;max-width:801px;border-radius:16px;background:rgba(255,255,255,0.2);padding:10px;">
+        <!-- Inner dark panel -->
+        <div class="ff-panel-row" style="border-radius:8px;background:#292929;overflow:hidden;min-height:296px;">
+
+          <!-- LEFT: Layered before/after image stack -->
+          <div class="ff-panel-img-col" style="position:relative;width:400px;min-width:400px;height:296px;flex-shrink:0;border-radius:8px;overflow:hidden;">
+            <!-- Layer 1: Original photo -->
+            <img src="media_frame-2147230404-image50.png" alt="Original photo" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#f2f2f2;" />
+            <!-- Layer 2: Processing state -->
+            <img src="media_frame-2147230404-image51.png" alt="Photo with background being removed" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:1px solid rgba(255,255,255,0.1);" />
+            <!-- Layer 3: Result frame (white = transparent checkerboard base) -->
+            <div style="position:absolute;inset:0;border-radius:8px;background:#ffffff;overflow:hidden;">
+              <img src="media_frame-2147230404-sp14.png" alt="Background removed result" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;border:2px solid rgba(255,255,255,0.15);" />
+              <img src="media_frame-2147230404-screenshot20260426At92754Pm1.png" alt="Final background removal result" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />
+              <!-- "Remove background" action badge -->
+              <div style="position:absolute;bottom:12px;left:12px;padding:11px 13px 11px 11px;border-radius:7px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);">
+                <div style="display:flex;flex-direction:row;align-items:center;gap:6.5px;height:16px;">
+                  <img src="media_frame-2147230404-s2iconimagebackgroundremove20n.png" alt="Remove background icon" width="19" height="19" style="width:19px;height:19px;flex-shrink:0;background:#555;border-radius:2px;object-fit:contain;" />
+                  <span style="color:#dbdbdb;font-size:14.5px;line-height:18px;letter-spacing:-0.15px;white-space:nowrap;">Remove background</span>
+                </div>
+              </div>
+            </div>
+          </div><!-- /image stack -->
+
+          <!-- RIGHT: Drop zone -->
+          <div style="flex:1;display:flex;flex-direction:column;padding:12.8px;gap:12.8px;min-width:260px;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;flex:1;">
+              <!-- Drop zone box -->
+              <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:27px 19px;width:100%;min-height:226px;flex:1;border-radius:6.4px;border:1px solid rgba(255,255,255,0.85);overflow:hidden;">
+                <img src="media_frame-2147230404-s2iconimage20n.png" alt="Image icon" width="32" height="32" style="width:32px;height:32px;flex-shrink:0;background:#555;border-radius:4px;object-fit:contain;" />
+                <!-- Upload CTA button -->
+                <button type="button" style="display:inline-flex;flex-direction:row;align-items:center;justify-content:center;gap:6.4px;padding:9.6px 19.2px 11.2px;background:#3b63fb;border:none;border-radius:80px;cursor:pointer;font-family:inherit;min-width:186px;height:42px;margin:4px 0;">
+                  <img src="media_frame-2147230404-leadingIcon.png" alt="" width="19" height="19" style="width:19px;height:19px;flex-shrink:0;background:#5577ee;border-radius:2px;object-fit:contain;" />
+                  <span style="color:#ffffff;font-weight:700;font-size:15.2px;line-height:21px;white-space:nowrap;">Upload your image</span>
+                </button>
+                <!-- Text labels -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:12.8px;width:100%;">
+                  <p style="color:#f2f2f2;font-weight:700;font-size:16.8px;line-height:16px;text-align:center;margin:0;">Or drag and drop here</p>
+                  <p style="color:rgba(255,255,255,0.85);font-family:'Adobe Clean Spectrum VF','Adobe Clean VF',system-ui,sans-serif;font-weight:400;font-size:12.8px;line-height:19px;text-align:center;margin:0;">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</p>
+                </div>
+              </div>
+              <!-- Terms of use -->
+              <p style="color:rgba(255,255,255,0.75);font-weight:400;font-size:11.2px;line-height:14px;text-align:center;margin:0;max-width:278px;">By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.</p>
+            </div>
+          </div><!-- /drop zone -->
+
+        </div><!-- /inner dark panel -->
+      </div><!-- /outer frosted ring -->
+    </div><!-- /panel section -->
+
+  </div><!-- /ff-wrap hero -->
+</div><!-- /dark hero -->
+
+
+<!-- ═══════════════════════════════════════
+     WHITE EDITORIAL SECTION
+     ═══════════════════════════════════════ -->
+<div style="background:#ffffff;width:100%;overflow:hidden;">
+  <div class="ff-wrap">
+
+    <!-- Title + description + CTAs -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:19.2px;padding:64px 0 48px;text-align:center;">
+      <h2 class="ff-section-h2" style="color:#000000;font-weight:800;font-size:35.2px;line-height:35px;letter-spacing:-1.41px;margin:0;max-width:860px;">
+        Lorem ipsum dolor sit amet consectetur.
+      </h2>
+      <p style="color:#2c2c2c;font-weight:400;font-size:16px;line-height:21px;text-align:center;margin:0;max-width:806px;">
+        Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.
+      </p>
+      <!-- CTA buttons -->
+      <div style="display:flex;flex-direction:row;justify-content:center;gap:12.8px;flex-wrap:wrap;">
+        <!-- Primary: black border pill -->
+        <button type="button" style="display:inline-flex;align-items:center;gap:4.8px;padding:11px 19.2px;border-radius:80px;border:1px solid #000000;background:transparent;cursor:pointer;font-family:inherit;">
+          <span style="color:#000000;font-weight:600;font-size:11.2px;line-height:11px;letter-spacing:0.11px;">Customer Stories</span>
+          <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px;height:10px;flex-shrink:0;background:#333;border-radius:1px;object-fit:contain;" />
+        </button>
+        <!-- Secondary: faint border pill -->
+        <button type="button" style="display:inline-flex;align-items:center;gap:4.8px;padding:11px 19.2px;border-radius:80px;border:1px solid rgba(209,209,251,0.2);background:transparent;cursor:pointer;font-family:inherit;">
+          <span style="color:#000000;font-weight:600;font-size:11.2px;line-height:11px;letter-spacing:0.11px;">Customer Stories</span>
+          <img src="media_frame-2147230404-iconForButton.png" alt="" style="width:10px;height:10px;flex-shrink:0;background:#333;border-radius:1px;object-fit:contain;" />
+        </button>
+      </div>
+    </div><!-- /title block -->
+
+    <!-- Four editorial rows (alternating text / card layout) -->
+    <div style="display:flex;flex-direction:column;gap:100px;padding-bottom:128px;">
+
+      <!-- BLOCK 1 — text left, card right -->
+      <div class="ff-editorial">
+        <div class="ff-ed-text-fixed" style="flex:0 0 335px;max-width:335px;display:flex;flex-direction:column;gap:32px;">
+          <div style="display:flex;flex-direction:column;gap:6.4px;">
+            <span style="display:block;color:#000000;font-weight:700;font-size:12.8px;line-height:16px;text-transform:uppercase;width:56px;text-align:center;">Eyebrow</span>
+            <h3 class="ff-ed-h3" style="color:#000000;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;margin:0;">
+              Lorem ipsum dolor sit amet consectetur.
+            </h3>
+          </div>
+          <p style="color:#5d5d5d;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.
+          </p>
+        </div>
+        <div class="ff-ed-card" style="flex:1;max-width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,0.3);overflow:hidden;position:relative;">
+          <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="position:absolute;bottom:6.4px;right:6.4px;width:57px;height:46px;object-fit:contain;" />
+        </div>
+      </div>
+
+      <!-- BLOCK 2 — card left, text right -->
+      <div class="ff-editorial">
+        <div class="ff-ed-card" style="flex:1;max-width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,0.3);overflow:hidden;position:relative;">
+          <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="position:absolute;bottom:6.4px;right:6.4px;width:57px;height:46px;object-fit:contain;" />
+        </div>
+        <div class="ff-ed-text-fixed" style="flex:0 0 416px;max-width:416px;display:flex;flex-direction:column;gap:32px;">
+          <h3 class="ff-ed-h3" style="color:#000000;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur.
+          </h3>
+          <p style="color:#5d5d5d;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.
+          </p>
+        </div>
+      </div>
+
+      <!-- BLOCK 3 — text left, card right -->
+      <div class="ff-editorial">
+        <div class="ff-ed-text-fixed" style="flex:0 0 335px;max-width:335px;display:flex;flex-direction:column;gap:32px;">
+          <div style="display:flex;flex-direction:column;gap:6.4px;">
+            <span style="display:block;color:#000000;font-weight:700;font-size:12.8px;line-height:16px;text-transform:uppercase;width:56px;text-align:center;">Eyebrow</span>
+            <h3 class="ff-ed-h3" style="color:#000000;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;margin:0;">
+              Lorem ipsum dolor sit amet consectetur.
+            </h3>
+          </div>
+          <p style="color:#5d5d5d;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.
+          </p>
+        </div>
+        <div class="ff-ed-card" style="flex:1;max-width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,0.3);overflow:hidden;position:relative;">
+          <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="position:absolute;bottom:6.4px;right:6.4px;width:57px;height:46px;object-fit:contain;" />
+        </div>
+      </div>
+
+      <!-- BLOCK 4 — card left, text right -->
+      <div class="ff-editorial">
+        <div class="ff-ed-card" style="flex:1;max-width:520px;height:535px;border-radius:16px;background:#c4c4c4;border:2.4px solid rgba(255,255,255,0.3);overflow:hidden;position:relative;">
+          <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" style="position:absolute;bottom:6.4px;right:6.4px;width:57px;height:46px;object-fit:contain;" />
+        </div>
+        <div class="ff-ed-text-fixed" style="flex:0 0 416px;max-width:416px;display:flex;flex-direction:column;gap:32px;">
+          <h3 class="ff-ed-h3" style="color:#000000;font-weight:800;font-size:28.8px;line-height:28px;letter-spacing:-0.86px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur.
+          </h3>
+          <p style="color:#5d5d5d;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;margin:0;">
+            Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /editorial blocks -->
+  </div><!-- /ff-wrap white -->
+</div><!-- /white section -->
+
+</section>
