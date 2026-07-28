@@ -586,7 +586,7 @@ nav.feds-topnav .feds-bc-wrapper {
   }
 
   body:has(.brand-concierge.floating-input) #brand-concierge-modal.dialog-modal,
-  body:has(.brand-concierge.floating-input) #brand-concierge-side.dialog-modal {
+  body:has(.brand-concierge.floating-input) #brand-concierge-side.dialog-modal.expanded {
     max-width: 1412px;
     width: calc(100% - 48px);
   }
