@@ -154,7 +154,7 @@ export default async function init(el) {
     decorateMarqueeBackground(el, background);
     decorateHeader(el, header, { eyebrow: true });
     decorateInput(el, input, { handle: handleInput });
-    decorateCards(el, cards, { handle: handleSuggestedPrompt });
+    decorateCards(el, cards, { handle: handleSuggestedPrompt }, 'marquee-');
     decorateLegal(el, legal);
 
     const foreground = createTag('div', { class: 'foreground container' });
