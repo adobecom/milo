@@ -54,10 +54,9 @@ module.exports = {
       name: '@Promo-future',
       // TEMP: the mep-next overlay (.mep-fab, opened by this test) is gated
       // behind ?mepnext=on. Remove once mep-next is the default preview and the
-      // gate is dropped. Host is pinned to `.aem.page` (not the `.aem.live`
-      // baseURL) because the overlay requires Sidekick auth on the public
-      // `.aem.live` edge; branch code still loads via the milolibs param.
-      path: 'https://main--milo--adobecom.aem.page/drafts/nala/features/promotions/promo-future?mepnext=on',
+      // gate is dropped. The test runs this on the `.aem.page` preview tier of
+      // the same branch (overlay requires Sidekick auth on the `.aem.live` edge).
+      path: '/drafts/nala/features/promotions/promo-future?mepnext=on',
       data: {
         mepPath: '/drafts/nala/features/promotions/manifests/promo-insert-future.json--all',
         textMarquee: 'Promo test page',
@@ -96,10 +95,9 @@ module.exports = {
       name: '@Promo-preview',
       // TEMP: the mep-next overlay (.mep-fab, opened by this test) is gated
       // behind ?mepnext=on. Remove once mep-next is the default preview and the
-      // gate is dropped. Host is pinned to `.aem.page` (not the `.aem.live`
-      // baseURL) because the overlay requires Sidekick auth on the public
-      // `.aem.live` edge; branch code still loads via the milolibs param.
-      path: 'https://main--milo--adobecom.aem.page/drafts/nala/features/promotions/promo-default?mepnext=on',
+      // gate is dropped. The test runs this on the `.aem.page` preview tier of
+      // the same branch (overlay requires Sidekick auth on the `.aem.live` edge).
+      path: '/drafts/nala/features/promotions/promo-default?mepnext=on',
       data: {
         mepInsertOn: '/drafts/nala/features/promotions/manifests/promo-insert.json--all',
         mepReplaceOn: '/drafts/nala/features/promotions/manifests/promo-replace.json--all',
