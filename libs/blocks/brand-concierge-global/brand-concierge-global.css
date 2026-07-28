@@ -86,10 +86,6 @@ nav.feds-topnav .feds-bc-wrapper {
   text-align: left;
 }
 
-.bc-gnav .prompt-card-text .card-icon {
-  display: none;
-}
-
 .bc-gnav .prompt-card-text p {
   color: var(--bc-card-text-color);
   margin: 0;
