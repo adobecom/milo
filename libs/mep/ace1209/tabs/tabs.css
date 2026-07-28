@@ -277,7 +277,8 @@
       }
     }
 
-    [role='tablist'] {
+    [role='tablist'],
+    [role='radiogroup'] {
       overflow: visible;
       margin: 0 var(--s2a-spacing-24);
     }
