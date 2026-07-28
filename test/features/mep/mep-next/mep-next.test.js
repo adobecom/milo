@@ -5,6 +5,7 @@ import sinon from 'sinon';
 document.body.innerHTML = await readFile({ path: '../../personalization/mocks/postPersonalization.html' });
 const {
   escapeHtml,
+  escapeAttr,
   parsePageAndUrl,
   getMepPopup,
   saveToMmm,
@@ -108,6 +109,30 @@ describe('escapeHtml', () => {
 
   it('stringifies non-string input before escaping', () => {
     expect(escapeHtml(42)).to.equal('42');
+  });
+});
+
+describe('escapeAttr', () => {
+  it('returns null, undefined and empty string unchanged', () => {
+    expect(escapeAttr(null)).to.equal(null);
+    expect(escapeAttr(undefined)).to.equal(undefined);
+    expect(escapeAttr('')).to.equal('');
+  });
+
+  it('encodes quotes so a value cannot close a quoted attribute', () => {
+    const out = escapeAttr('" onmouseover="alert(1)');
+    expect(out).to.not.include('"');
+    expect(out).to.include('&quot;');
+  });
+
+  it('encodes & < > and single quotes', () => {
+    expect(escapeAttr('a&b')).to.include('&amp;');
+    expect(escapeAttr('<x>')).to.equal('&lt;x&gt;');
+    expect(escapeAttr("o'clock")).to.include('&#39;');
+  });
+
+  it('stringifies non-string input before escaping', () => {
+    expect(escapeAttr(42)).to.equal('42');
   });
 });
 
@@ -1248,6 +1273,78 @@ describe('getMepPopup', () => {
     expect(defaultSelectedOptions.length).to.equal(0);
     const matchedOption = popup.querySelector('option[value="variant-b"][selected]');
     expect(matchedOption, 'matching variant option is pre-selected').to.exist;
+  });
+
+  const XSS = '<img src=x onerror=alert(1)>';
+  const basePage = {
+    url: 'https://www.adobe.com/test-page.html', pageId: 0, target: 'on', personalization: 'on', locale: 'en-US', geo: '',
+  };
+
+  it('escapes a malicious variant name in both option text and attributes', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ variantNames: [XSS], selectedVariantName: XSS })],
+    });
+    expect(popup.querySelector('img'), 'no injected element from variant name').to.be.null;
+    const selected = popup.querySelector('.mep-selected-variant');
+    expect(selected.textContent, 'variant rendered as literal text').to.include(XSS);
+    expect(selected.querySelector('img'), 'variant text not parsed as markup').to.be.null;
+  });
+
+  it('does not let a malicious manifest url break out of the href/title attributes', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ url: 'https://x/"><img src=x onerror=alert(1)>' })],
+    });
+    expect(popup.querySelector('.mep-manifest-title img'), 'attribute break-out blocked').to.be.null;
+  });
+
+  it('neutralizes a javascript: manifest url to an empty href', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      // eslint-disable-next-line no-script-url
+      activities: [buildActivity({ url: 'javascript:alert(1)' })],
+    });
+    expect(popup.querySelector('.mep-edit-manifest').getAttribute('href')).to.equal('');
+  });
+
+  it('escapes malicious source, mktgAction, geoRestriction and targetActivityName', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ source: '<b>x</b>', mktgAction: '<b>x</b>', geoRestriction: '<b>x</b>', targetActivityName: '<b>x</b>' })],
+    });
+    expect(popup.querySelector('.mep-section-data b'), 'section data values not parsed as markup').to.be.null;
+    expect(popup.querySelector('.target-activity-name b'), 'target activity name not parsed as markup').to.be.null;
+  });
+
+  it('does not throw and renders default (control) when variantNames is undefined', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity({ variantNames: undefined, selectedVariantName: 'default' })],
+    });
+    expect([...popup.querySelectorAll('.mep-active')].some((el) => el.textContent.includes('default (control)'))).to.be.true;
+  });
+
+  it('renders a usable expand svg (no duplicated xmlns attribute)', async () => {
+    config.marketsConfig = { languages: { data: [] } };
+    setConfig(config);
+    const popup = await renderPopup({
+      page: { ...basePage },
+      activities: [buildActivity()],
+    });
+    const expand = popup.querySelector('.mep-toggle-expand');
+    expect(expand, 'expand svg present').to.exist;
+    expect(expand.tagName.toLowerCase()).to.equal('svg');
   });
 
   it('renders "0 manifests found" and a manifests-found count of 0 when there are no activities', async () => {

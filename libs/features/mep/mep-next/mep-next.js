@@ -30,6 +30,29 @@ export function escapeHtml(str) {
   return el.innerHTML;
 }
 
+// escapeHtml only encodes & < > — safe for element TEXT. Values placed inside
+// quoted HTML attributes also need " and ' encoded so they can't close the attribute.
+export function escapeAttr(str) {
+  if (str == null || str === '') return str;
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
+function safeUrl(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    const { protocol } = new URL(url, window.location.origin);
+    return protocol === 'http:' || protocol === 'https:' ? url : '';
+  } catch (e) {
+    return '';
+  }
+}
+
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
 export const API_URLS = {
@@ -337,16 +360,18 @@ function getManifestListDomAndParameter(mepConfig) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
-    const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
+    let variantNamesArray = [];
+    if (Array.isArray(variantNames)) variantNamesArray = variantNames;
+    else if (typeof variantNames === 'string') variantNamesArray = variantNames.split('||');
     let options = '';
     let isSelected = '';
-    if (!variantNames.includes(selectedVariantName) && pageId === 0) {
+    if (!variantNamesArray.includes(selectedVariantName) && pageId === 0) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
     }
-    options += `<option name="${editPath}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
-    options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
+    options += `<option name="${escapeAttr(editPath)}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
+    options += `<option name="${escapeAttr(editPath)}${pageId}" value="default"
+    id="${escapeAttr(editPath)}${pageId}--default" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="Default (control)">Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -354,11 +379,11 @@ function getManifestListDomAndParameter(mepConfig) {
         isSelected = 'selected';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
-      options += `<option name="${editPath}${pageId}" value="${variant}" 
-      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
+      options += `<option name="${escapeAttr(editPath)}${pageId}" value="${escapeAttr(variant)}"
+      id="${escapeAttr(editPath)}${pageId}--${escapeAttr(variant)}" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="${escapeAttr(variant)}">${escapeHtml(variant)}</option>`;
     });
     const expandSVG = `
-    <svg xmlns="<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
     </svg>`;
     const collapseSVG = `
@@ -366,27 +391,27 @@ function getManifestListDomAndParameter(mepConfig) {
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
     manifestList += `
-    <div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
+    <div class="mep-section" title="Manifest location: ${escapeAttr(editUrl)}&#013;Analytics manifest name: ${escapeAttr(analyticsTitle || 'N/A for this manifest type')}">
       <div class="mep-manifest-title">
-        <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-          ${mIdx + 1}. ${getFileName(manifestPath)}
+        <a class="mep-edit-manifest" href="${escapeAttr(safeUrl(editUrl))}" target="_blank" title="Open manifest">
+          ${mIdx + 1}. ${escapeHtml(getFileName(manifestPath))}
         </a>
         <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
-      </div>   
+      </div>
       <div class="mep-manifest-info">
-            ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
+            ${targetActivityName ? `<div class="target-activity-name">${escapeHtml(targetActivityName)}</div>` : ''}
               <div class="mep-section-data">
                   <span class="mep-active">Experience</span>
-                ${!variantNames.includes(selectedVariantName) ? `
+                ${!variantNamesArray.includes(selectedVariantName) ? `
                   <span class="mep-active">default (control)</span>` : `
-                  <span class='mep-active mep-selected-variant'>${selectedVariantName}</span>`}
+                  <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
-                  <span>${source}</span>
+                  <span>${escapeHtml(source)}</span>
                   <span>Mktg action</span>
-                  <span>${mktgAction}</span>
+                  <span>${escapeHtml(mktgAction)}</span>
                 ${geoRestriction ? `
                   <span>Geo</span>
-                  <span>${geoRestriction.toUpperCase()}</span>` : ''}
+                  <span>${escapeHtml(geoRestriction.toUpperCase())}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
                   <span>${disabled ? 'inactive' : 'active'}</span>` : ''}
@@ -697,12 +722,12 @@ export async function getMepPopup(mepConfig) {
         <span>Foundation</span>
         <span>${pageData.foundation}</span>
         <span>Target Integration</span>
-        <span>${pageData.targetIntegration}</span>
+        <span>${escapeHtml(pageData.targetIntegration)}</span>
         <span>Personalization</span>
-        <span>${pageData.personalization}</span>
+        <span>${escapeHtml(pageData.personalization)}</span>
     ${page.lastSeen ? `
         <span>Locale</span>
-        <span>${pageData.locale}</span>`
+        <span>${escapeHtml(pageData.locale)}</span>`
     : ''}
     </div>
     `;
@@ -735,7 +760,7 @@ export async function getMepPopup(mepConfig) {
         <span>Lang First / Lingo</span>
         <span>${lingoData.langFirst}</span>
         <span>Geo Folder</span>
-        <span>${lingoData.geoFolder}</span>
+        <span>${escapeHtml(lingoData.geoFolder)}</span>
     </div>
   `;
     mepPopupBody[1].append(createTag('div', { class: 'mep-section' }, lingoHTML));
