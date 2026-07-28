@@ -2052,6 +2052,7 @@ export async function loadIms() {
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
         : `${base}/deps/imslib.min.js`;
       loadScript(path);
+      if (new URLSearchParams(window.location.search).get('get-env') === 'true') console.log('environment config', env);
     });
   })().then(() => {
     if (getMepEnablement('xlg') === 'loggedout') {
