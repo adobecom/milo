@@ -379,7 +379,7 @@ export function decorateFloatingInput(el, cards, input, floatingInputEvents, var
 
   const floatingInput = createTag('section', { class: 'bc-floating-input' });
   decorateInput(floatingInput, input, { handle: floatingInputEvents.inputHandle });
-  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle });
+  decorateCards(floatingInput, cards, { handle: floatingInputEvents.cardHandle }, 'fi-');
   el.append(floatingInput);
 
   const updateLayout = () => {
