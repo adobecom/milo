@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-remove-background-from-your-image-for-free",
+  "sectionIndex": 0,
+  "decision": "below-threshold",
+  "score": 0.59,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/w2VbLPROC36BO0DA0wBgyY/Doodlebug?node-id=11239-129054",
+  "figmaNodeId": "11239:129055",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-1a7efc0e-ms6jmhe2",
+  "miloTargetPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-1a7efc0e-ms6jmhe2/libs/c2/blocks/forge-remove-background-from-your-image-for-free",
+  "miloBranch": "forge/session-1a7efc0e-e3a",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/lzartman/forge/figma-1a7efc?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css"
+  }
+}

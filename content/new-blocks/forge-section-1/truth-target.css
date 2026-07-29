@@ -1,0 +1,30 @@
+.forge-section-1 { width:100%; background:#f8f8f8; box-shadow:0px 0.6px 0px 0px #eaeaea; }
+
+.forge-section-1 { max-width:889px; margin:0 auto; padding:0 12px; display:flex; flex-direction:row; justify-content:space-between; align-items:center; height:38px; box-sizing:border-box; }
+
+.forge-section-1 { display:flex; flex-direction:row; align-items:center; flex:1; min-width:0; }
+
+.forge-section-1 { height:20px; width:auto; padding-right:12px; flex-shrink:0; background-color:#e8e8e8; display:block; }
+
+.forge-section-1 { display:flex; flex-direction:row; align-items:center; gap:7.2px; flex-shrink:0; }
+
+.forge-section-1 { display:inline-flex; align-items:center; gap:4.8px; padding:3.6px 10.8px; background:#3b63fb; border:1.2px solid #3b63fb; border-radius:9px; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-size:9px; font-weight:700; line-height:11px; color:#ffffff; text-decoration:none; white-space:nowrap; flex-shrink:0; }
+
+.forge-section-1 { font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-size:8.4px; line-height:12px; color:#2c2c2c; white-space:nowrap; padding:0 7.2px; }
+
+.forge-section-1 { width:14px; height:14px; flex-shrink:0; background-color:#ddd; display:block; }
+
+.forge-section-1 { display:inline-flex; align-items:center; gap:4.8px; padding:3px 10.8px; background:transparent; border:1.2px solid #d4d4d4; border-radius:12px; font-family:'Adobe Clean',Arial,Helvetica,sans-serif; font-size:9px; font-weight:700; line-height:11px; color:#2c2c2c; text-decoration:none; white-space:nowrap; flex-shrink:0; position:relative; min-width:48px; justify-content:center; }
+
+.forge-section-1 { width:100%; background:#f8f8f8; box-shadow:0px 1.8px 1.8px 0px rgba(142,142,142,0.30); }
+
+.forge-section-1 { max-width:889px; margin:0 auto; padding:8.4px 12px; height:26px; box-sizing:border-box; display:flex; align-items:center; }
+
+@media (max-width:1024px) {
+.forge-section-1 { display:none; }
+}
+
+@media (max-width:768px) {
+.forge-section-1 { display:none; }
+.forge-section-1 { justify-content:space-between; }
+}

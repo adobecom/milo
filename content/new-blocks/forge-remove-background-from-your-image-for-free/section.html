@@ -1,0 +1,532 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.59" data-binding="below-threshold" data-figma-node-id="11239:129055" data-block="news" style="width:100%;overflow:hidden;font-family:'Adobe Clean',Arial,Helvetica,sans-serif;position:relative;">
+  <style>
+    #ff-hero-dark {
+      width:100%;
+      background-color:#111111;
+      background-image:radial-gradient(circle,rgba(255,255,255,0.10) 1px,transparent 1px);
+      background-size:22px 22px;
+      position:relative;
+      overflow:hidden;
+    }
+    #ff-hero-inner {
+      max-width:1154px;
+      margin:0 auto;
+      padding:0 24px;
+      box-sizing:border-box;
+    }
+    #ff-heading-block {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      text-align:center;
+      padding-top:64px;
+      padding-bottom:44px;
+      gap:10px;
+    }
+    #ff-product-lockup {
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:6px;
+      margin-bottom:2px;
+    }
+    #ff-product-lockup img {
+      width:26px;
+      height:26px;
+      border-radius:5px;
+      background:#e34850;
+      flex-shrink:0;
+    }
+    #ff-product-lockup span {
+      color:#ffffff;
+      font-weight:700;
+      font-size:17.6px;
+      line-height:22px;
+      letter-spacing:-0.35px;
+    }
+    #ff-h1 {
+      color:#ffffff;
+      font-weight:800;
+      font-size:51px;
+      line-height:1;
+      letter-spacing:-1.54px;
+      text-align:center;
+      max-width:641px;
+      margin:8px 0 10px;
+    }
+    #ff-subtitle {
+      color:#ffffff;
+      font-weight:400;
+      font-size:14.4px;
+      line-height:20px;
+      text-align:center;
+      max-width:536px;
+      margin:0;
+    }
+    #ff-card-wrap {
+      display:flex;
+      justify-content:center;
+      padding-bottom:64px;
+    }
+    #ff-card-outer {
+      width:801px;
+      max-width:100%;
+      background:rgba(255,255,255,0.20);
+      border-radius:16px;
+      padding:10px;
+      box-sizing:border-box;
+    }
+    #ff-card-inner {
+      background:#292929;
+      border-radius:8px;
+      display:flex;
+      flex-direction:row;
+      gap:13px;
+      min-height:296px;
+      overflow:hidden;
+    }
+    #ff-img-panel {
+      width:400px;
+      min-width:260px;
+      height:296px;
+      position:relative;
+      flex-shrink:0;
+      overflow:hidden;
+      border-radius:8px;
+      background:#f2f2f2;
+    }
+    #ff-img-panel img.ff-bg-img {
+      position:absolute;
+      top:0;left:0;
+      width:100%;height:100%;
+      object-fit:cover;
+      border-radius:8px;
+    }
+    #ff-img-panel img.ff-overlay-img {
+      position:absolute;
+      top:0;left:0;
+      width:100%;height:100%;
+      object-fit:cover;
+    }
+    #ff-remove-badge {
+      position:absolute;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      background:rgba(255,255,255,0.15);
+      border:0.72px solid rgba(255,255,255,0.25);
+      border-radius:7px;
+      padding:9px 13px;
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:6px;
+      white-space:nowrap;
+    }
+    #ff-remove-badge img {
+      width:19px;height:19px;flex-shrink:0;
+    }
+    #ff-remove-badge span {
+      color:#dbdbdb;
+      font-size:14.5px;
+      line-height:18px;
+      letter-spacing:-0.15px;
+      font-weight:400;
+    }
+    #ff-dropzone-panel {
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:19px;
+      padding:13px;
+      min-width:0;
+    }
+    #ff-dropzone-col {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:13px;
+      width:100%;
+    }
+    #ff-dropzone-box {
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      padding:27px 19px;
+      width:100%;
+      border:1px dashed #ffffff;
+      border-radius:6px;
+      box-sizing:border-box;
+      min-height:226px;
+      overflow:hidden;
+    }
+    #ff-dropzone-box img.ff-dz-icon {
+      width:32px;height:32px;flex-shrink:0;
+    }
+    #ff-upload-btn {
+      background:#3b63fb;
+      border:none;
+      border-radius:80px;
+      padding:10px 19px;
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    #ff-upload-btn img {
+      width:19px;height:19px;flex-shrink:0;
+    }
+    #ff-upload-btn span {
+      color:#ffffff;
+      font-weight:700;
+      font-size:15.2px;
+      line-height:21px;
+    }
+    #ff-dz-drag {
+      color:#f2f2f2;
+      font-weight:700;
+      font-size:16.8px;
+      line-height:16px;
+      text-align:center;
+      display:block;
+      width:100%;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    #ff-dz-file {
+      color:#ffffff;
+      font-weight:400;
+      font-size:12.8px;
+      line-height:19px;
+      text-align:center;
+      display:block;
+      width:100%;
+      font-family:'Adobe Clean Spectrum VF','Adobe Clean',Arial,sans-serif;
+    }
+    #ff-terms {
+      color:#ffffff;
+      font-weight:400;
+      font-size:11.2px;
+      line-height:14px;
+      text-align:center;
+      max-width:278px;
+      margin:0;
+    }
+    #ff-white-section {
+      width:100%;
+      background:#ffffff;
+      border-radius:24px 24px 0 0;
+      overflow:hidden;
+      position:relative;
+      margin-top:-24px;
+    }
+    #ff-white-inner {
+      max-width:1154px;
+      margin:0 auto;
+      padding:0 24px;
+      box-sizing:border-box;
+    }
+    #ff-title-block {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:19px;
+      padding-top:64px;
+      padding-bottom:48px;
+      text-align:center;
+    }
+    #ff-title-text-wrap {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      max-width:806px;
+      width:100%;
+    }
+    #ff-h2 {
+      color:#000000;
+      font-weight:800;
+      font-size:35.2px;
+      line-height:35px;
+      letter-spacing:-1.41px;
+      text-align:center;
+      margin:0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    #ff-title-desc {
+      color:#2c2c2c;
+      font-weight:400;
+      font-size:16px;
+      line-height:21px;
+      text-align:center;
+      margin:11px 0 0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+      max-width:806px;
+    }
+    .ff-cta-row {
+      display:flex;
+      flex-direction:row;
+      justify-content:center;
+      align-items:center;
+      gap:13px;
+    }
+    .ff-cta-btn {
+      display:flex;
+      flex-direction:row;
+      justify-content:center;
+      align-items:center;
+      gap:5px;
+      padding:11px 19px;
+      border-radius:80px;
+      background:transparent;
+      cursor:pointer;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    .ff-cta-btn-primary {
+      border:0.8px solid #000000;
+    }
+    .ff-cta-btn-secondary {
+      border:0.8px solid rgba(209,209,251,0.2);
+    }
+    .ff-cta-btn span {
+      font-weight:600;
+      font-size:11.2px;
+      line-height:11px;
+      letter-spacing:0.11px;
+      color:#000000;
+    }
+    .ff-cta-btn img {
+      width:10px;height:10px;flex-shrink:0;
+    }
+    .ff-features {
+      display:flex;
+      flex-direction:column;
+      gap:80px;
+      padding-bottom:128px;
+    }
+    .ff-feature-row {
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      justify-content:space-between;
+      gap:32px;
+      width:100%;
+    }
+    .ff-feature-text {
+      display:flex;
+      flex-direction:column;
+      gap:32px;
+      flex-shrink:0;
+      max-width:400px;
+    }
+    .ff-feature-eyebrow {
+      color:#000000;
+      font-weight:700;
+      font-size:12.8px;
+      line-height:16px;
+      text-transform:uppercase;
+      display:block;
+      font-family:'Adobe Clean',Arial,sans-serif;
+      margin-bottom:6px;
+    }
+    .ff-feature-h3 {
+      color:#000000;
+      font-weight:800;
+      font-size:28.8px;
+      line-height:28px;
+      letter-spacing:-0.86px;
+      margin:0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    .ff-feature-p {
+      color:#5d5d5d;
+      font-weight:400;
+      font-size:16px;
+      line-height:21px;
+      letter-spacing:0.16px;
+      margin:0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+    .ff-feature-card {
+      width:520px;
+      height:535px;
+      border-radius:16px;
+      background:#c4c4c4;
+      border:2.4px solid rgba(255,255,255,0.3);
+      overflow:hidden;
+      flex-shrink:0;
+      display:flex;
+      justify-content:flex-end;
+      align-items:flex-end;
+      padding:6px;
+      box-sizing:border-box;
+    }
+    .ff-feature-card img {
+      width:57px;height:46px;
+    }
+    @media (max-width:1024px) {
+      #ff-h1 { font-size:36px; }
+      #ff-card-outer { width:100%; }
+      #ff-card-inner { flex-direction:column; }
+      #ff-img-panel { width:100%; min-width:0; height:220px; border-radius:8px 8px 0 0; }
+      .ff-feature-row { flex-direction:column; gap:24px; }
+      .ff-feature-card { width:100%; height:320px; }
+      .ff-feature-text { max-width:100%; }
+      .ff-feature-row.ff-row-rev { flex-direction:column-reverse; }
+    }
+    @media (max-width:768px) {
+      #ff-h1 { font-size:28px; }
+      #ff-h2 { font-size:24px; line-height:1.2; }
+      #ff-heading-block { padding-top:40px; padding-bottom:28px; }
+      .ff-features { gap:48px; padding-bottom:64px; }
+      .ff-feature-card { height:240px; }
+      #ff-white-section { border-radius:16px 16px 0 0; }
+    }
+  </style>
+
+  <!-- ═══ DARK HERO ═══ -->
+  <div id="ff-hero-dark">
+    <div id="ff-hero-inner">
+
+      <div id="ff-heading-block">
+        <!-- Adobe Firefly lockup -->
+        <div id="ff-product-lockup">
+          <img src="media_frame-2147230404-appIcon.png" alt="App icon" />
+          <span>Adobe Firefly</span>
+        </div>
+
+        <!-- Main headline -->
+        <h1 id="ff-h1">Remove background from your image for free.</h1>
+
+        <!-- Subtitle -->
+        <p id="ff-subtitle">Easily remove the background from photos, then edit them in Adobe Firefly where you can add new backgrounds, graphics, and more.</p>
+      </div>
+
+      <!-- App demo card -->
+      <div id="ff-card-wrap">
+        <div id="ff-card-outer">
+          <div id="ff-card-inner">
+
+            <!-- Left: photo with bg-removal effect -->
+            <div id="ff-img-panel">
+              <img class="ff-bg-img" src="media_frame-2147230404-image50.png" alt="image 50" style="border:0.8px solid rgba(255,255,255,0.1);" />
+              <img class="ff-overlay-img" src="media_frame-2147230404-image51.png" alt="image 51" style="border:0.8px solid rgba(255,255,255,0.1);" />
+              <div style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:8px;overflow:hidden;background:#ffffff;">
+                <img class="ff-bg-img" src="media_frame-2147230404-sp14.png" alt="SP_14" style="border:1.6px solid rgba(255,255,255,0.15);" />
+                <img class="ff-overlay-img" src="media_frame-2147230404-screenshot20260426At92754Pm1.png" alt="Screenshot 2026-04-26 at 9.27.54 PM 1" />
+              </div>
+              <!-- Remove background badge -->
+              <div id="ff-remove-badge">
+                <img src="media_frame-2147230404-s2iconimagebackgroundremove20n.png" alt="S2_Icon_ImageBackgroundRemove_20_N" />
+                <span>Remove background</span>
+              </div>
+            </div>
+
+            <!-- Right: drop zone -->
+            <div id="ff-dropzone-panel">
+              <div id="ff-dropzone-col">
+                <div id="ff-dropzone-box">
+                  <img class="ff-dz-icon" src="media_frame-2147230404-s2iconimage20n.png" alt="S2_Icon_Image_20_N" />
+                  <button id="ff-upload-btn">
+                    <img src="media_frame-2147230404-leadingIcon.png" alt="Leading icon" />
+                    <span>Upload your image</span>
+                  </button>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+                    <span id="ff-dz-drag">Or drag and drop here</span>
+                    <span id="ff-dz-file">File must be JPEG (JPG), PNG, or WEBP and up to 100MB.</span>
+                  </div>
+                </div>
+                <p id="ff-terms">By uploading your image or video, you agree to the Adobe Terms of Use and Privacy Policy.</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ WHITE SECTION ═══ -->
+  <div id="ff-white-section">
+    <div id="ff-white-inner">
+
+      <!-- Title + CTAs -->
+      <div id="ff-title-block">
+        <div id="ff-title-text-wrap">
+          <h2 id="ff-h2">Lorem ipsum dolor sit amet consectetur.</h2>
+          <p id="ff-title-desc">Lorem ipsum dolor sit amet consectetur. Fusce egestas tortor risus nunc. Volutpat egestas massa in odio. Purus at sollicitudin amet sit porttitor.</p>
+        </div>
+        <div class="ff-cta-row">
+          <button class="ff-cta-btn ff-cta-btn-primary">
+            <span>Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="Icon For Button" />
+          </button>
+          <button class="ff-cta-btn ff-cta-btn-secondary">
+            <span>Customer Stories</span>
+            <img src="media_frame-2147230404-iconForButton.png" alt="Icon For Button" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Feature blocks -->
+      <div class="ff-features">
+
+        <!-- Block 1: text left, image right -->
+        <div class="ff-feature-row">
+          <div class="ff-feature-text">
+            <div>
+              <span class="ff-feature-eyebrow">Eyebrow</span>
+              <h3 class="ff-feature-h3">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p class="ff-feature-p">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff-feature-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" />
+          </div>
+        </div>
+
+        <!-- Block 2: image left, text right -->
+        <div class="ff-feature-row ff-row-rev">
+          <div class="ff-feature-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" />
+          </div>
+          <div class="ff-feature-text">
+            <h3 class="ff-feature-h3">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p class="ff-feature-p">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+        <!-- Block 3: text left, image right -->
+        <div class="ff-feature-row">
+          <div class="ff-feature-text">
+            <div>
+              <span class="ff-feature-eyebrow">Eyebrow</span>
+              <h3 class="ff-feature-h3">Lorem ipsum dolor sit amet consectetur.</h3>
+            </div>
+            <p class="ff-feature-p">Lorem ipsum dolor sit amet consectetur. Aliquet sed fringilla interdum sit tellus pharetra eu. Non proin urna turpis morbi risus scelerisque. Sociis a aenean in risus aliquet a non.</p>
+          </div>
+          <div class="ff-feature-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" />
+          </div>
+        </div>
+
+        <!-- Block 4: image left, text right -->
+        <div class="ff-feature-row ff-row-rev">
+          <div class="ff-feature-card">
+            <img src="media_frame-2147230404-accessibilityMotionControls.png" alt="Accessibility Motion Controls" />
+          </div>
+          <div class="ff-feature-text">
+            <h3 class="ff-feature-h3">Lorem ipsum dolor sit amet consectetur.</h3>
+            <p class="ff-feature-p">Lorem ipsum dolor sit amet consectetur. Vel malesuada lobortis imperdiet pretium. Tortor lacus ultrices turpis bibendum purus dignissim. In turpis tristique mauris et odio mauris.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</section>

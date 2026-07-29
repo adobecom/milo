@@ -1,0 +1,145 @@
+.forge-remove-background-from-your-image-for-free #ff-img-panel img.ff-bg-img {
+      position:absolute;
+      top:0;left:0;
+      width:100%;height:100%;
+      object-fit:cover;
+      border-radius:8px;
+    }
+
+.forge-remove-background-from-your-image-for-free #ff-img-panel img.ff-overlay-img {
+      position:absolute;
+      top:0;left:0;
+      width:100%;height:100%;
+      object-fit:cover;
+    }
+
+.forge-remove-background-from-your-image-for-free #ff-dropzone-box img.ff-dz-icon {
+      width:32px;height:32px;flex-shrink:0;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      display:flex;
+      flex-direction:row;
+      justify-content:center;
+      align-items:center;
+      gap:13px;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      display:flex;
+      flex-direction:row;
+      justify-content:center;
+      align-items:center;
+      gap:5px;
+      padding:11px 19px;
+      border-radius:80px;
+      background:transparent;
+      cursor:pointer;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      border:0.8px solid #000000;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      border:0.8px solid rgba(209,209,251,0.2);
+    }
+
+.forge-remove-background-from-your-image-for-free span {
+      font-weight:600;
+      font-size:11.2px;
+      line-height:11px;
+      letter-spacing:0.11px;
+      color:#000000;
+    }
+
+.forge-remove-background-from-your-image-for-free img {
+      width:10px;height:10px;flex-shrink:0;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      display:flex;
+      flex-direction:column;
+      gap:80px;
+      padding-bottom:128px;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      display:flex;
+      flex-direction:row;
+      align-items:center;
+      justify-content:space-between;
+      gap:32px;
+      width:100%;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      display:flex;
+      flex-direction:column;
+      gap:32px;
+      flex-shrink:0;
+      max-width:400px;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      color:#000000;
+      font-weight:700;
+      font-size:12.8px;
+      line-height:16px;
+      text-transform:uppercase;
+      display:block;
+      font-family:'Adobe Clean',Arial,sans-serif;
+      margin-bottom:6px;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      color:#000000;
+      font-weight:800;
+      font-size:28.8px;
+      line-height:28px;
+      letter-spacing:-0.86px;
+      margin:0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      color:#5d5d5d;
+      font-weight:400;
+      font-size:16px;
+      line-height:21px;
+      letter-spacing:0.16px;
+      margin:0;
+      font-family:'Adobe Clean',Arial,sans-serif;
+    }
+
+.forge-remove-background-from-your-image-for-free {
+      width:520px;
+      height:535px;
+      border-radius:16px;
+      background:#c4c4c4;
+      border:2.4px solid rgba(255,255,255,0.3);
+      overflow:hidden;
+      flex-shrink:0;
+      display:flex;
+      justify-content:flex-end;
+      align-items:flex-end;
+      padding:6px;
+      box-sizing:border-box;
+    }
+
+.forge-remove-background-from-your-image-for-free img {
+      width:57px;height:46px;
+    }
+
+@media (max-width:1024px) {
+.forge-remove-background-from-your-image-for-free { flex-direction:column; gap:24px; }
+.forge-remove-background-from-your-image-for-free { width:100%; height:320px; }
+.forge-remove-background-from-your-image-for-free { max-width:100%; }
+.forge-remove-background-from-your-image-for-free { flex-direction:column-reverse; }
+}
+
+@media (max-width:768px) {
+.forge-remove-background-from-your-image-for-free { gap:48px; padding-bottom:64px; }
+.forge-remove-background-from-your-image-for-free { height:240px; }
+}

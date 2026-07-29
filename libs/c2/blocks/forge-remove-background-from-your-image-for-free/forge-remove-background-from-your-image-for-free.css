@@ -1,0 +1,34 @@
+/* forge-remove-background-from-your-image-for-free — distinctive-section FLOOR (structural, lint-clean).
+   The agentic build-block-from-figma author REPLACES this with CSS authored
+   toward the Figma visual target; this floor keys only on the classes the floor
+   init() stamps (.foreground/.media/.content) so it always matches the FLAT DA
+   cell. Raw truth section-<node>.css is NOT written here (it keys on Figma
+   classes absent at runtime) — it is handed to the author as a reference only. */
+.forge-remove-background-from-your-image-for-free {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24, 24px);
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 64px) var(--s2a-layout-section-bottom, 80px);
+}
+.forge-remove-background-from-your-image-for-free .foreground,
+.forge-remove-background-from-your-image-for-free .content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-16, 16px);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+.forge-remove-background-from-your-image-for-free .media {
+  width: 100%;
+}
+.forge-remove-background-from-your-image-for-free .media img,
+.forge-remove-background-from-your-image-for-free img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+.forge-remove-background-from-your-image-for-free a:not([class]) {
+  color: inherit;
+}
