@@ -2805,6 +2805,71 @@ function loadLingoIndexes(area = document) {
   }).catch((e) => window.lana?.log(`Failed to get mep lingo prefix: ${e}`, { tags: 'lingo', severity: 'error' }));
 }
 
+/*
+ * da-marketo libs — opt-in loading of da-marketo's Marketo blocks for any Milo
+ * consumer. When a `?marketolibs` param, `marketo-libs` metadata, or a
+ * `.da-marketo` block is present, we rename `.marketo` blocks to `.da-marketo`
+ * and register da-marketo's `/mkto` folder as an externalLibs base, so Milo's
+ * own loader pulls the da-marketo block directly from da-marketo's origin —
+ * Milo's marketo block is never loaded. We do this with updateConfig (not
+ * setConfig or da-marketo's register()) so the page's codeRoot is not disturbed.
+ */
+const MARKETO_LIBS_PARAM = 'marketolibs';
+const MARKETO_LIBS_META = 'marketo-libs';
+const MARKETO_LIBS_BLOCKS = ['da-marketo', 'da-marketo-config'];
+const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
+
+// Resolve the base URL of da-marketo's `mkto/` folder from a trigger, or null
+// when none is present. Precedence: query param > metadata > `.da-marketo` block.
+export function getMarketoLibsBase(
+  area = document,
+  location = window.location,
+  getMeta = getMetadata,
+) {
+  const params = new URLSearchParams(location.search);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (params.has(MARKETO_LIBS_PARAM)) branch = params.get(MARKETO_LIBS_PARAM) || 'main'; // bare ?marketolibs -> main
+  else if (meta) branch = meta;
+  else if (area.querySelector('.da-marketo')) branch = 'main';
+  else return null; // no trigger -> Milo's default behavior
+
+  if (branch === 'true') branch = 'main';
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) {
+    window.lana?.log(`Invalid ${MARKETO_LIBS_PARAM} branch: ${branch}`, { tags: 'marketo-libs', severity: 'warn' });
+    return null;
+  }
+  if (branch === 'local') return 'http://localhost:6586/mkto';
+  const host = branch.includes('--') ? branch : `${branch}--da-marketo--adobecom`;
+  return `https://${host}.aem.live/mkto`;
+}
+
+export function loadMarketoLibs(
+  area = document,
+  location = window.location,
+  getMeta = getMetadata,
+) {
+  const config = getConfig();
+  // Skip if da-marketo is already active — e.g. a consumer's own scripts.js
+  // (da-marketo, da-bacom) called register() before loadArea.
+  if (config.externalLibs?.some((lib) => lib?.blocks?.includes('da-marketo'))) return;
+
+  const base = getMarketoLibsBase(area, location, getMeta);
+  if (!base) return; // no trigger -> Milo's default behavior
+
+  // Rename so Milo's block loader resolves the da-marketo block, not Milo's.
+  area.querySelectorAll('.marketo').forEach((el) => el.classList.replace('marketo', 'da-marketo'));
+  area.querySelectorAll('.marketo-config').forEach((el) => el.classList.replace('marketo-config', 'da-marketo-config'));
+
+  // updateConfig replaces config verbatim (unlike setConfig, it does not
+  // re-prefix codeRoot), so only externalLibs changes.
+  updateConfig({
+    ...config,
+    externalLibs: [...(config.externalLibs ?? []), { base, blocks: MARKETO_LIBS_BLOCKS }],
+  });
+}
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
@@ -2834,6 +2899,7 @@ export async function loadArea(area = document) {
   if (isDoc) {
     await decorateDocumentExtras();
     initModalEventListener();
+    loadMarketoLibs(area);
   }
 
   const areaBlocks = [];
