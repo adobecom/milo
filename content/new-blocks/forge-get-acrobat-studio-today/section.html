@@ -1,0 +1,122 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.53" data-binding="ambiguous" data-figma-node-id="10559:113746" data-block="news" style="position:relative;width:100%;min-height:1176px;overflow:hidden;background:#000;">
+  <style>
+    [data-figma-node-id="10559:113746"] .bg-img {
+      position:absolute;inset:0;
+      background-image:url('https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/a2f4cfb7-1f3a-4aef-85a1-5c128fcf7971');
+      background-size:cover;background-position:center top;
+    }
+    [data-figma-node-id="10559:113746"] .gradient-overlay {
+      position:absolute;inset:0;
+      background:linear-gradient(180deg,rgba(0,0,0,0.20) 0%,#000000 100%);
+    }
+    [data-figma-node-id="10559:113746"] .outer {
+      position:relative;z-index:1;width:100%;
+      padding:0 120px;box-sizing:border-box;
+    }
+    [data-figma-node-id="10559:113746"] .inner {
+      display:flex;flex-direction:column;align-items:center;
+      gap:24px;max-width:1200px;margin:0 auto;
+    }
+    [data-figma-node-id="10559:113746"] .top-pad {
+      height:160px;width:100%;flex-shrink:0;
+    }
+    [data-figma-node-id="10559:113746"] .copy-lockup {
+      display:flex;flex-direction:column;align-items:center;
+      gap:8px;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .eyebrow {
+      margin:0;color:#fff;
+      font-family:'Adobe Clean',adobe-clean,sans-serif;
+      font-size:14px;line-height:18px;
+      font-weight:400;text-align:center;
+    }
+    [data-figma-node-id="10559:113746"] .headline {
+      margin:0;color:#fff;
+      font-family:'Adobe Clean Display',adobe-clean-display,'Adobe Clean',sans-serif;
+      font-size:56px;line-height:56px;
+      letter-spacing:-1.68px;text-align:center;
+      font-weight:900;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .subtitle {
+      margin:0;color:#fff;
+      font-family:'Adobe Clean',adobe-clean,sans-serif;
+      font-size:20px;line-height:24px;
+      font-weight:400;text-align:center;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .cta-group {
+      display:flex;flex-direction:column;gap:16px;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .price {
+      margin:0;color:#fff;
+      font-family:'Adobe Clean',adobe-clean,sans-serif;
+      font-size:16px;line-height:19px;
+      letter-spacing:-0.16px;font-weight:700;
+      text-align:center;
+    }
+    [data-figma-node-id="10559:113746"] .btn-row {
+      display:flex;flex-direction:row;
+      justify-content:center;gap:8px;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .btn-primary {
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:14px 24px;background:#ffffff;
+      border-radius:999px;border:none;cursor:pointer;
+      font-family:'Adobe Clean',adobe-clean,sans-serif;
+      font-size:14px;line-height:18px;font-weight:700;
+      color:#000000;white-space:nowrap;text-decoration:none;
+    }
+    [data-figma-node-id="10559:113746"] .btn-secondary {
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:14px 24px;background:transparent;
+      border-radius:999px;border:1px solid #ffffff;cursor:pointer;
+      font-family:'Adobe Clean',adobe-clean,sans-serif;
+      font-size:14px;line-height:18px;font-weight:700;
+      color:#ffffff;white-space:nowrap;text-decoration:none;
+    }
+    @media (max-width:1280px) {
+      [data-figma-node-id="10559:113746"] { min-height:997px; }
+      [data-figma-node-id="10559:113746"] .top-pad { height:124px; }
+      [data-figma-node-id="10559:113746"] .headline { font-size:48px;line-height:50px; }
+    }
+    @media (max-width:1024px) {
+      [data-figma-node-id="10559:113746"] { min-height:800px; }
+      [data-figma-node-id="10559:113746"] .outer { padding:0 48px; }
+      [data-figma-node-id="10559:113746"] .top-pad { height:80px; }
+      [data-figma-node-id="10559:113746"] .headline { font-size:40px;line-height:44px;letter-spacing:-1px; }
+      [data-figma-node-id="10559:113746"] .subtitle { font-size:18px; }
+    }
+    @media (max-width:768px) {
+      [data-figma-node-id="10559:113746"] { min-height:740px; }
+      [data-figma-node-id="10559:113746"] .outer { padding:0 24px; }
+      [data-figma-node-id="10559:113746"] .top-pad { height:64px; }
+      [data-figma-node-id="10559:113746"] .headline { font-size:32px;line-height:36px;letter-spacing:-0.8px; }
+      [data-figma-node-id="10559:113746"] .subtitle { font-size:16px;line-height:22px; }
+      [data-figma-node-id="10559:113746"] .btn-row { flex-direction:column;align-items:center; }
+      [data-figma-node-id="10559:113746"] .btn-primary,
+      [data-figma-node-id="10559:113746"] .btn-secondary { width:240px; }
+    }
+  </style>
+
+  <div class="bg-img"></div>
+  <div class="gradient-overlay"></div>
+
+  <div class="outer">
+    <div class="inner">
+      <div class="top-pad"></div>
+
+      <div class="copy-lockup">
+        <p class="eyebrow">Acrobat Studio</p>
+        <h1 class="headline">Get Acrobat Studio today.</h1>
+        <p class="subtitle">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <div class="cta-group">
+        <p class="price">US$24.99/mo annual, billed monthly</p>
+        <div class="btn-row">
+          <a href="#" class="btn-primary">Free Trial</a>
+          <a href="#" class="btn-secondary">Compare Plans</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
