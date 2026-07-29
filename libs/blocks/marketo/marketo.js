@@ -65,16 +65,17 @@ export const MARKETO_LIBS_CLASS = 'da-marketo';
 const MARKETO_LIBS_BRANCH_RE = /^[a-zA-Z0-9_-]+$/;
 
 export function getMarketoLibsBase(el, location = window.location, getMeta = getMetadata) {
-  let branch = new URLSearchParams(location.search).get(MARKETO_LIBS_PARAM);
-  if (branch === '') branch = 'main'; // bare ?marketolibs
-  if (branch == null) branch = getMeta(MARKETO_LIBS_META) || null;
-  if (!branch && el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  const { hostname, search } = location;
+  const param = new URLSearchParams(search).get(MARKETO_LIBS_PARAM);
+  const meta = getMeta(MARKETO_LIBS_META);
+
+  let branch;
+  if (meta) branch = 'main';
+  if (el?.classList?.contains(MARKETO_LIBS_CLASS)) branch = 'main';
+  if (param != null) branch = param || 'main';
   if (!branch) return null;
-  if (branch === 'true') branch = 'main';
-  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) {
-    window.lana?.log(`Invalid ${MARKETO_LIBS_PARAM} branch: ${branch}`, { tags: 'marketo', severity: 'w' });
-    return null; // fall back to Milo's default behavior
-  }
+  if (!MARKETO_LIBS_BRANCH_RE.test(branch)) throw new Error(`Invalid ${MARKETO_LIBS_PARAM} branch name: ${branch}`);
+  if (!['.aem.', '.hlx.', '.stage.', 'local', '.da.'].some((i) => hostname.includes(i))) return '/mkto';
   if (branch === 'local') return 'http://localhost:6586/mkto';
   return branch.includes('--')
     ? `https://${branch}.aem.live/mkto`

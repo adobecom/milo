@@ -473,7 +473,9 @@ describe('Marketo formSuccess IMS', () => {
 
 describe('da-marketo libs', () => {
   const plainEl = () => document.createElement('div');
-  const loc = (search) => ({ search });
+  // default to a dev host so branch resolution falls through to the CDN URLs;
+  // pass a production host explicitly to exercise the /mkto DNS route.
+  const loc = (search, hostname = 'main--milo--adobecom.aem.live') => ({ search, hostname });
   const noMeta = () => '';
 
   beforeEach(() => {
@@ -499,9 +501,9 @@ describe('da-marketo libs', () => {
         .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
     });
 
-    it('treats ?marketolibs=true as main', () => {
+    it('treats ?marketolibs=true as a literal branch', () => {
       expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=true'), noMeta))
-        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
+        .to.equal('https://true--da-marketo--adobecom.aem.live/mkto');
     });
 
     it('resolves a named branch to a da-marketo branch mkto base', () => {
@@ -509,9 +511,9 @@ describe('da-marketo libs', () => {
         .to.equal('https://stage--da-marketo--adobecom.aem.live/mkto');
     });
 
-    it('resolves the marketo-libs metadata trigger', () => {
+    it('resolves any marketo-libs metadata value to main', () => {
       expect(getMarketoLibsBase(plainEl(), loc(''), () => 'stage'))
-        .to.equal('https://stage--da-marketo--adobecom.aem.live/mkto');
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
     });
 
     it('resolves the da-marketo block class to main', () => {
@@ -528,11 +530,11 @@ describe('da-marketo libs', () => {
         .to.equal('https://parambranch--da-marketo--adobecom.aem.live/mkto');
     });
 
-    it('gives metadata precedence over the block class', () => {
+    it('resolves metadata to main even when a da-marketo class is present', () => {
       const el = plainEl();
       el.classList.add('da-marketo');
       expect(getMarketoLibsBase(el, loc(''), () => 'metabranch'))
-        .to.equal('https://metabranch--da-marketo--adobecom.aem.live/mkto');
+        .to.equal('https://main--da-marketo--adobecom.aem.live/mkto');
     });
 
     it('resolves a fork branch containing -- to an aem.live mkto base', () => {
@@ -545,11 +547,18 @@ describe('da-marketo libs', () => {
         .to.equal('http://localhost:6586/mkto');
     });
 
-    it('rejects an invalid branch name and warns', () => {
-      const result = getMarketoLibsBase(plainEl(), loc('?marketolibs=bad!name'), noMeta);
-      expect(result).to.be.null;
-      expect(window.lana.log.calledOnce).to.be.true;
-      expect(window.lana.log.firstCall.args[1]).to.include({ severity: 'w' });
+    it('throws on an invalid branch name', () => {
+      expect(() => getMarketoLibsBase(plainEl(), loc('?marketolibs=bad!name'), noMeta))
+        .to.throw(/Invalid marketolibs branch name/);
+    });
+
+    it('resolves to /mkto on a production adobe.com host when triggered', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('?marketolibs=main', 'business.adobe.com'), noMeta))
+        .to.equal('/mkto');
+    });
+
+    it('returns null on a production host when there is no trigger', () => {
+      expect(getMarketoLibsBase(plainEl(), loc('', 'www.adobe.com'), noMeta)).to.be.null;
     });
   });
 
