@@ -13,6 +13,25 @@ function prepPic(picture) {
   return clone;
 }
 
+function eagerLoad(scope, highPriority) {
+  scope.querySelectorAll('img').forEach((img) => {
+    img.setAttribute('loading', 'eager');
+    if (highPriority) img.setAttribute('fetchpriority', 'high');
+  });
+}
+
+function optimizeImageLoading(block, bg, media) {
+  const firstBg = bg.querySelector('.rcc-bg-slide');
+  const firstMedia = media.querySelector('.rcc-media-slide');
+  if (firstBg) eagerLoad(firstBg, true);
+  if (firstMedia) eagerLoad(firstMedia, false);
+
+  const eagerScopes = [firstBg, firstMedia].filter(Boolean);
+  [...block.querySelectorAll('img')]
+    .filter((img) => !eagerScopes.some((scope) => scope.contains(img)))
+    .forEach((img) => img.setAttribute('fetchpriority', 'low'));
+}
+
 function buildBgSlide(app, active) {
   const slide = createTag('div', { class: `rcc-bg-slide${active ? ' is-active' : ''}` });
   const pic = prepPic(app.picture);
@@ -302,6 +321,7 @@ function decorate(block) {
   }
 
   const refs = buildRoller(block, eyebrowEl, headingEl, apps);
+  optimizeImageLoading(block, refs.bg, refs.media);
   initScroll(block, refs, apps);
 }
 
