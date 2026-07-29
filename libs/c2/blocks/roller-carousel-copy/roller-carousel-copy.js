@@ -2,6 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200;
+const M_BREAKPOINT = 768;
 const L_BREAKPOINT = 1280;
 const MIN_ROLLER_ROOM = 120;
 
@@ -208,8 +209,13 @@ function createUpdatePosition({
     } else if (w >= L_BREAKPOINT) {
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
-    } else {
+    } else if (w >= M_BREAKPOINT) {
       lineY = mediaRect.top - wrapRect.top - itemH;
+      bottomAlign = true;
+    } else {
+      const keyLine = divider.getBoundingClientRect().bottom - wrapRect.top;
+      const imageTop = mediaRect.top - wrapRect.top;
+      lineY = (keyLine + imageTop) / 2 + itemH / 2;
       bottomAlign = true;
     }
     const scrolled = Math.max(0, Math.min(usable, -rect.top));
