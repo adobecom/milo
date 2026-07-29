@@ -3,6 +3,7 @@ import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200;
 const L_BREAKPOINT = 1280;
+const MIN_ROLLER_ROOM = 120;
 
 function prepPic(picture) {
   if (!picture) return null;
@@ -42,29 +43,49 @@ function buildMedia(apps) {
   return wrapper;
 }
 
-function buildHeader(eyebrowText, headingText) {
+function buildHeader(eyebrowEl, headingEl) {
   const header = createTag('div', { class: 'rcc-header' });
-  if (eyebrowText) {
-    const eyebrow = createTag('p', { class: 'rcc-eyebrow' });
-    eyebrow.textContent = eyebrowText;
-    header.append(eyebrow);
+  if (eyebrowEl) {
+    eyebrowEl.classList.add('rcc-eyebrow');
+    header.append(eyebrowEl);
   }
-  if (headingText) {
-    const h = createTag('h2', { class: 'rcc-heading' });
-    h.textContent = headingText;
-    header.append(h);
+  if (headingEl) {
+    headingEl.classList.add('rcc-heading');
+    header.append(headingEl);
   }
   return header;
 }
 
-function buildReducedMotion(block, eyebrowText, headingText, apps) {
+function parseContent(rows) {
+  const eyebrowEl = rows[0].querySelector('p');
+  const headingEl = rows[0].querySelector('h1,h2,h3,h4,h5,h6');
+
+  const apps = [];
+  let currentCategory = '';
+  rows.slice(1).forEach((row) => {
+    const cols = row.children;
+    if (cols.length === 1) {
+      currentCategory = cols[0].textContent?.trim() || currentCategory;
+      return;
+    }
+    const name = cols[0]?.textContent?.trim() ?? '';
+    const pics = [...row.querySelectorAll('picture')];
+    const icon = pics.length > 1 ? pics[0] : null;
+    const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
+    if (name) apps.push({ category: currentCategory, name, picture, icon });
+  });
+
+  return { eyebrowEl, headingEl, apps };
+}
+
+function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
   block.classList.add('rcc-reduced-motion');
 
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
   bg.append(buildBgSlide(apps[0], true));
 
   const content = createTag('div', { class: 'rcc-rm-content' });
-  content.append(buildHeader(eyebrowText, headingText));
+  content.append(buildHeader(eyebrowEl, headingEl));
 
   const list = createTag('div', { class: 'rcc-rm-list' });
   let currentCategory = null;
@@ -91,48 +112,15 @@ function buildReducedMotion(block, eyebrowText, headingText, apps) {
   block.replaceChildren(bg, content);
 }
 
-function decorate(block) {
-  const rows = [...block.children];
-  if (rows.length < 2) return;
-
-  const eyebrowText = rows[0].querySelector('p')?.textContent?.trim() ?? '';
-  const headingText = rows[0].querySelector('h1,h2,h3,h4,h5')?.textContent?.trim() ?? '';
-
-  const apps = [];
-  let currentCategory = '';
-  rows.slice(1).forEach((row) => {
-    const cols = row.children;
-    if (cols.length === 1) {
-      currentCategory = cols[0].querySelector('h6')?.textContent?.trim()
-        || cols[0].textContent?.trim()
-        || currentCategory;
-      return;
-    }
-    const name = cols[0]?.textContent?.trim() ?? '';
-    const pics = [...row.querySelectorAll('picture')];
-    const icon = pics.length > 1 ? pics[0] : null;
-    const picture = pics.length > 1 ? pics[1] : (pics[0] ?? null);
-    if (name) apps.push({ category: currentCategory, name, picture, icon });
-  });
-
-  if (!apps.length) return;
-
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    buildReducedMotion(block, eyebrowText, headingText, apps);
-    return;
-  }
-
+function buildRoller(block, eyebrowEl, headingEl, apps) {
   const scrollWrapper = createTag('div', { class: 'rcc-scroll-wrapper' });
   scrollWrapper.style.height = `calc(100dvh + ${apps.length * SCROLL_PER_APP}px)`;
 
   const sticky = createTag('div', { class: 'rcc-sticky' });
-
   const bg = buildBg(apps);
-
   const content = createTag('div', { class: 'rcc-content' });
   const left = createTag('div', { class: 'rcc-left' });
-
-  const header = buildHeader(eyebrowText, headingText);
+  const header = buildHeader(eyebrowEl, headingEl);
 
   const carousel = createTag('div', { class: 'rcc-carousel' });
   const categoryWrapper = createTag('div', { class: 'rcc-category-wrapper' });
@@ -142,7 +130,7 @@ function decorate(block) {
   categoryWrapper.append(categoryLabel, divider);
 
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
-  const list = createTag('ul', { class: 'rcc-list', 'aria-label': 'Included apps' });
+  const list = createTag('ul', { class: 'rcc-list' });
   apps.forEach((app, i) => {
     const item = createTag('li', { class: `rcc-item${i === 0 ? ' is-active' : ''}` });
     item.textContent = app.name;
@@ -158,12 +146,24 @@ function decorate(block) {
   scrollWrapper.append(sticky);
   block.replaceChildren(bg, scrollWrapper);
 
-  const items = [...list.querySelectorAll('.rcc-item')];
-  const mediaSlides = [...media.querySelectorAll('.rcc-media-slide')];
-  const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
-  let activeIdx = 0;
+  return {
+    bg,
+    scrollWrapper,
+    content,
+    left,
+    header,
+    carousel,
+    categoryLabel,
+    divider,
+    listWrapper,
+    list,
+    media,
+  };
+}
 
-  const activate = (newIdx) => {
+function createActivate({ items, mediaSlides, bgSlides, categoryLabel, apps }) {
+  let activeIdx = 0;
+  return (newIdx) => {
     if (newIdx === activeIdx) return;
     items[activeIdx].classList.remove('is-active');
     mediaSlides[activeIdx].classList.remove('is-active');
@@ -174,8 +174,12 @@ function decorate(block) {
     bgSlides[activeIdx].classList.add('is-active');
     categoryLabel.textContent = apps[activeIdx].category;
   };
+}
 
-  const updatePosition = () => {
+function createUpdatePosition({
+  block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,
+}) {
+  return () => {
     const w = window.innerWidth;
     const mediaRect = media.getBoundingClientRect();
 
@@ -215,13 +219,11 @@ function decorate(block) {
     list.style.transform = `translateY(${lineY - offset * itemH}px)`;
     activate(Math.min(Math.floor(progress), apps.length - 1));
   };
+}
 
-  window.requestAnimationFrame(updatePosition);
-
-  const ro = new ResizeObserver(updatePosition);
-  ro.observe(listWrapper);
-
-  const MIN_ROLLER_ROOM = 120;
+function createReflow({
+  block, content, divider, left, header, carousel, scrollWrapper,
+}) {
   let reflowVpThreshold = 0;
   const setReflow = (on) => {
     if (on === block.classList.contains('rcc-reflow')) return;
@@ -233,7 +235,7 @@ function decorate(block) {
       block.classList.remove('rcc-reflow');
     }
   };
-  const evaluateReflow = () => {
+  return () => {
     const vh = window.innerHeight;
     if (!block.classList.contains('rcc-reflow')) {
       const dividerOffset = divider.getBoundingClientRect().bottom
@@ -247,6 +249,29 @@ function decorate(block) {
       setReflow(false);
     }
   };
+}
+
+function initScroll(block, refs, apps) {
+  const {
+    bg, scrollWrapper, content, left, header, carousel,
+    categoryLabel, divider, listWrapper, list, media,
+  } = refs;
+
+  const items = [...list.querySelectorAll('.rcc-item')];
+  const mediaSlides = [...media.querySelectorAll('.rcc-media-slide')];
+  const bgSlides = [...bg.querySelectorAll('.rcc-bg-slide')];
+
+  const activate = createActivate({ items, mediaSlides, bgSlides, categoryLabel, apps });
+  const updatePosition = createUpdatePosition({
+    block, media, divider, scrollWrapper, listWrapper, list, items, apps, activate,
+  });
+  const evaluateReflow = createReflow({
+    block, content, divider, left, header, carousel, scrollWrapper,
+  });
+
+  window.requestAnimationFrame(updatePosition);
+  new ResizeObserver(updatePosition).observe(listWrapper);
+
   evaluateReflow();
   window.addEventListener('resize', () => {
     evaluateReflow();
@@ -256,6 +281,22 @@ function decorate(block) {
     updatePosition();
     evaluateReflow();
   }, { passive: true });
+}
+
+function decorate(block) {
+  const rows = [...block.children];
+  if (rows.length < 2) return;
+
+  const { eyebrowEl, headingEl, apps } = parseContent(rows);
+  if (!apps.length) return;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    buildReducedMotion(block, eyebrowEl, headingEl, apps);
+    return;
+  }
+
+  const refs = buildRoller(block, eyebrowEl, headingEl, apps);
+  initScroll(block, refs, apps);
 }
 
 export default function init(el) {
