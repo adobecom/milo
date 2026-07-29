@@ -1047,11 +1047,10 @@
             const textarea = form.querySelector('#explanation-input');
             const checkbox = form.querySelector('#contact-me');
 
-            // Mock _satellite to capture analytics
-            window._satellite = {
-              track: (eventType, data) => {
-                window.lastTrackedEvent = { eventType, data };
-              }
+            // Mock window.alloy to capture analytics
+            window.alloy = (eventName, dataObj) => {
+              window.lastTrackedEvent = { eventName, dataObj };
+              return Promise.resolve();
             };
 
             // Fill out form completely
@@ -1071,13 +1070,15 @@
 
             // Verify analytics was sent
             expect(window.lastTrackedEvent).to.exist;
-            expect(window.lastTrackedEvent.eventType).to.equal('event');
-            
-            const analyticsData = window.lastTrackedEvent.data.data._adobe_corpnew.evolved_survey;
+            expect(window.lastTrackedEvent.eventName).to.equal('sendEvent');
+
+            const analyticsData = window.lastTrackedEvent.dataObj.data._adobe_corpnew.evolved_survey;
             expect(analyticsData.surveyScore).to.equal(2);
             expect(analyticsData.surveyFeedback).to.equal('This is my detailed feedback');
             expect(analyticsData.adobeCanContact).to.equal(true);
             expect(analyticsData.surveyType).to.equal('CSAT 5pt');
+
+            delete window.alloy;
           });
 
           it('should prevent double submission', async () => {
@@ -1090,8 +1091,9 @@
             const radioButton = form.querySelector('input[type="radio"]');
 
             let submitCount = 0;
-            window._satellite = {
-              track: () => { submitCount++; }
+            window.alloy = () => {
+              submitCount++;
+              return Promise.resolve();
             };
 
             // Select radio and submit
@@ -1107,6 +1109,8 @@
 
             // Should only have submitted once
             expect(submitCount).to.equal(1);
+
+            delete window.alloy;
           });
 
         });

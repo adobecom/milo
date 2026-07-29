@@ -74,7 +74,6 @@ const {
   getActiveLink,
   getExperienceName,
   isActiveLink,
-  resetActiveLink,
   icons,
   isDesktop,
   isTangentToViewport,
@@ -111,7 +110,10 @@ const {
   setupKeyboardNav,
   KEYBOARD_DELAY,
   isSmallScreen,
+  updateGnavActiveLink,
 } = utilities;
+
+export { updateGnavActiveLink };
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
@@ -660,6 +662,7 @@ class Gnav {
         </div>
         ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
+        ${getMetadata('gnav-brand-concierge')?.toLowerCase() === 'on' ? toFragment`<div class="feds-bc-wrapper"></div>` : ''}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? toFragment`<div class="feds-product-entry-cta-placeholder"></div>` : ''}
         ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${showPlansCta ? toFragment`<div class="feds-client-plans-cta"></div>` : ''}
@@ -1191,8 +1194,9 @@ class Gnav {
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
+    this.reloadUnav = () => window.UniversalNav?.reload(getConfiguration());
     isDesktop.addEventListener('change', () => {
-      window.UniversalNav.reload(getConfiguration());
+      this.reloadUnav();
     });
   };
 
@@ -1461,7 +1465,14 @@ class Gnav {
     `;
 
     // Get all main menu items, but exclude any that are nested inside other features
-    const items = [...this.content.querySelectorAll('h2, p:only-child > strong > a, p:only-child > em > a, p:only-child > a.merch')]
+    const mainNavItemsSelector = [
+      'h2',
+      'p:only-child > strong > a',
+      'p:only-child > em > a',
+      'p:only-child > a.merch',
+      'p:only-child > a.con-button',
+    ].join(', ');
+    const items = [...this.content.querySelectorAll(mainNavItemsSelector)]
       .filter((item) => CONFIG.features.every((feature) => !item.closest(`.${feature}`)));
 
     // Save number of items to decide whether a hamburger menu is required
@@ -1491,9 +1502,11 @@ class Gnav {
     const hasAsyncDropdown = itemTopParent instanceof HTMLElement
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
-    const isPrimaryCta = item.closest('strong') instanceof HTMLElement;
+    const isPrimaryCta = item.closest('strong') instanceof HTMLElement
+      || item.matches('a.con-button.blue');
     if (isPrimaryCta) return 'primaryCta';
-    const isSecondaryCta = item.closest('em') instanceof HTMLElement;
+    const isSecondaryCta = item.closest('em') instanceof HTMLElement
+      || item.matches('a.con-button.outline');
     if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
@@ -1807,6 +1820,7 @@ class Gnav {
               const url = new URL(linkElem.href);
               linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
               if (isActiveLink(linkElem)) {
+                linkElem.dataset.activeLinkHref = linkElem.href;
                 linkElem.removeAttribute('href');
               }
               const linkHash = url.hash.slice(2);
@@ -1817,6 +1831,7 @@ class Gnav {
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
+            linkElem.dataset.activeLinkHref = linkElem.href;
             linkElem.removeAttribute('href');
             linkElem.setAttribute('role', 'link');
             linkElem.setAttribute('aria-disabled', 'true');
@@ -1904,25 +1919,6 @@ class Gnav {
   };
 }
 
-export const updateGnavActiveLink = () => {
-  resetActiveLink();
-
-  const nav = document.querySelector(selectors.globalNav)?.querySelector('.feds-nav');
-  if (!nav) return;
-
-  nav.querySelectorAll(selectors.activeNavItem).forEach((el) => {
-    el.classList.remove(selectors.activeNavItem.slice(1));
-    el.classList.remove(selectors.deferredActiveNavItem.slice(1));
-    el.style.width = '';
-  });
-
-  nav.querySelectorAll(selectors.navItem).forEach((navItem) => {
-    if (getActiveLink(navItem) instanceof HTMLElement) {
-      navItem.classList.add(selectors.activeNavItem.slice(1));
-    }
-  });
-};
-
 export default async function init(block) {
   const { mep, miniGnav = false, showPlansCta } = getConfig();
   const sourceUrl = await getGnavSource();
@@ -1953,9 +1949,11 @@ export default async function init(block) {
   if (showPlansCta) block.classList.add('has-plans-cta');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
+  window.feds = window.feds || {};
   if (!gnav.useUniversalNav && gnav.blocks?.profile?.rawElem) {
-    window.feds = window.feds || {};
     window.feds.nav = { reload: () => gnav.reloadProfile() };
+  } else if (gnav.useUniversalNav) {
+    window.feds.nav = { reloadUnav: gnav.reloadUnav };
   }
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');

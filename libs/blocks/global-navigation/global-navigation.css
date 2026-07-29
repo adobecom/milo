@@ -7,7 +7,7 @@
   text-decoration: none;
 }
 
-.global-navigation button:not(.feds-client-desktop-apps button, .feds-client-plans-cta button) {
+.global-navigation button:not(.feds-client-desktop-apps button, .feds-client-plans-cta button, .feds-bc-wrapper button) {
   background: none;
   cursor: pointer;
 }
