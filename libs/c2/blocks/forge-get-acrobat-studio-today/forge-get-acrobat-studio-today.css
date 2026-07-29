@@ -1,0 +1,210 @@
+/* forge-get-acrobat-studio-today — centred CTA hero over a full-bleed photo.
+   Authored toward the Figma frame; every rule is scoped under the block class
+   (no :root/body/@font-face/@import — page globals define the --s2a-* tokens). */
+
+.forge-get-acrobat-studio-today {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  /* Preserve the comp's tall-hero proportion (~0.82 of container width, the
+     1440x1176 design ratio) as a responsive clamp — never pin frame pixels. */
+  min-height: clamp(720px, 82vw, 1176px);
+  background: var(--s2a-color-background-inverse, #000);
+  color: var(--s2a-color-white, #fff);
+}
+
+/* Background image — absolutely fills the section; section min-height reserves
+   its box (no per-image aspect-ratio needed for a cover layer). */
+.forge-get-acrobat-studio-today .media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+}
+
+.forge-get-acrobat-studio-today .media picture,
+.forge-get-acrobat-studio-today .media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Dark scrim: transparent at top → solid at the bottom, matching the comp. */
+.forge-get-acrobat-studio-today .overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, var(--s2a-color-background-inverse, #000) 100%);
+}
+
+/* Foreground content column, sitting near the top of the hero. */
+.forge-get-acrobat-studio-today .foreground {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--s2a-spacing-160, 160px) var(--s2a-spacing-124, 120px) var(--s2a-spacing-48, 48px);
+}
+
+.forge-get-acrobat-studio-today .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  width: 100%;
+  max-width: 1200px;
+}
+
+.forge-get-acrobat-studio-today .text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .eyebrow {
+  margin: 0;
+  font-family: var(--s2a-font-family-eyebrow, var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif));
+  font-size: var(--s2a-font-size-14, 14px);
+  font-weight: 400;
+  line-height: var(--s2a-font-line-height-18, 1.3);
+  text-align: center;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today .heading {
+  margin: 0;
+  width: 100%;
+  font-family: var(--s2a-font-family-adobe-clean-display, adobe-clean-display, adobe-clean, sans-serif);
+  font-weight: 900;
+  font-size: clamp(2rem, 1.1rem + 3vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-align: center;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today .description {
+  margin: 0;
+  width: 100%;
+  max-width: 45rem;
+  font-family: var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif);
+  font-weight: 400;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  line-height: 1.25;
+  text-align: center;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .price {
+  margin: 0;
+  font-family: var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif);
+  font-weight: 700;
+  font-size: var(--s2a-font-size-16, 16px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today .buttons {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  margin: 0;
+}
+
+/* CTA buttons — deep scope so these win over the global .con-button styles.
+   First CTA is solid (white on black); the rest are outline (white on glass). */
+.forge-get-acrobat-studio-today .buttons .con-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 28px;
+  border-radius: var(--s2a-border-radius-999, 999px);
+  border: var(--s2a-border-width-2, 1.5px) solid transparent;
+  font-family: var(--s2a-font-family-adobe-clean, adobe-clean, sans-serif);
+  font-weight: 700;
+  font-size: var(--s2a-font-size-14, 14px);
+  line-height: 1.3;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.forge-get-acrobat-studio-today .buttons .con-button.blue {
+  background: var(--s2a-color-white, #fff);
+  border-color: var(--s2a-color-white, #fff);
+  color: var(--s2a-color-background-inverse, #000);
+}
+
+.forge-get-acrobat-studio-today .buttons .con-button.outline {
+  background: transparent;
+  border-color: var(--s2a-color-white, #fff);
+  color: var(--s2a-color-white, #fff);
+}
+
+.forge-get-acrobat-studio-today .buttons .con-button:focus-visible {
+  outline: 2px solid var(--s2a-color-white, #fff);
+  outline-offset: 3px;
+}
+
+/* Any stray authored link stays legible on the dark background (C20). */
+.forge-get-acrobat-studio-today a:not([class]) {
+  color: inherit;
+}
+
+@media (min-width: 900px) {
+  .forge-get-acrobat-studio-today .buttons .con-button:hover {
+    filter: brightness(0.92);
+  }
+
+  .forge-get-acrobat-studio-today .buttons .con-button.outline:hover {
+    background: rgba(255, 255, 255, 0.14);
+    filter: none;
+  }
+}
+
+@media (max-width: 1024px) {
+  .forge-get-acrobat-studio-today {
+    min-height: clamp(680px, 82vw, 997px);
+  }
+
+  .forge-get-acrobat-studio-today .foreground {
+    padding: var(--s2a-spacing-124, 124px) var(--s2a-spacing-64, 60px) var(--s2a-spacing-48, 48px);
+  }
+}
+
+@media (max-width: 768px) {
+  .forge-get-acrobat-studio-today {
+    min-height: clamp(520px, 120vw, 800px);
+  }
+
+  .forge-get-acrobat-studio-today .foreground {
+    padding: var(--s2a-spacing-80, 80px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-40, 40px);
+  }
+
+  .forge-get-acrobat-studio-today .heading {
+    letter-spacing: -0.025em;
+  }
+}
