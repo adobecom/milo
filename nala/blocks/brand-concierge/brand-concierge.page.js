@@ -32,6 +32,19 @@ export default class BrandConciergeBlock {
     this.pageHeadings = this.page.locator('h1, h2, h3');
     this.pageBody = this.page.locator('p');
 
+    // Marquee (multi-image hero) variant
+    this.marquee = this.page.locator('.brand-concierge.marquee').first();
+    this.marqueeDark = this.page.locator('.brand-concierge.marquee.dark');
+    this.marqueeLight = this.page.locator('.brand-concierge.marquee.light');
+    this.marqueeEyebrow = this.block.locator('.bc-header-eyebrow').first();
+    this.marqueeHeadline = this.block.locator('.bc-header-title').first();
+    this.marqueeSubheadline = this.block.locator('.bc-header-subtitle').first();
+    this.marqueeLegal = this.block.locator('.bc-legal').first();
+    this.marqueeImages = this.block.locator('picture');
+    this.marqueeChips = this.block.locator('.prompt-card-button');
+    this.marqueeTextarea = this.block.locator('.bc-input-field textarea').first();
+    this.marqueeSendButton = this.block.locator('.input-field-button').first();
+
     // Modal close/dismiss elements
     this.modalCloseButton = this.page.locator('#brand-concierge-modal .dialog-close');
     this.modalCurtain = this.page.locator('.modal-curtain');
