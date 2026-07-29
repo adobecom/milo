@@ -122,6 +122,16 @@ export default function init(el) {
     await window.adobeIMS?.refreshToken();
     (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
   });
+  window.addEventListener('feds:signOut', () => {
+    if (window.adobe?.concierge?.clearHistory) {
+      if (document.body.classList.contains('bc-side-open')) {
+        const closeButton = document.querySelector('#brand-concierge-side button.dialog-close');
+        closeButton.click();
+      }
+      window.adobe.concierge.clearHistory();
+    }
+  });
+
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);
