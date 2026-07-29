@@ -1,0 +1,156 @@
+.social-proof {
+  overflow: clip;
+  border-radius: var(--s2a-border-radius-24);
+  container-type: inline-size;
+  --animation-timeline: --social-proof-view;
+  --animation-range: entry 10% contain 60%;
+  --animation-fill: both;
+
+  > div {
+    --stretch-target: 100cqi;
+    --stretch-peak: min(2560px, 100vw);
+    --stretch-from: calc(var(--stretch-peak) / var(--stretch-target));
+    view-timeline-name: --social-proof-view;
+    view-timeline-axis: block;
+    animation: social-proof-stretch var(--parallax-easing);
+    animation-timeline: var(--animation-timeline);
+    animation-range: var(--animation-range);
+    animation-fill-mode: var(--animation-fill);
+    transform-origin: center top;
+    will-change: transform;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--s2a-spacing-lg);
+    padding: var(--s2a-spacing-lg) var(--s2a-spacing-lg) var(--s2a-spacing-2xl);
+    border-radius: inherit;
+
+    .foreground {
+      --animation-range: entry 0% contain 20%;
+
+      display: flex;
+      flex-direction: column;
+      gap: var(--s2a-spacing-md);
+      padding-inline: var(--s2a-spacing-md);
+      max-width: 460px;
+      animation: social-proof-content-enter var(--parallax-easing);
+      animation-timeline: var(--animation-timeline);
+      animation-range: var(--animation-range);
+      animation-fill-mode: var(--animation-fill);
+      will-change: transform;
+
+      .content p:last-child {
+        color: var(--s2a-color-content-subtle);
+      }
+    }
+
+    .media {
+      border-radius: var(--s2a-border-radius-md);
+      max-height: 400px;
+      overflow: hidden;
+      width: 100%;
+
+      picture {
+        display: block;
+        width: 100%;
+        height: 100%;
+
+        img {
+          display: block;
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
+          animation: social-proof-image-zoom var(--parallax-easing);
+          animation-timeline: var(--animation-timeline);
+          animation-range: var(--animation-range);
+          animation-fill-mode: var(--animation-fill);
+          will-change: transform;
+        }
+      }
+    }
+
+    figure {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: var(--s2a-spacing-md);
+
+      figcaption {
+        display: flex;
+        flex-direction: column;
+
+        :not(:first-child) {
+          color: var(--s2a-color-content-subtle);
+        }
+      }
+    }
+  }
+}
+
+@media (width >= 768px) {
+  .social-proof {
+    border-radius: var(--s2a-border-radius-lg);
+
+    > div {
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+      padding: var(--s2a-spacing-lg);
+
+      .foreground {
+        flex: 1 1 50%;
+        max-width: none;
+        box-sizing: border-box;
+        justify-content: space-between;
+        padding: var(--s2a-spacing-2xl);
+      }
+
+      .media {
+        flex: 1 1 50%;
+        max-height: none;
+        min-height: 460px;
+      }
+    }
+  }
+}
+
+@media (width >= 1024px) {
+  .social-proof > div .foreground {
+    padding: var(--s2a-spacing-2xl);
+  }
+}
+
+@media (width >= 1280px) {
+  .social-proof > div .foreground {
+    padding: var(--s2a-spacing-4xl);
+  }
+}
+
+@media (width >= 1920px) {
+  .social-proof > div .foreground {
+    padding: var(--s2a-layout-md);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @keyframes social-proof-stretch {
+    from { transform: scale(var(--stretch-from)); }
+    to   { transform: scale(1); }
+  }
+
+  @keyframes social-proof-image-zoom {
+    from { transform: scale(var(--stretch-from)); }
+    to   { transform: scale(1); }
+  }
+
+  @keyframes social-proof-content-enter {
+    from { transform: translate(0%, 20%); }
+    to   { transform: translate(0%, 0%); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-proof * {
+    animation: none !important;
+  }
+}
