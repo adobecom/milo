@@ -26,7 +26,7 @@
 .language-banner-text {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
@@ -35,7 +35,7 @@
 .language-banner-link {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: 700;
   line-height: 18px;
@@ -152,11 +152,6 @@ html:has(meta[name="foundation"][content="c2"]) {
       justify-content: center;
       padding-inline: 150px;
       gap: 0;
-    }
-
-    .language-banner-text,
-    .language-banner-link {
-      font-size: var(--s2a-font-size-md);
     }
 
     .language-banner-close {
