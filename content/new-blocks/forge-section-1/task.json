@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-section-1",
+  "sectionIndex": 1,
+  "decision": "new-block",
+  "score": 0,
+  "topCandidate": null,
+  "sectionClass": "sf-sec-1",
+  "figmaUrl": "https://www.figma.com/design/w2VbLPROC36BO0DA0wBgyY/Doodlebug?node-id=11239-129054",
+  "figmaNodeId": "11239:129132",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-7e7f3fa7-ms6mjxu5",
+  "miloTargetPath": "/Users/logan/dev/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-7e7f3fa7-ms6mjxu5/libs/c2/blocks/forge-section-1",
+  "miloBranch": "forge/session-7e7f3fa7-95b",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/lzartman/forge/figma-7e7f3f?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}
