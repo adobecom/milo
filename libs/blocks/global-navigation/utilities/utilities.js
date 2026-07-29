@@ -134,11 +134,6 @@ export const logErrorFor = async (fn, message, tags, errorType, severity = 'erro
   }
 };
 
-// Domain-scoped account cookies (set at the edge / by the Universal Nav) that must not
-// outlive sign-out. Shared by both sign-out paths: the feds profile dropdown and the
-// Universal Nav SignOut event. Walks host -> registrable domain so the correct Domain=
-// variant is hit regardless of subdomain (prod adobe.com, stage stage.adobe.com). No-ops
-// off adobe.com (localhost, other hosts); browsers reject foreign-Domain cookie writes.
 export const clearSignOutCookies = () => {
   const { host } = window.location;
   if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
