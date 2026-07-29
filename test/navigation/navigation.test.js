@@ -114,6 +114,41 @@ describe('Navigation component', async () => {
     expect(onReady.called).to.be.true;
   });
 
+  it('Renders the brand concierge placeholder when navHelperWidget is on', async () => {
+    document.head.querySelectorAll('meta[name="gnav-brand-concierge"]').forEach((meta) => meta.remove());
+    const onReady = stub();
+    await loadBlock(withTestLocales({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        navHelperWidget: 'on',
+      },
+      env: 'prod',
+      theme: 'dark',
+    }), 'http://localhost:2000');
+    const bcPlaceholder = document.querySelector('.feds-bc-wrapper');
+    expect(bcPlaceholder).to.exist;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Does not render the brand concierge placeholder when navHelperWidget is off', async () => {
+    document.head.querySelectorAll('meta[name="gnav-brand-concierge"]').forEach((meta) => meta.remove());
+    const onReady = stub();
+    await loadBlock(withTestLocales({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }), 'http://localhost:2000');
+    const bcPlaceholder = document.querySelector('.feds-bc-wrapper');
+    expect(bcPlaceholder).to.not.exist;
+    expect(onReady.called).to.be.true;
+  });
+
   it('Should not render the footer block when config is not passed', async () => {
     try {
       await loadBlock(withTestLocales({ env: 'qa', authoringPath: '/federal/dev', footer: {} }), 'http://localhost:2000');

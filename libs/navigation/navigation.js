@@ -196,6 +196,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
             signInCtaStyle: configBlock?.unav?.profile?.signInCtaStyle || 'secondary',
             productEntryCta: configBlock.productEntryCta || 'off',
+            navHelperWidget: configBlock.navHelperWidget || 'off',
             promoSource,
           };
           const metaTags = [
@@ -204,6 +205,7 @@ export default async function loadBlock(configs, customLib) {
             { key: 'redirect', name: 'adobe-home-redirect' },
             { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
             { key: 'productEntryCta', name: 'product-entry-cta' },
+            { key: 'navHelperWidget', name: 'gnav-brand-concierge' },
             { key: 'promoSource', name: 'gnav-promo-source' },
           ];
           setMetaTags(metaTags, gnavConfigs, createTag);
