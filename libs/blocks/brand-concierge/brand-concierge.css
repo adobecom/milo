@@ -887,6 +887,10 @@
   font-size: 16px;
   top: unset;
   bottom: 0;
+}
+
+#brand-concierge-modal.dialog-modal.opening,
+#brand-concierge-side.dialog-modal.opening {
   animation: var(--bc-modal-animation-time) ease-in-out slide-up;
 }
 
@@ -1274,13 +1278,17 @@
       margin: 24px 24px 24px auto;
       bottom: 0;
       right: 0;
-      width: 400px;
+      width: 448px;
+    }
+
+    #brand-concierge-side.dialog-modal.opening {
       animation: var(--bc-modal-animation-time) ease-in-out slide-in;
     }
 
     #brand-concierge-side.dialog-modal.closing {
       animation: var(--bc-modal-animation-time) ease-in-out slide-out;
-      right: 100vw;
+      right: -100vw;
+      bottom: 0;
     }
     
     #brand-concierge-side ~ .modal-curtain {

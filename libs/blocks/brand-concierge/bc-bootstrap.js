@@ -244,7 +244,7 @@ export async function bcBootstrap(initialMessage, mountIdentifier) {
     }
 
     if (!bcToken) {
-      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
+      bcToken = window.adobeIMS?.getAccessToken()?.token;
     }
 
     if (bcToken) {
@@ -311,6 +311,7 @@ export async function openModal(initialMessage, bootstrap) {
 
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
+    class: 'opening',
     id: 'brand-concierge-modal',
     content: innerModal,
     closeCallback: async () => {
@@ -320,6 +321,11 @@ export async function openModal(initialMessage, bootstrap) {
       });
     },
   });
+
+  setTimeout(() => {
+    modal.classList.remove('opening');
+  }, animationMs);
+
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
 
@@ -335,6 +341,7 @@ export async function openSideModal(initialMessage, bootstrap) {
 
   innerModal.append(header, mountEl);
   const modal = await getModal(null, {
+    class: 'opening',
     id: 'brand-concierge-side',
     content: innerModal,
     closeCallback: async () => {
@@ -346,6 +353,11 @@ export async function openSideModal(initialMessage, bootstrap) {
       });
     },
   });
+
+  setTimeout(() => {
+    modal.classList.remove('opening');
+  }, animationMs);
+
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.body.classList.add('bc-side-open');
