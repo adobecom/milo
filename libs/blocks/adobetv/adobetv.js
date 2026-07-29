@@ -9,6 +9,9 @@ const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, {
 });
 
 const updateCaptionsLang = (url, geo, captionsLangMap) => {
+  if (true) {
+    console.log('Testing this');
+  
   if (geo && captionsLangMap) {
     const entry = captionsLangMap.find((l) => l?.geos?.split(',')?.includes(geo));
     if (entry) {
@@ -103,7 +106,7 @@ export default function init(a) {
 
     if (geo && federalCR && url.searchParams.has('captions')) {
       if (!captionsLangMapPromise) {
-        const captionsUrl = `${federalCR}/federal/assets/data/adobetv-captions1.json?sheet=${atvCaptionsKey}`;
+        const captionsUrl = `${federalCR}/federal/assets/data/adobetv-captions.json?sheet=${atvCaptionsKey}`;
         captionsLangMapPromise = fetch(captionsUrl).then((res) => {
           if (!res.ok) {
             return new Promise(() => { throw new Error(`Failed to fetch ${captionsUrl}`); });
