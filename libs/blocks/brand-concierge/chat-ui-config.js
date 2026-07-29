@@ -316,7 +316,7 @@ export default {
     '--chat-container-background': '#FFFFFF',
     '--chat-container-bottom-background': '#FFFFFF',
     '--chat-history-bottom-padding': '0',
-    '--chat-history-padding': '28px',
+    '--chat-history-padding': '24px',
     '--chat-history-padding-top-expanded': '0',
     '--chat-history-padding-mobile': '24px',
     '--chat-history-padding-tablet': '32px',
