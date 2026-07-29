@@ -49,9 +49,11 @@ video {
   cursor: pointer;
 }
 
-[dir='rtl'] .video-container .pause-play-wrapper {
+@media (max-width: 599px) {
+  [dir='rtl'] .video-container .pause-play-wrapper {
     right: auto;
     left: 2%;
+  }
 }
 
 .video-container .pause-play-wrapper .offset-filler {  
