@@ -15,6 +15,7 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
+import { clearSignOutCookies } from './utilities/utilities.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -162,6 +163,10 @@ const getMessageEventListener = () => {
           .catch(() => { setUserProfile({}); });
         break;
       case 'SignOut':
+        // Clear domain-scoped account cookies before the Universal Nav runs the default
+        // IMS sign-out. On UNAV pages this listener is the only SignOut handler, so nothing
+        // else clears these (unlike the feds profile dropdown path).
+        clearSignOutCookies();
         executeDefaultAction();
         break;
       case 'ProfileSwitch':

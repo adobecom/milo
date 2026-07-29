@@ -134,6 +134,23 @@ export const logErrorFor = async (fn, message, tags, errorType, severity = 'erro
   }
 };
 
+// Domain-scoped account cookies (set at the edge / by the Universal Nav) that must not
+// outlive sign-out. Shared by both sign-out paths: the feds profile dropdown and the
+// Universal Nav SignOut event. Walks host -> registrable domain so the correct Domain=
+// variant is hit regardless of subdomain (prod adobe.com, stage stage.adobe.com). No-ops
+// off adobe.com (localhost, other hosts); browsers reject foreign-Domain cookie writes.
+export const clearSignOutCookies = () => {
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const labels = host.split('.');
+  ['ims_country_code', 'acomsis', 'acomsis_stage'].forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
+};
+
 export function addMepHighlightAndTargetId(el, source) {
   let { manifestId, targetManifestId } = source.dataset;
   const manifestIdEl = source?.closest('[data-manifest-id]');
