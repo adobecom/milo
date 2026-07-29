@@ -479,6 +479,7 @@ function setAccessibilityLabels(el) {
         [...el.querySelectorAll('.table-cell div')].forEach((cellDiv) => {
           const closeIcon = cellDiv.querySelector('.icon-close');
           if (closeIcon) {
+            closeIcon.querySelector('title')?.remove();
             closeIcon.setAttribute('aria-hidden', 'true');
             cellDiv.appendChild(createTag('span', { class: 'sr-only' }, notAFeatureText));
             return;
