@@ -107,6 +107,7 @@ const ARC_TEXT_ANCHOR_COLUMN_SPREAD = ANIM_CONFIG.columnCompressionTarget - 0.15
 // Mobile layout constants
 const MOBILE_COL_GAP = 32;
 const MOBILE_OUTER_MARGIN = 24;
+const MOBILE_COLUMN_COUNT = 2;
 
 // FAN_INDEX_BY_GRID_POSITION maps grid [row][col] → arc position.
 // Arc reads column-by-column L→R; fanIdx=0 is lower-right (peels first).
@@ -161,6 +162,12 @@ function getAcrobatDesktopMockupWidth(viewportWidth, isTablet) {
 function getDeskCardCenterX(viewportWidth, colIdx, columnSpread) {
   return viewportWidth * (0.5 + CARD_COLUMN_OFFSETS_RATIO[colIdx] * columnSpread);
 }
+
+// ── RTL ──
+const isRtl = () => document.dir === 'rtl';
+const mirrorCol = (idx, count) => (isRtl() ? count - 1 - idx : idx);
+const mirrorX = (x, width) => (isRtl() ? width - x : x);
+const mirrorSign = (value) => (isRtl() ? -value : value);
 
 function clamp01(x) {
   if (x < 0) return 0;
@@ -359,8 +366,8 @@ function parseAuthoredContent(el) {
       cards.push({
         colIdx,
         rowIdx,
-        mobileColIdx: colIdx % 2,
-        mobileRowIdx: Math.floor(colIdx / 2),
+        mobileColIdx: colIdx % MOBILE_COLUMN_COUNT,
+        mobileRowIdx: Math.floor(colIdx / MOBILE_COLUMN_COUNT),
         mobileHidden: rowIdx !== 0,
         cardHeight,
         label,
@@ -494,12 +501,11 @@ function buildStage(el) {
 // Slot geometry below mirrors getDesktopMockupCardSlot / getMobileMockupCardSlot,
 // but expressed as percentages of the mockup's design box so the slotted card
 // clones scale with the responsive mockup without per-frame JS.
-function getNoMotionDesktopSlotPct(def, rtl) {
+function getNoMotionDesktopSlotPct(def) {
   const slotHDesign = ACROBAT_DESKTOP_SLOT_WIDTH * (def.cardHeight / CARD_WIDTH);
-  const slotColIdx = rtl
-    ? ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length - 1 - def.colIdx
-    : def.colIdx;
-  const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[slotColIdx];
+  const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[
+    mirrorCol(def.colIdx, ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length)
+  ];
   const cy = ACROBAT_DESKTOP_SLOT_CENTER_Y_BY_ROW[def.rowIdx];
   return {
     left: ((cx - ACROBAT_DESKTOP_SLOT_WIDTH / 2) / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH) * 100,
@@ -509,7 +515,7 @@ function getNoMotionDesktopSlotPct(def, rtl) {
   };
 }
 
-function getNoMotionMobileSlotPct(def, rtl) {
+function getNoMotionMobileSlotPct(def) {
   const canvasHeight = ACROBAT_MOBILE_MOCKUP_HEIGHT
     - ACROBAT_MOBILE_MOCKUP_TOP_BAR_HEIGHT
     - ACROBAT_MOBILE_MOCKUP_BOTTOM_BAR_HEIGHT;
@@ -529,7 +535,7 @@ function getNoMotionMobileSlotPct(def, rtl) {
     + ACROBAT_MOBILE_MOCKUP_TOP_PADDING + tallSlotH / 2 + 30;
   const height = Math.round(def.cardHeight * cardSlotScale);
   const centerY = firstRowCenterY + def.mobileRowIdx * rowPitch;
-  const slotColIdx = rtl ? 1 - def.mobileColIdx : def.mobileColIdx;
+  const slotColIdx = mirrorCol(def.mobileColIdx, MOBILE_COLUMN_COUNT);
   const x = slotGridLeft + slotColIdx * (slotWidth + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
   return {
     left: (x / ACROBAT_MOBILE_MOCKUP_WIDTH) * 100,
@@ -541,12 +547,12 @@ function getNoMotionMobileSlotPct(def, rtl) {
 
 // Slotted clones are decorative duplicates of the grid figures (same images,
 // shown inside the mockup), so they carry no alt and are hidden from AT.
-function buildSlottedCard(def, isMobile, rtl) {
+function buildSlottedCard(def, isMobile) {
   const pic = def.el.querySelector('picture') || def.el.querySelector('img');
   if (!pic) return null;
   const slot = isMobile
-    ? getNoMotionMobileSlotPct(def, rtl)
-    : getNoMotionDesktopSlotPct(def, rtl);
+    ? getNoMotionMobileSlotPct(def)
+    : getNoMotionDesktopSlotPct(def);
   const cardEl = createTag('div', { class: 'no-motion-slotted-card', 'aria-hidden': 'true' });
   cardEl.style.left = `${slot.left}%`;
   cardEl.style.top = `${slot.top}%`;
@@ -569,8 +575,6 @@ function buildNoMotion(el) {
     titleEl, cards: cardDefs, textBlockEl, ctaEl,
     mobileMockupImgEl, desktopMockupImgEl, desktopPanelImgEl,
   } = parseAuthoredContent(el);
-
-  const rtl = document.dir === 'rtl';
 
   titleEl.classList.add('acrobat-title');
   textBlockEl.classList.add('text-block');
@@ -611,7 +615,7 @@ function buildNoMotion(el) {
   if (desktopPanelImgEl) desktopPanel.appendChild(desktopPanelImgEl);
   desktopMockup.appendChild(desktopPanel);
   cardDefs.forEach((def) => {
-    const slotted = buildSlottedCard(def, false, rtl);
+    const slotted = buildSlottedCard(def, false);
     if (slotted) desktopMockup.appendChild(slotted);
   });
 
@@ -619,7 +623,7 @@ function buildNoMotion(el) {
   if (mobileMockupImgEl) mobileMockup.appendChild(mobileMockupImgEl);
   cardDefs.forEach((def) => {
     if (def.mobileHidden) return;
-    const slotted = buildSlottedCard(def, true, rtl);
+    const slotted = buildSlottedCard(def, true);
     if (slotted) mobileMockup.appendChild(slotted);
   });
 
@@ -662,22 +666,20 @@ function getMobileLayout(vw) {
   return { cardW, scale, tallH, rowPitch: tallH + 61 };
 }
 
-function getMobileMockupCardSlot(card, mockupFrame, rtl) {
+function getMobileMockupCardSlot(card, mockupFrame) {
   const width = mockupFrame.slotWidth;
   const height = Math.round(card.baseHeight * mockupFrame.cardSlotScale);
   const centerY = mockupFrame.firstRowCenterY + card.mobileRowIdx * mockupFrame.rowPitch;
-  const slotColIdx = rtl ? 1 - card.mobileColIdx : card.mobileColIdx;
+  const slotColIdx = mirrorCol(card.mobileColIdx, MOBILE_COLUMN_COUNT);
   const x = mockupFrame.slotGridLeft
     + slotColIdx * (width + ACROBAT_MOBILE_SLOT_COLUMN_GAP);
   return { x, y: centerY - height / 2, width, height };
 }
 
-function getDesktopMockupCardSlot(card, mockupFrame, rtl) {
+function getDesktopMockupCardSlot(card, mockupFrame) {
   const width = mockupFrame.slotWidth;
   const height = card.height * (width / CARD_WIDTH);
-  const slotColIdx = rtl
-    ? ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length - 1 - card.colIdx
-    : card.colIdx;
+  const slotColIdx = mirrorCol(card.colIdx, ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN.length);
   return {
     x: mockupFrame.mockupLeft
       + ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[slotColIdx] * mockupFrame.scale
@@ -737,7 +739,7 @@ function mountMotion(el) {
     },
     // Vertical pan offsets (px) for cards, text, and mockup during peel→grid and post-reveal.
     verticalPan: { arcGridY: 0, mobilePostRevealY: 0, deskPostRevealY: 0 },
-    frame: { isMobile: false, isTablet: false, mobileLayout: null, rtl: false },
+    frame: { isMobile: false, isTablet: false, mobileLayout: null },
   };
 
   const LAYOUT_CACHE = {
@@ -841,10 +843,13 @@ function mountMotion(el) {
       y += (lineY - y) * flattenProgress;
       rot = arcRotation * (1 - flattenProgress);
     }
-    if (ANIM_STATE.frame.rtl) {
-      return { x: viewportWidth - x, y, rot: -rot, rx: -arcCosine, ry: arcSine };
-    }
-    return { x, y, rot, rx: arcCosine, ry: arcSine };
+    return {
+      x: mirrorX(x, viewportWidth),
+      y,
+      rot: mirrorSign(rot),
+      rx: mirrorSign(arcCosine),
+      ry: arcSine,
+    };
   }
 
   // ──────────────────── Layout helpers ────────────────────
@@ -933,10 +938,9 @@ function mountMotion(el) {
           card.baseY = OFFSCREEN_SENTINEL;
           return;
         }
-        let centerX = gridLeft
+        const centerX = mirrorX(gridLeft
             + card.mobileColIdx * (mobileLayout.cardW + MOBILE_COL_GAP)
-            + mobileLayout.cardW / 2;
-        if (ANIM_STATE.frame.rtl) centerX = viewportWidth - centerX;
+            + mobileLayout.cardW / 2, viewportWidth);
         const centerY = firstRowCenterY + card.mobileRowIdx * mobileLayout.rowPitch;
         card.baseX = centerX - card.width / 2;
         card.baseY = centerY - card.height / 2;
@@ -945,12 +949,11 @@ function mountMotion(el) {
     }
     const rowAnchor = -0.2 + 0.7 * ANIM_STATE.phase.arcToGrid;
     sceneCards.forEach((card) => {
-      let centerX = getDeskCardCenterX(
+      const centerX = mirrorX(getDeskCardCenterX(
         viewportWidth,
         card.colIdx,
         ANIM_STATE.cardGridLayout.columnSpread,
-      );
-      if (ANIM_STATE.frame.rtl) centerX = viewportWidth - centerX;
+      ), viewportWidth);
       const centerY = viewportHeight
         * (0.5 + (card.rowIdx - rowAnchor) * ANIM_STATE.cardGridLayout.rowGap);
       card.baseX = centerX - card.width / 2;
@@ -977,7 +980,6 @@ function mountMotion(el) {
   function resize() {
     viewportWidth = window.innerWidth;
     viewportHeight = window.innerHeight;
-    ANIM_STATE.frame.rtl = document.dir === 'rtl';
     refreshFrameProfile();
     syncMockupWrappers();
     canvasGrid.resize();
@@ -1121,7 +1123,7 @@ function mountMotion(el) {
       scale: scale * slideScaleMul,
       rotation,
       tiltX: cardXTilt,
-      tiltY: ANIM_STATE.frame.rtl ? -cardYTilt : cardYTilt,
+      tiltY: mirrorSign(cardYTilt),
     });
     card.el.style.opacity = Math.min(1, cardSlideT / ANIM_CONFIG.slideOpacityRampTo).toFixed(3);
     const shadowAlpha = ANIM_CONFIG.arcShadowAlpha * (1 - cardPeelProgress);
@@ -1137,8 +1139,8 @@ function mountMotion(el) {
   // Final glide from on-grid position into its slot in the Acrobat mockup.
   function renderGridToSlot(card, cardScale, deskGridScale, mockupFrame) {
     const cardSlot = ANIM_STATE.frame.isMobile
-      ? getMobileMockupCardSlot(card, mockupFrame, ANIM_STATE.frame.rtl)
-      : getDesktopMockupCardSlot(card, mockupFrame, ANIM_STATE.frame.rtl);
+      ? getMobileMockupCardSlot(card, mockupFrame)
+      : getDesktopMockupCardSlot(card, mockupFrame);
     const endCenterX = cardSlot.x + cardSlot.width / 2;
     const postRevealY = ANIM_STATE.frame.isMobile
       ? ANIM_STATE.verticalPan.mobilePostRevealY
@@ -1372,9 +1374,7 @@ function mountMotion(el) {
         + viewportHeight * 0.036
         - ANIM_STATE.verticalPan.arcGridY;
     }
-    if (ANIM_STATE.frame.rtl) {
-      textLeft = viewportWidth - textLeft - LAYOUT_CACHE.textBlockWidth;
-    }
+    if (isRtl()) textLeft = viewportWidth - textLeft - LAYOUT_CACHE.textBlockWidth;
     const arcReveal = ANIM_STATE.frame.isMobile
       ? clamp01((ANIM_STATE.phase.arcToGrid - 0.1) / 0.3)
       : clamp01(arcTextPanProgressCached * 2);
