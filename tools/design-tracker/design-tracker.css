@@ -1,0 +1,380 @@
+body {
+  font-family: adobe-clean, 'Source Sans Pro', -apple-system, sans-serif;
+  margin: 0;
+  padding: 0 24px 48px;
+  background: #f5f5f5;
+  color: #2c2c2c;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 0;
+}
+
+header h1 {
+  font-size: 20px;
+  margin: 0;
+  flex: 1;
+}
+
+header label {
+  font-size: 14px;
+}
+
+#groups {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ticket-group {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.ticket-group h2 {
+  font-size: 16px;
+  margin: 0 0 4px;
+}
+
+.ticket-group h2 a {
+  color: #1473e6;
+  text-decoration: none;
+}
+
+.ticket-meta {
+  font-size: 13px;
+  color: #6e6e6e;
+  margin-bottom: 12px;
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e8f0fe;
+  color: #1473e6;
+  font-size: 12px;
+  margin-left: 6px;
+}
+
+.designs {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.design-row {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.design-card {
+  width: 200px;
+  flex-shrink: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.design-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: #f0f0f0;
+  display: block;
+}
+
+.design-card-body {
+  padding: 8px 10px;
+}
+
+.design-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.design-card-date {
+  font-size: 12px;
+  color: #6e6e6e;
+}
+
+.roadmap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.roadmap-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6e6e6e;
+  margin-bottom: 6px;
+}
+
+.roadmap-track {
+  flex: 1;
+  min-width: 0;
+  min-height: 100px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Edge bars/labels are centered on their 0%/100% position via a negative
+     margin, which pushes them outside the scrollable content's own box —
+     this padding gives them room so they aren't clipped by the scrollport. */
+  padding: 0 8px;
+}
+
+.roadmap-track-inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.roadmap-bars {
+  position: relative;
+  height: 100px;
+}
+
+.roadmap-day-labels {
+  position: relative;
+  height: 16px;
+}
+
+.roadmap-day-label {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #6e6e6e;
+  white-space: nowrap;
+}
+
+.roadmap-day-label-first {
+  transform: translateX(0);
+}
+
+.roadmap-day-label-last {
+  transform: translateX(-100%);
+}
+
+.roadmap-bar {
+  position: absolute;
+  bottom: 0;
+  width: 16px;
+  margin-left: -8px;
+  background: #1473e6;
+  border: none;
+  border-radius: 3px 3px 0 0;
+  opacity: 0.85;
+  cursor: pointer;
+  transition: opacity 0.15s, background 0.15s;
+  padding: 0;
+}
+
+.roadmap-bar-empty {
+  width: 4px;
+  margin-left: -2px;
+  background: #e0e0e0;
+  cursor: default;
+}
+
+.roadmap-bar-empty:hover {
+  opacity: 0.85;
+}
+
+.roadmap-bar:hover {
+  opacity: 1;
+  background: #0d66d0;
+}
+
+.roadmap-bar-selected {
+  background: #0d66d0;
+  opacity: 1;
+  outline: 2px solid #0d66d0;
+  outline-offset: 1px;
+}
+
+.roadmap-bar-zero {
+  height: 4px !important;
+  background: #c8c8c8;
+}
+
+.roadmap-bar-zero:hover {
+  background: #a8a8a8;
+}
+
+.roadmap-bar-outside-range {
+  opacity: 0.25;
+}
+
+.roadmap-bar-outside-range:hover {
+  opacity: 0.5;
+}
+
+.roadmap-summary {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: #f5f8ff;
+  border: 1px solid #d3e2fc;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.roadmap-summary-header {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.roadmap-summary-versions {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.roadmap-summary-version {
+  padding: 8px 0;
+  border-top: 1px solid #d3e2fc;
+}
+
+.roadmap-summary-version:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.roadmap-summary-version-header {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.roadmap-summary-count {
+  color: #6e6e6e;
+  margin-bottom: 6px;
+}
+
+.roadmap-summary-list {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.roadmap-summary-list li {
+  padding: 6px 0;
+  border-bottom: 1px solid #e5edfc;
+}
+
+.roadmap-summary-item-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.roadmap-summary-item-link {
+  color: #1473e6;
+  text-decoration: none;
+}
+
+.roadmap-summary-item-link:hover {
+  text-decoration: underline;
+}
+
+.roadmap-screenshot {
+  position: relative;
+  margin-bottom: 10px;
+  border: 1px solid #d3e2fc;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.roadmap-screenshot img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.roadmap-highlight {
+  position: absolute;
+  border: 2px solid;
+  pointer-events: none;
+}
+
+.roadmap-highlight-modified {
+  border-color: #1473e6;
+  background: rgba(20, 115, 230, 0.15);
+}
+
+.roadmap-highlight-added {
+  border-color: #2d9d78;
+  background: rgba(45, 157, 120, 0.15);
+}
+
+.roadmap-highlight-removed {
+  border-color: #d7373f;
+  background: rgba(215, 55, 63, 0.15);
+}
+
+.roadmap-screenshot-caption {
+  font-size: 10px;
+  color: #6e6e6e;
+  font-style: italic;
+  padding: 4px 6px;
+  border-top: 1px solid #eee;
+}
+
+.roadmap-summary-badge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 8px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.roadmap-summary-badge-modified {
+  background: #1473e6;
+}
+
+.roadmap-summary-badge-added {
+  background: #2d9d78;
+}
+
+.roadmap-summary-badge-removed {
+  background: #d7373f;
+}
+
+.roadmap-summary-details {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  font-weight: 400;
+  color: #4b4b4b;
+}
+
+.roadmap-summary-details li {
+  padding: 1px 0;
+  border-bottom: none;
+}
+
+.roadmap-summary-note {
+  color: #6e6e6e;
+  margin-top: 4px;
+}
+
+.empty-state {
+  color: #6e6e6e;
+  padding: 40px 0;
+  text-align: center;
+}
