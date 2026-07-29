@@ -50,7 +50,7 @@ video {
 }
 
 @media (max-width: 599px) {
-  [dir='rtl'] .video-container .pause-play-wrapper {
+  [dir="rtl"] .video-container .pause-play-wrapper {
     right: auto;
     left: 2%;
   }
