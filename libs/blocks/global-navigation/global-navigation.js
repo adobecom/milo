@@ -164,6 +164,7 @@ const getMessageEventListener = () => {
         break;
       case 'SignOut':
         executeDefaultAction();
+        window.dispatchEvent(new Event('feds:signOut'));
         break;
       case 'ProfileSwitch':
         Promise.resolve(executeDefaultAction()).then((profile) => {
