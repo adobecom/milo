@@ -1,0 +1,48 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+:root {
+  --background:#ffffff;
+  --surface:#eceae7;
+  --surface-subtle:#f8f8f8;
+  --primary:#3b63fb;
+  --primary-hover:#274dea;
+  --accent:#eb1000;
+  --ink:#000000;
+  --text:#2c2c2c;
+  --gray-500:#909090;
+  --gray-600:#686868;
+  --gray-300:#d4d4d4;
+  --radius-primary:16px;
+  --radius-secondary:12px;
+  --radius-pill:999px;
+  --shadow-1:0 2px 12px rgba(0,0,0,0.08);
+  --shadow-2:0 1px 8px rgba(0,0,0,0.14);
+  --body:"Adobe Clean","Trebuchet MS","Segoe UI",Helvetica,Arial,sans-serif;
+  --display:"Adobe Clean Display","Adobe Clean","Trebuchet MS","Segoe UI",Helvetica,Arial,sans-serif;
+}
+
+* {box-sizing:border-box;}
+
+html {scroll-behavior:smooth;}
+
+body {
+  margin:0;
+  font-family:var(--body);
+  color:var(--text);
+  background:var(--background);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+
+@media(min-width:900px) {nav.mainnav{display:flex;}}
+
+@media(min-width:900px) {
+  .featured{grid-template-columns:1.15fr 1fr;}
+  .featured .media{min-height:100%;}
+}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }
