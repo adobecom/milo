@@ -103,7 +103,7 @@ export default function init(a) {
 
     if (geo && federalCR && url.searchParams.has('captions')) {
       if (!captionsLangMapPromise) {
-        const captionsUrl = `${federalCR}/federal/assets/data/adobetv-captions.json?sheet=${atvCaptionsKey}`;
+        const captionsUrl = `${federalCR}/federal/assets/data/adobetv-captions1.json?sheet=${atvCaptionsKey}`;
         captionsLangMapPromise = fetch(captionsUrl).then((res) => {
           if (!res.ok) {
             return new Promise(() => { throw new Error(`Failed to fetch ${captionsUrl}`); });
