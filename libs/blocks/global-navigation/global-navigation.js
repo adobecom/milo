@@ -6,6 +6,7 @@ import {
   loadIms,
   loadStyle,
   loadLana,
+  loadBlock,
   decorateLinksAsync,
   loadScript,
   getGnavSource,
@@ -163,6 +164,7 @@ const getMessageEventListener = () => {
         break;
       case 'SignOut':
         executeDefaultAction();
+        window.dispatchEvent(new Event('feds:signOut'));
         break;
       case 'ProfileSwitch':
         Promise.resolve(executeDefaultAction()).then((profile) => {
@@ -590,6 +592,7 @@ class Gnav {
       // We needn't worry about delays now since decorateAside
       // needed to run anyway prior to decorateTopNavWrapper
       this.decorateAside,
+      this.decorateBrandConciergeGlobal,
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
@@ -1450,6 +1453,12 @@ class Gnav {
     includeLabel: false,
     analyticsValue: 'Logo',
   });
+
+  decorateBrandConciergeGlobal = async () => {
+    const rawBlock = this.content.querySelector('.brand-concierge-global');
+    if (!rawBlock) return;
+    await loadBlock(rawBlock);
+  };
 
   decorateMainNav = async () => {
     performance.mark('Decorate-MainNav-Start');
