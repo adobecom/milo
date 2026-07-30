@@ -15,7 +15,6 @@ import {
   getLingoRegion,
   lingoActive,
 } from '../../utils/utils.js';
-import { clearSignOutCookies } from './utilities/utilities.js';
 
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -69,6 +68,7 @@ const { replaceKey, replaceKeyArray } = placeholders;
 const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
+  clearSignOutCookies,
   closeAllDropdowns,
   createErrorPopup,
   fetchAndProcessPlainHtml,
