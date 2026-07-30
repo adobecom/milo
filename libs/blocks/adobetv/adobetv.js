@@ -71,8 +71,8 @@ const createIframeWithCaptions = (a, url, geo) => {
   if (!captionsLangMapPromise) {
     createIframe(a);
   } else {
-    captionsLangMapPromise?.then((resp) => {
-      if (resp?.data) {
+    captionsLangMapPromise.then((resp) => {
+      if (resp.data) {
         const videoHref = updateCaptionsLang(url, geo, resp.data);
         createIframe(a, videoHref);
       } else {
