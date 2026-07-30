@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-with-great-power-comes-great-productivity",
+  "sectionIndex": 0,
+  "decision": "new-block",
+  "score": 0.52,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "",
+  "figmaNodeId": "10463:42970",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-9f95e6b8-ms7dztsy",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-9f95e6b8-ms7dztsy/libs/c2/blocks/forge-with-great-power-comes-great-productivity",
+  "miloBranch": "forge/session-9f95e6b8-d4c",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/bizpro-static-final?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

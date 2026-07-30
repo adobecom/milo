@@ -1,0 +1,800 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.70" data-binding="new-block" data-figma-node-id="10463:45141" data-block="base-card" style="width:100%;background:#f8f8f8;font-family:'Adobe Clean',Arial,Helvetica,sans-serif;">
+<style>
+  #sec45141{display:flex;flex-direction:column;}
+  #sec45141 .plan-grid{display:flex;gap:8px;width:100%;max-width:1200px;}
+  #sec45141 .plan-card{flex:1;min-width:0;}
+  #sec45141 .merch-grid{display:flex;gap:8px;width:100%;max-width:1200px;margin:0 auto;}
+  #sec45141 .merch-card{flex:1;min-width:0;max-width:596px;}
+  #sec45141 .footer-cols{display:grid;grid-template-columns:repeat(6,1fr);gap:32px;padding:0 124px;}
+  @media(max-width:1200px){
+    #sec45141 .plan-grid{flex-wrap:wrap;}
+    #sec45141 .plan-card{flex:0 0 calc(50% - 4px);max-width:calc(50% - 4px);}
+    #sec45141 .merch-grid{flex-wrap:wrap;}
+    #sec45141 .merch-card{flex:0 0 calc(50% - 4px);max-width:calc(50% - 4px);}
+    #sec45141 .footer-cols{grid-template-columns:repeat(3,1fr);}
+  }
+  @media(max-width:768px){
+    #sec45141 .plan-card{flex:0 0 100%;max-width:100%;}
+    #sec45141 .merch-card{flex:0 0 100%;max-width:100%;}
+    #sec45141 .footer-cols{grid-template-columns:1fr 1fr;padding:0 24px;}
+    #sec45141 .sub1-inner{padding:60px 24px!important;}
+    #sec45141 .sub2-content{padding:60px 24px!important;}
+    #sec45141 .agentic-inner{padding:60px 24px!important;}
+  }
+  #sec45141 .btn-accent{display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;background:#3b63fb;border:none;font-size:14px;font-weight:700;color:#fff;cursor:pointer;padding:0 24px;white-space:nowrap;}
+  #sec45141 .btn-outlined-dark{display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;border:1px solid #000;background:transparent;font-size:14px;font-weight:700;color:#000;cursor:pointer;padding:0 24px;white-space:nowrap;}
+  #sec45141 .btn-outlined-light{display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;border:1px solid rgba(255,255,255,0.4);background:transparent;font-size:14px;font-weight:700;color:#fff;cursor:pointer;padding:0 24px;white-space:nowrap;}
+  #sec45141 .btn-solid-white{display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;background:#fff;border:none;font-size:14px;font-weight:700;color:#000;cursor:pointer;padding:0 24px;white-space:nowrap;}
+  #sec45141 .tab-active{display:flex;align-items:center;justify-content:center;height:32px;border-radius:50px;background:#000;padding:0 20px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;}
+  #sec45141 .tab-inactive{display:flex;align-items:center;justify-content:center;height:32px;border-radius:50px;background:transparent;padding:0 20px;font-size:14px;font-weight:700;color:rgba(0,0,0,0.6);cursor:pointer;white-space:nowrap;}
+  #sec45141 .feature-item{display:flex;align-items:flex-start;gap:8px;padding:0 20px;}
+  #sec45141 .feature-item p{font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;}
+  #sec45141 .section-divider{height:1px;background:#e8e8e8;margin:0;}
+</style>
+
+<div id="sec45141">
+
+  <!-- ═══ SUB-SECTION 1: Simple Plan Cards ═══ -->
+  <div style="background:#fff;overflow:hidden;position:relative;z-index:1;margin-bottom:-32px;">
+    <div class="sub1-inner" style="padding:124px 120px;max-width:1440px;margin:0 auto;box-sizing:border-box;">
+
+      <!-- Section Heading -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;margin-bottom:40px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+          <h2 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#000;margin:0;max-width:984px;">Plans that work for you.</h2>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-accent" style="border-radius:75px;padding:16px 24px;height:auto;font-size:14px;">Free Trial</button>
+          <button style="display:flex;align-items:center;justify-content:center;border-radius:75px;border:1px solid #000;background:transparent;font-size:14px;font-weight:700;color:#000;cursor:pointer;padding:16px 24px;white-space:nowrap;">Compare All Plans</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;justify-content:center;margin-bottom:40px;">
+        <div style="display:flex;gap:4px;background:rgba(0,0,0,0.067);border-radius:24px;padding:4px;width:502px;">
+          <div style="flex:1;padding:4px;">
+            <div class="tab-active" style="background:#000;">Individuals</div>
+          </div>
+          <div class="tab-inactive" style="flex:1;">Businesses</div>
+          <div class="tab-inactive" style="flex:1;">Students &amp; Teachers</div>
+        </div>
+      </div>
+
+      <!-- Plan Cards + Navigation -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:40px;">
+        <div class="plan-grid">
+
+          <!-- Card 1: Acrobat Reader -->
+          <div class="plan-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;color:rgba(0,0,0,0.64);">PDF viewing</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Reader</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Start with the trusted standard for viewing and sharing PDFs.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <div style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">Free</div>
+                  <div style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);">Download today</div>
+                </div>
+                <div style="display:flex;gap:4px;padding-top:16px;flex-wrap:wrap;">
+                  <button class="btn-outlined-dark" style="flex:1;">Get free app</button>
+                  <button class="btn-accent" style="flex:1;">Get free app</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <div style="background:#f8f8f8;padding:24px;display:flex;flex-direction:column;gap:12px;flex:1;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                <span style="font-size:14px;color:#000;">Core PDF tools</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">View, Print, Share PDFs</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Acrobat Express -->
+          <div class="plan-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;color:rgba(0,0,0,0.64);">AI Insights and creation</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Express</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Get document insights with AI-powered tools, and quickly create on-brand content.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <div style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$9.99/mo</div>
+                  <div style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);">Annual, billed monthly</div>
+                </div>
+                <div style="display:flex;gap:4px;padding-top:16px;flex-wrap:wrap;">
+                  <button class="btn-solid-white" style="flex:0 0 auto;border:1px solid #eee;">Free Trial</button>
+                  <button class="btn-accent" style="flex:1;">Free trial</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <div style="background:#f8f8f8;padding:24px;display:flex;flex-direction:column;gap:24px;flex:1;">
+              <!-- Core PDF -->
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                  <span style="font-size:14px;color:#000;">Core PDF tools</span>
+                </div>
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">View, Print, Share PDFs</p></div>
+              </div>
+              <!-- AI -->
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid #e8e8e8;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                  <span style="font-size:14px;color:#000;">AI Assistant</span>
+                </div>
+                <div class="feature-item"><p>Summarize documents</p></div>
+                <div class="feature-item"><p>Organize and share in PDF Spaces</p></div>
+              </div>
+              <!-- Creation -->
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid #e8e8e8;">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style="flex-shrink:0"><path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+                  <span style="font-size:14px;color:#000;">Creation tools</span>
+                </div>
+                <div class="feature-item"><p>Make presentations, flyers, and social ads</p></div>
+                <div class="feature-item"><p>Design with easy-to-use tools</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Acrobat Pro -->
+          <div class="plan-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;color:rgba(0,0,0,0.64);">Full PDF toolset</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Pro</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Do it all with the complete AI-powered PDF and design solution for document workflows.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <div style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$19.99/mo</div>
+                  <div style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);">Annual, billed monthly</div>
+                </div>
+                <div style="display:flex;gap:4px;padding-top:16px;flex-wrap:wrap;">
+                  <button class="btn-solid-white" style="flex:0 0 auto;border:1px solid #eee;">Free Trial</button>
+                  <button class="btn-accent" style="flex:1;">Free trial</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <div style="background:#f8f8f8;padding:24px;display:flex;flex-direction:column;gap:12px;flex:1;">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                <span style="font-size:14px;color:#000;">70+ PDF tools</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;padding-left:4px;">
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Convert, Compress, Create PDFs</p></div>
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Edit, export, protect and organize PDFs</p></div>
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Collect e-signatures and track responses</p></div>
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Password protect PDFs and redact sensitive information</p></div>
+                <div style="padding:0 24px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Auto-compare versions of a PDF</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 4: Acrobat Studio (dark) -->
+          <div class="plan-card" style="border-radius:16px;background:#000;display:flex;flex-direction:column;flex:0 0 294px;max-width:294px;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;color:#000;">Best value</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Studio</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Create, edit, and sign PDFs with secure PDF and e-signature workflows.</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <div style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$24.99/mo</div>
+                  <div style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);">Annual, billed monthly</div>
+                </div>
+                <div style="display:flex;gap:4px;padding-top:16px;flex-wrap:wrap;">
+                  <button class="btn-solid-white" style="flex:0 0 auto;border:1px solid #eee;">Free Trial</button>
+                  <button class="btn-accent" style="flex:1;">Free trial</button>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <!-- Features on dark -->
+            <div style="padding:24px;display:flex;flex-direction:column;flex:1;">
+              <!-- 70+ PDF tools -->
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="white" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                  <span style="font-size:14px;color:#000;">70+ PDF tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;font-weight:700;">All Acrobat Pro PDF tools</p></div>
+              </div>
+              <!-- AI -->
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.16);">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                  <span style="font-size:14px;color:#000;">AI Assistant</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Summarize documents</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Organize and share in PDF Spaces</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Contract analysis</p></div>
+              </div>
+              <!-- Creation -->
+              <div style="display:flex;flex-direction:column;gap:8px;margin-top:16px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.16);">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style="flex-shrink:0"><path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+                  <span style="font-size:14px;color:#000;">Creation tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Make presentations, flyers, and social ads</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Design with easy-to-use tools</p></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end plan-grid -->
+
+        <!-- Navigation row -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;border:1px solid rgba(0,0,0,0.08);background:transparent;font-size:14px;font-weight:700;color:#000;cursor:pointer;padding:0 24px;width:168px;">Compare all plans</button>
+          <button style="width:40px;height:40px;border-radius:50%;background:#f8f8f8;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2L3.5 6L7.5 10" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </button>
+          <button style="width:40px;height:40px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2L8.5 6L4.5 10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </button>
+        </div>
+
+      </div><!-- end sub1 content -->
+    </div><!-- end sub1-inner -->
+  </div><!-- end sub1 -->
+
+
+  <!-- ═══ SUB-SECTION 2: Full Merch Cards ═══ -->
+  <div style="background:#fff;border-radius:32px 32px 0 0;overflow:hidden;position:relative;z-index:2;margin-bottom:-32px;">
+    <div class="sub2-content" style="padding:124px 0;max-width:1440px;margin:0 auto;box-sizing:border-box;">
+
+      <!-- Heading -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;padding:0 120px;margin-bottom:48px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+          <p style="font-size:16px;font-weight:700;color:rgba(0,0,0,0.64);margin:0;text-align:center;">Plans &amp; Pricing</p>
+          <h2 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#000;margin:0;max-width:984px;">Plans that work for you.</h2>
+          <p style="font-size:16px;line-height:20px;color:#131313;margin:0;text-align:center;max-width:796px;">Everyone from solo-preneurs to the world's largest enterprises are using Acrobat to work faster, unleash creativity, accelerate document productivity, and power their digital businesses.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-accent" style="border-radius:75px;padding:16px 24px;height:auto;">Free Trial</button>
+          <button style="display:flex;align-items:center;justify-content:center;border-radius:75px;border:1px solid #000;background:transparent;font-size:14px;font-weight:700;color:#000;cursor:pointer;padding:16px 24px;">Compare All Plans</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div style="display:flex;justify-content:center;margin-bottom:48px;">
+        <div style="display:flex;gap:4px;background:rgba(0,0,0,0.04);border-radius:24px;padding:4px;">
+          <div style="padding:4px;">
+            <div style="display:flex;align-items:center;justify-content:center;height:32px;border-radius:50px;background:#000;padding:0 20px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;white-space:nowrap;min-width:165px;">Individuals</div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:50px;padding:0 20px;font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);cursor:pointer;white-space:nowrap;">Businesses</div>
+          <div style="display:flex;align-items:center;justify-content:center;height:40px;border-radius:50px;padding:0 20px;font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);cursor:pointer;white-space:nowrap;">Students &amp; Teachers</div>
+        </div>
+      </div>
+
+      <!-- Merch Card Grid -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:40px;padding:0 120px;">
+        <div class="merch-grid">
+
+          <!-- Merch Card 1: Acrobat Reader -->
+          <div class="merch-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;letter-spacing:0.16px;color:rgba(0,0,0,0.64);">PDF viewing</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Reader</h3>
+                <p style="font-size:14px;line-height:18px;letter-spacing:0.14px;color:#000;margin:0;">Get started with the trusted standard for viewing and sharing PDFs.</p>
+                <p style="font-size:14px;line-height:18px;letter-spacing:0.14px;color:#000;margin:0;">See what's included | See terms</p>
+              </div>
+              <!-- Pricing -->
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;flex-direction:column;">
+                  <span style="font-size:14px;color:rgba(0,0,0,0.64);letter-spacing:0.14px;">US$XX.XX/mo*</span>
+                  <span style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">Free</span>
+                  <span style="font-size:14px;color:rgba(0,0,0,0.64);">Download today</span>
+                </div>
+                <p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;letter-spacing:0.14px;">Annual subscription, cancel within 14 days for a full refund. Fee applies if you cancel after 14 days.</p>
+              </div>
+              <!-- License Dropdown -->
+              <div style="border-radius:8px;background:#f8f8f8;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;height:40px;box-sizing:border-box;">
+                  <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:14px;font-weight:700;color:#000;">1</span>
+                    <span style="font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);">License</span>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+                </div>
+                <div style="padding:8px 12px 12px;">
+                  <p style="font-size:12px;font-weight:700;line-height:16px;letter-spacing:0.24px;color:#000;margin:0;">Save 7.5% your first year with 3+ licenses. See terms</p>
+                </div>
+              </div>
+              <!-- Checkboxes -->
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border-radius:8px;">
+                  <div style="width:20px;height:20px;border-radius:3px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                    <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5L4.5 8L10.5 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+                  </div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add Acrobat AI Assistant to your Acrobat plan for US$1.99/mo.</span>
+                  <div style="width:16px;height:16px;border-radius:80px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;">
+                  <div style="width:20px;height:20px;border:2px solid #292929;border-radius:3px;flex-shrink:0;"></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add a 30-day free trial of Adobe Stock.**</span>
+                </div>
+              </div>
+              <!-- CTAs -->
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-accent" style="flex:1;min-width:0;">Free trial</button>
+                <button class="btn-outlined-dark" style="flex:1;min-width:0;">Get free app</button>
+              </div>
+              <!-- Secure -->
+              <div style="display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);letter-spacing:0.14px;">Secure transaction</span>
+              </div>
+            </div>
+            <!-- Features -->
+            <div style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px;flex:1;">
+              <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                  <span style="font-size:14px;color:#000;">Basic PDF tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;letter-spacing:0.14px;">View, Print, Share PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;letter-spacing:0.14px;">Annotate and comment on PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;letter-spacing:0.14px;">Fill out and sign forms</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Merch Card 2: Acrobat Express -->
+          <div class="merch-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;letter-spacing:0.16px;color:rgba(0,0,0,0.64);">AI Insights and creation</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Express</h3>
+                <p style="font-size:14px;line-height:18px;letter-spacing:0.14px;color:#000;margin:0;">Get document insights with AI-powered tools, and quickly create on-brand content.</p>
+                <p style="font-size:14px;line-height:18px;letter-spacing:0.14px;color:#000;margin:0;">See what's included | See terms</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div>
+                  <span style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$9.99/mo</span><br/>
+                  <span style="font-size:14px;color:rgba(0,0,0,0.64);">Annual, billed monthly</span>
+                </div>
+                <p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;letter-spacing:0.14px;">Annual subscription, cancel within 14 days for a full refund.</p>
+              </div>
+              <div style="border-radius:8px;background:#f8f8f8;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;height:40px;box-sizing:border-box;">
+                  <div style="display:flex;gap:8px;"><span style="font-size:14px;font-weight:700;color:#000;">1</span><span style="font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);">License</span></div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+                </div>
+                <div style="padding:8px 12px 12px;"><p style="font-size:12px;font-weight:700;color:#000;margin:0;">Save 7.5% your first year with 3+ licenses. See terms</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border-radius:8px;">
+                  <div style="width:20px;height:20px;border-radius:3px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5L4.5 8L10.5 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ></path></svg></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add Acrobat AI Assistant to your Acrobat plan for US$1.99/mo.</span>
+                  <div style="width:16px;height:16px;border-radius:80px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;">
+                  <div style="width:20px;height:20px;border:2px solid #292929;border-radius:3px;flex-shrink:0;"></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add a 30-day free trial of Adobe Stock.**</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-accent" style="flex:1;">Free trial</button>
+                <button class="btn-outlined-dark" style="flex:1;">Get free app</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:24px;flex:1;">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg><span style="font-size:14px;color:#000;">Core PDF tools</span></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">View, Print, Share PDFs</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid #e8e8e8;"><div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div><span style="font-size:14px;color:#000;">AI Assistant</span></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Summarize documents</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Organize and share in PDF Spaces</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid #e8e8e8;"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" style="flex-shrink:0"><path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" ></path></svg><span style="font-size:14px;color:#000;">Creation tools</span></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Make presentations, flyers, and social ads</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Design with easy-to-use tools</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Merch Card 3: Acrobat Pro -->
+          <div class="merch-card" style="border-radius:16px;background:#f8f8f8;border:4px solid #f8f8f8;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;letter-spacing:0.16px;color:rgba(0,0,0,0.64);">Full PDF toolset</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Pro</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Do it all with the complete AI-powered PDF and design solution for document workflows.</p>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">See what's included | See terms</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div><span style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$19.99/mo</span><br/><span style="font-size:14px;color:rgba(0,0,0,0.64);">Annual, billed monthly</span></div>
+                <p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Annual subscription, cancel within 14 days for a full refund.</p>
+              </div>
+              <div style="border-radius:8px;background:#f8f8f8;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;height:40px;box-sizing:border-box;">
+                  <div style="display:flex;gap:8px;"><span style="font-size:14px;font-weight:700;color:#000;">1</span><span style="font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);">License</span></div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+                </div>
+                <div style="padding:8px 12px 12px;"><p style="font-size:12px;font-weight:700;color:#000;margin:0;">Save 7.5% your first year with 3+ licenses. See terms</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border-radius:8px;">
+                  <div style="width:20px;height:20px;border-radius:3px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5L4.5 8L10.5 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ></path></svg></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add Acrobat AI Assistant to your Acrobat plan for US$1.99/mo.</span>
+                  <div style="width:16px;height:16px;border-radius:80px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;">
+                  <div style="width:20px;height:20px;border:2px solid #292929;border-radius:3px;flex-shrink:0;"></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add a 30-day free trial of Adobe Stock.**</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-accent" style="flex:1;">Free trial</button>
+                <button class="btn-outlined-dark" style="flex:1;">Get free app</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:24px;flex:1;">
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="#000" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="#000" stroke-width="1.2" stroke-linecap="round" ></line></svg><span style="font-size:14px;color:#000;">70+ PDF tools</span></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">View, Print, Share PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Edit, export, protect and organize PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Collect e-signatures and track responses</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Password protect PDFs and redact sensitive information</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Auto-compare versions of a PDF</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.12);">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(45deg,#8d88f2 20%,#eb1000 100%);flex-shrink:0;"></div>
+                  <span style="font-size:14px;color:#000;">AI Assistant</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Summarize and ask questions about documents</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Organize and share in PDF Spaces</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(0,0,0,0.12);">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style="flex-shrink:0"><path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z" stroke="#000" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+                  <span style="font-size:14px;color:#000;">Creation tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Make presentations, flyers, and social ads</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Design with easy-to-use tools</p></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Merch Card 4: Acrobat Studio (dark) -->
+          <div class="merch-card" style="border-radius:16px;background:#000;border:4px solid #000;display:flex;flex-direction:column;">
+            <div style="background:#fff;border-radius:12px;padding:24px;display:flex;flex-direction:column;gap:24px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:24px;height:24px;background:#b30b00;border-radius:5px;flex-shrink:0;"></div>
+                <span style="font-size:16px;font-weight:700;letter-spacing:0.16px;color:#000;">All-in-one solution</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <h3 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;">Acrobat Studio</h3>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">Do it all with the complete AI-powered PDF and design solution for document workflows.</p>
+                <p style="font-size:14px;line-height:18px;color:#000;margin:0;">See what's included | See terms</p>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div><span style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:18px;line-height:21px;letter-spacing:-0.48px;color:#000;">US$24.99/mo</span><br/><span style="font-size:14px;color:rgba(0,0,0,0.64);">Annual, billed monthly</span></div>
+                <p style="font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;">Annual subscription, cancel within 14 days for a full refund. Fee applies if you cancel after 14 days.</p>
+              </div>
+              <div style="border-radius:8px;background:#f8f8f8;overflow:hidden;">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;height:40px;box-sizing:border-box;">
+                  <div style="display:flex;gap:8px;"><span style="font-size:14px;font-weight:700;color:#000;">1</span><span style="font-size:14px;font-weight:700;color:rgba(0,0,0,0.64);">License</span></div>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+                </div>
+                <div style="padding:8px 12px 12px;"><p style="font-size:12px;font-weight:700;color:#000;margin:0;">Save 7.5% your first year with 3+ licenses. See terms</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border-radius:8px;">
+                  <div style="width:20px;height:20px;border-radius:3px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;display:flex;align-items:center;justify-content:center;"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1.5 5L4.5 8L10.5 1.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ></path></svg></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add Acrobat AI Assistant to your Acrobat plan for US$1.99/mo.</span>
+                  <div style="width:16px;height:16px;border-radius:80px;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:16px 12px;background:#fff;border:1px solid rgba(0,0,0,0.12);border-radius:8px;">
+                  <div style="width:20px;height:20px;border:2px solid #292929;border-radius:3px;flex-shrink:0;"></div>
+                  <span style="font-size:14px;font-weight:700;color:#000;flex:1;line-height:18px;">Add a 30-day free trial of Adobe Stock.**</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <button class="btn-accent" style="flex:1;">Free trial</button>
+                <button class="btn-outlined-dark" style="flex:1;">Get free app</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0"><rect x="3" y="8" width="10" height="6" rx="1.5" fill="rgba(0,0,0,0.64)" ></rect><path d="M6 8V5.5a2 2 0 014 0V8" stroke="rgba(0,0,0,0.64)" stroke-width="1.5" stroke-linecap="round" fill="none" ></path></svg>
+                <span style="font-size:14px;color:rgba(0,0,0,0.64);">Secure transaction</span>
+              </div>
+            </div>
+            <!-- Features on dark bg -->
+            <div style="padding:24px;display:flex;flex-direction:column;align-items:center;gap:24px;flex:1;">
+              <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <svg viewBox="0 0 20 20" width="20" height="20" fill="none" style="flex-shrink:0"><rect x="4" y="2" width="12" height="16" rx="1.5" stroke="white" stroke-width="1.5" ></rect><line x1="7" y1="7" x2="13" y2="7" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="10" x2="13" y2="10" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line><line x1="7" y1="13" x2="11" y2="13" stroke="white" stroke-width="1.2" stroke-linecap="round" ></line></svg>
+                  <span style="font-size:14px;color:#fff;font-weight:700;">70+ PDF tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Get all the PDF tools in Acrobat Pro</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Edit, export, protect and organize PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Collect e-signatures and track responses</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Password protect PDFs and redact sensitive information</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Auto-compare versions of a PDF</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:12px;width:100%;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.16);">
+                  <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(180deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;"></div>
+                  <span style="font-size:14px;color:#fff;font-weight:700;">AI Assistant</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Ask AI to edit, convert, or compress PDFs</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Get AI summaries, insights, and answers</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Organize, share, and share with PDF Spaces</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Contract analysis</p></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;width:100%;">
+                <div style="display:flex;align-items:center;gap:4px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.16);">
+                  <svg viewBox="0 0 16 16" width="16" height="16" fill="none" style="flex-shrink:0"><path d="M10.5 2.5L13.5 5.5L6 13H3V10L10.5 2.5Z" stroke="white" stroke-width="1.5" stroke-linejoin="round" ></path></svg>
+                  <span style="font-size:14px;color:#fff;font-weight:700;">Creation tools</span>
+                </div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Create flyers, social content, and presentations from documents</p></div>
+                <div style="padding:0 20px;"><p style="font-size:14px;line-height:18px;color:#fff;margin:0;">Design with easy-to-use tools</p></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end merch-grid -->
+
+        <!-- Navigation -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button style="display:flex;align-items:center;justify-content:center;height:40px;width:168px;border-radius:999px;border:1px solid rgba(0,0,0,0.08);background:transparent;font-size:14px;font-weight:700;color:#000;cursor:pointer;">Compare all plans</button>
+          <button style="width:40px;height:40px;border-radius:50%;background:#f8f8f8;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2L3.5 6L7.5 10" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </button>
+          <button style="width:40px;height:40px;border-radius:50%;background:#000;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2L8.5 6L4.5 10" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </button>
+        </div>
+
+      </div><!-- end sub2 padded content -->
+    </div><!-- end sub2-content -->
+  </div><!-- end sub2 -->
+
+
+  <!-- ═══ SUB-SECTION 3: Agentic Search + Footer ═══ -->
+  <div style="background:#000;position:relative;z-index:3;padding-top:160px;">
+
+    <!-- Agentic Search -->
+    <div class="agentic-inner" style="padding:0 124px 124px;max-width:1440px;margin:0 auto;box-sizing:border-box;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:24px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding-bottom:32px;text-align:center;width:100%;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:7.5px;width:100%;">
+            <p style="font-size:14px;font-weight:600;letter-spacing:0.14px;color:#4f4f4f;margin:0;text-align:center;">Adobe is for everyone</p>
+            <h2 style="font-family:'Adobe Clean Display',Georgia,serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;color:#fff;margin:0;text-align:center;width:100%;">Find what you're looking for.</h2>
+          </div>
+          <p style="font-size:20px;line-height:26px;letter-spacing:-0.4px;color:#fff;margin:0;text-align:center;max-width:700px;">Get answers from our agent about Adobe products and solutions.</p>
+          <div style="margin-top:8px;">
+            <button style="display:flex;align-items:center;justify-content:center;padding:16px 24px;height:40px;border-radius:75px;background:rgba(255,255,255,0.1);border:1px solid rgba(0,0,0,0.1);font-family:'Adobe Clean Display',Georgia,serif;font-weight:600;font-size:14px;letter-spacing:0.14px;color:#000;cursor:pointer;">Try in Photoshop Web</button>
+          </div>
+        </div>
+        <!-- Search Bar -->
+        <div style="display:flex;align-items:center;width:100%;max-width:768px;height:56px;border-radius:28px;background:rgba(255,255,255,0.1);border:2px solid rgba(0,0,0,0.1);overflow:hidden;box-sizing:border-box;">
+          <div style="padding:0 8px 0 24px;flex-shrink:0;display:flex;align-items:center;">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="5.5" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" ></circle><line x1="13.5" y1="13.5" x2="17" y2="17" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" ></line></svg>
+          </div>
+          <div style="flex:1;padding:16px;font-size:16px;line-height:24px;color:rgba(255,255,255,0.6);">Ask anything</div>
+          <div style="padding:12px;flex-shrink:0;display:flex;align-items:center;gap:6px;">
+            <button style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.1);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="white" stroke-width="1.5" stroke-linecap="round" ></path></svg>
+            </button>
+          </div>
+        </div>
+        <p style="font-size:12px;line-height:18px;color:rgba(255,255,255,0.6);text-align:center;max-width:900px;margin:0;">Use of this beta AI chatbot is subject to Adobe's Privacy Policy. Don't share sensitive data. AI responses are not your Content, may be inaccurate and any offers provided are non-binding. Generative AI Terms.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer style="background:#000;max-width:1440px;margin:0 auto;box-sizing:border-box;">
+
+      <!-- Footer Link Columns -->
+      <div class="footer-cols" style="display:grid;grid-template-columns:repeat(6,1fr);gap:32px;padding:0 124px 40px;">
+
+        <!-- Col 1: Individuals & Small Business -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">For individuals &amp; small business</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Creative AI</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Photography</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Design &amp; Illustration</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Video &amp; animation</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">PDF</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">3D</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Elements Family</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Stock images &amp; video</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">View all products</a>
+          </div>
+        </div>
+
+        <!-- Col 2: Medium & Large Business -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">For medium &amp; large business</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Personalization at scale</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Content supply chain</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Unified customer experience</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Creativity and production</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">B2B GTM orchestration</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">View all products</a>
+          </div>
+        </div>
+
+        <!-- Col 3: Organizations -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">For Organizations</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Education</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Nonprofits</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Government</a>
+          </div>
+        </div>
+
+        <!-- Col 4: Support -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">Support</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Help Center</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Download and install</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Adobe Community</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Adobe Learn</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Medium &amp; large business support</a>
+          </div>
+        </div>
+
+        <!-- Col 5: Contact -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">Contact</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Chat with sales</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Request information</a>
+          </div>
+        </div>
+
+        <!-- Col 6: Adobe -->
+        <div style="display:flex;flex-direction:column;gap:24px;">
+          <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">Adobe</span>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Log into your account</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">About</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Careers</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Events</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Newsroom</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Corporate Responsibility</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Investor Relations</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Supply Chain</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Trust Center</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Integrity</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Adobe for All</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Adobe Blog</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Terms</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Privacy</a>
+            <a href="#" style="font-size:16px;color:rgba(255,255,255,0.64);text-decoration:none;line-height:20px;">Cookie preferences</a>
+          </div>
+        </div>
+
+      </div><!-- end footer-cols -->
+
+      <!-- Featured Products -->
+      <div style="display:flex;flex-direction:column;gap:24px;padding:0 124px 40px;">
+        <span style="font-size:16px;font-weight:700;color:#fff;line-height:20px;">Featured Products</span>
+        <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:16px;height:15px;background:#b30b00;border-radius:3px;flex-shrink:0;"></div>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Acrobat Reader</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:16px;height:16px;background:linear-gradient(135deg,#ff6a00,#8b5cf6);border-radius:3px;flex-shrink:0;overflow:hidden;"></div>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Firefly</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:16px;height:15px;background:#1473e6;border-radius:3px;flex-shrink:0;"></div>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Adobe Express</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:16px;height:16px;background:#001e36;border-radius:3px;flex-shrink:0;"></div>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Photoshop</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Bottom Bar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:32px;padding:0 124px 40px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:32px;flex-wrap:wrap;">
+          <div style="display:flex;align-items:center;gap:5px;cursor:pointer;">
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Change region</span>
+            <svg width="8" height="5" viewBox="0 0 8 5" fill="none"><path d="M1 1L4 4L7 1" stroke="rgba(255,255,255,0.64)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path></svg>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">© 2026 Adobe Inc. All rights reserved.</span>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">Do not sell or share my personal information</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div style="width:7px;height:8px;background:rgba(255,255,255,0.64);clip-path:polygon(50% 0%,100% 100%,0% 100%);"></div>
+            <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.64);letter-spacing:0.24px;">AdChoices</span>
+          </div>
+        </div>
+        <!-- Social Icons -->
+        <div style="display:flex;align-items:center;gap:16px;">
+          <a href="#" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1H9.5L6.5 5.5L10 11H7.5L5.5 8L3 11H1L4.5 6L1 1H3.5L5.3 3.8L7.5 1Z" fill="white" opacity="0.7" ></path></svg>
+          </a>
+          <a href="#" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="2" width="8" height="8" rx="2.5" stroke="white" stroke-width="1.2" opacity="0.7" ></rect><circle cx="6" cy="6" r="1.8" stroke="white" stroke-width="1.2" opacity="0.7" ></circle><circle cx="8.5" cy="3.5" r="0.6" fill="white" opacity="0.7" ></circle></svg>
+          </a>
+          <a href="#" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 2C1 1.45 1.45 1 2 1H10C10.55 1 11 1.45 11 2V10C11 10.55 10.55 11 10 11H2C1.45 11 1 10.55 1 10V2Z" stroke="white" stroke-width="1.2" opacity="0.7" ></path><path d="M1 4H11M4.5 4V11" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.7" ></path></svg>
+          </a>
+          <a href="#" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;text-decoration:none;">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1C3.24 1 1 3.24 1 6C1 8.76 3.24 11 6 11C8.76 11 11 8.76 11 6C11 3.24 8.76 1 6 1Z" stroke="white" stroke-width="1.2" opacity="0.7" ></path><path d="M4 6C4 4.89 4.89 4 6 4C7.11 4 8 4.89 8 6C8 7.11 7.11 8 6 8" stroke="white" stroke-width="1.2" stroke-linecap="round" opacity="0.7" ></path></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Large Adobe Logo Area -->
+      <div style="width:100%;height:338px;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <span style="font-size:200px;font-weight:900;color:rgba(255,255,255,0.06);font-family:'Adobe Clean Display',Georgia,serif;letter-spacing:-8px;user-select:none;line-height:1;">Adobe</span>
+      </div>
+
+    </footer>
+
+  </div><!-- end sub3 -->
+
+</div><!-- end #sec45141 -->
+</section>

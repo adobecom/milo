@@ -1,0 +1,23 @@
+.forge-plans-that-work-for-you #sec45141 .plan-grid {display:flex;gap:8px;width:100%;max-width:1200px;}
+
+.forge-plans-that-work-for-you #sec45141 .plan-card {flex:1;min-width:0;}
+
+.forge-plans-that-work-for-you #sec45141 .merch-grid {display:flex;gap:8px;width:100%;max-width:1200px;margin:0 auto;}
+
+.forge-plans-that-work-for-you #sec45141 .merch-card {flex:1;min-width:0;max-width:596px;}
+
+.forge-plans-that-work-for-you #sec45141 .footer-cols {display:grid;grid-template-columns:repeat(6,1fr);gap:32px;padding:0 124px;}
+
+.forge-plans-that-work-for-you #sec45141 .btn-accent {display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;background:var(--s2a-color-blue-900, #3b63fb);border:none;font-size:14px;font-weight:700;color:var(--s2a-color-gray-25, #fff);cursor:pointer;padding:0 24px;white-space:nowrap;}
+
+.forge-plans-that-work-for-you #sec45141 .btn-outlined-dark {display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;border:1px solid var(--s2a-color-gray-1000, #000);background:transparent;font-size:14px;font-weight:700;color:var(--s2a-color-gray-1000, #000);cursor:pointer;padding:0 24px;white-space:nowrap;}
+
+.forge-plans-that-work-for-you #sec45141 .btn-solid-white {display:flex;align-items:center;justify-content:center;height:40px;border-radius:999px;background:var(--s2a-color-gray-25, #fff);border:none;font-size:14px;font-weight:700;color:var(--s2a-color-gray-1000, #000);cursor:pointer;padding:0 24px;white-space:nowrap;}
+
+.forge-plans-that-work-for-you #sec45141 .tab-active {display:flex;align-items:center;justify-content:center;height:32px;border-radius:50px;background:var(--s2a-color-gray-1000, #000);padding:0 20px;font-size:14px;font-weight:700;color:var(--s2a-color-gray-25, #fff);cursor:pointer;white-space:nowrap;}
+
+.forge-plans-that-work-for-you #sec45141 .tab-inactive {display:flex;align-items:center;justify-content:center;height:32px;border-radius:50px;background:transparent;padding:0 20px;font-size:14px;font-weight:700;color:rgba(0,0,0,0.6);cursor:pointer;white-space:nowrap;}
+
+.forge-plans-that-work-for-you #sec45141 .feature-item {display:flex;align-items:flex-start;gap:8px;padding:0 20px;}
+
+.forge-plans-that-work-for-you #sec45141 .feature-item p {font-size:14px;line-height:18px;color:rgba(0,0,0,0.64);margin:0;}
