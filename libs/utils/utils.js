@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-section-0',
 ];
 
 const AUTO_BLOCKS = [
