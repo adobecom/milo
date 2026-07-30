@@ -1,0 +1,38 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "brand-concierge",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 3,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 4,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "act-dark"
+  },
+  {
+    "idx": 5,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "act-dark"
+  }
+]
