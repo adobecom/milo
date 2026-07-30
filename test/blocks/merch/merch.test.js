@@ -20,7 +20,6 @@ import merch, {
   getModalAction,
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
-  getMasBase,
   getOptions,
   appendDexterParameters,
   getLocaleSettings,
@@ -911,7 +910,6 @@ describe('Merch Block', () => {
 
   describe('Upgrade Flow', () => {
     beforeEach(() => {
-      getMasBase.baseUrl = undefined;
       updateSearch({});
     });
 
@@ -1679,6 +1677,38 @@ describe('Merch Block', () => {
       const url2 = getMasLibsBaseUrl();
       expect(url2).to.include('.aem.live');
       expect(url2).to.not.include('.aem.page');
+    });
+
+    it('returns null for hostile maslibs values (VULN-36379)', () => {
+      const hostile = [
+        'evil.com',
+        'cdn.jsdelivr.net/gh/u/r@main--mas--aem',
+        'evil.com%23',
+        'a--b@evil.com',
+        'evil.com:8080/x--y',
+        'a----b',
+        'a--b--c--d',
+        '-a',
+        'a-',
+        'a--',
+        // eslint-disable-next-line no-script-url -- payload must prove script URLs are rejected
+        'javascript:alert(1)',
+      ];
+      hostile.forEach((payload) => {
+        window.history.pushState({}, '', `/?maslibs=${payload}`);
+        expect(getMasLibsBaseUrl(), payload).to.be.null;
+      });
+    });
+
+    it('returns null for overlong maslibs values', () => {
+      window.history.pushState({}, '', `/?maslibs=${'a'.repeat(200)}`);
+      expect(getMasLibsBaseUrl()).to.be.null;
+    });
+
+    it('ignores maslibs on www.adobe.com (prod guard)', () => {
+      window.history.pushState({}, '', '/?maslibs=feature-branch');
+      expect(getMasLibsBaseUrl('www.adobe.com')).to.be.null;
+      expect(getMasLibsBaseUrl('www.stage.adobe.com')).to.equal('https://feature-branch--mas--adobecom.aem.live');
     });
   });
 
