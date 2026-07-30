@@ -1,0 +1,53 @@
+:root {
+  /* Ink / Paper are pure by brand design (two-act grounds) */
+  --heading-font-family:'adobe-clean-display','Adobe Clean Display','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --body-font-family:'adobe-clean','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+
+  --heading-xxl:clamp(40px,6.25vw,80px); /* title-1 */
+  --heading-xl:clamp(32px,4vw,56px);     /* title-2 */
+  --heading-lg:clamp(28px,3vw,48px);     /* title-3 */
+  --heading-md:24px;                     /* title-4 */
+  --body-lg:20px;
+  --body:16px;
+  --body-sm:14px;
+
+  --line-height-heading:1.02;
+  --line-height-body:1.35;
+
+  --color-bg:#ffffff;        /* Paper */
+  --color-fg:#000000;        /* Ink */
+  --color-accent:#3b63fb;    /* Adobe Blue — actions + links only */
+
+  --blue-deep:#274dea;
+  --warm-stone:#eceae7;
+  --cloud:#f8f8f8;
+  --gray-700:#505050;
+  --ink-64:rgba(0,0,0,.64);
+  --paper-72:rgba(255,255,255,.72);
+  --paper-56:rgba(255,255,255,.56);
+  --brand-red:#eb1000;       /* RESERVED — wordmark only */
+
+  --spacing-xs:4px;
+  --spacing-sm:8px;
+  --spacing-md:16px;
+  --spacing-lg:24px;
+  --spacing-xl:48px;
+  --spacing-2xl:96px;
+
+  --section-padding:64px;    /* balanced; multi-audience hard floor */
+  --max-width:1280px;
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-pill:999px;
+  --nav-lift:0 2px 12px rgba(0,0,0,.08);
+  --ease:cubic-bezier(.42,0,0,1);
+  --ease-out:cubic-bezier(.16,1,.3,1);
+}
+
+* {box-sizing:border-box}
+
+html {-webkit-text-size-adjust:100%;hanging-punctuation:first}
+
+body {margin:0;background:var(--color-bg);color:var(--color-fg);
+  font-family:var(--body-font-family);font-size:var(--body);line-height:var(--line-height-body);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}

@@ -1,0 +1,168 @@
+/* forge-adobe-is-transforming-the-world-s-biggest-brands
+   Customer-proof section: heading + customer-logo strip + featured story card.
+   Every selector keys on the block's OWN classes (never a bare element or a
+   page-level main/section/img). Every custom property is either an --s2a-*
+   design-system token or a --forge-* token defined locally in this scope, so
+   the block is fully self-contained (no page-global :root dependency). */
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands {
+  /* local tokens, wired to the C2 (--s2a-*) design system with safe fallbacks */
+  --forge-max-width: 1200px;
+  --forge-story-bg: var(--s2a-color-background-subtle, #eceae7);
+  --forge-accent: var(--s2a-color-content-brand, #3b63fb);
+  --forge-accent-hover: var(--s2a-color-blue-900, #274dea);
+  --forge-heading: var(--s2a-color-content-heading, #1a1a1a);
+  --forge-subtle: var(--s2a-color-content-subtle, #505050);
+  --forge-radius: var(--s2a-border-radius-16, 16px);
+  --forge-quote-font: var(--s2a-font-family-heading, 'Adobe Clean Display', 'Adobe Clean', sans-serif);
+  --forge-logo-h: 34px;
+  --forge-story-logo-h: 40px;
+
+  box-sizing: border-box;
+  display: block;
+  max-width: var(--forge-max-width);
+  margin-inline: auto;
+  padding: var(--s2a-spacing-124, 124px) clamp(20px, 5vw, 48px) var(--s2a-spacing-80, 80px);
+  color: var(--forge-heading);
+}
+
+/* Heading */
+.forge-adobe-is-transforming-the-world-s-biggest-brands .section-head {
+  max-width: 60ch;
+  margin: 0 0 var(--s2a-spacing-40, 40px);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .section-head__title {
+  margin: 0;
+  color: var(--forge-heading);
+}
+
+/* Customer-logo strip */
+.forge-adobe-is-transforming-the-world-s-biggest-brands .logos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: clamp(28px, 5vw, 64px);
+  margin: 0 0 var(--s2a-spacing-48, 48px);
+  padding: 0;
+  list-style: none;
+  opacity: 0.85;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .logos__item {
+  display: flex;
+  align-items: center;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .logos__img {
+  display: block;
+  width: auto;
+  height: var(--forge-logo-h);
+  max-width: 100%;
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition: filter 200ms ease, opacity 200ms ease;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .logos__img:hover {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+/* Featured story card */
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: start;
+  padding: clamp(28px, 4vw, 48px);
+  background: var(--forge-story-bg);
+  border-radius: var(--forge-radius);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__logo {
+  display: flex;
+  align-items: center;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__logo-img {
+  display: block;
+  width: auto;
+  height: var(--forge-story-logo-h);
+  max-width: 100%;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__body {
+  display: flex;
+  flex-direction: column;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__lead {
+  margin: 0 0 var(--s2a-spacing-20, 20px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--forge-subtle);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__quote {
+  margin: 0;
+  font-family: var(--forge-quote-font);
+  font-size: clamp(22px, 2.4vw, 32px);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--forge-heading);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__cite {
+  margin: var(--s2a-spacing-16, 16px) 0 0;
+  color: var(--forge-subtle);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--s2a-spacing-20, 20px);
+  font-weight: 700;
+  color: var(--forge-accent);
+  text-decoration: none;
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__link::after {
+  content: "\2192";
+  transition: transform 200ms cubic-bezier(0.42, 0, 0, 1);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__link:hover {
+  color: var(--forge-accent-hover);
+}
+
+.forge-adobe-is-transforming-the-world-s-biggest-brands .story__link:hover::after {
+  transform: translateX(3px);
+}
+
+@media (max-width: 960px) {
+  .forge-adobe-is-transforming-the-world-s-biggest-brands .story {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-adobe-is-transforming-the-world-s-biggest-brands {
+    padding-top: var(--s2a-spacing-80, 80px);
+    padding-bottom: var(--s2a-spacing-48, 48px);
+  }
+
+  .forge-adobe-is-transforming-the-world-s-biggest-brands .logos {
+    gap: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-adobe-is-transforming-the-world-s-biggest-brands .logos__img,
+  .forge-adobe-is-transforming-the-world-s-biggest-brands .story__link::after {
+    transition: none;
+  }
+}

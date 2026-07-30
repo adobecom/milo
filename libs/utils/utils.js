@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'explore-card',
   'faq',
   'floating-cta',
+  'forge-adobe-is-transforming-the-world-s-biggest-brands',
   'global-footer',
   'global-navigation',
   'hover-list',

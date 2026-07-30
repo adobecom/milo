@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-adobe-is-transforming-the-world-s-biggest-brands",
+  "sectionIndex": 3,
+  "decision": "new-block",
+  "score": 0.81,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-3",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo-logs-deploy-stage-e2e/src/forge/shared/data/_repos/milo/.forge-worktrees/session-99ba7ae9-ms7ez44g",
+  "miloTargetPath": "/Users/osahin/repos/milo-logs-deploy-stage-e2e/src/forge/shared/data/_repos/milo/.forge-worktrees/session-99ba7ae9-ms7ez44g/libs/c2/blocks/forge-adobe-is-transforming-the-world-s-biggest-brands",
+  "miloBranch": "forge/session-99ba7ae9-89e",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/redesign-99ba7a?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}
