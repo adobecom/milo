@@ -1,0 +1,31 @@
+.forge-section-2 {max-width:1920px;margin:0 auto;padding:0 220px;box-sizing:border-box;}
+
+.forge-section-2 {display:flex;flex-direction:row;gap:8px;width:100%;}
+
+.forge-section-2 {display:flex;flex-direction:column;flex:1;min-width:0;}
+
+.forge-section-2 {position:relative;width:100%;height:366px;border-radius:16px;overflow:hidden;flex-shrink:0;}
+
+.forge-section-2 {position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+
+.forge-section-2 {display:flex;flex-direction:column;gap:24px;padding:24px 24px 0 24px;}
+
+.forge-section-2 {display:flex;flex-direction:column;gap:8px;}
+
+.forge-section-2 {font-family:'Adobe Clean Display','adobe-clean-display',system-ui,sans-serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-0.48px;color:#000000;margin:0;padding:0;}
+
+.forge-section-2 {font-family:'Adobe Clean','adobe-clean',system-ui,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(0,0,0,0.64);margin:0;padding:0;}
+
+.forge-section-2 {font-family:'Adobe Clean','adobe-clean',system-ui,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:0.16px;color:rgba(0,0,0,0.6);margin:0;padding:0;}
+
+.forge-section-2 {display:inline-flex;flex-direction:row;align-items:center;gap:8px;cursor:pointer;text-decoration:none;}
+
+.forge-section-2 {font-family:'Adobe Clean','adobe-clean',system-ui,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000000;}
+
+.forge-section-2 {width:6px;height:6px;border-top:1.5px solid #000;border-right:1.5px solid #000;transform:rotate(45deg);flex-shrink:0;display:inline-block;}
+
+.forge-section-2 {position:absolute;display:flex;flex-direction:column;justify-content:center;padding:11px 12px 11px 11px;border-radius:9px;background:#ffffff;box-shadow:0 0 4px 1px rgba(0,0,0,.25);}
+
+.forge-section-2 {display:flex;flex-direction:row;align-items:center;gap:7px;height:18px;}
+
+.forge-section-2 {font-family:'Adobe Clean','adobe-clean',system-ui,sans-serif;font-weight:400;font-size:13px;line-height:18px;letter-spacing:-0.13px;color:#292929;white-space:nowrap;}
