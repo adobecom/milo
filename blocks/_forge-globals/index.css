@@ -1,0 +1,78 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+:root {
+  /* Fonts */
+  --heading-font-family:'adobe-clean-display','Adobe Clean Display','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --body-font-family:'adobe-clean','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+
+  /* Type scale */
+  --heading-xxl:clamp(44px,6.25vw,84px);
+  --heading-xl:clamp(34px,4.4vw,56px);
+  --heading-lg:40px;
+  --heading-md:24px;
+  --body:20px;
+  --body-sm:14px;
+  --line-height-heading:1.0;
+  --line-height-body:1.25;
+
+  /* Color roles (C2, pinned) */
+  --color-ink:#000000;              /* ink */
+  --color-paper:#ffffff;            /* paper */
+  --color-warm-stone:#eceae7;       /* warm-stone */
+  --color-cloud:#f8f8f8;            /* cloud */
+  --color-ink-64:rgba(0,0,0,0.64);  /* body-secondary on light */
+  --color-gray-700:#505050;         /* eyebrow / tertiary on light */
+  --color-paper-72:rgba(255,255,255,0.72); /* body on black act */
+  --color-paper-48:rgba(255,255,255,0.48); /* meta on black act */
+  --color-hairline:rgba(0,0,0,0.10);
+  --color-hairline-dark:rgba(255,255,255,0.14);
+  --color-accent:#3b63fb;           /* adobe-blue — THE saturated colour */
+  --color-accent-hover:#274dea;     /* blue-deep */
+  --color-focus:#378ef0;            /* captured focus-ring token */
+  --color-adobe-red:#eb1000;        /* reserved: wordmark only */
+
+  /* token-contract aliases */
+  --color-bg:var(--color-paper);
+  --color-fg:var(--color-ink);
+
+  /* Spacing (8pt) */
+  --spacing-xs:4px;
+  --spacing-sm:8px;
+  --spacing-md:16px;
+  --spacing-lg:24px;
+  --spacing-xl:48px;
+  --spacing-2xl:96px;
+  --section-padding:64px;           /* balanced tier (multi-audience floor) */
+  --max-width:1200px;
+
+  /* Radius */
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-pill:999px;
+
+  /* Motion (arrival) */
+  --ease:cubic-bezier(0.42,0,0,1);
+  --dur-fast:200ms;
+  --dur-base:400ms;
+}
+
+*,*::before,*::after {box-sizing:border-box}
+
+html {-webkit-text-size-adjust:100%;text-size-adjust:100%;hanging-punctuation:first;scroll-behavior:smooth}
+
+body {
+  margin:0;
+  background:var(--color-paper);
+  color:var(--color-ink);
+  font-family:var(--body-font-family);
+  font-size:var(--body-sm);
+  line-height:var(--line-height-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }
