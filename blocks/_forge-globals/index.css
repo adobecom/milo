@@ -1,0 +1,94 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+@media(max-width:1024px) {
+      .h42970-top{gap:60px!important;}
+      .h42970-h1{font-size:48px!important;line-height:54px!important;letter-spacing:-1.5px!important;padding:0 32px!important;}
+      .h42970-body{font-size:17px!important;line-height:22px!important;}
+      .h42970-mosaic{flex-wrap:wrap!important;gap:12px!important;padding:0 12px!important;box-sizing:border-box!important;}
+      .h42970-col{width:calc(50% - 6px)!important;gap:12px!important;}
+      .h42970-col img,.h42970-col>div{width:100%!important;height:auto!important;aspect-ratio:1/1!important;}
+    }
+
+@media(max-width:768px) {
+      .h42970-top{gap:40px!important;}
+      .h42970-h1{font-size:32px!important;line-height:38px!important;letter-spacing:-0.5px!important;padding:0 20px!important;}
+      .h42970-body{font-size:15px!important;line-height:21px!important;}
+      .h42970-mosaic{flex-direction:column!important;align-items:center!important;gap:12px!important;padding:0 16px!important;}
+      .h42970-col{width:100%!important;max-width:400px!important;gap:12px!important;}
+      .h42970-col img,.h42970-col>div{width:100%!important;height:auto!important;aspect-ratio:4/3!important;}
+      .h42970-promo-cta{flex-direction:column!important;border-radius:12px!important;}
+    }
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+@media(max-width:1024px) {
+      .jtbd-inner{padding-top:80px;gap:32px;}
+      .jtbd-headline{font-size:40px;line-height:44px;}
+      .jtbd-cards{flex-direction:column;height:auto;align-items:stretch;}
+      .jtbd-left-img{flex:none;width:100%;height:480px;}
+      .jtbd-right-col{flex:none;width:100%;height:auto;}
+      .jtbd-right-img{height:380px;}
+      .jtbd-right-copy{max-width:100%;padding:24px;}
+    }
+
+@media(max-width:768px) {
+      .jtbd-inner{padding-top:56px;gap:24px;}
+      .jtbd-headline{font-size:28px;line-height:32px;letter-spacing:-.5px;}
+      .jtbd-subhead{font-size:14px;line-height:18px;}
+      .jtbd-cards{padding:0 12px;gap:12px;}
+      .jtbd-left-img{height:240px;border-radius:20px;}
+      .jtbd-right-img{height:240px;border-radius:20px;}
+      .jtbd-right-copy{padding:16px 12px 0;gap:16px;}
+      .jtbd-card-heading{font-size:16px;}
+      .jtbd-card-body{font-size:14px;line-height:18px;}
+    }
+
+@media(max-width:1024px) {
+      .offer-root{height:auto;min-height:900px;}
+      .doc-card{transform:scale(0.75)!important;transform-origin:top left!important;}
+    }
+
+@media(max-width:768px) {
+      .offer-root{height:auto;min-height:700px;}
+      .doc-card{transform:scale(0.52)!important;transform-origin:top left!important;}
+    }
+
+@media(max-width:1024px) {
+  .wn-wrap{padding:0 48px 80px}
+  .wn-h2{font-size:40px;line-height:44px;letter-spacing:-1px}
+  .wn-grid{flex-direction:column}
+  .wn-card-img,.wn-card-ph{height:240px}
+}
+
+@media(max-width:768px) {
+  .wn-wrap{padding:0 24px 60px}
+  .wn-h2{font-size:30px;line-height:34px;letter-spacing:-.5px}
+  .wn-btns{flex-direction:column;width:100%;align-items:stretch}
+  .wn-btn{box-sizing:border-box;text-align:center}
+  .wn-card-img,.wn-card-ph{height:200px}
+}
+
+@media(max-width:1200px) {
+    #sec45141 .plan-grid{flex-wrap:wrap;}
+    #sec45141 .plan-card{flex:0 0 calc(50% - 4px);max-width:calc(50% - 4px);}
+    #sec45141 .merch-grid{flex-wrap:wrap;}
+    #sec45141 .merch-card{flex:0 0 calc(50% - 4px);max-width:calc(50% - 4px);}
+    #sec45141 .footer-cols{grid-template-columns:repeat(3,1fr);}
+  }
+
+@media(max-width:768px) {
+    #sec45141 .plan-card{flex:0 0 100%;max-width:100%;}
+    #sec45141 .merch-card{flex:0 0 100%;max-width:100%;}
+    #sec45141 .footer-cols{grid-template-columns:1fr 1fr;padding:0 24px;}
+    #sec45141 .sub1-inner{padding:60px 24px!important;}
+    #sec45141 .sub2-content{padding:60px 24px!important;}
+    #sec45141 .agentic-inner{padding:60px 24px!important;}
+  }
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }
