@@ -1,0 +1,75 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.53" data-binding="new-block" data-figma-node-id="10559:113746" data-block="news" style="width:100%;position:relative;overflow:hidden;background:#000;min-height:1176px;">
+  <!-- Background photographic image -->
+  <div style="position:absolute;inset:0;background-image:url('https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/8896e440-479b-4b0f-a559-c892112a5a7c');background-size:cover;background-position:center top;"></div>
+  <!-- Dark gradient overlay matching parent: rgba(0,0,0,0.20) → #000 -->
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.55) 45%,#000000 100%);"></div>
+
+  <!-- Full-width inner container capped at canvas width -->
+  <div style="position:relative;max-width:1440px;margin:0 auto;padding:0 120px;z-index:1;box-sizing:border-box;">
+    <!-- Copy Lockup: centred, max 1200px -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:24px;max-width:1200px;margin:0 auto;">
+
+      <!-- Top padding spacer (xl = 160px) -->
+      <div style="height:160px;flex-shrink:0;"></div>
+
+      <!-- Eyebrow + Headline + Sub-copy -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+        <p style="margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-size:14px;line-height:18px;font-weight:400;text-align:center;">Acrobat Studio</p>
+        <h1 style="margin:0;color:#ffffff;font-family:'Adobe Clean Display',adobe-clean-display,sans-serif;font-size:56px;line-height:56px;font-weight:900;letter-spacing:-1.68px;text-align:center;width:100%;">Get Acrobat Studio today.</h1>
+        <p style="margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-size:20px;line-height:24px;font-weight:400;text-align:center;width:100%;max-width:760px;">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- Price + CTA buttons -->
+      <div style="display:flex;flex-direction:column;gap:16px;width:100%;align-items:center;">
+        <p style="margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-size:16px;line-height:19px;font-weight:700;letter-spacing:-0.16px;text-align:center;">US$24.99/mo annual, billed monthly</p>
+
+        <div style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;">
+          <!-- Free Trial – solid white pill -->
+          <a href="#" style="display:inline-flex;align-items:center;justify-content:center;padding:14px 24px;border-radius:999px;background:#ffffff;border:none;cursor:pointer;text-decoration:none;min-width:117px;box-sizing:border-box;">
+            <span style="color:#000000;font-family:'Adobe Clean',adobe-clean,sans-serif;font-size:14px;line-height:18px;font-weight:700;text-align:center;white-space:nowrap;">Free Trial</span>
+          </a>
+          <!-- Compare Plans – outlined pill -->
+          <a href="#" style="display:inline-flex;align-items:center;justify-content:center;padding:14px 24px;border-radius:999px;background:transparent;border:1px solid #ffffff;cursor:pointer;text-decoration:none;box-sizing:border-box;">
+            <span style="color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-size:14px;line-height:18px;font-weight:700;text-align:center;white-space:nowrap;">Compare Plans</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Bottom fill so section reaches ~1176px total height -->
+      <div style="height:660px;flex-shrink:0;"></div>
+
+    </div>
+  </div>
+
+  <style>
+    @media (max-width: 1024px) {
+      [data-figma-node-id="10559:113746"] > div:last-of-type {
+        padding: 0 40px;
+      }
+      [data-figma-node-id="10559:113746"] h1 {
+        font-size: 42px !important;
+        line-height: 46px !important;
+      }
+    }
+    @media (max-width: 768px) {
+      [data-figma-node-id="10559:113746"] > div:last-of-type {
+        padding: 0 24px;
+      }
+      [data-figma-node-id="10559:113746"] h1 {
+        font-size: 32px !important;
+        line-height: 36px !important;
+        letter-spacing: -0.8px !important;
+      }
+      [data-figma-node-id="10559:113746"] p[style*="font-size:20px"] {
+        font-size: 16px !important;
+        line-height: 22px !important;
+      }
+      [data-figma-node-id="10559:113746"] div[style*="height:160px"] {
+        height: 64px !important;
+      }
+      [data-figma-node-id="10559:113746"] div[style*="height:660px"] {
+        height: 420px !important;
+      }
+    }
+  </style>
+</section>

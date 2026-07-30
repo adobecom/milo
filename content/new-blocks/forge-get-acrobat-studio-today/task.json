@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-get-acrobat-studio-today",
+  "sectionIndex": 0,
+  "decision": "new-block",
+  "score": 0.53,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=10559-113745",
+  "figmaNodeId": "10559:113746",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/Users/akadkly/Documents/GitHub/milo/.forge-worktrees/session-56b67f37-ms75rsnq",
+  "miloTargetPath": "/Users/akadkly/Documents/GitHub/milo/.forge-worktrees/session-56b67f37-ms75rsnq/libs/c2/blocks/forge-get-acrobat-studio-today",
+  "miloBranch": "forge/session-56b67f37-91a",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/akadkly/forge/figma-56b67f?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

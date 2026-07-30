@@ -1,0 +1,173 @@
+/* forge-get-acrobat-studio-today — centred dark hero.
+   Reconstructed at runtime by init(): .foreground > .content >
+   (.text-group[.eyebrow/.headline/.copy] + .cta-group[.price/.action-area]).
+   All rules scoped under .forge-get-acrobat-studio-today (L10/L19 clean). */
+
+.forge-get-acrobat-studio-today {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(34rem, 78vh, 54rem);
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-layout-lg, 64px) var(--s2a-spacing-80, 80px);
+  color: var(--s2a-color-gray-25, #fff);
+  background-color: var(--s2a-color-gray-1000, #000);
+  background-image:
+    radial-gradient(120% 78% at 82% 96%, rgba(255, 168, 92, 0.30) 0%, rgba(255, 132, 54, 0.10) 24%, rgba(0, 0, 0, 0) 56%),
+    radial-gradient(90% 90% at 20% 8%, rgba(70, 92, 128, 0.32) 0%, rgba(0, 0, 0, 0) 55%),
+    linear-gradient(180deg, rgba(24, 26, 33, 1) 0%, rgba(0, 0, 0, 1) 78%);
+  background-repeat: no-repeat;
+  text-align: center;
+}
+
+.forge-get-acrobat-studio-today .foreground {
+  width: 100%;
+  max-width: 75rem; /* ~1200px content cap, reflows below */
+  margin-inline: auto;
+}
+
+.forge-get-acrobat-studio-today .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-24, 24px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .eyebrow {
+  margin: 0;
+  color: var(--s2a-color-gray-25, #fff);
+  font-size: 0.875rem;
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.forge-get-acrobat-studio-today .headline {
+  margin: 0;
+  max-width: 60rem;
+  color: var(--s2a-color-gray-25, #fff);
+  font-size: clamp(2.25rem, 1.4rem + 3.4vw, 3.5rem); /* 36 -> 56px */
+  line-height: 1.02;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.forge-get-acrobat-studio-today .copy {
+  margin: 0;
+  max-width: 47.5rem; /* ~760px */
+  color: var(--s2a-color-gray-25, #fff);
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem); /* 16 -> 20px */
+  line-height: 1.25;
+  font-weight: 400;
+}
+
+.forge-get-acrobat-studio-today .cta-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .price {
+  margin: 0;
+  color: var(--s2a-color-gray-25, #fff);
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.forge-get-acrobat-studio-today .action-area {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+/* Pills — authored explicitly (C20) because the C2 .con-button base is tuned
+   for light backgrounds; on this dark hero it would render invisible. */
+.forge-get-acrobat-studio-today .cta {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7.3rem;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--s2a-border-radius-999, 999px);
+  border: var(--s2a-border-width-md, 2px) solid transparent;
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  font-size: 0.875rem;
+  line-height: 1.28;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+.forge-get-acrobat-studio-today .cta.primary {
+  background-color: var(--s2a-color-gray-25, #fff);
+  border-color: var(--s2a-color-gray-25, #fff);
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-get-acrobat-studio-today .cta.primary:hover {
+  background-color: var(--s2a-color-gray-100, #e9e9e9);
+  border-color: var(--s2a-color-gray-100, #e9e9e9);
+}
+
+.forge-get-acrobat-studio-today .cta.secondary {
+  background-color: transparent;
+  border-color: var(--s2a-color-gray-25, #fff);
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+.forge-get-acrobat-studio-today .cta.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.forge-get-acrobat-studio-today .cta:focus-visible {
+  outline: 2px solid var(--s2a-color-gray-25, #fff);
+  outline-offset: 2px;
+}
+
+/* Any stray authored link stays readable on the dark ground (C20). */
+.forge-get-acrobat-studio-today a:not(.cta) {
+  color: inherit;
+}
+
+@media (max-width: 1024px) {
+  .forge-get-acrobat-studio-today {
+    padding-inline: var(--s2a-layout-md, 40px);
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-get-acrobat-studio-today {
+    min-height: clamp(28rem, 82vh, 40rem);
+    padding: var(--s2a-spacing-80, 80px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-48, 48px);
+  }
+
+  .forge-get-acrobat-studio-today .action-area {
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .forge-get-acrobat-studio-today .cta {
+    width: 100%;
+  }
+}
