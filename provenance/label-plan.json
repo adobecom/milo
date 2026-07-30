@@ -1,0 +1,38 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "block"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "block"
+  },
+  {
+    "idx": 3,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "block"
+  },
+  {
+    "idx": 4,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "block"
+  },
+  {
+    "idx": 5,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "block"
+  }
+]
