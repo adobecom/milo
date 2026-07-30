@@ -1,0 +1,75 @@
+.forge-address-your-biggest-customer-experience-challenges-with-adobe img {max-width:100%;display:block}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {max-width:var(--max-width);margin-inline:auto;padding-inline:clamp(20px,5vw,48px)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {font-family:var(--body-font-family);font-size:13px;font-weight:700;letter-spacing:0.01em;color:var(--gray-700);margin:0 0 12px}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .act-dark .eyebrow {color:var(--text-on-dark)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {font-size:var(--body);line-height:1.35;color:var(--text-secondary);max-width:60ch;margin:16px 0 0}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .act-dark .lede {color:var(--text-on-dark)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {display:inline-flex;align-items:center;gap:6px;color:var(--blue);text-decoration:none;
+  font-weight:700;font-size:14px;padding-bottom:2px;background:linear-gradient(var(--blue),var(--blue)) 0 100%/0 1.5px no-repeat;
+  transition:background-size 220ms var(--ease)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe:hover {background-size:100% 1.5px}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe::after {content:"→";transition:transform 220ms var(--ease)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe:hover::after {transform:translateX(3px)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .act-dark .tlink {color:var(--s2a-color-gray-25, #fff);background-image:linear-gradient(var(--s2a-color-gray-25, #fff),var(--s2a-color-gray-25, #fff))}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {max-width:900px;margin-bottom:var(--spacing-xl)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe h2 {font-size:var(--heading-xl);line-height:1.02}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {background:var(--warm-stone);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;
+  transition:transform 260ms var(--ease)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe:hover {transform:translateY(-4px)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {background:var(--cloud);border:1px solid #efefef}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {aspect-ratio:16/9;overflow:hidden;background:var(--warm-stone)}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe img {width:100%;height:100%;object-fit:cover}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {padding:24px;display:flex;flex-direction:column;gap:10px;flex:1}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe h3 {font-size:var(--heading-md);line-height:1;letter-spacing:-0.01em}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe p {margin:0;font-size:var(--body-sm);line-height:1.4;color:var(--text-secondary);flex:1}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .tlink {margin-top:6px}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {grid-column:span 3;flex-direction:row}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .card__body {flex:1;justify-content:center}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .card__media {aspect-ratio:auto;width:44%;flex:none}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .quote .tlink {margin-top:22px}
+
+@media (prefers-reduced-motion: no-preference) {
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {opacity:0;transform:translateY(14px);animation:rise .6s var(--ease) forwards}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {animation-delay:.06s}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {animation-delay:.12s}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {animation-delay:.18s}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {animation-delay:.24s}
+}
+
+@media (max-width:900px) {
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {grid-template-columns:1fr 1fr}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {grid-column:span 2}
+}
+
+@media (max-width:600px) {
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {grid-template-columns:1fr}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {grid-column:span 1;flex-direction:column}
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .card__media {width:100%;aspect-ratio:16/9}
+}

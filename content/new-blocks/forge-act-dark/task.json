@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-act-dark",
+  "sectionIndex": 3,
+  "decision": "new-block",
+  "score": 0.81,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-3",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-559a6f60-ms82hgy7",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-559a6f60-ms82hgy7/libs/c2/blocks/forge-act-dark",
+  "miloBranch": "forge/session-559a6f60-dc1",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/ruchikas/forge/redesign-559a6f?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

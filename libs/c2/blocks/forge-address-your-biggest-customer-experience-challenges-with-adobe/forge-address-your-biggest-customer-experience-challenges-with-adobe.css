@@ -1,0 +1,170 @@
+/* forge-address-your-biggest-customer-experience-challenges-with-adobe
+   Solution-pillars section: lead-in + card grid. Compact text tiles sit in a 3-up
+   grid; media-bearing pillars become full-width feature rows. All values wire to the
+   C2 design system (--s2a-*) or block-local tokens so the block is self-contained. */
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {
+  /* block-local layout tokens (design intent, not frame pixels) */
+  --forge-max-width: 1200px;
+  --forge-media-basis: 44%;
+  --forge-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  box-sizing: border-box;
+  max-width: var(--forge-max-width);
+  margin-inline: auto;
+  /* section rhythm: match C2 sibling vertical cadence, not just Figma side padding */
+  padding-block: var(--s2a-spacing-124) var(--s2a-spacing-80);
+  padding-inline: clamp(var(--s2a-spacing-20), 5vw, var(--s2a-spacing-48));
+  color: var(--s2a-color-content-default);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe * {
+  box-sizing: border-box;
+}
+
+/* ---- lead-in ------------------------------------------------------------- */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__head {
+  max-width: 46rem;
+  margin-bottom: var(--s2a-spacing-48);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__title {
+  color: var(--s2a-color-content-heading);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__lede {
+  margin-top: var(--s2a-spacing-16);
+  max-width: 60ch;
+  color: var(--s2a-color-content-body-subtle);
+}
+
+/* ---- grid ---------------------------------------------------------------- */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--s2a-spacing-24);
+  align-items: stretch;
+}
+
+/* ---- card (compact text tile) ------------------------------------------- */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8);
+  padding: var(--s2a-spacing-32);
+  background: var(--s2a-color-background-subtle);
+  border: var(--s2a-border-width-sm) solid var(--s2a-color-border-subtle);
+  border-radius: var(--s2a-border-radius-md);
+  overflow: hidden;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__body h3 {
+  color: var(--s2a-color-content-heading);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__body p:not(.eyebrow) {
+  color: var(--s2a-color-content-body-subtle);
+  flex: 1;
+}
+
+/* ---- text link ----------------------------------------------------------- */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__link {
+  align-self: flex-start;
+  margin-top: var(--s2a-spacing-8);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-4);
+  /* explicit readable brand color — never inherit the global a{} color (C20) */
+  color: var(--s2a-color-content-brand);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold);
+  text-decoration: none;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__link::after {
+  content: "\2192";
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__link:hover {
+  text-decoration: underline;
+}
+
+/* ---- wide feature card (media + copy row) -------------------------------- */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__card--wide {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__card--wide
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__body {
+  flex: 1;
+  justify-content: center;
+  padding: var(--s2a-spacing-40);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__media {
+  flex: 0 0 var(--forge-media-basis);
+  /* reserve the box before the image arrives (CLS): fixed ratio + object-fit cover */
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--s2a-color-gray-100);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe__media img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- motion (gated; block ships no reveals — only a subtle hover nudge) --- */
+@media (prefers-reduced-motion: no-preference) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__link::after {
+    transition: transform 220ms var(--forge-ease);
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__link:hover::after {
+    transform: translateX(3px);
+  }
+}
+
+/* ---- responsive ---------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe {
+    padding-block: var(--s2a-spacing-80) var(--s2a-spacing-48);
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__card--wide {
+    flex-direction: column;
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__card--wide
+    .forge-address-your-biggest-customer-experience-challenges-with-adobe__body {
+    padding: var(--s2a-spacing-32);
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe__media {
+    flex-basis: auto;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}

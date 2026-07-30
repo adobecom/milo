@@ -1,0 +1,241 @@
+/* forge-act-dark
+   Dark "Explore all Adobe business products" catalog: a header row (title +
+   ghost CTA), a category-chip strip, and a featured panel (intro column beside a
+   2-up product-tile grid). All values wire to the C2 design system (--s2a-*) or
+   block-local tokens (design INTENT — column counts, ratios, gaps — never frame
+   pixels), so the block is self-contained and reflows to its container (L27). */
+
+.forge-act-dark {
+  /* block-local tokens — dark surface roles + layout intent */
+  --fad-max-width: 1200px;
+  --fad-surface: var(--s2a-color-gray-1000, #000);
+  --fad-on-dark: var(--s2a-color-gray-25, #fff);
+  --fad-on-dark-subtle: rgba(255, 255, 255, 0.72);
+  --fad-hairline: rgba(255, 255, 255, 0.16);
+  --fad-hairline-strong: rgba(255, 255, 255, 0.4);
+  --fad-hover: rgba(255, 255, 255, 0.06);
+  --fad-radius-act: 28px;
+  --fad-radius-tile: var(--s2a-border-radius-md, 12px);
+  --fad-ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  box-sizing: border-box;
+  background: var(--fad-surface);
+  color: var(--fad-on-dark);
+  border-radius: var(--fad-radius-act) var(--fad-radius-act) 0 0;
+  /* section rhythm: match C2 sibling vertical cadence, not just Figma side padding */
+  padding-block: var(--s2a-spacing-124) var(--s2a-spacing-80);
+  padding-inline: clamp(var(--s2a-spacing-20), 5vw, var(--s2a-spacing-48));
+}
+
+.forge-act-dark * {
+  box-sizing: border-box;
+}
+
+.forge-act-dark img {
+  max-width: 100%;
+  display: block;
+}
+
+.forge-act-dark__inner {
+  max-width: var(--fad-max-width);
+  margin-inline: auto;
+}
+
+/* ---- header row ---------------------------------------------------------- */
+.forge-act-dark__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-20);
+  margin-bottom: var(--s2a-spacing-32);
+}
+
+.forge-act-dark__title {
+  color: var(--fad-on-dark);
+  margin: 0;
+}
+
+.forge-act-dark__headcta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-spacing-8);
+  padding: var(--s2a-spacing-12) var(--s2a-spacing-24);
+  border: 1.5px solid var(--fad-on-dark);
+  border-radius: 999px;
+  color: var(--fad-on-dark);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 200ms var(--fad-ease);
+}
+
+.forge-act-dark__headcta:hover {
+  background: var(--fad-hover);
+}
+
+/* ---- category chips ------------------------------------------------------ */
+.forge-act-dark__cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-8);
+  margin-bottom: var(--s2a-spacing-40);
+}
+
+.forge-act-dark__cat {
+  border: 1.5px solid var(--fad-hairline);
+  background: transparent;
+  color: var(--fad-on-dark-subtle);
+  border-radius: 999px;
+  padding: var(--s2a-spacing-8) var(--s2a-spacing-16);
+  font: inherit;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: color 180ms var(--fad-ease), border-color 180ms var(--fad-ease),
+    background-color 180ms var(--fad-ease);
+}
+
+.forge-act-dark__cat:hover {
+  color: var(--fad-on-dark);
+  border-color: var(--fad-hairline-strong);
+}
+
+.forge-act-dark__cat.is-active {
+  background: var(--fad-on-dark);
+  color: var(--s2a-color-gray-1000, #000);
+  border-color: var(--fad-on-dark);
+}
+
+.forge-act-dark__cat:focus-visible {
+  outline: 2px solid var(--fad-on-dark);
+  outline-offset: 2px;
+}
+
+/* ---- featured panel ------------------------------------------------------ */
+.forge-act-dark__panel {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: clamp(var(--s2a-spacing-32), 4vw, var(--s2a-spacing-64));
+  align-items: start;
+}
+
+.forge-act-dark__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-16);
+}
+
+.forge-act-dark__panel-title {
+  margin: 0;
+  color: var(--fad-on-dark);
+}
+
+.forge-act-dark__lede {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--fad-on-dark-subtle);
+}
+
+/* text link — explicit readable color on dark; never inherit global a{} (C20) */
+.forge-act-dark__cta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-4);
+  color: var(--fad-on-dark);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  text-decoration: none;
+}
+
+.forge-act-dark__cta::after {
+  content: "\2192";
+}
+
+.forge-act-dark__cta:hover {
+  text-decoration: underline;
+}
+
+/* visual — reserve the box before the image arrives (CLS): ratio + cover fit */
+.forge-act-dark__media {
+  margin-top: var(--s2a-spacing-8);
+  width: 100%;
+  max-width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--fad-radius-tile);
+  background: var(--s2a-color-gray-900, #131313);
+}
+
+.forge-act-dark__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- product tiles ------------------------------------------------------- */
+.forge-act-dark__tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s2a-spacing-12);
+  align-content: start;
+}
+
+.forge-act-dark__tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-12);
+  padding: var(--s2a-spacing-16);
+  border: 1px solid var(--fad-hairline);
+  border-radius: var(--fad-radius-tile);
+  color: var(--fad-on-dark);
+  text-decoration: none;
+  transition: background-color 180ms var(--fad-ease), border-color 180ms var(--fad-ease);
+}
+
+.forge-act-dark__tile:hover {
+  background: var(--fad-hover);
+  border-color: var(--fad-hairline-strong);
+}
+
+.forge-act-dark__tile:focus-visible {
+  outline: 2px solid var(--fad-on-dark);
+  outline-offset: 2px;
+}
+
+.forge-act-dark__tile-name {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  letter-spacing: -0.01em;
+}
+
+.forge-act-dark__tile-new {
+  flex: none;
+  font-size: 0.625rem;
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--s2a-color-gray-1000, #000);
+  background: var(--fad-on-dark);
+  border-radius: 999px;
+  padding: 2px var(--s2a-spacing-8);
+}
+
+/* ---- responsive ---------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .forge-act-dark__panel {
+    grid-template-columns: 1fr;
+    gap: var(--s2a-spacing-40);
+  }
+}
+
+@media (max-width: 700px) {
+  .forge-act-dark {
+    padding-block: var(--s2a-spacing-80) var(--s2a-spacing-48);
+  }
+
+  .forge-act-dark__tiles {
+    grid-template-columns: 1fr;
+  }
+}
