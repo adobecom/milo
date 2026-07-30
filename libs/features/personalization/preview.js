@@ -1,3 +1,5 @@
+// TEMP: legacy MEP preview, retained as the ?mepnext fallback for prod validation.
+// Remove with the toggle once mep-next is validated.
 import {
   createTag,
   getCookie,
@@ -26,6 +28,29 @@ export function escapeHtml(str) {
   const el = document.createElement('span');
   el.textContent = String(str);
   return el.innerHTML;
+}
+
+// escapeHtml only encodes & < > — safe for element TEXT. Values placed inside
+// quoted HTML attributes also need " and ' encoded so they can't close the attribute.
+export function escapeAttr(str) {
+  if (str == null || str === '') return str;
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Only http(s)/relative URLs are safe as an href; reject javascript:, data:, etc.
+function safeUrl(url) {
+  if (typeof url !== 'string') return '';
+  try {
+    const { protocol } = new URL(url, window.location.origin);
+    return protocol === 'http:' || protocol === 'https:' ? url : '';
+  } catch (e) {
+    return '';
+  }
 }
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
@@ -296,10 +321,18 @@ const OST_BASE_URL = 'https://milo.adobe.com/tools/ost';
 
 // type=price/checkoutUrl pre-selects the correct OST tab. Idempotent.
 function annotateOffers() {
+  // One badge per OSI per parent — a price + legal inline-price share an OSI in
+  // one <p> and would otherwise stack two identical "View in OST" badges.
+  const seenByParent = new Map();
   document.querySelectorAll(MAS_OSI_SELECTOR).forEach((el) => {
-    if (mepMasStudioUrls.has(el)) return;
     const osi = el.getAttribute('data-wcs-osi');
     if (!osi) return;
+    let seen = seenByParent.get(el.parentElement);
+    if (!seen) { seen = new Set(); seenByParent.set(el.parentElement, seen); }
+    // Already-stamped sibling still claims its OSI so the dup stays suppressed.
+    if (mepMasStudioUrls.has(el)) { seen.add(osi); return; }
+    if (seen.has(osi)) return;
+    seen.add(osi);
     const isPrice = el.matches('span[is="inline-price"]');
     const type = isPrice ? 'price' : 'checkoutUrl';
     const pageMarket = getResolvedPageMarket();
@@ -309,17 +342,42 @@ function annotateOffers() {
   });
 }
 
-// Real DOM (not ::before) — three independent click targets + Copy needs a clipboard handler.
+// Consolidated action stack for COLLECTION cards only (Edit / View in OST /
+// Copy). Standalone cards use per-element ::before OST badges instead.
 const CARD_ACTIONS_CLASS = 'mep-mas-card-actions';
 const CARD_ACTION_EDIT_CLASS = 'mep-mas-card-action-edit';
 const CARD_ACTION_OST_CLASS = 'mep-mas-card-action-ost';
 const CARD_ACTION_COPY_CLASS = 'mep-mas-card-action-copy';
 
+// aem-fragment merch-cards are shadow-DOM hosts that only render slotted
+// children, so a stack appended inside the card is never projected. It lives on
+// <body> and is positioned over the card's box via getBoundingClientRect.
+const CARD_STACK_Z_INDEX = '999';
+const cardActionStacks = new WeakMap(); // card -> stack
+const cardStackOwners = new WeakMap(); // stack -> card
+const liveCardActionStacks = new Set();
+
+function positionCardActionStack(card, stack) {
+  const rect = card.getBoundingClientRect();
+  if (rect.width === 0 && rect.height === 0) { stack.style.display = 'none'; return; }
+  stack.style.display = '';
+  stack.style.top = `${rect.top + window.scrollY + 4}px`;
+  stack.style.left = `${rect.right + window.scrollX - stack.offsetWidth - 4}px`;
+}
+
+export function repositionCardActionStacks() {
+  liveCardActionStacks.forEach((stack) => {
+    const card = cardStackOwners.get(stack);
+    if (!card?.isConnected) { stack.remove(); liveCardActionStacks.delete(stack); return; }
+    positionCardActionStack(card, stack);
+  });
+}
+
 function getCardFragmentId(card) {
   return card.querySelector('aem-fragment[fragment]')?.getAttribute('fragment') || null;
 }
 
-// View in OST uses the first OSI — M@S confirmed all OSIs in a card are equivalent.
+// All OSIs in a collection card open the same Studio; the first is representative.
 function getCardFirstOsi(card) {
   return card.querySelector('[data-wcs-osi]')?.getAttribute('data-wcs-osi') || null;
 }
@@ -328,53 +386,48 @@ function getCardFirstOsi(card) {
 function injectMasCardActionStack(card) {
   const studioUrl = mepMasStudioUrls.get(card);
   if (!studioUrl) return;
-  card.querySelectorAll(`:scope > .${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+  const existing = cardActionStacks.get(card);
+  if (existing) {
+    existing.remove();
+    liveCardActionStacks.delete(existing);
+    cardActionStacks.delete(card);
+  }
 
   const stack = createTag('div', { class: CARD_ACTIONS_CLASS });
   const market = card.dataset.masMarket;
   const mismatch = card.dataset.masMarketMismatch === 'true';
-  const marketSuffix = market ? ` \u00b7 ${market}` : '';
+  const marketSuffix = market ? ` · ${market}` : '';
   const mismatchClass = mismatch ? ` ${CARD_ACTIONS_CLASS}-mismatch` : '';
 
-  const editLink = createTag(
-    'a',
-    {
-      class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
-      href: toFragmentEditorUrl(studioUrl),
-      target: '_blank',
-      rel: 'noopener noreferrer',
-    },
-  );
+  const editLink = createTag('a', {
+    class: `${CARD_ACTION_EDIT_CLASS}${mismatchClass}`,
+    href: toFragmentEditorUrl(studioUrl),
+    target: '_blank',
+    rel: 'noopener noreferrer',
+  });
   editLink.textContent = `Edit Card${marketSuffix}`;
   stack.append(editLink);
 
   const osi = getCardFirstOsi(card);
   if (osi) {
-    const ostLink = createTag(
-      'a',
-      {
-        class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
-        href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-      },
-    );
+    const ostLink = createTag('a', {
+      class: `${CARD_ACTION_OST_CLASS}${mismatchClass}`,
+      href: `${OST_BASE_URL}?osi=${encodeURIComponent(osi)}${market ? `&country=${encodeURIComponent(market)}` : ''}`,
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
     ostLink.textContent = `View in OST${marketSuffix}`;
     stack.append(ostLink);
   }
 
   const fragmentId = getCardFragmentId(card);
   if (fragmentId) {
-    const copyBtn = createTag(
-      'button',
-      {
-        type: 'button',
-        class: CARD_ACTION_COPY_CLASS,
-        'data-fragment-id': fragmentId,
-        title: `Copy fragment id: ${fragmentId}`,
-      },
-      'Copy Fragment ID',
-    );
+    const copyBtn = createTag('button', {
+      type: 'button',
+      class: CARD_ACTION_COPY_CLASS,
+      'data-fragment-id': fragmentId,
+      title: `Copy fragment id: ${fragmentId}`,
+    }, 'Copy Fragment ID');
     copyBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -397,11 +450,18 @@ function injectMasCardActionStack(card) {
     stack.append(copyBtn);
   }
 
-  card.append(stack);
+  stack.style.position = 'absolute';
+  stack.style.right = 'auto';
+  stack.style.zIndex = CARD_STACK_Z_INDEX;
+  document.body.append(stack);
+  cardActionStacks.set(card, stack);
+  cardStackOwners.set(stack, card);
+  liveCardActionStacks.add(stack);
+  positionCardActionStack(card, stack);
 }
 
-// Collection surfaces use this sibling-placed badge. Cards: real-DOM action
-// stack (injectMasCardActionStack). Inline/ost/offer: ::before pseudos.
+// Collection surfaces use this sibling-placed badge. Cards render a CSS outline;
+// inline/ost/offer render per element via ::before pseudos.
 function buildMasBadge(url, surface, market, pageMarket) {
   const a = createTag(
     'a',
@@ -434,12 +494,13 @@ export function injectMasBadges() {
   let visibleCount = 0;
   document.querySelectorAll('[data-mas-block]').forEach((el) => {
     const surface = el.dataset.masBlock;
+    // Collection cards get the consolidated action stack; standalone cards use
+    // per-element ::before OST. offer/inline/ost are ::before pseudos too.
     if (surface === 'card') {
-      injectMasCardActionStack(el);
+      if (el.closest('[data-mas-block="collection"]')) injectMasCardActionStack(el);
       visibleCount += 1;
       return;
     }
-    // offer/inline/ost use ::before pseudos — sibling <a> shifted layout in paragraphs/headings.
     if (surface === 'offer' || surface === 'inline' || surface === 'ost') {
       visibleCount += 1;
       return;
@@ -475,8 +536,10 @@ export function injectMasBadges() {
 
 export function removeMasBadges() {
   document.querySelectorAll(`a.${MAS_BADGE_CLASS}`).forEach((el) => el.remove());
-  // Cards: real DOM, must strip. Pseudos (offer/inline/ost) hide via body[data-mep-mas-highlight].
+  // Collection card stacks live on <body> — strip them. Standalone/offer/inline/ost
+  // are CSS-only (outline + ::before).
   document.querySelectorAll(`.${CARD_ACTIONS_CLASS}`).forEach((el) => el.remove());
+  liveCardActionStacks.clear();
   removeSubCollectionBadges();
   updateMasNoContentMessage(false);
 }
@@ -528,6 +591,8 @@ let masRestampTimer;
 let masChildCardClickHandler;
 let masAemLoadHandler;
 let masRestampClickHandler;
+let masResizeHandler;
+let masResizeRaf;
 // Exported for tests. Long enough for M@S hydration after a tab/accordion
 // switch, short enough to feel responsive.
 export const MAS_RESTAMP_DEBOUNCE_MS = 300;
@@ -564,6 +629,18 @@ export function watchForMasContent() {
   };
   document.addEventListener('click', masRestampClickHandler, true);
 
+  // Body-level collection-card stacks are positioned from getBoundingClientRect,
+  // so a resize can move the cards out from under them. Scroll needs no handler —
+  // the overlays use document coordinates.
+  masResizeHandler = () => {
+    if (masResizeRaf) return;
+    masResizeRaf = requestAnimationFrame(() => {
+      masResizeRaf = 0;
+      repositionCardActionStacks();
+    });
+  };
+  window.addEventListener('resize', masResizeHandler);
+
   // Re-injection triggers:
   //   - new [data-mas-block] / <merch-card> nodes (collection children)
   //   - aem-fragment[fragment] insertion (M@S sometimes appends post-mount; miss permanently)
@@ -593,11 +670,14 @@ function unwatchForMasContent() {
   document.removeEventListener('click', masChildCardClickHandler, true);
   document.removeEventListener('aem:load', masAemLoadHandler, true);
   document.removeEventListener('click', masRestampClickHandler, true);
+  window.removeEventListener('resize', masResizeHandler);
   masObserver.disconnect();
   masObserver = null;
   masChildCardClickHandler = null;
   masAemLoadHandler = null;
   masRestampClickHandler = null;
+  masResizeHandler = null;
+  if (masResizeRaf) { cancelAnimationFrame(masResizeRaf); masResizeRaf = 0; }
   clearTimeout(masRestampTimer);
 }
 
@@ -906,16 +986,18 @@ function getManifestListDomAndParameter(mepConfig) {
     } = manifest;
     const editUrl = manifestUrl || manifestPath;
     const editPath = normalizePath(editUrl);
-    const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
+    let variantNamesArray = [];
+    if (Array.isArray(variantNames)) variantNamesArray = variantNames;
+    else if (typeof variantNames === 'string') variantNamesArray = variantNames.split('||');
     let options = '';
     let isSelected = '';
-    if (!variantNames.includes(selectedVariantName) && pageId === 0) {
+    if (!variantNamesArray.includes(selectedVariantName) && pageId === 0) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
     }
-    options += `<option name="${editPath}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
-    options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
+    options += `<option name="${escapeAttr(editPath)}${pageId}" value="" title="none">None (Don't add manifest)</option>`;
+    options += `<option name="${escapeAttr(editPath)}${pageId}" value="default"
+    id="${escapeAttr(editPath)}${pageId}--default" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="Default (control)">Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -923,11 +1005,11 @@ function getManifestListDomAndParameter(mepConfig) {
         isSelected = 'selected';
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
-      options += `<option name="${editPath}${pageId}" value="${variant}" 
-      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
+      options += `<option name="${escapeAttr(editPath)}${pageId}" value="${escapeAttr(variant)}"
+      id="${escapeAttr(editPath)}${pageId}--${escapeAttr(variant)}" data-manifest="${escapeAttr(editPath)}" ${isSelected} title="${escapeAttr(variant)}">${escapeHtml(variant)}</option>`;
     });
     const expandSVG = `
-    <svg xmlns="<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" class="mep-toggle-expand">
       <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/>
     </svg>`;
     const collapseSVG = `
@@ -935,27 +1017,27 @@ function getManifestListDomAndParameter(mepConfig) {
       <path d="M200-440v-80h560v80H200Z"/>
     </svg>`;
     manifestList += `
-    <div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
+    <div class="mep-section" title="Manifest location: ${escapeAttr(editUrl)}&#013;Analytics manifest name: ${escapeAttr(analyticsTitle || 'N/A for this manifest type')}">
       <div class="mep-manifest-title">
-        <a class="mep-edit-manifest" href="${editUrl}" target="_blank" title="Open manifest">
-          ${mIdx + 1}. ${getFileName(manifestPath)}
+        <a class="mep-edit-manifest" href="${escapeAttr(safeUrl(editUrl))}" target="_blank" title="Open manifest">
+          ${mIdx + 1}. ${escapeHtml(getFileName(manifestPath))}
         </a>
         <div class="mep-manifest-toggle">${expandSVG}${collapseSVG}</div>
-      </div>   
+      </div>
       <div class="mep-manifest-info">
-            ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
+            ${targetActivityName ? `<div class="target-activity-name">${escapeHtml(targetActivityName)}</div>` : ''}
               <div class="mep-section-data">
                   <span class="mep-active">Experience</span>
-                ${!variantNames.includes(selectedVariantName) ? `
+                ${!variantNamesArray.includes(selectedVariantName) ? `
                   <span class="mep-active">default (control)</span>` : `
-                  <span class='mep-active mep-selected-variant'>${selectedVariantName}</span>`}
+                  <span class='mep-active mep-selected-variant'>${escapeHtml(selectedVariantName)}</span>`}
                   <span>Source</span>
-                  <span>${source}</span>
+                  <span>${escapeHtml(source)}</span>
                   <span>Mktg action</span>
-                  <span>${mktgAction}</span>
+                  <span>${escapeHtml(mktgAction)}</span>
                 ${geoRestriction ? `
                   <span>Geo</span>
-                  <span>${geoRestriction ? `${geoRestriction?.toUpperCase()}` : ''}</span>` : ''}
+                  <span>${geoRestriction ? `${escapeHtml(geoRestriction?.toUpperCase())}` : ''}</span>` : ''}
                 ${(eventStart && eventEnd) || disabled ? `
                   <span>Active?</span>
                   <span>${(eventStart && eventEnd) || disabled ? `${disabled ? 'inactive' : 'active'}` : ''}` : ''}</span>
@@ -1372,12 +1454,12 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Foundation</span>
         <span>${pageData.foundation}</span>
         <span>Target Integration</span>
-        <span>${pageData.targetIntegration}</span>
+        <span>${escapeHtml(pageData.targetIntegration)}</span>
         <span>Personalization</span>
-        <span>${pageData.personalization}</span>
+        <span>${escapeHtml(pageData.personalization)}</span>
     ${page.lastSeen ? `
         <span>Locale</span>
-        <span>${pageData.locale}</span>`
+        <span>${escapeHtml(pageData.locale)}</span>`
     : ''}
     </div>
     `;
@@ -1450,14 +1532,14 @@ export async function getMepPopup(mepConfig, isMmm = false) {
         <span>Lang First / Lingo</span>
         <span>${lingoData.langFirst}</span>
         <span>Geo Folder</span>
-        <span>${lingoData.geoFolder}</span>
+        <span>${escapeHtml(lingoData.geoFolder)}</span>
       ${isMmm ? '' : `
         <span>Country cookie</span>
         <span>${lingoData.countryCookie}</span>
         <span>User Country</span>
         <span>${lingoData.userCountry}</span>
         <span>Geo + User</span>
-        <span>${lingoData.geoUser}</span>
+        <span>${escapeHtml(lingoData.geoUser)}</span>
       `}
     </div>
   `;

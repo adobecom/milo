@@ -1,6 +1,3 @@
-// TEMP: legacy MEP preview helper, retained as part of the ?mepnext fallback for prod validation.
-// Remove with preview.js once mep-next is validated.
-//
 // MEP "Highlight M@S Content" — sub-collection edit badges.
 //
 // A <merch-card-collection> can host sub-collections surfaced in the
@@ -13,8 +10,8 @@
 // <aem-fragment> immediately after dispatching aem:load, so its rawData
 // can't be read after the fact.
 
-import { createTag } from '../../utils/utils.js';
-import { mepMasStudioUrls } from '../../blocks/merch/mas-mep-utils.js';
+import { createTag } from '../../../utils/utils.js';
+import { mepMasStudioUrls } from '../../../blocks/merch/mas-mep-utils.js';
 
 export const SUB_COLLECTION_BADGE_CLASS = 'mep-mas-sub-collection-badge';
 

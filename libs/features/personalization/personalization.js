@@ -1738,7 +1738,10 @@ export async function init(enablements = {}) {
       // Flatten the preview.js → caas/utils.js → {lingo-active, getUuid} discovery chain
       loadLink(`${config.base}/utils/lingo-active.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
       loadLink(`${config.base}/utils/getUuid.js`, { rel: 'modulepreload', crossorigin: 'anonymous' });
-      import('./preview.js').then(({ saveToMmm }) => saveToMmm()).catch((e) => {
+      // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+      const previewSrc = new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on'
+        ? '../mep/mep-next/mep-next.js' : './preview.js';
+      import(previewSrc).then(({ saveToMmm }) => saveToMmm()).catch((e) => {
         log(`MEP save error: ${e.toString()}`);
         window.lana?.log(`MEP save error: ${e.toString()}`);
       });

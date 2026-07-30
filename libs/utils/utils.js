@@ -2410,8 +2410,16 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+        .then(({ default: init }) => init());
+      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+        .then(({ default: init }) => init());
+    } else {
+      import('../features/personalization/preview.js')
+        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    }
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
