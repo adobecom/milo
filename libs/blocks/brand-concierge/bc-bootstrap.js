@@ -90,12 +90,10 @@ async function openSusiLightModal() {
     window.dispatchEvent(new CustomEvent('signIn:decorateNav', { detail: 'signIn' }));
     window?.lana.log('SUSI login success', { tags: 'brand-concierge', severity: 'info' });
     const token = detail;
-    if (!bcToken) {
-      bcToken = token;
-      const mountEl = document.getElementById(mountId);
-      if (mountEl) {
-        mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
-      }
+    bcToken = token;
+    const mountEl = document.getElementById(mountId);
+    if (mountEl) {
+      mountEl.dispatchEvent(new CustomEvent('bc:cta-action-handled', { detail: { token } }));
     }
   };
 
