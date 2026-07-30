@@ -1,0 +1,110 @@
+/* forge-hero — split-media newsroom hero. All selectors are scoped to .forge-hero.
+   Tokens are declared on the block scope (not :root); page-level :root tokens are
+   provided by the page globals linked in <head>. Values snap to --s2a-* tokens with
+   safe fallbacks so the block renders even if a token is unset. */
+
+.forge-hero {
+  /* Local layout token — self-contained, not sourced from a page-global. */
+  --fh-max-width: 1200px;
+  /* Accent + text colors wired to the C2 (--s2a-*) design system w/ literal fallbacks. */
+  --fh-accent: var(--s2a-color-button-background-accent-solid-on-light-default, #3b63fb);
+  --fh-text: var(--s2a-color-content-default, #131313);
+  --fh-eyebrow: var(--s2a-color-content-eyebrow, #505050);
+  --fh-media-bg: var(--s2a-color-gray-50, #f8f8f8);
+  --fh-hairline: var(--s2a-color-border-subtle, color-mix(in srgb, var(--fh-text) 12%, transparent));
+  /* section rhythm consistent with C2 siblings (~124px top / ~80px bottom) */
+  padding-block: var(--s2a-spacing-124, 124px) var(--s2a-spacing-80, 80px);
+  color: var(--fh-text);
+}
+
+.forge-hero .container {
+  max-width: var(--fh-max-width);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 64px);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+
+.forge-hero .hero__lead { min-width: 0; }
+
+.forge-hero .eyebrow {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fh-eyebrow);
+  margin: 0 0 var(--s2a-spacing-md, 16px);
+}
+
+.forge-hero .hero__id {
+  font-size: clamp(48px, 6.25vw, 80px);
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.forge-hero .featured {
+  margin-top: var(--s2a-spacing-xl, 32px);
+  padding-top: var(--s2a-spacing-lg, 24px);
+  border-top: 1px solid var(--fh-hairline);
+}
+
+.forge-hero .featured__eyebrow {
+  color: var(--fh-accent);
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.forge-hero .featured__title {
+  font-size: clamp(26px, 2.6vw, 34px);
+  line-height: 1.1;
+  margin: 0 0 var(--s2a-spacing-md, 16px);
+}
+
+.forge-hero .featured .hero__cta,
+.forge-hero .featured .action-area { margin: var(--s2a-spacing-lg, 24px) 0 0; }
+
+/* CTA falls back to a readable pill even if the global con-button style is absent. */
+.forge-hero .hero__cta a:not(.con-button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding-inline: 24px;
+  border-radius: var(--s2a-border-radius-999, 999px);
+  background: var(--fh-accent);
+  color: var(--s2a-color-gray-25, #fff);
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.forge-hero .hero__media {
+  background: var(--fh-media-bg);
+  border-radius: var(--s2a-border-radius-16, 16px);
+  padding: var(--s2a-spacing-lg, 24px);
+}
+
+/* Reserve the image box at its natural 445x310 ratio so the hero never shifts on
+   image arrival (CLS). width/max-width + height:auto keep it fluid in-container.
+   Styled via block-owned classes (.hero__picture/.hero__img added in JS), never a
+   bare element selector that could reach page-level media. */
+.forge-hero .hero__picture { display: block; }
+
+.forge-hero .hero__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 445 / 310;
+  object-fit: cover;
+  border-radius: var(--s2a-border-radius-12, 12px);
+}
+
+@media (max-width: 900px) {
+  .forge-hero { padding-block: var(--s2a-spacing-80, 80px) var(--s2a-spacing-48, 48px); }
+  .forge-hero .container { grid-template-columns: 1fr; }
+  .forge-hero .hero__media { order: -1; }
+}

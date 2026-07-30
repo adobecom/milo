@@ -1,0 +1,117 @@
+/* forge-act-dark — dark split-media "drive-action" section. Every top-level rule
+   is scoped to .forge-act-dark (L10/L19: no :root / body / @font-face / @import /
+   bare element selectors). CSS keys ONLY on the classes init() builds
+   (.container / .act-dark__media / .act-dark__copy / .eyebrow / .act-dark__cta) —
+   never on the Figma classes (.summit__media, .btn--ghost) that DA strips before
+   decorate. Values snap to --s2a-* tokens with literal fallbacks so the block
+   renders even when a token is unset. */
+
+.forge-act-dark {
+  /* Local layout token — self-contained, not sourced from a page-global. */
+  --ad-max-width: 1200px;
+  /* Dark surface + text colors wired to the C2 (--s2a-*) system w/ fallbacks. */
+  --ad-bg: var(--s2a-color-gray-900, #0d0d0f);
+  --ad-text: var(--s2a-color-gray-25, #fff);
+  --ad-eyebrow: rgba(255, 255, 255, 0.72);
+  --ad-body: rgba(255, 255, 255, 0.78);
+  --ad-hairline: rgba(255, 255, 255, 0.14);
+  /* section rhythm consistent with C2 siblings (~124px top / ~80px bottom). */
+  padding-block: var(--s2a-spacing-124, 124px) var(--s2a-spacing-80, 80px);
+  background: var(--ad-bg);
+  color: var(--ad-text);
+}
+
+.forge-act-dark .container {
+  max-width: var(--ad-max-width);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 5vw, 64px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+
+/* Media tile — framed gradient ground; the moved <picture> fills it. */
+.forge-act-dark .act-dark__media {
+  border-radius: var(--s2a-border-radius-16, 16px);
+  overflow: hidden;
+  border: 1px solid var(--ad-hairline);
+  background: linear-gradient(135deg, #1b1b1f, #0a0a0c);
+}
+
+.forge-act-dark .act-dark__picture { display: block; }
+
+/* Reserve the image box at its natural 445x222 ratio so the section never shifts
+   on image arrival (CLS). width/max-width + height:auto keep it fluid in-container.
+   Styled via block-owned classes (added in JS), never a bare img selector. */
+.forge-act-dark .act-dark__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 445 / 222;
+  object-fit: cover;
+}
+
+.forge-act-dark .act-dark__copy { min-width: 0; }
+
+.forge-act-dark .act-dark__copy .eyebrow {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ad-eyebrow);
+  margin: 0 0 var(--s2a-spacing-md, 16px);
+}
+
+.forge-act-dark .act-dark__copy h1,
+.forge-act-dark .act-dark__copy h2,
+.forge-act-dark .act-dark__copy h3,
+.forge-act-dark .act-dark__copy h4 {
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--s2a-spacing-lg, 24px);
+  max-width: 18ch;
+  color: var(--ad-text);
+}
+
+.forge-act-dark .act-dark__copy p {
+  color: var(--ad-body);
+  max-width: 52ch;
+  margin: 0 0 var(--s2a-spacing-xl, 32px);
+}
+
+.forge-act-dark .act-dark__cta { margin: var(--s2a-spacing-lg, 24px) 0 0; }
+
+/* C20: links on a dark tile MUST set color explicitly — never inherit the global
+   a{color:#000}. Applies whether or not the global con-button style is present. */
+.forge-act-dark .act-dark__cta a { color: var(--ad-text); }
+
+/* Fallback ghost pill when the global con-button style is absent. */
+.forge-act-dark .act-dark__cta a:not(.con-button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding-inline: 24px;
+  border-radius: var(--s2a-border-radius-999, 999px);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.forge-act-dark .act-dark__cta a:not(.con-button):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 900px) {
+  .forge-act-dark {
+    padding-block: var(--s2a-spacing-80, 80px) var(--s2a-spacing-48, 48px);
+  }
+
+  .forge-act-dark .container { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,59 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+:root {
+    --heading-font-family: 'adobe-clean-display', 'Adobe Clean Display', 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+    --body-font-family:    'adobe-clean', 'Adobe Clean', 'Helvetica Neue', Arial, sans-serif;
+
+    --heading-xxl: clamp(48px, 6.25vw, 80px);   /* display */
+    --heading-xl:  clamp(34px, 3.6vw, 56px);    /* headline */
+    --heading-lg:  34px;
+    --heading-md:  24px;                         /* title */
+    --body:        18px;
+    --body-sm:     15px;
+
+    --line-height-heading: 0.95;
+    --line-height-body:    1.5;
+
+    /* C2 palette — inherited from _brand-extraction.json */
+    --color-bg:         #ffffff;   /* Paper */
+    --color-fg:         #000000;   /* Ink */
+    --color-accent:     #3b63fb;   /* Adobe Blue — the only saturated colour */
+    --color-blue-deep:  #274dea;   /* Adobe Blue hover */
+    --color-warm-stone: #eceae7;   /* card / asset ground */
+    --color-cloud:      #f8f8f8;   /* subtle ground / hairline */
+    --color-gray-700:   #505050;   /* eyebrow / subtle text on light */
+    --color-adobe-red:  #eb1000;   /* reserved to the wordmark only */
+
+    --spacing-xs:  4px;
+    --spacing-sm:  8px;
+    --spacing-md:  16px;
+    --spacing-lg:  24px;
+    --spacing-xl:  48px;
+    --spacing-2xl: 96px;
+
+    --section-padding: 96px;
+    --max-width:       1280px;
+    --radius:          16px;
+    --radius-sm:       12px;
+    --pill:            999px;
+
+    --nav-lift: 0 2px 12px rgba(0,0,0,0.08);
+    --ease:     cubic-bezier(0.42, 0, 0, 1);
+  }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-wrap: pretty; hanging-punctuation: first; }
+
+body {
+    margin: 0;
+    font-family: var(--body-font-family);
+    font-size: var(--body);
+    line-height: var(--line-height-body);
+    color: var(--color-fg);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }
