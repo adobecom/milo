@@ -1,0 +1,235 @@
+<section data-binding-score="0.76" data-binding="loose-variant" data-figma-node-id="10559:113781" data-block="news" style="width:100%;position:relative;overflow:hidden;background:#0d0d0d;min-height:1176px;">
+
+  <style>
+    .rch-bg-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.55) 40%, #000000 100%);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .rch-bg-photo {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background: radial-gradient(ellipse 120% 80% at 50% 38%, #2a2e36 0%, #141618 40%, #050507 100%);
+    }
+    .rch-outer {
+      position: relative;
+      z-index: 3;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 120px;
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+    }
+    .rch-copy-lockup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+    }
+    .rch-top-pad {
+      height: 160px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+    .rch-headline-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .rch-eyebrow {
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      text-align: center;
+      margin: 0;
+    }
+    .rch-headline {
+      color: #ffffff;
+      font-family: 'Adobe Clean Display', adobe-clean-display, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      margin: 0;
+      width: 100%;
+    }
+    .rch-body {
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 20px;
+      text-align: center;
+      margin: 0;
+      width: 100%;
+      max-width: 700px;
+    }
+    .rch-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+    }
+    .rch-price {
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 19px;
+      letter-spacing: -0.16px;
+      text-align: center;
+      margin: 0;
+    }
+    .rch-btn-row {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .rch-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: none;
+      cursor: pointer;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #000000;
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: 117px;
+      transition: opacity 0.15s ease;
+    }
+    .rch-btn-primary:hover { opacity: 0.9; }
+    .rch-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid #ffffff;
+      cursor: pointer;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #ffffff;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background 0.15s ease;
+    }
+    .rch-btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+    /* Bottom portion: laptop image placeholder area */
+    .rch-bottom-visual {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      padding-top: 48px;
+      padding-bottom: 0;
+      flex-shrink: 0;
+    }
+    .rch-laptop-img {
+      width: 340px;
+      height: auto;
+      display: block;
+      background: #1a1a1a;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 1024px) {
+      .rch-outer {
+        padding: 0 48px;
+      }
+      .rch-headline {
+        font-size: 44px;
+        line-height: 48px;
+        letter-spacing: -1.2px;
+      }
+      .rch-top-pad { height: 100px; }
+    }
+
+    @media (max-width: 768px) {
+      .rch-outer {
+        padding: 0 24px;
+      }
+      .rch-top-pad { height: 72px; }
+      .rch-headline {
+        font-size: 32px;
+        line-height: 36px;
+        letter-spacing: -0.8px;
+      }
+      .rch-body { font-size: 15px; }
+      .rch-btn-row {
+        flex-direction: column;
+        align-items: center;
+      }
+      .rch-btn-primary,
+      .rch-btn-secondary {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+      }
+      .rch-laptop-img { width: 90%; }
+    }
+  </style>
+
+  <!-- Background photo layer (dark office / bokeh) -->
+  <div class="rch-bg-photo" aria-hidden="true"></div>
+
+  <!-- Gradient overlay -->
+  <div class="rch-bg-gradient" aria-hidden="true"></div>
+
+  <!-- Content -->
+  <div class="rch-outer">
+    <div class="rch-copy-lockup">
+
+      <!-- Top spacing -->
+      <div class="rch-top-pad" aria-hidden="true"></div>
+
+      <!-- Headline group -->
+      <div class="rch-headline-group">
+        <p class="rch-eyebrow">Acrobat Studio</p>
+        <h2 class="rch-headline">Get Acrobat Studio today.</h2>
+        <p class="rch-body">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- Pricing + Buttons -->
+      <div class="rch-cta-group">
+        <p class="rch-price">US$24.99/mo annual, billed monthly</p>
+        <div class="rch-btn-row">
+          <a href="#" class="rch-btn-primary">Free Trial</a>
+          <a href="#" class="rch-btn-secondary">Compare Plans</a>
+        </div>
+      </div>
+
+      <!-- Bottom visual area: laptop / product screenshot -->
+      <div class="rch-bottom-visual">
+        <img src="media_section-3-functional.png" alt="Acrobat Studio application on laptop" class="rch-laptop-img" style="width:380px;height:auto;display:block;background:#1c1e22;border-radius:8px;min-height:240px;object-fit:cover;" />
+      </div>
+
+    </div>
+  </div>
+
+</section>

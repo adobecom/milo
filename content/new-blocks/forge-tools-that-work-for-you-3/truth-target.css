@@ -1,0 +1,130 @@
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-wrap {
+      position: relative;
+      width: 100%;
+      height: 1040px;
+      overflow: hidden;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-bg {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2880px;
+      height: 1180px;
+      top: 0;
+      background-color: #1c1208;
+      background-image: radial-gradient(ellipse 60% 50% at 50% 70%, #3a2410 0%, #1c1208 50%, #000000 100%);
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-gradient {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #000000 10%, rgba(0,0,0,0) 71%, rgba(0,0,0,0) 76%, #000000 95%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-content {
+      position: absolute;
+      top: 160px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1200px;
+      max-width: calc(100% - 48px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      z-index: 2;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 100%;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-heading {
+      font-family: 'Adobe Clean Display', 'Arial Black', sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-subheading {
+      font-family: 'Adobe Clean', Arial, sans-serif;
+      font-weight: 400;
+      font-size: 16px;
+      line-height: 20px;
+      text-align: center;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 24px;
+      height: 40px;
+      border-radius: 75px;
+      border: 1px solid #ffffff;
+      text-decoration: none;
+      cursor: pointer;
+      white-space: nowrap;
+      background: transparent;
+      transition: background 0.2s;
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-cta:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-cta-label {
+      font-family: 'Adobe Clean', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #ffffff;
+    }
+
+@media (max-width: 1024px) {
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-wrap {
+        height: auto;
+        min-height: 680px;
+      }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-content {
+        position: relative;
+        top: auto;
+        left: auto;
+        transform: none;
+        width: 100%;
+        max-width: 100%;
+        padding: 120px 32px 260px;
+      }
+}
+
+@media (max-width: 768px) {
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-wrap {
+        min-height: 520px;
+      }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-content {
+        padding: 80px 20px 200px;
+      }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-heading {
+        font-size: 36px;
+        line-height: 40px;
+        letter-spacing: -0.8px;
+      }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .s3-subheading {
+        font-size: 15px;
+      }
+}
