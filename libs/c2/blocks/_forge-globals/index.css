@@ -1,0 +1,66 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+:root {
+  /* type families — brand family first, Source Sans 3 as rendered fallback */
+  --heading-font-family: 'adobe-clean-display','Adobe Clean Display','Source Sans 3',-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --body-font-family:    'adobe-clean','Adobe Clean','Source Sans 3',-apple-system,'Helvetica Neue',Arial,sans-serif;
+
+  --heading-xxl: clamp(44px, 6.25vw, 80px);   /* display */
+  --heading-xl:  clamp(34px, 4vw, 56px);
+  --heading-lg:  clamp(28px, 3vw, 40px);
+  --heading-md:  24px;
+  --body:        18px;
+  --body-sm:     14px;
+
+  --line-height-heading: 1.0;
+  --line-height-body:    1.5;
+
+  /* colors — C2 (pure #fff/#000 retained by brand decision, see DESIGN.json) */
+  --color-paper:   #ffffff;   /* Paper */
+  --color-ink:     #000000;   /* Ink */
+  --warm-stone:    #eceae7;   /* Warm Stone */
+  --cloud:         #f8f8f8;   /* Cloud */
+  --gray-700:      #505050;   /* Gray 700 */
+  --ink-64:        rgba(0,0,0,0.64);
+  --paper-72:      rgba(255,255,255,0.72);
+  --paper-60:      rgba(255,255,255,0.60);
+  --paper-10:      rgba(255,255,255,0.10);
+
+  --color-bg:      var(--color-paper);   /* background */
+  --color-fg:      var(--color-ink);     /* text-primary */
+  --color-accent:  #3b63fb;              /* Adobe Blue — primary */
+  --accent-hover:  #274dea;              /* Blue Deep */
+
+  --spacing-xs:  4px;
+  --spacing-sm:  8px;
+  --spacing-md:  16px;
+  --spacing-lg:  24px;
+  --spacing-xl:  48px;
+  --spacing-2xl: 96px;
+
+  --section-padding: 64px;   /* balanced tier / multi-audience floor */
+  --max-width:       1280px;
+  --radius:          16px;   /* rounded.primary */
+  --radius-sm:       12px;
+
+  --ease: cubic-bezier(0.42,0,0,1);
+  --nav-h: 64px;
+}
+
+*,*::before,*::after {box-sizing:border-box}
+
+html {-webkit-text-size-adjust:100%}
+
+body {
+  margin:0;
+  font-family:var(--body-font-family);
+  font-size:var(--body);
+  line-height:var(--line-height-body);
+  color:var(--color-fg);
+  background:var(--color-bg);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }

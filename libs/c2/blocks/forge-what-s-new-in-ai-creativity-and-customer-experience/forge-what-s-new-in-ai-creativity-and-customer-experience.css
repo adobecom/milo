@@ -1,0 +1,177 @@
+/* forge-what-s-new-in-ai-creativity-and-customer-experience
+ * "What's new" announcement: eyebrow + h2 section head, then a 3-up grid of
+ * feature cards (media / badge / heading / body / text-link). DA strips authored
+ * classes, so every selector is scoped under the block root and keyed on the
+ * classes init() reconstructs at runtime. All design values wire to the C2
+ * --s2a-* token system through locally-defined --fwn-* aliases, so the block is
+ * self-contained and re-themable — no page-level element reach, no ad-hoc tokens.
+ */
+.forge-what-s-new-in-ai-creativity-and-customer-experience {
+  /* Design-system aliases: each maps to a C2 --s2a-* token (literal fallback
+     only for graceful degradation if the token layer is absent). */
+  --fwn-max-width: 1200px;
+  --fwn-pad-inline: clamp(var(--s2a-spacing-20, 20px), 5vw, var(--s2a-spacing-64, 64px));
+  --fwn-pad-top: clamp(var(--s2a-spacing-64, 64px), 8vw, var(--s2a-spacing-124, 124px));
+  --fwn-pad-bottom: clamp(var(--s2a-spacing-48, 48px), 6vw, var(--s2a-spacing-80, 80px));
+  --fwn-grid-gap: var(--s2a-spacing-24, 24px);
+  --fwn-card-gap: var(--s2a-spacing-12, 12px);
+  --fwn-card-pad: var(--s2a-spacing-24, 24px);
+  --fwn-head-gap: var(--s2a-spacing-16, 16px);
+  --fwn-head-mb: var(--s2a-spacing-48, 48px);
+  --fwn-font-body: var(--s2a-font-family-body, 'adobe-clean', 'Source Sans 3', sans-serif);
+  --fwn-font-heading: var(--s2a-font-family-heading, 'adobe-clean-display', 'Source Sans 3', sans-serif);
+  --fwn-color-fg: var(--s2a-color-content-default, #000);
+  --fwn-color-eyebrow: var(--s2a-color-content-eyebrow, rgb(0 0 0 / 64%));
+  --fwn-color-body: var(--s2a-color-content-subtle, rgb(0 0 0 / 64%));
+  --fwn-color-accent: var(--s2a-color-blue-900, #3b63fb);
+  --fwn-color-card-bg: var(--s2a-color-background-subtle, #f8f8f8);
+  --fwn-radius: var(--s2a-border-radius-16, 16px);
+  --fwn-size-heading: clamp(2.125rem, 4vw, var(--s2a-font-size-56, 3.5rem));
+  --fwn-size-title: var(--s2a-font-size-24, 1.5rem);
+  --fwn-size-body: var(--s2a-font-size-18, 1.125rem);
+  --fwn-size-label: var(--s2a-font-size-14, 0.875rem);
+  --fwn-ease: cubic-bezier(0.42, 0, 0, 1);
+
+  max-width: var(--fwn-max-width);
+  margin-inline: auto;
+  /* C21: vertical section rhythm consistent with C2 siblings (~124px / ~80px). */
+  padding-block: var(--fwn-pad-top) var(--fwn-pad-bottom);
+  padding-inline: var(--fwn-pad-inline);
+  font-family: var(--fwn-font-body);
+  color: var(--fwn-color-fg);
+}
+
+/* Section head */
+.forge-what-s-new-in-ai-creativity-and-customer-experience .section-head {
+  max-width: 820px;
+  margin-bottom: var(--fwn-head-mb);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fwn-head-gap);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .eyebrow {
+  margin: 0;
+  font-size: var(--fwn-size-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fwn-color-eyebrow);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .section-head h2 {
+  margin: 0;
+  font-family: var(--fwn-font-heading);
+  font-size: var(--fwn-size-heading);
+  line-height: 1.05;
+}
+
+/* 3-up grid — bake the column INTENT, no pinned design-width px (L27). */
+.forge-what-s-new-in-ai-creativity-and-customer-experience .cards-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--fwn-grid-gap);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--fwn-color-card-bg);
+  border-radius: var(--fwn-radius);
+  overflow: hidden;
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card__media {
+  display: block;
+  margin: 0;
+}
+
+/* C19 (CLS): reserve the media box up front (fixed ratio + intrinsic sizing). */
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--fwn-card-gap);
+  padding: var(--fwn-card-pad);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .badge {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fwn-color-accent);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card h3 {
+  margin: 0;
+  font-family: var(--fwn-font-heading);
+  font-size: var(--fwn-size-title);
+  line-height: 1.1;
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .feature-card__body p {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: var(--fwn-size-body);
+  color: var(--fwn-color-body);
+}
+
+/* C20 (contrast): set link colour explicitly so it never inherits a { color:#000 }. */
+.forge-what-s-new-in-ai-creativity-and-customer-experience .textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-size: var(--fwn-size-body);
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--fwn-color-accent);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .textlink:hover {
+  text-decoration: underline;
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .textlink::after {
+  content: "→";
+  transition: transform 200ms var(--fwn-ease);
+}
+
+.forge-what-s-new-in-ai-creativity-and-customer-experience .textlink:hover::after {
+  transform: translateX(3px);
+}
+
+/* Responsive reflow — 3-up → 2-up → 1-up by container width (L27, no fixed px). */
+@media (max-width: 1200px) {
+  .forge-what-s-new-in-ai-creativity-and-customer-experience .cards-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .forge-what-s-new-in-ai-creativity-and-customer-experience .cards-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* C10: disable the micro-interaction under reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+  .forge-what-s-new-in-ai-creativity-and-customer-experience .textlink::after {
+    transition: none;
+  }
+
+  .forge-what-s-new-in-ai-creativity-and-customer-experience .textlink:hover::after {
+    transform: none;
+  }
+}

@@ -144,6 +144,8 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-address-your-biggest-customer-experience-challenges-with-adobe',
+  'forge-what-s-new-in-ai-creativity-and-customer-experience',
 ];
 
 const AUTO_BLOCKS = [

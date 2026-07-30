@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-address-your-biggest-customer-experience-challenges-with-adobe",
+  "sectionIndex": 2,
+  "decision": "new-block",
+  "score": 0.81,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-22cc8b95-ms7x4v2j",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-22cc8b95-ms7x4v2j/libs/c2/blocks/forge-address-your-biggest-customer-experience-challenges-with-adobe",
+  "miloBranch": "forge/session-22cc8b95-53d",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/akadkly/forge/redesign-22cc8b?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}

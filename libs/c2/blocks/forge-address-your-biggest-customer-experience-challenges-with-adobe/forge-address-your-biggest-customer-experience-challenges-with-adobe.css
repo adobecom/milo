@@ -1,0 +1,211 @@
+/* forge-address-your-biggest-customer-experience-challenges-with-adobe
+ * A "customer-experience challenges" value-prop section: eyebrow-less h2 + intro
+ * section head, then a 6-column bento grid of 5 challenge cards — 2 media cards
+ * (span 3 → 2-up first row) followed by 3 text-only cards (span 2 → 3-up second
+ * row). DA strips authored classes, so every selector is scoped under the block
+ * root and keyed on the classes init() reconstructs at runtime. All design values
+ * wire to the C2 --s2a-* token system through locally-defined --fac-* aliases
+ * (literal fallback only for graceful degradation) — no page-level element reach,
+ * no ad-hoc tokens, no pinned Figma-frame pixels (L27).
+ */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe {
+  --fac-max-width: 1200px;
+  --fac-pad-inline: clamp(var(--s2a-spacing-20, 20px), 5vw, var(--s2a-spacing-64, 64px));
+  --fac-pad-top: clamp(var(--s2a-spacing-64, 64px), 8vw, var(--s2a-spacing-124, 124px));
+  --fac-pad-bottom: clamp(var(--s2a-spacing-48, 48px), 6vw, var(--s2a-spacing-80, 80px));
+  --fac-grid-gap: var(--s2a-spacing-24, 24px);
+  --fac-card-gap: var(--s2a-spacing-12, 12px);
+  --fac-card-pad: var(--s2a-spacing-24, 24px);
+  --fac-head-gap: var(--s2a-spacing-16, 16px);
+  --fac-head-mb: var(--s2a-spacing-48, 48px);
+  --fac-font-body: var(--s2a-font-family-body, 'adobe-clean', 'Source Sans 3', sans-serif);
+  --fac-font-heading: var(--s2a-font-family-heading, 'adobe-clean-display', 'Source Sans 3', sans-serif);
+  --fac-color-fg: var(--s2a-color-content-default, #000);
+  --fac-color-eyebrow: var(--s2a-color-content-eyebrow, rgb(0 0 0 / 64%));
+  --fac-color-body: var(--s2a-color-content-body-subtle, rgb(0 0 0 / 64%));
+  --fac-color-accent: var(--s2a-color-blue-900, #3b63fb);
+  --fac-color-card-bg: var(--s2a-color-background-subtle, #f5f5f5);
+  --fac-color-card-bg-alt: var(--s2a-color-background-default, #fafaf7);
+  --fac-radius: var(--s2a-border-radius-16, 16px);
+  --fac-size-heading: clamp(2.125rem, 4vw, var(--s2a-font-size-56, 3.5rem));
+  --fac-size-title: var(--s2a-font-size-24, 1.5rem);
+  --fac-size-body: var(--s2a-font-size-18, 1.125rem);
+  --fac-size-small: var(--s2a-font-size-16, 1rem);
+  --fac-size-label: var(--s2a-font-size-14, 0.875rem);
+  --fac-ease: cubic-bezier(0.42, 0, 0, 1);
+
+  max-width: var(--fac-max-width);
+  margin-inline: auto;
+  /* C21: vertical section rhythm consistent with C2 siblings (~124px / ~80px). */
+  padding-block: var(--fac-pad-top) var(--fac-pad-bottom);
+  padding-inline: var(--fac-pad-inline);
+  font-family: var(--fac-font-body);
+  color: var(--fac-color-fg);
+}
+
+/* Section head */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .section-head {
+  max-width: 820px;
+  margin-bottom: var(--fac-head-mb);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fac-head-gap);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .section-head h2 {
+  margin: 0;
+  font-family: var(--fac-font-heading);
+  font-size: var(--fac-size-heading);
+  line-height: 1.05;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .section-intro {
+  margin: 0;
+  font-size: var(--fac-size-body);
+  color: var(--fac-color-body);
+}
+
+/* 6-column bento grid — bake the column INTENT, no pinned design-width px (L27). */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--fac-grid-gap);
+}
+
+/* Card shell */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--fac-radius);
+  overflow: hidden;
+  background: var(--fac-color-card-bg);
+}
+
+/* PROPORTION CADENCE (from section.html): media cards 2-up, text cards 3-up. */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--media {
+  grid-column: span 3;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--text {
+  grid-column: span 2;
+  background: var(--fac-color-card-bg-alt);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge__media {
+  display: block;
+  margin: 0;
+}
+
+/* C19 (CLS): reserve the media box up front (fixed ratio + intrinsic sizing). */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge__img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--fac-card-gap);
+  padding: var(--fac-card-pad);
+}
+
+/* Text-only cards get a little more padding + an accent tick above the eyebrow. */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--text .challenge__body {
+  padding: calc(var(--fac-card-pad) + 4px) var(--fac-card-pad);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--text .challenge__body::before {
+  content: "";
+  width: 28px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--fac-color-accent);
+  margin-bottom: 4px;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .eyebrow {
+  margin: 0;
+  font-size: var(--fac-size-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fac-color-eyebrow);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge h3 {
+  margin: 0;
+  font-family: var(--fac-font-heading);
+  font-size: var(--fac-size-title);
+  line-height: 1.1;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge__body p:not(.eyebrow) {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: var(--fac-size-small);
+  color: var(--fac-color-body);
+}
+
+/* C20 (contrast): set link colour explicitly so it never inherits a { color:#000 }. */
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  font-size: var(--fac-size-small);
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--fac-color-accent);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink::after {
+  content: "→";
+  transition: transform 200ms var(--fac-ease);
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink:hover {
+  text-decoration: underline;
+}
+
+.forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink:hover::after {
+  transform: translateX(3px);
+}
+
+/* Responsive reflow — 6-col bento → 4-col → 1-up stack by container width (L27). */
+@media (max-width: 1024px) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--media,
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--text {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--media,
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .challenge--text {
+    grid-column: span 1;
+  }
+}
+
+/* C10: disable the micro-interaction under reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink::after {
+    transition: none;
+  }
+
+  .forge-address-your-biggest-customer-experience-challenges-with-adobe .textlink:hover::after {
+    transform: none;
+  }
+}
