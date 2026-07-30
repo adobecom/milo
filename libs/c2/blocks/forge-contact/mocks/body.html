@@ -1,0 +1,20 @@
+<!--
+  forge-contact L22 fixture — mirrors the REAL class-less DA serialization the
+  block receives at runtime: a flat run of semantic nodes (picture, h2, p, three
+  route anchors) wrapped only in DA's block > div > div cell. NO authored
+  .contact__icon/.routes/.route classes (DA strips them), so the test gates the
+  JS reconstruction rather than assuming the structure. Every image is a 1x1
+  transparent data-URI so the unit run never touches the network.
+-->
+<div class="forge-contact">
+  <div>
+    <div>
+      <picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="80" height="80"></picture>
+      <h2>Contact our team.</h2>
+      <p>Direct all press inquiries to <a href="mailto:adobepr@adobe.com">adobepr@adobe.com</a>. Direct all industry analyst inquiries to <a href="mailto:adobear@adobe.com">adobear@adobe.com</a>.</p>
+      <a href="https://www.adobe.com/about-adobe.html"><picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="40" height="40"></picture> About Adobe</a>
+      <a href="https://www.adobe.com/corporate-responsibility.html"><picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="40" height="40"></picture> Corporate Responsibility</a>
+      <a href="https://www.adobe.com/investor-relations.html"><picture><img src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" width="40" height="40"></picture> Investor Relations</a>
+    </div>
+  </div>
+</div>

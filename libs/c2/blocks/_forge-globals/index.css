@@ -1,0 +1,62 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+:root {
+    --heading-font-family: 'adobe-clean-display','Adobe Clean Display','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+    --body-font-family:    'adobe-clean','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+
+    --heading-xxl: clamp(40px, 6.25vw, 80px);
+    --heading-xl:  clamp(32px, 3.6vw, 56px);
+    --heading-lg:  40px;
+    --heading-md:  24px;
+    --body:        20px;
+    --body-sm:     16px;
+
+    --line-height-heading: 0.98;
+    --line-height-body:    1.45;
+
+    /* paper */        --color-bg:      #ffffff;
+    /* ink */          --color-fg:      #000000;
+    /* adobe-blue */   --color-accent:  #3b63fb;
+    /* blue-deep */    --color-accent-hover: #274dea;
+    /* warm-stone */   --color-surface: #eceae7;
+    /* cloud */        --color-surface-subtle: #f8f8f8;
+    /* gray-700 */     --color-text-subtle: #505050;
+    --color-text-secondary: rgba(0,0,0,0.64);
+    --color-ink:     #000000;
+    --color-on-ink:  #ffffff;
+    --color-on-ink-72: rgba(255,255,255,0.72);
+    /* adobe-red — RESERVED to the wordmark */ --color-adobe-red: #eb1000;
+
+    --spacing-xs:  4px;
+    --spacing-sm:  8px;
+    --spacing-md:  16px;
+    --spacing-lg:  24px;
+    --spacing-xl:  48px;
+    --spacing-2xl: 96px;
+
+    --section-padding: 96px;
+    --max-width:       1280px;
+    --radius:          16px;
+    --radius-sm:       12px;
+    --radius-pill:     999px;
+
+    --ease: cubic-bezier(0.42, 0, 0, 1);
+    --dur:  200ms;
+  }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; hanging-punctuation: first; }
+
+body {
+    margin: 0;
+    font-family: var(--body-font-family);
+    font-size: var(--body-sm);
+    line-height: var(--line-height-body);
+    color: var(--color-fg);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }

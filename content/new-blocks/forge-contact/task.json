@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-contact",
+  "sectionIndex": 4,
+  "decision": "tight-variant",
+  "score": 0.85,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-4",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-6f307ee9-ms83bbk8",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-6f307ee9-ms83bbk8/libs/c2/blocks/forge-contact",
+  "miloBranch": "forge/session-6f307ee9-a26",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/ruchikas/forge/redesign-6f307e?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

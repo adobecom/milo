@@ -1,0 +1,38 @@
+.forge-contact img { max-width: 100%; display: block; }
+
+.forge-contact .container { max-width: var(--max-width); margin-inline: auto; padding-inline: clamp(20px, 5vw, 64px); }
+
+.forge-contact { padding-block: var(--section-padding); }
+
+.forge-contact .act-dark .section { padding-block: var(--section-padding); }
+
+.forge-contact { text-align: center; border-bottom: 1px solid rgba(255,255,255,0.12); }
+
+.forge-contact .contact__icon { width: 56px; height: 56px; margin: 0 auto 28px; border-radius: 50%; overflow: hidden; }
+
+.forge-contact .contact__icon img { width: 100%; height: 100%; object-fit: contain; }
+
+.forge-contact h2 { font-family: var(--heading-font-family); font-weight: 900; font-size: var(--heading-xl); letter-spacing: -0.02em; line-height: 1.0; color: var(--s2a-color-gray-25, #fff); }
+
+.forge-contact .contact__inquiries { margin: 20px auto 0; max-width: 46ch; font-size: 17px; line-height: 1.5; color: var(--color-on-ink-72); }
+
+.forge-contact .contact__inquiries a { color: #6a8bfc; }
+
+.forge-contact .contact__inquiries a:hover { color: #9db3fd; }
+
+.forge-contact .routes { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-top: 40px; }
+
+.forge-contact .route { display: flex; flex-direction: column; align-items: center; gap: 12px; text-decoration: none; color: var(--s2a-color-gray-25, #fff); font-weight: 700; font-size: 15px; }
+
+.forge-contact .route__icon { width: 40px; height: 40px; }
+
+.forge-contact .route__icon img { width: 100%; height: 100%; object-fit: contain; filter: invert(1) brightness(2); }
+
+.forge-contact .route span { border-bottom: 1px solid rgba(255,255,255,0.4); padding-bottom: 2px; }
+
+.forge-contact .route:hover span { border-color: var(--s2a-color-gray-25, #fff); }
+
+@media (max-width: 640px) {
+.forge-contact .routes { gap: 28px; }
+.forge-contact h2 { font-size: 34px; }
+}
