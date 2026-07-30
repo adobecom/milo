@@ -1,0 +1,31 @@
+<section data-binding-score="0.75" data-binding="loose-variant" data-figma-node-id="10559:113802" data-block="rich-content" style="width:100%;background:#000000;position:relative;overflow:hidden;">
+  <div style="max-width:1440px;margin:0 auto;position:relative;height:1040px;overflow:hidden;">
+    <!-- Background gradient overlay (covers the hero image underneath) -->
+    <div style="position:absolute;inset:0;background:linear-gradient(180deg,#000000 10%,rgba(0,0,0,0) 71%,rgba(0,0,0,0) 76%,#000000 95%);z-index:2;pointer-events:none;"></div>
+    <!-- Hero background image: centered, 2880×1180, behind gradient -->
+    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:2880px;height:1180px;z-index:1;background:#1a1a1a;"></div>
+    <!-- Copy Lockup: absolutely centred, top aligned to 160px -->
+    <div style="position:absolute;top:160px;left:50%;transform:translateX(-50%);width:1200px;max-width:calc(100% - 48px);display:flex;flex-direction:column;align-items:center;gap:16px;z-index:3;">
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;text-align:center;">
+        <h2 style="margin:0;color:#ffffff;font-family:'Adobe Clean Display','Adobe Clean',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;">Tools that work for you.</h2>
+        <p style="margin:0;color:#ffffff;font-family:'Adobe Clean',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:400;font-size:16px;line-height:20px;text-align:center;">Bring any idea to life with products for creators, businesses, and beyond.</p>
+      </div>
+      <a href="#" style="display:inline-flex;justify-content:center;align-items:center;gap:6px;padding:0 24px;height:40px;border-radius:75px;border:1px solid #ffffff;text-decoration:none;white-space:nowrap;box-sizing:border-box;cursor:pointer;">
+        <span style="color:#ffffff;font-family:'Adobe Clean',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-weight:700;font-size:14px;line-height:18px;text-align:center;">See all products</span>
+      </a>
+    </div>
+  </div>
+  <style>
+    @media (max-width:1024px){
+      [data-figma-node-id="10559:113802"] > div { height:auto !important; min-height:680px; }
+      [data-figma-node-id="10559:113802"] h2 { font-size:44px !important; line-height:48px !important; }
+      [data-figma-node-id="10559:113802"] [style*="top:160px"] { width:calc(100% - 80px) !important; }
+    }
+    @media (max-width:768px){
+      [data-figma-node-id="10559:113802"] > div { min-height:520px; }
+      [data-figma-node-id="10559:113802"] h2 { font-size:32px !important; line-height:36px !important; letter-spacing:-0.8px !important; }
+      [data-figma-node-id="10559:113802"] p { font-size:14px !important; line-height:18px !important; }
+      [data-figma-node-id="10559:113802"] [style*="top:160px"] { top:100px !important; width:calc(100% - 48px) !important; }
+    }
+  </style>
+</section>
