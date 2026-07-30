@@ -1,0 +1,38 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "hero"
+  },
+  {
+    "idx": 1,
+    "dataBlock": "news",
+    "dataVariants": [],
+    "primaryClass": "news"
+  },
+  {
+    "idx": 2,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "facts"
+  },
+  {
+    "idx": 3,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": "awards"
+  },
+  {
+    "idx": 4,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "summit"
+  },
+  {
+    "idx": 5,
+    "dataBlock": "base-card",
+    "dataVariants": [],
+    "primaryClass": "contact"
+  }
+]
