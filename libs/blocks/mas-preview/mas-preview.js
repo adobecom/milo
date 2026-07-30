@@ -1,5 +1,5 @@
-import { createTag, decorateAutoBlock, loadBlock, getConfig } from '../../utils/utils.js';
-import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction } from '../merch/merch.js';
+import { createTag, decorateAutoBlock, loadBlock } from '../../utils/utils.js';
+import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction, initService } from '../merch/merch.js';
 
 const DEFAULT_LOCALE = 'en_US';
 const TAG_MAS_COM_SERVICE = 'mas-commerce-service';
@@ -15,18 +15,13 @@ function registerCheckoutAction() {
   }
 }
 
-function createMasCommerceService(selectLocale, selectCountry) {
-  const { commerce } = getConfig();
-  document.head.querySelector(TAG_MAS_COM_SERVICE)?.remove();
+async function createMasCommerceService(selectLocale, selectCountry) {
   const localeArray = selectLocale.value.split('_');
-  const attrs = {
+  await initService(true, {
     locale: selectLocale.value,
     country: selectCountry.value || localeArray[1],
     language: localeArray[0],
-    ...commerce,
-  };
-  const service = createTag(TAG_MAS_COM_SERVICE, attrs);
-  document.head.append(service);
+  });
   registerCheckoutAction();
 }
 
@@ -118,7 +113,7 @@ export default async function init(el) {
 
   selectLocale.value = url.searchParams.get(LOCALE) || DEFAULT_LOCALE;
   if (selectLocale.value !== DEFAULT_LOCALE || selectCountry.value) {
-    createMasCommerceService(selectLocale, selectCountry);
+    await createMasCommerceService(selectLocale, selectCountry);
   }
 
   const btnCopy = createTag('button', { type: 'button' }, 'Copy URL');
@@ -129,10 +124,10 @@ export default async function init(el) {
     preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview, true);
   });
   selectLocale.addEventListener('change', async () => {
-    createMasCommerceService(selectLocale, selectCountry);
+    await createMasCommerceService(selectLocale, selectCountry);
   });
   selectCountry.addEventListener('change', async () => {
-    createMasCommerceService(selectLocale, selectCountry);
+    await createMasCommerceService(selectLocale, selectCountry);
   });
   btnCopy.addEventListener('click', async () => {
     await navigator.clipboard.writeText(window.location.href.split('#')[0]);
