@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-act2",
+  "sectionIndex": 4,
+  "decision": "tight-variant",
+  "score": 0.85,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-4",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-7ac91660-ms83fmc8",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-7ac91660-ms83fmc8/libs/c2/blocks/forge-act2",
+  "miloBranch": "forge/session-7ac91660-2ac",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/ruchikas/forge/redesign-7ac916?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

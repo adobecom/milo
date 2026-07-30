@@ -1,0 +1,162 @@
+/* forge-act2 — dark "Contact our team" section.
+ * Every selector is scoped to the block's OWN rebuilt classes (never a bare
+ * page-level element). All design values resolve through a local --fa-* token
+ * layer wired to the C2 --s2a-* design system, so the block is self-contained. */
+
+.forge-act2 {
+  /* local tokens → C2 design system (or locally-defined literals) */
+  --fa-bg: var(--s2a-color-gray-1000);
+  --fa-text: var(--s2a-color-content-knockout);
+  --fa-text-subtle: var(--s2a-color-transparent-white-64);
+  --fa-hairline: var(--s2a-color-transparent-white-16);
+  --fa-tile-bg: var(--s2a-color-transparent-white-08);
+  --fa-tile-bg-hover: var(--s2a-color-transparent-white-16);
+  --fa-radius: var(--s2a-border-radius-12);
+  --fa-gap: var(--s2a-spacing-16);
+  --fa-pad-block: var(--s2a-spacing-124);
+  --fa-pad-block-end: var(--s2a-spacing-80);
+  --fa-pad-inline: var(--s2a-spacing-24);
+  --fa-max-width: 1200px;
+  --fa-lede-width: 640px;
+  --fa-tiles-width: 820px;
+  --fa-icon-size: 56px;
+  --fa-tile-icon-size: 28px;
+  --fa-ease: cubic-bezier(0.42, 0, 0, 1);
+
+  background: var(--fa-bg);
+  color: var(--fa-text);
+  border-top: 1px solid var(--fa-hairline);
+  padding-block: var(--fa-pad-block) var(--fa-pad-block-end);
+
+  .wrap {
+    max-width: var(--fa-max-width);
+    margin-inline: auto;
+    padding-inline: var(--fa-pad-inline);
+  }
+
+  .lede {
+    max-width: var(--fa-lede-width);
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  .info-ic {
+    display: block;
+    width: var(--fa-icon-size);
+    height: var(--fa-icon-size);
+    margin: 0 auto var(--s2a-spacing-24);
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+    }
+  }
+
+  .lede-copy :is(h1, h2, h3) {
+    color: var(--fa-text);
+  }
+
+  .inq {
+    margin-top: var(--s2a-spacing-20);
+    color: var(--fa-text-subtle);
+    line-height: 1.6;
+  }
+
+  .inq a {
+    color: var(--fa-text);
+    border-bottom: 1px solid var(--fa-text-subtle);
+    text-decoration: none;
+    transition: border-color 200ms var(--fa-ease);
+  }
+
+  .inq a:is(:hover, :focus-visible) {
+    border-bottom-color: var(--fa-text);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--fa-gap);
+    max-width: var(--fa-tiles-width);
+    margin: var(--s2a-spacing-48) auto 0;
+  }
+
+  .tile {
+    display: flex;
+    align-items: center;
+    gap: var(--fa-gap);
+    background: var(--fa-tile-bg);
+    border: 1px solid var(--fa-hairline);
+    border-radius: var(--fa-radius);
+    padding: var(--s2a-spacing-20) var(--s2a-spacing-24);
+    color: var(--fa-text);
+    font-weight: 700;
+    text-decoration: none;
+    transition: background 200ms var(--fa-ease);
+  }
+
+  .tile:is(:hover, :focus-visible) {
+    background: var(--fa-tile-bg-hover);
+    color: var(--fa-text);
+  }
+
+  .tile-ic {
+    display: inline-flex;
+    flex: none;
+    width: var(--fa-tile-icon-size);
+    height: var(--fa-tile-icon-size);
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1 / 1;
+      object-fit: contain;
+    }
+  }
+
+  .tile-label {
+    text-align: start;
+  }
+
+  .arw {
+    margin-inline-start: auto;
+    color: var(--fa-text-subtle);
+    transition: transform 200ms var(--fa-ease);
+  }
+
+  .tile:is(:hover, :focus-visible) .arw {
+    transform: translateX(3px);
+    color: var(--fa-text);
+  }
+}
+
+@media (max-width: 900px) {
+  .forge-act2 .tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-act2 {
+    padding-block: var(--s2a-spacing-80) var(--s2a-spacing-48);
+  }
+
+  .forge-act2 .wrap {
+    padding-inline: var(--s2a-spacing-20);
+  }
+
+  .forge-act2 .tiles {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-act2 .arw,
+  .forge-act2 .tile,
+  .forge-act2 .inq a {
+    transition: none;
+  }
+}

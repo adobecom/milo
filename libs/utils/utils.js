@@ -144,6 +144,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-act2',
 ];
 
 const AUTO_BLOCKS = [
