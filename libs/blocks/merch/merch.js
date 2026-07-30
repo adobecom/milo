@@ -1449,6 +1449,12 @@ export async function buildCta(el, params) {
   const service = await initService();
   const text = el.textContent?.replace(/^CTA +/, '');
   const cta = service.createCheckoutLink(context, text);
+  if (isMasGeoDetectionEnabled() && service.settings.country) {
+    // Pin the checkout link to the market country Milo already validated against
+    // supported regions, so MAS doesn't substitute the signed-in user's raw,
+    // unvalidated IMS profile country (data-ims-country) at render time.
+    cta.setAttribute('data-ims-country', service.settings.country);
+  }
   if (el.href.includes('#_tcl')) {
     el.href = el.href.replace('#_tcl', '');
   } else {
