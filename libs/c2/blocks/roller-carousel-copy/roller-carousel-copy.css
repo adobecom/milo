@@ -174,9 +174,8 @@
   bottom: var(--s2a-spacing-lg);
   z-index: 2;
   aspect-ratio: 650 / 766;
-  width: min(33.33vw, 305px);
+  width: clamp(180px, 50vw, 305px);
   height: auto;
-  max-height: 360px;
   border-radius: var(--s2a-border-radius-sm);
   overflow: hidden;
 }
