@@ -681,3 +681,6 @@
     }
   }
 }
+
+/* forge loose-band overlay (delta wins over stock) */
+@import '../_forge-overlays/rich-content--forge-loose.css';
