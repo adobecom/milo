@@ -29,7 +29,8 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
 
   const annotationsListener = async () => {
     if (document.getElementById('pc-root')) return;
-    const scriptUrl = 'https://milo-core-prod.adobe.io/page-commenter.js';
+    // const scriptUrl = 'https://milo-core-prod.adobe.io/page-commenter.js';
+    const scriptUrl = 'https://forge-stage.adobe.io/page-commenter.js';
     await loadScript(scriptUrl);
   };
 
