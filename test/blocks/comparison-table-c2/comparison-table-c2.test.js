@@ -1,6 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { waitFor } from '../../helpers/waitfor.js';
 
 import init from '../../../libs/c2/blocks/comparison-table-c2/comparison-table-c2.js';
 
@@ -131,5 +132,31 @@ describe('Comparison Table C2', () => {
     expect(el.querySelectorAll('.table-container').length).to.equal(2);
     // the separator row is consumed, not rendered
     expect(el.textContent).to.not.contain('+++');
+  });
+
+  it('adds placeholder-driven screen-reader text to empty cells', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/default.html' });
+    const el = document.querySelector('.comparison-table-c2');
+    init(el);
+
+    // setAccessibilityLabels resolves placeholders asynchronously
+    await waitFor(() => el.querySelector('.cell-content.empty-cell .sr-only'), 2000);
+    const srOnly = el.querySelector('.cell-content.empty-cell .sr-only');
+    expect(srOnly).to.exist;
+    expect(srOnly.textContent).to.equal('Not included');
+  });
+
+  it('builds a labelled mobile filter select per column when there are 3+ columns', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/three-columns.html' });
+    const el = document.querySelector('.comparison-table-c2');
+    init(el);
+
+    const selects = el.querySelectorAll('.mobile-filter-select');
+    expect(selects.length).to.equal(3);
+
+    // aria-labels are applied asynchronously from placeholders
+    await waitFor(() => el.querySelector('.mobile-filter-select[aria-label]'), 2000);
+    expect(selects[0].getAttribute('aria-label')).to.equal('Choose table column 1');
+    expect(selects[1].getAttribute('aria-label')).to.equal('Choose table column 2');
   });
 });
