@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -341,57 +341,16 @@ let log;
 let upgradeOffer = null;
 
 /**
- * Given a url, calculates the hostname of MAS platform.
- * Supports, www prod, stage, local and feature branches.
- * if params are missing, it will return the latest calculated or default value.
- * @param {string} hostname optional
- * @param {string} maslibs optional
- * @returns base url for mas platform
+ * Parses the maslibs URL parameter and returns a validated base URL.
+ * Ignored on www.adobe.com; elsewhere the value must be a branch,
+ * branch--repo or branch--repo--owner shape (VULN-36379).
+ * @param {string} [hostname] hostname to evaluate the prod guard against
+ * @returns {string | null} Base URL or null if maslibs not present or invalid
  */
-export function getMasBase(hostname, maslibs) {
-  let { baseUrl } = getMasBase;
-  if (!baseUrl) {
-    if (maslibs === 'stage') {
-      baseUrl = 'https://www.stage.adobe.com/mas';
-    } else if (maslibs === 'local') {
-      baseUrl = 'http://localhost:9001';
-    } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.aem.${extension}`;
-    } else {
-      baseUrl = 'https://www.adobe.com/mas';
-    }
-    getMasBase.baseUrl = baseUrl;
-  }
-  return baseUrl;
-}
-
-/**
- * Parses maslibs URL parameter and returns base URL
- * @returns {string | null} Base URL or null if maslibs not present
- */
-export function getMasLibsBaseUrl() {
+export function getMasLibsBaseUrl(hostname = window.location.hostname) {
+  if (hostname === 'www.adobe.com') return null;
   const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitized = masLibs.trim().toLowerCase();
-
-  if (sanitized === 'local') {
-    return 'http://localhost:3000';
-  }
-
-  if (sanitized === 'main') {
-    return 'https://main--mas--adobecom.aem.live';
-  }
-
-  let branch = sanitized;
-  if (!sanitized.includes('--')) {
-    branch = `${sanitized}--mas--adobecom`;
-  }
-
-  return `https://${branch}.aem.live`;
+  return getValidatedMasLibsUrl(urlParams.get('maslibs'));
 }
 
 /**

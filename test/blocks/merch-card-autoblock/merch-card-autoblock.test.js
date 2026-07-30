@@ -16,7 +16,7 @@ if (!customElements.get('mas-field')) {
         content.setAttribute('data-role', 'mas-field-content');
         const field = this.getAttribute('field');
         if (field === 'description') {
-          content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a>';
+          content.innerHTML = '<h3><strong>Resolved description</strong></h3><a href="https://www.adobe.com/">See terms</a><a href="https://main--milo--adobecom.aem.live/test/fragments/modal#cardmodal">Open modal</a>';
         } else if (field === 'ctas') {
           content.innerHTML = '<strong><a href="https://www.adobe.com/">Buy now</a></strong><em><a href="https://main--milo--adobecom.aem.page/some/test/page">Go</a></em>';
         } else if (field === 'ctas-checkout') {
@@ -177,6 +177,17 @@ describe('merch-card-autoblock autoblock', () => {
       expect(masField.getAttribute('field')).to.equal('description');
       const frag = masField.querySelector('aem-fragment');
       expect(frag).to.exist;
+    });
+
+    it('decorates modal links inside inline mas-field content', async () => {
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=modal-link-1&field=description';
+      a.textContent = '[[modal-link-test:description]]';
+      document.body.append(a);
+      await init(a);
+      const modalLink = document.querySelector('mas-field a[href="#cardmodal"]');
+      expect(modalLink.classList.contains('modal')).to.be.true;
+      expect(modalLink.getAttribute('data-modal-path')).to.equal('/test/fragments/modal');
     });
 
     it('returns early for inline fragment when fragment is missing', async () => {
@@ -441,6 +452,7 @@ describe('merch-card-autoblock autoblock', () => {
       [...p.querySelectorAll('mas-field')].forEach((mf) => {
         mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
       });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
 
       expect(p.querySelectorAll('mas-field').length).to.equal(0);
       const links = [...p.querySelectorAll('a.con-button')];
@@ -469,6 +481,7 @@ describe('merch-card-autoblock autoblock', () => {
       p.querySelector('mas-field').dispatchEvent(
         new CustomEvent('mas:ready', { bubbles: true, composed: true }),
       );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
 
       expect(p.querySelectorAll('mas-field').length).to.equal(0);
       const link = p.querySelector('a[data-wcs-osi]');
