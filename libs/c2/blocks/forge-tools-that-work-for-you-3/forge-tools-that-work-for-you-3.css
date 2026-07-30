@@ -1,0 +1,147 @@
+/* forge-tools-that-work-for-you-3 — full-bleed dark hero/marquee.
+   Every selector is scoped to .forge-tools-that-work-for-you-3 (L10). No :root,
+   body, @font-face, @import, or design-width pixel widths (L19/L27): the Figma
+   1440x1040 frame is expressed as a responsive aspect-ratio + clamps so the
+   block reflows to its own container. Classes below are the ones init() stamps
+   on the reconstructed DOM — NOT the stripped Figma classes. */
+
+.forge-tools-that-work-for-you-3 {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  /* Figma frame 1440x1040 -> ~0.722 ratio; clamp keeps a sane band per viewport. */
+  aspect-ratio: 1440 / 1040;
+  min-height: 560px;
+  max-height: 1040px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  background-color: #000;
+  color: var(--s2a-color-text-inverse, #fff);
+}
+
+/* ---- Media layer: stacked background composite (fill + wider hero) --------- */
+.forge-tools-that-work-for-you-3 .hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.forge-tools-that-work-for-you-3 .hero-media-item {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.forge-tools-that-work-for-you-3 .hero-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* Black-to-transparent-to-black scrim: keeps the top dark for legible headline
+   text, reveals the image through the middle band, fades back to black so the
+   section seats cleanly against its neighbours. */
+.forge-tools-that-work-for-you-3 .hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    #000 0%,
+    rgb(0 0 0 / 78%) 22%,
+    rgb(0 0 0 / 0%) 58%,
+    rgb(0 0 0 / 0%) 72%,
+    #000 96%
+  );
+}
+
+/* ---- Foreground lockup: heading + subhead + CTA, centred near the top ------ */
+.forge-tools-that-work-for-you-3 .hero-foreground {
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  text-align: center;
+  /* Figma padding-top: desktop 160 / tablet 100 / mobile 72 -> responsive clamp. */
+  padding: clamp(72px, 11vw, 160px) clamp(24px, 8vw, 120px) 0;
+}
+
+.forge-tools-that-work-for-you-3 .hero-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-tools-that-work-for-you-3 .hero-heading {
+  margin: 0;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-weight: 900;
+  /* Figma 56 / 44 / 32 across breakpoints. */
+  font-size: clamp(32px, 3.9vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--s2a-color-text-inverse, #fff);
+}
+
+.forge-tools-that-work-for-you-3 .hero-subhead {
+  margin: 0;
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-weight: 400;
+  font-size: clamp(15px, 1.2vw, 16px);
+  line-height: 1.25;
+  color: var(--s2a-color-text-inverse, #fff);
+}
+
+/* Outlined pill CTA. color is set explicitly (never inherits the global dark
+   a{color}) so it stays legible on the dark hero (C20). Works as <a> or <button>. */
+.forge-tools-that-work-for-you-3 .hero-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 24px;
+  margin-top: var(--s2a-spacing-8, 8px);
+  border: 1px solid var(--s2a-color-text-inverse, #fff);
+  border-radius: 75px;
+  background: transparent;
+  color: var(--s2a-color-text-inverse, #fff);
+  font-family: 'Adobe Clean', adobe-clean, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.forge-tools-that-work-for-you-3 .hero-cta:hover,
+.forge-tools-that-work-for-you-3 .hero-cta:focus-visible {
+  background: var(--s2a-color-text-inverse, #fff);
+  color: #000;
+}
+
+@media (max-width: 1200px) {
+  .forge-tools-that-work-for-you-3 {
+    min-height: 640px;
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-tools-that-work-for-you-3 {
+    aspect-ratio: 3 / 4;
+    min-height: 520px;
+  }
+}

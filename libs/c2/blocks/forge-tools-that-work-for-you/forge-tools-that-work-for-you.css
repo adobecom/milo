@@ -1,0 +1,172 @@
+/* forge-tools-that-work-for-you — full-bleed dark hero/marquee.
+   Every selector is scoped to .forge-tools-that-work-for-you (L10). No :root,
+   body, @font-face or @import (L19). Layout intent (heights, ratios, gaps) is
+   expressed responsively — no pinned design-width pixels (L27). */
+
+.forge-tools-that-work-for-you {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: clamp(520px, 48vw, 1040px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: clamp(96px, 13vw, 160px) clamp(24px, 6vw, 100px) clamp(64px, 8vw, 96px);
+  background: var(--s2a-color-black, #000);
+  color: var(--s2a-color-white, #fff);
+  text-align: center;
+}
+
+/* Full-bleed background photograph. The absolute .background layer reserves the
+   box (inset:0), so the section's min-height — not the image — drives height and
+   the photo cannot shift the page as it loads (CLS). */
+.forge-tools-that-work-for-you .background {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.forge-tools-that-work-for-you .background picture,
+.forge-tools-that-work-for-you .background img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.forge-tools-that-work-for-you .background img {
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* Design-specified scrim: dark at the top behind the copy, clear across the
+   middle so the photo reads, dark again at the base. */
+.forge-tools-that-work-for-you .scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--s2a-color-black, #000) 0%,
+    rgba(0, 0, 0, 0.82) 12%,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0) 72%,
+    rgba(0, 0, 0, 0.85) 92%,
+    var(--s2a-color-black, #000) 100%
+  );
+}
+
+/* Centred copy lockup near the top of the hero. */
+.forge-tools-that-work-for-you .foreground {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(16px, 2.2vw, 24px);
+}
+
+.forge-tools-that-work-for-you .copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+}
+
+.forge-tools-that-work-for-you .copy h1,
+.forge-tools-that-work-for-you .copy h2,
+.forge-tools-that-work-for-you .copy h3 {
+  margin: 0;
+  width: 100%;
+  max-width: 18ch;
+  font-weight: 900;
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--s2a-color-white, #fff);
+}
+
+.forge-tools-that-work-for-you .copy p {
+  margin: 0;
+  width: 100%;
+  max-width: 52ch;
+  font-size: clamp(16px, 1.5vw, 20px);
+  line-height: 1.2;
+  font-weight: 400;
+  color: var(--s2a-color-white, #fff);
+}
+
+/* CTA cluster. */
+.forge-tools-that-work-for-you .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  width: 100%;
+}
+
+.forge-tools-that-work-for-you .button-group {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+/* Links never inherit the near-black global a{} colour on this dark surface (C20). */
+.forge-tools-that-work-for-you a {
+  color: inherit;
+}
+
+.forge-tools-that-work-for-you .con-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-spacing-8, 8px);
+  padding: 11px 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: var(--s2a-font-size-100, 14px);
+  line-height: 1.25;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.forge-tools-that-work-for-you .con-button.outline {
+  background: transparent;
+  border-color: var(--s2a-color-white, #fff);
+  color: var(--s2a-color-white, #fff);
+}
+
+.forge-tools-that-work-for-you .con-button.blue {
+  background: var(--s2a-color-white, #fff);
+  border-color: var(--s2a-color-white, #fff);
+  color: var(--s2a-color-black, #000);
+}
+
+.forge-tools-that-work-for-you .con-button:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .forge-tools-that-work-for-you .button-group {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  .forge-tools-that-work-for-you .con-button {
+    width: 100%;
+  }
+}

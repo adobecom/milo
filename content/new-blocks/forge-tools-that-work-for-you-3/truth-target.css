@@ -1,0 +1,10 @@
+@media (max-width:1024px) {
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .dw-content { padding-top:100px !important; padding-left:48px !important; padding-right:48px !important; height:auto !important; min-height:800px !important; }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .dw-heading { font-size:44px !important; line-height:48px !important; }
+}
+
+@media (max-width:768px) {
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .dw-content { padding-top:72px !important; padding-left:24px !important; padding-right:24px !important; height:auto !important; min-height:560px !important; }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .dw-heading { font-size:32px !important; line-height:36px !important; letter-spacing:-0.5px !important; }
+.forge-tools-that-work-for-you-3 [data-figma-node-id="10559:113802"] .dw-sub { font-size:15px !important; }
+}
