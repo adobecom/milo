@@ -68,6 +68,38 @@ describe('News', () => {
     expect(items.querySelectorAll('.news-item').length).to.equal(2);
   });
 
+  it('uses the four-up class when there are four items', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/four-up.html' });
+    const block = document.querySelector('.news');
+    await init(block);
+
+    const items = block.querySelector('.news-items');
+    expect(items.classList.contains('four-up')).to.be.true;
+    expect(items.querySelectorAll('.news-item').length).to.equal(4);
+  });
+
+  it('uses the six-up class when there are six items', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/six-up.html' });
+    const block = document.querySelector('.news');
+    await init(block);
+
+    const items = block.querySelector('.news-items');
+    expect(items.classList.contains('six-up')).to.be.true;
+    expect(items.querySelectorAll('.news-item').length).to.equal(6);
+  });
+
+  it('leaves a non-svg header icon src unrewritten', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/header-png-icon.html' });
+    const block = document.querySelector('.news');
+    await init(block);
+
+    const img = block.querySelector('.news-headline .headline picture img');
+    expect(img).to.exist;
+    expect(img.classList.contains('icon')).to.be.true;
+    // non-svg src is not passed through getFederatedUrl
+    expect(img.getAttribute('src')).to.equal('/federal/icons/news-icon.png');
+  });
+
   it('marks the item cell as foreground and classifies its contents', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.news');
