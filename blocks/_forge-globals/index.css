@@ -1,0 +1,44 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+:root {
+    --background: #ffffff;
+    --surface: #eceae7;
+    --surface-subtle: #f8f8f8;
+    --primary: #3b63fb;
+    --primary-hover: #274dea;
+    --accent: #eb1000;
+    --ink: #2c2c2c;
+    --ink-soft: #505050;
+    --ink-faint: #707070;
+    --line: #eaeaea;
+    --white: #fff;
+    --black: #000;
+    --radius-primary: 16px;
+    --radius-secondary: 12px;
+    --radius-pill: 999px;
+    --shadow-1: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-2: 0 1px 8px rgba(0,0,0,0.14);
+    --heading-font: 'Adobe Clean Display', 'Trebuchet MS', 'Segoe UI', Helvetica, Arial, sans-serif;
+    --body-font: 'Adobe Clean', 'Trebuchet MS', 'Segoe UI', Helvetica, Arial, sans-serif;
+    --maxw: 1200px;
+  }
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    font-family: var(--body-font);
+    color: var(--ink);
+    background: var(--background);
+    -webkit-font-smoothing: antialiased;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }
