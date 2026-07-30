@@ -1487,6 +1487,150 @@ export function isTrustedAutoBlock(autoBlock, url) {
     || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
 }
 
+const MAS_FRAGMENT_AUTOBLOCKS = [
+  'mas-compare-chart-autoblock',
+  'merch-card-collection-autoblock',
+  'merch-card-autoblock',
+];
+
+const MAS_MEP_SELECTOR = 'mas';
+const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
+const MAS_FRAGMENT_PRELOAD_API_KEY = 'wcms-commerce-ims-ro-user-milo-cc';
+
+// Kept in sync with GeoMap in blocks/merch/merch.js.
+const MAS_GEO_MAP = {
+  ar: 'AR_es',
+  be_en: 'BE_en',
+  be_fr: 'BE_fr',
+  be_nl: 'BE_nl',
+  br: 'BR_pt',
+  ca: 'CA_en',
+  ch_de: 'CH_de',
+  ch_fr: 'CH_fr',
+  ch_it: 'CH_it',
+  cl: 'CL_es',
+  co: 'CO_es',
+  la: 'DO_es',
+  mx: 'MX_es',
+  pe: 'PE_es',
+  africa: 'MU_en',
+  dk: 'DK_da',
+  de: 'DE_de',
+  ee: 'EE_et',
+  eg_ar: 'EG_ar',
+  eg_en: 'EG_en',
+  es: 'ES_es',
+  fr: 'FR_fr',
+  gr_el: 'GR_el',
+  gr_en: 'GR_en',
+  ie: 'IE_en',
+  il_he: 'IL_he',
+  it: 'IT_it',
+  lv: 'LV_lv',
+  lt: 'LT_lt',
+  lu_de: 'LU_de',
+  lu_en: 'LU_en',
+  lu_fr: 'LU_fr',
+  my_en: 'MY_en',
+  my_ms: 'MY_ms',
+  hu: 'HU_hu',
+  mt: 'MT_en',
+  mena_en: 'DZ_en',
+  mena_ar: 'DZ_ar',
+  nl: 'NL_nl',
+  no: 'NO_nb',
+  pl: 'PL_pl',
+  pt: 'PT_pt',
+  ro: 'RO_ro',
+  si: 'SI_sl',
+  sk: 'SK_sk',
+  fi: 'FI_fi',
+  se: 'SE_sv',
+  tr: 'TR_tr',
+  uk: 'GB_en',
+  at: 'AT_de',
+  cz: 'CZ_cs',
+  bg: 'BG_bg',
+  ru: 'RU_ru',
+  ua: 'UA_uk',
+  au: 'AU_en',
+  in_en: 'IN_en',
+  in_hi: 'IN_hi',
+  id_en: 'ID_en',
+  id_id: 'ID_id',
+  nz: 'NZ_en',
+  sa_ar: 'SA_ar',
+  sa_en: 'SA_en',
+  sg: 'SG_en',
+  cn: 'CN_zh',
+  tw: 'TW_zh',
+  hk_zh: 'HK_zh',
+  jp: 'JP_ja',
+  kr: 'KR_ko',
+  za: 'ZA_en',
+  ng: 'NG_en',
+  cr: 'CR_es',
+  ec: 'EC_es',
+  pr: 'US_es', // not a typo, should be US
+  gt: 'GT_es',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
+  sea: 'SG_en',
+  th_en: 'TH_en',
+  th_th: 'TH_th',
+};
+
+// Kept in sync with EXTRA_MAS_LOCALES in blocks/merch/merch.js.
+const MAS_EXTRA_LOCALES = { pr: 'es_PR' };
+
+/**
+ * Minimal, sync re-derivation of blocks/merch/merch.js's getMiloLocaleSettings, kept local so
+ * this file doesn't take on a static dependency on merch.js (which itself imports from here).
+ * Doesn't handle the langstore edge case merch.js's version does, since decorateAutoBlock's
+ * prefetch is best-effort - a miss there just means no prefetch, not a broken locale.
+ */
+function getMasLocale(miloLocale) {
+  const geo = (miloLocale?.prefix || 'US_en').replace('/', '');
+  let [country = 'US', language = 'en'] = (MAS_GEO_MAP[geo] ?? geo).split('_', 2);
+  country = country.toUpperCase();
+  language = language.toLowerCase();
+  return { locale: MAS_EXTRA_LOCALES[geo] ?? `${language}_${country}`, country };
+}
+
+/**
+ * Synchronously transforms a mas.adobe.com/studio.html link into a prefetch link for the
+ * fragment it references, so the fetch starts in the same tick the link is recognized as an
+ * autoblock - before the block that would otherwise be the first to request it, and before
+ * any async work (dynamic imports, locale detection) could lose the race to the real fetch.
+ * @param {HTMLAnchorElement} a
+ */
+function preloadMasFragment(a) {
+  const { hash } = new URL(a.href);
+  const params = new URLSearchParams(hash.startsWith('#') ? hash.substring(1) : hash);
+  const fragment = params.get('fragment') || params.get('query');
+  if (!fragment) return;
+  const command = getConfig().mep?.inBlock?.[MAS_MEP_SELECTOR]?.fragments?.[fragment];
+  const fragmentId = command?.action === 'replace' ? command.content : fragment;
+  const { locale, country: localeCountry } = getMasLocale(getConfig().locale);
+
+  // When MAS geo-detection is on, the real request's country comes from the visitor's
+  // detected market (Akamai geo, cookie, or URL override), not from the page's locale -
+  // e.g. a French-speaking Belgian on an /fr page still gets country=BE.
+  const masGeoDetect = PAGE_URL.searchParams.get('mas-geo-detection') ?? getMetadata('mas-geo-detection');
+  const geoDetectionOn = !isBot() && ['on', 'true'].includes(masGeoDetect?.toLowerCase());
+  const detectedCountry = geoDetectionOn
+    ? computeDetectedMarketCountry(window.location.search, getCookie('country'), sessionStorage.getItem('akamai'))
+    : null;
+  const country = detectedCountry ? detectedCountry.toUpperCase() : localeCountry;
+
+  // Mirrors aem-fragment.js: country is only a separate param when it's not already implied
+  // by the locale suffix (e.g. locale=fr_CH + country=CH would be redundant).
+  let endpoint = `${MAS_FRAGMENT_API}?id=${fragmentId}&api_key=${MAS_FRAGMENT_PRELOAD_API_KEY}&locale=${locale}`;
+  if (country && !locale.endsWith(`_${country}`)) endpoint += `&country=${country}`;
+
+  loadLink(endpoint, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', type: 'application/json' });
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
   let url;
@@ -1503,6 +1647,10 @@ export function decorateAutoBlock(a) {
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
     if (!isTrustedAutoBlock(candidate[key], url)) return false;
+
+    if (MAS_FRAGMENT_AUTOBLOCKS.includes(key)) {
+      preloadMasFragment(a);
+    }
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
       a.target = '_blank';
