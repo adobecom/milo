@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'explore-card',
   'faq',
   'floating-cta',
+  'forge-get-acrobat-studio-today',
   'global-footer',
   'global-navigation',
   'hover-list',
