@@ -80,6 +80,16 @@ describe('FAQ', () => {
     expect(block.querySelector('.faq-question').textContent.trim()).to.equal('A real question?');
   });
 
+  it('builds an empty list when no row has a heading', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/no-headings.html' });
+    const block = document.querySelector('.faq');
+    init(block);
+
+    const list = block.querySelector(':scope > .faq-list');
+    expect(list).to.exist;
+    expect(list.querySelectorAll('.faq-item').length).to.equal(0);
+  });
+
   it('updates aria-expanded and the analytics prefix on toggle', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const block = document.querySelector('.faq');
@@ -131,6 +141,24 @@ describe('FAQ', () => {
       document.body.innerHTML = await readFile({ path: './mocks/default.html' });
       init(document.querySelector('.faq'));
       expect(document.head.querySelector('script[type="application/ld+json"]')).to.be.null;
+    });
+
+    // Guards the shared module-level SEO_SCHEMA singleton: each .seo block must emit
+    // a schema built from only its own questions, with no state leaking between inits.
+    it('emits an independent schema per block for multiple seo blocks', async () => {
+      document.body.innerHTML = await readFile({ path: './mocks/seo-multi.html' });
+      [...document.querySelectorAll('.faq.seo')].forEach((block) => init(block));
+
+      const schemas = [...document.head.querySelectorAll('script[type="application/ld+json"]')]
+        .map((s) => JSON.parse(s.textContent));
+      expect(schemas).to.have.length(2);
+
+      // first block (2 questions) and second block (3 questions) stay independent
+      expect(schemas[0].mainEntity).to.have.length(2);
+      expect(schemas[0].mainEntity[0].name).to.equal('Alpha question one?');
+      expect(schemas[1].mainEntity).to.have.length(3);
+      expect(schemas[1].mainEntity[0].name).to.equal('Beta question one?');
+      expect(schemas[1].mainEntity.every((q) => q.name.startsWith('Beta'))).to.be.true;
     });
   });
 
