@@ -1,0 +1,196 @@
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-bg-photo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.20) 0%, #000000 100%);
+      pointer-events: none;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-container {
+      position: relative;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 120px;
+      box-sizing: border-box;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-lockup {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding-top: 160px;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-text-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-eyebrow {
+      margin: 0;
+      font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 18px;
+      color: #ffffff;
+      text-align: center;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-headline {
+      margin: 0;
+      font-family: 'Adobe Clean Display', 'adobe-clean-display', sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      color: #ffffff;
+      text-align: center;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-description {
+      margin: 0;
+      font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+      font-weight: 400;
+      font-size: 20px;
+      line-height: 24px;
+      color: #ffffff;
+      text-align: center;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-pricing-group {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      align-items: center;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-price {
+      margin: 0;
+      font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 19px;
+      letter-spacing: -0.16px;
+      color: #ffffff;
+      text-align: center;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-group {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: none;
+      cursor: pointer;
+      font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #000000;
+      white-space: nowrap;
+      text-decoration: none;
+      min-width: 117px;
+    }
+
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      border-radius: 999px;
+      background: transparent;
+      border: 1px solid #ffffff;
+      cursor: pointer;
+      font-family: 'Adobe Clean', 'adobe-clean', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      color: #ffffff;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+@media (max-width: 1280px) {
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-lockup {
+        padding-top: 124px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-headline {
+        font-size: 48px;
+        line-height: 52px;
+      }
+}
+
+@media (max-width: 1024px) {
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-container {
+        padding: 0 60px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-headline {
+        font-size: 42px;
+        line-height: 46px;
+      }
+}
+
+@media (max-width: 768px) {
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-container {
+        padding: 0 24px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-lockup {
+        padding-top: 80px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-headline {
+        font-size: 34px;
+        line-height: 38px;
+        letter-spacing: -0.8px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-description {
+        font-size: 17px;
+        line-height: 22px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-group {
+        flex-direction: column;
+        align-items: center;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-primary, .forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-btn-secondary {
+        width: 200px;
+        justify-content: center;
+      }
+}
+
+@media (max-width: 480px) {
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-lockup {
+        padding-top: 64px;
+      }
+.forge-get-acrobat-studio-today [data-figma-node-id="10559:113745"] .rch-headline {
+        font-size: 28px;
+        line-height: 32px;
+      }
+}

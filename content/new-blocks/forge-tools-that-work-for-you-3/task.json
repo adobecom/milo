@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-tools-that-work-for-you-3",
+  "sectionIndex": 3,
+  "decision": "below-threshold",
+  "score": 0.66,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-3",
+  "figmaUrl": "https://www.figma.com/design/lOFnBFhsYyFWPbSdiPa9us/Hub-%E2%80%94-A.com?node-id=10559-113821",
+  "figmaNodeId": "10559:113802",
+  "distinctive": true,
+  "truthShotRel": "screenshots/section-3-ref.png",
+  "geometry": null,
+  "miloPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-00102bd5-ms7jhx11",
+  "miloTargetPath": "/Users/osahin/repos/milo-logs-deploy/src/forge/shared/data/_repos/milo/.forge-worktrees/session-00102bd5-ms7jhx11/libs/c2/blocks/forge-tools-that-work-for-you-3",
+  "miloBranch": "forge/session-00102bd5-237",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin/forge/figma-00102b?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}
