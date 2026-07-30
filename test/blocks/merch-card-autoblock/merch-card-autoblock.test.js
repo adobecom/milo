@@ -452,6 +452,7 @@ describe('merch-card-autoblock autoblock', () => {
       [...p.querySelectorAll('mas-field')].forEach((mf) => {
         mf.dispatchEvent(new CustomEvent('mas:ready', { bubbles: true, composed: true }));
       });
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
 
       expect(p.querySelectorAll('mas-field').length).to.equal(0);
       const links = [...p.querySelectorAll('a.con-button')];
@@ -480,6 +481,7 @@ describe('merch-card-autoblock autoblock', () => {
       p.querySelector('mas-field').dispatchEvent(
         new CustomEvent('mas:ready', { bubbles: true, composed: true }),
       );
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
 
       expect(p.querySelectorAll('mas-field').length).to.equal(0);
       const link = p.querySelector('a[data-wcs-osi]');
