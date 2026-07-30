@@ -1,0 +1,173 @@
+/* forge-section — customer-proof section (logo wall + featured quote).
+   Scoped entirely under .forge-section. Design tokens are --s2a-* with hex
+   fallbacks so the block renders even if the C2 token sheet is absent. Layout
+   INTENT is expressed responsively (grid/fr/max-width), never in frame pixels. */
+
+.forge-section {
+  --fs-max: 1200px;
+  --fs-tile: var(--s2a-color-gray-25, #fff);
+  --fs-surface: var(--s2a-color-background-default, #fff);
+  --fs-border: var(--s2a-color-border-subtle, #eceae7);
+  --fs-border-strong: var(--s2a-color-border-default, #d4d0cb);
+  --fs-ink: var(--s2a-color-content-heading, #131313);
+  --fs-text: var(--s2a-color-content-default, #2c2c2c);
+  --fs-muted: var(--s2a-color-content-subtle, #686868);
+  --fs-radius-lg: var(--s2a-border-radius-16, 16px);
+  --fs-radius-md: var(--s2a-border-radius-12, 12px);
+
+  /* C21 vertical rhythm — match the C2 catalog siblings (~124 top / ~80 bottom),
+     not just Figma's horizontal padding. */
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-80, 80px);
+  background: var(--s2a-color-background-subtle, #f8f8f8);
+  color: var(--fs-text);
+}
+
+.forge-section .container {
+  width: min(var(--fs-max), 100%);
+  margin-inline: auto;
+}
+
+/* ---- Section head ---- */
+.forge-section .section-head {
+  max-width: 46ch;
+  margin: 0 auto var(--s2a-spacing-48, 48px);
+  text-align: center;
+}
+
+.forge-section .section-head .title {
+  margin: 0;
+  color: var(--fs-ink);
+  font-size: clamp(2rem, 4vw, 2.9rem);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+}
+
+/* ---- Logo wall ---- */
+.forge-section .logos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s2a-spacing-16, 16px);
+}
+
+.forge-section .logos li { display: flex; }
+
+.forge-section .logo-item {
+  flex: 1;
+  min-height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--s2a-spacing-12, 12px);
+  background: var(--fs-tile);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-md);
+  color: var(--fs-muted);
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.forge-section .logo-item:hover,
+.forge-section .logo-item:focus-visible {
+  color: var(--fs-ink);
+  border-color: var(--fs-border-strong);
+}
+
+/* ---- Read-more link ---- */
+.forge-section .center-link {
+  margin: var(--s2a-spacing-32, 32px) 0 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+.forge-section .center-link a {
+  color: var(--fs-ink);
+  text-decoration: none;
+}
+
+.forge-section .center-link a::after { content: " \2192"; }
+.forge-section .center-link a:hover { text-decoration: underline; }
+
+/* ---- Featured quote card ---- */
+.forge-section .quote {
+  margin: var(--s2a-spacing-64, 56px) auto 0;
+  max-width: 860px;
+  padding: var(--s2a-spacing-64, 56px) var(--s2a-spacing-40, 40px);
+  text-align: center;
+  background: var(--fs-surface);
+  border: 1px solid var(--fs-border);
+  border-radius: var(--fs-radius-lg);
+}
+
+.forge-section .quote .brand {
+  margin: 0 0 var(--s2a-spacing-16, 16px);
+  color: var(--fs-ink);
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.forge-section .quote .quote-title {
+  margin: 0 auto var(--s2a-spacing-20, 20px);
+  max-width: 22ch;
+  color: var(--fs-ink);
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.18;
+}
+
+.forge-section .quote .quote-body {
+  margin: 0 auto var(--s2a-spacing-16, 16px);
+  max-width: 48ch;
+  padding: 0;
+  border: 0;
+  quotes: none;
+  color: var(--fs-text);
+  font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.forge-section .quote .who {
+  margin: 0;
+  color: var(--fs-ink);
+  font-weight: 700;
+}
+
+.forge-section .quote .read {
+  margin: var(--s2a-spacing-20, 20px) 0 0;
+  font-weight: 700;
+}
+
+.forge-section .quote .read a {
+  color: var(--fs-ink);
+  text-decoration: none;
+}
+
+.forge-section .quote .read a::after { content: " \2192"; }
+.forge-section .quote .read a:hover { text-decoration: underline; }
+
+/* ---- Responsive: widen the logo wall, ease side padding ---- */
+@media (min-width: 600px) {
+  .forge-section .logos { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 768px) {
+  .forge-section {
+    padding-left: var(--s2a-spacing-48, 48px);
+    padding-right: var(--s2a-spacing-48, 48px);
+  }
+}
+
+@media (min-width: 960px) {
+  .forge-section .logos {
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--s2a-spacing-20, 20px);
+  }
+}

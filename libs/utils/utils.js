@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'explore-card',
   'faq',
   'floating-cta',
+  'forge-section',
   'global-footer',
   'global-navigation',
   'hover-list',

@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-section",
+  "sectionIndex": 4,
+  "decision": "loose-variant",
+  "score": 0.83,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-4",
+  "figmaUrl": "",
+  "figmaNodeId": "",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-9358e32d-ms72uht7",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-9358e32d-ms72uht7/libs/c2/blocks/forge-section",
+  "miloBranch": "forge/session-9358e32d-375",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/osahin-forge/forge/adobe-for-business-enterprise-digital-ma?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}
