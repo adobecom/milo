@@ -1,0 +1,19 @@
+.forge-tools-that-work-for-you {position:relative;height:1040px;overflow:hidden;max-width:1440px;margin:0 auto;}
+
+.forge-tools-that-work-for-you {position:absolute;left:50%;transform:translateX(-50%);width:2880px;height:1180px;top:0;z-index:0;background:#0d0800;}
+
+.forge-tools-that-work-for-you {position:absolute;inset:0;background:linear-gradient(180deg,#000000 18%,rgba(0,0,0,0) 76%,rgba(0,0,0,0) 83%,#000000 95%);}
+
+.forge-tools-that-work-for-you {position:absolute;inset:0;background:linear-gradient(180deg,#000000 10%,rgba(0,0,0,0) 71%,rgba(0,0,0,0) 76%,#000000 95%);z-index:1;pointer-events:none;}
+
+.forge-tools-that-work-for-you {position:absolute;top:160px;left:50%;transform:translateX(-50%);width:1200px;display:flex;flex-direction:column;align-items:center;gap:16px;z-index:2;}
+
+.forge-tools-that-work-for-you {display:flex;flex-direction:column;gap:8px;width:100%;}
+
+.forge-tools-that-work-for-you {font-family:'Adobe Clean Display','Adobe Clean',Helvetica,Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#fff;margin:0;padding:0;}
+
+.forge-tools-that-work-for-you {font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;text-align:center;color:#fff;margin:0;padding:0;}
+
+.forge-tools-that-work-for-you {display:inline-flex;flex-direction:row;justify-content:center;align-items:center;gap:6px;padding:0 24px;height:40px;border-radius:75px;border:1.5px solid #fff;text-decoration:none;cursor:pointer;background:transparent;flex-shrink:0;}
+
+.forge-tools-that-work-for-you span {font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;text-align:center;color:#fff;white-space:nowrap;}

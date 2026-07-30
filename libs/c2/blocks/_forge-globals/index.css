@@ -1,0 +1,29 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+@media(max-width:1280px) {
+      .dw-copy{width:90%;max-width:1200px;}
+    }
+
+@media(max-width:1024px) {
+      .dw-root{height:auto;min-height:640px;}
+      .dw-copy{position:relative;top:auto;left:auto;transform:none;width:90%;max-width:900px;padding-top:120px;margin:0 auto;}
+      .dw-heading{font-size:44px;line-height:50px;letter-spacing:-1.2px;}
+      .dw-subheading{font-size:18px;line-height:22px;}
+    }
+
+@media(max-width:768px) {
+      .dw-root{min-height:520px;}
+      .dw-copy{width:calc(100% - 48px);padding-top:80px;}
+      .dw-heading{font-size:32px;line-height:36px;letter-spacing:-0.8px;}
+      .dw-subheading{font-size:16px;line-height:20px;}
+    }
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }

@@ -1,0 +1,47 @@
+<section data-binding-score="0.75" data-binding="loose-variant" data-figma-node-id="10559:113766" data-block="rich-content" style="width:100%;background:#000;position:relative;overflow:hidden;">
+  <style>
+    .dw-root{position:relative;height:1040px;overflow:hidden;max-width:1440px;margin:0 auto;}
+    .dw-bg{position:absolute;left:50%;transform:translateX(-50%);width:2880px;height:1180px;top:0;z-index:0;background:#0d0800;}
+    .dw-bg-grad{position:absolute;inset:0;background:linear-gradient(180deg,#000000 18%,rgba(0,0,0,0) 76%,rgba(0,0,0,0) 83%,#000000 95%);}
+    .dw-overlay{position:absolute;inset:0;background:linear-gradient(180deg,#000000 10%,rgba(0,0,0,0) 71%,rgba(0,0,0,0) 76%,#000000 95%);z-index:1;pointer-events:none;}
+    .dw-copy{position:absolute;top:160px;left:50%;transform:translateX(-50%);width:1200px;display:flex;flex-direction:column;align-items:center;gap:16px;z-index:2;}
+    .dw-text-group{display:flex;flex-direction:column;gap:8px;width:100%;}
+    .dw-heading{font-family:'Adobe Clean Display','Adobe Clean',Helvetica,Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#fff;margin:0;padding:0;}
+    .dw-subheading{font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;text-align:center;color:#fff;margin:0;padding:0;}
+    .dw-btn{display:inline-flex;flex-direction:row;justify-content:center;align-items:center;gap:6px;padding:0 24px;height:40px;border-radius:75px;border:1.5px solid #fff;text-decoration:none;cursor:pointer;background:transparent;flex-shrink:0;}
+    .dw-btn span{font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;text-align:center;color:#fff;white-space:nowrap;}
+    @media(max-width:1280px){
+      .dw-copy{width:90%;max-width:1200px;}
+    }
+    @media(max-width:1024px){
+      .dw-root{height:auto;min-height:640px;}
+      .dw-copy{position:relative;top:auto;left:auto;transform:none;width:90%;max-width:900px;padding-top:120px;margin:0 auto;}
+      .dw-heading{font-size:44px;line-height:50px;letter-spacing:-1.2px;}
+      .dw-subheading{font-size:18px;line-height:22px;}
+    }
+    @media(max-width:768px){
+      .dw-root{min-height:520px;}
+      .dw-copy{width:calc(100% - 48px);padding-top:80px;}
+      .dw-heading{font-size:32px;line-height:36px;letter-spacing:-0.8px;}
+      .dw-subheading{font-size:16px;line-height:20px;}
+    }
+  </style>
+  <div class="dw-root">
+    <!-- Background hero image placeholder (dark room scene, no asset URL available) -->
+    <div class="dw-bg" aria-hidden="true">
+      <div class="dw-bg-grad"></div>
+    </div>
+    <!-- Section gradient overlay -->
+    <div class="dw-overlay" aria-hidden="true"></div>
+    <!-- Copy lockup -->
+    <div class="dw-copy">
+      <div class="dw-text-group">
+        <h2 class="dw-heading">Tools that work for you.</h2>
+        <p class="dw-subheading">Bring any idea to life with products for creators, businesses, and beyond.</p>
+      </div>
+      <a href="#" class="dw-btn">
+        <span>See all products</span>
+      </a>
+    </div>
+  </div>
+</section>
