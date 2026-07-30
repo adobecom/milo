@@ -1,0 +1,37 @@
+.forge-dww-root {position:relative;width:100%;height:1040px;overflow:hidden;background-color:#000;background-image:linear-gradient(180deg,#000 10%,rgba(0,0,0,0) 71%,rgba(0,0,0,0) 76%,#000 95%),url('media_section-3-fill8aa111282ebb.png');background-size:cover;background-position:center center;background-repeat:no-repeat}
+
+.forge-dww-root .dww-hero-wrap {position:absolute;left:50%;transform:translateX(-50%);width:2880px;height:1180px;top:0;z-index:1}
+
+.forge-dww-root .dww-hero-img {display:block;width:100%;height:100%;object-fit:cover}
+
+.forge-dww-root .dww-hero-grad {position:absolute;inset:0;background:linear-gradient(180deg,#000000 18%,rgba(0,0,0,0) 76%,rgba(0,0,0,0) 83%,#000000 95%);pointer-events:none}
+
+.forge-dww-root .dww-content {position:relative;max-width:1440px;height:100%;margin:0 auto;z-index:2}
+
+.forge-dww-root .dww-lockup {position:absolute;top:160px;left:50%;transform:translateX(-50%);width:1200px;max-width:calc(100% - 48px);display:flex;flex-direction:column;align-items:center;gap:16px}
+
+.forge-dww-root .dww-texts {display:flex;flex-direction:column;gap:8px;width:100%}
+
+.forge-dww-root .dww-heading {font-family:'Adobe Clean Display','AdobeCleanDisplay','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#fff;margin:0;padding:0}
+
+.forge-dww-root .dww-sub {font-family:'Adobe Clean','AdobeClean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;text-align:center;color:#fff;margin:0;padding:0}
+
+.forge-dww-root .dww-btn {display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 24px;height:40px;border-radius:75px;border:1px solid #fff;background:transparent;color:#fff;font-family:'Adobe Clean','AdobeClean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background-color 0.2s ease;flex-shrink:0}
+
+.forge-dww-root .dww-btn:hover {background-color:rgba(255,255,255,0.12)}
+
+@media (max-width:1280px) {
+.forge-dww-root .dww-lockup {width:90%}
+}
+
+@media (max-width:1024px) {
+.forge-dww-root .dww-lockup {top:120px}
+.forge-dww-root .dww-heading {font-size:44px;line-height:48px}
+}
+
+@media (max-width:768px) {
+.forge-dww-root {height:640px}
+.forge-dww-root .dww-lockup {top:80px;width:calc(100% - 48px)}
+.forge-dww-root .dww-heading {font-size:32px;line-height:38px;letter-spacing:-1px}
+.forge-dww-root .dww-sub {font-size:16px;line-height:22px}
+}

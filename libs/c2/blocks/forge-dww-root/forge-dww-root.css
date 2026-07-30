@@ -1,0 +1,146 @@
+/* forge-dww-root — full-bleed dark hero band.
+   Authored toward the Figma visual target (truth-target.css + reference frame),
+   keyed ONLY on the .forge-dww-root-* classes init() stamps on the rebuilt DOM.
+   The Figma frame's 2880px hero-plate width is expressed RELATIVELY here (the
+   image covers the section box), never pinned — the block reflows to its own
+   container (L27). */
+
+.forge-dww-root {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  min-height: clamp(560px, 58vw, 960px);
+  display: flex;
+  justify-content: center;
+  background-color: var(--s2a-color-gray-1000, #000);
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+/* ---- media plate: photo covers the whole band ---- */
+.forge-dww-root .forge-dww-root-media {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+}
+
+.forge-dww-root .forge-dww-root-media picture {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.forge-dww-root .forge-dww-root-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+/* ---- gradient scrim: darken top + bottom so copy stays legible ---- */
+.forge-dww-root .forge-dww-root-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    var(--s2a-color-gray-1000, #000) 6%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 72%,
+    var(--s2a-color-gray-1000, #000) 98%
+  );
+}
+
+/* ---- copy lockup: centred, anchored toward the top of the band ---- */
+.forge-dww-root .forge-dww-root-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(72px, 11vw, 176px) var(--s2a-spacing-24, 24px) clamp(48px, 6vw, 96px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.forge-dww-root .forge-dww-root-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-16, 16px);
+  width: 100%;
+  max-width: 760px;
+  text-align: center;
+}
+
+.forge-dww-root .forge-dww-root-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.forge-dww-root .forge-dww-root-heading {
+  margin: 0;
+  padding: 0;
+  font-weight: 900;
+  font-size: clamp(2rem, 1rem + 2.9vw, 3.5rem); /* 32 → 56px */
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+.forge-dww-root .forge-dww-root-sub {
+  margin: 0;
+  padding: 0;
+  font-weight: 400;
+  font-size: clamp(1rem, 0.9rem + 0.4vw, 1.25rem); /* 16 → 20px */
+  line-height: 1.2;
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+/* ---- CTA: transparent pill with a white hairline border ---- */
+.forge-dww-root .forge-dww-root-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.forge-dww-root .forge-dww-root-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 24px;
+  border: 1px solid var(--s2a-color-gray-25, #fff);
+  border-radius: 75px;
+  background: transparent;
+  color: var(--s2a-color-gray-25, #fff); /* C20: explicit on dark bg */
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 18px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.forge-dww-root .forge-dww-root-btn:hover,
+.forge-dww-root .forge-dww-root-btn:focus-visible {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: var(--s2a-color-gray-25, #fff);
+}
+
+@media (min-width: 1200px) {
+  .forge-dww-root .forge-dww-root-lockup {
+    max-width: 820px;
+  }
+}

@@ -119,6 +119,7 @@ const C2_BLOCKS = [
   'explore-card',
   'faq',
   'floating-cta',
+  'forge-dww-root',
   'global-footer',
   'global-navigation',
   'hover-list',
@@ -144,6 +145,7 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-get-acrobat-studio-today',
 ];
 
 const AUTO_BLOCKS = [
