@@ -405,10 +405,17 @@ async function openChatModal(initialMessage, el) {
       bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
     }
 
-    if (bcToken) {
+    // ARP session token is set by global nav and is available regardless of sign-in state.
+    // Sent as-is (encodes { sid, bfp }); the agent decodes it. Merged with the auth token
+    // into a single data payload since only one can be sent per event.
+    const arpSessionToken = window.adobeArp?.sessionToken;
+    if (bcToken || arpSessionToken) {
       content.data = {
         type: 'auth',
-        payload: { token: bcToken },
+        payload: {
+          ...(bcToken && { token: bcToken }),
+          ...(arpSessionToken && { 'arp-session-id': arpSessionToken }),
+        },
       };
     }
 
