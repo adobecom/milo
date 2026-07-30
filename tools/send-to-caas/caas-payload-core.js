@@ -40,7 +40,9 @@ const isValidModal = (u) => VALID_MODAL_RE.test(u);
 
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
-const PAGE_URL = new URL(window.location.href);
+// Computed lazily (not at module-import time): a vm sandbox may not have
+// shimmed window.location yet when this module is first evaluated.
+const getPageUrl = () => new URL(window.location.href);
 
 // Copied verbatim from libs/utils/utils.js (getMetadata).
 function getMetadata(name, doc = document) {
@@ -51,7 +53,7 @@ function getMetadata(name, doc = document) {
 
 // Copied verbatim from libs/utils/utils.js (lingoActive).
 function lingoActive() {
-  const langFirst = (PAGE_URL.searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
+  const langFirst = (getPageUrl().searchParams.get('langfirst') || getMetadata('langfirst'))?.toLowerCase();
   return ['true', 'on'].includes(langFirst);
 }
 

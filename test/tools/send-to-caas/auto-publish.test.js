@@ -92,6 +92,11 @@ describe('auto-publish: matchesUrl', () => {
     expect(matchesUrl('/foo/**', '/foo/bar/baz')).to.be.true;
     expect(matchesUrl('/foo/**', '/bar/foo')).to.be.false;
   });
+
+  it('matches the bare directory itself (without trailing slash)', () => {
+    expect(matchesUrl('/foo/**', '/foo')).to.be.true;
+    expect(matchesUrl('/foo/**', '/foobar')).to.be.false;
+  });
 });
 
 describe('auto-publish: resolveRule', () => {

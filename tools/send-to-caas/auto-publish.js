@@ -51,10 +51,14 @@ const DEFAULT_TARGETS = {
 };
 
 // URL-pattern matching mirrors libs/tools/utils/publish.js: pattern '/foo/**'
-// matches any path under /foo/; otherwise an exact match is required.
+// matches any path under /foo/, including /foo itself; otherwise an exact
+// match is required.
 export const matchesUrl = (pattern, path) => {
   if (typeof pattern !== 'string' || typeof path !== 'string') return false;
-  if (pattern.endsWith('**')) return path.startsWith(pattern.slice(0, -2));
+  if (pattern.endsWith('**')) {
+    const dir = pattern.slice(0, -2); // e.g. '/foo/'
+    return path === dir.slice(0, -1) || path.startsWith(dir);
+  }
   return pattern === path;
 };
 

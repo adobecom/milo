@@ -47,6 +47,17 @@ const parseRepoOwner = (origin) => {
   }
 };
 
+// The real Helix hostname (e.g. main--bacom--adobecom.aem.live) — needed by
+// addHost() to build resolvable image/thumbnail URLs. `${repo}.${owner}`
+// (e.g. bacom.adobecom) is not a real host and was never resolvable.
+const getHost = (origin) => {
+  try {
+    return new URL(origin).hostname;
+  } catch {
+    return '';
+  }
+};
+
 export const collectSuccessfulPaths = (jobStatus) => {
   const resources = jobStatus?.data?.resources;
   if (!Array.isArray(resources)) return [];
@@ -87,20 +98,28 @@ export const runAutoPublishForJob = async ({
   const accessToken = await getToken().catch(() => null);
   if (!accessToken) return [];
 
-  const { repo, owner } = parseRepoOwner(job.origin);
+  const { repo } = parseRepoOwner(job.origin);
   const getAuthToken = async () => accessToken;
 
-  const tasks = paths.map((path) => publish({
-    action: jobStatus.topic,
-    url: `${job.origin}${path}`,
-    path,
-    origin: job.origin,
-    getAuthToken,
-    host: owner ? `${repo}.${owner}` : '',
-    repo: repo || '',
-  }).catch((e) => ({ skipped: false, error: e?.message || String(e), path })));
+  // Sequential, not Promise.all: buildCaasXdmPayload (in the shared payload
+  // library) writes per-page state into a module-level config object, so
+  // running these concurrently lets one path's config clobber another's
+  // mid-flight.
+  const results = [];
+  for (const path of paths) {
+    const result = await publish({
+      action: jobStatus.topic,
+      url: `${job.origin}${path}`,
+      path,
+      origin: job.origin,
+      getAuthToken,
+      host: getHost(job.origin),
+      repo: repo || '',
+    }).catch((e) => ({ skipped: false, error: e?.message || String(e), path }));
+    results.push(result);
+  }
 
-  return Promise.all(tasks);
+  return results;
 };
 
 export default runAutoPublishForJob;

@@ -142,7 +142,35 @@ describe('bulk-publish-v2 auto-publish-hook: runAutoPublishForJob', () => {
     expect(calls[0].url).to.equal('https://main--bacom--adobecom.aem.live/a');
     expect(calls[0].origin).to.equal('https://main--bacom--adobecom.aem.live');
     expect(calls[0].repo).to.equal('bacom');
+    // Real Helix hostname, not the non-resolvable `${repo}.${owner}` — addHost()
+    // uses this to build image/thumbnail URLs, which must actually resolve.
+    expect(calls[0].host).to.equal('main--bacom--adobecom.aem.live');
     expect(await calls[0].getAuthToken()).to.equal('tok-abc');
+  });
+
+  it('runs publish calls sequentially, not concurrently', async () => {
+    const order = [];
+    const publish = async ({ path }) => {
+      order.push(`start:${path}`);
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      order.push(`end:${path}`);
+      return { skipped: false, results: [{ ok: true }] };
+    };
+    await runAutoPublishForJob({
+      job,
+      jobStatus: jobStatus('publish', [
+        { status: 200, webPath: '/a' },
+        { status: 200, webPath: '/b' },
+      ]),
+      optedIn: async () => true,
+      getToken: async () => 'tok',
+      publish,
+    });
+    // Each call must fully settle before the next starts — buildCaasXdmPayload
+    // (in the shared payload library) writes per-page state into a module-level
+    // config object, so overlapping calls would let one path's config clobber
+    // another's mid-flight.
+    expect(order).to.deep.equal(['start:/a', 'end:/a', 'start:/b', 'end:/b']);
   });
 
   it('passes preview action through unchanged', async () => {
@@ -190,8 +218,9 @@ describe('bulk-publish-v2 auto-publish-hook: runAutoPublishForJob', () => {
       getToken: async () => 'tok',
       publish,
     });
-    // Malformed origin → no repo derived; call still made with empty strings.
+    // Malformed origin → no repo/host derived; call still made with empty strings.
     expect(calls[0].repo).to.equal('');
+    expect(calls[0].host).to.equal('');
   });
 
   it('does not invoke getToken when site is not opted in (avoids IMS load)', async () => {

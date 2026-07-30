@@ -18,6 +18,7 @@ import {
   hasCardMetadata,
   hasContentTypeTag,
   isDisabledOnPage,
+  setConfig,
 } from '../tools/send-to-caas/caas-payload-core.js';
 
 export {
@@ -26,4 +27,5 @@ export {
   hasCardMetadata,
   hasContentTypeTag,
   isDisabledOnPage,
+  setConfig,
 };
