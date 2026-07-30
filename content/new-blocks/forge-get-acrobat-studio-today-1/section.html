@@ -1,0 +1,69 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.50" data-binding="new-block" data-figma-node-id="10559:113781" data-block="news" style="width:100%;position:relative;overflow:hidden;background:#111111;">
+  <!-- Gradient overlay matching design: rgba(0,0,0,0.20) → #000 -->
+  <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.20) 0%,#000000 100%);z-index:1;pointer-events:none;"></div>
+
+  <!-- Full-width inner wrapper, capped at 1440px, centred -->
+  <div style="position:relative;z-index:2;max-width:1440px;margin:0 auto;min-height:1176px;display:flex;flex-direction:column;align-items:center;padding:0 120px;box-sizing:border-box;">
+
+    <!-- xl top padding spacer: 160px -->
+    <div style="height:160px;flex-shrink:0;" aria-hidden="true"></div>
+
+    <!-- Copy lockup – max-width 1200px, centred -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:24px;width:100%;max-width:1200px;">
+
+      <!-- Eyebrow + heading + description -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;">
+        <p style="margin:0;font-family:'Adobe Clean',Arial,sans-serif;font-size:14px;line-height:18px;font-weight:400;color:#ffffff;text-align:center;">Acrobat Studio</p>
+        <h2 style="margin:0;font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-size:56px;line-height:56px;letter-spacing:-1.68px;font-weight:900;color:#ffffff;text-align:center;">Get Acrobat Studio today.</h2>
+        <p style="margin:0;font-family:'Adobe Clean',Arial,sans-serif;font-size:16px;line-height:20px;font-weight:400;color:#ffffff;text-align:center;max-width:640px;">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- Pricing + CTA buttons -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:16px;width:100%;">
+        <p style="margin:0;font-family:'Adobe Clean',Arial,sans-serif;font-size:16px;line-height:19px;letter-spacing:-0.16px;font-weight:700;color:#ffffff;text-align:center;">US$24.99/mo annual, billed monthly</p>
+
+        <!-- Button group -->
+        <div style="display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;">
+          <!-- Free Trial – solid white -->
+          <a href="#" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:999px;background:#ffffff;border:none;font-family:'Adobe Clean',Arial,sans-serif;font-size:14px;line-height:18px;font-weight:700;color:#000000;text-decoration:none;white-space:nowrap;cursor:pointer;min-width:117px;box-sizing:border-box;">
+            Free Trial
+          </a>
+          <!-- Compare Plans – white outline -->
+          <a href="#" style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:999px;background:transparent;border:1px solid #ffffff;font-family:'Adobe Clean',Arial,sans-serif;font-size:14px;line-height:18px;font-weight:700;color:#ffffff;text-decoration:none;white-space:nowrap;cursor:pointer;box-sizing:border-box;">
+            Compare Plans
+          </a>
+        </div>
+      </div>
+    </div><!-- /copy lockup -->
+
+  </div><!-- /inner container -->
+
+  <style>
+    @media (max-width: 1024px) {
+      [data-figma-node-id="10559:113781"] .rch-inner {
+        padding: 0 48px;
+      }
+      [data-figma-node-id="10559:113781"] h1 {
+        font-size: 42px !important;
+        line-height: 46px !important;
+      }
+    }
+    @media (max-width: 768px) {
+      [data-figma-node-id="10559:113781"] .rch-inner {
+        padding: 0 24px;
+      }
+      [data-figma-node-id="10559:113781"] h1 {
+        font-size: 32px !important;
+        line-height: 36px !important;
+        letter-spacing: -0.5px !important;
+      }
+      [data-figma-node-id="10559:113781"] .rch-buttons {
+        flex-direction: column !important;
+        align-items: stretch !important;
+      }
+      [data-figma-node-id="10559:113781"] .rch-buttons a {
+        text-align: center;
+      }
+    }
+  </style>
+</section>

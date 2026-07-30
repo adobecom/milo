@@ -1,0 +1,159 @@
+/* forge-get-acrobat-studio-today — centered dark "Get Acrobat Studio today." hero.
+   Authored toward the Figma reference frame. Every selector is scoped under
+   .forge-get-acrobat-studio-today (forge-block-lint L10/L19). Layout intent is
+   expressed relatively (clamp/max-width/flex) — no pinned design-width pixels. */
+
+.forge-get-acrobat-studio-today {
+  --fgast-fg: #fff;
+  --fgast-bg: #111;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: clamp(30rem, 52vw, 47.5rem);
+  padding:
+    var(--s2a-layout-section-top, 124px)
+    var(--s2a-layout-lg, 64px)
+    var(--s2a-layout-section-bottom, 80px);
+  overflow: hidden;
+  color: var(--s2a-color-text-inverse, var(--fgast-fg));
+  text-align: center;
+  background-color: var(--fgast-bg);
+  /* Approximate the dim, warm office backdrop of the comp: a soft top glow over
+     a deepening charcoal-to-black wash (no photo asset ships with the content). */
+  background-image:
+    radial-gradient(120% 78% at 50% -6%, rgba(196, 176, 140, 0.42) 0%, rgba(30, 28, 26, 0) 46%),
+    linear-gradient(180deg, rgba(26, 24, 22, 0.55) 0%, rgba(12, 11, 11, 0.86) 58%, #000 100%);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.forge-get-acrobat-studio-today__lockup {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 50rem;
+  margin: 0 auto;
+}
+
+/* Selectors are nested under __lockup so they out-specify any Milo typography
+   class (heading-*, eyebrow, body-*) that decorateBlockText layers on. */
+.forge-get-acrobat-studio-today__lockup .forge-get-acrobat-studio-today__eyebrow {
+  margin: 0;
+  font-size: var(--s2a-font-size-100, 0.875rem);
+  font-weight: 400;
+  line-height: 1.3;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today__lockup .forge-get-acrobat-studio-today__title {
+  margin: 0.5rem 0 0;
+  font-weight: 900;
+  font-size: clamp(2rem, 1rem + 3.4vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today__lockup .forge-get-acrobat-studio-today__body {
+  margin: 0.5rem auto 0;
+  max-width: 47.5rem;
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.3;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today__lockup .forge-get-acrobat-studio-today__price {
+  margin: var(--s2a-spacing-24, 1.5rem) 0 0;
+  font-size: var(--s2a-font-size-75, 1rem);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+
+.forge-get-acrobat-studio-today__actions {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-spacing-8, 0.5rem);
+  margin: var(--s2a-spacing-16, 1rem) 0 0;
+}
+
+.forge-get-acrobat-studio-today__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-spacing-8, 0.5rem);
+  min-width: 7.3rem;
+  padding: 0.875rem 1.5rem;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.28;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.forge-get-acrobat-studio-today__cta--fill {
+  background: var(--s2a-color-white, #fff);
+  border-color: var(--s2a-color-white, #fff);
+  color: #000;
+}
+
+.forge-get-acrobat-studio-today__cta--outline {
+  background: transparent;
+  border-color: var(--s2a-color-white, #fff);
+  color: var(--fgast-fg);
+}
+
+.forge-get-acrobat-studio-today__cta:focus-visible {
+  outline: 2px solid var(--s2a-color-white, #fff);
+  outline-offset: 2px;
+}
+
+.forge-get-acrobat-studio-today__cta--fill:hover { background: rgba(255, 255, 255, 0.88); }
+.forge-get-acrobat-studio-today__cta--outline:hover { background: rgba(255, 255, 255, 0.12); }
+
+.forge-get-acrobat-studio-today__cta-icon,
+.forge-get-acrobat-studio-today__cta-icon img {
+  display: block;
+  flex-shrink: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  aspect-ratio: 1 / 1;
+}
+
+/* Never let a stray authored link inherit the global near-black on this dark
+   section (forge-block-lint C20). */
+.forge-get-acrobat-studio-today a { color: inherit; }
+
+@media (max-width: 600px) {
+  .forge-get-acrobat-studio-today {
+    padding-right: var(--s2a-layout-sm, 24px);
+    padding-left: var(--s2a-layout-sm, 24px);
+  }
+
+  .forge-get-acrobat-studio-today__actions {
+    flex-direction: column;
+    align-self: stretch;
+  }
+
+  .forge-get-acrobat-studio-today__cta { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-get-acrobat-studio-today__cta { transition: none; }
+}
