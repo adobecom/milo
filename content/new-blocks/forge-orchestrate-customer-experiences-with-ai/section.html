@@ -1,0 +1,256 @@
+<section data-binding-score="0.73" data-binding="loose-variant" data-figma-node-id="9706:13838" data-block="news" style="display:block;width:100%;border:1px solid rgba(255,255,255,.10);box-sizing:border-box;background:#444">
+<style>
+.s2-hero{position:relative;width:100%;height:810px;overflow:hidden;background:#1a0d09}
+.s2-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center}
+.s2-scrim{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,0) 55%);z-index:1;pointer-events:none}
+.s2-canvas{position:absolute;inset:0;z-index:2;overflow:hidden}
+.s2-inner{width:100%;max-width:1440px;height:100%;margin:0 auto;position:relative}
+.s2-nav{position:absolute;top:0;left:0;right:0;display:flex;flex-direction:row;justify-content:space-between;align-items:center;padding:4px 16px;height:72px;box-sizing:border-box}
+.s2-logo-group{display:flex;align-items:center;gap:24px;height:64px}
+.s2-navlinks{display:flex;gap:18px;list-style:none;margin:0;padding:0;align-items:center}
+.s2-navlinks a{color:rgba(255,255,255,.9);font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;text-decoration:none;white-space:nowrap;line-height:1}
+.s2-navlinks a:hover{opacity:.75}
+.s2-utility{display:flex;align-items:center;gap:12px}
+.s2-signin{background:#fff;color:#000;border:none;border-radius:75px;padding:0 24px;height:40px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;line-height:18px}
+.s2-askbar{display:flex;align-items:center;gap:8px;background:#fff;border-radius:75px;height:40px;padding:0 14px 0 10px;min-width:252px}
+.s2-askdot{width:14px;height:14px;border-radius:50%;background:linear-gradient(180deg,#eb1000 0%,#8d88f2 100%);flex-shrink:0}
+.s2-asktext{flex:1;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(0,0,0,.70);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.14px}
+.s2-askbtn{background:none;border:none;padding:0;font-family:'Adobe Clean Display',Helvetica,Arial,sans-serif;font-weight:600;font-size:14px;color:#000;cursor:pointer;letter-spacing:.14px;white-space:nowrap}
+.s2-content{position:absolute;inset:0;padding:160px 64px 80px 64px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.s2-copy{display:flex;flex-direction:column;gap:32px;max-width:667px}
+.s2-eyebrow{margin:0;color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px}
+.s2-heading{margin:0;color:#fff;font-family:'Adobe Clean Display',Helvetica,Arial,sans-serif;font-weight:900;font-size:80px;line-height:76px;letter-spacing:-3.2px}
+.s2-desc{margin:0;color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;max-width:500px}
+.s2-ctas{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.s2-cta-solid{background:#fff;color:#000;border:none;border-radius:75px;height:40px;padding:0 24px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;cursor:pointer;white-space:nowrap}
+.s2-cta-outline{background:transparent;color:#fff;border:1px solid #fff;border-radius:75px;height:40px;padding:0 24px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;cursor:pointer;white-space:nowrap}
+.s2-router{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:24px}
+.s2-tabs{display:flex;gap:8px;align-items:stretch}
+.s2-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:12px;padding:12px 12px 16px 12px;width:220px;min-width:131px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;box-sizing:border-box;cursor:pointer;color:#fff}
+.s2-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:rgba(0,0,0,.50)}
+.s2-card-active{background:#fff;border-color:rgba(255,255,255,.10);color:#000}
+.s2-redbar{display:none;position:absolute;top:0;left:12px;width:96px;height:4px;background:#eb1000;border-radius:4px}
+.s2-card-active .s2-redbar{display:block}
+.s2-card-icons{min-height:24px;display:flex;align-items:center;margin-top:4px}
+.s2-card-icons img{height:20px;width:auto;max-width:100%;object-fit:contain;object-position:left center}
+.s2-card-cta{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.s2-card-label{font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;flex:1}
+.s2-pp{width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+/* mobile */
+.s2-mob{display:none}
+/* responsive */
+@media(min-width:1920px){
+  .s2-hero{height:960px}
+  .s2-content{padding-top:160px}
+}
+@media(max-width:1280px){
+  .s2-heading{font-size:64px;line-height:60px;letter-spacing:-2.4px}
+  .s2-card{width:180px}
+  .s2-askbar{min-width:200px}
+}
+@media(max-width:1100px){
+  .s2-heading{font-size:52px;line-height:50px;letter-spacing:-2px}
+  .s2-content{padding:120px 40px 60px}
+  .s2-card{width:160px;min-width:110px}
+  .s2-navlinks{gap:12px}
+  .s2-navlinks a{font-size:13px}
+  .s2-askbar{min-width:160px}
+  .s2-desc{font-size:18px}
+}
+@media(max-width:768px){
+  .s2-hero{display:none}
+  .s2-mob{display:block}
+}
+</style>
+
+<!-- ======= DESKTOP HERO ======= -->
+<div class="s2-hero">
+  <img class="s2-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fillf4e469d22d99.png" alt="" aria-hidden="true" style="background:#2a1810" />
+  <div class="s2-scrim"></div>
+
+  <div class="s2-canvas">
+    <div class="s2-inner">
+
+      <!-- NAV -->
+      
+
+      <!-- CONTENT -->
+      <div class="s2-content">
+
+        <!-- Copy block -->
+        <div class="s2-copy">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <p class="s2-eyebrow">Adobe for Business</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <h2 class="s2-heading">Orchestrate customer experiences with AI.</h2>
+              <p class="s2-desc">Unify data, content, and workflows with Adobe AI to move faster, personalize at scale, and prove impact across your business.</p>
+            </div>
+          </div>
+          <div class="s2-ctas">
+            <button class="s2-cta-solid">It starts with Adobe</button>
+            <button class="s2-cta-outline">See plans</button>
+          </div>
+        </div>
+
+        <!-- Router navigation (tab cards) -->
+        <div class="s2-router">
+          <div class="s2-tabs" role="tablist">
+
+            <!-- Creativity and design -->
+            <div class="s2-card" role="tab" aria-selected="false" tabindex="0">
+              <div class="s2-redbar"></div>
+              <div class="s2-card-icons">
+                <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId20.png" alt="" style="background:rgba(255,255,255,.08);min-width:60px;border-radius:2px" />
+              </div>
+              <div class="s2-card-cta">
+                <span class="s2-card-label">Creativity and design</span>
+                <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true" style="flex-shrink:0">
+                  <path d="M1 1.3 3 3.5 1 5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Content creation -->
+            <div class="s2-card" role="tab" aria-selected="false" tabindex="0">
+              <div class="s2-redbar"></div>
+              <div class="s2-card-icons">
+                <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId21.png" alt="" style="background:rgba(255,255,255,.08);min-width:60px;border-radius:2px" />
+              </div>
+              <div class="s2-card-cta">
+                <span class="s2-card-label">Content creation</span>
+                <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true" style="flex-shrink:0">
+                  <path d="M1 1.3 3 3.5 1 5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- PDF and productivity -->
+            <div class="s2-card" role="tab" aria-selected="false" tabindex="0">
+              <div class="s2-redbar"></div>
+              <div class="s2-card-icons" style="min-height:20px"></div>
+              <div class="s2-card-cta">
+                <span class="s2-card-label">PDF and productivity</span>
+                <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true" style="flex-shrink:0">
+                  <path d="M1 1.3 3 3.5 1 5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Adobe for Business — ACTIVE -->
+            <div class="s2-card s2-card-active" role="tab" aria-selected="true" tabindex="0">
+              <div class="s2-redbar"></div>
+              <div class="s2-card-icons" style="min-height:20px"></div>
+              <div class="s2-card-cta">
+                <span class="s2-card-label">Adobe for Business</span>
+                <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true" style="flex-shrink:0">
+                  <path d="M1 1.3 3 3.5 1 5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Students and teachers -->
+            <div class="s2-card" role="tab" aria-selected="false" tabindex="0">
+              <div class="s2-redbar"></div>
+              <div class="s2-card-icons" style="min-height:20px"></div>
+              <div class="s2-card-cta">
+                <span class="s2-card-label">Students and teachers</span>
+                <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true" style="flex-shrink:0">
+                  <path d="M1 1.3 3 3.5 1 5.7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Play/Pause button -->
+          <button class="s2-pp" aria-label="Pause slideshow">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="white" aria-hidden="true">
+              <rect x="0" y="0" width="4" height="14" rx="1" ></rect>
+              <rect x="7" y="0" width="4" height="14" rx="1" ></rect>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /s2-content -->
+    </div><!-- /s2-inner -->
+  </div><!-- /s2-canvas -->
+</div><!-- /s2-hero -->
+
+<!-- ======= MOBILE ======= -->
+<div class="s2-mob">
+  <!-- Mobile hero section -->
+  <div style="position:relative;width:100%;min-height:620px;overflow:hidden;background:#1a0d09">
+    <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fill5aea0be10966.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#1a0d09" />
+    <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-scrim1.png" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;background:transparent" />
+    <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,0) 55%);z-index:2"></div>
+
+    <div style="position:relative;z-index:3;min-height:620px;display:flex;flex-direction:column;box-sizing:border-box">
+
+      <!-- Mobile nav -->
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px;flex-shrink:0">
+        <a href="/" aria-label="Adobe" style="display:flex;align-items:center;text-decoration:none">
+          <svg width="30" height="26" viewBox="0 0 35 30" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M21.5 0H35L21.5 30V0Z" fill="#FA0F00" ></path>
+            <path d="M13.5 0H0L13.5 30V0Z" fill="#FA0F00" ></path>
+            <path d="M17.5 11.4 24.2 28H20.0L17.5 21.8H11.2L17.5 11.4Z" fill="#FA0F00" ></path>
+          </svg>
+        </a>
+        <button style="background:#fff;color:#000;border:none;border-radius:75px;padding:0 20px;height:36px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;cursor:pointer">Sign In</button>
+      </div>
+
+      <!-- Mobile copy -->
+      <div style="padding:24px 24px 20px;display:flex;flex-direction:column;gap:24px;flex:1;justify-content:center">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p style="margin:0;color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px">Adobe for Business</p>
+          <h2 style="margin:0;color:#fff;font-family:'Adobe Clean Display',Helvetica,Arial,sans-serif;font-weight:900;font-size:40px;line-height:40px;letter-spacing:-1.68px">Orchestrate customer experiences with AI.</h2>
+          <p style="margin:0;color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px">Unify data, content, and workflows with Adobe AI to move faster, personalize at scale, and show impact across your business.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button style="background:#fff;color:#000;border:none;border-radius:75px;height:40px;padding:0 24px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap">It starts with Adobe</button>
+          <button style="background:transparent;color:#fff;border:1px solid #fff;border-radius:75px;height:40px;padding:0 24px;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;cursor:pointer">See plans</button>
+        </div>
+      </div>
+
+      <!-- Mobile tab nav (horizontal scroll) -->
+      <div style="padding:0 16px 24px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-shrink:0">
+        <style>.s2-mob-tabs::-webkit-scrollbar{display:none}</style>
+        <div class="s2-mob-tabs" style="display:flex;gap:4px;width:max-content">
+
+          <div style="position:relative;display:flex;align-items:center;gap:8px;padding:12px 12px 16px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;cursor:pointer;flex-shrink:0">
+            <div style="position:absolute;bottom:0;left:0;right:0;height:4px;background:#eb1000;border-radius:4px 4px 0 0"></div>
+            <span style="color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;white-space:nowrap">Creativity and design</span>
+          </div>
+
+          <div style="position:relative;display:flex;align-items:center;gap:8px;padding:12px 12px 16px;border-radius:8px;background:#fff;border:1px solid rgba(255,255,255,.10);overflow:hidden;cursor:pointer;flex-shrink:0">
+            <span style="color:#000;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;white-space:nowrap">Content creation</span>
+          </div>
+
+          <div style="position:relative;display:flex;align-items:center;gap:8px;padding:12px 12px 16px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;cursor:pointer;flex-shrink:0">
+            <div style="position:absolute;bottom:0;left:0;right:0;height:4px;background:#eb1000;border-radius:4px 4px 0 0"></div>
+            <span style="color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;white-space:nowrap">PDF and productivity</span>
+          </div>
+
+          <div style="position:relative;display:flex;align-items:center;gap:8px;padding:12px 12px 16px;border-radius:8px;background:#fff;border:1px solid rgba(255,255,255,.10);overflow:hidden;cursor:pointer;flex-shrink:0">
+            <div style="position:absolute;bottom:0;left:0;right:0;height:4px;background:#eb1000;border-radius:4px 4px 0 0"></div>
+            <span style="color:#000;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;white-space:nowrap">Adobe for Business</span>
+          </div>
+
+          <div style="position:relative;display:flex;align-items:center;gap:8px;padding:12px 12px 16px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;cursor:pointer;flex-shrink:0">
+            <span style="color:#fff;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:13px;white-space:nowrap">Students and teachers</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile white content panel (below hero) -->
+  <div style="background:#fff;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center">
+    <p style="margin:0;color:rgba(0,0,0,.50);font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px">Optimized Workflows</p>
+    <h3 style="margin:0;color:#000;font-family:'Adobe Clean Display',Helvetica,Arial,sans-serif;font-weight:900;font-size:32px;line-height:32px;letter-spacing:-.96px">Everything you need to make anything.</h3>
+    <p style="margin:0;color:#101017;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:.16px">Whether you're a student, social influencer, creative professional, performance marketer, or global brand—Adobe has the apps you need to make it happen.</p>
+  </div>
+</div>
+
+</section>

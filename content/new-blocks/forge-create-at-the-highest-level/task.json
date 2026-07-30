@@ -1,0 +1,25 @@
+{
+  "blockName": "forge-create-at-the-highest-level",
+  "sectionIndex": 0,
+  "decision": "below-threshold",
+  "score": 0.69,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/fMKQndDRSNu4yTjDYyiQoN/Home-%E2%80%94-A.com?node-id=8450-13352",
+  "figmaNodeId": "9706:11088",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/data/_repos/milo/.forge-worktrees/session-1e6c8920-ms7wd9bq",
+  "miloTargetPath": "/data/_repos/milo/.forge-worktrees/session-1e6c8920-ms7wd9bq/libs/c2/blocks/forge-create-at-the-highest-level",
+  "miloBranch": "forge/session-1e6c8920-1cf",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/bradjohn/forge/figma-1e6c89?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

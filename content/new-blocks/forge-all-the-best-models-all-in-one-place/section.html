@@ -1,0 +1,189 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.66" data-binding="below-threshold" data-figma-node-id="9706:20624" data-block="news" style="width:100%;background:#444;position:relative;overflow:hidden;">
+<style>
+  .s4-wrap{position:relative;width:100%;overflow:hidden;}
+  .s4-inner{position:relative;max-width:1440px;margin:0 auto;height:810px;overflow:hidden;}
+  @media(min-width:1920px){.s4-inner{max-width:1920px;height:960px;}}
+  @media(max-width:767px){.s4-inner{height:auto;min-height:580px;}}
+
+  .s4-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;background-color:#2a2025;}
+  .s4-scrim{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.00) 55%);z-index:1;pointer-events:none;}
+
+  /* Nav */
+  .s4-nav{position:absolute;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:64px;box-sizing:border-box;}
+  .s4-nav-left{display:flex;align-items:center;gap:20px;height:64px;flex-shrink:0;}
+  .s4-logo{display:flex;align-items:center;gap:7px;text-decoration:none;flex-shrink:0;}
+  .s4-logo-text{color:#fff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:20px;line-height:1;}
+  .s4-nav-links{display:flex;align-items:center;gap:18px;list-style:none;margin:0;padding:0;}
+  .s4-nav-links a{color:rgba(255,255,255,.9);font-family:'Adobe Clean',Arial,sans-serif;font-size:14px;font-weight:400;text-decoration:none;white-space:nowrap;}
+  .s4-nav-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .s4-nav-icon{color:#fff;flex-shrink:0;}
+  .s4-avatar{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.25);flex-shrink:0;}
+  .s4-signin{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;border:none;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000;white-space:nowrap;flex-shrink:0;}
+  .s4-searchbar{display:flex;align-items:center;gap:8px;padding:0 14px;height:40px;border-radius:75px;background:#fff;white-space:nowrap;flex-shrink:0;}
+  .s4-search-orb{width:14px;height:14px;border-radius:50%;background:linear-gradient(0deg,#8d88f2 0%,#eb1000 100%);flex-shrink:0;}
+  .s4-search-text{font-family:'Adobe Clean',Arial,sans-serif;font-size:13px;line-height:13px;color:rgba(0,0,0,.7);}
+  .s4-search-ask{font-family:'Adobe Clean Display',Arial,sans-serif;font-weight:600;font-size:14px;color:#000;}
+  @media(max-width:1200px){.s4-searchbar{display:none;} .s4-nav-links li:nth-child(n+4){display:none;}}
+  @media(max-width:900px){.s4-nav-links{display:none;}}
+  @media(max-width:767px){.s4-signin{display:none;}}
+
+  /* Content */
+  .s4-content{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:space-between;padding:160px 64px 80px;box-sizing:border-box;}
+  @media(max-width:1024px){.s4-content{padding:120px 40px 60px;}}
+  @media(max-width:767px){.s4-content{padding:80px 24px 40px;position:relative;}}
+
+  /* Copy */
+  .s4-copy{display:flex;flex-direction:column;gap:32px;max-width:667px;}
+  .s4-copy-inner{display:flex;flex-direction:column;gap:16px;}
+  .s4-eyebrow{color:#fff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;margin:0;}
+  .s4-text-group{display:flex;flex-direction:column;gap:8px;}
+  .s4-heading{color:#fff;font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:80px;line-height:76px;letter-spacing:-3.2px;margin:0;}
+  .s4-body{color:#fff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;max-width:500px;margin:0;}
+  @media(max-width:1024px){.s4-heading{font-size:64px;line-height:64px;letter-spacing:-2.4px;}}
+  @media(max-width:767px){.s4-heading{font-size:40px;line-height:40px;letter-spacing:-1.68px;} .s4-body{font-size:16px;line-height:20px;} .s4-copy{max-width:100%;}}
+
+  .s4-ctas{display:flex;flex-direction:row;gap:8px;flex-wrap:wrap;}
+  .s4-btn-white{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;border:none;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000;white-space:nowrap;}
+  .s4-btn-outline{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:transparent;border:1px solid #fff;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#fff;white-space:nowrap;}
+
+  /* Router nav */
+  .s4-router{display:flex;flex-direction:row;justify-content:space-between;align-items:flex-end;gap:24px;width:100%;}
+  @media(max-width:767px){.s4-router{flex-direction:column-reverse;align-items:flex-end;gap:12px;}}
+  .s4-tabs{display:flex;flex-direction:row;align-items:flex-end;gap:8px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;}
+  .s4-tabs::-webkit-scrollbar{display:none;}
+
+  .s4-tab{position:relative;display:flex;flex-direction:column;padding:12px 12px 16px;width:220px;min-width:131px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;cursor:pointer;box-sizing:border-box;flex-shrink:0;text-decoration:none;transition:background .2s;}
+  .s4-tab--active{background:#fff;}
+
+  .s4-tab-bar{position:absolute;top:0;left:0;width:96px;height:4px;background:rgba(0,0,0,.5);}
+  .s4-tab--active .s4-tab-bar{background:#eb1000;border-radius:0 0 4px 4px;}
+
+  .s4-tab-cta{display:flex;align-items:center;gap:8px;width:100%;margin-top:10px;}
+  .s4-tab-label{flex:1;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#fff;}
+  .s4-tab--active .s4-tab-label{color:#000;}
+
+  @media(max-width:1100px){.s4-tab{width:180px;}}
+  @media(max-width:900px){.s4-tab{width:150px;min-width:110px;}}
+  @media(max-width:767px){.s4-tab{width:140px;min-width:120px;}}
+
+  .s4-play{width:40px;height:40px;border-radius:100px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+
+  /* Mobile supplemental */
+  .s4-mobile-panel{display:none;background:#fff;padding:40px 32px;text-align:center;}
+  @media(max-width:767px){.s4-mobile-panel{display:flex;flex-direction:column;align-items:center;gap:8px;}}
+  .s4-mp-eyebrow{color:rgba(0,0,0,.5);font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;margin:0;}
+  .s4-mp-heading{color:#000;font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:32px;line-height:32px;letter-spacing:-.96px;margin:0;}
+  .s4-mp-body{color:#101017;font-family:'Adobe Clean',Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:.16px;margin:0;}
+</style>
+
+<div class="s4-wrap">
+  <div class="s4-inner">
+    <!-- Background photograph -->
+    <img class="s4-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fillc50d3c79c534.png" alt="Person working at a laptop displaying Adobe Firefly image generation interface" />
+
+    <!-- Gradient scrim overlay -->
+    <div class="s4-scrim"></div>
+
+    <!-- Top navigation -->
+    
+
+    <!-- Main content (hero copy + category nav) -->
+    <div class="s4-content">
+
+      <!-- Hero copy -->
+      <div class="s4-copy">
+        <div class="s4-copy-inner">
+          <p class="s4-eyebrow">Firefly</p>
+          <div class="s4-text-group">
+            <h2 class="s4-heading">All the best models, all in one place.</h2>
+            <p class="s4-body">Quickly create and edit images, video and audio with unlimited generations using top AI models from Adobe, Google, OpenAI, and more.</p>
+          </div>
+        </div>
+        <div class="s4-ctas">
+          <button class="s4-btn-white">Create with Firefly</button>
+          <button class="s4-btn-outline">See plans</button>
+        </div>
+      </div>
+
+      <!-- Category router navigation -->
+      <div class="s4-router">
+        <div class="s4-tabs" role="tablist" aria-label="Product categories">
+
+          <!-- Tab 1: Creativity and design -->
+          <div class="s4-tab" role="tab" aria-selected="false" tabindex="0">
+            <div class="s4-tab-bar" aria-hidden="true"></div>
+            <div class="s4-tab-cta">
+              <span class="s4-tab-label">Creativity and design</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M1 1L3.5 3.5L1 6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 2: Content creation (ACTIVE) -->
+          <div class="s4-tab s4-tab--active" role="tab" aria-selected="true" tabindex="0">
+            <div class="s4-tab-bar" aria-hidden="true"></div>
+            <div class="s4-tab-cta">
+              <span class="s4-tab-label">Content creation</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M1 1L3.5 3.5L1 6" stroke="#000" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 3: PDF and productivity -->
+          <div class="s4-tab" role="tab" aria-selected="false" tabindex="0">
+            <div class="s4-tab-bar" aria-hidden="true"></div>
+            <div class="s4-tab-cta">
+              <span class="s4-tab-label">PDF and productivity</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M1 1L3.5 3.5L1 6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 4: Adobe for Business -->
+          <div class="s4-tab" role="tab" aria-selected="false" tabindex="0">
+            <div class="s4-tab-bar" aria-hidden="true"></div>
+            <div class="s4-tab-cta">
+              <span class="s4-tab-label">Adobe for Business</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M1 1L3.5 3.5L1 6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 5: Students and teachers -->
+          <div class="s4-tab" role="tab" aria-selected="false" tabindex="0">
+            <div class="s4-tab-bar" aria-hidden="true"></div>
+            <div class="s4-tab-cta">
+              <span class="s4-tab-label">Students and teachers</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M1 1L3.5 3.5L1 6" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Play / Pause toggle -->
+        <button class="s4-play" aria-label="Pause slideshow">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <rect x="2" y="1" width="3" height="12" rx="1" fill="white" ></rect>
+            <rect x="9" y="1" width="3" height="12" rx="1" fill="white" ></rect>
+          </svg>
+        </button>
+      </div>
+
+    </div><!-- /s4-content -->
+  </div><!-- /s4-inner -->
+
+  <!-- Mobile supplemental card (visible only on mobile) -->
+  <div class="s4-mobile-panel">
+    <p class="s4-mp-eyebrow">Optimized Workflows</p>
+    <h3 class="s4-mp-heading">Everything you need&#160; to make anything.</h3>
+    <p class="s4-mp-body">Whether you're a student, social influencer, creative professional, performance marketer, or global brand—Adobe has the apps you need to make it happen.</p>
+  </div>
+
+</div><!-- /s4-wrap -->
+</section>

@@ -1,0 +1,225 @@
+<section data-binding-score="0.73" data-binding="loose-variant" data-figma-node-id="9706:23266" data-block="news" class="sl6">
+<style>
+.sl6{width:100%;position:relative;overflow:hidden;background:#1a0d07;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;}
+.sl6 *{box-sizing:border-box;}
+/* ── Hero wrapper ─────────────────────────────────────── */
+.sl6-hero{position:relative;width:100%;height:810px;overflow:hidden;}
+.sl6-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;}
+.sl6-scrim{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,0) 55%);z-index:1;pointer-events:none;}
+/* ── Nav ──────────────────────────────────────────────── */
+.sl6-nav{position:absolute;top:0;left:0;right:0;z-index:10;}
+.sl6-nav-c{max-width:1440px;margin:0 auto;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;}
+.sl6-nav-l{display:flex;align-items:center;gap:24px;}
+.sl6-logo-link{display:flex;align-items:center;text-decoration:none;flex-shrink:0;}
+.sl6-nav-links{display:flex;align-items:center;gap:20px;list-style:none;margin:0;padding:0;}
+.sl6-nav-links a{color:rgba(255,255,255,.90);text-decoration:none;font-size:14px;font-weight:400;white-space:nowrap;}
+.sl6-nav-r{display:flex;align-items:center;gap:12px;}
+.sl6-icon-btn{background:none;border:none;cursor:pointer;display:flex;align-items:center;padding:0;}
+.sl6-signin{background:#fff;color:#000;border:none;border-radius:75px;padding:0 24px;height:40px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap;}
+.sl6-searchbar{display:flex;align-items:center;gap:6px;background:#fff;border-radius:75px;padding:0 14px;height:40px;}
+.sl6-orb{width:14px;height:14px;border-radius:50%;background:linear-gradient(180deg,#eb1000 0%,#8d88f2 100%);flex-shrink:0;}
+.sl6-sq{font-size:13px;color:rgba(0,0,0,.70);white-space:nowrap;letter-spacing:.13px;}
+.sl6-ask{font-family:'Adobe Clean Display','Adobe Clean',inherit;font-size:14px;font-weight:600;color:#000;white-space:nowrap;letter-spacing:.14px;}
+/* ── Content overlay ─────────────────────────────────── */
+.sl6-content{position:absolute;inset:0;z-index:2;}
+.sl6-content-c{max-width:1440px;margin:0 auto;height:100%;display:flex;flex-direction:column;justify-content:space-between;padding:160px 64px 80px;}
+/* ── Copy ────────────────────────────────────────────── */
+.sl6-copy{display:flex;flex-direction:column;gap:32px;max-width:667px;}
+.sl6-copy-head{display:flex;flex-direction:column;gap:16px;}
+.sl6-app-lbl{margin:0;font-weight:700;font-size:16px;line-height:20px;color:#fff;}
+.sl6-hg{display:flex;flex-direction:column;gap:8px;}
+.sl6-h2{margin:0;font-family:'Adobe Clean Display','Adobe Clean',sans-serif;font-weight:900;font-size:80px;line-height:76px;letter-spacing:-3.2px;color:#fff;}
+.sl6-sub{margin:0;font-size:20px;line-height:24px;color:#fff;max-width:500px;}
+.sl6-cta{display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#000;border:none;border-radius:75px;padding:0 24px;height:40px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;}
+/* ── Router navigation ───────────────────────────────── */
+.sl6-router{display:flex;flex-direction:row;justify-content:space-between;align-items:flex-end;gap:24px;}
+.sl6-tabs{display:flex;flex-direction:row;align-items:flex-end;gap:8px;}
+.sl6-tab{position:relative;border-radius:8px;padding:12px 12px 16px;width:220px;flex-shrink:0;overflow:hidden;display:flex;flex-direction:column;gap:12px;}
+.sl6-tab-on{background:#fff;border:1px solid rgba(255,255,255,.10);}
+.sl6-tab-off{background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);}
+.sl6-abar{position:absolute;top:0;left:12px;width:96px;height:4px;background:#eb1000;border-radius:0 0 4px 4px;}
+.sl6-icons{display:flex;align-items:center;gap:3px;min-height:20px;}
+.sl6-chip{width:19px;height:18px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#fff;letter-spacing:0;}
+.sl6-tab-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.sl6-lbl-dk{font-weight:700;font-size:14px;line-height:18px;color:#000;}
+.sl6-lbl-lt{font-weight:700;font-size:14px;line-height:18px;color:#fff;}
+.sl6-pp{width:40px;height:40px;border-radius:100px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;}
+/* ── Mobile white card ───────────────────────────────── */
+.sl6-mc{display:none;background:#fff;padding:40px 32px;text-align:center;flex-direction:column;align-items:center;gap:8px;}
+.sl6-mc-ey{margin:0;font-weight:700;font-size:16px;line-height:20px;color:rgba(0,0,0,.50);}
+.sl6-mc-h{margin:0;font-family:'Adobe Clean Display',inherit;font-weight:900;font-size:32px;line-height:32px;letter-spacing:-.96px;color:#000;}
+.sl6-mc-p{margin:0;font-size:16px;line-height:21px;letter-spacing:.16px;color:#101017;}
+/* ── Responsive ──────────────────────────────────────── */
+@media(max-width:1280px){
+  .sl6-tab{width:190px;}
+  .sl6-h2{font-size:72px;line-height:68px;}
+}
+@media(max-width:1100px){
+  .sl6-tab{width:168px;}
+  .sl6-h2{font-size:60px;line-height:58px;}
+  .sl6-content-c{padding:140px 48px 64px;}
+  .sl6-sq{display:none;}
+}
+@media(max-width:900px){
+  .sl6-tab{width:150px;}
+  .sl6-h2{font-size:52px;line-height:50px;letter-spacing:-2px;}
+}
+@media(max-width:768px){
+  .sl6-hero{height:auto;min-height:600px;}
+  .sl6-content-c{padding:80px 24px 32px;}
+  .sl6-h2{font-size:40px;line-height:40px;letter-spacing:-1.68px;}
+  .sl6-sub{font-size:16px;line-height:20px;max-width:100%;}
+  .sl6-copy{max-width:100%;gap:24px;}
+  .sl6-nav-links{display:none;}
+  .sl6-searchbar{display:none;}
+  .sl6-router{flex-direction:column;align-items:flex-start;gap:16px;}
+  .sl6-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;width:100%;}
+  .sl6-tab{width:155px;}
+  .sl6-mc{display:flex;}
+}
+@media(max-width:480px){
+  .sl6-hero{min-height:520px;}
+  .sl6-h2{font-size:34px;line-height:36px;}
+  .sl6-tab{width:140px;}
+  .sl6-icons .sl6-chip:nth-child(n+4){display:none;}
+}
+</style>
+
+<!-- ── Hero ──────────────────────────────────────────────────── -->
+<div class="sl6-hero">
+
+  <!-- Background photograph (Premiere Pro editing studio) -->
+  <img class="sl6-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fill2a871ec68316.png" alt="Adobe Premiere Pro Color Mode interface — editor working at a monitor showing rally car footage" width="1920" height="960" />
+
+  <!-- Gradient scrim: dark top-left, transparent toward bottom-right -->
+  <div class="sl6-scrim" aria-hidden="true"></div>
+
+  <!-- ── Top navigation bar ─────────────────────────────────── -->
+  
+
+  <!-- ── Main content overlay ──────────────────────────────── -->
+  <div class="sl6-content">
+    <div class="sl6-content-c">
+
+      <!-- Hero copy: label → headline → subtext → CTA -->
+      <div class="sl6-copy">
+        <div class="sl6-copy-head">
+          <p class="sl6-app-lbl">Premiere</p>
+          <div class="sl6-hg">
+            <h2 class="sl6-h2">Introducing Color Mode.</h2>
+            <p class="sl6-sub">Color grading purpose-built for editors. Now in Premiere (beta). Learn more.</p>
+          </div>
+        </div>
+        <div>
+          <button class="sl6-cta">Free trial</button>
+        </div>
+      </div>
+
+      <!-- Bottom carousel / router navigation -->
+      <div class="sl6-router" role="tablist" aria-label="Slide categories">
+
+        <div class="sl6-tabs">
+
+          <!-- Tab 1: Creativity and design — ACTIVE (white card, red bar) -->
+          <div class="sl6-tab sl6-tab-on" role="tab" aria-selected="true">
+            <div class="sl6-abar" aria-hidden="true"></div>
+            <div class="sl6-icons" aria-hidden="true">
+              <div class="sl6-chip" style="background:#da1f26;">Cc</div>
+              <div class="sl6-chip" style="background:#eb4600;">Ps</div>
+              <div class="sl6-chip" style="background:#001e36;color:#31a8ff;">Ai</div>
+              <div class="sl6-chip" style="background:#0f0f0f;color:#e8d44d;">Id</div>
+            </div>
+            <div class="sl6-tab-foot">
+              <span class="sl6-lbl-dk">Creativity and design</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M0.75 0.75L3.25 3.5L0.75 6.25" stroke="#000" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 2: Content creation -->
+          <div class="sl6-tab sl6-tab-off" role="tab" aria-selected="false">
+            <div class="sl6-icons" aria-hidden="true">
+              <div class="sl6-chip" style="background:#eb1000;">Ff</div>
+              <div class="sl6-chip" style="background:#2b6b5e;color:#00f2c5;">Ex</div>
+              <div class="sl6-chip" style="background:#1c1c4e;color:#99f;">Ae</div>
+            </div>
+            <div class="sl6-tab-foot">
+              <span class="sl6-lbl-lt">Content creation</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M0.75 0.75L3.25 3.5L0.75 6.25" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 3: PDF and productivity -->
+          <div class="sl6-tab sl6-tab-off" role="tab" aria-selected="false">
+            <div class="sl6-icons" aria-hidden="true">
+              <div class="sl6-chip" style="background:#b30b00;">Ac</div>
+              <div class="sl6-chip" style="background:#470137;color:#ff61f6;">Si</div>
+              <div class="sl6-chip" style="background:#1c2260;color:#00d4ff;">Sc</div>
+            </div>
+            <div class="sl6-tab-foot">
+              <span class="sl6-lbl-lt">PDF and productivity</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M0.75 0.75L3.25 3.5L0.75 6.25" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 4: Adobe for Business -->
+          <div class="sl6-tab sl6-tab-off" role="tab" aria-selected="false">
+            <div class="sl6-icons" aria-hidden="true">
+              <div class="sl6-chip" style="background:#eb1000;width:16px;height:16px;">Ec</div>
+              <div class="sl6-chip" style="background:#e34902;width:16px;height:16px;">Mk</div>
+              <div class="sl6-chip" style="background:#13819c;width:16px;height:16px;">An</div>
+            </div>
+            <div class="sl6-tab-foot">
+              <span class="sl6-lbl-lt">Adobe for Business</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M0.75 0.75L3.25 3.5L0.75 6.25" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Tab 5: Students and teachers -->
+          <div class="sl6-tab sl6-tab-off" role="tab" aria-selected="false">
+            <div class="sl6-icons" aria-hidden="true">
+              <div class="sl6-chip" style="background:#da1f26;">Cc</div>
+              <div class="sl6-chip" style="background:#eb1000;">Ff</div>
+              <div class="sl6-chip" style="background:#b30b00;">Ac</div>
+              <div class="sl6-chip" style="background:#001e36;color:#31a8ff;">Ai</div>
+            </div>
+            <div class="sl6-tab-foot">
+              <span class="sl6-lbl-lt">Students and teachers</span>
+              <svg width="4" height="7" viewBox="0 0 4 7" fill="none" aria-hidden="true">
+                <path d="M0.75 0.75L3.25 3.5L0.75 6.25" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" ></path>
+              </svg>
+            </div>
+          </div>
+
+        </div><!-- /.sl6-tabs -->
+
+        <!-- Play/Pause button -->
+        <button class="sl6-pp" aria-label="Pause slideshow">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <rect x="1" y="1" width="3.5" height="10" rx="1" fill="white" ></rect>
+            <rect x="7.5" y="1" width="3.5" height="10" rx="1" fill="white" ></rect>
+          </svg>
+        </button>
+
+      </div><!-- /.sl6-router -->
+
+    </div><!-- /.sl6-content-c -->
+  </div><!-- /.sl6-content -->
+
+</div><!-- /.sl6-hero -->
+
+<!-- ── Mobile white card (hidden on desktop) ─────────────── -->
+<div class="sl6-mc" aria-hidden="true">
+  <p class="sl6-mc-ey">Optimized Workflows</p>
+  <h3 class="sl6-mc-h">Everything you need&#160;to make anything.</h3>
+  <p class="sl6-mc-p">Whether you're a student, social influencer, creative professional, performance marketer, or global brand—Adobe has the apps you need to make it happen.</p>
+</div>
+
+</section>

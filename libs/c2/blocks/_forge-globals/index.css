@@ -1,0 +1,147 @@
+/* forge page-level globals (:root tokens, resets, @font-face) relocated out of
+   block CSS so forge-* blocks pass forge-block-lint L10/L19. Linked from <head>. */
+@media(max-width:768px) {
+  .s1-dsk{display:none;}
+  .s1-mob{display:block;width:100%;background:#444;}
+}
+
+@media(max-width:1280px) and (min-width:769px) {
+  .s1-headline{font-size:64px;line-height:60px;letter-spacing:-2.5px;}
+  .s1-tab{width:185px;}
+}
+
+@media(max-width:1100px) and (min-width:769px) {
+  .s1-headline{font-size:52px;line-height:50px;letter-spacing:-2px;}
+  .s1-copy{max-width:500px;}
+  .s1-tab{width:155px;min-width:110px;}
+  .s1-content{padding:140px 40px 60px;}
+}
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* page-level rules owned by no authored block (reused/prose sections, or a
+   non-first section whose globals no block's corpus contained) — hoisted so
+   tokens, fonts and animations still resolve. */
+@media(min-width:1920px) {
+  .s2-hero{height:960px}
+  .s2-content{padding-top:160px}
+}
+
+@media(max-width:1280px) {
+  .s2-heading{font-size:64px;line-height:60px;letter-spacing:-2.4px}
+  .s2-card{width:180px}
+  .s2-askbar{min-width:200px}
+}
+
+@media(max-width:1100px) {
+  .s2-heading{font-size:52px;line-height:50px;letter-spacing:-2px}
+  .s2-content{padding:120px 40px 60px}
+  .s2-card{width:160px;min-width:110px}
+  .s2-navlinks{gap:12px}
+  .s2-navlinks a{font-size:13px}
+  .s2-askbar{min-width:160px}
+  .s2-desc{font-size:18px}
+}
+
+@media(max-width:768px) {
+  .s2-hero{display:none}
+  .s2-mob{display:block}
+}
+
+@media(min-width:1920px) {.s4-inner{max-width:1920px;height:960px;}}
+
+@media(max-width:767px) {.s4-inner{height:auto;min-height:580px;}}
+
+@media(max-width:1200px) {.s4-searchbar{display:none;} .s4-nav-links li:nth-child(n+4){display:none;}}
+
+@media(max-width:900px) {.s4-nav-links{display:none;}}
+
+@media(max-width:767px) {.s4-signin{display:none;}}
+
+@media(max-width:1024px) {.s4-content{padding:120px 40px 60px;}}
+
+@media(max-width:767px) {.s4-content{padding:80px 24px 40px;position:relative;}}
+
+@media(max-width:1024px) {.s4-heading{font-size:64px;line-height:64px;letter-spacing:-2.4px;}}
+
+@media(max-width:767px) {.s4-heading{font-size:40px;line-height:40px;letter-spacing:-1.68px;} .s4-body{font-size:16px;line-height:20px;} .s4-copy{max-width:100%;}}
+
+@media(max-width:767px) {.s4-router{flex-direction:column-reverse;align-items:flex-end;gap:12px;}}
+
+@media(max-width:1100px) {.s4-tab{width:180px;}}
+
+@media(max-width:900px) {.s4-tab{width:150px;min-width:110px;}}
+
+@media(max-width:767px) {.s4-tab{width:140px;min-width:120px;}}
+
+@media(max-width:767px) {.s4-mobile-panel{display:flex;flex-direction:column;align-items:center;gap:8px;}}
+
+@media(max-width:1200px) {
+  .s5-askbar{display:none;}
+  .s5-h1{font-size:64px;line-height:62px;letter-spacing:-2.56px;}
+  .s5-card{width:auto;flex:1;min-width:0;}
+}
+
+@media(max-width:960px) {
+  .s5-h1{font-size:52px;line-height:50px;letter-spacing:-2.08px;}
+  .s5-navlinks{display:none;}
+  .s5-content{padding:120px 40px 60px;}
+  .s5-card{min-width:0;}
+  .s5-clabel{font-size:12px;}
+}
+
+@media(max-width:768px) {
+  .s5-shell{height:auto;}
+  .s5-content{position:relative;padding:90px 24px 40px;min-height:560px;}
+  .s5-h1{font-size:40px;line-height:40px;letter-spacing:-1.68px;}
+  .s5-body{font-size:16px;line-height:20px;max-width:100%;}
+  .s5-copy{max-width:100%;}
+  .s5-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .s5-tabs::-webkit-scrollbar{display:none;}
+  .s5-card{min-width:145px;flex-shrink:0;}
+  .s5-signin{padding:0 16px;font-size:13px;}
+  .s5-mob{display:block;}
+}
+
+@media(max-width:1280px) {
+  .sl6-tab{width:190px;}
+  .sl6-h2{font-size:72px;line-height:68px;}
+}
+
+@media(max-width:1100px) {
+  .sl6-tab{width:168px;}
+  .sl6-h2{font-size:60px;line-height:58px;}
+  .sl6-content-c{padding:140px 48px 64px;}
+  .sl6-sq{display:none;}
+}
+
+@media(max-width:900px) {
+  .sl6-tab{width:150px;}
+  .sl6-h2{font-size:52px;line-height:50px;letter-spacing:-2px;}
+}
+
+@media(max-width:768px) {
+  .sl6-hero{height:auto;min-height:600px;}
+  .sl6-content-c{padding:80px 24px 32px;}
+  .sl6-h2{font-size:40px;line-height:40px;letter-spacing:-1.68px;}
+  .sl6-sub{font-size:16px;line-height:20px;max-width:100%;}
+  .sl6-copy{max-width:100%;gap:24px;}
+  .sl6-nav-links{display:none;}
+  .sl6-searchbar{display:none;}
+  .sl6-router{flex-direction:column;align-items:flex-start;gap:16px;}
+  .sl6-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;width:100%;}
+  .sl6-tab{width:155px;}
+  .sl6-mc{display:flex;}
+}
+
+@media(max-width:480px) {
+  .sl6-hero{min-height:520px;}
+  .sl6-h2{font-size:34px;line-height:36px;}
+  .sl6-tab{width:140px;}
+  .sl6-icons .sl6-chip:nth-child(n+4){display:none;}
+}
+
+@keyframes forge-shimmer {100%{transform:translateX(100%)}}
+
+/* reused-C2 reconciliation (see htmlToBlocks.js) */
+.section.dark .rich-content.hero { background-color: transparent; }

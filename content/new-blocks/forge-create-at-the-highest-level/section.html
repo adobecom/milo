@@ -1,0 +1,305 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.69" data-binding="below-threshold" data-figma-node-id="9706:11088" data-block="news">
+<style>
+/* ── Slide 1 Hero ── */
+.s1{width:100%;background:#444;font-family:'Adobe Clean',Arial,Helvetica,sans-serif;}
+
+/* DESKTOP (>768px) */
+.s1-dsk{position:relative;width:100%;min-height:810px;overflow:hidden;display:block;}
+.s1-mob{display:none;}
+
+/* full-bleed bg photo */
+.s1-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#555;}
+/* gradient scrim overlay */
+.s1-scrim{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.00) 55%);pointer-events:none;}
+
+/* centered inner */
+.s1-inner{position:relative;max-width:1440px;margin:0 auto;min-height:810px;display:flex;flex-direction:column;}
+
+/* nav bar */
+.s1-nav{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:0 16px;height:64px;z-index:10;}
+.s1-nav-logo{display:flex;align-items:center;height:64px;}
+.s1-nav-logo img{height:64px;width:auto;max-height:64px;}
+.s1-nav-util{display:flex;align-items:center;gap:12px;}
+.s1-nav-util-icon{width:18px;height:18px;object-fit:contain;flex-shrink:0;}
+.s1-nav-avatar{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;}
+.s1-nav-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.s1-nav-signin{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;border:none;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;text-decoration:none;white-space:nowrap;flex-shrink:0;}
+.s1-search-bar{display:flex;align-items:center;gap:8px;padding:0 16px;height:40px;border-radius:75px;background:#fff;overflow:hidden;flex-shrink:0;min-width:0;}
+.s1-search-dot{width:14px;height:14px;border-radius:50%;background:linear-gradient(180deg,#eb1000 0%,#8d88f2 100%);flex-shrink:0;}
+.s1-search-txt{font-size:14px;line-height:13px;letter-spacing:.14px;color:rgba(0,0,0,.7);white-space:nowrap;}
+.s1-search-ask{font-family:'Adobe Clean Display',Arial,sans-serif;font-weight:600;font-size:14px;color:#000;white-space:nowrap;}
+
+/* main content area */
+.s1-content{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:160px 64px 80px;box-sizing:border-box;min-height:810px;}
+
+/* copy */
+.s1-copy{display:flex;flex-direction:column;gap:32px;max-width:667px;}
+.s1-copy-head{display:flex;flex-direction:column;gap:16px;}
+.s1-eyebrow{font-weight:700;font-size:16px;line-height:20px;color:#fff;margin:0;}
+.s1-copy-body{display:flex;flex-direction:column;gap:8px;}
+.s1-headline{font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:80px;line-height:76px;letter-spacing:-3.2px;color:#fff;margin:0;}
+.s1-desc{font-size:20px;line-height:24px;color:#fff;margin:0;max-width:500px;}
+.s1-ctas{display:flex;flex-direction:row;gap:8px;flex-wrap:wrap;}
+.s1-btn-white{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;border:none;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000;text-decoration:none;white-space:nowrap;}
+.s1-btn-outline{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:transparent;border:1px solid #fff;cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#fff;text-decoration:none;white-space:nowrap;}
+
+/* tabs row */
+.s1-tabs-row{display:flex;flex-direction:row;justify-content:space-between;align-items:flex-end;gap:24px;}
+.s1-tabs{display:flex;flex-direction:row;align-items:flex-end;gap:8px;flex-wrap:nowrap;min-width:0;}
+.s1-tab{position:relative;display:flex;flex-direction:column;gap:12px;padding:12px 12px 16px;width:220px;min-width:120px;border-radius:8px;border:1px solid rgba(255,255,255,.11);overflow:hidden;cursor:pointer;flex-shrink:0;box-sizing:border-box;}
+.s1-tab.act{background:#fff;}
+.s1-tab.inact{background:rgba(0,0,0,.44);}
+.s1-tab-bar{position:absolute;top:0;left:0;width:96px;height:4px;border-radius:0 0 4px 4px;}
+.s1-tab-bar.red{background:#eb1000;}
+.s1-tab-bar.drk{background:rgba(0,0,0,.5);}
+.s1-tab-prod{height:28px;width:auto;object-fit:contain;max-width:100%;background:transparent;}
+.s1-tab-cta{display:flex;flex-direction:row;align-items:center;gap:8px;}
+.s1-tab-lbl{font-weight:700;font-size:14px;line-height:18px;flex:1;text-align:left;}
+.s1-tab.act .s1-tab-lbl{color:#000;}
+.s1-tab.inact .s1-tab-lbl{color:#fff;}
+.s1-tab-chev{width:3px;height:6px;flex-shrink:0;object-fit:contain;}
+.s1-pp{width:40px;height:40px;border-radius:100px;flex-shrink:0;object-fit:contain;background:rgba(0,0,0,.44);}
+
+/* MOBILE (≤768px) */
+@media(max-width:768px){
+  .s1-dsk{display:none;}
+  .s1-mob{display:block;width:100%;background:#444;}
+}
+
+/* tablet adjustments */
+@media(max-width:1280px) and (min-width:769px){
+  .s1-headline{font-size:64px;line-height:60px;letter-spacing:-2.5px;}
+  .s1-tab{width:185px;}
+}
+@media(max-width:1100px) and (min-width:769px){
+  .s1-headline{font-size:52px;line-height:50px;letter-spacing:-2px;}
+  .s1-copy{max-width:500px;}
+  .s1-tab{width:155px;min-width:110px;}
+  .s1-content{padding:140px 40px 60px;}
+}
+
+/* ── MOBILE STYLES ── */
+.s1-mob-hero{position:relative;width:100%;min-height:691px;overflow:hidden;background:#333;}
+.s1-mob-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;background:#555;}
+.s1-mob-scrim{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.60) 0%,rgba(0,0,0,.00) 55%);pointer-events:none;}
+.s1-mob-inner{position:relative;z-index:1;min-height:691px;display:flex;flex-direction:column;}
+.s1-mob-statusbar{display:flex;justify-content:space-between;align-items:center;padding:21px 24px 19px;}
+.s1-mob-time{color:#fff;font-family:'SF Pro','-apple-system','BlinkMacSystemFont',sans-serif;font-weight:590;font-size:17px;line-height:22px;}
+.s1-mob-levels{height:22px;width:auto;}
+.s1-mob-nav{display:flex;justify-content:space-between;align-items:center;padding:4px 16px;height:48px;}
+.s1-mob-logo{height:30px;width:auto;object-fit:contain;}
+.s1-mob-nav-r{display:flex;align-items:center;gap:8px;}
+.s1-mob-apps{width:22px;height:18px;object-fit:contain;}
+.s1-mob-signin{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;border:1px solid rgba(255,255,255,.05);cursor:pointer;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000;text-decoration:none;white-space:nowrap;}
+.s1-mob-copy{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:24px 24px 20px;gap:24px;}
+.s1-mob-copy-top{display:flex;flex-direction:column;gap:8px;}
+.s1-mob-eyebrow{font-weight:700;font-size:16px;line-height:20px;color:#fff;margin:0;}
+.s1-mob-headline{font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:40px;line-height:40px;letter-spacing:-1.68px;color:#fff;margin:0;}
+.s1-mob-desc{font-size:16px;line-height:20px;color:#fff;margin:0;}
+.s1-mob-ctas{display:flex;flex-direction:row;gap:8px;}
+.s1-mob-btn-w{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;background:#fff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000;text-decoration:none;white-space:nowrap;}
+.s1-mob-btn-o{display:flex;align-items:center;justify-content:center;padding:0 24px;height:40px;border-radius:75px;border:1px solid #fff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#fff;text-decoration:none;white-space:nowrap;}
+.s1-mob-pp{position:absolute;bottom:104px;right:16px;width:40px;height:40px;border-radius:100px;object-fit:contain;background:rgba(0,0,0,.44);z-index:2;}
+.s1-mob-tabs-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 16px 0;background:transparent;}
+.s1-mob-tabs-wrap::-webkit-scrollbar{display:none;}
+.s1-mob-tabs{display:flex;flex-direction:row;align-items:flex-end;gap:4px;padding:8px 0;}
+.s1-mob-tab{position:relative;display:flex;flex-direction:row;align-items:center;gap:12px;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.11);overflow:hidden;flex-shrink:0;cursor:pointer;box-sizing:border-box;}
+.s1-mob-tab.act{background:#fff;}
+.s1-mob-tab.inact{background:rgba(0,0,0,.44);height:46px;}
+.s1-mob-tab-bar{position:absolute;bottom:0;left:0;width:96px;height:4px;border-radius:4px 4px 0 0;background:#eb1000;}
+.s1-mob-tab-prod{height:22px;width:auto;object-fit:contain;flex-shrink:0;}
+.s1-mob-tab-lbl{font-weight:700;font-size:14px;line-height:18px;white-space:nowrap;}
+.s1-mob-tab.act .s1-mob-tab-lbl{color:#000;}
+.s1-mob-tab.inact .s1-mob-tab-lbl{color:#fff;}
+.s1-mob-tab-chev{width:3px;height:6px;flex-shrink:0;object-fit:contain;}
+.s1-mob-bottom{background:#fff;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.s1-mob-bottom-inner{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;}
+.s1-mob-opt{font-weight:700;font-size:16px;line-height:20px;color:rgba(0,0,0,.5);text-align:center;margin:0;}
+.s1-mob-bh{font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:32px;line-height:32px;letter-spacing:-.96px;color:#000;text-align:center;margin:0;}
+.s1-mob-bd{font-size:16px;line-height:21px;letter-spacing:.16px;color:#101017;text-align:center;margin:0;}
+</style>
+
+<!-- ═══════════ DESKTOP HERO (>768px) ═══════════ -->
+<div class="s1 s1-dsk">
+  <!-- Background photograph -->
+  <img class="s1-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fillef72709cec9b.png" alt="Creative workspace featuring Adobe tools on an iMac display" loading="eager" />
+  <!-- Gradient scrim -->
+  <div class="s1-scrim"></div>
+
+  <!-- Centered content container -->
+  <div class="s1-inner">
+    <!-- Navigation bar -->
+    
+
+    <!-- Main content (pushes copy top, tabs bottom) -->
+    <div class="s1-content">
+      <!-- Hero copy -->
+      <div class="s1-copy">
+        <div class="s1-copy-head">
+          <p class="s1-eyebrow">Creative Cloud</p>
+          <div class="s1-copy-body">
+            <h1 class="s1-headline">Create at the highest level.&#160;</h1>
+            <p class="s1-desc">Photoshop, Illustrator, Premiere, and much more. Work with the tools behind the world's most iconic creative content. Save 50% on Creative Cloud Pro for the first three months. See terms.</p>
+          </div>
+        </div>
+        <div class="s1-ctas">
+          <a href="#" class="s1-btn-white">Free trial</a>
+          <a href="#" class="s1-btn-outline">See plans</a>
+        </div>
+      </div>
+
+      <!-- Router Navigation / Category tabs -->
+      <div class="s1-tabs-row">
+        <div class="s1-tabs" role="tablist">
+
+          <!-- Tab 1: Creativity and design — ACTIVE -->
+          <div class="s1-tab act" role="tab" aria-selected="true">
+            <div class="s1-tab-bar red"></div>
+            <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId.png" alt="" class="s1-tab-prod" loading="lazy" style="background:#eee;min-height:28px;" />
+            <div class="s1-tab-cta">
+              <span class="s1-tab-lbl">Creativity and design</span>
+              <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron.png" alt="" class="s1-tab-chev" loading="lazy" />
+            </div>
+          </div>
+
+          <!-- Tab 2: Content creation -->
+          <div class="s1-tab inact" role="tab" aria-selected="false">
+            <div class="s1-tab-bar drk"></div>
+            <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId1.png" alt="" class="s1-tab-prod" loading="lazy" style="background:rgba(255,255,255,.08);min-height:28px;" />
+            <div class="s1-tab-cta">
+              <span class="s1-tab-lbl">Content creation</span>
+              <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron1.png" alt="" class="s1-tab-chev" loading="lazy" />
+            </div>
+          </div>
+
+          <!-- Tab 3: PDF and productivity -->
+          <div class="s1-tab inact" role="tab" aria-selected="false">
+            <div class="s1-tab-bar drk"></div>
+            <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId2.png" alt="" class="s1-tab-prod" loading="lazy" style="background:rgba(255,255,255,.08);min-height:28px;" />
+            <div class="s1-tab-cta">
+              <span class="s1-tab-lbl">PDF and productivity</span>
+              <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron2.png" alt="" class="s1-tab-chev" loading="lazy" />
+            </div>
+          </div>
+
+          <!-- Tab 4: Adobe for Business -->
+          <div class="s1-tab inact" role="tab" aria-selected="false">
+            <div class="s1-tab-bar drk"></div>
+            <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId3.png" alt="" class="s1-tab-prod" loading="lazy" style="background:rgba(255,255,255,.08);min-height:28px;" />
+            <div class="s1-tab-cta">
+              <span class="s1-tab-lbl">Adobe for Business</span>
+              <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron3.png" alt="" class="s1-tab-chev" loading="lazy" />
+            </div>
+          </div>
+
+          <!-- Tab 5: Students and teachers -->
+          <div class="s1-tab inact" role="tab" aria-selected="false">
+            <div class="s1-tab-bar drk"></div>
+            <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId4.png" alt="" class="s1-tab-prod" loading="lazy" style="background:rgba(255,255,255,.08);min-height:28px;" />
+            <div class="s1-tab-cta">
+              <span class="s1-tab-lbl">Students and teachers</span>
+              <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron4.png" alt="" class="s1-tab-chev" loading="lazy" />
+            </div>
+          </div>
+
+        </div><!-- /s1-tabs -->
+
+        <!-- Play/Pause -->
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-playPause.png" alt="Play or pause slideshow" class="s1-pp" loading="lazy" />
+      </div><!-- /s1-tabs-row -->
+    </div><!-- /s1-content -->
+  </div><!-- /s1-inner -->
+</div><!-- /s1-dsk -->
+
+
+<!-- ═══════════ MOBILE HERO (≤768px) ═══════════ -->
+<div class="s1-mob">
+  <!-- Hero area with background photo -->
+  <div class="s1-mob-hero">
+    <img class="s1-mob-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fillcd02e5a732a6.png" alt="Creative workspace" loading="eager" />
+    <div class="s1-mob-scrim"></div>
+    <div class="s1-mob-inner">
+      <!-- Status bar -->
+      <div class="s1-mob-statusbar">
+        <span class="s1-mob-time">9:41</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-levels.png" alt="" class="s1-mob-levels" loading="eager" />
+      </div>
+      <!-- Navigation -->
+      <div class="s1-mob-nav">
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-logo.png" alt="Adobe" class="s1-mob-logo" loading="eager" />
+        <div class="s1-mob-nav-r">
+          <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-applications3.png" alt="Apps" class="s1-mob-apps" loading="lazy" />
+          <a href="#" class="s1-mob-signin">Sign In</a>
+        </div>
+      </div>
+      <!-- Hero copy (anchored to bottom of hero) -->
+      <div class="s1-mob-copy">
+        <div class="s1-mob-copy-top">
+          <p class="s1-mob-eyebrow">Creative Cloud</p>
+          <h2 class="s1-mob-headline">Create at the highest level.&#160;</h2>
+          <p class="s1-mob-desc">Photoshop, Illustrator, Premiere, and much more. Work with the tools behind the world's most iconic creative content. Save 50% on Creative Cloud Pro for the first three months. See terms.</p>
+        </div>
+        <div class="s1-mob-ctas">
+          <a href="#" class="s1-mob-btn-w">Free trial</a>
+          <a href="#" class="s1-mob-btn-o">See plans</a>
+        </div>
+      </div>
+    </div>
+    <!-- Play/Pause button -->
+    <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-playPause3.png" alt="Play or pause" class="s1-mob-pp" loading="lazy" />
+  </div>
+
+  <!-- Horizontal-scrolling category tabs -->
+  <div class="s1-mob-tabs-wrap">
+    <div class="s1-mob-tabs" role="tablist">
+
+      <!-- Tab 1: Creativity and design — ACTIVE -->
+      <div class="s1-mob-tab act" role="tab" aria-selected="true">
+        <div class="s1-mob-tab-bar"></div>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId15.png" alt="" class="s1-mob-tab-prod" loading="lazy" />
+        <span class="s1-mob-tab-lbl">Creativity and design</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron15.png" alt="" class="s1-mob-tab-chev" loading="lazy" />
+      </div>
+
+      <!-- Tab 2: Content creation -->
+      <div class="s1-mob-tab inact" role="tab" aria-selected="false">
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId16.png" alt="" class="s1-mob-tab-prod" loading="lazy" />
+        <span class="s1-mob-tab-lbl">Content creation</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron16.png" alt="" class="s1-mob-tab-chev" loading="lazy" />
+      </div>
+
+      <!-- Tab 3: PDF and productivity -->
+      <div class="s1-mob-tab inact" role="tab" aria-selected="false">
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId17.png" alt="" class="s1-mob-tab-prod" loading="lazy" />
+        <span class="s1-mob-tab-lbl">PDF and productivity</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron17.png" alt="" class="s1-mob-tab-chev" loading="lazy" />
+      </div>
+
+      <!-- Tab 4: Adobe for Business -->
+      <div class="s1-mob-tab inact" role="tab" aria-selected="false">
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId18.png" alt="" class="s1-mob-tab-prod" loading="lazy" />
+        <span class="s1-mob-tab-lbl">Adobe for Business</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron18.png" alt="" class="s1-mob-tab-chev" loading="lazy" />
+      </div>
+
+      <!-- Tab 5: Students and teachers -->
+      <div class="s1-mob-tab inact" role="tab" aria-selected="false">
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-productId19.png" alt="" class="s1-mob-tab-prod" loading="lazy" />
+        <span class="s1-mob-tab-lbl">Students and teachers</span>
+        <img src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-chevron19.png" alt="" class="s1-mob-tab-chev" loading="lazy" />
+      </div>
+
+    </div>
+  </div>
+
+  <!-- White bottom info card -->
+  <div class="s1-mob-bottom">
+    <div class="s1-mob-bottom-inner">
+      <p class="s1-mob-opt">Optimized Workflows</p>
+      <h2 class="s1-mob-bh">Everything you need&#160; to make anything.</h2>
+      <p class="s1-mob-bd">Whether you're a student, social influencer, creative professional, performance marketer, or global brand—Adobe has the apps you need to make it happen.</p>
+    </div>
+  </div>
+</div><!-- /s1-mob -->
+
+</section>

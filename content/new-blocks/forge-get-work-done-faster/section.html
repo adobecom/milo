@@ -1,0 +1,130 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.66" data-binding="below-threshold" data-figma-node-id="9706:21945" data-block="news">
+<style>
+.s5{position:relative;width:100%;background-color:#444444;overflow:hidden;}
+.s5-bg{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;z-index:0;}
+.s5-gradient{position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.62) 0%,rgba(0,0,0,0) 55%);z-index:1;pointer-events:none;}
+.s5-shell{position:relative;z-index:2;max-width:1440px;margin:0 auto;height:810px;}
+/* nav */
+.s5-nav{position:absolute;top:0;left:0;right:0;height:64px;display:flex;justify-content:space-between;align-items:center;padding:0 16px;z-index:10;}
+.s5-brand{display:flex;align-items:center;}
+.s5-logo-mark{width:28px;height:26px;background:#eb1000;display:flex;align-items:center;justify-content:center;font-family:'Adobe Clean',Arial,sans-serif;font-weight:900;font-size:14px;color:#fff;letter-spacing:-.5px;flex-shrink:0;}
+.s5-logo-name{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:18px;color:#fff;margin:0 18px 0 5px;text-decoration:none;display:inline-block;}
+.s5-navlinks{display:flex;align-items:center;gap:0;}
+.s5-na{font-family:'Adobe Clean',Arial,sans-serif;font-size:14px;font-weight:400;color:rgba(255,255,255,.9);text-decoration:none;padding:0 10px;white-space:nowrap;}
+.s5-util{display:flex;align-items:center;gap:8px;}
+.s5-signin{height:40px;padding:0 24px;border-radius:75px;background:#ffffff;border:none;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;color:#000000;cursor:pointer;white-space:nowrap;}
+.s5-askbar{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:75px;background:#ffffff;cursor:pointer;overflow:hidden;}
+.s5-askdot{width:14px;height:14px;min-width:14px;border-radius:50%;background:linear-gradient(180deg,#eb1000 0%,#8d88f2 100%);}
+.s5-askq{font-family:'Adobe Clean',Arial,sans-serif;font-size:13px;color:rgba(0,0,0,.7);white-space:nowrap;}
+.s5-askword{font-family:'Adobe Clean Display',Arial,sans-serif;font-weight:600;font-size:14px;color:#000;white-space:nowrap;}
+/* content */
+.s5-content{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:160px 64px 80px;z-index:3;}
+/* hero copy */
+.s5-copy{display:flex;flex-direction:column;gap:32px;max-width:667px;}
+.s5-copyhead{display:flex;flex-direction:column;gap:16px;}
+.s5-eye{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:#ffffff;margin:0;}
+.s5-heads{display:flex;flex-direction:column;gap:8px;}
+.s5-h1{font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:80px;line-height:76px;letter-spacing:-3.2px;color:#ffffff;margin:0;}
+.s5-body{font-family:'Adobe Clean',Arial,sans-serif;font-weight:400;font-size:20px;line-height:24px;color:#ffffff;margin:0;max-width:500px;}
+.s5-ctas{display:flex;align-items:center;gap:8px;}
+.s5-btn1{height:40px;padding:0 24px;border-radius:75px;background:#ffffff;border:none;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000000;cursor:pointer;}
+.s5-btn2{height:40px;padding:0 24px;border-radius:75px;background:transparent;border:1px solid #ffffff;font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#ffffff;cursor:pointer;}
+/* router nav */
+.s5-router{display:flex;justify-content:space-between;align-items:center;gap:24px;}
+.s5-tabs{display:flex;align-items:center;gap:8px;}
+.s5-card{position:relative;width:220px;height:72px;border-radius:8px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);overflow:hidden;flex-shrink:0;cursor:pointer;}
+.s5-card--on{background:#ffffff;border-color:rgba(255,255,255,.10);}
+.s5-cbar{position:absolute;top:0;left:0;width:96px;height:4px;background:rgba(0,0,0,.50);}
+.s5-card--on .s5-cbar{background:#eb1000;border-radius:0 0 4px 4px;}
+.s5-cico{position:absolute;top:12px;left:12px;width:22px;height:20px;border-radius:3px;}
+.s5-crow{position:absolute;bottom:12px;left:12px;right:12px;display:flex;align-items:center;gap:6px;}
+.s5-clabel{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#ffffff;flex:1;}
+.s5-card--on .s5-clabel{color:#000000;}
+.s5-cchev{flex-shrink:0;}
+.s5-pp{width:40px;height:40px;border-radius:100px;background:rgba(0,0,0,.44);border:1px solid rgba(255,255,255,.11);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;padding:0;}
+/* mobile supplemental */
+.s5-mob{display:none;background:#ffffff;padding:40px 32px;text-align:center;}
+.s5-mob-eye{font-family:'Adobe Clean',Arial,sans-serif;font-weight:700;font-size:16px;line-height:20px;color:rgba(0,0,0,.5);margin:0 0 8px;}
+.s5-mob-h{font-family:'Adobe Clean Display','Adobe Clean',Arial,sans-serif;font-weight:900;font-size:32px;line-height:32px;letter-spacing:-.96px;color:#000000;margin:0 0 8px;}
+.s5-mob-p{font-family:'Adobe Clean',Arial,sans-serif;font-weight:400;font-size:16px;line-height:21px;letter-spacing:.16px;color:#101017;margin:0;}
+/* responsive */
+@media(max-width:1200px){
+  .s5-askbar{display:none;}
+  .s5-h1{font-size:64px;line-height:62px;letter-spacing:-2.56px;}
+  .s5-card{width:auto;flex:1;min-width:0;}
+}
+@media(max-width:960px){
+  .s5-h1{font-size:52px;line-height:50px;letter-spacing:-2.08px;}
+  .s5-navlinks{display:none;}
+  .s5-content{padding:120px 40px 60px;}
+  .s5-card{min-width:0;}
+  .s5-clabel{font-size:12px;}
+}
+@media(max-width:768px){
+  .s5-shell{height:auto;}
+  .s5-content{position:relative;padding:90px 24px 40px;min-height:560px;}
+  .s5-h1{font-size:40px;line-height:40px;letter-spacing:-1.68px;}
+  .s5-body{font-size:16px;line-height:20px;max-width:100%;}
+  .s5-copy{max-width:100%;}
+  .s5-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .s5-tabs::-webkit-scrollbar{display:none;}
+  .s5-card{min-width:145px;flex-shrink:0;}
+  .s5-signin{padding:0 16px;font-size:13px;}
+  .s5-mob{display:block;}
+}
+</style>
+
+<div class="s5">
+  <!-- Full-bleed background photograph -->
+  <img class="s5-bg" src="media_scrim-updates-with-latest-films-copy-synced-with-dsot-as-of-3-25-26-3-27pm-fillc8b501cd03ee.png" alt="" width="1920" height="960" />
+  <!-- Dark gradient scrim overlay (top-left → transparent) -->
+  <div class="s5-gradient" aria-hidden="true"></div>
+
+  <div class="s5-shell">
+    <!-- Top navigation bar -->
+    <header class="s5-nav">
+      <div class="s5-brand">
+        <div class="s5-logo-mark" aria-hidden="true">A</div>
+        <a class="s5-logo-name" href="#" aria-label="Adobe">Adobe</a>
+        
+      </div>
+      <div class="s5-util">
+        <button class="s5-signin">Sign In</button>
+        <div class="s5-askbar" role="search" aria-label="AI search">
+          <div class="s5-askdot" aria-hidden="true"></div>
+          <span class="s5-askq">What’s the best plan for me?</span>
+          <span class="s5-askword">Ask</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero content -->
+    <div class="s5-content">
+      <!-- Copy block -->
+      <div class="s5-copy">
+        <div class="s5-copyhead">
+          <p class="s5-eye">Acrobat</p>
+          <div class="s5-heads">
+            <h2 class="s5-h1">Get work done. Faster.</h2>
+            <p class="s5-body">Create, edit, share, and sign documents with trusted PDF tools. Use AI to make easy edits, get answers, generate summaries, and create polished content.</p>
+          </div>
+        </div>
+        <div class="s5-ctas">
+          <button class="s5-btn1">Free trial</button>
+          <button class="s5-btn2">See plans</button>
+        </div>
+      </div>
+
+      <!-- Router / slide navigation -->
+      
+    </div>
+  </div>
+
+  <!-- Mobile-only supplemental content (below hero) -->
+  <div class="s5-mob">
+    <p class="s5-mob-eye">Optimized Workflows</p>
+    <h3 class="s5-mob-h">Everything you need&#160;to make anything.</h3>
+    <p class="s5-mob-p">Whether you’re a student, social influencer, creative professional, performance marketer, or global brand—Adobe has the apps you need to make it happen.</p>
+  </div>
+</div>
+</section>

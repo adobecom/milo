@@ -1,0 +1,270 @@
+/* forge-orchestrate-customer-experiences-with-ai — dark AI hero.
+   Every top-level selector is scoped to the block root (L10/L19); layout INTENT
+   is ported from the Figma target as responsive units (aspect-ratio/clamp/%),
+   never as pinned design-width pixels (L27). */
+
+.forge-orchestrate-customer-experiences-with-ai {
+  --hero-ink: var(--s2a-color-white, #fff);
+  --hero-bg: #1a0d09;
+  --hero-card-bg: rgba(0, 0, 0, .44);
+  --hero-card-border: rgba(255, 255, 255, .11);
+  --hero-accent: #eb1000;
+  --hero-font: var(--s2a-font-family, 'Adobe Clean', adobe-clean, 'Helvetica Neue', Helvetica, Arial, sans-serif);
+  --hero-display: var(--s2a-font-family-display, 'Adobe Clean Display', 'Adobe Clean', adobe-clean, Helvetica, Arial, sans-serif);
+  display: block;
+  width: 100%;
+  font-family: var(--hero-font);
+  color: var(--hero-ink);
+}
+
+/* C20 — never inherit the global near-black link colour on a dark section. */
+.forge-orchestrate-customer-experiences-with-ai a { color: inherit; }
+
+/* ---- stage ------------------------------------------------------------- */
+.forge-orchestrate-customer-experiences-with-ai .hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 600px;
+  max-height: 900px;
+  overflow: hidden;
+  background: var(--hero-bg);
+  isolation: isolate;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__bg { position: absolute; inset: 0; z-index: 0; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__bg img,
+.forge-orchestrate-customer-experiences-with-ai .hero__bg picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(0, 0, 0, .62) 0%, rgba(0, 0, 0, .12) 48%, rgba(0, 0, 0, 0) 60%);
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__inner {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  /* Top padding is trimmed vs the frame's 160px, which reserved room for the
+     nav stripe this block intentionally drops (L28) — keeps the tab row inside. */
+  padding: clamp(72px, 8.5vw, 116px) clamp(24px, 4.5vw, 64px) clamp(40px, 5vw, 72px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+/* ---- copy -------------------------------------------------------------- */
+.forge-orchestrate-customer-experiences-with-ai .hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 1.8vw, 28px);
+  max-width: 667px;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__eyebrow {
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--hero-ink);
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__heading {
+  margin: 0;
+  font-family: var(--hero-display);
+  font-weight: 900;
+  font-size: clamp(40px, 5.6vw, 80px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  color: var(--hero-ink);
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__desc {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.2;
+  max-width: 500px;
+  color: var(--hero-ink);
+}
+
+/* ---- CTAs -------------------------------------------------------------- */
+.forge-orchestrate-customer-experiences-with-ai .hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 75px;
+  font-family: var(--hero-font);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity .15s ease, background-color .15s ease;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__cta--primary { background: #fff; color: #000; border: 1px solid #fff; }
+.forge-orchestrate-customer-experiences-with-ai .hero__cta--secondary { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .8); }
+.forge-orchestrate-customer-experiences-with-ai .hero__cta:hover { opacity: .85; }
+
+/* ---- router / tab cards ------------------------------------------------ */
+.forge-orchestrate-customer-experiences-with-ai .hero__router {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__cards {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__cards::-webkit-scrollbar { display: none; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 131px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 12px 16px;
+  border-radius: 8px;
+  background: var(--hero-card-bg);
+  border: 1px solid var(--hero-card-border);
+  color: #fff;
+  font-family: var(--hero-font);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+  backdrop-filter: blur(6px);
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card.is-active { background: #fff; border-color: rgba(255, 255, 255, .1); color: #000; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card-bar {
+  position: absolute;
+  top: 0;
+  left: 12px;
+  width: 96px;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: var(--hero-accent);
+  opacity: 0;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card.is-active .hero__card-bar { opacity: 1; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card-icons { min-height: 24px; display: flex; align-items: center; gap: 6px; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card-icons img,
+.forge-orchestrate-customer-experiences-with-ai .hero__card-icons picture {
+  height: 22px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: left center;
+  display: block;
+}
+
+.forge-orchestrate-customer-experiences-with-ai .hero__card-cta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.forge-orchestrate-customer-experiences-with-ai .hero__card-label { flex: 1; font-weight: 700; font-size: 14px; line-height: 18px; }
+.forge-orchestrate-customer-experiences-with-ai .hero__card-chevron { display: inline-flex; flex-shrink: 0; opacity: .8; }
+.forge-orchestrate-customer-experiences-with-ai .forge-o-svg { display: inline-flex; line-height: 0; }
+
+.forge-orchestrate-customer-experiences-with-ai .hero__pp {
+  flex-shrink: 0;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--hero-card-bg);
+  border: 1px solid var(--hero-card-border);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ---- mobile-only caption panel ---------------------------------------- */
+.forge-orchestrate-customer-experiences-with-ai .hero__caption { display: none; }
+
+/* ---- responsive -------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .forge-orchestrate-customer-experiences-with-ai .hero__card { min-width: 120px; }
+}
+
+@media (max-width: 900px) {
+  .forge-orchestrate-customer-experiences-with-ai .hero { aspect-ratio: auto; min-height: 620px; max-height: none; }
+  .forge-orchestrate-customer-experiences-with-ai .hero__router { flex-direction: column; gap: 16px; }
+  .forge-orchestrate-customer-experiences-with-ai .hero__cards { flex-wrap: nowrap; }
+  .forge-orchestrate-customer-experiences-with-ai .hero__card { flex: 0 0 auto; }
+  .forge-orchestrate-customer-experiences-with-ai .hero__pp { align-self: flex-end; }
+}
+
+@media (max-width: 768px) {
+  .forge-orchestrate-customer-experiences-with-ai .hero__scrim {
+    background: linear-gradient(180deg, rgba(0, 0, 0, .5) 0%, rgba(0, 0, 0, .2) 40%, rgba(0, 0, 0, .55) 100%);
+  }
+  .forge-orchestrate-customer-experiences-with-ai .hero__caption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 40px 32px;
+    background: #fff;
+    color: #101017;
+    text-align: center;
+  }
+  .forge-orchestrate-customer-experiences-with-ai .hero__caption-eyebrow { margin: 0; font-weight: 700; font-size: 16px; line-height: 20px; color: rgba(0, 0, 0, .5); }
+  .forge-orchestrate-customer-experiences-with-ai .hero__caption-heading {
+    margin: 0;
+    font-family: var(--hero-display);
+    font-weight: 900;
+    font-size: clamp(28px, 8vw, 34px);
+    line-height: 1;
+    letter-spacing: -.03em;
+    color: #000;
+  }
+  .forge-orchestrate-customer-experiences-with-ai .hero__caption-desc { margin: 0; font-weight: 400; font-size: 16px; line-height: 1.35; color: #101017; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-orchestrate-customer-experiences-with-ai .hero__cta { transition: none; }
+}

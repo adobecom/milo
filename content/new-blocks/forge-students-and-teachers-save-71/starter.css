@@ -1,0 +1,447 @@
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] {
+  width: 100%;
+  position: relative;
+  background: #444444;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-hero {
+  position: relative;
+  width: 100%;
+  height: 810px;
+  overflow: hidden;
+}
+
+@media (min-width: 1920px) {
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-hero { height: 960px; }
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background-color: #555;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0) 55%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-frame {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1440px;
+  height: 100%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-btn-sign-in {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
+  height: 40px;
+  border-radius: 75px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--s2a-color-gray-1000, #000);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-content {
+  flex: 1;
+  padding: 88px 64px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 667px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-copy-head {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-label {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  line-height: 20px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-heading {
+  font-family: 'Adobe Clean Display', 'Arial Black', Arial, sans-serif;
+  font-size: 80px;
+  font-weight: 900;
+  color: white;
+  line-height: 76px;
+  letter-spacing: -3.2px;
+  margin: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-body {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: white;
+  line-height: 24px;
+  max-width: 500px;
+  margin: 8px 0 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-ctas {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-btn-trial {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
+  height: 40px;
+  border-radius: 75px;
+  background: white;
+  border: none;
+  cursor: pointer;
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--s2a-color-gray-1000, #000);
+  white-space: nowrap;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-btn-plans {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 24px;
+  height: 40px;
+  border-radius: 75px;
+  background: transparent;
+  border: 1px solid white;
+  cursor: pointer;
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-router {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 12px 16px;
+  width: 220px;
+  min-width: 0;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.44);
+  border: 1px solid rgba(255,255,255,0.11);
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 1;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab--active {
+  background: white;
+  border-color: rgba(255,255,255,0.10);
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 96px;
+  height: 4px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab-lbl {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  line-height: 18px;
+  flex: 1;
+  min-width: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab--active .s3-tab-lbl {
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-play {
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  background: rgba(0,0,0,0.44);
+  border: 1px solid rgba(255,255,255,0.11);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1280px) {
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-heading { font-size: 64px; line-height: 62px; letter-spacing: -2.5px; }
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab { width: 190px; }
+}
+
+@media (max-width: 1024px) {
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-heading { font-size: 52px; line-height: 50px; letter-spacing: -2px; }
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-body { font-size: 17px; max-width: 420px; }
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab { width: 160px; padding: 10px 10px 14px; }
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-tab-icon { width: 28px; height: 28px; }
+}
+
+@media (max-width: 768px) {
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-hero { display: none; }
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mobile { display: none; }
+
+@media (max-width: 768px) {
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mobile { display: block; }
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-photo {
+  position: relative;
+  width: 100%;
+  min-height: 580px;
+  overflow: hidden;
+  background: #444;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.60) 0%, rgba(0,0,0,0) 55%);
+  z-index: 1;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 52px 24px 20px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+  justify-content: flex-end;
+  padding-bottom: 20px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-copy-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-label {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  line-height: 20px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-h1 {
+  font-family: 'Adobe Clean Display', 'Arial Black', Arial, sans-serif;
+  font-size: 40px;
+  font-weight: 900;
+  color: white;
+  line-height: 40px;
+  letter-spacing: -1.68px;
+  margin: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-body {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: white;
+  line-height: 20px;
+  margin: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-ctas {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tabs-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tabs-scroll::-webkit-scrollbar { display: none; }
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tabs {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  padding-bottom: 6px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tab {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px 14px;
+  height: 46px;
+  border-radius: 8px;
+  background: rgba(0,0,0,0.44);
+  border: 1px solid rgba(255,255,255,0.11);
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tab--active {
+  background: white;
+  border-color: rgba(255,255,255,0.10);
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tab-lbl {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-tab--active .s3-mob-tab-lbl { color: var(--s2a-color-gray-1000, #000); }
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-white {
+  background: white;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-subtitle {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(0,0,0,0.50);
+  text-align: center;
+  margin: 0;
+  line-height: 20px;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-whead {
+  font-family: 'Adobe Clean Display', 'Arial Black', Arial, sans-serif;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--s2a-color-gray-1000, #000);
+  line-height: 32px;
+  letter-spacing: -0.96px;
+  text-align: center;
+  margin: 0;
+}
+
+.forge-students-and-teachers-save-71 [data-figma-node-id="9706:17982"] .s3-mob-wdesc {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #101017;
+  line-height: 21px;
+  letter-spacing: 0.16px;
+  text-align: center;
+  margin: 8px 0 0;
+}

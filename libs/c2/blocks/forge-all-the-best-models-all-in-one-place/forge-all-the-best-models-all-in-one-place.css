@@ -1,0 +1,266 @@
+/* forge-all-the-best-models-all-in-one-place — dark, full-bleed AI hero.
+   Every top-level selector is scoped to the block root (L10/L19); layout INTENT
+   from the Figma target is expressed as responsive units (aspect-ratio/clamp/%),
+   never pinned design-width pixels (L27). */
+
+.forge-all-the-best-models-all-in-one-place {
+  --hero-ink: var(--s2a-color-white, #fff);
+  --hero-bg: #201512;
+  --hero-card-bg: rgba(0, 0, 0, .44);
+  --hero-card-border: rgba(255, 255, 255, .12);
+  --hero-accent: #eb1000;
+  --hero-font: var(--s2a-font-family, 'Adobe Clean', adobe-clean, 'Helvetica Neue', Helvetica, Arial, sans-serif);
+  --hero-display: var(--s2a-font-family-display, 'Adobe Clean Display', 'Adobe Clean', adobe-clean, Helvetica, Arial, sans-serif);
+
+  display: block;
+  width: 100%;
+  font-family: var(--hero-font);
+  color: var(--hero-ink);
+}
+
+/* C20 — never inherit the global near-black link colour on a dark section. */
+.forge-all-the-best-models-all-in-one-place a { color: inherit; }
+
+/* ---- stage ------------------------------------------------------------- */
+.forge-all-the-best-models-all-in-one-place .hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  min-height: 600px;
+  max-height: 900px;
+  overflow: hidden;
+  background: var(--hero-bg);
+  isolation: isolate;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__bg { position: absolute; inset: 0; z-index: 0; }
+
+.forge-all-the-best-models-all-in-one-place .hero__bg picture,
+.forge-all-the-best-models-all-in-one-place .hero__bg img {
+  width: 100%;
+  height: 100%;
+  /* C19 — reserve the box before the photo loads (natural 16/9 frame). */
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center center;
+  display: block;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, .68) 0%, rgba(0, 0, 0, .28) 34%, rgba(0, 0, 0, 0) 58%),
+    linear-gradient(0deg, rgba(0, 0, 0, .45) 0%, rgba(0, 0, 0, 0) 30%);
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__inner {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  /* Top padding is trimmed vs the frame's 160px, which reserved room for the
+     nav stripe this block intentionally drops (L28) — keeps the tab row in. */
+  padding: clamp(64px, 8vw, 104px) clamp(24px, 4.5vw, 64px) clamp(36px, 4.4vw, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+/* ---- copy -------------------------------------------------------------- */
+.forge-all-the-best-models-all-in-one-place .hero__copy {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 1.8vw, 24px);
+  max-width: 667px;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__eyebrow {
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--hero-ink);
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__heading {
+  margin: 0;
+  font-family: var(--hero-display);
+  font-weight: 900;
+  font-size: clamp(40px, 5.8vw, 80px);
+  line-height: .95;
+  letter-spacing: -.03em;
+  color: var(--hero-ink);
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__desc {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.2;
+  max-width: 480px;
+  color: var(--hero-ink);
+}
+
+/* ---- CTAs -------------------------------------------------------------- */
+.forge-all-the-best-models-all-in-one-place .hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  border-radius: 75px;
+  font-family: var(--hero-font);
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity .15s ease, background-color .15s ease;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__cta--primary { background: #fff; color: #000; border: 1px solid #fff; }
+.forge-all-the-best-models-all-in-one-place .hero__cta--secondary { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .85); }
+.forge-all-the-best-models-all-in-one-place .hero__cta:hover { opacity: .85; }
+
+/* ---- router / tab cards ------------------------------------------------ */
+.forge-all-the-best-models-all-in-one-place .hero__router {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__cards {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__cards::-webkit-scrollbar { display: none; }
+
+.forge-all-the-best-models-all-in-one-place .hero__card {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 131px;
+  max-width: 220px;
+  min-height: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 14px 12px 16px;
+  border-radius: 8px;
+  background: var(--hero-card-bg);
+  border: 1px solid var(--hero-card-border);
+  color: #fff;
+  font-family: var(--hero-font);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-sizing: border-box;
+  backdrop-filter: blur(6px);
+  transition: background-color .2s ease;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__card.is-active { background: #fff; border-color: rgba(255, 255, 255, .1); color: #000; }
+
+.forge-all-the-best-models-all-in-one-place .hero__card-bar {
+  position: absolute;
+  top: 0;
+  left: 12px;
+  width: 96px;
+  height: 4px;
+  border-radius: 0 0 4px 4px;
+  background: var(--hero-accent);
+  opacity: 0;
+}
+
+.forge-all-the-best-models-all-in-one-place .hero__card.is-active .hero__card-bar { opacity: 1; }
+
+.forge-all-the-best-models-all-in-one-place .hero__card-cta { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.forge-all-the-best-models-all-in-one-place .hero__card-label { flex: 1; font-weight: 700; font-size: 14px; line-height: 18px; }
+.forge-all-the-best-models-all-in-one-place .hero__svg { display: inline-flex; line-height: 0; flex-shrink: 0; opacity: .85; }
+
+.forge-all-the-best-models-all-in-one-place .hero__pp {
+  flex-shrink: 0;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--hero-card-bg);
+  border: 1px solid var(--hero-card-border);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+
+/* ---- mobile-only caption panel ---------------------------------------- */
+.forge-all-the-best-models-all-in-one-place .hero__caption { display: none; }
+
+/* ---- responsive -------------------------------------------------------- */
+@media (max-width: 1200px) {
+  .forge-all-the-best-models-all-in-one-place .hero__card { min-width: 120px; }
+}
+
+@media (max-width: 900px) {
+  .forge-all-the-best-models-all-in-one-place .hero { aspect-ratio: auto; min-height: 620px; max-height: none; }
+  .forge-all-the-best-models-all-in-one-place .hero__router { flex-direction: column; gap: 16px; }
+  .forge-all-the-best-models-all-in-one-place .hero__cards { flex-wrap: nowrap; }
+  .forge-all-the-best-models-all-in-one-place .hero__card { flex: 0 0 auto; }
+  .forge-all-the-best-models-all-in-one-place .hero__pp { align-self: flex-end; }
+}
+
+@media (max-width: 768px) {
+  .forge-all-the-best-models-all-in-one-place .hero__scrim {
+    background: linear-gradient(180deg, rgba(0, 0, 0, .55) 0%, rgba(0, 0, 0, .2) 42%, rgba(0, 0, 0, .55) 100%);
+  }
+  .forge-all-the-best-models-all-in-one-place .hero__caption {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 40px 32px;
+    background: #fff;
+    color: #101017;
+    text-align: center;
+  }
+  .forge-all-the-best-models-all-in-one-place .hero__caption-eyebrow { margin: 0; font-weight: 700; font-size: 16px; line-height: 20px; color: rgba(0, 0, 0, .5); }
+  .forge-all-the-best-models-all-in-one-place .hero__caption-heading {
+    margin: 0;
+    font-family: var(--hero-display);
+    font-weight: 900;
+    font-size: clamp(28px, 8vw, 34px);
+    line-height: 1;
+    letter-spacing: -.03em;
+    color: #000;
+  }
+  .forge-all-the-best-models-all-in-one-place .hero__caption-desc { margin: 0; font-weight: 400; font-size: 16px; line-height: 1.35; color: #101017; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-all-the-best-models-all-in-one-place .hero__cta,
+  .forge-all-the-best-models-all-in-one-place .hero__card { transition: none; }
+}

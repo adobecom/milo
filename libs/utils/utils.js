@@ -144,6 +144,12 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-all-the-best-models-all-in-one-place',
+  'forge-create-at-the-highest-level',
+  'forge-get-work-done-faster',
+  'forge-orchestrate-customer-experiences-with-ai',
+  'forge-sl6',
+  'forge-students-and-teachers-save-71',
 ];
 
 const AUTO_BLOCKS = [
