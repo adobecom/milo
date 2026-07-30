@@ -556,6 +556,28 @@ const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
   );
 };
 
+// A page with no locale prefix (e.g. bacom's base English pages, which live
+// directly at /products/... with no /en/) still has its first path segment
+// extracted positionally by callers below — but that segment is real content,
+// not a locale. Only trust it as a locale if it's one of this site's own known
+// codes (a family's own base code, or any family's regionalSites codes);
+// otherwise the path is unprefixed and belongs to the site's root ('/') family.
+const resolveSiteLocaleStr = (siteLocalesData, uniqueSiteId, rawLocaleStr) => {
+  const knownCodes = new Set();
+  siteLocalesData
+    .filter((entry) => entry.uniqueSiteId === uniqueSiteId)
+    .forEach(({ baseSite, regionalSites }) => {
+      const baseLocale = baseSite?.split('/')[1];
+      if (baseLocale) knownCodes.add(baseLocale);
+      (regionalSites || '')
+        .split(',')
+        .map((site) => site.trim().replace(/^\//, ''))
+        .filter(Boolean)
+        .forEach((code) => knownCodes.add(code));
+    });
+  return knownCodes.has(rawLocaleStr) ? rawLocaleStr : '';
+};
+
 let lingoSiteMappingPromise;
 function fetchLingoSiteMapping(fqdn = 'www.adobe.com') {
   if (!lingoSiteMappingPromise) {
@@ -604,7 +626,8 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
       pathname = `/${path.split('/').slice(1).join('/')}`;
     }
   }
-  const localeStr = pathname.split('/')[1] || '';
+  const rawLocaleStr = pathname.split('/')[1] || '';
+  const localeStr = resolveSiteLocaleStr(siteLocalesData, uniqueSiteId, rawLocaleStr);
 
   let foundInMapping = false;
   let isEnglishRegional = false;
@@ -612,7 +635,7 @@ export async function isLingoLangFirstPath(origin, path, fqdn = 'www.adobe.com')
   for (const { uniqueSiteId: sid, baseSite, regionalSites } of siteLocalesData) {
     if (sid === uniqueSiteId) {
       const baseLocale = baseSite.split('/')[1] || '';
-      if (localeStr !== '' && localeStr === baseLocale) {
+      if (localeStr === baseLocale) {
         foundInMapping = true;
         break;
       }
@@ -702,7 +725,7 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
       }
     }
   }
-  const localeStr = pathname.split('/')[1];
+  const rawLocaleStr = pathname.split('/')[1] || '';
 
   try {
     let siteId;
@@ -716,10 +739,15 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
     if (matchedByOrigin) {
       siteId = matchedByOrigin.uniqueSiteId;
     }
+    const localeStr = resolveSiteLocaleStr(siteLocalesData, siteId, rawLocaleStr);
     // check if the localeStr is in the baseSite or regionalSites.
     // if not, use the og country/language logic
     if (!siteLocalesData.some(({ uniqueSiteId, baseSite, regionalSites }) => uniqueSiteId === siteId && (localeStr === baseSite.split('/')[1] || isLocaleInRegionalSites(regionalSites, localeStr)))) {
-      const locale = LOCALES[localeStr]?.ietf || 'en-US';
+      // Not part of this site's Lingo mapping — fall back to the classic
+      // Milo locale lookup using the raw (unresolved) path segment, since it
+      // may still be a valid geo-locale prefix even though it isn't one of
+      // this site's own Lingo codes.
+      const locale = LOCALES[rawLocaleStr]?.ietf || 'en-US';
       /* eslint-disable-next-line prefer-const */
       let [currLang, currCountry] = locale.split('-');
       return {
@@ -731,10 +759,14 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
     siteLocalesData
       .filter(({ uniqueSiteId }) => uniqueSiteId === siteId)
       .forEach(({ baseSite, regionalSites }) => {
-        if (localeStr === baseSite.split('/')[1]) {
+        const baseLocale = baseSite.split('/')[1];
+        // baseLocale is '' for the root ('/') family, which has no code of its
+        // own — skip it here and let the pre-initialized {xx, en} default
+        // (above) stand, rather than overwriting it with a blank language.
+        if (baseLocale && localeStr === baseLocale) {
           lingoSiteMapping = {
             country: 'xx',
-            language: baseSite.split('/')[1],
+            language: baseLocale,
           };
           return;
         }
@@ -744,10 +776,11 @@ async function getLingoSiteLocale(origin, path, fqdn = 'www.adobe.com') {
               country: localeStr,
               language: 'en',
             };
+            return;
           }
           lingoSiteMapping = {
             country: localeStr,
-            language: baseSite.split('/')[1],
+            language: baseLocale,
           };
         }
       });

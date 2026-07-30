@@ -13,6 +13,7 @@ import {
   getGrayboxExperienceId,
   initBulkPublisherLingoMapping,
   isLingoLangFirstPath,
+  getLanguageFirstCountryAndLang,
 } from '../../../libs/blocks/caas/utils.js';
 
 describe('utils.js export sanity', () => {
@@ -1492,6 +1493,14 @@ describe('isLingoLangFirstPath', () => {
     expect(result).to.be.false;
   });
 
+  it('returns true for an unprefixed path (base English page, no locale segment)', async () => {
+    // e.g. business.adobe.com/products/brand-concierge.html: the first path
+    // segment ("products") is real content, not a locale, and must not be
+    // mistaken for one just because it occupies that position in the URL.
+    const result = await isLingoLangFirstPath('bacom', '/products/brand-concierge.html', 'test');
+    expect(result).to.be.true;
+  });
+
   it('throws when fetch fails so the caller can surface it as an error', async () => {
     window.fetch = stub().rejects(new Error('network error'));
     initBulkPublisherLingoMapping();
@@ -1503,6 +1512,51 @@ describe('isLingoLangFirstPath', () => {
     }
     expect(caught).to.be.instanceOf(Error);
     expect(caught.message).to.equal('network error');
+  });
+});
+
+describe('getLanguageFirstCountryAndLang', () => {
+  // Same shape as bacom's real lingo-site-mapping entry: a root ('/') English
+  // family plus a French family, each with their own regional variants.
+  const MOCK_MAPPING = {
+    'site-query-index-map': { data: [{ uniqueSiteId: 'bacom-site', caasOrigin: 'bacom' }] },
+    'site-locales': {
+      data: [
+        { uniqueSiteId: 'bacom-site', baseSite: '/', regionalSites: '/gb, /au' },
+        { uniqueSiteId: 'bacom-site', baseSite: '/fr', regionalSites: '/be_fr' },
+      ],
+    },
+  };
+  let ogFetch;
+
+  beforeEach(() => {
+    ogFetch = window.fetch;
+    window.fetch = stub().resolves({ ok: true, json: () => Promise.resolve(MOCK_MAPPING) });
+    initBulkPublisherLingoMapping();
+  });
+
+  afterEach(() => {
+    window.fetch = ogFetch;
+  });
+
+  it('resolves an unprefixed base-English path to en/xx, not the classic en-US fallback', async () => {
+    const result = await getLanguageFirstCountryAndLang('/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'en' });
+  });
+
+  it('resolves a French-prefixed path to fr/xx', async () => {
+    const result = await getLanguageFirstCountryAndLang('/fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'xx', lang: 'fr' });
+  });
+
+  it('resolves an English-regional path to its country with language en (not blank)', async () => {
+    const result = await getLanguageFirstCountryAndLang('/gb/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
+  });
+
+  it('resolves a French-regional path to its country with language fr', async () => {
+    const result = await getLanguageFirstCountryAndLang('/be_fr/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'be', lang: 'fr' });
   });
 });
 
