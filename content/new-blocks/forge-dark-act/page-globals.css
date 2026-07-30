@@ -1,0 +1,54 @@
+:root {
+  --heading-font-family:'adobe-clean-display','Adobe Clean Display','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --body-font-family:'adobe-clean','Adobe Clean',-apple-system,'Helvetica Neue',Arial,sans-serif;
+
+  --heading-xxl:clamp(40px,6.25vw,80px);  /* display / hero */
+  --heading-xl:clamp(34px,4.4vw,48px);    /* headline / section titles */
+  --heading-lg:clamp(28px,3.2vw,36px);
+  --heading-md:24px;                       /* title-4 / card names */
+  --body:16px;
+  --body-lg:20px;
+  --body-sm:14px;
+
+  --line-height-heading:1.0;
+  --line-height-body:1.5;
+
+  /* colors */
+  --color-bg:#ffffff;      /* paper */
+  --color-fg:#000000;      /* ink */
+  --color-accent:#3b63fb;  /* Adobe Blue — the single voice */
+  --color-accent-hover:#274dea;
+  --color-ink-inverse:#ffffff;
+  --surface-stone:#eceae7;
+  --surface-cloud:#f8f8f8;
+  --color-bg-dark:#000000;
+  --gray-700:#505050;
+  --text-subtle:rgba(0,0,0,0.64);
+  --text-subtle-dark:rgba(255,255,255,0.72);
+  --hairline:rgba(0,0,0,0.12);
+  --hairline-dark:rgba(255,255,255,0.16);
+  --adobe-red:#eb1000;     /* wordmark ONLY */
+
+  --spacing-xs:4px;
+  --spacing-sm:8px;
+  --spacing-md:16px;
+  --spacing-lg:24px;
+  --spacing-xl:48px;
+  --spacing-2xl:96px;
+
+  --section-padding:80px;  /* desktop; see DESIGN.md § Layout note A2 */
+  --max-width:1200px;
+  --radius:16px;
+  --radius-sm:12px;
+  --radius-pill:999px;
+
+  --ease:cubic-bezier(0.42,0,0,1);
+}
+
+*,*::before,*::after {box-sizing:border-box;}
+
+html {-webkit-text-size-adjust:100%;hanging-punctuation:first;scroll-behavior:smooth;}
+
+body {margin:0;background:var(--color-bg);color:var(--color-fg);
+  font-family:var(--body-font-family);font-size:var(--body);line-height:var(--line-height-body);
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}

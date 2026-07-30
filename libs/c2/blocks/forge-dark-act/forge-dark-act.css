@@ -1,0 +1,95 @@
+/* forge-dark-act — a reusable dark split-media call-to-action section.
+
+   Every selector is scoped to .forge-dark-act and its own .fda-* parts (L10);
+   no :root / body / @font-face / @import / bare element selectors (L19), and no
+   page-level main/section/img reach. Colors, space and type are wired to the C2
+   --s2a-* design system so the block is self-contained; block-local --fda-*
+   tokens carry the layout INTENT relatively (fr / max-inline-size / aspect-ratio)
+   so the section reflows to its container — no pinned Figma-frame pixels (L27). */
+
+.forge-dark-act {
+  /* block-local layout tokens (intent, not frame pixels) */
+  --fda-max-inline-size: 1200px;
+  --fda-column-gap: var(--s2a-spacing-4xl);
+  --fda-media-ratio: 2 / 1;
+
+  box-sizing: border-box;
+  /* Inverse surface + knockout ink: a dark section on a light-theme page,
+     the same pairing C2's rich-content.media uses. */
+  background: var(--s2a-color-background-inverse);
+  color: var(--s2a-color-content-knockout);
+  border-block-start: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-12);
+  /* Vertical section rhythm consistent with C2 siblings (~124px top / ~80px bottom). */
+  padding-block: var(--s2a-layout-lg) var(--s2a-layout-sm);
+  padding-inline: var(--s2a-spacing-lg);
+}
+
+.forge-dark-act .fda-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--fda-column-gap);
+  align-items: center;
+  max-inline-size: var(--fda-max-inline-size);
+  margin-inline: auto;
+}
+
+.forge-dark-act .fda-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s2a-spacing-lg);
+}
+
+/* Eyebrow + body use light-on-dark ink: the global light-theme values render
+   near-black and would be invisible on this inverse surface (contrast). */
+.forge-dark-act .fda-copy .eyebrow {
+  color: var(--s2a-color-transparent-white-48);
+}
+
+.forge-dark-act .fda-copy .body-md {
+  max-inline-size: 52ch;
+  color: var(--s2a-color-transparent-white-64);
+}
+
+.forge-dark-act .fda-copy .action-area {
+  margin-block-start: var(--s2a-spacing-sm);
+}
+
+/* Media column reserves its box up front via aspect-ratio so the image can
+   never shift the page as it loads (CLS). Natural asset is 900x450 = 2/1. */
+.forge-dark-act .fda-media {
+  border-radius: var(--s2a-border-radius-md);
+  overflow: hidden;
+}
+
+.forge-dark-act .fda-media picture {
+  display: block;
+}
+
+.forge-dark-act .fda-media img {
+  display: block;
+  inline-size: 100%;
+  max-inline-size: 100%;
+  block-size: auto;
+  aspect-ratio: var(--fda-media-ratio);
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Stack the columns before they get too narrow to read side by side. */
+@media (max-width: 900px) {
+  .forge-dark-act {
+    padding-block: var(--s2a-layout-sm) var(--s2a-spacing-4xl);
+  }
+
+  .forge-dark-act .fda-grid {
+    grid-template-columns: 1fr;
+    gap: var(--s2a-spacing-2xl);
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-dark-act .fda-copy .action-area .con-button {
+    inline-size: 100%;
+  }
+}

@@ -1,0 +1,52 @@
+.forge-dark-act img {max-width:100%;display:block;}
+
+.forge-dark-act .wrap {max-width:var(--max-width);margin-inline:auto;padding-inline:24px;}
+
+.forge-dark-act .eyebrow {font-family:var(--body-font-family);font-size:13px;font-weight:700;
+  letter-spacing:0.04em;color:var(--gray-700);margin:0;}
+
+.forge-dark-act .ds-btn {display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  height:44px;padding-inline:24px;border:1.5px solid transparent;border-radius:var(--radius-pill);
+  font-family:var(--body-font-family);font-size:14px;font-weight:700;letter-spacing:0;
+  text-decoration:none;cursor:pointer;transition:background 200ms var(--ease),color 200ms var(--ease),border-color 200ms var(--ease);white-space:nowrap;}
+
+.forge-dark-act .ds-btn--primary {background:var(--color-accent);color:var(--s2a-color-gray-25, #fff);}
+
+.forge-dark-act .ds-btn--primary:hover {background:var(--color-accent-hover);color:var(--s2a-color-gray-25, #fff);}
+
+.forge-dark-act .arrow {transition:transform 200ms var(--ease);}
+
+.forge-dark-act .ds-btn:hover .arrow, .forge-dark-act .newsrow:hover .arrow {transform:translateX(3px);}
+
+.forge-dark-act .nav-links .ds-btn {height:40px;margin-left:8px;}
+
+.forge-dark-act {background:var(--color-bg-dark);color:var(--color-ink-inverse);}
+
+.forge-dark-act h2, .forge-dark-act h3 {color:var(--s2a-color-gray-25, #fff);}
+
+.forge-dark-act .facts .eyebrow {color:var(--s2a-color-gray-25, #fff);}
+
+.forge-dark-act .facts .eyebrow {color:var(--text-subtle-dark);}
+
+.forge-dark-act {border-top:1px solid var(--hairline-dark);padding-block:var(--section-padding);}
+
+.forge-dark-act .summit__grid {display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+
+.forge-dark-act .summit__title {font-size:var(--heading-xl);letter-spacing:-0.02em;color:var(--s2a-color-gray-25, #fff);}
+
+.forge-dark-act .summit__body {margin-top:24px;color:var(--text-subtle-dark);font-size:var(--body-lg);line-height:1.5;max-width:52ch;}
+
+.forge-dark-act .summit__cta {margin-top:32px;}
+
+.forge-dark-act .summit__media {border-radius:var(--radius);overflow:hidden;aspect-ratio:16/8;background:#111;}
+
+.forge-dark-act .summit__media img {width:100%;height:100%;object-fit:cover;}
+
+@media (max-width:900px) {
+.forge-dark-act .summit__grid {grid-template-columns:1fr;gap:36px;}
+}
+
+@media (max-width:640px) {
+.forge-dark-act .wrap {padding-inline:18px;}
+.forge-dark-act .nav-links .ds-btn {margin-left:0;width:100%;}
+}
