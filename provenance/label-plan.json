@@ -1,0 +1,26 @@
+[
+  {
+    "idx": 0,
+    "dataBlock": "rich-content",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 1,
+    "dataBlock": "news",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 2,
+    "dataBlock": "forge-section-5--seed-70522635",
+    "dataVariants": [],
+    "primaryClass": null
+  },
+  {
+    "idx": 3,
+    "dataBlock": "forge-section-5--seed-70522635",
+    "dataVariants": [],
+    "primaryClass": null
+  }
+]
