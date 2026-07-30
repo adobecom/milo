@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-explore-what-s-new",
+  "sectionIndex": 0,
+  "decision": "loose-variant",
+  "score": 0.73,
+  "topCandidate": "rich-content",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "https://www.figma.com/design/fMKQndDRSNu4yTjDYyiQoN/Home-%E2%80%94-A.com?node-id=11612-14386",
+  "figmaNodeId": "11612:14387",
+  "distinctive": true,
+  "truthShotRel": "screenshots/v0-figma-reference.png",
+  "geometry": null,
+  "miloPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-c2d673f5-ms78pnv6",
+  "miloTargetPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-c2d673f5-ms78pnv6/libs/c2/blocks/forge-explore-what-s-new",
+  "miloBranch": "forge/session-c2d673f5-2c8",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/local-dev/forge/figma-c2d673?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

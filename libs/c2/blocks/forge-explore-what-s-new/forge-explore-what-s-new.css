@@ -1,0 +1,149 @@
+/* forge-explore-what-s-new — centered "Explore what's new." hero header.
+   Scoped entirely under .forge-explore-what-s-new (L10/L19). Styles ONLY the
+   classes init() stamps on the RECONSTRUCTED DOM (C24). Figma frame values are
+   expressed RELATIVELY (max-width + %) so the block reflows to its own
+   container rather than the 2560px design frame (L27). */
+
+.forge-explore-what-s-new {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--s2a-color-background-default, #fff);
+  /* Section rhythm: generous top/bottom, not just the horizontal Figma pad (C21). */
+  padding: var(--s2a-spacing-64, 64px) var(--s2a-spacing-64, 64px) var(--s2a-spacing-48, 48px);
+}
+
+.forge-explore-what-s-new .fewn-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-32, 32px);
+  width: 100%;
+  max-width: 1480px;
+}
+
+.forge-explore-what-s-new .fewn-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+  max-width: 984px;
+  text-align: center;
+}
+
+.forge-explore-what-s-new .fewn-eyebrow {
+  margin: 0;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 21px;
+  letter-spacing: -0.16px;
+  color: var(--s2a-color-content-eyebrow, rgb(0 0 0 / 60%));
+}
+
+.forge-explore-what-s-new .fewn-title {
+  margin: 0;
+  max-width: 984px;
+  font-family: "Adobe Clean Display", "Adobe Clean", adobe-clean, "Trebuchet MS", sans-serif;
+  font-weight: 900;
+  font-size: 56px;
+  line-height: 56px;
+  letter-spacing: -1.68px;
+  color: var(--s2a-color-content-primary, #000);
+}
+
+.forge-explore-what-s-new .fewn-body {
+  margin: 0;
+  max-width: 736px;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.4px;
+  color: var(--s2a-color-content-secondary, #101017);
+}
+
+.forge-explore-what-s-new .fewn-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+.forge-explore-what-s-new .fewn-actions .fewn-cta {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  box-sizing: border-box;
+  height: auto;
+  padding: 16px 24px;
+  border: 1px solid var(--s2a-color-content-primary, #000);
+  border-radius: 75px;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+/* Filled (primary) — explicit readable colors, never inherit the global a{} (C20). */
+.forge-explore-what-s-new .fewn-actions .fewn-cta--fill {
+  background: var(--s2a-color-content-primary, #000);
+  color: var(--s2a-color-content-inverse, #fff);
+}
+
+/* Outline (secondary). */
+.forge-explore-what-s-new .fewn-actions .fewn-cta--outline {
+  background: transparent;
+  color: var(--s2a-color-content-primary, #000);
+}
+
+.forge-explore-what-s-new .fewn-actions .fewn-cta:focus-visible {
+  outline: 2px solid var(--s2a-color-focus-ring-default, #1473e6);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1024px) {
+  .forge-explore-what-s-new {
+    padding-right: var(--s2a-spacing-40, 40px);
+    padding-left: var(--s2a-spacing-40, 40px);
+  }
+
+  .forge-explore-what-s-new .fewn-title {
+    font-size: 40px;
+    line-height: 44px;
+    letter-spacing: -1.2px;
+  }
+}
+
+@media (max-width: 768px) {
+  .forge-explore-what-s-new {
+    padding-right: var(--s2a-spacing-20, 20px);
+    padding-left: var(--s2a-spacing-20, 20px);
+  }
+
+  .forge-explore-what-s-new .fewn-title {
+    font-size: 32px;
+    line-height: 36px;
+    letter-spacing: -1px;
+  }
+
+  .forge-explore-what-s-new .fewn-body {
+    font-size: 17px;
+    line-height: 23px;
+  }
+
+  .forge-explore-what-s-new .fewn-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .forge-explore-what-s-new .fewn-actions .fewn-cta {
+    width: 100%;
+  }
+}
