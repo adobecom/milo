@@ -144,6 +144,9 @@ const C2_BLOCKS = [
   'tabs',
   'tour',
   'visually-hidden',
+  'forge-get-acrobat-studio-today',
+  'forge-get-acrobat-studio-today-1',
+  'forge-tools-that-work-for-you',
 ];
 
 const AUTO_BLOCKS = [
