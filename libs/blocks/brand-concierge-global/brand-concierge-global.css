@@ -226,6 +226,7 @@ nav.feds-topnav .feds-bc-wrapper {
 .bc-gnav .bc-textarea-grow-wrap {
   display: grid;
   flex: 1;
+  overflow: hidden;
 }
 
 .bc-gnav .bc-input-field-container textarea,
@@ -242,10 +243,22 @@ nav.feds-topnav .feds-bc-wrapper {
   overflow: hidden;
   overflow-wrap: normal;
   min-height: var(--bc-input-height);
-  max-height: 35vh;
-  padding: 14px 0;
+  max-height: var(--bc-input-height);
+  padding: 8px 0;
   box-sizing: border-box;
   grid-area: 1 / 1 / 2 / 2;
+  white-space: nowrap;
+}
+
+.floating-input .bc-floating-input .bc-input-field-container textarea,
+.floating-input .bc-floating-input .bc-textarea-grow-wrap::after,
+.brand-concierge.marquee .bc-input-field-container textarea,
+.brand-concierge.marquee .bc-textarea-grow-wrap::after {
+  max-height: 40px;
+  min-height: 480px;
+  overflow: hidden;
+  overflow-wrap: normal;
+  padding: 12px 0;
   white-space: nowrap;
 }
 
