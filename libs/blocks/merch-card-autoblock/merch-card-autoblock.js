@@ -1,6 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { postProcessAutoblock, localizePreviewLinks } from '../merch/autoblock.js';
+import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
 import {
   initService,
   createAemFragment,
@@ -276,6 +276,8 @@ async function createInline(el, options) {
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');
   if (!content) return;
+
+  await decorateContentLinks(content);
 
   // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
   // them. Applies to both CTA (<a>) and price (<span>) fields.
