@@ -1,0 +1,147 @@
+.forge-get-acrobat-studio-today {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 0 120px;
+      box-sizing: border-box;
+    }
+
+.forge-get-acrobat-studio-today {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today { height: 160px; }
+
+.forge-get-acrobat-studio-today {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 14px;
+      line-height: 18px;
+      font-weight: 400;
+      text-align: center;
+    }
+
+.forge-get-acrobat-studio-today {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Adobe Clean Display', adobe-clean-display, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 900;
+      font-size: 56px;
+      line-height: 56px;
+      letter-spacing: -1.68px;
+      text-align: center;
+    }
+
+.forge-get-acrobat-studio-today {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 20px;
+      line-height: 24px;
+      font-weight: 400;
+      text-align: center;
+      max-width: 740px;
+    }
+
+.forge-get-acrobat-studio-today {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+    }
+
+.forge-get-acrobat-studio-today {
+      margin: 0;
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      line-height: 19px;
+      letter-spacing: -0.16px;
+      text-align: center;
+    }
+
+.forge-get-acrobat-studio-today {
+      display: flex;
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+.forge-get-acrobat-studio-today {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      background: #ffffff;
+      border-radius: 999px;
+      color: #000000;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      text-decoration: none;
+      white-space: nowrap;
+      min-width: 117px;
+      border: none;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+.forge-get-acrobat-studio-today:hover { background: #f0f0f0; }
+
+.forge-get-acrobat-studio-today {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      background: transparent;
+      border: 1.5px solid #ffffff;
+      border-radius: 999px;
+      color: #ffffff;
+      font-family: 'Adobe Clean', adobe-clean, 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 18px;
+      text-decoration: none;
+      white-space: nowrap;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+
+.forge-get-acrobat-studio-today:hover { background: rgba(255,255,255,0.1); }
+
+@media (max-width: 1024px) {
+.forge-get-acrobat-studio-today { padding: 0 48px; }
+.forge-get-acrobat-studio-today { font-size: 44px; line-height: 48px; }
+.forge-get-acrobat-studio-today { height: 124px; }
+}
+
+@media (max-width: 768px) {
+.forge-get-acrobat-studio-today { padding: 0 24px; }
+.forge-get-acrobat-studio-today { font-size: 32px; line-height: 36px; letter-spacing: -0.96px; }
+.forge-get-acrobat-studio-today { font-size: 16px; line-height: 22px; }
+.forge-get-acrobat-studio-today { height: 80px; }
+.forge-get-acrobat-studio-today { flex-direction: column; align-items: center; }
+.forge-get-acrobat-studio-today, .forge-get-acrobat-studio-today { width: 100%; max-width: 280px; justify-content: center; }
+}
