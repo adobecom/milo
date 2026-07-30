@@ -1,29 +1,11 @@
 import { createTag, decorateAutoBlock, loadBlock } from '../../utils/utils.js';
-import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, getCheckoutAction, initService } from '../merch/merch.js';
+import { GeoMap, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION, initService } from '../merch/merch.js';
 
 const DEFAULT_LOCALE = 'en_US';
-const TAG_MAS_COM_SERVICE = 'mas-commerce-service';
 const FRAGMENT_ID = 'fragment-id';
 const CONTENT_TYPE = 'content-type';
 const LOCALE = 'locale';
 const COUNTRY = 'country';
-
-function registerCheckoutAction() {
-  const service = document.head.querySelector(TAG_MAS_COM_SERVICE);
-  if (typeof service?.registerCheckoutAction === 'function') {
-    service.registerCheckoutAction(getCheckoutAction);
-  }
-}
-
-async function createMasCommerceService(selectLocale, selectCountry) {
-  const localeArray = selectLocale.value.split('_');
-  await initService(true, {
-    locale: selectLocale.value,
-    country: selectCountry.value || localeArray[1],
-    language: localeArray[0],
-  });
-  registerCheckoutAction();
-}
 
 const MODEL_IDS = {
   L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24: MAS_MERCH_CARD_COLLECTION,
@@ -33,7 +15,7 @@ const MODEL_IDS = {
 async function preview(divPreview, selectType, selectLoc, selectCo, fragmentEl, btn, deeplink) {
   divPreview.innerHTML = '';
 
-  registerCheckoutAction();
+  await initService();
 
   fetch(`https://odinpreview.corp.adobe.com/adobe/contentFragments/${fragmentEl.value}`)
     // eslint-disable-next-line consistent-return
@@ -112,9 +94,6 @@ export default async function init(el) {
   localeArray.forEach((value) => selectLocale.appendChild(createTag('option', { value }, value)));
 
   selectLocale.value = url.searchParams.get(LOCALE) || DEFAULT_LOCALE;
-  if (selectLocale.value !== DEFAULT_LOCALE || selectCountry.value) {
-    await createMasCommerceService(selectLocale, selectCountry);
-  }
 
   const btnCopy = createTag('button', { type: 'button' }, 'Copy URL');
   const btnPreview = createTag('button', { type: 'button' }, 'Preview');
@@ -122,12 +101,6 @@ export default async function init(el) {
   btnPreview.addEventListener('click', () => {
     divPreview.classList.add('hidden');
     preview(divPreview, selectType, selectLocale, selectCountry, fragmentIdEl, btnPreview, true);
-  });
-  selectLocale.addEventListener('change', async () => {
-    await createMasCommerceService(selectLocale, selectCountry);
-  });
-  selectCountry.addEventListener('change', async () => {
-    await createMasCommerceService(selectLocale, selectCountry);
   });
   btnCopy.addEventListener('click', async () => {
     await navigator.clipboard.writeText(window.location.href.split('#')[0]);
