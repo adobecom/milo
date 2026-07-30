@@ -1,0 +1,236 @@
+/* forge-section-2 — three-up "app spotlight" bento section.
+   Authored toward the Figma frame + truth-target.css INTENT, keyed ONLY on the
+   classes forge-section-2.js stamps on the reconstructed DOM (the authored
+   Figma classes are stripped at runtime — C24). Every selector is scoped under
+   .forge-section-2 (L10/L19): no :root / body / @font-face / @import, no fixed
+   design-width pixels (L27) — the layout reflows to its container. */
+
+.forge-section-2 {
+  --fs2-radius: 16px;
+  --fs2-grid-gap: clamp(8px, 0.6vw, 12px);
+  --fs2-copy-gap: var(--s2a-spacing-24, 24px);
+  --fs2-head-gap: var(--s2a-spacing-8, 8px);
+  --fs2-fg: var(--s2a-color-text, #000);
+  --fs2-muted: var(--s2a-color-text-secondary, rgba(0, 0, 0, 0.64));
+  --fs2-card-bg: #111;
+  --fs2-chip-bg: #fff;
+  --fs2-chip-fg: #292929;
+
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--s2a-layout-section-top, 124px) clamp(20px, 6vw, 120px) var(--s2a-layout-section-bottom, 80px);
+  color: var(--fs2-fg);
+}
+
+/* --- 3-up grid; reflows to a single column on narrow containers --- */
+.forge-section-2 .fs2-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--fs2-grid-gap);
+  width: 100%;
+}
+
+.forge-section-2 .fs2-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* --- Media card: aspect-locked box reserves layout before assets load (C19) --- */
+.forge-section-2 .fs2-card {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--fs2-radius);
+  overflow: hidden;
+  background-color: var(--fs2-card-bg);
+  flex-shrink: 0;
+}
+
+/* Full-bleed background / composite layers. */
+.forge-section-2 .fs2-bg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.forge-section-2 .fs2-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Floating inset mockups (e.g. the presentation slides), staggered. */
+.forge-section-2 .fs2-layer {
+  position: absolute;
+  left: 10%;
+  top: 34%;
+  width: 74%;
+  z-index: 2;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+}
+
+.forge-section-2 .fs2-layer--1 {
+  left: 18%;
+  top: 20%;
+  z-index: 3;
+}
+
+.forge-section-2 .fs2-layer-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* Floating chips: white pill with icon(s) + label. */
+.forge-section-2 .fs2-chip {
+  position: absolute;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: calc(100% - 32px);
+  padding: 11px 12px;
+  border-radius: 9px;
+  background: var(--fs2-chip-bg);
+  box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.25);
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--fs2-chip-fg);
+  white-space: nowrap;
+}
+
+.forge-section-2 .fs2-chip--tl { top: 16px; left: 16px; }
+.forge-section-2 .fs2-chip--br { right: 16px; bottom: 20px; }
+
+.forge-section-2 .fs2-chip-icon {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.forge-section-2 .fs2-chip-icon-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.forge-section-2 .fs2-chip-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Copy block below the card --- */
+.forge-section-2 .fs2-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs2-copy-gap);
+  padding-top: var(--s2a-spacing-24, 24px);
+}
+
+.forge-section-2 .fs2-headgroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs2-head-gap);
+}
+
+.forge-section-2 .fs2-headline {
+  margin: 0;
+  font-family: 'Adobe Clean Display', 'Adobe Clean', 'Arial Black', sans-serif;
+  font-weight: 900;
+  font-size: clamp(20px, 1.6vw, 24px);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--fs2-fg);
+}
+
+.forge-section-2 .fs2-body {
+  margin: 0;
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 400;
+  font-size: clamp(14px, 1.1vw, 16px);
+  line-height: 1.28;
+  color: var(--fs2-muted);
+}
+
+/* CTA: text link + chevron. Colour set explicitly so it never falls back to the
+   global a{color:#000} on any background (C20). */
+.forge-section-2 .fs2-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--fs2-fg);
+}
+
+.forge-section-2 .fs2-cta-label {
+  font-family: 'Adobe Clean', Arial, sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.28;
+  white-space: nowrap;
+  color: inherit;
+}
+
+.forge-section-2 .fs2-cta-arrow {
+  flex-shrink: 0;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.forge-section-2 .fs2-cta:hover .fs2-cta-arrow,
+.forge-section-2 .fs2-cta:focus-visible .fs2-cta-arrow {
+  transform: translateX(3px);
+}
+
+/* --- Responsive: two-up, then single column --- */
+@media (max-width: 1024px) {
+  .forge-section-2 .fs2-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 3vw, 32px);
+  }
+}
+
+@media (max-width: 700px) {
+  .forge-section-2 {
+    padding: var(--s2a-layout-section-top-mobile, 72px) 20px var(--s2a-layout-section-bottom-mobile, 56px);
+  }
+
+  .forge-section-2 .fs2-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .forge-section-2 .fs2-col {
+    max-width: 520px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .forge-section-2 .fs2-card {
+    aspect-ratio: 16 / 10;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .forge-section-2 .fs2-cta-arrow {
+    transition: none;
+  }
+}

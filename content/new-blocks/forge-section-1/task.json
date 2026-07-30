@@ -1,0 +1,25 @@
+{
+  "blockName": "forge-section-1",
+  "sectionIndex": 1,
+  "decision": "new-block",
+  "score": 0.52,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-1",
+  "figmaUrl": "https://www.figma.com/design/fMKQndDRSNu4yTjDYyiQoN/Home-%E2%80%94-A.com?node-id=11612-14386",
+  "figmaNodeId": "11612:14395",
+  "distinctive": true,
+  "truthShotRel": "screenshots/section-2-ref.png",
+  "geometry": null,
+  "miloPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-16855dd5-ms82f1x7",
+  "miloTargetPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-16855dd5-ms82f1x7/libs/c2/blocks/forge-section-1",
+  "miloBranch": "forge/session-16855dd5-309",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/local-dev/forge/figma-16855d?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}

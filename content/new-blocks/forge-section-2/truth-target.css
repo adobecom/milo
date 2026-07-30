@@ -1,0 +1,27 @@
+.forge-section-2 #sec-11612-14406 .s-inner {max-width:1920px;margin:0 auto;padding:0 220px;box-sizing:border-box;}
+
+.forge-section-2 #sec-11612-14406 .s-grid {display:flex;flex-direction:row;gap:8px;width:100%;}
+
+.forge-section-2 #sec-11612-14406 .s-col {flex:1;min-width:0;display:flex;flex-direction:column;}
+
+.forge-section-2 #sec-11612-14406 .s-card {position:relative;width:100%;height:366px;border-radius:16px;overflow:hidden;flex-shrink:0;}
+
+.forge-section-2 #sec-11612-14406 .s-card-bg {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
+
+.forge-section-2 #sec-11612-14406 .s-copy {display:flex;flex-direction:column;gap:24px;padding:24px 0 0;}
+
+.forge-section-2 #sec-11612-14406 .s-headgroup {display:flex;flex-direction:column;gap:8px;}
+
+.forge-section-2 #sec-11612-14406 .s-headline {margin:0;font-family:'Adobe Clean Display','Adobe Clean',Helvetica,Arial,sans-serif;font-weight:900;font-size:24px;line-height:24px;letter-spacing:-.48px;color:#000;}
+
+.forge-section-2 #sec-11612-14406 .s-body {margin:0;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(0,0,0,.64);}
+
+.forge-section-2 #sec-11612-14406 .s-cta {display:flex;align-items:center;gap:8px;cursor:pointer;}
+
+.forge-section-2 #sec-11612-14406 .s-cta-label {font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;text-decoration:none;}
+
+.forge-section-2 #sec-11612-14406 .s-chevron {display:inline-block;width:6px;height:6px;border-top:1.5px solid #000;border-right:1.5px solid #000;transform:rotate(45deg);flex-shrink:0;margin-top:-2px;}
+
+.forge-section-2 #sec-11612-14406 .s-chip {position:absolute;display:flex;align-items:center;background:#fff;border-radius:9px;padding:11px 12px;gap:7px;box-shadow:0 0 4px 1px rgba(0,0,0,.25);white-space:nowrap;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-size:16px;line-height:20px;letter-spacing:-.16px;color:#292929;z-index:10;}
+
+.forge-section-2 #sec-11612-14406 .s-chip-lg {position:absolute;display:flex;align-items:center;background:#fff;border-radius:10px;padding:10px 11px;gap:7.5px;box-shadow:0 0 4.02px 1px rgba(0,0,0,.25);white-space:nowrap;font-family:'Adobe Clean',Helvetica,Arial,sans-serif;font-size:16px;line-height:20px;color:#292929;z-index:10;}
