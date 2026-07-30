@@ -1,0 +1,73 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.57" data-binding="new-block" data-figma-node-id="10463:43369" data-block="base-card" style="width:100%;position:relative;overflow:hidden;background:#f6f6f6;" data-section-style="parallax-featured-card-media">
+  <style>
+    .offer-section-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+      height: 1470px;
+      overflow: hidden;
+    }
+    .offer-card-base {
+      position: absolute;
+      width: 596px;
+      height: 920px;
+      border-radius: 16px;
+    }
+    @media (max-width: 1024px) {
+      .offer-section-inner {
+        height: auto;
+        min-height: 480px;
+        padding: 60px 24px 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .offer-card-base {
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: min(596px, 100%);
+        height: auto;
+        aspect-ratio: 596 / 920;
+      }
+      .offer-card-base + .offer-card-base {
+        display: none;
+      }
+    }
+    @media (max-width: 768px) {
+      .offer-section-inner {
+        padding: 40px 16px 60px;
+      }
+    }
+  </style>
+
+  <div class="offer-section-inner">
+
+    <!-- Back card – rightmost, most positive rotation -->
+    <img src="./media_db87d8a14722dcff.png" alt="Offer card" class="offer-card-base" style="top:275px;left:434px;z-index:1;
+             transform:rotate(0.6189637175010086deg);
+             background:#dcdcdc;object-fit:cover;" />
+
+    <!-- Mid-back card – slight positive rotation -->
+    <img src="./media_1d4cd684ac87afc5.png" alt="Offer card" class="offer-card-base" style="top:272px;left:429px;z-index:2;
+             transform:rotate(0.3180828922698842deg);
+             background:#e4e4e4;object-fit:cover;" />
+
+    <!-- Mid-front card – slight negative rotation -->
+    <img src="./media_ecabc424acffba94.png" alt="Offer card" class="offer-card-base" style="top:268px;left:424px;z-index:3;
+             transform:rotate(-0.4778840771533721deg);
+             background:#ececec;object-fit:cover;" />
+
+    <!-- White card – slight negative rotation, just behind shadow layer -->
+    <div class="offer-card-base" style="top:266px;left:422px;z-index:4;
+             transform:rotate(-0.25439521284390004deg);
+             background:#ffffff;"></div>
+
+    <!-- Front card – topmost, drop shadow, no rotation offset -->
+    <div class="offer-card-base" style="top:266px;left:422px;z-index:5;
+             background:#ffffff;
+             box-shadow:0px 4px 4px 0px rgba(0,0,0,0.25);"></div>
+
+  </div>
+</section>

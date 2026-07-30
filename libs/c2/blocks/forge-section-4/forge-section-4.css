@@ -1,0 +1,43 @@
+.forge-section-4 {
+      max-width: 1440px;
+      margin: 0 auto;
+      position: relative;
+      height: 1470px;
+      overflow: hidden;
+    }
+
+.forge-section-4 {
+      position: absolute;
+      width: 596px;
+      height: 920px;
+      border-radius: 16px;
+    }
+
+@media (max-width: 1024px) {
+.forge-section-4 {
+        height: auto;
+        min-height: 480px;
+        padding: 60px 24px 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+.forge-section-4 {
+        position: relative;
+        top: auto !important;
+        left: auto !important;
+        transform: none !important;
+        width: min(596px, 100%);
+        height: auto;
+        aspect-ratio: 596 / 920;
+      }
+.forge-section-4 + .offer-card-base {
+        display: none;
+      }
+}
+
+@media (max-width: 768px) {
+.forge-section-4 {
+        padding: 40px 16px 60px;
+      }
+}

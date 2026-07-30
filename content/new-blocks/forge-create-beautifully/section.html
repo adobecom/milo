@@ -1,0 +1,449 @@
+<section data-binding-source="judge" data-binding-score="0.85" data-binding="tight-variant" data-figma-node-id="10463:43375" data-block="news">
+<style>
+.fgtu{width:100%;background:linear-gradient(0deg,#f6f6f6 0%,rgba(246,246,246,0) 100%);overflow:hidden;box-sizing:border-box;}
+.fgtu *,.fgtu *::before,.fgtu *::after{box-sizing:border-box;}
+/* ── Grid Section ── */
+.fgtu__grid{position:relative;width:100%;overflow:hidden;padding-top:124px;padding-bottom:88px;}
+.fgtu__grid-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:792px;height:713px;border:1px solid #e1e1ef;pointer-events:none;z-index:0;display:block;object-fit:contain;}
+.fgtu__grid-inner{max-width:1440px;margin:0 auto;padding:0 124px;position:relative;z-index:1;display:flex;flex-direction:column;align-items:flex-end;gap:24px;}
+.fgtu__card-rows{display:flex;flex-direction:column;gap:141px;}
+.fgtu__card-row{display:flex;flex-direction:row;gap:141px;align-items:flex-start;}
+.fgtu__card{display:flex;flex-direction:column;gap:8px;width:192px;flex-shrink:0;}
+.fgtu__thumb{width:192px;border-radius:8px;overflow:hidden;display:block;flex-shrink:0;}
+.fgtu__thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.fgtu__badge{display:inline-flex;align-items:center;padding:4.97px 6.29px;background:#e1e1f1;border-radius:2px;width:fit-content;}
+.fgtu__badge span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:12px;color:#000;line-height:6px;letter-spacing:-0.24px;white-space:nowrap;}
+.fgtu__copy{width:392px;padding:24px;}
+.fgtu__copy-stack{display:flex;flex-direction:column;gap:8px;margin-bottom:24px;}
+.fgtu__copy h2{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:20px;line-height:24px;letter-spacing:-0.48px;color:#000;margin:0;}
+.fgtu__copy p{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(0,0,0,.64);margin:0;}
+.fgtu__cta{display:inline-flex;align-items:center;gap:8px;text-decoration:none;cursor:pointer;}
+.fgtu__cta-label{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000;}
+/* ── Try-It Section ── */
+.fgtu__tryit{padding:124px 226px;overflow:hidden;}
+.fgtu__tryit-inner{max-width:988px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:40px;}
+.fgtu__tryit-copy{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;height:100px;}
+.fgtu__tryit-copy h2{font-family:'Adobe Clean Display','Helvetica Neue',Arial,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;color:#000;margin:0;max-width:732px;}
+.fgtu__tryit-copy p{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-weight:400;font-size:16px;line-height:20px;text-align:center;color:#131313;margin:0;max-width:616px;}
+/* ── UI Preview ── */
+.fgtu__preview{width:100%;height:655px;background:#1e1e1e;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;}
+.fgtu__tb{height:35px;background:#323232;border-bottom:1px solid #545454;display:flex;align-items:center;padding:0 12px;gap:0;flex-shrink:0;}
+.fgtu__tb-addspace{display:flex;align-items:center;gap:5px;padding-right:10px;margin-right:10px;border-right:1px solid #545454;}
+.fgtu__tb-addspace span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#ebebeb;}
+.fgtu__tb-tabs{display:flex;align-items:center;gap:18px;flex:1;}
+.fgtu__tb-tab{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#ebebeb;padding-bottom:2px;}
+.fgtu__tb-tab--active{color:#fff;border-bottom:1px solid #fff;}
+.fgtu__tb-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.fgtu__tb-right-sep{width:1px;height:12px;background:#545454;}
+.fgtu__tb-findtext{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#ebebeb;}
+.fgtu__btn-share{padding:3px 11px;border-radius:11px;background:#707070;cursor:pointer;}
+.fgtu__btn-share span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#fff;font-weight:700;}
+.fgtu__btn-ai{padding:3px 11px;border-radius:11px;background:linear-gradient(-58deg,#676dfc 45%,#ff6a54 80%);cursor:pointer;}
+.fgtu__btn-ai span{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#fff;font-weight:700;}
+.fgtu__body{flex:1;display:flex;overflow:hidden;}
+.fgtu__lhp{width:35px;background:#323232;border-right:1px solid #545454;flex-shrink:0;display:flex;flex-direction:column;align-items:center;padding:8px 0 8px;gap:6px;}
+.fgtu__lhp-icon{width:14px;height:14px;border-radius:2px;background:#545454;flex-shrink:0;}
+.fgtu__lhp-sep{width:26px;height:1px;background:#545454;}
+.fgtu__main{flex:1;background:#282828;display:flex;align-items:center;justify-content:center;position:relative;}
+.fgtu__doc{width:264px;height:370px;background:#fff;border-radius:4px;box-shadow:0 8px 48px rgba(0,0,0,0.5);padding:22px;display:flex;flex-direction:column;gap:9px;position:relative;}
+.fgtu__doc-line{height:6px;background:#e5e5e5;border-radius:2px;}
+.fgtu__doc-img-area{height:96px;background:linear-gradient(135deg,#abdde8,#90c0d0);border-radius:6px;margin:6px 0;display:flex;align-items:center;justify-content:center;}
+.fgtu__doc-circle{width:48px;height:48px;background:rgba(255,255,255,.28);border-radius:50%;}
+.fgtu__doc-ai-bar{height:26px;background:#f0f0f0;border-radius:13px;display:flex;align-items:center;padding:0 12px;gap:8px;margin-top:6px;}
+.fgtu__doc-ai-dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(-58deg,#676dfc 45%,#ff6a54 80%);flex-shrink:0;}
+.fgtu__doc-ai-line{height:5px;flex:1;background:#d0d0d0;border-radius:2px;}
+.fgtu__comment-pip{position:absolute;top:24px;right:-14px;width:22px;height:22px;background:#0265dc;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(2,101,220,.5);}
+.fgtu__qt{position:absolute;left:calc(50% - 132px + 14px);top:50%;transform:translateY(-50%);background:#323232;border-radius:4px;border:1px solid #545454;padding:3px;display:flex;flex-direction:column;align-items:center;gap:4px;}
+.fgtu__qt-drag{width:22px;height:3px;border-radius:2px;background:#707070;}
+.fgtu__qt-icon{width:22px;height:22px;border-radius:3px;background:#0367e0;display:flex;align-items:center;justify-content:center;}
+.fgtu__qt-icon-plain{width:22px;height:22px;border-radius:3px;background:#444;display:flex;align-items:center;justify-content:center;}
+.fgtu__rhp{width:230px;background:#fff;border-left:1px solid #d5d5d5;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;}
+.fgtu__rhp-hdr{padding:6px 12px;background:#f8f8f8;border-bottom:1px solid #d5d5d5;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.fgtu__rhp-hdr-title{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:11px;font-weight:700;color:#000;}
+.fgtu__rhp-hdr-count{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:11px;color:#464646;}
+.fgtu__rhp-input-wrap{padding:8px;border-bottom:1px solid #d5d5d5;flex-shrink:0;}
+.fgtu__rhp-input{background:#f8f8f8;border:1px solid #b1b1b1;border-radius:3px;padding:6px 8px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:9px;color:#6d6d6d;}
+.fgtu__rhp-comments{flex:1;overflow:auto;}
+.fgtu__comment{padding:10px 12px;border-bottom:1px solid #d5d5d5;}
+.fgtu__comment--active{background:#f8f8f8;border-left:3px solid #0265dc;}
+.fgtu__comment-hdr{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.fgtu__comment-av{width:22px;height:22px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:8px;font-weight:700;color:#fff;}
+.fgtu__comment-meta{flex:1;}
+.fgtu__comment-name{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:9px;font-weight:700;color:#000;line-height:1.2;}
+.fgtu__comment-date{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:8px;color:#6d6d6d;line-height:1.2;}
+.fgtu__comment-body{padding-left:30px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:9px;color:#222;line-height:1.4;}
+.fgtu__comment-reply{padding-left:30px;margin-top:6px;}
+.fgtu__comment-reply-btn{font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:9px;font-weight:700;color:#222;}
+/* Responsive */
+@media (max-width:1280px){
+  .fgtu__grid-inner{padding:0 60px;}
+  .fgtu__card-row{gap:60px;}
+  .fgtu__card-rows{gap:60px;}
+  .fgtu__tryit{padding:100px 80px;}
+}
+@media (max-width:1024px){
+  .fgtu__grid-inner{padding:0 32px;align-items:center;}
+  .fgtu__card-row{gap:20px;flex-wrap:wrap;justify-content:center;}
+  .fgtu__card-rows{gap:32px;}
+  .fgtu__card{width:160px;}
+  .fgtu__thumb{width:160px;}
+  .fgtu__copy{width:100%;max-width:560px;text-align:center;padding:16px;}
+  .fgtu__cta{justify-content:center;}
+  .fgtu__tryit{padding:80px 40px;}
+  .fgtu__tryit-copy h2{font-size:40px;line-height:44px;}
+  .fgtu__preview{height:500px;}
+  .fgtu__rhp{display:none;}
+}
+@media (max-width:768px){
+  .fgtu__grid{padding-top:60px;padding-bottom:48px;}
+  .fgtu__grid-inner{padding:0 16px;}
+  .fgtu__card{width:140px;}
+  .fgtu__thumb{width:140px;}
+  .fgtu__card-row{gap:12px;}
+  .fgtu__card-rows{gap:24px;}
+  .fgtu__tryit{padding:60px 24px;}
+  .fgtu__tryit-copy{height:auto;gap:12px;}
+  .fgtu__tryit-copy h2{font-size:30px;line-height:34px;letter-spacing:-0.5px;}
+  .fgtu__tryit-copy p{font-size:14px;}
+  .fgtu__preview{height:400px;}
+  .fgtu__qt{display:none;}
+}
+</style>
+
+<div class="fgtu">
+
+  <!-- ════════════════════════════════════════
+       Section: Grid Showcase
+  ════════════════════════════════════════ -->
+  <div class="fgtu__grid">
+
+    <!-- Subtle background grid pattern -->
+    <img src="./media_b5b3a59d2a2a91ba.png" alt="" aria-hidden="true" class="fgtu__grid-bg" width="792" height="713" />
+
+    <div class="fgtu__grid-inner">
+
+      <!-- 4 × 2 document card grid -->
+      <div class="fgtu__card-rows">
+
+        <!-- ── Row 1 ── -->
+        <div class="fgtu__card-row">
+
+          <!-- Flyer.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:230px;background:#c8b4e0;">
+              <img src="./media_eb1d7080d98f7c60.png" alt="Flyer document thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <div class="fgtu__badge"><span>Flyer.pdf</span></div>
+          </div>
+
+          <!-- Invoice.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:192px;background:#efeff1;display:flex;align-items:center;justify-content:center;padding:16px;">
+              <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:6px;padding:12px 0;">
+                <div style="height:7px;width:55%;background:#2254bd;border-radius:1px;opacity:.7;"></div>
+                <div style="height:5px;width:80%;background:#d4d4d4;border-radius:1px;"></div>
+                <div style="height:5px;width:70%;background:#d4d4d4;border-radius:1px;"></div>
+                <div style="height:1px;background:#ccc;margin:4px 0;"></div>
+                <div style="height:5px;width:90%;background:#d4d4d4;border-radius:1px;"></div>
+                <div style="height:5px;width:75%;background:#d4d4d4;border-radius:1px;"></div>
+                <div style="height:1px;background:#ccc;margin:4px 0;"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <div style="height:8px;width:30%;background:#d4d4d4;border-radius:1px;"></div>
+                  <div style="height:8px;width:20%;background:#2254bd;border-radius:1px;opacity:.8;"></div>
+                </div>
+              </div>
+            </div>
+            <div class="fgtu__badge"><span>Invoice.pdf</span></div>
+          </div>
+
+          <!-- Report.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:231px;background:#abdde8;">
+              <img src="./media_aeb71522f527e7ac.png" alt="Report document thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <div class="fgtu__badge"><span>Report.pdf</span></div>
+          </div>
+
+          <!-- Poster.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:192px;background:#d9d9d9;">
+              <img src="./media_8784906c705ed53c.png" alt="Poster document thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <div class="fgtu__badge"><span>Poster.pdf</span></div>
+          </div>
+
+        </div><!-- /row 1 -->
+
+        <!-- ── Row 2 ── -->
+        <div class="fgtu__card-row">
+
+          <!-- Infographic.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:192px;background:#d9d9d9;display:flex;align-items:center;justify-content:center;padding:16px;">
+              <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;">
+                <div style="width:80%;height:72px;background:rgba(0,0,0,.06);border-radius:4px;display:flex;align-items:flex-end;justify-content:space-around;padding:8px;">
+                  <div style="width:16%;background:#aaa;border-radius:2px;height:40%;"></div>
+                  <div style="width:16%;background:#aaa;border-radius:2px;height:65%;"></div>
+                  <div style="width:16%;background:#aaa;border-radius:2px;height:50%;"></div>
+                  <div style="width:16%;background:#aaa;border-radius:2px;height:80%;"></div>
+                  <div style="width:16%;background:#aaa;border-radius:2px;height:55%;"></div>
+                </div>
+                <div style="height:6px;width:70%;background:rgba(0,0,0,.12);border-radius:2px;"></div>
+              </div>
+            </div>
+            <div class="fgtu__badge"><span>Infographic.pdf</span></div>
+          </div>
+
+          <!-- Invitation.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:230px;background:#e8e8c8;">
+              <img src="./media_dc75b16292443ad6.png" alt="Invitation document thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <div class="fgtu__badge"><span>Invitation.pdf</span></div>
+          </div>
+
+          <!-- Presentation.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:192px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;">
+              <div style="width:160px;height:160px;background:#e8e8e8;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;">
+                <div style="height:8px;width:70%;background:#bbb;border-radius:2px;"></div>
+                <div style="height:6px;width:50%;background:#ccc;border-radius:2px;"></div>
+                <div style="flex:1;background:#ddd;border-radius:4px;margin-top:4px;"></div>
+              </div>
+            </div>
+            <div class="fgtu__badge"><span>Presentation.pdf</span></div>
+          </div>
+
+          <!-- SocialPost.pdf -->
+          <div class="fgtu__card">
+            <div class="fgtu__thumb" style="height:230px;background:#e8f0f8;">
+              <img src="./media_fc19e8a112ae37d7.png" alt="Social post document thumbnail" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />
+            </div>
+            <div class="fgtu__badge"><span>SocialPost.pdf</span></div>
+          </div>
+
+        </div><!-- /row 2 -->
+
+      </div><!-- /card-rows -->
+
+      <!-- Copy block — right-aligned -->
+      <div class="fgtu__copy">
+        <div class="fgtu__copy-stack">
+          <h2>Create beautifully.</h2>
+          <p>Empower your whole team to create polished on-brand presentations, social content, and more using AI&#160;Assistant, 100,000+ professional templates, and custom images in Adobe&#160;Express.</p>
+        </div>
+        <a href="#" class="fgtu__cta" aria-label="Learn more about Adobe Express">
+          <span class="fgtu__cta-label">Learn more</span>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 1.5L5.5 5.5L1 9.5" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" ></path>
+          </svg>
+        </a>
+      </div>
+
+    </div><!-- /grid-inner -->
+  </div><!-- /grid -->
+
+
+  <!-- ════════════════════════════════════════
+       Section: Try It (PDF Space demo)
+  ════════════════════════════════════════ -->
+  <div class="fgtu__tryit">
+    <div class="fgtu__tryit-inner">
+
+      <!-- Heading + body -->
+      <div class="fgtu__tryit-copy">
+        <h2>Test drive a PDF Space now.</h2>
+        <p>Learn how to turn files and links into knowledge hubs to work faster&#160;— and everything else you can do with PDF Spaces&#160;— in this immersive hands-on experience.</p>
+      </div>
+
+      <!-- Acrobat viewer UI mockup -->
+      <div class="fgtu__preview" role="img" aria-label="Interactive Acrobat PDF Space demo preview">
+
+        <!-- Top toolbar -->
+        <div class="fgtu__tb">
+          <!-- Add to PDF Space -->
+          <div class="fgtu__tb-addspace">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+              <rect x="1" y="1" width="11" height="11" rx="2" stroke="#ebebeb" stroke-width="1.2" ></rect>
+              <path d="M6.5 4v5M4 6.5h5" stroke="#ebebeb" stroke-width="1.2" stroke-linecap="round" ></path>
+            </svg>
+            <span>Add to PDF Space</span>
+          </div>
+          <!-- Tabs -->
+          <div class="fgtu__tb-tabs">
+            <span class="fgtu__tb-tab fgtu__tb-tab--active">All tools</span>
+            <span class="fgtu__tb-tab">Edit</span>
+            <span class="fgtu__tb-tab">Convert</span>
+            <span class="fgtu__tb-tab">E-Sign</span>
+          </div>
+          <!-- Right controls -->
+          <div class="fgtu__tb-right">
+            <span class="fgtu__tb-findtext">Find text or tools</span>
+            <div class="fgtu__tb-right-sep"></div>
+            <div class="fgtu__btn-share"><span>Share</span></div>
+            <div class="fgtu__btn-ai"><span>AI Assistant</span></div>
+          </div>
+        </div>
+
+        <!-- App body -->
+        <div class="fgtu__body">
+
+          <!-- Left sidebar icons -->
+          <div class="fgtu__lhp">
+            <div style="width:14px;height:14px;border-radius:3px;background:linear-gradient(-58deg,#676dfc 45%,#ff6a54 80%);flex-shrink:0;"></div>
+            <div class="fgtu__lhp-sep"></div>
+            <div class="fgtu__lhp-icon"></div>
+            <div class="fgtu__lhp-icon"></div>
+            <div class="fgtu__lhp-icon"></div>
+            <div class="fgtu__lhp-icon"></div>
+            <div class="fgtu__lhp-icon"></div>
+            <div class="fgtu__lhp-icon"></div>
+          </div>
+
+          <!-- Main document area -->
+          <div class="fgtu__main">
+
+            <!-- Document page -->
+            <div class="fgtu__doc">
+              <!-- Heading line -->
+              <div class="fgtu__doc-line" style="width:56%;background:#c8b4e0;height:8px;"></div>
+              <div class="fgtu__doc-line" style="width:90%;"></div>
+              <div class="fgtu__doc-line" style="width:80%;"></div>
+              <!-- Visual area -->
+              <div class="fgtu__doc-img-area">
+                <div class="fgtu__doc-circle"></div>
+              </div>
+              <div class="fgtu__doc-line" style="width:95%;"></div>
+              <div class="fgtu__doc-line" style="width:85%;"></div>
+              <div class="fgtu__doc-line" style="width:92%;"></div>
+              <div class="fgtu__doc-line" style="width:78%;"></div>
+              <div class="fgtu__doc-line" style="width:88%;"></div>
+              <!-- AI bar -->
+              <div class="fgtu__doc-ai-bar">
+                <div class="fgtu__doc-ai-dot"></div>
+                <div class="fgtu__doc-ai-line"></div>
+              </div>
+              <!-- Comment indicator -->
+              <div class="fgtu__comment-pip">
+                <svg width="11" height="10" viewBox="0 0 11 10" fill="white" aria-hidden="true">
+                  <path d="M1.5 1.5h8v5.5H6.5l-2 2V7h-3V1.5z" ></path>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Quick toolbar (floating left of doc) -->
+            <div class="fgtu__qt">
+              <div class="fgtu__qt-drag"></div>
+              <!-- Cursor tool (active / blue) -->
+              <div class="fgtu__qt-icon">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <path d="M2 1.5L2 7L4.5 5.5L5.5 8L6.5 7.5L5.5 5L7.5 4.5L2 1.5Z" fill="white" ></path>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <rect x="1.5" y="1.5" width="6" height="6" rx="1" stroke="#ebebeb" stroke-width="1.2" ></rect>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <rect x="1" y="3.5" width="7" height="2" fill="#ebebeb" opacity=".5" rx="0.5" ></rect>
+                  <path d="M2 5.5L7 5.5" stroke="#ebebeb" stroke-width="1.2" stroke-linecap="round" ></path>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <path d="M2 7L7 2M5 1.5h2.5V4" stroke="#ebebeb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <path d="M3 2h3M2 4h5M2.5 6h4" stroke="#ebebeb" stroke-width="1" stroke-linecap="round" ></path>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <path d="M4.5 1.5V7.5M2.5 5.5L4.5 7.5L6.5 5.5" stroke="#ebebeb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" ></path>
+                </svg>
+              </div>
+              <div class="fgtu__qt-icon-plain">
+                <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                  <circle cx="4.5" cy="4.5" r="1.5" fill="#ebebeb" ></circle><circle cx="4.5" cy="4.5" r="0.5" fill="#444" ></circle>
+                  <circle cx="4.5" cy="1.5" r="0.5" fill="#ebebeb" ></circle><circle cx="4.5" cy="7.5" r="0.5" fill="#ebebeb" ></circle>
+                </svg>
+              </div>
+            </div>
+
+          </div><!-- /main -->
+
+          <!-- Right comments panel -->
+          <div class="fgtu__rhp">
+            <!-- Header -->
+            <div class="fgtu__rhp-hdr">
+              <div style="display:flex;align-items:center;gap:6px;flex:1;">
+                <span class="fgtu__rhp-hdr-title">Comments</span>
+                <span class="fgtu__rhp-hdr-count">3</span>
+              </div>
+              <div style="display:flex;gap:4px;">
+                <div style="width:22px;height:22px;border-radius:3px;background:#e8e8e8;"></div>
+                <div style="width:22px;height:22px;border-radius:3px;background:#e8e8e8;"></div>
+                <div style="width:22px;height:22px;border-radius:3px;background:#e8e8e8;"></div>
+              </div>
+            </div>
+            <!-- New comment input -->
+            <div class="fgtu__rhp-input-wrap">
+              <div style="font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:10px;color:#000;margin-bottom:6px;">Add comments or use @ invite</div>
+              <div class="fgtu__rhp-input">Comment or use @ to invite</div>
+            </div>
+            <!-- Comments list -->
+            <div class="fgtu__rhp-comments">
+              <!-- Active comment (highlighted) -->
+              <div class="fgtu__comment fgtu__comment--active">
+                <div class="fgtu__comment-hdr">
+                  <div class="fgtu__comment-av" style="background:#60d8f3;">U</div>
+                  <div class="fgtu__comment-meta">
+                    <div class="fgtu__comment-name">Username</div>
+                    <div class="fgtu__comment-date">26 Feb</div>
+                  </div>
+                </div>
+                <div class="fgtu__comment-body">Comment_comes_here_lorem_ipsum_dolar_sit_ames.</div>
+                <div style="padding-left:30px;margin-top:8px;background:#f8f8f8;border:1px solid #0265dc;border-radius:3px;padding:8px 8px 8px 30px;min-height:56px;font-family:'Adobe Clean','Helvetica Neue',Arial,sans-serif;font-size:9px;color:#6d6d6d;">Reply or use @ to invite</div>
+                <div class="fgtu__comment-reply"><span class="fgtu__comment-reply-btn">Reply</span></div>
+              </div>
+              <div style="width:100%;height:1px;background:#d5d5d5;"></div>
+              <!-- Second comment -->
+              <div class="fgtu__comment">
+                <div class="fgtu__comment-hdr">
+                  <div class="fgtu__comment-av" style="background:#e8c600;">U</div>
+                  <div class="fgtu__comment-meta">
+                    <div class="fgtu__comment-name">Username</div>
+                    <div class="fgtu__comment-date">Just now</div>
+                  </div>
+                </div>
+                <div class="fgtu__comment-body">Comment_comes_here_lorem_ipsum_dolar_sit_ames.</div>
+                <div class="fgtu__comment-reply"><span class="fgtu__comment-reply-btn">Reply</span></div>
+              </div>
+              <div style="width:100%;height:1px;background:#d5d5d5;"></div>
+              <!-- Third comment -->
+              <div class="fgtu__comment">
+                <div class="fgtu__comment-hdr">
+                  <div class="fgtu__comment-av" style="background:#ccc;">U</div>
+                  <div class="fgtu__comment-meta">
+                    <div class="fgtu__comment-name">Username</div>
+                    <div class="fgtu__comment-date">8 Jan</div>
+                  </div>
+                </div>
+                <div class="fgtu__comment-body">Comment_comes_here_lorem_ipsum_dolar_sit_ames.</div>
+                <div class="fgtu__comment-reply"><span class="fgtu__comment-reply-btn">Reply</span></div>
+              </div>
+            </div>
+          </div><!-- /rhp -->
+
+        </div><!-- /body -->
+      </div><!-- /preview -->
+
+    </div><!-- /tryit-inner -->
+  </div><!-- /tryit -->
+
+</div><!-- /fgtu -->
+</section>

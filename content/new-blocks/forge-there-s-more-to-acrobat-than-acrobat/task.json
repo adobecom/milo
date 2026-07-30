@@ -1,0 +1,23 @@
+{
+  "blockName": "forge-there-s-more-to-acrobat-than-acrobat",
+  "sectionIndex": 2,
+  "decision": "new-block",
+  "score": 0.57,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "",
+  "figmaNodeId": "10463:43143",
+  "distinctive": false,
+  "truthShotRel": null,
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-39d32251-ms7g8va9",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-39d32251-ms7g8va9/libs/c2/blocks/forge-there-s-more-to-acrobat-than-acrobat",
+  "miloBranch": "forge/session-39d32251-cb1",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/bizpro-hub-39d322?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html"
+  }
+}
