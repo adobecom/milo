@@ -1501,6 +1501,16 @@ describe('isLingoLangFirstPath', () => {
     expect(result).to.be.true;
   });
 
+  it('returns false for a real locale code that is simply not onboarded to this site\'s Lingo mapping', async () => {
+    // 'uk' is not in bacom-site's mapping (mock has no /uk anywhere) but IS a
+    // real locale prefix in Milo's classic locale table — it must fall
+    // through to the classic non-LFL lookup, not be swept into the
+    // unprefixed root family the way genuine content segments (e.g.
+    // "products") are.
+    const result = await isLingoLangFirstPath('bacom', '/uk/article', 'test');
+    expect(result).to.be.false;
+  });
+
   it('throws when fetch fails so the caller can surface it as an error', async () => {
     window.fetch = stub().rejects(new Error('network error'));
     initBulkPublisherLingoMapping();
@@ -1557,6 +1567,15 @@ describe('getLanguageFirstCountryAndLang', () => {
   it('resolves a French-regional path to its country with language fr', async () => {
     const result = await getLanguageFirstCountryAndLang('/be_fr/products/brand-concierge.html', 'bacom', 'test');
     expect(result).to.deep.equal({ country: 'be', lang: 'fr' });
+  });
+
+  it('falls through to the classic locale for a real locale code not onboarded to this site', async () => {
+    // 'uk' isn't in this mock's mapping (no /uk anywhere), but it IS a real
+    // locale in Milo's classic locale table (en-GB) — it must resolve via
+    // that classic lookup, not be misclassified as the unprefixed root
+    // family's en/xx.
+    const result = await getLanguageFirstCountryAndLang('/uk/products/brand-concierge.html', 'bacom', 'test');
+    expect(result).to.deep.equal({ country: 'gb', lang: 'en' });
   });
 });
 

@@ -559,10 +559,18 @@ const isLocaleInRegionalSites = (regionalSites, locStr, langStr) => {
 // A page with no locale prefix (e.g. bacom's base English pages, which live
 // directly at /products/... with no /en/) still has its first path segment
 // extracted positionally by callers below — but that segment is real content,
-// not a locale. Only trust it as a locale if it's one of this site's own known
-// codes (a family's own base code, or any family's regionalSites codes);
-// otherwise the path is unprefixed and belongs to the site's root ('/') family.
+// not a locale, and must not be mistaken for one just because it occupies
+// that position in the URL. Trust it as a locale when either:
+//  - it's one of this site's own known codes (a family's own base code, or
+//    any family's regionalSites codes), or
+//  - it's a real locale code in Milo's classic locale table (LOCALES) — e.g.
+//    bacom's /uk/ pages: 'uk' isn't onboarded to bacom's Lingo mapping, but
+//    it IS a real locale prefix, so it must fall through to the classic
+//    non-LFL lookup rather than being swept into the unprefixed root family.
+// Otherwise the path is unprefixed and belongs to the site's root ('/') family.
 const resolveSiteLocaleStr = (siteLocalesData, uniqueSiteId, rawLocaleStr) => {
+  if (!rawLocaleStr) return '';
+  if (rawLocaleStr in LOCALES) return rawLocaleStr;
   const knownCodes = new Set();
   siteLocalesData
     .filter((entry) => entry.uniqueSiteId === uniqueSiteId)
