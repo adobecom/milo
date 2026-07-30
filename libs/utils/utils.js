@@ -2410,8 +2410,16 @@ export async function loadDeferred(area, blocks, config) {
       }));
   }
   if (config.mep?.preview) {
-    import('../features/personalization/preview.js')
-      .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    // TEMP: ?mepnext=on -> mep-next, else preview.js; gate + toLowerCase() hack die on removal.
+    if (new URLSearchParams(window.location.search.toLowerCase()).get('mepnext') === 'on') {
+      import('../features/mep/mep-next/mep-overlay/mep-overlay-highlight.js')
+        .then(({ default: init }) => init());
+      import('../features/mep/mep-next/mep-overlay/mep-overlay.js')
+        .then(({ default: init }) => init());
+    } else {
+      import('../features/personalization/preview.js')
+        .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+    }
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
@@ -2681,23 +2689,41 @@ export function partition(arr, fn) {
   );
 }
 
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+/**
+ * Validates the maslibs URL parameter and returns the MAS base URL.
+ * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
+ * the resulting host always stays under aem.live (VULN-36379).
+ * @param {string} masLibs raw maslibs parameter value
+ * @returns {string|null} base URL, or null if the value is missing or invalid
+ */
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
 function getMasDepUrl(component) {
   const { hostname } = window.location;
   if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
 
-  const masLibs = new URLSearchParams(window.location.search).get('maslibs')?.trim().toLowerCase();
-  if (masLibs) {
-    let baseUrl;
-    if (masLibs === 'local') baseUrl = 'http://localhost:3000';
-    else if (masLibs === 'main') baseUrl = 'https://main--mas--adobecom.aem.live';
-    else {
-      const branch = masLibs.includes('--') ? masLibs : `${masLibs}--mas--adobecom`;
-      baseUrl = `https://${branch}.aem.live`;
-    }
-    return `${baseUrl}/web-components/dist/${component}`;
-  }
-
-  return `https://main--mas--adobecom.aem.live/web-components/dist/${component}`;
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
+  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
+  return `${baseUrl}/web-components/dist/${component}`;
 }
 
 const STATIC_BLOCK_DEPS = {
