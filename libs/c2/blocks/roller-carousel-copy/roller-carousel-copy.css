@@ -222,6 +222,12 @@
     padding-top: var(--s2a-layout-lg);
   }
 
+  .rcc-item {
+    font-size: var(--s2a-typography-font-size-heading-1);
+    line-height: var(--s2a-typography-line-height-heading-1);
+    letter-spacing: var(--s2a-typography-letter-spacing-heading-1);
+  }
+
   .rcc-media-wrapper {
     bottom: var(--s2a-spacing-lg);
     height: clamp(252px, 100dvh - 384px, 560px);
