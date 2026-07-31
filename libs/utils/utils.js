@@ -1495,7 +1495,7 @@ const MAS_FRAGMENT_AUTOBLOCKS = [
 
 const MAS_MEP_SELECTOR = 'mas';
 const MAS_FRAGMENT_API = 'https://www.adobe.com/mas/io/fragment';
-const MAS_FRAGMENT_PRELOAD_API_KEY = 'wcms-commerce-ims-ro-user-milo-cc';
+const DEFAULT_MAS_FRAGMENT_API_KEY = 'wcms-commerce-ims-ro-user-milo';
 
 // Kept in sync with GeoMap in blocks/merch/merch.js.
 const MAS_GEO_MAP = {
@@ -1625,7 +1625,8 @@ function preloadMasFragment(a) {
 
   // Mirrors aem-fragment.js: country is only a separate param when it's not already implied
   // by the locale suffix (e.g. locale=fr_CH + country=CH would be redundant).
-  let endpoint = `${MAS_FRAGMENT_API}?id=${fragmentId}&api_key=${MAS_FRAGMENT_PRELOAD_API_KEY}&locale=${locale}`;
+  const apiKey = getConfig().commerce?.['wcs-api-key'] ?? DEFAULT_MAS_FRAGMENT_API_KEY;
+  let endpoint = `${MAS_FRAGMENT_API}?id=${fragmentId}&api_key=${apiKey}&locale=${locale}`;
   if (country && !locale.endsWith(`_${country}`)) endpoint += `&country=${country}`;
 
   loadLink(endpoint, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', type: 'application/json' });
