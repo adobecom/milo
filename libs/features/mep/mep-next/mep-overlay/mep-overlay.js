@@ -132,7 +132,7 @@ function toggleExpandedCard(cardEl) {
   localStorage.setItem(CARD_STORAGE_KEY, JSON.stringify([...expanded]));
 }
 
-function buildManifestCard(manifest) {
+function buildManifestCard(manifest, { mmm = false } = {}) {
   const filename = createTag('span', { class: 'mep-manifest-filename' });
   filename.textContent = manifest.fileName ?? '';
   const link = createTag('a', { href: safeUrl(manifest.editUrl), target: '_blank', rel: 'noopener' }, [
@@ -140,7 +140,7 @@ function buildManifestCard(manifest) {
     filename,
   ]);
   const header = createTag('div', { class: 'mep-manifest-header' }, [
-    createTag('span', { class: 'mep-overline' }, 'Manifest'),
+    createTag('span', { class: 'mep-overline' }, mmm ? '7 Day Manifest' : 'Manifest'),
     createTag('h1', {}, [link, svgIcon('icon-expand-circle-down')]),
   ]);
 
@@ -469,14 +469,23 @@ async function buildAdditionalManifests() {
   const drawerEl = document.querySelector('#mep-drawer');
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
-
-  if (!lastManifestEl || lastManifestEl.classList.contains('mmm-manifest-card')) return;
+  if (!lastManifestEl) return;
 
   for (const manifest of manifests) {
-    const manifestEl = buildManifestCard(manifest);
+    const manifestEl = buildManifestCard(manifest, { mmm: true });
     manifestEl.classList.add('mmm-manifest-card');
     lastManifestEl.after(manifestEl);
   }
+}
+
+async function toggleManifestManager(event) {
+  const drawerEl = document.querySelector('#mep-drawer');
+  const mmmManifestEls = drawerEl?.querySelectorAll('.mmm-manifest-card');
+  if (mmmManifestEls?.length) {
+    mmmManifestEls.forEach((el) => { el.hidden = !event.target.checked; });
+    return;
+  }
+  if (event.target.checked) await buildAdditionalManifests();
 }
 
 let gnavOffsetRaf;
@@ -513,7 +522,7 @@ function setEventListeners() {
   });
 
   drawerEl.addEventListener('input', (event) => {
-    if (event.target.id === 'toggle-manifest-manager') buildAdditionalManifests();
+    if (event.target.id === 'toggle-manifest-manager') toggleManifestManager(event);
     toggleHighlight(event);
     if (event.target.type !== 'checkbox') setPreviewButton(event);
   });
