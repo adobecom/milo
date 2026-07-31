@@ -17,7 +17,10 @@ Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored ph
 ```
 
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
-tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome).
+tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome). Mouse
+drags rotate **freely** (trackball — no pitch limit, so cards can tumble past vertical
+and read upside down); **touch drags spin yaw only** so vertical swipes stay page
+scroll (see Free rotation + Touch gesture arbitration).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
@@ -35,10 +38,10 @@ per-card list.
 | `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect, hintText)` (named) — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown }`. Exposes the globe as **one** focusable widget (a transparent centered `<button>` over the sphere): a stable tab stop (out of tab order only while the modal traps focus), Left/Right arrows → `spinGlobe`, Enter/Space → `openModal` (first item), and `onFocus` snaps the page to the interactive state (pdf-space pattern). All runtime state (`count`, `sphereFormT`, modal-open) + actions (`spinGlobe`, `openModal`, `onFocus`) are injected; holds no globe state except its own DOM node. |
-| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
-| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
+| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`), follows the pointer, and runs the **two-step retirement**: `getHintDismissed()` fades the label out (with the WebGL hint, on first drag), and the later `getCursorRetired()` fades the disc/chevrons over `RETIRE_FADE_MS`, after which `active` drops and the **ordinary system cursor takes back over**. `isActive()` lets interaction.js cede (and then re-take) the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
@@ -85,9 +88,9 @@ from `interaction.js` (sharing drag velocity via the `drag` object); and the des
 custom cursor from `cursor.js` (its `isActive()` gates interaction's hover cursor).
 The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
-and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
-objects + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep
-`sphereRotX/Y` and the nav-nudge spring in `updateSphereRotation`).
+and reaches into the sphere only through the shared `sphereRotQuat`
+object + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep the
+orientation and the nav-nudge spring in `updateSphereRotation`).
 
 ## How to run
 
@@ -461,6 +464,72 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   266px chunk pinned to the bottom holding the description (top), badges, and — in its bottom
   row — the arrows in the left/right corners with the plain-text counter centered. Same
   `rgb(0 0 0 / 64%)` + `blur(12px)` + light text as desktop.
+- **Free rotation (trackball) — the orientation is one accumulated quaternion.** The sphere's
+  drag orientation is a single `sphereRotQuat`, not a pitch/yaw Euler pair. Each frame's drag
+  deltas are applied as world-axis rotations **premultiplied** onto it
+  (`applySphereRotDelta(WORLD_Y, velX)` / `(WORLD_X, velY)`). Premultiplying by a *world*
+  axis is what makes "drag right" always the screen's horizontal axis however far the globe
+  has been tumbled — post-multiplying would use the sphere's own tumbled local axis. There is
+  **no pitch clamp**: the globe tumbles freely, cards pass through vertical, and past 90° they
+  read upside down. That's accepted as the honest result of the gesture (`CARD_FRAG` already
+  flips back-facing fragments for the camera-inside-sphere case). `sphereRotQuat` is
+  renormalized every frame — repeated products drift off the unit sphere.
+  - **What this replaced, and why.** Previously an `'XYZ'` Euler pair with pitch clamped ±60°
+    as the *outer* rotation. That ordering existed only to dodge a gimbal flip: with `'YXZ'`
+    (unclamped yaw outside) the local pitch axis's world-X component goes to 0 at 90° of yaw
+    (vertical drag does nothing) and −1 at 180° (drag down tilts *up*). Quaternion
+    accumulation has no such failure — measured response to a vertical drag is flat
+    (27.5 ± 0.01) at 0/90/180/270/450° of yaw, and pitch passes through ±90° and beyond with
+    no loss of response.
+  - **Tradeoff: roll is emergent, and there is no self-righting.** Pitch and yaw rotations
+    don't commute, and their commutator is a **roll** term (order ε² per frame, integrated
+    along the drag path). So curved drags accumulate tilt the user never asked for — a single
+    circular drag builds ~26° of roll, three build ~67°. A closed loop in *input* space is not
+    a closed loop in *orientation* space. The old ±60° clamp suppressed this implicitly by
+    storing an absolute angle (no path to integrate along). Accumulated roll clears only on
+    scroll-out (`sphereFormT < 0.01` → `sphereRotQuat.identity()`). This is the price of free
+    tumbling; **if the drifting horizon proves unacceptable, the fix is a spring back toward
+    upright on release, not a return to Euler.** (Note this is *not* what Google Earth does —
+    Earth stores absolute lat/lon/tilt and keeps north-up, closer to `OrbitControls`. Free
+    tumbling is `TrackballControls`, for objects with no canonical "up".)
+  - **The nav-nudge became a minimal-arc slerp.** `triggerModalNavNudge` now builds one
+    rotation about the single axis carrying the card's world direction to front-center
+    (`setFromUnitVectors`), scaled to `NAV_NUDGE_FACTOR` and capped at `NAV_NUDGE_MAX_ANGLE`
+    (one angle, replacing the per-axis `NAV_NUDGE_MAX_Y`/`_X`). The spring then runs on the
+    **slerp parameter** (`navNudgeT`, 0→1) between two captured orientations. This is both
+    simpler and strictly more correct than the old two-Euler version — whose own comment
+    conceded that Y and X rotations don't commute — and it can't inject roll, since the
+    rotation axis is perpendicular to both directions.
+- **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`).
+  On a touch device a vertical drag *is* the page-scroll gesture, so the globe can't also
+  claim it. Touch therefore gets **yaw only**: horizontal drag spins the sphere, vertical
+  drag scrolls the page. Pitch (`drag.velY`) stays **mouse-only** — a pointer has no
+  competing gesture. The canvas's `touch-action: pan-y` (`authoring.js`) makes the browser
+  hand vertical pans to the page, but that alone isn't sufficient: moves arriving *before*
+  the browser commits to the pan would still leak a pitch kick into `velY`. So the axis is
+  resolved in JS from the first decisive movement — `AXIS_LOCK_THRESHOLD` (8px) of travel
+  from the down point, then **latched** for the rest of the gesture (a curved swipe can't
+  flip axes mid-drag). Below the threshold *neither* axis acts, and a 45° tie resolves to
+  vertical (scroll wins ambiguity). `isTouchDrag` is recorded **per gesture** from
+  `e.pointerType` (`touch`/`pen`), so a touchscreen laptop gets the lock for finger input
+  and full pitch for its mouse — no capability sniff.
+  - **Taps are deliberately not gated on the lock.** `CLICK_MAX_MOVE` (10px) exceeds the
+    8px lock threshold, so a jittery fingertip tap may well have latched an axis; gating
+    the tap on it would swallow those taps. `onPointerUp`'s distance/time test is
+    independent, so tap-to-open-modal is unchanged.
+  - **`isPageScrollGesture()`** is exported for per-frame stages that read
+    `drag.isDragging` as "the user is working the globe." During a vertical touch drag
+    `isDragging` is still true, so the hint-dismissal stage (`updateHintExitProgress`)
+    must skip it — its hold-time term (`+0.0022`/frame ≈ 0.13/s) would otherwise accrue
+    during an ordinary scroll and retire the "Click & Drag" hint past
+    `CURSOR_HINT_DISMISS_T` (0.12) in ~1s of scrolling, without the user ever having spun
+    the globe. The predicate is gated on `drag.isDragging` too, since `isTouchDrag`
+    persists after pointerup.
+  - No dwell is required for this to work: touch scrolling is self-terminating, so on
+    lift the sphere is stationary and `sphereFormT >= 0.8` holds for the rest of the
+    runway — the user can stop anywhere and spin. Scroll and spin are mutually exclusive
+    in *time*, so they never arbitrate. (The separate question of how easy it is to
+    *land* on the pristine formed globe is a pacing matter — see Open items.)
 - **`.globe-gallery`-scoped type-scale tokens in `globe-gallery.css`.** The prototype relied on
   `:root` tokens from a typography stylesheet Milo doesn't ship. `globe-gallery.css` defines
   the needed `--font-display`/`--type-title-1-*`/`--type-body-*` tokens scoped to
@@ -479,8 +548,8 @@ into its own DI module~~ (`a11y.js`); ~~`MODAL_PHASE` state-machine constants~~
 (frozen enum, now in `modal.js`); ~~DRY modal magic numbers~~ (`MODAL_CAM_DIST`,
 `SDF_CORNER_RADIUS`); ~~extract the modal into its own DI module~~ (`modal.js` —
 `createGlobeModal(deps)`; the sphere coupling stayed narrow: shared
-`sphereRotEuler`/`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with
-`sphereRotX/Y` + the nav-nudge spring kept in `updateSphereRotation`).
+`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with the orientation +
+the nav-nudge spring kept in `updateSphereRotation`).
 
 Done: ~~reduced-motion handling~~ (renders a static interactive globe + snaps the
 modal — see Accessibility; supersedes the old "static poster" idea); ~~single-widget
@@ -501,16 +570,28 @@ Remaining (each an independent enhancement / fix — no ordering dependency):
 1. **Mobile drag affordance.** The cursor is desktop-only and the WebGL hint text is the only
    touch hint today. Options: a brief auto-nudge rotation on first view, a touch-specific
    on-canvas glyph, or leave the text as-is — a design call, judge on a real device.
-2. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
+   Now that touch is **yaw-only** (see Behavior notes), the hint arguably wants copy that
+   says *swipe sideways* rather than the desktop "Click & Drag" — it's the authored hint
+   string (row 2), so it's an authoring/localization change, not code.
+2. **Zoom landing zone (pacing, not interaction).** `zoomT` begins the instant the fold
+   ends, and the zoom uses `easeOutCubic` (3× speed at onset ≈ 91 world units of camera
+   travel per viewport-height). The window where the sphere is interactive *and* the
+   camera is still parked is only `progress` 0.265→0.322 ≈ **238px of scroll** at the
+   default 630vh runway — narrower than one casual flick, so users often meet the globe
+   already partway into the zoom rather than at its composed best. If that reads as a
+   problem on a real device, the cheap fix is delaying the zoom's start (a gap between
+   `foldLast` and where `zoomT` climbs) rather than a true scroll-park, which would mean
+   remapping `progress` across the whole timeline. Affects desktop equally.
+3. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
    this — start/stop the ticker on intersect), instead of running every frame. Behavior
    change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
    exit aren't cut off). Now more worthwhile since reduced motion also
    keeps the ticker running on a static globe.
-3. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
+4. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
    after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
    resources, or collapse gracefully.
-4. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
+5. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
    `caFilterR`/`caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`).** It's a
    second, scroll-velocity-only CA system layered on top of the shader's per-card CA. Its
    magnitude is sub-pixel on slow scroll, ~`CA_PX_MAX` (3px) max on fast scroll, and zero at
