@@ -30,3 +30,4 @@ mcp-server.log
 *.eot
 .playwright-mcp/*
 
+/blocks/
