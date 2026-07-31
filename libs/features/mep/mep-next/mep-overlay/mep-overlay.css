@@ -242,6 +242,10 @@ body:has(#mep-drawer:popover-open) .mep-fab {
   border: 1px solid var(--mep-white-12);
 }
 
+.mep-drawer .mep-card[hidden] {
+  display: none;
+}
+
 .mep-drawer .mep-card.center {
   align-items: center;
 }
