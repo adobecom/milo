@@ -1,0 +1,9 @@
+{
+  "total": 2,
+  "offset": 0,
+  "limit": 2,
+  "data": [
+    { "key": "choose-table-column", "value": "Choose table column" },
+    { "key": "empty-table-cell", "value": "Not included" }
+  ]
+}
