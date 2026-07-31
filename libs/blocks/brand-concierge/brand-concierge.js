@@ -414,7 +414,7 @@ async function openChatModal(initialMessage, el) {
         type: 'auth',
         payload: {
           ...(bcToken && { token: bcToken }),
-          ...(arpSessionToken && { 'arp-session-id': arpSessionToken }),
+          ...(arpSessionToken && { sessionToken: arpSessionToken }),
         },
       };
     }
