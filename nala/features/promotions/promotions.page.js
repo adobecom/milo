@@ -14,9 +14,9 @@ export default class CommercePage {
     this.textInsertBeforeCommon = page.locator('.text #common-promo');
     this.textInsertBeforeCommonDE = page.locator('.text #german-promo');
     this.textInsertBeforeCommonFR = page.locator('.text #french-promo');
-    this.mepMenuOpen = page.locator('.mep-open');
+    this.mepMenuOpen = page.locator('.mep-fab');
     this.mepPreviewButton = page.locator('//a[contains(text(),"Preview")]');
-    this.mepManifestList = page.locator('.mep-manifest-list');
+    this.mepManifestList = page.locator('.mep-tab-content.active');
     this.mepSelectInsert = page.locator('select').nth(0);
     this.mepSelectReplace = page.locator('select').nth(1);
     this.getMerchCardCollection = (id) => page.locator(`merch-card-collection[id="${id}"]`);
