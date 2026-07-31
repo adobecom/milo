@@ -440,6 +440,8 @@
   --grid-max-width-default: 1920px;
   --grid-max-width-fluid: 2560px;
 
+  --global-height-nav: 80px;
+
   /* Regional font variations */
   &:lang(ar) {
     --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family-base);
@@ -558,6 +560,14 @@ body {
   &:has(.dialog-modal) #onetrust-consent-sdk {
     display: none;
   }
+}
+
+header.global-navigation {
+  min-height: var(--global-height-nav);
+}
+
+body:has(.global-navigation) main {
+  margin-top: calc(-1 * var(--global-height-nav));
 }
 
 main > div,

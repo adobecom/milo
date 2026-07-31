@@ -73,7 +73,8 @@ export function getMasLibsBase() {
 
   if (!masLibs || masLibs.trim() === '' || masLibs.trim() === 'main') return 'https://mas.adobe.com';
 
-  return getMasLibs().replace('/web-components/dist', '');
+  // invalid maslibs values are rejected by getMasLibs and fall back to the default
+  return getMasLibs()?.replace('/web-components/dist', '') ?? 'https://mas.adobe.com';
 }
 
 /**

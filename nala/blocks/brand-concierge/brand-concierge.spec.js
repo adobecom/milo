@@ -206,5 +206,66 @@ module.exports = {
         anchorDelayClass: 'floating-anchor-delay-450',
       },
     },
+    {
+      // Marquee (multi-image hero) block - dark variant.
+      // Verifies eyebrow, headline, subheadline, chat placeholder, chips,
+      // legal, and multi-image rendering. Background is provided by <picture>
+      // elements (not a has-bg-* class).
+      tcid: '18',
+      name: '@brand-concierge marquee dark renders',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-multi-image-dark',
+      tags: '@brand-concierge @brand-concierge-marquee @brand-concierge-marquee-dark @regression @milo',
+      data: {
+        variantClass: 'dark',
+        eyebrowText: 'Adobe for business',
+        headlineText: 'Grow your business with Adobe.',
+        subheadlineText: 'Unify data, content, and workflows with Adobe AI',
+        inputPlaceholder: 'What do you want help with?',
+        legalText: 'By using this AI chatbot',
+        minimumChipCount: 3,
+        minimumImageCount: 1,
+      },
+    },
+    {
+      // Marquee (multi-image hero) block - light variant.
+      tcid: '19',
+      name: '@brand-concierge marquee light renders',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-multi-image-light',
+      tags: '@brand-concierge @brand-concierge-marquee @brand-concierge-marquee-light @regression @milo',
+      data: {
+        variantClass: 'light',
+        eyebrowText: 'Adobe for business',
+        headlineText: 'Grow your business with Adobe.',
+        subheadlineText: 'Unify data, content, and workflows with Adobe AI',
+        inputPlaceholder: 'What do you want help with?',
+        legalText: 'By using this AI chatbot',
+        minimumChipCount: 3,
+        minimumImageCount: 1,
+      },
+    },
+    {
+      // Marquee chat - Enter key submits query and opens the conversation modal.
+      tcid: '20',
+      name: '@brand-concierge marquee chat enter submits',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-multi-image-light',
+      tags: '@brand-concierge @brand-concierge-marquee @brand-concierge-marquee-enter @regression @milo',
+      data: { inputText: 'i need help with billing' },
+    },
+    {
+      // Marquee chat - Send button submits query and opens the modal.
+      tcid: '21',
+      name: '@brand-concierge marquee chat send button submits',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-multi-image-light',
+      tags: '@brand-concierge @brand-concierge-marquee @brand-concierge-marquee-send @regression @milo',
+      data: { inputText: 'i need help with billing' },
+    },
+    {
+      // Marquee chip - clicking a chip pre-populates and submits its text.
+      tcid: '22',
+      name: '@brand-concierge marquee chip submits',
+      path: '/drafts/nala/blocks/brand-concierge/bc-hero-multi-image-light',
+      tags: '@brand-concierge @brand-concierge-marquee @brand-concierge-marquee-chip @regression @milo',
+      data: {},
+    },
   ],
 };
