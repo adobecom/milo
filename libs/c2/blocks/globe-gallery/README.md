@@ -39,7 +39,7 @@ per-card list.
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
-| `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`) and follows the pointer, and dismisses the label once `getHintDismissed()` flips (shared `textExitProgress` signal — fades out with the WebGL hint on first drag); `isActive()` lets interaction.js cede the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
+| `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`), follows the pointer, and runs the **two-step retirement**: `getHintDismissed()` fades the label out (with the WebGL hint, on first drag), and the later `getCursorRetired()` fades the disc/chevrons over `RETIRE_FADE_MS`, after which `active` drops and the **ordinary system cursor takes back over**. `isActive()` lets interaction.js cede (and then re-take) the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
 | `three.module.min.js` | Tree-shaken Three.js r160 ESM build (~453KB). Build artifact — do not edit. |
@@ -386,7 +386,10 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   away permanently: `textExitProgress` (0→1) accumulates from drag distance + hold time +
   velocity burst and drives the shader's `uExitP` (horizontal stretch + radial scatter +
   amplified warp + full dissolve + opacity fade); it resets only when the section scrolls out
-  of the interactive range (`sphereFormT < SPHERE_INTERACTIVE_T`). Shows on **all** devices
+  of the interactive range (`sphereFormT < SPHERE_INTERACTIVE_T`). That signal is owned by its
+  own tick stage (`updateHintExitProgress`) rather than by `updateClickDragText`, because the
+  text stage early-returns before the interactive range — exactly the scroll-out that has to
+  reset it — and the custom cursor reads it too. Shows on **all** devices
   (no mobile-specific affordance yet — see backlog). Built async in `buildTextMesh` (waits for
   `document.fonts.ready` so it renders in Adobe Clean), driven by the `updateClickDragText`
   tick stage, rebuilt on resize, static-and-faint under reduced motion. Copy is hardcoded
@@ -394,11 +397,16 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
 - **Desktop custom cursor (`src/cursor.js`).** On `(hover: hover) and (pointer: fine)` only,
   over the interactive sphere with no modal open: the system cursor is replaced by a 48px
   `mix-blend-mode: difference` disc (so it inverts whatever's beneath it) flanked by two
-  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. The label
-  dismisses for good once the user has dragged a little — it rides the same `textExitProgress`
-  signal as the WebGL hint text (via the injected `getHintDismissed`, threshold
-  `CURSOR_HINT_DISMISS_T`), so cursor label and background text fade out together; the disc +
-  chevrons stay. Resets with `textExitProgress` on scroll-out. Two
+  chevrons that squeeze 4px inward while dragging, plus a faint "Click & Drag" label. It
+  **retires in two steps** as the user drags, both riding the same `textExitProgress` signal
+  as the WebGL hint text: at `CURSOR_HINT_DISMISS_T` (0.12, injected as `getHintDismissed`)
+  the label fades out along with the background text; at the later `CURSOR_RETIRE_T` (0.55,
+  `getCursorRetired`) the **whole effect goes away** — the disc + chevrons fade over
+  `RETIRE_FADE_MS` (0.42s, mirrored by the `--retiring` CSS transitions), then `active` drops,
+  clearing `cursor: none` so the **ordinary system cursor** (back under `interaction.js`)
+  takes over. The disc shrinks rather than fades because `mix-blend-mode: difference` turns
+  partial opacity into a gray wash. Opening a card sets `textExitProgress = 1`, so a click
+  retires the cursor immediately. Both steps reset on scroll-out. Two
   body-level DOM layers (NOT scoped to the block root): the disc **must** be a direct `<body>`
   child — `mix-blend-mode` only reaches page content from outside a `position: fixed`
   (GPU-isolated) container — while the chevrons + label live in a fixed container. The module
@@ -408,10 +416,13 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   inactive discs are `visibility: hidden`. Label copy is the authored hint string (see Localization).
 - **Modal — edge-anchored nav arrows + bottom-center counter; desktop adds a screen-edge scrim.**
   The prev/next arrows and the counter are independent chrome children (no shared wrapper),
-  each positioned per-frame by `positionModalChrome`. **Desktop/tablet**: arrows pin to the
-  viewport's left/right edges (24px gap, vertically centered); the counter sits at the image's
-  bottom-center. **Mobile** (deferred to its own pass): a bottom-center row — counter centered,
-  arrows flanking it. The three frosted controls (both arrows + close) share one style: 1px
+  each positioned per-frame by `positionModalChrome`. At **every** breakpoint they read as one
+  bottom-center row. **Desktop/tablet**: the counter pill centers on the image's horizontal
+  center at its bottom edge, with an arrow `DT_NAV_GAP` (12px) away on each side; the pill is a
+  fixed `DT_COUNTER_W` (138px, mirroring its CSS `width` — keep the two in sync) so the flank
+  offset needs no measuring. All three share one `bottom` and are 44px tall, so they align as a
+  row. **Mobile**: the same row spread wide — arrows in the bottom-left/right corners, counter
+  centered between them, inside the bottom scrim. The three frosted controls (both arrows + close) share one style: 1px
   `--s2a-color-transparent-white-24` border, `--s2a-border-radius-4` (6px) radius,
   `--s2a-color-transparent-black-64` background, `blur(12px)`. The close button sits in the
   viewport's top-right margin at every breakpoint. On **desktop/tablet** (`@media min-width:768px`)
@@ -422,8 +433,11 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   on all four sides) so the visible photo — not the geometry — reaches the margin (mirrors
   the mobile branch). A fixed-width (`DT_SCRIM_W` = 316px) dark frosted readability
   scrim is attached to the **viewport's left edge, full viewport height** (independent
-  of the image — role/name/description hug the **top**, badges pinned to the bottom via
-  `margin-top:auto`), and the counter renders as a frosted pill. Scrim/nav/counter are
+  of the image — the role/name/description block is **left-aligned and vertically
+  centered**: `margin-top:auto` on `.globe-gallery-modal__role-label` plus the badges'
+  existing `margin-top:auto` gives the flex column two auto margins that split the scrim's
+  free space, with the badges still pinned to the bottom), and the counter renders as a
+  frosted pill. Scrim/nav/counter are
   all dark frosted (`rgb(0 0 0 / 64%)` + `blur(12px)`). **Mobile** (<768px, the CSS base
   — styles are mobile-first, desktop layered in the `min-width:768px` query): the image is
   full-bleed to the screen width (top-aligned, aspect kept) with **square corners**

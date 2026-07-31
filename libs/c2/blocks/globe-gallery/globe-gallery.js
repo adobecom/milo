@@ -220,10 +220,12 @@ const TEXT_CA_DIR_STRENGTH = 0.05; // uMotionDir strength for drag CA on the tex
 const TEXT_CA_WARP_MUL = 1.5; // warp-driven CA boost (lingers as warp decays)
 const TEXT_DRAG_WARP_MUL = 3.0; // text drag-warp vs sphere cards — more violent
 const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit — letterforms bleed off-screen
-// The custom-cursor label ("Click & Drag") rides the same textExitProgress signal as the
-// WebGL hint: it fades out for good once the user has dragged even a little (well before the
-// background text fully dissolves near 1). Resets with textExitProgress on scroll-out.
+// The custom cursor rides the same textExitProgress signal as the WebGL hint, in two
+// steps: at CURSOR_HINT_DISMISS_T the "Click & Drag" label fades out, and at the later
+// CURSOR_RETIRE_T the whole cursor does too and the system cursor takes back over
+// (see cursor.js). Both reset with textExitProgress on scroll-out.
 const CURSOR_HINT_DISMISS_T = 0.12;
+const CURSOR_RETIRE_T = 0.55;
 
 // ── Modal-nav reactivity nudge ───────────────────────────────────────────────
 // A spring on sphereRotY/X toward the newly-shown card's slot so the sphere
@@ -733,10 +735,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     else disarmFocusGuard();
   };
 
-  // Open a card + retire the "Click & Drag" hint. Opening a card is a stronger
-  // "I get it" signal than a spin, so we push textExitProgress past the dismiss
-  // threshold — the cursor label and background WebGL hint both stay gone after
-  // the modal closes (until the section scrolls out, which resets the signal).
+  // Open a card + retire the "Click & Drag" hint. Opening a card is a stronger "I get
+  // it" signal than a spin, so textExitProgress goes straight to 1 — past both cursor
+  // thresholds, so the hint stays gone and the cursor is retired once the modal closes.
   const openModalAndDismissHint = (idx, x, y) => {
     textExitProgress = 1;
     modal.open(idx, x, y);
@@ -768,9 +769,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getSphereInteractive: () => sphereFormTAtLastTick >= SPHERE_INTERACTIVE_T,
     getModalOpen: () => modal.getModalIdx() >= 0,
     getReducedMotion: () => reducedMotion,
-    // Same one-way exit as the WebGL hint text — the cursor label dismisses once the
-    // user has dragged a little (see CURSOR_HINT_DISMISS_T). Resets on scroll-out.
+    // The two-step exit off the shared hint signal (see the threshold constants).
     getHintDismissed: () => textExitProgress > CURSOR_HINT_DISMISS_T,
+    getCursorRetired: () => textExitProgress > CURSOR_RETIRE_T,
     labelText: hintText || 'Click & Drag',
     drag,
   });
@@ -1468,9 +1469,34 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     for (let i = 0; i < bp.N_TOTAL; i += 1) updateCardTransform(i, frame);
   }
 
+  // ── Stage: hint-exit signal ──
+  // Owns textExitProgress (0→1), the one-way "the user gets it" signal driving both the
+  // WebGL hint text's dissolve and the custom cursor's two-step retirement. Kept out of
+  // updateClickDragText because that stage early-returns before the interactive range —
+  // exactly the scroll-out that has to reset the signal.
+  function updateHintExitProgress(frame) {
+    const { sphereFormT } = frame;
+    // Reset on scroll-out of the interactive range (fresh on re-entry).
+    if (sphereFormT < SPHERE_INTERACTIVE_T) {
+      textExitProgress = 0;
+      return;
+    }
+    if (reducedMotion || !drag.isDragging || textExitProgress >= 1) return;
+    const spd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
+    const norm = spd / MAX_VEL; // 0–1
+    textExitProgress = Math.min(
+      1,
+      textExitProgress
+        + norm * 0.018 // drag-distance contribution
+        + 0.0022 // hold-time contribution (~0.13/s at 60fps)
+        + norm * norm * 0.010, // velocity burst (quadratic — a fast flick punches harder)
+    );
+  }
+
   // ── Stage: "Click & Drag" hint text ──
   // Warps in during the fold, settles to a faint resting opacity, fades on zoom, and
-  // warps/dissolves away permanently on the user's first drag. Reads frame.foldSphDist
+  // warps/dissolves away permanently on the user's first drag (reading the
+  // textExitProgress signal that updateHintExitProgress owns). Reads frame.foldSphDist
   // (updateSphereGroupDepth) + the live sphereDragWarp (updateSphereRotation), so it must
   // run after both. No-op until the async font build assigns textMesh.
   function updateClickDragText(frame) {
@@ -1515,21 +1541,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const txtOp = lerpN(TEXT_OPACITY_PEAK, TEXT_OPACITY_RESTING, txtT)
       * (1 - Math.min(1, zoomT * 3));
 
-    // Accumulate the one-way exit on the first drag (distance + hold time + velocity burst).
-    if (drag.isDragging && textExitProgress < 1) {
-      const spd = Math.sqrt(drag.velX * drag.velX + drag.velY * drag.velY);
-      const norm = spd / MAX_VEL; // 0–1
-      textExitProgress = Math.min(
-        1,
-        textExitProgress
-          + norm * 0.018 // drag-distance contribution
-          + 0.0022 // hold-time contribution (~0.13/s at 60fps)
-          + norm * norm * 0.010, // velocity burst (quadratic — a fast flick punches harder)
-      );
-    }
-    // Reset once the section scrolls out of the interactive range (fresh on re-entry).
-    if (sphereFormT < SPHERE_INTERACTIVE_T && textExitProgress > 0) textExitProgress = 0;
-
+    // textExitProgress is owned by updateHintExitProgress (an earlier stage) — read only here.
     textMesh.visible = txtOp > 0.001 && textExitProgress < 0.999;
     uniforms.uUVScale.value = 1.0;
     uniforms.uOpacity.value = txtOp;
@@ -1581,6 +1593,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateGlobalCA();
     updateCardTransforms(frame);
+    updateHintExitProgress(frame); // owns textExitProgress — before its two consumers
+
     updateClickDragText(frame);
     cursor.update();
     updateArcCopy();

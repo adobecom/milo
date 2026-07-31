@@ -57,6 +57,8 @@ const DN_NAV_WARP = 0.40; // peak warp
 // chrome positions are derived from the image's projected bounds (see positionModalChrome).
 const DT_IMG_MARGIN = 12; // gap between the visible image and every viewport edge
 const DT_SCRIM_W = 316; // info scrim fixed width
+const DT_NAV_GAP = 12; // gap between the counter pill and each arrow
+const DT_COUNTER_W = 138; // .globe-gallery-modal__counter fixed width (md+ CSS)
 
 export default function createGlobeModal({
   q,
@@ -326,8 +328,8 @@ export default function createGlobeModal({
     // counter centers on its left point via translateX(-50%).
     //   Mobile  → arrows in the bottom-left/right corners, counter bottom-center,
     //     all inside the bottom scrim.
-    //   Desktop → arrows at the viewport's left/right edges (vertically centered),
-    //     counter at the image's bottom-center.
+    //   Desktop → one bottom-center row at the image's bottom edge: counter pill on the
+    //     image's center, an arrow DT_NAV_GAP away on each side.
     const NAV_SIZE = 44; // matches the .globe-gallery-modal__nav width/height in CSS
     const EDGE = 24;
     const counterBase = 'translateX(-50%)';
@@ -349,18 +351,21 @@ export default function createGlobeModal({
         counterEl.style.top = 'auto'; counterEl.style.bottom = `${EDGE}px`;
       }
     } else {
-      const navTop = `${Math.round(H / 2 - NAV_SIZE / 2)}px`; // vertically centered
+      // Counter and arrows are both NAV_SIZE tall and share one `bottom` → one row.
+      const rowBottom = `${H - visBot + INSET}px`;
+      const centerX = (visLeft + visRight) / 2;
+      const flank = DT_COUNTER_W / 2 + DT_NAV_GAP; // pill edge → arrow's near edge
+      if (counterEl) {
+        counterEl.style.left = `${Math.round(centerX)}px`; counterEl.style.right = 'auto';
+        counterEl.style.top = 'auto'; counterEl.style.bottom = rowBottom;
+      }
       if (prevEl) {
-        prevEl.style.left = `${EDGE}px`; prevEl.style.right = 'auto';
-        prevEl.style.top = navTop; prevEl.style.bottom = 'auto';
+        prevEl.style.left = `${Math.round(centerX - flank - NAV_SIZE)}px`; prevEl.style.right = 'auto';
+        prevEl.style.top = 'auto'; prevEl.style.bottom = rowBottom;
       }
       if (nextEl) {
-        nextEl.style.left = 'auto'; nextEl.style.right = `${EDGE}px`;
-        nextEl.style.top = navTop; nextEl.style.bottom = 'auto';
-      }
-      if (counterEl) {
-        counterEl.style.left = `${(visLeft + visRight) / 2}px`; counterEl.style.right = 'auto';
-        counterEl.style.top = 'auto'; counterEl.style.bottom = `${H - visBot + INSET}px`;
+        nextEl.style.left = `${Math.round(centerX + flank)}px`; nextEl.style.right = 'auto';
+        nextEl.style.top = 'auto'; nextEl.style.bottom = rowBottom;
       }
     }
 

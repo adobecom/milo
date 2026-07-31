@@ -16,10 +16,14 @@
 
    The label text is the authored hint string (deps.labelText, shared with the
    WebGL hint text; falls back to "Click & Drag"). Decorative — not exposed to
-   assistive tech; the a11y widget covers the real affordance. It rides the same
-   one-way dismissal as the WebGL hint: once deps.getHintDismissed() flips true
-   (the user has dragged a little), the label fades out for good — matching the
-   background text — while the disc + chevrons stay. Resets on scroll-out.
+   assistive tech; the a11y widget covers the real affordance.
+
+   The cursor retires in two steps as the user drags, both riding the shared
+   textExitProgress signal: deps.getHintDismissed() fades the label out (matching
+   the WebGL hint), then the later deps.getCursorRetired() fades the disc +
+   chevrons over RETIRE_FADE_MS and hands the canvas back to the ordinary system
+   cursor (isActive() goes false, so interaction.js resumes owning it). Both
+   steps reset on scroll-out, so a re-entry gets the full affordance again.
 
    Owns its DOM + listeners; teardown() removes them and clears the canvas cursor.
    isActive() lets the interaction module defer its hover cursor (pointer/default)
@@ -34,10 +38,13 @@ const RING_SVG = [
   '</svg>',
 ].join('');
 
+// Must match the --retiring transition durations in globe-gallery.css.
+const RETIRE_FADE_MS = 420;
+
 export default function createCursor(deps) {
   const {
     getCanvas, getSphereInteractive, getModalOpen, getReducedMotion,
-    getHintDismissed, labelText, drag,
+    getHintDismissed, getCursorRetired, labelText, drag,
   } = deps;
   let containerEl = null; // fixed container: chevrons + label (no blend mode)
   let discEl = null; // body-level disc (mix-blend-mode: difference)
@@ -47,8 +54,11 @@ export default function createCursor(deps) {
   let onCanvas = false; // pointer currently over the globe canvas
   let active = false; // cursor currently shown
   let hintDismissed = false; // label faded out after the user's first drag
+  let retireT0 = -1; // timestamp the retirement fade started; -1 = not retiring
   let mx = 0;
   let my = 0;
+
+  const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
   function onMove(e) { mx = e.clientX; my = e.clientY; }
   function onEnter() { onCanvas = true; }
@@ -87,15 +97,28 @@ export default function createCursor(deps) {
     window.addEventListener('mousemove', onMove, { passive: true });
   }
 
-  // Per-frame: toggle shown/dragging state and follow the pointer. No-op on touch
-  // (containerEl is null) — and a no-op write is cheap, so it's safe to call every tick.
+  // Per-frame: toggle shown/dragging/retiring state and follow the pointer. No-op on
+  // touch (containerEl is null) — and a no-op write is cheap, so it's safe every tick.
   function update() {
     if (!containerEl || !hasMouse) return;
     const canvas = getCanvas();
+
+    // Retirement: start the CSS fade when the signal flips; once it has run for
+    // RETIRE_FADE_MS, drop `active` too, which hands the canvas cursor back to the
+    // system. The classes stay on past that, so nothing flashes back in.
+    const wantRetired = getCursorRetired();
+    if (wantRetired !== (retireT0 >= 0)) {
+      retireT0 = wantRetired ? now() : -1;
+      containerEl.classList.toggle('globe-gallery-cursor--retiring', wantRetired);
+      if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--retiring', wantRetired);
+    }
+    const faded = retireT0 >= 0 && now() - retireT0 >= RETIRE_FADE_MS;
+
     const wantActive = !getReducedMotion()
       && onCanvas
       && getSphereInteractive()
-      && !getModalOpen();
+      && !getModalOpen()
+      && !faded;
     if (wantActive !== active) {
       active = wantActive;
       containerEl.classList.toggle('globe-gallery-cursor--active', active);
@@ -107,16 +130,18 @@ export default function createCursor(deps) {
     // One-way label dismissal: once the user has dragged, the "Click & Drag" label
     // fades out (the disc + chevrons stay). Tracks the shared textExitProgress signal,
     // which resets on scroll-out, so the flag can flip back on re-entry.
-    const wantDismissed = typeof getHintDismissed === 'function' && getHintDismissed();
+    const wantDismissed = getHintDismissed();
     if (wantDismissed !== hintDismissed) {
       hintDismissed = wantDismissed;
       containerEl.classList.toggle('globe-gallery-cursor--hint-dismissed', hintDismissed);
     }
-    if (!active) return;
-    const dragging = drag.isDragging;
+    // Computed from `active` so going inactive mid-drag clears the squeeze rather than
+    // freezing it (the per-frame writes below stop once inactive).
+    const dragging = active && drag.isDragging;
     containerEl.classList.toggle('globe-gallery-cursor--dragging', dragging);
+    if (discEl) discEl.classList.toggle('globe-gallery-cursor__disc--dragging', dragging);
+    if (!active) return;
     if (discEl) {
-      discEl.classList.toggle('globe-gallery-cursor__disc--dragging', dragging);
       // top/left (not transform) keeps `transform` free for the CSS scale entrance.
       discEl.style.left = `${mx}px`;
       discEl.style.top = `${my}px`;
@@ -140,6 +165,7 @@ export default function createCursor(deps) {
     if (discEl && discEl.parentNode) discEl.parentNode.removeChild(discEl);
     containerEl = null; discEl = null; ringWrap = null; textWrap = null;
     onCanvas = false; active = false; hintDismissed = false; mx = 0; my = 0;
+    retireT0 = -1;
   }
 
   return { setup, update, teardown, isActive };

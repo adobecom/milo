@@ -628,6 +628,8 @@ body.modal-open { overflow: hidden; }
     padding: 40px 32px;
   }
 
+  .globe-gallery-modal__role-label { margin-top: auto; }
+
   .globe-gallery-modal__name {
     font-size: 24px;
     line-height: 28px;
@@ -657,10 +659,9 @@ body.modal-open { overflow: hidden; }
   .globe-gallery-modal__badge-app { font-size: 14px; }
   .globe-gallery-modal__badge-role { font-size: 14px; }
 
-  /* Counter becomes a frosted pill between the arrows (matches the nav buttons). */
   .globe-gallery-modal__counter {
-    min-width: 96px;
-    padding: 0 20px;
+    width: 138px;
+    box-sizing: border-box;
     border-radius: var(--s2a-border-radius-4);
     border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-white-24);
     background: var(--s2a-color-transparent-black-64);
@@ -776,6 +777,17 @@ body.modal-open { overflow: hidden; }
      mirroring the WebGL hint text. Placed after the --active rule (equal specificity)
      so it wins. */
   .globe-gallery-cursor--hint-dismissed .globe-gallery-cursor__text { opacity: 0; }
+
+  .globe-gallery-cursor--retiring .globe-gallery-cursor__ring {
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity 0.42s ease, transform 0.42s ease;
+  }
+
+  .globe-gallery-cursor__disc--retiring {
+    transform: scale(0);
+    transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 /* ── Reduced-motion flow overrides ───────────────────────────────────────────
