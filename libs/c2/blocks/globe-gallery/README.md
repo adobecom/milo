@@ -6,12 +6,12 @@ target; modal, a11y gallery, and chromatic aberration (CA) are fast-follow.
 
 ## What it is
 
-Over a tall, pinned scroll range (`--runway-height` in the CSS), 45 photo cards animate
-through four phases:
+Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored photo cards
+(any count on desktop; first 24 on mobile) animate through four phases:
 
 ```
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
-0.30–0.60  Grid peel cards peel off the arc into a 9×5 grid (staggered)
+0.30–0.60  Grid peel cards peel off the arc into a 9×5-nominal grid (staggered)
 ~0.37–0.78 Sphere    each card folds onto a fibonacci sphere as it lands
 0.78–1.00  Zoom      a perspective camera flies through the sphere
 ```
@@ -158,10 +158,26 @@ Each fragment section is flat P/UL elements:
 | `<p><picture>…</picture></p>` | **image** | required — sections without one are skipped |
 
 Badge app names resolve against `APP_CATALOG` (by name/abbr/id) for brand icon
-colors; unknown apps render with a derived abbreviation. `N_TOTAL` follows the
-authored card count, capped at the per-BP grid capacity (45 desktop/tablet = 9×5,
-24 mobile = 3×8). Fewer cards → the last grid column is partially filled; more →
-extras are dropped. No modulo wrapping (`getCardMetadata(i)` indexes directly).
+colors; unknown apps render with a derived abbreviation.
+
+**Card count.** `N_TOTAL` follows the authored card count, capped per breakpoint by
+`N_MAX`:
+
+- **md (≥768) — uncapped.** Every authored card renders. The sphere (Fibonacci) and the
+  arc (normalized `fanT`) are both count-agnostic, and the grid's 9×5 is only *nominal*:
+  it fixes the card size, gap, and centering origin, and the grid already overflows the
+  viewport ~1.44× by design as a "more cards beyond" cue. Cards past 45 continue into
+  further (negative-index, off-screen) columns. `totalW`/`totalH` derive from the nominal
+  dims, never the actual column count, so **adding cards never shifts cards 0–44**.
+  Practical ceiling is texture memory / load time, not layout.
+- **sm (<768) — hard cap of 24.** The 3×8 grid already exceeds a 667px-tall viewport and
+  the sphere is small, so mobile renders the **first 24** authored cards and ignores the
+  rest (logged via `lana` at `info`). Surplus cards are never fetched, so mobile pays no
+  texture cost for them.
+
+Fewer cards than the nominal grid → the last column is partially filled. No modulo
+wrapping (`getCardMetadata(i)` indexes directly). `ARC_DENSE_COUNT` is derived from
+`ARC_DENSE_FRACTION × N_TOTAL`, so the clustered:spread arc ratio holds at any count.
 
 ## Localization
 
@@ -341,11 +357,11 @@ timer all derive from it, so camera / depth-sort / interactivity stay aligned.
   0→1 (arc-copy fade, arc pre-roll speed, text→arc gap).
 
 **Breakpoints** resolve once in `init()`. There are **two render profiles** split at
-768px (the Milo sm↔md boundary): `md` (≥768 — 45 cards, 9×5 grid, large sphere) and
-`sm` (<768 — 24 cards, 3×8, smaller sphere). The `md` band is named for its lower
-bound and covers Milo md *and* lg. Per-profile knobs in `BREAKPOINTS`:
-`N_TOTAL`, `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`, `GRID_COLS/ROWS`,
-`ARC_DENSE_COUNT`. There is deliberately no md↔lg split: Milo md (768–1279) and lg
+768px (the Milo sm↔md boundary): `md` (≥768 — all authored cards, 9×5 nominal grid,
+large sphere) and `sm` (<768 — first 24 cards, 3×8, smaller sphere). The `md` band is
+named for its lower bound and covers Milo md *and* lg. Per-profile knobs in
+`BREAKPOINTS`: `N_MAX` (0 = uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
+`GRID_COLS/ROWS`, `ARC_DENSE_FRACTION`. There is deliberately no md↔lg split: Milo md (768–1279) and lg
 (1280–1440) render identically, so a third band would never change anything the WebGL
 cares about — code branches only on `'sm'`. Crossing 768px on resize changes the card
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
@@ -454,8 +470,8 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
 
 Done: ~~scope DOM to `el`~~
 (now class-scoped to the block root, multiple globes per page supported);
-~~align `N_TOTAL`/grid to authored count~~ (fixed grid, partial fill — see
-authoring contract); ~~scroll feel~~ (on a c2 page Milo loads Lenis with
+~~align `N_TOTAL`/grid to authored count~~ (md renders every authored card, surplus
+flowing into off-screen grid columns; sm hard-caps at 24 — see authoring contract); ~~scroll feel~~ (on a c2 page Milo loads Lenis with
 `autoRaf:true` in `utils.js`, so `window.scrollY` *is* the Milo-approved
 smooth-scroll position — no separate setup needed); ~~v1 scope decided~~ (core
 arc→grid→sphere→zoom; modal + a11y + CA are fast-follow); ~~extract the a11y gallery

@@ -34,11 +34,16 @@ const CARD_ASPECT = 456 / 631; // portrait
 // covers both (md and up). A separate lg band would never change anything the
 // WebGL cares about. CSS keeps its own md/lg type tiers (see globe.css).
 const BREAKPOINTS = {
-  // ≥768 — Milo md + lg (named for its lower bound). Full experience: 45 cards,
-  // 9×5 grid, large sphere.
+  // ≥768 — Milo md + lg (named for its lower bound). Full experience: every authored
+  // card (N_MAX: 0 = uncapped), 9×5 nominal grid, large sphere.
   md: {
     minWidth: 768,
-    N_TOTAL: 45,
+    // Cap on how many authored cards this band renders. 0 = uncapped (render all).
+    // Desktop shows the full set: the sphere is a Fibonacci distribution and the arc
+    // is a normalized fanT spread, so both scale to any count; the grid intentionally
+    // overflows the viewport already (see computeGridLayout), so cards beyond the
+    // 9×5 = 45 nominal slots land in extra off-screen columns rather than being dropped.
+    N_MAX: 0,
     ARC_SPAN: 4.50,
     SPHERE_R: 35,
     CARD_H_SPHERE: 6.5,
@@ -47,15 +52,21 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 9,
     GRID_ROWS: 5,
-    ARC_DENSE_COUNT: 27,
+    // Fraction of the cards that cluster into the off-screen arc flank. A fraction (not
+    // an absolute count) so the clustered:spread ratio holds at any card count — at the
+    // former fixed 45 cards this resolves to the same 27.
+    ARC_DENSE_FRACTION: 0.6,
   },
   // <768 — Milo sm. Tuned for 375x667 portrait: sphere fits ~88% viewport width /
   // 49% height at SPHERE_R=20, CAM_Z_SPHERE=70; card count + grid adjusted to
-  // portrait; arc cards sized to fit with margin. ARC_DENSE_COUNT=0 → cards spread
-  // uniformly across the arc (N_TOTAL=24 isn't crowded enough to need clustering).
+  // portrait; arc cards sized to fit with margin. ARC_DENSE_FRACTION=0 → cards spread
+  // uniformly across the arc (24 isn't crowded enough to need clustering).
+  // N_MAX is a HARD 24 here (unlike md's uncapped): the 3×8 grid already overflows a
+  // 667px-tall viewport, the sphere is small, and mobile shouldn't pay the texture cost
+  // of a large set. Extra authored cards are deliberately ignored on sm — the first 24 win.
   sm: {
     minWidth: 0,
-    N_TOTAL: 24,
+    N_MAX: 24,
     ARC_SPAN: 3.6,
     SPHERE_R: 20,
     CARD_H_SPHERE: 6.0,
@@ -64,7 +75,7 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 3,
     GRID_ROWS: 8,
-    ARC_DENSE_COUNT: 0,
+    ARC_DENSE_FRACTION: 0,
   },
 };
 
@@ -282,14 +293,23 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // initRuntime() runs — do NOT read at module load time.
   let bp = null;
 
-  // Resolve a band's static cfg into the active profile: clamps N_TOTAL to the
-  // authored card count, derives the sphere card width + fold distance, clamps the
-  // dense-arc cluster. Pure — returns a frozen object assigned to `bp`.
+  // Resolve a band's static cfg into the active profile: derives N_TOTAL from the
+  // authored card count, the sphere card width + fold distance, and the dense-arc
+  // cluster size. Pure — returns a frozen object assigned to `bp`.
   function resolveBpProfile(name, cfg) {
-    // N_TOTAL follows the authored card count, capped at the per-BP maximum
-    // (cfg.N_TOTAL == GRID_COLS*GRID_ROWS — the grid can't hold more). Fewer
-    // cards → ragged last grid column (accepted). More cards → extras dropped.
-    const nTotal = Math.min(CARD_CONTENT.length, cfg.N_TOTAL);
+    // N_TOTAL follows the authored card count, capped only where the band sets a hard
+    // N_MAX (sm: 24 — see BREAKPOINTS). md is uncapped, so authoring 50 cards puts all
+    // 50 on the sphere and the arc; the grid phase absorbs the surplus in extra
+    // off-screen columns (computeGridLayout keeps its 9×5 nominal framing).
+    const nTotal = cfg.N_MAX > 0
+      ? Math.min(CARD_CONTENT.length, cfg.N_MAX)
+      : CARD_CONTENT.length;
+    if (cfg.N_MAX > 0 && CARD_CONTENT.length > cfg.N_MAX) {
+      window.lana?.log?.(
+        `globe-gallery: ${CARD_CONTENT.length} cards authored, rendering the first ${cfg.N_MAX} at breakpoint "${name}"`,
+        { tags: 'globe-gallery', severity: 'info' },
+      );
+    }
     return Object.freeze({
       name,
       N_TOTAL: nTotal,
@@ -305,9 +325,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
       GRID_COLS: cfg.GRID_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
-      // Clamp the dense-arc cluster to the actual card count so a small authored
-      // set still leaves cards for the visible spread region (fanT > ARC_DENSE_SPLIT).
-      ARC_DENSE_COUNT: Math.min(cfg.ARC_DENSE_COUNT, nTotal),
+      // Dense-arc cluster as a share of the actual card count, so the clustered:spread
+      // ratio is count-independent. Clamped below nTotal-1 so the spread region
+      // (fanT > ARC_DENSE_SPLIT) always keeps at least one card.
+      ARC_DENSE_COUNT: Math.min(
+        Math.round(cfg.ARC_DENSE_FRACTION * nTotal),
+        Math.max(0, nTotal - 1),
+      ),
     });
   }
 
@@ -412,7 +436,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // each card's uAspect uniform (set per phase by the card-transform stages) — no
   // rasterized mask textures.
 
-  // ── Grid layout (9×5 = 45 cards, sized to fit viewport) ───────────────────
+  // ── Grid layout (9×5 nominal on md, sized to fit viewport) ────────────────
+  // GRID_COLS/ROWS define the NOMINAL grid: it sets the card size, the gap, and the
+  // centering origin. On md the card count is uncapped, so a set larger than
+  // GRID_COLS*GRID_ROWS simply continues into further columns (col goes negative →
+  // placed further left, off-screen). That's deliberate and needs no special-casing:
+  // the md grid already overflows the viewport ~1.44× by design as a "more cards
+  // beyond" cue, so the surplus lands in the same off-screen region. Critically,
+  // totalW/totalH stay derived from the NOMINAL dims, never from the actual column
+  // count — otherwise adding cards would re-center the grid and shift every card.
   function computeGridLayout() {
     if (cards.length === 0) return;
     const { GRID_COLS, GRID_ROWS, CARD_W_SPHERE } = bp;
