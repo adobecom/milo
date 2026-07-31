@@ -1,0 +1,24 @@
+{
+  "blockName": "forge-work-smarter-than-ever-with-documents",
+  "sectionIndex": 2,
+  "decision": "ambiguous",
+  "score": 0.69,
+  "topCandidate": "base-card",
+  "sectionClass": "sf-sec-2",
+  "figmaUrl": "https://www.figma.com/design/fMKQndDRSNu4yTjDYyiQoN/Home-%E2%80%94-A.com?node-id=11612-14386",
+  "figmaNodeId": "11612:14406",
+  "distinctive": true,
+  "truthShotRel": "screenshots/section-3-ref.png",
+  "geometry": null,
+  "miloPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-3dc1f062-ms939yzw",
+  "miloTargetPath": "/Users/bradjohn/Documents/forge-new/milo/.forge-worktrees/session-3dc1f062-ms939yzw/libs/c2/blocks/forge-work-smarter-than-ever-with-documents",
+  "miloBranch": "forge/session-3dc1f062-29f",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/local-dev/forge/figma-3dc1f0?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css"
+  }
+}

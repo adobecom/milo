@@ -1,0 +1,150 @@
+/* forge-introducing-color-mode — a "featured card media" hero.
+   Authored toward the Figma visual target (truth-target.css + the reference
+   frame), keyed ONLY on the classes init() stamps on the reconstructed DOM
+   (.fic-*). Every rule is scoped under .forge-introducing-color-mode; local
+   design tokens live inside that scope (never :root). No fixed design-width px
+   (L27) — the card reflows to its container via max-width + aspect-ratio. */
+.forge-introducing-color-mode {
+  --fic-max-width: 1480px;
+  --fic-radius: 16px;
+  --fic-asset-bg: #1c1a28;
+  --fic-headline-color: var(--s2a-color-text, #1d1d1f);
+  --fic-body-color: var(--s2a-color-text-secondary, rgba(0, 0, 0, 0.6));
+  --fic-cta-color: var(--s2a-color-text, #1d1d1f);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--s2a-layout-section-top, 124px) var(--s2a-layout-lg, 64px) var(--s2a-layout-section-bottom, 80px);
+  background: var(--s2a-color-background, #fff);
+}
+
+.forge-introducing-color-mode * { box-sizing: border-box; }
+
+.forge-introducing-color-mode .fic-inner {
+  max-width: var(--fic-max-width);
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24, 24px);
+}
+
+/* Media asset — reserves its box via aspect-ratio so the page never shifts
+   while the fill image loads (CLS). object-fit:cover fills the rounded frame. */
+.forge-introducing-color-mode .fic-asset {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1480 / 670;
+  border-radius: var(--fic-radius);
+  overflow: hidden;
+  background: var(--fic-asset-bg);
+}
+
+.forge-introducing-color-mode .fic-fill,
+.forge-introducing-color-mode .fic-fill img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* App-mnemonic badge overlay, top-left of the asset. */
+.forge-introducing-color-mode .fic-badge {
+  position: absolute;
+  top: clamp(10px, 1.2vw, 16px);
+  left: clamp(10px, 1.2vw, 16px);
+  display: block;
+  width: clamp(28px, 3vw, 44px);
+  height: auto;
+}
+
+.forge-introducing-color-mode .fic-badge img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Copy row below the asset: text on the left, CTA on the right. */
+.forge-introducing-color-mode .fic-copy {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s2a-spacing-24, 24px);
+}
+
+.forge-introducing-color-mode .fic-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+.forge-introducing-color-mode .fic-headline {
+  margin: 0;
+  color: var(--fic-headline-color);
+  font-weight: 900;
+  font-size: clamp(20px, 2vw, 24px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.forge-introducing-color-mode .fic-body {
+  margin: 0;
+  color: var(--fic-body-color);
+  font-size: 16px;
+  line-height: 1.32;
+}
+
+/* Chevron CTA — a real link, kept as an <a>; explicit color (never inherit the
+   global a{color:#000}) so it stays readable, plus a CSS-drawn ">" chevron. */
+.forge-introducing-color-mode .fic-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  flex-shrink: 0;
+  color: var(--fic-cta-color);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.forge-introducing-color-mode .fic-cta::after {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.forge-introducing-color-mode .fic-cta:hover,
+.forge-introducing-color-mode .fic-cta:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 1200px) {
+  .forge-introducing-color-mode {
+    padding-right: var(--s2a-layout-md, 32px);
+    padding-left: var(--s2a-layout-md, 32px);
+  }
+}
+
+@media (max-width: 900px) {
+  .forge-introducing-color-mode .fic-copy {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--s2a-spacing-12, 12px);
+  }
+}
+
+@media (max-width: 600px) {
+  .forge-introducing-color-mode {
+    padding-top: 64px;
+    padding-bottom: 48px;
+  }
+  .forge-introducing-color-mode .fic-asset { aspect-ratio: 4 / 3; }
+}

@@ -1,0 +1,104 @@
+/* forge-explore-what-s-new — a centered "Features and Releases" text intro.
+   Authored TOWARD the Figma reference (centered eyebrow + display heading +
+   subhead + CTA pair on a light background). Typography (family / weight / size)
+   comes from Milo's global C2 classes the JS stamps (heading-2, eyebrow,
+   body-md, con-button); this sheet owns only LAYOUT, spacing rhythm, measure
+   caps, and centering. Every selector is scoped under .forge-explore-what-s-new
+   and values snap to --s2a-* tokens (with literal fallbacks) — no :root, no
+   @font-face, no fixed design-width pixels. */
+
+.forge-explore-what-s-new {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* Section rhythm consistent with C2 siblings: generous top, lighter bottom. */
+  padding: var(--s2a-spacing-124, 124px) var(--s2a-layout-lg, 64px) var(--s2a-spacing-80, 80px);
+  text-align: center;
+
+  & .foreground {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2a-spacing-32, 32px);
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+
+  & .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--s2a-spacing-8, 8px);
+    width: 100%;
+  }
+
+  & .eyebrow {
+    margin: 0;
+    color: var(--s2a-color-content-eyebrow, rgba(0, 0, 0, 0.6));
+  }
+
+  /* Display heading — sizing/family/weight inherited from global heading-2.
+     Cap the measure so the line breaks like the comp; stays responsive. */
+  & h1,
+  & .heading-2 {
+    margin: 0;
+    max-width: 984px;
+    color: var(--s2a-color-content-heading, #000);
+  }
+
+  /* Subhead / any unclassed copy. */
+  & .body-md,
+  & p:not([class]) {
+    margin: 0;
+    max-width: 736px;
+    color: var(--s2a-color-content-body-strong, #101017);
+  }
+
+  /* CTA pair — side by side, centered, wrapping on narrow widths. */
+  & .action-area {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    gap: var(--s2a-spacing-8, 8px);
+    margin-top: var(--s2a-spacing-16, 16px);
+    width: 100%;
+  }
+
+  & .action-area .con-button {
+    border-radius: var(--s2a-border-radius-999, 75px);
+  }
+
+  /* Any authored media stays fluid and never overflows its column. */
+  & picture,
+  & img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Tablet: trim the vertical rhythm and let the copy breathe. */
+@media (max-width: 1024px) {
+  .forge-explore-what-s-new {
+    padding: var(--s2a-spacing-96, 96px) var(--s2a-layout-md, 40px) var(--s2a-spacing-64, 64px);
+  }
+
+  .forge-explore-what-s-new .body-md,
+  .forge-explore-what-s-new p:not([class]) {
+    max-width: 90%;
+  }
+}
+
+/* Mobile: compact rhythm. */
+@media (max-width: 600px) {
+  .forge-explore-what-s-new {
+    padding: var(--s2a-spacing-48, 48px) var(--s2a-spacing-24, 24px) var(--s2a-spacing-40, 40px);
+  }
+
+  .forge-explore-what-s-new .foreground {
+    gap: var(--s2a-spacing-24, 24px);
+  }
+}
