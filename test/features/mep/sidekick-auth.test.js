@@ -163,15 +163,15 @@ describe('sidekick-auth (shadow-DOM login-button probe)', () => {
       expect(cb.calledWith(false)).to.be.true;
     });
 
-    it('resolves once the sidekick mounts after load', async () => {
+    it('resolves unauthed promptly with no sidekick, then flips true when it mounts', async () => {
       setConfig({ env: { name: 'prod' } });
       const cb = sinon.spy();
       onSidekickAuth(cb); // no sidekick yet
       await wait(50);
-      expect(cb.called).to.be.false;
+      expect(cb.calledWith(false)).to.be.true; // no sidekick → unauthed promptly
       mountSidekick({ authed: true });
       await wait(50);
-      expect(cb.calledWith(true)).to.be.true;
+      expect(cb.calledWith(true)).to.be.true; // opening the sidekick flips it
     });
 
     it('does not emit the same verdict twice', async () => {

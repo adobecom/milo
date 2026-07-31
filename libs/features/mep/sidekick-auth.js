@@ -121,7 +121,13 @@ export function onSidekickAuth(callback) {
   if (sk?.shadowRoot) {
     attachAuthEvents(sk);
     watchPluginActionBar(sk.shadowRoot);
+    // Sidekick present: brief head start before defaulting to unauthed, so a late
+    // status resolution doesn't flash a sign-in prompt.
+    setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
   } else {
+    // No sidekick → unauthed now (delay 0): no flash to avoid, and nothing lingering
+    // to fire after a consumer tears down. Still watch for a late mount.
+    setTimeout(() => { if (authed === undefined) set(false); }, 0);
     const observer = new MutationObserver(() => {
       const el = getSidekick();
       if (!el?.shadowRoot) return;
@@ -132,10 +138,6 @@ export function onSidekickAuth(callback) {
     observer.observe(document.body, { childList: true });
     track(observer);
   }
-
-  // Default to unauthed if nothing resolved us in the head start (no sidekick /
-  // signed out). A later sign-in still flips it.
-  setTimeout(() => { if (authed === undefined) set(false); }, RESOLVE_DELAY_MS);
   // Tear down only the transient search observers, and only if none resolved.
   mountTimer = setTimeout(() => { observers.slice().forEach(stop); }, WATCH_TIMEOUT_MS);
 }
