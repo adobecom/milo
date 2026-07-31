@@ -1,0 +1,203 @@
+/* forge-work-smarter-than-ever-with-documents — 3-up use-case card grid.
+   Every top-level selector is scoped to .forge-work-smarter-than-ever-with-documents
+   (L10); no :root / body / bare-element / @font-face / @import (L19); no fixed
+   design-width pixels (L27) — the grid reflows to its container via 1fr columns
+   + max-width. Keys ONLY on the classes init() stamps (C24) — the Figma
+   .usecase/.bento/.appicon classes do not exist at runtime. Design intent from
+   the Figma frame is carried as PROPORTIONS (aspect-ratio, fr, tokens). */
+
+.forge-work-smarter-than-ever-with-documents {
+  /* C21: vertical section rhythm consistent with C2 siblings, not just the
+     horizontal padding Figma specifies. */
+  padding-block: var(--s2a-spacing-124, 124px) var(--s2a-spacing-80, 80px);
+  padding-inline: var(--s2a-spacing-40, 40px);
+  box-sizing: border-box;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+  gap: var(--s2a-spacing-8, 8px);
+  width: 100%;
+  max-width: 1480px;
+  margin-inline: auto;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* --- Media panel: rounded, overflow-clipped, dark; reserves its box via
+   aspect-ratio (488/366 from the comp) so no image arrival shifts the page
+   (C19) and all three columns stay height-aligned. --- */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-media {
+  position: relative;
+  aspect-ratio: 488 / 366;
+  border-radius: var(--s2a-border-radius-16, 16px);
+  overflow: hidden;
+  background-color: var(--s2a-color-gray-1000, #0a0a0a);
+}
+
+/* Hero picture fills the panel (object-fit:cover absorbs ratio mismatch). Keyed
+   on the block's OWN classes — never a bare `img`. */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-hero {
+  position: absolute;
+  inset: 0;
+  display: block;
+  margin: 0;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-hero-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Floating overlay thumbnails (extra authored pictures) — centred so every node
+   keeps real space without ever overflowing the clipped panel. */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-overlays {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2a-spacing-12, 12px);
+  padding: var(--s2a-spacing-24, 24px);
+  pointer-events: none;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-overlay {
+  display: block;
+  margin: 0;
+  max-width: 55%;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-overlay-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--s2a-border-radius-8, 8px);
+  box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* App-mnemonic badge overlaid at the top-left corner. */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-appicon {
+  position: absolute;
+  z-index: 3;
+  inset-block-start: var(--s2a-spacing-16, 16px);
+  inset-inline-start: var(--s2a-spacing-16, 16px);
+  width: clamp(28px, 3vw, 44px);
+  margin: 0;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-appicon-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--s2a-border-radius-8, 8px);
+}
+
+/* Pill "chip" labels overlaid low on the panel. */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-chips {
+  position: absolute;
+  z-index: 4;
+  inset-inline-start: var(--s2a-spacing-16, 16px);
+  inset-block-end: var(--s2a-spacing-16, 16px);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s2a-spacing-8, 8px);
+  max-width: calc(100% - 32px);
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-chip {
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 12px;
+  background-color: #fff;
+  color: #292929;
+  border-radius: 9px;
+  box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.25);
+  font-size: 0.875rem;
+  line-height: 1.25;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* --- Copy column: headline + body + CTA. --- */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-24, 24px);
+  padding: var(--s2a-spacing-24, 24px) var(--s2a-spacing-24, 24px) 0;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2a-spacing-8, 8px);
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-title {
+  margin: 0;
+  font-weight: 900;
+  font-size: 1.5rem;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.3;
+  color: var(--s2a-color-transparent-black-64, rgba(0, 0, 0, 0.64));
+}
+
+/* C20: set link/CTA colour explicitly inside the block scope (never rely on the
+   global a{color:#000}). This CTA sits on the light section background. */
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2a-spacing-8, 8px);
+  color: var(--s2a-color-gray-1000, #000);
+  font-weight: 700;
+  font-size: 0.875rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-cta svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+/* Comp collapses to a single column on tablet/mobile; media widens to 16/9. */
+@media (max-width: 1024px) {
+  .forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-grid {
+    grid-template-columns: 1fr;
+    gap: var(--s2a-spacing-24, 24px);
+  }
+
+  .forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-media {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+@media (max-width: 768px) {
+  .forge-work-smarter-than-ever-with-documents {
+    padding-block: var(--s2a-spacing-80, 80px) var(--s2a-spacing-48, 48px);
+    padding-inline: var(--s2a-spacing-16, 16px);
+  }
+
+  .forge-work-smarter-than-ever-with-documents .forge-work-smarter-than-ever-with-documents-copy {
+    padding-inline: 0;
+  }
+}

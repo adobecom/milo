@@ -1,3 +1,6 @@
+/* forge loose-band overlay (delta wins by specificity: .block.intent) */
+@import '../_forge-overlays/rich-content--forge-loose.css';
+
 .rich-content {
   --content-gap: var(--s2a-spacing-8);
 

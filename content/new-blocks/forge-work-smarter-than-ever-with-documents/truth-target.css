@@ -1,0 +1,29 @@
+.forge-work-smarter-than-ever-with-documents .c3-inner {max-width:1920px;margin:0 auto;padding:0 220px;box-sizing:border-box;}
+
+.forge-work-smarter-than-ever-with-documents .c3-row {display:flex;flex-direction:row;gap:8px;width:100%;align-items:flex-start;}
+
+.forge-work-smarter-than-ever-with-documents .c3-col {flex:1 1 0;display:flex;flex-direction:column;min-width:0;}
+
+.forge-work-smarter-than-ever-with-documents .c3-card {position:relative;width:100%;aspect-ratio:488/366;border-radius:16px;overflow:hidden;flex-shrink:0;}
+
+.forge-work-smarter-than-ever-with-documents .c3-card-img {position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;}
+
+.forge-work-smarter-than-ever-with-documents .c3-copy {padding:24px 24px 0;display:flex;flex-direction:column;gap:24px;}
+
+.forge-work-smarter-than-ever-with-documents .c3-hb {display:flex;flex-direction:column;gap:8px;}
+
+.forge-work-smarter-than-ever-with-documents .c3-h {margin:0;font-family:'Adobe Clean Display','Adobe Clean',Arial,Helvetica,sans-serif;font-weight:900;font-size:24px;line-height:1;letter-spacing:-0.48px;color:#000000;}
+
+.forge-work-smarter-than-ever-with-documents .c3-p {margin:0;font-family:'Adobe Clean',Arial,Helvetica,sans-serif;font-weight:400;font-size:16px;line-height:20px;color:rgba(0,0,0,0.64);}
+
+.forge-work-smarter-than-ever-with-documents .c3-cta {display:flex;align-items:center;gap:8px;}
+
+.forge-work-smarter-than-ever-with-documents .c3-cta-lbl {font-family:'Adobe Clean',Arial,Helvetica,sans-serif;font-weight:700;font-size:14px;line-height:18px;color:#000000;cursor:pointer;}
+
+.forge-work-smarter-than-ever-with-documents .c3-chevron {display:inline-block;width:6px;height:6px;border-top:1.5px solid #000;border-right:1.5px solid #000;transform:rotate(45deg);flex-shrink:0;margin-bottom:1px;}
+
+.forge-work-smarter-than-ever-with-documents .c3-pill {position:absolute;display:flex;align-items:center;gap:7px;padding:10px 12px;background:#ffffff;border-radius:9px;box-shadow:0 0 4px 1px rgba(0,0,0,0.25);white-space:nowrap;z-index:2;}
+
+.forge-work-smarter-than-ever-with-documents .c3-pill span {font-family:'Adobe Clean',Arial,Helvetica,sans-serif;font-size:16px;line-height:20px;color:#292929;font-weight:400;}
+
+.forge-work-smarter-than-ever-with-documents .c3-pill img {width:18px;height:18px;flex-shrink:0;}

@@ -1,0 +1,31 @@
+@media (max-width:1024px) {
+.rich-content.forge-loose > div {
+        padding: 40px 48px;
+      }
+.rich-content.forge-loose h2 {
+        font-size: 40px;
+        line-height: 44px;
+      }
+}
+
+@media (max-width:768px) {
+.rich-content.forge-loose > div {
+        padding: 32px 24px;
+        gap: 24px;
+      }
+.rich-content.forge-loose h2 {
+        font-size: 32px;
+        line-height: 36px;
+      }
+.rich-content.forge-loose p {
+        font-size: 16px;
+      }
+.rich-content.forge-loose div[style*="flex-direction:row"] {
+        flex-direction: column;
+        width: 100%;
+      }
+.rich-content.forge-loose a {
+        width: 100%;
+        justify-content: center;
+      }
+}
