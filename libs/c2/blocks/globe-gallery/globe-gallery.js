@@ -52,6 +52,17 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 9,
     GRID_ROWS: 5,
+    // Full sphere — desktop has free rotation, so any card can be pitched to face the
+    // camera; nothing is permanently oblique. See fibSpherePos.
+    POLAR_BAND: 1,
+    // 0 = cards face radially outward (true sphere). See applyCardFacing.
+    CARD_FACE_CAMERA: 0,
+    // 0 = keep native-aspect sizing (landscape cards are physically bigger). md is sparse
+    // enough (8.9% coverage, gap/maxHalfDiag 1.57) that the size variance reads as collage
+    // rather than crowding. See SPHERE_AREA_NORM in buildCards.
+    SPHERE_AREA_NORM: 0,
+    // Per-card random roll, radians (±0.25 ≈ ±14°) — collage scatter.
+    CARD_ROLL_JITTER: 0.5,
     // Fraction of the cards that cluster into the off-screen arc flank. A fraction (not
     // an absolute count) so the clustered:spread ratio holds at any card count — at the
     // former fixed 45 cards this resolves to the same 27.
@@ -69,12 +80,39 @@ const BREAKPOINTS = {
     N_MAX: 24,
     ARC_SPAN: 3.6,
     SPHERE_R: 20,
-    CARD_H_SPHERE: 6.0,
+    // 6.0 → 11.0. Coverage scales with H², and this is the nominal height BEFORE
+    // SPHERE_AREA_NORM (which shrinks wide cards and grows tall ones to equalize area).
+    // Net: ~42% sphere-face coverage — the sparse "scattered" read was mostly low coverage —
+    // while the widest card still clears its neighbours (gap/maxHalfDiag 1.60). Cheaper than
+    // more cards (no extra textures/draws). Only affects the SPHERE phase; CARD_W_ARC drives
+    // the arc.
+    CARD_H_SPHERE: 11.0,
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
     GRID_COLS: 3,
     GRID_ROWS: 8,
+    // Truncated to a latitude band → barrel/"sphere section" silhouette. Touch is
+    // yaw-only, which can't change a card's latitude, so the polar caps would be
+    // permanently edge-on (see fibSpherePos). 0.7 → polar range 46–134°, worst-case
+    // obliquity 44° (was 90°), silhouette 1.26:1 wide — still reads as a globe.
+    // Side effect: the globe covers ~41% of viewport height (was ~55%). Deliberately NOT
+    // compensated by pulling CAM_Z_SPHERE in — the equator is unchanged, so width is
+    // already at ~98% of the frustum and any closer clips the globe horizontally.
+    POLAR_BAND: 0.7,
+    // Turn each card halfway from radial-outward toward the camera, killing the edge-on
+    // slivers at the left/right limb (azimuthal obliquity — POLAR_BAND only fixed the
+    // latitude component). Halves worst-case obliquity: 90° → 45°. See updateCardFacing.
+    CARD_FACE_CAMERA: 0.5,
+    // Reduced from md's ±14° to ±5°: at sm's sparse coverage the larger jitter reads as
+    // scattered debris rather than a structured surface.
+    CARD_ROLL_JITTER: 0.18,
+    // 0.5 = EQUAL AREA. Cards keep native aspect on the sphere, so a 16:9 image was 2.67×
+    // the area of a 2:3 one — the actual cause of the "some places dense, some sparse"
+    // read (the widest cards had gap/maxHalfDiag 1.25, i.e. they physically overlapped
+    // their neighbours). Scaling both axes by sphereScaleX^-0.5 equalizes area exactly
+    // while leaving aspect — and therefore the image — undistorted.
+    SPHERE_AREA_NORM: 0.5,
     ARC_DENSE_FRACTION: 0,
   },
 };
@@ -253,9 +291,26 @@ const NAV_NUDGE_STIFF = 0.05; // softer pull
 const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
 
 // ── Fibonacci sphere distribution ────────────────────────────────────────────
+// Cards are spread by walking cos(polar) linearly — equal-area, so spacing stays even.
+//
+// POLAR_BAND (per-BP) truncates the distribution to a latitude band: cos(polar) is spread
+// over [−band, +band] instead of the full [−1, +1], which chops the caps off and leaves a
+// "sphere section" — a barrel/cylinder silhouette that still curves like a globe. band = 1
+// is the untruncated sphere.
+//
+// WHY sm needs it: touch is yaw-only (see interaction.js's axis lock), and yaw can never
+// change a card's latitude. A card's best-case obliquity at its ideal yaw is exactly
+// |polar − 90°|, so polar-cap cards are permanently edge-on however much the user spins —
+// at band = 1 the top/bottom cards sit at 90°/66° oblique and are effectively unseeable
+// (3 of 24 on sm). Truncating to band = 0.7 caps worst-case obliquity at 44°, so every
+// card becomes reachable and legible with yaw alone. Desktop keeps band = 1: free
+// rotation there can pitch any card to face the camera, so nothing is unreachable.
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
-function fibSpherePos(i, total, radius) {
-  const polarAngle = Math.acos(1 - (2 * i) / total);
+function fibSpherePos(i, total, radius, band = 1) {
+  // Scale the original full-sphere expression rather than re-deriving the spread, so
+  // band = 1 reproduces the previous positions EXACTLY (bit-for-bit) — desktop is unchanged.
+  const cosPolar = band * (1 - (2 * i) / total);
+  const polarAngle = Math.acos(Math.max(-1, Math.min(1, cosPolar)));
   const azimuth = GOLDEN_ANGLE * i;
   return new THREE.Vector3(
     radius * Math.sin(polarAngle) * Math.cos(azimuth),
@@ -327,6 +382,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
       GRID_COLS: cfg.GRID_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
+      POLAR_BAND: cfg.POLAR_BAND,
+      CARD_FACE_CAMERA: cfg.CARD_FACE_CAMERA,
+      SPHERE_AREA_NORM: cfg.SPHERE_AREA_NORM,
+      CARD_ROLL_JITTER: cfg.CARD_ROLL_JITTER,
       // Dense-arc cluster as a share of the actual card count, so the clustered:spread
       // ratio is count-independent. Clamped below nTotal-1 so the spread region
       // (fanT > ARC_DENSE_SPLIT) always keeps at least one card.
@@ -395,14 +454,22 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // accumulation has no such failure: response to a vertical drag is flat at every
   // orientation, and pitch passes through ±90° and beyond without a limit.
   //
-  // TRADEOFF — roll is emergent. Pitch and yaw rotations do not commute, and their
-  // commutator is a ROLL term (order ε² per frame, integrated along the drag path). So
-  // curved drags accumulate tilt the user never asked for: a single circular drag builds
-  // ~26° of roll, three build ~67°. The globe has no self-righting behavior — this is
-  // accepted as the cost of free tumbling (the old ±60° pitch clamp suppressed it by
-  // storing an absolute angle, so there was no path to integrate along). If the drifting
-  // horizon proves unacceptable in review, the fix is a spring back toward upright on
-  // release, NOT a return to Euler.
+  // TRADEOFF — roll becomes PATH-DEPENDENT. Pitch and yaw rotations do not commute, and
+  // their commutator is a ROLL term (order ε² per frame, integrated along the drag path),
+  // so curved drags accumulate tilt the user never asked for: one circular drag builds ~26°,
+  // three build ~67°, and it does not self-cancel.
+  //
+  // Be precise about what changed: the OLD clamped-Euler scheme ALSO produced roll — the
+  // screen-horizontal axis picks up a y-component of sin(yaw)·sin(pitch), so pitch 45° +
+  // yaw 45° gave 30° of roll, well inside the clamp. What the old scheme gave was roll that
+  // was BOUNDED and NON-HYSTERETIC: a pure function of the current (pitch, yaw), returning
+  // to exactly 0 whenever pitch did, bounded by |roll| ≤ |pitch| ≤ 60°. So what we gave up
+  // is SELF-CORRECTION, not the absence of roll — dragging back to horizontal no longer
+  // levels the globe. Accumulated roll clears only on scroll-out (identity() below).
+  //
+  // CURRENT DECISION (open): ship pure trackball; the drift has not been judged on a real
+  // device. If it proves unacceptable, prefer a spring-to-upright on release over reverting
+  // to Euler — see the three options in README.md (Behavior notes → Free rotation).
   // The quaternion is the SOLE representation — there is no longer a companion Euler
   // (every consumer takes the quat directly, via `.applyQuaternion` / `.copy`).
   const sphereRotQuat = new THREE.Quaternion();
@@ -448,6 +515,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   const navNudgeTargetQuat = new THREE.Quaternion();
   // Scratch for the minimal-arc alignment rotation (rebuilt per nudge request).
   const navNudgeAlignQuat = new THREE.Quaternion();
+  // Scratch for applyCardFacing (reused per card, per frame — never retained).
+  const cardNormal = new THREE.Vector3();
+  const facingTarget = new THREE.Vector3();
+  const facingAlign = new THREE.Quaternion();
+  const facingPartial = new THREE.Quaternion();
   // Front-center view direction (camera looks down −Z, so the visible pole is +Z) and a
   // never-mutated identity to slerp the nudge magnitude out of.
   const FRONT_CENTER_DIR = new THREE.Vector3(0, 0, 1);
@@ -521,6 +593,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   function buildCards() {
     const {
       N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
+      POLAR_BAND, CARD_ROLL_JITTER, SPHERE_AREA_NORM,
     } = bp;
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
@@ -535,6 +608,16 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       const ctd = cardTexData[i] || {};
       const sphereScaleX = ctd.sphereScaleX !== undefined ? ctd.sphereScaleX : 1;
       const imgAspect = sphereScaleX * CARD_ASPECT;
+      // Equal-area normalization (see SPHERE_AREA_NORM). On the sphere a card keeps its
+      // image's native aspect, so width scales with sphereScaleX while height stays at
+      // CARD_H_SPHERE — a 16:9 image ends up 2.67× the AREA of a 2:3 one, which is what
+      // made the sphere read as crowded in places and empty in others. Scaling BOTH axes
+      // by sphereScaleX^-norm equalizes area at norm = 0.5 (area ∝ scaleX·scaleY, so
+      // scaleX·scaleY = ssx·ssx^-1 = 1) and leaves aspect untouched, so the image is
+      // never distorted. norm = 0 restores the previous native-size behavior exactly.
+      const areaNorm = SPHERE_AREA_NORM
+        ? sphereScaleX ** -SPHERE_AREA_NORM
+        : 1;
       // Cover-crop UVs (fall back to the no-crop identity if the texture errored).
       const repeatX = ctd.arcRepeatX !== undefined ? ctd.arcRepeatX : 1;
       const repeatY = ctd.arcRepeatY !== undefined ? ctd.arcRepeatY : 1;
@@ -555,13 +638,14 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       sphereGroup.add(mesh);
 
       // Sphere target position (Fibonacci)
-      const sp = fibSpherePos(i, N_TOTAL, SPHERE_R);
+      const sp = fibSpherePos(i, N_TOTAL, SPHERE_R, POLAR_BAND);
 
-      // Sphere orientation: face center + random z-rotation
+      // Sphere orientation: face center + random z-rotation (jitter is per-BP — sm uses a
+      // smaller spread, see CARD_ROLL_JITTER).
       const m = new THREE.Matrix4()
         .lookAt(sp, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
       const sq = new THREE.Quaternion().setFromRotationMatrix(m);
-      const rz = (Math.random() - 0.5) * 0.5;
+      const rz = (Math.random() - 0.5) * CARD_ROLL_JITTER;
       sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
 
       // Column-major mapping (matches computeGridLayout)
@@ -577,7 +661,14 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         gridCol: GRID_COLS - 1 - Math.floor(i / GRID_ROWS),
         gridRow: GRID_ROWS - 1 - (i % GRID_ROWS),
         peelJitter: Math.random(),
+        // Final sphere-phase scale factors (equal-area normalization already folded in —
+        // see areaNorm above). sphereScaleX is the RAW aspect stretch, kept because the
+        // grid/arc phases and the modal size their planes from it; sphereScale{X,Y} are
+        // what the sphere/fold branches apply. With SPHERE_AREA_NORM = 0 these are
+        // exactly (sphereScaleX, 1) — the previous behavior.
         sphereScaleX,
+        sphereScaleSX: sphereScaleX * areaNorm,
+        sphereScaleSY: areaNorm,
         imgAspect, // world-space aspect on the sphere (CARD_ASPECT × sphereScaleX)
         arcRepeatX: repeatX,
         arcRepeatY: repeatY,
@@ -654,6 +745,42 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // it via the getSphereFormT getter injected into createInteraction.
   let sphereFormTAtLastTick = 0;
 
+  // ── Card facing — turns cards partway from radial-outward toward the camera ──
+  // Fixes the edge-on "sliver" cards at the left/right limb. A card faces radially
+  // outward, so its obliquity to the camera equals its angular distance from
+  // front-center: at the limb (90°) it renders as a line. POLAR_BAND only addressed the
+  // LATITUDE component of that; this addresses the azimuthal component, which is
+  // intrinsic to a sphere and unfixable by redistribution.
+  //
+  // MUST be per-frame, not baked into card.sphereQuat at build time: the sphere rotates,
+  // so a baked tilt rotates with it and stops pointing at the camera — and since sm is
+  // yaw-only, every card cycles through the limb.
+  //
+  // The alignment target is sign(n.z) × view direction, NOT the view direction itself: a
+  // uniform blend toward +Z would rotate a BACK-hemisphere card (normal ≈ −Z) to
+  // perpendicular, turning the fix into the very sliver it removes. Aligning each card
+  // toward whichever pole it already faces keeps back cards fully facing away (visible
+  // from behind; CARD_FRAG mirrors uv.x for back faces), and preserves the sphere read.
+  //
+  // k = 0 is a true sphere (no-op, so md pays nothing but a cheap early return).
+  // `amount` (default 1) scales the effect — the fold branch passes its fdE so the tilt
+  // eases in as the card lands, arriving continuous with the sphere branch.
+  // Operates on a THREE.Quaternion IN PLACE, so it serves both the per-frame mesh writes
+  // here and modal.js's close-animation target (injected as applySphereFacing).
+  function applySphereFacing(quat, amount = 1) {
+    const k = bp.CARD_FACE_CAMERA * amount;
+    if (!k) return;
+    // Card's current outward normal = its local +Z under this orientation.
+    cardNormal.set(0, 0, 1).applyQuaternion(quat);
+    facingTarget.set(0, 0, cardNormal.z < 0 ? -1 : 1);
+    facingAlign.setFromUnitVectors(cardNormal, facingTarget);
+    // Partial rotation toward that target, then compose onto the orientation.
+    facingPartial.copy(IDENTITY_QUAT).slerp(facingAlign, k);
+    quat.premultiply(facingPartial);
+  }
+
+  const applyCardFacing = (mesh, amount = 1) => applySphereFacing(mesh.quaternion, amount);
+
   // Set a card's local transform to its canonical sphere slot with the current
   // sphere-drag rotation baked in. Used by reparent sites so there's no one-frame
   // flash of an unrotated card before tick()'s sphere block re-applies rotation.
@@ -668,7 +795,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       card.mesh.position.copy(card.spherePos);
       card.mesh.quaternion.copy(card.sphereQuat);
     }
-    card.mesh.scale.set(card.sphereScaleX, 1, 1);
+    // Match placeSphereCard's facing tilt, else the reparented card flashes at the
+    // un-tilted orientation for one frame — the exact flash this function exists to avoid.
+    applyCardFacing(card.mesh);
+    card.mesh.scale.set(card.sphereScaleSX, card.sphereScaleSY, 1);
   }
 
   // Modal-nav reactivity: compute the spring target that will rotate the sphere
@@ -768,6 +898,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     reducedMotion,
     sphereRotQuat,
     snapToSphereSlot: snapCardToSphereSlot,
+    applySphereFacing,
     requestNavNudge: triggerModalNavNudge,
     applyMotionCA,
   });
@@ -1275,7 +1406,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const fadeEnd = NEAR_FADE_END * CARD_H_SPHERE;
     const fadeStart = NEAR_FADE_START * CARD_H_SPHERE;
     const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
-    mesh.scale.set(card.sphereScaleX * hs, hs, hs);
+    mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
     setCardUV(mesh, 1, 1, 0, 0);
     setCardAspect(mesh, card.imgAspect);
     if (sphereRotActive) {
@@ -1283,6 +1414,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     } else {
       mesh.quaternion.copy(card.sphereQuat);
     }
+    applyCardFacing(mesh);
     mesh.renderOrder = 0;
     mesh.material.opacity = proxFade;
     mesh.material.uniforms.uDissolve.value = 1 - proxFade;
@@ -1329,8 +1461,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       lerpN(stage.z, sZ, fdE),
     );
     mesh.scale.set(
-      lerpN(stage.scale, card.sphereScaleX, fdE),
-      lerpN(stage.scale, 1, fdE),
+      lerpN(stage.scale, card.sphereScaleSX, fdE),
+      lerpN(stage.scale, card.sphereScaleSY, fdE),
       1,
     );
     setCardUV(
@@ -1360,6 +1492,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       stageQuat.setFromEuler(stageEuler.set(0, 0, residualZ));
       mesh.quaternion.multiply(stageQuat); // local-Z (in-plane) spin, post-multiply
     }
+    // Blend the camera-facing tilt in over the fold (scaled by fdE) so a card arrives at
+    // exactly the orientation placeSphereCard will give it. Without this the fold would
+    // land on the un-tilted sphereQuat and the card would snap the instant fdE hits 1.
+    applyCardFacing(mesh, fdE);
     mesh.renderOrder = 0;
     mesh.material.opacity = 1;
     applyMotionCA(mesh, mesh.position.x - prevMeshX, mesh.position.y - prevMeshY);

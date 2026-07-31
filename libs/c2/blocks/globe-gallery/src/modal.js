@@ -83,6 +83,10 @@ export default function createGlobeModal({
   // Sphere-rotation bridge (live THREE object shared by reference + core callbacks):
   sphereRotQuat,
   snapToSphereSlot,
+  // Applies the sphere's camera-facing tilt to a quaternion in place (no-op when the
+  // active breakpoint has CARD_FACE_CAMERA = 0). Needed so the close animation's target
+  // orientation matches the sphere phase exactly.
+  applySphereFacing,
   requestNavNudge,
   applyMotionCA,
 }) {
@@ -960,7 +964,13 @@ export default function createGlobeModal({
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
-        tgtScale.set(modalCard.sphereScaleX, 1, 1);
+        // Sphere-phase scale carries the equal-area normalization (sphereScaleS*), and the
+        // sphere-phase orientation carries the camera-facing tilt — both must match what
+        // placeSphereCard / snapToSphereSlot will apply, or the card jumps on the last frame
+        // of the close animation (snapToSphereSlot runs at aT >= 1 and would correct it
+        // visibly). applySphereFacing is a no-op where CARD_FACE_CAMERA is 0 (md).
+        tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);
+        applySphereFacing(tgtQuat);
 
         modalCard.mesh.position.lerpVectors(modalCloseStartPos, tgtPos, aE);
         modalCard.mesh.quaternion.copy(modalCloseStartQuat).slerp(tgtQuat, aE);
