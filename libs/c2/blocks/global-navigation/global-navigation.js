@@ -35,20 +35,21 @@ function getFederalDomain(config) {
 
 export default async function init(el) {
   const config = getConfig();
+  const isLingo = lingoActive();
   const federalDomain = getFederalDomain(config);
   const federalGnavUrl = new URL('libs/global-navigation/dist/main.js', `${federalDomain}/`).href;
 
   const placeholdersPromise = (async () => {
     const { fetchPlaceholders, getGeoIpPlaceholders } = await import('../../../features/placeholders.js');
-    const placeholders = await fetchPlaceholders({ config });
+    // Federal replaces {{key}} tokens with a flat string swap and never runs
+    // milo's geo-aware decoration, so merge geo-IP overrides into the map here —
+    // otherwise {{…-geo-ip}} tokens in the gnav resolve to the base value.
+    const [placeholders, geoIp] = await Promise.all([
+      fetchPlaceholders({ config }),
+      isLingo ? getGeoIpPlaceholders(config) : null,
+    ]);
     const map = new Map(Object.entries(placeholders));
-    // Federal replaces {{key}} tokens against this map with a flat string swap
-    // and never runs milo's geo-aware decoration, so merge geo-IP overrides in
-    // here — otherwise {{…-geo-ip}} tokens in the gnav resolve to the base value.
-    if (lingoActive()) {
-      const geoIp = await getGeoIpPlaceholders(config);
-      geoIp?.forEach((value, key) => map.set(key, value));
-    }
+    geoIp?.forEach((value, key) => map.set(key, value));
     return map;
   })();
   // for now we only support inBlock commands.
@@ -68,11 +69,13 @@ export default async function init(el) {
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
+  const lingoRegion = isLingo ? await getLingoRegion({ useGeoLocation: true }) : null;
 
   const gnavPromise = main({
     localizeLink,
-    decorateBody: (body) => decorateLinksAsync(body),
+    // Lingo link transformation only — skip when lingo is off so federal doesn't
+    // re-run milo link decoration over links federal has already localized.
+    ...(isLingo && { decorateBody: decorateLinksAsync }),
     gnavSource: gnavUrl,
     asideSource: null,
     isLocalNav: false,
