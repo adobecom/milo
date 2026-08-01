@@ -13,7 +13,7 @@ Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored ph
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
 0.30–0.60  Grid peel cards peel off the arc into a 9×5-nominal grid (staggered)
 ~0.37–0.78 Sphere    each card folds onto a fibonacci sphere as it lands
-                     (sm: truncated to a latitude band — see POLAR_BAND)
+                     (sm + any touch device: a cylinder wall instead — see below)
 0.78–1.00  Zoom      a perspective camera flies through the sphere
 ```
 
@@ -366,8 +366,8 @@ large sphere) and `sm` (<768 — first 24 cards, 3×8, smaller sphere). The `md`
 named for its lower bound and covers Milo md *and* lg. Per-profile knobs in
 `BREAKPOINTS`: `N_MAX` (0 = uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
 `GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, plus precise-pointer defaults
-for the shape keys (`POLAR_BAND`, `CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that
-`YAW_ONLY_GEOMETRY` overrides on coarse-pointer devices. There is deliberately no md↔lg split: Milo md (768–1279) and lg
+for the shape keys (`CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that `YAW_ONLY_GEOMETRY`
+overrides wherever the cylinder applies. There is deliberately no md↔lg split: Milo md (768–1279) and lg
 (1280–1440) render identically, so a third band would never change anything the WebGL
 cares about — code branches only on `'sm'`. Crossing 768px on resize changes the card
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
@@ -542,14 +542,19 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   separately and must not be conflated:
   - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
     radius, camera Z. `sm` | `md`.
-  - **Input precision** (`prefersYawOnlyGeometry`, `(pointer: coarse)`) picks the sphere's
-    SHAPE, via the `YAW_ONLY_GEOMETRY` overlay — `POLAR_BAND`, `CARD_FACE_CAMERA`,
-    `SPHERE_AREA_NORM`, `CYLINDER` / `CYL_COLS_FIT` / `CYL_GAP_RATIO` / `CYL_ASPECT_CAP`.
+  - **Shape** (`usesCylinderGeometry`) picks cylinder-vs-sphere, on an OR: **`sm` width OR a
+    coarse primary pointer**. Both independently rule out a sphere — a small viewport can't
+    frame one, and yaw-only drags can't reach its poles — so the cylinder covers both. A
+    precise-pointer narrow window used to fall between the two and render a **capless
+    sphere** (caps truncated but not unfolded); the truncation parameter has been removed
+    outright so that state is unreachable, not merely unselected.
+    Constants live in the `YAW_ONLY_GEOMETRY` overlay — `CYLINDER` / `CYL_COLS_FIT` /
+    `CYL_GAP_RATIO` / `CYL_ASPECT_CAP` / `CARD_FACE_CAMERA`.
   - **Why split.** Those shape constants exist *only* because a yaw-only drag can't change a
     card's latitude. They were originally keyed to the `sm` width band, which was wrong: an
     **iPad Pro is ≥768px (so `md`) but drags with touch**, leaving **7 of its 45 cards
-    permanently >60° oblique** — precisely the bug `POLAR_BAND` was written to fix, on a
-    device that never received the fix. Width tells you nothing about input.
+    permanently >60° oblique** — precisely the bug the yaw-only geometry exists to fix, on a
+    device that never received it. Width tells you nothing about input.
   - **`(pointer: coarse)`, not `(hover: none)` and not a UA sniff.** It describes the
     *primary* pointer's precision. iPad Pro with touch alone reports `pointer: coarse`; attach
     a trackpad and it flips to `pointer: fine` — and that flip is handled, since geometry is
@@ -568,7 +573,7 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     iPad Pro (1024, touch)  md      45  cylinder masonry   14  13.09     164%*     1.22
     iPad Pro + trackpad     md      45  full sphere         -      -        n/a       -
     Desktop (1440, mouse)   md      45  full sphere         -      -        n/a       -
-    Narrow desktop (500)    sm      24  banded sphere       -      -        n/a       -
+    Narrow desktop (500)    sm      24  cylinder masonry    8  13.09      83%      1.05
     * >100% = the wall bleeds past the top/bottom edges — intended immersive framing on a
       large screen (77% of the centre-plane frustum).
     ```
@@ -615,37 +620,11 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     reintroduces the ragged look it was built to fix.
   - **`CARD_FACE_CAMERA` drops 0.5 → 0.35.** Still wanted — limb cards are edge-on until spun
     round — but a cylinder has no polar cards to rescue, so it's only limb polish now.
-  - `POLAR_BAND` is retained in the overlay as an inert `1` (it means nothing for a cylinder)
-    so the shape-key contract stays uniform across both paths.
-- **Superseded — the truncated sphere (`POLAR_BAND`), kept because precise-pointer narrow
-  windows still use it.** Under it
-  the Fibonacci distribution is clipped to a latitude band — `fibSpherePos` spreads
-  `cos(polar)` over `[−band, +band]` instead of `[−1, +1]`, chopping the polar caps off and
-  leaving a barrel / "sphere section": still curved like a globe, just wider than tall
-  (1.26:1 silhouette at `band = 0.7`).
-  - **Why.** Touch is yaw-only, and yaw can never change a card's latitude. A card's
-    best-case obliquity at its ideal yaw is exactly `|polar − 90°|`, so polar-cap cards stay
-    edge-on however far the user spins — at `band = 1`, 3 of a phone's 24 cards (and 7 of an
-    iPad Pro's 45) sat at 66–90° oblique and were effectively unseeable. `band = 0.7` gives a
-    46–134° polar range, dropping worst-case obliquity to 44°, so **every card becomes legible
-    with yaw alone** (cards >60° oblique: 3 → 0 on sm, 7 → 0 on md-touch). Neighbour spacing
-    also improves (8.16 → 11.46 world units).
-  - **Precise-pointer devices keep `POLAR_BAND: 1`** (full sphere) at any width — free
-    rotation can pitch any card to face the camera, so nothing is permanently oblique. The implementation scales the original
-    full-sphere expression (`band * (1 - 2i/total)`), so `band = 1` reproduces the previous
-    positions **bit-for-bit** — verified across 179 positions at N = 24/45/50/60, max
-    deviation 0. Desktop is untouched.
-  - **Two side effects worth knowing.** (1) The banded sm globe covers ~41% of viewport height
-    instead of ~55%. This is deliberately *not* compensated by pulling `CAM_Z_SPHERE` in: the
-    equator is unchanged, so the globe already fills ~98% of the frustum width in portrait
-    and any closer clips it horizontally. (2) `lookAt` with `worldUp = (0,1,0)` is degenerate
-    exactly *at* the poles, which the band now excludes — so banding is strictly safer
-    numerically than the full sphere.
 - **Density + facing pass (fixing the "edgy / unevenly distributed" touch-device read).** Three
   independent causes were measured; note that **adding cards fixes none of them** — screen-space
   nearest-neighbour spacing is already even at N = 24 (CV 0.26) and gets *worse* with more
   cards (CV 0.41 at N = 48, 0.46 at N = 60) because near/far foreshortening variance grows.
-  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.5` under the yaw-only overlay, else `0`).** `POLAR_BAND` only fixed the
+  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.35` on the cylinder, `0` on the full sphere).** Latitude obliquity is handled structurally by the cylinder; this fixes the
     *latitude* component of obliquity. A radially-facing card's obliquity equals its angular
     distance from front-center, so cards at the left/right limb render as near-invisible
     lines — the *azimuthal* component, intrinsic to a sphere and unfixable by redistribution.

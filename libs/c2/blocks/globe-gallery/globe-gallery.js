@@ -52,10 +52,6 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 9,
     GRID_ROWS: 5,
-    // Full sphere — a precise pointer has free rotation, so any card can be pitched to face
-    // the camera and nothing is permanently oblique. Overridden by YAW_ONLY_GEOMETRY on
-    // coarse-pointer devices at this width (e.g. iPad Pro). See fibSpherePos.
-    POLAR_BAND: 1,
     // 0 = cards face radially outward (true sphere). See applyCardFacing.
     CARD_FACE_CAMERA: 0,
     // 0 = keep native-aspect sizing (landscape cards are physically bigger). With a precise
@@ -81,40 +77,25 @@ const BREAKPOINTS = {
     N_MAX: 24,
     ARC_SPAN: 3.6,
     SPHERE_R: 20,
-    // 6.0 → 11.0. Coverage scales with H², and this is the nominal height BEFORE
-    // SPHERE_AREA_NORM (which shrinks wide cards and grows tall ones to equalize area).
-    // Net: ~42% sphere-face coverage — the sparse "scattered" read was mostly low coverage —
-    // while the widest card still clears its neighbours (gap/maxHalfDiag 1.60). Cheaper than
-    // more cards (no extra textures/draws). Only affects the SPHERE phase; CARD_W_ARC drives
-    // the arc.
+    // Sphere-phase card height. On sm this is only the PlaneGeometry base — the cylinder
+    // masonry solves each card's real size from the column layout and scales the mesh — so
+    // it no longer sets the visible size. Kept sane for the fold's lerp start and the
+    // NEAR_FADE_* thresholds, which are expressed in card-heights.
     CARD_H_SPHERE: 11.0,
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
     CAM_Z_END: -60,
     GRID_COLS: 3,
     GRID_ROWS: 8,
-    // Same values as YAW_ONLY_GEOMETRY, kept here as the precise-pointer default for this
-    // width: a narrow window on a desktop has a mouse (full rotation), but this band's small
-    // sphere still reads better banded. The overlay supplies these on any coarse-pointer
-    // device regardless of width. 0.7 → polar range 46–134°, worst-case obliquity 44°
-    // (was 90°), silhouette 1.26:1 wide — still reads as a globe.
-    // Side effect: the globe covers ~41% of viewport height (was ~55%). Deliberately NOT
-    // compensated by pulling CAM_Z_SPHERE in — the equator is unchanged, so width is
-    // already at ~98% of the frustum and any closer clips the globe horizontally.
-    POLAR_BAND: 0.7,
-    // Turn each card halfway from radial-outward toward the camera, killing the edge-on
-    // slivers at the left/right limb (azimuthal obliquity — POLAR_BAND only fixed the
-    // latitude component). Halves worst-case obliquity: 90° → 45°. See updateCardFacing.
-    CARD_FACE_CAMERA: 0.5,
-    // Reduced from md's ±14° to ±5°: at sm's sparse coverage the larger jitter reads as
-    // scattered debris rather than a structured surface.
+    // Shape keys are UNREACHABLE on sm: usesCylinderGeometry() is true for the whole band,
+    // so YAW_ONLY_GEOMETRY always supplies the shape. Kept only for the uniform contract.
+    CARD_FACE_CAMERA: 0,
+    // Unused on the masonry path (roll is forced to 0 — the columns lining up IS the
+    // effect); retained for the arc/grid phases, which read the same constant.
     CARD_ROLL_JITTER: 0.18,
-    // 0.5 = EQUAL AREA. Cards keep native aspect on the sphere, so a 16:9 image was 2.67×
-    // the area of a 2:3 one — the actual cause of the "some places dense, some sparse"
-    // read (the widest cards had gap/maxHalfDiag 1.25, i.e. they physically overlapped
-    // their neighbours). Scaling both axes by sphereScaleX^-0.5 equalizes area exactly
-    // while leaving aspect — and therefore the image — undistorted.
-    SPHERE_AREA_NORM: 0.5,
+    // Also unreachable on sm (see the shape-key note above) — masonry sets card size from
+    // the column layout, so area normalization has nothing to do.
+    SPHERE_AREA_NORM: 0,
     ARC_DENSE_FRACTION: 0,
   },
 };
@@ -130,8 +111,8 @@ function resolveBP(w) {
 // yaw-only drag can never change a card's latitude (see interaction.js's axis lock), so
 // polar-cap cards would be permanently edge-on. Keying them to the `sm` width band was
 // wrong — an iPad Pro is ≥768px (so `md`) but drags with touch, which left 7 of its 45
-// cards unreachable: exactly the bug POLAR_BAND was written to fix, on a device that never
-// received the fix.
+// cards unreachable: exactly the bug the yaw-only geometry exists to fix, on a device that
+// never received it.
 //
 // So width still decides count / grid / camera (resolveBP), and this overlay decides the
 // sphere's SHAPE. Result: phone = sm count + banded sphere, iPad Pro = md count + banded
@@ -182,15 +163,22 @@ const YAW_ONLY_GEOMETRY = {
   // spins them round, and this makes them legible in place. Weaker than the sphere's 0.5 —
   // a cylinder has no polar cards to rescue, so this is only limb polish.
   CARD_FACE_CAMERA: 0.35,
-  // Unused on the masonry path — card size comes from the column layout, and the shape keys
-  // below only mean something for the Fibonacci sphere. Kept so the contract is uniform.
+  // Unused on the masonry path — card size comes from the column layout.
   SPHERE_AREA_NORM: 0,
-  POLAR_BAND: 1,
 };
 
-// True when the primary pointer is coarse (touch/stylus-first). Guarded for
-// matchMedia-less environments, where we assume a precise pointer (full sphere).
-function prefersYawOnlyGeometry() {
+// Whether to render the cylinder-masonry wall instead of the Fibonacci sphere. True when
+// EITHER axis calls for it:
+//   • coarse primary pointer — drags are yaw-only at any width, so a sphere's polar cards
+//     would be permanently edge-on (the original reason the overlay exists);
+//   • the `sm` width band — a small viewport can't frame a sphere well regardless of input,
+//     and a narrow precise-pointer window previously fell through to a half-finished
+//     middle state — a CAPLESS SPHERE (caps truncated but not unfolded), neither a proper
+//     globe nor the cylinder. That state should never ship; sm and touch both get the
+//     cylinder now, and the truncation parameter has been removed outright.
+// matchMedia-less environments are treated as precise-pointer, so the width test decides.
+function usesCylinderGeometry(bandName) {
+  if (bandName === 'sm') return true;
   if (!window.matchMedia) return false;
   return window.matchMedia('(pointer: coarse)').matches;
 }
@@ -365,19 +353,10 @@ const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
 
 // ── Fibonacci sphere distribution ────────────────────────────────────────────
 // Cards are spread by walking cos(polar) linearly — equal-area, so spacing stays even.
-//
-// POLAR_BAND (per-BP) truncates the distribution to a latitude band: cos(polar) is spread
-// over [−band, +band] instead of the full [−1, +1], which chops the caps off and leaves a
-// "sphere section" — a barrel/cylinder silhouette that still curves like a globe. band = 1
-// is the untruncated sphere.
-//
-// WHY sm needs it: touch is yaw-only (see interaction.js's axis lock), and yaw can never
-// change a card's latitude. A card's best-case obliquity at its ideal yaw is exactly
-// |polar − 90°|, so polar-cap cards are permanently edge-on however much the user spins —
-// at band = 1 the top/bottom cards sit at 90°/66° oblique and are effectively unseeable
-// (3 of 24 on sm). Truncating to band = 0.7 caps worst-case obliquity at 44°, so every
-// card becomes reachable and legible with yaw alone. Desktop keeps band = 1: free
-// rotation there can pitch any card to face the camera, so nothing is unreachable.
+// Used for the FULL sphere only (wide viewport + precise pointer); everything else renders
+// the cylinder masonry, so there is deliberately no latitude-truncation parameter here. An
+// earlier version had one, which produced a capless sphere — caps cut off but not unfolded,
+// neither a globe nor a cylinder. Don't reintroduce it; use the cylinder instead.
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 // Cylindrical masonry layout. Unlike the sphere/helix layouts this is a WHOLE-SET solve, not
 // a per-index formula: card heights depend on their images' aspects, and balancing the columns
@@ -457,11 +436,8 @@ function cylinderMasonryLayout({
   });
 }
 
-function fibSpherePos(i, total, radius, band = 1) {
-  // Scale the original full-sphere expression rather than re-deriving the spread, so
-  // band = 1 reproduces the previous positions EXACTLY (bit-for-bit) — desktop is unchanged.
-  const cosPolar = band * (1 - (2 * i) / total);
-  const polarAngle = Math.acos(Math.max(-1, Math.min(1, cosPolar)));
+function fibSpherePos(i, total, radius) {
+  const polarAngle = Math.acos(Math.max(-1, Math.min(1, 1 - (2 * i) / total)));
   const azimuth = GOLDEN_ANGLE * i;
   return new THREE.Vector3(
     radius * Math.sin(polarAngle) * Math.cos(azimuth),
@@ -504,9 +480,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Resolve a band's static cfg into the active profile: derives N_TOTAL from the
   // authored card count, the sphere card width + fold distance, and the dense-arc
   // cluster size. Pure — returns a frozen object assigned to `bp`.
-  // `yawOnly` (from prefersYawOnlyGeometry) selects the sphere-shape constants; it's passed
-  // in rather than read here so the caller resolves it once per (re)init alongside the band.
-  function resolveBpProfile(name, cfg, yawOnly) {
+  // `cylinder` (from usesCylinderGeometry) selects the shape constants; it's passed in rather
+  // than read here so the caller resolves it once per (re)init alongside the band.
+  function resolveBpProfile(name, cfg, cylinder) {
     // N_TOTAL follows the authored card count, capped only where the band sets a hard
     // N_MAX (sm: 24 — see BREAKPOINTS). md is uncapped, so authoring 50 cards puts all
     // 50 on the sphere and the arc; the grid phase absorbs the surplus in extra
@@ -522,16 +498,16 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     }
     // Sphere-phase card height: the band's value, scaled when the yaw-only overlay applies
     // (see cylinderMasonryLayout). Only sphere/fold use this; CARD_W_ARC drives the arc.
-    const shape = yawOnly ? YAW_ONLY_GEOMETRY : cfg;
+    const shape = cylinder ? YAW_ONLY_GEOMETRY : cfg;
     // On the masonry path the real card size is solved per-card by cylinderMasonryLayout;
     // this is only the PlaneGeometry base (each mesh is then scaled to its solved w/h), so
     // the band's own value serves fine.
     const sphereCardH = cfg.CARD_H_SPHERE;
     return Object.freeze({
       name,
-      // Which input axis this profile resolved against — compared in doLayout to detect a
+      // Whether this profile resolved to the cylinder — compared in doLayout to detect a
       // pointer-precision change (the shape counterpart of a width-band crossing).
-      YAW_ONLY: yawOnly,
+      YAW_ONLY: cylinder,
       N_TOTAL: nTotal,
       N_VISIBLE: nTotal, // all cards on arc simultaneously (no conveyor)
       ARC_SPAN: cfg.ARC_SPAN,
@@ -545,12 +521,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
       GRID_COLS: cfg.GRID_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
-      // Sphere SHAPE comes from the input axis, not the width band (see
-      // YAW_ONLY_GEOMETRY): a coarse-pointer device drags yaw-only at ANY width, so an
-      // iPad Pro gets md's card count with the banded, camera-facing sphere. The band's
-      // own values are the precise-pointer defaults.
+      // SHAPE is resolved by usesCylinderGeometry (sm width OR coarse pointer), independently
+      // of the width band that sets count/grid/camera — so an iPad Pro gets md's card count
+      // with the cylinder. The band's own values below are the wide precise-pointer defaults.
       // Listed explicitly rather than spread so the overlay's own layout keys can't leak on.
-      POLAR_BAND: shape.POLAR_BAND,
       CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
       SPHERE_AREA_NORM: shape.SPHERE_AREA_NORM,
       // Cylindrical masonry (yaw-only devices) vs Fibonacci sphere. On the masonry path card
@@ -771,7 +745,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   function buildCards() {
     const {
       N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
-      POLAR_BAND, CARD_ROLL_JITTER, SPHERE_AREA_NORM, CYLINDER,
+      CARD_ROLL_JITTER, SPHERE_AREA_NORM, CYLINDER,
     } = bp;
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
@@ -839,7 +813,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       // Sphere target position (Fibonacci)
       const sp = mas
         ? mas.pos.clone()
-        : fibSpherePos(i, N_TOTAL, SPHERE_R, POLAR_BAND);
+        : fibSpherePos(i, N_TOTAL, SPHERE_R);
 
       // Orientation: face outward + random z-rotation (jitter is per-BP — see
       // CARD_ROLL_JITTER). On a CYLINDER the target is the point on the AXIS at the card's
@@ -962,9 +936,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // ── Card facing — turns cards partway from radial-outward toward the camera ──
   // Fixes the edge-on "sliver" cards at the left/right limb. A card faces radially
   // outward, so its obliquity to the camera equals its angular distance from
-  // front-center: at the limb (90°) it renders as a line. POLAR_BAND only addressed the
-  // LATITUDE component of that; this addresses the azimuthal component, which is
-  // intrinsic to a sphere and unfixable by redistribution.
+  // front-center: at the limb (90°) it renders as a line. This addresses the AZIMUTHAL
+  // component of obliquity, which is intrinsic to a sphere and unfixable by redistribution
+  // (the cylinder removes the latitude component structurally — see cylinderMasonryLayout).
   //
   // MUST be per-frame, not baked into card.sphereQuat at build time: the sphere rotates,
   // so a baked tilt rotates with it and stops pointing at the camera — and since sm is
@@ -2080,7 +2054,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // etc. CSS is intentionally NOT BP-aware here — author per-BP CSS with
     // traditional @media queries.
     const band = resolveBP(W);
-    bp = resolveBpProfile(band.name, band.cfg, prefersYawOnlyGeometry());
+    bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
 
     try {
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -2118,7 +2092,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       // runtime (attaching a trackpad to a tablet), so a change there rebuilds too — the
       // geometry is baked at buildCards() time and can't be swapped in place.
       const nextBand = resolveBP(W);
-      const nextYawOnly = prefersYawOnlyGeometry();
+      const nextYawOnly = usesCylinderGeometry(nextBand.name);
       if (nextBand.name !== bp.name || nextYawOnly !== bp.YAW_ONLY) {
         // eslint-disable-next-line no-use-before-define
         destroy();
