@@ -52,14 +52,15 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 9,
     GRID_ROWS: 5,
-    // Full sphere — desktop has free rotation, so any card can be pitched to face the
-    // camera; nothing is permanently oblique. See fibSpherePos.
+    // Full sphere — a precise pointer has free rotation, so any card can be pitched to face
+    // the camera and nothing is permanently oblique. Overridden by YAW_ONLY_GEOMETRY on
+    // coarse-pointer devices at this width (e.g. iPad Pro). See fibSpherePos.
     POLAR_BAND: 1,
     // 0 = cards face radially outward (true sphere). See applyCardFacing.
     CARD_FACE_CAMERA: 0,
-    // 0 = keep native-aspect sizing (landscape cards are physically bigger). md is sparse
-    // enough (8.9% coverage, gap/maxHalfDiag 1.57) that the size variance reads as collage
-    // rather than crowding. See SPHERE_AREA_NORM in buildCards.
+    // 0 = keep native-aspect sizing (landscape cards are physically bigger). With a precise
+    // pointer md is sparse enough (8.9% coverage, gap/maxHalfDiag 1.57) that the size
+    // variance reads as collage rather than crowding. See SPHERE_AREA_NORM in buildCards.
     SPHERE_AREA_NORM: 0,
     // Per-card random roll, radians (±0.25 ≈ ±14°) — collage scatter.
     CARD_ROLL_JITTER: 0.5,
@@ -92,10 +93,11 @@ const BREAKPOINTS = {
     CAM_Z_END: -60,
     GRID_COLS: 3,
     GRID_ROWS: 8,
-    // Truncated to a latitude band → barrel/"sphere section" silhouette. Touch is
-    // yaw-only, which can't change a card's latitude, so the polar caps would be
-    // permanently edge-on (see fibSpherePos). 0.7 → polar range 46–134°, worst-case
-    // obliquity 44° (was 90°), silhouette 1.26:1 wide — still reads as a globe.
+    // Same values as YAW_ONLY_GEOMETRY, kept here as the precise-pointer default for this
+    // width: a narrow window on a desktop has a mouse (full rotation), but this band's small
+    // sphere still reads better banded. The overlay supplies these on any coarse-pointer
+    // device regardless of width. 0.7 → polar range 46–134°, worst-case obliquity 44°
+    // (was 90°), silhouette 1.26:1 wide — still reads as a globe.
     // Side effect: the globe covers ~41% of viewport height (was ~55%). Deliberately NOT
     // compensated by pulling CAM_Z_SPHERE in — the equator is unchanged, so width is
     // already at ~98% of the frustum and any closer clips the globe horizontally.
@@ -120,6 +122,77 @@ const BREAKPOINTS = {
 function resolveBP(w) {
   if (w >= BREAKPOINTS.md.minWidth) return { name: 'md', cfg: BREAKPOINTS.md };
   return { name: 'sm', cfg: BREAKPOINTS.sm };
+}
+
+// ── Yaw-only geometry overlay ────────────────────────────────────────────────
+// Viewport width and INPUT CAPABILITY are independent axes, and the sphere-geometry
+// constants below belong to the input axis, not the width one: they exist purely because a
+// yaw-only drag can never change a card's latitude (see interaction.js's axis lock), so
+// polar-cap cards would be permanently edge-on. Keying them to the `sm` width band was
+// wrong — an iPad Pro is ≥768px (so `md`) but drags with touch, which left 7 of its 45
+// cards unreachable: exactly the bug POLAR_BAND was written to fix, on a device that never
+// received the fix.
+//
+// So width still decides count / grid / camera (resolveBP), and this overlay decides the
+// sphere's SHAPE. Result: phone = sm count + banded sphere, iPad Pro = md count + banded
+// sphere, desktop = md count + full sphere.
+//
+// `(pointer: coarse)` is the right query — it describes the PRIMARY pointer's precision.
+// iPad Pro with touch alone reports `hover: none, pointer: coarse`; add a trackpad and it
+// flips to `hover: hover, pointer: fine`. (Not `hover`, which is about hover capability,
+// and not a UA sniff.) Geometry is baked at buildCards() time, so unlike the per-gesture
+// `pointerType` check this must commit to the device's primary input for the session — it
+// re-resolves on the same destroy()+init() path as a width-band crossing (see doLayout).
+const YAW_ONLY_GEOMETRY = {
+  // CYLINDER instead of a sphere. This is the clean solution to the yaw-only problem rather
+  // than a mitigation of it: every card's normal is HORIZONTAL, so obliquity depends only on
+  // azimuth — which is exactly what yaw controls. Yaw can therefore bring ANY card to 0°
+  // face-on, at any height. (The banded sphere this replaced could only reduce worst-case
+  // obliquity to 44°, because latitude still tilted every card and yaw couldn't touch it.)
+  // Reads as the sphere's caps having been unfolded up and down into a straight wall.
+  CYLINDER: true,
+  // ── Masonry layout ────────────────────────────────────────────────────────
+  // The cylinder is laid out as COLUMNS around the circumference with cards packed down
+  // each one — a cylindrical masonry wall — replacing the golden-angle helix. Two problems
+  // with the helix that this fixes:
+  //   1. Azimuthal clumping. Golden-angle spacing is even in the LIMIT, but at 24 cards a
+  //      45° sector held anywhere from 2 to 4 cards, so the wall had crowded and bare
+  //      verticals. Fixed columns are exactly evenly spaced by construction.
+  //   2. Ragged sizing. Equal-area normalization (SPHERE_AREA_NORM) traded height against
+  //      width, so heights varied 1.63× and nothing lined up. Masonry instead fixes card
+  //      WIDTH to the column width — uniform, so columns align vertically — and lets HEIGHT
+  //      follow each image's native aspect, which is what produces the intended stagger.
+  //      That makes SPHERE_AREA_NORM unnecessary on this path (see resolveBpProfile).
+  //
+  // Column count is DERIVED, not fixed: it must scale with the card count, since a fixed
+  // count that suited sm's 24 cards left md's 45 stacked 6× past the viewport. CYL_COLS_FIT
+  // picks the fewest columns whose tallest column still fits this fraction of the frustum
+  // height — so it is the WALL-HEIGHT dial. Lowering it adds a column, which narrows the
+  // cards and shortens the wall: 0.95 → 0.80 took sm from 117% of the near-face frustum
+  // (bleeding well past the top/bottom) to 94% (just contained).
+  CYL_COLS_FIT: 0.80,
+  // Gap between cards as a fraction of card width — the BREATHING-ROOM dial. Sets the
+  // horizontal gap too, since card width = column pitch / (1 + this). 0.20 roughly doubles
+  // the visible gutters vs the initial 0.08 (vertical 1.33 → 2.62 world units on sm).
+  CYL_GAP_RATIO: 0.20,
+  // Clamp on how extreme a card's aspect may get, so one 16:9 panorama can't dominate a
+  // column. Not a distortion — the existing cover-crop UVs just crop harder.
+  CYL_ASPECT_CAP: 1.5,
+  // Still wanted on a cylinder: cards at the left/right limb are edge-on until the user
+  // spins them round, and this makes them legible in place. Weaker than the sphere's 0.5 —
+  // a cylinder has no polar cards to rescue, so this is only limb polish.
+  CARD_FACE_CAMERA: 0.35,
+  // Unused on the masonry path — card size comes from the column layout, and the shape keys
+  // below only mean something for the Fibonacci sphere. Kept so the contract is uniform.
+  SPHERE_AREA_NORM: 0,
+  POLAR_BAND: 1,
+};
+
+// True when the primary pointer is coarse (touch/stylus-first). Guarded for
+// matchMedia-less environments, where we assume a precise pointer (full sphere).
+function prefersYawOnlyGeometry() {
+  if (!window.matchMedia) return false;
+  return window.matchMedia('(pointer: coarse)').matches;
 }
 
 // ── Phase timeline (progress 0→1 across the block's full scroll length) ──────
@@ -306,6 +379,84 @@ const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
 // card becomes reachable and legible with yaw alone. Desktop keeps band = 1: free
 // rotation there can pitch any card to face the camera, so nothing is unreachable.
 const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
+// Cylindrical masonry layout. Unlike the sphere/helix layouts this is a WHOLE-SET solve, not
+// a per-index formula: card heights depend on their images' aspects, and balancing the columns
+// requires seeing all of them. Returns one entry per card:
+//   { pos, w, h }  — pos on the cylinder wall, plus that card's world width/height.
+//
+// Cards are assigned greedily to the currently SHORTEST column, which is what keeps the wall
+// from having tall and short spots (measured imbalance ≈1.27 max/min column height, vs the
+// helix's 2× azimuthal density swing). Column count is chosen as the fewest columns whose
+// tallest column fits `colsFit` of the frustum height — it has to scale with card count.
+//
+// `aspects[i]` is each card's native image aspect (w/h). `frustumH` bounds the wall height.
+function cylinderMasonryLayout({
+  aspects, radius, frustumH, colsFit, gapRatio, aspectCap,
+}) {
+  const n = aspects.length;
+  // Clamp extremes so one panorama can't dominate a column (cover-crop handles the rest).
+  const clamped = aspects.map((ar) => {
+    const a = Number.isFinite(ar) && ar > 0 ? ar : 1;
+    return Math.max(1 / aspectCap, Math.min(aspectCap, a));
+  });
+
+  // Pack into `cols` columns; returns the per-column running heights + placements.
+  const pack = (cols) => {
+    const pitch = (2 * Math.PI * radius) / cols;
+    const cardW = pitch / (1 + gapRatio);
+    const gap = cardW * gapRatio;
+    const colH = new Array(cols).fill(0);
+    const placed = new Array(n);
+    // TALLEST-FIRST (the classic longest-processing-time-first heuristic). Packing in source
+    // order leaves the tall cards until last, where they have nowhere balanced to go — that
+    // alone left one column 1.64× another. Placing the tall ones while every column is still
+    // short cuts the imbalance to ~1.05. Safe to reorder: the layout already scatters
+    // consecutive cards across columns (0 of 23 adjacent pairs share a column), so authored
+    // order carries no spatial meaning to lose, and modal prev/next walks card INDEX and
+    // spins to whatever slot that card holds.
+    const order = Array.from({ length: n }, (unused, i) => i)
+      .sort((a, b) => clamped[a] - clamped[b]); // ascending aspect = descending height
+    for (let k = 0; k < n; k += 1) {
+      const i = order[k];
+      const h = cardW / clamped[i];
+      // Shortest column wins → balanced totals.
+      let best = 0;
+      for (let c = 1; c < cols; c += 1) if (colH[c] < colH[best]) best = c;
+      placed[i] = { col: best, offset: colH[best], w: cardW, h };
+      colH[best] += h + gap;
+    }
+    // Trailing gap isn't part of the occupied height.
+    const totals = colH.map((h) => Math.max(0, h - gap));
+    return { placed, totals, wallH: Math.max(...totals) };
+  };
+
+  // Fewest columns that fit. Upper bound n: one card per column always fits comfortably.
+  let packed = null;
+  for (let cols = Math.min(4, n); cols <= Math.max(4, n); cols += 1) {
+    packed = pack(cols);
+    if (packed.wallH <= frustumH * colsFit) break;
+  }
+
+  const cols = packed.totals.length;
+  return packed.placed.map((p, i) => {
+    // Centre each column's own stack vertically, so a shorter column sits centred rather
+    // than hanging from the top — this is what reads as masonry instead of a ragged edge.
+    const colTotal = packed.totals[p.col];
+    const y = colTotal / 2 - p.offset - p.h / 2;
+    const azimuth = (2 * Math.PI * p.col) / cols;
+    return {
+      pos: new THREE.Vector3(
+        radius * Math.cos(azimuth),
+        y,
+        radius * Math.sin(azimuth),
+      ),
+      w: p.w,
+      h: p.h,
+      index: i,
+    };
+  });
+}
+
 function fibSpherePos(i, total, radius, band = 1) {
   // Scale the original full-sphere expression rather than re-deriving the spread, so
   // band = 1 reproduces the previous positions EXACTLY (bit-for-bit) — desktop is unchanged.
@@ -353,7 +504,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Resolve a band's static cfg into the active profile: derives N_TOTAL from the
   // authored card count, the sphere card width + fold distance, and the dense-arc
   // cluster size. Pure — returns a frozen object assigned to `bp`.
-  function resolveBpProfile(name, cfg) {
+  // `yawOnly` (from prefersYawOnlyGeometry) selects the sphere-shape constants; it's passed
+  // in rather than read here so the caller resolves it once per (re)init alongside the band.
+  function resolveBpProfile(name, cfg, yawOnly) {
     // N_TOTAL follows the authored card count, capped only where the band sets a hard
     // N_MAX (sm: 24 — see BREAKPOINTS). md is uncapped, so authoring 50 cards puts all
     // 50 on the sphere and the arc; the grid phase absorbs the surplus in extra
@@ -367,14 +520,24 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         { tags: 'globe-gallery', severity: 'info' },
       );
     }
+    // Sphere-phase card height: the band's value, scaled when the yaw-only overlay applies
+    // (see cylinderMasonryLayout). Only sphere/fold use this; CARD_W_ARC drives the arc.
+    const shape = yawOnly ? YAW_ONLY_GEOMETRY : cfg;
+    // On the masonry path the real card size is solved per-card by cylinderMasonryLayout;
+    // this is only the PlaneGeometry base (each mesh is then scaled to its solved w/h), so
+    // the band's own value serves fine.
+    const sphereCardH = cfg.CARD_H_SPHERE;
     return Object.freeze({
       name,
+      // Which input axis this profile resolved against — compared in doLayout to detect a
+      // pointer-precision change (the shape counterpart of a width-band crossing).
+      YAW_ONLY: yawOnly,
       N_TOTAL: nTotal,
       N_VISIBLE: nTotal, // all cards on arc simultaneously (no conveyor)
       ARC_SPAN: cfg.ARC_SPAN,
       SPHERE_R: cfg.SPHERE_R,
-      CARD_H_SPHERE: cfg.CARD_H_SPHERE,
-      CARD_W_SPHERE: cfg.CARD_H_SPHERE * CARD_ASPECT,
+      CARD_H_SPHERE: sphereCardH,
+      CARD_W_SPHERE: sphereCardH * CARD_ASPECT,
       CARD_W_ARC: cfg.CARD_W_ARC,
       CAM_Z_SPHERE: cfg.CAM_Z_SPHERE,
       CAM_Z_END: cfg.CAM_Z_END,
@@ -382,9 +545,24 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       FOLD_SPHERE_DIST: Math.round(cfg.SPHERE_R / (0.35 * Math.tan(Math.PI / 6))),
       GRID_COLS: cfg.GRID_COLS,
       GRID_ROWS: cfg.GRID_ROWS,
-      POLAR_BAND: cfg.POLAR_BAND,
-      CARD_FACE_CAMERA: cfg.CARD_FACE_CAMERA,
-      SPHERE_AREA_NORM: cfg.SPHERE_AREA_NORM,
+      // Sphere SHAPE comes from the input axis, not the width band (see
+      // YAW_ONLY_GEOMETRY): a coarse-pointer device drags yaw-only at ANY width, so an
+      // iPad Pro gets md's card count with the banded, camera-facing sphere. The band's
+      // own values are the precise-pointer defaults.
+      // Listed explicitly rather than spread so the overlay's own layout keys can't leak on.
+      POLAR_BAND: shape.POLAR_BAND,
+      CARD_FACE_CAMERA: shape.CARD_FACE_CAMERA,
+      SPHERE_AREA_NORM: shape.SPHERE_AREA_NORM,
+      // Cylindrical masonry (yaw-only devices) vs Fibonacci sphere. On the masonry path card
+      // size comes from the column solve (cylinderMasonryLayout), so CARD_*_SPHERE above is
+      // only the fallback/geometry base — CYL_* are the knobs it reads.
+      CYLINDER: !!shape.CYLINDER,
+      CYL_COLS_FIT: shape.CYL_COLS_FIT,
+      CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
+      CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
+      // Frustum height at the cylinder's centre plane — the vertical budget the column
+      // solve fits its tallest column into.
+      CYL_FRUSTUM_H: 2 * Math.tan(Math.PI / 6) * cfg.CAM_Z_SPHERE,
       CARD_ROLL_JITTER: cfg.CARD_ROLL_JITTER,
       // Dense-arc cluster as a share of the actual card count, so the clustered:spread
       // ratio is count-independent. Clamped below nTotal-1 so the spread region
@@ -593,7 +771,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   function buildCards() {
     const {
       N_TOTAL, N_VISIBLE, SPHERE_R, CARD_W_SPHERE, CARD_H_SPHERE, GRID_COLS, GRID_ROWS,
-      POLAR_BAND, CARD_ROLL_JITTER, SPHERE_AREA_NORM,
+      POLAR_BAND, CARD_ROLL_JITTER, SPHERE_AREA_NORM, CYLINDER,
     } = bp;
     sphereGroup = new THREE.Group();
     scene.add(sphereGroup);
@@ -602,6 +780,23 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // per-card via quaternion, so a uniform group scale doesn't affect drag/spin.
     if (reducedMotion && bp.name !== 'sm') sphereGroup.scale.setScalar(RM_GLOBE_SCALE_MD);
     cards = [];
+
+    // Masonry (cylinder path) is a whole-set solve — column count, card widths and the
+    // greedy shortest-column packing all need every card's aspect at once — so it runs
+    // ONCE here, before the per-card loop reads its result. Null on the sphere path.
+    const masonry = CYLINDER
+      ? cylinderMasonryLayout({
+        aspects: Array.from({ length: N_TOTAL }, (unused, i) => {
+          const d = cardTexData[i] || {};
+          return (d.sphereScaleX !== undefined ? d.sphereScaleX : 1) * CARD_ASPECT;
+        }),
+        radius: SPHERE_R,
+        frustumH: bp.CYL_FRUSTUM_H,
+        colsFit: bp.CYL_COLS_FIT,
+        gapRatio: bp.CYL_GAP_RATIO,
+        aspectCap: bp.CYL_ASPECT_CAP,
+      })
+      : null;
 
     for (let i = 0; i < N_TOTAL; i += 1) {
       // cardTexData is fully populated by the time buildCards() fires (called from onDone)
@@ -618,6 +813,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       const areaNorm = SPHERE_AREA_NORM
         ? sphereScaleX ** -SPHERE_AREA_NORM
         : 1;
+      // Masonry solves each card's ABSOLUTE world width/height (uniform width per column,
+      // height from the image's aspect — that's the stagger). Convert to scale factors
+      // against the shared PlaneGeometry so the rest of the pipeline is unchanged.
+      const mas = masonry ? masonry[i] : null;
       // Cover-crop UVs (fall back to the no-crop identity if the texture errored).
       const repeatX = ctd.arcRepeatX !== undefined ? ctd.arcRepeatX : 1;
       const repeatY = ctd.arcRepeatY !== undefined ? ctd.arcRepeatY : 1;
@@ -638,14 +837,25 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       sphereGroup.add(mesh);
 
       // Sphere target position (Fibonacci)
-      const sp = fibSpherePos(i, N_TOTAL, SPHERE_R, POLAR_BAND);
+      const sp = mas
+        ? mas.pos.clone()
+        : fibSpherePos(i, N_TOTAL, SPHERE_R, POLAR_BAND);
 
-      // Sphere orientation: face center + random z-rotation (jitter is per-BP — sm uses a
-      // smaller spread, see CARD_ROLL_JITTER).
+      // Orientation: face outward + random z-rotation (jitter is per-BP — see
+      // CARD_ROLL_JITTER). On a CYLINDER the target is the point on the AXIS at the card's
+      // own height, not the origin: aiming at the origin would tilt every off-centre card
+      // toward it, reintroducing exactly the vertical obliquity the cylinder exists to
+      // remove. Aiming at (0, y, 0) keeps the normal horizontal, so all cards stand upright
+      // like a carousel wall.
+      const faceTarget = CYLINDER
+        ? new THREE.Vector3(0, sp.y, 0)
+        : new THREE.Vector3(0, 0, 0);
       const m = new THREE.Matrix4()
-        .lookAt(sp, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+        .lookAt(sp, faceTarget, new THREE.Vector3(0, 1, 0));
       const sq = new THREE.Quaternion().setFromRotationMatrix(m);
-      const rz = (Math.random() - 0.5) * CARD_ROLL_JITTER;
+      // No roll on the masonry path: the columns lining up IS the effect, and any tilt
+      // reintroduces the ragged look it was built to fix.
+      const rz = CYLINDER ? 0 : (Math.random() - 0.5) * CARD_ROLL_JITTER;
       sq.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), rz));
 
       // Column-major mapping (matches computeGridLayout)
@@ -667,9 +877,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         // what the sphere/fold branches apply. With SPHERE_AREA_NORM = 0 these are
         // exactly (sphereScaleX, 1) — the previous behavior.
         sphereScaleX,
-        sphereScaleSX: sphereScaleX * areaNorm,
-        sphereScaleSY: areaNorm,
-        imgAspect, // world-space aspect on the sphere (CARD_ASPECT × sphereScaleX)
+        sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : sphereScaleX * areaNorm,
+        sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : areaNorm,
+        // World-space aspect in the sphere phase — drives the rounded-corner SDF, so it must
+        // equal the card's ACTUAL rendered w/h. On the masonry path the aspect cap means the
+        // rendered shape can differ from the raw image aspect, so derive it from the solved
+        // size rather than from sphereScaleX.
+        imgAspect: mas ? mas.w / mas.h : imgAspect,
         arcRepeatX: repeatX,
         arcRepeatY: repeatY,
         arcOffsetX: offsetX,
@@ -1838,6 +2052,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   let resizeHandler = null;
+  // Pointer-precision media query + its listener (see the yaw-only geometry overlay).
+  let coarsePointerMQ = null;
+  let coarsePointerHandler = null;
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
 
   // ── Init ───────────────────────────────────────────────────────────────────
@@ -1863,7 +2080,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // etc. CSS is intentionally NOT BP-aware here — author per-BP CSS with
     // traditional @media queries.
     const band = resolveBP(W);
-    bp = resolveBpProfile(band.name, band.cfg);
+    bp = resolveBpProfile(band.name, band.cfg, prefersYawOnlyGeometry());
 
     try {
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -1897,8 +2114,12 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       // grid, sphere) → full destroy()+init() so all geometry, textures, and
       // grid layout rebuild with the new band's constants. Resizing within a
       // band falls through to the cheap path below.
+      // The sphere's shape also depends on primary-pointer precision, which can change at
+      // runtime (attaching a trackpad to a tablet), so a change there rebuilds too — the
+      // geometry is baked at buildCards() time and can't be swapped in place.
       const nextBand = resolveBP(W);
-      if (nextBand.name !== bp.name) {
+      const nextYawOnly = prefersYawOnlyGeometry();
+      if (nextBand.name !== bp.name || nextYawOnly !== bp.YAW_ONLY) {
         // eslint-disable-next-line no-use-before-define
         destroy();
         if (initRuntime() === false) root.classList.add('globe-gallery--empty');
@@ -1928,6 +2149,19 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     if (resizeHandler) window.removeEventListener('resize', resizeHandler);
     resizeHandler = doLayout;
     window.addEventListener('resize', resizeHandler, { passive: true });
+
+    // Pointer precision can change without a resize (attaching a trackpad to a tablet, or
+    // an OS input-mode switch), and it selects the sphere's shape — so listen for it
+    // directly rather than relying on a resize to notice. doLayout's own comparison decides
+    // whether a rebuild is actually needed, so a spurious fire is harmless.
+    if (coarsePointerMQ && coarsePointerHandler) {
+      coarsePointerMQ.removeEventListener('change', coarsePointerHandler);
+    }
+    if (window.matchMedia) {
+      coarsePointerMQ = window.matchMedia('(pointer: coarse)');
+      coarsePointerHandler = doLayout;
+      coarsePointerMQ.addEventListener('change', coarsePointerHandler);
+    }
 
     // Recompute block metrics whenever page height changes (images/blocks loading
     // above the block shift its offsetTop; blockHeight=0 at first paint makes
@@ -1980,6 +2214,11 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     if (resizeHandler) {
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;
+    }
+    if (coarsePointerMQ && coarsePointerHandler) {
+      coarsePointerMQ.removeEventListener('change', coarsePointerHandler);
+      coarsePointerMQ = null;
+      coarsePointerHandler = null;
     }
     if (layoutObs) {
       layoutObs.disconnect();

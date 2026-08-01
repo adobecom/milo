@@ -365,8 +365,9 @@ timer all derive from it, so camera / depth-sort / interactivity stay aligned.
 large sphere) and `sm` (<768 — first 24 cards, 3×8, smaller sphere). The `md` band is
 named for its lower bound and covers Milo md *and* lg. Per-profile knobs in
 `BREAKPOINTS`: `N_MAX` (0 = uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
-`GRID_COLS/ROWS`, `POLAR_BAND`, `CARD_FACE_CAMERA`, `CARD_ROLL_JITTER`,
-`SPHERE_AREA_NORM`, `ARC_DENSE_FRACTION`. There is deliberately no md↔lg split: Milo md (768–1279) and lg
+`GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, plus precise-pointer defaults
+for the shape keys (`POLAR_BAND`, `CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that
+`YAW_ONLY_GEOMETRY` overrides on coarse-pointer devices. There is deliberately no md↔lg split: Milo md (768–1279) and lg
 (1280–1440) render identically, so a third band would never change anything the WebGL
 cares about — code branches only on `'sm'`. Crossing 768px on resize changes the card
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
@@ -537,33 +538,114 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     simpler and strictly more correct than the old two-Euler version — whose own comment
     conceded that Y and X rotations don't commute — and it can't inject roll, since the
     rotation axis is perpendicular to both directions.
-- **sm renders a truncated sphere (`POLAR_BAND`) so yaw-only can reach every card.** On sm
+- **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
+  separately and must not be conflated:
+  - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
+    radius, camera Z. `sm` | `md`.
+  - **Input precision** (`prefersYawOnlyGeometry`, `(pointer: coarse)`) picks the sphere's
+    SHAPE, via the `YAW_ONLY_GEOMETRY` overlay — `POLAR_BAND`, `CARD_FACE_CAMERA`,
+    `SPHERE_AREA_NORM`, `CYLINDER` / `CYL_COLS_FIT` / `CYL_GAP_RATIO` / `CYL_ASPECT_CAP`.
+  - **Why split.** Those shape constants exist *only* because a yaw-only drag can't change a
+    card's latitude. They were originally keyed to the `sm` width band, which was wrong: an
+    **iPad Pro is ≥768px (so `md`) but drags with touch**, leaving **7 of its 45 cards
+    permanently >60° oblique** — precisely the bug `POLAR_BAND` was written to fix, on a
+    device that never received the fix. Width tells you nothing about input.
+  - **`(pointer: coarse)`, not `(hover: none)` and not a UA sniff.** It describes the
+    *primary* pointer's precision. iPad Pro with touch alone reports `pointer: coarse`; attach
+    a trackpad and it flips to `pointer: fine` — and that flip is handled, since geometry is
+    baked at `buildCards()` time and can't be swapped in place: `doLayout` compares
+    `bp.YAW_ONLY` and does the same `destroy()` + `init()` rebuild as a width-band crossing.
+    A `change` listener on the media query drives it, because attaching a trackpad fires no
+    `resize`.
+  - **This is distinct from the per-gesture check.** `interaction.js` decides yaw-only per
+    *gesture* from `e.pointerType`, so a hybrid device gets full pitch from its mouse and
+    yaw-only from a finger. Geometry can't be per-gesture, so it commits to the primary input.
+  - Resolved matrix:
+
+    ```
+    device                  band cards  shape            cols  cardW  wall@near  col imb
+    iPhone (393, touch)     sm      24  cylinder masonry    8  13.09      83%      1.05
+    iPad Pro (1024, touch)  md      45  cylinder masonry   14  13.09     164%*     1.22
+    iPad Pro + trackpad     md      45  full sphere         -      -        n/a       -
+    Desktop (1440, mouse)   md      45  full sphere         -      -        n/a       -
+    Narrow desktop (500)    sm      24  banded sphere       -      -        n/a       -
+    * >100% = the wall bleeds past the top/bottom edges — intended immersive framing on a
+      large screen (77% of the centre-plane frustum).
+    ```
+
+- **Yaw-only devices render a CYLINDER, not a sphere.** This replaced the truncated-sphere
+  approach and is a *solution* to the yaw-only problem rather than a mitigation of it: every
+  card's normal is **horizontal**, so obliquity depends only on azimuth — exactly what yaw
+  controls. Yaw can therefore bring **any** card to 0° face-on at any height. (The banded
+  sphere could only reduce worst-case obliquity to 44°, because latitude tilted every card
+  and yaw couldn't touch it.) Reads as the sphere's caps unfolded up and down into a wall.
+  - **Layout is cylindrical MASONRY** (`cylinderMasonryLayout`) — fixed columns around the
+    circumference with cards packed down each one. This replaced a golden-angle helix, which
+    had two visible faults: golden-angle spacing is only even in the *limit*, so at 24 cards a
+    45° sector held anywhere from **2 to 4** cards (crowded and bare verticals); and equal-area
+    normalization traded height against width, so heights varied **1.63×** and nothing lined up.
+  - **Uniform WIDTH is what fixes the alignment; varying HEIGHT is the effect.** Card width is
+    set to the column width — identical for every card, so columns read as true verticals —
+    while height follows each image's native aspect (**2.25×** range), which is the masonry
+    stagger. This makes `SPHERE_AREA_NORM` unnecessary on this path (set to 0).
+  - **Cards go to the currently SHORTEST column, TALLEST CARD FIRST** — the classic
+    longest-processing-time-first heuristic. Greedy alone isn't enough: packing in source order
+    leaves the tall cards until last, where nothing balanced remains, leaving one column
+    **1.64×** another. Placing tall cards while every column is still short drops that to
+    **1.05**. Reordering is free here — the layout already scatters consecutive cards (0 of 23
+    adjacent pairs share a column), so authored order carries no spatial meaning, and modal
+    prev/next walks card *index* and spins to whatever slot the card holds. Each column's stack
+    is then centred about y=0, so a short column sits centred rather than hanging from the top.
+  - **Column count is DERIVED, not fixed** (`CYL_COLS_FIT` 0.80): the fewest columns whose
+    tallest column still fits that fraction of the frustum height. It has to scale with the
+    card count — a fixed count suited to sm's 24 cards left md's 45 stacked ~6× past the
+    viewport. Resolves to 8 columns on sm, 14 on md (and at 50 cards); ~3–4 cards per column.
+    **This is the wall-HEIGHT dial**: lowering it adds a column, which narrows the cards and
+    shortens the wall (0.95 → 0.80 took sm from 117% of the near-face frustum, bleeding well
+    past the edges, to 83%).
+  - **`CYL_ASPECT_CAP` (1.5)** clamps how extreme a card's aspect may get, so one 16:9
+    panorama can't dominate a column. Not a distortion — the existing cover-crop UVs simply
+    crop harder. Note `imgAspect` is therefore derived from the *solved* size, not the raw
+    image aspect, so the rounded-corner SDF still matches the rendered shape.
+  - **`CYL_GAP_RATIO` (0.20)** is the breathing-room dial, setting both gaps (card width =
+    column pitch / (1 + ratio)). Verified no overlap in either direction: min vertical gap
+    in-column 2.62 and horizontal *chord* clearance 2.22–2.49 (the chord matters, not the arc
+    — flat cards cut across the curve).
+  - **No roll jitter on this path** — the columns lining up *is* the effect, so any tilt
+    reintroduces the ragged look it was built to fix.
+  - **`CARD_FACE_CAMERA` drops 0.5 → 0.35.** Still wanted — limb cards are edge-on until spun
+    round — but a cylinder has no polar cards to rescue, so it's only limb polish now.
+  - `POLAR_BAND` is retained in the overlay as an inert `1` (it means nothing for a cylinder)
+    so the shape-key contract stays uniform across both paths.
+- **Superseded — the truncated sphere (`POLAR_BAND`), kept because precise-pointer narrow
+  windows still use it.** Under it
   the Fibonacci distribution is clipped to a latitude band — `fibSpherePos` spreads
   `cos(polar)` over `[−band, +band]` instead of `[−1, +1]`, chopping the polar caps off and
   leaving a barrel / "sphere section": still curved like a globe, just wider than tall
   (1.26:1 silhouette at `band = 0.7`).
   - **Why.** Touch is yaw-only, and yaw can never change a card's latitude. A card's
     best-case obliquity at its ideal yaw is exactly `|polar − 90°|`, so polar-cap cards stay
-    edge-on however far the user spins — at `band = 1`, 3 of sm's 24 cards sat at 66–90°
-    oblique and were effectively unseeable. `band = 0.7` gives a 46–134° polar range,
-    dropping worst-case obliquity to 44°, so **every card becomes legible with yaw alone**
-    (cards >60° oblique: 3 → 0). Neighbour spacing also improves (8.16 → 11.46 world units).
-  - **md keeps `POLAR_BAND: 1`** (full sphere) — free rotation can pitch any card to face the
-    camera, so nothing is permanently oblique there. The implementation scales the original
+    edge-on however far the user spins — at `band = 1`, 3 of a phone's 24 cards (and 7 of an
+    iPad Pro's 45) sat at 66–90° oblique and were effectively unseeable. `band = 0.7` gives a
+    46–134° polar range, dropping worst-case obliquity to 44°, so **every card becomes legible
+    with yaw alone** (cards >60° oblique: 3 → 0 on sm, 7 → 0 on md-touch). Neighbour spacing
+    also improves (8.16 → 11.46 world units).
+  - **Precise-pointer devices keep `POLAR_BAND: 1`** (full sphere) at any width — free
+    rotation can pitch any card to face the camera, so nothing is permanently oblique. The implementation scales the original
     full-sphere expression (`band * (1 - 2i/total)`), so `band = 1` reproduces the previous
     positions **bit-for-bit** — verified across 179 positions at N = 24/45/50/60, max
     deviation 0. Desktop is untouched.
-  - **Two side effects worth knowing.** (1) The sm globe now covers ~41% of viewport height
+  - **Two side effects worth knowing.** (1) The banded sm globe covers ~41% of viewport height
     instead of ~55%. This is deliberately *not* compensated by pulling `CAM_Z_SPHERE` in: the
     equator is unchanged, so the globe already fills ~98% of the frustum width in portrait
     and any closer clips it horizontally. (2) `lookAt` with `worldUp = (0,1,0)` is degenerate
     exactly *at* the poles, which the band now excludes — so banding is strictly safer
     numerically than the full sphere.
-- **sm density + facing pass (fixing the "edgy / unevenly distributed" mobile read).** Three
+- **Density + facing pass (fixing the "edgy / unevenly distributed" touch-device read).** Three
   independent causes were measured; note that **adding cards fixes none of them** — screen-space
   nearest-neighbour spacing is already even at N = 24 (CV 0.26) and gets *worse* with more
   cards (CV 0.41 at N = 48, 0.46 at N = 60) because near/far foreshortening variance grows.
-  - **Edge-on slivers → `CARD_FACE_CAMERA` (sm `0.5`, md `0`).** `POLAR_BAND` only fixed the
+  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.5` under the yaw-only overlay, else `0`).** `POLAR_BAND` only fixed the
     *latitude* component of obliquity. A radially-facing card's obliquity equals its angular
     distance from front-center, so cards at the left/right limb render as near-invisible
     lines — the *azimuthal* component, intrinsic to a sphere and unfixable by redistribution.
@@ -581,7 +663,7 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
       `placeSphereCard`, `snapCardToSphereSlot` (reparent — the one-frame flash it exists to
       prevent), and `placeFoldingCard` **scaled by `fdE`** so the tilt eases in over the fold
       and arrives exactly continuous with the sphere branch (verified: 0.00e+0° apart).
-  - **Uneven card SIZE → `SPHERE_AREA_NORM` (sm `0.5`, md `0`).** This was the actual cause
+  - **Uneven card SIZE → `SPHERE_AREA_NORM` (`0.5` under the yaw-only overlay, else `0`).** This was the actual cause
     of the remaining "some places dense, some sparse" read, and it is not a distribution
     problem at all. On the sphere a card keeps its image's **native aspect**: height is fixed
     at `CARD_H_SPHERE` and width scales with `sphereScaleX`, so a 16:9 image ends up **2.67×
@@ -595,10 +677,11 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
       Applied at the same three sites as the facing tilt, **plus** `modal.js`'s close-animation
       target — that one also needed `applySphereFacing` injected, since it lands on the sphere
       orientation and would otherwise jump on the final frame when `snapToSphereSlot` runs.
-    - `norm = 0` reproduces the old `(sphereScaleX, 1)` scaling **exactly**, so md is
-      untouched (verified across ssx 0.5–3.0). The rounded-corner SDF is unaffected: uniform
+    - `norm = 0` reproduces the old `(sphereScaleX, 1)` scaling **exactly**, so
+      precise-pointer devices are untouched (verified across ssx 0.5–3.0). The rounded-corner SDF is unaffected: uniform
       scaling preserves w/h, so `uAspect` still matches and corners stay circular.
-  - **Sparseness → `CARD_H_SPHERE` 6.0 → 11.0 on sm.** The other half of the "uneven" read was
+  - **Sparseness → `CARD_H_SPHERE` 6.0 → 11.0 on sm** (the sphere path; the cylinder path
+    solves its own sizing from the column layout). The other half of the "uneven" read was
     plain low coverage: 24 cards at 6.0 covered only **12.4%** of the sphere face, so the eye
     saw accidental clusters in black space rather than a surface. Coverage scales with
     **H²**, making size a far stronger lever than count — and unlike count it adds **no
