@@ -159,6 +159,14 @@ const YAW_ONLY_GEOMETRY = {
   // Clamp on how extreme a card's aspect may get, so one 16:9 panorama can't dominate a
   // column. Not a distortion — the existing cover-crop UVs just crop harder.
   CYL_ASPECT_CAP: 1.5,
+  // Barrel bulge — how much the radius narrows toward the top/bottom of the wall, as a
+  // fraction of the radius (r = R·(1 − bulge·t²)). Buys back a curved, globe-like
+  // silhouette without giving up the straight columns a real sphere would destroy: 0.12
+  // insets the wall edges ~8% of R (a ~23px waist-vs-edge difference on a 375px screen)
+  // for only ~9° of normal tilt, and leaves the dead-centre column's alignment exact.
+  // Don't push past ~0.2: the inter-column chord shrinks with r while card width doesn't,
+  // so the narrowed edges begin to overlap (0.25 measured −0.20 clearance). 0 = cylinder.
+  CYL_BULGE: 0.18,
   // Still wanted on a cylinder: cards at the left/right limb are edge-on until the user
   // spins them round, and this makes them legible in place. Weaker than the sphere's 0.5 —
   // a cylinder has no polar cards to rescue, so this is only limb polish.
@@ -303,6 +311,15 @@ const HOVER_RATE = 0.15; // per-frame lerp toward target (~125ms to 80%)
 // thresholds sit well inside the resting interactive distance (nearest card depth ≈
 // CAM_Z_SPHERE − SPHERE_R ≈ 4–5 card-heights), so the steady globe + the approach are
 // untouched — the fade only engages mid zoom-through.
+// Half-width (in |normal.z|) of the fade-out band around edge-on for the camera-facing
+// tilt — see applySphereFacing. 0.25 kills the sign-flip discontinuity (63.3° → 1.9° max
+// per-frame change) while leaving the correction untouched out to ~75° of obliquity;
+// widening it past ~0.35 starts eating the limb correction the tilt exists to provide.
+const FACING_EDGE_ON_BAND = 0.25;
+// Ceiling on dragFlipZ as a fraction of CAM_Z_SPHERE (see buildCards). The flip threshold is
+// derived from geometry + fade distance, which on md can land just outside the camera's
+// zoom-start position; this keeps it strictly inside the zoom-through.
+const DRAG_FLIP_MAX_CAM_FRAC = 0.95;
 const NEAR_FADE_START = 2.5; // begin fading when card depth < 2.5 card-heights
 const NEAR_FADE_END = 1.6; // fully transparent when card depth < 1.6 card-heights
 
@@ -370,7 +387,7 @@ const GOLDEN_ANGLE = Math.PI * (1 + Math.sqrt(5));
 //
 // `aspects[i]` is each card's native image aspect (w/h). `frustumH` bounds the wall height.
 function cylinderMasonryLayout({
-  aspects, radius, frustumH, colsFit, gapRatio, aspectCap,
+  aspects, radius, frustumH, colsFit, gapRatio, aspectCap, bulge = 0,
 }) {
   const n = aspects.length;
   // Clamp extremes so one panorama can't dominate a column (cover-crop handles the rest).
@@ -417,17 +434,45 @@ function cylinderMasonryLayout({
   }
 
   const cols = packed.totals.length;
+  // BARREL bulge: the radius eases in toward the top/bottom of the wall,
+  //   r(t) = radius · (1 − bulge·t²),  t = 2y / wallH ∈ [−1, 1]
+  // so the silhouette curves like a globe while every column keeps a CONSTANT azimuth —
+  // which is what preserves the straight-column alignment a true sphere destroys (a
+  // meridian projects to a curve; a barrel's column still projects to a vertical line at
+  // the front). It only displaces cards in the radial direction, so the dead-centre column
+  // the user is reading shows exactly 0px of horizontal drift; angled columns pick up a
+  // little (~12px at bulge 0.12 on a 375px screen) as their radial offset turns partly
+  // sideways. bulge = 0 is an exact cylinder.
+  //
+  // The cost is obliquity: the surface normal tilts by the slope dr/dy, up to ~9° at 0.12
+  // (vs a chopped sphere's 5–33°). Keep it modest — the chord between adjacent columns
+  // shrinks with r while card width does not, so past ~0.2 the narrowed top/bottom of the
+  // wall starts to overlap (0.25 measured −0.20 clearance).
+  const wallH = packed.wallH || 1;
   return packed.placed.map((p, i) => {
     // Centre each column's own stack vertically, so a shorter column sits centred rather
     // than hanging from the top — this is what reads as masonry instead of a ragged edge.
     const colTotal = packed.totals[p.col];
     const y = colTotal / 2 - p.offset - p.h / 2;
     const azimuth = (2 * Math.PI * p.col) / cols;
+    const t = Math.max(-1, Math.min(1, (2 * y) / wallH));
+    const r = radius * (1 - bulge * t * t);
+    // Outward normal for the surface of revolution r(y): the meridian tangent is
+    // (dr/dy, 1), so the normal is (1, −dr/dy) normalized, swung to this azimuth. Passed
+    // out so buildCards can aim each card along it (a plain lookAt at the axis would
+    // ignore the slope and leave the card tilted relative to its own surface).
+    const dRdy = bulge === 0 ? 0 : radius * -2 * bulge * t * (2 / wallH);
+    const nScale = 1 / Math.hypot(1, dRdy);
     return {
       pos: new THREE.Vector3(
-        radius * Math.cos(azimuth),
+        r * Math.cos(azimuth),
         y,
-        radius * Math.sin(azimuth),
+        r * Math.sin(azimuth),
+      ),
+      normal: new THREE.Vector3(
+        nScale * Math.cos(azimuth),
+        -dRdy * nScale,
+        nScale * Math.sin(azimuth),
       ),
       w: p.w,
       h: p.h,
@@ -534,6 +579,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       CYL_COLS_FIT: shape.CYL_COLS_FIT,
       CYL_GAP_RATIO: shape.CYL_GAP_RATIO,
       CYL_ASPECT_CAP: shape.CYL_ASPECT_CAP,
+      CYL_BULGE: shape.CYL_BULGE,
       // Frustum height at the cylinder's centre plane — the vertical budget the column
       // solve fits its tallest column into.
       CYL_FRUSTUM_H: 2 * Math.tan(Math.PI / 6) * cfg.CAM_Z_SPHERE,
@@ -581,6 +627,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   let tickerAdded = false;
   let sphereDragWarp = 0;
   let cameraInsideSphere = false;
+  // Camera z at which the drag direction flips (see updateActiveCamera). Computed in
+  // buildCards from the actual geometry + fade distance rather than assumed from SPHERE_R.
+  let dragFlipZ = 0;
   // "Click & Drag" hint text: the mesh (built async after fonts load, so null until then)
   // and the one-way exit progress (0→1, accumulated on first drag; reset on scroll-out).
   let textMesh = null;
@@ -769,6 +818,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         colsFit: bp.CYL_COLS_FIT,
         gapRatio: bp.CYL_GAP_RATIO,
         aspectCap: bp.CYL_ASPECT_CAP,
+        bulge: bp.CYL_BULGE,
       })
       : null;
 
@@ -816,13 +866,17 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         : fibSpherePos(i, N_TOTAL, SPHERE_R);
 
       // Orientation: face outward + random z-rotation (jitter is per-BP — see
-      // CARD_ROLL_JITTER). On a CYLINDER the target is the point on the AXIS at the card's
-      // own height, not the origin: aiming at the origin would tilt every off-centre card
-      // toward it, reintroducing exactly the vertical obliquity the cylinder exists to
-      // remove. Aiming at (0, y, 0) keeps the normal horizontal, so all cards stand upright
-      // like a carousel wall.
-      const faceTarget = CYLINDER
-        ? new THREE.Vector3(0, sp.y, 0)
+      // CARD_ROLL_JITTER). On the masonry wall the card faces along the SURFACE NORMAL that
+      // the layout computed, which on a barrel is tilted by the local slope dr/dy — so the
+      // card lies flat against its own surface instead of standing bolt upright through it.
+      // At bulge = 0 that normal is exactly horizontal, i.e. the pure-cylinder behavior.
+      // NOT the origin: aiming there would tilt every off-centre card toward the centre,
+      // reintroducing the vertical obliquity this layout exists to remove.
+      // lookAt(eye, target) points local +Z from the TARGET back toward the EYE, so the
+      // target has to be INSIDE the surface (sp − normal) for the card to face outward —
+      // the same reason the pure-cylinder version aimed at the axis rather than away from it.
+      const faceTarget = mas
+        ? sp.clone().sub(mas.normal)
         : new THREE.Vector3(0, 0, 0);
       const m = new THREE.Matrix4()
         .lookAt(sp, faceTarget, new THREE.Vector3(0, 1, 0));
@@ -853,6 +907,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         sphereScaleX,
         sphereScaleSX: mas ? mas.w / CARD_W_SPHERE : sphereScaleX * areaNorm,
         sphereScaleSY: mas ? mas.h / CARD_H_SPHERE : areaNorm,
+        // This card's ACTUAL rendered world height in the sphere phase. The near-camera
+        // proximity fade is expressed in card-heights, and on the masonry path
+        // bp.CARD_H_SPHERE is only the PlaneGeometry base — it no longer describes any
+        // rendered card (heights range 8.7–19.6 against a base of 11 on sm, 6.5 on md). Using
+        // the base meant the fade scaled by the wrong number: on md a 19.6-tall card finished
+        // dissolving at 0.61× its own fill-the-frame depth, i.e. it filled the screen BEFORE
+        // going transparent — exactly what the fade exists to prevent. Per-card height gives
+        // every card the intended ~1.85× margin by construction.
+        sphereWorldH: mas ? mas.h : CARD_H_SPHERE * areaNorm,
         // World-space aspect in the sphere phase — drives the rounded-corner SDF, so it must
         // equal the card's ACTUAL rendered w/h. On the masonry path the aspect cap means the
         // rendered shape can differ from the raw image aspect, so derive it from the solved
@@ -867,6 +930,37 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         hoverUV: new THREE.Vector2(0.5, 0.5), // cursor position on card in UV space
       });
     }
+    // ── Drag-flip threshold ──
+    // The camera z below which the drag direction inverts (read by updateActiveCamera).
+    // Anchored to where cards actually VANISH, so the flip lands with the dissolve:
+    //   front wall  = the largest radial distance any card sits at. Radial (not raw z)
+    //                 because the globe spins — every card visits the front, so the
+    //                 threshold has to be rotation-invariant.
+    //   + fadeEnd   = the depth in front of the lens at which opacity hits 0. Taken from the
+    //                 TALLEST card, since the fade is per-card (NEAR_FADE_END ×
+    //                 card.sphereWorldH) and the tallest one is the last to vanish — using a
+    //                 smaller value would flip while something is still on screen.
+    // Result: by the time the camera reaches dragFlipZ the near-side cards are already
+    // fully dissolved, so the surface being dragged IS the far wall.
+    // spherePos is the card's LOCAL position, so fold in sphereGroup.scale — reduced motion
+    // shrinks the group on md (RM_GLOBE_SCALE_MD), which would otherwise put the threshold
+    // 3.5 units outside the real wall and flip the drag early.
+    const groupScale = sphereGroup.scale.x || 1;
+    const maxRadial = cards.reduce(
+      (m, c) => Math.max(m, Math.hypot(c.spherePos.x, c.spherePos.z)),
+      0,
+    ) * groupScale;
+    const maxCardH = cards.reduce((m, c) => Math.max(m, c.sphereWorldH), 0) * groupScale;
+    // Clamped below the camera's zoom-start distance: with per-card fade distances the
+    // tallest card's threshold can exceed CAM_Z_SPHERE (md measured 66.4 vs 65), which would
+    // invert the drag the instant the zoom-through begins — while the near wall is still in
+    // full view. DRAG_FLIP_MAX_CAM_FRAC keeps it strictly inside the zoom so the flip always
+    // happens partway through, never at its start.
+    dragFlipZ = Math.min(
+      maxRadial + NEAR_FADE_END * maxCardH,
+      bp.CAM_Z_SPHERE * DRAG_FLIP_MAX_CAM_FRAC,
+    );
+
     // Seed per-card random tilts once so they stay stable across resize
     gridTilts = [];
     for (let ti = 0; ti < N_TOTAL; ti += 1) {
@@ -956,10 +1050,20 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Operates on a THREE.Quaternion IN PLACE, so it serves both the per-frame mesh writes
   // here and modal.js's close-animation target (injected as applySphereFacing).
   function applySphereFacing(quat, amount = 1) {
-    const k = bp.CARD_FACE_CAMERA * amount;
+    let k = bp.CARD_FACE_CAMERA * amount;
     if (!k) return;
     // Card's current outward normal = its local +Z under this orientation.
     cardNormal.set(0, 0, 1).applyQuaternion(quat);
+    // The alignment target's SIGN flips as the card passes edge-on (normal.z crossing 0),
+    // and the two targets are 180° apart — so applying the effect at full strength there
+    // teleports the card by up to ~63°, which reads as a card snapping to the far side just
+    // as it thins out. Fade the effect to zero across a band around edge-on so the two
+    // branches meet at no-op and the sign flip becomes unobservable: max per-frame change
+    // drops 63.3° → 1.9° on a fast drag, while the limb correction stays fully intact out to
+    // ~75° of obliquity (it only matters near face-on/back-on anyway).
+    const edgeOnT = Math.min(1, Math.abs(cardNormal.z) / FACING_EDGE_ON_BAND);
+    k *= edgeOnT * edgeOnT * (3 - 2 * edgeOnT); // smoothstep — C1, so no velocity kink
+    if (k < 1e-6) return;
     facingTarget.set(0, 0, cardNormal.z < 0 ? -1 : 1);
     facingAlign.setFromUnitVectors(cardNormal, facingTarget);
     // Partial rotation toward that target, then compose onto the orientation.
@@ -1297,7 +1401,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   //   Zoom-through: perspective continuing CAM_Z_SPHERE → CAM_Z_END.
   function updateActiveCamera(frame) {
     const { sphereFormT, zoomT } = frame;
-    const { SPHERE_R, CAM_Z_SPHERE, CAM_Z_END } = bp;
+    const { CAM_Z_SPHERE, CAM_Z_END } = bp;
     let activeCamera;
     const camZArc = arcCamZ(H);
     if (sphereFormT === 0) {
@@ -1315,7 +1419,16 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       camera.position.z = camZ;
       camera.updateProjectionMatrix();
     }
-    cameraInsideSphere = zoomT > 0 && Math.abs(camera.position.z) < SPHERE_R;
+    // Flip the drag once the camera is INSIDE — i.e. once the near wall's cards are gone and
+    // the surface the user is looking at is the far one. The threshold is dragFlipZ, derived
+    // in buildCards from where cards actually DISAPPEAR (front wall + the near-fade distance),
+    // not from SPHERE_R. Using SPHERE_R meant the two events only coincided by accident: the
+    // fade distance is measured in card-heights, so when sm's CARD_H_SPHERE went 6.0 → 11.0
+    // for density the dissolve started completing 17.6 units ahead of the wall (was 9.6)
+    // while the flip stayed at 20 — leaving a long stretch where cards were gone but the
+    // drag hadn't inverted. Deriving it keeps the two aligned through any future change to
+    // card size, bulge, or radius.
+    cameraInsideSphere = zoomT > 0 && Math.abs(camera.position.z) < dragFlipZ;
     return activeCamera;
   }
 
@@ -1588,11 +1701,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // depth ≤ fadeEnd, so the only visibility toggle happens where the card is invisible
     // on both sides. Toggling at the fade edge instead would let a sub-pixel scroll
     // jitter (Lenis easing to its target after a scroll) flash near cards on/off.
-    const { CARD_H_SPHERE } = bp;
     const depth = camera.position.z - (sphGroupZ + mesh.position.z);
     if (depth <= 0) { mesh.visible = false; return; }
-    const fadeEnd = NEAR_FADE_END * CARD_H_SPHERE;
-    const fadeStart = NEAR_FADE_START * CARD_H_SPHERE;
+    // Thresholds scale with THIS card's rendered height (see card.sphereWorldH), not the
+    // breakpoint's geometry base — so a tall card starts and finishes fading proportionally
+    // further out and can never fill the frame before it is transparent.
+    const fadeEnd = NEAR_FADE_END * card.sphereWorldH;
+    const fadeStart = NEAR_FADE_START * card.sphereWorldH;
     const proxFade = Math.max(0, Math.min(1, (depth - fadeEnd) / (fadeStart - fadeEnd)));
     mesh.scale.set(card.sphereScaleSX * hs, card.sphereScaleSY * hs, hs);
     setCardUV(mesh, 1, 1, 0, 0);

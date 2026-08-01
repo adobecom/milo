@@ -549,7 +549,7 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     sphere** (caps truncated but not unfolded); the truncation parameter has been removed
     outright so that state is unreachable, not merely unselected.
     Constants live in the `YAW_ONLY_GEOMETRY` overlay — `CYLINDER` / `CYL_COLS_FIT` /
-    `CYL_GAP_RATIO` / `CYL_ASPECT_CAP` / `CARD_FACE_CAMERA`.
+    `CYL_GAP_RATIO` / `CYL_ASPECT_CAP` / `CYL_BULGE` / `CARD_FACE_CAMERA`.
   - **Why split.** Those shape constants exist *only* because a yaw-only drag can't change a
     card's latitude. They were originally keyed to the `sm` width band, which was wrong: an
     **iPad Pro is ≥768px (so `md`) but drags with touch**, leaving **7 of its 45 cards
@@ -578,7 +578,7 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
       large screen (77% of the centre-plane frustum).
     ```
 
-- **Yaw-only devices render a CYLINDER, not a sphere.** This replaced the truncated-sphere
+- **Yaw-only devices render a barrelled CYLINDER, not a sphere.** This replaced the truncated-sphere
   approach and is a *solution* to the yaw-only problem rather than a mitigation of it: every
   card's normal is **horizontal**, so obliquity depends only on azimuth — exactly what yaw
   controls. Yaw can therefore bring **any** card to 0° face-on at any height. (The banded
@@ -616,8 +616,63 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     column pitch / (1 + ratio)). Verified no overlap in either direction: min vertical gap
     in-column 2.62 and horizontal *chord* clearance 2.22–2.49 (the chord matters, not the arc
     — flat cards cut across the curve).
+  - **The near-camera fade scales with each card's OWN rendered height**
+    (`card.sphereWorldH`), not `bp.CARD_H_SPHERE`. On the masonry path `CARD_H_SPHERE` is only
+    the `PlaneGeometry` base and no longer describes any rendered card (solved heights run
+    8.7–19.6 against a base of 11 on sm, 6.5 on md), so using it scaled the fade by the wrong
+    number: on md a 19.6-tall card finished dissolving at **0.61×** its own fill-the-frame
+    depth — it filled the screen *before* going transparent, which is precisely what the fade
+    exists to prevent. Per-card height gives every card the intended **1.85×** margin by
+    construction, at any band, count, or bulge.
+    - `dragFlipZ` takes the **tallest** card's fade distance (the last to vanish), and is
+      clamped to `CAM_Z_SPHERE × DRAG_FLIP_MAX_CAM_FRAC` (0.95). Without the clamp the larger
+      per-card distance pushed md's threshold to 66.4 against a `CAM_Z_SPHERE` of 65 — the
+      drag would have inverted the instant the zoom began, with the near wall still in full
+      view.
+  - **The drag-flip threshold is DERIVED, not `SPHERE_R`** (`dragFlipZ`, computed in
+    `buildCards`, read by `updateActiveCamera`). Once the camera is inside the shell the
+    visible far-hemisphere wall moves opposite to the same world rotation, so the drag delta
+    is negated to keep tracking the surface being looked at. That flip used to fire at
+    `|camera.z| < SPHERE_R` — the *geometric* wall — while cards dissolve some distance in
+    front of it (`NEAR_FADE_END × CARD_H_SPHERE`). The two only coincided by accident, and
+    the accident broke: raising sm's `CARD_H_SPHERE` 6.0 → 11.0 for density stretched the
+    dissolve distance 9.6 → 17.6 units while the threshold stayed at 20, leaving a long
+    stretch where the near cards were gone but the drag hadn't inverted. `dragFlipZ` is now
+    `maxRadial + NEAR_FADE_END × CARD_H_SPHERE`, so the flip lands with the dissolve by
+    construction — dead zone 17.4 → ~0 on sm, 9.3 → ~0 on md — and stays correct through
+    changes to card size, `CYL_BULGE`, or radius.
+    - `maxRadial` is the largest **radial** distance of any card, not raw z: the globe spins,
+      so every card visits the front and the threshold has to be rotation-invariant.
+    - `sphereGroup.scale` is folded in — reduced motion shrinks the group on md
+      (`RM_GLOBE_SCALE_MD`), which would otherwise flip 3.5 units early.
+    - Still gated on `zoomT > 0`, and verified not to fire at zoom start (margin 32 units on
+      sm, 20 on md), so the interactive globe phase is untouched.
   - **No roll jitter on this path** — the columns lining up *is* the effect, so any tilt
     reintroduces the ragged look it was built to fix.
+  - **`CYL_BULGE` (0.12) barrels the wall** so the silhouette curves like a globe without
+    giving up the straight columns: `r = R·(1 − bulge·t²)` with `t = 2y / wallH`, i.e. the
+    radius narrows toward the top and bottom. Every column keeps a **constant azimuth**, so
+    it still projects to a vertical line — the bulge only displaces cards radially. Measured
+    on sm: the dead-centre column (the one being read) shows **exactly 0px** horizontal
+    drift, angled front columns pick up ~12px on a 375px screen, and the wall edges inset
+    ~8% of R. Costs ~9° of normal tilt on sm / ~14° on md — well under a chopped sphere's
+    5–33°. **Don't push past ~0.2**: the inter-column chord shrinks with `r` while card width
+    doesn't, so the narrowed edges start to overlap (0.25 measures −0.20 clearance). `0` is an
+    exact cylinder.
+    - The layout returns a per-card **`normal`**, and `buildCards` aims each card along it.
+      A plain `lookAt` at the axis would ignore the barrel's slope and leave cards standing
+      bolt upright through their own surface. Note `lookAt(eye, target)` points local +Z from
+      the *target* back toward the *eye*, so the target is `pos − normal` (inside the
+      surface) for the card to face outward.
+  - **Why not a chopped masonry globe** (evaluated and rejected). Meridian columns on a sphere
+    project to *curves*, not lines, so in-column alignment breaks by construction; a 0.7 band
+    leaves only ~89° of usable arc against ~41° per card, so columns hold **2 cards** — too
+    few to read as a stack — and pushing for more shrinks cards from 13.09 to 9.52 wide;
+    latitude obliquity returns at 5–33°. There's also no good taper choice: tapering card
+    width with `sin(polar)` makes widths vary 1.18× (columns visibly non-uniform), and not
+    tapering leaves cards floating off the surface at the band edges. Masonry wants a
+    developable surface — a cylinder is one, a sphere isn't. The barrel is the compromise
+    that keeps the alignment.
   - **`CARD_FACE_CAMERA` drops 0.5 → 0.35.** Still wanted — limb cards are edge-on until spun
     round — but a cylinder has no polar cards to rescue, so it's only limb polish now.
 - **Density + facing pass (fixing the "edgy / unevenly distributed" touch-device read).** Three
@@ -633,6 +688,14 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     - **It must be per-frame, not baked into `card.sphereQuat`.** The sphere rotates, so a
       build-time tilt rotates with it and stops pointing at the camera — and since sm is
       yaw-only, *every* card cycles through the limb.
+    - **The effect must fade to zero at edge-on, or the sign flip is visible.** The two
+      targets are 180° apart, so applying the tilt at full strength as a card passes edge-on
+      (`normal.z` crossing 0) teleports it by up to **63°** — a card snapping to the far side
+      exactly as it thins out. `FACING_EDGE_ON_BAND` (0.25, in `|normal.z|`) smoothsteps `k`
+      to 0 across a band around edge-on, so the two branches meet at no-op: max per-frame
+      change drops **63.3° → 1.9°** (against a 0.5° input step), verified across yaw, pitch
+      and oblique tumbling. The correction survives untouched out to ~75° obliquity — it only
+      matters near face-on anyway — and widening the band past ~0.35 starts eating it.
     - **The alignment target is `sign(n.z) × viewDir`, not `viewDir`.** A uniform blend
       toward `+Z` rotates a back-hemisphere card (normal ≈ −Z) to perpendicular — creating
       the very sliver it removes (verified: back card 180° → 90°). Aligning each card toward
