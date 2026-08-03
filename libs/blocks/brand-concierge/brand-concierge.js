@@ -1,5 +1,5 @@
 import { getModal, closeModal } from '../modal/modal.js';
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript, loadStyle } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 import bcAnalytics from './bc-analytics.js';
 
@@ -332,7 +332,11 @@ async function openChatModal(initialMessage, el) {
   const JARVIS_APPID = 'helpx-default';
   const ASSISTANT_UI_URL = 'https://stage-server.messaging.adobe.com';
 
-  await loadScript(JARVIS_CLIENT_JS_URL.replace(/\.js$/, '.css'));
+  // loadScript() only ever creates a <script> tag - loading the CSS through it downloads
+  // the bytes but never applies them (confirmed via live testing: no entry ever appeared in
+  // document.styleSheets, so position:fixed on the CTA/window never took effect). helpx.stage
+  // loads it as a real <link rel="stylesheet">, which is what loadStyle() does.
+  loadStyle(JARVIS_CLIENT_JS_URL.replace(/\.js$/, '.css'));
   await loadScript(JARVIS_CLIENT_JS_URL);
 
   // 1.0 global; confirm with Jarvis/Leo team if the Leo/2.0 build uses a different name.
