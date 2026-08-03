@@ -2,7 +2,7 @@ import { createTag } from '../../../utils/utils.js';
 import { decorateViewportContent } from '../../../utils/decorate.js';
 
 const SCROLL_PER_APP = 200;
-const M_BREAKPOINT = 768;
+const M_BREAKPOINT = 1024;
 const L_BREAKPOINT = 1280;
 const MIN_ROLLER_ROOM = 120;
 
@@ -231,8 +231,8 @@ function createUpdatePosition({
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
     } else if (w >= M_BREAKPOINT) {
-      lineY = mediaRect.top - wrapRect.top - itemH;
-      bottomAlign = true;
+      lineY = mediaRect.top - wrapRect.top;
+      bottomAlign = false;
     } else {
       const keyLine = divider.getBoundingClientRect().bottom - wrapRect.top;
       const imageTop = mediaRect.top - wrapRect.top;
