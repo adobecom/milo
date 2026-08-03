@@ -378,11 +378,15 @@ async function openChatModal(initialMessage, el) {
     callbacks: { signInProvider, getContextCallback, analyticsCallback, chatStateCallback },
   });
 
-  client.openMessagingWindow({
-    componentid: 'brand-concierge',
-    componentver: '1.0',
-    sourceType: 'button',
-    sourceText: initialMessage || chatLabelText,
+  // initialize() doesn't return a promise; openMessagingWindow() is a no-op if called
+  // before the client reports ready, so gate it on the client's own ready callback.
+  client.registerForOnReadyCallback(() => {
+    client.openMessagingWindow({
+      componentid: 'brand-concierge',
+      componentver: '1.0',
+      sourceType: 'button',
+      sourceText: initialMessage || chatLabelText,
+    });
   });
 }
 
