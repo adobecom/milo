@@ -205,6 +205,7 @@
     [role='tablist'] {
       background: transparent;
       border-radius: 0;
+      overflow: visible;
 
       .tab-list-container {
         min-width: 0;
@@ -230,6 +231,7 @@
           background: transparent;
           color: var(--s2a-color-content-default);
           border-bottom-color: var(--s2a-color-blue-800);
+          padding-bottom: var(--s2a-spacing-2xs);
         }
       }
     }
