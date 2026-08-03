@@ -306,7 +306,13 @@ async function openSusiLightModal() {
 
 async function openChatModal(initialMessage, el) {
   // POC: the Jarvis client renders its own sandboxed iframe/window, so this skips
-  // Milo's modal (getModal) entirely rather than mounting a same-DOM app inside it.
+  // Milo's modal (getModal) entirely. It still needs a mount point to expand/position
+  // itself into, though - confirmed via live testing: without one, the client posts
+  // adbmsgui_SET_EXPANDED but has nothing to resize, and stays stuck minimised offscreen.
+  if (!document.getElementById(mountId)) {
+    document.body.append(createTag('div', { id: mountId }));
+  }
+
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
   const submitButton = el.querySelector('.input-field-button');
@@ -374,6 +380,7 @@ async function openChatModal(initialMessage, el) {
     theme: 'light',
     loadedVia: 'milo-brand-concierge',
     context: { userData: { userid: '', accountType: 'FREE' } },
+    mountEl: `#${mountId}`,
     chatUiUrl: ASSISTANT_UI_URL,
     callbacks: { signInProvider, getContextCallback, analyticsCallback, chatStateCallback },
   });
