@@ -129,10 +129,7 @@
   }
 
   .rcc-item {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-2);
-    line-height: var(--s2a-typography-line-height-heading-2);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
+    font-weight: var(--s2a-font-weight-body);
     color: var(--s2a-color-content-knockout);
     opacity: 0.12;
     transition: opacity 0.3s ease;

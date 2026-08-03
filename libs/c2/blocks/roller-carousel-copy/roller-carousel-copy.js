@@ -154,7 +154,7 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
   const list = createTag('ul', { class: 'rcc-list' });
   apps.forEach((app, i) => {
-    const item = createTag('li', { class: `rcc-item${i === 0 ? ' is-active' : ''}` });
+    const item = createTag('li', { class: `rcc-item heading-2${i === 0 ? ' is-active' : ''}` });
     item.textContent = app.name;
     list.append(item);
   });
