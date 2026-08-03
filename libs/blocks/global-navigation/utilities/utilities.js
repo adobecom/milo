@@ -567,7 +567,12 @@ export async function fetchAndProcessPlainHtml({
   if (inlineFrags.length) {
     const { default: loadInlineFrags } = await import('../../fragment/fragment.js');
     const fragPromises = inlineFrags.map(async (link) => {
-      link.href = await localizeLinkAsync(getFederatedUrl(link.href));
+      link.href = await localizeLinkAsync(
+        getFederatedUrl(link.href),
+        window.location.hostname,
+        false,
+        link,
+      );
       // Skip loadArea for MEP in-block replacements - gnav/footer have their own decoration
       if (link.dataset.manifestId) {
         link.dataset.skipLoadArea = 'true';

@@ -52,6 +52,7 @@ const C1_BLOCKS = [
   'language-selector',
   'language-banner',
   'market-selector',
+  'mas-compare-chart-autoblock',
   'locui',
   'locui-create',
   'm7',
@@ -110,23 +111,39 @@ const C1_BLOCKS = [
 
 const C2_BLOCKS = [
   'base-card',
-  'box',
   'brand-concierge',
   'carousel-c2',
+  'comparison-table-c2',
   'elastic-carousel',
   'explore-card',
   'faq',
+  'floating-cta',
   'global-footer',
   'global-navigation',
   'globe-gallery',
+  'hover-list',
+  'hub-hero',
+  'iframe',
+  'logo-ticker',
   'martech-metadata',
+  'modal-metadata',
   'modal',
   'news',
+  'offer-hero',
+  'pdf-space',
+  'plans-hero',
+  'product-marquee-grid',
+  'quick-actions',
+  'quote',
   'region-nav',
   'rich-content',
   'router-marquee',
   'section-metadata',
+  'side-by-side',
   'social-proof',
+  'split-aside-grid',
+  'tabs',
+  'tour',
   'visually-hidden',
   'product-marquee-grid',
   'hover-list',
@@ -151,6 +168,7 @@ const AUTO_BLOCKS = [
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
+  { 'mas-compare-chart-autoblock': 'mas.adobe.com/studio.html#content-type=mas-compare-chart' },
   { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
   { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
   { m7: '/creativecloud/business-plans', styles: false },
@@ -566,7 +584,8 @@ export const shouldAllowKrTrial = (link, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = (link) => {
   const localePrefix = getConfig()?.locale?.prefix;
-  if (shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
+  const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+  if (hasAllowKrTrialMeta || shouldAllowKrTrial(link, localePrefix) || localePrefix !== '/kr'
       || (!link.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
        && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}', '무료', 'free']
          .some((pattern) => link.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
@@ -574,7 +593,7 @@ export const shouldBlockFreeTrialLinks = (link) => {
   }
 
   if (link.dataset.wcsOsi) {
-    link.classList.add('hidden-osi-trial-link');
+    link.dataset.hideKrFreeTrial = 'true';
     return false;
   }
 
@@ -1004,7 +1023,7 @@ export async function resolveDetectedMarketCountry() {
   return detectedMarket;
 }
 
-export async function getLingoRegion() {
+export async function getLingoRegion({ useGeoLocation = false } = {}) {
   if (!lingoActive()) return null;
   const config = getConfig();
   const { locale } = config || {};
@@ -1012,7 +1031,14 @@ export async function getLingoRegion() {
 
   if (!regions || !Object.keys(regions).length) return null;
 
-  const country = (await resolveDetectedMarketCountry())?.toLowerCase();
+  if (useGeoLocation) {
+    const intlPrefix = sessionStorage.getItem('international') || getCookie('international');
+    if (intlPrefix) return Object.values(regions).find((r) => r.prefix === `/${intlPrefix}`) ?? null;
+  }
+
+  const country = useGeoLocation
+    ? normCountryCode(await getCountry())
+    : (await resolveDetectedMarketCountry())?.toLowerCase();
   if (!country) return null;
 
   const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
@@ -1442,25 +1468,6 @@ export function decorateImageLinks(el) {
     } catch (e) {
       console.log('Error:', `${e.message} '${source.trim()}'`);
     }
-  });
-}
-
-export function decoratePictures(area) {
-  area.querySelectorAll('picture').forEach((picture) => {
-    if (picture.classList.contains('large-image-decorated')) return;
-    const sources = picture.querySelectorAll('source');
-    const image = picture.querySelector('img');
-    if (!sources.length || !image) return;
-    if (Number(image.getAttribute('width')) < 2000) return;
-    const path = image.src.split('?')[0];
-    const largeImageSource = createTag('source', {
-      type: 'image/webp',
-      srcset: `${path}?width=3000&format=webply`,
-      media: '(min-width: 1920px)',
-    });
-
-    picture.prepend(largeImageSource);
-    picture.classList.add('large-image-decorated');
   });
 }
 
@@ -1909,7 +1916,6 @@ export function filterDuplicatedLinkBlocks(blocks) {
 async function decorateSection(section, idx) {
   section.dataset.status = 'pending';
   section.dataset.idx = idx;
-  if (getMetadata('large-images') === 'on') decoratePictures(section);
   let links = await decorateLinksAsync(section);
   decorateDefaults(section);
   const blocks = section.querySelectorAll(':scope > div[class]:not(.content)');
@@ -2007,7 +2013,7 @@ export const getMepEnablement = (mdKey, paramKey = false) => {
 let imsLoaded;
 export async function loadIms() {
   imsLoaded = imsLoaded || (async () => {
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
         locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
@@ -2024,7 +2030,12 @@ export async function loadIms() {
         scope: imsScope || defaultScope,
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
-          ? `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com${locale.prefix}` : undefined,
+          ? (() => {
+            const baseUrl = `https://www${env.name !== 'prod' ? '.stage' : ''}.adobe.com`;
+            const acomPrefix = (lingoRegion?.prefix || locale.prefix).slice(1);
+            if (acomPrefix === 'cn' || acomPrefix === 'sea') return `${baseUrl}${locale.prefix}`;
+            return `${baseUrl}/home${acomPrefix ? `?acomLocale=${acomPrefix}` : ''}`;
+          })() : undefined,
         autoValidateToken: true,
         environment: env.ims,
         useLocalStorage: false,
@@ -2326,7 +2337,7 @@ async function loadPostLCP(config) {
   });
 }
 
-export function scrollToHashedElement(hash) {
+export async function scrollToHashedElement(hash) {
   if (!hash || /=/.test(hash)) return; // skip if hash is used for deeplinking.
   const elementId = decodeURIComponent(hash).slice(1);
   let targetElement;
@@ -2339,8 +2350,14 @@ export function scrollToHashedElement(hash) {
     });
   }
   if (!targetElement) return;
-  const bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
-  const topOffset = targetElement.getBoundingClientRect().top + window.pageYOffset;
+
+  let bufferHeight = document.querySelector('.global-navigation')?.offsetHeight || 0;
+  if (getMetadata('foundation') === 'c2') {
+    const globalNavigation = await getConfig().federal?.fedsGlobalNavigation;
+    bufferHeight = globalNavigation?.getGnavHeight?.() ?? bufferHeight;
+  }
+
+  const topOffset = targetElement.getBoundingClientRect().top + window.scrollY;
   window.scrollTo({
     top: topOffset - bufferHeight,
     behavior: 'smooth',

@@ -1,6 +1,7 @@
 import { CheckoutWorkflowStep, Defaults, Log } from '@adobecom/mas-platform/web-components/dist/commerce.js';
 
 import { expect } from '@esm-bundle/chai';
+import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
 import { mepMasStudioUrls } from '../../../libs/blocks/merch/mas-mep-utils.js';
@@ -35,6 +36,8 @@ import merch, {
   getMasLibsBaseUrl,
   getMasLibs,
   shouldHideStPriceLabels,
+  isMasErrorEnv,
+  createFragmentErrorEl,
 } from '../../../libs/blocks/merch/merch.js';
 import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -1703,5 +1706,76 @@ describe('Merch Block', () => {
       window.history.pushState({}, '', '/?maslibs=feature-branch');
       expect(getMasLibs()).to.equal('https://feature-branch--mas--adobecom.aem.live/web-components/dist');
     });
+  });
+});
+
+describe('isMasErrorEnv', () => {
+  it('returns true for localhost', () => {
+    expect(isMasErrorEnv('localhost:6456')).to.be.true;
+  });
+
+  it('returns true for aem.page', () => {
+    expect(isMasErrorEnv('main--milo--adobecom.aem.page')).to.be.true;
+  });
+
+  it('returns false for aem.live', () => {
+    expect(isMasErrorEnv('main--milo--adobecom.aem.live')).to.be.false;
+  });
+
+  it('returns false for stage.adobe.com', () => {
+    expect(isMasErrorEnv('stage.adobe.com')).to.be.false;
+  });
+
+  it('returns false for www.adobe.com', () => {
+    expect(isMasErrorEnv('www.adobe.com')).to.be.false;
+  });
+});
+
+describe('createFragmentErrorEl', () => {
+  let fetchStub;
+
+  afterEach(() => {
+    fetchStub?.restore();
+  });
+
+  it('shows Not Found badge when fragment API returns 404', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 404 }));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.classList.contains('mas-frag-error')).to.be.true;
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Not Found');
+    expect(el.querySelector('.mas-frag-error-label').textContent).to.equal('Card:');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('test-uuid');
+  });
+
+  it('shows Load Error badge when fragment API returns non-404', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 500 }));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('shows Load Error badge when fetch throws', async () => {
+    fetchStub = sinon.stub(window, 'fetch').rejects(new Error('network error'));
+    const el = await createFragmentErrorEl('test-uuid', 'Card');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('uses Collection label for collections', async () => {
+    fetchStub = sinon.stub(window, 'fetch').resolves(new Response('', { status: 404 }));
+    const el = await createFragmentErrorEl('some-collection', 'Collection');
+    expect(el.querySelector('.mas-frag-error-label').textContent).to.equal('Collection:');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('some-collection');
+  });
+
+  it('shows unknown when uuid is not provided', async () => {
+    const el = await createFragmentErrorEl(null, 'Card');
+    expect(el.querySelector('.mas-frag-error-id').textContent).to.equal('unknown');
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Load Error');
+  });
+
+  it('shows Not Found when status 404 is passed directly without fetching', async () => {
+    fetchStub = sinon.stub(window, 'fetch');
+    const el = await createFragmentErrorEl('test-uuid', 'Card', 404);
+    expect(el.querySelector('.mas-frag-error-badge').textContent).to.equal('Not Found');
+    expect(fetchStub.called).to.be.false;
   });
 });

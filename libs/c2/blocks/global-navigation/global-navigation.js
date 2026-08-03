@@ -1,4 +1,4 @@
-import { getEnv, getConfig, getMetadata, localizeLink } from '../../../utils/utils.js';
+import { getEnv, getConfig, getMetadata, localizeLink, convertStageLinks } from '../../../utils/utils.js';
 
 const DEFAULT_FEDERAL_URL = 'https://main--federal--adobecom.aem.page';
 
@@ -45,13 +45,13 @@ export default async function init(el) {
 
   const personalizationHandler = async (cs, root) => {
     const { handleCommands } = await import('../../../features/personalization/personalization.js');
-    return handleCommands(cs, root);
+    return handleCommands(cs, root, true, true);
   };
 
   const { main } = await import(federalGnavUrl);
   const gnavUrl = new URL(getMetadata('gnav-source') || `${config.locale?.contentRoot ?? window.location.origin}/gnav`);
 
-  main({
+  const gnavPromise = main({
     localizeLink,
     gnavSource: gnavUrl,
     asideSource: null,
@@ -64,11 +64,16 @@ export default async function init(el) {
       commands: [...commands, ...gnavMepCommands],
       handleCommands: personalizationHandler,
     },
+    convertStageLinks: ({ anchors, hostname, href }) => {
+      convertStageLinks({ anchors, config, hostname, href });
+    },
   }).catch((error) => {
     window.lana?.log?.('Failed to initialize federal global navigation', {
       error,
       tags: 'global-navigation',
       errorType: 'e',
     });
+    return {};
   });
+  config.federal = { fedsGlobalNavigation: gnavPromise };
 }

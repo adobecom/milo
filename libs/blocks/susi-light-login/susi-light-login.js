@@ -49,7 +49,7 @@ export class SusiLight {
 
   createAuthParams = async () => {
     const { imsClientId, locale, imsScope, env } = getConfig();
-    const lingoRegion = lingoActive() ? await getLingoRegion() : null;
+    const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return {
       client_id: imsClientId,
       scope: imsScope || window.adobeid.scope || 'AdobeID,openid,gnav',

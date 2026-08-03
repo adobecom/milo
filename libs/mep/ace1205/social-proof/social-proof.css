@@ -144,7 +144,7 @@
   }
 
   @keyframes social-proof-content-enter {
-    from { transform: translate(-5%, 20%); }
+    from { transform: translate(0%, 20%); }
     to   { transform: translate(0%, 0%); }
   }
 }

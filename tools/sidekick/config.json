@@ -88,6 +88,14 @@
     },
     {
       "containerId": "tools",
+      "title": "Annotations",
+      "id": "annotations",
+      "environments": ["dev", "preview", "live"],
+      "event": "annotations",
+      "excludePaths": ["/tools**", "*.json", "**.docx**", "**.xlsx**", "**/:x**"]
+    },
+    {
+      "containerId": "tools",
       "id": "offerpreview",
       "title": "Offer preview",
       "environments": [ "edit" ],

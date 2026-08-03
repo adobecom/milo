@@ -1,4 +1,4 @@
-import { decorateBlockText, decorateViewportContent } from '../../../utils/decorate.js';
+import { decorateBlockText, decorateViewportContent, syncPausePlayIcon, USER_PAUSED_ATTR } from '../../../utils/decorate.js';
 import { createTag } from '../../../utils/utils.js';
 
 const SWIPE_THRESHOLD = 20;
@@ -10,7 +10,12 @@ const RIGHT_DRAG_DENOM = 160;
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const DESKTOP_MQ = '(width >= 768px)';
 const CHEVRON_SVG = '<svg viewBox="0 0 12 12" aria-hidden="true" focusable="false"><path d="M4 1l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"]), video';
+const ARROW_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+  <path d="M11.208 5.417L7.50781 1.7168C7.18554 1.39453 6.66406 1.39453 6.34179 1.7168C6.01953 2.03907 6.01953 2.56055 6.34179 2.88282L8.63281 5.17481H1.375C0.918955 5.17481 0.549805 5.54395 0.549805 6.00001C0.549805 6.45607 0.918945 6.82521 1.375 6.82521H8.63281L6.34179 9.1172C6.01953 9.43947 6.01953 9.96095 6.34179 10.2832C6.50292 10.4444 6.71386 10.5254 6.9248 10.5254C7.13574 10.5254 7.34668 10.4444 7.50781 10.2832L11.208 6.58302C11.5303 6.26075 11.5303 5.73927 11.208 5.417Z" fill="currentColor"/></svg>`;
+const FOCUSABLE_SELECTOR = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+let videoObserver = null;
+const isRTL = document.documentElement.dir === 'rtl';
+const negateSwipe = isRTL ? -1 : 1;
 
 function markStandaloneLinks(foreground) {
   foreground.querySelectorAll('a').forEach((a) => {
@@ -20,6 +25,41 @@ function markStandaloneLinks(foreground) {
     const linkText = a.textContent?.trim() ?? '';
     parent?.classList.replace('body-md', 'link-container');
     if (parentText === linkText) a.classList.add('standalone-link', 'label');
+  });
+}
+
+function replaceVideoIntersectionObserver(medias) {
+  medias.forEach((media) => {
+    const videoEl = media.querySelector('video');
+    if (!videoEl) return;
+    const oldObserver = window?.videoIntersectionObs;
+    if (oldObserver) oldObserver.unobserve(videoEl);
+
+    if (videoObserver) {
+      videoObserver.observe(videoEl);
+      return;
+    }
+
+    videoObserver = new window.IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const { isIntersecting, target: video } = entry;
+        const isHaveLoopAttr = video.getAttributeNames().includes('loop');
+        const { playedOnce = false } = video.dataset;
+        const isUserPaused = video.hasAttribute(USER_PAUSED_ATTR);
+        const isPlaying = video.currentTime > 0 && !video.paused && !video.ended
+          && video.readyState > video.HAVE_CURRENT_DATA;
+        const isActive = video.closest('.media')?.getAttribute('data-slot') === '0';
+
+        if (!isIntersecting) {
+          if (isPlaying && (!playedOnce && !isUserPaused)) syncPausePlayIcon(video);
+          video.pause();
+        } else if (!isUserPaused && (isHaveLoopAttr || !playedOnce) && !isPlaying && isActive) {
+          video.play();
+          syncPausePlayIcon(video, { type: 'playing' });
+        }
+      });
+    }, { threshold: 0.4 });
+    videoObserver.observe(videoEl);
   });
 }
 
@@ -35,12 +75,13 @@ function updateAriaLive(ariaLive, items) {
 }
 
 function decorateItem(item, index) {
+  const headingSize = 5;
   item.classList.add('split-aside-grid-item');
   item.dataset.slideIndex = String(index);
   const [content, media] = item.children;
   if (content) {
     content.classList.add('foreground');
-    decorateBlockText(content, { heading: '5', body: 'md', button: 'md' });
+    decorateBlockText(content, { heading: headingSize, body: 'md', button: 'md' });
     markStandaloneLinks(content);
     const text = content.querySelectorAll('p');
     const container = createTag(
@@ -56,13 +97,13 @@ function decorateItem(item, index) {
   }
 
   const headingText = content?.querySelector(':is(h1,h2,h3,h4,h5,h6)')?.textContent || `Slide ${index + 1}`;
+  const icon = createTag('span', { class: 'grid-item-toggle-icon' }, CHEVRON_SVG);
+  const text = createTag('span', { class: `grid-item-toggle-text heading-${headingSize}` }, headingText);
   const toggle = createTag('button', {
-    class: 'split-aside-grid-item-toggle',
+    class: 'split-aside-grid-toggle',
     type: 'button',
     'aria-expanded': 'false',
-    'aria-label': headingText,
-  });
-  toggle.innerHTML = CHEVRON_SVG;
+  }, [icon, text]);
   item.prepend(toggle);
   return { content, media, toggle };
 }
@@ -75,11 +116,16 @@ function setupBlock(el) {
   let ariaLive;
   let slideNum;
   let isCarousel;
+  let itemsWrap;
+  let controlsWrap;
+  let nextBtn;
+  let prevBtn;
 
   let rotation = 0;
   let flying = false;
   let drag = null;
   let target = null;
+  let resizeObserver = null;
 
   const mod = (n) => ((n % slideNum) + slideNum) % slideNum;
   const slotOf = (idx) => mod(idx - rotation);
@@ -89,6 +135,9 @@ function setupBlock(el) {
     medias.forEach((media, idx) => {
       const isActive = slotOf(idx) === 0;
       media.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      media.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusable) => {
+        focusable.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
     });
 
     items.forEach((item, idx) => {
@@ -110,18 +159,45 @@ function setupBlock(el) {
     });
   }
 
-  function applyRotation(isSetup) {
+  function setInline(element, properties = {}) {
+    if (!element) return;
+    Object.entries(properties).forEach(([key, value]) => {
+      element.style.setProperty(`--split-aside-grid-${key}`, value);
+    });
+  }
+
+  function clearInline(element, properties = ['transform', 'transition', 'opacity']) {
+    if (!element) return;
+    properties.forEach((property) => element.style.removeProperty(`--split-aside-grid-${property}`));
+  }
+
+  function applyRotation(updateRotation, isSetup) {
+    rotation += updateRotation;
     medias.forEach((m, idx) => {
       const slot = slotOf(idx);
-      m.style.setProperty('--split-aside-grid-stack-index', slot);
-      m.style.setProperty('--split-aside-grid-stack-slot', slot);
+      setInline(m, {
+        'stack-index': slot,
+        'stack-slot': slot,
+      });
       m.dataset.slot = String(slot);
+      const isActive = slot === 0;
+      const video = m.querySelector('video');
+      if (!video) return;
+      const { playedOnce = false } = video.dataset;
+      if (playedOnce) return;
+      if (isActive) {
+        video.play();
+        syncPausePlayIcon(video, { type: 'playing' });
+        return;
+      }
+      video.pause();
+      syncPausePlayIcon(video);
     });
 
     items.forEach((item, idx) => {
       const isActive = slotOf(idx) === 0;
       item.classList.toggle('split-aside-grid-active', isActive);
-      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope > .split-aside-grid-toggle');
       if (toggle) toggle.setAttribute('aria-expanded', isActive ? 'true' : 'false');
     });
     dotEls.forEach((dot, idx) => {
@@ -139,27 +215,22 @@ function setupBlock(el) {
     medias.forEach((slide) => {
       if (slide === ignore) return;
       const slot = parseInt(slide.getAttribute('data-slot'), 10);
-      const indexUpdate = dir === 'right' ? slot + progress : slot - progress;
-      slide.style.transition = 'none';
-      slide.style.transform = '';
-      slide.style.setProperty('--split-aside-grid-stack-index', indexUpdate);
-      if (dir === 'left') return;
-      slide.style.setProperty('--split-aside-grid-stack-slot', slot + 1);
+      const indexUpdate = dir === 'prev' ? slot + progress : slot - progress;
+      setInline(slide, {
+        transition: 'none',
+        'stack-index': indexUpdate,
+      });
+      clearInline(slide, ['transform']);
+      if (dir === 'next') return;
+      setInline(slide, { 'stack-slot': slot + 1 });
     });
-  }
-
-  function clearInline(m) {
-    if (!m) return;
-    m.style.transition = '';
-    m.style.transform = '';
-    m.style.opacity = '';
   }
 
   function stackWidth() {
     return stack.getBoundingClientRect().width || 374;
   }
 
-  function commitLeft(progress) {
+  function commitNext(progress, isNavigation) {
     flying = true;
     const oldFront = slideAt(0);
     const width = stackWidth();
@@ -167,89 +238,86 @@ function setupBlock(el) {
     const preSlots = medias.map((_, idx) => slotOf(idx));
 
     /* 1. Old front: fly off-screen left — no opacity change. */
-    oldFront.style.transition = `transform ${FLY_MS}ms ease-out`;
-    oldFront.style.transform = `translateX(${-width}px) rotate(-25deg)`;
+    setInline(oldFront, {
+      transform: `translateX(${negateSwipe * -width}px) rotate(${negateSwipe * -25}deg)`,
+      transition: `transform ${FLY_MS}ms ease-out`,
+    });
 
     /* 2. Rotate state — new front + new mid transition smoothly into their new slots. */
-    rotation += 1;
-
-    applyRotation();
+    applyRotation(1);
+    oldFront.dataset.slot = '0';
     /* Freeze z-index at pre-rotation values until the fly-off ends. */
     medias.forEach((slide, idx) => {
-      slide.style.setProperty('--split-aside-grid-stack-slot', String(preSlots[idx]));
+      setInline(slide, { 'stack-slot': String(preSlots[idx]) });
       if (slide === oldFront) return;
       clearInline(slide);
     });
     /* Keep old front at slot 0 size and visible during fly-off. */
-    oldFront.style.setProperty('--split-aside-grid-stack-index', '0');
-    oldFront.dataset.slot = '0';
 
     /* 3. After the fly-off ends, settle old front into its real slot,
           update z-indexes, and fade the new back card in at slot 2. */
     setTimeout(() => {
-      oldFront.style.transition = 'none';
-      oldFront.style.transform = '';
-      const oldFrontSlot = slotOf(medias.indexOf(oldFront));
-      oldFront.style.setProperty('--split-aside-grid-stack-index', String(oldFrontSlot));
+      setInline(oldFront, { opacity: '0' });
       oldFront.dataset.slot = `${medias.length - 1}`;
-      oldFront.style.opacity = '0';
       medias.forEach((m, idx) => {
-        m.style.setProperty('--split-aside-grid-stack-slot', String(slotOf(idx)));
-        m.classList.remove('show-image');
+        m.classList.remove('show-image', 'incoming');
+        setInline(m, { 'stack-slot': String(slotOf(idx)) });
       });
+      clearInline(oldFront, ['transform']);
 
       setTimeout(() => {
-        oldFront.style.transition = `opacity ${FADE_IN_MS}ms ease-out`;
-        oldFront.style.opacity = '';
+        setInline(oldFront, { transition: `opacity ${FADE_IN_MS}ms ease-out` });
+        requestAnimationFrame(() => clearInline(oldFront, ['opacity']));
         flying = false;
       }, 10);
-    }, FLY_MS * (1 - progress) + 150);
+    }, FLY_MS * (1 - progress) + (isNavigation ? 0 : 150));
   }
 
-  function animateToRight(progress, incoming) {
+  function animateNext() {
+    const front = slideAt(0);
+    const next = slideAt(1);
+    next.classList.add('show-image');
+    const progress = Math.min((negateSwipe * -drag.dx) / RIGHT_DRAG_DENOM, 1);
+    drag.progress = progress;
+    const rot = drag.dx * 0.07;
+    setInline(front, {
+      transform: `translateX(${drag.dx}px) rotate(${rot}deg)`,
+      transition: 'none',
+    });
+  }
+
+  function animatePrev(progress, incoming) {
     const width = stackWidth();
-    const rot = -25 * (1 - progress);
-    updateStack('right', progress, incoming);
+    const rot = negateSwipe * -25 * (1 - progress);
+    updateStack('prev', progress, incoming);
     const front = slideAt(0);
     incoming.classList.add('show-image', 'incoming');
     front.classList.add('show-image');
-    incoming.style.transition = 'none';
-    incoming.style.setProperty('--split-aside-grid-stack-index', '0');
-    incoming.style.setProperty('--split-aside-grid-stack-slot', '0');
-    incoming.style.transform = `translateX(${-width * (1 - progress)}px) rotate(${rot}deg)`;
+    setInline(incoming, {
+      transition: 'none',
+      transform: `translateX(${negateSwipe * -width * (1 - progress)}px) rotate(${rot}deg)`,
+      'stack-index': '0',
+      'stack-slot': '0',
+    });
   }
 
-  function commitRight(progress, isKeyboard) {
+  function commitPrev(progress, isNavigation) {
     flying = true;
     const incoming = slideAt(-1);
 
-    rotation -= 1;
+    applyRotation(-1);
 
-    applyRotation();
-
-    if (isKeyboard) {
-      animateToRight(progress, incoming);
-      setTimeout(() => {
-        incoming.style.transform = '';
-        medias.forEach((slide) => {
-          slide.classList.remove('show-image');
-          slide.classList.remove('incoming');
-          clearInline(slide);
-          flying = false;
-        });
-      });
-      return;
+    if (isNavigation) {
+      animatePrev(progress, incoming);
+      setTimeout(() => medias.forEach((slide) => clearInline(slide)));
+    } else {
+      medias.forEach((slide) => clearInline(slide));
     }
-    medias.forEach((slide) => {
-      slide.style.transition = '';
-    });
-    incoming.style.transform = '';
 
     setTimeout(() => {
       medias.forEach((slide) => {
         slide.classList.remove('show-image');
         slide.classList.remove('incoming');
-        clearInline(slide);
       });
       flying = false;
     }, FLY_MS * (1 - progress) + 20);
@@ -259,15 +327,14 @@ function setupBlock(el) {
     const incoming = slideAt(-1);
     medias.forEach((m) => {
       if (!m) return;
-      m.style.transition = '';
-      m.style.transform = '';
       m.classList.remove('show-image', 'incoming');
+      clearInline(m);
     });
-    if (direction === 'right') incoming.style.display = 'none';
-    applyRotation();
+    applyRotation(0);
+    if (direction !== 'prev') return;
+    incoming.style.display = 'none';
     setTimeout(() => {
-      medias.forEach((m) => clearInline(m));
-      if (direction === 'right') incoming.style.display = 'block';
+      incoming.style.display = 'block';
     }, SNAP_MS + 40);
   }
 
@@ -283,36 +350,39 @@ function setupBlock(el) {
     try { stack.setPointerCapture(e.pointerId); } catch (_) { /* noop */ }
   }
 
+  function getDirection(dragX) {
+    if ((dragX < 0 && !isRTL) || (dragX > 0 && isRTL)) return 'next';
+    return 'prev';
+  }
+
   function onPointerMove(e) {
     if (!drag || e.pointerId !== drag.id || !target) return;
-    drag.dx = e.clientX - drag.x0;
-    drag.dy = e.clientY - drag.y0;
 
-    let direction = null;
-    if (drag.dx < 0) direction = 'left';
-    else if (drag.dx > 0) direction = 'right';
-    if (drag.direction && drag.direction !== direction) {
+    const xDrag = e.clientX - drag.x0;
+    const yDrag = e.clientY - drag.y0;
+    const isScroll = Math.abs(xDrag) - Math.abs(yDrag) < 5;
+    if (isScroll && !drag.animation) return;
+
+    drag.dx = xDrag;
+    drag.dy = yDrag;
+    drag.animation = true;
+
+    const dir = getDirection(drag.dx);
+    if (drag.direction && drag.direction !== dir) {
       /* Direction reversed — reset every drag-touched property back to the original slots */
-      medias.forEach((m) => { m.style.transform = ''; });
-      applyRotation();
+      medias.forEach((m) => clearInline(m, ['transform']));
+      applyRotation(0);
     }
-    drag.direction = direction;
 
-    if (drag.dx < 0) {
-      const front = slideAt(0);
-      const next = slideAt(1);
-      next.classList.add('show-image');
-      const progress = Math.min(-drag.dx / RIGHT_DRAG_DENOM, 1);
-      drag.progress = progress;
-      const rot = drag.dx * 0.07;
-      front.style.transition = 'none';
-      front.style.transform = `translateX(${drag.dx}px) rotate(${rot}deg)`;
-    } else if (drag.dx > 0) {
+    if (dir === 'next') {
+      animateNext();
+    } else if (dir === 'prev') {
       const incoming = slideAt(-1);
-      const progress = Math.min(drag.dx / RIGHT_DRAG_DENOM, 1);
-      animateToRight(progress, incoming);
+      const progress = Math.min(Math.abs(drag.dx) / RIGHT_DRAG_DENOM, 1);
       drag.progress = progress;
+      animatePrev(progress, incoming);
     }
+    drag.direction = dir;
   }
 
   function onPointerUp(e) {
@@ -326,31 +396,42 @@ function setupBlock(el) {
 
     if (!commit) { snapBack(direction); return; }
     if (reducedMotion()) {
-      rotation += dx < 0 ? 1 : -1;
-      applyRotation();
-      medias.forEach(clearInline);
+      applyRotation(direction === 'next' ? 1 : -1);
+      medias.forEach((slide) => clearInline(slide));
       return;
     }
-    if (dx < 0) commitLeft(progress);
-    else commitRight(progress);
+    if (direction === 'next') commitNext(progress);
+    else commitPrev(progress);
   }
 
-  function onKeyDown(e) {
-    const { key } = e;
-    if (key === 'ArrowLeft') commitLeft(0.25);
-    else if (key === 'ArrowRight') commitRight(0.25, true);
+  function handleNavigation(e) {
+    if (flying) return;
+
+    const triggers = new Map([
+      ['ArrowLeft', isRTL ? 'next' : 'prev'],
+      ['ArrowRight', isRTL ? 'prev' : 'next'],
+      [prevBtn, 'prev'],
+      [nextBtn, 'next'],
+    ]);
+    const actions = { prev: [commitPrev, prevBtn], next: [commitNext, nextBtn] };
+    const { key, target: btn } = e;
+    const actionTrigger = key ? triggers.get(key) : triggers.get(btn);
+    if (!actionTrigger) return;
+    const [commit, toFocus] = actions[actionTrigger];
+    commit(0.25, true);
+    toFocus?.focus();
   }
 
   function selectByIndex(idx, item) {
     if (idx < 0 || idx >= slideNum) return;
     if (slotOf(idx) === 0) {
       const expanded = item.classList.toggle('split-aside-grid-active');
-      const toggle = item.querySelector(':scope > .split-aside-grid-item-toggle');
+      const toggle = item.querySelector(':scope > .split-aside-grid-toggle');
       toggle?.setAttribute('aria-expanded', String(expanded));
       return;
     }
     rotation = idx;
-    applyRotation();
+    applyRotation(0);
   }
 
   function onItemClick(e) {
@@ -361,9 +442,31 @@ function setupBlock(el) {
     selectByIndex(idx, item);
   }
 
+  function swapStackItems(mobile = true) {
+    if (mobile) {
+      controlsWrap.before(stack);
+      controlsWrap.after(itemsWrap);
+      return;
+    }
+    controlsWrap.before(itemsWrap);
+    controlsWrap.after(stack);
+  }
+
   const desktopMQ = window.matchMedia(DESKTOP_MQ);
   let mobileBound = false;
   let desktopBound = false;
+
+  function enableMobileNavigation() {
+    prevBtn.addEventListener('click', handleNavigation);
+    nextBtn.addEventListener('click', handleNavigation);
+    el.addEventListener('keydown', handleNavigation);
+  }
+
+  function disableMobileNavigation() {
+    prevBtn.removeEventListener('click', handleNavigation);
+    nextBtn.removeEventListener('click', handleNavigation);
+    el.removeEventListener('keydown', handleNavigation);
+  }
 
   function bindMobile() {
     if (mobileBound) return;
@@ -372,7 +475,8 @@ function setupBlock(el) {
     stack.addEventListener('pointermove', onPointerMove);
     stack.addEventListener('pointerup', onPointerUp);
     stack.addEventListener('pointercancel', onPointerUp);
-    el.addEventListener('keydown', onKeyDown);
+    enableMobileNavigation();
+    swapStackItems();
   }
 
   function unbindMobile() {
@@ -382,28 +486,52 @@ function setupBlock(el) {
     stack.removeEventListener('pointermove', onPointerMove);
     stack.removeEventListener('pointerup', onPointerUp);
     stack.removeEventListener('pointercancel', onPointerUp);
-    el.removeEventListener('keydown', onKeyDown);
+    disableMobileNavigation();
+  }
+
+  function addResizeObserver() {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (!entry) return;
+      const { scrollWidth } = el;
+      const width = document.documentElement.clientWidth;
+      setInline(stack, { 'stack-cutoff': `${scrollWidth - width}px` });
+    });
+    resizeObserver.observe(stack);
+  }
+
+  function removeResizeObserver() {
+    if (!resizeObserver) return;
+    resizeObserver.disconnect();
+    resizeObserver = null;
   }
 
   function bindDesktop() {
     if (desktopBound) return;
     desktopBound = true;
     items.forEach((item) => item.addEventListener('click', onItemClick));
+    addResizeObserver();
+    swapStackItems(false);
   }
 
   function unbindDesktop() {
     if (!desktopBound) return;
     desktopBound = false;
     items.forEach((item) => item.removeEventListener('click', onItemClick));
+    removeResizeObserver();
   }
 
   function syncBindings() {
     stack = el.querySelector('.split-aside-grid-stack');
     medias = [...el.querySelectorAll('.media')];
-    items = [...el.querySelectorAll('.split-aside-grid-item')];
+    itemsWrap = el.querySelector('.split-aside-grid-items');
+    items = [...itemsWrap.children];
     dotEls = [...el.querySelector('.split-aside-grid-dots').children];
     ariaLive = el.querySelector('.aria-live-container');
     slideNum = medias.length;
+    controlsWrap = el.querySelector('.split-aside-grid-controls');
+    nextBtn = controlsWrap.querySelector('button.next');
+    prevBtn = controlsWrap.querySelector('button.prev');
 
     if (desktopMQ.matches) {
       isCarousel = false;
@@ -414,8 +542,7 @@ function setupBlock(el) {
       unbindDesktop();
       bindMobile();
     }
-
-    applyRotation(true);
+    applyRotation(0, true);
   }
 
   desktopMQ.addEventListener('change', syncBindings);
@@ -430,7 +557,6 @@ function decorate(block) {
 
   const stack = createTag('div', { class: 'split-aside-grid-stack' });
   medias.forEach((m) => stack.appendChild(m));
-  block.prepend(stack);
 
   const dots = createTag('ul', { class: 'split-aside-grid-dots', role: 'tablist', 'aria-label': 'Slide indicators' });
   medias.forEach((_, i) => {
@@ -443,7 +569,16 @@ function decorate(block) {
       },
     ));
   });
-  stack.insertAdjacentElement('afterend', dots);
+
+  const controlsWrapper = createTag(
+    'div',
+    { class: 'split-aside-grid-controls' },
+    [
+      createTag('button', { class: 'prev', 'aria-label': 'Previous slide' }, ARROW_SVG),
+      dots,
+      createTag('button', { class: 'next', 'aria-label': 'Next slide' }, ARROW_SVG),
+    ],
+  );
 
   /* Wrap items in a grid container so every item occupies the same cell.
      The cell sizes to the tallest item, so the container's height stays stable
@@ -456,7 +591,8 @@ function decorate(block) {
     'aria-live': 'polite',
     'aria-atomic': 'true',
   });
-  block.append(itemsWrap, ariaLive);
+  block.append(itemsWrap, controlsWrapper, stack, ariaLive);
+  replaceVideoIntersectionObserver(medias);
 }
 
 export default function init(el) {

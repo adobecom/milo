@@ -686,8 +686,6 @@
     line-height: var(--s2a-typography-line-height-body-md);
     letter-spacing: var(--s2a-typography-letter-spacing-body-md);
     color: var(--s2a-color-gray-900);
-    display: flex;
-    justify-content: flex-start;
 
     &.price-strikethrough {
       color: var(--s2a-color-transparent-black-64);

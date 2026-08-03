@@ -18,7 +18,7 @@ export function findFragmentElements(area = document) {
 }
 
 export async function checkFragmentPublished(uuid, locale) {
-  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale });
+  const params = new URLSearchParams({ id: uuid, api_key: API_KEY, locale, source: 'preflight' });
   const url = `${API_BASE}?${params.toString()}`;
   try {
     const res = await fetch(url);

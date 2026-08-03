@@ -42,6 +42,7 @@ function decorateJumpLinks(content, foreground) {
 
   const anchors = [...jumpRow.querySelectorAll('a')];
   const nav = createTag('nav', { class: 'jump-links', 'aria-label': 'Jump to section' });
+  const list = createTag('ul');
 
   anchors.forEach((anchor) => {
     const badge = createTag('span', { class: 'jump-link-badge' });
@@ -51,25 +52,37 @@ function decorateJumpLinks(content, foreground) {
     anchor.append(badge, label);
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
-      scrollToHashedElement(getSectionHash(anchor));
+      const hash = getSectionHash(anchor);
+      if (window.lenis?.scrollTo) {
+        const target = document.querySelector(`#${hash.slice(1)}:not(.dialog-modal)`);
+        if (!target) return;
+        const offset = -(document.querySelector('.global-navigation')?.offsetHeight || 0);
+        window.lenis.scrollTo(target, { offset, force: true });
+        return;
+      }
+      scrollToHashedElement(hash);
     });
-    nav.append(anchor);
+    list.append(createTag('li', {}, anchor));
   });
+
+  nav.append(list);
 
   jumpRow.remove();
   foreground.append(nav);
 }
 
-function decorateVideoVariant(container) {
+function decorateMediaVariant(container) {
   const row = container.children[0];
   if (!row) return;
 
   const [ctaCell, mediaCell] = [...row.children];
   if (!ctaCell && !mediaCell) return;
 
-  if (mediaCell) {
-    mediaCell.classList.add('media');
+  if (mediaCell?.textContent.trim() || mediaCell?.children.length) {
+    mediaCell.classList.add('media-cell');
     container.append(mediaCell);
+  } else {
+    mediaCell?.remove();
   }
 
   if (ctaCell) {
@@ -84,8 +97,8 @@ function decorateVideoVariant(container) {
 }
 
 function decorate(block, root = block) {
-  if (root.classList.contains('video')) {
-    decorateVideoVariant(block);
+  if (root.classList.contains('media')) {
+    decorateMediaVariant(block);
     return;
   }
 

@@ -176,6 +176,14 @@
   will-change: transform;
   & > .fragment {
     max-height: 100%;
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE and old Edge */
+    -ms-overflow-style: none;
+    /* Chrome, Safari, Edge (Chromium), Opera */
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   &.is-dragging {
@@ -190,13 +198,23 @@
     width: 48px;
     height: 48px;
     border-radius: 6px;
-    background-color: rgba(242, 242, 242, 1);
-    border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-12);
+    background-color: var(--s2a-color-gray-75);
+    border: var(--s2a-border-width-sm) solid var(--s2a-color-gray-200);
     top: var(--s2a-spacing-md);
     right: var(--s2a-spacing-md);
-    &::before,
-    &::after {
-      width: calc(10px * 1.33);
+
+    &:hover {
+      background-color: var(--s2a-color-gray-300);
+      border-color: var(--s2a-color-gray-400);
+    }
+
+    &:active {
+      background-color: var(--s2a-color-background-knockout);
+      border-color: var(--s2a-color-gray-700);
+      &::before,
+      &::after {
+        background-color: var(--s2a-color-content-knockout);
+      }
     }
   }
 

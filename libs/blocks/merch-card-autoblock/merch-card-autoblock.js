@@ -4,9 +4,12 @@ import { postProcessAutoblock } from '../merch/autoblock.js';
 import { mepMasStudioUrls } from '../merch/mas-mep-utils.js';
 import {
   initService,
+  createAemFragment,
   getOptions,
   overrideOptions,
   loadMasComponent,
+  createFragmentErrorEl,
+  isMasErrorEnv,
   COMMERCE_LIBRARY,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -65,16 +68,23 @@ async function loadInlineDependencies() {
   await loadMasComponent(MAS_FIELD);
 }
 
-export async function checkReady(masElement) {
+export async function checkReady(masElement, fragment) {
+  if (isMasErrorEnv()) {
+    const uuid = fragment ?? masElement.querySelector('aem-fragment')?.getAttribute('fragment');
+    if (masElement.hasAttribute('failed')) {
+      createFragmentErrorEl(uuid, 'Card').then((el) => masElement.insertAdjacentElement('beforebegin', el));
+    } else {
+      masElement.addEventListener('aem:error', async (e) => {
+        masElement.insertAdjacentElement('beforebegin', await createFragmentErrorEl(uuid, 'Card', e.detail?.status));
+      }, { once: true });
+    }
+  }
+
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
-    const { env } = getConfig();
-    if (env.name !== 'prod') {
-      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
-    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }
@@ -120,13 +130,10 @@ function normalizeBlockFieldWrappers(masField) {
 }
 
 async function createJsonLd(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '', hidden: '' }, aemFragment);
   document.body.appendChild(merchCard);
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   const fragmentEl = merchCard.querySelector('aem-fragment');
   const fields = fragmentEl?.data?.fields;
   const priceEl = merchCard.querySelector('[is="inline-price"][data-template="price"]')
@@ -141,10 +148,7 @@ async function createJsonLd(el, options) {
 }
 
 export async function createCard(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   // For the "Edit Card" mep preview badge.
   if (getConfig()?.mep?.preview) {
@@ -157,7 +161,7 @@ export async function createCard(el, options) {
   } else {
     el.replaceWith(merchCard);
   }
-  await checkReady(merchCard);
+  await checkReady(merchCard, options.fragment);
   await postProcessAutoblock(merchCard, true);
 }
 
@@ -169,17 +173,14 @@ function copyMasFieldIdToParent(masField, name) {
 
 /** Replaces an inline fragment link with a mas-field wrapping an aem-fragment. */
 async function createInline(el, options) {
-  const attrs = { fragment: options.fragment };
-  if (seenFragments.has(options.fragment)) attrs.loading = 'cache';
-  seenFragments.add(options.fragment);
-  const aemFragment = createTag('aem-fragment', attrs);
+  const aemFragment = createAemFragment(options, seenFragments);
   const masField = createTag('mas-field', { field: options.field }, aemFragment);
   if (getConfig()?.mep?.preview) {
     mepMasStudioUrls.set(masField, el.href);
     masField.dataset.masBlock = 'inline';
   }
   el.replaceWith(masField);
-  await checkReady(masField);
+  await checkReady(masField, options.fragment);
   normalizeBlockFieldWrappers(masField);
 
   const content = masField.querySelector(':scope > [data-role="mas-field-content"]');

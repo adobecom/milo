@@ -112,7 +112,7 @@
   --s2a-color-yellow-1400: #382300;
   --s2a-color-yellow-1500: #281900;
   --s2a-color-yellow-1600: #120b00;
-  --s2a-color-transparent-black-00: rgb(0 0 0 / 0);
+  --s2a-color-transparent-black-00: rgb(0 0 0 / 0%);
   --s2a-color-transparent-black-04: rgb(0 0 0 / 4%);
   --s2a-color-transparent-black-08: rgb(0 0 0 / 8%);
   --s2a-color-transparent-black-12: rgb(0 0 0 / 12%);
@@ -125,7 +125,7 @@
   --s2a-color-transparent-black-80: rgb(0 0 0 / 80%);
   --s2a-color-transparent-black-88: rgb(0 0 0 / 88%);
   --s2a-color-transparent-black-96: rgb(0 0 0 / 96%);
-  --s2a-color-transparent-white-00: rgb(255 255 255 / 0);
+  --s2a-color-transparent-white-00: rgb(255 255 255 / 0%);
   --s2a-color-transparent-white-04: rgb(255 255 255 / 4%);
   --s2a-color-transparent-white-08: rgb(255 255 255 / 8%);
   --s2a-color-transparent-white-12: rgb(255 255 255 / 12%);
@@ -422,7 +422,8 @@
 
   /* Milo-specific declarations */
   --scroll-padding-block: 0;
-  --body-font-family: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family-base: var(--s2a-font-family-default), adobe-clean, "Trebuchet MS", sans-serif;
+  --body-font-family: var(--body-font-family-base);
   --heading-font-family: "Adobe Clean Display Black", var(--s2a-font-family-heading), adobe-clean-display, "Arial Bold Adjusted", sans-serif;
 
   /* Animation properties */
@@ -440,37 +441,43 @@
 
   /* Regional font variations */
   &:lang(ar) {
-    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family);
+    --body-font-family: adobe-arabic, myriad-arabic, var(--body-font-family-base);
 
     font-size: 125%;
   }
 
   &:lang(ko-KR),
   &:lang(ko) {
-    --body-font-family: adobe-clean-han-korean, var(--body-font-family);
+    --body-font-family: adobe-clean-han-korean, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
 
     word-break: keep-all;
   }
 
   &:lang(ja-JP),
   &:lang(ja) {
-    --body-font-family: adobe-clean-han-japanese, var(--body-font-family);
+    --body-font-family: adobe-clean-han-japanese, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-TW) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-CN) {
-    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family);
+    --body-font-family: adobe-clean-han-simplified-c, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(zh-HK) {
-    --body-font-family: adobe-clean-han-traditional, var(--body-font-family);
+    --body-font-family: adobe-clean-han-traditional, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 
   &:lang(th) {
-    --body-font-family: adobe-clean-thai, var(--body-font-family);
+    --body-font-family: adobe-clean-thai, var(--body-font-family-base);
+    --heading-font-family: var(--body-font-family);
   }
 }
 
@@ -589,8 +596,13 @@ a {
   &.standalone-link {
     &::after {
       display: inline-block;
+      width: 5px;
+      height: 8px;
       margin-inline-start: var(--s2a-spacing-8);
-      content: url('../assets/img/arrow-right.svg');
+      content: '';
+      background-color: currentcolor;
+      mask: url('../assets/img/arrow-right.svg') no-repeat center;
+      mask-size: contain;
       transition: transform 0.5s var(--parallax-easing);
     }
 
@@ -637,7 +649,7 @@ h1, h2, h3, h4, h5, h6, [class*="heading-"] {
 
   a,
   a:is(:hover, :focus, :active) {
-    color: currentColor;
+    color: currentcolor;
   }
 }
 
@@ -770,7 +782,7 @@ p {
 
   &.fluid {
     --grid-max-width: var(--grid-max-width-fluid);
-    --grid-margin-width: 0px; /* Keep unit for calc */
+    --grid-margin-width: 0; /* Keep unit for calc */
   }
 
   &.fixed {
@@ -831,10 +843,11 @@ p {
 
 .con-button {
   --cta-backdrop-filter: blur(calc(var(--s2a-blur-md) / 2));
+
   box-sizing: border-box;
   background-color: var(--s2a-color-transparent-black-00);
   backdrop-filter: var(--cta-backdrop-filter);
-  -webkit-backdrop-filter: var(--cta-backdrop-filter);
+  backdrop-filter: var(--cta-backdrop-filter);
   border-radius: var(--s2a-border-radius-round);
   border: var(--s2a-border-width-md) solid var(--s2a-color-gray-1000);
   color: var(--s2a-color-gray-1000);
@@ -860,7 +873,7 @@ p {
 
   &:is(:disabled, [aria-disabled="true"], .disabled) {
     pointer-events: none;
-    opacity: 48%;
+    opacity: 0.48;
     cursor: not-allowed;
   }
 
@@ -883,13 +896,16 @@ p {
   &.blue {
     background-color: var(--s2a-color-blue-900);
     border-color: var(--s2a-color-blue-900);
+
     --cta-backdrop-filter: none;
+
     color: var(--s2a-color-gray-25);
 
     &:hover {
       background-color: var(--s2a-color-blue-1000);
       border-color: var(--s2a-color-blue-1000);
     }
+
     &:active {
       background-color: var(--s2a-color-blue-1100);
       border-color: var(--s2a-color-blue-1100);
@@ -904,7 +920,9 @@ p {
   &.fill {
     background-color: var(--s2a-color-gray-1000);
     border-color: var(--s2a-color-gray-1000);
+
     --cta-backdrop-filter: none;
+
     color: var(--s2a-color-gray-25);
 
     &:hover {
@@ -920,6 +938,7 @@ p {
 
   &.transparent {
     border: none;
+
     --cta-backdrop-filter: none;
 
     &:hover {
@@ -935,6 +954,7 @@ p {
   .icon  {
     display: flex;
     align-items: center;
+
     svg {
       width: 12px;
       height: 12px;
@@ -956,9 +976,19 @@ p {
   justify-content: center;
   transition: background-color 0.2s ease, border-color 0.2s ease;
   will-change: background-color, border-color;
+
   path {
     transition: fill 0.2s ease;
     will-change: fill;
+  }
+
+  .dark & {
+    background-color: var(--s2a-color-transparent-black-04);
+    border-color: var(--s2a-color-transparent-black-08);
+
+    path {
+      fill: var(--s2a-color-gray-1000);
+    }
   }
 }
 
@@ -977,6 +1007,7 @@ p {
   padding: var(--s2a-spacing-sm);
   text-decoration: none;
   white-space: nowrap;
+
   img {
     block-size: 32px;
     flex-shrink: 0;
@@ -1000,8 +1031,34 @@ p {
     .icon-button {
       background-color: var(--s2a-color-content-knockout);
       border-color: var(--s2a-color-content-knockout);
+
       path {
         fill: var(--s2a-color-background-knockout);
+      }
+    }
+  }
+
+
+  .dark & {
+    background: var(--s2a-color-background-inverse);
+    color: var(--s2a-color-content-inverse);
+
+    &:hover,
+    &:focus {
+      .icon-button {
+        background-color: var(--s2a-color-transparent-black-08);
+        border-color: var(--s2a-color-transparent-black-16);
+      }
+    }
+
+    &:active {
+      .icon-button {
+        background-color: var(--s2a-color-gray-1000);
+        border-color: var(--s2a-color-transparent-white-24);
+
+        path {
+          fill: var(--s2a-color-content-default);
+        }
       }
     }
   }
@@ -1017,6 +1074,7 @@ p {
         background-color: var(--s2a-color-transparent-white-64);
         color: var(--s2a-color-gray-1000);
       }
+
       &:active {
         background-color: var(--s2a-color-gray-25);
         color: var(--s2a-color-gray-1000);
@@ -1045,6 +1103,7 @@ p {
         background-color: var(--s2a-color-transparent-white-12);
         color: var(--s2a-color-gray-25);
       }
+
       &:active {
         background-color: var(--s2a-color-transparent-white-16);
         color: var(--s2a-color-gray-25);
@@ -1071,6 +1130,7 @@ span.hang-opening-quote {
 .section:has(~ .section.parallax-garage-door-reveal):not(.parallax-move-up-fast) {
   z-index: 1;
 }
+
 /* TODO: Parallax styles should be loaded separately and conditionally */
 @supports (animation-timeline: view()) {
   /* General parallax declarations */
@@ -1162,7 +1222,7 @@ span.hang-opening-quote {
   @keyframes enable-grid-parallax {
     from {
       --grid-max-width: var(--grid-max-width-fluid);
-      --grid-margin-width: 0px;
+      --grid-margin-width: 0;
     }
 
     to {
@@ -1173,20 +1233,92 @@ span.hang-opening-quote {
 
   /* Stagger parallax declarations */
   [class*="parallax-stagger-"] {
+    view-timeline: --parallax-stagger-timeline block;
+    view-timeline-inset: 40% 10%;
+
+    > :not([class*="section-"]) {
+      --parallax-stagger-row-index: 0;
+
+      animation-timing-function: var(--parallax-easing);
+      animation-fill-mode: both;
+      animation-timeline: --parallax-stagger-timeline;
+      animation-range: var(--parallax-range-start) var(--parallax-range-end);
+      will-change: transform;
+    }
+
+    /* Column count per -up class */
+    &.two-up { --parallax-stagger-cols: 2; }
+    &.three-up { --parallax-stagger-cols: 3; }
+    &.four-up { --parallax-stagger-cols: 4; }
+    &.six-up { --parallax-stagger-cols: 6; }
+
+    /* Column stagger indices per -up class */
+    &.two-up   > :nth-child(2n+1 of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+1 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+1 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+1 of :not([class*="section-"])) { --parallax-stagger-index: 0.5; }
+
+    &.two-up   > :nth-child(2n of :not([class*="section-"])),
+    &.three-up > :nth-child(3n+2 of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+2 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+2 of :not([class*="section-"])) { --parallax-stagger-index: 1.5; }
+
+    &.three-up > :nth-child(3n of :not([class*="section-"])),
+    &.four-up  > :nth-child(4n+3 of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+3 of :not([class*="section-"])) { --parallax-stagger-index: 2.5; }
+
+    &.four-up  > :nth-child(4n of :not([class*="section-"])),
+    &.six-up   > :nth-child(6n+4 of :not([class*="section-"])) { --parallax-stagger-index: 3.5; }
+
+    &.six-up   > :nth-child(6n+5 of :not([class*="section-"])) { --parallax-stagger-index: 4.5; }
+
+    &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
+
+    /* Row stagger indices per -up class */
+
+    /* Row 1 */
+    &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+5 of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+7 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 1;
+    }
+
+    /* Row 2 */
+    &.two-up   > :nth-child(n+5  of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+9  of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+18 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 2;
+    }
+
+    /* Row 3 */
+    &.two-up   > :nth-child(n+7  of :not([class*="section-"])):nth-child(-n+8  of :not([class*="section-"])),
+    &.three-up > :nth-child(n+10 of :not([class*="section-"])):nth-child(-n+12 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+16 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+19 of :not([class*="section-"])):nth-child(-n+24 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 3;
+    }
+
+    /* Row 4 */
+    &.two-up   > :nth-child(n+9  of :not([class*="section-"])):nth-child(-n+10 of :not([class*="section-"])),
+    &.three-up > :nth-child(n+13 of :not([class*="section-"])):nth-child(-n+15 of :not([class*="section-"])),
+    &.four-up  > :nth-child(n+17 of :not([class*="section-"])):nth-child(-n+20 of :not([class*="section-"])),
+    &.six-up   > :nth-child(n+25 of :not([class*="section-"])):nth-child(-n+30 of :not([class*="section-"])) {
+      --parallax-stagger-row-index: 4;
+    }
+
     @media (width >= 768px) {
-      view-timeline: --parallax-stagger-timeline block;
-      view-timeline-inset: 40% 10%;
       animation-name: none;
 
       > :not([class*="section-"]) {
-        --parallax-stagger-row-index: 0;
-
         animation-name: enable-parallax-stagger;
-        animation-timing-function: var(--parallax-easing);
-        animation-fill-mode: both;
-        animation-timeline: --parallax-stagger-timeline;
-        animation-range: var(--parallax-range-start) var(--parallax-range-end);
-        will-change: transform;
+      }
+
+      &.masonry-layout > :not([class*="section-"]) {
+        --parallax-stagger-drift: 150px;
+
+        animation-timeline: view(block);
       }
 
       &.masonry-layout > :not([class*="section-"]) {
@@ -1211,6 +1343,7 @@ span.hang-opening-quote {
       &.six-up:has(> :nth-child(13 of :not([class*="section-"]))) {
         --parallax-range-end-length: 80%;
       }
+
 
       /* Column count per -up class */
       &.two-up { --parallax-stagger-cols: 2; }
@@ -1241,6 +1374,7 @@ span.hang-opening-quote {
       &.six-up   > :nth-child(6n of :not([class*="section-"])) { --parallax-stagger-index: 5.5; }
 
       /* Row stagger indices per -up class */
+
       /* Row 1 */
       &.two-up   > :nth-child(n+3 of :not([class*="section-"])):nth-child(-n+4  of :not([class*="section-"])),
       &.three-up > :nth-child(n+4 of :not([class*="section-"])):nth-child(-n+6  of :not([class*="section-"])),
@@ -1303,6 +1437,7 @@ span.hang-opening-quote {
   }
 
   /* Garage door parallax (rich content over section w/ bkg) declarations */
+
   /* TODO: decide if this is general enough to be global */
   .section.parallax-garage-door-reveal {
     --gd-grow-from: -50vh;
@@ -1317,12 +1452,14 @@ span.hang-opening-quote {
     @media (width >= 1280px) {
       --gd-grow-from: -110vh;
       --gd-reveal-from: 50vh;
+
       animation-range: entry 0% cover 50%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
       --gd-reveal-from: 30vh;
+
       animation-range: entry 0% cover 36%;
     }
 
@@ -1366,6 +1503,7 @@ span.hang-opening-quote {
   }
 
   /* Section 1 to section 2 parallax declarations */
+
   /* TODO: decide if this is general enough to be a global class */
   .section.parallax-move-up-fast {
     will-change: transform;
@@ -1415,7 +1553,8 @@ span.hang-opening-quote {
   }
 
   @keyframes dg-top-door {
-    from { transform: translateY(-20vh); }
+    from { transform: translateY(-30vh); }
+
     to { transform: translateY(0); }
   }
 
@@ -1425,6 +1564,7 @@ span.hang-opening-quote {
   }
 
   /* Line height parallax declarations */
+
   /* TODO: Adapt authoring to move and rename class */
   .parallax-line-height * {
     animation: text-reveal-up var(--parallax-easing) both;

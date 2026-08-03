@@ -7,6 +7,8 @@ export function isMatching(container, query, type, titleText) {
 
   switch (type) {
     case 'blocks':
+    case 'c1-blocks':
+    case 'c2-blocks':
       tagsString = getSearchTags(container);
       break;
     case 'templates':

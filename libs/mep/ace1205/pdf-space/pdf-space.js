@@ -1442,12 +1442,17 @@ function mountMotion(el) {
     if (stage.scrollLeft !== 0) stage.scrollLeft = 0;
   });
 
+  let pointerDown = false;
+  stage.addEventListener('pointerdown', () => { pointerDown = true; });
+  stage.addEventListener('pointerup', () => { pointerDown = false; });
+
   const textBlockLink = textBlockEl.querySelector('a');
   textBlockLink?.addEventListener('focus', () => {
-    snapToFocusTarget(ANIM_STATE.timing.slottingStart);
+    if (!pointerDown) snapToFocusTarget(ANIM_STATE.timing.slottingStart);
   });
   const ctaLink = ctaEl.querySelector('a');
   ctaLink?.addEventListener('focus', () => {
+    if (pointerDown) return;
     const { timing } = ANIM_STATE;
     snapToFocusTarget(
       timing.slottingStart + timing.slottingDuration + timing.postRevealScrollDistance,

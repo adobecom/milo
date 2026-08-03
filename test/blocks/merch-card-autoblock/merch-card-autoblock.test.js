@@ -354,6 +354,56 @@ describe('merch-card-autoblock autoblock', () => {
       expect(blue.classList.contains('button-l')).to.be.true;
     });
 
+    it('passes mask and pzn to aem-fragment in createCard', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=mask-pzn-card-1&mask=foo&pzn=bar';
+      document.body.append(a);
+      await init(a);
+      const frag = document.querySelector('merch-card aem-fragment');
+      expect(frag.getAttribute('mask')).to.equal('foo');
+      expect(frag.getAttribute('pzn')).to.equal('bar');
+    });
+
+    it('passes mask and pzn to aem-fragment in createInline', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=mask-pzn-inline-1&mask=baz&pzn=qux&field=prices';
+      document.body.append(a);
+      await init(a);
+      const frag = document.querySelector('mas-field aem-fragment');
+      expect(frag.getAttribute('mask')).to.equal('baz');
+      expect(frag.getAttribute('pzn')).to.equal('qux');
+    });
+
+    it('does not set mask or pzn when absent from URL', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const a = document.createElement('a');
+      a.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=no-mask-pzn-1';
+      document.body.append(a);
+      await init(a);
+      const frag = document.querySelector('merch-card aem-fragment');
+      expect(frag.getAttribute('mask')).to.not.exist;
+      expect(frag.getAttribute('pzn')).to.not.exist;
+    });
+
+    it('treats same fragment with different mask as distinct cache entries', async () => {
+      setConfig({ codeRoot: '/libs' });
+      const a1 = document.createElement('a');
+      a1.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=cache-mask-1&mask=v1';
+      document.body.append(a1);
+      await init(a1);
+
+      const a2 = document.createElement('a');
+      a2.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=cache-mask-1&mask=v2';
+      document.body.append(a2);
+      await init(a2);
+
+      const frags = document.querySelectorAll('merch-card aem-fragment');
+      expect(frags[0].getAttribute('loading')).to.not.exist;
+      expect(frags[1].getAttribute('loading')).to.not.exist;
+    });
+
     it('preserves Milo typography classes on parent heading when inline fragment stays inline', async () => {
       const heading = document.createElement('h1');
       heading.id = 'heading-milo-class-test';

@@ -1,8 +1,16 @@
 .section.rounded-corners-bottom:has(.offer-hero):not(.parallax-move-up-fast):not(.parallax-garage-door-reveal) {
   z-index: 4;
+  overflow: visible;
+
+  > .section-background {
+    overflow: clip;
+    border-radius: 0 0 var(--s2a-border-radius-lg) var(--s2a-border-radius-lg);
+  }
 }
 
 .offer-hero {
+  overflow-x: clip;
+
   .hero {
     position: relative;
     min-height: 100vh;
@@ -72,11 +80,6 @@
     opacity: 0;
     pointer-events: none;
     z-index: 2;
-
-    &.is-visible {
-      opacity: 1;
-      transition: opacity 250ms ease-out;
-    }
   }
 
   .hero-cards {
@@ -96,11 +99,6 @@
 
   a.hero-card-tile {
     text-decoration: none;
-
-    &:focus-visible {
-      outline: 2px solid var(--s2a-color-blue-800);
-      outline-offset: -2px;
-    }
 
     &:hover .learn-more svg {
       transform: translate3d(var(--s2a-spacing-4), 0, 0);
@@ -127,9 +125,23 @@
     overflow: hidden;
     transform-origin: top left;
     padding-top: calc(100% * 100 / 109);
+    will-change: transform;
   }
 
   &:dir(rtl) .hero-card-tile {
+    transform-origin: top right;
+  }
+
+  .hero-card-pile-shadow {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--s2a-border-radius-24);
+    box-shadow: 25px 25px 54px 0 rgb(0 0 0 / 20%);
+    pointer-events: none;
+    transform-origin: top left;
+  }
+
+  &:dir(rtl) .hero-card-pile-shadow {
     transform-origin: top right;
   }
 
@@ -231,6 +243,82 @@
   }
 }
 
+@supports not (animation-timeline: scroll()) {
+  .offer-hero .hero {
+    min-height: unset;
+    padding-bottom: 74px;
+  }
+
+  .offer-hero :is(.hero-card-title, .hero-card-body-text, .learn-more) {
+    opacity: 1;
+  }
+}
+
+@keyframes offer-hero-eyebrow-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes offer-hero-tile-to-grid {
+  to { transform: none; }
+}
+
+@keyframes offer-hero-shadow-to-grid {
+  to { opacity: 0; transform: none; }
+}
+
+@keyframes offer-hero-content-fade {
+  to { opacity: 0; transform: translateY(-80px); }
+}
+
+@keyframes offer-hero-content-slide {
+  to { transform: translateY(-80px); }
+}
+
+@supports (animation-timeline: scroll()) {
+  .offer-hero.scroll-driven-ready {
+    .hero-card-tile {
+      transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
+        rotate(var(--pile-rot, 0deg))
+        scale(var(--pile-scale, 1));
+      animation: offer-hero-tile-to-grid linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    .hero-card-pile-shadow {
+      transform: translate(var(--pile-tx, 0), var(--pile-ty, 0))
+        rotate(var(--pile-rot, 0deg))
+        scale(var(--pile-scale, 1));
+      animation: offer-hero-shadow-to-grid linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    .hero-content {
+      animation: offer-hero-content-slide linear forwards;
+      animation-timeline: scroll(root);
+    }
+
+    @media (height >= 500px) {
+      .hero-content {
+        animation-name: offer-hero-content-fade;
+      }
+    }
+
+    .hero-eyebrow {
+      animation: offer-hero-eyebrow-fade linear forwards;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+
+.offer-hero:has(.hero-card-tile:focus-visible) {
+  .hero-card-tile {
+    animation: none;
+    transform: none;
+  }
+}
+
 @media (width > 768px) {
   .offer-hero {
     .hero-content {
@@ -247,7 +335,7 @@
     }
 
     .hero-eyebrow {
-      --hero-eyebrow-gap: var(--s2a-spacing-2xl);
+      --hero-eyebrow-gap: var(--s2a-spacing-4xl);
     }
 
     .hero-cards {
@@ -268,7 +356,7 @@
   .offer-hero {
     .hero-content {
       padding-inline: 120px;
-      margin-top: 237px;
+      margin-top: 177px;
 
       :is(h1, h2, h3, h4, h5, h6) {
         max-width: 800px;

@@ -2747,6 +2747,9 @@ describe('Utils', () => {
     beforeEach(async () => {
       document.querySelector('meta[name="langfirst"]')?.remove();
       sessionStorage.removeItem('akamai');
+      sessionStorage.removeItem('international');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
       const timestamp = Date.now();
       lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
     });
@@ -2755,6 +2758,9 @@ describe('Utils', () => {
       const meta = document.querySelector('meta[name="langfirst"]');
       if (meta) meta.remove();
       sessionStorage.removeItem('akamai');
+      sessionStorage.removeItem('international');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
     });
 
     it('returns null when lingo is not active', async () => {
@@ -2774,6 +2780,61 @@ describe('Utils', () => {
       const region = await lingoModule.getLingoRegion();
       expect(region).to.not.be.null;
       expect(region.ietf).to.equal('de-CH');
+      expect(region.prefix).to.equal('/ch_de');
+    });
+
+    it('with useGeoLocation uses geo, not the market cookie, to pick the region', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      // User previously selected the FR market, but is physically in CH.
+      document.cookie = 'country=fr; path=/';
+      sessionStorage.setItem('akamai', 'ch');
+      const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
+      expect(region).to.not.be.null;
+      expect(region.prefix).to.equal('/ch_de');
+    });
+
+    it('with useGeoLocation honors the international cookie (explicit pick) over geo', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      // Explicit CH region pick; geo says US (no region) — the pick wins.
+      document.cookie = 'international=ch_de; path=/';
+      sessionStorage.setItem('akamai', 'us');
+      const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
+      expect(region).to.not.be.null;
+      expect(region.prefix).to.equal('/ch_de');
+    });
+
+    it('with useGeoLocation, an explicit base/root pick is not overridden by geo', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      // User explicitly chose the root (us) — geo CH must NOT pull them to ch_de.
+      document.cookie = 'international=us; path=/';
+      sessionStorage.setItem('akamai', 'ch');
+      const region = await lingoModule.getLingoRegion({ useGeoLocation: true });
+      expect(region).to.be.null;
+    });
+
+    it('by default honors the market cookie over geo (mep/content callers)', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      lingoModule.setConfig(lingoRegionConfig);
+      // User selected the CH market but is physically in the US.
+      document.cookie = 'country=ch; path=/';
+      sessionStorage.setItem('akamai', 'us');
+      const region = await lingoModule.getLingoRegion();
+      expect(region).to.not.be.null;
       expect(region.prefix).to.equal('/ch_de');
     });
 
@@ -2810,6 +2871,7 @@ describe('Utils', () => {
       locales: {
         '': { ietf: 'en-US', tk: 'hah7vzn.css' },
         fr: { ietf: 'fr-FR', tk: 'hah7vzn.css' },
+        ca_fr: { ietf: 'fr-CA', tk: 'hah7vzn.css', base: 'fr' },
         ch_fr: { ietf: 'fr-CH', tk: 'hah7vzn.css', base: 'fr' },
       },
       pathname: '/fr/creativecloud/',
@@ -2820,15 +2882,23 @@ describe('Utils', () => {
     beforeEach(async () => {
       document.querySelector('meta[name="langfirst"]')?.remove();
       sessionStorage.removeItem('akamai');
+      sessionStorage.removeItem('international');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
       originalAdobeId = window.adobeid;
       const timestamp = Date.now();
       lingoModule = await import(`../../libs/utils/utils.js?t=${timestamp}`);
     });
 
     afterEach(() => {
-      const meta = document.querySelector('meta[name="langfirst"]');
-      if (meta) meta.remove();
+      const langMeta = document.querySelector('meta[name="langfirst"]');
+      if (langMeta) langMeta.remove();
+      const ahomeMeta = document.querySelector('meta[name="adobe-home-redirect"]');
+      if (ahomeMeta) ahomeMeta.remove();
       sessionStorage.removeItem('akamai');
+      sessionStorage.removeItem('international');
+      document.cookie = 'country=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
       window.adobeid = originalAdobeId;
     });
 
@@ -2850,6 +2920,131 @@ describe('Utils', () => {
       lingoModule.loadIms().catch(() => {});
       await new Promise((resolve) => { setTimeout(resolve, 100); });
       expect(window.adobeid.locale).to.equal('fr_FR');
+    });
+
+    it('builds Adobe Home redirect_uri with region acomLocale when lingo is active', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ch_fr');
+    });
+
+    it('builds Adobe Home redirect_uri with locale-prefix acomLocale when lingo is not active', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=fr');
+    });
+
+    it('keeps cn and sea on their locale homepage instead of /home for Adobe Home redirect_uri', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/cn/', locales: { '': { ietf: 'en-US' }, cn: { ietf: 'zh-CN' } } });
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/cn');
+    });
+
+    it('keeps sea on its locale homepage instead of /home for Adobe Home redirect_uri', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/sea/', locales: { '': { ietf: 'en-US' }, sea: { ietf: 'en-US' } } });
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/sea');
+    });
+
+    // AC#2: signing in from /fr with a Canadian IP lands on Adobe Home as ca_fr.
+    it('builds ca_fr Adobe Home redirect_uri for a Canadian user on the base /fr page', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ca');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+    });
+
+    // Sign-in uses geo (akamai 'ca'), not the selected-market cookie (country=fr),
+    // so a Canadian who previously picked the FR market still lands on ca_fr.
+    it('uses geo over a divergent market cookie for the Adobe Home redirect_uri', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      document.cookie = 'country=fr; path=/';
+      sessionStorage.setItem('akamai', 'ca');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+    });
+
+    // Explicit region pick (international cookie) wins over a divergent geo.
+    it('uses the international cookie over geo for the Adobe Home redirect_uri', async () => {
+      const lingoMeta = document.createElement('meta');
+      lingoMeta.setAttribute('name', 'langfirst');
+      lingoMeta.setAttribute('content', 'on');
+      document.head.append(lingoMeta);
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig(imsLingoConfig);
+      // Explicitly picked CA French; physically in CH — the pick wins over geo.
+      document.cookie = 'international=ca_fr; path=/';
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home?acomLocale=ca_fr');
+    });
+
+    it('builds a bare /home redirect_uri (no acomLocale) on the root locale', async () => {
+      const ahomeMeta = document.createElement('meta');
+      ahomeMeta.setAttribute('name', 'adobe-home-redirect');
+      ahomeMeta.setAttribute('content', 'on');
+      document.head.append(ahomeMeta);
+      lingoModule.setConfig({ ...imsLingoConfig, pathname: '/' });
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal('https://www.stage.adobe.com/home');
+    });
+
+    // AC#3 guard: pages without adobe-home-redirect must not get a /home redirect_uri.
+    it('leaves redirect_uri undefined when adobe-home-redirect is not on', async () => {
+      lingoModule.setConfig(imsLingoConfig);
+      sessionStorage.setItem('akamai', 'ch');
+      lingoModule.loadIms().catch(() => {});
+      await new Promise((resolve) => { setTimeout(resolve, 100); });
+      expect(window.adobeid.redirect_uri).to.equal(undefined);
     });
   });
 
