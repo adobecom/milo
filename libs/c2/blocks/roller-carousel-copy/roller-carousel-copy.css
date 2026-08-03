@@ -329,7 +329,7 @@
     .rcc-content {
       flex-direction: row;
       align-items: stretch;
-      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) 0;
+      padding: var(--s2a-layout-xl) var(--s2a-spacing-lg) var(--s2a-spacing-lg);
       padding-left: calc(var(--s2a-spacing-lg) + var(--s2a-spacing-md));
       gap: 0;
     }
