@@ -49,7 +49,11 @@ const BREAKPOINTS = {
     CARD_H_SPHERE: 6.5,
     CARD_W_ARC: 456,
     CAM_Z_SPHERE: 65,
-    CAM_Z_END: -60,
+    // End of the fly-through. Only ~7 units past the sphere's back surface (-SPHERE_R = -35):
+    // enough to punch through into black, but not the long deep plunge that left a big empty
+    // black tail before the quote section. Shorten/deepen to trade the "into the universe"
+    // travel against the gap before the quote emerges.
+    CAM_Z_END: -42,
     GRID_COLS: 9,
     GRID_ROWS: 5,
     // Fraction of the cards that cluster into the off-screen arc flank. A fraction (not
@@ -72,7 +76,8 @@ const BREAKPOINTS = {
     CARD_H_SPHERE: 6.0,
     CARD_W_ARC: 220,
     CAM_Z_SPHERE: 70,
-    CAM_Z_END: -60,
+    // ~8 units past the sm sphere's back surface (-SPHERE_R = -20) — see the md note.
+    CAM_Z_END: -28,
     GRID_COLS: 3,
     GRID_ROWS: 8,
     ARC_DENSE_FRACTION: 0,
@@ -355,9 +360,6 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   let blockHeight = 0;
   let W = 0; let
     H = 0;
-
-  const pqEl = q('.globe-gallery-pullquote');
-  let pqShown = false;
 
   let caFilterR = null; // SVG feOffset element for red channel  (Option C)
   let caFilterB = null; // SVG feOffset element for blue channel (Option C)
@@ -1076,32 +1078,6 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     }
   }
 
-  // Pull-quote: invisible while scrolling in from below; JS adds .is-active once
-  // zoomT crosses 0.38 (element is already at its sticky position). The sticky
-  // container handles the natural forward exit.
-  // Scroll-up exit: the sticky element unsticks only ~84px after the fade threshold,
-  // so a full 0.7s transition would still be playing when the element starts drifting
-  // downward. On scroll-up we use a fast 0.15s fade so it disappears before moving.
-  function updatePullQuote(frame) {
-    const { zoomT, scrollingDown } = frame;
-    // Reduced motion: the quote flows normally below the globe and is statically
-    // visible (CSS forces opacity:1, no sticky/scale reveal) — no JS toggling.
-    if (reducedMotion) return;
-    if (pqEl) {
-      if (zoomT >= 0.38 && !pqShown) {
-        pqEl.style.transition = ''; // restore CSS default (0.7s, set in .css)
-        pqShown = true;
-        pqEl.classList.add('is-active');
-      } else if (zoomT < 0.38 && pqShown) {
-        if (!scrollingDown) {
-          pqEl.style.transition = 'opacity 0.15s ease, transform 0.15s ease';
-        }
-        pqShown = false;
-        pqEl.classList.remove('is-active');
-      }
-    }
-  }
-
   // During fold: slide sphereGroup forward so the sphere-camera distance lerps from
   // FOLD_SPHERE_DIST (70% viewport height) at fold start to CAM_Z_SPHERE (93%) at fold
   // complete — easeInCubic holds it near 70% through formation, then swells to full size.
@@ -1617,7 +1593,6 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     modal.updateAnimation(frame.sphereRotActive);
     modal.updateDesktopNav();
     updateCanvasVisibility(frame);
-    updatePullQuote(frame);
 
     // Arc needs manual render order; sphere needs camera-distance sorting.
     renderer.sortObjects = frame.sphereFormT > 0.5;
@@ -1652,7 +1627,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
     // Reduced motion: take the canvas out of fixed viewport-pinning and into normal
     // flow (absolute within the static .globe-gallery-world) so the static globe
-    // scrolls away naturally and the pull-quote follows below — see the --reduced CSS.
+    // scrolls away naturally — see the --reduced CSS.
     // The top nudge drops the globe a touch below the section's top edge so it isn't
     // flush against the previous section; the world is grown symmetrically in CSS
     // (+2× this offset) so the sphere and the centred a11y widget stay aligned.
@@ -1736,7 +1711,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
     // Recompute block metrics whenever page height changes (images/blocks loading
     // above the block shift its offsetTop; blockHeight=0 at first paint makes
-    // progress=Infinity and skips straight to the zoom/pull-quote phase).
+    // progress=Infinity and skips straight to the zoom phase).
     if (layoutObs) layoutObs.disconnect();
     layoutObs = new ResizeObserver(() => {
       blockDocTop = root.getBoundingClientRect().top + window.scrollY;
@@ -1813,10 +1788,9 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     modal.destroy();
     // A11y gallery cleanup so a fresh init starts clean.
     a11y.teardown();
-    // Reset arc-copy and pull-quote
+    // Reset arc-copy
     const arcCopyEl = q('.globe-gallery-arc-copy');
     if (arcCopyEl) arcCopyEl.style.cssText = '';
-    if (pqEl) { pqEl.classList.remove('is-active'); pqEl.style.transition = ''; pqShown = false; }
     prevLenisY = 0; scrollVel = 0;
     // NOTE: `bp` is intentionally NOT cleared here. doLayout() compares bp.name
     // against the resolved band to detect a profile crossing, and initRuntime()
@@ -1884,20 +1858,20 @@ export default async function init(el) {
   // formed-sphere state (no arc/grid/fold/zoom), disables auto-spin, and snaps the modal
   // open/close — drag, arrow-spin, and click→open all still work. Instead of pinning a
   // fixed canvas, `--reduced` (see the CSS) makes the globe a static ~100vh section that
-  // scrolls away naturally (canvas absolute in the static world, set in initRuntime),
-  // followed by the pull-quote in normal flow — no runway, no sticky, no scroll gating.
+  // scrolls away naturally (canvas absolute in the static world, set in initRuntime)
+  // — no runway, no sticky, no scroll gating.
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reducedMotion) el.classList.add('globe-gallery--reduced');
 
   // Extract authored content BEFORE buildGlobeDom() wipes the block's children.
   // fragmentHref is captured here so it survives the DOM wipe.
-  const { arcCopy, pullQuote, hintText, fragmentHref } = parseAuthoredContent(el);
+  const { arcCopy, hintText, fragmentHref } = parseAuthoredContent(el);
 
   const labels = await resolveGlobeLabels();
   // buildGlobeDom mints + returns this instance's unique id suffix (CA filter,
   // modal aria targets); the runtime reuses it for the url(#…) filter ref. It also
-  // fills the arc-copy / pull-quote slots with the parsed authored text.
-  const gid = buildGlobeDom(el, labels, { arcCopy, pullQuote });
+  // fills the arc-copy slot with the parsed authored text.
+  const gid = buildGlobeDom(el, labels, { arcCopy });
 
   // Cards come from the authored fragment link, resolved by Milo before init().
   const cards = fragmentHref ? await fetchFragmentCards(fragmentHref) : null;

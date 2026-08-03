@@ -7,7 +7,7 @@
    for md (≥768) / lg (≥1280) live in the media queries.
 
    Two stylelint rules are disabled file-wide, both deliberate:
-   • selector-class-pattern — class names are BEM (.globe-gallery-pullquote__quote,
+   • selector-class-pattern — class names are BEM (.globe-gallery-arc-copy__title,
      .globe-gallery-modal__badge-icon--ps). The names are queried verbatim by globe-gallery.js
      (GLOBE_MARKUP / querySelector), so renaming would break JS.
    • *-no-vendor-prefix — the -webkit-backdrop-filter and display:-webkit-box /
@@ -19,8 +19,7 @@
 /* Reduced motion: no scroll choreography — lay the block out as normal document flow.
    The globe renders as a STATIC, interactive sphere in a ~100vh section that scrolls
    away naturally (the canvas is absolute inside the now-static .globe-gallery-world —
-   set in JS), then the pull-quote follows below in normal flow (no sticky pin, always
-   visible). The runtime still pins its timeline to the formed sphere and disables
+   set in JS). The runtime still pins its timeline to the formed sphere and disables
    auto-spin / fly-through (see globe-gallery.js). The compound selector beats the
    .globe-gallery runway height regardless of source order. (Cards failing to load falls
    back to the separate --empty collapse.) */
@@ -29,7 +28,7 @@
   min-height: 0;
 }
 
-/* The per-descendant --reduced overrides (world / arc-copy / a11y / pull-quote) are
+/* The per-descendant --reduced overrides (world / arc-copy / a11y) are
    grouped at the END of this file — they must follow the base rules they override
    (descending-specificity / cascade). See "Reduced-motion flow overrides" below. */
 
@@ -47,8 +46,8 @@
 /* ── Type-scale tokens ───────────────────────────────────────────────────────
    Ported from the prototype's styles/global/typography.css. The prototype
    relied on these :root tokens; Milo does NOT define them, so without this the
-   pull-quote and arc-copy fall back to default 16px text. Scoped to .globe so
-   they cascade to the JS-built overlays (pull-quote / arc-copy / modal are DOM
+   arc-copy falls back to default 16px text. Scoped to .globe so
+   they cascade to the JS-built overlays (arc-copy / modal are DOM
    descendants — position:fixed doesn't break custom-property inheritance).
    Keep values in sync with hub-creative/styles/global/typography.css.
 
@@ -57,11 +56,12 @@
    changes across tiers, so it lives only here. */
 .globe-gallery {
   /* --runway-height is the block's total scroll length and the single source of truth for
-     pacing: the JS reads the rendered height (no hard-coded copy there), and the pull-quote
-     pin derives its height from it (see .globe-gallery-pullquote-pin) so the two stay in
-     proportion and the quote's reveal stays aligned. Tune the whole animation here — larger
-     = slower/more scroll, smaller = snappier with a shorter frozen-quote tail. */
-  --runway-height: 630vh;
+     pacing: the JS reads the rendered height (no hard-coded copy there). Tune the whole
+     animation here — larger = slower/more scroll, smaller = snappier. The fly-through
+     completes at the end of this runway on a background frame (see `background` below);
+     the end-of-scroll quote is a separate C2 `quote` block authored in its own section
+     below the globe. */
+  --runway-height: 520vh;
 
   height: var(--runway-height);
   position: relative;
@@ -116,7 +116,7 @@
 /* ── z-index scheme (all in the page's root stacking context — the block root sets no
    stacking context) ──────────────────────────────────────────────────────────────────
    Two bands, one globe per page:
-   • Hero (2–5): world < canvas (JS, z:3) < a11y / arc-copy (4) < pull-quote (5). Small
+   • Hero (2–4): world < canvas (JS, z:3) < a11y / arc-copy (4). Small
      values that intentionally sit BELOW the page's header/chrome.
    • Modal (110–112): backdrop < modal-canvas (JS, z:111) < chrome (112). Above the page
      header so the modal overlays the whole page.
@@ -181,91 +181,6 @@
   font-size: var(--type-body-m-size);
   line-height: var(--type-body-m-lh);
   letter-spacing: var(--type-body-m-ls);
-  color: #c6c6c6;
-  margin: 0;
-}
-
-/* ── Pull-quote (sticky inside .globe-gallery-pullquote-pin) ──
-   The pin container is absolute at the bottom of the runway. The pull-quote is sticky
-   inside it, so it scrolls in naturally from below, sticks centered through the zoom
-   phase, and scrolls off the top as the runway ends — no JS required.
-   The pin height is a fixed fraction of --runway-height, so it scales with the runway
-   and the quote's sticky reveal stays aligned with the zoomT threshold as you tune. The
-   fraction also sets how long the quote stays frozen (≈ pin height − quote height), i.e.
-   the scroll length after the fly-through. */
-.globe-gallery-pullquote-pin {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: calc(var(--runway-height) * 0.4);
-  pointer-events: none;
-}
-
-/* The pull-quote is opacity:0/scale:0.9 while scrolling invisibly into its sticky
-   position. JS adds .is-active once zoomT crosses the threshold (element is already
-   at rest at 50vh center), so the transition makes it emerge in place. The sticky
-   container handles the natural exit — no JS needed to trigger it. */
-.globe-gallery-pullquote {
-  --pq-height: 583px;
-
-  position: sticky;
-  top: calc(50vh - var(--pq-height) / 2); /* centered vertically */
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 1920px;
-  margin: 0 auto;
-  height: var(--pq-height);
-  z-index: 5;
-  background: transparent;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 24px;
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0.9);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-
-.globe-gallery-pullquote.is-active {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.globe-gallery-pullquote__quote {
-  font-family: var(--font-display);
-  font-weight: var(--type-title-1-weight);
-  font-size: var(--type-title-1-size);
-  line-height: var(--type-title-1-lh);
-  letter-spacing: var(--type-title-1-ls);
-  color: #fff;
-  margin: 0;
-}
-
-/* Gap between the quote and the name/role. In the base (space-between) layout the two
-   are already pushed apart; this only bites when they cluster together — e.g. the RM
-   centred layout. */
-.globe-gallery-pullquote__attribution {
-  margin-top: 24px;
-}
-
-.globe-gallery-pullquote__name {
-  font-family: var(--font-body);
-  font-weight: var(--type-body-l-weight);
-  font-size: var(--type-body-l-size);
-  line-height: var(--type-body-l-lh);
-  letter-spacing: var(--type-body-l-ls);
-  color: #fff;
-  margin: 0;
-}
-
-.globe-gallery-pullquote__role {
-  font-family: var(--font-body);
-  font-weight: var(--type-body-l-weight);
-  font-size: var(--type-body-l-size);
-  line-height: var(--type-body-l-lh);
-  letter-spacing: var(--type-body-l-ls);
   color: #c6c6c6;
   margin: 0;
 }
@@ -794,13 +709,12 @@ body.modal-open { overflow: hidden; }
    Placed at the end of the file (after the base rules they override) so the
    descendant selectors don't precede their lower-specificity bases. Under
    prefers-reduced-motion the block is plain document flow: the globe sits in a
-   static ~100vh section that scrolls away, then the pull-quote follows below. The
+   static ~100vh section that scrolls away. The
    .globe-gallery--reduced class + JS canvas repositioning are set in globe-gallery.js. */
 
 /* Globe section: static (not sticky) so it scrolls away; position:relative anchors
    the absolute canvas + a11y widget it contains. Height = 8vh clearance above the 100vh
-   canvas (mirrors the canvas `top:8vh` set in JS) — no extra slack below, so the
-   pull-quote follows close beneath the globe. */
+   canvas (mirrors the canvas `top:8vh` set in JS) — no extra slack below. */
 .globe-gallery--reduced .globe-gallery-world {
   position: relative;
   height: 108vh;
@@ -818,27 +732,6 @@ body.modal-open { overflow: hidden; }
 .globe-gallery--reduced .globe-gallery-a11y {
   position: absolute;
   top: 58vh;
-}
-
-/* Pull-quote flows normally after the globe: drop the runway-bottom pin + sticky, show
-   it statically (no scroll-driven opacity/scale reveal), and top-align it in its own box
-   (no full-viewport centring) with a padding gap above so it sits a comfortable distance
-   below the globe rather than a full screen away. */
-.globe-gallery--reduced .globe-gallery-pullquote-pin {
-  position: static;
-  height: auto;
-}
-
-.globe-gallery--reduced .globe-gallery-pullquote {
-  position: static;
-  top: auto;
-  height: auto;
-  min-height: 0;
-  justify-content: flex-start;
-  padding: 10vh 24px 8vh;
-  opacity: 1;
-  transform: none;
-  transition: none;
 }
 
 /* ── Reduced-motion: interaction micro-animations ────────────────────────────

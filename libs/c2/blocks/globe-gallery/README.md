@@ -19,7 +19,7 @@ Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored ph
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
-fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
+WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
 Behavior notes), and a single focusable a11y **globe widget** (see Accessibility
 below) that exposes the sphere as one keyboard/screen-reader gallery rather than a
@@ -30,7 +30,7 @@ per-card list.
 | File | What it is |
 | --- | --- |
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the nav-nudge spring, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
-| `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the block rows positionally (arc-copy, cards, hint text, pull-quote), fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
+| `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy })` (+ internal parsers, `APP_CATALOG`). Reads the block rows positionally (arc-copy, cards, hint text), fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy slot. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `MODAL_FRAG`'s `uRadius` is set to 0 on mobile (square, full-bleed image). `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
 | `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect, hintText)` (named) — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
@@ -105,19 +105,35 @@ To regenerate Three.js after adding a new `THREE.*` call: add the symbol to
 
 ## Authoring contract
 
-The block expects up to **four direct child rows** (the hint and pull-quote rows
-are optional):
+The block expects up to **three direct child rows** (the hint row is optional):
 
 | Row | Purpose | Content |
 | --- | --- | --- |
 | 0 | **Arc-copy** | heading → `.offer-arc-copy__title`; `<p>` → `.offer-arc-copy__body` |
 | 1 | **Cards** | a Milo fragment link with `#_dnb` appended (see below) |
 | 2 | **Hint text** | plain text for the WebGL "Click & Drag" affordance (falls back to `Click & Drag` if empty/absent) |
-| 3 | **Pull-quote** | heading → quote; first `<p>` → name; second `<p>` → role |
 
 Rows are positional. `parseAuthoredContent(el)` returns
-`{ arcCopy, pullQuote, fragmentHref, hintText }`; cards are loaded separately from
+`{ arcCopy, fragmentHref, hintText }`; cards are loaded separately from
 the fragment link by `fetchFragmentCards`.
+
+### End-of-scroll quote (separate block)
+
+The quote that used to fade in at the end of the scroll is **no longer part of this
+block**. It's now the standalone C2 [`quote`](../quote/) block, authored in its own
+section **below** the globe-gallery section. To reproduce the old "quote emerges as
+the camera flies through the globe" effect, give that section a `section-metadata`
+block with:
+
+- `background`: `#131313` — matches the globe's own background (`--globe-gallery` `background`)
+  so the quote section reads seamlessly with the fly-through's ending frame.
+- `style`: `scroll-reveal` — opts the quote into the scroll-driven fade/scale reveal
+  (`opacity 0→1`, `scale 0.9→1`) as it rises to viewport centre. Without this flag the
+  quote block renders statically. See `libs/c2/blocks/quote/quote.css`.
+
+The globe fly-through completes on that background frame inside its own runway; the
+quote then scrolls up out of the same colour, so the transition is seamless without
+the two blocks being coupled in code.
 
 ### Fragment loading
 
@@ -188,7 +204,7 @@ custom-cursor label (`cursor.js`, via `deps.labelText`). Both fall back to
 `Click & Drag` when the row is empty/absent, and both are decorative — not exposed to
 assistive tech; the a11y widget instructions cover the real affordance.
 Authored text (arc-copy,
-pull-quote, card name/role/description) comes from the fragment + rows; everything
+card name/role/description) comes from the fragment + rows; everything
 else — the chrome aria-labels, the globe widget instructions, and the carousel
 announcement — resolves through Milo's placeholder dictionary via `replaceKeyArray`
 (`resolveGlobeLabels()` in `globe-gallery.js`, fetched once per init and threaded into
@@ -230,7 +246,7 @@ missing; on a correctly-authored page they never show. Specifically:
   `apps-used` keys above. **Setup action for localized pages:** add these keys to the
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
-- **Authored:** arc-copy, pull-quote, and card name/role/description come from the block
+- **Authored:** arc-copy and card name/role/description come from the block
   rows + fragment; the "Click & Drag" hint + cursor label come from **row 2** (the
   `Click & Drag` literal is just the empty-row fallback). Badge app labels come from the
   authored token (the `App`/`Ap` literal is only the empty-token fallback).
@@ -244,13 +260,13 @@ untranslated by design. There are no CSS `content:` text strings.
 ## Architecture notes
 
 **DOM is JS-built and scoped to the block root.** `init(el)` calls
-`parseAuthoredContent(el)` first (arc-copy, pull-quote, fragment href), then
-`buildGlobeDom(el, labels, { arcCopy, pullQuote })` wipes the block, injects the
-markup, fills the arc-copy / pull-quote slots, and **returns the `gid`** (the
+`parseAuthoredContent(el)` first (arc-copy, fragment href, hint text), then
+`buildGlobeDom(el, labels, { arcCopy })` wipes the block, injects the
+markup, fills the arc-copy slot, and **returns the `gid`** (the
 per-instance unique-id suffix it mints from a module-level counter in
 `authoring.js`). The runtime finds nodes by **class, queried within
 `el`** (`root.querySelector('.offer-globe-canvas')`, `.modal-card-canvas`,
-`.offer-pullquote`, `.card-modal*`, `.ca-r-offset`/`.ca-b-offset`, …) →
+`.card-modal*`, `.ca-r-offset`/`.ca-b-offset`, …) →
 **multiple globes can coexist on a page**. The only id-bearing nodes are made
 unique per instance via that `gid` suffix (ids, not classes, because both are
 document-wide id references): the CA SVG filter (referenced from JS as
@@ -302,9 +318,8 @@ arc/grid/fold/zoom, `scrollVel` forced 0), auto-spin is disabled (drag + arrow-s
 work, arrow-spin steps yaw directly), and the modal open/close/nav snap with no fly/warp.
 
 Rather than a tall runway + fixed pinned canvas, `.globe-gallery--reduced` lays the block
-out as normal flow: the globe is a **static ~100vh section that scrolls away naturally**,
-then the **pull-quote follows below in normal flow** — no sticky, no pin, no scroll
-gating. The pieces:
+out as normal flow: the globe is a **static ~100vh section that scrolls away naturally** —
+no sticky, no pin, no scroll gating. The pieces:
 
 - **Canvas** — `initRuntime` sets `position:absolute` + `top:8vh` (instead of the default
   `fixed`), so it lives inside the now-`position:relative` `.globe-gallery-world`, scrolls
@@ -320,11 +335,6 @@ gating. The pieces:
 - **A11y widget** — `position:absolute` (was `fixed`) so it scrolls with the globe;
   re-centred on the sphere with `top:58vh` (canvas `top` + half the canvas) since the base
   `top:50%` would track the taller world. Focus still snaps to `blockDocTop`.
-- **Pull-quote** — the pin drops `position:absolute`/bottom-of-runway and the quote drops
-  `sticky`; both go `static`, the quote is forced `opacity:1` (no scroll-driven reveal),
-  and hugs the top of its box (`min-height:0`, `justify-content:flex-start`, modest
-  padding) so it sits close under the globe rather than a screen away. `updatePullQuote`
-  early-returns under RM (CSS owns it).
 - **Arc-copy** — `display:none` (no arc phase to introduce; a fixed pill would hang over
   the scrolling page).
 
@@ -385,7 +395,7 @@ scales on top. The modal/arc-copy treatment is the same — sm (dark frosted pan
 clamped copy) is the base; `@media (min-width:768px)` overrides to the desktop card.
 
 **Reduced motion**: renders a static interactive globe as plain document flow
-(`.globe-gallery--reduced` — globe section scrolls away, pull-quote follows) — see
+(`.globe-gallery--reduced` — globe section scrolls away) — see
 Accessibility. The no-cards / WebGL-unavailable case is the separate
 `.globe-gallery--empty` collapse.
 
@@ -503,8 +513,8 @@ Remaining (each an independent enhancement / fix — no ordering dependency):
    on-canvas glyph, or leave the text as-is — a design call, judge on a real device.
 2. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
    this — start/stop the ticker on intersect), instead of running every frame. Behavior
-   change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
-   exit aren't cut off). Now more worthwhile since reduced motion also
+   change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll
+   isn't cut off). Now more worthwhile since reduced motion also
    keeps the ticker running on a static globe.
 3. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run

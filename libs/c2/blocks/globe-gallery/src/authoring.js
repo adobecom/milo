@@ -39,10 +39,10 @@ function findApp(token) {
 //                         <p>Description text</p>
 //                         <ul><li>App<ul><li>Role</li></ul></li>…</ul>
 //                         <p><picture>…</picture></p>
-//   Row 2 — pull-quote (optional): heading → quote;
-//                       first <p> → name; second <p> → role
-// Returns { arcCopy, pullQuote, fragmentHref }. Cards are fetched from the fragment
+// Returns { arcCopy, fragmentHref, hintText }. Cards are fetched from the fragment
 // link separately (fetchFragmentCards); the block collapses if the fetch yields none.
+// The end-of-scroll quote is no longer authored here — it lives in a separate C2
+// `quote` block placed in its own black `scroll-reveal` section below the globe.
 
 function parseArcCopy(row) {
   const heading = row.querySelector('h1,h2,h3,h4,h5,h6');
@@ -53,16 +53,6 @@ function parseArcCopy(row) {
   return {
     title: heading ? heading.textContent : paras.shift() || '',
     body: paras.join(' '),
-  };
-}
-
-function parsePullQuote(row) {
-  const quoteEl = row.querySelector('blockquote') || row.querySelector('h1,h2,h3,h4,h5,h6');
-  const paras = [...row.querySelectorAll('p')].map((p) => p.textContent).filter(Boolean);
-  return {
-    quote: quoteEl ? quoteEl.textContent : paras.shift() || '',
-    name: paras[0] || '',
-    role: paras[1] || '',
   };
 }
 
@@ -157,18 +147,16 @@ export async function fetchFragmentCards(href) {
 }
 
 // The rows are positional (see AUTHORING CONTRACT): arc-copy is always row 0,
-// the card fragment link is row 1, an optional hint-text row is 2, and an
-// optional pull-quote is row 3. The
+// the card fragment link is row 1, and an optional hint-text row is 2. The
 // fragment href is read here (before buildGlobeDom wipes the DOM) — links are
 // authored with #_dnb (e.g. /fragments/…#_dnb) so Milo skips auto-resolution and
 // the raw <a href> survives to here; the hash is stripped before fetching.
 export function parseAuthoredContent(el) {
-  const [arcCopyRow, cardsRow, hintTextRow, pullQuoteRow] = [...el.children];
+  const [arcCopyRow, cardsRow, hintTextRow] = [...el.children];
   const fragmentLink = cardsRow?.querySelector('a[href]');
   const hintText = hintTextRow?.textContent.trim() || '';
   return {
     arcCopy: parseArcCopy(arcCopyRow),
-    pullQuote: pullQuoteRow ? parsePullQuote(pullQuoteRow) : null,
     fragmentHref: fragmentLink ? fragmentLink.href.replace(/#.*$/, '') : null,
     hintText,
   };
@@ -188,7 +176,7 @@ export function parseAuthoredContent(el) {
 // `gid` is minted here (this module owns both creating and embedding the ids)
 // and returned by buildGlobeDom so the runtime can build the same url(#…) ref.
 //
-// Fixed-position overlays (ca-svg, pull-quote, modal) can live inside the block:
+// Fixed-position overlays (ca-svg, modal) can live inside the block:
 // position:fixed escapes the relative/sticky ancestors here (no transform/filter
 // on the chain).
 const buildMarkup = (gid, labels) => `
@@ -214,16 +202,6 @@ const buildMarkup = (gid, labels) => `
     <h2 class="globe-gallery-arc-copy__title"></h2>
     <p class="globe-gallery-arc-copy__body"></p>
   </aside>
-
-  <div class="globe-gallery-pullquote-pin">
-    <div class="globe-gallery-pullquote">
-      <blockquote class="globe-gallery-pullquote__quote"></blockquote>
-      <div class="globe-gallery-pullquote__attribution">
-        <p class="globe-gallery-pullquote__name"></p>
-        <p class="globe-gallery-pullquote__role"></p>
-      </div>
-    </div>
-  </div>
 
   <div class="globe-gallery-modal" aria-hidden="true">
     <div class="globe-gallery-modal__backdrop"></div>
@@ -267,14 +245,11 @@ let globeInstanceSeq = 0;
 
 // Build the block's DOM and return the `gid` used for this instance's unique ids
 // so the runtime can reference the CA filter via `url(#ca-filter-<gid>)`.
-export function buildGlobeDom(el, labels, { arcCopy, pullQuote }) {
+export function buildGlobeDom(el, labels, { arcCopy }) {
   globeInstanceSeq += 1;
   const gid = globeInstanceSeq;
   el.innerHTML = buildMarkup(gid, labels);
   el.querySelector('.globe-gallery-arc-copy__title').textContent = arcCopy.title;
   el.querySelector('.globe-gallery-arc-copy__body').textContent = arcCopy.body;
-  el.querySelector('.globe-gallery-pullquote__quote').textContent = pullQuote.quote;
-  el.querySelector('.globe-gallery-pullquote__name').textContent = pullQuote.name;
-  el.querySelector('.globe-gallery-pullquote__role').textContent = pullQuote.role;
   return gid;
 }
