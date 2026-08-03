@@ -5,6 +5,15 @@
   --bc-susi-standard-padding: 24px;
 }
 
+/* POC: the Jarvis client's own floating CTA re-shows itself (uiPolicy.showButtonAfterClose)
+   after the close/feedback flow finishes, racing past client.hideCTA(). Milo's block
+   (marquee input, cards, floating button) is meant to be the only entry point, so force it
+   hidden here instead of relying on JS timing. */
+/* stylelint-disable-next-line selector-id-pattern -- fixed ID from the Jarvis client SDK */
+#adbmsgCta {
+  display: none !important;
+}
+
 .brand-concierge {
   --bc-header-font-size: 36px;
   --bc-header-line-height: 45px;
