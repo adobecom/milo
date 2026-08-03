@@ -42,6 +42,17 @@ export default function createInteraction({
   let pointerDownY = 0;
   let pointerDownT = 0;
 
+  function ownsDrag(e) {
+    return drag.isDragging && canvasEl != null && canvasEl.hasPointerCapture(e.pointerId);
+  }
+
+  function cancelDrag() {
+    if (!drag.isDragging) return;
+    drag.isDragging = false;
+    drag.velX = 0;
+    drag.velY = 0;
+  }
+
   // Raycast the cards under the pointer; returns THREE intersections (nearest
   // first). Empty when renderer/camera aren't ready or nothing is hit.
   function pickCards(e) {
@@ -59,7 +70,9 @@ export default function createInteraction({
   }
 
   function onPointerDown(e) {
-    if (getModalIdx() >= 0) return; // modal open — don't drag the globe
+    if (e.button !== 0 || !e.isPrimary) return;
+    if (getModalIdx() >= 0) return;
+    canvasEl.setPointerCapture(e.pointerId);
     drag.isDragging = true;
     lastMX = e.clientX; lastMY = e.clientY;
     drag.velX = 0; drag.velY = 0;
@@ -69,7 +82,7 @@ export default function createInteraction({
   }
 
   function onPointerMove(e) {
-    if (!drag.isDragging) return;
+    if (!ownsDrag(e)) return;
     drag.velX = Math.max(-maxVel, Math.min(maxVel, (e.clientX - lastMX) * DRAG_SENSITIVITY));
     // +Y cursor delta (drag down) → +sphereRotX → +X-axis rotation tips the front
     // surface downward, so the globe follows the cursor (drag down reveals the top).
@@ -77,7 +90,6 @@ export default function createInteraction({
     lastMX = e.clientX; lastMY = e.clientY;
   }
 
-  // Click → modal: open the modal for the front-most card under the pointer.
   function handleCardClick(e) {
     const hits = pickCards(e);
     if (hits.length === 0) return;
@@ -92,9 +104,8 @@ export default function createInteraction({
   }
 
   function onPointerUp(e) {
-    const wasDragging = drag.isDragging;
+    if (!ownsDrag(e)) return;
     drag.isDragging = false;
-    if (!wasDragging) return;
     const dx = Math.abs(e.clientX - pointerDownX);
     const dy = Math.abs(e.clientY - pointerDownY);
     const dt = Date.now() - pointerDownT;
@@ -137,25 +148,29 @@ export default function createInteraction({
   function setup(canvas) {
     canvasEl = canvas;
     canvas.addEventListener('pointerdown', onPointerDown);
+    canvas.addEventListener('pointermove', onPointerMove);
+    canvas.addEventListener('pointerup', onPointerUp);
+    canvas.addEventListener('pointercancel', onPointerUp);
+    canvas.addEventListener('lostpointercapture', cancelDrag);
+    canvas.addEventListener('contextmenu', cancelDrag);
     canvas.addEventListener('mousemove', onHover);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    // pointercancel fires when the browser hijacks the gesture (common in Chrome
-    // DevTools touch emulation with touch-action restrictions). Treat it as
-    // pointerup so taps still register — the thresholds in onPointerUp filter drags.
-    window.addEventListener('pointercancel', onPointerUp);
   }
 
   function teardown() {
     if (canvasEl) {
       canvasEl.removeEventListener('pointerdown', onPointerDown);
+      canvasEl.removeEventListener('pointermove', onPointerMove);
+      canvasEl.removeEventListener('pointerup', onPointerUp);
+      canvasEl.removeEventListener('pointercancel', onPointerUp);
+      canvasEl.removeEventListener('lostpointercapture', cancelDrag);
+      canvasEl.removeEventListener('contextmenu', cancelDrag);
       canvasEl.removeEventListener('mousemove', onHover);
       canvasEl.style.cursor = '';
       canvasEl = null;
     }
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    window.removeEventListener('pointercancel', onPointerUp);
+    drag.isDragging = false;
+    drag.velX = 0;
+    drag.velY = 0;
   }
 
   return { setup, teardown };

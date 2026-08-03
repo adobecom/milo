@@ -1793,7 +1793,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     window.removeEventListener('blur', armFocusGuard);
     window.removeEventListener('focus', disarmFocusGuard);
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    // Pointer interaction cleanup (removes canvas + window listeners, clears cursor).
+    // Pointer interaction cleanup (removes canvas listeners, clears cursor + drag state).
     interaction.teardown();
     // Custom cursor cleanup (removes its body-level DOM + mousemove listener). Runs while
     // renderer still exists so getCanvas() resolves to clear the canvas cursor + listeners.
