@@ -150,7 +150,7 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
   const categoryWrapper = createTag('div', { class: 'rcc-category-wrapper' });
   const categoryLabel = createTag('span', { class: 'rcc-category' });
   categoryLabel.textContent = apps[0].category;
-  const divider = createTag('div', { class: 'rcc-divider', role: 'separator', 'aria-hidden': 'true' });
+  const divider = createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' });
   categoryWrapper.append(categoryLabel, divider);
 
   const listWrapper = createTag('div', { class: 'rcc-list-wrapper' });
