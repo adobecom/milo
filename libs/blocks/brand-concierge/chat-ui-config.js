@@ -318,7 +318,7 @@ export default {
     '--chat-history-bottom-padding': '0',
     '--chat-history-padding': '24px',
     '--chat-history-padding-top-expanded': '0',
-    '--chat-history-padding-mobile': '48px',
+    '--chat-history-padding-mobile': '34px',
     '--chat-history-padding-tablet': '32px',
     '--color-button-secondary-hover-text': '#FFFFFF',
     '--color-button-submit': '#292929',
