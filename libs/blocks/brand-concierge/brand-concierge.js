@@ -362,9 +362,12 @@ async function openChatModal(initialMessage, el) {
   };
   const analyticsCallback = (event) => bcAnalytics(event);
   // No Milo modal to close, so replicate the old close-triggered floating-button reset here.
+  // Also re-hide the client's own CTA: uiPolicy.showButtonAfterClose brings it back otherwise,
+  // and Milo's block (marquee input, cards, floating button) is meant to be the only entry point.
   const chatStateCallback = ({ chatState }) => {
-    if (chatState === 'close' && floatingButtonClicked) {
-      resetFloatingButton(el);
+    if (chatState === 'close') {
+      client.hideCTA();
+      if (floatingButtonClicked) resetFloatingButton(el);
     }
   };
 
@@ -402,6 +405,10 @@ async function openChatModal(initialMessage, el) {
   // initialize() doesn't return a promise; openMessagingWindow() is a no-op if called
   // before the client reports ready, so gate it on the client's own ready callback.
   client.registerForOnReadyCallback(() => {
+    // uiPolicy.showCTA auto-shows the client's own floating button after init regardless
+    // of anything we do here - Milo's block (marquee input, cards, floating button) is
+    // meant to be the only entry point, so hide it every time the client becomes ready.
+    client.hideCTA();
     client.openMessagingWindow({
       componentid: 'brand-concierge',
       componentver: '1.0',
