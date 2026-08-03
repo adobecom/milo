@@ -39,15 +39,14 @@ function getStandaloneNavOrigin(env) {
  * Load locale map from the federal project (same source as adobe.com consumers).
  * Dynamic import avoids bundling federal URLs.
  */
-async function loadFederalLocales(env) {
-  const origin = getStandaloneNavOrigin(env);
+async function loadFederalLocales(origin) {
   const url = `${origin}/federal/utils/locales.js`;
   const mod = await import(/* webpackIgnore: true */ /* @vite-ignore */ url);
   return mod.default;
 }
 
-async function resolveLocales(env, localesOverride) {
-  return localesOverride ?? loadFederalLocales(env);
+async function resolveLocales(origin, localesOverride) {
+  return localesOverride ?? loadFederalLocales(origin);
 }
 
 const getStageDomainsMap = (stageDomainsMap, env) => {
@@ -114,6 +113,7 @@ export default async function loadBlock(configs, customLib) {
     stageDomainsMap = {},
     allowedOrigins = [],
     promoSource = '',
+    origin: originOverride,
   } = configs || {};
   if (!header && !footer) {
     // eslint-disable-next-line no-console
@@ -145,16 +145,34 @@ export default async function loadBlock(configs, customLib) {
     loadStyle(`${miloLibs}/libs/navigation/navigation.css`);
   }
 
-  const origin = getStandaloneNavOrigin(env);
-  const [
-    { default: bootstrapBlock },
-    locales,
-    { setConfig, getConfig, createTag },
-  ] = await Promise.all([
-    import('./bootstrapper.js'),
-    resolveLocales(env, configs?.locales),
-    import('../utils/utils.js'),
-  ]);
+  const origin = originOverride || getStandaloneNavOrigin(env);
+  let bootstrapBlock;
+  let locales;
+  let setConfig;
+  let getConfig;
+  let createTag;
+  try {
+    ([
+      { default: bootstrapBlock },
+      locales,
+      { setConfig, getConfig, createTag },
+    ] = await Promise.all([
+      import('./bootstrapper.js'),
+      resolveLocales(origin, configs?.locales),
+      import('../utils/utils.js'),
+    ]));
+  } catch (e) {
+    // A stale cached response (e.g. mismatched CORS ACAO header from another
+    // standalone gnav consumer origin) must not break the host page.
+    header?.onError?.(e);
+    footer?.onError?.(e);
+    window.lana?.log(`${e.message} | standalone-gnav failed to load core scripts | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    });
+    return;
+  }
   const paramConfigs = getParamsConfigs(configs);
   const clientConfig = {
     theme,
@@ -172,7 +190,18 @@ export default async function loadBlock(configs, customLib) {
     onFooterError: footer?.onError,
     ...paramConfigs,
   };
-  setConfig({ ...getConfig(), ...clientConfig });
+  try {
+    setConfig({ ...getConfig(), ...clientConfig });
+  } catch (e) {
+    header?.onError?.(e);
+    footer?.onError?.(e);
+    window.lana?.log(`${e.message} | standalone-gnav failed to set config | href: ${window.location.href}`, {
+      clientId: 'feds-milo',
+      tags: 'standalone-gnav',
+      severity: 'error',
+    });
+    return;
+  }
   for await (const block of blockConfig) {
     const configBlock = configs[block.key];
 
@@ -214,7 +243,7 @@ export default async function loadBlock(configs, customLib) {
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);
-          window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
+          window.lana?.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
             tags: 'standalone-gnav',
             severity: 'error',
@@ -239,7 +268,7 @@ export default async function loadBlock(configs, customLib) {
           await bootstrapBlock(init, footerConfigs);
         } catch (e) {
           configBlock.onError?.(e);
-          window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
+          window.lana?.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
             tags: 'standalone-footer',
             severity: 'error',
