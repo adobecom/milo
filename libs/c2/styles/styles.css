@@ -878,8 +878,9 @@ p {
     color 300ms var(--parallax-easing);
 
   &:focus-visible {
-    outline: var(--s2a-border-width-2) solid var(--s2a-color-focus-ring-default);
+    outline: var(--s2a-border-width-2) solid var(--s2a-color-border-knockout);
     outline-offset: var(--s2a-border-width-2);
+    box-shadow: 0 0 0 var(--s2a-border-width-2) var(--s2a-color-border-inverse);
   }
 
   &:is(:disabled, [aria-disabled="true"], .disabled) {

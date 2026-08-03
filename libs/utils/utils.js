@@ -2020,7 +2020,7 @@ export async function loadIms() {
     const lingoRegion = lingoActive() ? await getLingoRegion({ useGeoLocation: true }) : null;
     return new Promise((resolve, reject) => {
       const {
-        locale, imsClientId, imsScope, env, base, adobeid, imsTimeout,
+        locale, imsClientId, imsScope, imsAdditionalScopes, env, base, adobeid, imsTimeout,
       } = getConfig();
       if (!imsClientId) {
         reject(new Error('Missing IMS Client ID'));
@@ -2031,7 +2031,7 @@ export async function loadIms() {
       const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
       window.adobeid = {
         client_id: imsClientId,
-        scope: imsScope || defaultScope,
+        scope: imsScope || (imsAdditionalScopes?.length ? `${defaultScope},${imsAdditionalScopes.join(',')}` : defaultScope),
         locale: (lingoRegion?.ietf || locale?.ietf)?.replace('-', '_') || 'en_US',
         redirect_uri: ahomeMeta === 'on'
           ? (() => {
@@ -2689,23 +2689,41 @@ export function partition(arr, fn) {
   );
 }
 
+const MASLIBS_PATTERN = /^([a-z0-9]+(-[a-z0-9]+)*)(--([a-z0-9]+(-[a-z0-9]+)*)){0,2}$/;
+const MASLIBS_MAX_LENGTH = 100;
+
+/**
+ * Validates the maslibs URL parameter and returns the MAS base URL.
+ * Only branch, branch--repo and branch--repo--owner shapes are allowed, so
+ * the resulting host always stays under aem.live (VULN-36379).
+ * @param {string} masLibs raw maslibs parameter value
+ * @returns {string|null} base URL, or null if the value is missing or invalid
+ */
+export function getValidatedMasLibsUrl(masLibs) {
+  if (!masLibs || masLibs.trim() === '') return null;
+  const value = masLibs.trim().toLowerCase();
+  if (value === 'local') return 'http://localhost:3000';
+  if (value === 'main') return 'https://main--mas--adobecom.aem.live';
+  if (value.length > MASLIBS_MAX_LENGTH || !MASLIBS_PATTERN.test(value)) return null;
+  const branch = value.includes('--') ? value : `${value}--mas--adobecom`;
+  let url;
+  try {
+    url = new URL(`https://${branch}.aem.live`);
+  } catch {
+    // stricter URL parsers (e.g. Node) reject invalid punycode labels
+    return null;
+  }
+  if (!url.hostname.endsWith('.aem.live')) return null;
+  return url.origin;
+}
+
 function getMasDepUrl(component) {
   const { hostname } = window.location;
   if (hostname === 'www.adobe.com') return `https://www.adobe.com/mas/libs/${component}`;
 
-  const masLibs = new URLSearchParams(window.location.search).get('maslibs')?.trim().toLowerCase();
-  if (masLibs) {
-    let baseUrl;
-    if (masLibs === 'local') baseUrl = 'http://localhost:3000';
-    else if (masLibs === 'main') baseUrl = 'https://main--mas--adobecom.aem.live';
-    else {
-      const branch = masLibs.includes('--') ? masLibs : `${masLibs}--mas--adobecom`;
-      baseUrl = `https://${branch}.aem.live`;
-    }
-    return `${baseUrl}/web-components/dist/${component}`;
-  }
-
-  return `https://main--mas--adobecom.aem.live/web-components/dist/${component}`;
+  const masLibs = new URLSearchParams(window.location.search).get('maslibs');
+  const baseUrl = getValidatedMasLibsUrl(masLibs) ?? 'https://main--mas--adobecom.aem.live';
+  return `${baseUrl}/web-components/dist/${component}`;
 }
 
 const STATIC_BLOCK_DEPS = {
