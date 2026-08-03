@@ -125,6 +125,10 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
     const btn = createTag('button', { class: 'rcc-rm-item', type: 'button' });
     btn.textContent = app.name;
     li.append(btn);
+    if (!group) {
+      group = createTag('ul', { class: 'rcc-rm-group' });
+      list.append(group);
+    }
     group.append(li);
   });
   content.append(list);
