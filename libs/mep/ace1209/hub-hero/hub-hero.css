@@ -335,7 +335,7 @@
     span {
       border-radius: var(--s2a-border-radius-4);
       border: var(--s2a-border-width-sm) solid var(--s2a-color-transparent-black-08);
-      background-color: var(--s2a-color-background-inverse);
+      background: var(--s2a-color-transparent-black-04);
       transition: all .3s ease-in-out;
 
       svg {
@@ -408,6 +408,7 @@
 }
 
 .hub-hero.slides-3 {
+  --slides: 3;
   --elastic-mobile-first-slide-offset: -140px;
   --hub-hero-carousel-item-hover-grow-index: 1.7;
   --carousel-items-top: calc(50vh - var(--hub-hero-carousel-container-height-desktop) / 2 + (var(--feds-height-nav, 64px) + var(--feds-localnav-height, 40px)) / 2 + 20px);
@@ -567,8 +568,8 @@
   }
 
   .hub-hero-carousel-header {
-    position: sticky;
     --carousel-header-top: calc(var(--carousel-items-top) - var(--slide-header-h) - var(--s2a-spacing-4xl) - var(--s2a-spacing-md));
+    position: sticky;
     top: var(--carousel-header-top);
     height: 0;
     overflow: visible;

@@ -351,7 +351,6 @@ export default async function init(el) {
   const heroHeader = el.querySelector('div:first-child');
   const classes = [...el.classList];
   const isThreeSlides = classes.includes('slides-3');
-  if (isThreeSlides) el.style.setProperty('--slides', '3');
 
   decorateBlockText(heroHeader, {
     heading: findSize(classes, 'heading-') ?? '1',
