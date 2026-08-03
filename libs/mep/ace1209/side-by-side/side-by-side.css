@@ -51,7 +51,6 @@
 
     overflow: hidden;
     aspect-ratio: 33/37;
-    border: var(--s2a-border-width-md) solid var(--s2a-color-transparent-white-12);
     display: flex;
     align-items: flex-end;
 
