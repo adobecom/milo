@@ -361,7 +361,7 @@
       z-index: auto;
       aspect-ratio: auto;
       flex: 0 0 650px;
-      align-self: flex-start;
+      align-self: flex-end;
       height: clamp(450px, 100dvh - var(--s2a-layout-xl) - var(--s2a-spacing-lg), 766px);
       border-radius: var(--s2a-border-radius-md);
       overflow: hidden;
