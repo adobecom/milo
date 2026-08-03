@@ -336,8 +336,8 @@
     }
 
     .rcc-media-icon {
-      top: var(--s2a-spacing-lg);
-      inset-inline-start: var(--s2a-spacing-lg);
+      top: var(--s2a-spacing-xl);
+      inset-inline-start: var(--s2a-spacing-xl);
       width: 32px;
       height: 32px;
     }
