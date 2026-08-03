@@ -121,10 +121,8 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
       group = createTag('ul', { class: 'rcc-rm-group', 'aria-label': currentCategory });
       list.append(group);
     }
-    const li = createTag('li');
-    const btn = createTag('button', { class: 'rcc-rm-item', type: 'button' });
-    btn.textContent = app.name;
-    li.append(btn);
+    const li = createTag('li', { class: 'rcc-rm-item' });
+    li.textContent = app.name;
     if (!group) {
       group = createTag('ul', { class: 'rcc-rm-group' });
       list.append(group);
