@@ -430,21 +430,21 @@ function setupLayoutDragAndDrop(layout, uploadsWrapper) {
 // milo's decorateAnchorVideo. It produces the `.video-container.video-holder` the block
 // already treats as media (so the video lands in the media column, not the dropzone), adds
 // a pause/play control, and lazy-appends the <source> on intersection — so a desktop-only
-// clip never downloads on the hidden mobile/tablet cells.
+// clip never downloads on the hidden mobile/tablet cells. The poster is authored as the
+// image's alt-text pipe-syntax (`<video-url>|<alt text>`, i.e. the Title field in Google
+// Docs' Alt-text dialog); milo's decorateImageLinks() already converts that into this anchor
+// with a `data-video-poster` attribute before this block's init() runs, so decorateAnchorVideo
+// picks up the poster natively — no manual picture/poster DOM surgery needed here.
 function decorateUploadVideos(uploadRow, decorateAnchorVideo) {
   [...uploadRow.children].forEach((cell) => {
     const videoLink = cell.querySelector('a[href*=".mp4"]');
     if (!videoLink) return;
-    const posterImg = cell.querySelector('picture img');
-    const posterSrc = posterImg?.getAttribute('src') || '';
     if (!videoLink.hash) videoLink.hash = '#autoplay';
     const src = videoLink.href.split('#')[0];
-    posterImg?.closest('picture')?.remove();
     // Move the link out of its <p> before decorating: decorateAnchorVideo swaps it for a
     // block-level <video> wrapper, which browsers fracture/misplace if left inside a <p>.
     cell.insertBefore(videoLink, cell.firstElementChild);
     decorateAnchorVideo({ src, anchorTag: videoLink });
-    if (posterSrc) cell.querySelector('video')?.setAttribute('poster', posterSrc);
   });
 }
 
@@ -522,8 +522,10 @@ export default async function init(el) {
     backgroundRow.classList.add('background');
     decorateBlockBg(el, backgroundRow, { useHandleFocalpoint: true });
   }
-  decorateContentRow(contentRow);
+  // Video must exist before decorateContentRow (setUploadRowMediaPriority) resizes its
+  // poster and sets preload — otherwise column.querySelector('video') finds nothing.
   decorateUploadVideos(contentRow, decorateAnchorVideo);
+  decorateContentRow(contentRow);
   const layoutParts = buildLayout();
   const marqueeCell = marqueeRow?.querySelector(':scope > div');
   const marqueeContent = marqueeCell ? buildMarqueeContent(marqueeCell) : null;
