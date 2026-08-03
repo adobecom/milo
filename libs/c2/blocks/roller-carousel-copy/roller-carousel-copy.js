@@ -306,9 +306,15 @@ function initScroll(block, refs, apps) {
     evaluateReflow();
     window.requestAnimationFrame(updatePosition);
   }, { passive: true });
+  let ticking = false;
   window.addEventListener('scroll', () => {
-    updatePosition();
-    evaluateReflow();
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      updatePosition();
+      evaluateReflow();
+      ticking = false;
+    });
   }, { passive: true });
 }
 
