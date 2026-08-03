@@ -80,24 +80,11 @@
   }
 
   .rcc-eyebrow {
-    font-family: var(--body-font-family);
-    font-size: var(--s2a-typography-font-size-eyebrow);
-    line-height: var(--s2a-typography-line-height-eyebrow);
-    font-weight: var(--s2a-font-weight-eyebrow);
-    letter-spacing: var(--s2a-typography-letter-spacing-eyebrow);
     color: var(--s2a-color-content-knockout);
-    margin: 0;
-    padding: 0;
   }
 
   .rcc-heading {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-2);
-    line-height: var(--s2a-typography-line-height-heading-2);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
     color: var(--s2a-color-content-knockout);
-    margin: 0;
-    padding: 0;
   }
 
   .rcc-carousel {
@@ -116,14 +103,8 @@
   }
 
   .rcc-category {
-    font-family: var(--heading-font-family);
-    font-size: var(--s2a-typography-font-size-heading-6);
-    line-height: var(--s2a-typography-line-height-heading-6);
-    font-weight: var(--s2a-font-weight-heading);
-    letter-spacing: var(--s2a-typography-letter-spacing-heading-6);
     color: var(--s2a-color-content-knockout);
     white-space: nowrap;
-    margin: 0;
   }
 
   .rcc-divider {

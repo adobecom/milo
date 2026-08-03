@@ -66,11 +66,11 @@ function buildMedia(apps) {
 function buildHeader(eyebrowEl, headingEl) {
   const header = createTag('div', { class: 'rcc-header' });
   if (eyebrowEl) {
-    eyebrowEl.classList.add('rcc-eyebrow');
+    eyebrowEl.classList.add('rcc-eyebrow', 'eyebrow');
     header.append(eyebrowEl);
   }
   if (headingEl) {
-    headingEl.classList.add('rcc-heading');
+    headingEl.classList.add('rcc-heading', 'heading-2');
     header.append(headingEl);
   }
   return header;
@@ -114,7 +114,7 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
     if (app.category && app.category !== currentCategory) {
       currentCategory = app.category;
       const catWrap = createTag('div', { class: 'rcc-category-wrapper rcc-rm-category' });
-      const catLabel = createTag('h3', { class: 'rcc-category' });
+      const catLabel = createTag('h3', { class: 'rcc-category heading-6' });
       catLabel.textContent = currentCategory;
       catWrap.append(catLabel, createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' }));
       list.append(catWrap);
@@ -146,7 +146,7 @@ function buildRoller(block, eyebrowEl, headingEl, apps) {
 
   const carousel = createTag('div', { class: 'rcc-carousel' });
   const categoryWrapper = createTag('div', { class: 'rcc-category-wrapper' });
-  const categoryLabel = createTag('span', { class: 'rcc-category' });
+  const categoryLabel = createTag('span', { class: 'rcc-category heading-6' });
   categoryLabel.textContent = apps[0].category;
   const divider = createTag('div', { class: 'rcc-divider', 'aria-hidden': 'true' });
   categoryWrapper.append(categoryLabel, divider);
