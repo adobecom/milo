@@ -153,14 +153,15 @@
     font-size: var(--s2a-typography-font-size-heading-2);
     line-height: var(--s2a-typography-line-height-heading-2);
     letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
-    color: var(--s2a-color-transparent-white-12);
-    transition: color 0.3s ease;
+    color: var(--s2a-color-content-knockout);
+    opacity: 0.12;
+    transition: opacity 0.3s ease;
     cursor: default;
     user-select: none;
     white-space: nowrap;
 
     &.is-active {
-      color: var(--s2a-color-content-knockout);
+      opacity: 1;
     }
   }
 
