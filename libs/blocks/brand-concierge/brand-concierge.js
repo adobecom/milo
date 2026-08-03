@@ -31,6 +31,7 @@ const params = new URL(document.location).searchParams;
 
 let floatingButtonClicked = false;
 let bcToken;
+let jarvisInitialized = false;
 
 const getTargetHeight = (target) => {
   const { marginBottom } = window.getComputedStyle(target);
@@ -371,23 +372,32 @@ async function openChatModal(initialMessage, el) {
     bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
   }
 
-  client.initialize({
-    appid: JARVIS_APPID,
-    appver: '1.0',
-    appType: 'web',
-    env: isStage ? 'stage' : 'prod',
-    language: lang,
-    region,
-    clientId: config?.imsClientId,
-    accessToken: bcToken ? `Bearer ${bcToken}` : '',
-    cookiesEnabled: true,
-    theme: 'light',
-    loadedVia: 'milo-brand-concierge',
-    context: { userData: { userid: '', accountType: 'FREE' } },
-    mountEl: `#${mountId}`,
-    chatUiUrl: ASSISTANT_UI_URL,
-    callbacks: { signInProvider, getContextCallback, analyticsCallback, chatStateCallback },
-  });
+  // Calling initialize() again after a conversation has already been through one full
+  // open/close cycle isn't a no-op: the SDK rejects it ("Messaging client already
+  // initialized, returning error") but still proceeds to request a new session, which
+  // then fails auth with a 401 and shows "Service Unavailable" in the chat UI. Confirmed
+  // via live testing (close via X, reopen via any entry point). Only initialize once;
+  // subsequent opens just need the ready-callback + openMessagingWindow below.
+  if (!jarvisInitialized) {
+    jarvisInitialized = true;
+    client.initialize({
+      appid: JARVIS_APPID,
+      appver: '1.0',
+      appType: 'web',
+      env: isStage ? 'stage' : 'prod',
+      language: lang,
+      region,
+      clientId: config?.imsClientId,
+      accessToken: bcToken ? `Bearer ${bcToken}` : '',
+      cookiesEnabled: true,
+      theme: 'light',
+      loadedVia: 'milo-brand-concierge',
+      context: { userData: { userid: '', accountType: 'FREE' } },
+      mountEl: `#${mountId}`,
+      chatUiUrl: ASSISTANT_UI_URL,
+      callbacks: { signInProvider, getContextCallback, analyticsCallback, chatStateCallback },
+    });
+  }
 
   // initialize() doesn't return a promise; openMessagingWindow() is a no-op if called
   // before the client reports ready, so gate it on the client's own ready callback.
