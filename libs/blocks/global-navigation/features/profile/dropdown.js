@@ -37,6 +37,19 @@ const decorateProfileLink = (service, path = '') => {
 
 const decorateAction = (label, path) => toFragment`<li><a class="feds-profile-action" href="${decorateProfileLink('adminconsole', path)}">${label}</a></li>`;
 
+const clearSignOutCookies = () => {
+  const { host } = window.location;
+  if (host !== 'adobe.com' && !host.endsWith('.adobe.com')) return;
+  const labels = host.split('.');
+  // Domain-scoped account cookies set at the edge / by the unav that must not outlive sign-out.
+  ['ims_country_code', 'acomsis', 'acomsis_stage'].forEach((name) => {
+    const base = `${name}=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+    for (let i = 0; i < labels.length - 1; i += 1) {
+      document.cookie = `${base}domain=${labels.slice(i).join('.')};`;
+    }
+  });
+};
+
 class ProfileDropdown {
   constructor({
     rawElem,
@@ -163,6 +176,7 @@ class ProfileDropdown {
 
     signOutLink.addEventListener('click', (e) => {
       e.preventDefault();
+      clearSignOutCookies();
       window.dispatchEvent(new Event('feds:signOut'));
       window.adobeIMS.signOut({ redirect_uri: window.location.href });
     });
