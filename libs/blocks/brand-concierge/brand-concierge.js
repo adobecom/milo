@@ -28,8 +28,6 @@ const animationMs = 500;
 const authoredContent = {};
 const variants = {};
 const params = new URL(document.location).searchParams;
-const webClient = params.get('webclient');
-const webClientVersion = params.get('webclientversion');
 
 let floatingButtonClicked = false;
 let bcToken;
@@ -134,10 +132,6 @@ function floatingElement(targetEl, el, focusableEl = null) {
       scrollPending = false;
     });
   }, { passive: true });
-}
-
-function getBetaLabel() {
-  return createTag('span', { class: 'bc-beta-label' }, 'Beta');
 }
 
 function getAnalyticsLabel(step) {
@@ -311,31 +305,8 @@ async function openSusiLightModal() {
 }
 
 async function openChatModal(initialMessage, el) {
-  const innerModal = new DocumentFragment();
-  const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
-  const icon = createTag('span', { class: 'modal-header-icon' }, aiIcon('ai-icon-modal', 'modal-icon', chatLabelText, 16));
-  const header = createTag('div', { class: 'bc-modal-header' }, [icon, title, getBetaLabel()]);
-  const mountEl = createTag('div', { id: mountId });
-
-  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
-  innerModal.append(header, mountEl);
-  const modal = await getModal(null, {
-    id: 'brand-concierge-modal',
-    content: innerModal,
-    closeCallback: async () => {
-      const floatingButton = el.querySelector('.bc-floating-button');
-      if (floatingButton && floatingButtonClicked) {
-        resetFloatingButton(el);
-      }
-      modal.classList.add('closing');
-      await new Promise((resolve) => {
-        setTimeout(() => resolve(), animationMs);
-      });
-    },
-  });
-  modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-  document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
-
+  // POC: the Jarvis client renders its own sandboxed iframe/window, so this skips
+  // Milo's modal (getModal) entirely rather than mounting a same-DOM app inside it.
   const textareaWrapper = el.querySelector('.bc-textarea-grow-wrap');
   const textarea = el.querySelector('.bc-input-field textarea');
   const submitButton = el.querySelector('.input-field-button');
@@ -346,118 +317,72 @@ async function openChatModal(initialMessage, el) {
     updateReplicatedValue(textareaWrapper, textarea);
   }
 
-  const logWebClient = (text, src) => {
-    // eslint-disable-next-line no-console
-    console.log(text, src);
+  // POC: Jarvis/Assistant client swap-in (throwaway branch, not for main/assistant).
+  const config = getConfig();
+  const { env, locale } = config;
+  const isStage = env?.name !== 'prod';
+
+  const JARVIS_CLIENT_JS_URL = 'https://stage-client.messaging.adobe.com/latest/AdobeMessagingClient.js';
+  const JARVIS_APPID = 'helpx-default';
+  const ASSISTANT_UI_URL = 'https://stage-server.messaging.adobe.com';
+
+  await loadScript(JARVIS_CLIENT_JS_URL.replace(/\.js$/, '.css'));
+  await loadScript(JARVIS_CLIENT_JS_URL);
+
+  // 1.0 global; confirm with Jarvis/Leo team if the Leo/2.0 build uses a different name.
+  const clientReady = await waitForCondition(() => !!window.AdobeMessagingExperienceClient);
+  if (!clientReady) {
+    window.lana?.log('Jarvis client not available', { tags: 'brand-concierge', severity: 'critical' });
+    return;
+  }
+  const client = window.AdobeMessagingExperienceClient;
+
+  const lang = locale?.ietf?.split('-')[0] || 'en';
+  const region = locale?.region || 'US';
+
+  const getContextCallback = () => ({
+    accessToken: bcToken ? `Bearer ${bcToken}` : '',
+    language: lang,
+    region,
+  });
+  const signInProvider = async () => {
+    await openSusiLightModal();
+    return { accessToken: bcToken };
   };
-
-  const { env, locale } = getConfig();
-  const baseProd = 'https://experience.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const baseStage = 'https://experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const prod = 'https://experience.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  const stage = 'https://experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-  let src = stage;
-
-  if (env?.name === 'prod') {
-    src = prod;
-  }
-
-  if (webClient === 'prod') {
-    logWebClient('prod', prod);
-    src = prod;
-  } else if (webClient === 'stage') {
-    logWebClient('stage', stage);
-    src = stage;
-  } else if (webClient === 'baseProd') {
-    logWebClient('baseProd', baseProd);
-    src = baseProd;
-  } else if (webClient === 'baseStage') {
-    logWebClient('baseStage', baseStage);
-    src = baseStage;
-  }
-
-  if (webClientVersion) {
-    const prBase = 'https://cdn.experience-stage.adobe.net/solutions/adobe-brand-concierge-acom-brand-concierge-web-agent/static-assets/main.js';
-    const pr = `${prBase}?adobe-brand-concierge-acom-brand-concierge-web-agent_version=${encodeURIComponent(webClientVersion)}`;
-    src = pr;
-  }
-
-  loadScript(src);
-
-  const bootstrapAPIReady = await waitForCondition(() => !!window.adobe?.concierge?.bootstrap);
-  const surfaceURL = window.location.href;
-  const { userAgent, language } = window.navigator;
-
-  const onBeforeEventSend = (content) => {
-    const MEETING_EVENT_TYPES = [
-      'form-fetch',
-      'form-submit',
-      'calendar-fetch',
-      'calendar-submit',
-      'conversation-command',
-    ];
-
-    if (MEETING_EVENT_TYPES.includes(content.data?.type)) {
-      return;
-    }
-
-    if (!bcToken) {
-      bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
-    }
-
-    if (bcToken) {
-      content.data = {
-        type: 'auth',
-        payload: { token: bcToken },
-      };
-    }
-
-    // eslint-disable-next-line no-underscore-dangle
-    const consentsConfig = window.alloy_all?.data?._adobe_corpnew?.otherConsents?.configuration;
-    const consentConfObject = consentsConfig
-      && Object.keys(consentsConfig).reduce((rdx, key) => {
-        rdx.push({
-          consentStandard: key,
-          consentStringValue: consentsConfig[key].toString(),
-          consentStandardVersion: '2.0',
-          gdprApplies: true,
-          containsPersonalData: true,
-        });
-        return rdx;
-      }, []);
-
-    content.xdm = {
-      web: { webPageDetails: { URL: surfaceURL } },
-      environment: {
-        browserDetails: { userAgent },
-        _dc: { language },
-      },
-      homeAddress: { region: locale.region },
-    };
-
-    if (consentConfObject?.length) {
-      content.xdm.consentStrings = consentConfObject;
+  const analyticsCallback = (event) => bcAnalytics(event);
+  // No Milo modal to close, so replicate the old close-triggered floating-button reset here.
+  const chatStateCallback = ({ chatState }) => {
+    if (chatState === 'close' && floatingButtonClicked) {
+      resetFloatingButton(el);
     }
   };
 
-  if (bootstrapAPIReady) {
-    window.adobe.concierge.bootstrap({
-      instanceName: 'alloy',
-      stylingConfigurations: getUpdatedChatUIConfig(),
-      selector: `#${mountId}`,
-      onBeforeEventSend,
-      onEvent: (event) => {
-        bcAnalytics(event);
-      },
-    });
-  } else {
-    window.lana?.log('Brand Concierge: bootstrap API not available', { tags: 'brand-concierge', severity: 'critical' });
+  if (!bcToken) {
+    bcToken = window.adobeIMS?.isSignedInUser() ? window.adobeIMS?.getAccessToken()?.token : null;
   }
 
-  mountEl.addEventListener('bc:cta-action', ({ detail }) => {
-    if (detail?.action === 'sign-in') {
-      openSusiLightModal();
-    }
+  client.initialize({
+    appid: JARVIS_APPID,
+    appver: '1.0',
+    appType: 'web',
+    env: isStage ? 'stage' : 'prod',
+    language: lang,
+    region,
+    clientId: config?.imsClientId,
+    accessToken: bcToken ? `Bearer ${bcToken}` : '',
+    cookiesEnabled: true,
+    theme: 'light',
+    loadedVia: 'milo-brand-concierge',
+    context: { userData: { userid: '', accountType: 'FREE' } },
+    chatUiUrl: ASSISTANT_UI_URL,
+    callbacks: { signInProvider, getContextCallback, analyticsCallback, chatStateCallback },
+  });
+
+  client.openMessagingWindow({
+    componentid: 'brand-concierge',
+    componentver: '1.0',
+    sourceType: 'button',
+    sourceText: initialMessage || chatLabelText,
   });
 }
 
