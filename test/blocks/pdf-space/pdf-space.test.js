@@ -302,6 +302,52 @@ describe('buildNoMotion DOM structure', () => {
   });
 });
 
+// ── RTL ───────────────────────────────────────────────────────────────────────
+
+describe('buildNoMotion in RTL', () => {
+  let el;
+  let matchMediaStub;
+
+  before(() => {
+    const realMatchMedia = window.matchMedia.bind(window);
+    matchMediaStub = sinon.stub(window, 'matchMedia').callsFake((query) => {
+      if (query.includes('prefers-reduced-motion')) return mockReducedMotionMQ(true);
+      return realMatchMedia(query);
+    });
+    document.documentElement.setAttribute('dir', 'rtl');
+    el = freshEl();
+    init(el);
+  });
+
+  after(() => {
+    matchMediaStub.restore();
+    document.documentElement.removeAttribute('dir');
+  });
+
+  it('mirrors desktop slot columns so authored col 0→3 target slots 3→0', () => {
+    const lefts = [...el.querySelectorAll('.acrobat-desktop-mockup .no-motion-slotted-card')]
+      .slice(0, 4)
+      .map((slot) => parseFloat(slot.style.left));
+    const expected = [3, 2, 1, 0].map((col) => {
+      const cx = ACROBAT_DESKTOP_SLOT_CENTER_X_BY_COLUMN[col];
+      return ((cx - ACROBAT_DESKTOP_SLOT_WIDTH / 2) / ACROBAT_DESKTOP_MOCKUP_DESIGN_WIDTH) * 100;
+    });
+    lefts.forEach((left, i) => expect(left).to.be.closeTo(expected[i], 0.01));
+  });
+
+  it('mirrors mobile slot columns within the 2-column grid', () => {
+    // Cards 0 and 1 sit in mobile col 0 and 1, so their x positions swap. The
+    // grid is centered in the mockup, so the pair is symmetric about the center.
+    const lefts = [...el.querySelectorAll('.acrobat-mobile-mockup .no-motion-slotted-card')]
+      .map((slot) => parseFloat(slot.style.left));
+    const width = parseFloat(
+      el.querySelector('.acrobat-mobile-mockup .no-motion-slotted-card').style.width,
+    );
+    expect(lefts[0]).to.be.greaterThan(lefts[1]);
+    expect(lefts[0] + width).to.be.closeTo(100 - lefts[1], 0.01);
+  });
+});
+
 // ── Motion layout ─────────────────────────────────────────────────────────────
 
 describe('buildStage / motion DOM structure', () => {
