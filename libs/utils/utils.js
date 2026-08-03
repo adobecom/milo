@@ -2537,6 +2537,15 @@ function getMarketsByRegionPriority(markets, geoIp) {
   return marketsWithPriority.map(({ market }) => market);
 }
 
+function pickPreferredMarket(markets, prefLang, geoIp) {
+  const candidates = markets.filter((m) => m.lang === prefLang);
+  if (!candidates.length) return null;
+  // regionPriorities -> site whose market matches the user's geo -> first-by-order
+  return getMarketsByRegionPriority(candidates, geoIp)?.[0]
+    ?? candidates.find((m) => (m.defaultMarket || '').toLowerCase() === geoIp)
+    ?? candidates[0];
+}
+
 function reserveBannerSpace() {
   document.body.prepend(createTag('div', { class: 'language-banner', 'daa-lh': 'language-banner' }));
   const existingWrapper = document.querySelector('.feds-promo-aside-wrapper');
@@ -2597,10 +2606,8 @@ export async function decorateLanguageBanner() {
   // Supported Market Path
   if (isSupportedMarket) {
     if (!prefLang || pageLang === prefLang) return;
-    const prefMarket = languageEntries.find((market) => (
-      market.lang === prefLang
-      && market.supportedRegions.includes(geoIp)
-    ));
+    const geoMarkets = languageEntries.filter((market) => market.supportedRegions.includes(geoIp));
+    const prefMarket = pickPreferredMarket(geoMarkets, prefLang, geoIp);
     if (prefMarket) addAndShow(prefMarket);
     else return;
   } else {
@@ -2611,7 +2618,7 @@ export async function decorateLanguageBanner() {
     if (useBannerFlow) {
       let prefMarketForGeo;
       if (prefLang) {
-        prefMarketForGeo = marketsForGeo.find((market) => market.lang === prefLang);
+        prefMarketForGeo = pickPreferredMarket(marketsForGeo, prefLang, geoIp);
         if (prefMarketForGeo) addAndShow(prefMarketForGeo);
       }
       if (!prefMarketForGeo) {
