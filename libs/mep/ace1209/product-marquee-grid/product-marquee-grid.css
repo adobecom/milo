@@ -16,7 +16,7 @@
     flex-direction: column;
     justify-content: space-between;
 
-    .heading-5 {
+    .pm-subtext {
       max-width: 400px;
     }
   }
@@ -126,7 +126,7 @@
     }
 
     .pm-foreground {
-      .heading-5 {
+      .pm-subtext {
         max-width: min(467px, 80%);
       }
     }

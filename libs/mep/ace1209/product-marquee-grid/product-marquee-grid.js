@@ -3,6 +3,17 @@ import { decorateViewportContent, decorateButtons } from '../../../utils/decorat
 
 const CHEVRON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 12 12" fill="none"><path d="M6.58349 11.208L10.2837 7.50781C10.606 7.18554 10.606 6.66406 10.2837 6.34179C9.96142 6.01953 9.43994 6.01953 9.11767 6.34179L6.82568 8.63281V1.375C6.82568 0.918955 6.45654 0.549805 6.00048 0.549805C5.54442 0.549805 5.17528 0.918945 5.17528 1.375V8.63281L2.88329 6.34179C2.56102 6.01953 2.03954 6.01953 1.71727 6.34179C1.55614 6.50292 1.47508 6.71386 1.47508 6.9248C1.47508 7.13574 1.55613 7.34668 1.71727 7.50781L5.41747 11.208C5.73974 11.5303 6.26122 11.5303 6.58349 11.208Z" fill="#fff"/></svg>';
 
+const findSize = (classes, key) => classes.find((item) => item.startsWith(key))?.slice(key.length);
+
+function getSubtextStyle(block) {
+  const classes = [...block.classList];
+  const headingSize = findSize(classes, 'heading-');
+  if (headingSize) return `heading-${headingSize}`;
+  const bodySize = findSize(classes, 'body-');
+  if (bodySize) return `body-${bodySize}`;
+  return 'heading-5';
+}
+
 function parseColumn(col, isSoftOffer) {
   const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
@@ -14,10 +25,10 @@ function parseColumn(col, isSoftOffer) {
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('heading-super');
 
-  const allParas = [...col.querySelectorAll('p')].filter((el) => el.textContent.trim());
-  const labelEl = isSoftOffer && allParas.length >= 2 ? allParas.at(-1) : null;
-  const bodyEls = labelEl ? allParas.slice(0, -1) : allParas;
-  bodyEls.forEach((el) => el.classList.add('heading-5'));
+  const allTextEls = [...col.querySelectorAll('p, h1, h2, h3, h4, h5, h6')]
+    .filter((el) => el !== heading && el.textContent.trim());
+  const labelEl = isSoftOffer && allTextEls.length >= 2 ? allTextEls.at(-1) : null;
+  const bodyEls = labelEl ? allTextEls.slice(0, -1) : allTextEls;
 
   return {
     iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
@@ -61,6 +72,9 @@ function decorate(block) {
   const {
     iconEl, ctaLink, ctaLinkPara, heading, labelEl, bodyEls,
   } = parseColumn(col, !isPromoCta);
+
+  const subtextStyle = getSubtextStyle(block);
+  bodyEls.forEach((el) => el.classList.add('pm-subtext', subtextStyle));
 
   const foreground = createTag('div', { class: 'pm-foreground' });
   foreground.append(buildChicletRow(iconEl, heading), ...bodyEls);
