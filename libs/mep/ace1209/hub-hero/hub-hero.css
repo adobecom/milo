@@ -510,25 +510,29 @@
       z-index: 10;
     }
 
-    .hub-hero-carousel-item:nth-child(1) {
-      animation: carouselSlidesThreeSlideOffset1 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
+    .hub-hero-carousel-item:nth-child(1),
+    .hub-hero-carousel-item:nth-child(2),
+    .hub-hero-carousel-item:nth-child(3) {
+      animation-timing-function: ease;
       animation-timeline: --hub-hero, --hub-hero, --hub-hero;
       animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
       animation-fill-mode: forwards, backwards, forwards;
+    }
+
+    .hub-hero-carousel-item:nth-child(1) {
+      --carousel-slide-start-y: var(--grid-col-two-offset);
+
+      animation-name: carouselSlidesThreeSlideOffset, carouselSlideExpandSize, carouselSlideExpandLayout;
     }
 
     .hub-hero-carousel-item:nth-child(2) {
-      animation: carouselSlidesThreeSlideOffset2 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-      animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-      animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
-      animation-fill-mode: forwards, backwards, forwards;
+      animation-name: carouselSlidesThreeSlideOffset2, carouselSlideExpandSize, carouselSlideExpandLayout;
     }
 
     .hub-hero-carousel-item:nth-child(3) {
-      animation: carouselSlidesThreeSlideOffset3 ease, carouselSlideExpandSize ease, carouselSlideExpandLayout ease;
-      animation-timeline: --hub-hero, --hub-hero, --hub-hero;
-      animation-range: var(--slide-animation-range), var(--slide-from-card-slide-range), var(--slide-animation-range);
-      animation-fill-mode: forwards, backwards, forwards;
+      --carousel-slide-start-y: var(--grid-col-four-offset);
+
+      animation-name: carouselSlidesThreeSlideOffset, carouselSlideExpandSize, carouselSlideExpandLayout;
       z-index: auto;
       visibility: visible;
       min-width: var(--hub-hero-carousel-item-min-width);
@@ -1389,9 +1393,9 @@
 }
 
 
-@keyframes carouselSlidesThreeSlideOffset1 {
+@keyframes carouselSlidesThreeSlideOffset {
   0% {
-    transform: translate(0px, var(--grid-col-two-offset));
+    transform: translate(0px, var(--carousel-slide-start-y));
     animation-timing-function: var(--slide-offset-timing);
   }
 
@@ -1408,17 +1412,6 @@
 
   30% {
     transform: translate(0px, -5%);
-  }
-
-  50% {
-    transform: translate(0px, 0%);
-  }
-}
-
-@keyframes carouselSlidesThreeSlideOffset3 {
-  0% {
-    transform: translate(0px, var(--grid-col-four-offset));
-    animation-timing-function: var(--slide-offset-timing);
   }
 
   50% {
