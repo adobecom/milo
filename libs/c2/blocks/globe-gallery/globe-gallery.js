@@ -109,7 +109,8 @@ const CARD_TEX_SM = 256;
 const CARD_TEX_MD = 768;
 const MODAL_TEX_SM = 768;
 const MODAL_TEX_MD = 2048;
-const ANTIALIAS = true;
+const ANTIALIAS_SM = false;
+const ANTIALIAS_MD = true;
 
 // ── Yaw-only geometry overlay ────────────────────────────────────────────────
 // Viewport width and INPUT CAPABILITY are independent axes, and the sphere-geometry
@@ -1236,7 +1237,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
-    antialias: ANTIALIAS,
+    antialias: bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD,
     caEnabled: CA_ENABLED,
     cardLabel: labels.cardLabel,
     reducedMotion,
@@ -2293,7 +2294,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
 
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: ANTIALIAS, alpha: true });
+      const aa = bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD;
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: aa, alpha: true });
     } catch (e) {
       renderer = null;
       return false;

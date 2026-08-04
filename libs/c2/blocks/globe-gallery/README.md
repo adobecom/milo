@@ -221,12 +221,14 @@ matches the camera aspect (full-frustum overlay, text centered), so `TEXT_MAX_SI
 45MB — the biggest single mobile allocation, almost all empty transparent space around one line
 of type. Capped, portrait tops out at ~1004×2048 (~11MB); landscape/desktop is unchanged.
 
-These caps are the tuning knobs. A separate `ANTIALIAS` constant (default `true`) toggles MSAA
-on both renderers — the largest GPU cost on high-DPR screens, since framebuffers scale with
-`DPR²`; flip it off to test the memory/quality trade (card corners keep their SDF edge-AA either
-way). `destroy()` also disposes every card geometry/material/texture — including each card's
-cached modal SDF material (Three frees GPU memory only on explicit `.dispose()`) — so a
-768px-boundary rebuild no longer leaks a full card set.
+These caps are the tuning knobs. `ANTIALIAS_SM` / `ANTIALIAS_MD` toggle MSAA per band (set at
+renderer creation, which rebuilds on a band crossing): on for md, where big-screen card
+silhouettes and overlaps alias without it, off for sm to save framebuffer memory (MSAA is the
+largest GPU cost on high-DPR screens — framebuffers scale with `DPR²`). Rounded corners keep
+their SDF `fwidth` edge-AA regardless, so MSAA only affects the quad silhouettes. `destroy()`
+also disposes every card geometry/material/texture — including each card's cached modal SDF
+material (Three frees GPU memory only on explicit `.dispose()`) — so a 768px-boundary rebuild no
+longer leaks a full card set.
 
 ## Localization
 
