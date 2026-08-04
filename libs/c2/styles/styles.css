@@ -1340,7 +1340,16 @@ span.hang-opening-quote {
 
     transform-origin: top center;
     animation: garage-door-grow ease-out both;
-    animation-timeline: view();
+
+    /* Named so .foreground can share this exact timeline below — view()
+       timelines are scoped to each element's own geometry, so giving
+       .foreground its own anonymous view() (even with identical range
+       percentages) maps to a different scroll position than the
+       section's, and the two transforms briefly fight each other on
+       entry. That mismatch was the reported "dip". */
+    view-timeline-name: --gd-timeline;
+    view-timeline-axis: block;
+    animation-timeline: --gd-timeline;
     animation-range: entry 0% var(--gd-range-end);
 
     @media (width >= 1280px) {
@@ -1368,12 +1377,7 @@ span.hang-opening-quote {
       z-index: 1;
       position: relative;
       animation: garage-door-reveal ease-out both;
-      animation-timeline: view();
-
-      /* Same range as the section's own grow animation (not its own,
-         later-starting range) so the two motions move together instead
-         of the foreground sitting still while its parent section is
-         still settling — that gap was the reported "dip". */
+      animation-timeline: --gd-timeline;
       animation-range: entry 0% var(--gd-range-end);
 
       * {
