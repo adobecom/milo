@@ -532,6 +532,30 @@ export const closeGnavOptions = () => {
   enableMobileScroll();
   setMenuState();
 };
+
+const getOrgFlags = (organizations) => {
+  const ORG_TYPE_CCT = 'DIRECT';
+  const ORG_TYPE_CCE = 'Enterprise';
+  const ORG_TYPE_CCE_DEPR = 'INDIRECT';
+  const ROLE_ADMIN = 'GRP_ADMIN';
+
+  const orgs = organizations?.organizations || [];
+  const relevantOrgs = orgs.filter(
+    (org) => org.orgType === ORG_TYPE_CCT
+      || org.orgType === ORG_TYPE_CCE
+      || org.orgType === ORG_TYPE_CCE_DEPR,
+  );
+  const showTeam = relevantOrgs.some(
+    (org) => org.orgType === ORG_TYPE_CCT
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  const showEnterprise = relevantOrgs.some(
+    (org) => (org.orgType === ORG_TYPE_CCE || org.orgType === ORG_TYPE_CCE_DEPR)
+      && org.groups?.some((g) => g.role === ROLE_ADMIN),
+  );
+  return { hasOrgs: showTeam || showEnterprise };
+};
+
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -946,7 +970,7 @@ class Gnav {
         window.adobeIMS.getOrganizations(),
       ]);
       accountId = profile?.userId || '';
-      hasOrgs = organizations?.count > 0;
+      hasOrgs = getOrgFlags(organizations).hasOrgs;
     } catch (e) {
       accountId = '';
       hasOrgs = false;
