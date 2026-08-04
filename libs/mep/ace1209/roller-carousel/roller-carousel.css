@@ -256,7 +256,6 @@
 
     .rcc-rm-item {
       display: block;
-      font-family: var(--heading-font-family);
       font-size: var(--s2a-typography-font-size-heading-2);
       line-height: var(--s2a-typography-line-height-heading-2);
       letter-spacing: var(--s2a-typography-letter-spacing-heading-2);
