@@ -19,9 +19,9 @@ Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored ph
 
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
 tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome). Mouse
-drags rotate **freely** (trackball — no pitch limit, so cards can tumble past vertical
-and read upside down); **touch drags spin yaw only** so vertical swipes stay page
-scroll (see Free rotation + Touch gesture arbitration).
+drags spin **yaw freely** but **pitch is clamped to ±60°** (cards never pass vertical
+or read upside down, and the globe self-levels); **touch drags spin yaw only** so
+vertical swipes stay page scroll (see Sphere rotation + Touch gesture arbitration).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
@@ -467,77 +467,57 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   266px chunk pinned to the bottom holding the description (top), badges, and — in its bottom
   row — the arrows in the left/right corners with the plain-text counter centered. Same
   `rgb(0 0 0 / 64%)` + `blur(12px)` + light text as desktop.
-- **Free rotation (trackball) — the orientation is one accumulated quaternion.** The sphere's
-  drag orientation is a single `sphereRotQuat`, not a pitch/yaw Euler pair. Each frame's drag
-  deltas are applied as world-axis rotations **premultiplied** onto it
-  (`applySphereRotDelta(WORLD_Y, velX)` / `(WORLD_X, velY)`). Premultiplying by a *world*
-  axis is what makes "drag right" always the screen's horizontal axis however far the globe
-  has been tumbled — post-multiplying would use the sphere's own tumbled local axis. There is
-  **no pitch clamp**: the globe tumbles freely, cards pass through vertical, and past 90° they
-  read upside down. That's accepted as the honest result of the gesture (`CARD_FRAG` already
-  flips back-facing fragments for the camera-inside-sphere case). `sphereRotQuat` is
-  renormalized every frame — repeated products drift off the unit sphere.
-  - **What this replaced, and why.** Previously an `'XYZ'` Euler pair with pitch clamped ±60°
-    as the *outer* rotation. That ordering existed only to dodge a gimbal flip: with `'YXZ'`
-    (unclamped yaw outside) the local pitch axis's world-X component goes to 0 at 90° of yaw
-    (vertical drag does nothing) and −1 at 180° (drag down tilts *up*). Quaternion
-    accumulation has no such failure — measured response to a vertical drag is flat
-    (27.5 ± 0.01) at 0/90/180/270/450° of yaw, and pitch passes through ±90° and beyond with
-    no loss of response.
-  - **Tradeoff: roll becomes PATH-DEPENDENT.** Pitch and yaw rotations don't commute, and
-    their commutator is a **roll** term (order ε² per frame, integrated along the drag path).
-    A closed loop in *input* space is not a closed loop in *orientation* space, so curved
-    drags accumulate tilt the user never asked for and it does not self-cancel.
-    **Note precisely what changed here — the old clamped-Euler scheme also produced roll.**
-    It is not true that the ±60° clamp prevented roll: the screen-horizontal axis picks up a
-    y-component of `sin(yaw)·sin(pitch)`, so e.g. pitch 45° + yaw 45° gave 30° of roll, and
-    pitch 60° + yaw 90° gave 60° — all well inside the clamp. What the old scheme gave was
-    roll that is **bounded and non-hysteretic**: a pure function of the current
-    `(pitch, yaw)` with no memory of the path, returning to exactly 0 whenever pitch returns
-    to 0, and bounded by `|roll| ≤ |pitch| ≤ 60°` (verified by scanning the whole reachable
-    space). The same circular drag under both schemes:
+- **Sphere rotation — clamped Euler pitch/yaw (yaw free, pitch capped ±60°).** The orientation
+  SOURCE is a pitch/yaw pair (`sphereRotX`, `sphereRotY`); the shared `sphereRotQuat` that
+  every consumer reads (card transforms, modal close, snap) is **rebuilt from it each frame**
+  (`refreshSphereRotQuat` → `setFromEuler`, order `'XYZ'`). Yaw (`sphereRotY`) is an unclamped
+  turntable spin about the up-axis; pitch (`sphereRotX`) tilts about world X and is **clamped
+  to ±π/3 (±60°)** in `updateSphereRotation`, so cards never pass vertical or read upside down
+  and the globe **self-levels**. `'XYZ'` puts the clamped pitch as the *outer* rotation to
+  dodge a gimbal flip: with `'YXZ'` (unclamped yaw outside) the local pitch axis's world-X
+  component goes to 0 at 90° of yaw (vertical drag does nothing) and −1 at 180° (drag down
+  tilts *up*). Keeping pitch outer + clamped keeps vertical drag well-behaved everywhere the
+  cap allows.
+  - **Why capped, not a free trackball.** A pure-trackball version (one accumulated
+    `sphereRotQuat`, world-axis deltas premultiplied each frame, no clamp) was tried and
+    **reverted** — full tumbling read as "too free," and the cap is a behavioral requirement.
+    It's preserved in git history (commit `desktop no clamp, drag yaw-only`) if free rotation
+    with a spring-to-upright is ever wanted. The reason it was rejected is roll:
+  - **Roll: clamped Euler is bounded and self-correcting; the trackball drifts.** Pitch and
+    yaw don't commute, so *both* schemes produce roll — the screen-horizontal axis picks up a
+    `sin(yaw)·sin(pitch)` y-component (pitch 45° + yaw 45° ≈ 30° of roll). The difference is
+    memory. Under clamped Euler the orientation is a pure function of the current
+    `(pitch, yaw)`: roll returns to exactly 0 whenever pitch does, bounded by
+    `|roll| ≤ |pitch| ≤ 60°`. Under the trackball, roll is path-dependent — a closed loop in
+    *input* space is not a closed loop in *orientation* space, so curved drags accumulate tilt
+    that never self-cancels:
 
     ```
-     loop |  OLD roll | OLD pitch |  NEW roll
-     -----+-----------+-----------+----------
-      1   |     0.0   |     0.0   |    25.6
-      2   |     0.0   |     0.0   |    49.8
-      3   |     0.0   |     0.0   |    67.2
-      4   |     0.0   |     0.0   |    60.3   ← wanders, doesn't settle
+     loop | CLAMPED roll | CLAMPED pitch | TRACKBALL roll
+     -----+--------------+---------------+---------------
+      1   |      0.0     |      0.0      |     25.6
+      2   |      0.0     |      0.0      |     49.8
+      3   |      0.0     |      0.0      |     67.2
+      4   |      0.0     |      0.0      |     60.3   ← wanders, doesn't settle
     ```
 
-    So the regression is the loss of **self-correction**, not the introduction of roll. Under
-    the old scheme dragging back to horizontal always returned the globe level; now it
-    doesn't. Accumulated roll clears only on scroll-out (`sphereFormT < 0.01` →
-    `sphereRotQuat.identity()`).
+    Dragging back to horizontal always returns the clamped globe level; the trackball's
+    accumulated roll cleared only on scroll-out. That self-correction is why we keep the cap.
   - **Why absolute angles vs. an accumulated rotation (and why Google Earth differs).** Earth
     stores absolute lat/lon/tilt and keeps north-up (closer to `OrbitControls`); roll is only
     reachable via a deliberate Ctrl+drag. That fits its problem: Earth's state is a *camera
     pose over a fixed, oriented world*, the globe has a real north pole, and those angles are
     exactly the user's mental model — so they can be displayed, deep-linked, and restored.
-    Ours is an *object's orientation with no canonical up*: a Fibonacci sphere of cards has no
-    pole and no meaningful latitude, so there is nothing to name or link to. The general
-    tradeoff: **absolute angles buy predictability by restricting reachable orientations;
-    accumulated quaternions buy all of SO(3) by giving up path-independence.** Gimbal
-    degeneracy is a *symptom* of the angle approach (hence the clamp), not its purpose.
-  - **CURRENT DECISION (open — may revisit).** Shipping pure trackball (option 1 below).
-    The drifting horizon has **not** been judged on a real device yet; the numbers above are
-    computed, not felt. Three options if it proves unacceptable — do not "fix" this by
-    quietly reverting one piece:
-    1. **Pure trackball** *(shipped)* — maximum freedom; drifting horizon; no self-correction.
-    2. **Trackball + spring-to-upright on release** — free during the gesture, settles level.
-       Keeps the gimbal fix and restores the self-correcting property the clamp gave. This is
-       the recommended fallback and the most likely next step.
-    3. **Revert to clamped Euler** — accepts bounded roll and the ±60° pitch limit, but gets
-       path-independence back for free.
-  - **The nav-nudge became a minimal-arc slerp.** `triggerModalNavNudge` now builds one
-    rotation about the single axis carrying the card's world direction to front-center
-    (`setFromUnitVectors`), scaled to `NAV_NUDGE_FACTOR` and capped at `NAV_NUDGE_MAX_ANGLE`
-    (one angle, replacing the per-axis `NAV_NUDGE_MAX_Y`/`_X`). The spring then runs on the
-    **slerp parameter** (`navNudgeT`, 0→1) between two captured orientations. This is both
-    simpler and strictly more correct than the old two-Euler version — whose own comment
-    conceded that Y and X rotations don't commute — and it can't inject roll, since the
-    rotation axis is perpendicular to both directions.
+    Ours is an *object's orientation with no canonical up*. The general tradeoff: **absolute
+    angles buy predictability (and path-independence) by restricting reachable orientations;
+    accumulated quaternions buy all of SO(3) by giving it up.** We take the former: the ±60°
+    pitch limit is a feature, not a limitation to design around.
+  - **The nav-nudge is a two-axis spring on `sphereRotY`/`X`.** `triggerModalNavNudge` projects
+    the new card's slot to world space, derives an approximate yaw/pitch alignment delta
+    (`alignDeltaY = -atan2(x, z)`, `alignDeltaX = atan2(y, horiz)`), scales by
+    `NAV_NUDGE_FACTOR`, caps per-axis (`NAV_NUDGE_MAX_Y` / `_X`), and sets spring targets. The
+    spring in `updateSphereRotation` eases both scalars toward target with slight underdamping;
+    the pitch target is itself clamped to ±π/3 so a nudge can't exceed the cap.
 - **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
   separately and must not be conflated:
   - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere

@@ -361,10 +361,8 @@ const CURSOR_RETIRE_T = 0.55;
 // injected requestNavNudge → triggerModalNavNudge here; the spring physics live
 // in updateSphereRotation. All other modal tuning lives in modal.js.
 const NAV_NUDGE_FACTOR = 0.25; // 25% of full alignment angle — gentle
-// Single cap on the minimal-arc rotation (one angle now, not per-axis Y/X: the nudge is a
-// rotation about one arbitrary axis — the shortest arc bringing the card to front-center).
-// 0.45 rad ≈ 26°, matching the old dominant Y cap so the feel is unchanged.
-const NAV_NUDGE_MAX_ANGLE = 0.45;
+const NAV_NUDGE_MAX_Y = 0.45; // ~26° cap so distant cards don't cause big swings
+const NAV_NUDGE_MAX_X = 0.18; // ~10° cap (X is already clamped to ±π/3 elsewhere)
 const NAV_NUDGE_STIFF = 0.05; // softer pull
 const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
 
@@ -642,55 +640,23 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // reference into modal.js (its closing animation reads the live rotation), so it's
   // created eagerly — the reference is stable.
   //
-  // FREE ROTATION (trackball). The orientation is a single ACCUMULATED QUATERNION, not a
-  // pitch/yaw Euler pair. Each frame's drag deltas are applied as world-axis rotations
-  // PREMULTIPLIED onto the state (see updateSphereRotation): premultiplying by a world
-  // axis means "drag right" is always the screen's horizontal axis no matter how far the
-  // globe has been tumbled, so there is no local frame that can go degenerate.
-  //
-  // This replaced an 'XYZ' Euler pair (pitch clamped ±60° as the outer rotation, yaw
-  // unclamped inside). That ordering existed solely to dodge a gimbal flip — with 'YXZ'
-  // (unclamped yaw outside) the local pitch axis's world-X component goes 0 at 90° of yaw
-  // (vertical drag does nothing) and −1 at 180° (drag down tilts up). Quaternion
-  // accumulation has no such failure: response to a vertical drag is flat at every
-  // orientation, and pitch passes through ±90° and beyond without a limit.
-  //
-  // TRADEOFF — roll becomes PATH-DEPENDENT. Pitch and yaw rotations do not commute, and
-  // their commutator is a ROLL term (order ε² per frame, integrated along the drag path),
-  // so curved drags accumulate tilt the user never asked for: one circular drag builds ~26°,
-  // three build ~67°, and it does not self-cancel.
-  //
-  // Be precise about what changed: the OLD clamped-Euler scheme ALSO produced roll — the
-  // screen-horizontal axis picks up a y-component of sin(yaw)·sin(pitch), so pitch 45° +
-  // yaw 45° gave 30° of roll, well inside the clamp. What the old scheme gave was roll that
-  // was BOUNDED and NON-HYSTERETIC: a pure function of the current (pitch, yaw), returning
-  // to exactly 0 whenever pitch did, bounded by |roll| ≤ |pitch| ≤ 60°. So what we gave up
-  // is SELF-CORRECTION, not the absence of roll — dragging back to horizontal no longer
-  // levels the globe. Accumulated roll clears only on scroll-out (identity() below).
-  //
-  // CURRENT DECISION (open): ship pure trackball; the drift has not been judged on a real
-  // device. If it proves unacceptable, prefer a spring-to-upright on release over reverting
-  // to Euler — see the three options in README.md (Behavior notes → Free rotation).
-  // The quaternion is the SOLE representation — there is no longer a companion Euler
-  // (every consumer takes the quat directly, via `.applyQuaternion` / `.copy`).
+  // The orientation SOURCE is a pitch/yaw Euler pair; sphereRotQuat is rebuilt from it each
+  // frame (refreshSphereRotQuat) and is what every consumer reads. 'XYZ' → R = R_pitch ·
+  // R_yaw: pitch (sphereRotX, clamped ±π/3 ≈ ±60°) is the OUTER rotation about world X, so
+  // vertical drag always tilts about the screen-horizontal axis regardless of how far the
+  // globe has been spun. Yaw (sphereRotY, unclamped) is the inner turntable spin about the
+  // up-axis. Putting the clamped axis outside avoids the gimbal flip 'YXZ' (unclamped yaw
+  // outside) would hit — there the local pitch axis inverts past 90° of yaw and reverses
+  // vertical drag. Roll is then a bounded, non-hysteretic function of (pitch, yaw): it
+  // returns to 0 whenever pitch does, so the globe self-levels — no free tumbling, no
+  // upside-down cards, no drifting horizon.
+  let sphereRotY = 0; // yaw — unclamped turntable spin
+  let sphereRotX = 0; // pitch — clamped ±π/3 in updateSphereRotation
+  const sphereRotEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const sphereRotQuat = new THREE.Quaternion();
-  // Scratch for building each frame's incremental world-axis delta.
-  const dragDeltaQuat = new THREE.Quaternion();
-  const WORLD_X = new THREE.Vector3(1, 0, 0);
-  const WORLD_Y = new THREE.Vector3(0, 1, 0);
-  // Apply one world-axis increment to the accumulated orientation. Premultiply (not
-  // multiply) so the axis is interpreted in WORLD space — post-multiplying would rotate
-  // about the sphere's own tumbled local axis, which is the drift-prone behavior.
-  const applySphereRotDelta = (axis, angle) => {
-    if (angle === 0) return;
-    dragDeltaQuat.setFromAxisAngle(axis, angle);
-    sphereRotQuat.premultiply(dragDeltaQuat);
-  };
-  // Maintain the unit-length invariant. Repeated quaternion products drift off the unit
-  // sphere, so normalize every frame (cheap; prevents cumulative scale error from leaking
-  // into card transforms over a long session).
   const refreshSphereRotQuat = () => {
-    sphereRotQuat.normalize();
+    sphereRotEuler.set(sphereRotX, sphereRotY, 0);
+    sphereRotQuat.setFromEuler(sphereRotEuler);
   };
   const foldRotQuat = new THREE.Quaternion();
   // Scratch quat/euler for the fold's residual peel-spin (reused per card, per frame —
@@ -699,31 +665,23 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   const stageEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const tmpVec3 = new THREE.Vector3();
 
-  // Modal-nav "reactivity nudge": when user navigates prev/next within the modal, spring
-  // the sphere partway toward facing the new card's slot. Sphere visibly rotates behind
-  // the blur to acknowledge the navigation. Magnitude scales with angular distance to the
-  // new card's actual position, so a close neighbor gives a small nudge and a
-  // back-of-sphere card gives a bigger one (capped). Slight overshoot + decay for a
-  // "bouncy" feel.
-  //
-  // Under free rotation the spring runs on a single SLERP PARAMETER (navNudgeT, 0→1)
-  // between two captured orientations rather than on two Euler scalars — the geodesic
-  // between them is the shortest arc, so the nudge can't inject roll of its own.
+  // Modal-nav "reactivity nudge": when user navigates prev/next within the modal, drive a
+  // spring on sphereRotY/X toward a target derived from the new card's slot position. Sphere
+  // visibly rotates behind the blur to acknowledge the navigation. Magnitude scales with
+  // angular distance to the new card's actual position, so a close neighbor gives a small
+  // nudge and a back-of-sphere card gives a bigger one (capped). Slight overshoot + decay
+  // for a "bouncy" feel.
   let navNudgeActive = false;
-  let navNudgeT = 1; // 0 = at nudge start orientation, 1 = at target
-  let navNudgeVel = 0; // tuning consts (NAV_NUDGE_*) are at module scope
-  const navNudgeStartQuat = new THREE.Quaternion();
-  const navNudgeTargetQuat = new THREE.Quaternion();
-  // Scratch for the minimal-arc alignment rotation (rebuilt per nudge request).
-  const navNudgeAlignQuat = new THREE.Quaternion();
+  let navNudgeTargetY = 0;
+  let navNudgeTargetX = 0;
+  let navNudgeVelY = 0;
+  let navNudgeVelX = 0; // tuning consts (NAV_NUDGE_*) are at module scope
   // Scratch for applyCardFacing (reused per card, per frame — never retained).
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
   const facingAlign = new THREE.Quaternion();
   const facingPartial = new THREE.Quaternion();
-  // Front-center view direction (camera looks down −Z, so the visible pole is +Z) and a
-  // never-mutated identity to slerp the nudge magnitude out of.
-  const FRONT_CENTER_DIR = new THREE.Vector3(0, 0, 1);
+  // Never-mutated identity, used to slerp a partial card-facing rotation out of.
   const IDENTITY_QUAT = new THREE.Quaternion();
 
   let modal = null;
@@ -1078,7 +1036,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // flash of an unrotated card before tick()'s sphere block re-applies rotation.
   function snapCardToSphereSlot(card) {
     if (!card || !card.mesh) return;
-    const hasRot = Math.abs(sphereRotQuat.w) < 0.999999; // not identity
+    const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
     if (hasRot) {
       refreshSphereRotQuat();
       card.mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
@@ -1096,35 +1054,34 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Modal-nav reactivity: compute the spring target that will rotate the sphere
   // partway toward facing the new card's slot, then activate the spring. Injected
   // into modal.js as requestNavNudge and called on each prev/next nav (arrow or swipe).
-  // Under free rotation this is the MINIMAL ARC: one rotation, about the single axis that
-  // carries the card's current world direction toward front-center (+Z). setFromUnitVectors
-  // gives exactly that (shortest great-circle path), which is both simpler and strictly
-  // more correct than the old two-Euler approximation — whose own comment conceded that Y
-  // and X rotations don't commute. It also can't inject roll: the rotation axis is
-  // perpendicular to both directions, so no component is spent twisting about the view.
+  // Drives the shared sphereRotY/X pair toward a target derived from the new card's slot.
   function triggerModalNavNudge(newIdx) {
     if (!cards[newIdx]) return;
     const newCard = cards[newIdx];
-    // Current world direction of the new card's slot (unit), under the live orientation.
-    const from = tmpVec3.copy(newCard.spherePos).applyQuaternion(sphereRotQuat).normalize();
-    // Rotation carrying that direction to front-center. Degenerate when the card is
-    // already at front-center (from ≈ +Z) — setFromUnitVectors handles the parallel and
-    // antiparallel cases, and a near-zero angle simply produces a no-op nudge.
-    navNudgeAlignQuat.setFromUnitVectors(from, FRONT_CENTER_DIR);
-    // Scale to a gentle fraction of full alignment, capped. Both are applied to the ANGLE
-    // (via slerp from identity) rather than to the quaternion components, so the axis is
-    // preserved and only the magnitude changes.
-    const fullAngle = 2 * Math.acos(Math.min(1, Math.abs(navNudgeAlignQuat.w)));
-    const wantAngle = Math.min(NAV_NUDGE_MAX_ANGLE, fullAngle * NAV_NUDGE_FACTOR);
-    // fullAngle ≈ 0 → card already centered, nothing to acknowledge.
-    if (fullAngle < 1e-4) return;
-    navNudgeStartQuat.copy(sphereRotQuat);
-    navNudgeTargetQuat
-      .copy(IDENTITY_QUAT)
-      .slerp(navNudgeAlignQuat, wantAngle / fullAngle)
-      .multiply(sphereRotQuat);
-    navNudgeT = 0;
-    navNudgeVel = 0;
+    // World position of new card's slot under the CURRENT sphere rotation.
+    const wp = tmpVec3.copy(newCard.spherePos).applyQuaternion(sphereRotQuat);
+    // alignDeltaY: rotation around Y that would bring the card's projected XZ
+    // position to the +Z axis (facing the camera). Sign: positive Y rotation moves
+    // a +X-side card toward +Z, so the delta is -atan2(x, z).
+    const alignDeltaY = -Math.atan2(wp.x, wp.z);
+    // alignDeltaX: rotation around X that would bring the card's Y component to 0 after the
+    // Y alignment. Approximate (Y and X rotations don't commute) but close enough at
+    // NUDGE_FACTOR scale.
+    const horiz = Math.sqrt(wp.x * wp.x + wp.z * wp.z);
+    const alignDeltaX = Math.atan2(wp.y, horiz);
+    // Scaled, clamped deltas — subtle nudge that grows with distance but capped.
+    const nudgeY = Math.max(
+      -NAV_NUDGE_MAX_Y,
+      Math.min(NAV_NUDGE_MAX_Y, alignDeltaY * NAV_NUDGE_FACTOR),
+    );
+    const nudgeX = Math.max(
+      -NAV_NUDGE_MAX_X,
+      Math.min(NAV_NUDGE_MAX_X, alignDeltaX * NAV_NUDGE_FACTOR),
+    );
+    navNudgeTargetY = sphereRotY + nudgeY;
+    navNudgeTargetX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX + nudgeX));
+    navNudgeVelY = 0;
+    navNudgeVelX = 0;
     navNudgeActive = true;
   }
 
@@ -1203,8 +1160,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // Keyboard spin is yaw-only, so it never accumulates roll.
   function spinGlobe(dir) {
     if (reducedMotion) {
-      applySphereRotDelta(WORLD_Y, dir * KEY_SPIN_STEP);
-      refreshSphereRotQuat();
+      sphereRotY += dir * KEY_SPIN_STEP;
     } else {
       drag.velX = Math.max(-MAX_VEL, Math.min(MAX_VEL, drag.velX + dir * KEY_SPIN_IMPULSE));
     }
@@ -1454,23 +1410,21 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
 
     // ── Modal-navigation spring nudge ──
     // Runs even while modal is open (drag accumulation is gated, but the spring is
-    // independent). Eases the orientation toward navNudgeTargetQuat (set by
-    // triggerModalNavNudge). Slight underdamping gives a small overshoot + settle.
-    //
-    // Under free rotation this is a spring on the SLERP PARAMETER rather than on two
-    // Euler scalars: navNudgeT runs 0→1 along the geodesic from the orientation at
-    // nudge-request time to the target, so the nudge takes the shortest arc and can't
-    // inject roll of its own (the old per-axis version fought the accumulated quat).
+    // independent). Drives sphereRotY/X toward the target set by triggerModalNavNudge.
+    // Slight underdamping (damp < critical) gives a small overshoot + settle.
     if (navNudgeActive) {
-      const nD = 1 - navNudgeT;
-      navNudgeVel = (navNudgeVel + nD * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-      navNudgeT += navNudgeVel;
-      sphereRotQuat.copy(navNudgeStartQuat).slerp(navNudgeTargetQuat, Math.min(1, navNudgeT));
-      // Settle when the parameter is at the target AND velocity is essentially zero.
-      if (Math.abs(nD) < 0.001 && Math.abs(navNudgeVel) < 0.001) {
+      const nDy = navNudgeTargetY - sphereRotY;
+      const nDx = navNudgeTargetX - sphereRotX;
+      navNudgeVelY = (navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+      navNudgeVelX = (navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+      sphereRotY += navNudgeVelY;
+      sphereRotX += navNudgeVelX;
+      // Settle when position is at target AND velocity is essentially zero.
+      if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001
+          && Math.abs(navNudgeVelY) < 0.001 && Math.abs(navNudgeVelX) < 0.001) {
         navNudgeActive = false;
-        navNudgeVel = 0;
-        navNudgeT = 1;
+        navNudgeVelY = 0;
+        navNudgeVelX = 0;
       }
     }
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
@@ -1488,13 +1442,13 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         // the inner wall left. Negate the delta so dragging always tracks the surface
         // the user is looking at — consistent feel inside and out.
         const dragDir = cameraInsideSphere ? -1 : 1;
-        // World-axis increments, premultiplied onto the accumulated orientation: yaw about
-        // world Y (keeps auto-rotate a level turntable spin however the globe is tumbled),
-        // pitch about world X (always the screen-horizontal axis). No pitch clamp — free
-        // rotation, so cards can tumble past vertical and read upside down. That's the
-        // honest result of the gesture; CARD_FRAG already handles back-facing fragments.
-        applySphereRotDelta(WORLD_Y, drag.velX * dragDir);
-        applySphereRotDelta(WORLD_X, drag.velY * dragDir);
+        // Yaw (velX) spins freely about the up-axis; pitch (velY) tilts about world X and is
+        // CLAMPED to ±π/3 (±60°) so cards never pass vertical or read upside down. The clamp
+        // stores an absolute pitch angle, so roll stays a bounded function of (pitch, yaw)
+        // and the globe self-levels — see the sphere-rotation-state note above.
+        sphereRotY += drag.velX * dragDir;
+        sphereRotX += drag.velY * dragDir;
+        sphereRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX));
       }
 
       // ── Sphere-drag warp ──
@@ -1517,24 +1471,23 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
     } else {
       // Below interactive threshold: stop accumulating drag inertia/auto-rot.
-      // The orientation is preserved while mid-scroll so a brief dip below and back
-      // doesn't lose the user's accumulated rotation. Reset to identity only at the very
-      // top of the section so a fresh entry into the sphere starts upright — this is also
-      // the only thing that clears accumulated roll (see the free-rotation note above).
+      // sphereRotY/sphereRotX are preserved while mid-scroll so a brief dip below and back
+      // doesn't lose the user's accumulated rotation. Zero only at the very top of the
+      // section so a fresh entry into the sphere starts upright.
       // Warp eases (same rate as the interactive-zone branch) rather than snapping.
       drag.velX = 0;
       drag.velY = 0;
       sphereDragWarp += (0 - sphereDragWarp) * 0.20;
       if (Math.abs(sphereDragWarp) < 0.001) sphereDragWarp = 0;
       if (sphereFormT < 0.01) {
-        sphereRotQuat.identity();
+        sphereRotY = 0;
+        sphereRotX = 0;
         navNudgeActive = false;
       }
     }
 
-    // Fast-path flag so the rotation math can be skipped while the globe is exactly
-    // upright. Compared against identity (w = ±1) rather than two zeroed scalars.
-    const sphereRotActive = Math.abs(sphereRotQuat.w) < 0.999999;
+    // sphereRotActive is a fast-path flag so the rotation math can be skipped when upright.
+    const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
     refreshSphereRotQuat();
     return sphereRotActive;
   }
