@@ -1339,7 +1339,7 @@ span.hang-opening-quote {
     --gd-range-end: cover 36%;
 
     transform-origin: top center;
-    animation: garage-door-grow ease-out both;
+    animation: garage-door-grow linear both;
 
     /* Named so .foreground can share this exact timeline below — view()
        timelines are scoped to each element's own geometry, so giving
@@ -1376,7 +1376,7 @@ span.hang-opening-quote {
     .foreground {
       z-index: 1;
       position: relative;
-      animation: garage-door-reveal ease-out both;
+      animation: garage-door-reveal linear both;
       animation-timeline: --gd-timeline;
       animation-range: entry 0% var(--gd-range-end);
 
