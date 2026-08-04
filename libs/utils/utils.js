@@ -1030,7 +1030,7 @@ export function computeDetectedMarketCountry(
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
   const geoCountry = normCountryCode(countryFromGeo);
   const imsCountry = imsLoginEnabled ? normCountryCode(coFromIMS) : undefined;
-  return countryParam || cookieCountry || imsCountry || akamaiParam || geoCountry;
+  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {

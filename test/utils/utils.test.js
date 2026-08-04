@@ -2829,16 +2829,16 @@ describe('Utils', () => {
       expect(utils.computeDetectedMarketCountry('?country=lu', 'be', null)).to.equal('lu');
     });
 
-    it('prefers country cookie over akamaiLocale query param when country param absent', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', 'be', null)).to.equal('be');
+    it('prefers akamaiLocale query param over country cookie when country param absent', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', 'be', null)).to.equal('fr');
     });
 
     it('prefers country cookie over geo hint when no country/akamai params', () => {
       expect(utils.computeDetectedMarketCountry('', 'lu', 'ng')).to.equal('lu');
     });
 
-    it('prefers IMS country over akamaiLocale when no country cookie and mas-ims-login is enabled', () => {
-      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca', true)).to.equal('ca');
+    it('prefers akamaiLocale over IMS country when no country cookie and mas-ims-login is enabled', () => {
+      expect(utils.computeDetectedMarketCountry('?akamaiLocale=fr', null, null, 'ca', true)).to.equal('fr');
     });
 
     it('prefers country cookie over IMS country even when mas-ims-login is enabled', () => {
