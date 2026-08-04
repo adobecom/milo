@@ -886,6 +886,13 @@ export default function createGlobeModal({
     modalCard.mesh.getWorldQuaternion(modalStartQuat);
     modalCard.mesh.getWorldScale(modalStartScale);
 
+    // NOTE: open() deliberately does NOT centre the sphere. The user clicked a specific card, so
+    // the globe must stay put (spinning to re-centre the just-clicked card is jarring — and a
+    // card is only openable when it's already on the visible front). Only modal TRAVERSAL
+    // (prev/next/swipe) re-centres, so the newly-revealed card comes to centre and returns there
+    // on close — see centerModalCard / requestNavNudge in navigate / commitSwipeNavigation /
+    // startDesktopNavTransition.
+
     // Reparent into the *modal* scene (separate canvas, above the blur backdrop) so the card
     // stays sharp while the sphere is blurred. world transform preserved via attach().
     if (modalScene) modalScene.attach(modalCard.mesh);

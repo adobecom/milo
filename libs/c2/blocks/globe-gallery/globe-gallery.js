@@ -370,17 +370,13 @@ const TEXT_WARP_OVERFLOW = 0.6; // extra mesh scale per warp unit — letterform
 const CURSOR_HINT_DISMISS_T = 0.12;
 const CURSOR_RETIRE_T = 0.55;
 
-// ── Modal-nav reactivity nudge ───────────────────────────────────────────────
-// A spring that rotates the sphere partway toward the newly-shown card's slot so it
-// acknowledges prev/next nav. Scales with angular distance (capped); slight
-// underdamping gives a bouncy settle. The modal (modal.js) triggers it via the
-// injected requestNavNudge → triggerModalNavNudge here; the spring physics live
-// in updateSphereRotation. All other modal tuning lives in modal.js.
-const NAV_NUDGE_FACTOR = 0.25; // 25% of full alignment angle — gentle
-const NAV_NUDGE_MAX_Y = 0.45; // ~26° cap so distant cards don't cause big swings
-const NAV_NUDGE_MAX_X = 0.18; // ~10° cap (X is already clamped to ±π/3 elsewhere)
-const NAV_NUDGE_STIFF = 0.05; // softer pull
-const NAV_NUDGE_DAMP = 0.86; // closer to critical damping → minimal overshoot
+// ── Sphere-to-card alignment ─────────────────────────────────────────────────
+// One mechanism centres a card on screen for BOTH the modal (each open/next/prev, so
+// closing returns the card to centre) and the keyboard gallery (each browse focus): a
+// monotonic ease (KEY_EASE) toward a full-alignment target (see cardCenterYawPitch /
+// centerModalCard / centerCardOnScreen). The physics live in updateSphereRotation; there is
+// no separate partial "nudge" spring — the modal aligns the same way the keyboard does, only
+// with a ±60° pitch cap and no upright-roll (so the globe stays self-levelled after close).
 
 // ── Fibonacci sphere distribution ────────────────────────────────────────────
 // Cards are spread by walking cos(polar) linearly — equal-area, so spacing stays even.
@@ -694,20 +690,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   const stageEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const tmpVec3 = new THREE.Vector3();
 
-  // Modal-nav "reactivity nudge": when user navigates prev/next within the modal, drive a
-  // spring on sphereRotY/X toward a target derived from the new card's slot position. Sphere
-  // visibly rotates behind the blur to acknowledge the navigation. Magnitude scales with
-  // angular distance to the new card's actual position, so a close neighbor gives a small
-  // nudge and a back-of-sphere card gives a bigger one (capped). Slight overshoot + decay
-  // for a "bouncy" feel.
+  // Sphere-to-card alignment state (shared by the modal + the keyboard gallery). When a card
+  // is opened/navigated (modal) or focused (browse), the sphere eases so that card faces the
+  // camera at screen centre — so closing the modal returns the card to centre instead of
+  // leaving the user lost. sphereRotY/X (+ Z for the keyboard's upright roll) ease monotonically
+  // toward the target below (KEY_EASE) with no overshoot.
   let navNudgeActive = false;
-  // keyboard centring (exponential ease, upright) vs modal nudge (underdamped spring)
-  let navNudgeKeyboard = false;
   let navNudgeTargetY = 0;
   let navNudgeTargetX = 0;
-  let navNudgeTargetZ = 0; // roll target — keyboard centring only
-  let navNudgeVelY = 0;
-  let navNudgeVelX = 0; // tuning consts (NAV_NUDGE_*) are at module scope
+  let navNudgeTargetZ = 0; // roll target — keyboard centring only (modal leaves it at current)
   const kbTargetQuat = new THREE.Quaternion(); // scratch: keyboard-centring target orientation
   const kbTargetEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const kbUp = new THREE.Vector3(); // scratch: focused card's world up (for the upright roll)
@@ -1090,69 +1081,62 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     card.mesh.scale.set(card.sphereScaleSX, card.sphereScaleSY, 1);
   }
 
-  // Modal-nav reactivity: compute the spring target that will rotate the sphere
-  // partway toward facing the new card's slot, then activate the spring. Injected
-  // into modal.js as requestNavNudge and called on each prev/next nav (arrow or swipe).
-  // Drives the shared sphereRotY/X pair toward a target derived from the new card's slot.
-  function triggerModalNavNudge(newIdx) {
-    if (!cards[newIdx]) return;
-    const newCard = cards[newIdx];
-    // World position of new card's slot under the CURRENT sphere rotation.
-    const wp = tmpVec3.copy(newCard.spherePos).applyQuaternion(sphereRotQuat);
-    // alignDeltaY: rotation around Y that would bring the card's projected XZ
-    // position to the +Z axis (facing the camera). Sign: positive Y rotation moves
-    // a +X-side card toward +Z, so the delta is -atan2(x, z).
-    const alignDeltaY = -Math.atan2(wp.x, wp.z);
-    // alignDeltaX: rotation around X that would bring the card's Y component to 0 after the
-    // Y alignment. Approximate (Y and X rotations don't commute) but close enough at
-    // NUDGE_FACTOR scale.
-    const horiz = Math.sqrt(wp.x * wp.x + wp.z * wp.z);
-    const alignDeltaX = Math.atan2(wp.y, horiz);
-    // Scaled, clamped deltas — subtle nudge that grows with distance but capped.
-    const nudgeY = Math.max(
-      -NAV_NUDGE_MAX_Y,
-      Math.min(NAV_NUDGE_MAX_Y, alignDeltaY * NAV_NUDGE_FACTOR),
-    );
-    const nudgeX = bp.YAW_ONLY ? 0 : Math.max(
-      -NAV_NUDGE_MAX_X,
-      Math.min(NAV_NUDGE_MAX_X, alignDeltaX * NAV_NUDGE_FACTOR),
-    );
-    navNudgeTargetY = sphereRotY + nudgeY;
-    navNudgeTargetX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX + nudgeX));
-    navNudgeVelY = 0;
-    navNudgeVelX = 0;
-    navNudgeKeyboard = false;
+  // Shared: the sphere yaw + pitch that bring card `idx` to screen centre (facing the camera).
+  // Both the modal and the keyboard gallery centre a card this way — the yaw is EXACT (not the
+  // old approximate world-space aim, which mixed pitch into yaw and landed cards off-centre,
+  // converging only after several re-focuses):
+  //   • yaw   — rotate spherePos about Y by the CURRENT yaw only (pitch can't affect x, since
+  //             world = Rx·Ry·p and Rx leaves x), then null its x so its azimuth faces +Z.
+  //             Unbounded, exact, shortest path.
+  //   • pitch — from the yaw-aligned (0, y, h): atan2(y, h) drives height → 0, clamped to
+  //             `pitchCap` (±60° for the modal so a near-polar card doesn't over-tilt then snap
+  //             down on close; ±85° for the keyboard so a browsed polar card still reaches
+  //             centre, held by the pitch-cap glide while browsing).
+  //   • yawOnly (cylinder / touch) — holds pitch at its current value: those devices take no
+  //             pitch input, and a barrel can't centre vertically anyway; only the column turns
+  //             to the front.
+  function cardCenterYawPitch(idx, pitchCap, yawOnly) {
+    const { spherePos } = cards[idx];
+    const cy = Math.cos(sphereRotY);
+    const sy = Math.sin(sphereRotY);
+    const px = spherePos.x * cy + spherePos.z * sy;
+    const pz = -spherePos.x * sy + spherePos.z * cy;
+    const targetYaw = sphereRotY - Math.atan2(px, pz); // extra yaw driving px → 0, z in front
+    if (yawOnly) return { targetYaw, targetPitch: sphereRotX };
+    const h = Math.sqrt(px * px + pz * pz); // horizontal radius = z after the yaw alignment
+    const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, Math.atan2(spherePos.y, h)));
+    return { targetYaw, targetPitch };
+  }
+
+  // Modal centring: rotate the sphere so the opened/navigated card faces the camera at screen
+  // centre behind the modal, so closing the modal returns the card to centre (not a random slot
+  // at the back — the disorientation the old partial "nudge" left). Injected into modal.js as
+  // requestNavNudge, called on each open / prev / next. Full yaw + pitch (±60° resting cap), NO
+  // upright-roll — the modal leaves sphereRotZ alone so the globe stays self-levelled after close.
+  // Yaw-only on cylinder/touch. Eases via the same monotonic KEY_EASE as the keyboard gallery.
+  function centerModalCard(idx) {
+    if (!cards[idx]) return;
+    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, Math.PI / 3, bp.YAW_ONLY);
+    navNudgeTargetY = targetYaw;
+    navNudgeTargetX = targetPitch;
+    navNudgeTargetZ = sphereRotZ; // no roll change — keep the globe level
     navNudgeActive = true;
   }
 
   // Keyboard-gallery centring: rotate the sphere so card `idx` lands dead-centre AND stands
   // UPRIGHT, facing the camera. Injected into a11y.js as centerCard, called on each browse-image
-  // focus. Lands in one shot (no re-focus convergence).
-  //
-  // Computed as three INDEPENDENT terms, NOT an Euler decomposition of the target quaternion —
-  // 'XYZ' decomposition extracts yaw via asin, capping it at ±90°, so any back-of-sphere card
-  // (yaw ≈ ±180°) came out as the mirror solution (pitch/roll ≈ 180° → upside down). Instead:
-  //   • yaw   — the card under YAW ONLY (pitch can't affect x, since world = Rx·Ry·p and Rx
-  //             leaves x): rotate about Y so its azimuth faces +Z. Unbounded, exact, shortest path.
-  //   • pitch — from the yaw-aligned (0, y, h): atan2(y, h) drives height → 0, clamped to the
-  //             keyboard cap (±85°, vs the ±60° drag cap) so near-polar cards still reach centre.
+  // focus. Lands in one shot (no re-focus convergence). Yaw + pitch come from the shared helper
+  // (keyboard cap ±85°); the extra term here is the upright ROLL:
   //   • roll  — SCREEN-space (world Z, premultiplied in refreshSphereRotQuat): cancels the card's
   //             residual roll at that (pitch, yaw) so it stands upright. A centred card is on the
   //             +Z axis, so this roll doesn't move it. 0 for drag/ambient; eased back to 0 on exit.
+  // (Computed as independent terms, NOT an Euler decomposition of the target quaternion — 'XYZ'
+  // decomposition extracts yaw via asin, capping it at ±90°, so any back-of-sphere card came out
+  // as the mirror solution, i.e. upside down.)
   function centerCardOnScreen(idx) {
     if (!cards[idx]) return;
-    const { spherePos, sphereQuat } = cards[idx];
-    // Yaw: card position under the CURRENT yaw only (rotate spherePos about Y by sphereRotY).
-    const cy = Math.cos(sphereRotY);
-    const sy = Math.sin(sphereRotY);
-    const px = spherePos.x * cy + spherePos.z * sy;
-    const pz = -spherePos.x * sy + spherePos.z * cy;
-    const py = spherePos.y; // yaw about Y preserves the height
-    const deltaY = -Math.atan2(px, pz); // extra yaw driving px → 0 with z in front (shortest)
-    const targetYaw = sphereRotY + deltaY;
-    const h = Math.sqrt(px * px + pz * pz); // horizontal radius = z after the yaw alignment
-    // Pitch: bring the yaw-aligned card's height to 0, clamped to the keyboard cap.
-    const targetPitch = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, Math.atan2(py, h)));
+    const { sphereQuat } = cards[idx];
+    const { targetYaw, targetPitch } = cardCenterYawPitch(idx, KEY_PITCH_CAP, false);
     // Roll: the card's world up at that (pitch, yaw), pre screen-roll; cancel its screen tilt.
     kbTargetEuler.set(targetPitch, targetYaw, 0);
     kbTargetQuat.setFromEuler(kbTargetEuler).multiply(sphereQuat);
@@ -1165,7 +1149,6 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     navNudgeTargetY = targetYaw;
     navNudgeTargetX = targetPitch;
     navNudgeTargetZ = sphereRotZ + dRoll; // shortest-path roll
-    navNudgeKeyboard = true;
     navNudgeActive = true;
     // Kill residual spin (auto-rotate/drag inertia) so it can't fight the ease.
     drag.velX = 0;
@@ -1244,7 +1227,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     sphereRotQuat,
     snapToSphereSlot: snapCardToSphereSlot,
     applySphereFacing,
-    requestNavNudge: triggerModalNavNudge,
+    requestNavNudge: centerModalCard,
     applyMotionCA,
   });
 
@@ -1504,41 +1487,24 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     const browsing = a11y && a11y.isBrowsing();
     if (wasBrowsing && !browsing) {
       navNudgeActive = false;
-      navNudgeVelX = 0;
-      navNudgeVelY = 0;
     }
     wasBrowsing = browsing;
 
-    // ── Modal-navigation spring nudge ──
-    // Runs even while modal is open (drag accumulation is gated, but the spring is
-    // independent). Drives sphereRotY/X toward the target set by triggerModalNavNudge.
-    // Slight underdamping (damp < critical) gives a small overshoot + settle.
+    // ── Sphere-to-card alignment ease ──
+    // Runs even while the modal is open (drag accumulation is gated by the modal branch below,
+    // but this ease is independent — that's what lets the sphere align behind the blur so the
+    // card is centred when the modal closes). Drives sphereRotY/X (+ Z for the keyboard's upright
+    // roll) toward the target set by centerModalCard / centerCardOnScreen. Monotonic exponential
+    // ease (KEY_EASE), no velocity integrator, so it never overshoots as it swings the live globe.
     if (navNudgeActive) {
       const nDy = navNudgeTargetY - sphereRotY;
       const nDx = navNudgeTargetX - sphereRotX;
-      if (navNudgeKeyboard) {
-        // Keyboard centring: monotonic exponential ease on all three axes (incl. the upright
-        // roll) — no velocity integrator, so it never overshoots as it swings the live globe.
-        const nDz = navNudgeTargetZ - sphereRotZ;
-        sphereRotY += nDy * KEY_EASE;
-        sphereRotX += nDx * KEY_EASE;
-        sphereRotZ += nDz * KEY_EASE;
-        if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001 && Math.abs(nDz) < 0.001) {
-          navNudgeActive = false;
-        }
-      } else {
-        // Modal-nav nudge: underdamped spring (slight overshoot + settle) behind the blur.
-        navNudgeVelY = (navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-        navNudgeVelX = (navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-        sphereRotY += navNudgeVelY;
-        sphereRotX += navNudgeVelX;
-        // Settle when position is at target AND velocity is essentially zero.
-        if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001
-            && Math.abs(navNudgeVelY) < 0.001 && Math.abs(navNudgeVelX) < 0.001) {
-          navNudgeActive = false;
-          navNudgeVelY = 0;
-          navNudgeVelX = 0;
-        }
+      const nDz = navNudgeTargetZ - sphereRotZ;
+      sphereRotY += nDy * KEY_EASE;
+      sphereRotX += nDx * KEY_EASE;
+      sphereRotZ += nDz * KEY_EASE;
+      if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001 && Math.abs(nDz) < 0.001) {
+        navNudgeActive = false;
       }
     }
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
