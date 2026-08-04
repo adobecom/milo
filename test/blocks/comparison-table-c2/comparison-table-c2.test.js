@@ -134,7 +134,7 @@ describe('Comparison Table C2', () => {
     expect(el.textContent).to.not.contain('+++');
   });
 
-  it('adds placeholder-driven screen-reader text to empty cells', async () => {
+  it('adds "not a feature" screen-reader text to empty (dash) cells', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/default.html' });
     const el = document.querySelector('.comparison-table-c2');
     init(el);
@@ -143,7 +143,7 @@ describe('Comparison Table C2', () => {
     await waitFor(() => el.querySelector('.cell-content.empty-cell .sr-only'), 2000);
     const srOnly = el.querySelector('.cell-content.empty-cell .sr-only');
     expect(srOnly).to.exist;
-    expect(srOnly.textContent).to.equal('Not included');
+    expect(srOnly.textContent).to.equal('not a feature');
   });
 
   it('close icon has an accessible name distinguishing it from an empty cell', async () => {

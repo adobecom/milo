@@ -519,8 +519,8 @@ function setupResponsiveHiding(el) {
 
 function setAccessibilityLabels(el) {
   import('../../../features/placeholders.js').then(({ replaceKeyArray }) => {
-    replaceKeyArray(['choose-table-column', 'empty-table-cell', 'not-a-feature', 'primary-feature'], getConfig())
-      .then(([ariaLabel, emptyText, notAFeatureText, primaryFeatureText]) => {
+    replaceKeyArray(['choose-table-column', 'not-a-feature', 'primary-feature'], getConfig())
+      .then(([ariaLabel, notAFeatureText, primaryFeatureText]) => {
         [...el.querySelectorAll('.mobile-filter-select')].forEach((element, index) => element.setAttribute('aria-label', `${ariaLabel} ${index + 1}`));
 
         el.querySelectorAll('.table-cell > .cell-content').forEach((cellDiv) => {
@@ -539,7 +539,7 @@ function setAccessibilityLabels(el) {
             return;
           }
           if (!cellDiv.classList.contains('empty-cell') || cellDiv.querySelector('.sr-only')) return;
-          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, emptyText));
+          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, notAFeatureText));
         });
       });
   });
