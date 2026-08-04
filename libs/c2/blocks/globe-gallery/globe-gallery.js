@@ -270,10 +270,19 @@ const ARC_DENSE_SPLIT = 0.50;
 const DRAG_FRICTION = 0.94;
 const MAX_VEL = 0.06;
 const AUTO_ROT_SPEED = 0.000045;
-// Keyboard arrow-spin (focused globe widget): per-press velocity impulse (normal
-// motion, decays via DRAG_FRICTION) and the direct yaw step (reduced motion, instant).
-const KEY_SPIN_IMPULSE = 0.025;
-const KEY_SPIN_STEP = 0.5; // radians (~29°) per Left/Right press under reduced motion
+// Keyboard-gallery pitch cap: browse-mode centring may tilt to ±85° (vs the ±60° drag cap)
+// so a near-polar image can reach the vertical centre; the excess eases back to ±60° at
+// PITCH_RELAX (per-frame retained fraction) once browsing ends. See updateSphereRotation.
+const KEY_PITCH_CAP = (85 * Math.PI) / 180;
+const PITCH_RELAX = 0.85;
+// Keyboard-gallery centring uses a monotonic exponential ease (per-frame fraction toward the
+// target) rather than the modal nudge's underdamped spring — so tabbing card→card NEVER
+// overshoots (the spring's overshoot is fine behind the modal blur but reads as dizzying when
+// it swings the whole live globe on every Tab).
+const KEY_EASE = 0.18;
+// tan(half of the 60° perspective vertical FOV) — used to project a focused card to screen
+// space for the keyboard-gallery focus ring (see updateA11yFocusRing).
+const RING_TANHALF = Math.tan(Math.PI / 6);
 
 // ── Sphere interaction ───────────────────────────────────────────────────────
 // Sphere becomes interactive (drag-rotate, hover, click → modal) at this
@@ -652,11 +661,24 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // upside-down cards, no drifting horizon.
   let sphereRotY = 0; // yaw — unclamped turntable spin
   let sphereRotX = 0; // pitch — clamped ±π/3 in updateSphereRotation
+  // SCREEN-space roll about the view axis (world Z), applied as an OUTER premultiply (not an
+  // Euler term — Euler 'XYZ' can't carry an outer roll). 0 for drag/ambient (the globe never
+  // rolls under the pointer); set ONLY by keyboard-gallery centring so a focused card stands
+  // upright (its baked-in CARD_ROLL_JITTER + slot orientation are cancelled). Because a centred
+  // card sits on the +Z axis, a Z-roll uprights it without moving it off-centre. Eased to 0
+  // once browsing ends.
+  let sphereRotZ = 0;
   const sphereRotEuler = new THREE.Euler(0, 0, 0, 'XYZ');
   const sphereRotQuat = new THREE.Quaternion();
+  const screenRollQuat = new THREE.Quaternion();
+  const Z_UNIT = new THREE.Vector3(0, 0, 1);
   const refreshSphereRotQuat = () => {
     sphereRotEuler.set(sphereRotX, sphereRotY, 0);
     sphereRotQuat.setFromEuler(sphereRotEuler);
+    if (sphereRotZ !== 0) {
+      screenRollQuat.setFromAxisAngle(Z_UNIT, sphereRotZ);
+      sphereRotQuat.premultiply(screenRollQuat); // world-Z roll applied last (screen space)
+    }
   };
   const foldRotQuat = new THREE.Quaternion();
   // Scratch quat/euler for the fold's residual peel-spin (reused per card, per frame —
@@ -672,10 +694,20 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // nudge and a back-of-sphere card gives a bigger one (capped). Slight overshoot + decay
   // for a "bouncy" feel.
   let navNudgeActive = false;
+  // keyboard centring (exponential ease, upright) vs modal nudge (underdamped spring)
+  let navNudgeKeyboard = false;
   let navNudgeTargetY = 0;
   let navNudgeTargetX = 0;
+  let navNudgeTargetZ = 0; // roll target — keyboard centring only
   let navNudgeVelY = 0;
   let navNudgeVelX = 0; // tuning consts (NAV_NUDGE_*) are at module scope
+  const kbTargetQuat = new THREE.Quaternion(); // scratch: keyboard-centring target orientation
+  const kbTargetEuler = new THREE.Euler(0, 0, 0, 'XYZ');
+  const kbUp = new THREE.Vector3(); // scratch: focused card's world up (for the upright roll)
+  let wasBrowsing = false; // tracks the keyboard-gallery browse edge (see updateSphereRotation)
+  // Pitch cap that glides ±85°→±60° when leaving keyboard browse, so exiting a beyond-cap
+  // card doesn't snap the globe (see updateSphereRotation). π/3 = the ±60° resting cap.
+  let pitchReleaseCap = Math.PI / 3;
   // Scratch for applyCardFacing (reused per card, per frame — never retained).
   const cardNormal = new THREE.Vector3();
   const facingTarget = new THREE.Vector3();
@@ -1036,7 +1068,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // flash of an unrotated card before tick()'s sphere block re-applies rotation.
   function snapCardToSphereSlot(card) {
     if (!card || !card.mesh) return;
-    const hasRot = (sphereRotY !== 0 || sphereRotX !== 0);
+    const hasRot = (sphereRotY !== 0 || sphereRotX !== 0 || sphereRotZ !== 0);
     if (hasRot) {
       refreshSphereRotQuat();
       card.mesh.position.copy(card.spherePos).applyQuaternion(sphereRotQuat);
@@ -1082,7 +1114,55 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     navNudgeTargetX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX + nudgeX));
     navNudgeVelY = 0;
     navNudgeVelX = 0;
+    navNudgeKeyboard = false;
     navNudgeActive = true;
+  }
+
+  // Keyboard-gallery centring: rotate the sphere so card `idx` lands dead-centre AND stands
+  // UPRIGHT, facing the camera. Injected into a11y.js as centerCard, called on each browse-image
+  // focus. Lands in one shot (no re-focus convergence).
+  //
+  // Computed as three INDEPENDENT terms, NOT an Euler decomposition of the target quaternion —
+  // 'XYZ' decomposition extracts yaw via asin, capping it at ±90°, so any back-of-sphere card
+  // (yaw ≈ ±180°) came out as the mirror solution (pitch/roll ≈ 180° → upside down). Instead:
+  //   • yaw   — the card under YAW ONLY (pitch can't affect x, since world = Rx·Ry·p and Rx
+  //             leaves x): rotate about Y so its azimuth faces +Z. Unbounded, exact, shortest path.
+  //   • pitch — from the yaw-aligned (0, y, h): atan2(y, h) drives height → 0, clamped to the
+  //             keyboard cap (±85°, vs the ±60° drag cap) so near-polar cards still reach centre.
+  //   • roll  — SCREEN-space (world Z, premultiplied in refreshSphereRotQuat): cancels the card's
+  //             residual roll at that (pitch, yaw) so it stands upright. A centred card is on the
+  //             +Z axis, so this roll doesn't move it. 0 for drag/ambient; eased back to 0 on exit.
+  function centerCardOnScreen(idx) {
+    if (!cards[idx]) return;
+    const { spherePos, sphereQuat } = cards[idx];
+    // Yaw: card position under the CURRENT yaw only (rotate spherePos about Y by sphereRotY).
+    const cy = Math.cos(sphereRotY);
+    const sy = Math.sin(sphereRotY);
+    const px = spherePos.x * cy + spherePos.z * sy;
+    const pz = -spherePos.x * sy + spherePos.z * cy;
+    const py = spherePos.y; // yaw about Y preserves the height
+    const deltaY = -Math.atan2(px, pz); // extra yaw driving px → 0 with z in front (shortest)
+    const targetYaw = sphereRotY + deltaY;
+    const h = Math.sqrt(px * px + pz * pz); // horizontal radius = z after the yaw alignment
+    // Pitch: bring the yaw-aligned card's height to 0, clamped to the keyboard cap.
+    const targetPitch = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, Math.atan2(py, h)));
+    // Roll: the card's world up at that (pitch, yaw), pre screen-roll; cancel its screen tilt.
+    kbTargetEuler.set(targetPitch, targetYaw, 0);
+    kbTargetQuat.setFromEuler(kbTargetEuler).multiply(sphereQuat);
+    kbUp.set(0, 1, 0).applyQuaternion(kbTargetQuat);
+    const rollTarget = Math.atan2(kbUp.x, kbUp.y); // screen-Z roll that returns up → +Y
+    const dRoll = Math.atan2(
+      Math.sin(rollTarget - sphereRotZ),
+      Math.cos(rollTarget - sphereRotZ),
+    );
+    navNudgeTargetY = targetYaw;
+    navNudgeTargetX = targetPitch;
+    navNudgeTargetZ = sphereRotZ + dRoll; // shortest-path roll
+    navNudgeKeyboard = true;
+    navNudgeActive = true;
+    // Kill residual spin (auto-rotate/drag inertia) so it can't fight the ease.
+    drag.velX = 0;
+    drag.velY = 0;
   }
 
   // ── Motion-trail CA helper ────────────────────────────────────────────────────
@@ -1152,20 +1232,6 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     applyMotionCA,
   });
 
-  // Keyboard spin: Left/Right arrows on the focused globe widget call this. Normal
-  // motion injects a velocity impulse into the shared drag.velX so the existing
-  // friction/inertia in updateSphereRotation gives a natural eased flick (clamped to
-  // MAX_VEL). Reduced motion steps the orientation directly by a fixed yaw angle — a
-  // discrete reposition with no momentum/auto-rotate (auto-spin is also off in that mode).
-  // Keyboard spin is yaw-only, so it never accumulates roll.
-  function spinGlobe(dir) {
-    if (reducedMotion) {
-      sphereRotY += dir * KEY_SPIN_STEP;
-    } else {
-      drag.velX = Math.max(-MAX_VEL, Math.min(MAX_VEL, drag.velX + dir * KEY_SPIN_IMPULSE));
-    }
-  }
-
   // Focusing the globe widget snaps the page so the block enters its interactive "globe"
   // state instead of being skipped, and is in view before the focus ring shows. Normal
   // motion scrolls to the formed-sphere offset inside the tall runway; reduced motion
@@ -1206,10 +1272,18 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getSphereFormT: () => sphereFormTAtLastTick,
     getModalIdx: () => modal.getModalIdx(),
     interactiveThreshold: SPHERE_INTERACTIVE_T,
-    spinGlobe,
-    // Keyboard activation has no pointer target → open the first item (decision 3),
-    // emanating the open-warp from screen center.
-    openModal: () => openModalAndDismissHint(0, W / 2, H / 2),
+    // Per-image browse-button name: authored alt text, falling back to the creator
+    // description until alt is authored (no creator-NAME fallback — decision). The final
+    // `Image N` guarantees a non-empty accessible name (WCAG 4.1.2) if a card has neither.
+    // TODO: HARDCODED — localize the positional fallback with the other a11y strings.
+    getCardLabel: (i) => {
+      const m = getCardMetadata(i);
+      return (m && (m.alt || m.description)) || `Image ${i + 1}`;
+    },
+    // Browse-image focus → rotate the globe so that image is centred on screen.
+    centerCard: centerCardOnScreen,
+    // Enter on a browse image → open the detail modal for that image, warp from centre.
+    openCard: (i) => openModalAndDismissHint(i, W / 2, H / 2),
     onFocus: snapToInteractive,
     galleryLabel: labels.galleryLabel,
     galleryInstructions: labels.galleryInstructions,
@@ -1408,6 +1482,17 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     sphereGroup.rotation.x = 0;
     sphereGroup.rotation.y = 0;
 
+    // Leaving the keyboard gallery (browse → collapsed): cancel any in-flight centring nudge
+    // so its yaw target stops fighting resumed auto-spin and its (possibly >60°) pitch target
+    // stops fighting the ±60° drag clamp. The pitch excess then eases back to 60° below.
+    const browsing = a11y && a11y.isBrowsing();
+    if (wasBrowsing && !browsing) {
+      navNudgeActive = false;
+      navNudgeVelX = 0;
+      navNudgeVelY = 0;
+    }
+    wasBrowsing = browsing;
+
     // ── Modal-navigation spring nudge ──
     // Runs even while modal is open (drag accumulation is gated, but the spring is
     // independent). Drives sphereRotY/X toward the target set by triggerModalNavNudge.
@@ -1415,16 +1500,29 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     if (navNudgeActive) {
       const nDy = navNudgeTargetY - sphereRotY;
       const nDx = navNudgeTargetX - sphereRotX;
-      navNudgeVelY = (navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-      navNudgeVelX = (navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
-      sphereRotY += navNudgeVelY;
-      sphereRotX += navNudgeVelX;
-      // Settle when position is at target AND velocity is essentially zero.
-      if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001
-          && Math.abs(navNudgeVelY) < 0.001 && Math.abs(navNudgeVelX) < 0.001) {
-        navNudgeActive = false;
-        navNudgeVelY = 0;
-        navNudgeVelX = 0;
+      if (navNudgeKeyboard) {
+        // Keyboard centring: monotonic exponential ease on all three axes (incl. the upright
+        // roll) — no velocity integrator, so it never overshoots as it swings the live globe.
+        const nDz = navNudgeTargetZ - sphereRotZ;
+        sphereRotY += nDy * KEY_EASE;
+        sphereRotX += nDx * KEY_EASE;
+        sphereRotZ += nDz * KEY_EASE;
+        if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001 && Math.abs(nDz) < 0.001) {
+          navNudgeActive = false;
+        }
+      } else {
+        // Modal-nav nudge: underdamped spring (slight overshoot + settle) behind the blur.
+        navNudgeVelY = (navNudgeVelY + nDy * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+        navNudgeVelX = (navNudgeVelX + nDx * NAV_NUDGE_STIFF) * NAV_NUDGE_DAMP;
+        sphereRotY += navNudgeVelY;
+        sphereRotX += navNudgeVelX;
+        // Settle when position is at target AND velocity is essentially zero.
+        if (Math.abs(nDy) < 0.001 && Math.abs(nDx) < 0.001
+            && Math.abs(navNudgeVelY) < 0.001 && Math.abs(navNudgeVelX) < 0.001) {
+          navNudgeActive = false;
+          navNudgeVelY = 0;
+          navNudgeVelX = 0;
+        }
       }
     }
     if (sphereFormT >= SPHERE_INTERACTIVE_T) {
@@ -1433,9 +1531,10 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         if (!drag.isDragging) {
           drag.velX *= DRAG_FRICTION;
           drag.velY *= DRAG_FRICTION;
-          // Auto-spin is disabled under reduced motion (decision 2) — the globe sits
-          // still until the user drags or arrow-keys it. Drag inertia is preserved.
-          if (!reducedMotion) drag.velX += AUTO_ROT_SPEED;
+          // Auto-spin is disabled under reduced motion (decision 2) and while the keyboard
+          // gallery is browsing (the globe must hold the centred image, not drift). Drag
+          // inertia is preserved either way.
+          if (!reducedMotion && !(a11y && a11y.isBrowsing())) drag.velX += AUTO_ROT_SPEED;
         }
         // Inside the globe the visible (far-hemisphere) wall moves opposite to the
         // same world rotation, so a drag that pulls the outer shell right would push
@@ -1443,12 +1542,36 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
         // the user is looking at — consistent feel inside and out.
         const dragDir = cameraInsideSphere ? -1 : 1;
         // Yaw (velX) spins freely about the up-axis; pitch (velY) tilts about world X and is
-        // CLAMPED to ±π/3 (±60°) so cards never pass vertical or read upside down. The clamp
-        // stores an absolute pitch angle, so roll stays a bounded function of (pitch, yaw)
-        // and the globe self-levels — see the sphere-rotation-state note above.
+        // CLAMPED so cards never pass vertical or read upside down. The clamp stores an
+        // absolute pitch angle, so roll stays a bounded function of (pitch, yaw) and the globe
+        // self-levels — see the sphere-rotation-state note above.
         sphereRotY += drag.velX * dragDir;
         sphereRotX += drag.velY * dragDir;
-        sphereRotX = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, sphereRotX));
+        // Pitch cap is context-dependent. Free DRAG stays at the ±60° resting cap (the
+        // behavioral rule); KEYBOARD centring (browsing) may tilt to ±85° so a near-polar image
+        // reaches the vertical centre. The seam between them is `pitchReleaseCap`, a cap that
+        // GLIDES rather than a hard switch: while browsing it tracks the held pitch (≥60°); once
+        // browsing ends it eases back to 60° (PITCH_RELAX), and sphereRotX is clamped to it each
+        // frame — so leaving a beyond-cap card (clicking, dragging) slides down instead of
+        // SNAPPING from 85°→60°. Drag stays bounded because it's clamped to that same cap, which
+        // is already 60° except during the brief post-browse glide (where it's decaying to 60°).
+        const RESTING_PITCH = Math.PI / 3;
+        if (browsing) {
+          sphereRotX = Math.max(-KEY_PITCH_CAP, Math.min(KEY_PITCH_CAP, sphereRotX));
+          pitchReleaseCap = Math.max(RESTING_PITCH, Math.abs(sphereRotX)); // prime the glide
+        } else {
+          sphereRotX = Math.max(-pitchReleaseCap, Math.min(pitchReleaseCap, sphereRotX));
+          if (pitchReleaseCap > RESTING_PITCH) {
+            pitchReleaseCap = RESTING_PITCH + (pitchReleaseCap - RESTING_PITCH) * PITCH_RELAX;
+            if (pitchReleaseCap - RESTING_PITCH < 0.001) pitchReleaseCap = RESTING_PITCH;
+          }
+          // The upright roll relaxes to 0 over the same glide (it has no hard clamp, so it
+          // was already smooth — kept here so pitch + roll settle together).
+          if (sphereRotZ !== 0) {
+            sphereRotZ *= PITCH_RELAX;
+            if (Math.abs(sphereRotZ) < 0.001) sphereRotZ = 0;
+          }
+        }
       }
 
       // ── Sphere-drag warp ──
@@ -1482,14 +1605,43 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       if (sphereFormT < 0.01) {
         sphereRotY = 0;
         sphereRotX = 0;
+        sphereRotZ = 0;
+        pitchReleaseCap = Math.PI / 3;
         navNudgeActive = false;
       }
     }
 
     // sphereRotActive is a fast-path flag so the rotation math can be skipped when upright.
-    const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0);
+    const sphereRotActive = (sphereRotY !== 0 || sphereRotX !== 0 || sphereRotZ !== 0);
     refreshSphereRotQuat();
     return sphereRotActive;
+  }
+
+  // ── Keyboard-gallery focus ring ─────────────────────────────────────────────
+  // Project the currently-focused browse image to screen space each frame and hand the
+  // rect to a11y.js, so its :focus-visible ring hugs the actual image (tracking it as the
+  // nudge spring rotates it to centre) instead of a fixed centred box. Cheap: one
+  // getWorldPosition + a closed-form perspective projection (the camera sits at (0,0,z)
+  // looking down −Z with a 60° vertical FOV, so world X/Y map straight to screen axes).
+  const ringWorld = new THREE.Vector3();
+  function updateA11yFocusRing() {
+    const idx = a11y.getFocusedIdx();
+    if (idx < 0 || !cards[idx] || !cards[idx].mesh) return;
+    const { mesh } = cards[idx];
+    mesh.getWorldPosition(ringWorld);
+    const viewZ = camera.position.z - ringWorld.z; // distance in front of the camera
+    if (viewZ <= 0.01) return; // behind/at the camera — nothing sensible to draw
+    const groupScale = sphereGroup.scale.x;
+    const halfWWorld = 0.5 * bp.CARD_W_SPHERE * mesh.scale.x * groupScale;
+    const halfHWorld = 0.5 * bp.CARD_H_SPHERE * mesh.scale.y * groupScale;
+    // Half the frustum's world height/width at this depth (fov 60° → tan(30°) = TANHALF).
+    const halfViewH = viewZ * RING_TANHALF;
+    const halfViewW = halfViewH * (W / H);
+    const cx = ((ringWorld.x / halfViewW) * 0.5 + 0.5) * W;
+    const cy = ((-ringWorld.y / halfViewH) * 0.5 + 0.5) * H;
+    const wPx = (halfWWorld / halfViewW) * W;
+    const hPx = (halfHWorld / halfViewH) * H;
+    a11y.setFocusRect(cx, cy, wPx, hPx);
   }
 
   // Canvas visibility — instantly visible once the section approaches; no opacity
@@ -2076,6 +2228,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     frame.sphGroupZ = updateSphereGroupDepth(frame);
     updateGlobalCA();
     updateCardTransforms(frame);
+    updateA11yFocusRing(); // after card transforms — reads the meshes' fresh world positions
     updateHintExitProgress(frame); // owns textExitProgress — before its two consumers
 
     updateClickDragText(frame);
@@ -2329,8 +2482,12 @@ async function resolveGlobeLabels() {
   const galleryTpl = galleryTplRaw.includes('{{count}}')
     ? galleryTplRaw
     : 'Interactive image gallery, {{count}} images';
+  // TODO: HARDCODED string — this is the provisional English copy shown in the entry-widget
+  // popup (visible, a11y audit) AND read via aria-describedby. Localize once the
+  // `image-gallery-instructions` placeholder key is authored in the sheet (then this branch
+  // is never hit). Keep it phrased as "press Enter → enter the gallery" per the audit.
   const galleryInstructions = galleryInstrRaw === 'image gallery instructions'
-    ? 'Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.'
+    ? 'Press Enter to enter the gallery, then Tab through the images.'
     : galleryInstrRaw;
   const cardTpl = cardTplRaw.includes('{{name}}')
     ? cardTplRaw

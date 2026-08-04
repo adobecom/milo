@@ -25,9 +25,9 @@ vertical swipes stay page scroll (see Sphere rotation + Touch gesture arbitratio
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
-Behavior notes), and a single focusable a11y **globe widget** (see Accessibility
-below) that exposes the sphere as one keyboard/screen-reader gallery rather than a
-per-card list.
+Behavior notes), and a **two-level a11y gallery** (see Accessibility below): a single
+focusable entry widget whose Enter opens a keyboard/screen-reader browse mode that tabs
+through each image (centring it on the globe) rather than exposing a flat per-card list.
 
 ## Files
 
@@ -38,7 +38,7 @@ per-card list.
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `MODAL_FRAG`'s `uRadius` is set to 0 on mobile (square, full-bleed image). `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
 | `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect, hintText)` (named) — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
-| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown }`. Exposes the globe as **one** focusable widget (a transparent centered `<button>` over the sphere): a stable tab stop (out of tab order only while the modal traps focus), Left/Right arrows → `spinGlobe`, Enter/Space → `openModal` (first item), and `onFocus` snaps the page to the interactive state (pdf-space pattern). All runtime state (`count`, `sphereFormT`, modal-open) + actions (`spinGlobe`, `openModal`, `onFocus`) are injected; holds no globe state except its own DOM node. |
+| `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ creator **description** fallback); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
@@ -210,7 +210,7 @@ per locale):
 | `close` | Close | modal close-button `aria-label` |
 | `apps-used` | Apps used | modal badges list `aria-label` |
 | `image-gallery-label` | `Interactive image gallery, {{count}} images` | globe widget `aria-label` — the concise accessible **name** (screen-reader "what is this") |
-| `image-gallery-instructions` | `Use the Left and Right arrow keys to rotate the globe, and Enter to browse the gallery.` | globe widget `aria-describedby` — the operating **instructions**, announced once |
+| `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, shown as a visible focus popup AND the `aria-describedby` text |
 | `image-gallery-card-label` | `View photo by {{name}}, {{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation (`{{index}} of {{count}}`) |
 
 The globe widget's **name** (`image-gallery-label`) is kept separate from its **controls**
@@ -235,9 +235,10 @@ missing; on a correctly-authored page they never show. Specifically:
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
 - **Authored:** arc-copy, pull-quote, and card name/role/description come from the block
-  rows + fragment; the "Click & Drag" hint + cursor label come from **row 2** (the
-  `Click & Drag` literal is just the empty-row fallback). Badge app labels come from the
-  authored token (the `App`/`Ap` literal is only the empty-token fallback).
+  rows + fragment; each **browse-image button's `aria-label`** is the card's authored **alt**
+  (→ **description** fallback until alt is authored); the "Click & Drag" hint + cursor label
+  come from **row 2** (the `Click & Drag` literal is just the empty-row fallback). Badge app
+  labels come from the authored token (the `App`/`Ap` literal is only the empty-token fallback).
 
 The one string with **no** sheet/authoring path is the modal's `1/N` counter (generated in
 `populateModal`, marked `// TODO:`); it's `aria-hidden` (screen readers get the localized
@@ -276,28 +277,48 @@ driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 
 ## Accessibility
 
-The globe is exposed as **one widget**, not a per-card list — a single focusable
-`<button>` (`a11y.js`, built over the sphere; `pointer-events:none` so it never blocks
-mouse drag). It's a **stable tab stop** (only pulled from the tab order while the modal
-traps focus), so the block is never skipped. Focusing it runs `snapToInteractive` —
-`window.lenis.scrollTo(top, { force, immediate })` to `SPHERE_FORMED_PROGRESS` (the
-`sphereFormT=1, zoomT=0` offset), bringing the block into its interactive state *and*
-into view before the focus ring shows (the pdf-space focus pattern). A focus guard
-(`suppressFocusSnap`, armed on window blur / `visibilitychange:hidden`) stops a
-tab-return from re-snapping.
+The globe is exposed as a **two-level gallery** (`a11y.js`), not a flat per-card list. Both
+levels are real `<button>`s built over the sphere (`pointer-events:none` so they never block
+mouse drag):
 
-- **Keyboard:** Tab → globe; Left/Right → `spinGlobe` (velocity impulse into the drag
-  inertia; a fixed yaw step under reduced motion); Enter/Space → open carousel mode at
-  item 1. In the modal, Prev/Next/Close are all tab stops with a focus trap (WAI-ARIA
-  dialog); Left/Right also traverse; Esc / Enter-on-Close exit and restore focus to the
-  globe widget.
-- **Screen reader:** the widget's `aria-label` (`image-gallery-label`) is a concise name;
-  its controls come from `image-gallery-instructions` via a visually-hidden
-  `aria-describedby` child, so the terse name reads on every focus and the how-to once. The
-  dialog announces the first item on open via
-  `aria-labelledby`/`describedby`; each **subsequent** item is announced once by a polite
-  live region (`.globe-gallery-modal__live`, updated only on navigation with `cardLabel`
-  so it doesn't double the open announcement or read the badge list).
+1. **Collapsed** — a single focusable entry `<button>`. A **stable tab stop** (only pulled
+   from the tab order while the modal traps focus, or while browsing), so the block is never
+   skipped; Tab past it goes to the next page element. Enter/Space **enters browse mode**.
+2. **Browse** — focus moves into a list of per-image buttons that join the tab order only
+   while entered. Tab/Shift+Tab walks image→image; on focus the globe rotates that image to
+   screen centre (`centerCardOnScreen` — a full-alignment reuse of the nav-nudge spring) and
+   a centred `:focus-visible` ring traces it. Enter opens the detail modal for **that** image.
+
+Focusing the entry button — or any browse image — runs `snapToInteractive`:
+`window.lenis.scrollTo(top, { force, immediate })` to `SPHERE_FORMED_PROGRESS` (the
+`sphereFormT=1, zoomT=0` offset), bringing the block into its interactive state *and* into
+view before the focus ring shows (the pdf-space focus pattern). A focus guard
+(`suppressFocusSnap`, armed on window blur / `visibilitychange:hidden`) stops a tab-return
+from re-snapping. While browsing, the core pauses auto-spin (`a11y.isBrowsing()`) so the
+globe holds the centred image; mouse drag still works.
+
+- **Keyboard:** Tab → globe entry; Enter/Space → enter browse mode (focus the first image).
+  In browse mode Tab/Shift+Tab moves image→image; **Esc** collapses back to the entry stop;
+  tabbing past the last image (or Shift+Tab before the first) leaves the block and collapses.
+  Enter on an image → open the detail modal for it. In the modal, Prev/Next/Close are all tab
+  stops with a focus trap (WAI-ARIA dialog); Left/Right also traverse; Esc / Enter-on-Close
+  exit and **restore focus to the image that opened it** (browse mode intact). Arrow-key globe
+  rotation was removed (browsing replaces it).
+- **Instructions popup:** on focus, the entry widget shows a **visible pill** ("Press Enter to
+  enter the gallery, then Tab through the images") so *sighted* keyboard users get the affordance
+  too (a11y-audit request). It's ONE element (`.globe-gallery-a11y-tip`) — hidden by default,
+  shown on the button's `:focus-visible`, and simultaneously the button's `aria-describedby`
+  target, so screen readers announce the same text (aria-describedby reads the node even while
+  it's visually hidden). Copy is `image-gallery-instructions` (currently a hardcoded English
+  fallback — `TODO` localize).
+- **Screen reader:** the entry button's `aria-label` (`image-gallery-label`) is a concise
+  name; its controls come from that `image-gallery-instructions` popup/`aria-describedby`, so the
+  terse name reads on every focus and the how-to once. Each
+  browse image's `aria-label` is its authored **alt** text (falling back to the creator
+  **description** until alt is authored; no name fallback). The modal dialog announces the
+  first item on open via `aria-labelledby`/`describedby`; each **subsequent** item is
+  announced once by a polite live region (`.globe-gallery-modal__live`, updated only on
+  navigation with `cardLabel` so it doesn't double the open announcement or read the badge list).
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive**
 globe instead of the scroll choreography, laid out as **plain document flow**:
@@ -473,7 +494,36 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   (`refreshSphereRotQuat` → `setFromEuler`, order `'XYZ'`). Yaw (`sphereRotY`) is an unclamped
   turntable spin about the up-axis; pitch (`sphereRotX`) tilts about world X and is **clamped
   to ±π/3 (±60°)** in `updateSphereRotation`, so cards never pass vertical or read upside down
-  and the globe **self-levels**. `'XYZ'` puts the clamped pitch as the *outer* rotation to
+  and the globe **self-levels**.
+  - **Keyboard-gallery centring drives the FULL orientation to `sphereQuat⁻¹` (centre + upright).**
+    A focused browse image should sit dead-centre AND stand upright (edges parallel to the
+    viewport), so `centerCardOnScreen` targets the one orientation that makes the card's world
+    quaternion (`sphereRotQuat · card.sphereQuat`) identity — i.e. `sphereRotQuat = card.sphereQuat⁻¹`.
+    On a sphere the outward normal IS the radial position, so this single target both centres the
+    card (normal → +Z) and cancels its slot orientation + baked-in `CARD_ROLL_JITTER` (up → +Y).
+    That target quaternion is decomposed back into the shared Euler XYZ triple and eased in
+    per-axis (yaw on the shortest path, pitch, and the upright **roll**). A naive yaw/pitch-only
+    aim (`atan2(wp.x, wp.z)`) left cards rolled AND, once any pitch was present, mis-aimed the yaw
+    (its `wp.z` mixes pitch in) so cards landed off-centre and only converged after several
+    re-focuses — both gone with the quaternion target.
+  - **Roll (`sphereRotZ`) exists ONLY for keyboard uprighting.** It's 0 for drag/ambient (the
+    globe never rolls under the pointer), set only by `centerCardOnScreen`, and eased back to 0
+    (`PITCH_RELAX`) once browsing ends. `refreshSphereRotQuat` now feeds all three Euler angles.
+  - **Pitch exception (`±85°`) via a GLIDING cap.** Free drag keeps the ±60° cap, but keyboard
+    centring may tilt pitch to **±85°** (`KEY_PITCH_CAP`) so a near-polar image still reaches the
+    vertical centre — a deliberate navigation, not free tumble. The seam is `pitchReleaseCap`, a cap
+    that glides rather than a hard switch: while browsing it tracks the held pitch (≥60°); once
+    browsing ends it eases back to ±60° (`PITCH_RELAX`) and `sphereRotX` is clamped to it each frame.
+    So **leaving a beyond-cap card (clicking, dragging) slides the globe down to level instead of
+    snapping 85°→60°** — and drag stays bounded because it's clamped to that same cap (already 60°
+    except during the brief post-browse glide). The browse→collapsed edge also cancels the in-flight
+    nudge and eases the upright roll to 0. (A plain `hardCap = browsing ? 85 : 60` was the first cut
+    and it SNAPPED — the hard clamp to 60° preempted the ease; the gliding cap is the fix.)
+  - **No-overshoot ease.** The keyboard nudge uses a **monotonic exponential ease** (`KEY_EASE`),
+    not the modal nudge's underdamped spring, so tabbing card→card never overshoots (the spring's
+    overshoot is fine behind the modal blur but reads as dizzying on the live globe).
+  - **Do not "restore" a blanket ±60° clamp / drop the roll / hard-switch the cap here** — it would
+    re-break polar-image centring, card uprighting, or the smooth exit. `'XYZ'` puts the clamped pitch as the *outer* rotation to
   dodge a gimbal flip: with `'YXZ'` (unclamped yaw outside) the local pitch axis's world-X
   component goes to 0 at 90° of yaw (vertical drag does nothing) and −1 at 180° (drag down
   tilts *up*). Keeping pitch outer + clamped keeps vertical drag well-behaved everywhere the

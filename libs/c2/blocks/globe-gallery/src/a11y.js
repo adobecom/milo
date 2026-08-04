@@ -1,31 +1,38 @@
 /* Keyboard + screen-reader entry point for the globe — a DI module.
 
-   The globe is exposed to assistive tech as ONE widget (a single tab stop), not a
-   per-card list: Tab selects the globe, Left/Right arrows spin it, Enter/Space opens
-   "carousel mode" (the card-detail modal) at the first item. This mirrors a
-   gallery/carousel pattern — the modal owns the in-carousel keyboard model (arrow
-   traverse, Tab→close, Esc/Enter-close exit; see modal.js).
+   The globe is exposed to assistive tech as a TWO-LEVEL gallery, not the modal carousel:
 
-   The widget is a real <button> (native focus + Enter/Space → click activation) sized
-   over the sphere region so sighted keyboard users get a :focus-visible ring; it's
-   pointer-events:none so it never intercepts mouse drag on the canvas beneath.
+     1. COLLAPSED — a single tab stop (a transparent <button> over the sphere). It's a
+        stable stop so the block is never skipped; Tab past it goes to the next page
+        element. Enter/Space ENTERS the gallery.
+     2. BROWSE — focus moves into a list of per-image buttons (one per card). Tab /
+        Shift+Tab walks image→image; each announces that image's alt text (authored alt →
+        creator description fallback). On focus the globe rotates that image to screen
+        centre (injected `centerCard`) and a centred focus ring traces it. Enter on an
+        image opens the detail modal for THAT image (injected `openCard`). Esc — or tabbing
+        out of the list either end — collapses back to the single entry stop.
 
-   It's a STABLE tab stop — always in the tab order (except while the modal traps focus)
-   so the block is never skipped, regardless of scroll position. On focus it calls the
-   injected `onFocus` which snaps the page to the globe's interactive scroll offset
-   (pdf-space pattern): this both forms the sphere and brings the block into view, so the
-   focus ring never appears over an out-of-view block. Arrow/Enter actions are still
-   gated on the sphere actually being formed (isInteractive) to cover the frame between
-   focus and the snap settling.
+   Both the entry button and the per-image buttons are real <button>s (native focus +
+   Enter/Space activation) so sighted keyboard users get a :focus-visible ring; all are
+   pointer-events:none so they never intercept mouse drag on the canvas beneath.
 
-   DI factory: every piece of runtime state it needs (count, the live sphereFormT /
-   modalIdx) is injected as a getter, and the actions it triggers (spinGlobe, openModal,
-   onFocus) are injected callbacks, so this module holds no globe state except its own
-   DOM node and imports neither the core nor the modal. The localized `galleryLabel` is the
-   widget's concise accessible NAME (announced on every focus); `galleryInstructions` is
-   the how-to-drive-it DESCRIPTION, wired via a visually-hidden `aria-describedby` child
-   (announced once) so the name stays terse. Multi-instance safe — all lookups go through
-   the injected root-scoped `q`, and the describedby id is suffixed with the instance `gid`. */
+   The per-image buttons only join the tab order while ENTERED (roving via tabIndex), and
+   the whole widget drops out of the tab order while the modal traps focus. Focusing the
+   entry button calls the injected `onFocus`, which snaps the page to the globe's
+   interactive scroll offset (pdf-space pattern) so tabbing INTO the block forms the sphere
+   and brings it into view before the ring shows; each image focus re-snaps the same way.
+   Arrow/Enter actions are gated on the sphere actually being formed (isInteractive) to
+   cover the frame between focus and the snap settling.
+
+   DI factory: every piece of runtime state it needs (count, sphereFormT, modalIdx, the
+   per-image label) is injected as a getter, and the actions it triggers (centerCard,
+   openCard, onFocus) are injected callbacks, so this module holds no globe state except
+   its own DOM nodes and imports neither the core nor the modal. `galleryLabel` is the
+   entry button's concise accessible NAME (announced on every focus); `galleryInstructions`
+   is the how-to-drive-it DESCRIPTION, shown as a VISIBLE popup on focus AND wired as the
+   `aria-describedby` child (one element for both audiences) so the name stays terse.
+   Multi-instance safe — all lookups go through the injected root-scoped `q`, and the
+   describedby id is suffixed with the instance `gid`. */
 
 export default function createGalleryA11y({
   q,
@@ -33,89 +40,214 @@ export default function createGalleryA11y({
   getSphereFormT,
   getModalIdx,
   interactiveThreshold,
-  spinGlobe,
-  openModal,
+  getCardLabel,
+  centerCard,
+  openCard,
   onFocus,
   galleryLabel,
   galleryInstructions,
   gid,
 }) {
-  let widgetEl = null; // the single focusable globe widget (button)
-  let tabbable = true; // current tab-order state (false only while modal traps focus)
+  let widgetEl = null; // the collapsed entry button (single tab stop)
+  let cardsEl = null; // container holding the per-image browse buttons
+  let cardButtons = []; // the per-image buttons (tab order only while entered)
+  let entered = false; // true while in BROWSE mode (image list is the tab order)
+  let focusedIdx = -1; // index of the currently-focused browse image, -1 if none
+  // Last-applied tab state, so updateTabStops() only touches the DOM on a real change.
+  let appliedModalOpen = null;
+  let appliedEntered = null;
 
-  // Whether the globe can be activated/spun right now (sphere formed + no modal).
+  // Whether the globe can be activated/entered right now (sphere formed + no modal).
   function isInteractive() {
     return getSphereFormT() >= interactiveThreshold && getModalIdx() < 0;
   }
 
-  // Build the single globe widget. Called after buildCards() so getCount() is final.
+  // BROWSE → COLLAPSED. Pull the image list out of the tab order and restore the single
+  // entry stop (unless the modal currently traps focus). Does not move focus by itself.
+  function collapse() {
+    entered = false;
+    focusedIdx = -1;
+    cardButtons.forEach((btn) => { btn.tabIndex = -1; });
+    if (widgetEl) widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
+  }
+
+  // Per-image button handlers. Defined here (not inline in the setup loop) so they don't
+  // close over the mutable focusedIdx / widgetEl per button; each reads its own index from
+  // the element's dataset. Focus → centre this image + snap into view; blur → clear the ring
+  // target (a card→card tab re-sets it synchronously, so no flicker; a blur into the modal
+  // leaves it -1); Esc → collapse back to the single entry stop.
+  function onCardFocus(e) {
+    focusedIdx = Number(e.currentTarget.dataset.idx);
+    centerCard(focusedIdx);
+    onFocus();
+  }
+  function onCardBlur(e) {
+    if (focusedIdx === Number(e.currentTarget.dataset.idx)) focusedIdx = -1;
+  }
+  function onCardClick(e) {
+    if (isInteractive()) openCard(Number(e.currentTarget.dataset.idx));
+  }
+  function onCardKeydown(e) {
+    if (e.key !== 'Escape') return;
+    e.preventDefault();
+    collapse();
+    if (widgetEl) widgetEl.focus();
+  }
+
+  // COLLAPSED → BROWSE. Only from the formed, modal-free globe. Make the images the tab
+  // order, drop the entry stop, and move focus to the first image (which centres it).
+  function enterBrowse() {
+    if (!isInteractive() || !cardButtons.length) return;
+    entered = true;
+    if (widgetEl) widgetEl.tabIndex = -1;
+    cardButtons.forEach((btn) => { btn.tabIndex = 0; });
+    cardButtons[0].focus();
+  }
+
+  // Build the entry button + the per-image browse list. Called after buildCards() so
+  // getCount() is final. Rebuilt cleanly on re-init (teardown removes the old nodes).
   function setup() {
     const canvas = q('.globe-gallery-canvas');
     if (!canvas || !canvas.parentNode) return;
+    const parent = canvas.parentNode;
 
-    // Remove an existing widget on re-init so we don't double up.
-    const existing = q('.globe-gallery-a11y');
-    if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    // Remove any existing nodes on re-init so we don't double up.
+    ['.globe-gallery-a11y', '.globe-gallery-a11y-cards'].forEach((sel) => {
+      const existing = q(sel);
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+    });
 
+    // ── Entry button (collapsed state) ──
     widgetEl = document.createElement('button');
     widgetEl.type = 'button';
     widgetEl.className = 'globe-gallery-a11y';
     widgetEl.setAttribute('aria-label', galleryLabel(getCount()));
     widgetEl.tabIndex = getModalIdx() < 0 ? 0 : -1;
 
-    // Operating instructions as the widget's DESCRIPTION (announced once), kept out of
-    // the concise aria-label NAME (announced on every focus). A visually-hidden child so
-    // it's removed with the widget on teardown; the gid keeps the id unique per instance
-    // (aria-describedby resolves a descendant id fine). Skipped if no instructions given.
+    // Operating instructions, serving BOTH audiences from ONE element (per a11y audit): a
+    // VISIBLE popup (CSS shows `.globe-gallery-a11y-tip` on the button's :focus-visible) so
+    // sighted keyboard users see "press Enter to enter the gallery", and simultaneously the
+    // button's aria-describedby target so screen readers announce the same text on focus
+    // (aria-describedby reads the referenced node even while it's visually hidden). Kept out
+    // of the concise aria-label NAME so the name stays terse. Child of the button, so it's
+    // removed on teardown; the gid keeps the id unique per instance.
+    // TODO: `galleryInstructions` is currently a hardcoded English fallback (see
+    // resolveGlobeLabels in globe-gallery.js) — localize once the placeholder key is authored.
     if (galleryInstructions) {
       const descEl = document.createElement('span');
-      descEl.className = 'globe-gallery-sr-only';
+      descEl.className = 'globe-gallery-a11y-tip';
       descEl.id = `globe-gallery-a11y-desc-${gid}`;
       descEl.textContent = galleryInstructions;
       widgetEl.appendChild(descEl);
       widgetEl.setAttribute('aria-describedby', descEl.id);
     }
 
-    // Focusing the globe snaps the page to its interactive (formed-sphere) scroll
-    // position — like pdf-space, so tabbing INTO the block brings it to the globe state
-    // rather than skipping it, and the focus ring never shows over an out-of-view block.
+    // Focusing the globe snaps the page to its interactive (formed-sphere) scroll position
+    // — like pdf-space, so tabbing INTO the block brings it to the globe state rather than
+    // skipping it, and the focus ring never shows over an out-of-view block.
     widgetEl.addEventListener('focus', () => { onFocus(); });
+    // Enter/Space (native button activation) → enter the gallery (browse the images).
+    widgetEl.addEventListener('click', () => { enterBrowse(); });
 
-    // Enter/Space (native button activation) → open carousel mode at the first item.
-    widgetEl.addEventListener('click', () => {
-      if (!isInteractive()) return;
-      openModal();
+    // ── Per-image browse buttons (browse state) ──
+    cardsEl = document.createElement('div');
+    cardsEl.className = 'globe-gallery-a11y-cards';
+    const count = getCount();
+    cardButtons = [];
+    for (let i = 0; i < count; i += 1) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'globe-gallery-a11y-card';
+      btn.tabIndex = -1; // joins the tab order only while entered
+      btn.dataset.idx = String(i);
+      btn.setAttribute('aria-label', getCardLabel(i));
+      btn.addEventListener('focus', onCardFocus);
+      btn.addEventListener('blur', onCardBlur);
+      btn.addEventListener('click', onCardClick);
+      btn.addEventListener('keydown', onCardKeydown);
+      cardButtons.push(btn);
+      cardsEl.appendChild(btn);
+    }
+
+    // Auto-collapse when focus leaves the image list (tab past the last / shift-tab before
+    // the first / click away). Skip while the modal is open — Enter-on-image moves focus
+    // into the modal chrome (modalIdx already ≥0), and we must stay entered so focus
+    // returns to the image on close.
+    cardsEl.addEventListener('focusout', (e) => {
+      if (!entered || getModalIdx() >= 0) return;
+      if (!e.relatedTarget || !cardsEl.contains(e.relatedTarget)) collapse();
     });
 
-    // Left/Right arrows spin the globe; preventDefault so the page doesn't also act
-    // on them (they don't scroll, but a focused button + custom keys should own them).
-    widgetEl.addEventListener('keydown', (e) => {
-      if (!isInteractive()) return;
-      if (e.key === 'ArrowLeft') { e.preventDefault(); spinGlobe(-1); } else if (e.key === 'ArrowRight') { e.preventDefault(); spinGlobe(1); }
-    });
-
-    canvas.parentNode.appendChild(widgetEl);
-    tabbable = true;
+    parent.appendChild(widgetEl);
+    parent.appendChild(cardsEl);
+    entered = false;
+    appliedModalOpen = null;
+    appliedEntered = null;
   }
 
-  // Keep the widget OUT of the tab order only while the modal is open (so focus stays
-  // trapped in carousel mode and can't land on the globe behind it). Otherwise it's a
-  // permanent tab stop. Only touches the DOM when the state flips — free at idle.
+  // Keep the tab order in sync with (modalOpen, entered): modal open → nothing in the
+  // widget is tabbable (focus trapped in the dialog); else entered → the images are the
+  // tab stops; else → the single entry button. Only touches the DOM when the state flips.
   function updateTabStops() {
     if (!widgetEl) return;
-    const wantTabbable = getModalIdx() < 0;
-    if (wantTabbable === tabbable) return;
-    tabbable = wantTabbable;
-    widgetEl.tabIndex = wantTabbable ? 0 : -1;
+    const modalOpen = getModalIdx() >= 0;
+    if (modalOpen === appliedModalOpen && entered === appliedEntered) return;
+    appliedModalOpen = modalOpen;
+    appliedEntered = entered;
+    if (modalOpen) {
+      widgetEl.tabIndex = -1;
+      cardButtons.forEach((btn) => { btn.tabIndex = -1; });
+    } else if (entered) {
+      widgetEl.tabIndex = -1;
+      cardButtons.forEach((btn) => { btn.tabIndex = 0; });
+    } else {
+      widgetEl.tabIndex = 0;
+      cardButtons.forEach((btn) => { btn.tabIndex = -1; });
+    }
   }
 
-  // Remove the widget and reset state so a fresh setup() (e.g. after a breakpoint-crossing
+  // True while browsing the image list — the core reads this to pause auto-spin so the
+  // globe holds the centred image instead of drifting.
+  function isBrowsing() {
+    return entered;
+  }
+
+  // The image the focus ring should trace, -1 if none. The core projects this card each
+  // frame and calls setFocusRect so the ring hugs the (moving) image, not a fixed box.
+  function getFocusedIdx() {
+    return focusedIdx;
+  }
+
+  // Position + size the focused image's button to a screen-space rect (px, centred on
+  // cx/cy) computed by the core from the card's live projection, so the :focus-visible ring
+  // traces the actual image as the globe rotates it to centre. Radius follows the height so
+  // the ring's rounded corners roughly match the card's.
+  function setFocusRect(cx, cy, w, h) {
+    const btn = cardButtons[focusedIdx];
+    if (!btn) return;
+    btn.style.left = `${cx}px`;
+    btn.style.top = `${cy}px`;
+    btn.style.width = `${w}px`;
+    btn.style.height = `${h}px`;
+    btn.style.borderRadius = `${h * 0.035}px`;
+  }
+
+  // Remove the nodes and reset state so a fresh setup() (e.g. after a breakpoint-crossing
   // re-init) starts clean.
   function teardown() {
-    if (widgetEl && widgetEl.parentNode) widgetEl.parentNode.removeChild(widgetEl);
+    [widgetEl, cardsEl].forEach((node) => {
+      if (node && node.parentNode) node.parentNode.removeChild(node);
+    });
     widgetEl = null;
-    tabbable = true;
+    cardsEl = null;
+    cardButtons = [];
+    entered = false;
+    focusedIdx = -1;
+    appliedModalOpen = null;
+    appliedEntered = null;
   }
 
-  return { setup, updateTabStops, teardown };
+  return {
+    setup, updateTabStops, teardown, isBrowsing, getFocusedIdx, setFocusRect,
+  };
 }

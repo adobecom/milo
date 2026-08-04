@@ -579,6 +579,72 @@ body.modal-open { overflow: hidden; }
 }
 .globe-gallery-a11y:focus { outline: none; }
 
+/* Per-image browse buttons (keyboard "enter the gallery" mode). The container overlays the
+   canvas (full viewport); each button is sized + positioned per-frame from JS
+   (updateA11yFocusRing) to the projected screen rect of its image, so the focused one's
+   :focus-visible ring hugs the actual image as the globe rotates it to centre. All
+   pointer-events:none so they never intercept canvas drag. Tabbable only while browsing
+   (toggled in JS). */
+.globe-gallery-a11y-cards {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4; /* same layer as the entry widget; above the WebGL canvas */
+}
+
+/* Default to viewport centre (≈ sphere centre) so the one frame between focus and the first
+   setFocusRect() puts any focus ring near where the image is heading, not the top-left
+   corner. JS overwrites left/top/width/height each frame while focused. */
+.globe-gallery-a11y-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.globe-gallery-a11y-card:focus { outline: none; }
+
+/* Entry-widget instructions popup. ONE element (the button's aria-describedby target) that
+   is ALSO a visible pill: hidden by default (aria-describedby still reads it for screen
+   readers), shown when the globe entry button is keyboard-focused so sighted users see the
+   "press Enter to enter the gallery" affordance too (a11y audit request). Centred on the
+   sphere; pointer-events:none so it never blocks the canvas. */
+.globe-gallery-a11y-tip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  max-width: min(78vw, 320px);
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 24%);
+  background: rgb(0 0 0 / 64%);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 5; /* above the a11y layer (z:4); the modal (higher) still covers it */
+}
+
+.globe-gallery-a11y:focus-visible .globe-gallery-a11y-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
 /* Visually-hidden but screen-reader-readable (e.g. the modal carousel live region).
    1×1 clipped is the standard sr-only recipe that keeps the node in the a11y tree. */
 .globe-gallery-sr-only {
@@ -598,6 +664,7 @@ body.modal-open { overflow: hidden; }
    :focus-visible styles them directly. (Outline follows the widget's border-radius in
    modern browsers, so the globe ring reads as a circle.) */
 .globe-gallery-a11y:focus-visible,
+.globe-gallery-a11y-card:focus-visible,
 .globe-gallery-modal__close:focus-visible,
 .globe-gallery-modal__nav:focus-visible {
   outline: 2px solid #1473E6;
@@ -818,6 +885,14 @@ body.modal-open { overflow: hidden; }
 .globe-gallery--reduced .globe-gallery-a11y {
   position: absolute;
   top: 58vh;
+}
+
+/* The focus-ring overlay tracks the scrolled canvas (absolute, matching its 8vh top +
+   100vh box) so the projected px coords land on the right image. */
+.globe-gallery--reduced .globe-gallery-a11y-cards {
+  position: absolute;
+  inset: 8vh 0 auto;
+  height: 100vh;
 }
 
 /* Pull-quote flows normally after the globe: drop the runway-bottom pin + sticky, show
