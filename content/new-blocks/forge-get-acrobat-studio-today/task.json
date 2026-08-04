@@ -1,0 +1,25 @@
+{
+  "blockName": "forge-get-acrobat-studio-today",
+  "sectionIndex": 0,
+  "decision": "below-threshold",
+  "score": 0.61,
+  "topCandidate": "news",
+  "sectionClass": "sf-sec-0",
+  "figmaUrl": "",
+  "figmaNodeId": "10559:113746",
+  "distinctive": true,
+  "truthShotRel": "screenshots/section-0-ref.png",
+  "geometry": null,
+  "miloPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-d4b5088f-msekdyxl",
+  "miloTargetPath": "/Users/victor/dev/milo-forge-fresh/.forge-worktrees/session-d4b5088f-msekdyxl/libs/c2/blocks/forge-get-acrobat-studio-today",
+  "miloBranch": "forge/session-d4b5088f-2d3",
+  "baseBranch": "forge-a-panel",
+  "previewUrl": "http://localhost:3000/drafts/vhargrave/forge/rich-content-hero-d4b508?milolibs=local",
+  "files": {
+    "sectionHtml": "section.html",
+    "starterCss": "starter.css",
+    "authorContentHtml": "author-content.html",
+    "truthTargetCss": "truth-target.css",
+    "pageGlobalsCss": "page-globals.css"
+  }
+}
