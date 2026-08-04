@@ -68,6 +68,7 @@ const { replaceKey, replaceKeyArray } = placeholders;
 const { getMiloLocaleSettings, isMasGeoDetectionEnabled } = merch;
 
 const {
+  clearSignOutCookies,
   closeAllDropdowns,
   createErrorPopup,
   fetchAndProcessPlainHtml,
@@ -162,6 +163,7 @@ const getMessageEventListener = () => {
           .catch(() => { setUserProfile({}); });
         break;
       case 'SignOut':
+        clearSignOutCookies();
         executeDefaultAction();
         break;
       case 'ProfileSwitch':
