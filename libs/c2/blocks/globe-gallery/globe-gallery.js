@@ -1113,7 +1113,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       -NAV_NUDGE_MAX_Y,
       Math.min(NAV_NUDGE_MAX_Y, alignDeltaY * NAV_NUDGE_FACTOR),
     );
-    const nudgeX = Math.max(
+    const nudgeX = bp.YAW_ONLY ? 0 : Math.max(
       -NAV_NUDGE_MAX_X,
       Math.min(NAV_NUDGE_MAX_X, alignDeltaX * NAV_NUDGE_FACTOR),
     );
@@ -1223,7 +1223,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getSphereGroup: () => sphereGroup,
     getRenderer: () => renderer,
     getCards: () => cards,
-    getCount: () => bp.N_TOTAL,
+    getCount: () => CARD_CONTENT.length,
     getCardMetadata,
     // Lazily load a sharper texture for the opened card. Returns the pending Image (so the
     // modal can cancel it) or null when the base cap already meets the modal cap (reuse, no load).

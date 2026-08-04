@@ -7,7 +7,8 @@ target; modal, a11y gallery, and chromatic aberration (CA) are fast-follow.
 ## What it is
 
 Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored photo cards
-(any count on desktop; first 24 on mobile) animate through four phases:
+(any count on desktop; first 24 on mobile — but the **modal browses all** authored images on
+mobile, see Card count) animate through four phases:
 
 ```
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
@@ -39,7 +40,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `textures.js` | `loadCardTextures({ maxTex })` — loads each card image into a cover-cropped `CanvasTexture`, downscaled to the `maxTex` per-device cap (see Texture memory budget); `loadModalTexture(src, maxTex, onReady)` — lazily loads one full (uncropped) image at a higher cap for the modal, returning the pending `Image` so the caller can cancel; `createClickDragTexture(aspect, hintText)` — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. All named exports, no per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ creator **description** fallback); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
-| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. `getCount()` is the FULL authored image count (the gallery), so on sm it browses past the 24 barrel cards into slotless **overflow carriers** it mints + disposes lazily (a modal-only quad that dissolves in/out — see Card count). Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
 | `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
@@ -174,10 +175,29 @@ colors; unknown apps render with a derived abbreviation.
   further (negative-index, off-screen) columns. `totalW`/`totalH` derive from the nominal
   dims, never the actual column count, so **adding cards never shifts cards 0–44**.
   Practical ceiling is texture memory / load time, not layout.
-- **sm (<768) — hard cap of 24.** The 3×8 grid already exceeds a 667px-tall viewport and
-  the sphere is small, so mobile renders the **first 24** authored cards and ignores the
-  rest (logged via `lana` at `info`). Surplus cards are never fetched, so mobile pays no
-  texture cost for them.
+- **sm (<768) — barrel hard cap of 24, modal gallery uncapped.** The 3×8 grid already
+  exceeds a 667px-tall viewport and the sphere is small, so mobile renders only the **first
+  24** authored cards on the **arc / grid / barrel** (`bp.N_TOTAL`, logged via `lana` at
+  `info`) — and loads only their 24 base textures, so the barrel pays no texture cost for the
+  surplus. **The modal, however, browses ALL authored images** (see the Modal gallery note
+  below): touch users must not be shown less *content* than desktop, only a smaller *on-screen
+  arrangement*.
+
+**Modal gallery = all authored images (barrel-count-independent).** The modal's `getCount()`
+is `CARD_CONTENT.length` (every authored image), not `bp.N_TOTAL`. On md the two are equal
+(uncapped), so nothing changes. On sm the modal navigates past the 24 barrel cards into
+**overflow images** (24…N-1) that have no sphere slot. The modal mints a lazy **modal-only
+carrier** per overflow index — a quad + SDF material that lives only in `modalScene`, owns its
+lazily-loaded modal texture (disposed on nav-away/close, so ≤1 overflow texture resident), and
+**dissolves** in/out (opacity cross-fade) on nav/close instead of flying to/from the globe
+(there's no slot to fly to). A card with a real barrel slot still flies as before. Overflow is
+reached only via modal **navigation** (arrow / swipe / ←→) — `open()` is always a barrel card
+(tap or a11y browse), so it's untouched. Any overflow-involving nav routes through the
+cross-warp dissolve on **every** breakpoint (mobile included), since the instant-swap /
+swipe-neighbor paths reparent to/from the sphere and can't carry a slotless card. The
+**keyboard/SR browse gallery stays at 24** (its per-image centring targets real sphere cards);
+SR users still reach every image through the modal's ←→ nav. All overflow carriers +
+their textures are disposed on a breakpoint re-init (`destroy`).
 
 Fewer cards than the nominal grid → the last column is partially filled. No modulo
 wrapping (`getCardMetadata(i)` indexes directly). `ARC_DENSE_COUNT` is derived from
@@ -614,7 +634,11 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     (`alignDeltaY = -atan2(x, z)`, `alignDeltaX = atan2(y, horiz)`), scales by
     `NAV_NUDGE_FACTOR`, caps per-axis (`NAV_NUDGE_MAX_Y` / `_X`), and sets spring targets. The
     spring in `updateSphereRotation` eases both scalars toward target with slight underdamping;
-    the pitch target is itself clamped to ±π/3 so a nudge can't exceed the cap.
+    the pitch target is itself clamped to ±π/3 so a nudge can't exceed the cap. **On yaw-only
+    geometry (`bp.YAW_ONLY` — cylinder / touch) the PITCH nudge is forced to 0**: those devices
+    take no pitch input anywhere else (the drag axis-lock is yaw-only), so a barrel's varied slot
+    heights would otherwise spring in real pitch on every modal navigation and leave the barrel
+    visibly skewed vertically after the modal closes. The yaw nudge stays (facing the new column).
 - **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
   separately and must not be conflated:
   - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
