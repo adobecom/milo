@@ -44,6 +44,7 @@ nav.feds-topnav .feds-bc-wrapper {
   position: absolute;
   top: calc(100% - 2px);
   z-index: 2;
+  pointer-events: none;
 }
 
 .bc-gnav .prompt-card-button {
@@ -90,6 +91,10 @@ nav.feds-topnav .feds-bc-wrapper {
 .bc-gnav .prompt-card-text p {
   color: var(--bc-card-text-color);
   margin: 0;
+}
+
+.bc-gnav .bc-prompt-cards.active {
+  pointer-events: all;
 }
 
 .bc-gnav:has(textarea:focus-visible, .input-field-button:focus-visible) .bc-prompt-cards button,
