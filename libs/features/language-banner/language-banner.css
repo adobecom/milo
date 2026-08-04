@@ -26,7 +26,7 @@
 .language-banner-text {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
@@ -35,7 +35,7 @@
 .language-banner-link {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-style: normal;
   font-weight: 700;
   line-height: 18px;
@@ -102,9 +102,9 @@ html:has(meta[name="foundation"][content="c2"]) {
 
   .language-banner-text {
     color: var(--s2a-color-gray-25);
-    font-size: var(--s2a-font-size-sm);
+    font-size: var(--s2a-typography-font-size-body-sm);
     font-weight: 400;
-    line-height: var(--s2a-font-line-height-18);
+    line-height: var(--s2a-font-line-height-21);
     flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
@@ -115,9 +115,9 @@ html:has(meta[name="foundation"][content="c2"]) {
 
   .language-banner-link {
     color: var(--s2a-color-gray-25);
-    font-size: var(--s2a-font-size-sm);
+    font-size: var(--s2a-typography-font-size-body-sm);
     font-weight: 700;
-    line-height: var(--s2a-font-line-height-18);
+    line-height: var(--s2a-font-line-height-21);
     text-decoration: underline;
     text-decoration-skip-ink: none;
     text-underline-position: from-font;
@@ -152,11 +152,6 @@ html:has(meta[name="foundation"][content="c2"]) {
       justify-content: center;
       padding-inline: 150px;
       gap: 0;
-    }
-
-    .language-banner-text,
-    .language-banner-link {
-      font-size: var(--s2a-font-size-md);
     }
 
     .language-banner-close {
