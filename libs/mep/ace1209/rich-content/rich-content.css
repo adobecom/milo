@@ -494,7 +494,7 @@
   padding-top: calc(var(--s2a-layout-sm) + var(--rc-pull-offset));
   padding-bottom: var(--s2a-layout-lg);
   overflow: clip;
-  --grid-margin-width: 5px;
+  --grid-margin-width: 0px; /* Keep unit for calc */
 
   @media (width >= 768px) {
     --grid-margin-width: var(--grid-margin-width-base);
@@ -521,7 +521,6 @@
     picture {
       display: block;
       width: 100%;
-      aspect-ratio: 365 / 350;
       border-radius: var(--s2a-border-radius-24);
       overflow: hidden;
       transform-origin: center bottom;
@@ -535,16 +534,24 @@
       video {
         display: block;
         width: 100%;
-        height: 100%;
+        height: auto;
         object-fit: cover;
+
+        @media (width >= 768px) {
+          height: 100%;
+        }
       }
     }
 
     picture img {
       display: block;
       width: 100%;
-      height: 100%;
+      height: auto;
       object-fit: cover;
+
+      @media (width >= 768px) {
+        height: 100%;
+      }
     }
 
     .action-area {
@@ -837,6 +844,15 @@
     @media (width >= 1440px) {
       .section.parallax-video-garage-door:has(.rich-content.media) {
         animation-range: entry 0% entry 70%, exit 50% exit 90%;
+      }
+    }
+
+    /* Mobile video is full-width at a fixed size — no scale-in-on-scroll,
+       so the CTA that rides the same timeline stays put too. */
+    @media (width < 768px) {
+      .section.parallax-video-garage-door .rich-content.media :is(.cta-area, .media-cell .action-area) :is(a, button),
+      .section.parallax-video-garage-door .rich-content.media .media-cell :is(.video-container, picture) {
+        animation: none;
       }
     }
   }
