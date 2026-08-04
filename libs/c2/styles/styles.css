@@ -1336,21 +1336,22 @@ span.hang-opening-quote {
   .section.parallax-garage-door-reveal {
     --gd-grow-from: -50vh;
     --gd-reveal-from: 20vh;
+    --gd-range-end: cover 36%;
 
     transform-origin: top center;
     animation: garage-door-grow ease-out both;
     animation-timeline: view();
-    animation-range: entry 0% cover 36%;
+    animation-range: entry 0% var(--gd-range-end);
 
     @media (width >= 1280px) {
       --gd-grow-from: -90vh;
       --gd-reveal-from: 30vh;
-      animation-range: entry 0% cover 48%;
+      --gd-range-end: cover 48%;
     }
 
     @media (width >= 1920px) {
       --gd-grow-from: -70vh;
-      animation-range: entry 0% cover 36%;
+      --gd-range-end: cover 36%;
     }
 
     .section-background {
@@ -1368,7 +1369,12 @@ span.hang-opening-quote {
       position: relative;
       animation: garage-door-reveal ease-out both;
       animation-timeline: view();
-      animation-range: cover -10% cover 70%;
+
+      /* Same range as the section's own grow animation (not its own,
+         later-starting range) so the two motions move together instead
+         of the foreground sitting still while its parent section is
+         still settling — that gap was the reported "dip". */
+      animation-range: entry 0% var(--gd-range-end);
 
       * {
         animation: garage-door-line-height ease-out both;
