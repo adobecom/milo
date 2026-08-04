@@ -146,6 +146,36 @@ describe('Comparison Table C2', () => {
     expect(srOnly.textContent).to.equal('Not included');
   });
 
+  it('close icon has an accessible name distinguishing it from an empty cell', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/icons.html' });
+    const el = document.querySelector('.comparison-table-c2');
+    init(el);
+
+    const closeIcon = el.querySelector('.icon-close');
+    await waitFor(() => closeIcon.closest('.cell-content').querySelector('.sr-only'), 2000);
+
+    expect(closeIcon.getAttribute('aria-hidden')).to.equal('true');
+    expect(closeIcon.closest('.cell-content').classList.contains('empty-cell')).to.be.false;
+    const srOnly = closeIcon.closest('.cell-content').querySelector('.sr-only');
+    expect(srOnly).to.exist;
+    expect(srOnly.textContent).to.equal('not a feature');
+  });
+
+  it('checkmark icon has an sr-only accessible name and no native title', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/icons.html' });
+    const el = document.querySelector('.comparison-table-c2');
+    init(el);
+
+    const checkmarkIcon = el.querySelector('.icon-checkmark');
+    await waitFor(() => checkmarkIcon.closest('.cell-content').querySelector('.sr-only'), 2000);
+
+    expect(checkmarkIcon.getAttribute('aria-hidden')).to.equal('true');
+    expect(checkmarkIcon.querySelector('title')).to.not.exist;
+    const srOnly = checkmarkIcon.closest('.cell-content').querySelector('.sr-only');
+    expect(srOnly).to.exist;
+    expect(srOnly.textContent).to.equal('primary feature');
+  });
+
   it('builds a labelled mobile filter select per column when there are 3+ columns', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/three-columns.html' });
     const el = document.querySelector('.comparison-table-c2');
