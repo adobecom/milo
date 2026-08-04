@@ -33,12 +33,15 @@ function latestDate(group) {
 function renderDesignCard(entry) {
   const a = document.createElement('a');
   a.className = 'design-card';
-  a.href = entry.figmaUrl;
-  a.target = '_blank';
-  a.rel = 'noopener';
+  if (entry.figmaUrl) {
+    a.href = entry.figmaUrl;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  }
 
   const img = document.createElement('img');
   if (entry.figmaThumbnailUrl) img.src = entry.figmaThumbnailUrl;
+  img.alt = entry.figmaFileName ? `${entry.figmaFileName} thumbnail` : 'Figma design thumbnail';
   a.append(img);
 
   const body = document.createElement('div');
@@ -62,6 +65,7 @@ function renderDesignCard(entry) {
 function groupByDay(changes) {
   const byDay = new Map();
   changes.forEach((c) => {
+    if (!c.date) return; // skip malformed entries rather than throwing and blanking the page
     const day = c.date.slice(0, 10);
     if (!byDay.has(day)) byDay.set(day, []);
     byDay.get(day).push(c);
@@ -113,8 +117,24 @@ function renderRoadmap(entry, sinceValue) {
   }
   wrap.append(title);
 
+  const trackWrap = document.createElement('div');
+  trackWrap.className = 'roadmap-track-wrap';
+
+  const skipId = `roadmap-after-${Math.random().toString(36).slice(2)}`;
+  const skipLink = document.createElement('a');
+  skipLink.href = `#${skipId}`;
+  skipLink.className = 'visually-hidden skip-timeline';
+  skipLink.textContent = `Skip ${entry.figmaFileName || 'design'} timeline (${days.length} days)`;
+  skipLink.addEventListener('click', (event) => {
+    event.preventDefault();
+    document.getElementById(skipId).focus();
+  });
+
   const track = document.createElement('div');
   track.className = 'roadmap-track';
+  track.tabIndex = 0; // scrollable region needs to be keyboard-focusable to scroll without a mouse
+  track.setAttribute('role', 'group');
+  track.setAttribute('aria-label', 'Change history timeline, scrollable');
 
   const inner = document.createElement('div');
   inner.className = 'roadmap-track-inner';
@@ -133,6 +153,8 @@ function renderRoadmap(entry, sinceValue) {
   const summary = document.createElement('div');
   summary.className = 'roadmap-summary';
   summary.hidden = true;
+  summary.tabIndex = -1; // not tab-stoppable, but focusable programmatically when revealed
+  summary.setAttribute('aria-live', 'polite');
 
   const labelEvery = Math.max(1, Math.ceil(days.length / 10));
 
@@ -150,10 +172,17 @@ function renderRoadmap(entry, sinceValue) {
       bar.style.height = `${Math.max(heightPct, 4)}%`;
       if (dayBucket.maxMagnitude === 0) bar.classList.add('roadmap-bar-zero');
       bar.title = `${new Date(dayBucket.day).toLocaleDateString()} · ${changeCount} version${changeCount === 1 ? '' : 's'} · max ${dayBucket.maxMagnitude}% changed`;
+      bar.setAttribute('aria-pressed', 'false');
+      bar.setAttribute('aria-label', bar.title);
       bar.addEventListener('click', () => {
-        inner.querySelectorAll('.roadmap-bar-selected').forEach((b) => b.classList.remove('roadmap-bar-selected'));
+        inner.querySelectorAll('.roadmap-bar-selected').forEach((b) => {
+          b.classList.remove('roadmap-bar-selected');
+          b.setAttribute('aria-pressed', 'false');
+        });
         bar.classList.add('roadmap-bar-selected');
+        bar.setAttribute('aria-pressed', 'true');
         renderSummary(summary, dayBucket, entry);
+        summary.focus();
       });
     } else {
       bar.style.height = '2%';
@@ -184,7 +213,23 @@ function renderRoadmap(entry, sinceValue) {
 
   inner.append(bars, labels);
   track.append(inner);
-  wrap.append(track);
+  trackWrap.append(track);
+
+  const skipTarget = document.createElement('div');
+  skipTarget.id = skipId;
+  skipTarget.tabIndex = -1; // focus target only, not a tab stop
+
+  const updateScrollAffordance = () => {
+    const moreToScroll = track.scrollWidth - track.scrollLeft - track.clientWidth > 4;
+    trackWrap.classList.toggle('roadmap-track-scrollable', moreToScroll);
+  };
+  track.addEventListener('scroll', updateScrollAffordance);
+  window.addEventListener('resize', updateScrollAffordance);
+  // Layout isn't final until the track is in the document — defer past the
+  // current paint so scrollWidth/clientWidth reflect the rendered size.
+  requestAnimationFrame(updateScrollAffordance);
+
+  wrap.append(skipLink, trackWrap, skipTarget);
   wrap.append(summary);
 
   return wrap;
@@ -199,6 +244,54 @@ function figmaNodeUrl(entry, id) {
   const topLevelId = id.replace(/^I/, '').split(';')[0];
   const urlId = topLevelId.replace(/:/g, '-');
   return `https://www.figma.com/design/${entry.figmaFileKey}/x?node-id=${urlId}`;
+}
+
+// Keyed to the exact detail strings/prefixes describe_modification() in
+// diff_versions.py produces — keep in sync with that function.
+const DETAIL_CATEGORIES = [
+  { match: (d) => d.startsWith('text'), label: 'text' },
+  { match: (d) => d === 'fill/color changed', label: 'color' },
+  { match: (d) => d === 'stroke changed', label: 'stroke' },
+  { match: (d) => d === 'effect (shadow/blur) changed', label: 'shadow/blur' },
+  { match: (d) => d === 'corner radius changed', label: 'corner radius' },
+  { match: (d) => d.startsWith('rotation:'), label: 'rotation' },
+  { match: (d) => d === 'auto-layout spacing/padding changed', label: 'spacing' },
+  { match: (d) => d.startsWith('position moved:'), label: 'position' },
+  { match: (d) => d.startsWith('size changed:'), label: 'size' },
+  { match: (d) => d.startsWith('opacity:'), label: 'opacity' },
+  { match: (d) => d.startsWith('visibility:'), label: 'visibility' },
+];
+
+// A raw list of "fill/color changed" / "size changed: 1920.0×15854.7 →
+// 1920.0×15820.9" reads as an engineering diff, not a design summary — this
+// gives non-technical viewers one plain-language line ("mostly color and
+// position changes, 2 added") before the detailed list underneath it.
+function summarizePlainLanguage(elements) {
+  const typeCounts = {};
+  const categoryCounts = new Map();
+  elements.forEach((el) => {
+    typeCounts[el.changeType] = (typeCounts[el.changeType] || 0) + 1;
+    if (el.changeType === 'modified') {
+      (el.details || []).forEach((d) => {
+        const category = DETAIL_CATEGORIES.find((c) => c.match(d));
+        if (category) categoryCounts.set(category.label, (categoryCounts.get(category.label) || 0) + 1);
+      });
+    }
+  });
+
+  const parts = [];
+  const topCategories = [...categoryCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([label]) => label);
+  if (topCategories.length) parts.push(`mostly ${topCategories.join(' and ')} changes`);
+  if (typeCounts.added) parts.push(`${typeCounts.added} added`);
+  if (typeCounts.removed) parts.push(`${typeCounts.removed} removed`);
+  if (typeCounts.recreated) parts.push(`${typeCounts.recreated} recreated`);
+
+  if (!parts.length) return null;
+  const text = parts.join(', ');
+  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 function renderVersionSummary(change, entry) {
@@ -218,10 +311,29 @@ function renderVersionSummary(change, entry) {
     count.textContent = `${total} element${total === 1 ? '' : 's'} changed`;
     block.append(count);
 
+    const plain = summarizePlainLanguage(elements);
+    if (plain) {
+      const plainLine = document.createElement('div');
+      plainLine.className = 'roadmap-summary-plain';
+      plainLine.textContent = plain;
+      block.append(plainLine);
+    }
+
     const list = document.createElement('ul');
     list.className = 'roadmap-summary-list';
     elements.forEach((el) => {
       const li = document.createElement('li');
+      if (el.box) {
+        // Only elements with a box actually have a matching highlight to
+        // find — an added/removed node past the tree-walk depth or one
+        // Figma didn't report a box for wouldn't have one, so skip wiring
+        // this one up rather than jumping to nothing.
+        li.dataset.elId = el.id; // looked up in the other direction by jumpToListItem() when a box is clicked
+        li.classList.add('roadmap-summary-list-item-clickable');
+        // Click, not hover — hovering while scanning down the list used to
+        // fire this on every row passed over, which felt too twitchy/sudden.
+        li.addEventListener('click', () => jumpToHighlight(li, el.id));
+      }
 
       const line = document.createElement('div');
       line.className = 'roadmap-summary-item-name';
@@ -279,21 +391,44 @@ function boxToPercent(box, nodeBox) {
   };
 }
 
-function renderDayScreenshot(dayBucket, entry) {
-  const shot = (entry.dayScreenshots || {})[dayBucket.day];
-  if (!shot) return null;
+const HIGHLIGHT_LEGEND = [
+  { type: 'modified', label: 'Modified' },
+  { type: 'added', label: 'Added' },
+  { type: 'removed', label: 'Removed (last known position)' },
+  { type: 'recreated', label: 'Recreated (new id, likely same content)' },
+];
 
-  const wrap = document.createElement('div');
-  wrap.className = 'roadmap-screenshot';
+function renderHighlightLegend() {
+  const legend = document.createElement('div');
+  legend.className = 'roadmap-legend';
+  HIGHLIGHT_LEGEND.forEach(({ type, label }) => {
+    const item = document.createElement('span');
+    item.className = 'roadmap-legend-item';
+    const swatch = document.createElement('span');
+    swatch.className = `roadmap-legend-swatch roadmap-legend-swatch-${type}`;
+    item.append(swatch, document.createTextNode(label));
+    legend.append(item);
+  });
+  return legend;
+}
 
-  const img = document.createElement('img');
-  img.src = shot.path;
-  wrap.append(img);
+const SCREENSHOT_CAPTION_TEXT = 'This preview image can look the same as another day’s even when real changes happened — the colored boxes show what actually changed, based on the design data, not on comparing the pictures.';
 
+// Shared between the small inline thumbnail and the enlarged modal view —
+// highlight boxes are positioned as % of `container`, so `container` must
+// be sized to match the image's own rendered box exactly in both places
+// (no cropping/letterboxing), or these percentages point at the wrong spot.
+//
+// `summary` is the .roadmap-summary panel whose version-summary list has
+// the matching row for each box — passed in explicitly rather than found
+// via box.closest('.roadmap-summary') at click time, since a box rendered
+// into the modal isn't nested under any summary (the modal is a singleton
+// appended straight to <body>).
+function renderHighlights(container, dayBucket, nodeBox, summary) {
   dayBucket.changes
     .flatMap((c) => c.changedElements || [])
     .forEach((el) => {
-      const pct = boxToPercent(el.box, shot.nodeBox);
+      const pct = boxToPercent(el.box, nodeBox);
       if (!pct) return;
       const box = document.createElement('div');
       box.className = `roadmap-highlight roadmap-highlight-${el.changeType}`;
@@ -301,13 +436,250 @@ function renderDayScreenshot(dayBucket, entry) {
       box.style.top = `${pct.top}%`;
       box.style.width = `${pct.width}%`;
       box.style.height = `${pct.height}%`;
-      box.title = `${el.changeType}: ${el.name || '(unnamed)'}`;
-      wrap.append(box);
+      box.dataset.elId = el.id; // matched against a clicked row in the version-summary list, see jumpToHighlight()
+      // No title tooltip: hover already surfaces this via the version-
+      // summary list, so a redundant native tooltip on top of that (and on
+      // top of the click behavior below) would just be noise.
+      //
+      // Not keyboard-focusable/AT-exposed on purpose — a design can have
+      // hundreds of overlapping boxes (500+ isn't unusual), and every one
+      // of those becoming a tab stop would be a much worse version of the
+      // "too many tab stops" problem already flagged for the day-bars.
+      // Keyboard/AT users have the exact same information (and can jump to
+      // the same Figma element) via the fully-accessible list below.
+      box.setAttribute('aria-hidden', 'true');
+      box.addEventListener('click', (event) => {
+        // Without this, the click bubbles up to the inner/modalInner
+        // element beneath and also triggers ITS click handler (enlarge or
+        // zoom-toggle) at the same time as jumping to the list row.
+        event.stopPropagation();
+        jumpToListItem(el.id, summary);
+      });
+      container.append(box);
     });
+}
+
+// Scopes to search for a matching highlight box when a version-summary row
+// is clicked: the inline screenshot inside the same day's summary panel,
+// plus the enlarged modal if it's currently open (it's a single global
+// singleton appended to <body>, not nested under any one summary, so it
+// isn't found by walking up from `li`).
+function highlightScopesFor(li) {
+  const scopes = [];
+  const summary = li.closest('.roadmap-summary');
+  if (summary) scopes.push(summary);
+  const modal = document.querySelector('.image-modal');
+  if (modal && !modal.hidden) scopes.push(modal);
+  return scopes;
+}
+
+let activeHighlightBoxes = [];
+
+// Clicking a row jumps to and highlights its matching box on the image
+// (both the inline screenshot and, if open, the enlarged modal) — the
+// reverse of jumpToListItem() below. This used to fire on hover instead,
+// but that meant just scanning down the list re-triggered it on every row
+// passed over, which felt too sudden/twitchy; a click is a deliberate act.
+// Stays highlighted until a different row is clicked (which swaps it),
+// not on any timer.
+function jumpToHighlight(li, elId) {
+  activeHighlightBoxes.forEach((box) => box.classList.remove('roadmap-highlight-active'));
+  activeHighlightBoxes = [];
+
+  highlightScopesFor(li).forEach((scope) => {
+    scope.querySelectorAll('.roadmap-highlight').forEach((box) => {
+      if (box.dataset.elId !== elId) return;
+      // Only the matching box changes — every other box keeps its own
+      // color and stays exactly as visible as it already was.
+      box.classList.add('roadmap-highlight-active');
+      activeHighlightBoxes.push(box);
+      // Both the inline screenshot (max-height + overflow-y:auto) and the
+      // enlarged modal (overflow:auto) can have the matching box scrolled
+      // out of view for a tall design — "nearest" scrolls just enough to
+      // bring it on-screen (or not at all if it's already visible).
+      box.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+    });
+  });
+}
+
+let jumpedListItem = null;
+
+// The reverse of jumpToHighlight() above: clicking a box on the image jumps
+// to and highlights its row in the (always-visible, never in the modal)
+// version-summary list, scrolling it into view the same way clicking a row
+// scrolls its box into view. Stays highlighted until a different box is
+// clicked (which swaps it), not on any timer.
+function jumpToListItem(elId, summary) {
+  if (!summary) return;
+  // Plain JS comparison rather than an attribute selector — Figma element
+  // ids routinely contain ":" and ";" (e.g. instance-override ids like
+  // "I392:15025;11468:11815;...") which don't need CSS-selector escaping
+  // inside a quoted attribute value, but there's no upside to relying on
+  // that being true versus just comparing the values directly.
+  const li = [...summary.querySelectorAll('.roadmap-summary-list li')]
+    .find((item) => item.dataset.elId === elId);
+  if (!li) return;
+
+  if (jumpedListItem) jumpedListItem.classList.remove('roadmap-summary-list-item-jumped');
+
+  li.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+  li.classList.add('roadmap-summary-list-item-jumped');
+  jumpedListItem = li;
+}
+
+let imageModal = null;
+
+// Single modal reused across every screenshot, rather than one per
+// day-screenshot — simpler close/Escape/focus-return handling, and avoids
+// dozens of hidden modal copies sitting in the DOM.
+function getImageModal() {
+  if (imageModal) return imageModal;
+
+  const modal = document.createElement('div');
+  modal.className = 'image-modal';
+  modal.hidden = true;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'image-modal-backdrop';
+
+  const dialog = document.createElement('div');
+  dialog.className = 'image-modal-dialog';
+  dialog.setAttribute('role', 'dialog');
+  dialog.setAttribute('aria-modal', 'true');
+  dialog.setAttribute('aria-label', 'Enlarged design preview');
+
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'image-modal-close';
+  closeButton.setAttribute('aria-label', 'Close enlarged preview');
+  closeButton.textContent = '×';
+
+  const body = document.createElement('div');
+  body.className = 'image-modal-body';
+
+  dialog.append(closeButton, body);
+  modal.append(backdrop, dialog);
+  document.body.append(modal);
+
+  let trigger = null;
+  const close = () => {
+    if (modal.hidden) return;
+    modal.hidden = true;
+    body.textContent = '';
+    document.body.classList.remove('image-modal-open');
+    if (trigger) trigger.focus();
+  };
+
+  backdrop.addEventListener('click', close);
+  closeButton.addEventListener('click', close);
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') close();
+  });
+
+  imageModal = {
+    open(populate, triggerEl) {
+      trigger = triggerEl;
+      body.textContent = '';
+      populate(body);
+      modal.hidden = false;
+      document.body.classList.add('image-modal-open');
+      closeButton.focus();
+    },
+  };
+  return imageModal;
+}
+
+function renderDayScreenshot(dayBucket, entry, summary) {
+  const shot = (entry.dayScreenshots || {})[dayBucket.day];
+  if (!shot) return null;
+
+  const altText = `End-of-day design preview for ${dayBucket.day}`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'roadmap-screenshot';
+
+  // Highlight boxes are positioned as percentages of THIS inner container,
+  // which holds only the image — not of `wrap`, which also contains the
+  // legend/caption below it (fixed pixel height regardless of image size,
+  // which would throw off what "percentage of the wrapper" means relative
+  // to the image alone). Verified this was a real, state-dependent
+  // misalignment, not a testing artifact — keep img+highlights isolated in
+  // their own sized container.
+  const inner = document.createElement('div');
+  inner.className = 'roadmap-screenshot-inner';
+  inner.title = 'Click to enlarge';
+  inner.tabIndex = 0;
+  inner.setAttribute('role', 'button');
+  inner.setAttribute('aria-label', 'Open enlarged design preview');
+
+  const openModal = (event) => {
+    getImageModal().open((body) => {
+      const modalInner = document.createElement('div');
+      modalInner.className = 'image-modal-inner image-modal-inner-fit';
+      // The dialog's own max-width/max-height (set so the modal fits the
+      // viewport on open) plus these are already-small source screenshots
+      // (rendered server-side at ~700px on the longest edge) — a click
+      // inside the modal zooms well past native resolution (some blur is an
+      // acceptable trade for actually being able to see it bigger), scrolling
+      // the dialog via its existing overflow:auto rather than being stuck at
+      // whatever size happened to fit on open.
+      const ZOOM_MULTIPLIER = 12;
+      modalInner.tabIndex = 0;
+      modalInner.setAttribute('role', 'button');
+      modalInner.setAttribute('aria-label', 'Zoom in');
+      modalInner.title = 'Click to zoom in';
+      const toggleZoom = () => {
+        const zoomingIn = modalInner.classList.contains('image-modal-inner-fit');
+        modalInner.classList.toggle('image-modal-inner-fit');
+        if (zoomingIn && modalImg.naturalWidth) {
+          modalImg.style.width = `${modalImg.naturalWidth * ZOOM_MULTIPLIER}px`;
+        } else {
+          modalImg.style.width = '';
+        }
+        modalInner.title = zoomingIn ? 'Click to fit to window' : 'Click to zoom in';
+        modalInner.setAttribute('aria-label', zoomingIn ? 'Fit to window' : 'Zoom in');
+      };
+      modalInner.addEventListener('click', toggleZoom);
+      modalInner.addEventListener('keydown', (zoomEvent) => {
+        if (zoomEvent.key === 'Enter' || zoomEvent.key === ' ') {
+          zoomEvent.preventDefault();
+          toggleZoom();
+        }
+      });
+
+      const modalImg = document.createElement('img');
+      modalImg.src = shot.path;
+      modalImg.alt = altText;
+      modalInner.append(modalImg);
+      renderHighlights(modalInner, dayBucket, shot.nodeBox, summary);
+      body.append(renderHighlightLegend(), modalInner);
+
+      const caption = document.createElement('div');
+      caption.className = 'roadmap-screenshot-caption';
+      caption.textContent = SCREENSHOT_CAPTION_TEXT;
+      body.append(caption);
+    }, event.currentTarget);
+  };
+  inner.addEventListener('click', openModal);
+  inner.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault(); // prevent page scroll on Space
+      openModal(event);
+    }
+  });
+
+  const img = document.createElement('img');
+  img.src = shot.path;
+  img.alt = altText;
+  inner.append(img);
+  renderHighlights(inner, dayBucket, shot.nodeBox, summary);
+
+  wrap.append(renderHighlightLegend());
+  wrap.append(inner);
 
   const caption = document.createElement('div');
   caption.className = 'roadmap-screenshot-caption';
-  caption.textContent = 'End-of-day preview — may look identical on other days even when changes were detected (see SKILL.md); highlighted boxes come from the element diff, not from comparing images.';
+  caption.textContent = SCREENSHOT_CAPTION_TEXT;
   wrap.append(caption);
 
   return wrap;
@@ -323,8 +695,11 @@ function renderSummary(container, dayBucket, entry) {
   header.textContent = `${new Date(`${dayBucket.day}T00:00:00Z`).toLocaleDateString()} · ${count} version${count === 1 ? '' : 's'}`;
   container.append(header);
 
-  const screenshot = renderDayScreenshot(dayBucket, entry);
-  if (screenshot) container.append(screenshot);
+  const body = document.createElement('div');
+  body.className = 'roadmap-summary-body';
+
+  const screenshot = renderDayScreenshot(dayBucket, entry, container);
+  if (screenshot) body.append(screenshot);
 
   const versions = document.createElement('div');
   versions.className = 'roadmap-summary-versions';
@@ -332,7 +707,9 @@ function renderSummary(container, dayBucket, entry) {
     .slice()
     .sort((a, b) => a.date.localeCompare(b.date))
     .forEach((change) => versions.append(renderVersionSummary(change, entry)));
-  container.append(versions);
+  body.append(versions);
+
+  container.append(body);
 }
 
 function renderDesignRow(entry, sinceValue) {
@@ -352,9 +729,11 @@ function renderGroup(group, sinceValue) {
 
   const h2 = document.createElement('h2');
   const link = document.createElement('a');
-  link.href = group.jiraUrl;
-  link.target = '_blank';
-  link.rel = 'noopener';
+  if (group.jiraUrl) {
+    link.href = group.jiraUrl;
+    link.target = '_blank';
+    link.rel = 'noopener';
+  }
   link.textContent = group.jiraKey || 'Untracked';
   h2.append(link);
   section.append(h2);
@@ -395,21 +774,67 @@ function render(entries, sinceValue) {
 
   const groups = groupByTicket(entries)
     .sort((a, b) => latestDate(b).localeCompare(latestDate(a)));
-  groups.forEach((group) => container.append(renderGroup(group, sinceValue)));
+  groups.forEach((group) => {
+    // One malformed entry shouldn't blank the entire page — skip just that group.
+    try {
+      container.append(renderGroup(group, sinceValue));
+    } catch (err) {
+      console.error('Failed to render group', group.jiraKey, err);
+    }
+  });
 }
 
 async function init() {
+  const container = document.getElementById('groups');
+  container.textContent = 'Loading…';
+  container.className = 'empty-state';
+
   let entries = [];
+  let loadError = false;
   try {
-    const res = await fetch(DATA_URL);
+    // cache-bust: the static server sends no cache-control headers, so browsers
+    // heuristically cache this aggressively — without this, a refreshed
+    // entries.json can keep serving stale data from disk cache indefinitely.
+    const res = await fetch(`${DATA_URL}?v=${Date.now()}`);
     entries = await res.json();
   } catch {
-    entries = [];
+    loadError = true;
+  }
+
+  container.className = '';
+  if (loadError) {
+    container.textContent = '';
+    const error = document.createElement('div');
+    error.className = 'empty-state';
+    error.textContent = 'Could not load design tracker data — check that entries.json is reachable.';
+    container.append(error);
+    return;
   }
 
   const sinceInput = document.getElementById('since');
+  const filterStatus = document.getElementById('filter-status');
+  const announceFilter = () => {
+    // render() rebuilds #groups silently — nothing else here tells a
+    // screen-reader user that filtering happened. The filter dims
+    // out-of-range bars rather than removing any design/row (see
+    // roadmap-bar-outside-range in renderRoadmap), so the announcement
+    // describes that, rather than claiming rows were hidden.
+    if (!sinceInput.value) {
+      filterStatus.textContent = 'Showing all designs, no date filter applied.';
+      return;
+    }
+    const sinceTime = new Date(sinceInput.value).getTime();
+    const count = entries.reduce((total, entry) => total + (entry.versionChanges || [])
+      .filter((c) => c.magnitude > 0 && new Date(c.date).getTime() >= sinceTime).length, 0);
+    filterStatus.textContent = `Highlighting ${count} change${count === 1 ? '' : 's'} since ${new Date(sinceTime).toLocaleDateString()} across all designs; older history is dimmed, not hidden.`;
+  };
+
   render(entries, sinceInput.value);
-  sinceInput.addEventListener('change', () => render(entries, sinceInput.value));
+  announceFilter();
+  sinceInput.addEventListener('change', () => {
+    render(entries, sinceInput.value);
+    announceFilter();
+  });
 }
 
 init();

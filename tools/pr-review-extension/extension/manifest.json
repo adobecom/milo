@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Milo PR Review (personal)",
+  "version": "0.1.0",
+  "description": "Runs the pr-review skill against the PR you're viewing and lets you accept/decline findings before posting.",
+  "permissions": ["sidePanel", "tabs", "storage"],
+  "host_permissions": ["http://127.0.0.1/*", "https://github.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Open PR Review panel"
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*/pull/*"],
+      "js": ["shared-render.js", "content.js"],
+      "css": ["content-injected.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

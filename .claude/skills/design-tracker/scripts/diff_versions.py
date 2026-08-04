@@ -14,6 +14,11 @@ Requires FIGMA_TOKEN in the environment (read-only Figma personal access token).
 
 Usage:
   python3 diff_versions.py --file-key <key> --node-id <id> [--since YYYY-MM-DD] [--max-versions N]
+
+Omit --node-id to track the WHOLE file (every page/canvas and everything
+under them) instead of one node's subtree — see full_file_document().
+Screenshots/highlight-overlays don't apply in that mode (no single node to
+render), so --screenshot-dir is ignored if --node-id is omitted.
 """
 import argparse
 import json
@@ -40,17 +45,42 @@ def api_get(url):
                 return json.load(resp)
         except urllib.error.HTTPError as e:
             if e.code == 429 and attempt < MAX_RETRIES - 1:
-                wait = int(e.headers.get("Retry-After", 0)) or (2 ** attempt)
+                retry_after = e.headers.get("Retry-After", "")
+                try:
+                    wait = int(retry_after) or (2 ** attempt)
+                except ValueError:
+                    # Retry-After can be an HTTP-date instead of seconds; fall back to backoff.
+                    wait = 2 ** attempt
                 time.sleep(wait)
                 continue
             raise
+
+
+def fatal_api_error(e, context):
+    if e.code in (401, 403):
+        reason = "FIGMA_TOKEN is expired or invalid — regenerate it in Figma account settings"
+    else:
+        reason = str(e)
+    print(json.dumps({"error": f"{context}: {reason}", "httpStatus": e.code}))
+    sys.exit(1)
 
 
 def fetch_all_versions(file_key, max_versions):
     versions = []
     url = f"{API}/files/{file_key}/versions"
     while url and len(versions) < max_versions:
-        data = api_get(url)
+        try:
+            data = api_get(url)
+        except urllib.error.HTTPError as e:
+            fatal_api_error(e, "failed fetching version list")
+        except (urllib.error.URLError, ValueError) as e:
+            # URLError: network-level failure (DNS, connection refused, timeout).
+            # ValueError covers json.JSONDecodeError from a malformed/truncated
+            # response body. Neither is an HTTPError, so without this the script
+            # would crash with a raw traceback instead of the clean JSON error
+            # output every other failure path produces.
+            print(json.dumps({"error": f"failed fetching version list: {e}"}))
+            sys.exit(1)
         versions.extend(data.get("versions", []))
         url = (data.get("pagination") or {}).get("next_page")
     return versions[:max_versions]
@@ -59,6 +89,22 @@ def fetch_all_versions(file_key, max_versions):
 def node_document(file_key, node_id, version_id):
     data = api_get(f"{API}/files/{file_key}/nodes?ids={node_id}&version={version_id}")
     return data["nodes"][node_id]["document"]
+
+
+def full_file_document(file_key, version_id):
+    """Whole-file mode (no --node-id): fetch the entire document tree (every
+    page/canvas and everything under them) at a specific version, instead of
+    one node's subtree. Same versioning mechanism, different endpoint —
+    /v1/files/:key (not /v1/files/:key/nodes) returns {"document": {...}} as
+    the tree root. This root is a synthetic DOCUMENT node with no
+    absoluteBoundingBox of its own, so screenshot/highlight-overlay features
+    (which need a single node's box) don't apply in this mode — see main()."""
+    data = api_get(f"{API}/files/{file_key}?version={version_id}")
+    return data["document"]
+
+
+def fetch_document(file_key, node_id, version_id):
+    return node_document(file_key, node_id, version_id) if node_id else full_file_document(file_key, version_id)
 
 
 def download(url, path):
@@ -73,7 +119,9 @@ TARGET_MAX_DIMENSION = 700  # px, longer edge — keeps preview files small rega
 def scale_for_box(box, target=TARGET_MAX_DIMENSION):
     if not box:
         return 0.3
-    longest = max(box.get("width", 0), box.get("height", 0)) or 1
+    longest = max(box.get("width", 0) or 0, box.get("height", 0) or 0)
+    if not longest:  # zero-size box is truthy but unusable — same fallback as a missing box
+        return 0.3
     return min(1.0, target / longest)
 
 
@@ -101,11 +149,39 @@ def flatten(node, out):
     return out
 
 
-def node_signature(node):
+LAYOUT_KEYS = ("layoutMode", "itemSpacing", "paddingLeft", "paddingRight", "paddingTop", "paddingBottom")
+
+
+def style_blob(node):
+    """Serializes the style fields shared by node_signature() and
+    describe_modification() exactly once per node, so a modified node
+    (checked by the former, then explained by the latter) doesn't pay for
+    json.dumps() on the same fills/strokes/effects twice."""
+    return (
+        json.dumps(node.get("fills"), sort_keys=True),
+        json.dumps(node.get("strokes"), sort_keys=True),
+        json.dumps(node.get("effects"), sort_keys=True),
+    )
+
+
+def node_signature(node, style=None):
+    """Fields checked to decide if a node counts as 'modified'. Originally only
+    covered text/fills/position/size/opacity/visibility — that missed corner
+    radius, strokes, effects (shadows/blur), rotation, and auto-layout spacing,
+    so a real visible edit to any of those could score as 0% changed. Keep
+    this and describe_modification() below in sync when adding a property."""
+    fills_json, strokes_json, effects_json = style or style_blob(node)
     box = node.get("absoluteBoundingBox") or {}
     return (
         node.get("characters"),
-        json.dumps(node.get("fills"), sort_keys=True),
+        fills_json,
+        strokes_json,
+        node.get("strokeWeight"),
+        effects_json,
+        node.get("cornerRadius"),
+        json.dumps(node.get("rectangleCornerRadii")),
+        round(node.get("rotation", 0) or 0, 2),
+        tuple(node.get(k) for k in LAYOUT_KEYS),
         round(box.get("x", 0), 1), round(box.get("y", 0), 1),
         round(box.get("width", 0), 1), round(box.get("height", 0), 1),
         node.get("opacity"),
@@ -113,18 +189,40 @@ def node_signature(node):
     )
 
 
-def describe_modification(old_n, new_n):
+def describe_modification(old_n, new_n, old_style=None, new_style=None):
     """Human-readable list of what specifically changed about a node."""
     details = []
+
+    old_fills, old_strokes_json, old_effects = old_style or style_blob(old_n)
+    new_fills, new_strokes_json, new_effects = new_style or style_blob(new_n)
 
     old_text, new_text = old_n.get("characters"), new_n.get("characters")
     if old_text != new_text:
         details.append(f'text: "{old_text}" → "{new_text}"' if old_text or new_text else "text changed")
 
-    old_fills = json.dumps(old_n.get("fills"), sort_keys=True)
-    new_fills = json.dumps(new_n.get("fills"), sort_keys=True)
     if old_fills != new_fills:
         details.append("fill/color changed")
+
+    old_strokes = (old_strokes_json, old_n.get("strokeWeight"))
+    new_strokes = (new_strokes_json, new_n.get("strokeWeight"))
+    if old_strokes != new_strokes:
+        details.append("stroke changed")
+
+    if old_effects != new_effects:
+        details.append("effect (shadow/blur) changed")
+
+    old_radius = (old_n.get("cornerRadius"), json.dumps(old_n.get("rectangleCornerRadii")))
+    new_radius = (new_n.get("cornerRadius"), json.dumps(new_n.get("rectangleCornerRadii")))
+    if old_radius != new_radius:
+        details.append("corner radius changed")
+
+    old_rotation = round(old_n.get("rotation", 0) or 0, 2)
+    new_rotation = round(new_n.get("rotation", 0) or 0, 2)
+    if old_rotation != new_rotation:
+        details.append(f"rotation: {old_rotation} → {new_rotation}")
+
+    if tuple(old_n.get(k) for k in LAYOUT_KEYS) != tuple(new_n.get(k) for k in LAYOUT_KEYS):
+        details.append("auto-layout spacing/padding changed")
 
     old_box, new_box = old_n.get("absoluteBoundingBox") or {}, new_n.get("absoluteBoundingBox") or {}
     old_pos = (round(old_box.get("x", 0), 1), round(old_box.get("y", 0), 1))
@@ -146,6 +244,44 @@ def describe_modification(old_n, new_n):
     return details or ["changed (property not tracked by this diff)"]
 
 
+def reconcile_recreated(added, removed):
+    """A node deleted and recreated with a new Figma ID but the same name+type
+    (common after detach-instance or ungroup/regroup) would otherwise show as
+    a spurious added+removed pair, inflating the changed count and cluttering
+    the summary with a no-op-looking "change". Reconcile matching pairs into
+    a single 'recreated' entry instead. Matches on name+type only (not
+    position) — deliberately simple; a position-tolerance match would reduce
+    false negatives further but adds float-comparison edge cases not worth
+    the complexity here."""
+    # Both lists are built from `set(old_flat) | set(new_flat)` (changed_elements
+    # below), whose iteration order depends on Python's per-process string hash
+    # randomization — without sorting here, which of several same-name/type
+    # candidates gets paired (when there's more than one) would vary between
+    # separate script runs on identical input. Sorting by id makes pairing
+    # deterministic; it doesn't make the *match* itself any smarter (still no
+    # position-tolerance, per the docstring above), just reproducible.
+    removed_by_key = {}
+    for r in sorted(removed, key=lambda r: r["id"]):
+        removed_by_key.setdefault((r["name"], r.get("type")), []).append(r)
+
+    still_added = []
+    recreated = []
+    for a in sorted(added, key=lambda a: a["id"]):
+        candidates = removed_by_key.get((a["name"], a.get("type")))
+        if candidates:
+            candidates.pop(0)
+            recreated.append({
+                "id": a["id"], "name": a["name"], "type": a.get("type"), "changeType": "recreated",
+                "details": ["same name/type recreated under a new id (likely detach/ungroup/regroup) — not necessarily a content change"],
+                "box": a.get("box"),
+            })
+        else:
+            still_added.append(a)
+
+    still_removed = [r for group in removed_by_key.values() for r in group]
+    return still_added, still_removed, recreated
+
+
 def changed_elements(old_doc, new_doc, limit=MAX_CHANGED_ELEMENTS):
     """Returns (changed element list capped at `limit`, total changed count,
     magnitude % = changed count / size of the node tree). Magnitude is
@@ -160,30 +296,37 @@ def changed_elements(old_doc, new_doc, limit=MAX_CHANGED_ELEMENTS):
         old_n, new_n = old_flat.get(nid), new_flat.get(nid)
         if old_n is None:
             added.append({
-                "id": nid, "name": new_n.get("name"), "changeType": "added",
+                "id": nid, "name": new_n.get("name"), "type": new_n.get("type"), "changeType": "added",
                 "details": [f"type: {new_n.get('type')}"],
                 "box": new_n.get("absoluteBoundingBox"),
             })
         elif new_n is None:
             removed.append({
-                "id": nid, "name": old_n.get("name"), "changeType": "removed",
+                "id": nid, "name": old_n.get("name"), "type": old_n.get("type"), "changeType": "removed",
                 "details": [f"type: {old_n.get('type')}"],
                 "box": old_n.get("absoluteBoundingBox"),
             })
-        elif node_signature(old_n) != node_signature(new_n):
-            modified.append({
-                "id": nid,
-                "name": new_n.get("name"),
-                "changeType": "modified",
-                "details": describe_modification(old_n, new_n),
-                "box": new_n.get("absoluteBoundingBox"),
-            })
+        else:
+            old_style, new_style = style_blob(old_n), style_blob(new_n)
+            if node_signature(old_n, old_style) != node_signature(new_n, new_style):
+                modified.append({
+                    "id": nid,
+                    "name": new_n.get("name"),
+                    "type": new_n.get("type"),
+                    "changeType": "modified",
+                    "details": describe_modification(old_n, new_n, old_style, new_style),
+                    "box": new_n.get("absoluteBoundingBox"),
+                })
+
+    added, removed, recreated = reconcile_recreated(added, removed)
+
     # modified (direct content/position edits) is the most meaningful signal;
     # added/removed nodes are often incidental (e.g. token/variable churn)
     modified.sort(key=lambda e: e["name"] or "")
+    recreated.sort(key=lambda e: e["name"] or "")
     added.sort(key=lambda e: e["name"] or "")
     removed.sort(key=lambda e: e["name"] or "")
-    ordered = modified + added + removed
+    ordered = modified + recreated + added + removed
     total = len(ordered)
 
     tree_size = len(set(old_flat) | set(new_flat)) or 1
@@ -195,12 +338,14 @@ def changed_elements(old_doc, new_doc, limit=MAX_CHANGED_ELEMENTS):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file-key", required=True)
-    parser.add_argument("--node-id", required=True)
+    parser.add_argument("--node-id", help="omit to track the WHOLE file (every page/canvas) "
+                         "instead of one node's subtree — see full_file_document()")
     parser.add_argument("--since", help="YYYY-MM-DD; omit to pull full available history")
     parser.add_argument("--max-versions", type=int, default=DEFAULT_MAX_VERSIONS)
     parser.add_argument("--screenshot-dir", help="if set, fetch one end-of-day preview image "
                          "(best-effort, see fetch_screenshot docstring) for each day that had "
-                         "a real (magnitude > 0) change, saved into this directory")
+                         "a real (magnitude > 0) change, saved into this directory. Ignored in "
+                         "whole-file mode (--node-id omitted) — there's no single node to render.")
     args = parser.parse_args()
 
     if not FIGMA_TOKEN:
@@ -210,11 +355,34 @@ def main():
     versions = fetch_all_versions(args.file_key, args.max_versions)
     versions.sort(key=lambda v: v["created_at"])
 
+    if args.since and len(versions) == args.max_versions and versions[0]["created_at"][:10] > args.since:
+        # The version cap was hit before pagination reached --since, even though every
+        # fetched version happens to already satisfy ">= since" — that's a coverage gap,
+        # not confirmation the window is fully covered. Observed in practice: a heavily
+        # edited file returned 60/60 versions spanning only the last 2 weeks when a full
+        # month was requested, with no error, silently returning incomplete history.
+        print(json.dumps({
+            "error": f"--max-versions {args.max_versions} was exhausted before reaching --since "
+                     f"{args.since} — all {len(versions)} fetched versions are already newer than "
+                     f"that date (oldest: {versions[0]['created_at'][:10]}). Increase --max-versions.",
+        }))
+        sys.exit(1)
+
     if args.since:
         start_idx = next(
             (i for i, v in enumerate(versions) if v["created_at"][:10] >= args.since),
-            len(versions),
+            None,
         )
+        if start_idx is None:
+            # fetch_all_versions stops at --max-versions before this filter runs, so if
+            # --since is older than every version fetched, silently taking "the last
+            # element" would return just the single oldest version with no warning.
+            oldest = versions[0]["created_at"][:10] if versions else "(no versions fetched)"
+            print(json.dumps({
+                "error": f"--since {args.since} is older than all {len(versions)} versions "
+                         f"fetched (oldest: {oldest}) — increase --max-versions to reach that date",
+            }))
+            sys.exit(1)
         start_idx = max(start_idx - 1, 0)
         versions = versions[start_idx:]
 
@@ -224,22 +392,29 @@ def main():
     day_root_box = {}       # day -> tracked node's own absoluteBoundingBox at that version
     day_has_change = set()  # days with at least one magnitude > 0 transition
     prev_doc = None
-    prev_json = None
     for v in versions:
         try:
-            doc = node_document(args.file_key, args.node_id, v["id"])
-            snapshot = json.dumps(doc, sort_keys=True)
+            doc = fetch_document(args.file_key, args.node_id, v["id"])
+
+            magnitude = None
+            changes, changed_count = [], 0
+            if prev_doc is not None:
+                # Also covered by this try: a malformed node (unexpected shape)
+                # or a pathologically deep whole-file tree could raise here
+                # (e.g. RecursionError) — that should be one bad version
+                # recorded in `errors`, not a crash of the whole run.
+                #
+                # No separate whole-doc json.dumps() equality pre-check here:
+                # changed_elements() below already walks both trees comparing
+                # only the specific tracked fields per node (node_signature()),
+                # which is cheaper than serializing every field of every node
+                # via sort_keys=True — and it naturally yields magnitude 0.0
+                # when nothing tracked differs, so the pre-check bought no
+                # speed, just doubled the work on versions that did change.
+                changes, changed_count, magnitude = changed_elements(prev_doc, doc)
         except Exception as e:
             errors.append({"versionId": v["id"], "date": v["created_at"], "reason": str(e)})
             continue
-
-        magnitude = None
-        changes, changed_count = [], 0
-        if prev_json is not None:
-            if prev_json == snapshot:
-                magnitude = 0.0
-            else:
-                changes, changed_count, magnitude = changed_elements(prev_doc, doc)
 
         day = v["created_at"][:10]
         day_last_version[day] = v["id"]
@@ -256,10 +431,13 @@ def main():
             "changedElements": changes,
             "changedElementCount": changed_count,
         })
-        prev_doc, prev_json = doc, snapshot
+        prev_doc = doc
 
     day_screenshots = {}
-    if args.screenshot_dir:
+    if args.screenshot_dir and not args.node_id:
+        errors.append({"versionId": None, "date": None,
+                        "reason": "--screenshot-dir ignored: no single node to render in whole-file mode (--node-id omitted)"})
+    elif args.screenshot_dir:
         os.makedirs(args.screenshot_dir, exist_ok=True)
         for day in sorted(day_has_change):
             version_id = day_last_version[day]

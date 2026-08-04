@@ -1,0 +1,262 @@
+/* Styles for annotations content.js injects into GitHub's Unified diff view.
+   Everything is scoped under tr.pr-review-annotation-row / .pr-review-annotation
+   so nothing bleeds into or gets overridden by GitHub's own styles. Colors are
+   hardcoded (not var(--...)) because sidepanel.css's :root custom properties
+   aren't loaded on github.com — these are the same values, copied over:
+   light: --blocker #d1242f, --suggestion #9a6700, --success #1a7f37,
+          --border #d0d7de, --code-bg/--surface #f6f8fa, --fg #1f2328,
+          --muted #59636e, --accent #0969da
+   dark:  --blocker #ff7b72, --suggestion #e3b341, --success #3fb950,
+          --border #30363d, --code-bg/--surface #21262d, --fg #e6edf3,
+          --muted #9198a1, --accent #4493f8 */
+
+tr.pr-review-annotation-row {
+  background: #ffffff;
+}
+
+tr.pr-review-annotation-row td.pr-review-annotation-cell {
+  padding: 0;
+  border-top: 0;
+}
+
+.pr-review-annotation {
+  padding: 10px 14px 10px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 12.5px;
+  color: #1f2328;
+  background: #f6f8fa;
+  border-left: 3px solid #59636e;
+}
+
+.pr-review-annotation--blockers {
+  border-left-color: #d1242f;
+  background: rgba(209, 36, 47, 0.06);
+}
+
+.pr-review-annotation--suggestions {
+  border-left-color: #9a6700;
+  background: rgba(154, 103, 0, 0.06);
+}
+
+.pr-review-annotation--nice_to_haves {
+  border-left-color: #57606a;
+  background: rgba(87, 96, 106, 0.06);
+}
+
+.pr-review-annotation-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.pr-review-annotation-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pr-review-annotation--blockers .pr-review-annotation-badge { color: #d1242f; }
+.pr-review-annotation--suggestions .pr-review-annotation-badge { color: #9a6700; }
+.pr-review-annotation--nice_to_haves .pr-review-annotation-badge { color: #57606a; }
+
+.pr-review-annotation-accept {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 550;
+  color: #59636e;
+  cursor: pointer;
+}
+
+.pr-review-annotation-accept input[type="checkbox"] {
+  accent-color: #0969da;
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+/* --- shared-render.js output: renderBody()/buildEditableTextBlock() emit
+   these generic class names (finding-*), not extension-specific ones, since
+   they're shared with the side panel. Scope them under our wrapper so they
+   only apply to our injected rows. --- */
+
+.pr-review-annotation .finding-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-review-annotation .finding-prose {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+  color: #1f2328;
+}
+
+.pr-review-annotation .finding-code {
+  margin: 4px 0;
+  padding: 8px 10px;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-left: 3px solid #1a7f37;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.pr-review-annotation .finding-code code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre;
+  color: #1f2328;
+}
+
+.pr-review-annotation .finding-code-badge {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #1a7f37;
+  margin-top: 4px;
+}
+
+.pr-review-annotation .finding-toolbar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.pr-review-annotation .finding-action-btn {
+  cursor: pointer;
+  border: 1px solid #d0d7de;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1f2328;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 550;
+  font-family: inherit;
+}
+
+.pr-review-annotation .finding-action-btn:hover {
+  background: #eaeef2;
+}
+
+.pr-review-annotation .finding-action-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pr-review-annotation .finding-edit-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #1f2328;
+  background: #f6f8fa;
+  border: 1px solid #0969da;
+  border-radius: 6px;
+  padding: 6px 8px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Fixed status badge — lets you see content.js's state (loaded, findings
+   count, injected count, or a stale-context error) without opening DevTools.
+   This is the single most useful diagnostic surface for the "why isn't
+   anything showing up" failure mode, since that failure mode is usually
+   silent otherwise. */
+#pr-review-status-badge {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 550;
+  padding: 6px 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  color: #ffffff;
+  background: #57606a;
+  max-width: 320px;
+  line-height: 1.4;
+}
+
+#pr-review-status-badge[data-variant="ok"] { background: #1a7f37; }
+#pr-review-status-badge[data-variant="error"] { background: #d1242f; }
+
+@media (prefers-color-scheme: dark) {
+  tr.pr-review-annotation-row {
+    background: #0d1117;
+  }
+
+  .pr-review-annotation {
+    color: #e6edf3;
+    background: #21262d;
+    border-left-color: #9198a1;
+  }
+
+  .pr-review-annotation--blockers {
+    border-left-color: #ff7b72;
+    background: rgba(255, 123, 114, 0.08);
+  }
+
+  .pr-review-annotation--suggestions {
+    border-left-color: #e3b341;
+    background: rgba(227, 179, 65, 0.08);
+  }
+
+  .pr-review-annotation--nice_to_haves {
+    border-left-color: #9198a1;
+    background: rgba(145, 152, 161, 0.08);
+  }
+
+  .pr-review-annotation--blockers .pr-review-annotation-badge { color: #ff7b72; }
+  .pr-review-annotation--suggestions .pr-review-annotation-badge { color: #e3b341; }
+  .pr-review-annotation--nice_to_haves .pr-review-annotation-badge { color: #9198a1; }
+
+  .pr-review-annotation-accept {
+    color: #9198a1;
+  }
+
+  .pr-review-annotation-accept input[type="checkbox"] {
+    accent-color: #4493f8;
+  }
+
+  .pr-review-annotation .finding-prose {
+    color: #e6edf3;
+  }
+
+  .pr-review-annotation .finding-code {
+    background: #161b22;
+    border-color: #30363d;
+    border-left-color: #3fb950;
+  }
+
+  .pr-review-annotation .finding-code code {
+    color: #e6edf3;
+  }
+
+  .pr-review-annotation .finding-code-badge {
+    color: #3fb950;
+  }
+
+  .pr-review-annotation .finding-action-btn {
+    border-color: #30363d;
+    background: #21262d;
+    color: #e6edf3;
+  }
+
+  .pr-review-annotation .finding-action-btn:hover {
+    background: #2d333b;
+  }
+
+  .pr-review-annotation .finding-edit-textarea {
+    color: #e6edf3;
+    background: #161b22;
+    border-color: #4493f8;
+  }
+}

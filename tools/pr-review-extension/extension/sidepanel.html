@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>PR Review</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header>
+    <h1>PR Review</h1>
+    <div id="pr-context" class="muted">Detecting PR…</div>
+  </header>
+
+  <main>
+    <button id="run-btn" disabled>Run review</button>
+    <div id="status" class="muted"></div>
+
+    <div id="results" hidden>
+      <section id="overview-section">
+        <h2 id="result-title"></h2>
+        <div id="result-size" class="muted"></div>
+        <div id="result-overview-container"></div>
+      </section>
+
+      <section id="blockers-section" class="finding-section" hidden>
+        <h3>Blockers</h3>
+        <ul id="blockers-list"></ul>
+      </section>
+
+      <section id="suggestions-section" class="finding-section" hidden>
+        <h3>Suggestions</h3>
+        <ul id="suggestions-list"></ul>
+      </section>
+
+      <section id="nice-to-haves-section" class="finding-section" hidden>
+        <h3>Nice-to-haves</h3>
+        <ul id="nice-to-haves-list"></ul>
+      </section>
+
+      <section id="post-section">
+        <div id="post-status" class="muted"></div>
+        <div class="post-buttons">
+          <button id="post-draft-btn" title="Creates a pending review on GitHub with the accepted findings as inline comments — invisible to anyone until you open the PR yourself and hit GitHub's own &quot;Submit review&quot; button.">Send as draft to GitHub</button>
+          <button id="post-comment-btn">Post as comment</button>
+          <button id="post-approve-btn">Approve</button>
+          <button id="post-request-changes-btn">Request changes</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="shared-render.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+# EU accessibility law knowledge base (via Deque)
+
+Source: Deque's compliance guidance on the European Accessibility Act (`deque.com/accessibility-compliance/european-accessibility-act-eaa/`), EN 301 549 (`deque.com/accessibility-compliance/en-301-549/`), and EN 17161 (`deque.com/blog/why-partnering-en-17161-with-wcag-is-a-major-step-forward-for-digital-accessibility/`). This is a summary of publicly published vendor guidance, not legal advice — treat it as a signal for what a PR reviewer should flag, not as a substitute for legal/compliance sign-off on whether adobe.com actually satisfies EAA obligations.
+
+**Why this belongs in the PR-review skill**: the EAA's compliance deadline (June 28, 2025) has already passed. For any milo page/block serving EU users, a WCAG violation is no longer just a best-practice gap — it's a live legal-compliance gap. This file exists so `[A11y]` findings in a PR review can be flagged with the right severity (this is a legal requirement, not a nice-to-have) rather than treated as generic polish.
+
+## The three-layer compliance stack
+
+1. **European Accessibility Act (EAA, EU Directive 2019/882)** — the law: who must comply, by when, what's covered, penalties.
+2. **EN 301 549** — the technical standard the EAA points to for *what "accessible" means*: directly references **WCAG 2.1 Level AA**.
+3. **EN 17161** — a *process/management* standard (not a technical one): how an organization should structurally find, track, and fix accessibility issues on an ongoing basis, as distinct from any single page passing a WCAG check today. Deque's framing: "WCAG is the horizon... EN 17161 is the road you drive on." The EAA has process requirements too (procurement, support, accessibility statements), not just technical ones — EN 17161 is under review as the harmonized EU standard for that side.
+
+## European Accessibility Act (EAA) — the law
+
+- **Compliance deadline: June 28, 2025** — already in effect, applies across all EU member states and to external (non-EU) businesses serving the EU market. This is the single most important fact for prioritization: there is no "upcoming deadline" framing anymore, it's a current obligation.
+- **Services covered** (this is the relevant bucket for milo/adobe.com, not the hardware list): **e-commerce**, banking, phone services, **websites**, **mobile applications**, electronic tickets, e-books, audio-visual media services, emergency-number access. adobe.com's marketing/commerce pages (subscription purchase flows, product pages) sit squarely in the "e-commerce" and "websites" categories.
+- **Products covered** (less directly relevant to milo, listed for completeness): computers, operating systems, smartphones, communication devices, TV equipment, ATMs, payment terminals, e-readers, ticketing/check-in machines.
+- **Microenterprise exemption**: organizations with fewer than 10 employees AND annual turnover/balance sheet under €2 million are exempt. Not applicable to Adobe — flagged here only so it's clear this exemption isn't a reason to deprioritize a milo a11y finding.
+- **"Disproportionate burden" exemption**: an organization may claim exemption if compliance cost significantly exceeds accessibility benefit, but this requires a **documented assessment** — it's not a self-declared excuse, and isn't something a PR review should assume applies. Never use "this would be disproportionate effort" as a reason to downgrade an a11y Blocker in a review — that determination is a legal/business one, not an engineering judgment call to make unilaterally in a code review.
+- **Required disclosures** (organization-level, not per-PR, but worth knowing exists): terms and conditions must include a plain-language overview of the service, usage guidelines, an explanation of how it aligns with the EAA's Annex I digital accessibility standards, and public accessibility-statement-style demonstration of ongoing compliance monitoring.
+- **Enforcement**: penalties must be "effective, proportionate, and dissuasive" per the directive, but exact penalty structures are set per EU member state, not by the EAA itself. Consumers/users can report infringements to courts or a national enforcing body.
+
+## EN 301 549 — what "accessible" technically means under EU law
+
+- Full name: the European standard for ICT accessibility requirements, developed by CEN/CENELEC/ETSI.
+- **Directly references WCAG 2.1 Level AA** as its web-content baseline — this is the concrete, checkable bar for a milo PR: **WCAG 2.1 AA conformance is a legal floor for EU-facing content, not just this repo's own internally-stated target** (which `milo-domain-knowledge.md` already lists as "WCAG 2.2 AA" for the accessibility-check skill — 2.2 AA is a superset of/stricter than 2.1 AA, so meeting the repo's own existing target already clears this legal bar; don't relax the repo's target to "just" 2.1 AA).
+- Structured in chapters mirroring WCAG's POUR principles: **Chapter 9** (web content), **Chapter 10** (non-web documents — relevant if a PR touches downloadable PDFs/docs), **Chapter 11** (non-web software, including native mobile apps).
+- **Public sector deadlines already passed years ago** under the earlier Web Accessibility Directive (2016/2102): websites since September 23, 2020; mobile apps since June 23, 2021; accessibility statements required and must be refreshed (not older than 3 years). Relevant context, not directly actionable for milo (a private-sector/commercial site), but explains why "EU accessibility law" isn't new or speculative — the public-sector half of it has been live for years.
+- **Country-level variations**: some member states (Germany's BITV, France's RGAA) have their own stricter local standards that supersede EN 301 549 — worth knowing this exists if a PR is specifically scoped to a DE/FR locale, though milo's own reference file doesn't have per-locale legal detail beyond this pointer.
+
+## EN 17161 — the process layer (why "we passed axe-core once" isn't the whole story)
+
+- A **management/process standard**, not a technical conformance standard — it doesn't replace WCAG/EN 301 549, it sits alongside them for the EAA's process-side obligations.
+- Core mechanism: an **issue registry** — a tracked list of identified accessibility issues, their root cause, and remediation plan — integrating automated monitoring (axe-core, Lighthouse), expert/manual audits, and customer support feedback, with root-cause analysis (RCA) and corrective/preventive action (CAPA) tracking.
+- Practical takeaway for this skill: a single PR passing automated axe checks is necessary but not sufficient for the process-level obligation — if a PR fixes an accessibility bug, the review should note whether it's the kind of issue that ought to also be logged/tracked (root cause, whether it's a one-off or a systemic pattern worth flagging for the team), not just treated as "fixed, done."
+
+## How to apply this in a PR review
+
+- Treat any `[A11y]` finding from `reviewer-knowledge.md` or any rule violation from `accessibility-deque.md`'s axe-core catalog as **carrying legal weight for EU-facing content**, not just a maintainability nitpick — this changes how it should be framed in the review (state plainly that it's a WCAG 2.1 AA / EN 301 549 conformance gap, not just "a nice-to-have"), and is a strong signal it belongs in **Blockers**, not Nice-to-haves, especially for `critical`/`serious`-impact axe rules (see `accessibility-deque.md`'s impact levels).
+- Never accept "disproportionate burden" or similar cost/benefit reasoning as a justification to downgrade an accessibility finding during code review — per the EAA, that's a documented, deliberate business/legal exemption process, not something to wave through in a PR comment.
+- If a PR fixes a real accessibility bug, consider noting in Nice-to-haves whether it looks like a one-off vs. a pattern likely to recur elsewhere in the codebase (the EN 17161 root-cause/CAPA framing) — this is a genuinely different, additive angle from "did this PR fix its own bug," and matches the team's own real habit (per `reviewer-knowledge.md`) of asking whether a fix should generalize.
+- This file is about EU legal obligations specifically. Combine with `accessibility-deque.md` for the technical rule catalog (what to check) and `reviewer-knowledge.md`'s `[A11y]` section for this team's actual review habits (how thoroughly to check) — the three files answer three different questions: is this legally required, what exactly is the technical bar, and how does this team actually verify it.

@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -m http.server *)",
+      "Bash(pkill -f *)",
+      "Bash(sips *)",
+      "Bash(curl -s -o /dev/null *)",
+      "Bash(open *)",
+      "Bash(rm -f *)",
+      "Bash(rm -rf .playwright-mcp)",
+      "Bash(mv *)",
+      "Bash(git status *)",
+      "Bash(mkdir -p *)",
+      "Bash(grep *)",
+      "Bash(find *)",
+      "Bash(python3 -c *)",
+      "Read(//private/tmp/**)",
+      "Edit(//private/tmp/**)",
+      "Write(//private/tmp/**)",
+      "Edit(.claude/skills/performance-audit/**)",
+      "Write(.claude/skills/performance-audit/**)",
+      "mcp__playwright__browser_run_code_unsafe",
+      "mcp__playwright__browser_close",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_resize",
+      "mcp__playwright__browser_evaluate",
+      "Agent"
+    ]
+  }
+}
