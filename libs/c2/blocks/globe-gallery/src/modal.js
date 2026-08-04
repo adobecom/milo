@@ -77,7 +77,7 @@ export default function createGlobeModal({
   getBP,
   getCardDims,
   cardAspect,
-  antialias,
+  getAntialias,
   caEnabled,
   // Localized per-item label ("… {name}, {index} of {count}") used for the polite
   // live-region announcement on carousel navigation.
@@ -1150,7 +1150,7 @@ export default function createGlobeModal({
     // above .card-modal__backdrop, so it stays sharp while the backdrop blurs the main canvas.
     modalCanvasEl = q('.globe-gallery-modal-canvas');
     if (modalCanvasEl) {
-      const modalGlOpts = { canvas: modalCanvasEl, antialias, alpha: true };
+      const modalGlOpts = { canvas: modalCanvasEl, antialias: getAntialias(), alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
       modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       modalRenderer.setSize(W, H);

@@ -1237,7 +1237,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
-    antialias: bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD,
+    getAntialias: () => (bp.name === 'sm' ? ANTIALIAS_SM : ANTIALIAS_MD),
     caEnabled: CA_ENABLED,
     cardLabel: labels.cardLabel,
     reducedMotion,
