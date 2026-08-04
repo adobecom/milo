@@ -426,17 +426,23 @@ function setupLayoutDragAndDrop(layout, uploadsWrapper) {
   window.addEventListener('dragend', () => clearActiveDropZone());
 }
 
-// ace1225: turn an authored mp4 link in a cell into an accessible autoplay video via
-// milo's decorateAnchorVideo. It produces the `.video-container.video-holder` the block
-// already treats as media (so the video lands in the media column, not the dropzone), adds
-// a pause/play control, and lazy-appends the <source> on intersection — so a desktop-only
-// clip never downloads on the hidden mobile/tablet cells. The poster is authored as the
-// image's alt-text pipe-syntax (`<video-url>|<alt text>`, i.e. the Title field in Google
-// Docs' Alt-text dialog); milo's decorateImageLinks() already converts that into this anchor
-// with a `data-video-poster` attribute before this block's init() runs, so decorateAnchorVideo
-// picks up the poster natively — no manual picture/poster DOM surgery needed here.
+// Poster→video authoring: the mp4 URL is authored in the image's Title field (DA emits it as
+// `data-title`). Reshape the poster into the `<a href=mp4 data-video-poster=...>` that milo's
+// decorateImageLinks produces for its alt-pipe convention, so decorateAnchorVideo takes over.
+function bridgePosterVideoImage(cell) {
+  const img = cell.querySelector('img[data-title*=".mp4"]');
+  if (!img) return;
+  const posterEl = img.closest('picture') || img;
+  const anchor = createTag('a', {
+    href: img.dataset.title,
+    'data-video-poster': posterEl.outerHTML,
+  });
+  posterEl.replaceWith(anchor);
+}
+
 function decorateUploadVideos(uploadRow, decorateAnchorVideo) {
   [...uploadRow.children].forEach((cell) => {
+    bridgePosterVideoImage(cell);
     const videoLink = cell.querySelector('a[href*=".mp4"]');
     if (!videoLink) return;
     if (!videoLink.hash) videoLink.hash = '#autoplay';
@@ -522,8 +528,7 @@ export default async function init(el) {
     backgroundRow.classList.add('background');
     decorateBlockBg(el, backgroundRow, { useHandleFocalpoint: true });
   }
-  // Video must exist before decorateContentRow (setUploadRowMediaPriority) resizes its
-  // poster and sets preload — otherwise column.querySelector('video') finds nothing.
+  // Build the video first: decorateContentRow's setUploadRowMediaPriority needs the <video>.
   decorateUploadVideos(contentRow, decorateAnchorVideo);
   decorateContentRow(contentRow);
   const layoutParts = buildLayout();
