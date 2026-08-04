@@ -60,7 +60,14 @@ function buildMerchCard(col2) {
   );
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  cardContent.append(...contentParas);
+  contentParas.forEach((para, i) => {
+    const priceLink = para.querySelector('a');
+    if (priceLink) {
+      priceLink.classList.add('pm-price');
+      contentParas[i + 1]?.classList.add('pm-price-sub');
+    }
+    cardContent.append(para);
+  });
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   ctaParas.forEach((p) => ctaWrapper.append(p));
