@@ -5,46 +5,59 @@
    image loader. It holds no per-globe state. */
 import * as THREE from '../three.module.min.js';
 
-// Cap on a card texture's longest side (px). Card planes are small on screen, so full
-// native resolution (often 1500–2000px) is pure GPU-memory waste: iOS uploads each texture
-// as uncompressed RGBA + mipmaps, and ~45 md cards at native size overruns the per-tab
-// memory cap → Safari kills the tab ("A problem repeatedly occurred") during the arc settle.
-// 768 keeps cards crisp at their on-screen size while cutting texture memory ~6–9×.
-const MAX_CARD_TEX = 768;
-
-// Longest-side clamp that preserves aspect (so the cover-crop UVs in done() stay correct).
-function fitDims(w, h) {
+// Longest-side clamp (px) that preserves aspect (so a cover-crop's UVs stay correct).
+// `maxTex` caps the GPU-resident texture: card planes are small on screen, so full native
+// resolution (often 1500–2000px) is pure GPU-memory waste — iOS uploads each texture as
+// uncompressed RGBA + mipmaps, and ~45 md cards at native size overruns the per-tab memory
+// cap → Safari kills the tab ("A problem repeatedly occurred") during the arc settle. The
+// per-device caps live in globe-gallery.js (CARD_TEX_* base set + MODAL_TEX_* opened card).
+function fitDims(w, h, maxTex) {
   const longest = Math.max(w, h);
-  if (longest <= MAX_CARD_TEX) return { w, h };
-  const s = MAX_CARD_TEX / longest;
+  if (longest <= maxTex) return { w, h };
+  const s = maxTex / longest;
   return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
 }
 
-// Load every card image into a CanvasTexture, applying a cover-fit crop so the
-// source's native aspect isn't stretched onto the fixed card plane.
+// Solid-color canvas — placeholder + untainted fallback (see imageToCanvas).
+function makeCanvas(w, h, color) {
+  const cv = document.createElement('canvas');
+  cv.width = w || 4; cv.height = h || 6;
+  const ctx2 = cv.getContext('2d');
+  ctx2.fillStyle = color || '#555';
+  ctx2.fillRect(0, 0, cv.width, cv.height);
+  return cv;
+}
+
+// Draw an image into an aspect-preserving canvas clamped to `maxTex` (longest side).
 //
 // file:// security notes:
 //   • TextureLoader sets crossOrigin='anonymous' → CORS mode → Chrome rejects
 //     file:// origins. So we load via a plain Image (no crossOrigin) and draw
 //     onto a 2D canvas, then wrap with CanvasTexture (allowed for same-origin).
-//   • If the canvas comes back tainted, fall back to an untainted placeholder
+//   • If the canvas comes back tainted, fall back to an untainted solid canvas
 //     so gl.texImage2D won't throw and crash the render loop.
+function imageToCanvas(img, maxTex) {
+  const { w, h } = fitDims(img.naturalWidth || 512, img.naturalHeight || 512, maxTex);
+  const cv = makeCanvas(w, h, '#555');
+  try {
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    cv.getContext('2d').getImageData(0, 0, 1, 1); // throws if tainted
+  } catch (e) {
+    return makeCanvas(w, h, '#444');
+  }
+  return cv;
+}
+
+// Load every card image into a CanvasTexture, applying a cover-fit crop so the source's
+// native aspect isn't stretched onto the fixed card plane. `maxTex` caps each texture's
+// resolution (see fitDims).
 //
 // onDone(textures, cardTexData) fires once all `count` textures have settled.
 // cardTexData[i] carries the cover-crop UVs + sphereScaleX the build step needs.
-export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
+export function loadCardTextures({ count, getSrc, planeAspect, maxTex }, onDone) {
   let loaded = 0;
   const textures = new Array(count);
   const cardTexData = [];
-
-  function makeCanvas(w, h, color) {
-    const cv = document.createElement('canvas');
-    cv.width = w || 4; cv.height = h || 6;
-    const ctx2 = cv.getContext('2d');
-    ctx2.fillStyle = color || '#555';
-    ctx2.fillRect(0, 0, cv.width, cv.height);
-    return cv;
-  }
 
   function done(i, tex) {
     tex.colorSpace = THREE.SRGBColorSpace;
@@ -77,21 +90,7 @@ export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
 
   function tryLoad(i) {
     const img = new Image();
-    img.onload = () => {
-      // Downscale to MAX_CARD_TEX on the longest side (aspect preserved) as we draw, so the
-      // GPU-resident texture is capped regardless of source resolution.
-      const { w: cw, h: ch } = fitDims(img.naturalWidth || 512, img.naturalHeight || 512);
-      const cv = makeCanvas(cw, ch, '#555');
-      let usedCv = cv;
-      try {
-        cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
-        // Verify the canvas is not tainted (throws on file:// if cross-origin).
-        cv.getContext('2d').getImageData(0, 0, 1, 1);
-      } catch (e) {
-        usedCv = makeCanvas(cw, ch, '#444');
-      }
-      done(i, new THREE.CanvasTexture(usedCv));
-    };
+    img.onload = () => { done(i, new THREE.CanvasTexture(imageToCanvas(img, maxTex))); };
     img.onerror = () => {
       done(i, new THREE.CanvasTexture(makeCanvas(4, 6, '#555')));
     };
@@ -99,6 +98,24 @@ export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
   }
 
   for (let i = 0; i < count; i += 1) tryLoad(i);
+}
+
+// Lazily load one card image at a higher cap for the modal (the flown-out card is the only
+// place a card is shown larger than its small base texture). The MODAL shader samples the
+// full image with raw UV — the modal plane is sized to the image's native aspect, so there's
+// no cover-crop and no repeat/offset to apply here (unlike loadCardTextures). `maxTex` caps
+// it (see MODAL_TEX_* in globe-gallery.js). onReady(tex) fires once decoded; the caller owns
+// disposal (on modal close). On error nothing fires — the modal keeps its base-texture
+// placeholder. Returns the Image so the caller can cancel a pending load (img.src = '').
+export function loadModalTexture(src, maxTex, onReady) {
+  const img = new Image();
+  img.onload = () => {
+    const tex = new THREE.CanvasTexture(imageToCanvas(img, maxTex));
+    tex.colorSpace = THREE.SRGBColorSpace;
+    onReady(tex);
+  };
+  img.src = src; // no crossOrigin — needed so onload fires for file://
+  return img;
 }
 
 // Offscreen-canvas resolution for the "Click & Drag" hint text (≈25% height = the

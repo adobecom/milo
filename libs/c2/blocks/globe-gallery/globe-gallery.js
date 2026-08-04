@@ -13,7 +13,7 @@ import { getConfig } from '../../../utils/utils.js';
 // eslint-disable-next-line import/no-relative-packages
 import { replaceKeyArray } from '../../../features/placeholders.js';
 import { parseAuthoredContent, fetchFragmentCards, buildGlobeDom } from './src/authoring.js';
-import { loadCardTextures, createClickDragTexture } from './src/textures.js';
+import { loadCardTextures, loadModalTexture as loadModalTextureRaw, createClickDragTexture } from './src/textures.js';
 import { createCardMaterial, createTextMaterial } from './src/materials.js';
 import createGalleryA11y from './src/a11y.js';
 import createGlobeModal from './src/modal.js';
@@ -104,6 +104,18 @@ function resolveBP(w) {
   if (w >= BREAKPOINTS.md.minWidth) return { name: 'md', cfg: BREAKPOINTS.md };
   return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
+
+// Texture-memory budget (px, longest side). The BASE set is every card, all resident at once
+// during the arc→grid settle, so it dominates GPU memory — it's what overran iOS's per-tab
+// cap and crashed the tab — so it's kept small, smaller still on phones. The MODAL cap is only
+// the opened card (loaded lazily, disposed on close), so it can be sharper without growing the
+// resident set. sm = phones/small windows, md = desktop/iPad. Tune the sm values for the phone
+// clarity/smoothness trade. When MODAL ≤ BASE for a band (md: 768/768) the modal reuses the
+// base texture — no extra load (see the loadModalUpgrade DI wired in initRuntime).
+const CARD_TEX_SM = 256;
+const CARD_TEX_MD = 768;
+const MODAL_TEX_SM = 512;
+const MODAL_TEX_MD = 768;
 
 // ── Yaw-only geometry overlay ────────────────────────────────────────────────
 // Viewport width and INPUT CAPABILITY are independent axes, and the sphere-geometry
@@ -1218,6 +1230,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getCards: () => cards,
     getCount: () => bp.N_TOTAL,
     getCardMetadata,
+    // Lazily load a sharper texture for the opened card (the base set is small, esp. on
+    // phones). Returns the pending Image (so the modal can cancel it) or null when the base
+    // texture already meets the modal cap (md: 768/768) — then the modal reuses it, no load.
+    loadModalUpgrade: (idx, onReady) => {
+      const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
+      const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
+      if (modalCap <= base) return null;
+      return loadModalTextureRaw(getCardMetadata(idx).img, modalCap, onReady);
+    },
     getViewport: () => ({ W, H }),
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
@@ -2389,6 +2410,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       count: bp.N_TOTAL,
       getSrc: (i) => getCardMetadata(i).img,
       planeAspect: CARD_ASPECT,
+      maxTex: bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD,
     }, (loadedTextures, loadedTexData) => {
       textures = loadedTextures;
       cardTexData = loadedTexData;

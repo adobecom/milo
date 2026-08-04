@@ -70,6 +70,9 @@ export default function createGlobeModal({
   getCards,
   getCount,
   getCardMetadata,
+  // Lazily load a sharper texture for the opened card. (idx, onReady) → pending Image | null.
+  // null means "no upgrade needed" (base texture already meets the modal cap) — keep the base.
+  loadModalUpgrade,
   getViewport,
   getBP,
   getCardDims,
@@ -100,6 +103,10 @@ export default function createGlobeModal({
   let modalIdx = -1; // currently open card index, -1 if closed
   let modalCard = null; // reference to the card object whose mesh is animating
   let modalPhase = MODAL_PHASE.CLOSED;
+  // Lazy hi-res modal texture: the pending Image (to cancel) + the CanvasTexture we own and
+  // must dispose (only 1 resident at a time — see releaseModalTexture / getModalMaterial).
+  let modalTexImg = null;
+  let modalTexOwned = null;
   let modalAnimT0 = 0; // animation start timestamp
   // World-transform snapshots (THREE) — created in setup().
   let modalStartPos = null;
@@ -153,16 +160,58 @@ export default function createGlobeModal({
     return card === modalCard || (!!modalScene && card.mesh.parent === modalScene);
   }
 
-  // Per-card SDF modal material, lazily built and cached on the card. The card's
-  // current `.map` (texture) feeds the modal material; aspect is the rendered
-  // world-space width/height (cardAspect × the card's sphereScaleX).
+  // Cancel a pending hi-res load and dispose the owned modal texture. Cheap to call when
+  // nothing is in flight. The owning card's modalMat is left pointing at the (now disposed)
+  // texture, but it isn't rendered again until getModalMaterial() resets its map to the base
+  // placeholder, so that's safe.
+  function releaseModalTexture() {
+    if (modalTexImg) {
+      modalTexImg.onload = null;
+      modalTexImg.src = '';
+      modalTexImg = null;
+    }
+    if (modalTexOwned) {
+      modalTexOwned.dispose();
+      modalTexOwned = null;
+    }
+  }
+
+  // Per-card SDF modal material, lazily built and cached on the card. The card's current
+  // `.map` (base texture) feeds it as an instant placeholder; aspect is the rendered
+  // world-space width/height (cardAspect × the card's sphereScaleX). Also called for swipe
+  // neighbors (attachCardToModal), which show the base texture until they become active — the
+  // hi-res upgrade is requested separately (requestModalUpgrade), only for the active card.
   function getModalMaterial(card) {
     if (!card.modalMat) {
       card.modalMat = createModalMaterial(card.mesh.material.map, card.sphereScaleX * cardAspect);
+    } else {
+      // A prior open may have swapped in a since-disposed hi-res texture — reset to the base
+      // (card.mesh.material is still the basic material here; the SDF swap happens after).
+      card.modalMat.uniforms.map.value = card.mesh.material.map;
     }
     // Mobile: square, full-bleed corners. Set each call so a breakpoint change is honored.
     card.modalMat.uniforms.uRadius.value = getBP() === 'sm' ? 0 : SDF_CORNER_RADIUS;
     return card.modalMat;
+  }
+
+  // Request the lazy hi-res texture for the ACTIVE modal card (not swipe-neighbors). Releases
+  // any previous card's upgrade first (covers open→open and nav switches), then loads and
+  // swaps it into the card's modal material when decoded. loadModalUpgrade returns null when
+  // no upgrade is warranted (desktop: base cap already meets the modal cap) — the base texture
+  // set by getModalMaterial then stands. `idx` is the card index (for the upstream loader).
+  function requestModalUpgrade(card, idx) {
+    releaseModalTexture();
+    if (!loadModalUpgrade) return;
+    modalTexImg = loadModalUpgrade(idx, (tex) => {
+      modalTexImg = null;
+      // Bail if the modal closed or navigated away before the decode finished.
+      if (modalCard !== card || modalPhase === MODAL_PHASE.CLOSED) {
+        tex.dispose();
+        return;
+      }
+      modalTexOwned = tex;
+      card.modalMat.uniforms.map.value = tex;
+    });
   }
 
   // Reset the modal SDF material's animated uniforms to clean defaults. The SDF
@@ -588,6 +637,7 @@ export default function createGlobeModal({
     modalScene.attach(newCard.mesh);
     newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
+    requestModalUpgrade(newCard, newIdx);
     // Start invisible (uOpacity=0) — animation fades it up to 1 over DN_NAV_DUR.
     // Helper also clears any stale uWarp / uMotionDir from a previous session.
     resetModalMaterialUniforms(newCard.mesh.material, 0);
@@ -702,6 +752,7 @@ export default function createGlobeModal({
     // Swap to SDF shader material for crisp corners at modal scale (alphaMap pixelates).
     modalCard.mesh.origMaterial = modalCard.mesh.material;
     modalCard.mesh.material = getModalMaterial(modalCard);
+    requestModalUpgrade(modalCard, i);
     // Reset cached SDF uniforms — protects against stale values left by a
     // previous interrupted nav (e.g., uOpacity stuck mid-fade → ghosted image).
     resetModalMaterialUniforms(modalCard.mesh.material, 1);
@@ -875,6 +926,7 @@ export default function createGlobeModal({
     // Swap to SDF shader material for crisp corners at modal scale.
     newCard.mesh.origMaterial = newCard.mesh.material;
     newCard.mesh.material = getModalMaterial(newCard);
+    requestModalUpgrade(newCard, next);
     newCard.mesh.renderOrder = 0;
     newCard.mesh.material.depthTest = true;
 
@@ -994,6 +1046,9 @@ export default function createGlobeModal({
           modalCard.mesh.material.depthTest = true;
           modalCard.mesh.renderOrder = 0;
           if (modalCanvasEl) modalCanvasEl.style.display = 'none';
+          // Free the opened card's lazily-loaded hi-res texture (only the small base set
+          // stays resident between modal sessions).
+          releaseModalTexture();
           modalPhase = MODAL_PHASE.CLOSED;
           modalCard = null;
           modalIdx = -1;
@@ -1358,6 +1413,7 @@ export default function createGlobeModal({
     if (closeTimeoutId) { clearTimeout(closeTimeoutId); closeTimeoutId = null; }
     if (keydownHandler) { document.removeEventListener('keydown', keydownHandler); keydownHandler = null; }
     resetModalDom();
+    releaseModalTexture();
     if (modalRenderer) {
       modalRenderer.dispose();
       modalRenderer = null;

@@ -36,7 +36,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 | `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the nav-nudge spring, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the block rows positionally (arc-copy, cards, hint text, pull-quote), fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `MODAL_FRAG`'s `uRadius` is set to 0 on mobile (square, full-bleed image). `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
-| `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect, hintText)` (named) — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
+| `textures.js` | `loadCardTextures({ maxTex })` — loads each card image into a cover-cropped `CanvasTexture`, downscaled to the `maxTex` per-device cap (see Texture memory budget); `loadModalTexture(src, maxTex, onReady)` — lazily loads one full (uncropped) image at a higher cap for the modal, returning the pending `Image` so the caller can cancel; `createClickDragTexture(aspect, hintText)` — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. All named exports, no per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown, isBrowsing }`. Exposes the globe as a **two-level gallery**: (1) a collapsed entry `<button>` over the sphere — a stable tab stop (out of tab order only while the modal traps focus) whose Enter/Space **enters browse mode**; (2) a list of per-image `<button>`s that join the tab order only while entered, so Tab/Shift+Tab walks image→image. Each image focus calls `centerCard` (rotate that image to screen centre) + `onFocus` (pdf-space snap) and announces its authored **alt** (→ creator **description** fallback); Enter → `openCard` (detail modal for that image). Esc — or tabbing out either end — collapses back to the entry stop. `isBrowsing()` lets the core pause auto-spin while browsing. All runtime state (`count`, `sphereFormT`, modal-open, `getCardLabel`) + actions (`centerCard`, `openCard`, `onFocus`) are injected; holds no globe state except its own DOM nodes. |
 | `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
@@ -182,6 +182,28 @@ colors; unknown apps render with a derived abbreviation.
 Fewer cards than the nominal grid → the last column is partially filled. No modulo
 wrapping (`getCardMetadata(i)` indexes directly). `ARC_DENSE_COUNT` is derived from
 `ARC_DENSE_FRACTION × N_TOTAL`, so the clustered:spread arc ratio holds at any count.
+
+### Texture memory budget
+
+Card images are downscaled to a per-device cap on upload (iOS uploads textures as
+uncompressed RGBA + mipmaps, and the full **base set** — every card, all resident during the
+arc→grid settle — otherwise overran the WebKit per-tab memory cap and crashed the tab, with
+no JS error). The caps live in `globe-gallery.js` (`CARD_TEX_SM/MD`, `MODAL_TEX_SM/MD`):
+
+- **Base set** (`loadCardTextures({ maxTex })`): small, since all ~24/45 cards stay resident —
+  `256` on sm (phones), `768` on md (desktop/iPad). Cards render below this size on screen, so
+  the cap isn't visible there.
+- **Modal** (opened card only): loaded lazily at a higher cap and disposed on close/nav, so
+  only one hi-res texture is ever resident. `512` on sm, `768` on md. When the modal cap ≤ the
+  base cap (md: 768/768) the modal just reuses the base texture — no extra load (the
+  `loadModalUpgrade` DI returns `null`). Wired through `modal.js`
+  (`getModalMaterial` sets the base texture as an instant placeholder; `requestModalUpgrade`
+  swaps in the sharper one when decoded; `releaseModalTexture` disposes it on close/nav/destroy).
+
+The four caps are the tuning knobs for the phone clarity-vs-smoothness trade — bump
+`MODAL_TEX_SM` first if a full-bleed mobile modal looks soft. `destroy()` now disposes every
+card geometry/material/texture (Three frees GPU memory only on explicit `.dispose()`), so a
+768px-boundary rebuild no longer leaks a full card set.
 
 ## Localization
 
