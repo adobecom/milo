@@ -60,7 +60,11 @@
       font-weight: 900;
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
       line-height: var(--s2a-typography-line-height-heading-5);
-      text-decoration: none;
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
     }
 
     .pm-price-sub {

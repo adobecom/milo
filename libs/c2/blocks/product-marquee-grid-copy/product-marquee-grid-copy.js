@@ -38,9 +38,8 @@ function buildChicletRow(iconEl, heading) {
 function buildMerchCard(contentParas, ctaParas) {
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   contentParas.forEach((para, i) => {
-    const priceLink = para.querySelector('a');
-    if (priceLink) {
-      priceLink.classList.add('pm-price');
+    if (para.querySelector('a')) {
+      para.classList.add('pm-price');
       contentParas[i + 1]?.classList.add('pm-price-sub');
     }
     cardContent.append(para);
