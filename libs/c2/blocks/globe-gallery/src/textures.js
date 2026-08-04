@@ -5,6 +5,21 @@
    image loader. It holds no per-globe state. */
 import * as THREE from '../three.module.min.js';
 
+// Cap on a card texture's longest side (px). Card planes are small on screen, so full
+// native resolution (often 1500–2000px) is pure GPU-memory waste: iOS uploads each texture
+// as uncompressed RGBA + mipmaps, and ~45 md cards at native size overruns the per-tab
+// memory cap → Safari kills the tab ("A problem repeatedly occurred") during the arc settle.
+// 768 keeps cards crisp at their on-screen size while cutting texture memory ~6–9×.
+const MAX_CARD_TEX = 768;
+
+// Longest-side clamp that preserves aspect (so the cover-crop UVs in done() stay correct).
+function fitDims(w, h) {
+  const longest = Math.max(w, h);
+  if (longest <= MAX_CARD_TEX) return { w, h };
+  const s = MAX_CARD_TEX / longest;
+  return { w: Math.max(1, Math.round(w * s)), h: Math.max(1, Math.round(h * s)) };
+}
+
 // Load every card image into a CanvasTexture, applying a cover-fit crop so the
 // source's native aspect isn't stretched onto the fixed card plane.
 //
@@ -63,12 +78,13 @@ export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
   function tryLoad(i) {
     const img = new Image();
     img.onload = () => {
-      const cw = img.naturalWidth || 512;
-      const ch = img.naturalHeight || 512;
+      // Downscale to MAX_CARD_TEX on the longest side (aspect preserved) as we draw, so the
+      // GPU-resident texture is capped regardless of source resolution.
+      const { w: cw, h: ch } = fitDims(img.naturalWidth || 512, img.naturalHeight || 512);
       const cv = makeCanvas(cw, ch, '#555');
       let usedCv = cv;
       try {
-        cv.getContext('2d').drawImage(img, 0, 0);
+        cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
         // Verify the canvas is not tainted (throws on file:// if cross-origin).
         cv.getContext('2d').getImageData(0, 0, 1, 1);
       } catch (e) {
@@ -87,7 +103,9 @@ export function loadCardTextures({ count, getSrc, planeAspect }, onDone) {
 
 // Offscreen-canvas resolution for the "Click & Drag" hint text (≈25% height = the
 // type fills ~75% of it). The plane geometry is sized separately in world units.
-const TEXT_CANVAS_W = 4096;
+// 2048 (was 4096): a 4096-wide canvas is a ~38MB texture + mipmaps for one line of type —
+// needless on iOS's tight GPU budget. 2048 stays sharp at the hint's on-screen size.
+const TEXT_CANVAS_W = 2048;
 
 // Fraction of canvas width the text fills at rest (the warp-overflow scale then pushes
 // letterforms off-screen during entrance/drag). The font auto-scales to hit this for ANY

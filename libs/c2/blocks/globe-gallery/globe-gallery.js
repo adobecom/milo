@@ -2432,7 +2432,19 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       renderer.dispose();
       renderer.domElement.style.display = 'none';
     }
+    for (let i = 0; i < cards.length; i += 1) {
+      const { mesh } = cards[i];
+      if (mesh) {
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) mesh.material.dispose();
+      }
+    }
+    for (let i = 0; i < textures.length; i += 1) {
+      if (textures[i]) textures[i].dispose();
+    }
     cards = [];
+    textures = [];
+    cardTexData = [];
     // Free the hint-text GPU resources + reset its exit progress before the scene teardown.
     disposeTextMesh();
     textExitProgress = 0;
