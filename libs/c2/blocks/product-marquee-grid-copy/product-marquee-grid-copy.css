@@ -1,0 +1,106 @@
+.product-marquee-grid-copy {
+  background: var(--s2a-color-background-default);
+  display: flex;
+  min-block-size: 494px;
+
+  .pm-content {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    padding-block: var(--s2a-layout-lg) var(--s2a-spacing-lg);
+  }
+
+  .pm-foreground {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .heading-5 {
+      max-width: 400px;
+    }
+  }
+
+  .pm-chiclet-row {
+    align-items: center;
+    display: flex;
+    gap: var(--s2a-spacing-md);
+
+    img.icon {
+      block-size: 50px;
+      flex-shrink: 0;
+      inline-size: 50px;
+      object-fit: contain;
+    }
+  }
+
+  .pm-promo-area {
+    margin-block-start: var(--s2a-spacing-lg);
+  }
+
+  .pm-merch-card {
+    border-radius: var(--s2a-border-radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-lg);
+    padding: var(--s2a-spacing-lg);
+  }
+
+  .pm-merch-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s2a-spacing-xs);
+  }
+
+  .pm-merch-ctas {
+    display: flex;
+    gap: var(--s2a-spacing-xs);
+
+    .con-button {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+}
+
+@media (width < 768px) {
+  .product-marquee-grid-copy .pm-foreground {
+    gap: var(--s2a-spacing-lg);
+    justify-content: flex-start;
+  }
+}
+
+@media (width >= 768px) {
+  .product-marquee-grid-copy {
+    min-block-size: 500px;
+
+    .pm-content {
+      --grid-margin-width: var(--s2a-spacing-3xl);
+      flex-direction: row;
+      gap: var(--s2a-spacing-xs);
+      padding-block: var(--s2a-layout-lg) var(--s2a-spacing-3xl);
+    }
+
+    .pm-chiclet-row {
+      gap: var(--s2a-spacing-lg);
+    }
+
+    .pm-chiclet-row img.icon {
+      block-size: 80px;
+      inline-size: 80px;
+    }
+
+    .pm-foreground {
+      .heading-5 {
+        max-width: min(467px, 80%);
+      }
+    }
+
+    .pm-promo-area {
+      align-self: flex-end;
+      margin-block-start: 0;
+      max-width: 596px;
+      width: 443px;
+    }
+  }
+}

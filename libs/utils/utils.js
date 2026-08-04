@@ -148,6 +148,7 @@ const C2_BLOCKS = [
   'hover-list',
   'roller-carousel',
   'roller-carousel-copy',
+  'product-marquee-grid-copy',
 ];
 
 const AUTO_BLOCKS = [
