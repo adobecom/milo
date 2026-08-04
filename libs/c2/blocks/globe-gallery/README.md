@@ -190,19 +190,42 @@ uncompressed RGBA + mipmaps, and the full **base set** — every card, all resid
 arc→grid settle — otherwise overran the WebKit per-tab memory cap and crashed the tab, with
 no JS error). The caps live in `globe-gallery.js` (`CARD_TEX_SM/MD`, `MODAL_TEX_SM/MD`):
 
-- **Base set** (`loadCardTextures({ maxTex })`): small, since all ~24/45 cards stay resident —
-  `256` on sm (phones), `768` on md (desktop/iPad). Cards render below this size on screen, so
-  the cap isn't visible there.
-- **Modal** (opened card only): loaded lazily at a higher cap and disposed on close/nav, so
-  only one hi-res texture is ever resident. `512` on sm, `768` on md. When the modal cap ≤ the
-  base cap (md: 768/768) the modal just reuses the base texture — no extra load (the
-  `loadModalUpgrade` DI returns `null`). Wired through `modal.js`
-  (`getModalMaterial` sets the base texture as an instant placeholder; `requestModalUpgrade`
-  swaps in the sharper one when decoded; `releaseModalTexture` disposes it on close/nav/destroy).
+- **Base set** (`loadCardTextures({ maxTex })`): all ~24/45 cards stay resident, so this
+  dominates. `256` on sm — just above the ~270 device-px a phone grid card needs (DPR-2 cap),
+  verified clear, ~6MB for 24 cards. `768` on md — ~1:1 with the largest card render (md grid
+  card ≈786 device px at 2560px wide) and downsampled everywhere smaller. Texture size isn't an
+  fps cost (mipmapping makes per-frame sampling track screen pixels, not texture size); only
+  memory + initial upload scale with it.
+- **Modal** (opened card only): loaded lazily and disposed on close/nav, so at most one is
+  resident. `768` on sm (≈1:1 with a full-bleed phone at the DPR-2 cap), `2048` on md — the
+  on-screen md modal tops out ~1400–1600 device px, so a larger source gains nothing visible
+  while 2048 bounds the transient cost (~17MB vs ~64MB for a 4000px original). When the modal
+  cap ≤ the base cap the modal just reuses the base texture — no extra load (the
+  `loadModalUpgrade` DI returns `null`); with the current numbers both bands do upgrade. Wired
+  through `modal.js` (`getModalMaterial` sets the base texture as an instant placeholder;
+  `requestModalUpgrade` swaps in the sharper one when decoded; `releaseModalTexture` disposes it
+  on close/nav/destroy).
 
-The four caps are the tuning knobs for the phone clarity-vs-smoothness trade — bump
-`MODAL_TEX_SM` first if a full-bleed mobile modal looks soft. `destroy()` now disposes every
-card geometry/material/texture (Three frees GPU memory only on explicit `.dispose()`), so a
+**Estimating the cost.** A GPU texture is stored uncompressed regardless of the source file's
+JPEG/PNG size: `bytes ≈ width × height × 4` (RGBA, 1 byte/channel). Mipmaps (auto-generated for
+`CanvasTexture`) add the full pyramid — ½-size, ¼-size, … — which converges to **+⅓**, so
+`resident ≈ w × h × 4 × 1.333`. Dimensions are the *downscaled canvas* (longest side = the cap),
+not the source file, and cover-crop doesn't change residency (the whole canvas is uploaded).
+Example: a 4:3 landscape source at the 256 cap → 256×192 canvas → 256·192·4·1.333 ≈ **0.26MB**;
+×24 sm cards ≈ **6MB**. At 768 that same card is ~2.3MB (9× the area). The 2048 md modal
+texture is a single ~2048×1536·4·1.333 ≈ **17MB**, transient.
+
+The **"Click & Drag" hint** (`createClickDragTexture`) is a separate line item: its canvas
+matches the camera aspect (full-frustum overlay, text centered), so `TEXT_MAX_SIDE` caps the
+*longest* side (2048). Without it a portrait phone (~0.49 aspect) derived a 2048×4180 canvas ≈
+45MB — the biggest single mobile allocation, almost all empty transparent space around one line
+of type. Capped, portrait tops out at ~1004×2048 (~11MB); landscape/desktop is unchanged.
+
+These caps are the tuning knobs. A separate `ANTIALIAS` constant (default `true`) toggles MSAA
+on both renderers — the largest GPU cost on high-DPR screens, since framebuffers scale with
+`DPR²`; flip it off to test the memory/quality trade (card corners keep their SDF edge-AA either
+way). `destroy()` also disposes every card geometry/material/texture — including each card's
+cached modal SDF material (Three frees GPU memory only on explicit `.dispose()`) — so a
 768px-boundary rebuild no longer leaks a full card set.
 
 ## Localization

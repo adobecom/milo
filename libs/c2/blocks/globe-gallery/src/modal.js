@@ -77,6 +77,7 @@ export default function createGlobeModal({
   getBP,
   getCardDims,
   cardAspect,
+  antialias,
   caEnabled,
   // Localized per-item label ("… {name}, {index} of {count}") used for the polite
   // live-region announcement on carousel navigation.
@@ -107,6 +108,7 @@ export default function createGlobeModal({
   // must dispose (only 1 resident at a time — see releaseModalTexture / getModalMaterial).
   let modalTexImg = null;
   let modalTexOwned = null;
+  let modalTexCard = null;
   let modalAnimT0 = 0; // animation start timestamp
   // World-transform snapshots (THREE) — created in setup().
   let modalStartPos = null;
@@ -160,10 +162,9 @@ export default function createGlobeModal({
     return card === modalCard || (!!modalScene && card.mesh.parent === modalScene);
   }
 
-  // Cancel a pending hi-res load and dispose the owned modal texture. Cheap to call when
-  // nothing is in flight. The owning card's modalMat is left pointing at the (now disposed)
-  // texture, but it isn't rendered again until getModalMaterial() resets its map to the base
-  // placeholder, so that's safe.
+  // Cancel a pending hi-res load and dispose the owned modal texture. Resets the owning card's
+  // modalMat back to its base texture first, so no material references it when disposed (the
+  // dnNav cross-warp keeps the outgoing card rendered briefly).
   function releaseModalTexture() {
     if (modalTexImg) {
       modalTexImg.onload = null;
@@ -171,9 +172,14 @@ export default function createGlobeModal({
       modalTexImg = null;
     }
     if (modalTexOwned) {
+      if (modalTexCard && modalTexCard.modalMat) {
+        const baseMat = modalTexCard.mesh.origMaterial || modalTexCard.mesh.material;
+        if (baseMat) modalTexCard.modalMat.uniforms.map.value = baseMat.map;
+      }
       modalTexOwned.dispose();
       modalTexOwned = null;
     }
+    modalTexCard = null;
   }
 
   // Per-card SDF modal material, lazily built and cached on the card. The card's current
@@ -197,8 +203,7 @@ export default function createGlobeModal({
   // Request the lazy hi-res texture for the ACTIVE modal card (not swipe-neighbors). Releases
   // any previous card's upgrade first (covers open→open and nav switches), then loads and
   // swaps it into the card's modal material when decoded. loadModalUpgrade returns null when
-  // no upgrade is warranted (desktop: base cap already meets the modal cap) — the base texture
-  // set by getModalMaterial then stands. `idx` is the card index (for the upstream loader).
+  // the base cap already meets the modal cap — the base texture from getModalMaterial stands.
   function requestModalUpgrade(card, idx) {
     releaseModalTexture();
     if (!loadModalUpgrade) return;
@@ -210,6 +215,7 @@ export default function createGlobeModal({
         return;
       }
       modalTexOwned = tex;
+      modalTexCard = card;
       card.modalMat.uniforms.map.value = tex;
     });
   }
@@ -697,6 +703,7 @@ export default function createGlobeModal({
     // 3) The chosen neighbor is now the new current.
     modalCard = cards[newIdx];
     modalIdx = newIdx;
+    requestModalUpgrade(modalCard, newIdx);
     positionCardInModal(modalCard, 0);
     // 4) Attach the new far neighbor (two steps in the swipe direction).
     attachCardToModal(cards[newFarIdx]);
@@ -1143,7 +1150,7 @@ export default function createGlobeModal({
     // above .card-modal__backdrop, so it stays sharp while the backdrop blurs the main canvas.
     modalCanvasEl = q('.globe-gallery-modal-canvas');
     if (modalCanvasEl) {
-      const modalGlOpts = { canvas: modalCanvasEl, antialias: true, alpha: true };
+      const modalGlOpts = { canvas: modalCanvasEl, antialias, alpha: true };
       modalRenderer = new THREE.WebGLRenderer(modalGlOpts);
       modalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       modalRenderer.setSize(W, H);

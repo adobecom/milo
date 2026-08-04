@@ -39,9 +39,10 @@ function makeCanvas(w, h, color) {
 function imageToCanvas(img, maxTex) {
   const { w, h } = fitDims(img.naturalWidth || 512, img.naturalHeight || 512, maxTex);
   const cv = makeCanvas(w, h, '#555');
+  const ctx = cv.getContext('2d');
   try {
-    cv.getContext('2d').drawImage(img, 0, 0, w, h);
-    cv.getContext('2d').getImageData(0, 0, 1, 1); // throws if tainted
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.getImageData(0, 0, 1, 1); // throws if tainted
   } catch (e) {
     return makeCanvas(w, h, '#444');
   }
@@ -118,11 +119,7 @@ export function loadModalTexture(src, maxTex, onReady) {
   return img;
 }
 
-// Offscreen-canvas resolution for the "Click & Drag" hint text (≈25% height = the
-// type fills ~75% of it). The plane geometry is sized separately in world units.
-// 2048 (was 4096): a 4096-wide canvas is a ~38MB texture + mipmaps for one line of type —
-// needless on iOS's tight GPU budget. 2048 stays sharp at the hint's on-screen size.
-const TEXT_CANVAS_W = 2048;
+const TEXT_MAX_SIDE = 2048;
 
 // Fraction of canvas width the text fills at rest (the warp-overflow scale then pushes
 // letterforms off-screen during entrance/drag). The font auto-scales to hit this for ANY
@@ -135,12 +132,20 @@ const HINT_FILL = 0.8;
 // short string can't overflow the height) — language-agnostic, unlike a fixed per-word
 // layout. No per-instance state; the caller owns disposal.
 export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
+  // Cap the longest side to TEXT_MAX_SIDE, preserving the camera aspect.
+  let canvasW; let canvasH;
+  if (aspect >= 1) {
+    canvasW = TEXT_MAX_SIDE;
+    canvasH = Math.max(1, Math.round(TEXT_MAX_SIDE / aspect));
+  } else {
+    canvasH = TEXT_MAX_SIDE;
+    canvasW = Math.max(1, Math.round(TEXT_MAX_SIDE * aspect));
+  }
   const canvas = document.createElement('canvas');
-  const ctxH = Math.round(TEXT_CANVAS_W / aspect);
-  canvas.width = TEXT_CANVAS_W;
-  canvas.height = ctxH;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
   const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, TEXT_CANVAS_W, ctxH);
+  ctx.clearRect(0, 0, canvasW, canvasH);
   ctx.fillStyle = 'white';
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
@@ -156,15 +161,15 @@ export function createClickDragTexture(aspect, hintText = 'Click & Drag') {
 
   // Measure at a reference size, then scale to fill HINT_FILL of the width. Cap to a
   // height budget so a very short string (e.g. one glyph) can't scale up and clip top/bottom.
-  const refSize = Math.round((TEXT_CANVAS_W * 250) / 1440); // Figma: 250px @ 1440 viewport
+  const refSize = Math.round((canvasW * 250) / 1440); // Figma: 250px @ 1440 viewport
   setFont(refSize);
   const measured = Math.max(1, ctx.measureText(hintText).width);
-  const maxSize = Math.round(ctxH * 0.55); // keeps glyphs within the ~75% height budget
-  const fitSize = Math.round(refSize * ((TEXT_CANVAS_W * HINT_FILL) / measured));
+  const maxSize = Math.round(canvasH * 0.55); // keeps glyphs within the ~75% height budget
+  const fitSize = Math.round(refSize * ((canvasW * HINT_FILL) / measured));
   const fontSize = Math.min(maxSize, fitSize);
   setFont(fontSize);
 
-  ctx.fillText(hintText, TEXT_CANVAS_W / 2, ctxH * 0.5);
+  ctx.fillText(hintText, canvasW / 2, canvasH * 0.5);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;

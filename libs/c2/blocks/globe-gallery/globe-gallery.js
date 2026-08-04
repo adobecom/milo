@@ -105,17 +105,11 @@ function resolveBP(w) {
   return { name: 'sm', cfg: BREAKPOINTS.sm };
 }
 
-// Texture-memory budget (px, longest side). The BASE set is every card, all resident at once
-// during the arc→grid settle, so it dominates GPU memory — it's what overran iOS's per-tab
-// cap and crashed the tab — so it's kept small, smaller still on phones. The MODAL cap is only
-// the opened card (loaded lazily, disposed on close), so it can be sharper without growing the
-// resident set. sm = phones/small windows, md = desktop/iPad. Tune the sm values for the phone
-// clarity/smoothness trade. When MODAL ≤ BASE for a band (md: 768/768) the modal reuses the
-// base texture — no extra load (see the loadModalUpgrade DI wired in initRuntime).
 const CARD_TEX_SM = 256;
 const CARD_TEX_MD = 768;
-const MODAL_TEX_SM = 512;
-const MODAL_TEX_MD = 768;
+const MODAL_TEX_SM = 768;
+const MODAL_TEX_MD = 2048;
+const ANTIALIAS = true;
 
 // ── Yaw-only geometry overlay ────────────────────────────────────────────────
 // Viewport width and INPUT CAPABILITY are independent axes, and the sphere-geometry
@@ -1230,9 +1224,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getCards: () => cards,
     getCount: () => bp.N_TOTAL,
     getCardMetadata,
-    // Lazily load a sharper texture for the opened card (the base set is small, esp. on
-    // phones). Returns the pending Image (so the modal can cancel it) or null when the base
-    // texture already meets the modal cap (md: 768/768) — then the modal reuses it, no load.
+    // Lazily load a sharper texture for the opened card. Returns the pending Image (so the
+    // modal can cancel it) or null when the base cap already meets the modal cap (reuse, no load).
     loadModalUpgrade: (idx, onReady) => {
       const base = bp.name === 'sm' ? CARD_TEX_SM : CARD_TEX_MD;
       const modalCap = bp.name === 'sm' ? MODAL_TEX_SM : MODAL_TEX_MD;
@@ -1243,6 +1236,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     getBP: () => bp.name,
     getCardDims: () => ({ w: bp.CARD_W_SPHERE, h: bp.CARD_H_SPHERE }),
     cardAspect: CARD_ASPECT,
+    antialias: ANTIALIAS,
     caEnabled: CA_ENABLED,
     cardLabel: labels.cardLabel,
     reducedMotion,
@@ -2299,7 +2293,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     bp = resolveBpProfile(band.name, band.cfg, usesCylinderGeometry(band.name));
 
     try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: ANTIALIAS, alpha: true });
     } catch (e) {
       renderer = null;
       return false;
@@ -2455,10 +2449,14 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       renderer.domElement.style.display = 'none';
     }
     for (let i = 0; i < cards.length; i += 1) {
-      const { mesh } = cards[i];
+      const card = cards[i];
+      const { mesh } = card;
       if (mesh) {
+        const mm = card.modalMat;
         if (mesh.geometry) mesh.geometry.dispose();
         if (mesh.material) mesh.material.dispose();
+        if (mesh.origMaterial && mesh.origMaterial !== mesh.material) mesh.origMaterial.dispose();
+        if (mm && mm !== mesh.material && mm !== mesh.origMaterial) mm.dispose();
       }
     }
     for (let i = 0; i < textures.length; i += 1) {
