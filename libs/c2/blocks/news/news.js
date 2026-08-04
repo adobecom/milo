@@ -44,7 +44,8 @@ export default async function init(el) {
       if (indx === 0) content.classList.add('news-item-headline');
       else if (isLinkOnlyContent(content, linkEl)) {
         content.classList.add('news-item-link');
-        linkEl.classList.add('standalone-link', 'label', `${el.classList.contains('quiet') ? 'quiet' : ''}`);
+        linkEl.classList.add('standalone-link', 'label');
+        if (el.classList.contains('quiet')) linkEl.classList.add('quiet');
       } else content.classList.add('news-item-body');
     });
   });

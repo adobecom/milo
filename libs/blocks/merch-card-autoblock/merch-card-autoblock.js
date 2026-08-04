@@ -1,6 +1,6 @@
 import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
 import { decorateButtons, getBlockSize } from '../../utils/decorate.js';
-import { postProcessAutoblock, localizePreviewLinks } from '../merch/autoblock.js';
+import { postProcessAutoblock, localizePreviewLinks, decorateContentLinks } from '../merch/autoblock.js';
 import {
   initService,
   createAemFragment,
@@ -248,13 +248,14 @@ let masReadyWatched = false;
 function watchMasFieldCtas() {
   if (masReadyWatched) return;
   masReadyWatched = true;
-  document.addEventListener('mas:ready', ({ target: mf }) => {
+  document.addEventListener('mas:ready', async ({ target: mf }) => {
     if (mf?.tagName !== 'MAS-FIELD' || !mf.closest('em, strong')) return;
     const content = mf.querySelector(':scope > [data-role="mas-field-content"]');
     // Same gate createInline uses: an inline CTA anchor, not block-level content.
     if (content?.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
       // Upgrade to checkout-link before hoisting, else the late CTA never hydrates.
       upgradeCommerceLinks(content);
+      await decorateContentLinks(content);
       decorateInlineCtas(mf, content);
     }
   });
@@ -280,6 +281,8 @@ async function createInline(el, options) {
   // Upgrade any plain commerce elements (missing `is`) so the commerce service resolves
   // them. Applies to both CTA (<a>) and price (<span>) fields.
   upgradeCommerceLinks(content);
+
+  await decorateContentLinks(content);
 
   // Inline CTAs: hoist the anchor into the authored em/strong and let decorateButtons style it.
   if (content.querySelector('a') && !content.querySelector(BLOCK_CONTENT_SELECTOR)) {
