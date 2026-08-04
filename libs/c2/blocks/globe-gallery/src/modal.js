@@ -10,10 +10,11 @@
 
    Coupling to the sphere is deliberately narrow and injected, not imported:
    the closing animation reads the live sphere-drag rotation via the injected
-   `sphereRotEuler` / `sphereRotQuat` THREE objects (shared by reference, updated
-   each frame by the core sphere stage); reparenting a card back to its slot goes
-   through `snapToSphereSlot`; the sphere's nav-reactivity spring is triggered via
-   `requestNavNudge` (the spring physics + sphereRotX/Y live in core). Motion-trail
+   `sphereRotQuat` THREE object (shared by reference, updated each frame by the core
+   sphere stage — the sphere's orientation is a single accumulated quaternion, so this
+   is the whole rotation state); reparenting a card back to its slot goes through
+   `snapToSphereSlot`; the sphere's nav-reactivity spring is triggered via
+   `requestNavNudge` (the spring physics live in core). Motion-trail
    CA is the core `applyMotionCA`. Everything else (scene, camera, sphereGroup,
    cards, viewport, breakpoint, card dims) is read through getters so the module
    never holds a stale snapshot across a resize / breakpoint re-init. */
@@ -79,10 +80,13 @@ export default function createGlobeModal({
   cardLabel,
   // When true, open/close/nav snap instantly with no fly/warp (prefers-reduced-motion).
   reducedMotion,
-  // Sphere-rotation bridge (live THREE objects shared by reference + core callbacks):
-  sphereRotEuler,
+  // Sphere-rotation bridge (live THREE object shared by reference + core callbacks):
   sphereRotQuat,
   snapToSphereSlot,
+  // Applies the sphere's camera-facing tilt to a quaternion in place (no-op when the
+  // active breakpoint has CARD_FACE_CAMERA = 0). Needed so the close animation's target
+  // orientation matches the sphere phase exactly.
+  applySphereFacing,
   requestNavNudge,
   applyMotionCA,
 }) {
@@ -953,14 +957,20 @@ export default function createGlobeModal({
         // is just the z translation. Apply the drag rotation manually.
         sphereGroup.updateMatrixWorld(true);
         if (sphereRotActive) {
-          tgtPos.copy(modalCard.spherePos).applyEuler(sphereRotEuler);
+          tgtPos.copy(modalCard.spherePos).applyQuaternion(sphereRotQuat);
           tgtQuat.copy(sphereRotQuat).multiply(modalCard.sphereQuat);
         } else {
           tgtPos.copy(modalCard.spherePos);
           tgtQuat.copy(modalCard.sphereQuat);
         }
         tgtPos.add(sphereGroup.position);
-        tgtScale.set(modalCard.sphereScaleX, 1, 1);
+        // Sphere-phase scale carries the equal-area normalization (sphereScaleS*), and the
+        // sphere-phase orientation carries the camera-facing tilt — both must match what
+        // placeSphereCard / snapToSphereSlot will apply, or the card jumps on the last frame
+        // of the close animation (snapToSphereSlot runs at aT >= 1 and would correct it
+        // visibly). applySphereFacing is a no-op where CARD_FACE_CAMERA is 0 (md).
+        tgtScale.set(modalCard.sphereScaleSX, modalCard.sphereScaleSY, 1);
+        applySphereFacing(tgtQuat);
 
         modalCard.mesh.position.lerpVectors(modalCloseStartPos, tgtPos, aE);
         modalCard.mesh.quaternion.copy(modalCloseStartQuat).slerp(tgtQuat, aE);

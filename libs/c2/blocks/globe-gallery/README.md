@@ -13,11 +13,15 @@ Over a tall, pinned scroll range (`--runway-height` in the CSS), the authored ph
 0.00–0.55  Arc       cards rotate across the viewport on a circular arc (ortho cam)
 0.30–0.60  Grid peel cards peel off the arc into a 9×5-nominal grid (staggered)
 ~0.37–0.78 Sphere    each card folds onto a fibonacci sphere as it lands
+                     (sm + any touch device: a cylinder wall instead — see below)
 0.78–1.00  Zoom      a perspective camera flies through the sphere
 ```
 
 Once the sphere forms (`sphereFormT >= 0.8`) it's **interactive**: drag to spin,
-tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome).
+tap a card to open a detail **modal** (separate WebGL canvas + HTML chrome). Mouse
+drags rotate **freely** (trackball — no pitch limit, so cards can tumble past vertical
+and read upside down); **touch drags spin yaw only** so vertical swipes stay page
+scroll (see Free rotation + Touch gesture arbitration).
 Extras: per-frame chromatic-aberration SVG filter, a fixed arc-copy overlay, a
 fixed pull-quote that fades in near the zoom end, a WebGL **"Click & Drag" hint
 text** behind the sphere (warps in on fold, dissolves away on first drag — see
@@ -35,10 +39,10 @@ per-card list.
 | `textures.js` | `loadCardTextures` (default export) — loads each card image into a cover-cropped `CanvasTexture`; `createClickDragTexture(aspect, hintText)` (named) — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. No per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
 | `materials.js` | Pure material factories: `createCardMaterial` (the card ShaderMaterial — texture cover-crop + optional CA/warp + SDF rounded corners, with the property-proxy), `createModalMaterial` (the modal SDF material), and `createTextMaterial` (the hint-text `TEXT_FRAG` material — driven entirely by uniforms, no proxy). |
 | `a11y.js` | `createGalleryA11y(deps)` DI factory → `{ setup, updateTabStops, teardown }`. Exposes the globe as **one** focusable widget (a transparent centered `<button>` over the sphere): a stable tab stop (out of tab order only while the modal traps focus), Left/Right arrows → `spinGlobe`, Enter/Space → `openModal` (first item), and `onFocus` snaps the page to the interactive state (pdf-space pattern). All runtime state (`count`, `sphereFormT`, modal-open) + actions (`spinGlobe`, `openModal`, `onFocus`) are injected; holds no globe state except its own DOM node. |
-| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotEuler`/`sphereRotQuat` objects (read by the closing anim) + `snapToSphereSlot` / `requestNavNudge` / `applyMotionCA` callbacks (which keep `sphereRotX/Y` + the nav-nudge spring in core). |
+| `modal.js` | `createGlobeModal(deps)` DI factory → `{ setup, resize, render, updateAnimation, updateDesktopNav, open, navigate, close, getModalIdx, isCardManaged, destroy }`. The card-detail modal: its own WebGL canvas/scene, the `MODAL_PHASE` open/close/navigate state machine, SDF material swap, desktop cross-warp nav, mobile swipe/pull gestures, chrome layout. Owns all modal tuning constants. Sphere coupling is injected and narrow: the shared `sphereRotQuat` object (read by the closing anim) + `snapToSphereSlot` / `applySphereFacing` / `requestNavNudge` / `applyMotionCA` callbacks (which keep the orientation + the nav-nudge spring in core). |
 | `math.js` | Shared pure helpers used by both core + modal: `easeOutCubic`, `easeInOutCubic`, `easeOutSine`, `lerpN`. |
 | `arc.js` | Pure arc-phase geometry (stateless): `arcRotationEase`, `buildArcCtx`, `getFanData`, `cssToWorld`, `rotateArcPoint`, `arcCamZ`. The fanned-arc layout + the CSS↔WebGL coordinate bridge. Derives everything from the viewport (W, H), `ARC_SPAN`, and the per-frame `arcCtx` the core owns (rebuilt each frame, threaded back in). |
-| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
+| `interaction.js` | `createInteraction(deps)` DI factory → `{ setup, teardown }`. Canvas pointer/mouse plumbing: drag-to-spin input, click-vs-drag discrimination, raycast picking for hover (cursor + per-card hover state) and click → modal. Owns its listeners + raycaster; reads live state via getters. Drag velocity is shared with the core sphere stage by reference through the `drag` object (`{ isDragging, velX, velY }`) — interaction writes it from pointer deltas, `updateSphereRotation` reads + decays it. Also owns the **touch axis lock** (yaw-only on touch so vertical swipes stay page scroll; pitch is mouse-only) and exports `isPageScrollGesture()` so per-frame stages can tell a page-scroll swipe from a globe drag — see Behavior notes. Defers its hover cursor (pointer/default) to the custom cursor via the injected `isCursorActive()`. |
 | `cursor.js` | `createCursor(deps)` DI factory → `{ setup, update, teardown, isActive }`. The desktop "Click & Drag" custom cursor (`(hover: hover) and (pointer: fine)` only; no-op on touch). Builds two body-level layers — a `mix-blend-mode: difference` disc (direct body child, so it inverts page content) + a fixed container with squeeze-on-drag chevrons and a label. `update()` (per frame) toggles shown/dragging state from injected getters (`getSphereInteractive`, `getModalOpen`, `getReducedMotion`, `drag`), follows the pointer, and runs the **two-step retirement**: `getHintDismissed()` fades the label out (with the WebGL hint, on first drag), and the later `getCursorRetired()` fades the disc/chevrons over `RETIRE_FADE_MS`, after which `active` drops and the **ordinary system cursor takes back over**. `isActive()` lets interaction.js cede (and then re-take) the canvas cursor. Owns its DOM + `mousemove`/canvas listeners; `teardown()` removes them. Label copy is the authored hint string (`deps.labelText`, shared with the WebGL hint text; see Localization). |
 | `globe-gallery.css` | Globe-only CSS. Also defines `.globe-gallery`-scoped type-scale tokens (see Behavior notes). |
 | `three-src.js` | Build entry — re-exports only the Three.js symbols the block uses. |
@@ -85,9 +89,9 @@ from `interaction.js` (sharing drag velocity via the `drag` object); and the des
 custom cursor from `cursor.js` (its `isActive()` gates interaction's hover cursor).
 The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
-and reaches into the sphere only through the shared `sphereRotEuler`/`sphereRotQuat`
-objects + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep
-`sphereRotX/Y` and the nav-nudge spring in `updateSphereRotation`).
+and reaches into the sphere only through the shared `sphereRotQuat`
+object + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep the
+orientation and the nav-nudge spring in `updateSphereRotation`).
 
 ## How to run
 
@@ -361,7 +365,9 @@ timer all derive from it, so camera / depth-sort / interactivity stay aligned.
 large sphere) and `sm` (<768 — first 24 cards, 3×8, smaller sphere). The `md` band is
 named for its lower bound and covers Milo md *and* lg. Per-profile knobs in
 `BREAKPOINTS`: `N_MAX` (0 = uncapped), `ARC_SPAN`, `SPHERE_R`, `CARD_*`, `CAM_Z_*`,
-`GRID_COLS/ROWS`, `ARC_DENSE_FRACTION`. There is deliberately no md↔lg split: Milo md (768–1279) and lg
+`GRID_COLS/ROWS`, `CARD_ROLL_JITTER`, `ARC_DENSE_FRACTION`, plus precise-pointer defaults
+for the shape keys (`CARD_FACE_CAMERA`, `SPHERE_AREA_NORM`) that `YAW_ONLY_GEOMETRY`
+overrides wherever the cylinder applies. There is deliberately no md↔lg split: Milo md (768–1279) and lg
 (1280–1440) render identically, so a third band would never change anything the WebGL
 cares about — code branches only on `'sm'`. Crossing 768px on resize changes the card
 count, so `doLayout` triggers a full `destroy()`+`init()` rebuild there; resizing within
@@ -461,6 +467,302 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
   266px chunk pinned to the bottom holding the description (top), badges, and — in its bottom
   row — the arrows in the left/right corners with the plain-text counter centered. Same
   `rgb(0 0 0 / 64%)` + `blur(12px)` + light text as desktop.
+- **Free rotation (trackball) — the orientation is one accumulated quaternion.** The sphere's
+  drag orientation is a single `sphereRotQuat`, not a pitch/yaw Euler pair. Each frame's drag
+  deltas are applied as world-axis rotations **premultiplied** onto it
+  (`applySphereRotDelta(WORLD_Y, velX)` / `(WORLD_X, velY)`). Premultiplying by a *world*
+  axis is what makes "drag right" always the screen's horizontal axis however far the globe
+  has been tumbled — post-multiplying would use the sphere's own tumbled local axis. There is
+  **no pitch clamp**: the globe tumbles freely, cards pass through vertical, and past 90° they
+  read upside down. That's accepted as the honest result of the gesture (`CARD_FRAG` already
+  flips back-facing fragments for the camera-inside-sphere case). `sphereRotQuat` is
+  renormalized every frame — repeated products drift off the unit sphere.
+  - **What this replaced, and why.** Previously an `'XYZ'` Euler pair with pitch clamped ±60°
+    as the *outer* rotation. That ordering existed only to dodge a gimbal flip: with `'YXZ'`
+    (unclamped yaw outside) the local pitch axis's world-X component goes to 0 at 90° of yaw
+    (vertical drag does nothing) and −1 at 180° (drag down tilts *up*). Quaternion
+    accumulation has no such failure — measured response to a vertical drag is flat
+    (27.5 ± 0.01) at 0/90/180/270/450° of yaw, and pitch passes through ±90° and beyond with
+    no loss of response.
+  - **Tradeoff: roll becomes PATH-DEPENDENT.** Pitch and yaw rotations don't commute, and
+    their commutator is a **roll** term (order ε² per frame, integrated along the drag path).
+    A closed loop in *input* space is not a closed loop in *orientation* space, so curved
+    drags accumulate tilt the user never asked for and it does not self-cancel.
+    **Note precisely what changed here — the old clamped-Euler scheme also produced roll.**
+    It is not true that the ±60° clamp prevented roll: the screen-horizontal axis picks up a
+    y-component of `sin(yaw)·sin(pitch)`, so e.g. pitch 45° + yaw 45° gave 30° of roll, and
+    pitch 60° + yaw 90° gave 60° — all well inside the clamp. What the old scheme gave was
+    roll that is **bounded and non-hysteretic**: a pure function of the current
+    `(pitch, yaw)` with no memory of the path, returning to exactly 0 whenever pitch returns
+    to 0, and bounded by `|roll| ≤ |pitch| ≤ 60°` (verified by scanning the whole reachable
+    space). The same circular drag under both schemes:
+
+    ```
+     loop |  OLD roll | OLD pitch |  NEW roll
+     -----+-----------+-----------+----------
+      1   |     0.0   |     0.0   |    25.6
+      2   |     0.0   |     0.0   |    49.8
+      3   |     0.0   |     0.0   |    67.2
+      4   |     0.0   |     0.0   |    60.3   ← wanders, doesn't settle
+    ```
+
+    So the regression is the loss of **self-correction**, not the introduction of roll. Under
+    the old scheme dragging back to horizontal always returned the globe level; now it
+    doesn't. Accumulated roll clears only on scroll-out (`sphereFormT < 0.01` →
+    `sphereRotQuat.identity()`).
+  - **Why absolute angles vs. an accumulated rotation (and why Google Earth differs).** Earth
+    stores absolute lat/lon/tilt and keeps north-up (closer to `OrbitControls`); roll is only
+    reachable via a deliberate Ctrl+drag. That fits its problem: Earth's state is a *camera
+    pose over a fixed, oriented world*, the globe has a real north pole, and those angles are
+    exactly the user's mental model — so they can be displayed, deep-linked, and restored.
+    Ours is an *object's orientation with no canonical up*: a Fibonacci sphere of cards has no
+    pole and no meaningful latitude, so there is nothing to name or link to. The general
+    tradeoff: **absolute angles buy predictability by restricting reachable orientations;
+    accumulated quaternions buy all of SO(3) by giving up path-independence.** Gimbal
+    degeneracy is a *symptom* of the angle approach (hence the clamp), not its purpose.
+  - **CURRENT DECISION (open — may revisit).** Shipping pure trackball (option 1 below).
+    The drifting horizon has **not** been judged on a real device yet; the numbers above are
+    computed, not felt. Three options if it proves unacceptable — do not "fix" this by
+    quietly reverting one piece:
+    1. **Pure trackball** *(shipped)* — maximum freedom; drifting horizon; no self-correction.
+    2. **Trackball + spring-to-upright on release** — free during the gesture, settles level.
+       Keeps the gimbal fix and restores the self-correcting property the clamp gave. This is
+       the recommended fallback and the most likely next step.
+    3. **Revert to clamped Euler** — accepts bounded roll and the ±60° pitch limit, but gets
+       path-independence back for free.
+  - **The nav-nudge became a minimal-arc slerp.** `triggerModalNavNudge` now builds one
+    rotation about the single axis carrying the card's world direction to front-center
+    (`setFromUnitVectors`), scaled to `NAV_NUDGE_FACTOR` and capped at `NAV_NUDGE_MAX_ANGLE`
+    (one angle, replacing the per-axis `NAV_NUDGE_MAX_Y`/`_X`). The spring then runs on the
+    **slerp parameter** (`navNudgeT`, 0→1) between two captured orientations. This is both
+    simpler and strictly more correct than the old two-Euler version — whose own comment
+    conceded that Y and X rotations don't commute — and it can't inject roll, since the
+    rotation axis is perpendicular to both directions.
+- **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
+  separately and must not be conflated:
+  - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
+    radius, camera Z. `sm` | `md`.
+  - **Shape** (`usesCylinderGeometry`) picks cylinder-vs-sphere, on an OR: **`sm` width OR a
+    coarse primary pointer**. Both independently rule out a sphere — a small viewport can't
+    frame one, and yaw-only drags can't reach its poles — so the cylinder covers both. A
+    precise-pointer narrow window used to fall between the two and render a **capless
+    sphere** (caps truncated but not unfolded); the truncation parameter has been removed
+    outright so that state is unreachable, not merely unselected.
+    Constants live in the `YAW_ONLY_GEOMETRY` overlay — `CYLINDER` / `CYL_COLS_FIT` /
+    `CYL_GAP_RATIO` / `CYL_ASPECT_CAP` / `CYL_BULGE` / `CARD_FACE_CAMERA`.
+  - **Why split.** Those shape constants exist *only* because a yaw-only drag can't change a
+    card's latitude. They were originally keyed to the `sm` width band, which was wrong: an
+    **iPad Pro is ≥768px (so `md`) but drags with touch**, leaving **7 of its 45 cards
+    permanently >60° oblique** — precisely the bug the yaw-only geometry exists to fix, on a
+    device that never received it. Width tells you nothing about input.
+  - **`(pointer: coarse)`, not `(hover: none)` and not a UA sniff.** It describes the
+    *primary* pointer's precision. iPad Pro with touch alone reports `pointer: coarse`; attach
+    a trackpad and it flips to `pointer: fine` — and that flip is handled, since geometry is
+    baked at `buildCards()` time and can't be swapped in place: `doLayout` compares
+    `bp.YAW_ONLY` and does the same `destroy()` + `init()` rebuild as a width-band crossing.
+    A `change` listener on the media query drives it, because attaching a trackpad fires no
+    `resize`.
+  - **This is distinct from the per-gesture check.** `interaction.js` decides yaw-only per
+    *gesture* from `e.pointerType`, so a hybrid device gets full pitch from its mouse and
+    yaw-only from a finger. Geometry can't be per-gesture, so it commits to the primary input.
+  - Resolved matrix:
+
+    ```
+    device                  band cards  shape            cols  cardW  wall@near  col imb
+    iPhone (393, touch)     sm      24  cylinder masonry    8  13.09      83%      1.05
+    iPad Pro (1024, touch)  md      45  cylinder masonry   14  13.09     164%*     1.22
+    iPad Pro + trackpad     md      45  full sphere         -      -        n/a       -
+    Desktop (1440, mouse)   md      45  full sphere         -      -        n/a       -
+    Narrow desktop (500)    sm      24  cylinder masonry    8  13.09      83%      1.05
+    * >100% = the wall bleeds past the top/bottom edges — intended immersive framing on a
+      large screen (77% of the centre-plane frustum).
+    ```
+
+- **Yaw-only devices render a barrelled CYLINDER, not a sphere.** This replaced the truncated-sphere
+  approach and is a *solution* to the yaw-only problem rather than a mitigation of it: every
+  card's normal is **horizontal**, so obliquity depends only on azimuth — exactly what yaw
+  controls. Yaw can therefore bring **any** card to 0° face-on at any height. (The banded
+  sphere could only reduce worst-case obliquity to 44°, because latitude tilted every card
+  and yaw couldn't touch it.) Reads as the sphere's caps unfolded up and down into a wall.
+  - **Layout is cylindrical MASONRY** (`cylinderMasonryLayout`) — fixed columns around the
+    circumference with cards packed down each one. This replaced a golden-angle helix, which
+    had two visible faults: golden-angle spacing is only even in the *limit*, so at 24 cards a
+    45° sector held anywhere from **2 to 4** cards (crowded and bare verticals); and equal-area
+    normalization traded height against width, so heights varied **1.63×** and nothing lined up.
+  - **Uniform WIDTH is what fixes the alignment; varying HEIGHT is the effect.** Card width is
+    set to the column width — identical for every card, so columns read as true verticals —
+    while height follows each image's native aspect (**2.25×** range), which is the masonry
+    stagger. This makes `SPHERE_AREA_NORM` unnecessary on this path (set to 0).
+  - **Cards go to the currently SHORTEST column, TALLEST CARD FIRST** — the classic
+    longest-processing-time-first heuristic. Greedy alone isn't enough: packing in source order
+    leaves the tall cards until last, where nothing balanced remains, leaving one column
+    **1.64×** another. Placing tall cards while every column is still short drops that to
+    **1.05**. Reordering is free here — the layout already scatters consecutive cards (0 of 23
+    adjacent pairs share a column), so authored order carries no spatial meaning, and modal
+    prev/next walks card *index* and spins to whatever slot the card holds. Each column's stack
+    is then centred about y=0, so a short column sits centred rather than hanging from the top.
+  - **Column count is DERIVED, not fixed** (`CYL_COLS_FIT` 0.80): the fewest columns whose
+    tallest column still fits that fraction of the frustum height. It has to scale with the
+    card count — a fixed count suited to sm's 24 cards left md's 45 stacked ~6× past the
+    viewport. Resolves to 8 columns on sm, 14 on md (and at 50 cards); ~3–4 cards per column.
+    **This is the wall-HEIGHT dial**: lowering it adds a column, which narrows the cards and
+    shortens the wall (0.95 → 0.80 took sm from 117% of the near-face frustum, bleeding well
+    past the edges, to 83%).
+  - **`CYL_ASPECT_CAP` (1.5)** clamps how extreme a card's aspect may get, so one 16:9
+    panorama can't dominate a column. Not a distortion — the existing cover-crop UVs simply
+    crop harder. Note `imgAspect` is therefore derived from the *solved* size, not the raw
+    image aspect, so the rounded-corner SDF still matches the rendered shape.
+  - **`CYL_GAP_RATIO` (0.20)** is the breathing-room dial, setting both gaps (card width =
+    column pitch / (1 + ratio)). Verified no overlap in either direction: min vertical gap
+    in-column 2.62 and horizontal *chord* clearance 2.22–2.49 (the chord matters, not the arc
+    — flat cards cut across the curve).
+  - **The near-camera fade scales with each card's OWN rendered height**
+    (`card.sphereWorldH`), not `bp.CARD_H_SPHERE`. On the masonry path `CARD_H_SPHERE` is only
+    the `PlaneGeometry` base and no longer describes any rendered card (solved heights run
+    8.7–19.6 against a base of 11 on sm, 6.5 on md), so using it scaled the fade by the wrong
+    number: on md a 19.6-tall card finished dissolving at **0.61×** its own fill-the-frame
+    depth — it filled the screen *before* going transparent, which is precisely what the fade
+    exists to prevent. Per-card height gives every card the intended **1.85×** margin by
+    construction, at any band, count, or bulge.
+    - `dragFlipZ` takes the **tallest** card's fade distance (the last to vanish), and is
+      clamped to `CAM_Z_SPHERE × DRAG_FLIP_MAX_CAM_FRAC` (0.95). Without the clamp the larger
+      per-card distance pushed md's threshold to 66.4 against a `CAM_Z_SPHERE` of 65 — the
+      drag would have inverted the instant the zoom began, with the near wall still in full
+      view.
+  - **The drag-flip threshold is DERIVED, not `SPHERE_R`** (`dragFlipZ`, computed in
+    `buildCards`, read by `updateActiveCamera`). Once the camera is inside the shell the
+    visible far-hemisphere wall moves opposite to the same world rotation, so the drag delta
+    is negated to keep tracking the surface being looked at. That flip used to fire at
+    `|camera.z| < SPHERE_R` — the *geometric* wall — while cards dissolve some distance in
+    front of it (`NEAR_FADE_END × CARD_H_SPHERE`). The two only coincided by accident, and
+    the accident broke: raising sm's `CARD_H_SPHERE` 6.0 → 11.0 for density stretched the
+    dissolve distance 9.6 → 17.6 units while the threshold stayed at 20, leaving a long
+    stretch where the near cards were gone but the drag hadn't inverted. `dragFlipZ` is now
+    `maxRadial + NEAR_FADE_END × CARD_H_SPHERE`, so the flip lands with the dissolve by
+    construction — dead zone 17.4 → ~0 on sm, 9.3 → ~0 on md — and stays correct through
+    changes to card size, `CYL_BULGE`, or radius.
+    - `maxRadial` is the largest **radial** distance of any card, not raw z: the globe spins,
+      so every card visits the front and the threshold has to be rotation-invariant.
+    - `sphereGroup.scale` is folded in — reduced motion shrinks the group on md
+      (`RM_GLOBE_SCALE_MD`), which would otherwise flip 3.5 units early.
+    - Still gated on `zoomT > 0`, and verified not to fire at zoom start (margin 32 units on
+      sm, 20 on md), so the interactive globe phase is untouched.
+  - **No roll jitter on this path** — the columns lining up *is* the effect, so any tilt
+    reintroduces the ragged look it was built to fix.
+  - **`CYL_BULGE` (0.12) barrels the wall** so the silhouette curves like a globe without
+    giving up the straight columns: `r = R·(1 − bulge·t²)` with `t = 2y / wallH`, i.e. the
+    radius narrows toward the top and bottom. Every column keeps a **constant azimuth**, so
+    it still projects to a vertical line — the bulge only displaces cards radially. Measured
+    on sm: the dead-centre column (the one being read) shows **exactly 0px** horizontal
+    drift, angled front columns pick up ~12px on a 375px screen, and the wall edges inset
+    ~8% of R. Costs ~9° of normal tilt on sm / ~14° on md — well under a chopped sphere's
+    5–33°. **Don't push past ~0.2**: the inter-column chord shrinks with `r` while card width
+    doesn't, so the narrowed edges start to overlap (0.25 measures −0.20 clearance). `0` is an
+    exact cylinder.
+    - The layout returns a per-card **`normal`**, and `buildCards` aims each card along it.
+      A plain `lookAt` at the axis would ignore the barrel's slope and leave cards standing
+      bolt upright through their own surface. Note `lookAt(eye, target)` points local +Z from
+      the *target* back toward the *eye*, so the target is `pos − normal` (inside the
+      surface) for the card to face outward.
+  - **Why not a chopped masonry globe** (evaluated and rejected). Meridian columns on a sphere
+    project to *curves*, not lines, so in-column alignment breaks by construction; a 0.7 band
+    leaves only ~89° of usable arc against ~41° per card, so columns hold **2 cards** — too
+    few to read as a stack — and pushing for more shrinks cards from 13.09 to 9.52 wide;
+    latitude obliquity returns at 5–33°. There's also no good taper choice: tapering card
+    width with `sin(polar)` makes widths vary 1.18× (columns visibly non-uniform), and not
+    tapering leaves cards floating off the surface at the band edges. Masonry wants a
+    developable surface — a cylinder is one, a sphere isn't. The barrel is the compromise
+    that keeps the alignment.
+  - **`CARD_FACE_CAMERA` drops 0.5 → 0.35.** Still wanted — limb cards are edge-on until spun
+    round — but a cylinder has no polar cards to rescue, so it's only limb polish now.
+- **Density + facing pass (fixing the "edgy / unevenly distributed" touch-device read).** Three
+  independent causes were measured; note that **adding cards fixes none of them** — screen-space
+  nearest-neighbour spacing is already even at N = 24 (CV 0.26) and gets *worse* with more
+  cards (CV 0.41 at N = 48, 0.46 at N = 60) because near/far foreshortening variance grows.
+  - **Edge-on slivers → `CARD_FACE_CAMERA` (`0.35` on the cylinder, `0` on the full sphere).** Latitude obliquity is handled structurally by the cylinder; this fixes the
+    *latitude* component of obliquity. A radially-facing card's obliquity equals its angular
+    distance from front-center, so cards at the left/right limb render as near-invisible
+    lines — the *azimuthal* component, intrinsic to a sphere and unfixable by redistribution.
+    `applyCardFacing` turns each card partway from radial-outward toward the camera. Result:
+    slivers 5 → 0, front-hemisphere worst obliquity 81° → 41°.
+    - **It must be per-frame, not baked into `card.sphereQuat`.** The sphere rotates, so a
+      build-time tilt rotates with it and stops pointing at the camera — and since sm is
+      yaw-only, *every* card cycles through the limb.
+    - **The effect must fade to zero at edge-on, or the sign flip is visible.** The two
+      targets are 180° apart, so applying the tilt at full strength as a card passes edge-on
+      (`normal.z` crossing 0) teleports it by up to **63°** — a card snapping to the far side
+      exactly as it thins out. `FACING_EDGE_ON_BAND` (0.25, in `|normal.z|`) smoothsteps `k`
+      to 0 across a band around edge-on, so the two branches meet at no-op: max per-frame
+      change drops **63.3° → 1.9°** (against a 0.5° input step), verified across yaw, pitch
+      and oblique tumbling. The correction survives untouched out to ~75° obliquity — it only
+      matters near face-on anyway — and widening the band past ~0.35 starts eating it.
+    - **The alignment target is `sign(n.z) × viewDir`, not `viewDir`.** A uniform blend
+      toward `+Z` rotates a back-hemisphere card (normal ≈ −Z) to perpendicular — creating
+      the very sliver it removes (verified: back card 180° → 90°). Aligning each card toward
+      whichever pole it already faces keeps back cards fully facing away (visible from
+      behind; `CARD_FRAG` mirrors `uv.x` for back faces).
+    - Applied at **three** sites, all of which must agree or the card visibly snaps:
+      `placeSphereCard`, `snapCardToSphereSlot` (reparent — the one-frame flash it exists to
+      prevent), and `placeFoldingCard` **scaled by `fdE`** so the tilt eases in over the fold
+      and arrives exactly continuous with the sphere branch (verified: 0.00e+0° apart).
+  - **Uneven card SIZE → `SPHERE_AREA_NORM` (`0.5` under the yaw-only overlay, else `0`).** This was the actual cause
+    of the remaining "some places dense, some sparse" read, and it is not a distribution
+    problem at all. On the sphere a card keeps its image's **native aspect**: height is fixed
+    at `CARD_H_SPHERE` and width scales with `sphereScaleX`, so a 16:9 image ends up **2.67×
+    the area** of a 2:3 one. Wide cards blot out their neighbours (at the previous sizing the
+    widest had `gap/maxHalfDiag` = 1.25 — they physically **intersected**) while tall narrow
+    ones leave gaps. Scaling *both* axes by `sphereScaleX^-norm` equalizes area exactly at
+    `norm = 0.5` (area ∝ scaleX·scaleY = ssx·ssx⁻¹ = 1) and leaves the aspect ratio — and
+    therefore the image — completely undistorted. Area spread **2.67× → 1.00×**.
+    - Baked once into `card.sphereScaleSX` / `sphereScaleSY` at build time (raw
+      `sphereScaleX` is kept because the arc/grid phases and the modal still size from it).
+      Applied at the same three sites as the facing tilt, **plus** `modal.js`'s close-animation
+      target — that one also needed `applySphereFacing` injected, since it lands on the sphere
+      orientation and would otherwise jump on the final frame when `snapToSphereSlot` runs.
+    - `norm = 0` reproduces the old `(sphereScaleX, 1)` scaling **exactly**, so
+      precise-pointer devices are untouched (verified across ssx 0.5–3.0). The rounded-corner SDF is unaffected: uniform
+      scaling preserves w/h, so `uAspect` still matches and corners stay circular.
+  - **Sparseness → `CARD_H_SPHERE` 6.0 → 11.0 on sm** (the sphere path; the cylinder path
+    solves its own sizing from the column layout). The other half of the "uneven" read was
+    plain low coverage: 24 cards at 6.0 covered only **12.4%** of the sphere face, so the eye
+    saw accidental clusters in black space rather than a surface. Coverage scales with
+    **H²**, making size a far stronger lever than count — and unlike count it adds **no
+    textures and no draw calls**. This is the *nominal* height before `SPHERE_AREA_NORM`
+    rebalances it; net **~42%** coverage with the widest card still clearing its neighbours
+    (`gap/maxHalfDiag` 1.60). Only affects the sphere phase; `CARD_W_ARC` drives the arc.
+  - **Scatter → `CARD_ROLL_JITTER` (sm `0.18` ≈ ±5°, md `0.5` ≈ ±14°).** The per-card random
+    roll was previously a hardcoded ±14°, which at sm's sparsity read as scattered debris
+    rather than a structured surface. Now per-BP; md keeps the original collage character.
+- **Touch gesture arbitration — yaw-only, via a directional axis lock** (`interaction.js`).
+  On a touch device a vertical drag *is* the page-scroll gesture, so the globe can't also
+  claim it. Touch therefore gets **yaw only**: horizontal drag spins the sphere, vertical
+  drag scrolls the page. Pitch (`drag.velY`) stays **mouse-only** — a pointer has no
+  competing gesture. The canvas's `touch-action: pan-y` (`authoring.js`) makes the browser
+  hand vertical pans to the page, but that alone isn't sufficient: moves arriving *before*
+  the browser commits to the pan would still leak a pitch kick into `velY`. So the axis is
+  resolved in JS from the first decisive movement — `AXIS_LOCK_THRESHOLD` (8px) of travel
+  from the down point, then **latched** for the rest of the gesture (a curved swipe can't
+  flip axes mid-drag). Below the threshold *neither* axis acts, and a 45° tie resolves to
+  vertical (scroll wins ambiguity). `isTouchDrag` is recorded **per gesture** from
+  `e.pointerType` (`touch`/`pen`), so a touchscreen laptop gets the lock for finger input
+  and full pitch for its mouse — no capability sniff.
+  - **Taps are deliberately not gated on the lock.** `CLICK_MAX_MOVE` (10px) exceeds the
+    8px lock threshold, so a jittery fingertip tap may well have latched an axis; gating
+    the tap on it would swallow those taps. `onPointerUp`'s distance/time test is
+    independent, so tap-to-open-modal is unchanged.
+  - **`isPageScrollGesture()`** is exported for per-frame stages that read
+    `drag.isDragging` as "the user is working the globe." During a vertical touch drag
+    `isDragging` is still true, so the hint-dismissal stage (`updateHintExitProgress`)
+    must skip it — its hold-time term (`+0.0022`/frame ≈ 0.13/s) would otherwise accrue
+    during an ordinary scroll and retire the "Click & Drag" hint past
+    `CURSOR_HINT_DISMISS_T` (0.12) in ~1s of scrolling, without the user ever having spun
+    the globe. The predicate is gated on `drag.isDragging` too, since `isTouchDrag`
+    persists after pointerup.
+  - No dwell is required for this to work: touch scrolling is self-terminating, so on
+    lift the sphere is stationary and `sphereFormT >= 0.8` holds for the rest of the
+    runway — the user can stop anywhere and spin. Scroll and spin are mutually exclusive
+    in *time*, so they never arbitrate. (The separate question of how easy it is to
+    *land* on the pristine formed globe is a pacing matter — see Open items.)
 - **`.globe-gallery`-scoped type-scale tokens in `globe-gallery.css`.** The prototype relied on
   `:root` tokens from a typography stylesheet Milo doesn't ship. `globe-gallery.css` defines
   the needed `--font-display`/`--type-title-1-*`/`--type-body-*` tokens scoped to
@@ -479,8 +781,8 @@ into its own DI module~~ (`a11y.js`); ~~`MODAL_PHASE` state-machine constants~~
 (frozen enum, now in `modal.js`); ~~DRY modal magic numbers~~ (`MODAL_CAM_DIST`,
 `SDF_CORNER_RADIUS`); ~~extract the modal into its own DI module~~ (`modal.js` —
 `createGlobeModal(deps)`; the sphere coupling stayed narrow: shared
-`sphereRotEuler`/`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with
-`sphereRotX/Y` + the nav-nudge spring kept in `updateSphereRotation`).
+`sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with the orientation +
+the nav-nudge spring kept in `updateSphereRotation`).
 
 Done: ~~reduced-motion handling~~ (renders a static interactive globe + snaps the
 modal — see Accessibility; supersedes the old "static poster" idea); ~~single-widget
@@ -501,16 +803,28 @@ Remaining (each an independent enhancement / fix — no ordering dependency):
 1. **Mobile drag affordance.** The cursor is desktop-only and the WebGL hint text is the only
    touch hint today. Options: a brief auto-nudge rotation on first view, a touch-specific
    on-canvas glyph, or leave the text as-is — a design call, judge on a real device.
-2. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
+   Now that touch is **yaw-only** (see Behavior notes), the hint arguably wants copy that
+   says *swipe sideways* rather than the desktop "Click & Drag" — it's the authored hint
+   string (row 2), so it's an authoring/localization change, not code.
+2. **Zoom landing zone (pacing, not interaction).** `zoomT` begins the instant the fold
+   ends, and the zoom uses `easeOutCubic` (3× speed at onset ≈ 91 world units of camera
+   travel per viewport-height). The window where the sphere is interactive *and* the
+   camera is still parked is only `progress` 0.265→0.322 ≈ **238px of scroll** at the
+   default 630vh runway — narrower than one casual flick, so users often meet the globe
+   already partway into the zoom rather than at its composed best. If that reads as a
+   problem on a real device, the cheap fix is delaying the zoom's start (a gap between
+   `foldLast` and where `zoomT` climbs) rather than a true scroll-park, which would mean
+   remapping `progress` across the whole timeline. Affects desktop equally.
+3. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
    this — start/stop the ticker on intersect), instead of running every frame. Behavior
    change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
    exit aren't cut off). Now more worthwhile since reduced motion also
    keeps the ticker running on a static globe.
-3. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
+4. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
    today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
    after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
    resources, or collapse gracefully.
-4. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
+5. **Consider removing the global SVG-filter CA ("Option C", `updateGlobalCA` + the
    `caFilterR`/`caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`).** It's a
    second, scroll-velocity-only CA system layered on top of the shader's per-card CA. Its
    magnitude is sub-pixel on slow scroll, ~`CA_PX_MAX` (3px) max on fast scroll, and zero at

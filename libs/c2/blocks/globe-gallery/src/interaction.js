@@ -11,7 +11,7 @@
    from raw pointer deltas; the core updateSphereRotation reads it, applies
    inertia/auto-rotate friction, and writes it back. Sharing a mutable object
    (rather than passing scalars through callbacks) mirrors how the modal shares
-   sphereRotEuler/Quat — two stages mutate the same value each frame. Everything
+   sphereRotQuat — two stages mutate the same value each frame. Everything
    else (renderer, camera, cards, sphere-formation progress, modal open) is read
    through getters / callbacks so the module never holds a stale snapshot across
    a breakpoint re-init.
@@ -26,6 +26,27 @@ const DRAG_SENSITIVITY = 0.005; // pointer px → rad/frame drag velocity
 const CLICK_MAX_MOVE = 10; // px
 const CLICK_MAX_TIME = 500; // ms
 const PICK_MIN_OPACITY = 0.1;
+// ── Touch axis lock ──────────────────────────────────────────────────────────
+// On a touch device a vertical drag is the page-scroll gesture, so the globe can't
+// also claim it. Touch therefore gets YAW ONLY: horizontal drag spins the sphere,
+// vertical drag scrolls the page. Pitch (velY) stays mouse-only — there's no
+// competing gesture with a pointer.
+//
+// The canvas already carries `touch-action: pan-y` (see authoring.js), which makes
+// the BROWSER hand vertical pans to the page and fire `pointercancel` at us. That
+// alone isn't enough: the moves before the browser commits to the pan still arrive
+// as pointermove, so raw deltas would leak a pitch kick into velY at the start of
+// every scroll. This lock resolves the axis ourselves from the first decisive
+// movement, so nothing leaks while the browser is still deciding.
+//
+// Resolution is deferred until the pointer travels AXIS_LOCK_THRESHOLD from the
+// down point (a fingertip's first pixels are too noisy to judge direction), then
+// latched for the rest of the gesture so a curved swipe can't flip axes mid-drag.
+const AXIS_LOCK_THRESHOLD = 8; // px of travel before the axis is decided
+// Lock states for the current touch gesture.
+const AXIS_UNDECIDED = 0;
+const AXIS_HORIZONTAL = 1; // spinning the globe — we consume the deltas
+const AXIS_VERTICAL = 2; // page scroll — we ignore the gesture entirely
 
 export default function createInteraction({
   getRenderer, getCamera, getCards, getModalIdx, openModal,
@@ -41,6 +62,23 @@ export default function createInteraction({
   let pointerDownX = 0;
   let pointerDownY = 0;
   let pointerDownT = 0;
+  // Axis lock for the in-flight gesture (see AXIS_LOCK_THRESHOLD). `isTouchDrag`
+  // records whether THIS gesture came from a touch/pen contact rather than a mouse,
+  // so the lock applies per-gesture on hybrid devices (touchscreen laptops) instead
+  // of being decided once by a capability sniff.
+  let isTouchDrag = false;
+  let axisLock = AXIS_UNDECIDED;
+
+  // Resolve the touch axis lock from total travel since pointerdown. No-op for mouse
+  // gestures (pitch is mouse-only) and once the axis is already latched. Ties and
+  // sub-threshold movement stay UNDECIDED so neither axis acts on ambiguous input.
+  function resolveAxisLock(e) {
+    if (!isTouchDrag || axisLock !== AXIS_UNDECIDED) return;
+    const tdx = Math.abs(e.clientX - pointerDownX);
+    const tdy = Math.abs(e.clientY - pointerDownY);
+    if (Math.max(tdx, tdy) < AXIS_LOCK_THRESHOLD) return;
+    axisLock = tdx > tdy ? AXIS_HORIZONTAL : AXIS_VERTICAL;
+  }
 
   function ownsDrag(e) {
     return drag.isDragging && canvasEl != null && canvasEl.hasPointerCapture(e.pointerId);
@@ -79,14 +117,34 @@ export default function createInteraction({
     pointerDownX = e.clientX;
     pointerDownY = e.clientY;
     pointerDownT = Date.now();
+    // Per-gesture, so a hybrid device (touchscreen laptop) gets the lock for finger
+    // input and full pitch for its mouse. 'pen' is grouped with touch: it's a direct
+    // contact on the same surface, so it drives the page's scroll gesture too.
+    isTouchDrag = e.pointerType === 'touch' || e.pointerType === 'pen';
+    axisLock = AXIS_UNDECIDED;
   }
 
   function onPointerMove(e) {
     if (!ownsDrag(e)) return;
+    resolveAxisLock(e);
+    // Touch, axis not yet resolved → consume nothing. Holding both axes until the
+    // gesture declares itself is what keeps a scroll from nudging the globe; the
+    // deltas aren't lost, since lastMX/lastMY are NOT advanced here, so the first
+    // frame after the lock resolves carries the full travel since pointerdown.
+    if (isTouchDrag && axisLock === AXIS_UNDECIDED) return;
+    // Touch, vertical → the page owns this gesture. Leave velX/velY at rest so the
+    // sphere is inert for the whole scroll (the browser's `touch-action: pan-y` is
+    // doing the actual scrolling).
+    if (isTouchDrag && axisLock === AXIS_VERTICAL) return;
     drag.velX = Math.max(-maxVel, Math.min(maxVel, (e.clientX - lastMX) * DRAG_SENSITIVITY));
-    // +Y cursor delta (drag down) → +sphereRotX → +X-axis rotation tips the front
-    // surface downward, so the globe follows the cursor (drag down reveals the top).
-    drag.velY = Math.max(-maxVel, Math.min(maxVel, (e.clientY - lastMY) * DRAG_SENSITIVITY));
+    // Pitch is MOUSE-ONLY. On touch, vertical drag is the page-scroll gesture, so a
+    // horizontal-locked touch drag spins yaw only and leaves velY untouched — see the
+    // AXIS_LOCK_THRESHOLD block. +Y cursor delta (drag down) → a positive world-X
+    // rotation, which tips the front surface downward, so the globe follows the cursor
+    // (drag down reveals the top).
+    if (!isTouchDrag) {
+      drag.velY = Math.max(-maxVel, Math.min(maxVel, (e.clientY - lastMY) * DRAG_SENSITIVITY));
+    }
     lastMX = e.clientX; lastMY = e.clientY;
   }
 
@@ -106,6 +164,11 @@ export default function createInteraction({
   function onPointerUp(e) {
     if (!ownsDrag(e)) return;
     drag.isDragging = false;
+    // Clear the lock so a cancelled/finished gesture can't leak its axis into the next
+    // one. The tap test below is deliberately independent of axisLock: CLICK_MAX_MOVE
+    // (10px) exceeds AXIS_LOCK_THRESHOLD (8px), so a jittery fingertip tap may well have
+    // latched an axis, and gating the tap on the lock would swallow those taps.
+    axisLock = AXIS_UNDECIDED;
     const dx = Math.abs(e.clientX - pointerDownX);
     const dy = Math.abs(e.clientY - pointerDownY);
     const dt = Date.now() - pointerDownT;
@@ -173,5 +236,18 @@ export default function createInteraction({
     drag.velY = 0;
   }
 
-  return { setup, teardown };
+  // True when the in-flight gesture is a touch drag the PAGE owns (vertical scroll),
+  // or a touch drag that hasn't declared its axis yet. The globe is inert then, so
+  // per-frame stages that treat `drag.isDragging` as "the user is working the globe"
+  // must exclude it — notably the hint-text dismissal, whose hold-time term would
+  // otherwise accrue during an ordinary scroll and retire the "Click & Drag" hint
+  // without the user ever having spun anything.
+  // Gated on drag.isDragging as well as the lock: isTouchDrag persists after pointerup
+  // (it describes the last gesture's input type), so without it this would keep reporting
+  // true between touch gestures and suppress the hint stage while nothing is in flight.
+  const isPageScrollGesture = () => drag.isDragging
+    && isTouchDrag
+    && axisLock !== AXIS_HORIZONTAL;
+
+  return { setup, teardown, isPageScrollGesture };
 }
