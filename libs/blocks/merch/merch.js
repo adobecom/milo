@@ -1,9 +1,8 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLinkAsync, getMetadata,
-  shouldAllowKrTrial, getCountry,
+  shouldAllowKrTrial, getCountry, getValidatedMasLibsUrl,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
-import { mepMasStudioUrls } from './mas-mep-utils.js';
 
 // MAS Component Names
 export const COMMERCE_LIBRARY = 'commerce';
@@ -342,57 +341,16 @@ let log;
 let upgradeOffer = null;
 
 /**
- * Given a url, calculates the hostname of MAS platform.
- * Supports, www prod, stage, local and feature branches.
- * if params are missing, it will return the latest calculated or default value.
- * @param {string} hostname optional
- * @param {string} maslibs optional
- * @returns base url for mas platform
+ * Parses the maslibs URL parameter and returns a validated base URL.
+ * Ignored on www.adobe.com; elsewhere the value must be a branch,
+ * branch--repo or branch--repo--owner shape (VULN-36379).
+ * @param {string} [hostname] hostname to evaluate the prod guard against
+ * @returns {string | null} Base URL or null if maslibs not present or invalid
  */
-export function getMasBase(hostname, maslibs) {
-  let { baseUrl } = getMasBase;
-  if (!baseUrl) {
-    if (maslibs === 'stage') {
-      baseUrl = 'https://www.stage.adobe.com/mas';
-    } else if (maslibs === 'local') {
-      baseUrl = 'http://localhost:9001';
-    } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.aem.${extension}`;
-    } else {
-      baseUrl = 'https://www.adobe.com/mas';
-    }
-    getMasBase.baseUrl = baseUrl;
-  }
-  return baseUrl;
-}
-
-/**
- * Parses maslibs URL parameter and returns base URL
- * @returns {string | null} Base URL or null if maslibs not present
- */
-export function getMasLibsBaseUrl() {
+export function getMasLibsBaseUrl(hostname = window.location.hostname) {
+  if (hostname === 'www.adobe.com') return null;
   const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('maslibs');
-
-  if (!masLibs || masLibs.trim() === '') return null;
-
-  const sanitized = masLibs.trim().toLowerCase();
-
-  if (sanitized === 'local') {
-    return 'http://localhost:3000';
-  }
-
-  if (sanitized === 'main') {
-    return 'https://main--mas--adobecom.aem.live';
-  }
-
-  let branch = sanitized;
-  if (!sanitized.includes('--')) {
-    branch = `${sanitized}--mas--adobecom`;
-  }
-
-  return `https://${branch}.aem.live`;
+  return getValidatedMasLibsUrl(urlParams.get('maslibs'));
 }
 
 /**
@@ -1116,27 +1074,26 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise
     ?? polyfills().then(async () => {
-      await loadMasComponent(COMMERCE_LIBRARY);
-
-      // Load fragment-client.js when maslibs is present
-      const fragmentClientUrl = getFragmentClientUrl();
-      if (fragmentClientUrl) {
-        const { loadScript: loadScriptUtil } = await import('../../utils/utils.js');
-        try {
-          await loadScriptUtil(fragmentClientUrl, 'module');
-        } catch (e) {
-          log?.error('Failed to load fragment-client.js:', e);
-        }
-      }
-
-      const { language, locale, country } = await getLocaleSettings(miloLocale);
       const useGeoMarket = isMasGeoDetectionEnabled();
+
+      // Load all independent resources in parallel
+      const fragmentClientUrl = getFragmentClientUrl();
+      const localeSettingsPromise = getLocaleSettings(miloLocale);
+      const [, , { language, locale, country }, validatedMarket] = await Promise.all([
+        loadMasComponent(COMMERCE_LIBRARY),
+        fragmentClientUrl
+          ? loadScript(fragmentClientUrl, 'module').catch((e) => {
+            log?.error('Failed to load fragment-client.js:', e);
+          })
+          : Promise.resolve(),
+        localeSettingsPromise,
+        useGeoMarket
+          ? import('../../utils/market.js').then(({ getValidatedMarket }) => getValidatedMarket())
+          : Promise.resolve(null),
+      ]);
+
       let countryFromMarket = country;
-      if (useGeoMarket) {
-        const { getValidatedMarket } = await import('../../utils/market.js');
-        const validatedMarket = await getValidatedMarket();
-        if (validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
-      }
+      if (useGeoMarket && validatedMarket) countryFromMarket = validatedMarket.toUpperCase();
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
@@ -1497,15 +1454,32 @@ export async function buildCta(el, params) {
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
    */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.removeAttribute('data-hide-kr-free-trial');
-      return;
+  const localePrefix = getConfig()?.locale?.prefix;
+  if (localePrefix === '/kr') {
+    const hasAllowKrTrial = shouldAllowKrTrial(el, localePrefix);
+    const hasAllowKrTrialMeta = getMetadata('allow-kr-free-trial') === 'on';
+    const elAlreadyHasAllow = el.getAttribute('data-allow-kr-free-trial') === 'true';
+
+    if (hasAllowKrTrial || hasAllowKrTrialMeta || elAlreadyHasAllow) {
+      cta.setAttribute('data-allow-kr-free-trial', 'true');
+      return cta;
     }
-    cta.remove();
-  });
+
+    cta.setAttribute('data-hide-kr-free-trial', crypto.randomUUID());
+    cta.onceSettled().then(() => {
+      const uuid = cta.getAttribute('data-hide-kr-free-trial');
+      const { offerType: ctaOfferType } = cta.value?.[0] || {};
+      if (ctaOfferType === OFFER_TYPE_TRIAL) cta.remove();
+      else cta.removeAttribute('data-hide-kr-free-trial');
+
+      const ctaClone = [...document.querySelectorAll(`[data-hide-kr-free-trial="${uuid}"]`)]
+        .find((clone) => clone !== cta);
+      if (!ctaClone) return;
+      const { offerType: cloneOfferType } = ctaClone.value?.[0] || {};
+      if (!cloneOfferType || cloneOfferType === OFFER_TYPE_TRIAL) ctaClone.remove();
+      else ctaClone.removeAttribute('data-hide-kr-free-trial');
+    });
+  }
 
   return cta;
 }
@@ -1606,6 +1580,7 @@ export default async function init(el) {
     // Rebuilt merch href keeps only the OSI; stash the original for
     // the "Edit OSI" badge.
     if (getConfig()?.mep?.preview) {
+      const { mepMasStudioUrls } = await import('./mas-mep-utils.js');
       mepMasStudioUrls.set(merch, el.href);
       merch.dataset.masBlock = 'ost';
     }

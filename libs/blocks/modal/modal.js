@@ -200,11 +200,18 @@ export async function getModal(details, custom) {
   const { id, deepLink } = details || custom;
   if (id !== LOCALE_MODAL_ID) isDeepLink = deepLink;
   const activeElementData = document.activeElement.dataset;
-  if (!isDeepLink
-    && (activeElementData.modalHash === `#${id}`
-    || activeElementData.modalId === id)
-  ) {
+  const isConfirmedTrigger = !isDeepLink
+    && (activeElementData.modalHash === `#${id}` || activeElementData.modalId === id);
+  if (isConfirmedTrigger) {
     document.activeElement.dataset.isModalTrigger = 'true';
+  }
+  let openedViaKeyboard = true;
+  if (isConfirmedTrigger) {
+    try {
+      openedViaKeyboard = document.activeElement.matches(':focus-visible');
+    } catch (e) {
+      openedViaKeyboard = true;
+    }
   }
 
   dialogLoadingSet.add(id);
@@ -279,7 +286,7 @@ export async function getModal(details, custom) {
   dialog.append(focusPlaceholder);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
-  firstFocusable?.focus({ preventScroll: true, ...focusVisible });
+  firstFocusable?.focus({ preventScroll: true, focusVisible: openedViaKeyboard });
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {

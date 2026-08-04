@@ -12,6 +12,7 @@
   visibility: visible;
   position: relative;
   z-index: 11;
+  overflow: hidden;
 }
 
 .language-banner-content {
@@ -25,7 +26,7 @@
 .language-banner-text {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: 12px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 400;
   line-height: 18px;
@@ -34,7 +35,7 @@
 .language-banner-link {
   color: #FFF;
   font-family: var(--body-font-family);
-  font-size: 12px;
+  font-size: var(--type-body-s-size);
   font-style: normal;
   font-weight: 700;
   line-height: 18px;
@@ -76,5 +77,93 @@
     transform: translateY(-50%);
     flex-direction: column;
     width: auto;
+  }
+}
+
+html:has(meta[name="foundation"][content="c2"]) {
+  .language-banner {
+    padding: var(--s2a-spacing-12) var(--s2a-spacing-20);
+    height: 44px;
+    overflow: hidden;
+    background-color: var(--s2a-color-blue-900);
+    gap: var(--s2a-spacing-8);
+    justify-content: flex-start;
+    position: relative;
+    visibility: visible;
+  }
+
+  .language-banner-content {
+    flex: 1 0 0;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--s2a-spacing-4);
+    min-width: 0;
+  }
+
+  .language-banner-text {
+    color: var(--s2a-color-gray-25);
+    font-size: var(--s2a-font-size-sm);
+    font-weight: 400;
+    line-height: var(--s2a-font-line-height-18);
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .language-banner-link {
+    color: var(--s2a-color-gray-25);
+    font-size: var(--s2a-font-size-sm);
+    font-weight: 700;
+    line-height: var(--s2a-font-line-height-18);
+    text-decoration: underline;
+    text-decoration-skip-ink: none;
+    text-underline-position: from-font;
+    cursor: pointer;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    align-self: center;
+    max-width: 50%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .language-banner-link:hover {
+    color: var(--s2a-color-gray-25);
+  }
+
+  .language-banner-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+  }
+
+  @media (width >= 768px) {
+    .language-banner {
+      justify-content: center;
+      padding-inline: 150px;
+      gap: 0;
+    }
+
+    .language-banner-text,
+    .language-banner-link {
+      font-size: var(--s2a-font-size-md);
+    }
+
+    .language-banner-close {
+      position: absolute;
+      inset-inline-end: var(--s2a-spacing-24);
+      top: 50%;
+      transform: translateY(-50%);
+    }
   }
 }

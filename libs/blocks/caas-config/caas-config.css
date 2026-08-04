@@ -85,10 +85,6 @@ dd.content .sort-options > .field {
   cursor: pointer;
 }
 
-.blade-card-options > div {
-    margin: 0 10px !important;
-}
-
 /* sticky panel */
 .config-panel {
   border-top: 8px solid black;
@@ -150,17 +146,42 @@ dd.content .sort-options > .field {
   display: inline-block;
 }
 
-/* Indent carousel options */
-dd.content .carousel-options .field {
-  padding-left: 20px;
-  max-width: calc(var(--field-max-size) - 20px);
-} 
-
 .caas-config .consonant-Wrapper--carousel {
   width: 100%;
   margin: 0;
 }
 
-.caas-config .nested {
-  padding-left: 20px;
+/* Indented fields for card style options */
+dd.content .nested {
+  background: #333;
+  width: calc(100% - 36px);
+  margin-top: -6px;
+  padding: 1px 0 2px 0;
+  border: solid #666 1px;
+  border-top: 0;
+  border-radius: 0 0 20px 20px;
+}
+
+dd.content .nested .field {
+  padding-left: 16px;
+  max-width: calc(var(--field-max-size) - 16px);
+  color: #bababa;
+}
+
+dd.content .nested .field label {
+  margin: 0;
+}
+
+dd.content .nested .field select {
+  width: calc(100% - 20px);
+}
+
+dd.content .nested .field input[type="text"] {
+  width: calc(100% - 40px);
+  font-family: monospace;
+  font-size: 12px !important;
+}
+
+dd.content .nested .note {
+  padding-left: 16px;
 }
