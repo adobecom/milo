@@ -74,6 +74,9 @@ export default async function init(el) {
     (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
   });
 
+  const mainTop = document.querySelector('main').offsetTop;
+  document.documentElement.style.setProperty('--bc-main-height', `${mainTop}px`);
+
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
 

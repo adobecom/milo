@@ -42,6 +42,7 @@
   --bc-dark-input-border-color: linear-gradient(98deg, #9A3CF9 0%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 100%);
   --bc-dark-button-color: rgba(255 255 255 / 80%);
   --bc-dark-button-hover-color: rgba(255 255 255 / 90%);
+  --bc-main-height: 64px;
 
   box-sizing: border-box;
   padding: 40px 24px 12px;
@@ -1274,7 +1275,7 @@
     #brand-concierge-side.dialog-modal {
       border-radius: 12px;
       box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-      height: calc(100vh - 48px - 63px);
+      height: calc(100vh - 48px - var(--bc-main-height));
       margin: 24px 24px 24px auto;
       bottom: 0;
       right: 0;

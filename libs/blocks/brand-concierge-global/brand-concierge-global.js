@@ -132,6 +132,9 @@ export default function init(el) {
     }
   });
 
+  const mainTop = document.querySelector('main').offsetTop;
+  document.documentElement.style.setProperty('--bc-main-height', `${mainTop}px`);
+
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;
   setAuthoredContent(null, cards, input);

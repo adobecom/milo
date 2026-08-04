@@ -23,6 +23,7 @@ nav.feds-topnav .feds-bc-wrapper {
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
+  --bc-main-height: 64px;
 
   align-items: center;
   box-sizing: content-box;
@@ -247,18 +248,6 @@ nav.feds-topnav .feds-bc-wrapper {
   padding: 8px 0;
   box-sizing: border-box;
   grid-area: 1 / 1 / 2 / 2;
-  white-space: nowrap;
-}
-
-.floating-input .bc-floating-input .bc-input-field-container textarea,
-.floating-input .bc-floating-input .bc-textarea-grow-wrap::after,
-.brand-concierge.marquee .bc-input-field-container textarea,
-.brand-concierge.marquee .bc-textarea-grow-wrap::after {
-  max-height: 40px;
-  min-height: 480px;
-  overflow: hidden;
-  overflow-wrap: normal;
-  padding: 12px 0;
   white-space: nowrap;
 }
 
@@ -618,11 +607,12 @@ nav.feds-topnav .feds-bc-wrapper {
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: calc(100vh - 48px - 63px);
+    height: calc(100vh - 48px - var(--bc-main-height));
     margin: 24px 24px 24px auto;
     bottom: 0;
     right: 0;
     width: 448px;
+    z-index: 5;
   }
 
   #brand-concierge-side.dialog-modal.opening {
