@@ -426,23 +426,11 @@ function setupLayoutDragAndDrop(layout, uploadsWrapper) {
   window.addEventListener('dragend', () => clearActiveDropZone());
 }
 
-// Poster→video authoring: the mp4 URL is authored in the image's Title field (DA emits it as
-// `data-title`). Reshape the poster into the `<a href=mp4 data-video-poster=...>` that milo's
-// decorateImageLinks produces for its alt-pipe convention, so decorateAnchorVideo takes over.
-function bridgePosterVideoImage(cell) {
-  const img = cell.querySelector('img[data-title*=".mp4"]');
-  if (!img) return;
-  const posterEl = img.closest('picture') || img;
-  const anchor = createTag('a', {
-    href: img.dataset.title,
-    'data-video-poster': posterEl.outerHTML,
-  });
-  posterEl.replaceWith(anchor);
-}
-
+// Poster→video authoring: author the mp4 URL in the image's alt text as `url#_autoplay | caption`.
+// Milo's decorateImageLinks() converts that into `<a href=mp4 data-video-poster=<picture>>` before
+// this block's init() runs, so we just hand the resulting anchor to decorateAnchorVideo.
 function decorateUploadVideos(uploadRow, decorateAnchorVideo) {
   [...uploadRow.children].forEach((cell) => {
-    bridgePosterVideoImage(cell);
     const videoLink = cell.querySelector('a[href*=".mp4"]');
     if (!videoLink) return;
     if (!videoLink.hash) videoLink.hash = '#autoplay';
