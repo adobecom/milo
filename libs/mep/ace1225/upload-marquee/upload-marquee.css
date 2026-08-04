@@ -159,6 +159,11 @@
   background: var(--color-gray-800);
 }
 
+.upload-marquee-block .video-container .pause-play-wrapper:focus-visible {
+  outline: 2px solid var(--um-accent-focus);
+  outline-offset: 2px;
+}
+
 .upload-marquee-block .video-container .pause-play-wrapper img.accessibility-control {
   width: 40px;
   height: 40px;
