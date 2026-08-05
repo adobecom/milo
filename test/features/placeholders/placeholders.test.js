@@ -232,3 +232,114 @@ describe('Geo-IP Placeholders (-geo-ip suffix)', () => {
     delete cfg.placeholders;
   });
 });
+
+describe('Geo-IP individual-country fallback', () => {
+  let paramsGetStub;
+  let langfirstMeta;
+  let fetchStub;
+
+  const geoLocales = {
+    '': { ietf: 'en-US', tk: 'hah7vzn.css' },
+    si: { ietf: 'sl-SI', tk: 'hah7vzn.css' },
+    uk: { ietf: 'en-GB', tk: 'hah7vzn.css' },
+    cl: { ietf: 'es-CL', tk: 'hah7vzn.css' },
+  };
+
+  before(() => {
+    paramsGetStub = stub(URLSearchParams.prototype, 'get');
+    paramsGetStub.withArgs('cache').returns('off');
+  });
+
+  after(() => {
+    paramsGetStub.restore();
+  });
+
+  function stubGeoFetch(pathValueMap) {
+    fetchStub = stub(window, 'fetch').callsFake((url) => {
+      const entry = Object.entries(pathValueMap).find(([path]) => url.includes(path));
+      if (!entry) return Promise.resolve({ ok: false });
+      const [, value] = entry;
+      return Promise.resolve({ ok: true, json: async () => ({ data: [{ key: 'buy-now-geo-ip', value }] }) });
+    });
+  }
+
+  function enableLingo(country, { regions, mepLingoCountryToRegion, marketsConfig, prefix = '' } = {}) {
+    langfirstMeta = document.createElement('meta');
+    langfirstMeta.name = 'langfirst';
+    langfirstMeta.content = 'on';
+    document.head.appendChild(langfirstMeta);
+    sessionStorage.setItem('akamai', country);
+    setConfig({ locales: geoLocales, mepLingoCountryToRegion, contentRoot: '' });
+    const cfg = getConfig();
+    cfg.locale.prefix = prefix;
+    if (regions) cfg.locale.regions = regions;
+    if (marketsConfig) cfg.marketsConfig = marketsConfig;
+    return cfg;
+  }
+
+  afterEach(() => {
+    if (langfirstMeta?.parentNode) langfirstMeta.parentNode.removeChild(langfirstMeta);
+    sessionStorage.removeItem('akamai');
+    fetchStub?.restore();
+    fetchStub = undefined;
+  });
+
+  it('resolves an individual-country prefix never wired as a regions/fold entry', async () => {
+    stubGeoFetch({ '/si/placeholders': 'Slovenia buy now' });
+    const cfg = enableLingo('si', { marketsConfig: { data: [{ prefix: '', supportedRegions: 'si' }] } });
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Slovenia buy now');
+  });
+
+  it('gates the individual-country tier by isSupportedMarket, falls back to the fold when unsupported', async () => {
+    stubGeoFetch({
+      '/cl/placeholders': 'Chile buy now',
+      '/la/placeholders': 'LatAm buy now',
+    });
+    const cfg = enableLingo('cl', {
+      regions: { la: { prefix: '/la' } },
+      mepLingoCountryToRegion: { la: ['cl', 'co'] },
+      marketsConfig: { data: [{ prefix: '', supportedRegions: 'us' }] },
+    });
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('LatAm buy now');
+  });
+
+  it('still resolves via the fold for a country with no standalone site of its own (no regression)', async () => {
+    stubGeoFetch({ '/africa/placeholders': 'Kenya buy now' });
+    const cfg = enableLingo('ke', {
+      regions: { africa: { prefix: '/africa' } },
+      mepLingoCountryToRegion: { africa: ['ke', 'mu'] },
+    });
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Kenya buy now');
+  });
+
+  it('prefers the individual-country site over a fold it is also a member of', async () => {
+    stubGeoFetch({
+      '/cl/placeholders': 'Chile buy now',
+      '/la/placeholders': 'LatAm buy now',
+    });
+    const cfg = enableLingo('cl', {
+      regions: { la: { prefix: '/la' } },
+      mepLingoCountryToRegion: { la: ['cl', 'co'] },
+      marketsConfig: { data: [{ prefix: '', supportedRegions: 'cl' }] },
+    });
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Chile buy now');
+  });
+
+  it('is a no-op when the detected country matches the page already being viewed', async () => {
+    const cfg = enableLingo('si', { prefix: '/si' });
+    cfg.locale.contentRoot = '/test/features/placeholders';
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('Buy now');
+  });
+
+  it('resolves the uk/gb locale-key alias', async () => {
+    stubGeoFetch({ '/uk/placeholders': 'UK buy now' });
+    const cfg = enableLingo('uk', { marketsConfig: { data: [{ prefix: '', supportedRegions: 'gb' }] } });
+    const text = await replaceText('{{buy-now-geo-ip}}', cfg);
+    expect(text).to.equal('UK buy now');
+  });
+});
