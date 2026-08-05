@@ -2,10 +2,13 @@ import {
   customFetch,
   getConfig,
   getMetadata,
-  getGeoLocalePrefix,
+  getLocale,
   getPlaceholderPaths,
   lingoActive,
+  normCountryCode,
+  resolveDetectedMarketCountry,
 } from '../utils/utils.js';
+import { isSupportedMarket } from '../utils/market.js';
 
 const fetchedPlaceholders = {};
 window.mph = {};
@@ -67,11 +70,56 @@ function keyToStr(key) {
 const isGeoIpKey = (key) => key.endsWith('-geo-ip');
 const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
+// No-fetch reimplementation of getLingoRegion's direct regions[] match, so
+// already-covered countries (`ca`/`za`/`sg`...) never pay the isSupportedMarket
+// fetch below. Intentionally skips the mepLingoCountryToRegion fold — that
+// rollup swaps whole fragments for a shared region and isn't reliable for a
+// precise per-country placeholder value.
+function getDirectRegionPrefix(locale, country, localeKey) {
+  if (!locale.regions) return null;
+  const regionKey = Object.entries(locale.regions).find(
+    ([key]) => key === country || key === `${country}_${localeKey}`,
+  )?.[0];
+  return regionKey ? locale.regions[regionKey].prefix : null;
+}
+
+// Some repos key a locale by a colloquial/URL code rather than ISO 3166-1
+// (da-cc's UK site is `uk`, not `gb`). normCountryCode() normalizes to ISO,
+// so without this alias the lookup below would miss it.
+const COUNTRY_KEY_ALIASES = { gb: 'uk' };
+
+// Fallback for a country with its own standalone locale (own prefix/
+// placeholders.json) that was never wired as a `regions` child, e.g. `si`/
+// `ch_it`. Gated by isSupportedMarket so it only fires where
+// supported-markets.json actually supports this country/language pairing.
+async function getIndividualCountryGeoPrefix(country, siteConfig, localeKey) {
+  const { locale, locales } = siteConfig;
+  if (!locales || !country) return null;
+  const alias = COUNTRY_KEY_ALIASES[country];
+  const candidateKeys = [country, `${country}_${localeKey}`];
+  if (alias) candidateKeys.push(alias, `${alias}_${localeKey}`);
+  const candidateKey = candidateKeys.find((key) => key in locales);
+  if (!candidateKey) return null;
+  const candidate = getLocale(locales, `/${candidateKey}`);
+  if (!candidate?.prefix || candidate.prefix === locale.prefix) return null;
+
+  const supported = await isSupportedMarket(country);
+  return supported ? candidate.prefix : null;
+}
+
 async function getGeoPlaceholders(config, sheet) {
   if (!lingoActive()) return null;
-  const geoPrefix = await getGeoLocalePrefix();
-  if (!geoPrefix) return null;
   const siteConfig = getConfig();
+  const { locale } = siteConfig;
+  const country = normCountryCode(await resolveDetectedMarketCountry());
+  const localeKey = locale.prefix === '' ? 'en' : locale.prefix.replace('/', '');
+
+  let geoPrefix = country ? getDirectRegionPrefix(locale, country, localeKey) : null;
+  if (!geoPrefix && country) {
+    geoPrefix = await getIndividualCountryGeoPrefix(country, siteConfig, localeKey);
+  }
+
+  if (!geoPrefix) return null;
   let geoOrigin = window.location.origin;
   let pathSuffix = siteConfig.contentRoot ?? '';
   const callerContentRoot = config.locale?.contentRoot ?? '';
