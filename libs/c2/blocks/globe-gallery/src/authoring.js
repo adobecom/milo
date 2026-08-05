@@ -233,13 +233,14 @@ const buildMarkup = (gid, labels) => `
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:111;display:none;pointer-events:none;"></canvas>
 
   <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
-    <img class="globe-gallery-modal__image" alt="" />
     <div class="globe-gallery-modal__info">
       <p class="globe-gallery-modal__role-label" id="globe-gallery-modal-role-${gid}"></p>
       <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
       <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
     </div>
+    <!-- sr-only text alternative for the WebGL photo, after the info so the heading is read first. -->
+    <span class="globe-gallery-modal__image globe-gallery-sr-only" role="img"></span>
     <!-- Controls come AFTER the info scrim so they paint on top of it (no z-index needed). -->
     <button class="globe-gallery-modal__nav globe-gallery-modal__nav--prev" type="button" aria-label="${labels.prevCard}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>

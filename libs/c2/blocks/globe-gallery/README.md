@@ -305,8 +305,9 @@ missing; on a correctly-authored page they never show. Specifically:
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
 - **Authored:** arc-copy, pull-quote, and card name/role/description come from the block
-  rows + fragment; each **browse-image button's `aria-label`** (and the modal image's `alt`)
-  is the card's authored **alt** (→ an `alt text to be authored` placeholder when none); the "Click & Drag" hint + cursor label
+  rows + fragment; each **browse-image button's `aria-label`** (and the modal's `role="img"`
+  text-alternative label) is the card's authored **alt** (→ an `alt text to be authored`
+  placeholder when none); the "Click & Drag" hint + cursor label
   come from **row 2** (the `Click & Drag` literal is just the empty-row fallback). Badge app
   labels come from the authored token (the `App`/`Ap` literal is only the empty-token fallback).
 
@@ -396,7 +397,10 @@ globe holds the centred image; mouse drag still works.
   first item on open — focus is on the dialog container, so the SR reads its accessible name
   (`aria-labelledby` now points at **role-label + name**, so the author's **role** is spoken
   first) then its `aria-describedby` description, then forward-navigation walks the content
-  (role → name → description → badges) before the Prev/Next/Close controls. Each **subsequent**
+  (role → name → description → badges → photo) before the Prev/Next/Close controls. The photo
+  itself is a `role="img"` sr-only element (`.globe-gallery-modal__image`, no bitmap) placed AFTER
+  the info block so the heading is read first, carrying the card's alt as its label so the WebGL
+  image has a real text alternative to land on. Each **subsequent**
   item is announced once by a polite live region (`.globe-gallery-modal__live`, updated only on
   navigation with `cardLabel` so it doesn't double the open announcement or read the badge list).
 

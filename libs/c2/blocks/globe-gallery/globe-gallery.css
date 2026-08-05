@@ -347,9 +347,6 @@
    ABOVE the photo and hide it. */
 .globe-gallery-modal-chrome::backdrop { background: transparent; }
 
-/* Image element kept in DOM for accessibility only — WebGL card is the visible "image". */
-.globe-gallery-modal__image { display: none; }
-
 /* Nav arrows — position (edges on desktop, bottom row on mobile) is set per-frame
    by JS (positionModalChrome); CSS handles visual style only. Dark frosted treatment
    with a 1px 24%-white border that sits over the photo at every breakpoint. */

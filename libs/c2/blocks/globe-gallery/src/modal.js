@@ -592,8 +592,11 @@ export default function createGlobeModal({
     const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
+    // role="img" element (no bitmap) — the text alternative for the WebGL photo, so a
+    // screen reader lands on the image inside the dialog. No src: the visible photo is the
+    // WebGL canvas, and loading the full original here would decode it a second time.
     const imgEl = targetEl.querySelector('.globe-gallery-modal__image');
-    if (imgEl) { imgEl.src = meta.img; imgEl.alt = meta.alt || 'alt text to be authored'; }
+    if (imgEl) imgEl.setAttribute('aria-label', meta.alt || 'alt text to be authored');
     const roleLabelEl = targetEl.querySelector('.globe-gallery-modal__role-label');
     if (roleLabelEl) roleLabelEl.textContent = meta.role;
     targetEl.querySelector('.globe-gallery-modal__name').textContent = meta.name;
