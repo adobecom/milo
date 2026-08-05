@@ -28,6 +28,29 @@ describe('Rich Content', () => {
     expect(heading.firstElementChild).to.equal(quote);
   });
 
+  ['"', '„', '‚', '「', '『'].forEach((mark) => {
+    it(`hangs a non-Pi opening quote (${mark}) into its own span`, () => {
+      document.body.innerHTML = `<main><div class="section"><div class="rich-content"><div><div>
+        <h2>${mark}Localized heading</h2><p>Copy.</p></div></div></div></div></main>`;
+      const block = document.querySelector('.rich-content');
+      init(block);
+
+      const quote = block.querySelector('.content h2 .opening-quote');
+      expect(quote).to.exist;
+      expect(quote.textContent).to.equal(mark);
+      expect(block.querySelector('.content h2').firstElementChild).to.equal(quote);
+    });
+  });
+
+  it("does not hang a straight single quote (') so headings like '90s stay intact", () => {
+    document.body.innerHTML = `<main><div class="section"><div class="rich-content"><div><div>
+      <h2>'90s nostalgia</h2><p>Copy.</p></div></div></div></div></main>`;
+    const block = document.querySelector('.rich-content');
+    init(block);
+
+    expect(block.querySelector('.opening-quote')).to.be.null;
+  });
+
   it('does not add an opening-quote span when the heading has no opening quote', async () => {
     document.body.innerHTML = await readFile({ path: './mocks/no-quote.html' });
     const block = document.querySelector('.rich-content');
