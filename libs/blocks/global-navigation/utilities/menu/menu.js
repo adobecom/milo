@@ -288,6 +288,9 @@ const decoratePromo = async (elem, index) => {
       const priceEl = await merch.default(link.cloneNode(true));
       if (priceEl instanceof HTMLElement) link.replaceWith(priceEl);
     }
+    headingParagraph.querySelectorAll('strong').forEach((strong) => {
+      strong.replaceWith(...strong.childNodes);
+    });
     // Wrap heading in one inline <span> so the text and inline prices flow together on same line
     const headingContent = document.createElement('span');
     headingContent.append(...headingParagraph.childNodes);
