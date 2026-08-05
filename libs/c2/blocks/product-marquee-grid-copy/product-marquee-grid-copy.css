@@ -61,8 +61,11 @@
       letter-spacing: var(--s2a-font-letter-spacing-4xl);
       line-height: var(--s2a-typography-line-height-heading-5);
 
-      a {
+      a,
+      [is="inline-price"] {
         color: inherit;
+        font: inherit;
+        letter-spacing: inherit;
         text-decoration: none;
       }
     }
