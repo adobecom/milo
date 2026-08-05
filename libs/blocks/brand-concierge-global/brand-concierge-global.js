@@ -133,7 +133,7 @@ export default function init(el) {
   });
 
   const mainTop = document.querySelector('main').offsetTop;
-  document.documentElement.style.setProperty('--bc-main-height', `${mainTop}px`);
+  document.documentElement.style.setProperty('--bc-main-top', `${mainTop}px`);
 
   const rows = el.querySelectorAll(':scope > div');
   const [cards, input] = rows;

@@ -42,7 +42,6 @@
   --bc-dark-input-border-color: linear-gradient(98deg, #9A3CF9 0%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 100%);
   --bc-dark-button-color: rgba(255 255 255 / 80%);
   --bc-dark-button-hover-color: rgba(255 255 255 / 90%);
-  --bc-main-height: 64px;
 
   box-sizing: border-box;
   padding: 40px 24px 12px;
@@ -824,26 +823,6 @@
   }
 }
 
-@keyframes slide-in {
-  from {
-    right: -100vw;
-  }
-
-  to {
-    right: 0;
-  }
-}
-
-@keyframes slide-out {
-  from {
-    right: 0;
-  }
-
-  to {
-    right: -100vw;
-  }
-}
-
 @keyframes fade-in {
   from {
     opacity: 0;
@@ -872,7 +851,7 @@
   z-index: calc( var(--modal-z-index-curtain) + 1);
 }
 
-#brand-concierge-modal{
+#brand-concierge-modal {
   --modal-header-height: 57px;
 }
 
@@ -894,12 +873,12 @@
 
 /* Fallback for browsers that don't support dvh */
 @supports not (height: 100dvh) {
-  #brand-concierge-modal.dialog-modal  {
+  #brand-concierge-modal.dialog-modal {
     height: calc(100vh - 22px);
   }
 }
 
-#brand-concierge-modal.dialog-modal.closing{
+#brand-concierge-modal.dialog-modal.closing {
   animation: var(--bc-modal-animation-time) ease-in-out slide-down;
   bottom: -100vh;
 }
@@ -915,14 +894,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-   /* stylelint-disable no-descending-specificity */
   #brand-concierge-modal.dialog-modal,
   #brand-concierge-modal.dialog-modal.closing,
   #brand-concierge-modal ~ .modal-curtain,
   #brand-concierge-modal.closing ~ .modal-curtain {
     animation: none;
   }
-  /* stylelint-enable no-descending-specificity */
+
+  .bc-floating-input {
+    backdrop-filter: none;
+    background: #F8F8F8;
+  }
+
+  .floating-input-dark .bc-floating-input {
+    background: #111;
+  }
 }
 
 #brand-concierge-modal .dialog-close {
@@ -1213,15 +1199,6 @@
 
   #brand-concierge-modal.dialog-modal {
     max-width: 80vw;
-  }
-
-
-  body.disable-scroll.bc-side-open {
-    overflow: auto;
-  }
-
-  .bc-side-open .bc-floating-element {
-    display: none;
   }
 }
 

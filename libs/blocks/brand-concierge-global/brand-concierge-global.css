@@ -23,7 +23,7 @@ nav.feds-topnav .feds-bc-wrapper {
   --bc-button-radius: 50%;
   --bc-button-color: #292929;
   --bc-button-hover-color: #131313;
-  --bc-main-height: 64px;
+  --bc-main-top: 64px;
 
   align-items: center;
   box-sizing: content-box;
@@ -612,7 +612,7 @@ nav.feds-topnav .feds-bc-wrapper {
   #brand-concierge-side.dialog-modal {
     border-radius: 12px;
     box-shadow: 0 4px 32px 0 rgba(0 0 0 / 16%), 0 4px 8px 0 rgba(0 0 0 / 16%);
-    height: calc(100vh - 48px - var(--bc-main-height));
+    height: calc(100vh - 48px - var(--bc-main-top));
     margin: 24px 24px 24px auto;
     bottom: 0;
     right: 0;

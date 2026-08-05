@@ -72,6 +72,16 @@ export default async function init(el) {
     await window.adobeIMS?.refreshToken();
     (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
   });
+  window.addEventListener('feds:signOut', () => {
+    if (window.adobe?.concierge?.clearHistory) {
+      const modal = document.querySelector('brand-concierge-modal');
+      if (modal) {
+        const closeButton = modal.querySelector('button.dialog-close');
+        closeButton.click();
+      }
+      window.adobe.concierge.clearHistory();
+    }
+  });
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
