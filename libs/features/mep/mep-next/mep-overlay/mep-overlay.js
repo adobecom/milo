@@ -467,6 +467,7 @@ async function buildAdditionalManifests() {
   if (!manifests.length) return;
 
   const drawerEl = document.querySelector('#mep-drawer');
+  if (drawerEl.querySelector('.mmm-manifest-card')) return;
   const manifestEls = [...drawerEl.querySelectorAll('.mep-manifest-card')];
   const lastManifestEl = manifestEls[manifestEls.length - 1];
   if (!lastManifestEl) return;
@@ -478,6 +479,7 @@ async function buildAdditionalManifests() {
   }
 }
 
+let additionalManifestsPromise;
 async function toggleManifestManager(event) {
   const drawerEl = document.querySelector('#mep-drawer');
   const mmmManifestEls = drawerEl?.querySelectorAll('.mmm-manifest-card');
@@ -485,7 +487,16 @@ async function toggleManifestManager(event) {
     mmmManifestEls.forEach((el) => { el.hidden = !event.target.checked; });
     return;
   }
-  if (event.target.checked) await buildAdditionalManifests();
+  if (!event.target.checked) return;
+
+  additionalManifestsPromise ??= buildAdditionalManifests().finally(() => {
+    additionalManifestsPromise = null;
+  });
+  await additionalManifestsPromise;
+
+  drawerEl.querySelectorAll('.mmm-manifest-card').forEach((el) => {
+    el.hidden = !event.target.checked;
+  });
 }
 
 let gnavOffsetRaf;
