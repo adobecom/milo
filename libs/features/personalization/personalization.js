@@ -516,18 +516,23 @@ function registerInBlockActions(command) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
     if (blockSelector.startsWith('https://mas.adobe.com/')) {
-      const getFragmentId = (masUrl) => {
+      const getFragmentParams = (masUrl) => {
         const { hash } = new URL(masUrl);
         const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
         const searchParams = new URLSearchParams(hashValue);
-        return searchParams.get('fragment') || searchParams.get('query');
+        return {
+          fragment: searchParams.get('fragment') || searchParams.get('query'),
+          field: searchParams.get('field') || '',
+        };
       };
-      blockSelector = getFragmentId(blockSelector);
+      const { fragment: sourceFragment, field } = getFragmentParams(blockSelector);
+      blockSelector = sourceFragment;
       if (blockSelector) {
         config.mep.inBlock[blockName].fragments ??= {};
         const { fragments } = config.mep.inBlock[blockName];
-        command.content = getFragmentId(command.content);
-        fragments[blockSelector] = command;
+        command.content = getFragmentParams(command.content).fragment;
+        fragments[blockSelector] ??= {};
+        fragments[blockSelector][field] = command;
         let overridesParent = document.querySelector('div.mas-overrides');
         if (!overridesParent) {
           overridesParent = createTag('div', { style: 'display: none;', class: 'mas-overrides' });
