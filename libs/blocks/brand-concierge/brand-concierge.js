@@ -21,7 +21,6 @@ import {
 } from './bc-bootstrap.js';
 
 const variants = {};
-const params = new URL(document.location).searchParams;
 
 function checkGlobal() {
   let global = false;
@@ -32,7 +31,7 @@ function checkGlobal() {
 }
 
 function routeInput(text) {
-  if (checkGlobal() || params.get('side-overlay')) {
+  if (checkGlobal()) {
     const isOpen = document.body.classList.contains('bc-side-open');
     if (isOpen) bcBootstrap(text, mountId);
     else openSideModal(text, bcBootstrap);
@@ -73,9 +72,6 @@ export default async function init(el) {
     await window.adobeIMS?.refreshToken();
     (window.feds?.nav?.reloadUnav ?? window.feds?.nav?.reload)?.();
   });
-
-  const mainTop = document.querySelector('main').offsetTop;
-  document.documentElement.style.setProperty('--bc-main-height', `${mainTop}px`);
 
   const rows = el.querySelectorAll(':scope > div');
   const [background, header, cards, input, legal] = rows;
