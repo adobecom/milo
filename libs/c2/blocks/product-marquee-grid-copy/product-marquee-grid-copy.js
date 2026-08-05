@@ -37,6 +37,18 @@ function buildChicletRow(iconEl, heading) {
   return chicletRow;
 }
 
+function buildSoftOfferCta(contentEls, ctaEls) {
+  const ctaWrapper = createTag('div', { class: 'pm-promo-cta' });
+  const labelEl = contentEls.at(-1);
+  if (labelEl) {
+    labelEl.classList.add('pm-promo-cta-label');
+    ctaWrapper.append(labelEl);
+  }
+  ctaEls.forEach((el) => ctaWrapper.append(el));
+  decorateButtons(ctaWrapper);
+  return ctaWrapper;
+}
+
 function buildMerchCard(contentEls, ctaEls) {
   const cardContent = createTag('div', { class: 'pm-merch-content' });
   contentEls.forEach((el, i) => {
@@ -76,8 +88,11 @@ function decorate(block) {
   if (bodyEl) foreground.append(bodyEl);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
-  if (isMerchOffer && (contentEls.length || ctaEls.length)) {
-    promoArea.append(buildMerchCard(contentEls, ctaEls));
+  if (ctaEls.length) {
+    const promoEl = isMerchOffer
+      ? buildMerchCard(contentEls, ctaEls)
+      : buildSoftOfferCta(contentEls, ctaEls);
+    promoArea.append(promoEl);
   }
 
   const content = createTag('div', { class: 'pm-content container' });
