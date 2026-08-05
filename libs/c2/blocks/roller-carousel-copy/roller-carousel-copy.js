@@ -233,7 +233,7 @@ function createUpdatePosition({
       lineY = mediaRect.bottom - wrapRect.top;
       bottomAlign = true;
     } else if (w >= M_BREAKPOINT) {
-      lineY = mediaRect.top - wrapRect.top + itemH;
+      lineY = mediaRect.top - wrapRect.top + itemH * 0.5;
       bottomAlign = false;
     } else {
       const keyLine = divider.getBoundingClientRect().bottom - wrapRect.top;
