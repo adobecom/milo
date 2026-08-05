@@ -93,6 +93,7 @@ export default function createGlobeModal({
   applySphereFacing,
   requestNavNudge,
   applyMotionCA,
+  restoreFocusOnClose,
 }) {
   // ── Modal renderer / scene (separate canvas above the blurred main canvas) ──
   let modalRenderer = null;
@@ -941,6 +942,10 @@ export default function createGlobeModal({
     // path, plus re-schedule the finalize timeout.
     if (modalPhase === MODAL_PHASE.CLOSING) return;
 
+    // The card index being viewed as close starts — captured for the focus-restore in the
+    // finalize timeout below, since modalIdx resets to -1 when the close animation completes.
+    const restoreIdx = modalIdx;
+
     // If a desktop nav transition is still in flight, finalize it first so the
     // outgoing old card returns to its sphere slot cleanly before the close
     // animation starts on the (new) modalCard.
@@ -983,8 +988,12 @@ export default function createGlobeModal({
       if (chromeEl) {
         chromeEl.classList.remove('is-open');
         // Leave the top layer. The native dialog restores focus to the element that
-        // opened it (the gallery image button for keyboard users) automatically.
+        // opened it (the gallery image button for keyboard users) automatically — then, if the
+        // user navigated to a different card, re-point focus to the last-viewed card so the globe
+        // doesn't spin back to the opener (whose focus handler would re-centre it). Synchronous,
+        // so the transient centre-on-opener never renders a frame.
         if (chromeEl.open) chromeEl.close();
+        if (restoreFocusOnClose) restoreFocusOnClose(restoreIdx);
       }
       document.documentElement.classList.remove('modal-open');
       document.body.classList.remove('modal-open');

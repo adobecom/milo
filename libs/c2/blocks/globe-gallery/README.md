@@ -34,7 +34,7 @@ through each image (centring it on the globe) rather than exposing a flat per-ca
 
 | File | What it is |
 | --- | --- |
-| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the nav-nudge spring, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
+| `globe-gallery.js` | The block + sphere render core. `export default init(el)` → builds DOM, runs the runtime (`createGlobeGalleryRuntime()` → `{ init, destroy }`). Holds tuning constants + pure helpers (module scope) and the stateful core (arc/grid/fold/sphere placement, drag-rotation physics + the sphere-to-card alignment ease, lifecycle). `tick()` is a thin orchestrator calling one named stage per concern (`computeFrame`, `updateActiveCamera`, `updateSphereRotation`, `updateCardTransforms`, `renderScene`, …) plus `modal.*` and `a11y.*`. The per-card placement is a dispatcher (`updateCardTransform`) over four runtime-scope branch fns (`placeSphereCard`/`placeFoldingCard`/`placeGridCard`/`placeArcCard`) fed a per-frame `frame` context. Instantiates the `modal`/`a11y`/`interaction` DI modules and injects live runtime state into them. |
 | `authoring.js` | Authoring layer: `parseAuthoredContent` + `fetchFragmentCards` + `buildGlobeDom(el, labels, { arcCopy, pullQuote })` (+ internal parsers, `APP_CATALOG`). Reads the block rows positionally (arc-copy, cards, hint text, pull-quote), fetches the card fragment, and builds the canvas/overlay/modal DOM — minting + returning the per-instance `gid` id suffix and filling the arc-copy / pull-quote slots. |
 | `shaders.js` | GLSL strings: `CARD_VERT`/`CARD_FRAG`, `MODAL_VERT`/`MODAL_FRAG`, `TEXT_FRAG`. The card/modal frag shaders round their corners with the same analytic SDF (`rrSDF`) — `uRadius` (22/631 of height) + `uAspect` (world-space width/height), no rasterized mask. `MODAL_FRAG`'s `uRadius` is set to 0 on mobile (square, full-bleed image). `TEXT_FRAG` (the "Click & Drag" hint, on `CARD_VERT`) is a simplified variant: centered barrel warp + per-pixel particle dissolve + the `uExitP` one-way exit. |
 | `textures.js` | `loadCardTextures({ maxTex })` — loads each card image into a cover-cropped `CanvasTexture`, downscaled to the `maxTex` per-device cap (see Texture memory budget); `loadModalTexture(src, maxTex, onReady)` — lazily loads one full (uncropped) image at a higher cap for the modal, returning the pending `Image` so the caller can cancel; `createClickDragTexture(aspect, hintText)` — renders the authored hint string (font auto-scaled to fit; defaults to "Click & Drag") to a `CanvasTexture`. All named exports, no per-instance state. (Rounded corners are no longer rasterized here; the card shader computes them.) |
@@ -66,7 +66,7 @@ forward ref (`doLayout` → `destroy`, a mutual reference). No blanket `/* eslin
 
 `globe-gallery.js` is organized top-down: (1) module-scope tuning constants grouped by
 `// ── Section ──` (layout/breakpoints, phase timeline, entry, grid, drag, CA,
-hover, nav-nudge) — the core's tuning surface; (2) the domain helper `fibSpherePos`
+hover, card-alignment) — the core's tuning surface; (2) the domain helper `fibSpherePos`
 (generic easings + `lerpN` live in `math.js`; the arc-phase geometry lives in
 `arc.js`); (3) `createGlobeGalleryRuntime()` — the
 per-instance closure holding sphere state + behavior. The active breakpoint's
@@ -92,7 +92,7 @@ The modal owns its own
 canvas/scene + the `MODAL_PHASE` (`CLOSED`/`OPENING`/`OPEN`/`CLOSING`) state machine
 and reaches into the sphere only through the shared `sphereRotQuat`
 object + the `snapToSphereSlot` / `requestNavNudge` callbacks (which keep the
-orientation and the nav-nudge spring in `updateSphereRotation`).
+orientation and the sphere-to-card alignment ease in `updateSphereRotation`).
 
 ## How to run
 
@@ -357,8 +357,10 @@ mouse drag):
    skipped; Tab past it goes to the next page element. Enter/Space **enters browse mode**.
 2. **Browse** — focus moves into a list of per-image buttons that join the tab order only
    while entered. Tab/Shift+Tab walks image→image; on focus the globe rotates that image to
-   screen centre (`centerCardOnScreen` — a full-alignment reuse of the nav-nudge spring) and
-   a centred `:focus-visible` ring traces it. Enter opens the detail modal for **that** image.
+   screen centre (`centerCardOnScreen` — the same sphere-to-card alignment the modal uses to
+   centre a card; on the cylinder it's yaw-only, so a top image stays high and only its column
+   turns to the front) and a centred `:focus-visible` ring traces it. Enter opens the detail modal
+   for **that** image.
 
 Focusing the entry button — or any browse image — runs `snapToInteractive`:
 `window.lenis.scrollTo(top, { force, immediate })` to `SPHERE_FORMED_PROGRESS` (the
@@ -499,8 +501,8 @@ when the breakpoint crosses — it does not re-open on the other side.
 
 For the same reason (the runtime closure survives a `destroy()`+`initRuntime()` rebuild),
 `destroy()` also **resets the sphere orientation + drag/nudge state** (`sphereRotX/Y/Z`,
-`pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, the nav-nudge spring, `wasBrowsing`)
-to the upright resting pose. Otherwise pitch/yaw the user had dragged before a device change
+`pitchReleaseCap`, `sphereDragWarp`, `drag.velX/velY`, the alignment-ease `navNudge*` state,
+`wasBrowsing`) to the upright resting pose. Otherwise pitch/yaw the user had dragged before a device change
 (a width-band or pointer-precision crossing — the emulator-device-swap case) carried into the
 freshly-rebuilt barrel and rendered it tilted until a scroll-out zeroed it at `sphereFormT <
 0.01`. These closure vars are otherwise only zeroed at the top of the section, so the explicit
@@ -607,26 +609,25 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     On a sphere the outward normal IS the radial position, so this single target both centres the
     card (normal → +Z) and cancels its slot orientation + baked-in `CARD_ROLL_JITTER` (up → +Y).
     That target quaternion is decomposed back into the shared Euler XYZ triple and eased in
-    per-axis (yaw on the shortest path, pitch, and the upright **roll**). A naive yaw/pitch-only
-    aim (`atan2(wp.x, wp.z)`) left cards rolled AND, once any pitch was present, mis-aimed the yaw
-    (its `wp.z` mixes pitch in) so cards landed off-centre and only converged after several
-    re-focuses — both gone with the quaternion target.
+    per-axis (yaw on the shortest path, pitch, and the upright **roll**). **On `YAW_ONLY` geometry
+    (cylinder / touch) it's yaw-only** — `cardCenterYawPitch` holds pitch, so a top-of-barrel image
+    stays visibly high and only its column turns to the front (a barrel can't centre vertically).
   - **Roll (`sphereRotZ`) exists ONLY for keyboard uprighting.** It's 0 for drag/ambient (the
     globe never rolls under the pointer), set only by `centerCardOnScreen`, and eased back to 0
     (`PITCH_RELAX`) once browsing ends. `refreshSphereRotQuat` now feeds all three Euler angles.
   - **Pitch exception (`±85°`) via a GLIDING cap.** Free drag keeps the ±60° cap, but keyboard
-    centring may tilt pitch to **±85°** (`KEY_PITCH_CAP`) so a near-polar image still reaches the
-    vertical centre — a deliberate navigation, not free tumble. The seam is `pitchReleaseCap`, a cap
-    that glides rather than a hard switch: while browsing it tracks the held pitch (≥60°); once
+    centring on the SPHERE may tilt pitch to **±85°** (`KEY_PITCH_CAP`) so a near-polar image still
+    reaches the vertical centre — a deliberate navigation, not free tumble. The seam is `pitchReleaseCap`,
+    a cap that glides rather than a hard switch: while browsing it tracks the held pitch (≥60°); once
     browsing ends it eases back to ±60° (`PITCH_RELAX`) and `sphereRotX` is clamped to it each frame.
     So **leaving a beyond-cap card (clicking, dragging) slides the globe down to level instead of
     snapping 85°→60°** — and drag stays bounded because it's clamped to that same cap (already 60°
-    except during the brief post-browse glide). The browse→collapsed edge also cancels the in-flight
-    nudge and eases the upright roll to 0. (A plain `hardCap = browsing ? 85 : 60` was the first cut
-    and it SNAPPED — the hard clamp to 60° preempted the ease; the gliding cap is the fix.)
-  - **No-overshoot ease.** The keyboard nudge uses a **monotonic exponential ease** (`KEY_EASE`),
-    not the modal nudge's underdamped spring, so tabbing card→card never overshoots (the spring's
-    overshoot is fine behind the modal blur but reads as dizzying on the live globe).
+    except during the brief post-browse glide). (On `YAW_ONLY` geometry browse is yaw-only, so pitch
+    never leaves the ±60° cap and the glide never engages.)
+  - **No-overshoot ease.** Both the keyboard gallery and the modal centre a card with the same
+    **monotonic exponential ease** (`KEY_EASE`) — no velocity integrator, so swinging the live
+    globe (keyboard) or the sphere behind the blur (modal) never overshoots. (An earlier modal
+    nudge used an underdamped spring; it was removed when the modal switched to full centring.)
   - **Do not "restore" a blanket ±60° clamp / drop the roll / hard-switch the cap here** — it would
     re-break polar-image centring, card uprighting, or the smooth exit. `'XYZ'` puts the clamped pitch as the *outer* rotation to
   dodge a gimbal flip: with `'YXZ'` (unclamped yaw outside) the local pitch axis's world-X
@@ -667,16 +668,35 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     angles buy predictability (and path-independence) by restricting reachable orientations;
     accumulated quaternions buy all of SO(3) by giving it up.** We take the former: the ±60°
     pitch limit is a feature, not a limitation to design around.
-  - **The nav-nudge is a two-axis spring on `sphereRotY`/`X`.** `triggerModalNavNudge` projects
-    the new card's slot to world space, derives an approximate yaw/pitch alignment delta
-    (`alignDeltaY = -atan2(x, z)`, `alignDeltaX = atan2(y, horiz)`), scales by
-    `NAV_NUDGE_FACTOR`, caps per-axis (`NAV_NUDGE_MAX_Y` / `_X`), and sets spring targets. The
-    spring in `updateSphereRotation` eases both scalars toward target with slight underdamping;
-    the pitch target is itself clamped to ±π/3 so a nudge can't exceed the cap. **On yaw-only
-    geometry (`bp.YAW_ONLY` — cylinder / touch) the PITCH nudge is forced to 0**: those devices
-    take no pitch input anywhere else (the drag axis-lock is yaw-only), so a barrel's varied slot
-    heights would otherwise spring in real pitch on every modal navigation and leave the barrel
-    visibly skewed vertically after the modal closes. The yaw nudge stays (facing the new column).
+  - **Modal TRAVERSAL centres the viewed card (shared with the keyboard gallery), it doesn't "nudge."**
+    `centerModalCard` (injected as `requestNavNudge`, called on each modal **prev / next / swipe** —
+    NOT on open) rotates the sphere so the newly-revealed card faces the camera at screen centre
+    behind the modal — so **closing returns the card to centre**, not a random back-of-globe slot.
+    **`open()` deliberately does not centre**: the user clicked a specific (already front-facing)
+    card, so spinning the globe to re-centre it would be jarring; the globe holds still, and the
+    card flies back to exactly where it was tapped on close. It reuses
+    the same exact-yaw + pitch alignment as `centerCardOnScreen` (`cardCenterYawPitch`) and the
+    same monotonic `KEY_EASE`; the only differences are the modal caps pitch at ±60° (RESTING, so
+    a near-polar card can't over-tilt then snap down when the ±60° drag clamp resumes on close, vs
+    the keyboard's ±85°) and applies **no upright-roll** (leaves `sphereRotZ` alone, so the globe
+    stays self-levelled).
+    **Exception — a keyboard-opened modal (`isBrowsing()`) routes nav-centring to
+    `centerCardOnScreen` instead**, so it DOES carry the upright roll: the globe stays
+    browse-consistent (upright at the viewed card) throughout, so on close there's no roll delta
+    to wiggle out and the (axis-aligned) focus ring hugs the card. Mouse/touch modals keep the
+    self-levelled `centerModalCard`.
+    On **yaw-only geometry** (`bp.YAW_ONLY` — cylinder / touch) `cardCenterYawPitch` holds pitch
+    at its current value, so only the column turns to the front (a barrel can't centre vertically,
+    and those devices take no pitch input anywhere else — a pitch target there left the barrel
+    visibly skewed after close). **Camera INSIDE the globe** (a modal opened mid-zoom-through, then
+    traversed): the camera sits at +z looking −Z, so once inside it sees the FAR (−Z) wall, not the
+    near one — `cardCenterYawPitch` flips the target to −Z (yaw takes the extra half-turn, pitch
+    negates), landing the card's outward-facing back in front of the lens instead of spinning it to
+    +Z *behind* the camera where it'd be invisible. (Keyed off `cameraInsideSphere`; the keyboard
+    gallery never hits it — browse always snaps to the formed sphere with the camera outside.) This
+    REPLACED an earlier partial "reactivity nudge" (a capped 25%-of-alignment underdamped spring,
+    `NAV_NUDGE_*`): it never brought the card near centre, so users were disoriented on close — the
+    removal also deleted that whole separate spring path.
 - **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
   separately and must not be conflated:
   - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
@@ -934,7 +954,7 @@ into its own DI module~~ (`a11y.js`); ~~`MODAL_PHASE` state-machine constants~~
 `SDF_CORNER_RADIUS`); ~~extract the modal into its own DI module~~ (`modal.js` —
 `createGlobeModal(deps)`; the sphere coupling stayed narrow: shared
 `sphereRotQuat` + `snapToSphereSlot` / `requestNavNudge`, with the orientation +
-the nav-nudge spring kept in `updateSphereRotation`).
+the sphere-to-card alignment ease kept in `updateSphereRotation`).
 
 Done: ~~reduced-motion handling~~ (renders a static interactive globe + snaps the
 modal — see Accessibility; supersedes the old "static poster" idea); ~~single-widget

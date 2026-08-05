@@ -211,6 +211,12 @@ export default function createGalleryA11y({
     return entered;
   }
 
+  function focusCard(idx) {
+    if (!entered) return;
+    const btn = cardButtons[idx];
+    if (btn) btn.focus();
+  }
+
   // The image the focus ring should trace, -1 if none. The core projects this card each
   // frame and calls setFocusRect so the ring hugs the (moving) image, not a fixed box.
   function getFocusedIdx() {
@@ -247,6 +253,6 @@ export default function createGalleryA11y({
   }
 
   return {
-    setup, updateTabStops, teardown, isBrowsing, getFocusedIdx, setFocusRect,
+    setup, updateTabStops, teardown, isBrowsing, getFocusedIdx, setFocusRect, focusCard,
   };
 }
