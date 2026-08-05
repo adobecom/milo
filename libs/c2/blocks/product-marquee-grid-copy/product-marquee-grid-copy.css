@@ -103,10 +103,27 @@
     justify-content: flex-start;
   }
 
-  .product-marquee-grid-copy.merch-offer .pm-merch-card {
-    background: none;
-    border-radius: 0;
-    padding: 0;
+  .product-marquee-grid-copy.merch-offer {
+    .pm-promo-area {
+      margin-block-start: 0;
+      padding: var(--s2a-spacing-lg);
+    }
+
+    .pm-merch-card {
+      background: none;
+      border-radius: 0;
+      padding: 0;
+    }
+
+    .pm-merch-content {
+      font-size: var(--s2a-typography-font-size-body-sm);
+      line-height: var(--s2a-typography-line-height-body-sm);
+    }
+
+    .pm-price-sub {
+      font-size: var(--s2a-typography-font-size-body-sm);
+      line-height: var(--s2a-typography-line-height-body-sm);
+    }
   }
 }
 

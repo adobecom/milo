@@ -114,7 +114,7 @@
 
   .rcc-list-wrapper {
     flex: 1;
-    overflow: hidden;
+    overflow-y: clip;
     min-height: 0;
     position: relative;
   }
