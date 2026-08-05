@@ -4,7 +4,7 @@ import { decorateViewportContent, decorateButtons } from '../../../utils/decorat
 const BLOCK_ELS = 'p, h1, h2, h3, h4, h5, h6';
 
 function parseColumn(col) {
-  const iconEl = col.querySelector(':is(p, h1, h2, h3, h4, h5, h6) img[src*=".svg"]');
+  const iconEl = col.querySelector('p img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
