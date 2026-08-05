@@ -37,11 +37,18 @@ export const MODAL_FRAG = [
   '  float d = rrSDF(pos, vec2(uAspect * 0.5 - uRadius, 0.5 - uRadius), uRadius);',
   '  float px = fwidth(pos.y);',
   '  float alpha = 1.0 - smoothstep(-px, px, d);',
-  // Fisheye/barrel warp anchored at uWarpCenter — same formula as the globe-card
-  // hover shader. Image content bulges outward around the anchor point.
-  '  vec2 d2 = vUv - uWarpCenter;',
+  // When the camera is INSIDE the globe the closing card rotates to show its BACK to the
+  // lens; a DoubleSide plane viewed from behind mirrors horizontally. Flip uv.x (and the warp
+  // anchor) on back faces so the back reads identically to the front — matching CARD_FRAG, so
+  // the image doesn't jump-mirror when the material swaps back at the end of the close (the
+  // "double flip"). No-op for the normal front-facing modal view (gl_FrontFacing true).
+  '  vec2 fUv = gl_FrontFacing ? vUv : vec2(1.0 - vUv.x, vUv.y);',
+  '  vec2 wc = gl_FrontFacing ? uWarpCenter : vec2(1.0 - uWarpCenter.x, uWarpCenter.y);',
+  // Fisheye/barrel warp anchored at wc — same formula as the globe-card hover shader.
+  // Image content bulges outward around the anchor point.
+  '  vec2 d2 = fUv - wc;',
   '  float r2 = dot(d2, d2);',
-  '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + uWarpCenter;',
+  '  vec2 warpedUv = d2 / (1.0 + uWarp * r2 * 4.0) + wc;',
   // Motion-trail CA: R trails behind card motion, B ghosts ahead. Sampled on warpedUv.
   '  float r = texture2D(map, warpedUv - uMotionDir).r;',
   '  float g = texture2D(map, warpedUv).g;',

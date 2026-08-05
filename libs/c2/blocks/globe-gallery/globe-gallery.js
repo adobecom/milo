@@ -1079,6 +1079,14 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     // un-tilted orientation for one frame — the exact flash this function exists to avoid.
     applyCardFacing(card.mesh);
     card.mesh.scale.set(card.sphereScaleSX, card.sphereScaleSY, 1);
+    // Clear stale hover: this card is teleporting back to its slot from the modal, so it is
+    // not under the cursor. Its hover state was frozen at 1 while managed (onHover — the only
+    // thing that clears it — can't fire, the mouse being over the modal chrome, not the canvas),
+    // so without this the card would fly back wearing the fisheye/scale/CA hover warp until the
+    // next mousemove. hoverT reset (not just the target) so it's clean on the return frame, no
+    // ease-out; a genuine re-hover re-raises it on the next mousemove.
+    card.hoverTarget = 0;
+    card.hoverT = 0;
   }
 
   // Shared: the sphere yaw + pitch that bring card `idx` to screen centre (facing the camera).
@@ -1095,16 +1103,28 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   //   • yawOnly (cylinder / touch) — holds pitch at its current value: those devices take no
   //             pitch input, and a barrel can't centre vertically anyway; only the column turns
   //             to the front.
+  //   • INSIDE the globe (zoom-through) — the camera sits at +z looking −Z. OUTSIDE it sees the
+  //             near (+Z) wall, so a centred card lands on +Z. Once the camera is inside, the near
+  //             wall's cards are gone and it sees the FAR (−Z) wall — so the card must land on −Z
+  //             instead (its outward-facing back ends up in front of the lens, which is what the
+  //             user sees there). That flips BOTH terms: yaw takes the extra half-turn to −Z, and
+  //             the pitch that drives the card's height to screen-centre negates (the equator card
+  //             at (0, y, −h) needs −atan2(y, h), not +). Wrapped to the shortest spin either way.
   function cardCenterYawPitch(idx, pitchCap, yawOnly) {
     const { spherePos } = cards[idx];
     const cy = Math.cos(sphereRotY);
     const sy = Math.sin(sphereRotY);
     const px = spherePos.x * cy + spherePos.z * sy;
     const pz = -spherePos.x * sy + spherePos.z * cy;
-    const targetYaw = sphereRotY - Math.atan2(px, pz); // extra yaw driving px → 0, z in front
+    const inside = cameraInsideSphere;
+    let deltaY = -Math.atan2(px, pz); // → +Z (near wall, camera outside)
+    if (inside) deltaY += Math.PI; // → −Z (far wall, camera inside)
+    deltaY = Math.atan2(Math.sin(deltaY), Math.cos(deltaY)); // shortest signed spin
+    const targetYaw = sphereRotY + deltaY;
     if (yawOnly) return { targetYaw, targetPitch: sphereRotX };
-    const h = Math.sqrt(px * px + pz * pz); // horizontal radius = z after the yaw alignment
-    const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, Math.atan2(spherePos.y, h)));
+    const h = Math.sqrt(px * px + pz * pz); // horizontal radius after the yaw alignment
+    const pitchMag = Math.atan2(spherePos.y, h); // drives the card's height → screen centre
+    const targetPitch = Math.max(-pitchCap, Math.min(pitchCap, inside ? -pitchMag : pitchMag));
     return { targetYaw, targetPitch };
   }
 

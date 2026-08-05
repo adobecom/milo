@@ -645,9 +645,15 @@ Accessibility. The no-cards / WebGL-unavailable case is the separate
     On **yaw-only geometry** (`bp.YAW_ONLY` — cylinder / touch) `cardCenterYawPitch` holds pitch
     at its current value, so only the column turns to the front (a barrel can't centre vertically,
     and those devices take no pitch input anywhere else — a pitch target there left the barrel
-    visibly skewed after close). This REPLACED an earlier partial "reactivity nudge" (a capped
-    25%-of-alignment underdamped spring, `NAV_NUDGE_*`): it never brought the card near centre, so
-    users were disoriented on close — the removal also deleted that whole separate spring path.
+    visibly skewed after close). **Camera INSIDE the globe** (a modal opened mid-zoom-through, then
+    traversed): the camera sits at +z looking −Z, so once inside it sees the FAR (−Z) wall, not the
+    near one — `cardCenterYawPitch` flips the target to −Z (yaw takes the extra half-turn, pitch
+    negates), landing the card's outward-facing back in front of the lens instead of spinning it to
+    +Z *behind* the camera where it'd be invisible. (Keyed off `cameraInsideSphere`; the keyboard
+    gallery never hits it — browse always snaps to the formed sphere with the camera outside.) This
+    REPLACED an earlier partial "reactivity nudge" (a capped 25%-of-alignment underdamped spring,
+    `NAV_NUDGE_*`): it never brought the card near centre, so users were disoriented on close — the
+    removal also deleted that whole separate spring path.
 - **Two independent axes: viewport WIDTH and INPUT PRECISION.** These are resolved
   separately and must not be conflated:
   - **Width** (`resolveBP`, 768px) picks the render profile — card count, grid dims, sphere
