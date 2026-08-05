@@ -277,7 +277,7 @@ per locale):
 | `close` | Close | modal close-button `aria-label` |
 | `apps-used` | Apps used | modal badges list `aria-label` |
 | `image-gallery-instructions` | `Press Enter to enter the gallery, then Tab through the images.` | globe entry widget — the operating **instructions**, shown as a visible focus popup AND wired as the button's accessible **name** (`aria-labelledby`) |
-| `image-gallery-card-label` | `{{index}} of {{count}}` | the modal carousel **live-region** announcement on each navigation |
+| `image-gallery-card-label` | `{{index}} of {{count}}` | the modal card **position**, written to the sr-only `.globe-gallery-modal__position` (in the dialog name + heading describedby) |
 
 The globe entry widget has **no separate name label**: its `image-gallery-instructions`
 copy IS the accessible name (one visually-hidden-until-focus element, wired as both the
@@ -299,8 +299,8 @@ literals in the code are only **fallbacks** for when a sheet key or authored fie
 missing; on a correctly-authored page they never show. Specifically:
 
 - **Sheet-backed:** all chrome `aria-label`s (modal nav/close, badges list), the arc-copy
-  region label, the globe widget **instructions** (which double as its name), and the carousel live-region
-  announcement — via the `image-gallery-*` / `previous-card` / `next-card` / `close` /
+  region label, the globe widget **instructions** (which double as its name), and the modal card
+  **position** — via the `image-gallery-*` / `previous-card` / `next-card` / `close` /
   `apps-used` keys above. **Setup action for localized pages:** add these keys to the
   `placeholders` sheet per locale (`// TODO: finalize authoring these keys` in
   `resolveGlobeLabels`); the English values in the table are the fallbacks.
@@ -313,7 +313,7 @@ missing; on a correctly-authored page they never show. Specifically:
 
 The one string with **no** sheet/authoring path is the modal's `1/N` counter (generated in
 `populateModal`, marked `// TODO:`); it's `aria-hidden` (screen readers get the localized
-`image-gallery-card-label` live region), so it's a visual-only concern for locales that
+`image-gallery-card-label` position text instead), so it's a visual-only concern for locales that
 format numerals differently. Adobe brand names (`Photoshop`, …) in `APP_CATALOG` are left
 untranslated by design. There are no CSS `content:` text strings.
 
@@ -373,9 +373,11 @@ globe holds the centred image; mouse drag still works.
   tabbing past the last image (or Shift+Tab before the first) leaves the block and collapses.
   Enter on an image → open the detail modal for it. The modal chrome is a **native `<dialog>`
   opened with `showModal()`** (`authoring.js`), so the focus trap, background `inert`, and
-  focus-restore are the platform's, not hand-rolled. On open, focus goes to the **dialog
-  container** (`tabindex="-1"`), not a control — so a screen reader announces the dialog
-  name + description first (see Screen reader). Prev/Next/Close are all tab stops; Tab cycles
+  focus-restore are the platform's, not hand-rolled. On open, focus goes to the **name heading**
+  (`.globe-gallery-modal__name`, `tabindex="-1"`), NOT the dialog container — focusing the
+  `<dialog>` itself makes VoiceOver enumerate it as a group ("dialog, N items") and swallow its
+  name; landing on a child makes VO announce the dialog's accessible name (role + name) then the
+  heading (see Screen reader). Prev/Next/Close are all tab stops; Tab cycles
   among them (native inert keeps focus in); navigation is via the on-screen arrows or swipe
   only — **Left/Right arrows are deliberately NOT bound to prev/next** (screen-reader users
   need them to read the dialog text; a11y audit). **Esc** (the dialog's `cancel` event,
@@ -394,15 +396,20 @@ globe holds the centred image; mouse drag still works.
   announced on focus (no redundant "interactive image gallery, N images"). Each
   browse image's `aria-label` is its authored **alt** text (falling back to an explicit
   `alt text to be authored` placeholder when none). The modal dialog announces the
-  first item on open — focus is on the dialog container, so the SR reads its accessible name
-  (`aria-labelledby` now points at **role-label + name**, so the author's **role** is spoken
-  first) then its `aria-describedby` description, then forward-navigation walks the content
+  first item on open — focus is on the **name heading** (a child), so VoiceOver reads the heading
+  name + its `aria-describedby` (**role + position**) reliably — the same set the dialog name
+  carries, since VO won't read the dialog's own `aria-labelledby` on open; forward-navigation then walks the content
   (role → name → description → badges → photo) before the Prev/Next/Close controls. The photo
   itself is a `role="img"` sr-only element (`.globe-gallery-modal__image`, no bitmap) placed AFTER
   the info block so the heading is read first, carrying the card's alt as its label so the WebGL
-  image has a real text alternative to land on. Each **subsequent**
-  item is announced once by a polite live region (`.globe-gallery-modal__live`, updated only on
-  navigation with `cardLabel` so it doesn't double the open announcement or read the badge list).
+  image has a real text alternative to land on. The card **position** ("N of M", `cardLabel`) lives
+  in one sr-only element (`.globe-gallery-modal__position`) referenced by BOTH the dialog's
+  `aria-labelledby` (role + name + position) and the heading's `aria-describedby` — **no `aria-live`**.
+  This makes it deterministic on both paths: **on open** it's read as part of the focused heading;
+  **on nav** (focus stays on Prev/Next) the accessible-name text changes, so VoiceOver re-announces
+  the dialog name — which is how the author name + position both get spoken on navigation. (This
+  nav re-announcement is a VoiceOver behavior; other AT may announce less on nav — a live region
+  would be more portable but couldn't reliably cover the open case, which is why it was dropped.)
 
 **Reduced motion** (`prefers-reduced-motion: reduce`) renders a **static interactive**
 globe instead of the scroll choreography, laid out as **plain document flow**:

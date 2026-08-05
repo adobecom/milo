@@ -7,10 +7,10 @@
         element. Enter/Space ENTERS the gallery.
      2. BROWSE — focus moves into a list of per-image buttons (one per card). Tab /
         Shift+Tab walks image→image; each announces that image's alt text (authored alt →
-        `alt text to be authored` placeholder when none). On focus the globe rotates that image to screen
-        centre (injected `centerCard`) and a centred focus ring traces it. Enter on an
-        image opens the detail modal for THAT image (injected `openCard`). Esc — or tabbing
-        out of the list either end — collapses back to the single entry stop.
+        `alt text to be authored` placeholder when none). On focus the globe rotates that
+        image to screen centre (injected `centerCard`) and a centred focus ring traces it.
+        Enter on an image opens the detail modal for THAT image (injected `openCard`).
+        Esc — or tabbing out of the list either end — collapses back to the single entry stop.
 
    Both the entry button and the per-image buttons are real <button>s (native focus +
    Enter/Space activation) so sighted keyboard users get a :focus-visible ring; all are

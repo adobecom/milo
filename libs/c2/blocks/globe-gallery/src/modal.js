@@ -79,8 +79,8 @@ export default function createGlobeModal({
   cardAspect,
   getAntialias,
   caEnabled,
-  // Localized per-item label ("… {name}, {index} of {count}") used for the polite
-  // live-region announcement on carousel navigation.
+  // Localized position label ("{index} of {count}") written to the sr-only __position
+  // element (read via the dialog name / heading describedby — see populateModal).
   cardLabel,
   // When true, open/close/nav snap instantly with no fly/warp (prefers-reduced-motion).
   reducedMotion,
@@ -582,13 +582,7 @@ export default function createGlobeModal({
     applyFade(counterEl, counterBase);
   }
 
-  // Write the authored metadata for card index i into the modal chrome DOM. When
-  // `announce` is true (carousel navigation, not the initial open), also update the
-  // polite live region so a screen reader reads the new item once — necessary because
-  // activating Prev/Next keeps focus on the button, so the content change is otherwise
-  // silent. The initial open is announced by the dialog's aria-labelledby/describedby,
-  // so open() passes announce=false to avoid a double-announcement.
-  function populateModal(i, announce) {
+  function populateModal(i) {
     const targetEl = q('.globe-gallery-modal-chrome') || modalEl;
     if (!targetEl) return;
     const meta = getCardMetadata(i);
@@ -603,12 +597,15 @@ export default function createGlobeModal({
     targetEl.querySelector('.globe-gallery-modal__description').textContent = meta.description;
     const counterEl = targetEl.querySelector('.globe-gallery-modal__counter');
     // TODO: localize — "NN / NN" format is hardcoded (not sheet/authored). aria-hidden, so
-    // visual-only; the SR path uses the localized cardLabel live region. Single digits are
-    // zero-padded ("2" → "02") and the slash is spaced ("02 / 45").
+    // visual-only; the SR path uses the localized cardLabel on the __position element. Single
+    // digits are zero-padded ("2" → "02") and the slash is spaced ("02 / 45").
     if (counterEl) {
       const pad = (n) => (String(n).length < 2 ? `0${n}` : String(n));
       counterEl.textContent = `${pad(i + 1)} / ${pad(getCount())}`;
     }
+    // SR position — read via the dialog name (aria-labelledby) + heading (aria-describedby).
+    const posEl = targetEl.querySelector('.globe-gallery-modal__position');
+    if (posEl) posEl.textContent = cardLabel(i + 1, getCount());
     const badgesEl = targetEl.querySelector('.globe-gallery-modal__badges');
     badgesEl.innerHTML = '';
     meta.badges.forEach((b) => {
@@ -621,10 +618,6 @@ export default function createGlobeModal({
         + `<span class="globe-gallery-modal__badge-role">${b.role}</span>`;
       badgesEl.appendChild(row);
     });
-    if (announce) {
-      const liveEl = targetEl.querySelector('.globe-gallery-modal__live');
-      if (liveEl) liveEl.textContent = cardLabel(i + 1, getCount());
-    }
   }
 
   // ── Swipe-neighbors helpers ───────────────────────────────────────────────
@@ -796,7 +789,7 @@ export default function createGlobeModal({
     modalIdx = newIdx;
     modalCard = newCard;
     modalPhase = MODAL_PHASE.OPEN;
-    populateModal(newIdx, true);
+    populateModal(newIdx);
     // Nudge the sphere toward the new slot only when it HAS one (barrel). No-op for overflow.
     if (!isOverflowIdx(newIdx)) requestNavNudge(newIdx);
 
@@ -844,7 +837,7 @@ export default function createGlobeModal({
       positionCardInModal(cards[newFarIdx], direction);
     }
 
-    populateModal(newIdx, true);
+    populateModal(newIdx);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
     requestNavNudge(newIdx);
@@ -917,11 +910,9 @@ export default function createGlobeModal({
     requestAnimationFrame(() => {
       modalEl.classList.add('is-open');
       if (chromeEl) chromeEl.classList.add('is-open');
-      // Move focus to the dialog container (tabindex=-1) rather than a control, so a
-      // screen reader announces the dialog name (role + name) + description first and
-      // forward-navigation then reads the content before the Prev/Next/Close controls.
-      // This overrides showModal()'s default (first focusable = Prev).
-      if (chromeEl) { try { chromeEl.focus(); } catch (e) { /* not focusable; ignore */ } }
+      const nameEl = chromeEl && chromeEl.querySelector('.globe-gallery-modal__name');
+      const focusEl = nameEl || chromeEl;
+      if (focusEl) { try { focusEl.focus(); } catch (e) { /* not focusable; ignore */ } }
     });
 
     const renderer = getRenderer();
@@ -973,13 +964,6 @@ export default function createGlobeModal({
     // Immediately hide chrome elements — they'll hide with the container fade.
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 0;
-
-    // Clear the live region so re-opening + navigating to the same index later still
-    // registers as a change and re-announces (and nothing stale lingers).
-    if (chromeEl) {
-      const liveEl = chromeEl.querySelector('.globe-gallery-modal__live');
-      if (liveEl) liveEl.textContent = '';
-    }
 
     modalEl.classList.remove('is-open');
     if (chromeEl) chromeEl.classList.remove('is-open');
@@ -1078,7 +1062,7 @@ export default function createGlobeModal({
     // Chrome stays fully visible during navigation — no animation, instant swap.
     modalChromeRevealT0 = -1;
     modalChromeFadeT = 1;
-    populateModal(next, true);
+    populateModal(next);
 
     // Sphere reactivity: spring the rotation partway toward facing the new slot.
     requestNavNudge(next);
@@ -1513,8 +1497,6 @@ export default function createGlobeModal({
       chromeEl.classList.remove('is-open');
       // Leave the top layer if a breakpoint re-init fires with the modal open.
       if (chromeEl.open) chromeEl.close();
-      const liveEl = chromeEl.querySelector('.globe-gallery-modal__live');
-      if (liveEl) liveEl.textContent = '';
     }
     if (modalCanvasEl) {
       modalCanvasEl.style.display = 'none';

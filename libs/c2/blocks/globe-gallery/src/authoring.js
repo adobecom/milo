@@ -232,10 +232,10 @@ const buildMarkup = (gid, labels) => `
 
   <canvas class="globe-gallery-modal-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:111;display:none;pointer-events:none;"></canvas>
 
-  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
+  <dialog class="globe-gallery-modal-chrome" tabindex="-1" aria-labelledby="globe-gallery-modal-role-${gid} globe-gallery-modal-name-${gid} globe-gallery-modal-position-${gid}" aria-describedby="globe-gallery-modal-description-${gid}">
     <div class="globe-gallery-modal__info">
       <p class="globe-gallery-modal__role-label" id="globe-gallery-modal-role-${gid}"></p>
-      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}"></h2>
+      <h2 class="globe-gallery-modal__name" id="globe-gallery-modal-name-${gid}" tabindex="-1" aria-describedby="globe-gallery-modal-role-${gid} globe-gallery-modal-position-${gid}"></h2>
       <p class="globe-gallery-modal__description" id="globe-gallery-modal-description-${gid}"></p>
       <ul class="globe-gallery-modal__badges" aria-label="${labels.appsUsed}"></ul>
     </div>
@@ -252,12 +252,7 @@ const buildMarkup = (gid, labels) => `
     <button class="globe-gallery-modal__close" type="button" aria-label="${labels.closeBtn}">
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </button>
-    <!-- Polite live region for carousel navigation. The dialog's aria-labelledby/
-         describedby announce the FIRST item on open; this announces each SUBSEQUENT
-         item once as the user navigates (focus stays on the Prev/Next button, so the
-         content change would otherwise be silent). Visually hidden; phrasing is
-         controlled in JS (modal.populateModal) so it skips the verbose badge list. -->
-    <div class="globe-gallery-modal__live globe-gallery-sr-only" aria-live="polite" aria-atomic="true"></div>
+    <span class="globe-gallery-modal__position globe-gallery-sr-only" id="globe-gallery-modal-position-${gid}"></span>
   </dialog>
 `;
 
