@@ -525,21 +525,17 @@ function setAccessibilityLabels(el) {
 
         el.querySelectorAll('.table-cell > .cell-content').forEach((cellDiv) => {
           const closeIcon = cellDiv.querySelector('.icon-close');
-          if (closeIcon) {
-            closeIcon.querySelector('title')?.remove();
-            closeIcon.setAttribute('aria-hidden', 'true');
-            cellDiv.appendChild(createTag('span', { class: 'sr-only' }, notAFeatureText));
-            return;
-          }
           const checkmarkIcon = cellDiv.querySelector('.icon-checkmark');
-          if (checkmarkIcon) {
-            checkmarkIcon.querySelector('title')?.remove();
-            checkmarkIcon.setAttribute('aria-hidden', 'true');
-            cellDiv.appendChild(createTag('span', { class: 'sr-only' }, primaryFeatureText));
+          const icon = closeIcon || checkmarkIcon;
+
+          if (icon) {
+            icon.querySelector('title')?.remove();
+            icon.setAttribute('aria-hidden', 'true');
+          } else if (!cellDiv.classList.contains('empty-cell') || cellDiv.querySelector('.sr-only')) {
             return;
           }
-          if (!cellDiv.classList.contains('empty-cell') || cellDiv.querySelector('.sr-only')) return;
-          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, notAFeatureText));
+
+          cellDiv.appendChild(createTag('span', { class: 'sr-only' }, checkmarkIcon ? primaryFeatureText : notAFeatureText));
         });
       });
   });
