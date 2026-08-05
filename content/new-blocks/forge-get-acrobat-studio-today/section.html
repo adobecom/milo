@@ -1,0 +1,108 @@
+<section data-binding-source="judge-new-block" data-binding-score="0.61" data-binding="below-threshold" data-figma-node-id="10559:113746" data-block="news" style="position:relative;width:100%;min-height:1176px;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;">
+  <style>
+    [data-figma-node-id="10559:113746"] .img-section-bg {
+      position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:0;
+    }
+    [data-figma-node-id="10559:113746"] .img-section-overlay {
+      position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.22) 0%,#000000 100%);z-index:1;
+    }
+    [data-figma-node-id="10559:113746"] .img-section-inner {
+      position:relative;z-index:2;width:100%;max-width:1440px;margin:0 auto;padding:0 120px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;
+    }
+    [data-figma-node-id="10559:113746"] .img-top-pad { height:160px; }
+    [data-figma-node-id="10559:113746"] .img-copy-lockup {
+      display:flex;flex-direction:column;align-items:center;gap:24px;width:100%;max-width:1200px;
+    }
+    [data-figma-node-id="10559:113746"] .img-headline-group {
+      display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .img-eyebrow {
+      margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-weight:400;font-size:14px;line-height:18px;text-align:center;
+    }
+    [data-figma-node-id="10559:113746"] .img-heading {
+      margin:0;color:#ffffff;font-family:'Adobe Clean Display',adobe-clean-display,sans-serif;font-weight:900;font-size:56px;line-height:56px;letter-spacing:-1.68px;text-align:center;width:100%;
+    }
+    [data-figma-node-id="10559:113746"] .img-subhead {
+      margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-weight:400;font-size:20px;line-height:24px;text-align:center;width:100%;max-width:700px;
+    }
+    [data-figma-node-id="10559:113746"] .img-cta-group {
+      display:flex;flex-direction:column;gap:16px;width:100%;align-items:center;
+    }
+    [data-figma-node-id="10559:113746"] .img-price {
+      margin:0;color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-weight:700;font-size:16px;line-height:19px;letter-spacing:-0.16px;text-align:center;
+    }
+    [data-figma-node-id="10559:113746"] .img-btn-group {
+      display:flex;flex-direction:row;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap;
+    }
+    [data-figma-node-id="10559:113746"] .img-btn-primary {
+      display:inline-flex;justify-content:center;align-items:center;padding:14px 24px;border-radius:999px;background:#ffffff;text-decoration:none;min-width:117px;cursor:pointer;
+    }
+    [data-figma-node-id="10559:113746"] .img-btn-primary span {
+      color:#000000;font-family:'Adobe Clean',adobe-clean,sans-serif;font-weight:700;font-size:14px;line-height:18px;text-align:center;white-space:nowrap;
+    }
+    [data-figma-node-id="10559:113746"] .img-btn-secondary {
+      display:inline-flex;justify-content:center;align-items:center;padding:14px 24px;border-radius:999px;border:1.5px solid #ffffff;text-decoration:none;cursor:pointer;
+    }
+    [data-figma-node-id="10559:113746"] .img-btn-secondary span {
+      color:#ffffff;font-family:'Adobe Clean',adobe-clean,sans-serif;font-weight:700;font-size:14px;line-height:18px;text-align:center;white-space:nowrap;
+    }
+    @media (max-width:1280px) {
+      [data-figma-node-id="10559:113746"] { min-height:997px; }
+      [data-figma-node-id="10559:113746"] .img-top-pad { height:124px; }
+      [data-figma-node-id="10559:113746"] .img-section-inner { padding:0 80px; }
+    }
+    @media (max-width:1024px) {
+      [data-figma-node-id="10559:113746"] { min-height:800px; }
+      [data-figma-node-id="10559:113746"] .img-top-pad { height:80px; }
+      [data-figma-node-id="10559:113746"] .img-section-inner { padding:0 48px; }
+      [data-figma-node-id="10559:113746"] .img-heading { font-size:44px;line-height:48px; }
+      [data-figma-node-id="10559:113746"] .img-subhead { font-size:18px;line-height:22px; }
+    }
+    @media (max-width:768px) {
+      [data-figma-node-id="10559:113746"] { min-height:740px; }
+      [data-figma-node-id="10559:113746"] .img-top-pad { height:64px; }
+      [data-figma-node-id="10559:113746"] .img-section-inner { padding:0 24px; }
+      [data-figma-node-id="10559:113746"] .img-heading { font-size:32px;line-height:36px;letter-spacing:-0.96px; }
+      [data-figma-node-id="10559:113746"] .img-subhead { font-size:16px;line-height:20px; }
+      [data-figma-node-id="10559:113746"] .img-btn-group { flex-direction:column; }
+      [data-figma-node-id="10559:113746"] .img-btn-primary,
+      [data-figma-node-id="10559:113746"] .img-btn-secondary { width:100%;max-width:280px;justify-content:center; }
+    }
+  </style>
+
+  <!-- Background photo -->
+  <img class="img-section-bg" src="./media_6bc15586530ab5d9.png" alt="" aria-hidden="true" />
+  <!-- Dark gradient overlay -->
+  <div class="img-section-overlay" aria-hidden="true"></div>
+
+  <!-- Centred content wrapper -->
+  <div class="img-section-inner">
+    <!-- Top spacing -->
+    <div class="img-top-pad" aria-hidden="true"></div>
+
+    <!-- Copy lockup -->
+    <div class="img-copy-lockup" data-node-id="10559:113751">
+
+      <!-- Headline group -->
+      <div class="img-headline-group" data-node-id="10559:113756">
+        <p class="img-eyebrow" data-node-id="10559:113757">Acrobat Studio</p>
+        <h1 class="img-heading" data-node-id="10559:113758">Get Acrobat Studio today.</h1>
+        <p class="img-subhead" data-node-id="10559:113759">The highly secure PDF and e-signature solution with advanced tools, PDF Spaces, Acrobat Pro, AI Assistant, plus Adobe Express Premium.</p>
+      </div>
+
+      <!-- Pricing + CTA buttons -->
+      <div class="img-cta-group" data-node-id="10559:113760">
+        <p class="img-price" data-node-id="10559:113761">US$24.99/mo annual, billed monthly</p>
+        <div class="img-btn-group" data-node-id="10559:113762">
+          <a href="#" class="img-btn-primary" data-node-id="10559:113763">
+            <span>Free Trial</span>
+          </a>
+          <a href="#" class="img-btn-secondary" data-node-id="10559:113765">
+            <span>Compare Plans</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,198 @@
+
+
+.forge-get-acrobat-studio-today {
+  --gas-max-width: 1200px;
+  --gas-text: var(--s2a-color-gray-25, #fff);
+  --gas-btn-radius: var(--s2a-border-radius-999, 999px);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: clamp(620px, 82vw, 1180px);
+  overflow: hidden;
+  box-sizing: border-box;
+  isolation: isolate;
+  color: var(--gas-text);
+}
+
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-bg picture,
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-bg img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0%, rgba(0, 0, 0, 1) 100%);
+}
+
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: var(--gas-max-width);
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: clamp(64px, 11vw, 160px);
+  padding-bottom: var(--s2a-spacing-3xl, 48px);
+  padding-inline: clamp(24px, 8vw, 120px);
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-lg, 24px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-xs, 8px);
+  width: 100%;
+  text-align: center;
+}
+
+
+.forge-get-acrobat-studio-today :is(h1, .forge-get-acrobat-studio-today h2, .forge-get-acrobat-studio-today h3, .forge-get-acrobat-studio-today h4, .forge-get-acrobat-studio-today h5, .forge-get-acrobat-studio-today h6, .forge-get-acrobat-studio-today p) {
+  color: var(--gas-text);
+  margin: 0;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-eyebrow {
+  font-size: var(--s2a-font-size-md, 14px);
+  line-height: 1.28;
+  font-weight: var(--s2a-font-weight-adobe-clean-regular, 400);
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-heading {
+  font-family: 'Adobe Clean Display', adobe-clean-display, var(--body-font-family, sans-serif);
+  font-weight: var(--s2a-font-weight-adobe-clean-black, 900);
+  font-size: clamp(2rem, 1.2rem + 2.6vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  width: 100%;
+  text-wrap: balance;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-subhead {
+  font-weight: var(--s2a-font-weight-adobe-clean-regular, 400);
+  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+  line-height: 1.2;
+  width: 100%;
+  max-width: 700px;
+  margin-inline: auto;
+}
+
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2a-spacing-md, 16px);
+  width: 100%;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-price {
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  font-size: var(--s2a-font-size-md, 16px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: var(--s2a-spacing-xs, 8px);
+  width: 100%;
+}
+
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  padding: 14px 24px;
+  border-radius: var(--gas-btn-radius);
+  font-weight: var(--s2a-font-weight-adobe-clean-bold, 700);
+  font-size: var(--s2a-font-size-sm, 14px);
+  line-height: 1.28;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button--primary {
+  background: var(--gas-text);
+  color: var(--s2a-color-gray-1000, #000);
+  border: 1.5px solid var(--gas-text);
+  min-width: 117px;
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button--primary:hover {
+  background: transparent;
+  color: var(--gas-text);
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button--secondary {
+  background: transparent;
+  color: var(--gas-text);
+  border: 1.5px solid var(--gas-text);
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button--secondary:hover {
+  background: var(--gas-text);
+  color: var(--s2a-color-gray-1000, #000);
+}
+
+.forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button:focus-visible {
+  outline: 2px solid var(--gas-text);
+  outline-offset: 3px;
+}
+
+
+@media (max-width: 1024px) {
+  .forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-inner {
+    padding-inline: clamp(24px, 6vw, 48px);
+  }
+}
+
+
+@media (max-width: 600px) {
+  .forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-buttons {
+    flex-direction: column;
+  }
+
+  .forge-get-acrobat-studio-today .forge-get-acrobat-studio-today-button {
+    width: 100%;
+    max-width: 280px;
+  }
+}
