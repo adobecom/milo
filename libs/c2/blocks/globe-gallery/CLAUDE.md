@@ -13,9 +13,10 @@ from the code alone.
   them that way (`npx eslint` exit 0, no banners).** The blanket `/* eslint-disable */` is
   gone. Targeted `// eslint-disable-next-line` comments are allowed when a rule genuinely
   misfires — keep them one-line, justified by a comment, never a blanket disable. Current
-  exceptions: 1 `no-use-before-define` in `globe-gallery.js` for a genuine forward ref
-  (`doLayout` → `destroy`, a mutual reference — the BP-crossing rebuild calls `destroy`
-  then re-inits); and 2
+  exceptions: 3 `no-use-before-define` in `globe-gallery.js` for genuine forward refs to the
+  `destroy`/`initRuntime` mutual pair (1 in `doLayout`, 2 in `recoverFromContextLoss` — both
+  the BP-crossing rebuild and the WebGL-context-loss recovery call `destroy` then re-init);
+  and 2
   `import/no-relative-packages` on the `getConfig` / `replaceKeyArray` imports in `globe-gallery.js`
   (the block's build-only `package.json` makes eslint see a package boundary that doesn't
   exist at runtime).

@@ -637,7 +637,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   let scrollVel = 0; // |lenisY - prevLenisY| — drives motion trail intensity
 
   const drag = { isDragging: false, velX: 0, velY: 0 };
-  let tickerAdded = false;
+  let renderReady = false;
+  let onScreen = true; // assume visible until the observer's first callback corrects it
   let sphereDragWarp = 0;
   let cameraInsideSphere = false;
   // Camera z at which the drag direction flips (see updateActiveCamera). Computed in
@@ -2247,8 +2248,70 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   // initRuntime (once textures load) and destroy.
   let rafId = 0;
   function rafLoop() { tick(); rafId = requestAnimationFrame(rafLoop); }
-  function startTicker() { if (!rafId) rafId = requestAnimationFrame(rafLoop); }
+  function startTicker() {
+    if (rafId) return;
+    // Reset the velocity baseline so the first frame after a (re)start doesn't read a huge
+    // scrollVel from a scroll that happened while the loop was paused off-screen (README #3).
+    prevLenisY = window.scrollY;
+    rafId = requestAnimationFrame(rafLoop);
+  }
   function stopTicker() { if (rafId) { cancelAnimationFrame(rafId); rafId = 0; } }
+  // Run the loop only while renderReady AND onScreen; called whenever either input changes.
+  function syncTicker() {
+    if (renderReady && onScreen) {
+      startTicker();
+    } else {
+      stopTicker();
+      if (renderer) renderer.domElement.style.display = 'none';
+    }
+  }
+
+  const MAX_CONTEXT_REBUILDS = 4;
+  const CONTEXT_STABLE_MS = 10000;
+  let contextRebuilds = 0;
+  let contextStableTimer = 0;
+  let contextRecovering = false;
+  function onContextLost(e) {
+    e.preventDefault();
+    if (contextStableTimer) { clearTimeout(contextStableTimer); contextStableTimer = 0; }
+    stopTicker();
+    renderReady = false;
+    window.lana?.log?.('globe-gallery: WebGL context lost', { tags: 'globe-gallery', severity: 'warn' });
+  }
+  function recoverFromContextLoss() {
+    contextRecovering = false;
+    contextRebuilds += 1;
+    const collapsed = contextRebuilds > MAX_CONTEXT_REBUILDS;
+    window.lana?.log?.(
+      collapsed
+        ? 'globe-gallery: WebGL context keeps failing — collapsing'
+        : 'globe-gallery: WebGL context restored — rebuilding',
+      { tags: 'globe-gallery', severity: collapsed ? 'error' : 'info' },
+    );
+    // eslint-disable-next-line no-use-before-define -- hoisted mutual ref (see doLayout note)
+    destroy();
+    // eslint-disable-next-line no-use-before-define -- same hoisted mutual ref
+    if (collapsed || initRuntime() === false) {
+      root.classList.add('globe-gallery--empty');
+      return;
+    }
+    contextStableTimer = window.setTimeout(() => {
+      contextRebuilds = 0; contextStableTimer = 0;
+    }, CONTEXT_STABLE_MS);
+  }
+  function onContextRestored() {
+    if (contextRecovering) return; // coalesce the main + modal canvases' restore events
+    contextRecovering = true;
+    window.setTimeout(recoverFromContextLoss, 0);
+  }
+  function bindContextListeners(add) {
+    const fn = add ? 'addEventListener' : 'removeEventListener';
+    [q('.globe-gallery-canvas'), q('.globe-gallery-modal-canvas')].forEach((c) => {
+      if (!c) return;
+      c[fn]('webglcontextlost', onContextLost, false);
+      c[fn]('webglcontextrestored', onContextRestored, false);
+    });
+  }
 
   // ── Layout ─────────────────────────────────────────────────────────────────
   let resizeHandler = null;
@@ -2256,6 +2319,7 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
   let coarsePointerMQ = null;
   let coarsePointerHandler = null;
   let layoutObs = null; // ResizeObserver keeping block metrics fresh as page content loads
+  let intersectionObs = null; // IntersectionObserver gating the rAF loop on visibility (#3)
 
   // ── Init ───────────────────────────────────────────────────────────────────
   function initRuntime() {
@@ -2293,6 +2357,8 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     renderer.sortObjects = false; // we manage order via mesh.renderOrder
+
+    bindContextListeners(true);
 
     scene = new THREE.Scene();
 
@@ -2374,6 +2440,15 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
     });
     layoutObs.observe(document.body);
 
+    if (intersectionObs) intersectionObs.disconnect();
+    if (typeof IntersectionObserver !== 'undefined') {
+      intersectionObs = new IntersectionObserver(([entry]) => {
+        onScreen = entry.isIntersecting;
+        syncTicker();
+      }, { rootMargin: '100% 0px 100% 0px' });
+      intersectionObs.observe(root);
+    }
+
     interaction.setup(canvas);
     cursor.setup();
 
@@ -2404,17 +2479,22 @@ function createGlobeGalleryRuntime(authoredCards, hintText, root, gid, labels, r
       buildCards();
       buildTextMesh();
       a11y.setup();
-      if (!tickerAdded) {
-        startTicker();
-        tickerAdded = true;
-      }
+      renderReady = true;
+      syncTicker();
     });
     return true;
   }
 
   function destroy() {
     stopTicker();
-    tickerAdded = false;
+    renderReady = false;
+    onScreen = true; // reset the visibility default; the next init's observer re-corrects it
+    bindContextListeners(false);
+    if (contextStableTimer) { clearTimeout(contextStableTimer); contextStableTimer = 0; }
+    if (intersectionObs) {
+      intersectionObs.disconnect();
+      intersectionObs = null;
+    }
     if (resizeHandler) {
       window.removeEventListener('resize', resizeHandler);
       resizeHandler = null;

@@ -119,6 +119,10 @@ export default function createGlobeModal({
   let modalCloseStartQuat = null;
   let modalCloseStartScale = null;
   let chromeProjV = null; // reusable Vector3 for chrome positioning projection
+  const scratchPos = new THREE.Vector3();
+  const scratchQuat = new THREE.Quaternion();
+  const scratchScale = new THREE.Vector3();
+  let chromeNodes = null;
 
   // Chrome reveal — elements fade + slide in after card is 90% settled.
   let modalChromeRevealT0 = -1; // timestamp when card first hit 90%; -1 = not yet
@@ -440,15 +444,21 @@ export default function createGlobeModal({
     if (!chromeEl || !camera) return;
     const { W, H } = getViewport();
     const { w: CARD_W_SPHERE, h: CARD_H_SPHERE } = getCardDims();
-    const infoEl = chromeEl.querySelector('.globe-gallery-modal__info');
-    const closeEl = chromeEl.querySelector('.globe-gallery-modal__close');
-    const prevEl = chromeEl.querySelector('.globe-gallery-modal__nav--prev');
-    const nextEl = chromeEl.querySelector('.globe-gallery-modal__nav--next');
-    const counterEl = chromeEl.querySelector('.globe-gallery-modal__counter');
+    if (!chromeNodes || chromeNodes.chromeEl !== chromeEl) {
+      chromeNodes = {
+        chromeEl,
+        infoEl: chromeEl.querySelector('.globe-gallery-modal__info'),
+        closeEl: chromeEl.querySelector('.globe-gallery-modal__close'),
+        prevEl: chromeEl.querySelector('.globe-gallery-modal__nav--prev'),
+        nextEl: chromeEl.querySelector('.globe-gallery-modal__nav--next'),
+        counterEl: chromeEl.querySelector('.globe-gallery-modal__counter'),
+      };
+    }
+    const { infoEl, closeEl, prevEl, nextEl, counterEl } = chromeNodes;
 
-    const tgtPos = new THREE.Vector3();
-    const tgtQuat = new THREE.Quaternion();
-    const tgtScale = new THREE.Vector3();
+    const tgtPos = scratchPos;
+    const tgtQuat = scratchQuat;
+    const tgtScale = scratchScale;
     computeModalTarget(tgtPos, tgtQuat, tgtScale);
 
     const halfH = CARD_H_SPHERE * tgtScale.y * 0.5;
@@ -1095,9 +1105,9 @@ export default function createGlobeModal({
       const aT = reducedMotion
         ? 1 : Math.max(0, Math.min(1, (now - modalAnimT0) / MODAL_ANIM_DURATION));
       const aE = easeInOutCubic(aT);
-      const tgtPos = new THREE.Vector3();
-      const tgtQuat = new THREE.Quaternion();
-      const tgtScale = new THREE.Vector3();
+      const tgtPos = scratchPos;
+      const tgtQuat = scratchQuat;
+      const tgtScale = scratchScale;
 
       // Capture modal card position before this frame's update for CA delta computation
       const prevModalX = modalCard.mesh.position.x;

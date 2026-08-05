@@ -145,8 +145,29 @@ creates the `WebGLRenderer` in a `try/catch` (Three.js throws when `getContext` 
 null — blocklisted GPU/driver, refused software renderer, headless/sandboxed context, or a
 context lost on a breakpoint-crossing rebuild). On failure `initRuntime` returns `false`,
 the caller adds `--empty`, and no ticker starts — so the block degrades to a collapsed
-section instead of throwing out of `init()` or running on a null renderer. (Note: a context
-*lost while running* after a successful init is not yet handled — see backlog.)
+section instead of throwing out of `init()` or running on a null renderer.
+
+**WebGL context loss while running** (as opposed to creation failure above) IS handled.
+Three.js drops every GPU object on `webglcontextlost` and does not re-upload them, so a
+context lost mid-run (GPU process reset/kill, driver TDR, a low-memory tab evicting its GPU
+backing) would otherwise leave a permanently blank canvas. `initRuntime` binds
+`webglcontextlost`/`webglcontextrestored` on **both** WebGL canvases (the main canvas and the
+modal's own canvas — `bindContextListeners`): on lost it stops the ticker and clears
+`renderReady`; on restored it rebuilds ALL GPU state via the same `destroy()`+`initRuntime()`
+path a breakpoint crossing uses (which already disposes + re-creates every renderer, texture,
+geometry, and material and re-adds the meshes). The two canvases' restore events are coalesced
+into ONE rebuild (`contextRecovering` guard + a macrotask defer, so both contexts are back
+before renderers are re-created on them). A rebuild cap (`MAX_CONTEXT_REBUILDS`) collapses to
+`--empty` if the context keeps dying (sustained GPU pressure) rather than looping; the counter
+resets once a rebuild survives `CONTEXT_STABLE_MS`, so unrelated losses across a long session
+don't accumulate toward it. Note Three.js's own renderer already `preventDefault()`s the lost
+event (which is what makes the browser fire `restored`); our handler adds the app-level rebuild.
+
+Reproduce / regression-test with the `WEBGL_lose_context` extension — in the console with the
+block on screen: `const g = document.querySelector('.globe-gallery-canvas').getContext('webgl2');
+const x = g.getExtension('WEBGL_lose_context'); x.loseContext(); setTimeout(() => x.restoreContext(), 1000);`
+— the globe repaints within a frame or two of `restoreContext()` (verified headlessly: the rAF
+loop stops during the loss and resumes after restore, and a card click re-opens the modal).
 
 ### Card shape
 
@@ -345,6 +366,29 @@ length (both refreshed in `doLayout` + a body `ResizeObserver`). Milo's page-lev
 Lenis keeps `window.scrollY` in sync (gsap was dropped for a `requestAnimationFrame`
 driver, `startTicker`/`stopTicker`). The modal pauses Lenis via
 `window.lenis.stop()/start()` plus a `.modal-open { overflow:hidden }` CSS lock.
+
+**Ticker gating (rAF only while visible).** The loop runs only when BOTH `renderReady`
+(textures loaded + cards built) AND `onScreen` are true; `syncTicker()` reconciles them and
+is called whenever either flips. `onScreen` is driven by an `IntersectionObserver` on the
+block root with a generous `rootMargin: '100% 0px'` — the root IS the tall runway, so one
+extra viewport top and bottom keeps the loop alive through the `ENTRY_LEAD_VH` pre-roll (it
+starts before the top edge enters) and the pull-quote exit (it continues past the bottom
+edge), stopping only when the block is a full viewport away. This matters more than usual
+because reduced motion also keeps the ticker running on an otherwise-static globe.
+`startTicker()` resets `prevLenisY = window.scrollY` on every (re)start so a resume after a
+long off-screen scroll doesn't read a spurious one-frame `scrollVel` spike. The observer is
+created in `initRuntime`, disconnected in `destroy` (mirrors `layoutObs`); it fires once on
+`observe()` to correct the `onScreen` default.
+
+**Pausing must hide the canvas (multi-globe correctness).** The main canvas is
+`position:fixed` + full-viewport + `pointer-events:auto`, and `updateCanvasVisibility` — the
+stage that `display:none`s it when the block is out of range — runs *inside* `tick()`. So
+when `syncTicker()` stops the loop it also sets `renderer.domElement.style.display = 'none'`;
+otherwise a paused globe's fixed canvas keeps intercepting pointer events across the whole
+viewport, which with **multiple globes per page** silently blocks whichever globe is actually
+on screen (its clicks/drags/hover land on the off-screen globe's paused canvas). The resumed
+loop's `updateCanvasVisibility` restores the display. A single off-screen globe hiding its
+own canvas is a no-op (it's out of view anyway).
 
 ## Accessibility
 
@@ -969,7 +1013,21 @@ Done: ~~shortened grid phase~~ (`FOLD_PEEL_OVERLAP` — cards fold from their li
 before fully landing, so the grid never resolves; see Behavior notes / Phase constants);
 ~~WebGL "Click & Drag" hint text~~ and ~~desktop custom cursor~~ (both documented under
 Behavior notes); ~~authored "Click & Drag" copy~~ (row 2 → both the WebGL hint and the
-cursor label; see Localization).
+cursor label; see Localization); ~~pause the rAF loop when off-screen~~ (an
+`IntersectionObserver` on the block root gates the ticker — see Scroll model); ~~trim the
+modal's per-frame work~~ (`positionModalChrome` + `updateAnimation` now reuse one scratch
+`Vector3`/`Quaternion`/`Vector3` trio and cache the 6 chrome node refs instead of
+re-querying + re-allocating each frame — see modal.js `scratchPos`/`chromeNodes`);
+~~handle WebGL context loss while running~~ (listens on both canvases and rebuilds all GPU
+state via the `destroy()`+`initRuntime()` path on `webglcontextrestored`, with a rebuild cap
+that collapses to `--empty` — see Architecture notes → WebGL context loss).
+
+Decided (kept as-is for now): the **global SVG-filter CA on md**. It's OFF on sm (the
+`GLOBAL_CA` bp flag — a whole-viewport SVG filter is the most expensive per-frame op on a
+phone compositor, exactly during the fast scroll where mobile framedrops reproduced) and
+stays ON for md, where desktop/tablet handle it and the canvas-wide fringe on fast scroll is
+wanted. Revisit only if a real md perf issue appears; if dropped it's a tidy self-contained
+removal (`updateGlobalCA` + the `<filter>` markup in `buildGlobeDom` + the `caFilterR/B` refs).
 
 Remaining (each an independent enhancement / fix — no ordering dependency):
 1. **Mobile drag affordance.** The cursor is desktop-only and the WebGL hint text is the only
@@ -987,37 +1045,3 @@ Remaining (each an independent enhancement / fix — no ordering dependency):
    problem on a real device, the cheap fix is delaying the zoom's start (a gap between
    `foldLast` and where `zoomT` climbs) rather than a true scroll-park, which would mean
    remapping `progress` across the whole timeline. Affects desktop equally.
-3. **Pause the rAF loop when off-screen** via `IntersectionObserver` (pdf-space does
-   this — start/stop the ticker on intersect), instead of running every frame. Behavior
-   change (must keep a generous `rootMargin` so the `ENTRY_LEAD_VH` pre-roll + pull-quote
-   exit aren't cut off). Now more worthwhile since reduced motion also
-   keeps the ticker running on a static globe.
-4. **Handle WebGL context loss while running** (`webglcontextlost`/`webglcontextrestored`):
-   today only context-creation *failure* is caught (→ `--empty`); a context lost mid-run
-   after a successful init would blank the canvas with no recovery. Listen + rebuild GPU
-   resources, or collapse gracefully.
-5. **Global SVG-filter CA ("Option C") is now OFF on sm; consider dropping it on md too.**
-   `updateGlobalCA` applies a full-canvas SVG chromatic-aberration filter (`caFilterR`/
-   `caFilterB` feOffsets + the `<filter>` markup in `buildGlobeDom`), re-applied every frame
-   while scrolling. A whole-viewport SVG filter pass is one of the most expensive per-frame
-   operations on a phone compositor, and it runs precisely during the fast scrolling where
-   mobile framedrops reproduce — so it is now gated off on sm via the `GLOBAL_CA` bp flag
-   (`GLOBAL_CA_SM = false`); the per-card in-shader motion CA still runs, so cards keep their
-   smear. It's still on for md (desktop/tablet handles it). It remains a second,
-   scroll-velocity-only CA layered on the shader's per-card CA — sub-pixel on slow scroll,
-   ~`CA_PX_MAX` (3px) max on fast scroll, zero at rest (`SCROLL_VEL_DEADBAND`) — so a full
-   removal on md is still a reasonable product call; keep it only if the canvas-wide fringe
-   during *fast* desktop scroll earns its cost. If dropped, it's a tidy self-contained removal.
-6. **Trim the modal's per-frame work** (`positionModalChrome` in `modal.js`). While a modal
-   is open it runs every frame and re-queries 6 chrome nodes (`.globe-gallery-modal-chrome`
-   + info/close/prev/next/counter) and allocates a fresh `tgtPos`/`tgtQuat`/`tgtScale` each
-   frame (`updateAnimation` allocates the same trio). Low priority — the modal is a brief,
-   isolated interaction, not the scroll hot path measured for framedrops — but the same
-   scratch-object + cached-node pattern used for the arc transition and arc-copy overlay
-   applies cleanly here if the modal ever needs squeezing.
-
-## Model to copy
-
-`libs/mep/ace1205/pdf-space/` is the same family of animation, already fully
-ported (authoring contract, reduced-motion, IntersectionObserver lifecycle,
-JS↔CSS custom-property bridge). Use it as the reference for refactor work.
