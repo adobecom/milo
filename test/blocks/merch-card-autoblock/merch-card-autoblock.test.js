@@ -128,9 +128,11 @@ describe('merch-card-autoblock autoblock', () => {
             mas: {
               fragments: {
                 a657fd3d9f67: {
-                  action: 'replace',
-                  manifestId: 'promo1.json',
-                  content: '1234',
+                  '': {
+                    action: 'replace',
+                    manifestId: 'promo1.json',
+                    content: '1234',
+                  },
                 },
               },
             },
@@ -147,6 +149,39 @@ describe('merch-card-autoblock autoblock', () => {
       await init(a);
       const card = document.querySelector('merch-card');
       expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.equal('Creative Cloud All Apps PROMO');
+    });
+
+    it('mep replace on one headless field does not affect other fields sharing the same source fragment', async () => {
+      setConfig({
+        mep: {
+          inBlock: {
+            mas: {
+              fragments: {
+                'field-scope-1': {
+                  cardTitle: {
+                    action: 'replace',
+                    content: '1234',
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      const title = document.createElement('a');
+      title.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=field-scope-1&field=cardTitle';
+      title.textContent = '[[field-scope-test:cardTitle]]';
+      const description = document.createElement('a');
+      description.href = 'https://mas.adobe.com/studio.html#content-type=merch-card&fragment=field-scope-1&field=description';
+      description.textContent = '[[field-scope-test:description]]';
+      document.body.append(title, description);
+      await init(title);
+      await init(description);
+      const masFields = [...document.querySelectorAll('mas-field')];
+      const titleField = masFields.find((mf) => mf.getAttribute('field') === 'cardTitle');
+      const descriptionField = masFields.find((mf) => mf.getAttribute('field') === 'description');
+      expect(titleField.querySelector('aem-fragment').getAttribute('fragment')).to.equal('1234');
+      expect(descriptionField.querySelector('aem-fragment').getAttribute('fragment')).to.equal('field-scope-1');
     });
 
     it('creates mas-field wrapping aem-fragment with correct attributes', async () => {

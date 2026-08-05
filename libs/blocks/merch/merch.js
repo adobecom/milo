@@ -1573,11 +1573,9 @@ export const MEP_SELECTOR = 'mas';
 export function overrideOptions(fragment, options) {
   const { mep } = getConfig();
   const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
-  if (fragments) {
-    const command = fragments[fragment];
-    if (command && command.action === 'replace') {
-      return { ...options, fragment: command.content };
-    }
+  const command = fragments?.[fragment]?.[options.field || ''];
+  if (command && command.action === 'replace') {
+    return { ...options, fragment: command.content };
   }
   return options;
 }
