@@ -1,27 +1,29 @@
 import { createTag, getFederatedUrl } from '../../../utils/utils.js';
 import { decorateViewportContent, decorateButtons } from '../../../utils/decorate.js';
 
+const BLOCK_ELS = 'p, h1, h2, h3, h4, h5, h6';
+
 function parseColumn(col) {
-  const iconEl = col.querySelector('p img[src*=".svg"]');
+  const iconEl = col.querySelector(':is(p, h1, h2, h3, h4, h5, h6) img[src*=".svg"]');
   if (iconEl) iconEl.src = getFederatedUrl(iconEl.src);
 
   const heading = col.querySelector('h1, h2, h3, h4, h5, h6');
   heading?.classList.add('heading-super');
 
-  const iconParent = iconEl?.closest('p');
-  const allParas = [...col.querySelectorAll('p')].filter(
-    (el) => el !== iconParent && el.textContent.trim(),
+  const iconParent = iconEl?.closest(BLOCK_ELS);
+  const allEls = [...col.querySelectorAll(BLOCK_ELS)].filter(
+    (el) => el !== iconParent && el !== heading && el.textContent.trim(),
   );
 
-  // First para = left-side body copy; everything after = right-side merch card
-  const [bodyEl, ...merch] = allParas;
+  // First element = left-side body copy; everything after = right-side merch card
+  const [bodyEl, ...merch] = allEls;
   if (bodyEl) bodyEl.classList.add('heading-5');
 
-  const ctaParas = merch.filter((p) => p.querySelector('em a, strong a'));
-  const contentParas = merch.filter((p) => !p.querySelector('em a, strong a'));
+  const ctaEls = merch.filter((el) => el.querySelector('em a, strong a'));
+  const contentEls = merch.filter((el) => !el.querySelector('em a, strong a'));
 
   return {
-    iconEl, heading, bodyEl, contentParas, ctaParas,
+    iconEl, heading, bodyEl, contentEls, ctaEls,
   };
 }
 
@@ -35,12 +37,12 @@ function buildChicletRow(iconEl, heading) {
   return chicletRow;
 }
 
-function buildMerchCard(contentParas, ctaParas) {
+function buildMerchCard(contentEls, ctaEls) {
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  cardContent.append(...contentParas);
+  cardContent.append(...contentEls);
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
-  ctaParas.forEach((p) => ctaWrapper.append(p));
+  ctaEls.forEach((el) => ctaWrapper.append(el));
   decorateButtons(ctaWrapper);
 
   return createTag('div', { class: 'pm-merch-card' }, [cardContent, ctaWrapper]);
@@ -51,7 +53,7 @@ function decorate(block) {
   if (!col) return;
 
   const {
-    iconEl, heading, bodyEl, contentParas, ctaParas,
+    iconEl, heading, bodyEl, contentEls, ctaEls,
   } = parseColumn(col);
 
   const foreground = createTag('div', { class: 'pm-foreground' });
@@ -59,8 +61,8 @@ function decorate(block) {
   if (bodyEl) foreground.append(bodyEl);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
-  if (contentParas.length || ctaParas.length) {
-    promoArea.append(buildMerchCard(contentParas, ctaParas));
+  if (contentEls.length || ctaEls.length) {
+    promoArea.append(buildMerchCard(contentEls, ctaEls));
   }
 
   const content = createTag('div', { class: 'pm-content container' });
