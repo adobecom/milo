@@ -1546,10 +1546,12 @@ class Gnav {
       && itemTopParent.closest('.large-menu') instanceof HTMLElement;
     if (hasAsyncDropdown) return 'asyncDropdownTrigger';
     const isPrimaryCta = item.closest('strong') instanceof HTMLElement
-      || item.matches('a.con-button.blue');
+      || item.matches('a.con-button.blue')
+      || item.querySelector('a.con-button.blue') instanceof HTMLElement;
     if (isPrimaryCta) return 'primaryCta';
     const isSecondaryCta = item.closest('em') instanceof HTMLElement
-      || item.matches('a.con-button.outline');
+      || item.matches('a.con-button.outline')
+      || item.querySelector('a.con-button.outline') instanceof HTMLElement;
     if (isSecondaryCta) return 'secondaryCta';
     const isText = !(item.querySelector('a') instanceof HTMLElement);
     if (isText) return 'text';
@@ -1839,13 +1841,16 @@ class Gnav {
           return addMepHighlightAndTargetId(triggerTemplate, item);
         }
         case 'primaryCta':
-        case 'secondaryCta':
-          // Remove its 'em' or 'strong' wrapper
-          item.parentElement.replaceWith(item);
+        case 'secondaryCta': {
+          const ctaLink = item.matches('a') ? item : item.querySelector('a');
+          if (ctaLink.parentElement.tagName === 'STRONG' || ctaLink.parentElement.tagName === 'EM') {
+            ctaLink.parentElement.replaceWith(ctaLink);
+          }
 
           return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-              ${decorateCta({ elem: item.classList.contains('merch') ? await (await import('../merch/merch.js')).default(item) : item, type: itemType, index: index + 1 })}
+              ${decorateCta({ elem: ctaLink.classList.contains('merch') ? await (await import('../merch/merch.js')).default(ctaLink) : ctaLink, type: itemType, index: index + 1 })}
             </div>`, item);
+        }
         case 'link': {
           let customLinkModifier = '';
           let removeCustomLink = false;
