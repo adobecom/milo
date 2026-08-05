@@ -25,4 +25,15 @@ describe('captureMetrics diff counts', () => {
       diff_metadata_changed_count: 0,
     });
   });
+
+  it('returns zeros when the diff results are empty or detail-less', () => {
+    const allZeros = {
+      diff_content_added_count: 0,
+      diff_content_modified_count: 0,
+      diff_content_removed_count: 0,
+      diff_metadata_changed_count: 0,
+    };
+    expect(buildDiffCounts([])).to.deep.equal(allZeros);
+    expect(buildDiffCounts([{ details: {} }])).to.deep.equal(allZeros);
+  });
 });

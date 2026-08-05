@@ -45,14 +45,17 @@ const mapChecksWithColumn = (checks) => checks?.map((check) => ({
 }));
 
 export function buildDiffCounts(diffResults) {
-  const d = diffResults?.[0]?.details || {};
-  const c = d.content || { added: [], modified: [], removed: [] };
-  const m = d.metadata || { added: [], modified: [], removed: [] };
+  const details = diffResults?.[0]?.details || {};
+  const content = details.content || { added: [], modified: [], removed: [] };
+  const metadata = details.metadata || { added: [], modified: [], removed: [] };
+  const metadataChangedCount = metadata.added.length
+    + metadata.modified.length
+    + metadata.removed.length;
   return {
-    diff_content_added_count: c.added.length,
-    diff_content_modified_count: c.modified.length,
-    diff_content_removed_count: c.removed.length,
-    diff_metadata_changed_count: m.added.length + m.modified.length + m.removed.length,
+    diff_content_added_count: content.added.length,
+    diff_content_modified_count: content.modified.length,
+    diff_content_removed_count: content.removed.length,
+    diff_metadata_changed_count: metadataChangedCount,
   };
 }
 
