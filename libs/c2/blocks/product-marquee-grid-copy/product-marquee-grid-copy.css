@@ -102,6 +102,12 @@
     gap: var(--s2a-spacing-lg);
     justify-content: flex-start;
   }
+
+  .product-marquee-grid-copy.merch-offer .pm-merch-card {
+    background: none;
+    border-radius: 0;
+    padding: 0;
+  }
 }
 
 @media (width >= 768px) {
