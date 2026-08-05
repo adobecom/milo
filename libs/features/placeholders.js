@@ -2,6 +2,7 @@ import {
   customFetch,
   getConfig,
   getMetadata,
+  getGeoLocalePrefix,
   getLocale,
   getPlaceholderPaths,
   lingoActive,
@@ -72,9 +73,7 @@ const PLACEHOLDER_REGEX = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
 
 // No-fetch reimplementation of getLingoRegion's direct regions[] match, so
 // already-covered countries (`ca`/`za`/`sg`...) never pay the isSupportedMarket
-// fetch below. Intentionally skips the mepLingoCountryToRegion fold — that
-// rollup swaps whole fragments for a shared region and isn't reliable for a
-// precise per-country placeholder value.
+// fetch below.
 function getDirectRegionPrefix(locale, country, localeKey) {
   if (!locale.regions) return null;
   const regionKey = Object.entries(locale.regions).find(
@@ -92,6 +91,11 @@ const COUNTRY_KEY_ALIASES = { gb: 'uk' };
 // placeholders.json) that was never wired as a `regions` child, e.g. `si`/
 // `ch_it`. Gated by isSupportedMarket so it only fires where
 // supported-markets.json actually supports this country/language pairing.
+// Tried before the mepLingoCountryToRegion fold (via getGeoLocalePrefix()
+// below) so a country with its own site (e.g. `cl`) prefers that over a
+// shared regional rollup (e.g. `la`) — but countries with no standalone site
+// of their own (e.g. `ke`, only reachable via the `africa` fold) still fall
+// through to the fold rather than losing geo-ip coverage outright.
 async function getIndividualCountryGeoPrefix(country, siteConfig, localeKey) {
   const { locale, locales } = siteConfig;
   if (!locales || !country) return null;
@@ -118,6 +122,7 @@ async function getGeoPlaceholders(config, sheet) {
   if (!geoPrefix && country) {
     geoPrefix = await getIndividualCountryGeoPrefix(country, siteConfig, localeKey);
   }
+  if (!geoPrefix) geoPrefix = await getGeoLocalePrefix();
 
   if (!geoPrefix) return null;
   let geoOrigin = window.location.origin;
