@@ -1011,21 +1011,39 @@ export function normCountryCode(country) {
   return lower === 'uk' ? 'gb' : lower.split('_')[0];
 }
 
-export function computeDetectedMarketCountry(search, cookieCountry, countryFromGeo) {
+export function isMasImsLoginEnabled() {
+  const queryParam = new URLSearchParams(window.location.search).get('mas-ims-login');
+  const metaValue = getMetadata('mas-ims-login');
+  const imsLogin = queryParam ?? metaValue;
+  return imsLogin?.toLowerCase() === 'on';
+}
+
+export function computeDetectedMarketCountry(
+  search,
+  cookieCountry,
+  countryFromGeo,
+  coFromIMS,
+  imsLoginEnabled,
+) {
   const params = new URLSearchParams(search);
   const countryParam = normCountryCode(params.get('country'));
   const akamaiParam = normCountryCode(params.get('akamaiLocale'));
-  return countryParam || akamaiParam || cookieCountry || normCountryCode(countryFromGeo);
+  const geoCountry = normCountryCode(countryFromGeo);
+  const imsCountry = imsLoginEnabled ? normCountryCode(coFromIMS) : undefined;
+  return countryParam || akamaiParam || cookieCountry || imsCountry || geoCountry;
 }
 
 export async function resolveDetectedMarketCountry() {
   if (isBot()) return null;
   const cookieMarket = getCookie('country');
+  const coFromIMS = getCookie('ims_country_code');
   const countryFromGeo = await getCountry();
   return computeDetectedMarketCountry(
     window.location.search,
     cookieMarket,
     countryFromGeo,
+    coFromIMS,
+    isMasImsLoginEnabled(),
   );
 }
 
@@ -2048,12 +2066,14 @@ export async function loadIms() {
           clearTimeout(timeout);
         },
         onError: reject,
+        ...adobeid,
         ...(imsGuest === 'on' && {
           api_parameters: { check_token: { guest_allowed: true } },
           enableGuestAccounts: true,
           enableGuestTokenForceRefresh: true,
+          enableGuestBotDetection: true,
+          guestBotDetectionProvider: 'bfp',
         }),
-        ...adobeid,
       };
       const path = PAGE_URL.searchParams.get('useAlternateImsDomain')
         ? 'https://auth.services.adobe.com/imslib/imslib.min.js'
