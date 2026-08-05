@@ -37,7 +37,11 @@
   .pm-promo-area {
     margin-block-start: var(--s2a-spacing-lg);
   }
+}
 
+/* merch-offer variant */
+
+.product-marquee-grid-copy.merch-offer {
   .pm-merch-card {
     background: var(--s2a-color-background-subtle);
     border-radius: var(--s2a-border-radius-12);
@@ -129,6 +133,11 @@
     .pm-promo-area {
       align-self: flex-end;
       margin-block-start: 0;
+    }
+  }
+
+  .product-marquee-grid-copy.merch-offer {
+    .pm-promo-area {
       max-width: 596px;
       width: 443px;
     }

@@ -63,6 +63,7 @@ function buildMerchCard(contentEls, ctaEls) {
 }
 
 function decorate(block) {
+  const isMerchOffer = block.classList.contains('merch-offer');
   const col = block.children[0]?.children[0];
   if (!col) return;
 
@@ -75,7 +76,7 @@ function decorate(block) {
   if (bodyEl) foreground.append(bodyEl);
 
   const promoArea = createTag('div', { class: 'pm-promo-area' });
-  if (contentEls.length || ctaEls.length) {
+  if (isMerchOffer && (contentEls.length || ctaEls.length)) {
     promoArea.append(buildMerchCard(contentEls, ctaEls));
   }
 
