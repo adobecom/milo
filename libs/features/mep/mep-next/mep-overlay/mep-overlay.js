@@ -18,6 +18,7 @@ import {
   setPreviewButton,
   getMasRegions,
   findGeoGroupForLocale,
+  hasMasChanges,
 } from './mep-overlay-logic.js';
 import {
   TOGGLE_KEYS,
@@ -558,7 +559,8 @@ function setMasObserver() {
   };
 
   let debounceTimer;
-  const masObserver = new MutationObserver(() => {
+  const masObserver = new MutationObserver((mutations) => {
+    if (!hasMasChanges(mutations)) return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(runRefreshes, 200);
   });
