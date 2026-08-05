@@ -1,7 +1,7 @@
 .hub-hero {
   --slides: 4;
   --slide-max-viewport: calc(100vw/var(--slides));
-  --hub-hero-top-spacing: calc(124px + 64px);
+  --hub-hero-top-spacing: calc(188px);
   --hub-hero-height: 4000px;
   --slide-header-h: 64px;
   --slide-footer-h: 96px;
@@ -1755,7 +1755,6 @@
   }
 
   30% {
-    /* max-width: var(--grid-img-width); */
     min-width: var(--grid-img-width-min);
     max-height: calc(min(329px, var(--slide-max-viewport)) * 1.25);
   }

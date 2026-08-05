@@ -315,8 +315,10 @@ const handleGridImages = (imageContainers, slides, isThreeSlides) => {
   const leftSlideIndex = isThreeSlides ? 0 : 1;
   const rightSlideIndex = isThreeSlides ? 2 : 3;
 
-  gridColumns[1]?.append(slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true));
-  gridColumns[3]?.append(slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true));
+  const leftClone = slides[leftSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  const rightClone = slides[rightSlideIndex]?.querySelector('div:has(img)')?.cloneNode(true);
+  if (leftClone) gridColumns[1]?.append(leftClone);
+  if (rightClone) gridColumns[3]?.append(rightClone);
 
   return container;
 };
