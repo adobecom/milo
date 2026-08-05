@@ -1353,13 +1353,18 @@ span.hang-opening-quote {
     animation-range: entry 0% var(--gd-range-end);
 
     @media (width >= 1280px) {
-      --gd-grow-from: -90vh;
+      /* Capped so the entry travel distance can't outrun the scroll
+         distance the --gd-timeline range actually covers on tall
+         viewports — otherwise the section's transform recovers toward 0
+         faster than the page scrolls, and it visibly dips down before
+         pulling up. */
+      --gd-grow-from: max(-90vh, -1050px);
       --gd-reveal-from: 30vh;
       --gd-range-end: cover 48%;
     }
 
     @media (width >= 1920px) {
-      --gd-grow-from: -70vh;
+      --gd-grow-from: max(-70vh, -800px);
       --gd-range-end: cover 36%;
     }
 
