@@ -128,6 +128,50 @@
 .upload-marquee-block .upload-marquee-right .media-container .video-container {
   width: 100%;
   height: 100%;
+  position: relative;
+}
+
+/* Pause/play control: absolute + reserved 40x40 box so the async icon SVGs don't shift the
+   media (CLS). Mirrors libs/blocks/video/video.css, which a useBlockCode block doesn't load. */
+.upload-marquee-block .video-container .pause-play-wrapper {
+  position: absolute;
+  bottom: 2%;
+  top: auto;
+  inset-inline-end: 2%;
+  inset-inline-start: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  padding: 3px;
+  border-radius: 50%;
+  z-index: 3;
+  cursor: pointer;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: inherit;
+  background: var(--color-gray-800);
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper:focus-visible {
+  outline: 2px solid var(--um-accent-focus);
+  outline-offset: 2px;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper img.accessibility-control {
+  width: 40px;
+  height: 40px;
+}
+
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler.is-playing .play-icon,
+.upload-marquee-block .video-container .pause-play-wrapper .offset-filler:not(.is-playing) .pause-icon {
+  display: none;
 }
 
 .upload-marquee-block .upload-marquee-uploads > .tablet-up,
