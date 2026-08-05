@@ -39,7 +39,21 @@ function buildChicletRow(iconEl, heading) {
 
 function buildMerchCard(contentEls, ctaEls) {
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  cardContent.append(...contentEls);
+  contentEls.forEach((el, i) => {
+    if (el.querySelector('a[href*="osi="], [is="inline-price"], [data-wcs-osi]')) {
+      el.classList.add('pm-price');
+      const subEl = contentEls[i + 1];
+      if (subEl) {
+        subEl.classList.add('pm-price-sub');
+        const priceGroup = createTag('div', { class: 'pm-price-group' }, [el, subEl]);
+        cardContent.append(priceGroup);
+      } else {
+        cardContent.append(el);
+      }
+    } else if (!el.classList.contains('pm-price-sub')) {
+      cardContent.append(el);
+    }
+  });
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   ctaEls.forEach((el) => ctaWrapper.append(el));

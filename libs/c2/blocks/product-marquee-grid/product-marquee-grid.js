@@ -60,7 +60,21 @@ function buildMerchCard(col2) {
   );
 
   const cardContent = createTag('div', { class: 'pm-merch-content' });
-  cardContent.append(...contentParas);
+  contentParas.forEach((para, i) => {
+    if (para.querySelector('a[href*="osi="], [is="inline-price"], [data-wcs-osi]')) {
+      para.classList.add('pm-price');
+      const subPara = contentParas[i + 1];
+      if (subPara) {
+        subPara.classList.add('pm-price-sub');
+        const priceGroup = createTag('div', { class: 'pm-price-group' }, [para, subPara]);
+        cardContent.append(priceGroup);
+      } else {
+        cardContent.append(para);
+      }
+    } else if (!para.classList.contains('pm-price-sub')) {
+      cardContent.append(para);
+    }
+  });
 
   const ctaWrapper = createTag('div', { class: 'pm-merch-ctas' });
   ctaParas.forEach((p) => ctaWrapper.append(p));
