@@ -11,19 +11,6 @@ function openPreflightPanel() {
   sidekick.dispatchEvent(new CustomEvent('custom:preflight', { bubbles: true }));
 }
 
-['previewed', 'published'].forEach((event) => {
-  sidekick?.addEventListener(event, async () => {
-    const results = await getPreflightResults({
-      url: window.location.href,
-      area: document,
-      useCache: false,
-    }).catch(() => null);
-    if (!results) return;
-    window.hasCapturedPreflightMetrics = false;
-    captureMetrics(results.runChecks).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
-  });
-});
-
 function dismissNotification() {
   document.querySelector('.milo-preflight-overlay')?.remove();
   wasDismissed = true;
@@ -44,11 +31,23 @@ function getMasUnpublishedCount(results) {
   }, 0);
 }
 
+export function getDiffChangeCount(results) {
+  const details = results?.runChecks?.diff?.[0]?.details || {};
+  const content = details.content || { added: [], modified: [], removed: [] };
+  const metadata = details.metadata || { added: [], modified: [], removed: [] };
+  return content.added.length + content.modified.length + content.removed.length
+    + metadata.added.length + metadata.modified.length + metadata.removed.length;
+}
+
+export function diffNudgeMessage(count) {
+  return `${count} change${count === 1 ? '' : 's'} vs live — compare before publishing.`;
+}
+
 function isPreflightOpen() {
   return !!document.getElementById('preflight');
 }
 
-async function createPreflightNotification(masUnpublishedCount = 0) {
+async function createPreflightNotification(masUnpublishedCount = 0, diffMessage = '') {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
   // The modal already surfaces the results, so don't also show the notification.
@@ -61,13 +60,18 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
     ? `<br/><span class="notification-mas-line">M@S: ${masUnpublishedCount} unpublished fragment${masUnpublishedCount === 1 ? '' : 's'} on this page.</span>`
     : '';
 
+  // The diff nudge swaps in its own copy but keeps the same review CTA below.
+  const message = diffMessage
+    ? `${diffMessage} <button class="preflight-review-link">Review</button>`
+    : `Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}`;
+
   const overlay = document.createElement('div');
   overlay.className = 'milo-preflight-overlay';
   overlay.innerHTML = `
     <div class="preflight-notification">
       <div class="notification-content">
         <span class="notification-message">
-          Content quality checks are failing. Please <button class="preflight-review-link">review</button> before publishing.${masLine}
+          ${message}
         </span>
         <button class="notification-close">×</button>
       </div>
@@ -85,6 +89,24 @@ async function createPreflightNotification(masUnpublishedCount = 0) {
 
   document.body.appendChild(overlay);
 }
+
+['previewed', 'published'].forEach((event) => {
+  sidekick?.addEventListener(event, async () => {
+    const results = await getPreflightResults({
+      url: window.location.href,
+      area: document,
+      useCache: false,
+    }).catch(() => null);
+    if (!results) return;
+    window.hasCapturedPreflightMetrics = false;
+    captureMetrics(results.runChecks).catch((e) => window.lana?.log?.(`Preflight metrics capture failed: ${e}`, { tags: 'preflight' }));
+    // Diff nudge is preview-only: aem.live stakeholders and a just-synced publish never see it.
+    if (event === 'previewed' && window.location.hostname.endsWith('.aem.page')) {
+      const diffCount = getDiffChangeCount(results);
+      if (diffCount > 0) await createPreflightNotification(0, diffNudgeMessage(diffCount));
+    }
+  });
+});
 
 function setupLinkCheckListener() {
   if (linkCheckListener) return;
