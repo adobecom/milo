@@ -447,6 +447,10 @@
       --stack-scale-x: 0.94;
       margin-top: calc(var(--slide-footer-h) + var(--slide-header-h));
     }
+
+    .hub-hero-carousel-item-footer * {
+      white-space: wrap;
+    }
   }
 
   .hub-hero-carousel-item-media>p:nth-child(2) {
