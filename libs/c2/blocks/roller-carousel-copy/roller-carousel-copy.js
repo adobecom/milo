@@ -102,7 +102,9 @@ function buildReducedMotion(block, eyebrowEl, headingEl, apps) {
   block.classList.add('rcc-reduced-motion');
 
   const bg = createTag('div', { class: 'rcc-bg', 'aria-hidden': 'true' });
-  bg.append(buildBgSlide(apps[0], true));
+  const bgSlide = buildBgSlide(apps[0], true);
+  eagerLoad(bgSlide, true);
+  bg.append(bgSlide);
 
   const content = createTag('div', { class: 'rcc-rm-content' });
   content.append(buildHeader(eyebrowEl, headingEl));
