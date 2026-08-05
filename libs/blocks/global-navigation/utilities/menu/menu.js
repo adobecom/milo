@@ -282,10 +282,17 @@ const decoratePromo = async (elem, index) => {
   }
 
   if (promoHeader?.textContent.trim()) {
-    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">
-        ${promoHeader.textContent.trim()}
-      </div>`;
-    promoHeader.parentElement.replaceWith(headingElem);
+    const headingParagraph = promoHeader.parentElement;
+    const headingMerchLinks = headingParagraph.querySelectorAll('a.merch');
+    for (const link of headingMerchLinks) {
+      const priceEl = await merch.default(link.cloneNode(true));
+      if (priceEl instanceof HTMLElement) link.replaceWith(priceEl);
+    }
+    // Wrap heading in one inline <span> so the text and inline prices flow together on same line
+    const headingContent = document.createElement('span');
+    headingContent.append(...headingParagraph.childNodes);
+    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">${headingContent}</div>`;
+    headingParagraph.replaceWith(headingElem);
   }
 
   await decorateElements({ elem, className: 'feds-promo-link', index });
